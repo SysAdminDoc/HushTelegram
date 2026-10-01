@@ -15,6 +15,7 @@ The start of the project, with 4 patches for telegram.org's Telegram 12.10.6. No
 * **Telegram:** The update switches read more plainly, and the Chats summary on the settings home fits on one line.
 * **Telegram:** Every row on the Chats, Updates and Links pages has an icon now, so the text starts at the same edge on every page, and Chats has a chat bubble.
 * **Telegram:** With large text on a Samsung phone, switch rows show their icon at full size and line up with the rows around them.
+* **Telegram:** A row that opens another page has a gray icon on More settings too, as it already did on the settings home, so blue marks only the rows that do something where they are.
 * **Telegram:** The Licenses page shows the notice's headings in bold instead of under rows of = and - signs.
 * **Tooling:** The build, extension library, settings screen and diagnostics start from HushThreads at b141524, renamed to `app.hushtelegram.extension` so they can't collide with another Morphe source's classes.
 * **Tooling:** The verification and release scripts know Telegram. `verify-all-patches.ps1` takes telegram.org's single APK, and the manifest allowlist approves only the settings alias, the one manifest change the patches make.

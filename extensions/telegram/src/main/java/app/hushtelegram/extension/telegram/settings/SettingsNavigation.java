@@ -137,8 +137,9 @@ final class SettingsNavigation extends BaseAdapter {
     private void section(String id, String title, String detail, String icon, boolean primary) {
         for (Preference candidate : page.sections()) {
             if (!title.contentEquals(candidate.getTitle())) continue;
+            // Gray on the home page and on More settings alike: a row that opens a page wears gray,
+            // and blue is left for the rows that do something where they are.
             Preference link = link(screen.getContext(), title, detail, icon);
-            if (!primary) link.setIcon(SettingsIcons.icon(screen.getContext(), icon, palette().heading));
             link.setKey("section_" + id);
             link.setOnPreferenceClickListener(ignored -> { navigate(id); return true; });
             sections.add(new Section(id, (PreferenceCategory) candidate, link, primary));
