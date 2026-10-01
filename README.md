@@ -12,7 +12,7 @@
 
 HushTelegram is a Morphe patch bundle for Android that takes the sponsored messages out of Telegram and keeps a few things on your phone that Telegram would otherwise send home.
 
-It's early. There's no release yet. The four patches below have been applied to Telegram 12.10.6 and exercised on a signed-in phone. No sponsored message appeared during that test, so live ad removal still needs confirmation.
+It's early. There's no release yet. The four patches below have been applied to Telegram 12.10.6 and exercised on a signed-in phone, where Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
 
 ## Why use it
 
@@ -59,6 +59,12 @@ There are 4 patches, and every one of them is selected by default.
 | `Disable update checks` | Stops telegram.org's Telegram offering its own updates, which can't install over a patched build. Patch the new version in Morphe Manager instead. |
 | `Hide ads` | Hides the sponsored messages in channels, the sponsored accounts in search and the ads in Telegram's video player. Telegram never asks for them, so none are counted as seen. |
 | `HushTelegram settings` | Adds HushTelegram settings to Telegram. Long-press Telegram's launcher icon, or open Additional settings in the app on Telegram's App info page, to turn features on or off, pause HushTelegram, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
+
+### Hide ads, before and after
+
+The same search on the same phone, first with Hide ads off, then on. Telegram pins a sponsored account above the results for a lot of searches. With the switch on it never asks for one, so there's nothing to show and nothing to count as seen.
+
+<p><img src="assets/search-ads-off.png" width="320" alt="Search results for games with Hide ads off. An account marked Ad sits at the top."><img src="assets/search-ads-on.png" width="320" alt="The same search with Hide ads on. The Ad row is gone and the list starts with the first real result."></p>
 
 ## Settings
 
