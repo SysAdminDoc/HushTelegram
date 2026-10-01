@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(298);
+        Map<String, String> table = new HashMap<>(312);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -333,6 +333,10 @@ public final class L10nTranslations {
                 "Es gibt keine Diagnosedaten zum L\u00f6schen.");
         table.put("There's no diagnostic data to put back.",
                 "Es gibt keine Diagnosedaten zum Wiederherstellen.");
+        table.put("This build covers %1$s. Missing coverage: %2$s.",
+                "Dieser Build deckt %1$s ab. Fehlende Abdeckung: %2$s.");
+        table.put("This build has no coverage for %1$s.",
+                "Dieser Build deckt %1$s nicht ab.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Dieses Handy hat keine Dateiauswahl, hier l\u00e4sst sich also keine Datei w\u00e4hlen.");
         table.put("Try a different word or clear the search.",
@@ -359,10 +363,20 @@ public final class L10nTranslations {
                 "Deine Einstellungen sind aktiv.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Deine Schalter entsprechen bereits dieser Datei, es \u00e4ndert sich also nichts.");
+        table.put("channel ads",
+                "Kanalwerbung");
+        table.put("channel read metrics",
+                "Kanal-Lesemetriken");
+        table.put("device statistics reports",
+                "Ger\u00e4testatistikberichte");
+        table.put("search ads",
+                "Suchwerbung");
+        table.put("video ads",
+                "Videowerbung");
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(298);
+        Map<String, String> table = new HashMap<>(312);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -648,6 +662,10 @@ public final class L10nTranslations {
                 "No hay datos de diagn\u00f3stico que borrar.");
         table.put("There's no diagnostic data to put back.",
                 "No hay datos de diagn\u00f3stico que restaurar.");
+        table.put("This build covers %1$s. Missing coverage: %2$s.",
+                "Esta versi\u00f3n cubre %1$s. Falta cobertura de %2$s.");
+        table.put("This build has no coverage for %1$s.",
+                "Esta versi\u00f3n no cubre %1$s.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Este tel\u00e9fono no tiene selector de archivos, as\u00ed que aqu\u00ed no hay forma de elegir un archivo.");
         table.put("Try a different word or clear the search.",
@@ -674,10 +692,20 @@ public final class L10nTranslations {
                 "Tus controles est\u00e1n activos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Tus interruptores ya coinciden con ese archivo, as\u00ed que no cambiar\u00e1 nada.");
+        table.put("channel ads",
+                "anuncios en canales");
+        table.put("channel read metrics",
+                "m\u00e9tricas de lectura de canales");
+        table.put("device statistics reports",
+                "informes de estad\u00edsticas del dispositivo");
+        table.put("search ads",
+                "anuncios en b\u00fasquedas");
+        table.put("video ads",
+                "anuncios en videos");
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(298);
+        Map<String, String> table = new HashMap<>(312);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -963,6 +991,10 @@ public final class L10nTranslations {
                 "Tidak ada data diagnostik yang dapat dihapus.");
         table.put("There's no diagnostic data to put back.",
                 "Tidak ada data diagnostik yang dapat dikembalikan.");
+        table.put("This build covers %1$s. Missing coverage: %2$s.",
+                "Versi ini mencakup %1$s. Cakupan yang belum tersedia: %2$s.");
+        table.put("This build has no coverage for %1$s.",
+                "Versi ini tidak mencakup %1$s.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Ponsel ini tidak memiliki pemilih file, jadi file tidak dapat dipilih di sini.");
         table.put("Try a different word or clear the search.",
@@ -989,10 +1021,20 @@ public final class L10nTranslations {
                 "Kontrol Anda aktif.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Sakelar Anda sudah sesuai dengan file itu, jadi tidak ada yang akan berubah.");
+        table.put("channel ads",
+                "iklan saluran");
+        table.put("channel read metrics",
+                "metrik pembacaan saluran");
+        table.put("device statistics reports",
+                "laporan statistik perangkat");
+        table.put("search ads",
+                "iklan pencarian");
+        table.put("video ads",
+                "iklan video");
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(298);
+        Map<String, String> table = new HashMap<>(312);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1278,6 +1320,10 @@ public final class L10nTranslations {
                 "N\u00e3o h\u00e1 dados de diagn\u00f3stico para limpar.");
         table.put("There's no diagnostic data to put back.",
                 "N\u00e3o h\u00e1 dados de diagn\u00f3stico para restaurar.");
+        table.put("This build covers %1$s. Missing coverage: %2$s.",
+                "Esta vers\u00e3o cobre %1$s. Falta cobertura para %2$s.");
+        table.put("This build has no coverage for %1$s.",
+                "Esta vers\u00e3o n\u00e3o cobre %1$s.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Este dispositivo n\u00e3o tem seletor de arquivos, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel escolher um arquivo aqui.");
         table.put("Try a different word or clear the search.",
@@ -1304,10 +1350,20 @@ public final class L10nTranslations {
                 "Seus controles est\u00e3o ativos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Suas op\u00e7\u00f5es j\u00e1 correspondem \u00e0s desse arquivo, ent\u00e3o nada ser\u00e1 alterado.");
+        table.put("channel ads",
+                "an\u00fancios em canais");
+        table.put("channel read metrics",
+                "m\u00e9tricas de leitura de canais");
+        table.put("device statistics reports",
+                "relat\u00f3rios de estat\u00edsticas do dispositivo");
+        table.put("search ads",
+                "an\u00fancios na busca");
+        table.put("video ads",
+                "an\u00fancios em v\u00eddeos");
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(298);
+        Map<String, String> table = new HashMap<>(312);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -1593,6 +1649,10 @@ public final class L10nTranslations {
                 "Temizlenecek tan\u0131lama verisi yok.");
         table.put("There's no diagnostic data to put back.",
                 "Geri getirilecek tan\u0131lama verisi yok.");
+        table.put("This build covers %1$s. Missing coverage: %2$s.",
+                "Bu derlemenin kapsam\u0131: %1$s. Eksik kapsam: %2$s.");
+        table.put("This build has no coverage for %1$s.",
+                "Bu derleme %1$s i\u00e7in kapsam sa\u011flamaz.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Bu telefonda dosya se\u00e7ici yok, bu y\u00fczden burada dosya se\u00e7menin bir yolu yok.");
         table.put("Try a different word or clear the search.",
@@ -1619,5 +1679,15 @@ public final class L10nTranslations {
                 "Kontrolleriniz etkin.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Anahtarlar\u0131n zaten o dosyayla ayn\u0131, bu y\u00fczden hi\u00e7bir \u015fey de\u011fi\u015fmeyecek.");
+        table.put("channel ads",
+                "kanal reklamlar\u0131");
+        table.put("channel read metrics",
+                "kanal okuma \u00f6l\u00e7\u00fcmleri");
+        table.put("device statistics reports",
+                "cihaz istatistik raporlar\u0131");
+        table.put("search ads",
+                "arama reklamlar\u0131");
+        table.put("video ads",
+                "video reklamlar\u0131");
     }
 }

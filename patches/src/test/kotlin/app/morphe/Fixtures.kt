@@ -25,13 +25,18 @@ import org.junit.Assume.assumeTrue
  * A variable pointing at a missing or empty folder is a broken setup, and skipping there would
  * read as a pass. There is no default folder: one used to be a path on the maintainer's machine,
  * which skipped quietly everywhere else and published that machine's layout.
+ * The push gate sets [REQUIRED_VARIABLE], so an unavailable fixture can never become a skip there.
  */
 internal object Fixtures {
     const val VARIABLE = "HUSHTELEGRAM_FIXTURE_DIR"
+    const val REQUIRED_VARIABLE = "HUSHTELEGRAM_REQUIRE_FIXTURES"
 
     /** The files in the fixture folder that [accept] takes, sorted by name. */
     fun files(accept: (File) -> Boolean): List<File> {
         val configured = System.getenv(VARIABLE)
+        if (configured.isNullOrBlank() && System.getenv(REQUIRED_VARIABLE) == "1") {
+            fail("$VARIABLE is required by the push gate. Restore the vendor Telegram APKs and rerun :patches:test.")
+        }
         assumeTrue(
             "$VARIABLE is not set, so the Telegram fixture tests skip. Point it at the folder " +
                 "that holds the vendor Telegram APKs to run them.",

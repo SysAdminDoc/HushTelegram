@@ -88,6 +88,86 @@ public enum PatchFamily {
     @Nullable
     static volatile Map<PatchFamily, String> staysWhilePausedForTests;
 
+    /** Overrides target facts for partial-build tests. Null uses the flags injected when patching. */
+    @Nullable
+    static volatile Set<Capability> capabilitiesForTests;
+
+    /** Each independent hook, its owning family and the flag set only after it was inserted. */
+    public enum Capability {
+        CHANNEL_ADS(HIDE_ADS, "channelAds", "channel ads"),
+        VIDEO_ADS(HIDE_ADS, "videoAds", "video ads"),
+        SEARCH_ADS(HIDE_ADS, "searchAds", "search ads"),
+        DEVICE_STATS(DISABLE_ANALYTICS, "deviceStats", "device statistics reports"),
+        READ_METRICS(DISABLE_ANALYTICS, "readMetrics", "channel read metrics");
+
+        public final PatchFamily family;
+        final String statusMethod;
+        public final String label;
+
+        Capability(PatchFamily family, String statusMethod, String label) {
+            this.family = family;
+            this.statusMethod = statusMethod;
+            this.label = label;
+        }
+
+        /** A patch-time fact, independent of whether its switch is on or the app is paused. */
+        public boolean installed() {
+            Set<Capability> forced = capabilitiesForTests;
+            if (forced != null) return forced.contains(this);
+            Set<PatchFamily> forcedBuild = inBuildForTests;
+            // Existing whole-family tests represent complete builds unless they specify targets.
+            if (forcedBuild != null) return forcedBuild.contains(family);
+            try {
+                return Boolean.TRUE.equals(SettingsStatus.class.getMethod(statusMethod).invoke(null));
+            } catch (ReflectiveOperationException | RuntimeException failure) {
+                Logger.printException(() -> "Could not ask whether " + label + " is covered in this build", failure);
+                return false;
+            }
+        }
+    }
+
+    /** All independently tracked targets this family is expected to cover, in declaration order. */
+    public Set<Capability> expectedCapabilities() {
+        Set<Capability> expected = EnumSet.noneOf(Capability.class);
+        for (Capability capability : Capability.values()) {
+            if (capability.family == this) expected.add(capability);
+        }
+        return Collections.unmodifiableSet(expected);
+    }
+
+    /** An immutable snapshot of the targets whose hooks were inserted into this build. */
+    public Set<Capability> installedCapabilities() {
+        Set<Capability> installed = EnumSet.noneOf(Capability.class);
+        for (Capability capability : expectedCapabilities()) {
+            if (capability.installed()) installed.add(capability);
+        }
+        return Collections.unmodifiableSet(installed);
+    }
+
+    /** Keeps the usual description for complete builds and names precise coverage for partial ones. */
+    String coverageSummary(String completeSummary) {
+        Set<Capability> expected = expectedCapabilities();
+        Set<Capability> installed = installedCapabilities();
+        if (installed.size() == expected.size()) return completeSummary;
+        List<String> covered = new ArrayList<>();
+        List<String> missing = new ArrayList<>();
+        for (Capability capability : expected) {
+            (installed.contains(capability) ? covered : missing).add(L10n.t(capability.label));
+        }
+        if (covered.isEmpty()) return L10n.f("This build has no coverage for %1$s.", L10n.join(missing));
+        return L10n.f("This build covers %1$s. Missing coverage: %2$s.", L10n.join(covered), L10n.join(missing));
+    }
+
+    private String coverageReportLine() {
+        List<String> covered = new ArrayList<>();
+        List<String> missing = new ArrayList<>();
+        for (Capability capability : expectedCapabilities()) {
+            (capability.installed() ? covered : missing).add(capability.label);
+        }
+        String line = patchName + " coverage: " + (covered.isEmpty() ? "none" : String.join(", ", covered));
+        return missing.isEmpty() ? line : line + "; missing: " + String.join(", ", missing);
+    }
+
     @Nullable
     private String effectiveStaysWhilePaused() {
         Map<PatchFamily, String> forced = staysWhilePausedForTests;
@@ -163,6 +243,11 @@ public enum PatchFamily {
             else absent.add(family.patchName);
         }
         if (!absent.isEmpty()) lines.add("not in this build: " + String.join(", ", absent));
+        for (PatchFamily family : values()) {
+            if (inBuild.contains(family) && !family.expectedCapabilities().isEmpty()) {
+                lines.add(family.coverageReportLine());
+            }
+        }
         return lines;
     }
 

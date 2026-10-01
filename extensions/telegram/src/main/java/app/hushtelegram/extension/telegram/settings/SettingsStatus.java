@@ -13,11 +13,13 @@
 package app.hushtelegram.extension.telegram.settings;
 
 /**
- * Which patches were selected for this build.
+ * Which patches and individual targets this build carries.
  *
  * <p>Every method answers false here. A patch that adds a feature rewrites its method to answer
  * true, so the settings screen offers only the switches this APK backs and the diagnostic report
- * lists only the patches it carries.
+ * lists only the patches it carries. Target flags are set only after their hook was inserted.
+ * These are build facts, not preferences: Pause, switch changes and settings imports don't alter
+ * them.
  */
 @SuppressWarnings({"unused", "SameReturnValue"})
 public final class SettingsStatus {
@@ -33,6 +35,26 @@ public final class SettingsStatus {
     }
 
     public static boolean disableUpdateChecks() {
+        return false;
+    }
+
+    public static boolean channelAds() {
+        return false;
+    }
+
+    public static boolean videoAds() {
+        return false;
+    }
+
+    public static boolean searchAds() {
+        return false;
+    }
+
+    public static boolean deviceStats() {
+        return false;
+    }
+
+    public static boolean readMetrics() {
         return false;
     }
 }

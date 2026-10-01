@@ -46,6 +46,14 @@ internal fun BytecodePatchContext.enableStatus(name: String) {
 }
 
 /**
+ * Records one successfully inserted target hook in the extension's immutable build facts. Kept
+ * separate from [enableStatus] so wiring checks distinguish a family from its individual targets.
+ */
+internal fun BytecodePatchContext.enableCapability(name: String) {
+    statusMethod(name).returnEarly(true)
+}
+
+/**
  * Throws naming [name] unless `SettingsStatus` has a boolean method of that name, the same check
  * [enableStatus] makes. A patch whose own find phase changes bytecode before it calls [enableStatus]
  * should call this first, so a missing method refuses before anything is mutated rather than after,

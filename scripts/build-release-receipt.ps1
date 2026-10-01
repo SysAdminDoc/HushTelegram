@@ -351,11 +351,13 @@ foreach ($apk in $Fixture) {
         # bundle, not the base APK's: the merge rewrites the manifest itself, and a delta against
         # the base would record its changes as the patches' own.
         $baseline = Get-ApkManifestFacts -Apk $patchInput -Aapt2 $Aapt2
+        $floor = Test-PatchedMinSdk -StockMinSdk $baseline.minSdk -PatchedMinSdk $patched.minSdk
+        if (-not $floor.Valid) { throw "${label}: $($floor.Reason)" }
         $delta = Get-ManifestDelta -Stock $baseline -Patched $patched
         $verdicts = Get-PatchVerdicts -Report $report -Names $patchNames
         $changes = @(ConvertTo-ManifestDeltaEntries -Delta $delta)
         Write-Host ("[receipt] $label" + ": $(@($verdicts | Where-Object { $_.applied }).Count)/" +
-            "$($patchNames.Count) applied, $($changes.Count) manifest changes")
+            "$($patchNames.Count) applied, binary minSdk $($baseline.minSdk) -> $($patched.minSdk), $($changes.Count) manifest changes")
         foreach ($change in $changes) { Write-Host "[receipt]   $change" }
 
         $targets.Add([ordered]@{
@@ -368,6 +370,7 @@ foreach ($apk in $Fixture) {
                 forced      = $forced
             }
             patches       = $verdicts
+            sdk           = [ordered]@{ stockMinSdk = $baseline.minSdk; patchedMinSdk = $patched.minSdk }
             manifestDelta = [ordered]@{
                 permissionsAdded          = @($delta.permissionsAdded)
                 permissionsRemoved        = @($delta.permissionsRemoved)

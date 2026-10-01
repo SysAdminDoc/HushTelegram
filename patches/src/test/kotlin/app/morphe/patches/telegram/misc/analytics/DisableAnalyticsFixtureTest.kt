@@ -68,6 +68,13 @@ class DisableAnalyticsFixtureTest {
             assertEquals("$where: SettingsStatus.disableAnalytics() answers true first", Opcode.CONST_4, status[0].opcode)
             assertEquals(1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
             assertEquals(Opcode.RETURN, status[1].opcode)
+            // A family flag alone can't prove both independent targets were inserted.
+            for (target in listOf("deviceStats", "readMetrics")) {
+                val capability = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == target }.instructions()
+                assertEquals("$where: $target is an injected build fact", Opcode.CONST_4, capability[0].opcode)
+                assertEquals("$where: missing $target coverage", 1, (capability[0] as NarrowLiteralInstruction).narrowLiteral)
+                assertEquals(Opcode.RETURN, capability[1].opcode)
+            }
         }
     }
 

@@ -76,6 +76,62 @@ function Write-Step {
     Write-Host "[pre-push] $Message"
 }
 
+function Assert-PatchFixtures {
+    # Read the catalog and its helper from the tree being built, which may be a pushed commit's
+    # worktree rather than this checkout. A newer or uncommitted catalog cannot satisfy its gate.
+    param([Parameter(Mandatory = $true)][string]$ProjectRoot)
+
+    $configured = $env:HUSHTELEGRAM_FIXTURE_DIR
+    if ([string]::IsNullOrWhiteSpace($configured)) {
+        throw ('Patch verification requires HUSHTELEGRAM_FIXTURE_DIR. Set it to the folder ' +
+            'holding every declared vendor Telegram APK, then push again. Run unit-only tests ' +
+            'directly with Gradle when the fixtures are unavailable.')
+    }
+    $directory = [IO.Path]::GetFullPath($configured)
+    if (-not (Test-Path -LiteralPath $directory -PathType Container)) {
+        throw "HUSHTELEGRAM_FIXTURE_DIR names $directory, which is not a folder. Restore the vendor APKs or correct the path, then push again."
+    }
+    $catalogPath = Join-Path $ProjectRoot 'patches-list.json'
+    if (-not (Test-Path -LiteralPath $catalogPath -PathType Leaf)) {
+        throw "Patch verification requires the pushed tree's patches-list.json at $catalogPath. Restore its generated catalog, then push again."
+    }
+    $helper = Join-Path $ProjectRoot 'scripts/patch-target.ps1'
+    if (-not (Test-Path -LiteralPath $helper -PathType Leaf)) {
+        throw "Patch verification requires the pushed tree's scripts/patch-target.ps1 at $helper. Restore it, then push again."
+    }
+    . $helper
+    $target = Get-PatchTarget -PatchList (Get-Content -LiteralPath $catalogPath -Raw | ConvertFrom-Json)
+    if ($target.PackageName -cne 'org.telegram.messenger.web') {
+        throw ("Patch verification has no retained fixture naming rule for $($target.PackageName). " +
+            'Update the fixture tests and this gate together before declaring another package.')
+    }
+    $missing = @()
+    $count = 0
+    foreach ($version in @($target.PackageVersions)) {
+        $codes = @($target.PackageVersionCodes[$version] | Where-Object { $_ })
+        if ($codes.Count -eq 0) {
+            throw "Patch verification requires exact version codes for $($target.PackageName) $version in patches-list.json. Generate the pinned catalog, then push again."
+        }
+        foreach ($code in $codes) {
+            if ($code -notmatch '^\d+$') {
+                throw "patches-list.json declares the invalid version code $code for $($target.PackageName) $version. Correct it, then push again."
+            }
+            $name = "telegram-web-$version-$code.apk"
+            $file = Join-Path $directory $name
+            if (-not (Test-Path -LiteralPath $file -PathType Leaf) -or (Get-Item -LiteralPath $file).Length -eq 0) {
+                $missing += $name
+            }
+            $count++
+        }
+    }
+    if ($missing.Count -gt 0) {
+        throw ("HUSHTELEGRAM_FIXTURE_DIR is missing retained $($target.PackageName) build(s): " +
+            ($missing -join ', ') + ". Restore those vendor APKs in $directory, then push again.")
+    }
+    Write-Step "$count declared Telegram fixture(s) found"
+    return $directory
+}
+
 function Get-PushedPaths {
     <#
         Git writes "<local ref> <local sha> <remote ref> <remote sha>" per ref on stdin. A remote
@@ -702,23 +758,6 @@ try {
     if ($touchesCode) {
         Write-Step 'extension or patch sources, or a root file their tests read, changed, running the runtime tests and the API level check'
 
-        # The Morphe settings plugin resolves from GitHub Packages, which needs a reader token.
-        # A hook runs with git's environment, not the shell's, so these are usually absent and
-        # the build fails while applying the plugin, long before a test runs.
-        if (-not $env:GITHUB_ACTOR -or -not $env:GITHUB_TOKEN) {
-            if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
-                throw ('Set GITHUB_ACTOR and GITHUB_TOKEN, or install the gh CLI: the patches ' +
-                    'plugin resolves from GitHub Packages and cannot be applied without them.')
-            }
-            $login = (& gh api user --jq .login 2>$null)
-            $token = (& gh auth token 2>$null)
-            if ([string]::IsNullOrWhiteSpace($login) -or [string]::IsNullOrWhiteSpace($token)) {
-                throw 'gh is not signed in, so the patches plugin cannot be resolved. Run gh auth login.'
-            }
-            $env:GITHUB_ACTOR = $login
-            $env:GITHUB_TOKEN = $token
-        }
-
         # The lint runs alongside the tests because the tests cannot see this class of defect at
         # all: they run on a desktop JVM, where every java.util method exists whatever the
         # payload's floor says. Only the API level check reads minSdk, and it reads the SDK_INT
@@ -751,6 +790,27 @@ try {
                     Write-Step "building $gateCommit in $gateRoot"
                 }
                 try {
+                $savedFixtureDir = $env:HUSHTELEGRAM_FIXTURE_DIR
+                $savedRequiredFixtures = $env:HUSHTELEGRAM_REQUIRE_FIXTURES
+                try {
+                $env:HUSHTELEGRAM_FIXTURE_DIR = Assert-PatchFixtures -ProjectRoot $gateRoot
+                $env:HUSHTELEGRAM_REQUIRE_FIXTURES = '1'
+
+                # The Morphe settings plugin resolves from GitHub Packages, which needs a reader
+                # token. Require the fixtures before authenticating or starting that build.
+                if (-not $env:GITHUB_ACTOR -or -not $env:GITHUB_TOKEN) {
+                    if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+                        throw ('Set GITHUB_ACTOR and GITHUB_TOKEN, or install the gh CLI: the patches ' +
+                            'plugin resolves from GitHub Packages and cannot be applied without them.')
+                    }
+                    $login = (& gh api user --jq .login 2>$null)
+                    $token = (& gh auth token 2>$null)
+                    if ([string]::IsNullOrWhiteSpace($login) -or [string]::IsNullOrWhiteSpace($token)) {
+                        throw 'gh is not signed in, so the patches plugin cannot be resolved. Run gh auth login.'
+                    }
+                    $env:GITHUB_ACTOR = $login
+                    $env:GITHUB_TOKEN = $token
+                }
                 $global:LASTEXITCODE = 0
                 Invoke-WithoutGitEnvironment {
                     if ($wrapper) {
@@ -763,6 +823,10 @@ try {
                     throw ('The runtime test build did not pass. Read the output above: it says whether a ' +
                         'test failed, an API level above the payload floor was reached, or the build could ' +
                         'not start. Push anyway with HUSHTELEGRAM_SKIP_PRE_PUSH=1.')
+                }
+                } finally {
+                    $env:HUSHTELEGRAM_FIXTURE_DIR = $savedFixtureDir
+                    $env:HUSHTELEGRAM_REQUIRE_FIXTURES = $savedRequiredFixtures
                 }
                 } finally {
                     if ($gateRoot -eq $Root) { Assert-TreeUnchanged 'the runtime test build' }

@@ -12,6 +12,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.handleTargets
@@ -77,7 +78,8 @@ internal object SearchSponsoredPeersFingerprint : Fingerprint(
  * global search takes the way past its request that Telegram keeps for Premium users with ads
  * turned off. With nothing fetched, nothing is drawn, marked as seen or reported as clicked. The
  * places stand alone, so a build that moved one still has the others covered and the patch log
- * names the one it went without.
+ * names the one it went without. Each successful hook also sets its own build flag, so settings
+ * and diagnostic reports show which targets remain covered.
  *
  * Found by reading 12.10.6 (2026-09-30): both channel and player methods build
  * `TL_messages_getSponsoredMessages`, and nothing else in the app does. Search ads followed on
@@ -98,6 +100,9 @@ val hideAdsPatch = bytecodePatch(
 
     execute {
         requireStatusMethod("hideAds")
+        requireStatusMethod("channelAds")
+        requireStatusMethod("videoAds")
+        requireStatusMethod("searchAds")
 
         handleTargets(PATCH, "sponsored message requests", AdRequest.entries) { request ->
             when (request) {
@@ -105,6 +110,7 @@ val hideAdsPatch = bytecodePatch(
                     if (method == null) "no method of the messages controller builds $GET_SPONSORED_MESSAGES for a chat"
                     else {
                         method.returnEarlyWhen(PATCH, "$ADS->skipSponsoredMessages()Z", "const/4 v0, 0x0\nreturn-object v0")
+                        enableCapability("channelAds")
                         null
                     }
                 }
@@ -112,12 +118,15 @@ val hideAdsPatch = bytecodePatch(
                     if (method == null) "VideoAds has no load() that builds $GET_SPONSORED_MESSAGES"
                     else {
                         method.returnEarlyWhen(PATCH, "$ADS->skipVideoAds()Z", "return-void")
+                        enableCapability("videoAds")
                         null
                     }
                 }
                 AdRequest.SEARCH -> SearchSponsoredPeersFingerprint.methodOrNull.let { method ->
                     if (method == null) "no search method builds $GET_SPONSORED_PEERS"
-                    else method.skipSearchAdsWhen("$ADS->skipSearchAds()Z")
+                    else method.skipSearchAdsWhen("$ADS->skipSearchAds()Z").also { missing ->
+                        if (missing == null) enableCapability("searchAds")
+                    }
                 }
             }
         }

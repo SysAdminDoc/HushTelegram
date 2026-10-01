@@ -33,6 +33,8 @@ HushTelegram patches the Telegram you download from [telegram.org](https://teleg
 
 The other Telegram, `org.telegram.messenger`, shares nearly all its code with this one. Support for it is planned once it has its own checked build.
 
+The patched app requires Android 9 or newer. A build that loses one ad or usage-report hook names the missing coverage in its settings and diagnostic report.
+
 ## Install
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 1.32.0 or newer.
@@ -109,7 +111,7 @@ The four Telegram patches were written for this project by reading Telegram 12.1
 
 ## Building from source
 
-You need JDK 17 or newer and the Android SDK. The Morphe patcher comes from GitHub Packages, so you also need a GitHub token with `read:packages`.
+You need JDK 21 and the Android SDK. The Morphe patcher comes from GitHub Packages, so you also need a GitHub token with `read:packages`.
 
 ```bash
 export GITHUB_ACTOR=<your GitHub user>

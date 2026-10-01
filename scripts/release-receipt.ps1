@@ -36,8 +36,9 @@ function Get-ReleaseReceiptSchemaVersion {
         older commit, so it stays a bare return.
 
         2 added sbom: the file name, SHA-256 and component count of the release SBOM.
+        3 added each target's stock and patched binary minSdk, held to max(stock, 28).
     #>
-    return 2
+    return 3
 }
 
 function Resolve-ReceiptSchema {
@@ -45,9 +46,10 @@ function Resolve-ReceiptSchema {
     .SYNOPSIS
         The schema a receipt should be held to: the one its own commit's builder wrote.
     .DESCRIPTION
-        A receipt describes a release that has shipped, and one cut before schema 2 has no SBOM
-        to name. Holding it to schema 2 would refuse every later push from the checkout that cut
-        it, which is the trap Resolve-ReceiptToolchain describes for the patcher pin. So the
+        A receipt describes a release that has shipped. One cut before schema 2 has no SBOM,
+        and one cut before schema 3 has no binary SDK facts. Holding it to today's schema would
+        refuse every later push from the checkout that cut it, which is the trap
+        Resolve-ReceiptToolchain describes for the patcher pin. So the
         number is read out of scripts/release-receipt.ps1 at the receipt's commit. On a release
         push the receipt's commit is the commit being released, whose builder writes this
         checkout's schema, so nothing is relaxed for a new release.
@@ -74,8 +76,9 @@ function Resolve-ReceiptSchema {
     if ($version -eq $current) { return [pscustomobject]@{ Version = $version; Note = $null } }
     return [pscustomobject]@{
         Version = $version
-        Note = ("the receipt is held to schema $version, which its own commit $short wrote, so it names no " +
-            'SBOM and none is checked for its release')
+        Note = ("the receipt is held to schema $version, which its own commit $short wrote, so " +
+            $(if ($version -lt 2) { 'it names no SBOM or binary SDK facts and neither is checked for its release' }
+              else { 'it names no binary SDK facts and those are not checked for its release' }))
     }
 }
 
@@ -392,7 +395,7 @@ function ConvertFrom-XmlTreeValue {
 function Get-ApkManifestFacts {
     <#
     .SYNOPSIS
-        Package identity, requested permissions and exported components, read off an APK.
+        Package identity, minimum SDK, requested permissions and exported components, read off an APK.
     .DESCRIPTION
         Components count as exported only when the manifest says so. Every target this project
         patches is above API 31, where an intent filter without an explicit android:exported is
@@ -423,6 +426,8 @@ function ConvertFrom-ManifestXmlTree {
     $packageName = $null
     $versionName = $null
     $versionCode = $null
+    $minSdk = 1
+    $sdkElements = 0
     $permissions = New-Object System.Collections.Generic.List[string]
     $exported = New-Object System.Collections.Generic.List[string]
 
@@ -441,6 +446,10 @@ function ConvertFrom-ManifestXmlTree {
         if ($elementMatch.Success) {
             Complete-Component -Name $componentName -Kind $element -IsExported $componentExported -List $exported
             $element = $elementMatch.Groups[1].Value
+            if ($element -eq 'uses-sdk') {
+                $sdkElements++
+                if ($sdkElements -gt 1) { throw "More than one uses-sdk element in the manifest of $Source." }
+            }
             $componentName = $null
             $componentExported = $false
             continue
@@ -457,6 +466,15 @@ function ConvertFrom-ManifestXmlTree {
                 if ($name -eq 'package') { $packageName = $value }
                 elseif ($name -eq 'versionName') { $versionName = $value }
                 elseif ($name -eq 'versionCode') { $versionCode = $value }
+            }
+            'uses-sdk' {
+                if ($name -eq 'minSdkVersion') {
+                    $parsed = 0
+                    if ($value -notmatch '^\d+$' -or -not [int]::TryParse($value, [ref]$parsed) -or $parsed -lt 1) {
+                        throw "Invalid minSdkVersion in the manifest of ${Source}: $value"
+                    }
+                    $minSdk = $parsed
+                }
             }
             'uses-permission' {
                 if ($name -eq 'name' -and $value) { $permissions.Add($value) }
@@ -490,9 +508,30 @@ function ConvertFrom-ManifestXmlTree {
         package     = $packageName
         versionName = $versionName
         versionCode = $versionCode
+        minSdk      = $minSdk
         permissions = @($permissions | Sort-Object -Unique -CaseSensitive)
         exported    = @($qualified | Sort-Object -Unique -CaseSensitive)
     }
+}
+
+function Test-PatchedMinSdk {
+    <#
+    .SYNOPSIS
+        The binary installation floor must be API 28 or the stock floor, whichever is higher.
+    #>
+    param($StockMinSdk, $PatchedMinSdk)
+
+    foreach ($value in @($StockMinSdk, $PatchedMinSdk)) {
+        if (($value -isnot [int] -and $value -isnot [long]) -or $value -lt 1 -or $value -gt [int]::MaxValue) {
+            return [pscustomobject]@{ Valid = $false; Reason = 'The binary minSdk facts are missing or invalid.' }
+        }
+    }
+    $expected = [Math]::Max([int]$StockMinSdk, 28)
+    if ($PatchedMinSdk -ne $expected) {
+        return [pscustomobject]@{ Valid = $false
+            Reason = "The patched binary minSdk is $PatchedMinSdk; stock is $StockMinSdk, so it must be $expected (max(stock, 28))." }
+    }
+    return [pscustomobject]@{ Valid = $true; Reason = 'ok' }
 }
 
 function Get-ManifestDelta {
@@ -1061,7 +1100,7 @@ function Test-ReleaseReceipt {
         # receipt legitimately describes the commit it was generated at, not HEAD.
         [string]$ExpectedCommit,
         # The schema the receipt's own commit writes (Resolve-ReceiptSchema). From 2 a receipt
-        # names the release SBOM.
+        # names the release SBOM; from 3 it also proves the binary SDK floor.
         [int]$ExpectedSchemaVersion = (Get-ReleaseReceiptSchemaVersion),
         # The SBOM itself, when the caller has it: its hash and component count have to be what
         # the receipt records, and with -BundlePath it has to describe that bundle.
@@ -1235,6 +1274,14 @@ function Test-ReleaseReceipt {
         }
         if ([string]::IsNullOrWhiteSpace([string]$target.source.versionName)) {
             return Fail "The receipt records a $ExpectedPackageName run with no version name."
+        }
+        if ($ExpectedSchemaVersion -ge 3) {
+            $sdk = $target.PSObject.Properties['sdk']
+            if ($null -eq $sdk -or $null -eq $sdk.Value) {
+                return Fail "The receipt records no binary SDK facts for $label."
+            }
+            $floor = Test-PatchedMinSdk -StockMinSdk $sdk.Value.stockMinSdk -PatchedMinSdk $sdk.Value.patchedMinSdk
+            if (-not $floor.Valid) { return Fail "${label}: $($floor.Reason)" }
         }
         # Whether the CLI was told to ignore the declared version. Recorded as a boolean by the
         # builder; a receipt that leaves it out cannot say which of its runs were the real one.

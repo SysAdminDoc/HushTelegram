@@ -13,6 +13,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.ads.MESSAGES_CONTROLLER
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.handleTargets
@@ -72,7 +73,8 @@ internal object SendReadMetricsFingerprint : Fingerprint(
  * `messages.reportReadMetrics` going out as a channel was scrolled. One method builds it, and it
  * asks the extension just before, with the batch in hand. View counts are a separate request and
  * stay as they are. The two places stand alone, so a build that moved one still has the other
- * covered and the patch log names the one it went without.
+ * covered and the patch log names the one it went without. Each successful hook also sets its
+ * own build flag, so settings and diagnostic reports show which targets remain covered.
  */
 @Suppress("unused")
 val disableAnalyticsPatch = bytecodePatch(
@@ -87,6 +89,8 @@ val disableAnalyticsPatch = bytecodePatch(
 
     execute {
         requireStatusMethod("disableAnalytics")
+        requireStatusMethod("deviceStats")
+        requireStatusMethod("readMetrics")
 
         handleTargets(PATCH, "usage reports", Report.entries) { report ->
             when (report) {
@@ -94,12 +98,15 @@ val disableAnalyticsPatch = bytecodePatch(
                     if (method == null) "no method of the messages controller reads collectDeviceStats and sends a help.saveAppLog event"
                     else {
                         method.returnEarlyWhen(PATCH, "$ANALYTICS->skipDeviceStats()Z", "return-void")
+                        enableCapability("deviceStats")
                         null
                     }
                 }
                 Report.READ_METRICS -> SendReadMetricsFingerprint.methodOrNull.let { method ->
                     if (method == null) "no method builds $REPORT_READ_METRICS"
-                    else method.skipReadMetricsWhen("$ANALYTICS->skipReadMetrics(Ljava/util/List;)Z")
+                    else method.skipReadMetricsWhen("$ANALYTICS->skipReadMetrics(Ljava/util/List;)Z").also { missing ->
+                        if (missing == null) enableCapability("readMetrics")
+                    }
                 }
             }
         }

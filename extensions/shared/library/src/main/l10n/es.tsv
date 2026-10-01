@@ -144,6 +144,14 @@ Only some of Telegram's web addresses are selected for this app, and links to th
 Saved. Restart Telegram to apply this change.	Guardado. Reinicia Telegram para aplicar este cambio.
 Sponsored messages and video ads	Mensajes patrocinados y anuncios de video
 Stop usage reports	Detener los informes de uso
+# context: Immutable hook coverage shown when a patch has missing targets.
+channel ads	anuncios en canales
+video ads	anuncios en videos
+search ads	anuncios en búsquedas
+device statistics reports	informes de estadísticas del dispositivo
+channel read metrics	métricas de lectura de canales
+This build has no coverage for %1$s.	Esta versión no cubre %1$s.
+This build covers %1$s. Missing coverage: %2$s.	Esta versión cubre %1$s. Falta cobertura de %2$s.
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	Tres veces seguidas, Telegram falló o se congeló durante el primer minuto tras iniciarse, así que HushTelegram se pausó solo.
 Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.	Telegram no envía tus carpetas de almacenamiento como informe del dispositivo cuando su servidor lo pide, ni cuánto tiempo pasaste en cada publicación de un canal. Los mensajes y las llamadas funcionan como antes.
 Telegram's web addresses are selected for this app in Android's settings, so their links open here.	Las direcciones web de Telegram están seleccionadas para esta app en los ajustes de Android, así que sus enlaces se abren aquí.

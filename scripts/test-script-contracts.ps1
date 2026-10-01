@@ -394,6 +394,8 @@ $manifestLines = @(
     '    A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=2024607030',
     '    A: http://schemas.android.com/apk/res/android:versionName(0x0101021c)="46.7.3" (Raw: "46.7.3")',
     '    A: package="com.example.host" (Raw: "com.example.host")',
+    '      E: uses-sdk (line=8)',
+    '        A: http://schemas.android.com/apk/res/android:minSdkVersion(0x0101020c)=21',
     '    A: platformBuildVersionCode=36',
     '      E: uses-permission (line=10)',
     '        A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.permission.INTERNET" (Raw: "android.permission.INTERNET")',
@@ -415,6 +417,29 @@ $manifestLines = @(
 )
 
 $facts = ConvertFrom-ManifestXmlTree -Lines $manifestLines -Source 'fixture'
+Assert-True ($facts.minSdk -eq 21) 'The binary manifest minimum SDK was not read.'
+foreach ($withoutMinimum in @(
+        @($manifestLines | Where-Object { $_ -notlike '*minSdkVersion*' }),
+        @($manifestLines | Where-Object { $_ -notlike '*minSdkVersion*' -and $_ -notlike '*E: uses-sdk*' }))) {
+    $defaultSdk = ConvertFrom-ManifestXmlTree -Lines $withoutMinimum -Source 'default-sdk'
+    Assert-True ($defaultSdk.minSdk -eq 1) 'An omitted manifest minimum did not use Android''s API 1 default.'
+}
+foreach ($invalid in @('', '0', '-1', 'Future', '2147483648')) {
+    $invalidLines = @($manifestLines | ForEach-Object { $_ -replace '(minSdkVersion\(0x0101020c\)=)21$', "`${1}$invalid" })
+    Assert-Throws { ConvertFrom-ManifestXmlTree -Lines $invalidLines -Source 'invalid-sdk' } '*Invalid minSdkVersion*' `
+        "A binary manifest with invalid minimum $invalid was accepted."
+}
+Assert-Throws {
+    ConvertFrom-ManifestXmlTree -Lines ($manifestLines + @('      E: uses-sdk (line=90)')) -Source 'duplicate-sdk'
+} '*More than one uses-sdk*' 'An ambiguous binary minimum SDK was accepted.'
+foreach ($pair in @(@(21, 28), @(28, 28), @(36, 36))) {
+    $floor = Test-PatchedMinSdk -StockMinSdk $pair[0] -PatchedMinSdk $pair[1]
+    Assert-True $floor.Valid "A correct binary floor $($pair -join ' -> ') was refused: $($floor.Reason)"
+}
+foreach ($pair in @(@(21, 27), @(36, 28), @(21, 29), @($null, 28), @(21, $null), @('21', 28), @(21, 28.5))) {
+    $floor = Test-PatchedMinSdk -StockMinSdk $pair[0] -PatchedMinSdk $pair[1]
+    Assert-True (-not $floor.Valid) "An invalid binary floor $($pair -join ' -> ') was accepted."
+}
 Assert-True ($facts.package -eq 'com.example.host') 'The manifest package was not read.'
 Assert-True ($facts.versionName -eq '46.7.3') 'The manifest version name was not read.'
 Assert-True ($facts.versionCode -eq '2024607030') 'The manifest version code was not read.'
@@ -587,6 +612,7 @@ try {
                 forced = $false }
             patches = @([ordered]@{ name = 'Alpha'; applied = $true; reason = $null },
                         [ordered]@{ name = 'Beta'; applied = $true; reason = $null })
+            sdk = [ordered]@{ stockMinSdk = 21; patchedMinSdk = 28 }
             manifestDelta = [ordered]@{ permissionsAdded = @(); permissionsRemoved = @()
                 exportedComponentsAdded = @(); exportedComponentsRemoved = @() }
         }, [ordered]@{
@@ -595,6 +621,7 @@ try {
                 forced = $false }
             patches = @([ordered]@{ name = 'Alpha'; applied = $true; reason = $null },
                         [ordered]@{ name = 'Beta'; applied = $true; reason = $null })
+            sdk = [ordered]@{ stockMinSdk = 36; patchedMinSdk = 36 }
             manifestDelta = [ordered]@{ permissionsAdded = @(); permissionsRemoved = @()
                 exportedComponentsAdded = @(); exportedComponentsRemoved = @() }
         })
@@ -609,11 +636,11 @@ try {
     }
 
     function Test-TestReceipt {
-        param($Receipt, [string[]]$Approved = @())
+        param($Receipt, [string[]]$Approved = @(), [int]$Schema = (Get-ReleaseReceiptSchemaVersion))
         return Test-ReleaseReceipt -Receipt $Receipt -ExpectedVersion '9.9.9' `
             -ExpectedPatchNames @('Alpha', 'Beta') -ExpectedPatcherVersion '1.12.0' `
             -ExpectedManagerFloor '1.29.0' -ExpectedPackageName 'com.example.host' -ExpectedPackageVersions $declaredBuilds `
-            -ExpectedPackageVersionCodes $declaredCodes -BundlePath $bundle -ApprovedManifestDelta $Approved
+            -ExpectedPackageVersionCodes $declaredCodes -BundlePath $bundle -ApprovedManifestDelta $Approved -ExpectedSchemaVersion $Schema
     }
 
     $valid = Test-TestReceipt -Receipt (New-TestReceipt)
@@ -636,6 +663,14 @@ try {
         'no extension payload at all'           = { param($r) $r.extension.dexPayloads = @() }
         'no target at all'                      = { param($r) $r.targets = @() }
         'an unhashed source APK'                = { param($r) $r.targets[0].source.sha256 = '' }
+        'a target with no binary SDK facts'      = { param($r) $r.targets[0].PSObject.Properties.Remove('sdk') }
+        'a target with no stock minimum'        = { param($r) $r.targets[0].sdk.PSObject.Properties.Remove('stockMinSdk') }
+        'a target with no patched minimum'      = { param($r) $r.targets[0].sdk.PSObject.Properties.Remove('patchedMinSdk') }
+        'a string SDK minimum'                  = { param($r) $r.targets[0].sdk.patchedMinSdk = '28' }
+        'a fractional SDK minimum'              = { param($r) $r.targets[0].sdk.patchedMinSdk = 28.5 }
+        'a minimum below API 28'                = { param($r) $r.targets[0].sdk.patchedMinSdk = 27 }
+        'a lowered higher stock minimum'        = { param($r) $r.targets[1].sdk.patchedMinSdk = 28 }
+        'an unnecessarily raised stock minimum' = { param($r) $r.targets[0].sdk.patchedMinSdk = 29 }
         'fewer verdicts than patches'           = { param($r) $r.targets[0].patches = @($r.targets[0].patches[0]) }
         'a patch the catalog does not list'     = { param($r) $r.targets[0].patches[1].name = 'Gamma' }
         'the same patch reported twice'         = { param($r) $r.targets[0].patches[1].name = 'Alpha' }
@@ -950,20 +985,35 @@ try {
 
     # A receipt cut before schema 2 names no SBOM, and is read as its own commit wrote it; each
     # schema is refused where the other is expected.
-    $schemaOne = New-TestReceipt -Mutate { param($r) $r.schemaVersion = 1; $r.PSObject.Properties.Remove('sbom') }
+    $schemaOne = New-TestReceipt -Mutate {
+        param($r)
+        $r.schemaVersion = 1
+        $r.PSObject.Properties.Remove('sbom')
+        foreach ($target in $r.targets) { $target.PSObject.Properties.Remove('sdk') }
+    }
     $oneAtOne = Test-ReleaseReceipt -Receipt $schemaOne -ExpectedVersion '9.9.9' -ExpectedPatchNames @('Alpha', 'Beta') `
         -ExpectedPatcherVersion '1.12.0' -ExpectedManagerFloor '1.29.0' -ExpectedPackageName 'com.example.host' `
         -ExpectedPackageVersions $declaredBuilds -BundlePath $bundle -ExpectedSchemaVersion 1
     Assert-True $oneAtOne.Valid "A schema 1 receipt was refused at schema 1: $($oneAtOne.Reason)"
-    $oneAtTwo = Test-TestReceipt -Receipt $schemaOne
+    $oneAtTwo = Test-TestReceipt -Receipt $schemaOne -Schema 2
     Assert-True ($oneAtTwo.Reason -like '*schema version 1; its release is read at version 2*') `
         "A schema 1 receipt was not refused where schema 2 is expected: $($oneAtTwo.Reason)"
-    $twoAtOne = Test-ReceiptWithSbom (New-TestReceipt) -Schema 1
+    $schemaTwo = New-TestReceipt -Mutate {
+        param($r)
+        $r.schemaVersion = 2
+        foreach ($target in $r.targets) { $target.PSObject.Properties.Remove('sdk') }
+    }
+    $twoAtOne = Test-ReceiptWithSbom $schemaTwo -Schema 1
     Assert-True ($twoAtOne.Reason -like '*schema version 2; its release is read at version 1*') `
         "A schema 2 receipt was not refused where schema 1 is expected: $($twoAtOne.Reason)"
     $oneWithSbom = Test-ReceiptWithSbom $schemaOne -Schema 1
     Assert-True ($oneWithSbom.Reason -like '*schema 1 receipt names no SBOM to hold*') `
         "A schema 1 receipt was held to an SBOM it can't name: $($oneWithSbom.Reason)"
+    $twoAtTwo = Test-ReceiptWithSbom $schemaTwo -Schema 2
+    Assert-True $twoAtTwo.Valid "A shipped schema 2 receipt with its SBOM and no SDK facts was refused: $($twoAtTwo.Reason)"
+    $twoAtCurrent = Test-TestReceipt -Receipt $schemaTwo
+    Assert-True ($twoAtCurrent.Reason -like '*schema version 2; its release is read at version 3*') `
+        "A schema 2 receipt was accepted where binary SDK facts are required: $($twoAtCurrent.Reason)"
 } finally {
     Remove-Item -LiteralPath $allowlistRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
@@ -1239,7 +1289,7 @@ try {
     New-Item -ItemType Directory -Path (Split-Path -Parent $receiptScript) -Force | Out-Null
     $currentSchema = Get-ReleaseReceiptSchemaVersion
     $schemaCommits = @{}
-    foreach ($written in @(1, $currentSchema, ($currentSchema + 1))) {
+    foreach ($written in @(1, 2, $currentSchema, ($currentSchema + 1)) | Select-Object -Unique) {
         Set-Content -LiteralPath $receiptScript -Encoding UTF8 -Value @('function Get-ReleaseReceiptSchemaVersion {', '    <#',
             '    .SYNOPSIS', '        Bumped when the shape changes. A receipt at return 9 would be a surprise.', '    #>',
             "    return $written", '}')
@@ -1250,6 +1300,9 @@ try {
     $atOne = Resolve-ReceiptSchema -Root $toolchainRoot -Commit $schemaCommits[1]
     Assert-True ($atOne.Version -eq 1 -and $atOne.Note -like "*schema 1, which its own commit $($schemaCommits[1].Substring(0, 8)) wrote*") `
         "A receipt cut at schema 1 was not held to it: $($atOne.Version), $($atOne.Note)"
+    $atTwo = Resolve-ReceiptSchema -Root $toolchainRoot -Commit $schemaCommits[2]
+    Assert-True ($atTwo.Version -eq 2 -and $atTwo.Note -like '*names no binary SDK facts*' -and $atTwo.Note -notlike '*no SBOM*') `
+        "A shipped schema 2 receipt was not held to its schema without dropping SBOM checks: $($atTwo.Version), $($atTwo.Note)"
     $atCurrent = Resolve-ReceiptSchema -Root $toolchainRoot -Commit $schemaCommits[$currentSchema]
     Assert-True ($atCurrent.Version -eq $currentSchema -and $null -eq $atCurrent.Note) `
         "A receipt cut at this checkout's schema was not held to it quietly: $($atCurrent.Version), $($atCurrent.Note)"
@@ -2155,8 +2208,10 @@ Write-Host '[scripts] release facts contracts passed'
 
 $prePushScript = Join-Path $PSScriptRoot 'pre-push.ps1'
 $hookRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("hushtelegram-hook-" + [guid]::NewGuid().ToString('N'))
+$routingFixtures = $null
 $savedSkip = $env:HUSHTELEGRAM_SKIP_PRE_PUSH
 $savedRoutingWrapper = $env:HUSHTELEGRAM_BUILD_WRAPPER
+$savedRoutingFixtures = $env:HUSHTELEGRAM_FIXTURE_DIR
 $savedRoutingActor = $env:GITHUB_ACTOR
 $savedRoutingToken = $env:GITHUB_TOKEN
 $savedHookGit = @{}
@@ -2178,6 +2233,27 @@ try {
         'The hook fixture resolved outside its temporary repository; refusing to write.'
     & git -C $hookRoot config user.name 'Hook Contract'
     & git -C $hookRoot config user.email 'hook@example.invalid'
+    # The hook requires the pushed tree's pinned catalog before starting even a recording build.
+    # Every routing repository carries that same catalog/helper, with APK stand-ins outside it.
+    function Initialize-HookFixtureCatalog([string]$Repository) {
+        New-Item -ItemType Directory -Path (Join-Path $Repository 'scripts') -Force | Out-Null
+        Copy-Item -LiteralPath (Join-Path $Root 'patches-list.json') -Destination (Join-Path $Repository 'patches-list.json')
+        Copy-Item -LiteralPath (Join-Path $Root 'scripts/patch-target.ps1') -Destination (Join-Path $Repository 'scripts/patch-target.ps1')
+    }
+    Initialize-HookFixtureCatalog $hookRoot
+    $routingFixtures = [IO.Path]::GetFullPath("$hookRoot-fixtures")
+    Assert-True ([IO.Path]::GetDirectoryName($routingFixtures) -ieq
+        [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\', '/')) `
+        'The routing fixture directory resolved outside the temporary directory.'
+    New-Item -ItemType Directory -Path $routingFixtures -Force | Out-Null
+    $routingTarget = Get-PatchTarget -PatchList $catalog
+    foreach ($version in $routingTarget.PackageVersions) {
+        foreach ($code in @($routingTarget.PackageVersionCodes[$version])) {
+            Set-Content -LiteralPath (Join-Path $routingFixtures "telegram-web-$version-$code.apk") `
+                -Value 'vendor APK stand-in' -Encoding ASCII
+        }
+    }
+    $env:HUSHTELEGRAM_FIXTURE_DIR = $routingFixtures
     $factsMarker = Join-Path $hookRoot 'facts-ran.txt'
     $contractsMarker = Join-Path $hookRoot 'contracts-ran.txt'
     Set-Content -LiteralPath (Join-Path $hookRoot 'scripts/validate-release-facts.ps1') -Encoding UTF8 -Value @(
@@ -2451,6 +2527,7 @@ try {
         & git -C $listingRepo config user.name 'Listing Contract'
         & git -C $listingRepo config user.email 'listing@example.invalid'
         & git -C $listingRepo config core.autocrlf false
+        Initialize-HookFixtureCatalog $listingRepo
         $listingStubs = [ordered]@{
             'scripts/validate-release-facts.ps1' = ('param([string]$Root, [switch]$SkipDescriptionTestCount, ' +
                 '[switch]$AllowPublishedIndexLag, [switch]$VerifyPublishedAsset, [string]$ArtifactPath, ' +
@@ -2585,7 +2662,8 @@ try {
     $newBranchSource = Join-Path $hookRoot 'extensions/telegram/src/main/java/FirstCommit.java'
     New-Item -ItemType Directory -Path (Split-Path -Parent $newBranchSource) -Force | Out-Null
     Set-Content -LiteralPath $newBranchSource -Encoding UTF8 -Value 'final class FirstCommit {}'
-    & git -C $hookRoot add extensions/telegram/src/main/java/FirstCommit.java
+    & git -C $hookRoot add extensions/telegram/src/main/java/FirstCommit.java patches-list.json `
+        scripts/patch-target.ps1 scripts/test-script-contracts.ps1 scripts/test-telegram-sources.ps1
     & git -C $hookRoot commit --quiet -m 'code first'
     $firstCommit = (& git -C $hookRoot rev-parse HEAD).Trim()
     Set-Content -LiteralPath (Join-Path $hookRoot 'CONTRIBUTING.md') -Encoding UTF8 -Value 'tip only'
@@ -2931,6 +3009,13 @@ try {
             'The gate fixture resolved outside its temporary repository; refusing to write.'
         & git -C $gateRepo config user.name 'Gate Contract'
         & git -C $gateRepo config user.email 'gate@example.invalid'
+        Initialize-HookFixtureCatalog $gateRepo
+        foreach ($suite in @('scripts/test-script-contracts.ps1', 'scripts/test-telegram-sources.ps1')) {
+            Set-Content -LiteralPath (Join-Path $gateRepo $suite) -Encoding UTF8 -Value @(
+                'param([string]$Root)', 'exit 0')
+        }
+        & git -C $gateRepo add patches-list.json scripts/patch-target.ps1 `
+            scripts/test-script-contracts.ps1 scripts/test-telegram-sources.ps1
         $gateMarker = Join-Path $hookRoot 'gate-ran.txt'
         $gateStub = Join-Path $hookRoot 'gate-wrapper.ps1'
         Set-Content -LiteralPath $gateStub -Encoding UTF8 -Value @(
@@ -3231,13 +3316,17 @@ try {
 } finally {
     $env:HUSHTELEGRAM_SKIP_PRE_PUSH = $savedSkip
     $env:HUSHTELEGRAM_BUILD_WRAPPER = $savedRoutingWrapper
+    $env:HUSHTELEGRAM_FIXTURE_DIR = $savedRoutingFixtures
     $env:GITHUB_ACTOR = $savedRoutingActor
     $env:GITHUB_TOKEN = $savedRoutingToken
     foreach ($name in $savedHookGit.Keys) { Set-Item -LiteralPath ('Env:\' + $name) -Value $savedHookGit[$name] }
     Remove-Item -LiteralPath $hookRoot -Recurse -Force -ErrorAction SilentlyContinue
+    if ($routingFixtures) { Remove-Item -LiteralPath $routingFixtures -Recurse -Force -ErrorAction SilentlyContinue }
 }
 
 Write-Host '[scripts] pre-push routing contracts passed'
+& (Join-Path $PSScriptRoot 'test-fixture-gate.ps1') -Root $Root
+if ($LASTEXITCODE -ne 0) { throw 'The pre-push fixture contracts did not pass.' }
 
 # --- Test-ChangelogVersions ------------------------------------------------------------------
 #
@@ -3912,6 +4001,7 @@ try {
                     package = $releaseTarget.PackageName; versionName = $Builds[$i]; versionCode = $code
                     sha256 = ([string]'ABCDEF'[$i % 6] * 64); forced = $false }
                 patches       = @($releaseNames | ForEach-Object { [ordered]@{ name = $_; applied = $true; reason = $null } })
+                sdk           = [ordered]@{ stockMinSdk = 21; patchedMinSdk = 28 }
                 manifestDelta = $approvedDelta
             }
         })
@@ -3927,6 +4017,7 @@ try {
             targets   = $targets
         }
         if ($Schema -lt 2) { $document.Remove('sbom') }
+        if ($Schema -lt 3) { foreach ($target in $targets) { $target.Remove('sdk') } }
         Set-Content -LiteralPath $releaseReceipt -Encoding UTF8 -Value ($document | ConvertTo-Json -Depth 12)
     }
     # The run the hook makes for a push that carries a receipt: lenient, since the index may lag
@@ -4095,13 +4186,16 @@ try {
     # build exports the settings alias beside the launcher: the change the checked-in allowlist
     # approves, and the only one the patches make here.
     function Get-FixtureManifest([string]$Build, [string]$Code, [switch]$WithSplit, [switch]$Patched,
-            [string]$Package = $releaseTarget.PackageName) {
+            [string]$Package = $releaseTarget.PackageName, [int]$MinSdk = 21) {
+        $binaryMinSdk = if ($Patched) { [Math]::Max($MinSdk, 28) } else { $MinSdk }
         $lines = @(
             'N: android=http://schemas.android.com/apk/res/android (line=1)',
             '  E: manifest (line=1)',
             "    A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=$Code",
             "    A: http://schemas.android.com/apk/res/android:versionName(0x0101021c)=`"$Build`" (Raw: `"$Build`")",
             "    A: package=`"$Package`" (Raw: `"$Package`")",
+            '      E: uses-sdk (line=8)',
+            "        A: http://schemas.android.com/apk/res/android:minSdkVersion(0x0101020c)=$binaryMinSdk",
             '      E: uses-permission (line=10)',
             "        A: $androidName`"android.permission.INTERNET`" (Raw: `"android.permission.INTERNET`")")
         $lines += @('      E: application (line=20)',
@@ -4128,18 +4222,19 @@ try {
     # the version name made declared.
     $newerBuild = "$([int]($releaseTarget.PackageVersion -split '\.')[0] + 1).0.0.1.1"
     foreach ($build in @($newerBuild) + @($releaseTarget.PackageVersions)) {
+        $stockMinSdk = if ($build -eq $newerBuild) { 36 } else { 21 }
         $versionCode = if ($build -eq $newerBuild) { 512008382 } else { [long]@($releaseTarget.PackageVersionCodes[$build])[0] }
         $apkm = Join-Path $fixtures "telegram-$build-$versionCode.xapk"
         New-TestBundleArchive -Path $apkm -Entries ([ordered]@{
-            'org.telegram.messenger.web.apk' = Get-FixtureManifest -Build $build -Code "$versionCode"
+            'org.telegram.messenger.web.apk' = Get-FixtureManifest -Build $build -Code "$versionCode" -MinSdk $stockMinSdk
             'icon.png' = 'icon'
             'config.arm64_v8a.apk' = ('native code ' * 64)
             'manifest.json' = ("{`"package_name`":`"org.telegram.messenger.web`",`"version_code`":`"$versionCode`",`"split_apks`":[" +
                 '{"file":"org.telegram.messenger.web.apk","id":"base"},{"file":"config.arm64_v8a.apk","id":"config.arm64_v8a"}]}') })
         Set-Content -LiteralPath "$apkm.merged.txt" -Encoding ASCII -NoNewline `
-            -Value (Get-FixtureManifest -Build $build -Code "$versionCode" -WithSplit)
+            -Value (Get-FixtureManifest -Build $build -Code "$versionCode" -WithSplit -MinSdk $stockMinSdk)
         Set-Content -LiteralPath "$apkm.patched.txt" -Encoding ASCII -NoNewline `
-            -Value (Get-FixtureManifest -Build $build -Code "$versionCode" -WithSplit -Patched)
+            -Value (Get-FixtureManifest -Build $build -Code "$versionCode" -WithSplit -Patched -MinSdk $stockMinSdk)
         # The report the CLI writes: every patch and the internal dependencies applied, one step,
         # and the input's own version, which is what the CLI reports.
         Set-Content -LiteralPath "$apkm.result.json" -Encoding ASCII -Value ([ordered]@{
@@ -4221,6 +4316,10 @@ try {
             "The receipt does not hash the $label fixture it was given."
         Assert-True (@($builtTarget.patches | Where-Object { $_.applied }).Count -eq $releaseNames.Count) `
             "The receipt does not record every patch applied to $label."
+        $stockMinSdk = if ($label -eq $newerBuild) { 36 } else { 21 }
+        Assert-True ($builtTarget.sdk.stockMinSdk -eq $stockMinSdk -and
+                $builtTarget.sdk.patchedMinSdk -eq [Math]::Max($stockMinSdk, 28)) `
+            "The receipt does not record the binary SDK floor measured for $label."
         # The alias and the removal are the patches' changes. The split's activity the merge brings
         # in is the merge's.
         $changes = @(ConvertTo-ManifestDeltaEntries -Delta $builtTarget.manifestDelta)
@@ -4248,6 +4347,26 @@ try {
     $builtProved = "the receipt proves $($releaseNames.Count) patches on $($builtVersions -join ', ') " +
         "from commit $($releaseCommit.Substring(0, 8))"
     Assert-True ($said -like "*$builtProved*") "The release check did not accept the receipt the builder wrote: $said"
+
+    # The builder must read and reject a wrong binary minimum, not merely write SDK facts that
+    # agree with themselves. Both sides of API 28 and a higher stock floor are exercised.
+    foreach ($wrongSdk in @(
+            @{ Build = $releaseTarget.PackageVersion; Stock = 21; Patched = 27; Expected = 28 },
+            @{ Build = $releaseTarget.PackageVersion; Stock = 21; Patched = 29; Expected = 28 },
+            @{ Build = $newerBuild; Stock = 36; Patched = 28; Expected = 36 })) {
+        $manifestPath = "$($fixturePaths[$wrongSdk.Build]).patched.txt"
+        $manifestBytes = [System.IO.File]::ReadAllBytes($manifestPath)
+        try {
+            $text = [System.IO.File]::ReadAllText($manifestPath)
+            $text = $text -replace '(minSdkVersion\(0x0101020c\)=)\d+', "`${1}$($wrongSdk.Patched)"
+            [System.IO.File]::WriteAllText($manifestPath, $text, [System.Text.Encoding]::ASCII)
+            Assert-Throws { Invoke-ReceiptBuilder -Fixtures $allFixtures } `
+                "*patched binary minSdk is $($wrongSdk.Patched); stock is $($wrongSdk.Stock), so it must be $($wrongSdk.Expected)*" `
+                'The receipt builder accepted an APK with the wrong binary minimum SDK.'
+        } finally {
+            [System.IO.File]::WriteAllBytes($manifestPath, $manifestBytes)
+        }
+    }
 
     # A merge that fails, and one that exits 0 and writes nothing, stop the run before the CLI
     # patches anything. base.apk is not what the CLI patches, so there's no receipt to fall back to.
@@ -4286,12 +4405,12 @@ try {
     Set-Content -LiteralPath (Join-Path $tools 'apksigner.bat') -Encoding ASCII -Value @(
         '@echo off', "echo Signer #1 certificate SHA-256 digest: $($releaseSigner[0])", 'exit /b 0')
     $verifyAllScript = Join-Path $PSScriptRoot 'verify-all-patches.ps1'
-    function Invoke-VerifyAll([string]$Apk) {
+    function Invoke-VerifyAll([string]$Apk, [switch]$Force) {
         Remove-Item -LiteralPath $javaLog, $mergeLog, $resourceStock -Force -ErrorAction SilentlyContinue
         $global:LASTEXITCODE = 0
         $said = @(& $verifyAllScript -Apk $Apk -DesktopJar $stubJar -WorkDir (Join-Path $releaseRoot 'verify-work') `
             -Bundle $releaseBundle -PatchList (Join-Path $releaseRepo 'patches-list.json') -Java $stubJava `
-            -Aapt2 $stubAapt2 3>&1 6>&1 | ForEach-Object { "$_" }) -join "`n"
+            -Aapt2 $stubAapt2 -Force:$Force 3>&1 6>&1 | ForEach-Object { "$_" }) -join "`n"
         if ($LASTEXITCODE -ne 0) { throw "verify-all-patches.ps1 exited $LASTEXITCODE`: $said" }
         return $said
     }
@@ -4305,6 +4424,30 @@ try {
             "$(@(Get-Content -LiteralPath $javaLog) -join '; ')")
     Assert-True ((Get-Content -LiteralPath $resourceStock -Raw) -ceq (Get-Content -LiteralPath "$newestFixture.merged.txt" -Raw)) `
         'The resource check was not handed the merge as its stock side.'
+    Assert-True ($said -like '*binary minSdk: 21 -> 28 (max(stock, 28))*') `
+        "The verification run did not check the binary API 28 floor: $said"
+    $higher = Invoke-VerifyAll -Apk $fixturePaths[$newerBuild] -Force
+    Assert-True ($higher -like '*binary minSdk: 36 -> 36 (max(stock, 28))*' -and
+            $higher -like '*success: every requested patch applied*') `
+        "The verification run did not preserve a higher stock SDK floor: $higher"
+    foreach ($wrongSdk in @(
+            @{ Build = $releaseTarget.PackageVersion; Stock = 21; Patched = 27; Expected = 28 },
+            @{ Build = $newerBuild; Stock = 36; Patched = 28; Expected = 36 })) {
+        $manifestPath = "$($fixturePaths[$wrongSdk.Build]).patched.txt"
+        $manifestBytes = [System.IO.File]::ReadAllBytes($manifestPath)
+        try {
+            $text = [System.IO.File]::ReadAllText($manifestPath)
+            $text = $text -replace '(minSdkVersion\(0x0101020c\)=)\d+', "`${1}$($wrongSdk.Patched)"
+            [System.IO.File]::WriteAllText($manifestPath, $text, [System.Text.Encoding]::ASCII)
+            Assert-Throws { Invoke-VerifyAll -Apk $fixturePaths[$wrongSdk.Build] -Force:($wrongSdk.Build -eq $newerBuild) } `
+                "*patched binary minSdk is $($wrongSdk.Patched); stock is $($wrongSdk.Stock), so it must be $($wrongSdk.Expected)*" `
+                'The verification run accepted an APK with the wrong binary minimum SDK.'
+            Assert-True (-not (Test-Path -LiteralPath $resourceStock)) `
+                'SDK floor validation did not stop before the resource comparison.'
+        } finally {
+            [System.IO.File]::WriteAllBytes($manifestPath, $manifestBytes)
+        }
+    }
     foreach ($broken in $brokenMerges) {
         $flag = Join-Path $tools $broken.Flag
         Set-Content -LiteralPath $flag -Value 'on' -Encoding ASCII
@@ -4980,9 +5123,37 @@ try {
         Assert-True ($said -like "*the receipt is held to schema 1, which its own commit $($schemaOneCommit.Substring(0, 8)) wrote*" -and
             $said -like "*the receipt proves $($releaseNames.Count) patches on*from commit $($schemaOneCommit.Substring(0, 8))*") `
             "A receipt cut before the SBOM was not read as its own commit wrote it: $said"
-        Save-ReleaseReceipt -Builds $releaseTarget.PackageVersions -Commit $schemaOneCommit -Seconds $schemaOneSeconds
+        Save-ReleaseReceipt -Builds $releaseTarget.PackageVersions -Commit $schemaOneCommit -Seconds $schemaOneSeconds -Schema 2
         Assert-Throws { Invoke-ReleaseCheck } '*schema version 2; its release is read at version 1*' `
             'A schema 2 receipt was accepted for a commit whose builder wrote schema 1.'
+    } finally {
+        [System.IO.File]::WriteAllBytes($releaseReceipt, $receiptBytes)
+    }
+
+    # v0.0.4 shipped schema 2. Its receipt still proves the SBOM at its own commit, and lacks the
+    # binary SDK facts introduced since. A new schema 3 receipt cannot pose as that old release.
+    $schemaTwoScript = Join-Path $releaseRoot 'schema-two-release-receipt.ps1'
+    [System.IO.File]::WriteAllText($schemaTwoScript,
+        [System.IO.File]::ReadAllText($schemaOneScript).Replace('return 1', 'return 2'), [System.Text.Encoding]::ASCII)
+    $schemaTwoBlob = "$(Invoke-FixtureGit -Root $releaseRepo -Arguments @('hash-object', '-w', $schemaTwoScript) | Select-Object -First 1)".Trim()
+    Invoke-FixtureGit -Root $releaseRepo -Arguments @('update-index', '--add', '--cacheinfo',
+        "100644,$schemaTwoBlob,scripts/release-receipt.ps1") | Out-Null
+    $schemaTwoTree = "$(Invoke-FixtureGit -Root $releaseRepo -Arguments @('write-tree') | Select-Object -First 1)".Trim()
+    Invoke-FixtureGit -Root $releaseRepo -Arguments @('reset', '--quiet') | Out-Null
+    $schemaTwoCommit = "$(Invoke-FixtureGit -Root $releaseRepo -Arguments @('commit-tree', $schemaTwoTree, '-p', $releaseCommit,
+        '-m', 'cut before binary SDK facts') | Select-Object -First 1)".Trim()
+    $schemaTwoSeconds = [long]"$(Invoke-FixtureGit -Root $releaseRepo -Arguments @('log', '-1', '--format=%ct', $schemaTwoCommit) |
+        Select-Object -First 1)".Trim()
+    try {
+        Save-ReleaseReceipt -Builds $releaseTarget.PackageVersions -Commit $schemaTwoCommit -Seconds $schemaTwoSeconds -Schema 2
+        $said = Invoke-ReleaseCheck
+        Assert-True ($said -like "*the receipt is held to schema 2, which its own commit $($schemaTwoCommit.Substring(0, 8)) wrote*" -and
+                $said -like '*it names no binary SDK facts*' -and
+                $said -like "*the receipt proves $($releaseNames.Count) patches on*from commit $($schemaTwoCommit.Substring(0, 8))*") `
+            "A shipped receipt with no binary SDK facts was not read at its own schema: $said"
+        Save-ReleaseReceipt -Builds $releaseTarget.PackageVersions -Commit $schemaTwoCommit -Seconds $schemaTwoSeconds
+        Assert-Throws { Invoke-ReleaseCheck } '*schema version 3; its release is read at version 2*' `
+            'A schema 3 receipt was accepted for a commit whose builder wrote schema 2.'
     } finally {
         [System.IO.File]::WriteAllBytes($releaseReceipt, $receiptBytes)
     }

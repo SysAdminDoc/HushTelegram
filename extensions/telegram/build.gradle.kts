@@ -180,7 +180,7 @@ android {
     namespace = "app.hushtelegram.extension.telegram"
 
     defaultConfig {
-        // Telegram 449 declares minSdk 28, so nothing below it can run this code.
+        // The settings manifest patch raises Telegram's installation floor to this API.
         minSdk = 28
     }
 

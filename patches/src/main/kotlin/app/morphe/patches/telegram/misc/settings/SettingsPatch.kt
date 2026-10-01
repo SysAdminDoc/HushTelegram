@@ -64,7 +64,8 @@ internal fun BytecodePatchContext.declaredInHierarchy(
  * Adds an alias of [MAIN_ACTIVITY] that answers [APPLICATION_PREFERENCES], which is what makes
  * Android's App info page for Telegram show "Additional settings in the app". The alias opens
  * Telegram's own launcher activity with that action, and the extension opens the settings from there.
- * Nothing of Telegram's own manifest changes.
+ * The settings extension needs API 28, so the patched APK also declares that floor, preserving any
+ * higher minimum Telegram already requires.
  */
 internal val settingsManifestPatch = resourcePatch {
     execute {
@@ -82,6 +83,19 @@ internal val settingsManifestPatch = resourcePatch {
             if ((0 until aliases.length).any { (aliases.item(it) as Element).getAttribute("android:name") == SETTINGS_ALIAS_NAME }) {
                 throw PatchException("AndroidManifest.xml already has $SETTINGS_ALIAS_NAME")
             }
+
+            val sdkElements = document.getElementsByTagName("uses-sdk")
+            if (sdkElements.length > 1) throw PatchException("AndroidManifest.xml has more than one uses-sdk element")
+            val sdk = sdkElements.item(0) as? Element ?: document.createElement("uses-sdk").also {
+                document.documentElement.insertBefore(it, document.documentElement.firstChild)
+            }
+            val stockMinSdk = if (!sdk.hasAttribute("android:minSdkVersion")) {
+                1 // Android's default when a manifest declares no minimum.
+            } else {
+                sdk.getAttribute("android:minSdkVersion").toIntOrNull()?.takeIf { it > 0 }
+                    ?: throw PatchException("AndroidManifest.xml has an invalid minSdkVersion")
+            }
+            sdk.setAttribute("android:minSdkVersion", maxOf(stockMinSdk, 28).toString())
 
             val alias = document.createElement("activity-alias").apply {
                 setAttribute("android:name", SETTINGS_ALIAS_NAME)

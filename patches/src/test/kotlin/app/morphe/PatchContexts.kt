@@ -10,11 +10,13 @@
  */
 package app.morphe
 
+import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.PatcherConfig
 import app.morphe.patcher.patch.BytecodePatchContext
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import java.io.File
+import java.lang.ref.WeakReference
 
 /**
  * A patcher context over a handful of classes and no APK, so a test can run a patch's execute block
@@ -28,6 +30,13 @@ import java.io.File
  */
 internal object PatchContexts {
     fun of(classes: Collection<ClassDef>): BytecodePatchContext {
+        // Production starts each APK with fresh matches. Synthetic contexts must do the same:
+        // a fingerprint otherwise retains a method belonging to the previous fixture.
+        // The pinned patcher's bulk reset also empties its registry, which would miss reused
+        // singleton fingerprints on a third context. Clear matches without removing entries.
+        val fingerprints = Fingerprint::class.java.getDeclaredField("fingerprintList").apply { isAccessible = true }
+        @Suppress("UNCHECKED_CAST")
+        (fingerprints.get(null) as List<WeakReference<Fingerprint>>).forEach { it.get()?.clearMatch() }
         val work = File(System.getProperty("java.io.tmpdir"), "hushtelegram-patch-context")
         val config = PatcherConfig(apkFile = File(work, "none.apk"), temporaryFilesPath = work)
         val metadataType = Class.forName("app.morphe.patcher.PackageMetadata")

@@ -231,6 +231,9 @@ public class L10nCatalogTest {
         for (PatchFamily family : PatchFamily.values()) {
             if (family.staysWhilePaused != null) keys.add(family.staysWhilePaused);
         }
+        for (PatchFamily.Capability capability : PatchFamily.Capability.values()) {
+            keys.add(capability.label);
+        }
         keys.add("Stays in while paused");
         return keys;
     }

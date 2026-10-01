@@ -72,6 +72,7 @@ public class SupportReportTest {
     @After
     public void tearDown() {
         PatchFamily.inBuildForTests = null;
+        PatchFamily.capabilitiesForTests = null;
         PauseForTests.resume();
         BaseSettings.DEBUG.resetToDefault();
         LogBufferManager.clearLogBuffer();
@@ -145,6 +146,21 @@ public class SupportReportTest {
         for (String report : bothExports()) {
             assertTrue(report, report.contains("\nhushtelegram: paused (switch)"));
             assertTrue(report, report.contains("\nHide ads: disabled while paused (saved hushtelegram_hide_ads=on)\n"));
+        }
+    }
+
+    @Test
+    public void bothExportsPreservePrecisePartialCoverageWithoutDebugLogging() throws Exception {
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.CHANNEL_ADS,
+                PatchFamily.Capability.SEARCH_ADS, PatchFamily.Capability.DEVICE_STATS);
+        for (boolean paused : new boolean[]{false, true}) {
+            if (paused) PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+            for (String report : bothExports()) {
+                assertTrue(report, report.contains("\nHide ads coverage: channel ads, search ads; missing: video ads\n"));
+                assertTrue(report, report.contains("\nDisable analytics coverage: device statistics reports; missing: channel read metrics\n"));
+                assertTrue(report, report.contains("\ndebug_logging: off\n"));
+                assertFalse(report, report.contains("[SELECTED EVENTS]"));
+            }
         }
     }
 }

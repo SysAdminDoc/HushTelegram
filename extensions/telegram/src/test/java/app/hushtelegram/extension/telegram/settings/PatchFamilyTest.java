@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import org.json.JSONArray;
@@ -63,6 +64,7 @@ public class PatchFamilyTest {
     public void restore() {
         PatchFamily.inBuildForTests = null;
         PatchFamily.staysWhilePausedForTests = null;
+        PatchFamily.capabilitiesForTests = null;
         PauseForTests.resume();
         Settings.HIDE_ADS.resetToDefault();
         Settings.DISABLE_ANALYTICS.resetToDefault();
@@ -105,8 +107,40 @@ public class PatchFamilyTest {
         Set<String> named = new TreeSet<>();
         for (PatchFamily family : PatchFamily.values()) {
             assertTrue("two families share " + family.statusMethod, named.add(family.statusMethod));
+            for (PatchFamily.Capability capability : family.expectedCapabilities()) {
+                assertEquals("a target belongs to the wrong family", family, capability.family);
+                assertTrue("two targets share " + capability.statusMethod, named.add(capability.statusMethod));
+            }
         }
         assertEquals(flags, named);
+    }
+
+    @Test
+    public void capabilityListsAreImmutableBuildFactsIndependentOfSavedSwitchesAndPause() {
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.CHANNEL_ADS,
+                PatchFamily.Capability.SEARCH_ADS, PatchFamily.Capability.READ_METRICS);
+        Set<PatchFamily.Capability> expectedAds = EnumSet.of(PatchFamily.Capability.CHANNEL_ADS,
+                PatchFamily.Capability.VIDEO_ADS, PatchFamily.Capability.SEARCH_ADS);
+        Set<PatchFamily.Capability> installedAds = EnumSet.of(PatchFamily.Capability.CHANNEL_ADS,
+                PatchFamily.Capability.SEARCH_ADS);
+        assertEquals(expectedAds, PatchFamily.HIDE_ADS.expectedCapabilities());
+        assertEquals(installedAds, PatchFamily.HIDE_ADS.installedCapabilities());
+        assertEquals(EnumSet.of(PatchFamily.Capability.DEVICE_STATS, PatchFamily.Capability.READ_METRICS),
+                PatchFamily.DISABLE_ANALYTICS.expectedCapabilities());
+        assertEquals(EnumSet.of(PatchFamily.Capability.READ_METRICS),
+                PatchFamily.DISABLE_ANALYTICS.installedCapabilities());
+        assertTrue(PatchFamily.DISABLE_UPDATE_CHECKS.expectedCapabilities().isEmpty());
+        assertThrows(UnsupportedOperationException.class, () -> PatchFamily.HIDE_ADS.expectedCapabilities().clear());
+        assertThrows(UnsupportedOperationException.class, () -> PatchFamily.HIDE_ADS.installedCapabilities().clear());
+
+        Settings.HIDE_ADS.save(false);
+        Settings.DISABLE_ANALYTICS.save(false);
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        assertEquals(installedAds, PatchFamily.HIDE_ADS.installedCapabilities());
+        assertEquals(EnumSet.of(PatchFamily.Capability.READ_METRICS),
+                PatchFamily.DISABLE_ANALYTICS.installedCapabilities());
+        assertEquals("capabilities must never become saved settings", 0, SettingsStatus.class.getDeclaredFields().length);
     }
 
     /** The names are Morphe Manager's, so a report and the patch list say the same thing. */
@@ -178,13 +212,16 @@ public class PatchFamilyTest {
     @Test
     public void theReportSaysWhatASwitchRunsAndWhatStaysIn() {
         Set<PatchFamily> build = EnumSet.of(PatchFamily.HIDE_ADS, PatchFamily.DISABLE_ANALYTICS);
+        PatchFamily.inBuildForTests = build;
         Settings.DISABLE_ANALYTICS.save(false);
 
         List<String> running = PatchFamily.reportLines(build, false);
         assertEquals(Arrays.asList(
                 "Hide ads: on (hushtelegram_hide_ads=on)",
                 "Disable analytics: disabled by its switch (hushtelegram_disable_analytics=off)",
-                "not in this build: Disable update checks"),
+                "not in this build: Disable update checks",
+                "Hide ads coverage: channel ads, video ads, search ads",
+                "Disable analytics coverage: device statistics reports, channel read metrics"),
                 running);
 
         // Every family in this build has a switch, but the line still has room, after the switch's
@@ -202,6 +239,28 @@ public class PatchFamilyTest {
         assertEquals("Disable analytics: disabled while paused (saved hushtelegram_disable_analytics=off)",
                 paused.get(1));
         assertEquals(running.get(2), paused.get(2));
+        assertEquals("Pause must keep patch-time coverage facts", running.subList(3, 5), paused.subList(3, 5));
+    }
+
+    @Test
+    public void partialCoverageNamesEveryMissingTargetInTheReportWhileOffAndPaused() {
+        Set<PatchFamily> build = EnumSet.of(PatchFamily.HIDE_ADS, PatchFamily.DISABLE_ANALYTICS);
+        PatchFamily.inBuildForTests = build;
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.CHANNEL_ADS,
+                PatchFamily.Capability.READ_METRICS);
+        List<String> running = PatchFamily.reportLines(build, false);
+        assertTrue(running.toString(), running.contains("Hide ads coverage: channel ads; missing: video ads, search ads"));
+        assertTrue(running.toString(), running.contains("Disable analytics coverage: channel read metrics; missing: device statistics reports"));
+        Settings.HIDE_ADS.save(false);
+        Settings.DISABLE_ANALYTICS.save(false);
+        List<String> disabled = PatchFamily.reportLines(build, false);
+        assertEquals(running.subList(3, 5), disabled.subList(3, 5));
+        assertEquals(running.subList(3, 5), PatchFamily.reportLines(build, true).subList(3, 5));
+
+        PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+        List<String> none = PatchFamily.reportLines(build, false);
+        assertTrue(none.toString(), none.contains("Hide ads coverage: none; missing: channel ads, video ads, search ads"));
+        assertTrue(none.toString(), none.contains("Disable analytics coverage: none; missing: device statistics reports, channel read metrics"));
     }
 
     /**

@@ -189,8 +189,13 @@ try {
         # APK the CLI patched, and held to the same allowlist, so a change nobody approved stops this
         # run and not only the release. An approved change this run didn't make is reported and left
         # to the receipt, which needs every declared build to decide it.
+        $stockManifest = Get-ApkManifestFacts -Apk $patchInput -Aapt2 $Aapt2
+        $patchedManifest = Get-ApkManifestFacts -Apk $out -Aapt2 $Aapt2
+        $floor = Test-PatchedMinSdk -StockMinSdk $stockManifest.minSdk -PatchedMinSdk $patchedManifest.minSdk
+        if (-not $floor.Valid) { throw "[verify] $($floor.Reason)" }
+        Write-Host "[verify] binary minSdk: $($stockManifest.minSdk) -> $($patchedManifest.minSdk) (max(stock, 28))"
         $manifestChanges = @(ConvertTo-ManifestDeltaEntries -Delta (Get-ManifestDelta `
-            -Stock (Get-ApkManifestFacts -Apk $patchInput -Aapt2 $Aapt2) -Patched (Get-ApkManifestFacts -Apk $out -Aapt2 $Aapt2)))
+            -Stock $stockManifest -Patched $patchedManifest))
         $approvedChanges = @(Read-ManifestDeltaAllowlist -Path (Join-Path $PSScriptRoot 'manifest-delta-allowlist.txt') |
             Where-Object { $_ })
         $unapprovedChanges = @($manifestChanges | Where-Object { $approvedChanges -cnotcontains $_ })

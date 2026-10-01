@@ -53,10 +53,11 @@ public class PatchStatusWiringTest {
     /** The name argument, as a literal or as a constant of the same file. */
     private static final Pattern NAME = Pattern.compile("\\bname\\s*=\\s*(?:\"([^\"]+)\"|([A-Za-z_][A-Za-z0-9_]*))");
     private static final Pattern STATUS = Pattern.compile("enableStatus\\(\"([^\"]+)\"\\)");
+    private static final Pattern CAPABILITY = Pattern.compile("enableCapability\\(\"([^\"]+)\"\\)");
 
     @Test
     public void eachPatchEnablesItsOwnFamilysSwitch() throws IOException {
-        Map<String, List<String>> statusesByPatch = statusCallsByPatchName();
+        Map<String, List<String>> statusesByPatch = flagCallsByPatchName(STATUS);
 
         for (PatchFamily family : PatchFamily.values()) {
             List<String> calls = statusesByPatch.get(family.patchName);
@@ -71,7 +72,7 @@ public class PatchStatusWiringTest {
         TreeSet<String> known = new TreeSet<>();
         for (PatchFamily family : PatchFamily.values()) known.add(family.statusMethod);
 
-        for (Map.Entry<String, List<String>> patch : statusCallsByPatchName().entrySet()) {
+        for (Map.Entry<String, List<String>> patch : flagCallsByPatchName(STATUS).entrySet()) {
             for (String status : patch.getValue()) {
                 assertTrue("\"" + patch.getKey() + "\" turns on \"" + status + "\", which no family reads",
                         known.contains(status));
@@ -79,8 +80,25 @@ public class PatchStatusWiringTest {
         }
     }
 
-    /** Each patch source's declared patch name, with the enableStatus names the same file passes. */
-    private static Map<String, List<String>> statusCallsByPatchName() throws IOException {
+    /** Family switches still have their own flags; each independently inserted target has one too. */
+    @Test
+    public void eachPatchRecordsExactlyItsOwnTargetCapabilities() throws IOException {
+        Map<String, List<String>> capabilitiesByPatch = flagCallsByPatchName(CAPABILITY);
+        Map<String, TreeSet<String>> expectedByPatch = new HashMap<>();
+        for (PatchFamily.Capability capability : PatchFamily.Capability.values()) {
+            expectedByPatch.computeIfAbsent(capability.family.patchName, ignored -> new TreeSet<>())
+                    .add(capability.statusMethod);
+        }
+        assertEquals("a capability was recorded by a patch that doesn't own targets",
+                expectedByPatch.keySet(), capabilitiesByPatch.keySet());
+        for (Map.Entry<String, TreeSet<String>> expected : expectedByPatch.entrySet()) {
+            assertEquals(expected.getKey() + " doesn't record exactly its expected target flags",
+                    expected.getValue(), new TreeSet<>(capabilitiesByPatch.get(expected.getKey())));
+        }
+    }
+
+    /** Each patch source's declared patch name, with the family or target flags it passes. */
+    private static Map<String, List<String>> flagCallsByPatchName(Pattern flag) throws IOException {
         Path sources = repositoryRoot().toPath().resolve("patches/src/main/kotlin");
         Map<String, List<String>> result = new HashMap<>();
         List<Path> files = new ArrayList<>();
@@ -98,7 +116,7 @@ public class PatchStatusWiringTest {
             if (names.isEmpty()) continue;
             String name = names.get(0);
             List<String> statuses = new ArrayList<>();
-            Matcher status = STATUS.matcher(text);
+            Matcher status = flag.matcher(text);
             while (status.find()) {
                 if (!statuses.contains(status.group(1))) statuses.add(status.group(1));
             }

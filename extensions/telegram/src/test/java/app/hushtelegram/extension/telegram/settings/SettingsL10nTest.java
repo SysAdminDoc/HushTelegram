@@ -85,6 +85,7 @@ public class SettingsL10nTest {
     public void restore() {
         PatchFamily.inBuildForTests = null;
         PatchFamily.staysWhilePausedForTests = null;
+        PatchFamily.capabilitiesForTests = null;
         HushTelegramPreferenceFragment.failNextInitialization = null;
         PauseForTests.resume();
         ShadowToast.reset();
@@ -122,6 +123,26 @@ public class SettingsL10nTest {
             if (LETTER.matcher(outside).find()) plain.add(text);
         }
         assertEquals("shown without going through the catalog: " + plain, 0, plain.size());
+    }
+
+    /** The partial-build sentence and each target label must pass through the catalog together. */
+    @Test
+    @Config(qualifiers = "en-rXA")
+    public void partialAndMissingCoverageUseTheCatalogForEveryWord() {
+        List<String> plain = new ArrayList<>();
+        for (PatchFamily.Capability missing : PatchFamily.Capability.values()) {
+            Set<PatchFamily.Capability> installed = EnumSet.allOf(PatchFamily.Capability.class);
+            installed.remove(missing);
+            PatchFamily.capabilitiesForTests = installed;
+            String summary = missing.family.coverageSummary("");
+            if (LETTER.matcher(without(summary, '[', ']')).find()) plain.add(summary);
+        }
+        PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+        for (PatchFamily family : new PatchFamily[]{PatchFamily.HIDE_ADS, PatchFamily.DISABLE_ANALYTICS}) {
+            String summary = family.coverageSummary("");
+            if (LETTER.matcher(without(summary, '[', ']')).find()) plain.add(summary);
+        }
+        assertEquals("coverage shown without going through the catalog: " + plain, Collections.emptyList(), plain);
     }
 
     /** The check above has to see English set between two of the catalog's own strings. */

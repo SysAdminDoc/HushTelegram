@@ -92,6 +92,7 @@ public class HushTelegramPreferenceFragmentTest {
     public void restore() {
         PatchFamily.inBuildForTests = null;
         PatchFamily.staysWhilePausedForTests = null;
+        PatchFamily.capabilitiesForTests = null;
         PauseForTests.resume();
         BaseSettings.SAFE_MODE.resetToDefault();
     }
@@ -225,6 +226,37 @@ public class HushTelegramPreferenceFragmentTest {
                 assertFalse("\"" + text + "\" names Facebook, Meta, Instagram or Threads",
                         text.contains("Facebook") || text.contains("Meta") || text.contains("Instagram") || text.contains("Threads"));
             }
+        }
+    }
+
+    /** Partial target matches used to show the complete-build promise beside the family switch. */
+    @Test
+    public void partialBuildRowsNameTheirSurvivingAndMissingCoverage() {
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
+        for (PatchFamily.Capability missing : PatchFamily.Capability.values()) {
+            Set<PatchFamily.Capability> installed = EnumSet.allOf(PatchFamily.Capability.class);
+            installed.remove(missing);
+            PatchFamily.capabilitiesForTests = installed;
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                HushTelegramPreferenceFragment page = pageOf(controller);
+                String summary = String.valueOf(page.findPreference(missing.family.switches.get(0).key).getSummary());
+                assertTrue(summary, summary.startsWith("This build covers "));
+                assertTrue(summary, summary.endsWith("Missing coverage: " + missing.label + "."));
+                for (PatchFamily.Capability covered : missing.family.expectedCapabilities()) {
+                    if (covered != missing) assertTrue(summary, summary.contains(covered.label));
+                }
+                assertTrue("a surviving target lost its switch", page.findPreference(missing.family.switches.get(0).key).isEnabled());
+            }
+        }
+
+        PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            assertEquals("This build has no coverage for "
+                            + L10n.join(Arrays.asList("channel ads", "video ads", "search ads")) + ".",
+                    String.valueOf(page.findPreference(Settings.HIDE_ADS.key).getSummary()));
+            assertEquals("This build has no coverage for device statistics reports and channel read metrics.",
+                    String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));
         }
     }
 
