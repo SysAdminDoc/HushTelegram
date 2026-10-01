@@ -74,9 +74,11 @@ Long-press the Telegram icon and tap HushTelegram. You can also open Telegram's 
 
 ## Notifications on a patched Telegram
 
-This is the one thing to know before you switch. Telegram's push notifications go through Google's Firebase, and Google only hands them to an app signed with Telegram's own key. A patched Telegram is signed with yours, so Firebase turns it away and push doesn't arrive.
+This is the main thing to know before you switch. Telegram's push notifications go through Google's Firebase, and Google only hands them to an app signed with Telegram's own key. A patched Telegram is signed with yours, so Firebase turns it away and push doesn't arrive.
 
 Telegram has its own fallback for phones without Google's services. Under Settings, Notifications and Sounds, turn on Keep-Alive Service and Background Connection, and Telegram keeps its own connection open instead. That costs some battery, and it hasn't been tried on a patched build with an account yet. A patch that lets Firebase accept the patched app is the next thing being worked on.
+
+The map in the location picker stays blank for the same reason. Google's Maps key only answers an app with Telegram's own signature.
 
 ## Your Telegram account
 
