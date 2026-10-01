@@ -36,6 +36,7 @@ import java.util.EnumSet;
 import java.util.regex.Pattern;
 
 import app.hushtelegram.extension.telegram.misc.Analytics;
+import app.hushtelegram.extension.telegram.misc.AnalyticsTest.DeviceStatsController;
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
@@ -131,12 +132,25 @@ public class SupportReportTest {
      */
     @Test
     public void aHookThatRanSaysWhatItCounted() throws Exception {
-        for (int i = 0; i < 3; i++) Analytics.skipDeviceStats();
+        DeviceStatsController controller = new DeviceStatsController(true, false);
+        for (int i = 0; i < 3; i++) Analytics.skipDeviceStats(controller);
 
         for (String report : bothExports()) {
             assertBuildFacts(report);
             assertTrue(report, report.contains("\n[HOOK STATUS]\nDisable analytics: invoked 3, 0 found, 0 missing. "
                     + "Counted: device stats report skipped 3\n"));
+        }
+    }
+
+    @Test
+    public void bothExportsDistinguishUnrequestedAndAlreadyHandledReportsFromSkips() throws Exception {
+        Analytics.skipDeviceStats(new DeviceStatsController(false, false));
+        Analytics.skipDeviceStats(new DeviceStatsController(true, true));
+        for (String report : bothExports()) {
+            assertBuildFacts(report);
+            assertTrue(report, report.contains("device stats report not requested 1, device stats report already handled 1"));
+            assertFalse(report, report.contains("device stats report skipped"));
+            assertFalse(report, report.contains("read metrics report skipped"));
         }
     }
 

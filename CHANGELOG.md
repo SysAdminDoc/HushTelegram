@@ -8,6 +8,7 @@ Every HushTelegram release, newest first.
 * **Tooling:** Patch-changing pushes require every declared Telegram fixture. Release receipts record and verify the binary Android installation floor while retaining checks for published older receipts.
 * **Tooling:** The Java directory check works when a suitable runtime is already first on PATH.
 * **Telegram:** Diagnostic exports remove named chat, dialog, peer and channel IDs, access hashes, phone values and short Telegram deep links. Version, timestamp and counter fields stay readable.
+* **Telegram:** Usage-report counters distinguish reports Telegram requested from calls that were not requested or were already handled. A state lookup failure keeps Telegram's own behavior and appears in diagnostics.
 
 ## 0.0.4 (2026-10-01)
 

@@ -5,11 +5,13 @@
 package app.morphe.patches.telegram.misc.analytics
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.fieldAccess
 import app.morphe.patcher.newInstance
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.ads.MESSAGES_CONTROLLER
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
@@ -17,8 +19,9 @@ import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.handleTargets
+import app.morphe.patches.telegram.misc.extension.requireLocals
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
-import app.morphe.patches.telegram.misc.extension.returnEarlyWhen
+import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -67,7 +70,9 @@ internal object SendReadMetricsFingerprint : Fingerprint(
  *
  * Found by reading 12.10.6 (2026-09-30): of the places that build a `help.saveAppLog` event, the
  * device statistics are the one that describes the phone rather than something you did. That
- * method asks the extension first and returns before reading anything while the switch is on.
+ * method hands the extension its controller first and returns before scanning storage while the
+ * switch is on and a report is pending. The extension reads Telegram's two existing report flags
+ * so a call that was never going to send anything isn't counted as a skipped report.
  *
  * Read metrics followed on 2026-10-01, when Telegram's own request log on a signed-in phone showed
  * `messages.reportReadMetrics` going out as a channel was scrolled. One method builds it, and it
@@ -97,7 +102,19 @@ val disableAnalyticsPatch = bytecodePatch(
                 Report.DEVICE_STATS -> LogDeviceStatsFingerprint.methodOrNull.let { method ->
                     if (method == null) "no method of the messages controller reads collectDeviceStats and sends a help.saveAppLog event"
                     else {
-                        method.returnEarlyWhen(PATCH, "$ANALYTICS->skipDeviceStats()Z", "return-void")
+                        method.requireLocals(PATCH, 1)
+                        method.requireThisIntact(PATCH, listOf(0))
+                        val first = method.getInstruction(0)
+                        method.addInstructionsWithLabels(
+                            0,
+                            """
+                                invoke-static/range {p0 .. p0}, $ANALYTICS->skipDeviceStats(Ljava/lang/Object;)Z
+                                move-result v0
+                                if-eqz v0, :hush_keep
+                                return-void
+                            """,
+                            ExternalLabel("hush_keep", first),
+                        )
                         enableCapability("deviceStats")
                         null
                     }

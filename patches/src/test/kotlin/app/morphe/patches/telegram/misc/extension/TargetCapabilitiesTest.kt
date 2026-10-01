@@ -16,12 +16,14 @@ import app.morphe.patches.telegram.ads.MESSAGES_CONTROLLER
 import app.morphe.patches.telegram.ads.hideAdsPatch
 import app.morphe.patches.telegram.misc.analytics.REPORT_READ_METRICS
 import app.morphe.patches.telegram.misc.analytics.disableAnalyticsPatch
+import app.morphe.util.ControlFlow
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
@@ -41,7 +43,7 @@ class TargetCapabilitiesTest {
         CHANNEL("channelAds", "$EXTENSION_PACKAGE/ads/Ads;->skipSponsoredMessages()Z"),
         VIDEO("videoAds", "$EXTENSION_PACKAGE/ads/Ads;->skipVideoAds()Z"),
         SEARCH("searchAds", "$EXTENSION_PACKAGE/ads/Ads;->skipSearchAds()Z"),
-        DEVICE_STATS("deviceStats", "$EXTENSION_PACKAGE/misc/Analytics;->skipDeviceStats()Z"),
+        DEVICE_STATS("deviceStats", "$EXTENSION_PACKAGE/misc/Analytics;->skipDeviceStats(Ljava/lang/Object;)Z"),
         READ_METRICS("readMetrics", "$EXTENSION_PACKAGE/misc/Analytics;->skipReadMetrics(Ljava/util/List;)Z"),
     }
 
@@ -75,11 +77,34 @@ class TargetCapabilitiesTest {
             for ((target, original) in originals) {
                 val before = original.methods.single()
                 val patched = context.mutableClassDefBy(original.type).methods.single { it.name == before.name }
+                val opcode = if (target == Target.DEVICE_STATS) Opcode.INVOKE_STATIC_RANGE else Opcode.INVOKE_STATIC
                 assertTrue("$family subset $present lost ${target.hook}", patched.instructions().any {
-                    it.opcode == Opcode.INVOKE_STATIC && (it as ReferenceInstruction).reference.toString() == target.hook
+                    it.opcode == opcode && (it as ReferenceInstruction).reference.toString() == target.hook
                 })
             }
         }
+    }
+
+    /** A future sender with many locals must still pass this, even past invoke's v15 limit. */
+    @Test
+    fun `device stats passes exactly the host receiver past the short invoke register limit`() {
+        val original = host(Target.DEVICE_STATS, registersOverride = 40)
+        val context = PatchContexts.of(ExtensionDex.classes() + original)
+        PatchLogCapture.warnings { disableAnalyticsPatch.execute(context) }
+        val before = original.methods.single()
+        val patched = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == before.name }
+        val instructions = patched.instructions()
+        assertEquals(Opcode.INVOKE_STATIC_RANGE, instructions[0].opcode)
+        val call = instructions[0] as RegisterRangeInstruction
+        assertEquals(39, call.startRegister)
+        assertEquals(1, call.registerCount)
+        assertEquals(Target.DEVICE_STATS.hook, (instructions[0] as ReferenceInstruction).reference.toString())
+        assertEquals(40, patched.implementation!!.registerCount)
+        assertEquals(setOf(3, 4), ControlFlow.of(patched).normal[2].toSet())
+        assertEquals(before.instructions().map { it.opcode }, instructions.drop(4).map { it.opcode })
+        assertEquals(before.instructions().filterIsInstance<ReferenceInstruction>().map { it.reference.toString() },
+            instructions.drop(4).filterIsInstance<ReferenceInstruction>().map { it.reference.toString() })
+        assertFlag(context, "deviceStats", true)
     }
 
     @Test
@@ -141,7 +166,7 @@ class TargetCapabilitiesTest {
             patched.instructions().filterIsInstance<ReferenceInstruction>().map { it.reference.toString() })
     }
 
-    private fun host(target: Target, supportedShape: Boolean = true): ClassDef {
+    private fun host(target: Target, supportedShape: Boolean = true, registersOverride: Int? = null): ClassDef {
         val type = when (target) {
             Target.CHANNEL, Target.DEVICE_STATS -> MESSAGES_CONTROLLER
             Target.VIDEO -> "Lorg/telegram/messenger/video/VideoAds;"
@@ -154,6 +179,7 @@ class TargetCapabilitiesTest {
             else -> emptyList()
         }
         val returns = if (target == Target.CHANNEL) MESSAGES_CONTROLLER.removeSuffix(";") + "\$SponsoredMessagesInfo;" else "V"
+        val registers = registersOverride ?: if (target == Target.SEARCH) 5 else if (target == Target.CHANNEL) 4 else 3
         val body = when (target) {
             Target.CHANNEL -> """
                 new-instance v0, $GET_SPONSORED_MESSAGES
@@ -177,7 +203,8 @@ class TargetCapabilitiesTest {
                 return-void
             """
             Target.DEVICE_STATS -> """
-                iget-boolean v0, p0, $MESSAGES_CONTROLLER->collectDeviceStats:Z
+                ${if (registers > 16) "move-object/from16 v1, p0\niget-boolean v0, v1, $MESSAGES_CONTROLLER->collectDeviceStats:Z"
+                    else "iget-boolean v0, p0, $MESSAGES_CONTROLLER->collectDeviceStats:Z"}
                 new-instance v0, Lorg/telegram/tgnet/TLRPC${'$'}TL_help_saveAppLog;
                 return-void
             """
@@ -192,7 +219,6 @@ class TargetCapabilitiesTest {
             """
         }
         val isStatic = target == Target.SEARCH || target == Target.READ_METRICS
-        val registers = if (target == Target.SEARCH) 5 else if (target == Target.CHANNEL) 4 else 3
         val method = MutableMethod(ImmutableMethod(
             type, target.status, parameters.map { ImmutableMethodParameter(it, null, null) }, returns,
             AccessFlags.PUBLIC.value or if (isStatic) AccessFlags.STATIC.value else 0, null, null,

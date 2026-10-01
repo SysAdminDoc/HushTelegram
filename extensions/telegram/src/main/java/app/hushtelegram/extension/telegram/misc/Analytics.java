@@ -4,6 +4,7 @@
  */
 package app.hushtelegram.extension.telegram.misc;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import app.hushtelegram.extension.shared.Utils;
@@ -24,9 +25,37 @@ import app.hushtelegram.extension.telegram.settings.Settings;
 public final class Analytics {
     private Analytics() {}
 
-    /** Injected at the start of {@code logDeviceStats()}. True means return at once. Never throws. */
-    public static boolean skipDeviceStats() {
-        return skip("device stats report skipped");
+    /**
+     * Injected at the start of {@code logDeviceStats()}, with its messages controller. Counts a
+     * skipped report only when the server requested one and Telegram hasn't already handled it.
+     * True means return at once. A state lookup failure leaves Telegram's own path intact.
+     */
+    public static boolean skipDeviceStats(Object controller) {
+        HookStatus.invoked(FamilyNames.DISABLE_ANALYTICS);
+        try {
+            if (!Utils.settingsReady() || !Settings.DISABLE_ANALYTICS.get()) return false;
+        } catch (Throwable t) {
+            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "switch read", t);
+            return false;
+        }
+        try {
+            Field requested = controller.getClass().getField("collectDeviceStats");
+            if (!requested.getBoolean(controller)) {
+                HookStatus.counted(FamilyNames.DISABLE_ANALYTICS, "device stats report not requested");
+                return false;
+            }
+            Field reported = requested.getDeclaringClass().getDeclaredField("loggedDeviceStats");
+            reported.setAccessible(true);
+            if (reported.getBoolean(controller)) {
+                HookStatus.counted(FamilyNames.DISABLE_ANALYTICS, "device stats report already handled");
+                return false;
+            }
+        } catch (Throwable t) {
+            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "device stats state read", t);
+            return false;
+        }
+        HookStatus.counted(FamilyNames.DISABLE_ANALYTICS, "device stats report skipped");
+        return true;
     }
 
     /**

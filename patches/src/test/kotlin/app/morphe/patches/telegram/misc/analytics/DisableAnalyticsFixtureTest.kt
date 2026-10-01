@@ -11,13 +11,17 @@ import app.morphe.PatchContexts
 import app.morphe.patches.telegram.ads.MESSAGES_CONTROLLER
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
+import app.morphe.util.ControlFlow
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -36,6 +40,14 @@ class DisableAnalyticsFixtureTest {
             val where = build.name
             val classes = FixtureDex.classes(build, setOf(MESSAGES_CONTROLLER))
             assertEquals("$where: the messages controller", setOf(MESSAGES_CONTROLLER), classes.keys)
+            val controller = classes.getValue(MESSAGES_CONTROLLER)
+            val requested = controller.fields.single { it.name == "collectDeviceStats" }
+            assertEquals("$where: the request flag is boolean", "Z", requested.type)
+            assertTrue("$where: getField can read the public request flag", AccessFlags.PUBLIC.isSet(requested.accessFlags))
+            assertFalse("$where: the request flag belongs to each controller", AccessFlags.STATIC.isSet(requested.accessFlags))
+            val reported = controller.fields.single { it.name == "loggedDeviceStats" }
+            assertEquals("$where: the once-per-start guard is boolean", "Z", reported.type)
+            assertFalse("$where: the guard belongs to each controller", AccessFlags.STATIC.isSet(reported.accessFlags))
             val metricsClass = FixtureDex.classesWhere(build, { true }, ::sendsReadMetrics).single()
 
             val original = classes.getValue(MESSAGES_CONTROLLER).methods.single {
@@ -51,12 +63,26 @@ class DisableAnalyticsFixtureTest {
             val before = original.instructions()
             val after = patched.instructions()
             assertEquals("$where: instructions added", before.size + 4, after.size)
-            assertEquals("$where: asks the extension first", Opcode.INVOKE_STATIC, after[0].opcode)
-            assertEquals("$analytics->skipDeviceStats()Z", (after[0] as ReferenceInstruction).reference.toString())
+            assertEquals("$where: asks the extension first with the controller", Opcode.INVOKE_STATIC_RANGE, after[0].opcode)
+            assertEquals("$analytics->skipDeviceStats(Ljava/lang/Object;)Z", (after[0] as ReferenceInstruction).reference.toString())
+            val receiver = after[0] as RegisterRangeInstruction
+            assertEquals("$where: passes exactly one controller", 1, receiver.registerCount)
+            assertEquals("$where: passes the original this register", original.implementation!!.registerCount - 1, receiver.startRegister)
+            assertEquals("$where: register allocation stays stock", original.implementation!!.registerCount, patched.implementation!!.registerCount)
             assertEquals(Opcode.MOVE_RESULT, after[1].opcode)
             assertEquals(Opcode.IF_EQZ, after[2].opcode)
             assertEquals("$where: the early return", Opcode.RETURN_VOID, after[3].opcode)
             assertEquals("$where: nothing else moved", before.map { it.opcode }, after.subList(4, after.size).map { it.opcode })
+            assertEquals("$where: the stock field and call references stay intact",
+                before.filterIsInstance<ReferenceInstruction>().map { it.reference.toString() },
+                after.subList(4, after.size).filterIsInstance<ReferenceInstruction>().map { it.reference.toString() })
+            val oldFlow = ControlFlow.of(original)
+            val newFlow = ControlFlow.of(patched)
+            assertEquals("$where: false reaches the original first instruction", setOf(3, 4), newFlow.normal[2].toSet())
+            for (index in before.indices) {
+                assertEquals("$where: original branch $index stays stock", oldFlow.normal[index], newFlow.normal[index + 4].map { it - 4 })
+                assertEquals("$where: original handler $index stays stock", oldFlow.exceptional[index], newFlow.exceptional[index + 4].map { it - 4 })
+            }
 
             assertReadMetricsHooked(
                 "$where: read metrics", metrics,

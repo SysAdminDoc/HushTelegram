@@ -35,6 +35,7 @@ import java.util.Set;
 
 import app.hushtelegram.extension.telegram.ads.Ads;
 import app.hushtelegram.extension.telegram.misc.Analytics;
+import app.hushtelegram.extension.telegram.misc.AnalyticsTest.DeviceStatsController;
 import app.hushtelegram.extension.telegram.misc.UpdateChecks;
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
@@ -87,7 +88,8 @@ public class PausedHooksTest {
         probes.put(PatchFamily.HIDE_ADS, Arrays.asList(Ads::skipSponsoredMessages, Ads::skipVideoAds, Ads::skipSearchAds));
         // A device statistics report is never read or sent, and neither is a channel's read time.
         probes.put(PatchFamily.DISABLE_ANALYTICS, Arrays.asList(
-                Analytics::skipDeviceStats, () -> Analytics.skipReadMetrics(new ArrayList<>())));
+                () -> Analytics.skipDeviceStats(new DeviceStatsController(true, false)),
+                () -> Analytics.skipReadMetrics(new ArrayList<>())));
         // telegram.org's build never asks the server whether a newer one is out.
         probes.put(PatchFamily.DISABLE_UPDATE_CHECKS, Collections.singletonList(UpdateChecks::skipUpdateCheck));
         return probes;
