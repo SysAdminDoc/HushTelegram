@@ -20,10 +20,13 @@ import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.SwitchPreference;
+import android.text.Spanned;
+import android.text.style.StyleSpan;
 
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.SettingsContextRule;
@@ -313,6 +316,28 @@ public class HushTelegramPreferenceFragmentTest {
                 assertFalse(Shadows.shadowOf(dialog).getTitle() + " outlived the page", dialog.isShowing());
             }
         }
+    }
+
+    /**
+     * NOTICE's underlined headings read as rows of = and - on a phone. On screen each heading is
+     * bold and the rules are gone, and every word of the notice is still there.
+     */
+    @Test
+    public void theLicensesDialogShowsHeadingsInsteadOfRules() {
+        CharSequence shown = HushTelegramPreferenceFragment.noticeForScreen(LicenseNotice.TEXT, Color.WHITE);
+        String text = shown.toString();
+        assertFalse("a rule line is still on screen", Pattern.compile("(?m)^[=-]{3,}$").matcher(text).find());
+        assertFalse("removing the rules left a gap wider than NOTICE's own", text.contains("\n\n\n\n"));
+        assertEquals("words went missing", LicenseNotice.TEXT.replaceAll("(?m)^[=-]{3,}$", "").replaceAll("\\s+", " ").trim(),
+                text.replaceAll("\\s+", " ").trim());
+
+        Spanned spans = (Spanned) shown;
+        List<String> bold = new ArrayList<>();
+        for (StyleSpan span : spans.getSpans(0, spans.length(), StyleSpan.class)) {
+            if (span.getStyle() == Typeface.BOLD) bold.add(text.substring(spans.getSpanStart(span), spans.getSpanEnd(span)));
+        }
+        assertTrue(bold.toString(), bold.containsAll(Arrays.asList(
+                "HushTelegram NOTICE", "Morphe: Project Name Restriction", "Trademarks", "Material Design icons")));
     }
 
     private static int indexOfKey(List<Preference> rows, String key) {

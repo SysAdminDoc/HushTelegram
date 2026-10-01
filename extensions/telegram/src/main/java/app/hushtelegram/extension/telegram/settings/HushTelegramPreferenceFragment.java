@@ -19,6 +19,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -28,6 +29,10 @@ import android.preference.PreferenceScreen;
 import android.preference.SwitchPreference;
 import android.preference.TwoStatePreference;
 import android.text.Layout;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.text.util.Linkify;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
@@ -48,6 +53,8 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Logger;
@@ -864,7 +871,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         // blank lines, headings, lists and the generated notice itself intact.
         String notice = LicenseNotice.TEXT.replaceAll("(?<=[\\p{L}.,;])\\n(?=\\p{L})", " ")
                 .replaceAll("(?m)^(  .+?) {2,}(https?://[^\\n]+)$", "$1\n$2\n");
-        text.setText(notice);
+        ScreenColors colors = ScreenColors.DEFAULT;
+        text.setText(noticeForScreen(notice, colors.title));
         text.setTextIsSelectable(true);
         text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         text.setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY);
@@ -873,7 +881,6 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         text.setLineSpacing(Math.round(2 * context.getResources().getDisplayMetrics().density), 1.04f);
         ScrollView scroll = new ScrollView(context);
         scroll.addView(text);
-        ScreenColors colors = ScreenColors.DEFAULT;
         text.setTextColor(colors.summary);
         text.setLinkTextColor(colors.heading);
         Linkify.addLinks(text, Linkify.WEB_URLS);
@@ -881,6 +888,33 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 .setTitle(L10n.t("Licenses"))
                 .setView(scroll)
                 .setPositiveButton(L10n.t("OK"), null));
+    }
+
+    /**
+     * NOTICE marks its headings with a line of = or - under them, which reads as a heading in a
+     * text file and as a row of symbols on a phone. The heading turns bold and the rule goes, and
+     * so does a rule standing alone between notices, since the blank lines already part them.
+     */
+    static CharSequence noticeForScreen(String notice, int headingColor) {
+        Matcher heading = Pattern.compile("(?m)^(\\S[^\\n]*)\\n[=-]{3,}$").matcher(notice);
+        SpannableStringBuilder shown = new SpannableStringBuilder();
+        int at = 0;
+        while (heading.find()) {
+            shown.append(notice, at, heading.start());
+            int start = shown.length();
+            shown.append(heading.group(1));
+            shown.setSpan(new StyleSpan(Typeface.BOLD), start, shown.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            shown.setSpan(new ForegroundColorSpan(headingColor), start, shown.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            at = heading.end();
+        }
+        shown.append(notice, at, notice.length());
+        for (Matcher rule = Pattern.compile("(?m)^[=-]{3,}\\n").matcher(shown); rule.find(); rule.reset(shown)) {
+            shown.delete(rule.start(), rule.end());
+        }
+        for (Matcher gap = Pattern.compile("\\n{4,}").matcher(shown); gap.find(); gap.reset(shown)) {
+            shown.replace(gap.start(), gap.end(), "\n\n\n");
+        }
+        return shown;
     }
 
     @Override
