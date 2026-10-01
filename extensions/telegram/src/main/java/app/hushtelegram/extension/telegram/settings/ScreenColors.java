@@ -161,11 +161,18 @@ final class ScreenColors {
             imageSize.width = dp(row, 24);
             imageSize.height = dp(row, 24);
             icon.setLayoutParams(imageSize);
+            // From 2x text Samsung lays a switch row out from tw_preference_switch_large, which puts
+            // the 16dp gap on the icon itself and drops the frame's -4dp start margin. The padding
+            // squeezed the glyph to a third of its box and the missing margin moved the row's text.
+            icon.setPadding(0, 0, 0, 0);
             if (icon.getParent() instanceof ViewGroup) {
                 ViewGroup frame = (ViewGroup) icon.getParent();
                 frame.setPaddingRelative(0, 0, dp(row, 16), 0);
                 ViewGroup.LayoutParams size = frame.getLayoutParams();
                 size.width = dp(row, 40);
+                if (size instanceof ViewGroup.MarginLayoutParams) {
+                    ((ViewGroup.MarginLayoutParams) size).setMarginStart(-dp(row, 4));
+                }
                 frame.setLayoutParams(size);
             }
         }

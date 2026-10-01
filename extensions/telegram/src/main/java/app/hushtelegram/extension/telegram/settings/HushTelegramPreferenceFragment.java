@@ -226,40 +226,44 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         LogBufferManager.registerReportSection(ReleaseCheck.REPORT);
         Set<PatchFamily> build = PatchFamily.inThisBuild();
 
+        // Every row carries an icon, so all pages share one text edge. A switch that stops something
+        // Telegram does takes the stop sign.
         if (build.contains(PatchFamily.HIDE_ADS)) {
             PreferenceCategory chats = category(screen, L10n.t("Chats"));
-            chats.addPreference(toggle(context, Settings.HIDE_ADS, L10n.t("Hide ads"),
+            chats.addPreference(mark(toggle(context, Settings.HIDE_ADS, L10n.t("Hide ads"),
                     L10n.t("Channels show no sponsored messages and videos play without ads. Telegram never asks "
-                            + "for them, so none are counted as seen.")));
+                            + "for them, so none are counted as seen.")), SettingsIcons.BLOCK));
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS)) {
             PreferenceCategory privacy = category(screen, L10n.t("Privacy"));
-            privacy.addPreference(toggle(context, Settings.DISABLE_ANALYTICS, L10n.t("Stop device statistics"),
+            privacy.addPreference(mark(toggle(context, Settings.DISABLE_ANALYTICS, L10n.t("Stop device statistics"),
                     L10n.t("Telegram doesn't read your storage folders or send them as a device report when its "
-                            + "server asks. Messages and calls work as before.")));
+                            + "server asks. Messages and calls work as before.")), SettingsIcons.BLOCK));
         }
 
         // In every build: Telegram's own links are never verified for an app, so Android opens them
         // here only for the addresses selected on the app's Open by default page.
         PreferenceCategory links = category(screen, L10n.t("Links"));
-        links.addPreference(supportedLinksRow(context));
-        links.addPreference(info(context, L10n.t("Selecting links by hand"),
+        links.addPreference(mark(supportedLinksRow(context), SettingsIcons.LINKS));
+        // An explanation, not a control: the info mark says so, as it does for Version on About.
+        links.addPreference(mark(info(context, L10n.t("Selecting links by hand"),
                 L10n.t("Android opens t.me links in an app only when its addresses are selected for that app. "
-                        + "Selecting them sends their links here, and your other link settings stay as they are.")));
+                        + "Selecting them sends their links here, and your other link settings stay as they are.")),
+                SettingsIcons.ABOUT));
 
         // In every build: the release check is the settings entry's own, not a patch's. Its switch
         // is one Pause turns off, so it sits above the Pause row with the rest.
         PreferenceCategory updates = category(screen, L10n.t("Updates"));
         if (build.contains(PatchFamily.DISABLE_UPDATE_CHECKS)) {
-            updates.addPreference(toggle(context, Settings.DISABLE_UPDATE_CHECKS, L10n.t("Turn off Telegram's update checks"),
+            updates.addPreference(mark(toggle(context, Settings.DISABLE_UPDATE_CHECKS, L10n.t("Turn off Telegram's update checks"),
                     L10n.t("Telegram stops offering updates from telegram.org. Those can't install over this patched "
-                            + "build, so patch each new version in Morphe Manager instead.")));
+                            + "build, so patch each new version in Morphe Manager instead.")), SettingsIcons.BLOCK));
         }
-        updates.addPreference(toggle(context, Settings.CHECK_FOR_RELEASES, L10n.t("Check for new HushTelegram releases"),
+        updates.addPreference(mark(toggle(context, Settings.CHECK_FOR_RELEASES, L10n.t("Check for new HushTelegram releases"),
                 L10n.t("Ask GitHub once a day when Telegram starts, and show a newer release at the top of these "
-                        + "settings. Off by default. Nothing is downloaded.")));
-        updates.addPreference(checkNowRow(context));
+                        + "settings. Off by default. Nothing is downloaded.")), SettingsIcons.BELL));
+        updates.addPreference(mark(checkNowRow(context), SettingsIcons.UPDATES));
         ReleaseCheck.watch(this);
 
         // Named for its rows: the screen's own title already says HushTelegram.
@@ -294,7 +298,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 L10n.t("Diagnostic data cleared. Tap again to put it back."));
         hushtelegram.addPreference(mark(clear, SettingsIcons.DELETE));
         // Keep the detailed patch-time exception list after the controls people come here for.
-        if (stays != null) hushtelegram.addPreference(info(context, L10n.t(STAYS_WHILE_PAUSED), stays));
+        if (stays != null) hushtelegram.addPreference(mark(info(context, L10n.t(STAYS_WHILE_PAUSED), stays), SettingsIcons.ABOUT));
 
         PreferenceCategory about = category(screen, L10n.t("About"));
         about.addPreference(mark(info(context, L10n.t("Version"), L10n.f("HushTelegram %1$s on Telegram %2$s",

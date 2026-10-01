@@ -88,7 +88,7 @@ final class SettingsNavigation extends BaseAdapter {
         source = screen.getRootAdapter();
         Context context = screen.getContext();
         // Stable English route IDs survive a locale change; the displayed names are localized.
-        section("Chats", L10n.t("Chats"), L10n.t("Sponsored messages and video ads"), SettingsIcons.FEED, true);
+        section("Chats", L10n.t("Chats"), L10n.t("Sponsored messages and video ads"), SettingsIcons.CHAT, true);
         section("Privacy", L10n.t("Privacy"), L10n.t("The device statistics report"), SettingsIcons.BLOCK, true);
         section("Links", L10n.t("Links"), null, SettingsIcons.LINKS, false);
         section("Updates", L10n.t("Updates"), null, SettingsIcons.UPDATES, false);

@@ -13,6 +13,8 @@ The start of the project, with 4 patches for telegram.org's Telegram 12.10.6. No
 * **Telegram:** Check now says "No HushTelegram release is out yet." when GitHub has none to show, instead of asking you to try again later.
 * **Telegram:** The card at the top of HushTelegram settings says whether your controls are active or pause at the next start. The version line that crowded it out lives on the About page.
 * **Telegram:** The update switches read more plainly, and the Chats summary on the settings home fits on one line.
+* **Telegram:** Every row on the Chats, Updates and Links pages has an icon now, so the text starts at the same edge on every page, and Chats has a chat bubble.
+* **Telegram:** With large text on a Samsung phone, switch rows show their icon at full size and line up with the rows around them.
 * **Tooling:** The build, extension library, settings screen and diagnostics start from HushThreads at b141524, renamed to `app.hushtelegram.extension` so they can't collide with another Morphe source's classes.
 * **Tooling:** The verification and release scripts know Telegram. `verify-all-patches.ps1` takes telegram.org's single APK, and the manifest allowlist approves only the settings alias, the one manifest change the patches make.
 * **Tooling:** `sources/telegram-sources.json` records every Telegram patch source, Xposed module and fork found, with the commit each was read at, its licence and what HushTelegram may take from it. `docs/sources.md` is the readable version.
