@@ -268,6 +268,71 @@ public class ScreenColorsTest {
         }
     }
 
+    /**
+     * From 2x text Samsung builds a switch row from tw_preference_switch_large, which puts a 16dp
+     * end padding on the icon itself and leaves out the -4dp start margin preference_material gives
+     * the icon's frame. On an S25 the padding squeezed the glyph to a third of its box and the text
+     * started 11px right of its neighbors'. Painted, both shapes draw a full 24dp icon and start
+     * their text at the same place.
+     */
+    @Test
+    public void samsungsLargeTextSwitchRowKeepsItsIconAndTextEdge() {
+        android.content.Context context = RuntimeEnvironment.getApplication();
+        android.preference.Preference preference = new android.preference.Preference(context);
+        preference.setTitle("Hide ads");
+        preference.setIcon(new ColorDrawable(Color.WHITE));
+        int dp = Math.round(context.getResources().getDisplayMetrics().density);
+        int[] textStart = new int[2];
+        for (int shape = 0; shape < 2; shape++) {
+            boolean samsungLarge = shape == 1;
+            android.widget.LinearLayout row = new android.widget.LinearLayout(context);
+            row.setOrientation(samsungLarge ? android.widget.LinearLayout.VERTICAL : android.widget.LinearLayout.HORIZONTAL);
+            android.widget.LinearLayout line = samsungLarge ? new android.widget.LinearLayout(context) : row;
+            android.widget.LinearLayout frame = new android.widget.LinearLayout(context);
+            frame.setId(android.R.id.icon_frame);
+            android.widget.ImageView icon = new android.widget.ImageView(context);
+            icon.setId(android.R.id.icon);
+            icon.setImageDrawable(preference.getIcon());
+            android.widget.LinearLayout.LayoutParams frameSize = new android.widget.LinearLayout.LayoutParams(
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+            if (samsungLarge) {
+                icon.setPaddingRelative(0, 0, 16 * dp, 0);
+            } else {
+                frameSize.setMarginStart(-4 * dp);
+                frame.setMinimumWidth(60 * dp);
+                frame.setPaddingRelative(0, 4 * dp, 12 * dp, 4 * dp);
+            }
+            frame.addView(icon);
+            line.addView(frame, frameSize);
+            android.widget.RelativeLayout text = new android.widget.RelativeLayout(context);
+            TextView title = new TextView(context);
+            title.setId(android.R.id.title);
+            title.setText(preference.getTitle());
+            text.addView(title);
+            line.addView(text, new android.widget.LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+            if (samsungLarge) {
+                row.addView(line);
+                Switch toggle = new Switch(context);
+                toggle.setId(android.R.id.switch_widget);
+                row.addView(toggle);
+            }
+
+            ScreenColors.DEFAULT.paintRow(row, preference);
+            row.measure(View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+            row.layout(0, 0, 1080, row.getMeasuredHeight());
+
+            String which = samsungLarge ? "the large-text row" : "the standard row";
+            assertEquals(which + " pads its icon", 0, icon.getPaddingStart() + icon.getPaddingEnd()
+                    + icon.getPaddingTop() + icon.getPaddingBottom());
+            assertEquals(which + "'s icon box", 24 * dp, icon.getWidth());
+            int x = 0;
+            for (View at = title; at != row; at = (View) at.getParent()) x += at.getLeft();
+            textStart[shape] = x;
+        }
+        assertEquals("the large-text row's text starts somewhere else", textStart[0], textStart[1]);
+    }
+
     private static SettingsDialog show(Activity activity) {
         SettingsDialog dialog = new SettingsDialog();
         dialog.show(activity.getFragmentManager(), "hushtelegram_settings");
