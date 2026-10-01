@@ -109,6 +109,8 @@ public final class ReleaseCheck {
         OFFLINE,
         /** GitHub is turning away requests from this network for now. */
         RATE_LIMITED,
+        /** GitHub knows no release yet: its latest-release address answers 404 until the first one is out. */
+        NO_RELEASE,
         /** GitHub answered with an error. */
         HTTP_ERROR,
         /** The answer ran past the cap. */
@@ -362,6 +364,7 @@ public final class ReleaseCheck {
                 if (status == 429 || (status == 403 && rateLimited(exchange))) {
                     return Answer.failed(Result.RATE_LIMITED, "GitHub answered " + status);
                 }
+                if (status == 404) return Answer.failed(Result.NO_RELEASE, "GitHub answered 404");
                 if (status != 200) return Answer.failed(Result.HTTP_ERROR, "GitHub answered " + status);
                 long announced = exchange.length();
                 if (announced > MAX_BODY_BYTES) {
@@ -614,6 +617,9 @@ public final class ReleaseCheck {
                 return L10n.t("Couldn't reach GitHub. Try again later.");
             case RATE_LIMITED:
                 return L10n.t("GitHub is turning away checks from this network for now. Try again later.");
+            case NO_RELEASE:
+                // "Try again later" would send the reader back for an answer that hasn't changed.
+                return L10n.t("No HushTelegram release is out yet.");
             default:
                 return L10n.t("GitHub's answer couldn't be used. Try again later.");
         }

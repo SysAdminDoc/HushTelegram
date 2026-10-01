@@ -296,6 +296,16 @@ public class ReleaseCheckTest {
         assertEquals("GitHub's answer couldn't be used. Try again later.", ReleaseCheck.checkNowSummary());
     }
 
+    /** Before the first release, Check now says so instead of asking for another try. */
+    @Test
+    public void noReleaseYetSaysSo() {
+        github.then(Reply.status(404));
+        ReleaseCheck.run(NOW);
+        assertEquals("NO_RELEASE", Stored.RESULT.get());
+        assertEquals("No HushTelegram release is out yet.", ReleaseCheck.checkNowSummary());
+        assertNull("nothing newer goes on the card", ReleaseCheck.statusLine());
+    }
+
     @Test
     public void aTimeoutIsKeptAndTheNextTryWaitsADay() {
         github.then(Reply.failing(new SocketTimeoutException("connect timed out")));
@@ -377,10 +387,13 @@ public class ReleaseCheckTest {
         // A 403 that isn't a limit, and other errors, are errors: the control.
         github.then(Reply.status(403).header("X-RateLimit-Remaining", "59"));
         assertEquals(Result.HTTP_ERROR, fetch().result);
-        for (int status : new int[]{404, 500, 502, 204}) {
+        for (int status : new int[]{500, 502, 204}) {
             github.then(Reply.status(status));
             assertEquals(String.valueOf(status), Result.HTTP_ERROR, fetch().result);
         }
+        // GitHub's latest-release address answers 404 until a first release is out.
+        github.then(Reply.status(404));
+        assertEquals(Result.NO_RELEASE, fetch().result);
 
         // The limited try at NOW keeps the next start from asking for a day.
         Settings.CHECK_FOR_RELEASES.save(true);

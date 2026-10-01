@@ -206,8 +206,8 @@ public class HushTelegramPreferenceFragmentTest {
                     + "server asks. Messages and calls work as before.",
                     String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));
             assertEquals("Turn off Telegram's update checks", String.valueOf(page.findPreference(Settings.DISABLE_UPDATE_CHECKS.key).getTitle()));
-            assertEquals("telegram.org's build stops offering its own updates, which can't install over this patched "
-                    + "build. Patch the new version in Morphe Manager instead.",
+            assertEquals("Telegram stops offering updates from telegram.org. Those can't install over this patched "
+                    + "build, so patch each new version in Morphe Manager instead.",
                     String.valueOf(page.findPreference(Settings.DISABLE_UPDATE_CHECKS.key).getSummary()));
             // The switches are the screen's, all three on as they ship.
             for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.DISABLE_ANALYTICS,
@@ -254,8 +254,9 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
-     * A version is a value set into a sentence, so both rows that show one isolate it: in a
-     * right-to-left sentence "449.0.0.54.82" then keeps the order it was written in.
+     * A version is a value set into a sentence, so the row that shows one isolates it: in a
+     * right-to-left sentence "449.0.0.54.82" then keeps the order it was written in. The status
+     * card leaves the versions to the About page and says only whether the controls are active.
      */
     @Test
     public void theVersionRowsIsolateTheVersions() {
@@ -269,7 +270,7 @@ public class HushTelegramPreferenceFragmentTest {
             List<Preference> rows = rowsOf(controller);
             Preference card = rows.get(0);
             assertEquals("HushTelegram is on", String.valueOf(card.getTitle()));
-            assertTrue(String.valueOf(card.getSummary()), String.valueOf(card.getSummary()).contains(L10n.isolate(threads)));
+            assertEquals("Your controls are active.", String.valueOf(card.getSummary()));
             Preference version = null;
             for (Preference row : rows) {
                 if ("Version".contentEquals(row.getTitle())) version = row;

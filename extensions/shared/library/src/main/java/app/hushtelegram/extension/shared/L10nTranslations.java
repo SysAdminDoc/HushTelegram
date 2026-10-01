@@ -89,8 +89,8 @@ public final class L10nTranslations {
                 "Android hat diese App f\u00fcr die Webadressen von Telegram best\u00e4tigt, deshalb \u00f6ffnen sich ihre Links hier.");
         table.put("Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.",
                 "Die Android-Einstellungen f\u00fcr diese App lie\u00dfen sich nicht \u00f6ffnen. \u00d6ffne die App-Info \u00fcber das Telegram-Symbol, dann \u201eStandardm\u00e4\u00dfig \u00f6ffnen\u201c.");
-        table.put("Ask GitHub once a day at startup and show newer releases on the overview. Off by default. Nothing is downloaded.",
-                "Fragt GitHub einmal t\u00e4glich beim Start ab und zeigt neue Versionen in der \u00dcbersicht. Standardm\u00e4\u00dfig aus. Es wird nichts heruntergeladen.");
+        table.put("Ask GitHub once a day when Telegram starts, and show a newer release at the top of these settings. Off by default. Nothing is downloaded.",
+                "Fragt GitHub einmal t\u00e4glich beim Start von Telegram ab und zeigt eine neuere Version oben in diesen Einstellungen. Standardm\u00e4\u00dfig aus. Es wird nichts heruntergeladen.");
         table.put("Asks GitHub for the newest release right now, even with the switch above off.",
                 "Fragt GitHub sofort nach der neuesten Version, auch wenn der Schalter dar\u00fcber aus ist.");
         table.put("Back",
@@ -210,6 +210,8 @@ public final class L10nTranslations {
                 "Links, Updates, Sicherung und mehr");
         table.put("More settings",
                 "Weitere Einstellungen");
+        table.put("No HushTelegram release is out yet.",
+                "Es gibt noch keine Version von HushTelegram.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Keine App auf diesem Handy kann den Link \u00f6ffnen. Die Adresse ist %1$s.");
         table.put("No matching settings",
@@ -270,8 +272,8 @@ public final class L10nTranslations {
                 "Einstellungen importiert. %1$d Schalter wurden ge\u00e4ndert.");
         table.put("Source code and issues",
                 "Quellcode und Issues");
-        table.put("Sponsored messages in channels and video ads",
-                "Gesponserte Nachrichten in Kan\u00e4len und Videowerbung");
+        table.put("Sponsored messages and video ads",
+                "Gesponserte Nachrichten und Videowerbung");
         table.put("Stays in while paused",
                 "Bleibt w\u00e4hrend der Pause aktiv");
         table.put("Stop device statistics",
@@ -284,6 +286,8 @@ public final class L10nTranslations {
                 "Telegram ist dreimal hintereinander innerhalb einer Minute nach dem Start abgest\u00fcrzt oder h\u00e4ngen geblieben, deshalb hat sich HushTelegram selbst pausiert.");
         table.put("Telegram doesn't read your storage folders or send them as a device report when its server asks. Messages and calls work as before.",
                 "Telegram liest deine Speicherordner nicht aus und sendet sie nicht als Ger\u00e4tebericht, wenn sein Server danach fragt. Nachrichten und Anrufe funktionieren wie bisher.");
+        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
+                "Telegram bietet keine Updates von telegram.org mehr an. Sie lie\u00dfen sich nicht \u00fcber diesen gepatchten Build installieren, also patche jede neue Version stattdessen im Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Die Webadressen von Telegram sind in den Android-Einstellungen f\u00fcr diese App ausgew\u00e4hlt, deshalb \u00f6ffnen sich ihre Links hier.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -294,13 +298,13 @@ public final class L10nTranslations {
                 "Diese Datei f\u00fchrt eine Einstellung zweimal auf, daher ist unklar, welcher Wert gilt. Es wurde nichts ge\u00e4ndert.");
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Das ist keine HushTelegram-Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Diese Einstellungsdatei enth\u00e4lt einen Wert, den HushTelegram nicht lesen kann. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Diese Einstellungsdatei ist besch\u00e4digt oder nur teilweise heruntergeladen. Es wurde nichts ge\u00e4ndert.");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
                 "Diese Einstellungsdatei stammt aus einer neueren HushTelegram-Version als dieser. Es wurde nichts ge\u00e4ndert.");
         table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
@@ -345,8 +349,6 @@ public final class L10nTranslations {
                 "Updates");
         table.put("Version",
                 "Version");
-        table.put("Version %1$s for Telegram %2$s",
-                "Version %1$s f\u00fcr Telegram %2$s");
         table.put("You have the newest HushTelegram release.",
                 "Du hast die neueste Version von HushTelegram.");
         table.put("You paused HushTelegram.",
@@ -357,8 +359,6 @@ public final class L10nTranslations {
                 "Deine Einstellungen sind aktiv.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Deine Schalter entsprechen bereits dieser Datei, es \u00e4ndert sich also nichts.");
-        table.put("telegram.org's build stops offering its own updates, which can't install over this patched build. Patch the new version in Morphe Manager instead.",
-                "Der Build von telegram.org bietet keine eigenen Updates mehr an, die sich ohnehin nicht \u00fcber diesen gepatchten Build installieren lie\u00dfen. Patche die neue Version stattdessen im Morphe Manager.");
     }
 
     private static Map<String, String> buildEs() {
@@ -404,8 +404,8 @@ public final class L10nTranslations {
                 "Android verific\u00f3 esta app para las direcciones web de Telegram, as\u00ed que sus enlaces se abren aqu\u00ed.");
         table.put("Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.",
                 "No se abrieron los ajustes de Android para esta app. Abre Informaci\u00f3n de la app desde el icono de Telegram y luego Abrir de forma predeterminada.");
-        table.put("Ask GitHub once a day at startup and show newer releases on the overview. Off by default. Nothing is downloaded.",
-                "Consulta GitHub una vez al d\u00eda al iniciar y muestra nuevas versiones en el resumen. Desactivado por defecto. No descarga nada.");
+        table.put("Ask GitHub once a day when Telegram starts, and show a newer release at the top of these settings. Off by default. Nothing is downloaded.",
+                "Consulta GitHub una vez al d\u00eda al iniciar Telegram y muestra una versi\u00f3n m\u00e1s nueva arriba de estos ajustes. Desactivado por defecto. No descarga nada.");
         table.put("Asks GitHub for the newest release right now, even with the switch above off.",
                 "Pregunta ahora mismo a GitHub por la versi\u00f3n m\u00e1s reciente, aunque el interruptor de arriba est\u00e9 desactivado.");
         table.put("Back",
@@ -525,6 +525,8 @@ public final class L10nTranslations {
                 "Enlaces, actualizaciones, copia de seguridad y m\u00e1s");
         table.put("More settings",
                 "M\u00e1s ajustes");
+        table.put("No HushTelegram release is out yet.",
+                "Todav\u00eda no hay ninguna versi\u00f3n de HushTelegram.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Ninguna app de este tel\u00e9fono puede abrir el enlace. La direcci\u00f3n es %1$s.");
         table.put("No matching settings",
@@ -585,8 +587,8 @@ public final class L10nTranslations {
                 "Configuraci\u00f3n importada. Cambiaron %1$d interruptores.");
         table.put("Source code and issues",
                 "C\u00f3digo fuente e incidencias");
-        table.put("Sponsored messages in channels and video ads",
-                "Mensajes patrocinados en canales y anuncios de video");
+        table.put("Sponsored messages and video ads",
+                "Mensajes patrocinados y anuncios de video");
         table.put("Stays in while paused",
                 "Se mantiene durante la pausa");
         table.put("Stop device statistics",
@@ -599,6 +601,8 @@ public final class L10nTranslations {
                 "Tres veces seguidas, Telegram fall\u00f3 o se congel\u00f3 durante el primer minuto tras iniciarse, as\u00ed que HushTelegram se paus\u00f3 solo.");
         table.put("Telegram doesn't read your storage folders or send them as a device report when its server asks. Messages and calls work as before.",
                 "Telegram no lee tus carpetas de almacenamiento ni las env\u00eda como informe del dispositivo cuando su servidor las pide. Los mensajes y las llamadas funcionan como antes.");
+        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
+                "Telegram deja de ofrecer actualizaciones de telegram.org. No se pueden instalar sobre este build parcheado, as\u00ed que parchea cada versi\u00f3n nueva en Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Las direcciones web de Telegram est\u00e1n seleccionadas para esta app en los ajustes de Android, as\u00ed que sus enlaces se abren aqu\u00ed.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -609,13 +613,13 @@ public final class L10nTranslations {
                 "Ese archivo incluye un ajuste dos veces, as\u00ed que no se sabe qu\u00e9 valor usar. No se cambi\u00f3 nada.");
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Eso no es un archivo de configuraci\u00f3n de HushTelegram. No se cambi\u00f3 nada.");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Ese archivo de configuraci\u00f3n contiene un valor que HushTelegram no puede leer. No se cambi\u00f3 nada.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Ese archivo de configuraci\u00f3n est\u00e1 da\u00f1ado o solo se descarg\u00f3 en parte. No se cambi\u00f3 nada.");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
                 "Ese archivo de configuraci\u00f3n lo escribi\u00f3 una versi\u00f3n de HushTelegram m\u00e1s reciente que esta. No se cambi\u00f3 nada.");
         table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
@@ -660,8 +664,6 @@ public final class L10nTranslations {
                 "Actualizaciones");
         table.put("Version",
                 "Versi\u00f3n");
-        table.put("Version %1$s for Telegram %2$s",
-                "Versi\u00f3n %1$s para Telegram %2$s");
         table.put("You have the newest HushTelegram release.",
                 "Tienes la versi\u00f3n m\u00e1s reciente de HushTelegram.");
         table.put("You paused HushTelegram.",
@@ -672,8 +674,6 @@ public final class L10nTranslations {
                 "Tus controles est\u00e1n activos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Tus interruptores ya coinciden con ese archivo, as\u00ed que no cambiar\u00e1 nada.");
-        table.put("telegram.org's build stops offering its own updates, which can't install over this patched build. Patch the new version in Morphe Manager instead.",
-                "El build de telegram.org deja de ofrecer sus propias actualizaciones, que no se pueden instalar sobre este build parcheado. En su lugar, parchea la nueva versi\u00f3n en Morphe Manager.");
     }
 
     private static Map<String, String> buildIn() {
@@ -719,8 +719,8 @@ public final class L10nTranslations {
                 "Android telah memverifikasi aplikasi ini untuk alamat web Telegram, jadi tautannya terbuka di sini.");
         table.put("Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.",
                 "Pengaturan Android untuk aplikasi ini tidak terbuka. Buka Info aplikasi dari ikon Telegram, lalu Buka secara default.");
-        table.put("Ask GitHub once a day at startup and show newer releases on the overview. Off by default. Nothing is downloaded.",
-                "Periksa GitHub sekali sehari saat mulai dan tampilkan rilis baru di ringkasan. Mati secara bawaan. Tidak mengunduh apa pun.");
+        table.put("Ask GitHub once a day when Telegram starts, and show a newer release at the top of these settings. Off by default. Nothing is downloaded.",
+                "Periksa GitHub sekali sehari saat Telegram dimulai dan tampilkan rilis yang lebih baru di bagian atas pengaturan ini. Mati secara bawaan. Tidak mengunduh apa pun.");
         table.put("Asks GitHub for the newest release right now, even with the switch above off.",
                 "Menanyakan rilis terbaru ke GitHub sekarang juga, meski sakelar di atas mati.");
         table.put("Back",
@@ -840,6 +840,8 @@ public final class L10nTranslations {
                 "Tautan, pembaruan, cadangan, dan lainnya");
         table.put("More settings",
                 "Pengaturan lainnya");
+        table.put("No HushTelegram release is out yet.",
+                "Belum ada rilis HushTelegram.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Tidak ada aplikasi di ponsel ini yang dapat membuka tautan ini. Alamatnya %1$s.");
         table.put("No matching settings",
@@ -900,8 +902,8 @@ public final class L10nTranslations {
                 "Pengaturan diimpor. %1$d sakelar berubah.");
         table.put("Source code and issues",
                 "Kode sumber dan laporan masalah");
-        table.put("Sponsored messages in channels and video ads",
-                "Pesan bersponsor di saluran dan iklan video");
+        table.put("Sponsored messages and video ads",
+                "Pesan bersponsor dan iklan video");
         table.put("Stays in while paused",
                 "Tetap aktif saat dijeda");
         table.put("Stop device statistics",
@@ -914,6 +916,8 @@ public final class L10nTranslations {
                 "Telegram berhenti mendadak atau macet dalam satu menit setelah dibuka, tiga kali berturut-turut, jadi HushTelegram menjeda dirinya sendiri.");
         table.put("Telegram doesn't read your storage folders or send them as a device report when its server asks. Messages and calls work as before.",
                 "Telegram tidak membaca folder penyimpanan Anda atau mengirimkannya sebagai laporan perangkat saat server-nya meminta. Pesan dan panggilan tetap berfungsi seperti biasa.");
+        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
+                "Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Alamat web Telegram dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -924,13 +928,13 @@ public final class L10nTranslations {
                 "File itu mencantumkan satu pengaturan dua kali, jadi tidak jelas nilai mana yang harus dipakai. Tidak ada yang diubah.");
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Itu bukan file pengaturan HushTelegram. Tidak ada yang diubah.");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "File pengaturan itu memuat nilai yang tidak dapat dibaca HushTelegram. Tidak ada yang diubah.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "File pengaturan itu rusak atau hanya terunduh sebagian. Tidak ada yang diubah.");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
                 "File pengaturan itu dibuat oleh versi HushTelegram yang lebih baru daripada versi ini. Tidak ada yang diubah.");
         table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
@@ -975,8 +979,6 @@ public final class L10nTranslations {
                 "Pembaruan");
         table.put("Version",
                 "Versi");
-        table.put("Version %1$s for Telegram %2$s",
-                "Versi %1$s untuk Telegram %2$s");
         table.put("You have the newest HushTelegram release.",
                 "Anda sudah memakai rilis HushTelegram terbaru.");
         table.put("You paused HushTelegram.",
@@ -987,8 +989,6 @@ public final class L10nTranslations {
                 "Kontrol Anda aktif.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Sakelar Anda sudah sesuai dengan file itu, jadi tidak ada yang akan berubah.");
-        table.put("telegram.org's build stops offering its own updates, which can't install over this patched build. Patch the new version in Morphe Manager instead.",
-                "Build dari telegram.org berhenti menawarkan pembaruannya sendiri, yang tidak bisa dipasang di atas build yang sudah di-patch ini. Sebagai gantinya, patch versi baru di Morphe Manager.");
     }
 
     private static Map<String, String> buildPt_rBR() {
@@ -1034,8 +1034,8 @@ public final class L10nTranslations {
                 "O Android verificou este app para os endere\u00e7os web do Telegram, ent\u00e3o os links deles abrem aqui.");
         table.put("Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.",
                 "As configura\u00e7\u00f5es do Android para este app n\u00e3o abriram. Abra Informa\u00e7\u00f5es do app pelo \u00edcone do Telegram e depois Abrir por padr\u00e3o.");
-        table.put("Ask GitHub once a day at startup and show newer releases on the overview. Off by default. Nothing is downloaded.",
-                "Consulta o GitHub uma vez por dia ao iniciar e mostra novas vers\u00f5es na vis\u00e3o geral. Desativado por padr\u00e3o. Nada \u00e9 baixado.");
+        table.put("Ask GitHub once a day when Telegram starts, and show a newer release at the top of these settings. Off by default. Nothing is downloaded.",
+                "Consulta o GitHub uma vez por dia quando o Telegram inicia e mostra uma vers\u00e3o mais nova no topo destas configura\u00e7\u00f5es. Desativado por padr\u00e3o. Nada \u00e9 baixado.");
         table.put("Asks GitHub for the newest release right now, even with the switch above off.",
                 "Consulta o GitHub agora mesmo em busca da vers\u00e3o mais nova, mesmo que a op\u00e7\u00e3o acima esteja desativada.");
         table.put("Back",
@@ -1155,6 +1155,8 @@ public final class L10nTranslations {
                 "Links, atualiza\u00e7\u00f5es, backup e mais");
         table.put("More settings",
                 "Mais configura\u00e7\u00f5es");
+        table.put("No HushTelegram release is out yet.",
+                "Ainda n\u00e3o h\u00e1 nenhuma vers\u00e3o do HushTelegram.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Nenhum aplicativo neste dispositivo consegue abrir o link. O endere\u00e7o \u00e9 %1$s.");
         table.put("No matching settings",
@@ -1215,8 +1217,8 @@ public final class L10nTranslations {
                 "Configura\u00e7\u00f5es importadas. %1$d op\u00e7\u00f5es foram alteradas.");
         table.put("Source code and issues",
                 "C\u00f3digo-fonte e relatos de problemas");
-        table.put("Sponsored messages in channels and video ads",
-                "Mensagens patrocinadas em canais e an\u00fancios em v\u00eddeo");
+        table.put("Sponsored messages and video ads",
+                "Mensagens patrocinadas e an\u00fancios em v\u00eddeo");
         table.put("Stays in while paused",
                 "O que continua ativo na pausa");
         table.put("Stop device statistics",
@@ -1229,6 +1231,8 @@ public final class L10nTranslations {
                 "O Telegram fechou com erro ou travou no primeiro minuto ap\u00f3s iniciar, tr\u00eas vezes seguidas, ent\u00e3o o HushTelegram foi pausado automaticamente.");
         table.put("Telegram doesn't read your storage folders or send them as a device report when its server asks. Messages and calls work as before.",
                 "O Telegram n\u00e3o l\u00ea suas pastas de armazenamento nem as envia como relat\u00f3rio do dispositivo quando o servidor dele pede. Mensagens e chamadas funcionam como antes.");
+        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
+                "O Telegram deixa de oferecer atualiza\u00e7\u00f5es do telegram.org. Elas n\u00e3o podem ser instaladas sobre este build corrigido, ent\u00e3o aplique o patch de cada nova vers\u00e3o pelo Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Os endere\u00e7os web do Telegram est\u00e3o selecionados para este app nas configura\u00e7\u00f5es do Android, ent\u00e3o os links deles abrem aqui.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -1239,13 +1243,13 @@ public final class L10nTranslations {
                 "Esse arquivo cont\u00e9m uma configura\u00e7\u00e3o duplicada, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel saber qual valor usar. Nada foi alterado.");
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Isso n\u00e3o \u00e9 um arquivo de configura\u00e7\u00f5es do HushTelegram. Nada foi alterado.");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Esse arquivo de configura\u00e7\u00f5es tem um valor que o HushTelegram n\u00e3o consegue ler. Nada foi alterado.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Esse arquivo de configura\u00e7\u00f5es est\u00e1 corrompido ou foi baixado apenas parcialmente. Nada foi alterado.");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
                 "Esse arquivo de configura\u00e7\u00f5es foi criado por uma vers\u00e3o do HushTelegram mais nova que esta. Nada foi alterado.");
         table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
@@ -1290,8 +1294,6 @@ public final class L10nTranslations {
                 "Atualiza\u00e7\u00f5es");
         table.put("Version",
                 "Vers\u00e3o");
-        table.put("Version %1$s for Telegram %2$s",
-                "Vers\u00e3o %1$s para o Telegram %2$s");
         table.put("You have the newest HushTelegram release.",
                 "Voc\u00ea j\u00e1 est\u00e1 usando a vers\u00e3o mais nova do HushTelegram.");
         table.put("You paused HushTelegram.",
@@ -1302,8 +1304,6 @@ public final class L10nTranslations {
                 "Seus controles est\u00e3o ativos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Suas op\u00e7\u00f5es j\u00e1 correspondem \u00e0s desse arquivo, ent\u00e3o nada ser\u00e1 alterado.");
-        table.put("telegram.org's build stops offering its own updates, which can't install over this patched build. Patch the new version in Morphe Manager instead.",
-                "O build do telegram.org para de oferecer suas pr\u00f3prias atualiza\u00e7\u00f5es, que n\u00e3o podem ser instaladas sobre este build corrigido. Em vez disso, aplique o patch da nova vers\u00e3o pelo Morphe Manager.");
     }
 
     private static Map<String, String> buildTr() {
@@ -1349,8 +1349,8 @@ public final class L10nTranslations {
                 "Android bu uygulamay\u0131 Telegram'\u0131n web adresleri i\u00e7in do\u011frulad\u0131, bu y\u00fczden ba\u011flant\u0131lar\u0131 burada a\u00e7\u0131l\u0131r.");
         table.put("Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.",
                 "Bu uygulaman\u0131n Android ayarlar\u0131 a\u00e7\u0131lamad\u0131. Telegram simgesinden Uygulama bilgileri'ni, ard\u0131ndan Varsay\u0131lan olarak a\u00e7'\u0131 a\u00e7\u0131n.");
-        table.put("Ask GitHub once a day at startup and show newer releases on the overview. Off by default. Nothing is downloaded.",
-                "Ba\u015flang\u0131\u00e7ta g\u00fcnde bir kez GitHub\u2019\u0131 kontrol eder ve yeni s\u00fcr\u00fcmleri genel bak\u0131\u015fta g\u00f6sterir. Varsay\u0131lan olarak kapal\u0131d\u0131r. Hi\u00e7bir \u015fey indirilmez.");
+        table.put("Ask GitHub once a day when Telegram starts, and show a newer release at the top of these settings. Off by default. Nothing is downloaded.",
+                "Telegram a\u00e7\u0131ld\u0131\u011f\u0131nda g\u00fcnde bir kez GitHub'\u0131 kontrol eder ve daha yeni bir s\u00fcr\u00fcm\u00fc bu ayarlar\u0131n en \u00fcst\u00fcnde g\u00f6sterir. Varsay\u0131lan olarak kapal\u0131d\u0131r. Hi\u00e7bir \u015fey indirilmez.");
         table.put("Asks GitHub for the newest release right now, even with the switch above off.",
                 "Yukar\u0131daki anahtar kapal\u0131 olsa bile GitHub'a en yeni s\u00fcr\u00fcm\u00fc hemen sorar.");
         table.put("Back",
@@ -1470,6 +1470,8 @@ public final class L10nTranslations {
                 "Ba\u011flant\u0131lar, g\u00fcncellemeler, yedekleme ve daha fazlas\u0131");
         table.put("More settings",
                 "Di\u011fer ayarlar");
+        table.put("No HushTelegram release is out yet.",
+                "Hen\u00fcz bir HushTelegram s\u00fcr\u00fcm\u00fc yay\u0131nlanmad\u0131.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Bu telefondaki hi\u00e7bir uygulama ba\u011flant\u0131y\u0131 a\u00e7am\u0131yor. Adres: %1$s.");
         table.put("No matching settings",
@@ -1530,8 +1532,8 @@ public final class L10nTranslations {
                 "Ayarlar i\u00e7e aktar\u0131ld\u0131. %1$d anahtar de\u011fi\u015fti.");
         table.put("Source code and issues",
                 "Kaynak kodu ve sorunlar");
-        table.put("Sponsored messages in channels and video ads",
-                "Kanallardaki sponsorlu mesajlar ve video reklamlar\u0131");
+        table.put("Sponsored messages and video ads",
+                "Sponsorlu mesajlar ve video reklamlar\u0131");
         table.put("Stays in while paused",
                 "Duraklat\u0131lsa da devrede kal\u0131r");
         table.put("Stop device statistics",
@@ -1544,6 +1546,8 @@ public final class L10nTranslations {
                 "Telegram a\u00e7\u0131ld\u0131ktan sonraki bir dakika i\u00e7inde \u00fcst \u00fcste \u00fc\u00e7 kez \u00e7\u00f6kt\u00fc veya dondu, bu y\u00fczden HushTelegram kendini duraklatt\u0131.");
         table.put("Telegram doesn't read your storage folders or send them as a device report when its server asks. Messages and calls work as before.",
                 "Telegram, sunucusu istedi\u011finde depolama klas\u00f6rlerinizi okumaz veya bunlar\u0131 cihaz raporu olarak g\u00f6ndermez. Mesajlar ve aramalar eskisi gibi \u00e7al\u0131\u015f\u0131r.");
+        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
+                "Telegram, telegram.org g\u00fcncellemelerini sunmay\u0131 b\u0131rak\u0131r. Bunlar bu yamal\u0131 s\u00fcr\u00fcm\u00fcn \u00fczerine kurulamaz, bu y\u00fczden her yeni s\u00fcr\u00fcm\u00fc Morphe Manager'da yamala.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Telegram'\u0131n web adresleri Android ayarlar\u0131nda bu uygulama i\u00e7in se\u00e7ili, bu y\u00fczden ba\u011flant\u0131lar\u0131 burada a\u00e7\u0131l\u0131r.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -1554,13 +1558,13 @@ public final class L10nTranslations {
                 "Bu dosyada bir ayar iki kez ge\u00e7iyor, bu y\u00fczden hangi de\u011ferin kullan\u0131laca\u011f\u0131 belli de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Bu bir HushTelegram ayar dosyas\u0131 de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Bu ayar dosyas\u0131nda HushTelegram'un okuyamad\u0131\u011f\u0131 bir de\u011fer var. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Bu ayar dosyas\u0131 hasarl\u0131 ya da yaln\u0131zca bir k\u0131sm\u0131 indirilmi\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
                 "Bu ayar dosyas\u0131, HushTelegram'un bu s\u00fcr\u00fcm\u00fcnden daha yeni bir s\u00fcr\u00fcm\u00fcyle olu\u015fturulmu\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
@@ -1605,8 +1609,6 @@ public final class L10nTranslations {
                 "G\u00fcncellemeler");
         table.put("Version",
                 "S\u00fcr\u00fcm");
-        table.put("Version %1$s for Telegram %2$s",
-                "Telegram %2$s i\u00e7in %1$s s\u00fcr\u00fcm\u00fc");
         table.put("You have the newest HushTelegram release.",
                 "En yeni HushTelegram s\u00fcr\u00fcm\u00fcn\u00fc kullan\u0131yorsun.");
         table.put("You paused HushTelegram.",
@@ -1617,7 +1619,5 @@ public final class L10nTranslations {
                 "Kontrolleriniz etkin.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Anahtarlar\u0131n zaten o dosyayla ayn\u0131, bu y\u00fczden hi\u00e7bir \u015fey de\u011fi\u015fmeyecek.");
-        table.put("telegram.org's build stops offering its own updates, which can't install over this patched build. Patch the new version in Morphe Manager instead.",
-                "telegram.org'un s\u00fcr\u00fcm\u00fc, bu yamal\u0131 s\u00fcr\u00fcm\u00fcn \u00fczerine kurulamayacak kendi g\u00fcncellemelerini sunmay\u0131 durdurur. Bunun yerine yeni s\u00fcr\u00fcm\u00fc Morphe Manager'da yamala.");
     }
 }

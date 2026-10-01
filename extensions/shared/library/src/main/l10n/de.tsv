@@ -63,7 +63,7 @@ Retry	Erneut versuchen
 Save full report	Vollständigen Bericht speichern
 # The release check: its switch and Check now row under Updates, the status card's line about a newer release, and what a failed try says.
 Check for new HushTelegram releases	Nach neuen HushTelegram-Versionen suchen
-Ask GitHub once a day at startup and show newer releases on the overview. Off by default. Nothing is downloaded.	Fragt GitHub einmal täglich beim Start ab und zeigt neue Versionen in der Übersicht. Standardmäßig aus. Es wird nichts heruntergeladen.
+Ask GitHub once a day when Telegram starts, and show a newer release at the top of these settings. Off by default. Nothing is downloaded.	Fragt GitHub einmal täglich beim Start von Telegram ab und zeigt eine neuere Version oben in diesen Einstellungen. Standardmäßig aus. Es wird nichts heruntergeladen.
 Check now	Jetzt prüfen
 Asks GitHub for the newest release right now, even with the switch above off.	Fragt GitHub sofort nach der neuesten Version, auch wenn der Schalter darüber aus ist.
 Checking GitHub now.	GitHub wird gerade gefragt.
@@ -142,7 +142,7 @@ It targets Telegram %1$s.	Es ist für Telegram %1$s gedacht.
 None of Telegram's web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.	Keine Webadresse von Telegram ist für diese App ausgewählt, deshalb öffnen sich ihre Links woanders. Tippe, um sie in den Android-Einstellungen auszuwählen.
 Only some of Telegram's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Nur einige Webadressen von Telegram sind für diese App ausgewählt, und Links zu den übrigen öffnen sich woanders. Tippe, um sie in den Android-Einstellungen auszuwählen.
 Saved. Restart Telegram to apply this change.	Gespeichert. Starte Telegram neu, um diese Änderung zu übernehmen.
-Sponsored messages in channels and video ads	Gesponserte Nachrichten in Kanälen und Videowerbung
+Sponsored messages and video ads	Gesponserte Nachrichten und Videowerbung
 Stop device statistics	Gerätestatistiken stoppen
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	Telegram ist dreimal hintereinander innerhalb einer Minute nach dem Start abgestürzt oder hängen geblieben, deshalb hat sich HushTelegram selbst pausiert.
 Telegram doesn't read your storage folders or send them as a device report when its server asks. Messages and calls work as before.	Telegram liest deine Speicherordner nicht aus und sendet sie nicht als Gerätebericht, wenn sein Server danach fragt. Nachrichten und Anrufe funktionieren wie bisher.
@@ -150,6 +150,6 @@ Telegram's web addresses are selected for this app in Android's settings, so the
 The device statistics report	Der Gerätestatistikbericht
 Try again, or go back to Telegram.	Versuche es noch einmal oder kehre zu Telegram zurück.
 Turn off Telegram's update checks	Telegrams Update-Prüfungen abschalten
-Version %1$s for Telegram %2$s	Version %1$s für Telegram %2$s
 Your choices are saved. Tap Resume, then restart Telegram.	Deine Auswahl bleibt gespeichert. Tippe auf Fortsetzen und starte Telegram dann neu.
-telegram.org's build stops offering its own updates, which can't install over this patched build. Patch the new version in Morphe Manager instead.	Der Build von telegram.org bietet keine eigenen Updates mehr an, die sich ohnehin nicht über diesen gepatchten Build installieren ließen. Patche die neue Version stattdessen im Morphe Manager.
+Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.	Telegram bietet keine Updates von telegram.org mehr an. Sie ließen sich nicht über diesen gepatchten Build installieren, also patche jede neue Version stattdessen im Morphe Manager.
+No HushTelegram release is out yet.	Es gibt noch keine Version von HushTelegram.

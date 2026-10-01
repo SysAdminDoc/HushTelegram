@@ -253,11 +253,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         PreferenceCategory updates = category(screen, L10n.t("Updates"));
         if (build.contains(PatchFamily.DISABLE_UPDATE_CHECKS)) {
             updates.addPreference(toggle(context, Settings.DISABLE_UPDATE_CHECKS, L10n.t("Turn off Telegram's update checks"),
-                    L10n.t("telegram.org's build stops offering its own updates, which can't install over this patched "
-                            + "build. Patch the new version in Morphe Manager instead.")));
+                    L10n.t("Telegram stops offering updates from telegram.org. Those can't install over this patched "
+                            + "build, so patch each new version in Morphe Manager instead.")));
         }
         updates.addPreference(toggle(context, Settings.CHECK_FOR_RELEASES, L10n.t("Check for new HushTelegram releases"),
-                L10n.t("Ask GitHub once a day at startup and show newer releases on the overview. Off by default. Nothing is downloaded.")));
+                L10n.t("Ask GitHub once a day when Telegram starts, and show a newer release at the top of these "
+                        + "settings. Off by default. Nothing is downloaded.")));
         updates.addPreference(checkNowRow(context));
         ReleaseCheck.watch(this);
 
@@ -485,9 +486,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         boolean pausedNext = HushTelegramPause.pausesNextStart(context);
         String status;
         if (!HushTelegramPause.isPaused()) {
-            String version = L10n.f("Version %1$s for Telegram %2$s",
-                    L10n.isolate(Utils.getPatchesReleaseVersion()), L10n.isolate(Utils.getAppVersionName()));
-            status = pausedNext ? version + " " + L10n.t("HushTelegram pauses when Telegram restarts.") : version;
+            // The version lives on the About page. Here it pushed the line that matters below it.
+            status = pausedNext ? L10n.t("HushTelegram pauses when Telegram restarts.") : L10n.t("Your controls are active.");
         } else if (pausedNext) {
             status = pausedSummary(HushTelegramPause.reason(), context.getPackageName())
                     + " " + L10n.t("Tap to turn it back on.");

@@ -63,7 +63,7 @@ Retry	Coba lagi
 Save full report	Simpan laporan lengkap
 # The release check: its switch and Check now row under Updates, the status card's line about a newer release, and what a failed try says.
 Check for new HushTelegram releases	Periksa rilis HushTelegram baru
-Ask GitHub once a day at startup and show newer releases on the overview. Off by default. Nothing is downloaded.	Periksa GitHub sekali sehari saat mulai dan tampilkan rilis baru di ringkasan. Mati secara bawaan. Tidak mengunduh apa pun.
+Ask GitHub once a day when Telegram starts, and show a newer release at the top of these settings. Off by default. Nothing is downloaded.	Periksa GitHub sekali sehari saat Telegram dimulai dan tampilkan rilis yang lebih baru di bagian atas pengaturan ini. Mati secara bawaan. Tidak mengunduh apa pun.
 Check now	Periksa sekarang
 Asks GitHub for the newest release right now, even with the switch above off.	Menanyakan rilis terbaru ke GitHub sekarang juga, meski sakelar di atas mati.
 Checking GitHub now.	Sedang memeriksa GitHub.
@@ -142,7 +142,7 @@ It targets Telegram %1$s.	Rilis ini ditujukan untuk Telegram %1$s.
 None of Telegram's web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.	Tidak ada alamat web Telegram yang dipilih untuk aplikasi ini, jadi tautannya terbuka di tempat lain. Ketuk untuk memilihnya di pengaturan Android.
 Only some of Telegram's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Hanya sebagian alamat web Telegram yang dipilih untuk aplikasi ini, dan tautan ke alamat lainnya terbuka di tempat lain. Ketuk untuk memilihnya di pengaturan Android.
 Saved. Restart Telegram to apply this change.	Tersimpan. Mulai ulang Telegram untuk menerapkan perubahan ini.
-Sponsored messages in channels and video ads	Pesan bersponsor di saluran dan iklan video
+Sponsored messages and video ads	Pesan bersponsor dan iklan video
 Stop device statistics	Hentikan statistik perangkat
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	Telegram berhenti mendadak atau macet dalam satu menit setelah dibuka, tiga kali berturut-turut, jadi HushTelegram menjeda dirinya sendiri.
 Telegram doesn't read your storage folders or send them as a device report when its server asks. Messages and calls work as before.	Telegram tidak membaca folder penyimpanan Anda atau mengirimkannya sebagai laporan perangkat saat server-nya meminta. Pesan dan panggilan tetap berfungsi seperti biasa.
@@ -150,6 +150,6 @@ Telegram's web addresses are selected for this app in Android's settings, so the
 The device statistics report	Laporan statistik perangkat
 Try again, or go back to Telegram.	Coba lagi, atau kembali ke Telegram.
 Turn off Telegram's update checks	Matikan pemeriksaan pembaruan Telegram
-Version %1$s for Telegram %2$s	Versi %1$s untuk Telegram %2$s
 Your choices are saved. Tap Resume, then restart Telegram.	Pilihan Anda tersimpan. Ketuk Lanjutkan, lalu mulai ulang Telegram.
-telegram.org's build stops offering its own updates, which can't install over this patched build. Patch the new version in Morphe Manager instead.	Build dari telegram.org berhenti menawarkan pembaruannya sendiri, yang tidak bisa dipasang di atas build yang sudah di-patch ini. Sebagai gantinya, patch versi baru di Morphe Manager.
+Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.	Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.
+No HushTelegram release is out yet.	Belum ada rilis HushTelegram.
