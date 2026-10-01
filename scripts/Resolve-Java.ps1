@@ -92,7 +92,12 @@ function Resolve-Java {
         if ($seen.ContainsKey($candidate)) { continue }
         $seen[$candidate] = $true
         $version = Get-JavaMajorVersion -Java $candidate
-        if ($version -ge $Minimum) { return $candidate }
+        if ($version -ge $Minimum) {
+            # Callers also locate javac beside Java. Return the executable actually selected
+            # by PATH rather than the command name, and keep the first matching application.
+            return (Get-Command -Name $candidate -CommandType Application -ErrorAction Stop |
+                Select-Object -First 1).Path
+        }
         $rejected += if ($version -gt 0) { "$candidate is Java $version" } else { "$candidate would not run" }
     }
 
