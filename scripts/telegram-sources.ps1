@@ -21,6 +21,9 @@
       catalog declares among them. A provenance rule can't name a source the ledger doesn't allow.
     - Every index people find patch sources through records whether HushTelegram is listed there,
       when that was checked, or the dated submission.
+    - Optional patchCounts records counts per declared package, separately from the feature union.
+      An outOfScope reference can pin historical client research with the date its archive status
+      was verified. An unknown archive date is null, never the verification date.
 
     scripts/audit-telegram-sources.ps1 refreshes the ledger against those indexes and the forges.
     validate-release-facts.ps1 refuses a release whose census is more than two weeks old. Nothing in
@@ -344,6 +347,27 @@ function Test-SourceLedger {
         if (@(Get-SourceProperty $entry 'features' | Where-Object { -not [string]::IsNullOrWhiteSpace("$_") }).Count -eq 0) {
             $problems.Add("$label names no features.")
         }
+        if ($null -ne $entry.PSObject.Properties['patchCounts']) {
+            # Keep the JSON container type. The general property helper enumerates arrays.
+            $counts = $entry.PSObject.Properties['patchCounts'].Value
+            if ($null -eq $counts -or $counts -isnot [pscustomobject]) {
+                $problems.Add("$label patchCounts must be an object of per-package counts.")
+            } else {
+                foreach ($package in $entryPackages) {
+                    if ($null -eq $counts.PSObject.Properties[$package]) {
+                        $problems.Add("$label patchCounts records no count for $package.")
+                    }
+                }
+                foreach ($count in $counts.PSObject.Properties) {
+                    if ($entryPackages -notcontains $count.Name) {
+                        $problems.Add("$label patchCounts names undeclared package '$($count.Name)'.")
+                    }
+                    if (($count.Value -isnot [int] -and $count.Value -isnot [long]) -or $count.Value -lt 1) {
+                        $problems.Add("$label patchCounts for $($count.Name) must be a positive integer.")
+                    }
+                }
+            }
+        }
 
         $branches = @(Get-SourceProperty $entry 'branches' | Where-Object { $null -ne $_ })
         if ($branches.Count -eq 0) { $problems.Add("$label pins no branch.") }
@@ -434,6 +458,53 @@ function Test-SourceLedger {
             $problems.Add("outOfScope $repository gives no reason.")
         }
         Add-DateProblem (Get-SourceProperty $item 'lastChecked') "outOfScope $repository lastChecked"
+        if ($null -ne $item.PSObject.Properties['reference']) {
+            $reference = $item.PSObject.Properties['reference'].Value
+            $label = "outOfScope $repository reference"
+            if ($null -eq $reference -or $reference -isnot [pscustomobject]) {
+                $problems.Add("$label must be an object.")
+                continue
+            }
+            foreach ($name in @('kind', 'branch', 'commit', 'verifiedAt')) {
+                $property = $reference.PSObject.Properties[$name]
+                if ($null -eq $property -or $property.Value -isnot [string]) {
+                    $problems.Add("$label $name must be a string.")
+                }
+            }
+            $referenceKind = [string](Get-SourceProperty $reference 'kind')
+            if ($referenceKind -notin @('historical', 'maintained')) {
+                $problems.Add("$label kind must be historical or maintained.")
+            }
+            if ([string]::IsNullOrWhiteSpace([string](Get-SourceProperty $reference 'branch')) -or
+                    [string](Get-SourceProperty $reference 'commit') -notmatch '^[0-9a-f]{40}$') {
+                $problems.Add("$label needs a branch and pinned commit (40 hex characters).")
+            }
+            $archiveProperty = $reference.PSObject.Properties['archived']
+            $archived = Get-SourceProperty $reference 'archived'
+            if ($null -eq $archiveProperty -or $archiveProperty.Value -isnot [bool]) {
+                $problems.Add("$label must say whether it is archived.")
+            }
+            if ($archived -eq $true -and $referenceKind -ne 'historical') {
+                $problems.Add("$label is archived, so its kind must be historical.")
+            }
+            $verifiedAt = Get-SourceProperty $reference 'verifiedAt'
+            Add-DateProblem $verifiedAt "$label verifiedAt"
+            $archiveDateProperty = $reference.PSObject.Properties['archivedAt']
+            $archivedAt = Get-SourceProperty $reference 'archivedAt'
+            if ($null -eq $archiveDateProperty) {
+                $problems.Add("$label must record archivedAt as a date or null when unknown.")
+            } elseif ($null -ne $archiveDateProperty.Value -and $archiveDateProperty.Value -isnot [string]) {
+                $problems.Add("$label archivedAt must be a date string or null when unknown.")
+            } elseif ($null -ne $archivedAt) {
+                Add-DateProblem $archivedAt "$label archivedAt"
+                if ($archived -ne $true) { $problems.Add("$label records archivedAt but is not archived.") }
+                $archiveDate = Test-SourceDate $archivedAt
+                $verificationDate = Test-SourceDate $verifiedAt
+                if ($null -ne $archiveDate -and $null -ne $verificationDate -and $archiveDate -gt $verificationDate) {
+                    $problems.Add("$label archivedAt is after verifiedAt.")
+                }
+            }
+        }
     }
 
     # The adopted gates, and provenance.json held to the ledger.

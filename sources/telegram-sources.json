@@ -132,6 +132,11 @@
           "12.10.1"
         ]
       },
+      "patchCounts": {
+        "org.telegram.messenger": 14,
+        "org.telegram.messenger.web": 14,
+        "org.telegram.plus": 15
+      },
       "features": [
         "Remove ads",
         "Disable analytics",
@@ -165,7 +170,7 @@
       },
       "contaminatedBy": null,
       "disposition": "candidate",
-      "reason": "The most complete live Telegram set, part of a large multi-app bundle, added from 2026-08-07. Its signature chain (seed Telegram's DER certificate, then answer Telegram's fingerprint check and Firebase's certificate hash with it) is the known fix for the Firebase 403 a re-signed build gets, which HushTelegram reproduced on the S22 with 12.10.6. That chain is the first port to weigh. Premium, restriction bypass and anti-screenshot-notification patches are rejected for HushTelegram.",
+      "reason": "The pinned set has 14 patches for standard and web Telegram 12.10.1, and 15 for Plus Messenger. The features list is their union, not a count for each package. Its signature chain seeds Telegram's DER certificate and answers Telegram's fingerprint check and Firebase's certificate hash. That is a candidate for restoring push registration on a re-signed build. Listing a feature does not approve it for HushTelegram. Premium, restriction bypass and anti-screenshot-notification patches remain rejected.",
       "archived": false,
       "forks": [],
       "contentHashes": [],
@@ -508,7 +513,8 @@
       },
       "features": [
         "Remove sponsored messages",
-        "Allow saving restricted content"
+        "Allow saving restricted content",
+        "Lazy attachment-camera preview construction"
       ],
       "branches": [
         {
@@ -526,7 +532,7 @@
       },
       "contaminatedBy": null,
       "disposition": "candidate",
-      "reason": "A small Killergram rewrite for Cherrygram and OctoGram with official Telegram's packages in its restart list. Adds nothing Killergram doesn't have.",
+      "reason": "A Killergram rewrite with additional camera and UI hooks. Lazy attachment-camera preview construction is a candidate for keeping gallery selection separate from camera initialization. The pinned Xposed hooks are research references, not maintained dependencies or accepted HushTelegram features. Restricted-content saving remains rejected.",
       "archived": false,
       "forks": [],
       "contentHashes": [],
@@ -557,7 +563,7 @@
     },
     {
       "repository": "https://github.com/Nekogram/Nekogram",
-      "reason": "A Telegram fork, a whole client with its own package, so not a patch source. Hide Stories (NekoConfig.hideStories in StoriesController) and its download speed boost are the ideas. Two public write-ups report it sending phone numbers to its developer, so its network and account code is never a reference.",
+      "reason": "A Telegram fork, a whole client with its own package, so not a patch source or a HushTelegram dependency. Hide Stories (NekoConfig.hideStories in StoriesController) and its download speed boost are research candidates. A listed feature still needs its own behavior and privacy review.",
       "lastChecked": "2026-10-01"
     },
     {
@@ -567,7 +573,15 @@
     },
     {
       "repository": "https://github.com/risin42/NagramX",
-      "reason": "A Telegram fork, a whole client with its own package, so not a patch source. A Nagram superset with frequent feature drops.",
+      "reason": "A Telegram fork with its own package. Its repository was verified archived on 2026-10-01, but the archive date is unknown. The pinned dev branch and paste/transfer reports are historical research references, not evidence of current maintenance or a HushTelegram dependency.",
+      "reference": {
+        "kind": "historical",
+        "branch": "dev",
+        "commit": "2db685af00a4352c877ecf96474cbf0494284715",
+        "archived": true,
+        "verifiedAt": "2026-10-01",
+        "archivedAt": null
+      },
       "lastChecked": "2026-10-01"
     },
     {
@@ -612,7 +626,7 @@
     },
     {
       "repository": "https://github.com/opensource-compliance-gh/plus-messenger-gpl",
-      "reason": "A write-up on Plus Messenger (org.telegram.plus), which hasn't published source since 2017 and is documented doing harmful things. Never a reference.",
+      "reason": "A third-party write-up about Plus Messenger (org.telegram.plus), not the client's source or a patch source. Several recorded bundles target Plus, but HushTelegram targets official Telegram. This write-up supplies no code or maintained dependency.",
       "lastChecked": "2026-10-01"
     },
     {

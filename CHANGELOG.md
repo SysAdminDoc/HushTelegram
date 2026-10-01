@@ -10,6 +10,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** Diagnostic exports remove named chat, dialog, peer and channel IDs, access hashes, phone values and short Telegram deep links. Version, timestamp and counter fields stay readable.
 * **Telegram:** Usage-report counters distinguish reports Telegram requested from calls that were not requested or were already handled. A state lookup failure keeps Telegram's own behavior and appears in diagnostics.
 * **Tooling:** Targeted settings tests now cover Android 9, 13 and 16 for backups, cancellation, busy-state recovery, navigation, accessibility and large-text recovery screens.
+* **Tooling:** The source ledger distinguishes Rush's package-specific patch counts, KillergramNeo's camera and UI candidates, and NagramX's archived reference status. Census refreshes preserve reviewed commits and historical verification dates.
 
 ## 0.0.4 (2026-10-01)
 

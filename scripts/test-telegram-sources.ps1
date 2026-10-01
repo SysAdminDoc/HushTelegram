@@ -77,6 +77,24 @@ $entries = @($ledger.entries)
 foreach ($package in Get-SourcePackages) {
     Assert-True (@($entries | Where-Object { @($_.packages) -contains $package }).Count -gt 0) "The checked-in ledger has no $package source."
 }
+# These pinned research facts distinguish a feature union, a camera candidate and an archived
+# reference. None changes a source's adoption status or the commit in an adopted provenance rule.
+$rush = @($entries | Where-Object { $_.id -eq 'rushiranpise' })[0]
+Assert-True ($rush.branches[0].name -eq 'main' -and $rush.branches[0].commit -eq 'e3bb3af54e13ecfac60eb8bf9bdf287330f0529f' -and
+    $rush.patchCounts.'org.telegram.messenger' -eq 14 -and $rush.patchCounts.'org.telegram.messenger.web' -eq 14 -and
+    $rush.patchCounts.'org.telegram.plus' -eq 15 -and @($rush.features).Count -eq 15) `
+    'Rush must keep its pinned union separate from the 14 standard/web and 15 Plus patches.'
+$neo = @($entries | Where-Object { $_.id -eq 'killergram-neo' })[0]
+Assert-True ($neo.branches[0].name -eq 'master' -and $neo.branches[0].commit -eq '663dc422920ebcc838b48a05ccd69234d908541c' -and
+    $neo.features -contains 'Lazy attachment-camera preview construction' -and $neo.reason -like '*camera and UI hooks*' -and
+    $neo.disposition -eq 'candidate') `
+    'KillergramNeo must retain the pinned camera candidate without claiming it was adopted.'
+$nagramRepository = 'https://github.com/risin42/NagramX'
+$nagram = @($ledger.outOfScope | Where-Object { $_.repository -eq $nagramRepository })[0]
+Assert-True ($nagram.reference.kind -eq 'historical' -and $nagram.reference.branch -eq 'dev' -and
+    $nagram.reference.commit -eq '2db685af00a4352c877ecf96474cbf0494284715' -and $nagram.reference.archived -eq $true -and
+    $nagram.reference.verifiedAt -eq '2026-10-01' -and $null -eq $nagram.reference.archivedAt) `
+    'NagramX must remain a pinned historical reference with an unknown archive date.'
 
 # Fixture sources for the rules the checked-in ledger has nothing to test with: it adopts nothing
 # and holds no unlicensed or contaminated source. The rule cases below add them to a copy, with the
@@ -161,6 +179,13 @@ function Test-SourcesDoc {
 $sourcesDoc = [IO.File]::ReadAllText((Join-Path $Root 'docs/sources.md'))
 $docProblems = @(Test-SourcesDoc $sourcesDoc)
 Assert-True ($docProblems.Count -eq 0) ($docProblems -join ' | ')
+Assert-True ($sourcesDoc.Contains('14 patches for standard and web Telegram 12.10.1, and 15 for Plus Messenger') -and
+    $sourcesDoc.Contains($rush.branches[0].commit) -and $sourcesDoc.Contains($neo.branches[0].commit) -and
+    $sourcesDoc.Contains($nagram.reference.commit) -and $sourcesDoc.Contains('verified archived on 2026-10-01') -and
+    $sourcesDoc.Contains("Its archive date wasn't established.")) 'The source document lost a pinned classification or package count.'
+$staleClaims = '(?i)Adds nothing Killergram|frequent feature drops|fifteen Telegram patches for 12\.10\.1, on both packages|sending (?:users.? )?phone numbers to its developer|documented doing harmful things'
+Assert-True (([IO.File]::ReadAllText($ledgerPath) + $sourcesDoc) -notmatch $staleClaims) `
+    'The source ledger or its document restored a stale classification or unsupported client allegation.'
 $docEntries = @((Add-RuleFixtures (Copy-Json $ledger)).entries)
 $contaminated = @($docEntries | Where-Object { $_.id -eq 'fixture-contaminated' })[0]
 $oldLine = "- [fixture-owner/contaminated-patches]($($contaminated.repository)) (GPL-3.0) ports those hooks. Its code can be ported with credit."
@@ -291,6 +316,50 @@ Test-Broken { param($c) $c.entries[0].license = [pscustomobject]@{ spdx = 'GPL-3
     '*licence has no sha256*' 'A licence with no hash'
 Test-Broken { param($c) $c.entries[0].lineage = '' } '*names no lineage*' 'A source with no lineage'
 
+# Optional per-package counts must be complete and typed, without turning the feature union into
+# a per-package count. Reference pins and archive verification have their own meaning and date.
+Test-Broken { param($c) (Get-Entry $c 'rushiranpise').patchCounts = @() } '*patchCounts must be an object*' `
+    'Per-package patch counts recorded as an array'
+Test-Broken { param($c) $e = Get-Entry $c 'rushiranpise'; $e.patchCounts = @($e.patchCounts) } '*patchCounts must be an object*' `
+    'Per-package patch counts hidden inside a one-item array'
+Test-Broken { param($c) (Get-Entry $c 'rushiranpise').patchCounts.PSObject.Properties.Remove('org.telegram.plus') } `
+    '*patchCounts records no count for org.telegram.plus*' 'Per-package counts omitting a declared fork'
+Test-Broken { param($c) (Get-Entry $c 'rushiranpise').patchCounts | Add-Member -NotePropertyName 'com.whatsapp' -NotePropertyValue 14 } `
+    '*patchCounts names undeclared package*' 'A count for an undeclared package'
+foreach ($invalidCount in @('14', 14.5, 0, -1, $null)) {
+    Test-Broken { param($c) (Get-Entry $c 'rushiranpise').patchCounts.'org.telegram.messenger.web' = $invalidCount } `
+        '*patchCounts*must be a positive integer*' "An invalid per-package count '$invalidCount'"
+}
+function Get-NagramReference { param($Copy) return @($Copy.outOfScope | Where-Object { $_.repository -eq $nagramRepository })[0].reference }
+Test-Broken { param($c) $item = @($c.outOfScope | Where-Object { $_.repository -eq $nagramRepository })[0]; $item.reference = @($item.reference) } `
+    '*reference must be an object*' 'A reference hidden inside a one-item array'
+Test-Broken { param($c) (Get-NagramReference $c).commit = 'dev' } '*reference needs a branch and pinned commit*' `
+    'A historical reference with a moving branch instead of a commit'
+Test-Broken { param($c) (Get-NagramReference $c).branch = '' } '*reference needs a branch and pinned commit*' `
+    'A historical reference with no branch'
+Test-Broken { param($c) (Get-NagramReference $c).kind = 'dependency' } '*reference kind must be historical or maintained*' `
+    'Research recorded as a dependency'
+Test-Broken { param($c) (Get-NagramReference $c).kind = 'maintained' } '*is archived, so its kind must be historical*' `
+    'An archived reference classified as maintained'
+Test-Broken { param($c) (Get-NagramReference $c).archived = 'true' } '*reference must say whether it is archived*' `
+    'A string used for archive status'
+Test-Broken { param($c) (Get-NagramReference $c).archived = @($true) } '*reference must say whether it is archived*' `
+    'An array used for archive status'
+Test-Broken { param($c) (Get-NagramReference $c).verifiedAt = @('2026-10-01') } '*reference verifiedAt must be a string*' `
+    'An array used for the verification date'
+Test-Broken { param($c) (Get-NagramReference $c).verifiedAt = $null } '*reference verifiedAt is not a yyyy-MM-dd date*' `
+    'Archive status with no verification date'
+Test-Broken { param($c) (Get-NagramReference $c).verifiedAt = '2999-01-01' } '*reference verifiedAt is 2999-01-01, after today*' `
+    'Archive status verified in the future'
+Test-Broken { param($c) (Get-NagramReference $c).PSObject.Properties.Remove('archivedAt') } '*must record archivedAt as a date or null*' `
+    'An unknown archive date omitted instead of recorded as null'
+Test-Broken { param($c) (Get-NagramReference $c).archivedAt = @('2026-10-01') } '*reference archivedAt must be a date string or null*' `
+    'An array used for the archive date'
+Test-Broken { param($c) (Get-NagramReference $c).archivedAt = '2026-10-02' } '*reference archivedAt is after verifiedAt*' `
+    'An archive date after its verification'
+Test-Broken { param($c) $r = Get-NagramReference $c; $r.archived = $false; $r.archivedAt = '2026-09-01' } `
+    '*records archivedAt but is not archived*' 'An unarchived reference with an archive date'
+
 Write-Host '[sources] every ledger rule refuses the copy that breaks it'
 
 # --- the census and the listings a release is held to ----------------------------------------------
@@ -331,7 +400,13 @@ function Save-GateLedger {
     # Every date the audit's clean run stamps is set here, or a ledger stamped after these fixed
     # days would put a record after the gate's today and fail the case for the wrong reason.
     foreach ($entry in $copy.entries) { $entry.lastChecked = $CheckedAt }
-    foreach ($item in @($copy.outOfScope)) { $item.lastChecked = $CheckedAt }
+    foreach ($item in @($copy.outOfScope)) {
+        $item.lastChecked = $CheckedAt
+        # This synthetic gate runs in September. Its reference verification must also be in that
+        # fictional period; the audit case below proves a real census leaves verifiedAt alone.
+        $reference = Get-SourceProperty $item 'reference'
+        if ($null -ne $reference) { $reference.verifiedAt = $CheckedAt }
+    }
     [IO.File]::WriteAllText((Get-SourceLedgerPath -Root $gateRoot), ($copy | ConvertTo-Json -Depth 20))
 }
 Save-GateLedger -CheckedAt '2026-09-25'
@@ -398,6 +473,7 @@ $fixtureLedger = [ordered]@{
     entries = @(
         [ordered]@{ id = 'alpha'; repository = 'https://github.com/fixture-owner/alpha-patches'; lineage = 'alpha'; upstream = $null
             kind = 'morphe-patches'; packages = @('org.telegram.messenger.web'); targetVersions = [ordered]@{ 'org.telegram.messenger.web' = @('12.10.6') }
+            patchCounts = [ordered]@{ 'org.telegram.messenger.web' = 1 }
             features = @('Hide ads'); branches = @([ordered]@{ name = 'main'; commit = $commitA1 }); watchPaths = @()
             license = [ordered]@{ spdx = 'GPL-3.0'; url = "https://github.com/fixture-owner/alpha-patches/blob/$commitA1/LICENSE"; sha256 = $licenseHash }
             contaminatedBy = $null; disposition = 'adopted'; reason = 'A fixture source.'; archived = $false
@@ -417,7 +493,9 @@ $fixtureLedger = [ordered]@{
             contaminatedBy = $null; disposition = 'candidate'; reason = 'A fixture GitLab source.'; archived = $false
             forks = @(); contentHashes = @(); mirrors = @(); lastChecked = '2026-09-01' }
     )
-    outOfScope = @([ordered]@{ repository = 'https://github.com/noise/mentions-telegram'; reason = 'Names the package in a list.'; lastChecked = '2026-09-01' })
+    outOfScope = @([ordered]@{ repository = 'https://github.com/noise/mentions-telegram'; reason = 'A historical client reference.'
+        reference = [ordered]@{ kind = 'historical'; branch = 'dev'; commit = ('d1' * 20); archived = $true; verifiedAt = '2026-08-27'; archivedAt = $null }
+        lastChecked = '2026-09-01' })
 }
 $fixtureLedgerText = ($fixtureLedger | ConvertTo-Json -Depth 20) -replace "`r`n", "`n"
 function Reset-FixtureLedger { [IO.File]::WriteAllText($fixtureLedgerPath, $fixtureLedgerText, (New-Object Text.UTF8Encoding $false)) }
@@ -578,6 +656,10 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     Assert-True ($stampedLedger.census.checkedAt -eq '2026-09-25' -and @($stampedLedger.entries | Where-Object { $_.lastChecked -ne '2026-09-25' }).Count -eq 0 -and
         $stampedLedger.indexes[2].hushtelegram.checked -eq '2026-09-25' -and $stampedLedger.indexes[1].hushtelegram.submitted -eq '2026-09-01') `
         'The clean audit did not stamp the census and every checked record with today, or it moved a submission date.'
+    Assert-True ($stampedLedger.outOfScope[0].reference.verifiedAt -eq '2026-08-27' -and
+        $null -eq $stampedLedger.outOfScope[0].reference.archivedAt -and $stampedLedger.outOfScope[0].reference.commit -eq ('d1' * 20) -and
+        $stampedLedger.entries[0].patchCounts.'org.telegram.messenger.web' -eq 1 -and $stampedLedger.entries[0].adopted.commit -eq $adoptedCommit) `
+        'The census stamp moved historical verification, invented an archive date, or changed patch counts or adoption pins.'
     $after = Get-TreeState
     $changed = @(Compare-Object $before $after | ForEach-Object { ($_.InputObject -split ' ')[0] } | Sort-Object -Unique)
     Assert-True ($changed.Count -eq 1 -and $changed[0] -like '*telegram-sources.json') `
