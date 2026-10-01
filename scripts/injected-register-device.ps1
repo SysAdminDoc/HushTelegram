@@ -47,7 +47,7 @@ function Invoke-AndroidVerifierTally {
     $remote = "/data/local/tmp/hushtelegram-verify-$Label.apk"
     $directory = "/data/local/tmp/hushtelegram-verify-$Label"
     $primaryFailure = $null
-    # A clean Meta build can raise no verifier message at all (the Facebook sibling's never did), so
+    # A clean telegram.org build can raise no verifier message at all (the Facebook sibling's never did), so
     # an empty tally is a real answer here, and the proof that dex2oat verified anything has to
     # come from elsewhere: it read a file of
     # the pushed size, and it didn't log that the file was missing. dex2oat exits 0 on a missing

@@ -707,7 +707,7 @@ function Test-ChangelogManagerEntry {
     param(
         [Parameter(Mandatory = $true)][string]$Current,
         [Parameter(Mandatory = $true)][string]$ExpectedVersion,
-        [string]$App = 'Telegram's
+        [string]$App = 'Telegram'
     )
 
     function Fail { param([string]$Reason) return [pscustomobject]@{ Valid = $false; Reason = $Reason; Date = $null; Bullets = 0 } }

@@ -19,9 +19,9 @@
     HushTelegram has no bundled calibration list until a second Telegram build is confirmed, so the
     wrapper's -Calibrate has to refuse a run with no list or no builds named. Then the wrapper
     calibrates the Telegram fixture in HUSHTELEGRAM_FIXTURE_DIR against itself, named by its version,
-    on the method every patch starts from, BarcelonaAppShell.onCreate: it has to rank first and stand
+    on the method every patch starts from, ApplicationLoader.onCreate: it has to rank first and stand
     out, and the report has to show the candidate's prototype, strings, literals, opcode sketch,
-    references and call neighbourhood. That run reads the real XAPK's base, all 13 dex files of it.
+    references and call neighbourhood. That run reads the real APK's own dex files, all 4 of them.
 
     Through all of it, nothing under patches/ may change, and an output path there, or one ending in
     .kt or .java, has to be refused by both the tool and the wrapper. The tool has to refuse it
@@ -351,18 +351,18 @@ try {
     # A real Telegram build, named by its version the way a maintainer names it, against itself. The
     # Application's onCreate keeps its class and name on every build, and every patch starts there.
     $fixtures = if ($env:HUSHTELEGRAM_FIXTURE_DIR) { $env:HUSHTELEGRAM_FIXTURE_DIR } else { Join-Path $Root 'fixtures' }
-    $threadsVersion = '449.0.0.54.82'
+    $telegramVersion = '12.10.6'
     Assert-True (@(Get-ChildItem -LiteralPath $fixtures -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name.Contains($threadsVersion) }).Count -eq 1) `
-        ("The real-build case needs Telegram $threadsVersion in $fixtures, the folder HUSHTELEGRAM_FIXTURE_DIR names. " +
+        Where-Object { $_.Name.Contains($telegramVersion) }).Count -eq 1) `
+        ("The real-build case needs Telegram $telegramVersion in $fixtures, the folder HUSHTELEGRAM_FIXTURE_DIR names. " +
             'Without it the tool is never run on a real build, so this fails rather than skipping.')
-    $appShell = 'Lcom/instagram/barcelona/app/BarcelonaAppShell;->onCreate()V'
-    $realCalibration = Join-Path $caseRoot 'threads-calibration.txt'
+    $appShell = 'Lorg/telegram/messenger/ApplicationLoader;->onCreate()V'
+    $realCalibration = Join-Path $caseRoot 'telegram-calibration.txt'
     [System.IO.File]::WriteAllLines($realCalibration, [string[]]@('case app-shell-create', '  patch Extension', "  old $appShell",
         "  new $appShell", '  evidence The same build on both sides.'))
     $caseIds = @('app-shell-create')
     $calibrationReport = Join-Path $caseRoot 'calibration.txt'
-    $calibrated = Invoke-Wrapper @('-Calibrate', '-CalibrationPath', $realCalibration, '-OldApk', $threadsVersion, '-NewApk', $threadsVersion,
+    $calibrated = Invoke-Wrapper @('-Calibrate', '-CalibrationPath', $realCalibration, '-OldApk', $telegramVersion, '-NewApk', $telegramVersion,
         '-ReportPath', $calibrationReport, '-Java', $Java, '-DesktopJar', $DesktopJar, '-Root', $Root)
     Assert-True ($calibrated.ExitCode -eq 0 -and
         @($calibrated.Output | Where-Object { $_ -match '^\[fingerprint\] case app-shell-create rank 1 score [0-9.]+ ok stands-out$' }).Count -eq 1) `

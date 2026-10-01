@@ -8,7 +8,7 @@
     went. This runs scripts/FingerprintCandidates.java to do the looking.
 
     It captures the method's signature from the build the patch works on: its strings, its literals
-    with the version bytes Meta changes masked, the references it makes with the obfuscated names
+    with the version bytes telegram.org changes masked, the references it makes with the obfuscated names
     taken out, an opcode sketch, its prototype, its class and its callers. Then it ranks every method
     of the new build against that and writes a report with the evidence for each candidate. The
     signature's format is scripts/fingerprint-signature.schema.json, so one captured today still
@@ -25,21 +25,21 @@
     build and the transitions confirmed on it, so until then -Calibrate takes -CalibrationPath.
 
     An APK argument is a path to an .apk, .apkm or .xapk, or a version that names exactly one fixture
-    in the folder HUSHTELEGRAM_FIXTURE_DIR names, such as 449 or 449.0.0.54.82.
+    in the folder HUSHTELEGRAM_FIXTURE_DIR names, such as 12.10.6 or 12.10.6-71129.
 
 .EXAMPLE
-    scripts/fingerprint-candidates.ps1 -OldApk 448 -Method '<descriptor>' -NewApk 449
+    scripts/fingerprint-candidates.ps1 -OldApk 12.10.5 -Method '<descriptor>' -NewApk 12.10.6
 
 .EXAMPLE
-    scripts/fingerprint-candidates.ps1 -OldApk 449 -Method '<descriptor>' -SignaturePath feed-merge.json
+    scripts/fingerprint-candidates.ps1 -OldApk 12.10.6 -Method '<descriptor>' -SignaturePath feed-merge.json
 
     Captures the signature only, for a build that isn't out yet.
 
 .EXAMPLE
-    scripts/fingerprint-candidates.ps1 -Signature feed-merge.json -NewApk C:\bundles\threads-450.xapk
+    scripts/fingerprint-candidates.ps1 -Signature feed-merge.json -NewApk C:\bundles\telegram-12.10.7.xapk
 
 .EXAMPLE
-    scripts/fingerprint-candidates.ps1 -Calibrate -CalibrationPath 449-to-450.txt -OldApk 449 -NewApk 450
+    scripts/fingerprint-candidates.ps1 -Calibrate -CalibrationPath 12.10.6-to-12.10.7.txt -OldApk 12.10.6 -NewApk 12.10.7
 
     Checks the ranking against transitions confirmed on a later pair of builds.
 #>

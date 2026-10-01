@@ -220,14 +220,14 @@ function Get-BaseApk {
         aapt2 and the resource check read an APK. The base APK holds the manifest and the app's own
         resource table; the splits hold densities, languages and native code. An .apks or .apkm
         names it base.apk. An .xapk names it after the package and says so in its manifest.json,
-        and its config.arm64_v8a split is the larger file (67 MB to the base's 64 MB on 449), so
-        size alone picked the split. The largest APK that isn't a config or split_ file is the
-        fallback when nothing names the base, and the largest of any is the last resort.
+        and its config.arm64_v8a split can be the larger file, so size alone can pick the wrong
+        one. The largest APK that isn't a config or split_ file is the fallback when nothing names
+        the base, and the largest of any is the last resort.
 
         Both paths are resolved against PowerShell's location before .NET sees them, and the
         answer is a full path. .NET reads a relative path against the process's own directory,
         which a hook, a scheduled task or a session that moved with Set-Location leaves somewhere
-        else: `-Apk fixtures\threads.xapk` then named a file that wasn't there.
+        else: `-Apk fixtures\telegram.xapk` then named a file that wasn't there.
     #>
     param(
         [Parameter(Mandatory = $true)][string]$Apk,

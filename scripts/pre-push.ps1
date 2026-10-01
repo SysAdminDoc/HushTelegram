@@ -520,7 +520,7 @@ try {
     }).Count -gt 0
     # The source ledger's rules read NOTICE, provenance.json and the catalog's declared builds, and
     # hold docs/sources.md to the ledger, so a push of any of them runs the ledger's suite too.
-    $threadsSourcePaths = @(
+    $telegramSourcePaths = @(
         'NOTICE',
         'docs/sources.md',
         'patches-list.json',
@@ -531,8 +531,8 @@ try {
         'scripts/test-telegram-sources.ps1',
         'sources/telegram-sources.json'
     )
-    $touchesThreadsSources = @($paths | Where-Object {
-        $_ -in $threadsSourcePaths
+    $touchesTelegramSources = @($paths | Where-Object {
+        $_ -in $telegramSourcePaths
     }).Count -gt 0
     $touchesRelease = @($paths | Where-Object {
         $_ -eq 'patches-bundle.json' -or $_ -eq 'patches-list.json' -or
@@ -587,7 +587,7 @@ try {
         $head = $null
         $dirty = @()
         $gateCommits = @($null)
-    } elseif ($touchesCode -or $touchesRelease -or $touchesScripts -or $touchesContracts -or $touchesThreadsSources) {
+    } elseif ($touchesCode -or $touchesRelease -or $touchesScripts -or $touchesContracts -or $touchesTelegramSources) {
         $head = ([string](Invoke-HookGit @('-C', $Root, 'rev-parse', 'HEAD') | Select-Object -Last 1)).Trim()
         $dirty = @(Invoke-HookGit @('-C', $Root, 'status', '--porcelain', '--untracked-files=all'))
         $gateCommits = @($script:pushedCommits)
@@ -645,7 +645,7 @@ try {
         $suites += , @('scripts/test-fingerprint-candidates.ps1', 'fingerprint ranking changed, running its calibration',
             'The fingerprint ranking calibration did not pass.')
     }
-    if ($touchesThreadsSources) {
+    if ($touchesTelegramSources) {
         $suites += , @('scripts/test-telegram-sources.ps1', 'the Telegram source ledger or what it reads changed, running its rules',
             'The Telegram source ledger does not keep its rules.')
     }
@@ -879,7 +879,7 @@ try {
     }
 
     if (-not $touchesScripts -and -not $touchesCode -and -not $touchesRelease -and -not $touchesContracts -and
-            -not $touchesThreadsSources) {
+            -not $touchesTelegramSources) {
         Write-Step 'no code or published file changed'
     }
     Write-Step 'ok'

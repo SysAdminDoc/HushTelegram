@@ -71,7 +71,7 @@ function Compare-VerifierTallies {
         }
     }
 
-    # Two empty tallies are equal. A clean Meta build can raise no verifier message at all (the
+    # Two empty tallies are equal. A clean telegram.org build can raise no verifier message at all (the
     # Facebook sibling's never did), so the proof that a run verified something is the device
     # helper's (it read the pushed file), not a message count.
     [pscustomobject]@{

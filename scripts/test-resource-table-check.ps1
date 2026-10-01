@@ -10,16 +10,18 @@
     and a renamed entry pass and are reported. A lost layout, a layout file missing from the
     archive, a changed layout file, a lost style item, a changed parent, a lost night value, a
     reference to nothing, a renamed type and a missing package fail, and each failure names what
-    it lost. Telegram ships as a split bundle, and merging it into one APK drops the split
-    descriptor bundletool wrote (xml/splits0): that loss passes and is reported, and any other
-    lost xml resource still fails.
+    it lost. telegram.org ships a single universal APK, but a split bundle is still another
+    distributor's shape for it, and merging one into one APK drops the split descriptor bundletool
+    wrote (xml/splits0): that loss passes and is reported, and any other lost xml resource still
+    fails.
 
     A real split bundle too, built by aapt2 and merged by the CLI's own merger through
-    Get-MergedApk and MergeSplits.java, in both shapes a Telegram build comes in: an XAPK laid out
-    the way APKPure lays out Telegram (the base named for the package, config splits, manifest.json
-    and icon.png) and an .apkm. A resource only the split carries is in each merge, a table that
-    lost it fails against the merge while base.apk would only have called it added, a plain APK
-    comes back as it is, and a bundle the merger can't read is refused.
+    Get-MergedApk and MergeSplits.java, in both shapes such a bundle can come in: an XAPK laid out
+    the way APKPure lays out a split Telegram build (the base named for the package, config splits,
+    manifest.json and icon.png) and an .apkm. A resource only the split carries is in each merge, a
+    table that lost it fails against the merge while base.apk would only have called it added, a
+    plain APK (telegram.org's own shape) comes back as it is, and a bundle the merger can't read is
+    refused.
 #>
 [CmdletBinding()]
 param(
@@ -51,7 +53,7 @@ function Invoke-Checked {
     }
 }
 
-$package = 'com.instagram.barcelona'
+$package = 'org.telegram.messenger.web'
 $manifest = @"
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="$package">
     <application android:theme="@style/SearchTheme" />
@@ -315,7 +317,7 @@ try {
     $otherPackage = New-ResourceApk -Name 'other-package' -Files $stockFiles -PackageId '0x7e'
     $package = Invoke-Check -Patched $otherPackage -Name 'other-package'
     Assert-True ($package.ExitCode -eq 1) "A table without the stock package passed.`n$($package.Output)"
-    Assert-True ($package.Output -match 'FAIL package 0x7f com\.instagram\.barcelona: not in the patched table') `
+    Assert-True ($package.Output -match 'FAIL package 0x7f org\.telegram\.messenger\.web: not in the patched table') `
         "The missing package's failure did not name the package.`n$($package.Output)"
 
     # A value that points at nothing: the theme's window background, as bytes, moved to an id the
@@ -393,7 +395,7 @@ try {
     $bundleManifest = Join-Path $bundleDir 'AndroidManifest.xml'
     # The package by name: $package holds the other-package case's result by now.
     [System.IO.File]::WriteAllText($bundleManifest, ('<manifest xmlns:android="http://schemas.android.com/apk/res/android" ' +
-        'package="com.instagram.barcelona"><application /></manifest>'), [System.Text.UTF8Encoding]::new($false))
+        'package="org.telegram.messenger.web"><application /></manifest>'), [System.Text.UTF8Encoding]::new($false))
     $bundleCompiled = Join-Path $bundleDir 'compiled.zip'
     Invoke-Checked -Program $Aapt2 -Arguments @('compile', '--dir', (Join-Path $bundleDir 'res'), '-o', $bundleCompiled) `
         -Description 'aapt2 compile for the split bundle'
@@ -405,15 +407,15 @@ try {
         $bundleCompiled) -Description 'aapt2 link for the split bundle'
     # APKPure's layout of Telegram: the base named for the package, each split as config.<name>.apk,
     # an icon, and a manifest.json whose split_apks name the base by id.
-    $bundle = Join-Path $bundleDir 'threads-split.xapk'
+    $bundle = Join-Path $bundleDir 'telegram-split.xapk'
     $archive = [System.IO.Compression.ZipFile]::Open($bundle, [System.IO.Compression.ZipArchiveMode]::Create)
     try {
-        [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $baseApk, 'com.instagram.barcelona.apk') | Out-Null
+        [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $baseApk, 'org.telegram.messenger.web.apk') | Out-Null
         [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $splitApk, 'config.xxhdpi.apk') | Out-Null
         $writer = New-Object System.IO.StreamWriter($archive.CreateEntry('manifest.json').Open())
         try {
-            $writer.Write('{"xapk_version":2,"package_name":"com.instagram.barcelona","name":"Telegram","split_apks":[' +
-                '{"file":"com.instagram.barcelona.apk","id":"base"},{"file":"config.xxhdpi.apk","id":"config.xxhdpi"}]}')
+            $writer.Write('{"xapk_version":2,"package_name":"org.telegram.messenger.web","name":"Telegram","split_apks":[' +
+                '{"file":"org.telegram.messenger.web.apk","id":"base"},{"file":"config.xxhdpi.apk","id":"config.xxhdpi"}]}')
         } finally { $writer.Dispose() }
         $archive.CreateEntry('icon.png').Open().Dispose()
     } finally { $archive.Dispose() }
@@ -421,7 +423,7 @@ try {
     Assert-True ($mergedApk -eq (Join-Path $bundleDir 'merged/stock-merged.apk') -and (Test-Path -LiteralPath $mergedApk -PathType Leaf)) `
         "The split bundle was not merged into the APK asked for: $mergedApk"
     # The same two APKs as an .apkm merge the same way, and that merge carries the split's resource too.
-    $apkm = Join-Path $bundleDir 'threads-split.apkm'
+    $apkm = Join-Path $bundleDir 'telegram-split.apkm'
     $archive = [System.IO.Compression.ZipFile]::Open($apkm, [System.IO.Compression.ZipArchiveMode]::Create)
     try {
         foreach ($apk in $baseApk, $splitApk) {

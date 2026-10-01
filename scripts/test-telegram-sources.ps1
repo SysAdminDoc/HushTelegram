@@ -85,7 +85,7 @@ $catalogBuilds = @((Get-PatchTarget -PatchList ([IO.File]::ReadAllText((Join-Pat
 Assert-True ($catalogBuilds.Count -ge 1) 'The catalog declares no Telegram build, so the two-fixture cases would prove nothing.'
 # Two-fixture evidence is two builds, every declared one among them. Telegram declares one, so the
 # fixture adds the build before it.
-$olderBuild = '448.0.0.54.85'
+$olderBuild = '12.10.5'
 Assert-True ($catalogBuilds -notcontains $olderBuild) "The catalog declares $olderBuild, so the fixture's second build is no second build."
 $fixtureLicenseHash = 'a' * 64
 $fixtureAdoptedRepository = 'https://github.com/fixture-owner/adopted-patches'
@@ -94,7 +94,7 @@ $fixtureUnlicensedRepository = 'https://github.com/fixture-owner/unlicensed-modu
 function New-RuleFixtureEntry {
     param([string]$Id, [string]$Repository, [string]$Kind, $License, [string]$Disposition, $ContaminatedBy, [string[]]$Forks)
     return [pscustomobject][ordered]@{ id = $Id; repository = $Repository; lineage = $Id; upstream = $null; kind = $Kind
-        packages = @('com.instagram.barcelona'); targetVersions = [pscustomobject]@{ 'com.instagram.barcelona' = @($catalogBuilds[0]) }
+        packages = @('org.telegram.messenger.web'); targetVersions = [pscustomobject]@{ 'org.telegram.messenger.web' = @($catalogBuilds[0]) }
         features = @('Hide ads'); branches = @([pscustomobject]@{ name = 'main'; commit = ('0f' * 20) }); watchPaths = @()
         license = $License; contaminatedBy = $ContaminatedBy; disposition = $Disposition; reason = 'A fixture source.'; archived = $false
         forks = @($Forks); contentHashes = @(); mirrors = @(); lastChecked = '2026-09-01' }
@@ -166,7 +166,7 @@ $contaminated = @($docEntries | Where-Object { $_.id -eq 'fixture-contaminated' 
 $oldLine = "- [fixture-owner/contaminated-patches]($($contaminated.repository)) (GPL-3.0) ports those hooks. Its code can be ported with credit."
 Assert-True (@(@(Test-SourcesDoc ($sourcesDoc + "`n" + $oldLine) $docEntries) -like '*calls*portable*').Count -gt 0) `
     'A docs line calling a contaminated source''s code portable passed the check.'
-Assert-True (@(@(Test-SourcesDoc ($sourcesDoc + "`nSee https://github.com/unknown-owner/new-threads-patches.")) -like '*unknown-owner*').Count -gt 0) `
+Assert-True (@(@(Test-SourcesDoc ($sourcesDoc + "`nSee https://github.com/unknown-owner/new-telegram-patches.")) -like '*unknown-owner*').Count -gt 0) `
     'A docs link to a source the ledger doesn''t know passed the check.'
 
 Write-Host '[sources] the checked-in ledger and docs/sources.md keep their rules'
@@ -281,12 +281,12 @@ Test-Broken { param($c) $c.entries[0].lastChecked = '25/09/2026' } '*lastChecked
 Test-Broken { param($c) $c.entries[0].lastChecked = '2999-01-01' } '*lastChecked is 2999-01-01, after today*' 'A lastChecked in the future'
 Test-Broken { param($c) $c.entries[0].features = @() } '*names no features*' 'A source with no features'
 Test-Broken { param($c) $c.entries[0].targetVersions = [pscustomobject]@{} } '*records no declared target versions*' 'A source with no target versions'
-Test-Broken { param($c) $c.entries[0].packages = @('com.instagram.android') } '*names no Telegram package*outOfScope*' 'An Instagram-only source'
-Test-Broken { param($c) $c.entries[0].packages = @('com.instagram.barcelona', 'com.facebook.katana') } '*neither Telegram nor Instagram*' `
+Test-Broken { param($c) $c.entries[0].packages = @('org.telegram.plus') } '*names no Telegram package*outOfScope*' 'A fork-only source'
+Test-Broken { param($c) $c.entries[0].packages = @('org.telegram.messenger.web', 'com.whatsapp') } '*neither Telegram nor a fork this ledger allows beside it*' `
     'A source for another app'
-Test-Broken { param($c) $e = @($c.entries | Where-Object { @($_.packages) -contains 'com.instagram.android' })[0]
-    $e.targetVersions = [pscustomobject]@{ 'com.instagram.android' = @('449.0.0.52.84') } } '*records no declared target versions for com.instagram.barcelona*' `
-    'A source for both apps that records only Instagram''s builds'
+Test-Broken { param($c) $e = @($c.entries | Where-Object { @($_.packages) -contains 'org.telegram.messenger' -and @($_.packages) -contains 'org.telegram.messenger.web' })[0]
+    $e.targetVersions = [pscustomobject]@{ 'org.telegram.messenger' = @('12.10.1') } } '*records no declared target versions for org.telegram.messenger.web*' `
+    'A source for two packages that records only one package''s builds'
 Test-Broken { param($c) $c.entries[0].license = [pscustomobject]@{ spdx = 'GPL-3.0'; url = 'https://example.com/LICENSE'; sha256 = 'abc' } } `
     '*licence has no sha256*' 'A licence with no hash'
 Test-Broken { param($c) $c.entries[0].lineage = '' } '*names no lineage*' 'A source with no lineage'
@@ -397,7 +397,7 @@ $fixtureLedger = [ordered]@{
     )
     entries = @(
         [ordered]@{ id = 'alpha'; repository = 'https://github.com/fixture-owner/alpha-patches'; lineage = 'alpha'; upstream = $null
-            kind = 'morphe-patches'; packages = @('com.instagram.barcelona'); targetVersions = [ordered]@{ 'com.instagram.barcelona' = @('449.0.0.54.82') }
+            kind = 'morphe-patches'; packages = @('org.telegram.messenger.web'); targetVersions = [ordered]@{ 'org.telegram.messenger.web' = @('12.10.6') }
             features = @('Hide ads'); branches = @([ordered]@{ name = 'main'; commit = $commitA1 }); watchPaths = @()
             license = [ordered]@{ spdx = 'GPL-3.0'; url = "https://github.com/fixture-owner/alpha-patches/blob/$commitA1/LICENSE"; sha256 = $licenseHash }
             contaminatedBy = $null; disposition = 'adopted'; reason = 'A fixture source.'; archived = $false
@@ -406,18 +406,18 @@ $fixtureLedger = [ordered]@{
             mirrors = @([ordered]@{ repository = 'https://github.com/copier/alpha-copy'; reason = 'A fixture copy.'; blobs = @($blobMirror) })
             lastChecked = '2026-09-01' }
         [ordered]@{ id = 'beta'; repository = 'https://github.com/fixture-owner/beta-module'; lineage = 'beta'; upstream = $null
-            kind = 'xposed-module'; packages = @('com.instagram.barcelona', 'com.instagram.android'); targetVersions = [ordered]@{ 'com.instagram.barcelona' = @() }
-            features = @('Hide feed ads'); branches = @([ordered]@{ name = 'main'; commit = $commitB1 }); watchPaths = @('app/threads')
+            kind = 'xposed-module'; packages = @('org.telegram.messenger.web', 'org.telegram.plus'); targetVersions = [ordered]@{ 'org.telegram.messenger.web' = @() }
+            features = @('Hide sponsored messages'); branches = @([ordered]@{ name = 'main'; commit = $commitB1 }); watchPaths = @('app/telegram')
             license = $null; contaminatedBy = $null; disposition = 'behavior-only'; reason = 'A fixture module with no licence.'; archived = $false
             forks = @(); contentHashes = @(); mirrors = @(); lastChecked = '2026-09-01' }
         [ordered]@{ id = 'gamma'; repository = 'https://gitlab.com/fixture-group/gamma-patches'; lineage = 'gamma'; upstream = $null
-            kind = 'revanced-patches'; packages = @('com.instagram.barcelona'); targetVersions = [ordered]@{ 'com.instagram.barcelona' = @() }
+            kind = 'revanced-patches'; packages = @('org.telegram.messenger.web'); targetVersions = [ordered]@{ 'org.telegram.messenger.web' = @() }
             features = @('Open links outside'); branches = @([ordered]@{ name = 'main'; commit = $commitG1 }); watchPaths = @()
             license = [ordered]@{ spdx = 'GPL-3.0'; url = "https://gitlab.com/fixture-group/gamma-patches/-/blob/$commitG1/LICENSE"; sha256 = $licenseHash }
             contaminatedBy = $null; disposition = 'candidate'; reason = 'A fixture GitLab source.'; archived = $false
             forks = @(); contentHashes = @(); mirrors = @(); lastChecked = '2026-09-01' }
     )
-    outOfScope = @([ordered]@{ repository = 'https://github.com/noise/mentions-threads'; reason = 'Names the package in a list.'; lastChecked = '2026-09-01' })
+    outOfScope = @([ordered]@{ repository = 'https://github.com/noise/mentions-telegram'; reason = 'Names the package in a list.'; lastChecked = '2026-09-01' })
 }
 $fixtureLedgerText = ($fixtureLedger | ConvertTo-Json -Depth 20) -replace "`r`n", "`n"
 function Reset-FixtureLedger { [IO.File]::WriteAllText($fixtureLedgerPath, $fixtureLedgerText, (New-Object Text.UTF8Encoding $false)) }
@@ -431,18 +431,18 @@ function New-FakeAnswers {
     $answers = [ordered]@{
         official = @{ Status = 200; Content = '{"patches":[{"name":"Example","compatiblePackages":{"com.google.android.youtube":["20.1"]}}]}' }
         directory = @{ Status = 200; Content = (@{
-            bundles = @(@{ source = 'github'; repo = 'fixture-owner/alpha-patches'; name = 'Alpha'; targetApps = @('com.instagram.barcelona')
+            bundles = @(@{ source = 'github'; repo = 'fixture-owner/alpha-patches'; name = 'Alpha'; targetApps = @('org.telegram.messenger.web')
                 patches = @(@{ name = 'Hide ads'; compatiblePackagesKey = 0 }) })
-            compatibilities = @(@{ packageName = 'com.instagram.barcelona'; targets = @(@{ version = '449.0.0.54.82' }) }) } | ConvertTo-Json -Depth 8) }
-        awesome = @{ Status = 200; Content = '{"fixture-owner/alpha-patches":{"com.instagram.barcelona":"0123"},"SysAdminDoc/hushfeed":{"com.zhiliaoapp.musically":"4567"}}' }
+            compatibilities = @(@{ packageName = 'org.telegram.messenger.web'; targets = @(@{ version = '12.10.6' }) }) } | ConvertTo-Json -Depth 8) }
+        awesome = @{ Status = 200; Content = '{"fixture-owner/alpha-patches":{"org.telegram.messenger.web":"0123"},"SysAdminDoc/hushfeed":{"com.zhiliaoapp.musically":"4567"}}' }
         tracker = @{ Status = 200; Content = (@{
-            'sysadmindoc:stable' = @{ repo_url = 'https://github.com/SysAdminDoc/HushTelegram'; apps = @(@{ package = 'com.instagram.barcelona'; patches = @(@{ name = 'Hide ads' }) }) }
-            'alpha:stable' = @{ repo_url = 'https://github.com/fixture-owner/alpha-patches'; apps = @(@{ package = 'com.instagram.barcelona'; patches = @(@{ name = 'Hide ads' }) }) }
+            'sysadmindoc:stable' = @{ repo_url = 'https://github.com/SysAdminDoc/HushTelegram'; apps = @(@{ package = 'org.telegram.messenger.web'; patches = @(@{ name = 'Hide ads' }) }) }
+            'alpha:stable' = @{ repo_url = 'https://github.com/fixture-owner/alpha-patches'; apps = @(@{ package = 'org.telegram.messenger.web'; patches = @(@{ name = 'Hide ads' }) }) }
         } | ConvertTo-Json -Depth 8) }
         jmanSources = @{ Status = 200; Content = '{"alpha-stable":{"patches":"https://api.github.com/repos/fixture-owner/alpha-patches"},"gamma-stable":{"patches":"https://gitlab.com/api/v4/projects/fixture-group%2Fgamma-patches"}}' }
         jmanCatalog = @{ Status = 200; Content = ("# Catalog`n| [Alpha](#alpha) | 1 | 1 | Generated |`n### X Alpha Bundle Patch List:`n" +
             "| **Name** | **Description** | **Compatible Apps** | **Compatible Versions** |`n|---|---|---|---|`n" +
-            "| ${tick}Hide ads${tick} | ${tick}Removes ads.${tick} | ${tick}Telegram${tick} | ${tick}449.0.0.54.82${tick} |`n" +
+            "| ${tick}Hide ads${tick} | ${tick}Removes ads.${tick} | ${tick}Telegram${tick} | ${tick}12.10.6${tick} |`n" +
             "### X Gamma Bundle Patch List:`n| ${tick}Open links outside${tick} | ${tick}d${tick} | ${tick}Telegram${tick} | ${tick}Any${tick} |`n") }
         archive = @{ Status = 200; Content = '{"name":"patches-list.json"}' }
         searchHits = @(
@@ -451,7 +451,7 @@ function New-FakeAnswers {
             @{ repository = @{ full_name = 'clone/alpha-clone' }; path = 'src/Alpha.kt'; sha = $blobKnown }
             @{ repository = @{ full_name = 'rushiforai/morphe-archive' }; path = 'examplepatches/fixture-owner/alpha-patches/patches-list.json'; sha = ('3b' * 20) }
             @{ repository = @{ full_name = 'rushiforai/morphe-archive' }; path = 'examplepatches/Jman-Github/ReVanced-Patch-Bundles/patch-bundles/x/y-patches-list.json'; sha = ('4b' * 20) }
-            @{ repository = @{ full_name = 'noise/mentions-threads' }; path = 'list.txt'; sha = ('5b' * 20) }
+            @{ repository = @{ full_name = 'noise/mentions-telegram' }; path = 'list.txt'; sha = ('5b' * 20) }
             @{ repository = @{ full_name = 'SysAdminDoc/HushTelegram' }; path = 'patches-list.json'; sha = ('6b' * 20) }
             # The archive keeps a recorded fork's patch list for its entry's own package, which is no bundle of its own.
             @{ repository = @{ full_name = 'rushiforai/morphe-archive' }; path = 'examplepatches/someone/alpha-patches/patches-list.json'; sha = ('7b' * 20) }
@@ -471,7 +471,7 @@ function New-FakeAnswers {
         gammaLicense = @{ Status = 200; Content = (@{ file_name = 'LICENSE'; content = $licenseBase64 } | ConvertTo-Json) }
         gammaBranches = @{ Status = 200; Content = "[{`"name`":`"main`",`"commit`":{`"id`":`"$commitG1`"}}]" }
         gammaForks = @{ Status = 200; Content = '[]' }
-        repoMeta = @{ Status = 200; Content = '{"full_name":"newcomer/threads-patches","license":{"spdx_id":"MIT"},"fork":false,"archived":false,"pushed_at":"2026-09-20T00:00:00Z","description":"Telegram patches"}' }
+        repoMeta = @{ Status = 200; Content = '{"full_name":"newcomer/telegram-patches","license":{"spdx_id":"MIT"},"fork":false,"archived":false,"pushed_at":"2026-09-20T00:00:00Z","description":"Telegram patches"}' }
         oldNameMeta = @{ Status = 200; Content = '{"full_name":"fixture-owner/alpha-patches","fork":false,"archived":false}' }
         receipt = @{ Status = 200; Content = (@{ targets = @($adoptedBuilds | ForEach-Object {
             @{ source = @{ versionName = $_; forced = $false }; patches = @(@{ name = 'Hide ads'; applied = $true }) } }) } | ConvertTo-Json -Depth 8) }
@@ -500,7 +500,7 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
             '^https://api\.github\.com/repos/rushiforai/morphe-archive/contents/examplepatches/SysAdminDoc/HushTelegram/patches-list\.json$' { $answer = $a.archive; break }
             '^https://api\.github\.com/search/code\?q=([^&]+)&per_page=100&page=1$' {
                 $query = [Uri]::UnescapeDataString($Matches[1])
-                $items = if ($query -eq '"com.instagram.barcelona" bytecodePatch') { @($a.searchHits) } else { @() }
+                $items = if ($query -eq '"org.telegram.messenger.web" bytecodePatch') { @($a.searchHits) } else { @() }
                 $answer = @{ Status = 200; Content = (@{ total_count = $items.Count; incomplete_results = $false; items = $items } | ConvertTo-Json -Depth 8) }
                 break
             }
@@ -516,14 +516,14 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
             '^https://api\.github\.com/repos/fixture-owner/beta-module$' { $answer = $a.betaRepo; break }
             '^https://api\.github\.com/repos/fixture-owner/beta-module/license$' { $answer = $a.betaLicense; break }
             '^https://api\.github\.com/repos/fixture-owner/beta-module/branches\?per_page=100&page=1$' { $answer = $a.betaBranches; break }
-            '^https://api\.github\.com/repos/fixture-owner/beta-module/commits\?sha=main&path=app%2Fthreads&per_page=1$' { $answer = $a.betaWatch; break }
+            '^https://api\.github\.com/repos/fixture-owner/beta-module/commits\?sha=main&path=app%2Ftelegram&per_page=1$' { $answer = $a.betaWatch; break }
             '^https://api\.github\.com/repos/fixture-owner/beta-module/forks\?per_page=100&page=1$' { $answer = $a.betaForks; break }
             '^https://gitlab\.com/api/v4/projects/fixture-group%2Fgamma-patches$' { $answer = $a.gammaProject; break }
             '^https://gitlab\.com/api/v4/projects/fixture-group%2Fgamma-patches/repository/tree\?ref=main&per_page=100&page=1$' { $answer = $a.gammaTree; break }
             '^https://gitlab\.com/api/v4/projects/fixture-group%2Fgamma-patches/repository/files/LICENSE\?ref=main$' { $answer = $a.gammaLicense; break }
             '^https://gitlab\.com/api/v4/projects/fixture-group%2Fgamma-patches/repository/branches\?per_page=100&page=1$' { $answer = $a.gammaBranches; break }
             '^https://gitlab\.com/api/v4/projects/fixture-group%2Fgamma-patches/forks\?per_page=100&page=1$' { $answer = $a.gammaForks; break }
-            '^https://api\.github\.com/repos/(newcomer/threads-patches|clone/alpha-clone)$' { $answer = $a.repoMeta; break }
+            '^https://api\.github\.com/repos/(newcomer/telegram-patches|clone/alpha-clone)$' { $answer = $a.repoMeta; break }
             '^https://api\.github\.com/repos/fixture-owner/alpha-old$' { $answer = $a.oldNameMeta; break }
             '^https://github\.com/SysAdminDoc/HushTelegram/releases/download/v9\.9\.9/release-receipt-9\.9\.9\.json$' { $answer = $a.receipt; break }
         }
@@ -620,10 +620,10 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     Reset-FixtureLedger
 
     # Each way a source can move, one at a time, each put back after.
-    $fakeForge.Answers.directory.Content = $fakeForge.Answers.directory.Content.Replace('"repo":  "fixture-owner/alpha-patches"', '"repo":  "newcomer/threads-patches"').Replace(
-        '"repo": "fixture-owner/alpha-patches"', '"repo": "newcomer/threads-patches"')
-    Assert-True ($fakeForge.Answers.directory.Content -like '*newcomer/threads-patches*') 'The directory answer was not edited, so the addition case would prove nothing.'
-    Assert-Drift 'addition' '*github.com/newcomer/threads-patches*Morphe directory*' 'A bundle only the directory knows'
+    $fakeForge.Answers.directory.Content = $fakeForge.Answers.directory.Content.Replace('"repo":  "fixture-owner/alpha-patches"', '"repo":  "newcomer/telegram-patches"').Replace(
+        '"repo": "fixture-owner/alpha-patches"', '"repo": "newcomer/telegram-patches"')
+    Assert-True ($fakeForge.Answers.directory.Content -like '*newcomer/telegram-patches*') 'The directory answer was not edited, so the addition case would prove nothing.'
+    Assert-Drift 'addition' '*github.com/newcomer/telegram-patches*Morphe directory*' 'A bundle only the directory knows'
     $fakeForge.Answers = New-FakeAnswers
 
     $fakeForge.Answers.searchHits[2].sha = ('9b' * 20)
@@ -673,8 +673,8 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     Assert-Drift 'listing-changed' '*Morphe Patch Tracker no longer lists HushTelegram*' 'A listing that disappeared'
     $fakeForge.Answers = New-FakeAnswers
 
-    $fakeForge.Answers.official.Content = '{"patches":[{"name":"Hide ads","compatiblePackages":[{"packageName":"com.instagram.barcelona"}]}]}'
-    Assert-Drift 'official-bundle-changed' '*official bundle now patches*com.instagram.barcelona*' 'The official bundle taking on Telegram's
+    $fakeForge.Answers.official.Content = '{"patches":[{"name":"Hide ads","compatiblePackages":[{"packageName":"org.telegram.messenger.web"}]}]}'
+    Assert-Drift 'official-bundle-changed' '*official bundle now patches*org.telegram.messenger.web*' 'The official bundle taking on Telegram'
     $fakeForge.Answers = New-FakeAnswers
 
     # An adopted source's receipt has to prove every declared build, unforced.
@@ -688,7 +688,7 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
 
     # A recorded fork or an out-of-scope repository that an index lists as a bundle of its own. The
     # control's archived copy of the fork's list, for alpha's own package, stayed quiet.
-    foreach ($listed in @('someone/alpha-patches', 'noise/mentions-threads')) {
+    foreach ($listed in @('someone/alpha-patches', 'noise/mentions-telegram')) {
         $fakeForge.Answers.directory.Content = $fakeForge.Answers.directory.Content.Replace('"repo":  "fixture-owner/alpha-patches"', "`"repo`":  `"$listed`"").Replace(
             '"repo": "fixture-owner/alpha-patches"', "`"repo`": `"$listed`"")
         Assert-True ($fakeForge.Answers.directory.Content -like "*$listed*") "The directory answer was not edited, so the $listed case would prove nothing."

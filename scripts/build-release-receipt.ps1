@@ -42,7 +42,7 @@
     parameter once and refuses the second.
 
     scripts/build-release-receipt.ps1 -WorkDir C:\scratch `
-        -Fixture C:\fixtures\threads-a.xapk,C:\fixtures\threads-b.xapk
+        -Fixture C:\fixtures\telegram-a.xapk,C:\fixtures\telegram-b.xapk
 #>
 [CmdletBinding()]
 param(

@@ -4,8 +4,8 @@
     pre-push routing, the changelog, d8 and Java resolution, split bundles and the shared helpers.
 .DESCRIPTION
     Ported from Hushfeed's suite by way of Hushfacebook and held to Telegram's facts: the declared
-    build at its pinned version code, both of Meta's signers for Telegram, and .xapk or .apkm split
-    bundles. The pre-push hook runs it for changes under scripts/, and for README.md,
+    build at its pinned version code, telegram.org's signer, and .xapk or .apkm split bundles. The
+    pre-push hook runs it for changes under scripts/, and for README.md,
     patches-list.json or patches/build.gradle.kts. A missing suite stops the push.
 #>
 [CmdletBinding()]
@@ -53,11 +53,11 @@ function New-NotFoundAnswer {
 # fully patch, and the release scripts would take it for a declared target.
 $catalog = Get-Content -LiteralPath (Join-Path $Root 'patches-list.json') -Raw | ConvertFrom-Json
 $target = Get-PatchTarget -PatchList $catalog
-Assert-True ($target.PackageName -eq 'com.instagram.barcelona') 'The catalog package was not resolved.'
+Assert-True ($target.PackageName -eq 'org.telegram.messenger.web') 'The catalog package was not resolved.'
 Assert-True (@($target.PackageVersions).Count -ge 1 -and $target.PackageVersion -eq $target.PackageVersions[0]) `
     "The catalog's declared Telegram builds were not read: $($target.PackageVersions -join ', ')"
 foreach ($patch in @($catalog.patches)) {
-    Assert-True (((@($patch.compatiblePackages.'com.instagram.barcelona') | Sort-Object) -join ',') -eq
+    Assert-True (((@($patch.compatiblePackages.'org.telegram.messenger.web') | Sort-Object) -join ',') -eq
         ((@($target.PackageVersions) | Sort-Object) -join ',')) `
         "$($patch.name) declares other Telegram builds than the rest of the catalog."
 }
@@ -66,7 +66,7 @@ foreach ($patch in @($catalog.patches)) {
 # on. In the Facebook sibling a receipt counted another 580 build (vc 475019283 beside the declared
 # 475019344) as an unforced run of the declared one.
 foreach ($version in @($target.PackageVersions)) {
-    $pinned = @($catalog.patches[0].compatibility | Where-Object { $_.packageName -eq 'com.instagram.barcelona' } |
+    $pinned = @($catalog.patches[0].compatibility | Where-Object { $_.packageName -eq 'org.telegram.messenger.web' } |
         ForEach-Object { @($_.targets) } | Where-Object { $_.version -eq $version } |
         ForEach-Object { $_.versionCodes.PSObject.Properties } | ForEach-Object { [string]$_.Value })
     Assert-True ($pinned.Count -gt 0 -and (@($target.PackageVersionCodes[$version]) -join ',') -eq (($pinned | Sort-Object -Unique) -join ',')) `
@@ -130,16 +130,14 @@ Assert-Throws { Get-PatchTarget -PatchList ([pscustomobject]@{ patches = @((New-
 Assert-True ((Test-DeclaredBuild -Target $three -VersionName '99.1.0.0.1' -VersionCode '12345') -and
     @($three.PackageVersionCodes['99.1.0.0.1']).Count -eq 0) 'A build declared without a version code was not matched by its name.'
 
-# Both of Meta's signers for Telegram, on every patch. Telegram carries a rotated key, so a phone
-# reports the old signer or the new one depending on its Android version, and Morphe Manager
-# refuses an APK whose signer the patch doesn't list.
-$metaSigners = @('5367570bad488d8da6a0fab78d9766a1a4c23c3c70fac0ad2e91c8f0bd58b432',
-    '8f38da6b4dc34b1900353bde4630043198cbe3ef7214151f86679cd000c90500')
+# telegram.org's own signer, on every patch. Morphe Manager refuses an APK whose signer the patch
+# doesn't list.
+$telegramSigners = @('49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1')
 foreach ($patch in @($catalog.patches)) {
-    $declaredSigners = @($patch.compatibility | Where-Object { $_.packageName -eq 'com.instagram.barcelona' } |
+    $declaredSigners = @($patch.compatibility | Where-Object { $_.packageName -eq 'org.telegram.messenger.web' } |
         ForEach-Object { @($_.signatures) } | Sort-Object -Unique)
-    Assert-True (($declaredSigners -join ',') -eq ($metaSigners -join ',')) `
-        "$($patch.name) declares Telegram signers $($declaredSigners -join ', '), not both of Meta's."
+    Assert-True (($declaredSigners -join ',') -eq ($telegramSigners -join ',')) `
+        "$($patch.name) declares Telegram signers $($declaredSigners -join ', '), not telegram.org's own."
 }
 
 $allNames = @($catalog.patches | ForEach-Object { $_.name })
@@ -461,19 +459,16 @@ $unchanged = Get-ManifestDelta -Stock $facts -Patched $facts
 Assert-True (@(ConvertTo-ManifestDeltaEntries -Delta $unchanged).Count -eq 0) `
     'An unchanged manifest produced a delta.'
 
-# The checked-in allowlist approves two changes and nothing else: HushTelegram settings exports an
-# alias of Telegram's launcher activity for Android's App info page, and Remove the advertising ID
-# drops the advertising ID permission.
+# The checked-in allowlist approves one change and nothing else: HushTelegram settings exports an
+# alias of Telegram's launcher activity for Android's App info page.
 $checkedInAllowlist = @(Read-ManifestDeltaAllowlist -Path (Join-Path $PSScriptRoot 'manifest-delta-allowlist.txt') |
     Where-Object { $_ })
 $settingsAlias = 'activity-alias:app.hushtelegram.extension.telegram.settings.OpenSettings'
-$approvedEntries = @(
-    "exported-added $settingsAlias",
-    'permission-removed com.google.android.gms.permission.AD_ID')
+$approvedEntries = @("exported-added $settingsAlias")
 Assert-True ((@($checkedInAllowlist | Sort-Object -CaseSensitive) -join "`n") -ceq
         (@($approvedEntries | Sort-Object -CaseSensitive) -join "`n")) `
-    ('The checked-in manifest delta allowlist approves something besides the settings alias and the ' +
-     "advertising ID removal, or leaves one out: $($checkedInAllowlist -join ', ')")
+    ('The checked-in manifest delta allowlist approves something besides the settings alias, or leaves it ' +
+     "out: $($checkedInAllowlist -join ', ')")
 
 $allowlistRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("receipt-" + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $allowlistRoot | Out-Null
@@ -819,21 +814,20 @@ try {
     Assert-True ($stale.Reason -like '*any more*') `
         "The stale allowlist entry was refused for the wrong reason: $($stale.Reason)"
 
-    # The checked-in allowlist, against receipts that carry both approved changes on both builds.
-    # They pass. They plus any other change are refused, naming only the other, and a receipt with
-    # one of the two gone is refused for the one no patch makes any more.
+    # The checked-in allowlist, against receipts that carry the approved change on both builds. They
+    # pass. They plus any other change are refused, naming only the other, and a receipt with the
+    # approved change gone is refused for the one no patch makes any more.
     $withApproved = {
         param($r)
         foreach ($target in $r.targets) {
             $target.manifestDelta.exportedComponentsAdded = @($settingsAlias)
-            $target.manifestDelta.permissionsRemoved = @('com.google.android.gms.permission.AD_ID')
         }
     }
     $approvedReceipt = Test-TestReceipt -Receipt (New-TestReceipt -Mutate $withApproved) -Approved $checkedInAllowlist
-    Assert-True $approvedReceipt.Valid "A receipt carrying the two approved changes was refused: $($approvedReceipt.Reason)"
+    Assert-True $approvedReceipt.Valid "A receipt carrying the approved change was refused: $($approvedReceipt.Reason)"
     $unapproved = Test-TestReceipt -Receipt (New-TestReceipt) -Approved $checkedInAllowlist
     Assert-True (-not $unapproved.Valid -and $unapproved.Reason -like '*any more*') `
-        "A receipt without the approved changes passed the allowlist that approves them: $($unapproved.Reason)"
+        "A receipt without the approved change passed the allowlist that approves it: $($unapproved.Reason)"
     foreach ($other in @(
             @{ Name = 'another permission asked for'; Entry = 'permission-added android.permission.READ_SMS'
                 Change = { param($t) $t.manifestDelta.permissionsAdded = @($t.manifestDelta.permissionsAdded) + 'android.permission.READ_SMS' } },
@@ -841,15 +835,15 @@ try {
                 Change = { param($t) $t.manifestDelta.exportedComponentsAdded = @($t.manifestDelta.exportedComponentsAdded) + 'activity-alias:app.hushtelegram.extension.telegram.settings.Other' } },
             @{ Name = 'another permission dropped'; Entry = 'permission-removed android.permission.CAMERA'
                 Change = { param($t) $t.manifestDelta.permissionsRemoved = @($t.manifestDelta.permissionsRemoved) + 'android.permission.CAMERA' } },
-            @{ Name = 'a component exported'; Entry = 'exported-added service:com.instagram.barcelona.push.PushService'
-                Change = { param($t) $t.manifestDelta.exportedComponentsAdded = @($t.manifestDelta.exportedComponentsAdded) + 'service:com.instagram.barcelona.push.PushService' } },
-            @{ Name = 'a component no longer exported'; Entry = 'exported-removed activity:com.instagram.barcelona.mainactivity.BarcelonaActivity'
-                Change = { param($t) $t.manifestDelta.exportedComponentsRemoved = @('activity:com.instagram.barcelona.mainactivity.BarcelonaActivity') } })) {
+            @{ Name = 'a component exported'; Entry = 'exported-added service:org.telegram.messenger.web.push.PushService'
+                Change = { param($t) $t.manifestDelta.exportedComponentsAdded = @($t.manifestDelta.exportedComponentsAdded) + 'service:org.telegram.messenger.web.push.PushService' } },
+            @{ Name = 'a component no longer exported'; Entry = 'exported-removed activity:org.telegram.messenger.web.LaunchActivity'
+                Change = { param($t) $t.manifestDelta.exportedComponentsRemoved = @('activity:org.telegram.messenger.web.LaunchActivity') } })) {
         $receipt = New-TestReceipt -Mutate { param($r) & $withApproved $r; & $other.Change $r.targets[1] }
         $result = Test-TestReceipt -Receipt $receipt -Approved $checkedInAllowlist
-        Assert-True (-not $result.Valid) "With the settings alias and the advertising ID removal approved, $($other.Name) was accepted."
+        Assert-True (-not $result.Valid) "With the settings alias approved, $($other.Name) was accepted."
         Assert-True ($result.Reason -like "*nobody reviewed: $($other.Entry)") `
-            "With the settings alias and the advertising ID removal approved, $($other.Name) was refused for the wrong reason: $($result.Reason)"
+            "With the settings alias approved, $($other.Name) was refused for the wrong reason: $($result.Reason)"
     }
     $halfway = New-TestReceipt -Mutate {
         param($r)
@@ -1675,7 +1669,7 @@ try {
         $publishedHere = Get-ReleaseIndexVersion
         if ($publishedHere -eq $fixtureVersion) { return }
         Set-FactsFile $bugFormRelative {
-            param($text) $text -replace ('Version ' + [regex]::Escape($publishedHere) + ' for Telegram's), "Version $fixtureVersion for Telegram"
+            param($text) $text -replace ('Version ' + [regex]::Escape($publishedHere) + ' for Telegram'), "Version $fixtureVersion for Telegram"
         }
     }
 
@@ -2369,7 +2363,7 @@ try {
         }
     }
 
-    # The catalog is held to Meta's two signers, the builds every patch declares and the internal
+    # The catalog is held to telegram.org's signer, the builds every patch declares and the internal
     # dependencies the release scripts expect, and only the contract tests read it for those. A
     # push of the catalog alone ran the release facts and never them.
     Invoke-Hook -Paths @('patches-list.json')
@@ -3556,9 +3550,9 @@ try {
     Assert-True (Test-SamePath (Get-BaseApk -Apk $plainApk -Destination (Join-Path $commonRoot 'never.apk')) $plainApk) `
         'A plain APK was copied or replaced instead of being read as it is.'
 
-    $apkm = Join-Path $commonRoot 'threads.apkm'
+    $apkm = Join-Path $commonRoot 'telegram.apkm'
     $apkmEntries = [ordered]@{
-        'info.json' = '{"versioncode":"511908382"}'
+        'info.json' = '{"versioncode":"71129"}'
         'base.apk' = 'base'
         'split_config.arm64_v8a.apk' = ('native code ' * 64)
     }
@@ -3575,7 +3569,7 @@ try {
     Push-Location -LiteralPath $commonRoot
     try {
         [Environment]::CurrentDirectory = [System.IO.Path]::GetTempPath()
-        $relativeOut = Get-BaseApk -Apk 'threads.apkm' -Destination 'out\relative-base.apk'
+        $relativeOut = Get-BaseApk -Apk 'telegram.apkm' -Destination 'out\relative-base.apk'
         Assert-True ((Test-SamePath $relativeOut (Join-Path $commonRoot 'out\relative-base.apk')) -and
             (Get-Content -LiteralPath (Join-Path $commonRoot 'out\relative-base.apk') -Raw) -eq 'base') `
             'A relative bundle path was read against the process directory instead of the current location.'
@@ -3595,44 +3589,46 @@ try {
         (Get-Content -LiteralPath $xapkOut -Raw).StartsWith('app ')) `
         'A bundle with no base.apk did not fall back to its largest APK.'
 
-    # APKPure's layout of Telegram: the base named for the package, the arm64 split larger than it,
-    # and a manifest.json whose split_apks name the base by id. Size alone took the split.
-    $threadsXapk = Join-Path $commonRoot 'threads.xapk'
-    New-TestBundleArchive -Path $threadsXapk -Entries ([ordered]@{
-        'com.instagram.barcelona.apk' = 'threads base'
+    # APKPure's layout of a split Telegram build: the base named for the package, the arm64 split
+    # larger than it, and a manifest.json whose split_apks name the base by id. Size alone took the
+    # split. (telegram.org's own build ships as a single universal APK; a split layout is another
+    # distributor's, and Get-BaseApk has to read either.)
+    $telegramXapk = Join-Path $commonRoot 'telegram.xapk'
+    New-TestBundleArchive -Path $telegramXapk -Entries ([ordered]@{
+        'org.telegram.messenger.web.apk' = 'telegram base'
         'icon.png' = 'icon'
         'config.arm64_v8a.apk' = ('native code ' * 64)
         'config.mdpi.apk' = 'densities'
-        'manifest.json' = ('{"xapk_version":2,"package_name":"com.instagram.barcelona","split_apks":[' +
-            '{"file":"com.instagram.barcelona.apk","id":"base"},{"file":"config.arm64_v8a.apk","id":"config.arm64_v8a"},' +
+        'manifest.json' = ('{"xapk_version":2,"package_name":"org.telegram.messenger.web","split_apks":[' +
+            '{"file":"org.telegram.messenger.web.apk","id":"base"},{"file":"config.arm64_v8a.apk","id":"config.arm64_v8a"},' +
             '{"file":"config.mdpi.apk","id":"config.mdpi"}]}')
     })
-    $threadsOut = Join-Path $commonRoot 'out/threads-base.apk'
-    Assert-True ((Test-SamePath (Get-BaseApk -Apk $threadsXapk -Destination $threadsOut) $threadsOut) -and
-        (Get-Content -LiteralPath $threadsOut -Raw) -eq 'threads base') `
+    $telegramOut = Join-Path $commonRoot 'out/telegram-base.apk'
+    Assert-True ((Test-SamePath (Get-BaseApk -Apk $telegramXapk -Destination $telegramOut) $telegramOut) -and
+        (Get-Content -LiteralPath $telegramOut -Raw) -eq 'telegram base') `
         'The base an .xapk manifest names was not taken over the larger arm64 split beside it.'
     # Without split_apks, the manifest's package name still names the base.
     $packageOnlyXapk = Join-Path $commonRoot 'package-only.xapk'
     New-TestBundleArchive -Path $packageOnlyXapk -Entries ([ordered]@{
         'config.arm64_v8a.apk' = ('native code ' * 64)
         'other.apk' = ('other ' * 32)
-        'com.instagram.barcelona.apk' = 'threads base'
-        'manifest.json' = '{"package_name":"com.instagram.barcelona"}'
+        'org.telegram.messenger.web.apk' = 'telegram base'
+        'manifest.json' = '{"package_name":"org.telegram.messenger.web"}'
     })
     $packageOnlyOut = Join-Path $commonRoot 'out/package-only-base.apk'
     Assert-True ((Test-SamePath (Get-BaseApk -Apk $packageOnlyXapk -Destination $packageOnlyOut) $packageOnlyOut) -and
-        (Get-Content -LiteralPath $packageOnlyOut -Raw) -eq 'threads base') `
+        (Get-Content -LiteralPath $packageOnlyOut -Raw) -eq 'telegram base') `
         'The base an .xapk manifest names by its package was not taken over larger APKs.'
     # With nothing naming the base, a larger config split still loses to the app's own APK.
     $unnamedSplitXapk = Join-Path $commonRoot 'unnamed-split.xapk'
     New-TestBundleArchive -Path $unnamedSplitXapk -Entries ([ordered]@{
         'config.arm64_v8a.apk' = ('native code ' * 64)
         'split_feature.apk' = ('feature ' * 48)
-        'com.instagram.barcelona.apk' = 'threads base'
+        'org.telegram.messenger.web.apk' = 'telegram base'
     })
     $unnamedSplitOut = Join-Path $commonRoot 'out/unnamed-split-base.apk'
     Assert-True ((Test-SamePath (Get-BaseApk -Apk $unnamedSplitXapk -Destination $unnamedSplitOut) $unnamedSplitOut) -and
-        (Get-Content -LiteralPath $unnamedSplitOut -Raw) -eq 'threads base') `
+        (Get-Content -LiteralPath $unnamedSplitOut -Raw) -eq 'telegram base') `
         'A bundle naming no base took a larger config or split_ APK for it.'
     # And a bundle of splits alone hands back its largest, as before.
     $splitsOnly = Join-Path $commonRoot 'splits-only.xapk'
@@ -3782,7 +3778,7 @@ try {
     $releaseCatalogCopy = Get-Content -LiteralPath $releaseCatalogPath -Raw | ConvertFrom-Json
     $copiedTarget = Get-PatchTarget -PatchList $releaseCatalogCopy
     if (@($copiedTarget.PackageVersions).Count -lt 2) {
-        $previousBuild = '448.0.0.54.85'
+        $previousBuild = '12.10.5'
         foreach ($patch in @($releaseCatalogCopy.patches)) {
             $patch.compatiblePackages.($copiedTarget.PackageName) = @(@($patch.compatiblePackages.($copiedTarget.PackageName)) + $previousBuild)
             foreach ($compatibility in @($patch.compatibility | Where-Object { $_.packageName -eq $copiedTarget.PackageName })) {
@@ -3892,7 +3888,7 @@ try {
     Invoke-FixtureGit -Root $releaseRepo -Arguments @('tag', "v$indexVersionHere", $releaseCommit) | Out-Null
 
     # A receipt for this commit with a run of each build given, every patch applied and the
-    # manifest changes the checked-in allowlist approves, the settings alias and the advertising ID removal, written where the
+    # manifest change the checked-in allowlist approves, the settings alias, written where the
     # release check looks for it. A schema 1 receipt names no SBOM, as the ones cut before it
     # existed don't.
     $approvedDelta = [ordered]@{ permissionsAdded = @(); permissionsRemoved = @()
@@ -3912,7 +3908,7 @@ try {
             # Each build at the version code the catalog pins it to, as a run of the declared build.
             $code = @(@($releaseTarget.PackageVersionCodes[$Builds[$i]]) + @("51200000$i") | Where-Object { $_ })[0]
             [ordered]@{
-                source        = [ordered]@{ file = "threads-$($Builds[$i])-arm64-v8a.xapk"
+                source        = [ordered]@{ file = "telegram-$($Builds[$i])-arm64-v8a.apk"
                     package = $releaseTarget.PackageName; versionName = $Builds[$i]; versionCode = $code
                     sha256 = ([string]'ABCDEF'[$i % 6] * 64); forced = $false }
                 patches       = @($releaseNames | ForEach-Object { [ordered]@{ name = $_; applied = $true; reason = $null } })
@@ -3986,10 +3982,10 @@ try {
     # buildAndroid leaves it, carrying the classes.dex the published asset check at the end of
     # this section looks for. The merge carries a component the base APK's manifest lacks, so a
     # delta taken against the base instead of the merge records it as the patches' own, and the
-    # allowlist, which approves only the settings alias and the advertising ID removal, refuses the
-    # receipt. The JDK also plays ResourceTableCheck.java, keeping a copy of the stock APK it was
-    # handed, and DexDiff.java, and an apksigner beside aapt2 names Meta's signer, so
-    # verify-all-patches.ps1 runs on the same stand-ins.
+    # allowlist, which approves only the settings alias, refuses the receipt. The JDK also plays
+    # ResourceTableCheck.java, keeping a copy of the stock APK it was handed, and DexDiff.java, and
+    # an apksigner beside aapt2 names telegram.org's signer, so verify-all-patches.ps1 runs on the
+    # same stand-ins.
     $tools = Join-Path $releaseRoot 'tools'
     $fixtures = Join-Path $releaseRoot 'fixtures'
     New-Item -ItemType Directory -Path $tools, $fixtures -Force | Out-Null
@@ -4095,9 +4091,9 @@ try {
 
     $androidName = 'http://schemas.android.com/apk/res/android:name(0x01010003)='
     $androidExported = '          A: http://schemas.android.com/apk/res/android:exported(0x01010010)=true'
-    # Telegram asks for the advertising ID permission and exports its launcher activity. The patched
-    # build no longer asks for the permission and exports the settings alias beside the launcher:
-    # the changes the checked-in allowlist approves, and the only ones the patches make here.
+    # Telegram asks for internet access and exports its launcher activity, on every build. The patched
+    # build exports the settings alias beside the launcher: the change the checked-in allowlist
+    # approves, and the only one the patches make here.
     function Get-FixtureManifest([string]$Build, [string]$Code, [switch]$WithSplit, [switch]$Patched,
             [string]$Package = $releaseTarget.PackageName) {
         $lines = @(
@@ -4108,17 +4104,13 @@ try {
             "    A: package=`"$Package`" (Raw: `"$Package`")",
             '      E: uses-permission (line=10)',
             "        A: $androidName`"android.permission.INTERNET`" (Raw: `"android.permission.INTERNET`")")
-        if (-not $Patched) {
-            $lines += @('      E: uses-permission (line=11)',
-                "        A: $androidName`"com.google.android.gms.permission.AD_ID`" (Raw: `"com.google.android.gms.permission.AD_ID`")")
-        }
         $lines += @('      E: application (line=20)',
             '        E: activity (line=21)',
-            "          A: $androidName`"com.instagram.barcelona.mainactivity.BarcelonaActivity`" (Raw: `"com.instagram.barcelona.mainactivity.BarcelonaActivity`")",
+            "          A: $androidName`"org.telegram.messenger.web.LaunchActivity`" (Raw: `"org.telegram.messenger.web.LaunchActivity`")",
             $androidExported)
         if ($WithSplit) {
             $lines += @('        E: activity (line=40)',
-                "          A: $androidName`"com.instagram.barcelona.split.FeatureActivity`" (Raw: `"com.instagram.barcelona.split.FeatureActivity`")",
+                "          A: $androidName`"org.telegram.messenger.web.split.FeatureActivity`" (Raw: `"org.telegram.messenger.web.split.FeatureActivity`")",
                 $androidExported)
         }
         if ($Patched) {
@@ -4137,13 +4129,13 @@ try {
     $newerBuild = "$([int]($releaseTarget.PackageVersion -split '\.')[0] + 1).0.0.1.1"
     foreach ($build in @($newerBuild) + @($releaseTarget.PackageVersions)) {
         $versionCode = if ($build -eq $newerBuild) { 512008382 } else { [long]@($releaseTarget.PackageVersionCodes[$build])[0] }
-        $apkm = Join-Path $fixtures "threads-$build-$versionCode.xapk"
+        $apkm = Join-Path $fixtures "telegram-$build-$versionCode.xapk"
         New-TestBundleArchive -Path $apkm -Entries ([ordered]@{
-            'com.instagram.barcelona.apk' = Get-FixtureManifest -Build $build -Code "$versionCode"
+            'org.telegram.messenger.web.apk' = Get-FixtureManifest -Build $build -Code "$versionCode"
             'icon.png' = 'icon'
             'config.arm64_v8a.apk' = ('native code ' * 64)
-            'manifest.json' = ("{`"package_name`":`"com.instagram.barcelona`",`"version_code`":`"$versionCode`",`"split_apks`":[" +
-                '{"file":"com.instagram.barcelona.apk","id":"base"},{"file":"config.arm64_v8a.apk","id":"config.arm64_v8a"}]}') })
+            'manifest.json' = ("{`"package_name`":`"org.telegram.messenger.web`",`"version_code`":`"$versionCode`",`"split_apks`":[" +
+                '{"file":"org.telegram.messenger.web.apk","id":"base"},{"file":"config.arm64_v8a.apk","id":"config.arm64_v8a"}]}') })
         Set-Content -LiteralPath "$apkm.merged.txt" -Encoding ASCII -NoNewline `
             -Value (Get-FixtureManifest -Build $build -Code "$versionCode" -WithSplit)
         Set-Content -LiteralPath "$apkm.patched.txt" -Encoding ASCII -NoNewline `
@@ -4163,7 +4155,7 @@ try {
     # its base manifest, since every script has to refuse it before anything is merged or patched.
     $variantBuild = @($releaseTarget.PackageVersions)[-1]
     $variantCode = [long]@($releaseTarget.PackageVersionCodes[$variantBuild])[0] - 61
-    $variantApkm = Join-Path $fixtures "threads-$variantBuild-variant-arm64-v8a.apkm"
+    $variantApkm = Join-Path $fixtures "telegram-$variantBuild-variant-arm64-v8a.apkm"
     New-TestBundleArchive -Path $variantApkm -Entries ([ordered]@{
         'info.json' = "{`"versioncode`":`"$variantCode`"}"
         'base.apk' = Get-FixtureManifest -Build $variantBuild -Code "$variantCode" })
@@ -4261,8 +4253,8 @@ try {
     # patches anything. base.apk is not what the CLI patches, so there's no receipt to fall back to.
     $builtReceiptBeforeMerge = [System.IO.File]::ReadAllBytes($releaseReceipt)
     $brokenMerges = @(
-        @{ Flag = 'merge-fails.txt'; Pattern = '*Could not merge threads-*.xapk into one APK (exit 9)*could not read the bundle*' },
-        @{ Flag = 'merge-writes-nothing.txt'; Pattern = '*The merge of threads-*.xapk wrote no APK at *stock-merged.apk*' })
+        @{ Flag = 'merge-fails.txt'; Pattern = '*Could not merge telegram-*.xapk into one APK (exit 9)*could not read the bundle*' },
+        @{ Flag = 'merge-writes-nothing.txt'; Pattern = '*The merge of telegram-*.xapk wrote no APK at *stock-merged.apk*' })
     foreach ($broken in $brokenMerges) {
         $flag = Join-Path $tools $broken.Flag
         Set-Content -LiteralPath $flag -Value 'on' -Encoding ASCII
@@ -4280,10 +4272,10 @@ try {
         }
     }
 
-    # verify-all-patches.ps1 on the same stand-ins, with an apksigner beside aapt2 that names Meta's
-    # signer. Once the CLI stopped leaving its merge behind (1.17.0) it held the patched table to
-    # base.apk, so the 7,588 resources the Facebook sibling's 580 splits carry were never compared.
-    # It merges first now:
+    # verify-all-patches.ps1 on the same stand-ins, with an apksigner beside aapt2 that names
+    # telegram.org's signer. Once the CLI stopped leaving its merge behind (1.17.0) it held the
+    # patched table to base.apk, so the resources a split bundle's other slices carry were never
+    # compared. It merges first now:
     # the CLI is handed the merge, the resource check's stock side is that merge, and a bundle that
     # yields no merged APK stops the run before anything is patched. A plain APK goes to the CLI as
     # it is and is its own stock side.
@@ -4325,7 +4317,7 @@ try {
             Remove-Item -LiteralPath $flag -Force -ErrorAction SilentlyContinue
         }
     }
-    $plainFixture = Join-Path $fixtures "threads-$($releaseTarget.PackageVersion)-arm64-v8a.apk"
+    $plainFixture = Join-Path $fixtures "telegram-$($releaseTarget.PackageVersion)-arm64-v8a.apk"
     $newestCode = [regex]::Match((Get-Content -LiteralPath "$newestFixture.merged.txt" -Raw),
         'versionCode\(0x0101021b\)=(\d+)').Groups[1].Value
     Set-Content -LiteralPath $plainFixture -Encoding ASCII -NoNewline `
@@ -4518,11 +4510,12 @@ try {
         'patch-for-device.ps1 took another build of a declared version.'
     Assert-True (-not (Test-Path -LiteralPath $javaLog)) 'patch-for-device.ps1 started the CLI on another build of a declared version.'
 
-    # Another Meta app at a build the catalog declares. Neither script may hand it to the CLI: each
-    # refuses it by name before anything is patched. The builder gets it beside the newest declared
-    # build, so every declared build has a fixture and only the package check stands in the way.
-    $otherPackage = 'com.instagram.android'
-    $otherApkm = Join-Path $fixtures "instagram-$($unproved[0])-arm64-v8a.apkm"
+    # Telegram's own phone-number build, at a version the catalog declares for telegram.org's
+    # standalone one. Neither script may hand it to the CLI: each refuses it by name before anything
+    # is patched. The builder gets it beside the newest declared build, so every declared build has
+    # a fixture and only the package check stands in the way.
+    $otherPackage = 'org.telegram.messenger'
+    $otherApkm = Join-Path $fixtures "messenger-$($unproved[0])-arm64-v8a.apkm"
     New-TestBundleArchive -Path $otherApkm -Entries ([ordered]@{
         'info.json' = "{`"versioncode`":`"$versionCode`"}"
         'base.apk' = Get-FixtureManifest -Build $unproved[0] -Code "$versionCode" -Package $otherPackage })

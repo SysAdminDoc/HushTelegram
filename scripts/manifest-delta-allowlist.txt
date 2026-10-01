@@ -12,19 +12,16 @@
 # a way it doesn't list. A line nothing produces any more fails the receipt as well, so this
 # cannot quietly outlive the change it approved.
 #
-# Two changes are approved.
+# One change is approved.
 #
 # HushTelegram settings adds an alias of Telegram's launcher activity that answers
 # android.intent.action.APPLICATION_PREFERENCES, so Android's App info page for Telegram shows
 # "Additional settings in the app". An alias has to be exported for that page to open it. It
-# targets BarcelonaActivity, which Telegram already exports as its launcher, so nothing new is
-# reachable: the alias only gives other apps a second name for a screen they could already open.
+# targets org.telegram.ui.LaunchActivity, which Telegram already exports as its launcher (and under
+# several icon aliases besides), so nothing new is reachable: the alias only gives other apps a
+# second name for a screen they could already open.
 #
-# Remove the advertising ID drops Telegram's request for the advertising ID permission, so Google
-# Play services hands the app no advertising ID at all.
-#
-# Nothing else is approved. A patch that asks for any other permission, drops one, or changes what
-# other apps can reach still stops the release until somebody says why.
+# Nothing else is approved. A patch that asks for any permission, drops one, or changes what other
+# apps can reach still stops the release until somebody says why.
 
 exported-added activity-alias:app.hushtelegram.extension.telegram.settings.OpenSettings
-permission-removed com.google.android.gms.permission.AD_ID

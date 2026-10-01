@@ -103,7 +103,7 @@ import java.util.TreeSet;
 public class DexDiff {
 
     /** Anything under here is the bundle's own code rather than the host's. */
-    private static final String OWN = "Lapp/morphe/";
+    private static final String OWN = "Lapp/hushtelegram/extension/";
 
     private static final class RemovalAllowlist {
         final Set<String> methods = new TreeSet<>();

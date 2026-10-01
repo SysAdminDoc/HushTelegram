@@ -33,7 +33,7 @@
 
     Both halves refuse to pass on absent evidence. A dex comparison that found no difference at
     all compared the wrong things, and a device run only counts once dex2oat has read a file of
-    the size that was pushed (it exits 0 on a missing one). The clean side has to be Meta's own
+    the size that was pushed (it exits 0 on a missing one). The clean side has to be telegram.org's own
     build of the same version as the patched one: a patched APK on the clean side would compare
     two bundles instead of the bundle against Telegram.
 
@@ -44,7 +44,7 @@
     patches (Get-MergedApk), because the patched APK carries what the splits brought as well as
     base.apk's code: the Facebook sibling's 580 in-app browser shipped its own dex in
     split_heliumcore.apk, and against base.apk its methods read as some 12,000 added and 212
-    changed. The merge carries no signature, so Meta's signer is checked on base.apk, DexDiff
+    changed. The merge carries no signature, so telegram.org's signer is checked on base.apk, DexDiff
     holds the merge to base.apk's classes*.dex byte for byte (handed base.apk as its last
     argument), and it fails a clean side that holds any of the bundle's own code. The device half
     runs base.apk, the same app code.
@@ -177,16 +177,16 @@ if (-not $CleanApk) {
         Where-Object { $_.Extension -in '.apk', '.apkm', '.xapk' -and $_.Name -like "*$($patched.versionName)*" })
     if ($matching.Count -ne 1) {
         throw ("No single fixture for Telegram $($patched.versionName) in $fixtures (found $($matching.Count)). " +
-            'Pass -CleanApk with Meta''s build of that version.')
+            'Pass -CleanApk with telegram.org''s build of that version.')
     }
     $CleanApk = $matching[0].FullName
 }
 if (-not (Test-Path -LiteralPath $CleanApk -PathType Leaf)) { throw "No clean APK at $CleanApk." }
-# Telegram ships as a split bundle (an .xapk or .apkm). Its base APK holds the manifest, Meta's
+# A distributor's split bundle for Telegram (an .xapk or .apkm). Its base APK holds the manifest, telegram.org's
 # signature and the app's own classes*.dex, which is what the device half verifies.
 $cleanBase = Get-BaseApk -Apk $CleanApk -Destination (Join-Path $work 'clean-base.apk')
 
-# The clean side has to be Meta's own build of the version that was patched, not a patched build
+# The clean side has to be telegram.org's own build of the version that was patched, not a patched build
 # or another version: two patched files differ from each other, both halves report differences,
 # and the run would pass while comparing nothing against a clean baseline.
 $clean = Get-ApkManifestFacts -Apk $cleanBase -Aapt2 $Aapt2
@@ -201,7 +201,7 @@ $metaSigners = @($catalog.patches | ForEach-Object { $_.compatibility } |
 if ($metaSigners.Count -eq 0) { throw "patches-list.json declares no signer for $package to hold the clean APK to." }
 $cleanSigners = @(Get-SignerDigests -Apk $cleanBase)
 if (@($cleanSigners | Where-Object { $_ -in $metaSigners }).Count -eq 0) {
-    throw "The clean APK at $CleanApk is signed by $($cleanSigners -join ', '), not by Meta; it is not a vendor build."
+    throw "The clean APK at $CleanApk is signed by $($cleanSigners -join ', '), not by telegram.org; it is not a vendor build."
 }
 # The dex comparison's clean side: the whole bundle, merged as the CLI merged it before patching,
 # so a split's dex (the Facebook sibling's 580 in-app browser shipped one) is on both sides. DexDiff
@@ -211,7 +211,7 @@ if (-not $CleanMerged) {
 }
 if (-not (Test-Path -LiteralPath $CleanMerged -PathType Leaf)) { throw "No merged clean APK at $CleanMerged." }
 
-Write-Host "[registers] clean   $CleanApk (Telegram $($clean.versionName), signed by Meta)"
+Write-Host "[registers] clean   $CleanApk (Telegram $($clean.versionName), signed by telegram.org)"
 Write-Host "[registers] merged  $CleanMerged (the dex comparison's clean side)"
 Write-Host "[registers] patched $PatchedApk"
 

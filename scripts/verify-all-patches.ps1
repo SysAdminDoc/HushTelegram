@@ -14,8 +14,10 @@
     run answers "which patches still apply on this build" rather than being refused before it
     starts. The package still has to be the catalog's.
 
-    A split bundle is merged into one APK first, with the CLI's own merger (Get-MergedApk), and
-    the CLI patches that merge. A clean run reads the manifests of the merge and the patched APK
+    telegram.org ships a single universal APK, so -Apk is usually one already; a distributor's
+    split bundle (.xapk or .apkm) is merged into one APK first, with the CLI's own merger
+    (Get-MergedApk), and the CLI patches that merge either way. A clean run reads the manifests of
+    the merge (or the plain APK) and the patched APK
     the way the release receipt does and prints what patching changed: permissions asked for or
     dropped, components exported or no longer. A change scripts/manifest-delta-allowlist.txt
     doesn't approve stops the run there, before the release. It then holds the patched APK's
@@ -33,7 +35,7 @@
         -DesktopJar C:\path\to\morphe-desktop.jar -WorkDir C:\path\to\scratch
 
 .EXAMPLE
-    scripts/verify-all-patches.ps1 -Apk C:\fixtures\threads-older.xapk -Force `
+    scripts/verify-all-patches.ps1 -Apk C:\fixtures\telegram-older.apk -Force `
         -DesktopJar C:\path\to\morphe-desktop.jar -WorkDir C:\path\to\scratch
 #>
 [CmdletBinding()]
@@ -89,9 +91,10 @@ $runId = [guid]::NewGuid().ToString('N')
 $runDir = Join-Path $workRoot "verify-$runId"
 New-Item -ItemType Directory -Force -Path $runDir | Out-Null
 
-# Telegram ships split bundles. aapt2 reads the version facts off one APK, the base, which holds
-# the manifest, and the register check's clean side is the base too: it carries every dex and
-# Meta's signature, which a merge doesn't keep.
+# A distributor's build of Telegram can come as a split bundle. aapt2 reads the version facts off
+# one APK, the base, which holds the manifest, and the register check's clean side is the base
+# too: it carries every dex and telegram.org's signature, which a merge doesn't keep. A plain APK,
+# telegram.org's own shape, stands in as its own base.
 $stockApk = Get-BaseApk -Apk $Apk -Destination (Resolve-WithinRoot -Path (Join-Path $runDir 'stock-base.apk') -Root $workRoot)
 
 # The version the result is held to: the stock APK's own, read the same way the receipt reads
@@ -224,7 +227,7 @@ try {
         $resourceOutput | ForEach-Object { Write-Host "[verify] $_" }
         Write-Host "[verify] resource report: $resourceReport"
         if ($resourceExitCode -eq 0) {
-            # The injected code against Meta's: registers, branches, invokes, parameters and try
+            # The injected code against telegram.org's: registers, branches, invokes, parameters and try
             # ranges, the shapes that pass the CLI and fail on a device. The rules of
             # injected-mutation-contracts.txt ride along; they're project contracts, which the
             # device verifier doesn't check.

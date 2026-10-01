@@ -83,9 +83,9 @@ function Get-PatchTarget {
     # Every version the catalog declares, newest first. Telegram moves a release a week, so the
     # bundle declares the build it was last proved on and can keep the one before it; the newest is
     # the one a device build and the README name. Compared part by part as numbers, every part:
-    # Telegram's versions have five (449.0.0.54.82) and [version] takes four, so the fifth was
-    # dropped, and two builds apart only there sorted as equals in whatever order the shell left
-    # them, the older one first in both.
+    # Telegram's versions have three (12.10.6), but a fork with a longer scheme sorts fine too, and
+    # two builds that only differ past where one of them runs out of parts sort the shorter one
+    # lower, the way 12.10 sorts below 12.10.0.
     $declared = @($targets[$packageName] | Sort-Object -Unique)
     if ($declared.Count -eq 0) {
         throw "No compatible version for $packageName."
@@ -121,7 +121,7 @@ function Test-DeclaredBuild {
         Whether an APK is one of the builds a catalog declares.
     .DESCRIPTION
         Its version name has to be declared, and so does its version code wherever the catalog pins
-        codes to that name. Another arm64 build of Telegram 449 shares the declared name and was
+        codes to that name. Another arm64 build of Telegram 12.10.6 shares the declared name and was
         never proved, so only a declared build is patched without -f, and only a run of one proves
         a release. Takes Get-PatchTarget's answer, or anything carrying its PackageVersions and
         PackageVersionCodes.
@@ -138,7 +138,7 @@ function Test-DeclaredBuild {
 }
 
 function Format-DeclaredBuilds {
-    # The declared builds the way a refusal names them: 449.0.0.54.82 (511908382), 448.0.0.54.85 (511808302).
+    # The declared builds the way a refusal names them: 12.10.6 (71129), 12.10.5 (71077).
     param([Parameter(Mandatory = $true)]$Target)
 
     $named = foreach ($version in @($Target.PackageVersions)) {

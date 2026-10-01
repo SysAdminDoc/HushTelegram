@@ -9,9 +9,9 @@
     - the official Morphe patch bundle's patches-list.json, which has shipped no Telegram patch so
       far;
     - the Morphe community directory, Awesome Morphe, the Morphe Patch Tracker and Jman's bundle
-      index, for every bundle that targets com.instagram.barcelona, and for whether HushTelegram is
+      index, for every bundle that targets a census package, and for whether HushTelegram is
       listed on each, plus the Morphe Archive for HushTelegram' own listing;
-    - GitHub code search for the Telegram package name in patch lists, patch code and Xposed hooks,
+    - GitHub code search for each census package name in patch lists, patch code and Xposed hooks,
       with the two archive mirrors mapped back to the repositories they copied, and GitLab code
       search when GITLAB_TOKEN is set and -SkipGitLabCodeSearch isn't passed;
     - every ledger source's repository, licence, branches and forks. A source with watchPaths is
@@ -317,7 +317,7 @@ $candidates = @{}
 function Add-Candidate {
     <#
         Packages are what an index says a bundle targets. Code search only proves a file names the
-        package, which an Instagram patch that opens Telegram links does too, so its packages are Mentions.
+        package, which a fork's patch that opens Telegram links does too, so its packages are Mentions.
     #>
     param([string]$Key, [string]$Source, [string[]]$Packages, [string[]]$Mentions, [string]$Path, [string]$Blob, [string[]]$Features)
     if (-not $Key) { return }
@@ -463,7 +463,8 @@ Invoke-Source 'Jman''s bundle index' {
     }
     $catalog = Invoke-SourceRequest -Uri 'https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/PATCH-LIST-CATALOG.md'
     if ($catalog.Status -ne 200) { throw "Jman's patch list catalog answered HTTP $($catalog.Status)." }
-    $appPackages = @{ 'threads' = 'com.instagram.barcelona'; 'com.instagram.barcelona' = 'com.instagram.barcelona' }
+    $appPackages = @{ 'telegram' = 'org.telegram.messenger.web'; 'org.telegram.messenger' = 'org.telegram.messenger'
+        'org.telegram.messenger.web' = 'org.telegram.messenger.web'; 'org.telegram.messenger.beta' = 'org.telegram.messenger.beta' }
     $section = $null
     $found = @{}
     foreach ($line in ($catalog.Content -split "`r?`n")) {

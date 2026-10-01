@@ -429,13 +429,13 @@ try {
 
 # The verifier run end to end, with stand-ins for the tools it starts: a java that answers the
 # version probe and plays DexDiff with the given exit code, an aapt2 that describes Telegram
-# 449.0.0.54.82, and an apksigner that reports a Telegram signer from patches-list.json. With
+# 12.10.6, and an apksigner that reports a Telegram signer from patches-list.json. With
 # -JavaGone the apksigner also deletes that java, which leaves it unable to start by the time
 # DexDiff runs, as a JDK replaced mid-run would. A Continue preference around the DexDiff call
 # once turned exactly that into '[registers] success.'.
 $standIns = [System.IO.Path]::GetFullPath((Join-Path ([System.IO.Path]::GetTempPath()) `
     ("hushtelegram-verifier-standins-" + [guid]::NewGuid().ToString('N'))))
-$standInPackage = 'com.instagram.barcelona'
+$standInPackage = 'org.telegram.messenger.web'
 $metaSigner = @((Get-Content -LiteralPath (Join-Path (Split-Path -Parent $PSScriptRoot) 'patches-list.json') -Raw |
     ConvertFrom-Json).patches | ForEach-Object { $_.compatibility } |
     Where-Object { $_.packageName -eq $standInPackage } | ForEach-Object { $_.signatures } |
@@ -466,7 +466,7 @@ exit /b $DexDiffExit
 @echo off
 echo   E: manifest (line=2)
 echo     A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=511908382
-echo     A: http://schemas.android.com/apk/res/android:versionName(0x0101021c)="449.0.0.54.82" (Raw: "449.0.0.54.82")
+echo     A: http://schemas.android.com/apk/res/android:versionName(0x0101021c)="12.10.6" (Raw: "12.10.6")
 echo     A: package="$standInPackage" (Raw: "$standInPackage")
 exit /b 0
 "@
@@ -880,7 +880,7 @@ try {
     $patchedClean = Invoke-DexDiff -Clean (Join-Path $caseRoot 'good.apk') -Patched (Join-Path $caseRoot 'bad-branch.apk') `
         -Allowlist $emptyAllowlist -Name 'patched-clean' -Contracts $contracts
     Assert-True ($patchedClean.ExitCode -ne 0 -and ($patchedClean.Output -join "`n") -match
-        'the clean APK carries \d+ methods under Lapp/morphe/ .*so it is a patched build') `
+        'the clean APK carries \d+ methods under Lapp/hushtelegram/extension/ .*so it is a patched build') `
         "A clean side holding the bundle's code was accepted.`n$($patchedClean.Output -join "`n")"
 
     # Handed the signed base.apk, DexDiff holds the merge it reads to base.apk's classes*.dex as they

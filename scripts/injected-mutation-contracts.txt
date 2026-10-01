@@ -15,9 +15,9 @@
 # The settings patch sends each of these ShortcutManager calls to SettingsEntry, which makes the
 # real call and puts the HushTelegram shortcut back in front after it. One left in Telegram's own code
 # could rank Telegram's shortcuts ahead again and push the HushTelegram one out of the long-press
-# menu. 449.0.0.54.82 makes pushDynamicShortcut once, addDynamicShortcuts and updateShortcuts
-# twice each, removeAllDynamicShortcuts once and setDynamicShortcuts nowhere; its rule catches a
-# later build that starts making it.
+# menu. 12.10.6 makes pushDynamicShortcut once, addDynamicShortcuts twice, updateShortcuts once,
+# removeAllDynamicShortcuts once and setDynamicShortcuts nowhere; its rule catches a later build
+# that starts making it.
 no-call Landroid/content/pm/ShortcutManager;->pushDynamicShortcut(Landroid/content/pm/ShortcutInfo;)V outside Lapp/hushtelegram/extension/
 no-call Landroid/content/pm/ShortcutManager;->addDynamicShortcuts(Ljava/util/List;)Z outside Lapp/hushtelegram/extension/
 no-call Landroid/content/pm/ShortcutManager;->setDynamicShortcuts(Ljava/util/List;)Z outside Lapp/hushtelegram/extension/
