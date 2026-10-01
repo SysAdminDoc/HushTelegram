@@ -15,12 +15,25 @@ plugins {
 // makes for itself. The settings classpath is forced separately in settings.gradle.kts, which
 // resolves before this file exists.
 val reviewedBouncyCastle = libs.versions.bouncycastle.get()
+// AGP's host-side unified test platform brings Netty 4.1.93/4.1.110, including
+// GHSA-c4c3-7fpv-j4q5 (fixed on this line in 4.1.137). Align its modules at the
+// reviewed 4.1 release. These two configurations never contribute to an extension payload.
+val reviewedUtpNetty = "4.1.138.Final"
+val nettyTestPlatformConfigurations = setOf(
+    "_internal-unified-test-platform-core",
+    "_internal-unified-test-platform-android-test-plugin-host-emulator-control",
+)
 allprojects {
     configurations.configureEach {
+        val isNettyTestPlatform = name in nettyTestPlatformConfigurations
         resolutionStrategy.eachDependency {
             if (requested.group == "org.bouncycastle") {
                 useVersion(reviewedBouncyCastle)
                 because("The build classpath must use the reviewed Bouncy Castle release.")
+            }
+            if (isNettyTestPlatform && requested.group == "io.netty") {
+                useVersion(reviewedUtpNetty)
+                because("The Android host test tools must use the reviewed Netty 4.1 release.")
             }
         }
     }

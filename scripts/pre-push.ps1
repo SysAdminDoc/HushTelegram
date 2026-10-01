@@ -521,6 +521,10 @@ try {
         $_ -eq 'settings.gradle.kts' -or $_ -eq 'build.gradle.kts' -or
         $_ -in $runtimeTestInputs
     }).Count -gt 0
+    $buildAdvisoryInputs = @('scripts/build-advisories.ps1', 'scripts/build-advisory-exceptions.txt',
+        'scripts/test-build-advisories.ps1', 'scripts/release-advisories.ps1',
+        'gradle.properties', 'gradle/wrapper/gradle-wrapper.properties', 'gradle/wrapper/gradle-wrapper.jar')
+    $touchesBuildAdvisories = $touchesCode -or @($paths | Where-Object { $_ -in $buildAdvisoryInputs }).Count -gt 0
     $touchesScripts = @($paths | Where-Object { $_ -like 'scripts/*' }).Count -gt 0
     # The contract tests read two files outside scripts/ that nothing else checks: the catalog,
     # held to the builds, signers and dependencies the release scripts expect, and the Gradle file
@@ -647,7 +651,7 @@ try {
         $head = $null
         $dirty = @()
         $gateCommits = @($null)
-    } elseif ($touchesCode -or $touchesRelease -or $touchesScripts -or $touchesContracts -or $touchesTelegramSources) {
+    } elseif ($touchesBuildAdvisories -or $touchesRelease -or $touchesScripts -or $touchesContracts -or $touchesTelegramSources) {
         $head = ([string](Invoke-HookGit @('-C', $Root, 'rev-parse', 'HEAD') | Select-Object -Last 1)).Trim()
         $dirty = @(Invoke-HookGit @('-C', $Root, 'status', '--porcelain', '--untracked-files=all'))
         $gateCommits = @($script:pushedCommits)
@@ -755,8 +759,11 @@ try {
         }
     }
 
-    if ($touchesCode) {
-        Write-Step 'extension or patch sources, or a root file their tests read, changed, running the runtime tests and the API level check'
+    if ($touchesBuildAdvisories) {
+        if ($touchesCode) {
+            Write-Step 'extension or patch sources, or a root file their tests read, changed, running the runtime tests and the API level check'
+        }
+        Write-Step 'checking advisories for the resolved build, test and provided dependencies'
 
         # The lint runs alongside the tests because the tests cannot see this class of defect at
         # all: they run on a desktop JVM, where every java.util method exists whatever the
@@ -764,12 +771,13 @@ try {
         # guards with it, so a call that is properly guarded stays quiet.
         # The patch module has tests of its own, on the register helpers and the anchors, and
         # nothing before a push ran them: they only ran on the way to generatePatchesList.
-        $tasks = @(
+        $tasks = @(':patches:buildDependencyReport')
+        if ($touchesCode) { $tasks += @(
             ':extensions:telegram:test',
             ':patches:test',
             ':extensions:shared:library:lint',
             ':extensions:telegram:lint'
-        )
+        ) }
         # HUSHTELEGRAM_BUILD_WRAPPER names a PowerShell script that runs Gradle on this machine,
         # called as <wrapper> -ProjectDir <repository> -Tasks <task>...: a machine that shares its
         # CPU and memory between several builds points it at a governor. Unset, the Gradle
@@ -793,8 +801,10 @@ try {
                 $savedFixtureDir = $env:HUSHTELEGRAM_FIXTURE_DIR
                 $savedRequiredFixtures = $env:HUSHTELEGRAM_REQUIRE_FIXTURES
                 try {
-                $env:HUSHTELEGRAM_FIXTURE_DIR = Assert-PatchFixtures -ProjectRoot $gateRoot
-                $env:HUSHTELEGRAM_REQUIRE_FIXTURES = '1'
+                if ($touchesCode) {
+                    $env:HUSHTELEGRAM_FIXTURE_DIR = Assert-PatchFixtures -ProjectRoot $gateRoot
+                    $env:HUSHTELEGRAM_REQUIRE_FIXTURES = '1'
+                }
 
                 # The Morphe settings plugin resolves from GitHub Packages, which needs a reader
                 # token. Require the fixtures before authenticating or starting that build.
@@ -820,10 +830,24 @@ try {
                     }
                 }
                 if ($LASTEXITCODE -ne 0) {
+                    if (-not $touchesCode) {
+                        throw 'The resolved build dependency report could not be generated. Read the dependency resolution or checksum verification failure above.'
+                    }
                     throw ('The runtime test build did not pass. Read the output above: it says whether a ' +
                         'test failed, an API level above the payload floor was reached, or the build could ' +
                         'not start. Push anyway with HUSHTELEGRAM_SKIP_PRE_PUSH=1.')
                 }
+                $buildAdvisories = Join-Path $gateRoot 'scripts/build-advisories.ps1'
+                if (-not (Test-Path -LiteralPath $buildAdvisories -PathType Leaf)) {
+                    throw "The resolved build advisory checker is missing: $buildAdvisories"
+                }
+                $global:LASTEXITCODE = 0
+                if (Test-InPlace $gateCommit) {
+                    Invoke-WithoutGitEnvironment { & $buildAdvisories -Root $gateRoot }
+                } else {
+                    Invoke-CommitScript -Script $buildAdvisories -Arguments @{ Root = $gateRoot }
+                }
+                if ($LASTEXITCODE -ne 0) { throw 'The resolved build advisory scan did not pass.' }
                 } finally {
                     $env:HUSHTELEGRAM_FIXTURE_DIR = $savedFixtureDir
                     $env:HUSHTELEGRAM_REQUIRE_FIXTURES = $savedRequiredFixtures

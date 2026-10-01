@@ -6,6 +6,7 @@ import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
+import org.gradle.api.artifacts.result.UnresolvedDependencyResult
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.security.MessageDigest
@@ -292,6 +293,123 @@ object Sbom {
             }
             else -> throw GradleException("The SBOM can't hold a ${value::class.java.simpleName}.")
         }
+    }
+}
+
+/** Build, test and provided inputs, kept separate from the libraries the release bundle carries. */
+abstract class BuildDependencyGraph : DefaultTask() {
+    @get:Input
+    abstract val graphs: MapProperty<String, ResolvedComponentResult>
+
+    // A strict external-module artifact view downloads every listed artifact and invokes Gradle's
+    // checksum verification. Merely walking allComponents can leave unresolved edges unnoticed.
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val artifactFiles: ConfigurableFileCollection
+
+    @get:OutputFile
+    abstract val output: RegularFileProperty
+
+    @TaskAction
+    fun write() {
+        fun field(value: String): String {
+            if (value.isBlank() || value.any { it == '\t' || it == '\n' || it == '\r' }) {
+                throw GradleException("The build dependency report can't name [$value].")
+            }
+            return value
+        }
+        val lines = sortedSetOf<String>()
+        for ((configuration, root) in graphs.get().toSortedMap()) {
+            field(configuration)
+            lines += "graph\t$configuration"
+            val seen = mutableSetOf<ComponentIdentifier>()
+            val queue = ArrayDeque(listOf(root))
+            while (queue.isNotEmpty()) {
+                val component = queue.removeFirst()
+                if (!seen.add(component.id)) continue
+                if (component !== root) {
+                    when (val id = component.id) {
+                        is ModuleComponentIdentifier -> lines += listOf(
+                            "module", field(id.group), field(id.module), field(id.version), configuration
+                        ).joinToString("\t")
+                        is ProjectComponentIdentifier -> Unit
+                        else -> throw GradleException(
+                            "The build dependency report can't name ${id.displayName} on $configuration."
+                        )
+                    }
+                }
+                for (dependency in component.dependencies) {
+                    // An unresolved constraint is a failure too. Check before following or
+                    // dropping any edge; filtering constraints first can conceal this case.
+                    if (dependency !is ResolvedDependencyResult) {
+                        val failure = (dependency as? UnresolvedDependencyResult)?.failure?.message
+                        throw GradleException(
+                            "${dependency.requested.displayName} did not resolve on $configuration" +
+                                (failure?.let { ": $it" } ?: ".")
+                        )
+                    }
+                    queue.addLast(dependency.selected)
+                }
+            }
+        }
+        // Also force empty graph views to resolve. An artifact failure must never become a
+        // shortened report, including a dependency-verification refusal.
+        artifactFiles.files
+        output.get().asFile.apply {
+            parentFile.mkdirs()
+            writeText(lines.joinToString("\n", postfix = "\n"), Charsets.UTF_8)
+        }
+    }
+}
+
+abstract class WriteBuildDependencyReport : DefaultTask() {
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val graphFiles: ConfigurableFileCollection
+
+    @get:Input
+    abstract val gradleVersion: Property<String>
+
+    @get:OutputFile
+    abstract val output: RegularFileProperty
+
+    @TaskAction
+    fun write() {
+        val configurations = sortedSetOf<String>()
+        val components = sortedMapOf<String, List<String>>()
+        val origins = sortedMapOf<String, MutableSet<String>>()
+        for (file in graphFiles.files.sortedBy { it.path }) {
+            for (line in file.readLines(Charsets.UTF_8).filter { it.isNotBlank() }) {
+                val fields = line.split('\t')
+                when {
+                    fields.size == 2 && fields[0] == "graph" -> configurations += fields[1]
+                    fields.size == 5 && fields[0] == "module" -> {
+                        val coordinates = fields.subList(1, 4)
+                        val purl = Sbom.purl(coordinates[0], coordinates[1], coordinates[2])
+                        components[purl] = coordinates
+                        origins.getOrPut(purl) { sortedSetOf() } += fields[4]
+                    }
+                    else -> throw GradleException("$file has an invalid build dependency row: $line")
+                }
+            }
+        }
+        if (configurations.isEmpty() || components.isEmpty()) {
+            throw GradleException("The resolved build dependency report has no configurations or modules.")
+        }
+        val report = linkedMapOf(
+            "schemaVersion" to 1,
+            "gradleVersion" to gradleVersion.get(),
+            "configurations" to configurations,
+            "components" to components.map { (purl, coordinates) -> linkedMapOf(
+                "group" to coordinates[0], "name" to coordinates[1], "version" to coordinates[2],
+                "purl" to purl, "configurations" to origins.getValue(purl),
+            ) },
+        )
+        output.get().asFile.apply {
+            parentFile.mkdirs()
+            writeText(Sbom.json(report) + "\n", Charsets.UTF_8)
+        }
+        logger.lifecycle("Resolved build dependencies: ${components.size} modules on ${configurations.size} configurations")
     }
 }
 
@@ -721,6 +839,43 @@ dependencies {
     // patcher already brings this exact version at run time; this puts it on the test compile
     // classpath as well.
     testImplementation("com.github.REAndroid:arsclib:a28c6fb2a7")
+}
+
+val buildDependencyReport = tasks.register<WriteBuildDependencyReport>("buildDependencyReport") {
+    group = "verification"
+    description = "Reports resolved build, test and provided libraries separately from the shipped SBOM."
+    gradleVersion.set(project.gradle.gradleVersion)
+    output.set(layout.buildDirectory.file("dependency-reports/build-dependencies.json"))
+}
+// Each graph is resolved by a task belonging to its project, as the payload SBOM tasks are.
+// Wait for every plugin to finish creating configurations before collecting the resolvable ones.
+gradle.projectsEvaluated {
+    val graphTasks = rootProject.allprojects.sortedBy { it.path }.map { dependencyProject ->
+        dependencyProject.tasks.register<BuildDependencyGraph>("resolvedBuildDependencyGraph") {
+            graphs.convention(emptyMap())
+            output.set(dependencyProject.layout.buildDirectory.file("dependency-reports/resolved-graph.tsv"))
+            val configurations = dependencyProject.configurations.filter { it.isCanBeResolved }
+                .map { "${dependencyProject.path}:${it.name}" to it } +
+                dependencyProject.buildscript.configurations.filter { it.isCanBeResolved }
+                    .map { "${dependencyProject.path}:buildscript:${it.name}" to it }
+            for ((name, configuration) in configurations) {
+                graphs.put(name, configuration.incoming.resolutionResult.rootComponent)
+                artifactFiles.from(configuration.incoming.artifactView {
+                    componentFilter { it is ModuleComponentIdentifier }
+                }.files)
+            }
+            if (dependencyProject == rootProject) {
+                val extras = dependencyProject.extensions.extraProperties
+                @Suppress("UNCHECKED_CAST")
+                val settingsGraphs = extras.get("settingsBuildDependencyGraphs") as Map<String, ResolvedComponentResult>
+                graphs.putAll(settingsGraphs)
+                artifactFiles.from(extras.get("settingsBuildDependencyArtifacts"))
+            }
+        }
+    }
+    buildDependencyReport.configure {
+        graphFiles.from(graphTasks.map { it.flatMap { task -> task.output } })
+    }
 }
 
 tasks {

@@ -2241,6 +2241,8 @@ try {
         New-Item -ItemType Directory -Path (Join-Path $Repository 'scripts') -Force | Out-Null
         Copy-Item -LiteralPath (Join-Path $Root 'patches-list.json') -Destination (Join-Path $Repository 'patches-list.json')
         Copy-Item -LiteralPath (Join-Path $Root 'scripts/patch-target.ps1') -Destination (Join-Path $Repository 'scripts/patch-target.ps1')
+        Set-Content -LiteralPath (Join-Path $Repository 'scripts/build-advisories.ps1') -Encoding ASCII -Value @(
+            'param([string]$Root)', 'exit 0')
     }
     Initialize-HookFixtureCatalog $hookRoot
     $routingFixtures = [IO.Path]::GetFullPath("$hookRoot-fixtures")
@@ -2665,7 +2667,7 @@ try {
     New-Item -ItemType Directory -Path (Split-Path -Parent $newBranchSource) -Force | Out-Null
     Set-Content -LiteralPath $newBranchSource -Encoding UTF8 -Value 'final class FirstCommit {}'
     & git -C $hookRoot add extensions/telegram/src/main/java/FirstCommit.java patches-list.json `
-        scripts/patch-target.ps1 scripts/test-script-contracts.ps1 scripts/test-telegram-sources.ps1
+        scripts/patch-target.ps1 scripts/build-advisories.ps1 scripts/test-script-contracts.ps1 scripts/test-telegram-sources.ps1
     & git -C $hookRoot commit --quiet -m 'code first'
     $firstCommit = (& git -C $hookRoot rev-parse HEAD).Trim()
     Set-Content -LiteralPath (Join-Path $hookRoot 'CONTRIBUTING.md') -Encoding UTF8 -Value 'tip only'
@@ -3017,7 +3019,7 @@ try {
                 'param([string]$Root)', 'exit 0')
         }
         & git -C $gateRepo add patches-list.json scripts/patch-target.ps1 `
-            scripts/test-script-contracts.ps1 scripts/test-telegram-sources.ps1
+            scripts/build-advisories.ps1 scripts/test-script-contracts.ps1 scripts/test-telegram-sources.ps1
         $gateMarker = Join-Path $hookRoot 'gate-ran.txt'
         $gateStub = Join-Path $hookRoot 'gate-wrapper.ps1'
         Set-Content -LiteralPath $gateStub -Encoding UTF8 -Value @(
@@ -3329,6 +3331,8 @@ try {
 Write-Host '[scripts] pre-push routing contracts passed'
 & (Join-Path $PSScriptRoot 'test-fixture-gate.ps1') -Root $Root
 if ($LASTEXITCODE -ne 0) { throw 'The pre-push fixture contracts did not pass.' }
+& (Join-Path $PSScriptRoot 'test-build-advisories.ps1') -Root $Root
+if ($LASTEXITCODE -ne 0) { throw 'The resolved build advisory contracts did not pass.' }
 
 # --- Test-ChangelogVersions ------------------------------------------------------------------
 #

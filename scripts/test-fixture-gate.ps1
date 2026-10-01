@@ -83,6 +83,8 @@ try {
     Invoke-FixtureGit @('config', 'user.name', 'SysAdminDoc') | Out-Null
     Invoke-FixtureGit @('config', 'user.email', 'matt_parker@outlook.com') | Out-Null
     Copy-Item -LiteralPath (Join-Path $Root 'scripts/patch-target.ps1') -Destination (Join-Path $repo 'scripts/patch-target.ps1')
+    Set-Content -LiteralPath (Join-Path $repo 'scripts/build-advisories.ps1') -Encoding ASCII -Value @(
+        'param([string]$Root)', 'exit 0')
     Set-Content -LiteralPath (Join-Path $repo $source) -Value 'first source' -Encoding ASCII
     Set-Content -LiteralPath (Join-Path $repo 'scripts/validate-release-facts.ps1') -Encoding ASCII -Value @(
         'param([string]$Root, [switch]$VerifyPublishedAsset, [switch]$ArtifactIsHosted)',

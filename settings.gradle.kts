@@ -1,4 +1,5 @@
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 
 rootProject.name = "hushtelegram"
 
@@ -60,6 +61,17 @@ buildscript {
             if (requested.group == "org.bouncycastle") {
                 useVersion("1.86")
             }
+            // AGP's settings-plugin dependencies are build inputs, not shipped libraries.
+            // jose4j <=0.9.5 has GHSA-3677-xxcr-wjqv; JDOM <=2.0.6 has
+            // GHSA-2363-cqg2-863c. Keep the fixes on their existing release lines.
+            if (requested.group == "org.bitbucket.b_c" && requested.name == "jose4j") {
+                useVersion("0.9.7")
+                because("The settings plugin must use the reviewed jose4j 0.9 release.")
+            }
+            if (requested.group == "org.jdom" && requested.name == "jdom2") {
+                useVersion("2.0.6.1")
+                because("The settings plugin must use the JDOM release with the XXE fix.")
+            }
         }
     }
 }
@@ -98,3 +110,17 @@ if (!allowMavenLocal) {
 }
 
 include(":patches:stub")
+
+// Plugin dependencies live on the settings classpath, outside every project's configurations.
+// Keep that resolved graph for the root project's advisory-report task. Resolving its external
+// artifacts is still strict, so the normal reviewed-checksum verification applies to them too.
+val settingsBuildGraphs = buildscript.configurations.filter { it.isCanBeResolved }.associate {
+    "settings:${it.name}" to it.incoming.resolutionResult.rootComponent.get()
+}
+val settingsBuildArtifacts = buildscript.configurations.filter { it.isCanBeResolved }.map {
+    it.incoming.artifactView { componentFilter { it is ModuleComponentIdentifier } }.files
+}
+gradle.rootProject {
+    extensions.extraProperties.set("settingsBuildDependencyGraphs", settingsBuildGraphs)
+    extensions.extraProperties.set("settingsBuildDependencyArtifacts", settingsBuildArtifacts)
+}
