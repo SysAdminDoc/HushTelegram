@@ -12,7 +12,9 @@
 
 HushTelegram is a Morphe patch bundle for Android that takes the sponsored messages out of Telegram and keeps a few things on your phone that Telegram would otherwise send home.
 
-It's early. There's no release yet. The four patches below have been applied to Telegram 12.10.6 and exercised on a signed-in phone, where Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
+The latest release is [v0.0.4](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.4), with 4 patches. It's the first one. Every patch has been applied to Telegram 12.10.6 and exercised on a signed-in phone, where Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
+
+[Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) | [Download a release](https://github.com/SysAdminDoc/HushTelegram/releases/latest) | [Browse the patches](#patches)
 
 ## Why use it
 
@@ -33,10 +35,8 @@ The other Telegram, `org.telegram.messenger`, shares nearly all its code with th
 
 ## Install
 
-There's no release to install yet. Once there is:
-
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 1.32.0 or newer.
-2. Add HushTelegram as a patch source.
+2. Add HushTelegram as a patch source: https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram
 3. Download Telegram 12.10.6 from telegram.org.
 4. In Morphe Manager, pick that file, keep the default patch selection or change it, and patch.
 

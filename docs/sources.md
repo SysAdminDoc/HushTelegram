@@ -53,4 +53,4 @@ Premium unlocks, getting past a channel's forward or save protection, and openin
 
 ## Where HushTelegram is listed
 
-Nowhere. The repository is private for now, and none of the Morphe indexes (the community directory, Awesome Morphe, the Morphe Patch Tracker, Jman's bundle index and the Morphe Archive) list it.
+Nowhere yet. The repository went public with the first release on 2026-10-01, and none of the Morphe indexes (the community directory, Awesome Morphe, the Morphe Patch Tracker, Jman's bundle index and the Morphe Archive) had picked it up by then.
