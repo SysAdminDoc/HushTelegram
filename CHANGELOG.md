@@ -7,6 +7,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** Patched APKs require Android 9 or Telegram's higher minimum. Settings and diagnostic reports name any ad or usage-report hook missing from a partially supported build.
 * **Tooling:** Patch-changing pushes require every declared Telegram fixture. Release receipts record and verify the binary Android installation floor while retaining checks for published older receipts.
 * **Tooling:** The Java directory check works when a suitable runtime is already first on PATH.
+* **Telegram:** Diagnostic exports remove named chat, dialog, peer and channel IDs, access hashes, phone values and short Telegram deep links. Version, timestamp and counter fields stay readable.
 
 ## 0.0.4 (2026-10-01)
 

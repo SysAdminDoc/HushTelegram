@@ -70,6 +70,8 @@ public final class DiagnosticRedactor {
                     + "|guided|guides|guiding|guidance|guide|misguided|fluidity|fluid|liquid|squid|druid|authors"
                     + "|authored|authoring|author|authorize|authorized|authorizes|authorizing|unauthorized"
                     + "|authorities|authority)";
+    /** Telegram's phone fields, matched whole so phoneCount and headphone remain readable. */
+    private static final String PHONE_NAMES = "phone(?:[_-]?number)?";
     /**
      * Credential and device names kept from the shared redaction rules this class was built on:
      * sessionid, ds_user_id and csrftoken are cookie names a session can use, and rur, mid and
@@ -90,7 +92,7 @@ public final class DiagnosticRedactor {
                     + "|openudid|android[_-]?id|ds_user_id|ig_did|machine[_-]?id|advertiser[_-]?id"
                     + "|advertising[_-]?id|adid)[a-z0-9_-]*"
                     + "|(?!" + ORDINARY_WORDS + "(?![a-z0-9_]|-(?!>)))[a-z0-9_-]*(?:sid|uid|iid|auth)[a-z0-9_-]*"
-                    + "|rur|mid|pwd";
+                    + "|rur|mid|pwd|access[_-]?hash|" + PHONE_NAMES;
     /** Names whose unquoted value can hold spaces and semicolons, so it runs to the end of its line. */
     private static final String PASSWORD_NAMES = "[a-z0-9_-]*(?:password|passwd|passphrase|passcode)[a-z0-9_-]*|pwd";
     /**
@@ -105,6 +107,7 @@ public final class DiagnosticRedactor {
             "(?:[a-z0-9]+[_-])*(?:aid|cid|pk)|[a-z0-9_-]*(?:fbid|pk[_-]?id|media[_-]?id|story[_-]?id"
                     + "|post[_-]?id|feedback[_-]?id|video[_-]?id|item[_-]?id|group[_-]?id|page[_-]?id"
                     + "|profile[_-]?id|actor[_-]?id"
+                    + "|chat[_-]?id|dialog[_-]?id|peer[_-]?id|channel[_-]?id"
                     + "|thread[_-]?id|comment[_-]?id|msg[_-]?id|message[_-]?id)";
     /**
      * Names carrying the id of an account, or a list of them: user_id, userid, userId, user-id and
@@ -193,6 +196,13 @@ public final class DiagnosticRedactor {
     private static final String USER_ID_VALUE = "[^ \\t\\r\\n;&\"')}]*(?:[ \\t]++(?![a-z][a-z0-9_-]*" + SEPARATOR
             + ")[^ \\t\\r\\n;&\"')}]*)*";
     /**
+     * A formatted phone number can contain spaces and parentheses. A space continues its value
+     * only before another digit or opening parenthesis, so a following retries=3 stays visible.
+     * The no-break space and decimal digits are explicit for the JDK and Android's ICU engine.
+     */
+    private static final String PHONE_VALUE =
+            "[+(]*\\p{Nd}(?:[\\p{Nd}().+-]|[ \\t\\xA0]++(?=[\\p{Nd}(]))*";
+    /**
      * A bare id, for the places that print a list of them with no name in front. A Telegram post's
      * id, which is an Instagram media id, runs to nineteen digits, and the Meta ids that come with
      * it are fifteen or more. Nothing else these reports carry is a number that long. A
@@ -273,7 +283,7 @@ public final class DiagnosticRedactor {
         String passed = text
                 .replaceAll(ISOLATED_NAME, "[name omitted]")
                 .replaceAll(HANDLE, "[handle omitted]")
-                .replaceAll("(?i)" + EDGE + "[a-z][a-z0-9+.-]*://[^" + SPACE + "\"'<>]+", "[url omitted]")
+                .replaceAll("(?i)" + EDGE + "(?:[a-z][a-z0-9+.-]*://|tg:)[^" + SPACE + "\"'<>]+", "[url omitted]")
                 .replaceAll(HOST, "[host omitted]")
                 .replaceAll(NAME_VALUE_PAIR, "$1[omitted]")
                 .replaceAll(HEADER, "$1=[omitted]")
@@ -281,6 +291,8 @@ public final class DiagnosticRedactor {
                 .replaceAll("(?i)" + EDGE + "(" + PASSWORD_NAMES + ")" + SEPARATOR + "(?:" + QUOTED + "|[^\\r\\n]*)",
                         "$1=[omitted]");
         return withoutCredentialBlocks(passed)
+                .replaceAll("(?i)" + EDGE + "(" + PHONE_NAMES + ")" + SEPARATOR
+                        + "(?:" + QUOTED + "|" + PHONE_VALUE + ")", "$1=[omitted]")
                 .replaceAll("(?i)" + EDGE + "(" + CREDENTIAL_NAMES + ")" + SEPARATOR
                         + "(?:" + QUOTED + "|[^" + SPACE + ",&\"'<>]+)", "$1=[omitted]")
                 .replaceAll("(?i)" + EDGE + "(" + USER_ID_NAMES + ")" + SEPARATOR

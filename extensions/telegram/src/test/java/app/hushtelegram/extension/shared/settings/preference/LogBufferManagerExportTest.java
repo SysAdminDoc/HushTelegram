@@ -218,6 +218,14 @@ public class LogBufferManagerExportTest {
             lines.add(row[0]);
             crash.append(row[0]).append('\n');
         }
+        String telegramProbe = app.hushtelegram.extension.shared.diagnostics.DiagnosticRedactorTest.TELEGRAM_EXPORT_PROBE;
+        String telegramRedacted = app.hushtelegram.extension.shared.diagnostics.DiagnosticRedactorTest.TELEGRAM_EXPORT_REDACTED;
+        // Keep this event last so clipboard trimming cannot make the privacy assertion pass by
+        // dropping it. Each source has its own marker, and all must keep the numeric controls.
+        LogBufferManager.appendEvent(app.hushtelegram.extension.shared.diagnostics.DiagnosticCategory.FEED,
+                "TelegramProbe", "INFO", telegramProbe);
+        lines.add("section " + telegramProbe);
+        crash.append("crash ").append(telegramProbe).append('\n');
         String frame = "\tat app.hushtelegram.extension.telegram.settings.ReleaseTransport.open(ReleaseTransport.java:120)";
         crash.append(frame).append('\n');
         LogBufferManager.persistCrashReport(context, crash.toString());
@@ -267,6 +275,13 @@ public class LogBufferManagerExportTest {
                 assertTrue(where + " lost the stack frame: " + text, text.contains(frame + "\n"));
                 assertTrue(where + " lost the crash heading: " + text, text.contains("[LATEST JAVA CRASH]"));
                 assertTrue(where + " lost the section: " + text, text.contains("[PROBE]"));
+                String telegramEvent = " | TelegramProbe | INFO | " + telegramRedacted;
+                assertTrue(where + " lost the redacted Telegram event or its numeric controls: " + text,
+                        text.contains(telegramEvent + "\n") || text.endsWith(telegramEvent));
+                assertTrue(where + " lost the redacted Telegram crash line or its numeric controls: " + text,
+                        text.contains("crash " + telegramRedacted + "\n"));
+                assertTrue(where + " lost the redacted Telegram section or its numeric controls: " + text,
+                        text.contains("section " + telegramRedacted + "\n"));
             }
         } finally {
             LogBufferManager.clearReportSectionsForTests();

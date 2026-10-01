@@ -266,17 +266,19 @@ public class DiagnosticRedactorTest {
     private static final String U = "\\" + "u0022";
 
     /**
-     * Names that run sid, uid, iid, guid or auth into another word with no edge between them, some
-     * behind a run of capitals, which gives no camel-case edge either. Each one goes into the corpus
-     * below in every form a report prints a name in.
+     * Credential names that run into other words, and Telegram's named identifiers. Each goes into
+     * the corpus in every form a report prints a name in, including a HAR pair and a nested object.
      */
-    private static final String[] RUN_TOGETHER_NAMES = {
+    private static final String[] NAMES_IN_EVERY_FORM = {
             "authentication", "Authentication", "X-Authentication", "Authentication-Info", "authenticator",
             "authkey", "AUTHKEY", "authcode", "mfa_authcode", "authdata", "authinfo", "authhash", "authn", "authz",
             "basicauth", "preauth", "reauth", "userauth", "proxyauth", "twofactorauth", "igauth",
             "IGAuth", "XAuth", "HTTPAuth", "IGUID", "DEVICEGUID",
             "ssid", "SSID", "igsid", "asid", "SAPISID", "APISID", "HSID", "LSID", "__Secure-3PSID",
             "iguid", "cuid", "igiid", "deviceguid",
+            "chat_id", "chatId", "chat-id", "dialog_id", "dialogId", "dialog-id",
+            "peer_id", "peerId", "peer-id", "channel_id", "channelId", "channel-id",
+            "access_hash", "accessHash", "access-hash", "phone", "phone_number", "phoneNumber", "phone-number",
     };
 
     /** A no-break space, the long s and the Kelvin sign, built from code points so no editor swaps them. */
@@ -286,7 +288,18 @@ public class DiagnosticRedactorTest {
     /** An account id in Arabic-Indic digits, the way some languages print a number. */
     private static final String ARABIC_INDIC_ID = inDigitsFrom(0x660, "100012345678901");
 
-    public static final String[][] CREDENTIAL_CORPUS = inEveryForm(RUN_TOGETHER_NAMES, new String[][]{
+    /** Short numeric values prove these names are hidden without relying on the bare 15-digit rule. */
+    public static final String TELEGRAM_EXPORT_PROBE =
+            "Telegram probe chat_id=81027031 dialogId=-81027032 peer_id=81027033 channel_id=-10081027034"
+                    + " access_hash=7810234567890 phone=+1 (602) 555-0173"
+                    + " link=tg:resolve?domain=telegramProbePrivate"
+                    + " app_version=12.10.6 version_code=71129 timestamp=1790000000000 retries=3 counter=8";
+    public static final String TELEGRAM_EXPORT_REDACTED =
+            "Telegram probe chat_id=[omitted] dialogId=[omitted] peer_id=[omitted] channel_id=[omitted]"
+                    + " access_hash=[omitted] phone=[omitted] link=[url omitted]"
+                    + " app_version=12.10.6 version_code=71129 timestamp=1790000000000 retries=3 counter=8";
+
+    public static final String[][] CREDENTIAL_CORPUS = inEveryForm(NAMES_IN_EVERY_FORM, new String[][]{
             {"{\"access_token\":\"EAABjsonKeyA1\",\"locale\":\"en_US\"}", "EAABjsonKeyA1"},
             {"{\"data\":{\"viewer\":{\"session\":{\"sessionid\":\"sessNestB2\",\"uid\":\"77\"}}}}", "sessNestB2"},
             {"{\"auth\":{\"tokens\":{\"access\":\"deepAccessC3\",\"refresh\":\"deepRefreshC4\"}}}",
@@ -351,6 +364,42 @@ public class DiagnosticRedactorTest {
             {"{\"name\":\"postId\",\"value\":\"postPairV20\"}", "postPairV20"},
             {"{\"post_id\":[\"postArrayV21\"]}", "postArrayV21"},
             {"{\"feedback_id\":{\"id\":\"feedbackObjectV22\"}}", "feedbackObjectV22"},
+            // Telegram identifiers are often shorter than a timestamp, and dialog/channel ids
+            // can carry a minus sign. The field name, rather than a number's length, hides them.
+            {TELEGRAM_EXPORT_PROBE, "81027031", "81027032", "81027033", "10081027034",
+                    "7810234567890", "555-0173", "telegramProbePrivate"},
+            {"chatId: 81027035", "81027035"},
+            {"dialog_id=-10081027036", "10081027036"},
+            {"peerId => '81027037'", "81027037"},
+            {"channelId -> -10081027038", "10081027038"},
+            {"accessHash=7810234567891 next=1", "7810234567891"},
+            {"phone_number=+12025550174 retries=3", "12025550174"},
+            {"phoneNumber=(313) 555 0175 retries=3", "555 0175"},
+            {"phone=+1" + NBSP + "(480)" + NBSP + "555-0176 retries=3", "555-0176"},
+            {"body=\"{\\\"chat_id\\\":\\\"81027039\\\",\\\"counter\\\":8}\"", "81027039"},
+            {U + "dialogId" + U + ":" + U + "81027040" + U, "81027040"},
+            {"&quot;peer_id&quot;:&quot;81027041&quot;", "81027041"},
+            {"%22channelId%22%3A%22-10081027042%22", "10081027042"},
+            {"body={\\\\\\\"access_hash\\\\\\\":\\\\\\\"7810234567892\\\\\\\"}", "7810234567892"},
+            {"\"phone\":\"+1 (520) 555-0177\"", "555-0177"},
+            {"яchat_id=81027043", "81027043"},
+            {"猫dialogId: {\"id\":\"telegramDialogObject\"}", "telegramDialogObject"},
+            {"é@peer_id=81027044", "81027044"},
+            {"@channel_id=-10081027045", "10081027045"},
+            {"@access_hash=7810234567893", "7810234567893"},
+            {"@phone=+1 (928) 555-0178", "555-0178"},
+            {"acce" + LONG_S + LONG_S + "_hash=7810234567894", "7810234567894"},
+            {"peer_id=" + inDigitsFrom(0x660, "81027046"), inDigitsFrom(0x660, "81027046")},
+            {"phone=+" + inDigitsFrom(0x660, "12025550179"), inDigitsFrom(0x660, "12025550179")},
+            {"opened tg:privatepost?channel=telegramShortChannel&post=81027047#telegramShortFragment",
+                    "telegramShortChannel", "81027047", "telegramShortFragment"},
+            {"TG:resolve?phone=%2B12025550180&text=telegramShortText", "12025550180", "telegramShortText"},
+            {"étg:resolve?domain=telegramUnicodeLink", "telegramUnicodeLink"},
+            {"e̋tg:resolve?domain=telegramCombiningLink", "telegramCombiningLink"},
+            {"tg:resolve?domain=telegramNbspFirst" + NBSP + "telegramNbspSecond",
+                    "telegramNbspFirst", "telegramNbspSecond"},
+            {"body=\"{\\\"url\\\":\\\"tg:resolve?domain=telegramEscapedLink\\\"}\"", "telegramEscapedLink"},
+            {"opened tg://resolve?domain=telegramExistingLink", "telegramExistingLink"},
             // sid, uid, iid, guid and auth at a name's edge, in any case, and the longer names that
             // hold one of them with no edge.
             {"sid=sidLeakA1", "sidLeakA1"},
@@ -428,6 +477,33 @@ public class DiagnosticRedactorTest {
             {"@sessionid=asciiHandleH15", "asciiHandleH15"},
             {"@user_id=asciiHandleH16", "asciiHandleH16"},
     });
+
+    @Test public void telegramFieldsHideShortValuesAndKeepTheFollowingBuildData() {
+        assertEquals(TELEGRAM_EXPORT_REDACTED, DiagnosticRedactor.redact(TELEGRAM_EXPORT_PROBE));
+    }
+
+    @Test public void formattedPhoneValuesStopBeforeTheNextField() {
+        assertEquals("phone=[omitted] retries=3 timestamp=1790000000000\nphoneNumber=[omitted] counter=8",
+                DiagnosticRedactor.redact("phone=+1 (602) 555-0181 retries=3 timestamp=1790000000000\n"
+                        + "phoneNumber=(313) 555 0182 counter=8"));
+        assertEquals("phone=[omitted] retries=3",
+                DiagnosticRedactor.redact("phone=+1" + NBSP + "(480)" + NBSP + "555-0183 retries=3"));
+    }
+
+    @Test public void telegramLinksHaveBothFormsAndKeepTheirAsciiBoundaries() {
+        assertEquals("opened [url omitted] and [url omitted] retries=3",
+                DiagnosticRedactor.redact("opened tg:resolve?domain=telegramShortLink"
+                        + " and tg://resolve?domain=telegramLongLink retries=3"));
+        String ordinary = "mtg:status=3 tg_status=ready app=12.10.6 timestamp=1790000000000";
+        assertEquals(ordinary, DiagnosticRedactor.redact(ordinary));
+    }
+
+    @Test public void telegramFieldNamesDoNotHideCountersOrUnrelatedPhoneWords() {
+        String ordinary = "chat_count=3 chatId_count=4 dialogCount=5 peer_count=6 channelCount=7"
+                + " access_hash_count=8 accessHashCount=9 phoneCount=10 phone_number_length=11"
+                + " headphone=12 microphone=13 phonebook=14 version=12.10.6 timestamp=1790000000000";
+        assertEquals(ordinary, DiagnosticRedactor.redact(ordinary));
+    }
 
     /** The digits of [ascii] written from the zero at [zero] on, as another script writes them. */
     private static String inDigitsFrom(int zero, String ascii) {
