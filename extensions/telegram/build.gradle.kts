@@ -80,6 +80,9 @@ val requestedBouncyCastleVersions = sortedSetOf<String>()
 val unversionedBouncyCastleRequests = sortedSetOf<String>()
 
 configurations.configureEach {
+    // A full build report also resolves AGP's host-tool graphs. Their requests must not enter
+    // Robolectric's unit-test review; the security pin below still covers every configuration.
+    val reviewsUnitTestRequests = name.endsWith("UnitTestRuntimeClasspath")
     resolutionStrategy.eachDependency {
         if (requested.group == "org.bouncycastle") {
             // Recorded whatever it is, including a request that carries no version of its own.
@@ -92,11 +95,13 @@ configurations.configureEach {
             // than null, so a plain null check counted it as a version and the failure read
             // "asks for Bouncy Castle , which nobody has reviewed": it stopped the build, which
             // is the point, but said nothing a reader could act on.
-            val asked = requested.version?.takeIf { it.isNotBlank() }
-            if (asked != null) {
-                synchronized(requestedBouncyCastleVersions) { requestedBouncyCastleVersions.add(asked) }
-            } else {
-                synchronized(unversionedBouncyCastleRequests) { unversionedBouncyCastleRequests.add(requested.name) }
+            if (reviewsUnitTestRequests) {
+                val asked = requested.version?.takeIf { it.isNotBlank() }
+                if (asked != null) {
+                    synchronized(requestedBouncyCastleVersions) { requestedBouncyCastleVersions.add(asked) }
+                } else {
+                    synchronized(unversionedBouncyCastleRequests) { unversionedBouncyCastleRequests.add(requested.name) }
+                }
             }
             useVersion(safeBouncyCastleVersion)
             because("The Robolectric test graph must use the reviewed security release.")

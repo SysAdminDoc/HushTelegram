@@ -14,6 +14,7 @@ Prepared for the next release. The published version is still 0.0.4.
 * **Tooling:** Targeted settings tests now cover Android 9, 13 and 16 for backups, cancellation, busy-state recovery, navigation, accessibility and large-text recovery screens.
 * **Tooling:** The source ledger distinguishes Rush's package-specific patch counts, KillergramNeo's camera and UI candidates, and NagramX's archived reference status. Census refreshes preserve reviewed commits and historical verification dates.
 * **Tooling:** Push checks scan resolved build, test and provided dependencies separately from the shipped SBOM. Build-only Netty, jose4j and JDOM pins address the findings that scan exposed while preserving checksum verification.
+* **Tooling:** The unit-test dependency review keeps AGP host requests in their own scope when the full build report runs. Unreviewed unit-test versions and versionless modules still fail.
 
 ## 0.0.4 (2026-10-01)
 
