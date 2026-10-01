@@ -16,8 +16,8 @@ body:
     id: versions
     attributes:
       label: HushTelegram and Telegram versions
-      description: Long-press the Telegram icon and tap HushTelegram, or open Telegram's App info page and tap Additional settings in the app. Copy the version line under the HushTelegram title. If the screen opens on category pages, open More settings, then About, and copy the Version line.
-      placeholder: Version 0.0.1 for Telegram 12.10.6
+      description: Long-press the Telegram icon and tap HushTelegram, or open Telegram's App info page and tap Additional settings in the app. Then open More settings, then About, and copy the Version line.
+      placeholder: HushTelegram 0.0.1 on Telegram 12.10.6
     validations:
       required: true
   - type: input

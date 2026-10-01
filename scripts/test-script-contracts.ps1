@@ -1669,7 +1669,7 @@ try {
         $publishedHere = Get-ReleaseIndexVersion
         if ($publishedHere -eq $fixtureVersion) { return }
         Set-FactsFile $bugFormRelative {
-            param($text) $text -replace ('Version ' + [regex]::Escape($publishedHere) + ' for Telegram'), "Version $fixtureVersion for Telegram"
+            param($text) $text -replace ('HushTelegram ' + [regex]::Escape($publishedHere) + ' on Telegram'), "HushTelegram $fixtureVersion on Telegram"
         }
     }
 
@@ -1753,7 +1753,7 @@ try {
                 -replace '(latest release is \[v[^\]]*\]\([^)\s]*/tag/v)\d+(?:\.\d+)+', "`${1}$publishedHere"
         }
         Set-FactsFile $bugFormRelative {
-            param($text) $text -replace ('(placeholder:\s*Version \S+ for Telegram )' + [regex]::Escape($newestBuild)), "`${1}$movedBuild"
+            param($text) $text -replace ('(placeholder:\s*HushTelegram \S+ on Telegram )' + [regex]::Escape($newestBuild)), "`${1}$movedBuild"
         }
         $global:LASTEXITCODE = 0
         & $factsScript -Root $factsRoot -SkipDescriptionTestCount -AllowPublishedIndexLag -SkipUrlCheck 6> $null
@@ -1985,7 +1985,7 @@ try {
     # The bug form's placeholders, which sat three releases behind the target on Hushfeed before
     # anything read them. One for the version line, one for the manager line.
     Set-FactsFile $bugFormRelative {
-        param($text) $text -replace '(placeholder:\s*Version \S+ for Telegram )\S+', '${1}46.2.3'
+        param($text) $text -replace '(placeholder:\s*HushTelegram \S+ on Telegram )\S+', '${1}46.2.3'
     }
     Assert-Throws { Invoke-Facts } '*bug report form version placeholder*' `
         'A bug report form naming an old Telegram build was accepted.'
@@ -3840,9 +3840,9 @@ try {
     $releaseBugFormPath = Join-Path $releaseRepo '.github/ISSUE_TEMPLATE/bug_report.yml'
     $releaseBugFormText = Get-Content -LiteralPath $releaseBugFormPath -Raw
     $releaseBugFormText = $releaseBugFormText -replace
-        '(placeholder:\s*Version )\S+( for Telegram)', "`${1}$releaseVersionForIndex`${2}"
+        '(placeholder:\s*HushTelegram )\S+( on Telegram)', "`${1}$releaseVersionForIndex`${2}"
     $releaseBugFormText = $releaseBugFormText -replace
-        '(placeholder:\s*Version \S+ for Telegram )\d+(?:\.\d+)+',
+        '(placeholder:\s*HushTelegram \S+ on Telegram )\d+(?:\.\d+)+',
         "`${1}$($releaseTargetForIndex.PackageVersion)"
     Set-Content -LiteralPath $releaseBugFormPath -Encoding UTF8 -NoNewline -Value $releaseBugFormText
     # And the README's version badge and the sentence naming the latest release, which the release
