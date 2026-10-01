@@ -576,7 +576,7 @@ group = "app.morphe"
 patches {
     about {
         name = "HushTelegram"
-        description = "HushTelegram patches for Telegram, built for Morphe. No sponsored messages or video ads, no device statistics report, and no update prompts that a patched build can't install."
+        description = "HushTelegram patches for Telegram, built for Morphe. No sponsored messages, search ads or video ads, no device statistics or read time reports, and no update prompts that a patched build can't install."
         source = "https://github.com/SysAdminDoc/HushTelegram"
         author = "SysAdminDoc"
         contact = "https://github.com/SysAdminDoc/HushTelegram/issues"

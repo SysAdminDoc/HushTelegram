@@ -6,7 +6,7 @@
   "patches": [
     {
       "name": "Disable analytics",
-      "description": "Stops Telegram reading your storage folders and sending them to its server as a device statistics report. Everything the app needs to work is left alone.",
+      "description": "Stops Telegram sending your storage folders to its server as a device statistics report, and how long you spent on each channel post. Everything the app needs to work is left alone.",
       "category": "Privacy",
       "use": true,
       "dependencies": [
@@ -78,7 +78,7 @@
     },
     {
       "name": "Hide ads",
-      "description": "Hides the sponsored messages in channels and the ads in Telegram's video player. Telegram never asks for them, so none are counted as seen.",
+      "description": "Hides the sponsored messages in channels, the sponsored accounts in search and the ads in Telegram's video player. Telegram never asks for them, so none are counted as seen.",
       "category": "Ads",
       "use": true,
       "dependencies": [

@@ -31,15 +31,17 @@ import app.hushtelegram.extension.shared.settings.BooleanSetting;
 @SuppressWarnings("unused")
 public class Settings extends BaseSettings {
     /**
-     * Telegram never asks for a channel's sponsored messages or the video player's ads, so none
-     * are shown, counted as seen or reported as clicked ({@link app.hushtelegram.extension.telegram.ads.Ads}).
+     * Telegram never asks for a channel's sponsored messages, search's sponsored accounts or the
+     * video player's ads, so none are shown, counted as seen or reported as clicked
+     * ({@link app.hushtelegram.extension.telegram.ads.Ads}).
      */
     public static final BooleanSetting HIDE_ADS =
             new BooleanSetting("hushtelegram_hide_ads", TRUE);
 
     /**
      * The device statistics report the server can ask for (storage directories, sent as a
-     * help.saveAppLog event) is never read or sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).
+     * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
+     * never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).
      */
     public static final BooleanSetting DISABLE_ANALYTICS =
             new BooleanSetting("hushtelegram_disable_analytics", TRUE);

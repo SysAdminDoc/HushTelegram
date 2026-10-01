@@ -8,7 +8,10 @@ The start of the project, with 4 patches for telegram.org's Telegram 12.10.6. No
 
 * **Branding:** The README has a HushTelegram logo and a matching banner in the Hush family style.
 * **Telegram:** Hide ads stops the two requests Telegram makes for sponsored messages, a channel's and the video player's, before they go out. A channel answers as one with no sponsored messages and the player as one with no ad, so nothing is drawn, marked as seen or reported as clicked.
+* **Telegram:** Hide ads also keeps sponsored accounts out of global search. Telegram puts one above the results for many searches, "news" or "music" for example, and reports it as seen. Search now skips that request the same way it does for Premium users who turned ads off.
 * **Telegram:** Disable analytics returns from the device statistics report before it reads anything. That's the `help.saveAppLog` event Telegram sends with your storage folders when its server asks for one.
+* **Telegram:** Disable analytics also stops the read-time report. As you scroll a channel, Telegram times how long each post stays on screen and sends the batch to its server. The batch is now dropped instead. View counts aren't touched.
+* **Telegram:** The Privacy switch is called Stop usage reports now, since it covers more than device statistics.
 * **Telegram:** Disable update checks returns from telegram.org's own update check before it reaches the server, because the APK it offers is signed with Telegram's key and can't install over a patched build.
 * **Telegram:** HushTelegram settings opens from a launcher shortcut or from Additional settings in the app on Telegram's App info page, with pause, settings backups, diagnostics and the licenses.
 * **Telegram:** Check now says "No HushTelegram release is out yet." when GitHub has none to show, instead of asking you to try again later.

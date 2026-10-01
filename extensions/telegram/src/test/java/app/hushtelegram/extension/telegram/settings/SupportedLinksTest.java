@@ -267,7 +267,7 @@ public class SupportedLinksTest {
 
     /**
      * The row changes no switch: selecting addresses in Android decides which app gets a link, and
-     * Stop device statistics, under Privacy, decides what Telegram does with its device report.
+     * Stop usage reports, under Privacy, decides what Telegram does with its device report.
      */
     @Test
     public void theLinkSwitchStaysAsItIs() throws Exception {

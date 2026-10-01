@@ -255,7 +255,7 @@ public class SettingsL10nTest {
                 {"tr", "tr"}};
         Map<PatchFamily, String> stand = new java.util.LinkedHashMap<>();
         stand.put(PatchFamily.HIDE_ADS, "Hide ads");
-        stand.put(PatchFamily.DISABLE_ANALYTICS, "Stop device statistics");
+        stand.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         PatchFamily.staysWhilePausedForTests = stand;
         try {
             for (String[] language : languages) {

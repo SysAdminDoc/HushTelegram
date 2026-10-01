@@ -16,8 +16,8 @@ It's early. There's no release yet. The four patches below have been applied to 
 
 ## Why use it
 
-- **Channels without sponsored messages.** Telegram never asks for them, so none are drawn, counted as seen or reported as clicked. The same goes for the ads in its video player.
-- **Your storage stays your business.** When Telegram's server asks for a device statistics report, the patched app doesn't read your storage folders to build one.
+- **Channels and search without sponsored posts.** Telegram never asks for them, so none are drawn, counted as seen or reported as clicked. That covers the sponsored accounts pinned above search results and the ads in its video player too.
+- **Your habits stay your business.** When Telegram's server asks for a device statistics report, the patched app doesn't read your storage folders to build one. It also keeps to itself how long you looked at each post in a channel.
 - **No update offers that can't work.** telegram.org's build offers its own updates, and those can't install over a patched app. That offer is switched off, so you update through Morphe Manager instead.
 - **Controls that recover.** Every feature has a switch, and there's a pause, settings backups and privacy-filtered diagnostics for when Telegram changes.
 
@@ -55,9 +55,9 @@ There are 4 patches, and every one of them is selected by default.
 
 | Patch | What it does |
 |---|---|
-| `Disable analytics` | Stops Telegram reading your storage folders and sending them to its server as a device statistics report. Everything the app needs to work is left alone. |
+| `Disable analytics` | Stops Telegram sending your storage folders to its server as a device statistics report, and how long you spent on each channel post. Everything the app needs to work is left alone. |
 | `Disable update checks` | Stops telegram.org's Telegram offering its own updates, which can't install over a patched build. Patch the new version in Morphe Manager instead. |
-| `Hide ads` | Hides the sponsored messages in channels and the ads in Telegram's video player. Telegram never asks for them, so none are counted as seen. |
+| `Hide ads` | Hides the sponsored messages in channels, the sponsored accounts in search and the ads in Telegram's video player. Telegram never asks for them, so none are counted as seen. |
 | `HushTelegram settings` | Adds HushTelegram settings to Telegram. Long-press Telegram's launcher icon, or open Additional settings in the app on Telegram's App info page, to turn features on or off, pause HushTelegram, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
 
 ## Settings

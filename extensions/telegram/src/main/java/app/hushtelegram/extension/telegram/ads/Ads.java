@@ -14,9 +14,11 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  *
  * <p>Telegram asks its server for a channel's sponsored messages in one place, the messages
  * controller's {@code getSponsoredMessages(long)}, and the video player's ads come from their own
- * request in {@code VideoAds.load()}. Each starts by asking this class. While the switch is on the
- * request is never made: the channel answers as one with no sponsored messages, and the player as
- * one with no ad to show. Nothing is fetched, so nothing is drawn, counted as seen or reported as
+ * request in {@code VideoAds.load()}. Global search asks for sponsored accounts to put above its
+ * results with {@code contacts.getSponsoredPeers}. Each starts by asking this class. While the
+ * switch is on the request is never made: the channel answers as one with no sponsored messages,
+ * the player as one with no ad to show, and search takes the path Telegram keeps for Premium users
+ * who turned ads off. Nothing is fetched, so nothing is drawn, counted as seen or reported as
  * clicked.
  */
 public final class Ads {
@@ -36,6 +38,15 @@ public final class Ads {
      */
     public static boolean skipVideoAds() {
         return skip("video ads request skipped");
+    }
+
+    /**
+     * Injected in global search just before it builds {@code contacts.getSponsoredPeers}. True
+     * means take Telegram's own way past the request, the one a Premium user with ads turned off
+     * gets. Never throws.
+     */
+    public static boolean skipSearchAds() {
+        return skip("search ads request skipped");
     }
 
     private static boolean skip(String what) {

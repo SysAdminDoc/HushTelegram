@@ -27,7 +27,7 @@ import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
 
 /**
- * {@link Ads}'s two hooks, read on their own rather than through a probe: what each one counts
+ * {@link Ads}'s three hooks, read on their own rather than through a probe: what each one counts
  * with the switch on, what both leave alone with the switch off, paused, or before the settings
  * are ready, and what happens when the switch itself cannot be read.
  */
@@ -54,8 +54,9 @@ public class AdsTest {
         Settings.HIDE_ADS.save(true);
         assertTrue(Ads.skipSponsoredMessages());
         assertTrue(Ads.skipVideoAds());
-        assertEquals(Arrays.asList("Hide ads: invoked 2, 0 found, 0 missing. "
-                        + "Counted: sponsored messages request skipped 1, video ads request skipped 1"),
+        assertTrue(Ads.skipSearchAds());
+        assertEquals(Arrays.asList("Hide ads: invoked 3, 0 found, 0 missing. "
+                        + "Counted: sponsored messages request skipped 1, video ads request skipped 1, search ads request skipped 1"),
                 HookStatus.report());
     }
 
@@ -64,7 +65,8 @@ public class AdsTest {
         Settings.HIDE_ADS.save(false);
         assertFalse(Ads.skipSponsoredMessages());
         assertFalse(Ads.skipVideoAds());
-        assertEquals(Arrays.asList("Hide ads: invoked 2, 0 found, 0 missing"), HookStatus.report());
+        assertFalse(Ads.skipSearchAds());
+        assertEquals(Arrays.asList("Hide ads: invoked 3, 0 found, 0 missing"), HookStatus.report());
     }
 
     @Test
@@ -73,7 +75,8 @@ public class AdsTest {
         PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
         assertFalse(Ads.skipSponsoredMessages());
         assertFalse(Ads.skipVideoAds());
-        assertEquals(Arrays.asList("Hide ads: invoked 2, 0 found, 0 missing"), HookStatus.report());
+        assertFalse(Ads.skipSearchAds());
+        assertEquals(Arrays.asList("Hide ads: invoked 3, 0 found, 0 missing"), HookStatus.report());
     }
 
     @Test
@@ -82,8 +85,9 @@ public class AdsTest {
         SettingsContextRule.withoutContext(() -> {
             assertFalse(Ads.skipSponsoredMessages());
             assertFalse(Ads.skipVideoAds());
+            assertFalse(Ads.skipSearchAds());
         });
-        assertEquals(Arrays.asList("Hide ads: invoked 2, 0 found, 0 missing"), HookStatus.report());
+        assertEquals(Arrays.asList("Hide ads: invoked 3, 0 found, 0 missing"), HookStatus.report());
     }
 
     @Test

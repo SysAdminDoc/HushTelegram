@@ -80,7 +80,7 @@ public class HushTelegramPreferenceFragmentTest {
 
     static {
         ROW_TITLES.put(PatchFamily.HIDE_ADS, "Hide ads");
-        ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop device statistics");
+        ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_UPDATE_CHECKS, "Turn off Telegram's update checks");
     }
 
@@ -202,11 +202,12 @@ public class HushTelegramPreferenceFragmentTest {
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             HushTelegramPreferenceFragment page = pageOf(controller);
             assertEquals("Hide ads", String.valueOf(page.findPreference(Settings.HIDE_ADS.key).getTitle()));
-            assertEquals("Channels show no sponsored messages and videos play without ads. Telegram never asks "
-                    + "for them, so none are counted as seen.", String.valueOf(page.findPreference(Settings.HIDE_ADS.key).getSummary()));
-            assertEquals("Stop device statistics", String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getTitle()));
-            assertEquals("Telegram doesn't read your storage folders or send them as a device report when its "
-                    + "server asks. Messages and calls work as before.",
+            assertEquals("Channels show no sponsored messages, search shows no sponsored accounts, and videos play "
+                    + "without ads. Telegram never asks for them, so none are counted as seen.",
+                    String.valueOf(page.findPreference(Settings.HIDE_ADS.key).getSummary()));
+            assertEquals("Stop usage reports", String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getTitle()));
+            assertEquals("Telegram doesn't send your storage folders as a device report when its server asks, "
+                    + "or how long you spent on each channel post. Messages and calls work as before.",
                     String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));
             assertEquals("Turn off Telegram's update checks", String.valueOf(page.findPreference(Settings.DISABLE_UPDATE_CHECKS.key).getTitle()));
             assertEquals("Telegram stops offering updates from telegram.org. Those can't install over this patched "

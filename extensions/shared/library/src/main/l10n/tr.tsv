@@ -132,7 +132,7 @@ A change here applies after Telegram restarts.	Buradaki bir değişiklik Telegra
 Android opens t.me links in an app only when its addresses are selected for that app. Selecting them sends their links here, and your other link settings stay as they are.	Android, t.me bağlantılarını yalnızca bir uygulamanın adresleri o uygulama için seçiliyse o uygulamada açar. Onları seçmek bağlantılarını buraya gönderir ve diğer bağlantı ayarlarınız olduğu gibi kalır.
 Android verified this app for Telegram's web addresses, so their links open here.	Android bu uygulamayı Telegram'ın web adresleri için doğruladı, bu yüzden bağlantıları burada açılır.
 Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.	Bu uygulamanın Android ayarları açılamadı. Telegram simgesinden Uygulama bilgileri'ni, ardından Varsayılan olarak aç'ı açın.
-Channels show no sponsored messages and videos play without ads. Telegram never asks for them, so none are counted as seen.	Kanallarda sponsorlu mesaj gösterilmez ve videolar reklamsız oynar. Telegram bunları hiç istemez, bu yüzden hiçbiri görüntülenmiş sayılmaz.
+Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.	Kanallarda sponsorlu mesaj, aramada sponsorlu hesap gösterilmez ve videolar reklamsız oynar. Telegram bunları hiç istemez, bu yüzden hiçbiri görüntülenmiş sayılmaz.
 Chats	Sohbetler
 HushTelegram %1$s on Telegram %2$s	Telegram %2$s üzerinde HushTelegram %1$s
 HushTelegram %1$s targets Telegram %2$s.	HushTelegram %1$s, Telegram %2$s için hazırlandı.
@@ -143,11 +143,11 @@ None of Telegram's web addresses are selected for this app, so their links open 
 Only some of Telegram's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Telegram'ın web adreslerinden yalnızca bazıları bu uygulama için seçili ve diğerlerinin bağlantıları başka yerde açılır. Android ayarlarında seçmek için dokunun.
 Saved. Restart Telegram to apply this change.	Kaydedildi. Bu değişikliği uygulamak için Telegram'ı yeniden başlat.
 Sponsored messages and video ads	Sponsorlu mesajlar ve video reklamları
-Stop device statistics	Cihaz istatistiklerini durdur
+Stop usage reports	Kullanım raporlarını durdur
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	Telegram açıldıktan sonraki bir dakika içinde üst üste üç kez çöktü veya dondu, bu yüzden HushTelegram kendini duraklattı.
-Telegram doesn't read your storage folders or send them as a device report when its server asks. Messages and calls work as before.	Telegram, sunucusu istediğinde depolama klasörlerinizi okumaz veya bunları cihaz raporu olarak göndermez. Mesajlar ve aramalar eskisi gibi çalışır.
+Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.	Telegram, sunucusu istediğinde depolama klasörlerinizi cihaz raporu olarak göndermez, her kanal gönderisinde ne kadar kaldığınızı da göndermez. Mesajlar ve aramalar eskisi gibi çalışır.
 Telegram's web addresses are selected for this app in Android's settings, so their links open here.	Telegram'ın web adresleri Android ayarlarında bu uygulama için seçili, bu yüzden bağlantıları burada açılır.
-The device statistics report	Cihaz istatistikleri raporu
+Device statistics and read time	Cihaz istatistikleri ve okuma süresi
 Try again, or go back to Telegram.	Tekrar dene veya Telegram'a geri dön.
 Turn off Telegram's update checks	Telegram'ın güncelleme kontrollerini kapat
 Your choices are saved. Tap Resume, then restart Telegram.	Tercihleriniz kayıtlı. Devam et'e dokunun, sonra Telegram'ı yeniden başlatın.

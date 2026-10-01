@@ -132,7 +132,7 @@ A change here applies after Telegram restarts.	Perubahan di sini berlaku setelah
 Android opens t.me links in an app only when its addresses are selected for that app. Selecting them sends their links here, and your other link settings stay as they are.	Android hanya membuka tautan t.me di sebuah aplikasi saat alamatnya dipilih untuk aplikasi itu. Memilihnya akan mengirim tautannya ke sini, dan pengaturan tautan Anda yang lain tetap seperti semula.
 Android verified this app for Telegram's web addresses, so their links open here.	Android telah memverifikasi aplikasi ini untuk alamat web Telegram, jadi tautannya terbuka di sini.
 Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.	Pengaturan Android untuk aplikasi ini tidak terbuka. Buka Info aplikasi dari ikon Telegram, lalu Buka secara default.
-Channels show no sponsored messages and videos play without ads. Telegram never asks for them, so none are counted as seen.	Saluran tidak menampilkan pesan bersponsor dan video diputar tanpa iklan. Telegram tidak pernah memintanya, jadi tidak ada yang dihitung sebagai dilihat.
+Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.	Saluran tidak menampilkan pesan bersponsor, pencarian tidak menampilkan akun bersponsor, dan video diputar tanpa iklan. Telegram tidak pernah memintanya, jadi tidak ada yang dihitung sebagai dilihat.
 Chats	Chat
 HushTelegram %1$s on Telegram %2$s	HushTelegram %1$s di Telegram %2$s
 HushTelegram %1$s targets Telegram %2$s.	HushTelegram %1$s ditujukan untuk Telegram %2$s.
@@ -143,11 +143,11 @@ None of Telegram's web addresses are selected for this app, so their links open 
 Only some of Telegram's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Hanya sebagian alamat web Telegram yang dipilih untuk aplikasi ini, dan tautan ke alamat lainnya terbuka di tempat lain. Ketuk untuk memilihnya di pengaturan Android.
 Saved. Restart Telegram to apply this change.	Tersimpan. Mulai ulang Telegram untuk menerapkan perubahan ini.
 Sponsored messages and video ads	Pesan bersponsor dan iklan video
-Stop device statistics	Hentikan statistik perangkat
+Stop usage reports	Hentikan laporan penggunaan
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	Telegram berhenti mendadak atau macet dalam satu menit setelah dibuka, tiga kali berturut-turut, jadi HushTelegram menjeda dirinya sendiri.
-Telegram doesn't read your storage folders or send them as a device report when its server asks. Messages and calls work as before.	Telegram tidak membaca folder penyimpanan Anda atau mengirimkannya sebagai laporan perangkat saat server-nya meminta. Pesan dan panggilan tetap berfungsi seperti biasa.
+Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.	Telegram tidak mengirim folder penyimpanan Anda sebagai laporan perangkat saat server-nya meminta, atau berapa lama Anda melihat setiap postingan saluran. Pesan dan panggilan tetap berfungsi seperti biasa.
 Telegram's web addresses are selected for this app in Android's settings, so their links open here.	Alamat web Telegram dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.
-The device statistics report	Laporan statistik perangkat
+Device statistics and read time	Statistik perangkat dan waktu baca
 Try again, or go back to Telegram.	Coba lagi, atau kembali ke Telegram.
 Turn off Telegram's update checks	Matikan pemeriksaan pembaruan Telegram
 Your choices are saved. Tap Resume, then restart Telegram.	Pilihan Anda tersimpan. Ketuk Lanjutkan, lalu mulai ulang Telegram.

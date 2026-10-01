@@ -16,7 +16,10 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
@@ -27,7 +30,7 @@ import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
 
 /**
- * {@link Analytics}'s one hook, read on its own: what it counts with the switch on, what it
+ * {@link Analytics}'s two hooks, read on their own: what each counts with the switch on, what it
  * leaves alone with the switch off, paused, or before the settings are ready, and what it does
  * when the switch itself cannot be read.
  */
@@ -78,6 +81,41 @@ public class AnalyticsTest {
         Settings.DISABLE_ANALYTICS.save(true);
         SettingsContextRule.withoutContext(() -> assertFalse(Analytics.skipDeviceStats()));
         assertEquals(Arrays.asList("Disable analytics: invoked 1, 0 found, 0 missing"), HookStatus.report());
+    }
+
+    @Test
+    public void theReadMetricsBatchIsDroppedAndCountedWhileTheSwitchIsOn() {
+        Settings.DISABLE_ANALYTICS.save(true);
+        List<Object> pending = new ArrayList<>(Arrays.asList("post 1", "post 2"));
+        assertTrue(Analytics.skipReadMetrics(pending));
+        assertTrue("the batch is emptied as a send would, so it can't pile up", pending.isEmpty());
+        assertEquals(Arrays.asList(
+                        "Disable analytics: invoked 1, 0 found, 0 missing. Counted: read metrics report skipped 1"),
+                HookStatus.report());
+    }
+
+    @Test
+    public void theReadMetricsBatchGoesOutUntouchedWithTheSwitchOffWhilePausedOrBeforeTheSettingsAreReady() {
+        List<Object> pending = new ArrayList<>(Arrays.asList("post 1"));
+        Settings.DISABLE_ANALYTICS.save(false);
+        assertFalse(Analytics.skipReadMetrics(pending));
+        Settings.DISABLE_ANALYTICS.save(true);
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        assertFalse(Analytics.skipReadMetrics(pending));
+        PauseForTests.resume();
+        SettingsContextRule.withoutContext(() -> assertFalse(Analytics.skipReadMetrics(pending)));
+        assertEquals(Arrays.asList("post 1"), pending);
+        assertEquals(Arrays.asList("Disable analytics: invoked 3, 0 found, 0 missing"), HookStatus.report());
+    }
+
+    @Test
+    public void aBatchThatCannotBeEmptiedIsStillNotSent() {
+        Settings.DISABLE_ANALYTICS.save(true);
+        assertTrue(Analytics.skipReadMetrics(Collections.unmodifiableList(new ArrayList<>(Arrays.asList("post 1")))));
+        assertTrue(Analytics.skipReadMetrics(null));
+        assertEquals(Arrays.asList(
+                        "a working 'read metrics clear' hook (it threw java.lang.UnsupportedOperationException)"),
+                HookStatus.missing(FamilyNames.DISABLE_ANALYTICS));
     }
 
     @Test

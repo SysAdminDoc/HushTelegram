@@ -23,6 +23,7 @@ import org.robolectric.annotation.Config;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -82,10 +83,11 @@ public class PausedHooksTest {
 
     private static Map<PatchFamily, List<Probe>> probes() {
         Map<PatchFamily, List<Probe>> probes = new EnumMap<>(PatchFamily.class);
-        // A sponsored messages request is answered without ever being made.
-        probes.put(PatchFamily.HIDE_ADS, Collections.singletonList(Ads::skipSponsoredMessages));
-        // A device statistics report is never read or sent.
-        probes.put(PatchFamily.DISABLE_ANALYTICS, Collections.singletonList(Analytics::skipDeviceStats));
+        // A sponsored messages, video ads or search ads request is answered without ever being made.
+        probes.put(PatchFamily.HIDE_ADS, Arrays.asList(Ads::skipSponsoredMessages, Ads::skipVideoAds, Ads::skipSearchAds));
+        // A device statistics report is never read or sent, and neither is a channel's read time.
+        probes.put(PatchFamily.DISABLE_ANALYTICS, Arrays.asList(
+                Analytics::skipDeviceStats, () -> Analytics.skipReadMetrics(new ArrayList<>())));
         // telegram.org's build never asks the server whether a newer one is out.
         probes.put(PatchFamily.DISABLE_UPDATE_CHECKS, Collections.singletonList(UpdateChecks::skipUpdateCheck));
         return probes;

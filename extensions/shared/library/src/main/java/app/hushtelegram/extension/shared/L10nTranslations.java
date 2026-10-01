@@ -99,8 +99,8 @@ public final class L10nTranslations {
                 "Einstellungen durchsuchen");
         table.put("Cancel",
                 "Abbrechen");
-        table.put("Channels show no sponsored messages and videos play without ads. Telegram never asks for them, so none are counted as seen.",
-                "Kan\u00e4le zeigen keine gesponserten Nachrichten, und Videos laufen ohne Werbung. Telegram fragt nie danach, deshalb gilt keine davon als gesehen.");
+        table.put("Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.",
+                "Kan\u00e4le zeigen keine gesponserten Nachrichten, die Suche zeigt keine gesponserten Konten, und Videos laufen ohne Werbung. Telegram fragt nie danach, deshalb gilt keine davon als gesehen.");
         table.put("Chats",
                 "Chats");
         table.put("Check for new HushTelegram releases",
@@ -143,6 +143,8 @@ public final class L10nTranslations {
                 "HushTelegram lie\u00df sich nicht wieder einschalten. Versuche es noch einmal.");
         table.put("Debug logging",
                 "Debug-Protokollierung");
+        table.put("Device statistics and read time",
+                "Ger\u00e4testatistiken und Lesezeit");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Diagnosedaten gel\u00f6scht. Tippe erneut, um sie wiederherzustellen.");
         table.put("Diagnostic data put back.",
@@ -173,11 +175,11 @@ public final class L10nTranslations {
                 "Werbung ausblenden");
         table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
                 "HushTelegram %1$s ist erschienen. Aktualisiere es im Morphe Manager.");
-        table.put("HushTelegram %1$s on Telegram %2$s",
-                "HushTelegram %1$s auf Telegram %2$s");
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("HushTelegram %1$s on Telegram %2$s",
+                "HushTelegram %1$s auf Telegram %2$s");
         table.put("HushTelegram %1$s targets Telegram %2$s.",
                 "HushTelegram %1$s ist f\u00fcr Telegram %2$s gedacht.");
         table.put("HushTelegram is on",
@@ -276,16 +278,16 @@ public final class L10nTranslations {
                 "Gesponserte Nachrichten und Videowerbung");
         table.put("Stays in while paused",
                 "Bleibt w\u00e4hrend der Pause aktiv");
-        table.put("Stop device statistics",
-                "Ger\u00e4testatistiken stoppen");
+        table.put("Stop usage reports",
+                "Nutzungsberichte stoppen");
         table.put("Supported links",
                 "Unterst\u00fctzte Links");
         table.put("Tap to turn it back on.",
                 "Zum Wiedereinschalten tippen.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Telegram ist dreimal hintereinander innerhalb einer Minute nach dem Start abgest\u00fcrzt oder h\u00e4ngen geblieben, deshalb hat sich HushTelegram selbst pausiert.");
-        table.put("Telegram doesn't read your storage folders or send them as a device report when its server asks. Messages and calls work as before.",
-                "Telegram liest deine Speicherordner nicht aus und sendet sie nicht als Ger\u00e4tebericht, wenn sein Server danach fragt. Nachrichten und Anrufe funktionieren wie bisher.");
+        table.put("Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
+                "Telegram sendet deine Speicherordner nicht als Ger\u00e4tebericht, wenn sein Server danach fragt, und auch nicht, wie lange du jeden Kanalbeitrag angesehen hast. Nachrichten und Anrufe funktionieren wie bisher.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram bietet keine Updates von telegram.org mehr an. Sie lie\u00dfen sich nicht \u00fcber diesen gepatchten Build installieren, also patche jede neue Version stattdessen im Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -296,11 +298,11 @@ public final class L10nTranslations {
                 "Diese Datei ist kein lesbarer Text, sie wurde also wom\u00f6glich bei der \u00dcbertragung besch\u00e4digt. Es wurde nichts ge\u00e4ndert.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Diese Datei f\u00fchrt eine Einstellung zweimal auf, daher ist unklar, welcher Wert gilt. Es wurde nichts ge\u00e4ndert.");
-        table.put("That isn't a HushTelegram settings file. Nothing was changed.",
-                "Das ist keine HushTelegram-Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("That isn't a HushTelegram settings file. Nothing was changed.",
+                "Das ist keine HushTelegram-Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Diese Einstellungsdatei enth\u00e4lt einen Wert, den HushTelegram nicht lesen kann. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -313,8 +315,6 @@ public final class L10nTranslations {
                 "Die App mit der letzten Einstellungsdatei hat noch immer nicht geantwortet. Versuche es sp\u00e4ter noch einmal.");
         table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Die App, in der die Einstellungsdatei liegt, braucht zu lange, deshalb wartet HushTelegram nicht mehr. Sie kann das Speichern noch abschlie\u00dfen, also pr\u00fcfe die Datei, bevor du dich darauf verl\u00e4sst.");
-        table.put("The device statistics report",
-                "Der Ger\u00e4testatistikbericht");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Der Diagnosebericht lie\u00df sich noch nicht speichern. Versuche es gleich noch einmal.");
         table.put("The diagnostic report couldn't be saved. Try again.",
@@ -414,8 +414,8 @@ public final class L10nTranslations {
                 "Explorar ajustes");
         table.put("Cancel",
                 "Cancelar");
-        table.put("Channels show no sponsored messages and videos play without ads. Telegram never asks for them, so none are counted as seen.",
-                "Los canales no muestran mensajes patrocinados y los videos se reproducen sin anuncios. Telegram nunca los solicita, as\u00ed que ninguno cuenta como visto.");
+        table.put("Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.",
+                "Los canales no muestran mensajes patrocinados, la b\u00fasqueda no muestra cuentas patrocinadas y los videos se reproducen sin anuncios. Telegram nunca los solicita, as\u00ed que ninguno cuenta como visto.");
         table.put("Chats",
                 "Chats");
         table.put("Check for new HushTelegram releases",
@@ -458,6 +458,8 @@ public final class L10nTranslations {
                 "No se pudo volver a activar HushTelegram. Int\u00e9ntalo de nuevo.");
         table.put("Debug logging",
                 "Registro de depuraci\u00f3n");
+        table.put("Device statistics and read time",
+                "Estad\u00edsticas del dispositivo y tiempo de lectura");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Se borraron los datos de diagn\u00f3stico. Toca de nuevo para restaurarlos.");
         table.put("Diagnostic data put back.",
@@ -488,11 +490,11 @@ public final class L10nTranslations {
                 "Ocultar anuncios");
         table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
                 "Ya sali\u00f3 HushTelegram %1$s. Actual\u00edzalo en Morphe Manager.");
-        table.put("HushTelegram %1$s on Telegram %2$s",
-                "HushTelegram %1$s en Telegram %2$s");
     }
 
     private static void fillEs1(Map<String, String> table) {
+        table.put("HushTelegram %1$s on Telegram %2$s",
+                "HushTelegram %1$s en Telegram %2$s");
         table.put("HushTelegram %1$s targets Telegram %2$s.",
                 "HushTelegram %1$s est\u00e1 pensado para Telegram %2$s.");
         table.put("HushTelegram is on",
@@ -591,16 +593,16 @@ public final class L10nTranslations {
                 "Mensajes patrocinados y anuncios de video");
         table.put("Stays in while paused",
                 "Se mantiene durante la pausa");
-        table.put("Stop device statistics",
-                "Detener las estad\u00edsticas del dispositivo");
+        table.put("Stop usage reports",
+                "Detener los informes de uso");
         table.put("Supported links",
                 "Enlaces compatibles");
         table.put("Tap to turn it back on.",
                 "Toca para volver a activarlo.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Tres veces seguidas, Telegram fall\u00f3 o se congel\u00f3 durante el primer minuto tras iniciarse, as\u00ed que HushTelegram se paus\u00f3 solo.");
-        table.put("Telegram doesn't read your storage folders or send them as a device report when its server asks. Messages and calls work as before.",
-                "Telegram no lee tus carpetas de almacenamiento ni las env\u00eda como informe del dispositivo cuando su servidor las pide. Los mensajes y las llamadas funcionan como antes.");
+        table.put("Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
+                "Telegram no env\u00eda tus carpetas de almacenamiento como informe del dispositivo cuando su servidor lo pide, ni cu\u00e1nto tiempo pasaste en cada publicaci\u00f3n de un canal. Los mensajes y las llamadas funcionan como antes.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram deja de ofrecer actualizaciones de telegram.org. No se pueden instalar sobre este build parcheado, as\u00ed que parchea cada versi\u00f3n nueva en Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -611,11 +613,11 @@ public final class L10nTranslations {
                 "Ese archivo no es texto legible, as\u00ed que puede haberse da\u00f1ado por el camino. No se cambi\u00f3 nada.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Ese archivo incluye un ajuste dos veces, as\u00ed que no se sabe qu\u00e9 valor usar. No se cambi\u00f3 nada.");
-        table.put("That isn't a HushTelegram settings file. Nothing was changed.",
-                "Eso no es un archivo de configuraci\u00f3n de HushTelegram. No se cambi\u00f3 nada.");
     }
 
     private static void fillEs2(Map<String, String> table) {
+        table.put("That isn't a HushTelegram settings file. Nothing was changed.",
+                "Eso no es un archivo de configuraci\u00f3n de HushTelegram. No se cambi\u00f3 nada.");
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Ese archivo de configuraci\u00f3n contiene un valor que HushTelegram no puede leer. No se cambi\u00f3 nada.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -628,8 +630,6 @@ public final class L10nTranslations {
                 "La app del \u00faltimo archivo de configuraci\u00f3n a\u00fan no ha respondido. Int\u00e9ntalo m\u00e1s tarde.");
         table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "La app que guarda el archivo de configuraci\u00f3n tarda demasiado, as\u00ed que HushTelegram dej\u00f3 de esperar. Esa app a\u00fan puede terminar de guardarlo, as\u00ed que revisa el archivo antes de confiar en \u00e9l.");
-        table.put("The device statistics report",
-                "El informe de estad\u00edsticas del dispositivo");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Todav\u00eda no se pudo guardar el informe de diagn\u00f3stico. Int\u00e9ntalo de nuevo en un momento.");
         table.put("The diagnostic report couldn't be saved. Try again.",
@@ -729,8 +729,8 @@ public final class L10nTranslations {
                 "Jelajahi pengaturan");
         table.put("Cancel",
                 "Batal");
-        table.put("Channels show no sponsored messages and videos play without ads. Telegram never asks for them, so none are counted as seen.",
-                "Saluran tidak menampilkan pesan bersponsor dan video diputar tanpa iklan. Telegram tidak pernah memintanya, jadi tidak ada yang dihitung sebagai dilihat.");
+        table.put("Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.",
+                "Saluran tidak menampilkan pesan bersponsor, pencarian tidak menampilkan akun bersponsor, dan video diputar tanpa iklan. Telegram tidak pernah memintanya, jadi tidak ada yang dihitung sebagai dilihat.");
         table.put("Chats",
                 "Chat");
         table.put("Check for new HushTelegram releases",
@@ -773,6 +773,8 @@ public final class L10nTranslations {
                 "HushTelegram tidak dapat diaktifkan lagi. Coba lagi.");
         table.put("Debug logging",
                 "Pencatatan debug");
+        table.put("Device statistics and read time",
+                "Statistik perangkat dan waktu baca");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Data diagnostik dihapus. Ketuk lagi untuk mengembalikannya.");
         table.put("Diagnostic data put back.",
@@ -803,11 +805,11 @@ public final class L10nTranslations {
                 "Sembunyikan iklan");
         table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
                 "HushTelegram %1$s sudah dirilis. Perbarui di Morphe Manager.");
-        table.put("HushTelegram %1$s on Telegram %2$s",
-                "HushTelegram %1$s di Telegram %2$s");
     }
 
     private static void fillIn1(Map<String, String> table) {
+        table.put("HushTelegram %1$s on Telegram %2$s",
+                "HushTelegram %1$s di Telegram %2$s");
         table.put("HushTelegram %1$s targets Telegram %2$s.",
                 "HushTelegram %1$s ditujukan untuk Telegram %2$s.");
         table.put("HushTelegram is on",
@@ -906,16 +908,16 @@ public final class L10nTranslations {
                 "Pesan bersponsor dan iklan video");
         table.put("Stays in while paused",
                 "Tetap aktif saat dijeda");
-        table.put("Stop device statistics",
-                "Hentikan statistik perangkat");
+        table.put("Stop usage reports",
+                "Hentikan laporan penggunaan");
         table.put("Supported links",
                 "Tautan yang didukung");
         table.put("Tap to turn it back on.",
                 "Ketuk untuk mengaktifkan HushTelegram lagi.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Telegram berhenti mendadak atau macet dalam satu menit setelah dibuka, tiga kali berturut-turut, jadi HushTelegram menjeda dirinya sendiri.");
-        table.put("Telegram doesn't read your storage folders or send them as a device report when its server asks. Messages and calls work as before.",
-                "Telegram tidak membaca folder penyimpanan Anda atau mengirimkannya sebagai laporan perangkat saat server-nya meminta. Pesan dan panggilan tetap berfungsi seperti biasa.");
+        table.put("Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
+                "Telegram tidak mengirim folder penyimpanan Anda sebagai laporan perangkat saat server-nya meminta, atau berapa lama Anda melihat setiap postingan saluran. Pesan dan panggilan tetap berfungsi seperti biasa.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -926,11 +928,11 @@ public final class L10nTranslations {
                 "File itu bukan teks yang dapat dibaca, jadi mungkin rusak saat ditransfer. Tidak ada yang diubah.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "File itu mencantumkan satu pengaturan dua kali, jadi tidak jelas nilai mana yang harus dipakai. Tidak ada yang diubah.");
-        table.put("That isn't a HushTelegram settings file. Nothing was changed.",
-                "Itu bukan file pengaturan HushTelegram. Tidak ada yang diubah.");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("That isn't a HushTelegram settings file. Nothing was changed.",
+                "Itu bukan file pengaturan HushTelegram. Tidak ada yang diubah.");
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "File pengaturan itu memuat nilai yang tidak dapat dibaca HushTelegram. Tidak ada yang diubah.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -943,8 +945,6 @@ public final class L10nTranslations {
                 "Aplikasi yang menyimpan file pengaturan terakhir masih belum merespons. Coba lagi nanti.");
         table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Aplikasi yang menyimpan file pengaturan terlalu lama, jadi HushTelegram berhenti menunggu. Aplikasi itu mungkin masih menyelesaikan penyimpanannya, jadi periksa file itu sebelum mengandalkannya.");
-        table.put("The device statistics report",
-                "Laporan statistik perangkat");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Laporan diagnostik belum dapat disimpan. Coba lagi dalam beberapa saat.");
         table.put("The diagnostic report couldn't be saved. Try again.",
@@ -1044,8 +1044,8 @@ public final class L10nTranslations {
                 "Explorar configura\u00e7\u00f5es");
         table.put("Cancel",
                 "Cancelar");
-        table.put("Channels show no sponsored messages and videos play without ads. Telegram never asks for them, so none are counted as seen.",
-                "Os canais n\u00e3o mostram mensagens patrocinadas e os v\u00eddeos tocam sem an\u00fancios. O Telegram nunca os solicita, ent\u00e3o nenhum conta como visto.");
+        table.put("Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.",
+                "Os canais n\u00e3o mostram mensagens patrocinadas, a busca n\u00e3o mostra contas patrocinadas e os v\u00eddeos tocam sem an\u00fancios. O Telegram nunca os solicita, ent\u00e3o nenhum conta como visto.");
         table.put("Chats",
                 "Conversas");
         table.put("Check for new HushTelegram releases",
@@ -1088,6 +1088,8 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel reativar o HushTelegram. Tente novamente.");
         table.put("Debug logging",
                 "Registro de depura\u00e7\u00e3o");
+        table.put("Device statistics and read time",
+                "Estat\u00edsticas do dispositivo e tempo de leitura");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Dados de diagn\u00f3stico apagados. Toque de novo para restaur\u00e1-los.");
         table.put("Diagnostic data put back.",
@@ -1118,11 +1120,11 @@ public final class L10nTranslations {
                 "Ocultar an\u00fancios");
         table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
                 "O HushTelegram %1$s est\u00e1 dispon\u00edvel. Atualize-o pelo Morphe Manager.");
-        table.put("HushTelegram %1$s on Telegram %2$s",
-                "HushTelegram %1$s no Telegram %2$s");
     }
 
     private static void fillPt_rBR1(Map<String, String> table) {
+        table.put("HushTelegram %1$s on Telegram %2$s",
+                "HushTelegram %1$s no Telegram %2$s");
         table.put("HushTelegram %1$s targets Telegram %2$s.",
                 "O HushTelegram %1$s \u00e9 compat\u00edvel com o Telegram %2$s.");
         table.put("HushTelegram is on",
@@ -1221,16 +1223,16 @@ public final class L10nTranslations {
                 "Mensagens patrocinadas e an\u00fancios em v\u00eddeo");
         table.put("Stays in while paused",
                 "O que continua ativo na pausa");
-        table.put("Stop device statistics",
-                "Parar as estat\u00edsticas do dispositivo");
+        table.put("Stop usage reports",
+                "Parar os relat\u00f3rios de uso");
         table.put("Supported links",
                 "Links compat\u00edveis");
         table.put("Tap to turn it back on.",
                 "Toque para reativar.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "O Telegram fechou com erro ou travou no primeiro minuto ap\u00f3s iniciar, tr\u00eas vezes seguidas, ent\u00e3o o HushTelegram foi pausado automaticamente.");
-        table.put("Telegram doesn't read your storage folders or send them as a device report when its server asks. Messages and calls work as before.",
-                "O Telegram n\u00e3o l\u00ea suas pastas de armazenamento nem as envia como relat\u00f3rio do dispositivo quando o servidor dele pede. Mensagens e chamadas funcionam como antes.");
+        table.put("Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
+                "O Telegram n\u00e3o envia suas pastas de armazenamento como relat\u00f3rio do dispositivo quando o servidor dele pede, nem quanto tempo voc\u00ea passou em cada post de um canal. Mensagens e chamadas funcionam como antes.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "O Telegram deixa de oferecer atualiza\u00e7\u00f5es do telegram.org. Elas n\u00e3o podem ser instaladas sobre este build corrigido, ent\u00e3o aplique o patch de cada nova vers\u00e3o pelo Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -1241,11 +1243,11 @@ public final class L10nTranslations {
                 "Esse arquivo n\u00e3o cont\u00e9m texto leg\u00edvel, ent\u00e3o pode ter sido corrompido durante o processo. Nada foi alterado.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Esse arquivo cont\u00e9m uma configura\u00e7\u00e3o duplicada, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel saber qual valor usar. Nada foi alterado.");
-        table.put("That isn't a HushTelegram settings file. Nothing was changed.",
-                "Isso n\u00e3o \u00e9 um arquivo de configura\u00e7\u00f5es do HushTelegram. Nada foi alterado.");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
+        table.put("That isn't a HushTelegram settings file. Nothing was changed.",
+                "Isso n\u00e3o \u00e9 um arquivo de configura\u00e7\u00f5es do HushTelegram. Nada foi alterado.");
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Esse arquivo de configura\u00e7\u00f5es tem um valor que o HushTelegram n\u00e3o consegue ler. Nada foi alterado.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -1258,8 +1260,6 @@ public final class L10nTranslations {
                 "O app do \u00faltimo arquivo de configura\u00e7\u00f5es ainda n\u00e3o respondeu. Tente de novo mais tarde.");
         table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "O app que guarda o arquivo de configura\u00e7\u00f5es est\u00e1 demorando demais, ent\u00e3o o HushTelegram parou de esperar. Esse app ainda pode terminar de salv\u00e1-lo, ent\u00e3o confira o arquivo antes de confiar nele.");
-        table.put("The device statistics report",
-                "O relat\u00f3rio de estat\u00edsticas do dispositivo");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "O relat\u00f3rio de diagn\u00f3stico ainda n\u00e3o p\u00f4de ser salvo. Tente de novo em instantes.");
         table.put("The diagnostic report couldn't be saved. Try again.",
@@ -1359,8 +1359,8 @@ public final class L10nTranslations {
                 "Ayarlar\u0131 ke\u015ffet");
         table.put("Cancel",
                 "\u0130ptal");
-        table.put("Channels show no sponsored messages and videos play without ads. Telegram never asks for them, so none are counted as seen.",
-                "Kanallarda sponsorlu mesaj g\u00f6sterilmez ve videolar reklams\u0131z oynar. Telegram bunlar\u0131 hi\u00e7 istemez, bu y\u00fczden hi\u00e7biri g\u00f6r\u00fcnt\u00fclenmi\u015f say\u0131lmaz.");
+        table.put("Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.",
+                "Kanallarda sponsorlu mesaj, aramada sponsorlu hesap g\u00f6sterilmez ve videolar reklams\u0131z oynar. Telegram bunlar\u0131 hi\u00e7 istemez, bu y\u00fczden hi\u00e7biri g\u00f6r\u00fcnt\u00fclenmi\u015f say\u0131lmaz.");
         table.put("Chats",
                 "Sohbetler");
         table.put("Check for new HushTelegram releases",
@@ -1403,6 +1403,8 @@ public final class L10nTranslations {
                 "HushTelegram yeniden a\u00e7\u0131lamad\u0131. Tekrar dene.");
         table.put("Debug logging",
                 "Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc");
+        table.put("Device statistics and read time",
+                "Cihaz istatistikleri ve okuma s\u00fcresi");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Tan\u0131lama verileri temizlendi. Geri getirmek i\u00e7in tekrar dokun.");
         table.put("Diagnostic data put back.",
@@ -1433,11 +1435,11 @@ public final class L10nTranslations {
                 "Reklamlar\u0131 gizle");
         table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
                 "HushTelegram %1$s \u00e7\u0131kt\u0131. Morphe Manager'da g\u00fcncelle.");
-        table.put("HushTelegram %1$s on Telegram %2$s",
-                "Telegram %2$s \u00fczerinde HushTelegram %1$s");
     }
 
     private static void fillTr1(Map<String, String> table) {
+        table.put("HushTelegram %1$s on Telegram %2$s",
+                "Telegram %2$s \u00fczerinde HushTelegram %1$s");
         table.put("HushTelegram %1$s targets Telegram %2$s.",
                 "HushTelegram %1$s, Telegram %2$s i\u00e7in haz\u0131rland\u0131.");
         table.put("HushTelegram is on",
@@ -1536,16 +1538,16 @@ public final class L10nTranslations {
                 "Sponsorlu mesajlar ve video reklamlar\u0131");
         table.put("Stays in while paused",
                 "Duraklat\u0131lsa da devrede kal\u0131r");
-        table.put("Stop device statistics",
-                "Cihaz istatistiklerini durdur");
+        table.put("Stop usage reports",
+                "Kullan\u0131m raporlar\u0131n\u0131 durdur");
         table.put("Supported links",
                 "Desteklenen ba\u011flant\u0131lar");
         table.put("Tap to turn it back on.",
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Telegram a\u00e7\u0131ld\u0131ktan sonraki bir dakika i\u00e7inde \u00fcst \u00fcste \u00fc\u00e7 kez \u00e7\u00f6kt\u00fc veya dondu, bu y\u00fczden HushTelegram kendini duraklatt\u0131.");
-        table.put("Telegram doesn't read your storage folders or send them as a device report when its server asks. Messages and calls work as before.",
-                "Telegram, sunucusu istedi\u011finde depolama klas\u00f6rlerinizi okumaz veya bunlar\u0131 cihaz raporu olarak g\u00f6ndermez. Mesajlar ve aramalar eskisi gibi \u00e7al\u0131\u015f\u0131r.");
+        table.put("Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
+                "Telegram, sunucusu istedi\u011finde depolama klas\u00f6rlerinizi cihaz raporu olarak g\u00f6ndermez, her kanal g\u00f6nderisinde ne kadar kald\u0131\u011f\u0131n\u0131z\u0131 da g\u00f6ndermez. Mesajlar ve aramalar eskisi gibi \u00e7al\u0131\u015f\u0131r.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram, telegram.org g\u00fcncellemelerini sunmay\u0131 b\u0131rak\u0131r. Bunlar bu yamal\u0131 s\u00fcr\u00fcm\u00fcn \u00fczerine kurulamaz, bu y\u00fczden her yeni s\u00fcr\u00fcm\u00fc Morphe Manager'da yamala.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -1556,11 +1558,11 @@ public final class L10nTranslations {
                 "Bu dosya okunabilir bir metin de\u011fil, aktar\u0131m s\u0131ras\u0131nda hasar g\u00f6rm\u00fc\u015f olabilir. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Bu dosyada bir ayar iki kez ge\u00e7iyor, bu y\u00fczden hangi de\u011ferin kullan\u0131laca\u011f\u0131 belli de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-        table.put("That isn't a HushTelegram settings file. Nothing was changed.",
-                "Bu bir HushTelegram ayar dosyas\u0131 de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
     }
 
     private static void fillTr2(Map<String, String> table) {
+        table.put("That isn't a HushTelegram settings file. Nothing was changed.",
+                "Bu bir HushTelegram ayar dosyas\u0131 de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Bu ayar dosyas\u0131nda HushTelegram'un okuyamad\u0131\u011f\u0131 bir de\u011fer var. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -1573,8 +1575,6 @@ public final class L10nTranslations {
                 "Son ayar dosyas\u0131n\u0131 tutan uygulama h\u00e2l\u00e2 yan\u0131t vermedi. Daha sonra tekrar dene.");
         table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Ayar dosyas\u0131n\u0131 tutan uygulama \u00e7ok uzun s\u00fcr\u00fcyor, bu y\u00fczden HushTelegram beklemeyi b\u0131rakt\u0131. O uygulama kaydetmeyi yine de bitirebilir, bu y\u00fczden dosyaya g\u00fcvenmeden \u00f6nce onu kontrol et.");
-        table.put("The device statistics report",
-                "Cihaz istatistikleri raporu");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Tan\u0131lama raporu hen\u00fcz kaydedilemedi. Birazdan tekrar dene.");
         table.put("The diagnostic report couldn't be saved. Try again.",

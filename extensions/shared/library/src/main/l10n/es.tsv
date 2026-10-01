@@ -132,7 +132,7 @@ A change here applies after Telegram restarts.	Un cambio de aquí se aplica cuan
 Android opens t.me links in an app only when its addresses are selected for that app. Selecting them sends their links here, and your other link settings stay as they are.	Android abre los enlaces t.me en una app solo cuando sus direcciones están seleccionadas para esa app. Al seleccionarlas, sus enlaces llegan aquí, y tus otros ajustes de enlaces se quedan como están.
 Android verified this app for Telegram's web addresses, so their links open here.	Android verificó esta app para las direcciones web de Telegram, así que sus enlaces se abren aquí.
 Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.	No se abrieron los ajustes de Android para esta app. Abre Información de la app desde el icono de Telegram y luego Abrir de forma predeterminada.
-Channels show no sponsored messages and videos play without ads. Telegram never asks for them, so none are counted as seen.	Los canales no muestran mensajes patrocinados y los videos se reproducen sin anuncios. Telegram nunca los solicita, así que ninguno cuenta como visto.
+Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.	Los canales no muestran mensajes patrocinados, la búsqueda no muestra cuentas patrocinadas y los videos se reproducen sin anuncios. Telegram nunca los solicita, así que ninguno cuenta como visto.
 Chats	Chats
 HushTelegram %1$s on Telegram %2$s	HushTelegram %1$s en Telegram %2$s
 HushTelegram %1$s targets Telegram %2$s.	HushTelegram %1$s está pensado para Telegram %2$s.
@@ -143,11 +143,11 @@ None of Telegram's web addresses are selected for this app, so their links open 
 Only some of Telegram's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Solo algunas direcciones web de Telegram están seleccionadas para esta app, y los enlaces a las demás se abren en otro sitio. Toca para seleccionarlas en los ajustes de Android.
 Saved. Restart Telegram to apply this change.	Guardado. Reinicia Telegram para aplicar este cambio.
 Sponsored messages and video ads	Mensajes patrocinados y anuncios de video
-Stop device statistics	Detener las estadísticas del dispositivo
+Stop usage reports	Detener los informes de uso
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	Tres veces seguidas, Telegram falló o se congeló durante el primer minuto tras iniciarse, así que HushTelegram se pausó solo.
-Telegram doesn't read your storage folders or send them as a device report when its server asks. Messages and calls work as before.	Telegram no lee tus carpetas de almacenamiento ni las envía como informe del dispositivo cuando su servidor las pide. Los mensajes y las llamadas funcionan como antes.
+Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.	Telegram no envía tus carpetas de almacenamiento como informe del dispositivo cuando su servidor lo pide, ni cuánto tiempo pasaste en cada publicación de un canal. Los mensajes y las llamadas funcionan como antes.
 Telegram's web addresses are selected for this app in Android's settings, so their links open here.	Las direcciones web de Telegram están seleccionadas para esta app en los ajustes de Android, así que sus enlaces se abren aquí.
-The device statistics report	El informe de estadísticas del dispositivo
+Device statistics and read time	Estadísticas del dispositivo y tiempo de lectura
 Try again, or go back to Telegram.	Inténtalo de nuevo o vuelve a Telegram.
 Turn off Telegram's update checks	Desactivar las comprobaciones de actualización de Telegram
 Your choices are saved. Tap Resume, then restart Telegram.	Tus preferencias están guardadas. Toca Reanudar y luego reinicia Telegram.
