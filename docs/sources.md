@@ -4,18 +4,18 @@ HushTelegram started on 2026-09-30. Before writing a patch we went through every
 
 The short version: there are five Morphe or ReVanced patch sets for Telegram, and four of them are one family. Morphe's official bundle and ReVanced ship nothing for Telegram. None of the four patches HushTelegram has today took code from any of them.
 
-This page is the readable version. The one the scripts hold us to is [sources/telegram-sources.json](../sources/telegram-sources.json), which records every source with its branches and the commits we last read them at, its licence and a hash of the licence text, the Telegram builds it declares, its features, and what we're allowed to take from it.
+This page is the readable version. The one the scripts hold us to is [sources/telegram-sources.json](../sources/telegram-sources.json), which records every source with its branches and the commits we last read them at, its license and a hash of the license text, the Telegram builds it declares, its features, and what we're allowed to take from it.
 
 ## How a source gets in
 
 Each source in the ledger gets one of four answers:
 
 - **adopted** means HushTelegram ships code from it. No Telegram source is adopted today.
-- **candidate** means its licence lets us port code, and we might, once the checks below pass.
+- **candidate** means its license lets us port code, and we might, once the checks below pass.
 - **behavior-only** means we never port its code. We can read what it does and find the same thing in Telegram's own code, and that's all.
 - **rejected** means it's licensed but there's nothing there to take.
 
-A source with no licence, or one whose licence can't be combined with GPL-3.0, is behavior-only. So is a source whose Telegram code came from one of those. Before code from a source can ship, the ledger needs the commit it came from, a compatible licence with its URL and hash, the source's name in [NOTICE](../NOTICE), a rule in [provenance.json](../provenance.json) naming that repository and commit, and a release receipt showing the patches applied to the Telegram builds the bundle declares.
+A source with no license, or one whose license can't be combined with GPL-3.0, is behavior-only. So is a source whose Telegram code came from one of those. Before code from a source can ship, the ledger needs the commit it came from, a compatible license with its URL and hash, the source's name in [NOTICE](../NOTICE), a rule in [provenance.json](../provenance.json) naming that repository and commit, and a release receipt showing the patches applied to the Telegram builds the bundle declares.
 
 HushTelegram's own code starts from [HushThreads](https://github.com/SysAdminDoc/HushThreads) at commit b141524, the Threads sibling in the same family. The settings screen, the diagnostics, the pause switch, the release check and the patch-time safety checks all come from there, and every file that did says so in its header. That's family code, not a Telegram source, so it's recorded in provenance.json and NOTICE rather than here.
 
@@ -49,7 +49,7 @@ Two public write-ups report Nekogram sending users' phone numbers to its develop
 
 ## What we won't take
 
-Premium unlocks, getting past a channel's forward or save protection, and opening content Telegram hides for age or legal reasons are all popular, and the sets above ship them. HushTelegram doesn't, whatever the licence says. Raising the account limit past what Telegram allows is in the same group, since more accounts is a Premium perk.
+Premium unlocks, getting past a channel's forward or save protection, and opening content Telegram hides for age or legal reasons are all popular, and the sets above ship them. HushTelegram doesn't, whatever the license says. Raising the account limit past what Telegram allows is in the same group, since more accounts is a Premium perk.
 
 ## Where HushTelegram is listed
 
