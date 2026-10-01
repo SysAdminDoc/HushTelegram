@@ -5123,5 +5123,37 @@ Assert-Throws { Find-MachineNames -Root (Join-Path ([System.IO.Path]::GetTempPat
 
 Write-Host '[scripts] tracked-file machine name contracts passed'
 
+# --- README artwork --------------------------------------------------------------------------
+$artworkReadme = Get-Content -LiteralPath (Join-Path $Root 'README.md') -Raw
+Assert-True ($artworkReadme.StartsWith('![HushTelegram. Keep the chat. Cut the noise.](assets/readme-hero.png)') -and
+    ([regex]::Matches($artworkReadme, 'assets/readme-hero\.png')).Count -eq 1 -and
+    ([regex]::Matches($artworkReadme, 'assets/icon\.png')).Count -eq 1) `
+    'The README must show one HushTelegram hero at the top and one logo in the heading.'
+
+$logoBytes = [System.IO.File]::ReadAllBytes((Join-Path $Root 'assets/icon.png'))
+$heroBytes = [System.IO.File]::ReadAllBytes((Join-Path $Root 'assets/readme-hero.png'))
+Assert-True ($logoBytes.Length -ge 26 -and $heroBytes.Length -ge 26 -and
+    [System.Text.Encoding]::ASCII.GetString($logoBytes, 1, 3) -eq 'PNG' -and
+    [System.Text.Encoding]::ASCII.GetString($heroBytes, 1, 3) -eq 'PNG') `
+    'The README artwork must be PNG files.'
+$logoWidth = [System.Net.IPAddress]::NetworkToHostOrder([BitConverter]::ToInt32($logoBytes, 16))
+$logoHeight = [System.Net.IPAddress]::NetworkToHostOrder([BitConverter]::ToInt32($logoBytes, 20))
+$heroWidth = [System.Net.IPAddress]::NetworkToHostOrder([BitConverter]::ToInt32($heroBytes, 16))
+$heroHeight = [System.Net.IPAddress]::NetworkToHostOrder([BitConverter]::ToInt32($heroBytes, 20))
+Assert-True ($logoWidth -eq 1254 -and $logoHeight -eq 1254 -and $logoBytes[25] -eq 6 -and
+    $heroWidth -eq 1672 -and $heroHeight -eq 941 -and $heroBytes[25] -eq 2) `
+    'The logo must be a transparent square and the hero must keep its wide RGB layout.'
+Assert-True ((Get-FileHash -LiteralPath (Join-Path $Root 'assets/icon.png') -Algorithm SHA256).Hash -eq
+    (Get-FileHash -LiteralPath (Join-Path $Root 'concepts/marketing/2026-10-01/selected/logo-master.png') -Algorithm SHA256).Hash -and
+    (Get-FileHash -LiteralPath (Join-Path $Root 'assets/readme-hero.png') -Algorithm SHA256).Hash -eq
+    (Get-FileHash -LiteralPath (Join-Path $Root 'concepts/marketing/2026-10-01/selected/hero-master.png') -Algorithm SHA256).Hash) `
+    'The selected artwork masters must match the images used by the README.'
+$artworkBrief = Get-Content -LiteralPath (Join-Path $Root 'concepts/marketing/2026-10-01/artwork-brief.txt') -Raw
+Assert-True ($artworkBrief -match 'No words or version number' -and
+    $artworkBrief -match 'no real messages, accounts, or version number' -and
+    $artworkBrief -notmatch '(?i)\bv?\d+\.\d+\.\d+\b') `
+    'The artwork brief must keep the logo and hero free of release-specific text.'
+Write-Host '[scripts] README artwork contracts passed'
+
 $global:LASTEXITCODE = 0
 Write-Host '[scripts] report, target, Java and guarded replacement contracts passed'

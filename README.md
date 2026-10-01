@@ -1,16 +1,18 @@
+![HushTelegram. Keep the chat. Cut the noise.](assets/readme-hero.png)
+
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.0.2-2AABEE" alt="Version 0.0.2">
+  <img src="https://img.shields.io/badge/version-0.0.3-2AABEE" alt="Version 0.0.3">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Telegram-12.10.6-2AABEE" alt="Telegram 12.10.6">
   <img src="https://img.shields.io/badge/for-Morphe%20Manager%201.32.0%2B-8A2BE2" alt="For Morphe Manager 1.32.0 or newer">
 </p>
 
-# HushTelegram
+# <img src="assets/icon.png" width="36" alt=""> HushTelegram
 
 HushTelegram is a Morphe patch bundle for Android that takes the sponsored messages out of Telegram and keeps a few things on your phone that Telegram would otherwise send home.
 
-It's early. There's no release yet, and the four patches below have been applied to Telegram 12.10.6 and run on a phone, but not yet with an account signed in.
+It's early. There's no release yet. The four patches below have been applied to Telegram 12.10.6 and exercised on a signed-in phone. No sponsored message appeared during that test, so live ad removal still needs confirmation.
 
 ## Why use it
 

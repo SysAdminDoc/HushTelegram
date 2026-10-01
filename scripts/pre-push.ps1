@@ -473,7 +473,11 @@ try {
     # They also copy the README into the release facts fixture and hold it to the catalog, so a
     # push of only the README runs them too.
     $touchesContracts = $touchesScripts -or @($paths | Where-Object {
-        $_ -eq 'patches-list.json' -or $_ -eq 'patches/build.gradle.kts' -or $_ -eq 'README.md'
+        $_ -eq 'patches-list.json' -or $_ -eq 'patches/build.gradle.kts' -or $_ -in @(
+            'README.md', 'assets/icon.png', 'assets/readme-hero.png',
+            'concepts/marketing/2026-10-01/artwork-brief.txt',
+            'concepts/marketing/2026-10-01/selected/logo-master.png',
+            'concepts/marketing/2026-10-01/selected/hero-master.png')
     }).Count -gt 0
     $injectedRegisterVerifierPaths = @(
         'scripts/BadDexFixture.java',

@@ -6,6 +6,7 @@ Every HushTelegram release, newest first.
 
 The start of the project, with 4 patches for telegram.org's Telegram 12.10.6. Nothing has been released yet.
 
+* **Branding:** The README has a HushTelegram logo and a matching banner in the Hush family style.
 * **Telegram:** Hide ads stops the two requests Telegram makes for sponsored messages, a channel's and the video player's, before they go out. A channel answers as one with no sponsored messages and the player as one with no ad, so nothing is drawn, marked as seen or reported as clicked.
 * **Telegram:** Disable analytics returns from the device statistics report before it reads anything. That's the `help.saveAppLog` event Telegram sends with your storage folders when its server asks for one.
 * **Telegram:** Disable update checks returns from telegram.org's own update check before it reaches the server, because the APK it offers is signed with Telegram's key and can't install over a patched build.
