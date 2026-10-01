@@ -208,6 +208,7 @@ public class SupportedLinksTest {
     }
 
     @Test
+    @Config(sdk = {31, 33, 36})
     public void aTapOpensOpenByDefaultForThisApp() throws Exception {
         answer = state(true, hosts(NONE, NONE));
         Preference row = show(true).findPreference(KEY);
@@ -238,9 +239,9 @@ public class SupportedLinksTest {
         assertEquals(details.getDataString(), started.getDataString());
     }
 
-    /** Android 11 has no selection to read: the row says so and opens the app's own page. */
+    /** Android 11 and older have no selection to read; the app's own settings page still opens. */
     @Test
-    @Config(sdk = 30)
+    @Config(sdk = {28, 30})
     public void android11OpensTheAppsPage() throws Exception {
         Preference row = show(false).findPreference(KEY);
         assertEquals("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
@@ -254,7 +255,7 @@ public class SupportedLinksTest {
 
     /** With no settings page at all, a tap says so instead of closing Telegram. */
     @Test
-    @Config(sdk = 30)
+    @Config(sdk = {28, 30})
     public void withNoSettingsPageATapSaysSo() throws Exception {
         Preference row = show(false).findPreference(KEY);
         shadowOf(RuntimeEnvironment.getApplication()).checkActivities(true);

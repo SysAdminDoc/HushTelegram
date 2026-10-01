@@ -180,6 +180,7 @@ public class SettingsScreenStatesTest {
      * theme, so its light text stays readable on a phone set to light mode.
      */
     @Test
+    @Config(sdk = {28, 30, 33, 36})
     public void aFailedPageIsDrawnOnTheScreensBlackOnALightPhone() {
         PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
         RuntimeEnvironment.setQualifiers("+notnight");

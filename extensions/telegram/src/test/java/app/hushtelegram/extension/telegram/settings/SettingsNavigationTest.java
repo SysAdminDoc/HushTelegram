@@ -83,7 +83,8 @@ public class SettingsNavigationTest {
         PauseForTests.resume();
     }
 
-    @Test public void homeAndEveryCategoryAreReachableWithoutRemovingTheModel() {
+    @Test @Config(sdk = {28, 30, 33, 36})
+    public void homeAndEveryCategoryAreReachableWithoutRemovingTheModel() {
         assertNotNull(page.navigation);
         // The status card, Browse settings, Chats, Privacy and More settings.
         assertEquals(5, list().getCount());
@@ -310,7 +311,7 @@ public class SettingsNavigationTest {
     }
 
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
-    @Config(qualifiers = "ar-rXB-ldrtl-w390dp-h844dp-night-xhdpi")
+    @Config(sdk = {28, 30, 33, 36}, qualifiers = "ar-rXB-ldrtl-w390dp-h844dp-night-xhdpi")
     public void aPausedPageKeepsItsLineWholeAtLargeRightToLeftText() throws Exception {
         BaseSettings.PAUSED.save(true);
         PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
@@ -498,7 +499,8 @@ public class SettingsNavigationTest {
         return null;
     }
 
-    @Test public void recreationKeepsTheCategoryAndSearchQuery() {
+    @Test @Config(sdk = {28, 30, 33, 36})
+    public void recreationKeepsTheCategoryAndSearchQuery() {
         page.navigation.open(page.findPreference(Settings.DISABLE_UPDATE_CHECKS.key));
         recreate();
         assertTrue(contains(Settings.DISABLE_UPDATE_CHECKS.key));

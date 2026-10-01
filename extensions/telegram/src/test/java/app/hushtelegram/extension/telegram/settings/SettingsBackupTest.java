@@ -604,6 +604,7 @@ public class SettingsBackupTest {
     // ---- The screen and the picker ------------------------------------------------------------
 
     @Test
+    @Config(sdk = {28, 30, 33, 36})
     public void exportWritesTheFileThroughTheSystemPicker() throws Exception {
         Settings.DISABLE_ANALYTICS.save(false);
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
@@ -629,6 +630,7 @@ public class SettingsBackupTest {
 
     /** What Export writes is what Import takes back, through both pickers, every switch included. */
     @Test
+    @Config(sdk = {28, 30, 33, 36})
     public void aFileExportedThroughThePickerImportsBackThroughIt() throws Exception {
         Settings.HIDE_ADS.save(false);
         Settings.DISABLE_UPDATE_CHECKS.save(false);
@@ -756,6 +758,7 @@ public class SettingsBackupTest {
     }
 
     @Test
+    @Config(sdk = {28, 30, 33, 36})
     public void aCancelledPickerChangesNothingAndSaysNothing() throws Exception {
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             Activity activity = controller.get();
@@ -776,6 +779,7 @@ public class SettingsBackupTest {
      * finds it by the name the framework gave the page that asked, which the rebuilt one keeps.
      */
     @Test
+    @Config(sdk = {28, 30, 33, 36})
     public void thePickersAnswerReachesThePageRebuiltBehindIt() throws Exception {
         String file = fileWith(Settings.DISABLE_UPDATE_CHECKS, false);
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
@@ -934,6 +938,7 @@ public class SettingsBackupTest {
      * holds a filler.
      */
     @Test
+    @Config(sdk = {28, 30, 33, 36})
     public void aFullWorkerQueueLeavesTheRowsUsable() throws Exception {
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             Activity activity = controller.get();
@@ -1085,6 +1090,7 @@ public class SettingsBackupTest {
      * nothing new starts, and its late answer shows no preview and says nothing.
      */
     @Test
+    @Config(sdk = {28, 30, 33, 36})
     public void aStalledAppGivesTheRowsBackAndItsLateAnswerChangesNothing() throws Exception {
         CountDownLatch release = new CountDownLatch(1);
         SettingsFileProvider.stall = release;
