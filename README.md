@@ -62,6 +62,8 @@ There are 4 patches, and every one of them is selected by default.
 
 Long-press the Telegram icon and tap HushTelegram. You can also open Telegram's App info page and tap Additional settings in the app, which Samsung phones call Configure in Telegram.
 
+<p><img src="assets/settings-overview.png" width="320" alt="HushTelegram settings with search, Pause and the Chats and Privacy pages"><img src="assets/settings-chats.png" width="320" alt="The Chats page with the Hide ads switch turned on"></p>
+
 ## Notifications on a patched Telegram
 
 This is the one thing to know before you switch. Telegram's push notifications go through Google's Firebase, and Google only hands them to an app signed with Telegram's own key. A patched Telegram is signed with yours, so Firebase turns it away and push doesn't arrive.
