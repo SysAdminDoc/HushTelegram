@@ -2,7 +2,9 @@
 
 Every HushTelegram release, newest first.
 
-## Unreleased
+## 0.0.5 (2026-10-01)
+
+Prepared for the next release. The published version is still 0.0.4.
 
 * **Telegram:** Patched APKs require Android 9 or Telegram's higher minimum. Settings and diagnostic reports name any ad or usage-report hook missing from a partially supported build.
 * **Tooling:** Patch-changing pushes require every declared Telegram fixture. Release receipts record and verify the binary Android installation floor while retaining checks for published older receipts.
