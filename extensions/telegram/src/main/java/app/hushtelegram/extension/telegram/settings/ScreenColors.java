@@ -162,18 +162,24 @@ final class ScreenColors {
             imageSize.height = dp(row, 24);
             icon.setLayoutParams(imageSize);
             // From 2x text Samsung lays a switch row out from tw_preference_switch_large, which puts
-            // the 16dp gap on the icon itself and drops the frame's -4dp start margin. The padding
-            // squeezed the glyph to a third of its box and the missing margin moved the row's text.
+            // the 16dp gap on the icon itself and nests the icon's frame in a line of its own, without
+            // the frame's -4dp start margin. The padding squeezed the glyph to a third of its box and
+            // the missing margin moved the row's text.
             icon.setPadding(0, 0, 0, 0);
             if (icon.getParent() instanceof ViewGroup) {
                 ViewGroup frame = (ViewGroup) icon.getParent();
                 frame.setPaddingRelative(0, 0, dp(row, 16), 0);
                 ViewGroup.LayoutParams size = frame.getLayoutParams();
                 size.width = dp(row, 40);
-                if (size instanceof ViewGroup.MarginLayoutParams) {
-                    ((ViewGroup.MarginLayoutParams) size).setMarginStart(-dp(row, 4));
-                }
                 frame.setLayoutParams(size);
+                // The -4dp goes on the row's own child, which may draw into the row's padding. On the
+                // nested frame it would push the glyph past its line's edge, where the line clips it.
+                View line = frame;
+                while (line.getParent() instanceof View && line.getParent() != row) line = (View) line.getParent();
+                if (line.getParent() == row) {
+                    startMargin(frame, 0);
+                    startMargin(line, -dp(row, 4));
+                }
             }
         }
         PreferenceGroup parent = preference.getParent();
@@ -549,6 +555,14 @@ final class ScreenColors {
     /** Paints a dialog in the screen's colours. */
     static void dialog(@Nullable AlertDialog dialog) {
         DEFAULT.paint(dialog);
+    }
+
+    private static void startMargin(View view, int margin) {
+        if (view.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+            ViewGroup.MarginLayoutParams size = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+            size.setMarginStart(margin);
+            view.setLayoutParams(size);
+        }
     }
 
     private static int dp(View view, int value) {

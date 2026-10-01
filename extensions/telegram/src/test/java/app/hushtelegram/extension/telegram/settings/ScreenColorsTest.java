@@ -271,9 +271,9 @@ public class ScreenColorsTest {
     /**
      * From 2x text Samsung builds a switch row from tw_preference_switch_large, which puts a 16dp
      * end padding on the icon itself and leaves out the -4dp start margin preference_material gives
-     * the icon's frame. On an S25 the padding squeezed the glyph to a third of its box and the text
-     * started 11px right of its neighbors'. Painted, both shapes draw a full 24dp icon and start
-     * their text at the same place.
+     * the icon's frame, which it nests in a line of its own. On an S25 the padding squeezed the
+     * glyph to a third of its box and the text started 11px right of its neighbors'. Painted, both
+     * shapes draw a full 24dp icon inside its line and start their text at the same place.
      */
     @Test
     public void samsungsLargeTextSwitchRowKeepsItsIconAndTextEdge() {
@@ -326,6 +326,7 @@ public class ScreenColorsTest {
             assertEquals(which + " pads its icon", 0, icon.getPaddingStart() + icon.getPaddingEnd()
                     + icon.getPaddingTop() + icon.getPaddingBottom());
             assertEquals(which + "'s icon box", 24 * dp, icon.getWidth());
+            assertTrue(which + " moves its icon past the edge of the line that clips it", frame.getLeft() >= 0);
             int x = 0;
             for (View at = title; at != row; at = (View) at.getParent()) x += at.getLeft();
             textStart[shape] = x;
