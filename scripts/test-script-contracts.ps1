@@ -292,6 +292,9 @@ exit /b 19
     } "*$emptyJdk*" 'An explicit directory without bin/java fell through to the PATH Java.'
 
     $pathJava = Resolve-Java
+    # A PATH runtime is a command name, not a filesystem path. Resolve it before deriving
+    # a JDK directory; Split-Path twice on the valid answer 'java' used to bind an empty path.
+    $pathJava = (Get-Command -Name $pathJava -CommandType Application -ErrorAction Stop | Select-Object -First 1).Path
     $jdkRoot = Split-Path -Parent (Split-Path -Parent $pathJava)
     $resolvedJava = Resolve-Java -Explicit $jdkRoot
     Assert-True ([System.IO.Path]::GetFullPath($resolvedJava).Equals(
