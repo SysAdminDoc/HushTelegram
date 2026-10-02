@@ -44,6 +44,7 @@ public final class SettingsStatus {
     public static boolean hideSponsoredProxy() { return false; }
     public static boolean cachedProxyDialog() { return false; }
     public static boolean cachedProxyFilters() { return false; }
+    public static boolean hidePopularApps() { return false; }
     public static boolean disableChatSwipe() { return false; }
     public static boolean storyRequests() { return false; }
     public static boolean storyBar() { return false; }

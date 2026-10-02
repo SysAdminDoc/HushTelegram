@@ -88,6 +88,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HIDE_COMMERCE, "Hide Premium, gifts and Stars");
         ROW_TITLES.put(PatchFamily.HIDE_PROMOTIONAL_BANNERS, "Hide promotional banners");
         ROW_TITLES.put(PatchFamily.HIDE_SPONSORED_PROXY, "Hide sponsored proxy channel");
+        ROW_TITLES.put(PatchFamily.HIDE_POPULAR_APPS, "Hide popular apps");
         ROW_TITLES.put(PatchFamily.DISABLE_CHAT_SWIPE, "No swipe actions on chats");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
@@ -204,7 +205,7 @@ public class HushTelegramPreferenceFragmentTest {
                 if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_STORIES)
                         || build.contains(PatchFamily.HIDE_RECOMMENDATIONS) || build.contains(PatchFamily.HIDE_COMMERCE)
                         || build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS) || build.contains(PatchFamily.HIDE_SPONSORED_PROXY)
-                        || build.contains(PatchFamily.DISABLE_CHAT_SWIPE)) expected.add("Chats");
+                        || build.contains(PatchFamily.HIDE_POPULAR_APPS) || build.contains(PatchFamily.DISABLE_CHAT_SWIPE)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 expected.addAll(EVERY_BUILD);
@@ -258,7 +259,7 @@ public class HushTelegramPreferenceFragmentTest {
             // Browser routing is on as shipped; optional tracking cleaning has its own off default.
             for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.DISABLE_ANALYTICS,
                     Settings.DISABLE_UPDATE_CHECKS, Settings.HIDE_PROMOTIONAL_BANNERS, Settings.HIDE_SPONSORED_PROXY,
-                    Settings.OPEN_EXTERNAL_LINKS)) {
+                    Settings.HIDE_POPULAR_APPS, Settings.OPEN_EXTERNAL_LINKS)) {
                 assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
             assertFalse(Settings.STRIP_LINK_TRACKING.key,
@@ -278,6 +279,10 @@ public class HushTelegramPreferenceFragmentTest {
             // The gallery's camera starts as Telegram's does until someone turns the switch on.
             assertFalse(Settings.GALLERY_CAMERA_ON_TAP.key,
                     ((SwitchPreference) page.findPreference(Settings.GALLERY_CAMERA_ON_TAP.key)).isChecked());
+            assertEquals("Hide popular apps", String.valueOf(page.findPreference(Settings.HIDE_POPULAR_APPS.key).getTitle()));
+            assertEquals("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, "
+                            + "and Telegram doesn't ask for it. Apps you've opened and other results stay.",
+                    String.valueOf(page.findPreference(Settings.HIDE_POPULAR_APPS.key).getSummary()));
             assertEquals("No swipe actions on chats", String.valueOf(page.findPreference(Settings.DISABLE_CHAT_SWIPE.key).getTitle()));
             assertEquals("Swiping a chat sideways in the chat list does nothing, so you can't archive, mute, pin, delete or read a chat "
                             + "by accident. Long-press still has every action. Off by default in settings.",

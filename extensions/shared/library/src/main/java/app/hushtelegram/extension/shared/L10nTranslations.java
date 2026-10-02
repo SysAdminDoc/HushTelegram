@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(432);
+        Map<String, String> table = new HashMap<>(436);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -199,6 +199,8 @@ public final class L10nTranslations {
                 "Stories ausblenden");
         table.put("Hide ads",
                 "Werbung ausblenden");
+        table.put("Hide popular apps",
+                "Beliebte Apps ausblenden");
         table.put("Hide promotional banners",
                 "Werbebanner ausblenden");
         table.put("Hide recommendations",
@@ -297,11 +299,11 @@ public final class L10nTranslations {
                 "Datenschutz");
         table.put("Reading the settings file",
                 "Einstellungsdatei wird gelesen");
-        table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
-                "Zeichnet Patch-Aktivit\u00e4t auf und zeigt Fehler f\u00fcr einen Fehlerbericht. Im Alltag ausgeschaltet lassen.");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
+                "Zeichnet Patch-Aktivit\u00e4t auf und zeigt Fehler f\u00fcr einen Fehlerbericht. Im Alltag ausgeschaltet lassen.");
         table.put("Resume",
                 "Fortsetzen");
         table.put("Retry",
@@ -318,6 +320,8 @@ public final class L10nTranslations {
                 "Einstellungsdatei wird gespeichert");
         table.put("Search settings",
                 "Einstellungen suchen");
+        table.put("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.",
+                "Der Apps-Tab der Suche l\u00e4sst die Liste Beliebte Apps von Telegram samt \u00dcberschrift und Ladezeilen weg, und Telegram fragt sie nicht ab. Von dir ge\u00f6ffnete Apps und andere Ergebnisse bleiben.");
         table.put("Selecting links by hand",
                 "Links von Hand ausw\u00e4hlen");
         table.put("Set when you patched",
@@ -418,13 +422,13 @@ public final class L10nTranslations {
                 "Telegrams Update-Pr\u00fcfungen abschalten");
         table.put("Undo",
                 "R\u00fcckg\u00e4ngig");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
                 "Bis zum Fortsetzen verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv.");
         table.put("Updates",
                 "Updates");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Usage reports",
                 "Nutzungsberichte");
         table.put("Usage reports and call diagnostics",
@@ -500,7 +504,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(432);
+        Map<String, String> table = new HashMap<>(436);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -652,6 +656,8 @@ public final class L10nTranslations {
                 "Ocultar historias");
         table.put("Hide ads",
                 "Ocultar anuncios");
+        table.put("Hide popular apps",
+                "Ocultar apps populares");
         table.put("Hide promotional banners",
                 "Ocultar banners promocionales");
         table.put("Hide recommendations",
@@ -750,11 +756,11 @@ public final class L10nTranslations {
                 "Privacidad");
         table.put("Reading the settings file",
                 "Leyendo el archivo de configuraci\u00f3n");
-        table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
-                "Registra la actividad de los parches y muestra errores para un informe. D\u00e9jalo desactivado en el uso normal.");
     }
 
     private static void fillEs2(Map<String, String> table) {
+        table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
+                "Registra la actividad de los parches y muestra errores para un informe. D\u00e9jalo desactivado en el uso normal.");
         table.put("Resume",
                 "Reanudar");
         table.put("Retry",
@@ -771,6 +777,8 @@ public final class L10nTranslations {
                 "Guardando el archivo de configuraci\u00f3n");
         table.put("Search settings",
                 "Buscar ajustes");
+        table.put("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.",
+                "La pesta\u00f1a Apps de la b\u00fasqueda omite la lista Apps populares de Telegram, con su encabezado y sus filas de carga, y Telegram no la solicita. Las apps que has abierto y los dem\u00e1s resultados se mantienen.");
         table.put("Selecting links by hand",
                 "Seleccionar enlaces a mano");
         table.put("Set when you patched",
@@ -871,13 +879,13 @@ public final class L10nTranslations {
                 "Desactivar las comprobaciones de actualizaci\u00f3n de Telegram");
         table.put("Undo",
                 "Deshacer");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
                 "Hasta que reanudes, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene.");
         table.put("Updates",
                 "Actualizaciones");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Usage reports",
                 "Informes de uso");
         table.put("Usage reports and call diagnostics",
@@ -953,7 +961,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(432);
+        Map<String, String> table = new HashMap<>(436);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1105,6 +1113,8 @@ public final class L10nTranslations {
                 "Sembunyikan Cerita");
         table.put("Hide ads",
                 "Sembunyikan iklan");
+        table.put("Hide popular apps",
+                "Sembunyikan aplikasi populer");
         table.put("Hide promotional banners",
                 "Sembunyikan banner promosi");
         table.put("Hide recommendations",
@@ -1203,11 +1213,11 @@ public final class L10nTranslations {
                 "Privasi");
         table.put("Reading the settings file",
                 "Membaca file pengaturan");
-        table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
-                "Catat aktivitas patch dan tampilkan kesalahan untuk laporan bug. Matikan saat penggunaan biasa.");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
+                "Catat aktivitas patch dan tampilkan kesalahan untuk laporan bug. Matikan saat penggunaan biasa.");
         table.put("Resume",
                 "Lanjutkan");
         table.put("Retry",
@@ -1224,6 +1234,8 @@ public final class L10nTranslations {
                 "Menyimpan file pengaturan");
         table.put("Search settings",
                 "Cari pengaturan");
+        table.put("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.",
+                "Tab Aplikasi di pencarian melewati daftar Aplikasi populer dari Telegram, beserta judul dan baris pemuatannya, dan Telegram tidak memintanya. Aplikasi yang pernah kamu buka dan hasil lainnya tetap ada.");
         table.put("Selecting links by hand",
                 "Memilih tautan secara manual");
         table.put("Set when you patched",
@@ -1324,13 +1336,13 @@ public final class L10nTranslations {
                 "Matikan pemeriksaan pembaruan Telegram");
         table.put("Undo",
                 "Urungkan");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
                 "Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif.");
         table.put("Updates",
                 "Pembaruan");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Usage reports",
                 "Laporan penggunaan");
         table.put("Usage reports and call diagnostics",
@@ -1406,7 +1418,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(432);
+        Map<String, String> table = new HashMap<>(436);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1558,6 +1570,8 @@ public final class L10nTranslations {
                 "Ocultar Stories");
         table.put("Hide ads",
                 "Ocultar an\u00fancios");
+        table.put("Hide popular apps",
+                "Ocultar apps populares");
         table.put("Hide promotional banners",
                 "Ocultar banners promocionais");
         table.put("Hide recommendations",
@@ -1656,11 +1670,11 @@ public final class L10nTranslations {
                 "Privacidade");
         table.put("Reading the settings file",
                 "Lendo o arquivo de configura\u00e7\u00f5es");
-        table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
-                "Registra a atividade dos patches e mostra os erros para um relat\u00f3rio de problema. Mantenha desativado durante o uso normal.");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
+        table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
+                "Registra a atividade dos patches e mostra os erros para um relat\u00f3rio de problema. Mantenha desativado durante o uso normal.");
         table.put("Resume",
                 "Retomar");
         table.put("Retry",
@@ -1677,6 +1691,8 @@ public final class L10nTranslations {
                 "Salvando o arquivo de configura\u00e7\u00f5es");
         table.put("Search settings",
                 "Buscar configura\u00e7\u00f5es");
+        table.put("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.",
+                "A aba Apps da busca n\u00e3o mostra a lista Apps populares do Telegram, nem o t\u00edtulo e as linhas de carregamento, e o Telegram n\u00e3o a solicita. Os apps que voc\u00ea abriu e os outros resultados continuam.");
         table.put("Selecting links by hand",
                 "Selecionar links manualmente");
         table.put("Set when you patched",
@@ -1777,13 +1793,13 @@ public final class L10nTranslations {
                 "Desativar as verifica\u00e7\u00f5es de atualiza\u00e7\u00e3o do Telegram");
         table.put("Undo",
                 "Desfazer");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
                 "At\u00e9 voc\u00ea retomar, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo.");
         table.put("Updates",
                 "Atualiza\u00e7\u00f5es");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Usage reports",
                 "Relat\u00f3rios de uso");
         table.put("Usage reports and call diagnostics",
@@ -1859,7 +1875,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(432);
+        Map<String, String> table = new HashMap<>(436);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2011,6 +2027,8 @@ public final class L10nTranslations {
                 "Hik\u00e2yeleri gizle");
         table.put("Hide ads",
                 "Reklamlar\u0131 gizle");
+        table.put("Hide popular apps",
+                "Pop\u00fcler uygulamalar\u0131 gizle");
         table.put("Hide promotional banners",
                 "Tan\u0131t\u0131m afi\u015flerini gizle");
         table.put("Hide recommendations",
@@ -2109,11 +2127,11 @@ public final class L10nTranslations {
                 "Gizlilik");
         table.put("Reading the settings file",
                 "Ayar dosyas\u0131 okunuyor");
-        table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
-                "Hata raporu i\u00e7in yama etkinli\u011fini kaydeder ve hatalar\u0131 g\u00f6sterir. Normal kullan\u0131mda kapal\u0131 b\u0131rak\u0131n.");
     }
 
     private static void fillTr2(Map<String, String> table) {
+        table.put("Record patch activity and show errors for a bug report. Leave off during normal use.",
+                "Hata raporu i\u00e7in yama etkinli\u011fini kaydeder ve hatalar\u0131 g\u00f6sterir. Normal kullan\u0131mda kapal\u0131 b\u0131rak\u0131n.");
         table.put("Resume",
                 "Devam et");
         table.put("Retry",
@@ -2130,6 +2148,8 @@ public final class L10nTranslations {
                 "Ayar dosyas\u0131 kaydediliyor");
         table.put("Search settings",
                 "Ayarlarda ara");
+        table.put("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.",
+                "Aramadaki Uygulamalar sekmesi, Telegram'\u0131n Pop\u00fcler uygulamalar listesini ba\u015fl\u0131\u011f\u0131 ve y\u00fckleme sat\u0131rlar\u0131yla birlikte atlar ve Telegram bu listeyi istemez. A\u00e7t\u0131\u011f\u0131n\u0131z uygulamalar ve di\u011fer sonu\u00e7lar kal\u0131r.");
         table.put("Selecting links by hand",
                 "Ba\u011flant\u0131lar\u0131 elle se\u00e7me");
         table.put("Set when you patched",
@@ -2230,13 +2250,13 @@ public final class L10nTranslations {
                 "Telegram'\u0131n g\u00fcncelleme kontrollerini kapat");
         table.put("Undo",
                 "Geri al");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.",
                 "Devam ettirene kadar Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r.");
         table.put("Updates",
                 "G\u00fcncellemeler");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Usage reports",
                 "Kullan\u0131m raporlar\u0131");
         table.put("Usage reports and call diagnostics",

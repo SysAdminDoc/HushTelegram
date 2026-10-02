@@ -342,6 +342,9 @@ public class SettingsNavigationTest {
         recreate();
         assertNull(homeLine("Chats"));
         assertEquals("Call diagnostics", homeLine("Privacy"));
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_ADS, PatchFamily.HIDE_POPULAR_APPS);
+        recreate();
+        assertEquals("Ads in channels and search, and more", homeLine("Chats"));
         // The swipe switch is off as shipped, so it adds "and more" to the ads it sits beside.
         PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_ADS, PatchFamily.DISABLE_CHAT_SWIPE);
         recreate();

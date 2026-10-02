@@ -268,6 +268,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         PatchFamily.HIDE_SPONSORED_PROXY.coverageSummary(L10n.t("Hides a proxy's sponsored channel from the chat list and folders. "
                                 + "Leaves proxy settings and shared promo-data updates alone."))), SettingsIcons.BLOCK));
             }
+            if (build.contains(PatchFamily.HIDE_POPULAR_APPS)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_POPULAR_APPS, L10n.t("Hide popular apps"),
+                        PatchFamily.HIDE_POPULAR_APPS.coverageSummary(L10n.t("Search's Apps tab skips Telegram's Popular apps list, "
+                                + "with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay."))),
+                        SettingsIcons.BLOCK));
+            }
             if (build.contains(PatchFamily.DISABLE_CHAT_SWIPE)) {
                 chats.addPreference(mark(toggle(context, Settings.DISABLE_CHAT_SWIPE, L10n.t("No swipe actions on chats"),
                         PatchFamily.DISABLE_CHAT_SWIPE.coverageSummary(L10n.t("Swiping a chat sideways in the chat list does nothing, "

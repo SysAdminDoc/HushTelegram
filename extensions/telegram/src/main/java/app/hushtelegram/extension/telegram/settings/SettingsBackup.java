@@ -82,6 +82,7 @@ public final class SettingsBackup {
             Settings.HIDE_COMMERCE,
             Settings.HIDE_PROMOTIONAL_BANNERS,
             Settings.HIDE_SPONSORED_PROXY,
+            Settings.HIDE_POPULAR_APPS,
             Settings.DISABLE_CHAT_SWIPE,
             Settings.DISABLE_ANALYTICS,
             Settings.DISABLE_CALL_DEBUG,

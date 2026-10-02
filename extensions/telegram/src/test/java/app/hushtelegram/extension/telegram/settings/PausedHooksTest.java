@@ -162,6 +162,10 @@ public class PausedHooksTest {
                 app.hushtelegram.extension.telegram.misc.DraftPreviews::skipPollPreview,
                 app.hushtelegram.extension.telegram.misc.DraftPreviews::skipStoryLinkPreview,
                 app.hushtelegram.extension.telegram.misc.DraftPreviews::skipBotSharePreview));
+        // Search's Apps tab neither loads nor draws the Popular apps list.
+        probes.put(PatchFamily.HIDE_POPULAR_APPS, Arrays.asList(
+                app.hushtelegram.extension.telegram.misc.PopularApps::skipLoad,
+                app.hushtelegram.extension.telegram.misc.PopularApps::hideSection));
         // A sideways swipe on a chat row starts nothing.
         probes.put(PatchFamily.DISABLE_CHAT_SWIPE, Collections.singletonList(
                 app.hushtelegram.extension.telegram.misc.ChatSwipe::keepRowStill));

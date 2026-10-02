@@ -57,7 +57,7 @@ Morphe Manager signs the patched Telegram with a key it makes on your phone. And
 
 ## Patches
 
-The current source has 15 patches, all selected by default. Published v0.0.4 contains the four original patches. The new controls are prepared for the next release. Tracking cleaning and draft link previews stay off in settings until you turn them on. The new call controls still need a live call and audio check, and the draft preview switch still needs a check on a signed-in phone.
+The current source has 16 patches, all selected by default. Published v0.0.4 contains the four original patches. The new controls are prepared for the next release. Tracking cleaning and draft link previews stay off in settings until you turn them on. The new call controls still need a live call and audio check, and the draft preview switch still needs a check on a signed-in phone.
 
 | Patch | What it does |
 |---|---|
@@ -73,6 +73,7 @@ The current source has 15 patches, all selected by default. Published v0.0.4 con
 | `Hide Premium, gifts and Stars` | Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior. |
 | `Hide promotional banners` | Hides Premium, birthday and low Stars balance banners in the chat list. Account security notices and other suggestions remain. Nothing is dismissed for you. |
 | `Hide sponsored proxy channel` | Hides a proxy's sponsored channel from the chat list and folders. Leaves proxy settings and shared promo-data updates alone. |
+| `Hide popular apps` | Hides the Popular apps list in search's Apps tab and stops Telegram asking its server for it. Apps you've opened and other search results stay. |
 | `Disable chat swipe actions` | Adds a switch, off by default, that stops a sideways swipe on a chat in the chat list from archiving, muting, pinning, deleting or reading it. Long-press keeps every action. |
 | `Open links externally` | Opens ordinary HTTP(S) links in your browser. Telegram links, login, payment and authenticated routes keep their existing behavior. |
 | `Strip link tracking` | Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings. |

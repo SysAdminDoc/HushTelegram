@@ -28,6 +28,7 @@ public final class FamilyNames {
     public static final String HIDE_COMMERCE = "Hide Premium, gifts and Stars";
     public static final String HIDE_PROMOTIONAL_BANNERS = "Hide promotional banners";
     public static final String HIDE_SPONSORED_PROXY = "Hide sponsored proxy channel";
+    public static final String HIDE_POPULAR_APPS = "Hide popular apps";
     public static final String DISABLE_CHAT_SWIPE = "Disable chat swipe actions";
     public static final String DISABLE_ANALYTICS = "Disable analytics";
     public static final String DISABLE_CALL_DEBUG = "Disable call debug upload";

@@ -222,3 +222,5 @@ Opening the attachment gallery doesn't start the camera or ask for camera access
 Gallery camera	Galeri kamerası
 No swipe actions on chats	Sohbetlerde kaydırma eylemi yok
 Swiping a chat sideways in the chat list does nothing, so you can't archive, mute, pin, delete or read a chat by accident. Long-press still has every action. Off by default in settings.	Sohbet listesinde bir sohbeti yana kaydırmak hiçbir şey yapmaz, böylece bir sohbeti yanlışlıkla arşivlemez, sessize almaz, sabitlemez, silmez veya okundu olarak işaretlemezsiniz. Uzun basma tüm eylemleri sunmaya devam eder. Ayarlarda varsayılan olarak kapalıdır.
+Hide popular apps	Popüler uygulamaları gizle
+Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.	Aramadaki Uygulamalar sekmesi, Telegram'ın Popüler uygulamalar listesini başlığı ve yükleme satırlarıyla birlikte atlar ve Telegram bu listeyi istemez. Açtığınız uygulamalar ve diğer sonuçlar kalır.

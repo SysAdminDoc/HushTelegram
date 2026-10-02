@@ -58,6 +58,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_SPONSORED_PROXY =
             new BooleanSetting("hushtelegram_hide_sponsored_proxy", TRUE);
 
+    /** Search's Popular apps section and its request only; apps you've used and other results stay stock. */
+    public static final BooleanSetting HIDE_POPULAR_APPS =
+            new BooleanSetting("hushtelegram_hide_popular_apps", TRUE);
+
     /** The chat list's sideways swipe on a chat row only; long-press, drag to reorder and folder swipes stay stock. */
     public static final BooleanSetting DISABLE_CHAT_SWIPE =
             new BooleanSetting("hushtelegram_disable_chat_swipe", FALSE);
