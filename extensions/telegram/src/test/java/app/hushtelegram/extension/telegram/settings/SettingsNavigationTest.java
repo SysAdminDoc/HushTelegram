@@ -245,6 +245,61 @@ public class SettingsNavigationTest {
         assertEquals(homeOffset, list().getChildAt(0).getTop());
     }
 
+    /** Cancelling a pending Pause must not clamp a page after its status line disappears. */
+    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    @Config(qualifiers = "w390dp-h600dp-night-xhdpi")
+    public void undoPendingPauseKeepsTheCategoryOffset() throws Exception {
+        pendingPauseUndoKeepsOffset("Chats", null, false);
+    }
+
+    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    @Config(qualifiers = "w390dp-h600dp-night-xhdpi")
+    public void undoPendingPauseKeepsTheSearchOffset() throws Exception {
+        pendingPauseUndoKeepsOffset(null, "Hide", false);
+    }
+
+    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    @Config(qualifiers = "w390dp-h600dp-night-xhdpi")
+    public void undoPendingPauseKeepsTheOffsetWithAnExistingRestartNotice() throws Exception {
+        pendingPauseUndoKeepsOffset("Chats", null, true);
+    }
+
+    private void pendingPauseUndoKeepsOffset(String route, String search, boolean restart) throws Exception {
+        int normalBottomPadding = list().getPaddingBottom();
+        if (restart) app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.add(
+                Settings.HIDE_ADS.key);
+        BaseSettings.PAUSED.save(true);
+        if (search == null) page.navigation.navigate(route);
+        else findSearch(dialog.getView()).setText(search);
+        layout(dialog.getView(), 1200);
+        list().scrollListBy(40);
+        layout(dialog.getView(), 1200);
+        int position = list().getFirstVisiblePosition();
+        int offset = list().getChildAt(0).getTop();
+        assertTrue("regression needs a genuinely scrolled page", offset < 0);
+        assertEquals("Undo", pageAction().getText().toString());
+        pageAction().performClick();
+        ShadowLooper.idleMainLooper();
+        layout(dialog.getView(), 1200);
+        assertFalse(BaseSettings.PAUSED.savedValue());
+        assertFalse(HushTelegramPause.isPaused());
+        assertEquals(position, list().getFirstVisiblePosition());
+        assertEquals(offset, list().getChildAt(0).getTop());
+        if (restart) assertEquals("A change here applies after Telegram restarts.",
+                String.valueOf(((Preference) list().getItemAtPosition(0)).getTitle()));
+        else assertFalse(titles().contains("HushTelegram is on"));
+        capture("undo-pending-" + (restart ? "restart" : search == null ? "category" : "search"), 1200);
+
+        page.navigation.navigate("About");
+        layout(dialog.getView(), 1200);
+        assertEquals(normalBottomPadding, list().getPaddingBottom());
+        assertEquals(0, list().getFirstVisiblePosition());
+        findSearch(dialog.getView()).setText("Hide");
+        layout(dialog.getView(), 1200);
+        assertEquals(normalBottomPadding, list().getPaddingBottom());
+        assertFalse(titles().contains("HushTelegram is on"));
+    }
+
     /** Search results say it too, and a page with nothing Pause turns off, like About, doesn't. */
     @Test public void pausedSearchSaysSoAndPagesPauseDoesNotReachStayAsTheyAre() {
         BaseSettings.PAUSED.save(true);
@@ -719,11 +774,15 @@ public class SettingsNavigationTest {
     }
 
     private void capture(String name) throws Exception {
+        capture(name, 1688);
+    }
+
+    private void capture(String name, int height) throws Exception {
         File folder = new File("build/reports/settings-design");
         assertTrue(folder.isDirectory() || folder.mkdirs());
         View root = dialog.getView();
-        layout(root);
-        Bitmap image = Bitmap.createBitmap(780, 1688, Bitmap.Config.ARGB_8888);
+        layout(root, height);
+        Bitmap image = Bitmap.createBitmap(780, height, Bitmap.Config.ARGB_8888);
         root.draw(new Canvas(image));
         try (FileOutputStream out = new FileOutputStream(new File(folder, name + ".png"))) {
             assertTrue(image.compress(Bitmap.CompressFormat.PNG, 100, out));

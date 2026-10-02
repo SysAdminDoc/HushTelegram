@@ -51,6 +51,7 @@ final class SettingsNavigation extends BaseAdapter {
     private final HushTelegramPreferenceFragment page;
     private final SettingsDialog host;
     private final ListView list;
+    private final int normalBottomPadding;
     private final PreferenceScreen screen;
     private final ListAdapter source;
     private final List<Section> sections = new ArrayList<>();
@@ -87,6 +88,7 @@ final class SettingsNavigation extends BaseAdapter {
         this.host = host;
         screen = page.getPreferenceScreen();
         list = page.getView().findViewById(android.R.id.list);
+        normalBottomPadding = list.getPaddingBottom();
         source = screen.getRootAdapter();
         Context context = screen.getContext();
         // Stable English route IDs survive a locale change; the displayed names are localized.
@@ -172,6 +174,7 @@ final class SettingsNavigation extends BaseAdapter {
     void navigate(String destination) {
         refocus = null;
         rememberIndex();
+        pageStatusHeight = 0;
         query = "";
         route = destination;
         if (!MORE.equals(route) && selected() == null) route = "";
@@ -197,6 +200,7 @@ final class SettingsNavigation extends BaseAdapter {
         if (query.equals(text)) return;
         refocus = null;
         if (query.isEmpty()) rememberIndex();
+        pageStatusHeight = 0;
         query = text;
         route = "";
         rebuild();
@@ -212,6 +216,7 @@ final class SettingsNavigation extends BaseAdapter {
         if (route.isEmpty()) return false;
         Section section = selected();
         Preference left = section != null ? section.link : more;
+        pageStatusHeight = 0;
         route = section != null && !section.primary ? MORE : "";
         rebuild();
         host.showPage(title(), route.isEmpty(), query);
@@ -222,7 +227,6 @@ final class SettingsNavigation extends BaseAdapter {
     }
 
     private void showAt(int position, int offset) {
-        pageStatusHeight = 0;
         // A header resize otherwise syncs the old page's visible children back over this
         // selection in touch mode. Rebind when changing pages; normal preference updates
         // still keep their current views and scroll position through notifyDataSetChanged.
@@ -291,6 +295,12 @@ final class SettingsNavigation extends BaseAdapter {
             visible.add(more);
         }
         if (terms.isEmpty()) host.showResults(-1);
+        // Undo can remove the entire status card. Reserve its former scroll range at the
+        // bottom until navigation, without retaining a stale status row or changing choices.
+        int bottom = normalBottomPadding + (visible.contains(pageStatus) ? 0 : pageStatusHeight);
+        if (list.getPaddingBottom() != bottom) {
+            list.setPadding(list.getPaddingLeft(), list.getPaddingTop(), list.getPaddingRight(), bottom);
+        }
         notifyDataSetChanged();
     }
 
@@ -388,9 +398,9 @@ final class SettingsNavigation extends BaseAdapter {
             if (title != null) title.setTypeface(android.graphics.Typeface.create("sans-serif-medium", 0));
         }
         if (item == screen.getPreference(0)) bindStatus(row);
-        if (item == pageStatus && pageAction) {
+        if (item == pageStatus) {
             row.setMinimumHeight(Math.max(row.getMinimumHeight(), pageStatusHeight));
-            bindAction(row, HushTelegramPause.isPaused(), HushTelegramPause.pausesNextStart(screen.getContext()), true);
+            if (pageAction) bindAction(row, HushTelegramPause.isPaused(), HushTelegramPause.pausesNextStart(screen.getContext()), true);
         }
         return row;
     }

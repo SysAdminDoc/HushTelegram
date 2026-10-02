@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Undo keeps scrolled settings pages in place when a pending Pause is cancelled, including pages with restart notices. Leaving the page restores its normal spacing.
+
 * **Tooling:** Stories patching refuses changed visibility merges, overwritten peer-state registers and state-store paths that bypass the guard before editing the APK.
 
 * **Telegram:** Stop call diagnostics suppresses automatic debug reports and requested log-file uploads. Call cleanup remains unchanged, and disabling the switch or using Pause restores the original diagnostic paths.
