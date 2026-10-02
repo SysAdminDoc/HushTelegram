@@ -26,6 +26,7 @@ public final class FamilyNames {
     public static final String HIDE_STORIES = "Hide Stories";
     public static final String HIDE_RECOMMENDATIONS = "Hide recommendations";
     public static final String HIDE_COMMERCE = "Hide Premium, gifts and Stars";
+    public static final String HIDE_PROMOTIONAL_BANNERS = "Hide promotional banners";
     public static final String DISABLE_ANALYTICS = "Disable analytics";
     public static final String DISABLE_CALL_DEBUG = "Disable call debug upload";
     public static final String DISABLE_UPDATE_CHECKS = "Disable update checks";

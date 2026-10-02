@@ -76,6 +76,7 @@ body:
         - Hide Stories
         - Hide recommendations
         - Hide Premium, gifts and Stars
+        - Hide promotional banners
         - HushTelegram settings
     validations:
       required: true

@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Hide promotional banners filters seven Premium, birthday and low Stars balance prompts from the chat list. Account security notices and unknown suggestions remain. Disabling it or using Pause restores the original presentation without dismissing anything.
+
 * **Tooling:** Sales patching refuses changed labels, missing Gift icons and cached tab IDs that lose their boxed source before editing. The bug form lists the sales patch as a separate selection.
 
 * **Telegram:** Hide Premium, gifts and Stars removes the five Settings sales rows, profile Gifts tabs and the channel Gift button. Turning the switch off or using Pause restores those entry points. Account, purchase and ordinary channel controls retain their original paths.

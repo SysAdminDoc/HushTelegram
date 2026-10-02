@@ -38,6 +38,9 @@ public final class SettingsStatus {
     public static boolean commerceSettingsRows() { return false; }
     public static boolean commerceProfileGifts() { return false; }
     public static boolean commerceChannelGift() { return false; }
+    public static boolean hidePromotionalBanners() { return false; }
+    public static boolean promotionalSuggestions() { return false; }
+    public static boolean birthdayGiftBanner() { return false; }
     public static boolean storyRequests() { return false; }
     public static boolean storyBar() { return false; }
     public static boolean storyCamera() { return false; }

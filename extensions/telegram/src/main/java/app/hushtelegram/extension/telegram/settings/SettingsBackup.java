@@ -80,6 +80,7 @@ public final class SettingsBackup {
             Settings.HIDE_STORIES,
             Settings.HIDE_RECOMMENDATIONS,
             Settings.HIDE_COMMERCE,
+            Settings.HIDE_PROMOTIONAL_BANNERS,
             Settings.DISABLE_ANALYTICS,
             Settings.DISABLE_CALL_DEBUG,
             Settings.DISABLE_UPDATE_CHECKS));

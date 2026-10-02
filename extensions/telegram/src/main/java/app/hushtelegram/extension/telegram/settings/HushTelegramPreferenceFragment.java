@@ -236,7 +236,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         // Every row carries an icon, so all pages share one text edge. A switch that stops something
         // Telegram does takes the stop sign.
         if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_STORIES)
-                || build.contains(PatchFamily.HIDE_RECOMMENDATIONS) || build.contains(PatchFamily.HIDE_COMMERCE)) {
+                || build.contains(PatchFamily.HIDE_RECOMMENDATIONS) || build.contains(PatchFamily.HIDE_COMMERCE)
+                || build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS)) {
             PreferenceCategory chats = category(screen, L10n.t("Chats"));
             if (build.contains(PatchFamily.HIDE_ADS)) {
                 chats.addPreference(mark(toggle(context, Settings.HIDE_ADS, L10n.t("Hide ads"),
@@ -257,6 +258,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 chats.addPreference(mark(toggle(context, Settings.HIDE_COMMERCE, L10n.t("Hide Premium, gifts and Stars"),
                         PatchFamily.HIDE_COMMERCE.coverageSummary(L10n.t("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs "
                                 + "and the channel Gift button. Purchases and account controls keep their usual behavior."))), SettingsIcons.BLOCK));
+            }
+            if (build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_PROMOTIONAL_BANNERS, L10n.t("Hide promotional banners"),
+                        PatchFamily.HIDE_PROMOTIONAL_BANNERS.coverageSummary(L10n.t("Hides Premium, birthday and low Stars balance banners in the chat list. "
+                                + "Account security notices and other suggestions remain. Nothing is dismissed for you."))), SettingsIcons.BLOCK));
             }
         }
 

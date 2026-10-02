@@ -55,7 +55,7 @@ Morphe Manager signs the patched Telegram with a key it makes on your phone. And
 
 ## Patches
 
-The current source has 8 patches, all selected by default. Published v0.0.4 contains the four original patches. Stories, recommendations, call diagnostics and sales controls are prepared for the next release. The new call controls still need a live call and audio check.
+The current source has 9 patches, all selected by default. Published v0.0.4 contains the four original patches. Stories, recommendations, call diagnostics, sales controls and promotional banners are prepared for the next release. The new call controls still need a live call and audio check.
 
 | Patch | What it does |
 |---|---|
@@ -67,6 +67,7 @@ The current source has 8 patches, all selected by default. Published v0.0.4 cont
 | `Hide Stories` | Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available. |
 | `Hide recommendations` | Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on. |
 | `Hide Premium, gifts and Stars` | Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior. |
+| `Hide promotional banners` | Hides Premium, birthday and low Stars balance banners in the chat list. Account security notices and other suggestions remain. Nothing is dismissed for you. |
 
 ### Hide ads, before and after
 

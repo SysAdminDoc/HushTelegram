@@ -50,6 +50,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_COMMERCE =
             new BooleanSetting("hushtelegram_hide_commerce", TRUE);
 
+    /** Chat-list promotional presentation only; stored suggestions and account security stay stock. */
+    public static final BooleanSetting HIDE_PROMOTIONAL_BANNERS =
+            new BooleanSetting("hushtelegram_hide_promotional_banners", TRUE);
+
     /**
      * The device statistics report the server can ask for (storage directories, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are

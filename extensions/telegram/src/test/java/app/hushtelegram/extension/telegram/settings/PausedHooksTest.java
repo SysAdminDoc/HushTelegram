@@ -41,6 +41,7 @@ import app.hushtelegram.extension.telegram.misc.AnalyticsTest.DeviceStatsControl
 import app.hushtelegram.extension.telegram.misc.UpdateChecks;
 import app.hushtelegram.extension.telegram.misc.Stories;
 import app.hushtelegram.extension.telegram.misc.Recommendations;
+import app.hushtelegram.extension.telegram.misc.Suggestions;
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
@@ -111,6 +112,9 @@ public class PausedHooksTest {
         probes.put(PatchFamily.HIDE_COMMERCE, Arrays.asList(
                 () -> !app.hushtelegram.extension.telegram.misc.Commerce.addSettingsRow(new ArrayList<>(), new Object()),
                 () -> !app.hushtelegram.extension.telegram.misc.Commerce.showGiftsTab(true)));
+        probes.put(PatchFamily.HIDE_PROMOTIONAL_BANNERS, Arrays.asList(
+                () -> !Suggestions.filterChatList(Collections.singleton("PREMIUM_UPGRADE")).contains("PREMIUM_UPGRADE"),
+                () -> Suggestions.birthdayGiftBannerDismissed(false)));
         probes.put(PatchFamily.DISABLE_CALL_DEBUG, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.CallDebug.skipCallDebugUpload(true),
                 app.hushtelegram.extension.telegram.misc.CallDebug::skipCallLogFileUpload,

@@ -86,6 +86,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HIDE_STORIES, "Hide Stories");
         ROW_TITLES.put(PatchFamily.HIDE_RECOMMENDATIONS, "Hide recommendations");
         ROW_TITLES.put(PatchFamily.HIDE_COMMERCE, "Hide Premium, gifts and Stars");
+        ROW_TITLES.put(PatchFamily.HIDE_PROMOTIONAL_BANNERS, "Hide promotional banners");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_UPDATE_CHECKS, "Turn off Telegram's update checks");
@@ -195,7 +196,8 @@ public class HushTelegramPreferenceFragmentTest {
                 List<String> sections = sections(page);
                 List<String> expected = new ArrayList<>();
                 if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_STORIES)
-                        || build.contains(PatchFamily.HIDE_RECOMMENDATIONS) || build.contains(PatchFamily.HIDE_COMMERCE)) expected.add("Chats");
+                        || build.contains(PatchFamily.HIDE_RECOMMENDATIONS) || build.contains(PatchFamily.HIDE_COMMERCE)
+                        || build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)) expected.add("Privacy");
                 expected.addAll(EVERY_BUILD);
                 if (!expected.equals(sections)) wrong.add(build + ": sections " + sections);
@@ -218,6 +220,10 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Hides the chat-list story bar, avatar story rings and Post Story button, and stops "
                     + "fetching the story list. Profile stories and archives remain available.",
                     String.valueOf(page.findPreference(Settings.HIDE_STORIES.key).getSummary()));
+            assertEquals("Hide promotional banners", String.valueOf(page.findPreference(Settings.HIDE_PROMOTIONAL_BANNERS.key).getTitle()));
+            assertEquals("Hides Premium, birthday and low Stars balance banners in the chat list. "
+                            + "Account security notices and other suggestions remain. Nothing is dismissed for you.",
+                    String.valueOf(page.findPreference(Settings.HIDE_PROMOTIONAL_BANNERS.key).getSummary()));
             assertEquals("Stop usage reports", String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getTitle()));
             assertEquals("Telegram doesn't send your storage folders as a device report when its server asks, "
                     + "or how long you spent on each channel post. Messages and calls work as before.",
@@ -226,9 +232,9 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Telegram stops offering updates from telegram.org. Those can't install over this patched "
                     + "build, so patch each new version in Morphe Manager instead.",
                     String.valueOf(page.findPreference(Settings.DISABLE_UPDATE_CHECKS.key).getSummary()));
-            // The switches are the screen's, all three on as they ship.
+            // These switches are on as they ship, including the new promotional-banner control.
             for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.DISABLE_ANALYTICS,
-                    Settings.DISABLE_UPDATE_CHECKS)) {
+                    Settings.DISABLE_UPDATE_CHECKS, Settings.HIDE_PROMOTIONAL_BANNERS)) {
                 assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
             List<Preference> rows = new ArrayList<>();
