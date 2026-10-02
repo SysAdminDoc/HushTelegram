@@ -57,7 +57,7 @@ Morphe Manager signs the patched Telegram with a key it makes on your phone. And
 
 ## Patches
 
-The current source has 13 patches, all selected by default. Published v0.0.4 contains the four original patches. The new controls are prepared for the next release. Tracking cleaning and draft link previews stay off in settings until you turn them on. The new call controls still need a live call and audio check, and the draft preview switch still needs a check on a signed-in phone.
+The current source has 14 patches, all selected by default. Published v0.0.4 contains the four original patches. The new controls are prepared for the next release. Tracking cleaning and draft link previews stay off in settings until you turn them on. The new call controls still need a live call and audio check, and the draft preview switch still needs a check on a signed-in phone.
 
 | Patch | What it does |
 |---|---|
@@ -65,6 +65,7 @@ The current source has 13 patches, all selected by default. Published v0.0.4 con
 | `Disable update checks` | Stops telegram.org's Telegram offering its own updates, which can't install over a patched build. Patch the new version in Morphe Manager instead. |
 | `Disable call debug upload` | Stops automatic call debug reports and log-file uploads requested by Telegram's server. |
 | `Disable draft link previews` | Adds a switch, off by default, that stops Telegram fetching link previews for messages you haven't sent yet, in chats, the share sheet, polls, story links and bot shares. Sent messages still get their preview. |
+| `Gallery camera on tap` | Adds a switch, off by default, that stops the attachment gallery starting the camera or asking for camera access when it opens. Tapping the camera tile starts it. |
 | `Hide ads` | Hides the sponsored messages in channels, the sponsored accounts in search and the ads in Telegram's video player. Telegram never asks for them, so none are counted as seen. |
 | `HushTelegram settings` | Adds HushTelegram settings to Telegram. Long-press Telegram's launcher icon, or open Additional settings in the app on Telegram's App info page, to turn features on or off, pause HushTelegram, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
 | `Hide Stories` | Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available. |

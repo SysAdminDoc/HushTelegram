@@ -31,6 +31,7 @@ public final class FamilyNames {
     public static final String DISABLE_ANALYTICS = "Disable analytics";
     public static final String DISABLE_CALL_DEBUG = "Disable call debug upload";
     public static final String DISABLE_DRAFT_PREVIEWS = "Disable draft link previews";
+    public static final String GALLERY_CAMERA_ON_TAP = "Gallery camera on tap";
     public static final String OPEN_EXTERNAL_LINKS = "Open links externally";
     public static final String STRIP_LINK_TRACKING = "Strip link tracking";
     public static final String DISABLE_UPDATE_CHECKS = "Disable update checks";

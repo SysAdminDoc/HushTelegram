@@ -85,6 +85,7 @@ public final class SettingsBackup {
             Settings.DISABLE_ANALYTICS,
             Settings.DISABLE_CALL_DEBUG,
             Settings.DISABLE_DRAFT_PREVIEWS,
+            Settings.GALLERY_CAMERA_ON_TAP,
             Settings.OPEN_EXTERNAL_LINKS,
             Settings.STRIP_LINK_TRACKING,
             Settings.DISABLE_UPDATE_CHECKS));

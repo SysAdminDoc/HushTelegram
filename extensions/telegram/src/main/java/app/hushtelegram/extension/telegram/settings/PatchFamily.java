@@ -59,6 +59,8 @@ public enum PatchFamily {
             Settings.DISABLE_CALL_DEBUG),
     DISABLE_DRAFT_PREVIEWS(FamilyNames.DISABLE_DRAFT_PREVIEWS, "disableDraftPreviews", null,
             Settings.DISABLE_DRAFT_PREVIEWS),
+    GALLERY_CAMERA_ON_TAP(FamilyNames.GALLERY_CAMERA_ON_TAP, "galleryCameraOnTap", null,
+            Settings.GALLERY_CAMERA_ON_TAP),
     OPEN_EXTERNAL_LINKS(FamilyNames.OPEN_EXTERNAL_LINKS, "openExternalLinks", null,
             Settings.OPEN_EXTERNAL_LINKS),
     STRIP_LINK_TRACKING(FamilyNames.STRIP_LINK_TRACKING, "stripLinkTracking", null,

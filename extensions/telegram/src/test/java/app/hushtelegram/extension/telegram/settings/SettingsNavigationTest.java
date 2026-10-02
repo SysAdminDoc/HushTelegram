@@ -349,6 +349,15 @@ public class SettingsNavigationTest {
         PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.DISABLE_DRAFT_PREVIEWS);
         recreate();
         assertEquals("Draft link previews", homeLine("Privacy"));
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.GALLERY_CAMERA_ON_TAP);
+        recreate();
+        assertEquals("Gallery camera", homeLine("Privacy"));
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.DISABLE_DRAFT_PREVIEWS, PatchFamily.GALLERY_CAMERA_ON_TAP);
+        recreate();
+        assertEquals("Draft link previews, and more", homeLine("Privacy"));
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.DISABLE_CALL_DEBUG, PatchFamily.GALLERY_CAMERA_ON_TAP);
+        recreate();
+        assertEquals("Call diagnostics, and more", homeLine("Privacy"));
         PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
         PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.CHANNEL_ADS, PatchFamily.Capability.VIDEO_ADS);
         recreate();

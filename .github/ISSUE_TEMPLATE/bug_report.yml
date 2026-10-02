@@ -73,6 +73,7 @@ body:
         - Disable call debug upload
         - Disable draft link previews
         - Disable update checks
+        - Gallery camera on tap
         - Hide ads
         - Hide Stories
         - Hide recommendations

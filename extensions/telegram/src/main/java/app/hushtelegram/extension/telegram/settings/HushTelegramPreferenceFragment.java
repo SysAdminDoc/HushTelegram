@@ -271,7 +271,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
-                || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS)) {
+                || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) {
             PreferenceCategory privacy = category(screen, L10n.t("Privacy"));
             if (build.contains(PatchFamily.DISABLE_ANALYTICS)) {
                 privacy.addPreference(mark(toggle(context, Settings.DISABLE_ANALYTICS, L10n.t("Stop usage reports"),
@@ -290,6 +290,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         PatchFamily.DISABLE_DRAFT_PREVIEWS.coverageSummary(L10n.t("Telegram doesn't ask its server for a link preview "
                                 + "while a message is still unsent. That covers chats, the share sheet, polls, story links and bot shares. "
                                 + "Sent messages still get their preview. Off by default in settings."))),
+                        SettingsIcons.BLOCK));
+            }
+            if (build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) {
+                privacy.addPreference(mark(toggle(context, Settings.GALLERY_CAMERA_ON_TAP, L10n.t("Camera only on tap"),
+                        PatchFamily.GALLERY_CAMERA_ON_TAP.coverageSummary(L10n.t("Opening the attachment gallery doesn't start the camera "
+                                + "or ask for camera access. Tap the camera tile to start it. Off by default in settings."))),
                         SettingsIcons.BLOCK));
             }
         }

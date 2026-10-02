@@ -162,6 +162,15 @@ public class PausedHooksTest {
                 app.hushtelegram.extension.telegram.misc.DraftPreviews::skipPollPreview,
                 app.hushtelegram.extension.telegram.misc.DraftPreviews::skipStoryLinkPreview,
                 app.hushtelegram.extension.telegram.misc.DraftPreviews::skipBotSharePreview));
+        // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
+        probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),
+                () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.wakeOnTap(new Object(), null),
+                () -> {
+                    Object gallery = new Object();
+                    app.hushtelegram.extension.telegram.misc.GalleryCamera.wakeForPermission(gallery);
+                    return app.hushtelegram.extension.telegram.misc.GalleryCamera.openWhenReady(gallery, new Object());
+                }));
         // A device statistics report is never read or sent, and neither is a channel's read time.
         probes.put(PatchFamily.DISABLE_ANALYTICS, Arrays.asList(
                 () -> Analytics.skipDeviceStats(new DeviceStatsController(true, false)),

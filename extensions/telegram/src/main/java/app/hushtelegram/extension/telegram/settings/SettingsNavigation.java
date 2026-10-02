@@ -178,17 +178,22 @@ final class SettingsNavigation extends BaseAdapter {
 
     /**
      * The Privacy row's line, naming only the switches this build put on that page. The draft
-     * preview switch is off as shipped, so it adds "and more" rather than a name of its own.
+     * preview and gallery camera switches are off as shipped, so they add "and more" rather than
+     * names of their own, unless one of them is all the page holds.
      */
     @Nullable
     static String privacySummary(Set<PatchFamily> build) {
         boolean reports = build.contains(PatchFamily.DISABLE_ANALYTICS);
         boolean calls = build.contains(PatchFamily.DISABLE_CALL_DEBUG);
         boolean drafts = build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS);
+        boolean camera = build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP);
         String named = reports && calls ? L10n.t("Usage reports and call diagnostics")
                 : reports ? L10n.t("Usage reports") : calls ? L10n.t("Call diagnostics") : null;
-        if (named == null) return drafts ? L10n.t("Draft link previews") : null;
-        return drafts ? L10n.f("%1$s, and more", named) : named;
+        if (named == null) {
+            if (drafts && camera) return L10n.f("%1$s, and more", L10n.t("Draft link previews"));
+            return drafts ? L10n.t("Draft link previews") : camera ? L10n.t("Gallery camera") : null;
+        }
+        return drafts || camera ? L10n.f("%1$s, and more", named) : named;
     }
 
     private static Preference link(Context context, String title, String summary, String icon) {

@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(422);
+        Map<String, String> table = new HashMap<>(428);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -110,6 +110,8 @@ public final class L10nTranslations {
                 "Einstellungen durchsuchen");
         table.put("Call diagnostics",
                 "Anrufdiagnosen");
+        table.put("Camera only on tap",
+                "Kamera erst beim Tippen");
         table.put("Cancel",
                 "Abbrechen");
         table.put("Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.",
@@ -174,15 +176,17 @@ public final class L10nTranslations {
                 "Diagnosebericht exportieren");
         table.put("Export settings",
                 "Einstellungen exportieren");
-        table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
-                "Ab dem n\u00e4chsten Start verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv, und deine Auswahl bleibt gespeichert.");
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
+                "Ab dem n\u00e4chsten Start verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv, und deine Auswahl bleibt gespeichert.");
         table.put("Full report saved to %1$s",
                 "Vollst\u00e4ndiger Bericht gespeichert unter %1$s");
         table.put("GPL-3.0, with the notices of the projects this is built on",
                 "GPL-3.0, mit den Hinweisen der Projekte, auf denen es aufbaut");
+        table.put("Gallery camera",
+                "Galeriekamera");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
                 "GitHub weist Anfragen aus diesem Netz gerade ab. Versuche es sp\u00e4ter noch einmal.");
         table.put("GitHub's answer couldn't be used. Try again later.",
@@ -265,6 +269,8 @@ public final class L10nTranslations {
                 "Links extern \u00f6ffnen");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201eUnterst\u00fctzte Links \u00f6ffnen\u201c ist f\u00fcr diese App in den Android-Einstellungen aus. Tippe, um es einzuschalten.");
+        table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it. Off by default in settings.",
+                "Beim \u00d6ffnen der Anhang-Galerie startet die Kamera nicht und es wird kein Kamerazugriff angefragt. Tippe auf die Kamerakachel, um sie zu starten. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("Opens ordinary HTTP(S) links in your browser. Telegram links, login, payment and authenticated routes keep their existing behavior.",
                 "\u00d6ffnet normale HTTP(S)-Links in deinem Browser. Telegram-Links sowie Anmelde-, Zahlungs- und authentifizierte Links behalten ihr bisheriges Verhalten.");
         table.put("Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings.",
@@ -293,15 +299,15 @@ public final class L10nTranslations {
                 "Zeichnet Patch-Aktivit\u00e4t auf und zeigt Fehler f\u00fcr einen Fehlerbericht. Im Alltag ausgeschaltet lassen.");
         table.put("Resume",
                 "Fortsetzen");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Retry",
                 "Erneut versuchen");
         table.put("Save full report",
                 "Vollst\u00e4ndigen Bericht speichern");
         table.put("Save the full report in Download/Morphe.",
                 "Vollst\u00e4ndigen Bericht unter Download/Morphe speichern.");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("Save your switches to a file. They cover all the accounts in this Telegram app. Pause and Debug logging aren't included, and neither is the release check.",
                 "Speichert deine Schalter in einer Datei. Sie gelten f\u00fcr alle Konten in dieser Telegram-App. Pause und Debug-Protokollierung sind nicht enthalten, die Suche nach neuen Versionen auch nicht.");
         table.put("Saved. Restart Telegram to apply this change.",
@@ -416,15 +422,15 @@ public final class L10nTranslations {
                 "Nutzungsberichte");
         table.put("Usage reports and call diagnostics",
                 "Nutzungsberichte und Anrufdiagnosen");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Version",
                 "Version");
         table.put("You have the newest HushTelegram release.",
                 "Du hast die neueste Version von HushTelegram.");
         table.put("You paused HushTelegram.",
                 "Du hast HushTelegram pausiert.");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
                 "Deine Auswahl bleibt gespeichert. Tippe auf Fortsetzen und starte Telegram dann neu.");
         table.put("Your controls are active.",
@@ -490,7 +496,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(422);
+        Map<String, String> table = new HashMap<>(428);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -553,6 +559,8 @@ public final class L10nTranslations {
                 "Explorar ajustes");
         table.put("Call diagnostics",
                 "Diagn\u00f3sticos de llamadas");
+        table.put("Camera only on tap",
+                "C\u00e1mara solo al tocar");
         table.put("Cancel",
                 "Cancelar");
         table.put("Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.",
@@ -617,15 +625,17 @@ public final class L10nTranslations {
                 "Exportar informe de diagn\u00f3stico");
         table.put("Export settings",
                 "Exportar configuraci\u00f3n");
-        table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
-                "Desde el pr\u00f3ximo inicio, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene, y tus preferencias quedan guardadas.");
     }
 
     private static void fillEs1(Map<String, String> table) {
+        table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
+                "Desde el pr\u00f3ximo inicio, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene, y tus preferencias quedan guardadas.");
         table.put("Full report saved to %1$s",
                 "Informe completo guardado en %1$s");
         table.put("GPL-3.0, with the notices of the projects this is built on",
                 "GPL-3.0, con los avisos de los proyectos en los que se basa");
+        table.put("Gallery camera",
+                "C\u00e1mara de la galer\u00eda");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
                 "GitHub est\u00e1 rechazando por ahora las consultas desde esta red. Int\u00e9ntalo de nuevo m\u00e1s tarde.");
         table.put("GitHub's answer couldn't be used. Try again later.",
@@ -708,6 +718,8 @@ public final class L10nTranslations {
                 "Abrir enlaces externamente");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cAbrir enlaces compatibles\u201d est\u00e1 desactivado para esta app en los ajustes de Android. Toca para activarlo.");
+        table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it. Off by default in settings.",
+                "Al abrir la galer\u00eda de adjuntos, la c\u00e1mara no se inicia ni se pide acceso a ella. Toca el recuadro de la c\u00e1mara para iniciarla. Desactivado por defecto en los ajustes.");
         table.put("Opens ordinary HTTP(S) links in your browser. Telegram links, login, payment and authenticated routes keep their existing behavior.",
                 "Abre enlaces HTTP(S) normales en tu navegador. Los enlaces de Telegram y las rutas de inicio de sesi\u00f3n, pago o autenticaci\u00f3n conservan su comportamiento habitual.");
         table.put("Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings.",
@@ -736,15 +748,15 @@ public final class L10nTranslations {
                 "Registra la actividad de los parches y muestra errores para un informe. D\u00e9jalo desactivado en el uso normal.");
         table.put("Resume",
                 "Reanudar");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("Retry",
                 "Reintentar");
         table.put("Save full report",
                 "Guardar informe completo");
         table.put("Save the full report in Download/Morphe.",
                 "Guarda el informe completo en Download/Morphe.");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("Save your switches to a file. They cover all the accounts in this Telegram app. Pause and Debug logging aren't included, and neither is the release check.",
                 "Guarda tus interruptores en un archivo. Cubren todas las cuentas de esta app de Telegram. La pausa y el Registro de depuraci\u00f3n no se incluyen, y la b\u00fasqueda de nuevas versiones tampoco.");
         table.put("Saved. Restart Telegram to apply this change.",
@@ -859,15 +871,15 @@ public final class L10nTranslations {
                 "Informes de uso");
         table.put("Usage reports and call diagnostics",
                 "Informes de uso y diagn\u00f3sticos de llamadas");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Version",
                 "Versi\u00f3n");
         table.put("You have the newest HushTelegram release.",
                 "Tienes la versi\u00f3n m\u00e1s reciente de HushTelegram.");
         table.put("You paused HushTelegram.",
                 "Pausaste HushTelegram.");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
                 "Tus preferencias est\u00e1n guardadas. Toca Reanudar y luego reinicia Telegram.");
         table.put("Your controls are active.",
@@ -933,7 +945,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(422);
+        Map<String, String> table = new HashMap<>(428);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -996,6 +1008,8 @@ public final class L10nTranslations {
                 "Jelajahi pengaturan");
         table.put("Call diagnostics",
                 "Diagnostik panggilan");
+        table.put("Camera only on tap",
+                "Kamera hanya saat diketuk");
         table.put("Cancel",
                 "Batal");
         table.put("Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.",
@@ -1060,15 +1074,17 @@ public final class L10nTranslations {
                 "Ekspor laporan diagnostik");
         table.put("Export settings",
                 "Ekspor pengaturan");
-        table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
-                "Mulai peluncuran berikutnya, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif, dan pilihan Anda tetap tersimpan.");
     }
 
     private static void fillIn1(Map<String, String> table) {
+        table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
+                "Mulai peluncuran berikutnya, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif, dan pilihan Anda tetap tersimpan.");
         table.put("Full report saved to %1$s",
                 "Laporan lengkap disimpan ke %1$s");
         table.put("GPL-3.0, with the notices of the projects this is built on",
                 "GPL-3.0, beserta pemberitahuan dari proyek yang menjadi dasarnya");
+        table.put("Gallery camera",
+                "Kamera galeri");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
                 "GitHub sedang menolak pemeriksaan dari jaringan ini. Coba lagi nanti.");
         table.put("GitHub's answer couldn't be used. Try again later.",
@@ -1151,6 +1167,8 @@ public final class L10nTranslations {
                 "Buka tautan di luar aplikasi");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cBuka link yang didukung\u201d nonaktif untuk aplikasi ini di pengaturan Android. Ketuk untuk mengaktifkannya.");
+        table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it. Off by default in settings.",
+                "Membuka galeri lampiran tidak menyalakan kamera atau meminta akses kamera. Ketuk ubin kamera untuk menyalakannya. Secara default nonaktif di pengaturan.");
         table.put("Opens ordinary HTTP(S) links in your browser. Telegram links, login, payment and authenticated routes keep their existing behavior.",
                 "Membuka tautan HTTP(S) biasa di browser Anda. Tautan Telegram serta jalur login, pembayaran dan autentikasi tetap berperilaku seperti biasa.");
         table.put("Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings.",
@@ -1179,15 +1197,15 @@ public final class L10nTranslations {
                 "Catat aktivitas patch dan tampilkan kesalahan untuk laporan bug. Matikan saat penggunaan biasa.");
         table.put("Resume",
                 "Lanjutkan");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Retry",
                 "Coba lagi");
         table.put("Save full report",
                 "Simpan laporan lengkap");
         table.put("Save the full report in Download/Morphe.",
                 "Simpan laporan lengkap di Download/Morphe.");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("Save your switches to a file. They cover all the accounts in this Telegram app. Pause and Debug logging aren't included, and neither is the release check.",
                 "Simpan sakelar Anda ke sebuah file. Sakelar ini mencakup semua akun di aplikasi Telegram ini. Jeda dan Pencatatan debug tidak disertakan, begitu pula pemeriksaan rilis.");
         table.put("Saved. Restart Telegram to apply this change.",
@@ -1302,15 +1320,15 @@ public final class L10nTranslations {
                 "Laporan penggunaan");
         table.put("Usage reports and call diagnostics",
                 "Laporan penggunaan dan diagnostik panggilan");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Version",
                 "Versi");
         table.put("You have the newest HushTelegram release.",
                 "Anda sudah memakai rilis HushTelegram terbaru.");
         table.put("You paused HushTelegram.",
                 "Anda menjeda HushTelegram.");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
                 "Pilihan Anda tersimpan. Ketuk Lanjutkan, lalu mulai ulang Telegram.");
         table.put("Your controls are active.",
@@ -1376,7 +1394,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(422);
+        Map<String, String> table = new HashMap<>(428);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1439,6 +1457,8 @@ public final class L10nTranslations {
                 "Explorar configura\u00e7\u00f5es");
         table.put("Call diagnostics",
                 "Diagn\u00f3sticos de chamadas");
+        table.put("Camera only on tap",
+                "C\u00e2mera s\u00f3 ao tocar");
         table.put("Cancel",
                 "Cancelar");
         table.put("Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.",
@@ -1503,15 +1523,17 @@ public final class L10nTranslations {
                 "Exportar relat\u00f3rio de diagn\u00f3stico");
         table.put("Export settings",
                 "Exportar configura\u00e7\u00f5es");
-        table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
-                "A partir da pr\u00f3xima abertura, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo, e suas escolhas ficam salvas.");
     }
 
     private static void fillPt_rBR1(Map<String, String> table) {
+        table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
+                "A partir da pr\u00f3xima abertura, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo, e suas escolhas ficam salvas.");
         table.put("Full report saved to %1$s",
                 "Relat\u00f3rio completo salvo em %1$s");
         table.put("GPL-3.0, with the notices of the projects this is built on",
                 "GPL-3.0, com os avisos dos projetos em que o HushTelegram se baseia");
+        table.put("Gallery camera",
+                "C\u00e2mera da galeria");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
                 "O GitHub est\u00e1 recusando consultas desta rede por enquanto. Tente novamente mais tarde.");
         table.put("GitHub's answer couldn't be used. Try again later.",
@@ -1594,6 +1616,8 @@ public final class L10nTranslations {
                 "Abrir links externamente");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cAbrir links compat\u00edveis\u201d est\u00e1 desativado para este app nas configura\u00e7\u00f5es do Android. Toque para ativar.");
+        table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it. Off by default in settings.",
+                "Abrir a galeria de anexos n\u00e3o liga a c\u00e2mera nem pede acesso a ela. Toque no quadro da c\u00e2mera para lig\u00e1-la. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Opens ordinary HTTP(S) links in your browser. Telegram links, login, payment and authenticated routes keep their existing behavior.",
                 "Abre links HTTP(S) comuns no seu navegador. Links do Telegram e rotas de login, pagamento e autentica\u00e7\u00e3o mant\u00eam o comportamento habitual.");
         table.put("Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings.",
@@ -1622,15 +1646,15 @@ public final class L10nTranslations {
                 "Registra a atividade dos patches e mostra os erros para um relat\u00f3rio de problema. Mantenha desativado durante o uso normal.");
         table.put("Resume",
                 "Retomar");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Retry",
                 "Tentar novamente");
         table.put("Save full report",
                 "Salvar relat\u00f3rio completo");
         table.put("Save the full report in Download/Morphe.",
                 "Salve o relat\u00f3rio completo em Download/Morphe.");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Save your switches to a file. They cover all the accounts in this Telegram app. Pause and Debug logging aren't included, and neither is the release check.",
                 "Salve suas op\u00e7\u00f5es em um arquivo. Elas valem para todas as contas deste app do Telegram. Pausa e Registro de depura\u00e7\u00e3o n\u00e3o s\u00e3o inclu\u00eddos, nem a verifica\u00e7\u00e3o de novas vers\u00f5es.");
         table.put("Saved. Restart Telegram to apply this change.",
@@ -1745,15 +1769,15 @@ public final class L10nTranslations {
                 "Relat\u00f3rios de uso");
         table.put("Usage reports and call diagnostics",
                 "Relat\u00f3rios de uso e diagn\u00f3sticos de chamadas");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Version",
                 "Vers\u00e3o");
         table.put("You have the newest HushTelegram release.",
                 "Voc\u00ea j\u00e1 est\u00e1 usando a vers\u00e3o mais nova do HushTelegram.");
         table.put("You paused HushTelegram.",
                 "Voc\u00ea pausou o HushTelegram.");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
                 "Suas escolhas est\u00e3o salvas. Toque em Retomar e depois reinicie o Telegram.");
         table.put("Your controls are active.",
@@ -1819,7 +1843,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(422);
+        Map<String, String> table = new HashMap<>(428);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -1882,6 +1906,8 @@ public final class L10nTranslations {
                 "Ayarlar\u0131 ke\u015ffet");
         table.put("Call diagnostics",
                 "Arama tan\u0131lamalar\u0131");
+        table.put("Camera only on tap",
+                "Kamera yaln\u0131zca dokununca");
         table.put("Cancel",
                 "\u0130ptal");
         table.put("Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.",
@@ -1946,15 +1972,17 @@ public final class L10nTranslations {
                 "Tan\u0131lama raporunu d\u0131\u015fa aktar");
         table.put("Export settings",
                 "Ayarlar\u0131 d\u0131\u015fa aktar");
-        table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
-                "Sonraki a\u00e7\u0131l\u0131\u015ftan itibaren Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r ve tercihlerin kay\u0131tl\u0131 kal\u0131r.");
     }
 
     private static void fillTr1(Map<String, String> table) {
+        table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
+                "Sonraki a\u00e7\u0131l\u0131\u015ftan itibaren Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r ve tercihlerin kay\u0131tl\u0131 kal\u0131r.");
         table.put("Full report saved to %1$s",
                 "Tam rapor \u015furaya kaydedildi: %1$s");
         table.put("GPL-3.0, with the notices of the projects this is built on",
                 "GPL-3.0, \u00fczerine kuruldu\u011fu projelerin lisans bildirimleriyle");
+        table.put("Gallery camera",
+                "Galeri kameras\u0131");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
                 "GitHub \u015fu an bu a\u011fdan gelen sorgular\u0131 geri \u00e7eviriyor. Daha sonra tekrar dene.");
         table.put("GitHub's answer couldn't be used. Try again later.",
@@ -2037,6 +2065,8 @@ public final class L10nTranslations {
                 "Ba\u011flant\u0131lar\u0131 harici taray\u0131c\u0131da a\u00e7");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cDesteklenen ba\u011flant\u0131lar\u0131 a\u00e7\u201d Android ayarlar\u0131nda bu uygulama i\u00e7in kapal\u0131. A\u00e7mak i\u00e7in dokunun.");
+        table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it. Off by default in settings.",
+                "Ek galerisini a\u00e7mak kameray\u0131 ba\u015flatmaz ve kamera eri\u015fimi istemez. Ba\u015flatmak i\u00e7in kamera kutucu\u011funa dokunun. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Opens ordinary HTTP(S) links in your browser. Telegram links, login, payment and authenticated routes keep their existing behavior.",
                 "Normal HTTP(S) ba\u011flant\u0131lar\u0131n\u0131 taray\u0131c\u0131n\u0131zda a\u00e7ar. Telegram ba\u011flant\u0131lar\u0131 ile oturum a\u00e7ma, \u00f6deme ve kimlik do\u011frulama yollar\u0131n\u0131n mevcut davran\u0131\u015f\u0131 korunur.");
         table.put("Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings.",
@@ -2065,15 +2095,15 @@ public final class L10nTranslations {
                 "Hata raporu i\u00e7in yama etkinli\u011fini kaydeder ve hatalar\u0131 g\u00f6sterir. Normal kullan\u0131mda kapal\u0131 b\u0131rak\u0131n.");
         table.put("Resume",
                 "Devam et");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("Retry",
                 "Yeniden dene");
         table.put("Save full report",
                 "Tam raporu kaydet");
         table.put("Save the full report in Download/Morphe.",
                 "Tam raporu Download/Morphe konumuna kaydeder.");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("Save your switches to a file. They cover all the accounts in this Telegram app. Pause and Debug logging aren't included, and neither is the release check.",
                 "Anahtarlar\u0131n\u0131 bir dosyaya kaydet. Anahtarlar bu Telegram uygulamas\u0131ndaki t\u00fcm hesaplar i\u00e7in ge\u00e7erlidir. Duraklatma ve Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc dahil edilmez, s\u00fcr\u00fcm denetimi de edilmez.");
         table.put("Saved. Restart Telegram to apply this change.",
@@ -2188,15 +2218,15 @@ public final class L10nTranslations {
                 "Kullan\u0131m raporlar\u0131");
         table.put("Usage reports and call diagnostics",
                 "Kullan\u0131m raporlar\u0131 ve arama tan\u0131lamalar\u0131");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Version",
                 "S\u00fcr\u00fcm");
         table.put("You have the newest HushTelegram release.",
                 "En yeni HushTelegram s\u00fcr\u00fcm\u00fcn\u00fc kullan\u0131yorsun.");
         table.put("You paused HushTelegram.",
                 "HushTelegram'u duraklatt\u0131n.");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
                 "Tercihleriniz kay\u0131tl\u0131. Devam et'e dokunun, sonra Telegram'\u0131 yeniden ba\u015flat\u0131n.");
         table.put("Your controls are active.",

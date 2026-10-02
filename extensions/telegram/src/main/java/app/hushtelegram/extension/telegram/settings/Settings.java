@@ -74,6 +74,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting DISABLE_DRAFT_PREVIEWS =
             new BooleanSetting("hushtelegram_disable_draft_previews", FALSE);
 
+    /** The attachment gallery's camera tile only; the camera wakes on a tap and every other camera stays stock. */
+    public static final BooleanSetting GALLERY_CAMERA_ON_TAP =
+            new BooleanSetting("hushtelegram_gallery_camera_on_tap", FALSE);
+
     /** Ordinary HTTP(S) browser dispatch only; native and protected Telegram routes stay stock. */
     public static final BooleanSetting OPEN_EXTERNAL_LINKS =
             new BooleanSetting("hushtelegram_open_external_links", TRUE);

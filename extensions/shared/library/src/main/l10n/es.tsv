@@ -217,3 +217,6 @@ share sheet comments	comentarios del menú de compartir
 poll links	enlaces de encuestas
 story links	enlaces de historias
 bot shares	mensajes que comparten los bots
+Camera only on tap	Cámara solo al tocar
+Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it. Off by default in settings.	Al abrir la galería de adjuntos, la cámara no se inicia ni se pide acceso a ella. Toca el recuadro de la cámara para iniciarla. Desactivado por defecto en los ajustes.
+Gallery camera	Cámara de la galería

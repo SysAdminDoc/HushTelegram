@@ -217,3 +217,6 @@ share sheet comments	komentar di lembar berbagi
 poll links	tautan polling
 story links	tautan cerita
 bot shares	pesan yang dibagikan bot
+Camera only on tap	Kamera hanya saat diketuk
+Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it. Off by default in settings.	Membuka galeri lampiran tidak menyalakan kamera atau meminta akses kamera. Ketuk ubin kamera untuk menyalakannya. Secara default nonaktif di pengaturan.
+Gallery camera	Kamera galeri
