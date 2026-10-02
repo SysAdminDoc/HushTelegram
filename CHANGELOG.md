@@ -2,6 +2,10 @@
 
 Every HushTelegram release, newest first.
 
+## Unreleased
+
+* **Telegram:** Hide Stories removes the chat-list story bar, its camera button and avatar story interactions. Profile stories and archives remain available, and the switch or Pause restores Telegram's behavior.
+
 ## 0.0.5 (2026-10-01)
 
 Prepared for the next release. The published version is still 0.0.4.

@@ -1,4 +1,12 @@
 # Spanish for HushTelegram: the English key, a tab, the translation. One row per string.
+# context: Chat-list-only story controls and immutable hook coverage.
+Hide Stories	Ocultar historias
+Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.	Oculta la barra de historias de la lista de chats, los anillos de historias en los avatares y el botón para publicar una historia, y deja de consultar la lista de historias. Las historias de los perfiles y los archivos siguen disponibles.
+story list requests	consultas de la lista de historias
+chat-list story bar	barra de historias de la lista de chats
+Post Story button	botón para publicar una historia
+avatar story rings	anillos de historias en los avatares
+avatar story taps	toques de historias en los avatares
 # After editing, run python scripts/gen-l10n.py from the repository root.
 %1$d item in that file isn't a setting this version of HushTelegram knows, so it'll be left out.	%1$d elemento de ese archivo no es un ajuste que conozca esta versión de HushTelegram, así que se omitirá.
 %1$d items in that file aren't settings this version of HushTelegram knows, so they'll be left out.	%1$d elementos de ese archivo no son ajustes que conozca esta versión de HushTelegram, así que se omitirán.

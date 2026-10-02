@@ -38,6 +38,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_ADS =
             new BooleanSetting("hushtelegram_hide_ads", TRUE);
 
+    /** Chat-list stories only; explicit profile stories and archives keep Telegram's paths. */
+    public static final BooleanSetting HIDE_STORIES =
+            new BooleanSetting("hushtelegram_hide_stories", TRUE);
+
     /**
      * The device statistics report the server can ask for (storage directories, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are

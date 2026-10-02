@@ -30,6 +30,13 @@ public final class SettingsStatus {
         return false;
     }
 
+    public static boolean hideStories() { return false; }
+    public static boolean storyRequests() { return false; }
+    public static boolean storyBar() { return false; }
+    public static boolean storyCamera() { return false; }
+    public static boolean storyAvatars() { return false; }
+    public static boolean storyTouches() { return false; }
+
     public static boolean disableAnalytics() {
         return false;
     }

@@ -19,6 +19,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -37,6 +39,7 @@ import app.hushtelegram.extension.telegram.ads.Ads;
 import app.hushtelegram.extension.telegram.misc.Analytics;
 import app.hushtelegram.extension.telegram.misc.AnalyticsTest.DeviceStatsController;
 import app.hushtelegram.extension.telegram.misc.UpdateChecks;
+import app.hushtelegram.extension.telegram.misc.Stories;
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
@@ -52,9 +55,20 @@ import app.hushtelegram.extension.shared.settings.PauseForTests;
  * without a probe here fails the first test.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 30)
+@Config(sdk = 30, shadows = PausedHooksTest.AvatarScope.class,
+        instrumentedPackages = "app.hushtelegram.extension.telegram.misc")
 public class PausedHooksTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
+
+    private static final Object DIALOG_AVATAR = new Object();
+
+    /** The fixture tests cover the real scope bytecode; this supplies a dialog avatar to probes. */
+    @Implements(value = Stories.class, isInAndroidSdk = false)
+    public static class AvatarScope {
+        @Implementation protected static boolean isDialogAvatar(Object params) {
+            return params == DIALOG_AVATAR;
+        }
+    }
 
     /** One hook with its switch on: true when it changed what Telegram would have done. */
     interface Probe {
@@ -86,6 +100,11 @@ public class PausedHooksTest {
         Map<PatchFamily, List<Probe>> probes = new EnumMap<>(PatchFamily.class);
         // A sponsored messages, video ads or search ads request is answered without ever being made.
         probes.put(PatchFamily.HIDE_ADS, Arrays.asList(Ads::skipSponsoredMessages, Ads::skipVideoAds, Ads::skipSearchAds));
+        probes.put(PatchFamily.HIDE_STORIES, Arrays.asList(
+                Stories::skipStoryRequests, Stories::hideStoryBar,
+                () -> !Stories.showStoryCamera(true),
+                () -> Stories.hideAvatarStories(DIALOG_AVATAR),
+                () -> Stories.hideAvatarStoryTouches(DIALOG_AVATAR)));
         // A device statistics report is never read or sent, and neither is a channel's read time.
         probes.put(PatchFamily.DISABLE_ANALYTICS, Arrays.asList(
                 () -> Analytics.skipDeviceStats(new DeviceStatsController(true, false)),

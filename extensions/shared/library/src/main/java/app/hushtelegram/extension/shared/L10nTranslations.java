@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(312);
+        Map<String, String> table = new HashMap<>(326);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -171,13 +171,17 @@ public final class L10nTranslations {
                 "Mit der Antwort von GitHub lie\u00df sich nichts anfangen. Versuche es sp\u00e4ter noch einmal.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Direkt zu einer Gruppe von Einstellungen. Zur\u00fcck bringt dich dorthin, wo du warst.");
+        table.put("Hide Stories",
+                "Stories ausblenden");
         table.put("Hide ads",
                 "Werbung ausblenden");
-        table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
-                "HushTelegram %1$s ist erschienen. Aktualisiere es im Morphe Manager.");
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.",
+                "Blendet die Story-Leiste der Chatliste, Story-Ringe an Avataren und die Schaltfl\u00e4che zum Posten einer Story aus und ruft die Story-Liste nicht mehr ab. Profil-Stories und Archive bleiben verf\u00fcgbar.");
+        table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
+                "HushTelegram %1$s ist erschienen. Aktualisiere es im Morphe Manager.");
         table.put("HushTelegram %1$s on Telegram %2$s",
                 "HushTelegram %1$s auf Telegram %2$s");
         table.put("HushTelegram %1$s targets Telegram %2$s.",
@@ -232,6 +236,8 @@ public final class L10nTranslations {
                 "HushTelegram pausieren");
         table.put("Pause, backup and diagnostics",
                 "Pause, Sicherung und Diagnose");
+        table.put("Post Story button",
+                "Schaltfl\u00e4che zum Posten einer Story");
         table.put("Privacy",
                 "Datenschutz");
         table.put("Reading the settings file",
@@ -292,15 +298,15 @@ public final class L10nTranslations {
                 "Telegram bietet keine Updates von telegram.org mehr an. Sie lie\u00dfen sich nicht \u00fcber diesen gepatchten Build installieren, also patche jede neue Version stattdessen im Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Die Webadressen von Telegram sind in den Android-Einstellungen f\u00fcr diese App ausgew\u00e4hlt, deshalb \u00f6ffnen sich ihre Links hier.");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Diese Datei ist zu gro\u00df f\u00fcr eine Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
                 "Diese Datei ist kein lesbarer Text, sie wurde also wom\u00f6glich bei der \u00dcbertragung besch\u00e4digt. Es wurde nichts ge\u00e4ndert.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Diese Datei f\u00fchrt eine Einstellung zweimal auf, daher ist unklar, welcher Wert gilt. Es wurde nichts ge\u00e4ndert.");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Das ist keine HushTelegram-Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
@@ -363,20 +369,28 @@ public final class L10nTranslations {
                 "Deine Einstellungen sind aktiv.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Deine Schalter entsprechen bereits dieser Datei, es \u00e4ndert sich also nichts.");
+        table.put("avatar story rings",
+                "Story-Ringe an Avataren");
+        table.put("avatar story taps",
+                "Story-Tipps auf Avatare");
         table.put("channel ads",
                 "Kanalwerbung");
         table.put("channel read metrics",
                 "Kanal-Lesemetriken");
+        table.put("chat-list story bar",
+                "Story-Leiste der Chatliste");
         table.put("device statistics reports",
                 "Ger\u00e4testatistikberichte");
         table.put("search ads",
                 "Suchwerbung");
+        table.put("story list requests",
+                "Anfragen zur Story-Liste");
         table.put("video ads",
                 "Videowerbung");
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(312);
+        Map<String, String> table = new HashMap<>(326);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -500,13 +514,17 @@ public final class L10nTranslations {
                 "No se pudo usar la respuesta de GitHub. Int\u00e9ntalo de nuevo m\u00e1s tarde.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Ve directo a un grupo de ajustes. Atr\u00e1s te devuelve a donde estabas.");
+        table.put("Hide Stories",
+                "Ocultar historias");
         table.put("Hide ads",
                 "Ocultar anuncios");
-        table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
-                "Ya sali\u00f3 HushTelegram %1$s. Actual\u00edzalo en Morphe Manager.");
     }
 
     private static void fillEs1(Map<String, String> table) {
+        table.put("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.",
+                "Oculta la barra de historias de la lista de chats, los anillos de historias en los avatares y el bot\u00f3n para publicar una historia, y deja de consultar la lista de historias. Las historias de los perfiles y los archivos siguen disponibles.");
+        table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
+                "Ya sali\u00f3 HushTelegram %1$s. Actual\u00edzalo en Morphe Manager.");
         table.put("HushTelegram %1$s on Telegram %2$s",
                 "HushTelegram %1$s en Telegram %2$s");
         table.put("HushTelegram %1$s targets Telegram %2$s.",
@@ -561,6 +579,8 @@ public final class L10nTranslations {
                 "Pausar HushTelegram");
         table.put("Pause, backup and diagnostics",
                 "Pausa, copia de seguridad y diagn\u00f3stico");
+        table.put("Post Story button",
+                "bot\u00f3n para publicar una historia");
         table.put("Privacy",
                 "Privacidad");
         table.put("Reading the settings file",
@@ -621,15 +641,15 @@ public final class L10nTranslations {
                 "Telegram deja de ofrecer actualizaciones de telegram.org. No se pueden instalar sobre este build parcheado, as\u00ed que parchea cada versi\u00f3n nueva en Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Las direcciones web de Telegram est\u00e1n seleccionadas para esta app en los ajustes de Android, as\u00ed que sus enlaces se abren aqu\u00ed.");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Ese archivo es demasiado grande para ser un archivo de configuraci\u00f3n. No se cambi\u00f3 nada.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
                 "Ese archivo no es texto legible, as\u00ed que puede haberse da\u00f1ado por el camino. No se cambi\u00f3 nada.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Ese archivo incluye un ajuste dos veces, as\u00ed que no se sabe qu\u00e9 valor usar. No se cambi\u00f3 nada.");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Eso no es un archivo de configuraci\u00f3n de HushTelegram. No se cambi\u00f3 nada.");
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
@@ -692,20 +712,28 @@ public final class L10nTranslations {
                 "Tus controles est\u00e1n activos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Tus interruptores ya coinciden con ese archivo, as\u00ed que no cambiar\u00e1 nada.");
+        table.put("avatar story rings",
+                "anillos de historias en los avatares");
+        table.put("avatar story taps",
+                "toques de historias en los avatares");
         table.put("channel ads",
                 "anuncios en canales");
         table.put("channel read metrics",
                 "m\u00e9tricas de lectura de canales");
+        table.put("chat-list story bar",
+                "barra de historias de la lista de chats");
         table.put("device statistics reports",
                 "informes de estad\u00edsticas del dispositivo");
         table.put("search ads",
                 "anuncios en b\u00fasquedas");
+        table.put("story list requests",
+                "consultas de la lista de historias");
         table.put("video ads",
                 "anuncios en videos");
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(312);
+        Map<String, String> table = new HashMap<>(326);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -829,13 +857,17 @@ public final class L10nTranslations {
                 "Jawaban GitHub tidak dapat digunakan. Coba lagi nanti.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Langsung ke satu kelompok setelan. Kembali membawamu ke tempat semula.");
+        table.put("Hide Stories",
+                "Sembunyikan Cerita");
         table.put("Hide ads",
                 "Sembunyikan iklan");
-        table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
-                "HushTelegram %1$s sudah dirilis. Perbarui di Morphe Manager.");
     }
 
     private static void fillIn1(Map<String, String> table) {
+        table.put("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.",
+                "Menyembunyikan bilah cerita di daftar chat, lingkaran cerita pada avatar dan tombol Kirim Cerita, serta berhenti mengambil daftar cerita. Cerita profil dan arsip tetap tersedia.");
+        table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
+                "HushTelegram %1$s sudah dirilis. Perbarui di Morphe Manager.");
         table.put("HushTelegram %1$s on Telegram %2$s",
                 "HushTelegram %1$s di Telegram %2$s");
         table.put("HushTelegram %1$s targets Telegram %2$s.",
@@ -890,6 +922,8 @@ public final class L10nTranslations {
                 "Jeda HushTelegram");
         table.put("Pause, backup and diagnostics",
                 "Jeda, cadangan, dan diagnostik");
+        table.put("Post Story button",
+                "tombol Kirim Cerita");
         table.put("Privacy",
                 "Privasi");
         table.put("Reading the settings file",
@@ -950,15 +984,15 @@ public final class L10nTranslations {
                 "Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Alamat web Telegram dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "File itu terlalu besar untuk sebuah file pengaturan. Tidak ada yang diubah.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
                 "File itu bukan teks yang dapat dibaca, jadi mungkin rusak saat ditransfer. Tidak ada yang diubah.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "File itu mencantumkan satu pengaturan dua kali, jadi tidak jelas nilai mana yang harus dipakai. Tidak ada yang diubah.");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Itu bukan file pengaturan HushTelegram. Tidak ada yang diubah.");
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
@@ -1021,20 +1055,28 @@ public final class L10nTranslations {
                 "Kontrol Anda aktif.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Sakelar Anda sudah sesuai dengan file itu, jadi tidak ada yang akan berubah.");
+        table.put("avatar story rings",
+                "lingkaran cerita pada avatar");
+        table.put("avatar story taps",
+                "ketukan cerita pada avatar");
         table.put("channel ads",
                 "iklan saluran");
         table.put("channel read metrics",
                 "metrik pembacaan saluran");
+        table.put("chat-list story bar",
+                "bilah cerita di daftar chat");
         table.put("device statistics reports",
                 "laporan statistik perangkat");
         table.put("search ads",
                 "iklan pencarian");
+        table.put("story list requests",
+                "permintaan daftar cerita");
         table.put("video ads",
                 "iklan video");
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(312);
+        Map<String, String> table = new HashMap<>(326);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1158,13 +1200,17 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel usar a resposta do GitHub. Tente novamente mais tarde.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "V\u00e1 diretamente para um grupo de configura\u00e7\u00f5es. Voltar leva voc\u00ea de volta ao ponto em que estava.");
+        table.put("Hide Stories",
+                "Ocultar Stories");
         table.put("Hide ads",
                 "Ocultar an\u00fancios");
-        table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
-                "O HushTelegram %1$s est\u00e1 dispon\u00edvel. Atualize-o pelo Morphe Manager.");
     }
 
     private static void fillPt_rBR1(Map<String, String> table) {
+        table.put("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.",
+                "Oculta a barra de stories da lista de conversas, os an\u00e9is de stories nos avatares e o bot\u00e3o de publicar um story, e deixa de buscar a lista de stories. Os stories dos perfis e os arquivos continuam dispon\u00edveis.");
+        table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
+                "O HushTelegram %1$s est\u00e1 dispon\u00edvel. Atualize-o pelo Morphe Manager.");
         table.put("HushTelegram %1$s on Telegram %2$s",
                 "HushTelegram %1$s no Telegram %2$s");
         table.put("HushTelegram %1$s targets Telegram %2$s.",
@@ -1219,6 +1265,8 @@ public final class L10nTranslations {
                 "Pausar o HushTelegram");
         table.put("Pause, backup and diagnostics",
                 "Pausa, backup e diagn\u00f3stico");
+        table.put("Post Story button",
+                "bot\u00e3o de publicar um story");
         table.put("Privacy",
                 "Privacidade");
         table.put("Reading the settings file",
@@ -1279,15 +1327,15 @@ public final class L10nTranslations {
                 "O Telegram deixa de oferecer atualiza\u00e7\u00f5es do telegram.org. Elas n\u00e3o podem ser instaladas sobre este build corrigido, ent\u00e3o aplique o patch de cada nova vers\u00e3o pelo Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Os endere\u00e7os web do Telegram est\u00e3o selecionados para este app nas configura\u00e7\u00f5es do Android, ent\u00e3o os links deles abrem aqui.");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Esse arquivo \u00e9 grande demais para ser um arquivo de configura\u00e7\u00f5es. Nada foi alterado.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
                 "Esse arquivo n\u00e3o cont\u00e9m texto leg\u00edvel, ent\u00e3o pode ter sido corrompido durante o processo. Nada foi alterado.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Esse arquivo cont\u00e9m uma configura\u00e7\u00e3o duplicada, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel saber qual valor usar. Nada foi alterado.");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Isso n\u00e3o \u00e9 um arquivo de configura\u00e7\u00f5es do HushTelegram. Nada foi alterado.");
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
@@ -1350,20 +1398,28 @@ public final class L10nTranslations {
                 "Seus controles est\u00e3o ativos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Suas op\u00e7\u00f5es j\u00e1 correspondem \u00e0s desse arquivo, ent\u00e3o nada ser\u00e1 alterado.");
+        table.put("avatar story rings",
+                "an\u00e9is de stories nos avatares");
+        table.put("avatar story taps",
+                "toques de stories nos avatares");
         table.put("channel ads",
                 "an\u00fancios em canais");
         table.put("channel read metrics",
                 "m\u00e9tricas de leitura de canais");
+        table.put("chat-list story bar",
+                "barra de stories da lista de conversas");
         table.put("device statistics reports",
                 "relat\u00f3rios de estat\u00edsticas do dispositivo");
         table.put("search ads",
                 "an\u00fancios na busca");
+        table.put("story list requests",
+                "solicita\u00e7\u00f5es da lista de stories");
         table.put("video ads",
                 "an\u00fancios em v\u00eddeos");
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(312);
+        Map<String, String> table = new HashMap<>(326);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -1487,13 +1543,17 @@ public final class L10nTranslations {
                 "GitHub'\u0131n yan\u0131t\u0131 kullan\u0131lamad\u0131. Daha sonra tekrar dene.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Do\u011frudan bir ayar grubuna git. Geri, bulundu\u011fun yere d\u00f6nd\u00fcr\u00fcr.");
+        table.put("Hide Stories",
+                "Hik\u00e2yeleri gizle");
         table.put("Hide ads",
                 "Reklamlar\u0131 gizle");
-        table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
-                "HushTelegram %1$s \u00e7\u0131kt\u0131. Morphe Manager'da g\u00fcncelle.");
     }
 
     private static void fillTr1(Map<String, String> table) {
+        table.put("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.",
+                "Sohbet listesindeki hik\u00e2ye \u00e7ubu\u011funu, avatar hik\u00e2ye halkalar\u0131n\u0131 ve Hik\u00e2ye Payla\u015f d\u00fc\u011fmesini gizler, hik\u00e2ye listesini almay\u0131 durdurur. Profil hik\u00e2yeleri ve ar\u015fivler kullan\u0131labilir durumda kal\u0131r.");
+        table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
+                "HushTelegram %1$s \u00e7\u0131kt\u0131. Morphe Manager'da g\u00fcncelle.");
         table.put("HushTelegram %1$s on Telegram %2$s",
                 "Telegram %2$s \u00fczerinde HushTelegram %1$s");
         table.put("HushTelegram %1$s targets Telegram %2$s.",
@@ -1548,6 +1608,8 @@ public final class L10nTranslations {
                 "HushTelegram'u duraklat");
         table.put("Pause, backup and diagnostics",
                 "Duraklatma, yedekleme ve tan\u0131lama");
+        table.put("Post Story button",
+                "Hik\u00e2ye Payla\u015f d\u00fc\u011fmesi");
         table.put("Privacy",
                 "Gizlilik");
         table.put("Reading the settings file",
@@ -1608,15 +1670,15 @@ public final class L10nTranslations {
                 "Telegram, telegram.org g\u00fcncellemelerini sunmay\u0131 b\u0131rak\u0131r. Bunlar bu yamal\u0131 s\u00fcr\u00fcm\u00fcn \u00fczerine kurulamaz, bu y\u00fczden her yeni s\u00fcr\u00fcm\u00fc Morphe Manager'da yamala.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Telegram'\u0131n web adresleri Android ayarlar\u0131nda bu uygulama i\u00e7in se\u00e7ili, bu y\u00fczden ba\u011flant\u0131lar\u0131 burada a\u00e7\u0131l\u0131r.");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Bu dosya bir ayar dosyas\u0131 olamayacak kadar b\u00fcy\u00fck. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
                 "Bu dosya okunabilir bir metin de\u011fil, aktar\u0131m s\u0131ras\u0131nda hasar g\u00f6rm\u00fc\u015f olabilir. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Bu dosyada bir ayar iki kez ge\u00e7iyor, bu y\u00fczden hangi de\u011ferin kullan\u0131laca\u011f\u0131 belli de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Bu bir HushTelegram ayar dosyas\u0131 de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
@@ -1679,14 +1741,22 @@ public final class L10nTranslations {
                 "Kontrolleriniz etkin.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Anahtarlar\u0131n zaten o dosyayla ayn\u0131, bu y\u00fczden hi\u00e7bir \u015fey de\u011fi\u015fmeyecek.");
+        table.put("avatar story rings",
+                "avatar hik\u00e2ye halkalar\u0131");
+        table.put("avatar story taps",
+                "avatarlardaki hik\u00e2ye dokunu\u015flar\u0131");
         table.put("channel ads",
                 "kanal reklamlar\u0131");
         table.put("channel read metrics",
                 "kanal okuma \u00f6l\u00e7\u00fcmleri");
+        table.put("chat-list story bar",
+                "sohbet listesindeki hik\u00e2ye \u00e7ubu\u011fu");
         table.put("device statistics reports",
                 "cihaz istatistik raporlar\u0131");
         table.put("search ads",
                 "arama reklamlar\u0131");
+        table.put("story list requests",
+                "hik\u00e2ye listesi istekleri");
         table.put("video ads",
                 "video reklamlar\u0131");
     }

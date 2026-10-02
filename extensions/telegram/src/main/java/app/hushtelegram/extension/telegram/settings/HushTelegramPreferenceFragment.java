@@ -235,11 +235,18 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
         // Every row carries an icon, so all pages share one text edge. A switch that stops something
         // Telegram does takes the stop sign.
-        if (build.contains(PatchFamily.HIDE_ADS)) {
+        if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_STORIES)) {
             PreferenceCategory chats = category(screen, L10n.t("Chats"));
-            chats.addPreference(mark(toggle(context, Settings.HIDE_ADS, L10n.t("Hide ads"),
-                    PatchFamily.HIDE_ADS.coverageSummary(L10n.t("Channels show no sponsored messages, search shows no sponsored accounts, and videos play "
-                            + "without ads. Telegram never asks for them, so none are counted as seen."))), SettingsIcons.BLOCK));
+            if (build.contains(PatchFamily.HIDE_ADS)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_ADS, L10n.t("Hide ads"),
+                        PatchFamily.HIDE_ADS.coverageSummary(L10n.t("Channels show no sponsored messages, search shows no sponsored accounts, and videos play "
+                                + "without ads. Telegram never asks for them, so none are counted as seen."))), SettingsIcons.BLOCK));
+            }
+            if (build.contains(PatchFamily.HIDE_STORIES)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_STORIES, L10n.t("Hide Stories"),
+                        PatchFamily.HIDE_STORIES.coverageSummary(L10n.t("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching "
+                                + "the story list. Profile stories and archives remain available."))), SettingsIcons.BLOCK));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS)) {

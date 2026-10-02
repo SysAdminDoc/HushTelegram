@@ -72,6 +72,7 @@ body:
         - Disable analytics
         - Disable update checks
         - Hide ads
+        - Hide Stories
         - HushTelegram settings
     validations:
       required: true

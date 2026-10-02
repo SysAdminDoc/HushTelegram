@@ -36,6 +36,7 @@ import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.PauseForTests;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -78,8 +79,11 @@ public class HushTelegramPreferenceFragmentTest {
     /** The row each patch adds, by the title it shows. */
     private static final Map<PatchFamily, String> ROW_TITLES = new LinkedHashMap<>();
 
-    static {
+    @Before
+    public void initializeRowTitlesAfterTheContextIsReady() {
+        ROW_TITLES.clear();
         ROW_TITLES.put(PatchFamily.HIDE_ADS, "Hide ads");
+        ROW_TITLES.put(PatchFamily.HIDE_STORIES, "Hide Stories");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_UPDATE_CHECKS, "Turn off Telegram's update checks");
     }
@@ -187,7 +191,7 @@ public class HushTelegramPreferenceFragmentTest {
 
                 List<String> sections = sections(page);
                 List<String> expected = new ArrayList<>();
-                if (build.contains(PatchFamily.HIDE_ADS)) expected.add("Chats");
+                if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_STORIES)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS)) expected.add("Privacy");
                 expected.addAll(EVERY_BUILD);
                 if (!expected.equals(sections)) wrong.add(build + ": sections " + sections);
@@ -196,7 +200,7 @@ public class HushTelegramPreferenceFragmentTest {
         assertEquals(Collections.emptyList(), wrong);
     }
 
-    /** The three patches' rows say what each does, in Telegram's own words. */
+    /** Each patch's row says what it does, in Telegram's own words. */
     @Test
     public void eachPatchsRowSaysWhatItDoes() {
         PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
@@ -206,6 +210,10 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Channels show no sponsored messages, search shows no sponsored accounts, and videos play "
                     + "without ads. Telegram never asks for them, so none are counted as seen.",
                     String.valueOf(page.findPreference(Settings.HIDE_ADS.key).getSummary()));
+            assertEquals("Hide Stories", String.valueOf(page.findPreference(Settings.HIDE_STORIES.key).getTitle()));
+            assertEquals("Hides the chat-list story bar, avatar story rings and Post Story button, and stops "
+                    + "fetching the story list. Profile stories and archives remain available.",
+                    String.valueOf(page.findPreference(Settings.HIDE_STORIES.key).getSummary()));
             assertEquals("Stop usage reports", String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getTitle()));
             assertEquals("Telegram doesn't send your storage folders as a device report when its server asks, "
                     + "or how long you spent on each channel post. Messages and calls work as before.",

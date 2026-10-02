@@ -31,7 +31,7 @@ class PatchCategoriesTest {
      * Feed, Downloads and Interface come back when a Telegram patch needs one.
      */
     private val taxonomy = setOf(
-        "Ads", "Privacy", "Fixes", "Settings",
+        "Ads", "Chats", "Privacy", "Fixes", "Settings",
     )
 
     private fun shippedPatches() = run {

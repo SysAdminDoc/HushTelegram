@@ -43,6 +43,8 @@ import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 public enum PatchFamily {
     HIDE_ADS(FamilyNames.HIDE_ADS, "hideAds", null,
             Settings.HIDE_ADS),
+    HIDE_STORIES(FamilyNames.HIDE_STORIES, "hideStories", null,
+            Settings.HIDE_STORIES),
     DISABLE_ANALYTICS(FamilyNames.DISABLE_ANALYTICS, "disableAnalytics", null,
             Settings.DISABLE_ANALYTICS),
     DISABLE_UPDATE_CHECKS(FamilyNames.DISABLE_UPDATE_CHECKS, "disableUpdateChecks", null,
@@ -97,6 +99,11 @@ public enum PatchFamily {
         CHANNEL_ADS(HIDE_ADS, "channelAds", "channel ads"),
         VIDEO_ADS(HIDE_ADS, "videoAds", "video ads"),
         SEARCH_ADS(HIDE_ADS, "searchAds", "search ads"),
+        STORY_REQUESTS(HIDE_STORIES, "storyRequests", "story list requests"),
+        STORY_BAR(HIDE_STORIES, "storyBar", "chat-list story bar"),
+        STORY_CAMERA(HIDE_STORIES, "storyCamera", "Post Story button"),
+        STORY_AVATARS(HIDE_STORIES, "storyAvatars", "avatar story rings"),
+        STORY_TOUCHES(HIDE_STORIES, "storyTouches", "avatar story taps"),
         DEVICE_STATS(DISABLE_ANALYTICS, "deviceStats", "device statistics reports"),
         READ_METRICS(DISABLE_ANALYTICS, "readMetrics", "channel read metrics");
 
