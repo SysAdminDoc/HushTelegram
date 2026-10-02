@@ -24,6 +24,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -207,15 +208,84 @@ class HideSponsoredProxyFixtureTest {
         }
     }
 
+    @Test
+    fun `static promo type refuses before any host scope or build flag changes`() = refusal { context, _ ->
+        val field = context.mutableClassDefBy(MESSAGES_CONTROLLER).fields.single { it.name == "promoDialogType" }
+        field.accessFlags = field.accessFlags or AccessFlags.STATIC.value
+    }
+
+    @Test
+    fun `inaccessible runtime class refuses before any host scope or build flag changes`() = refusal { context, _ ->
+        val runtime = context.mutableClassDefBy(PROXY_PROMOTIONS)
+        runtime.accessFlags = runtime.accessFlags and AccessFlags.PUBLIC.value.inv()
+    }
+
+    @Test
+    fun `each instance status method refuses before any host scope or build flag changes`() {
+        for (name in FLAGS) refusal { context, _ ->
+            val method = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }
+            method.accessFlags = method.accessFlags and AccessFlags.STATIC.value.inv()
+        }
+    }
+
+    @Test
+    fun `all remaining instance fields refuse static reads before any mutation`() {
+        for ((type, name) in listOf(MESSAGES_CONTROLLER to "promoDialog", MESSAGES_CONTROLLER to "isLeftPromoChannel",
+            MESSAGES_CONTROLLER to "allDialogs", PROXY_DIALOG to "id", PROXY_CHAT to "left")) refusal { context, _ ->
+            val field = context.mutableClassDefBy(type).fields.single { it.name == name }
+            field.accessFlags = field.accessFlags or AccessFlags.STATIC.value
+        }
+    }
+
+    @Test
+    fun `uncallable extension methods refuse before any mutation`() {
+        for (name in listOf("hideCachedProxyDialog", "showSelectedDialog", "isSponsoredProxyDialog")) {
+            for (flag in listOf(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.ABSTRACT, AccessFlags.NATIVE)) {
+                refusal { context, _ ->
+                    val method = context.mutableClassDefBy(PROXY_PROMOTIONS).methods.single { it.name == name }
+                    method.accessFlags = if (flag in listOf(AccessFlags.PUBLIC, AccessFlags.STATIC))
+                        method.accessFlags and flag.value.inv() else method.accessFlags or flag.value
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `inaccessible status class and uncallable build flags refuse before any mutation`() {
+        refusal { context, _ ->
+            val status = context.mutableClassDefBy(SETTINGS_STATUS)
+            status.accessFlags = status.accessFlags and AccessFlags.PUBLIC.value.inv()
+        }
+        for (name in FLAGS) for (flag in listOf(AccessFlags.PUBLIC, AccessFlags.ABSTRACT, AccessFlags.NATIVE)) {
+            refusal { context, _ ->
+                val method = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }
+                method.accessFlags = if (flag == AccessFlags.PUBLIC) method.accessFlags and flag.value.inv()
+                    else method.accessFlags or flag.value
+            }
+        }
+    }
+
+    @Test
+    fun `empty build facts refuse before any host scope or build flag changes`() {
+        for (name in FLAGS) refusal { context, _ ->
+            val owner = context.mutableClassDefBy(SETTINGS_STATUS)
+            val method = owner.methods.single { it.name == name }
+            owner.methods.remove(method)
+            owner.methods.add(ImmutableMethod(method.definingClass, method.name, emptyList(), method.returnType,
+                method.accessFlags, method.annotations, method.hiddenApiRestrictions,
+                ImmutableMethodImplementation(method.implementation!!.registerCount, emptyList(), emptyList(), emptyList())).toMutable())
+        }
+    }
+
     private fun refusal(change: (BytecodePatchContext, ProxyPlan) -> Unit) {
         for (build in Fixtures.declaredBuilds()) {
             val hosts = hosts(build)
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
             val plan = context.resolveProxyHooks()
             change(context, plan)
-            val types = hosts.map { it.type } + PROXY_PROMOTIONS
+            val types = hosts.map { it.type } + listOf(PROXY_PROMOTIONS, SETTINGS_STATUS)
             val before = types.associateWith { type -> context.mutableClassDefBy(type).methods.associate {
-                it.signature() to it.instructions().map(::operation)
+                it.signature() to it.state()
             } }
             try {
                 hideSponsoredProxyPatch.execute(context)
@@ -224,10 +294,15 @@ class HideSponsoredProxyFixtureTest {
                 assertTrue(expected.message.orEmpty().isNotBlank())
             }
             for (type in types) assertEquals("${build.name}: no partial edit to $type", before.getValue(type),
-                context.mutableClassDefBy(type).methods.associate { it.signature() to it.instructions().map(::operation) })
+                context.mutableClassDefBy(type).methods.associate { it.signature() to it.state() })
             for (flag in FLAGS) {
                 val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.singleOrNull { it.name == flag } ?: continue
-                assertEquals("${build.name}: $flag remains false", 0L, (status.instructions()[0] as WideLiteralInstruction).wideLiteral)
+                val instructions = status.instructions()
+                if (instructions.isEmpty()) {
+                    assertEquals("${build.name}: invalid empty $flag remains empty", emptyList<Instruction>(), instructions)
+                } else {
+                    assertEquals("${build.name}: $flag remains false", 0L, (instructions[0] as WideLiteralInstruction).wideLiteral)
+                }
             }
         }
     }
@@ -237,6 +312,11 @@ class HideSponsoredProxyFixtureTest {
             MESSAGES_CONTROLLER.dropLast(1) + "\$DialogFilter;")).values.toList()
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
     private fun Method.signature() = name + parameterTypes.joinToString(prefix = "(", postfix = ")") + returnType
+    private fun Method.state(): List<Any?> {
+        val flow = implementation?.takeIf { instructions().isNotEmpty() }?.let { ControlFlow.of(this) }
+        return listOf(accessFlags, implementation?.registerCount, instructions().map(::operation),
+            flow?.normal?.toList(), flow?.exceptional?.toList())
+    }
     private fun Instruction.reference() = (this as? ReferenceInstruction)?.reference?.toString()
     private fun operation(instruction: Instruction) = listOf(instruction.opcode, instruction.namedRegisters(),
         instruction.reference(), (instruction as? WideLiteralInstruction)?.wideLiteral)

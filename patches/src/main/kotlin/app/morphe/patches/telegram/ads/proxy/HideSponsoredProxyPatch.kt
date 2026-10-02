@@ -89,6 +89,8 @@ internal fun BytecodePatchContext.resolveProxyHooks(): ProxyPlan {
     val allDialogs = member("allDialogs", ARRAY_LIST)
     val promoType = member("promoDialogType", "I")
     val proxyType = member("PROMO_TYPE_PROXY", "I")
+    shape(listOf(promo, left, allDialogs, promoType).none { AccessFlags.STATIC.isSet(it.accessFlags) },
+        "cached proxy fields no longer match instance reads")
     shape(AccessFlags.PUBLIC.isSet(controller.accessFlags) && AccessFlags.PUBLIC.isSet(promoType.accessFlags) &&
         AccessFlags.PUBLIC.isSet(proxyType.accessFlags) && AccessFlags.STATIC.isSet(proxyType.accessFlags),
         "proxy type scope is inaccessible")
@@ -181,18 +183,19 @@ internal fun BytecodePatchContext.resolveProxyHooks(): ProxyPlan {
         .unique("cached chat lookup")
     shape(listOf(dialog.accessFlags, chat.accessFlags, dialogId.accessFlags, chatLeft.accessFlags,
         isPromo.accessFlags, getChat.accessFlags).all { AccessFlags.PUBLIC.isSet(it) } &&
-        !AccessFlags.STATIC.isSet(isPromo.accessFlags) && !AccessFlags.STATIC.isSet(getChat.accessFlags),
+        listOf(dialogId.accessFlags, chatLeft.accessFlags, isPromo.accessFlags, getChat.accessFlags)
+            .none { AccessFlags.STATIC.isSet(it) },
         "folder proxy scope cannot access kept host members")
     val runtime = mutableClassDefBy(PROXY_PROMOTIONS)
+    shape(AccessFlags.PUBLIC.isSet(runtime.accessFlags), "extension presentation class is inaccessible")
     for ((name, parameters) in listOf(
         "hideCachedProxyDialog" to listOf("Ljava/lang/Object;", "Ljava/lang/Object;"),
         "showSelectedDialog" to listOf("Z", "Ljava/lang/Object;", "Ljava/lang/Object;"),
+        "isSponsoredProxyDialog" to listOf("Ljava/lang/Object;", "Ljava/lang/Object;"),
     )) shape(runtime.methods.count { it.name == name && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
-        AccessFlags.STATIC.isSet(it.accessFlags) && it.hasShape(parameters, "Z") } == 1,
-        "extension has no $name presentation guard")
-    shape(runtime.methods.count { it.name == "isSponsoredProxyDialog" &&
-        AccessFlags.STATIC.isSet(it.accessFlags) && it.hasShape(listOf("Ljava/lang/Object;", "Ljava/lang/Object;"), "Z") } == 1,
-        "extension has no Object proxy scope stub")
+        AccessFlags.STATIC.isSet(it.accessFlags) && !AccessFlags.ABSTRACT.isSet(it.accessFlags) &&
+        !AccessFlags.NATIVE.isSet(it.accessFlags) && it.implementation != null && it.hasShape(parameters, "Z") } == 1,
+        "extension has no callable $name proxy method")
     val scope = """
         instance-of v0, p0, $MESSAGES_CONTROLLER
         if-eqz v0, :hush_other

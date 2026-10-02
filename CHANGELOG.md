@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Tooling:** Sponsored-proxy patching rejects changed instance fields, inaccessible runtime hooks and invalid build flags before editing native code or scope stubs.
+
 * **Telegram:** Added external-browser routing and optional local tracking removal for opened links and Share Link choosers. Telegram, login and payment routes stay as they are.
 
 * **Tooling:** Source-mirror checks now locate clean checkouts through the tracked provenance file.
