@@ -32,6 +32,8 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableFieldReference
 
 private const val PATCH = "Gallery camera on tap"
 internal const val PHOTO_LAYOUT = "Lorg/telegram/ui/Components/ChatAttachAlertPhotoLayout;"
@@ -46,7 +48,7 @@ private const val OBJECT = "Ljava/lang/Object;"
 @Suppress("unused")
 val galleryCameraOnTapPatch = bytecodePatch(
     name = PATCH,
-    description = "Adds a switch, off by default, that stops the attachment gallery starting the camera or asking for camera access when it opens. Tapping the camera tile starts it.",
+    description = "Adds a switch, off by default, that keeps the attachment gallery from starting the camera or asking for camera access when it opens. Tapping the camera tile starts it.",
     default = true,
 ) {
     category("Privacy")
@@ -67,8 +69,8 @@ val galleryCameraOnTapPatch = bytecodePatch(
  * The gallery's camera paths in ChatAttachAlertPhotoLayout. [check] is checkCamera(Z), which asks
  * for the camera permission or starts CameraController; [show] builds the live camera tile; [open]
  * opens it full screen; [tap] is the camera tile's in-app branch; [asks] are the user's own
- * permission requests from the tile and the camera button; [opened] runs when the gallery's open
- * animation ends.
+ * permission requests from the tile and the camera button; [menuShow] is the attach menu's show(),
+ * which runs on every open whichever tab the menu opens on, and [menuGallery] its gallery field.
  */
 internal class GalleryCameraSites(
     val check: MutableMethod,
@@ -80,7 +82,8 @@ internal class GalleryCameraSites(
     val tap: MutableMethod,
     val tapIndex: Int,
     val asks: List<PermissionAsk>,
-    val opened: MutableMethod,
+    val menuShow: MutableMethod,
+    val menuGallery: FieldReference,
 )
 
 /** A camera permission request the user's tap leads to, with the register that holds the layout there. */
@@ -128,16 +131,27 @@ internal fun BytecodePatchContext.resolveGalleryCameraSites(): GalleryCameraSite
 
     val asks = permissionAsks(methods, check, tap)
 
-    // onOpenAnimationEnd: checkCamera(true) inside a chat, checkCamera(false) elsewhere.
-    val opened = methods.filter { !it.isStatic() && it.hasShape(emptyList(), "V") && it.instructions().let { body ->
-        body.size <= 12 && body.any { instruction -> instruction.opcode == Opcode.INSTANCE_OF } &&
-            body.count { instruction -> instruction.call()?.let { call -> call.definingClass == PHOTO_LAYOUT && call.name == check.name } == true } == 1 &&
-            body.count { instruction -> instruction.call() != null } == 1 } }
-        .one("gallery open animation end")
+    // The attach menu builds its one gallery when it's made and reuses it for every open. Its
+    // show() runs first on each open, on whatever tab, so that's where the gallery goes to sleep.
+    // The gallery's own open animation only ends when it's the tab the menu opened on.
+    val menus = mutableListOf<String>()
+    classDefForEach { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+        if (classDef.methods.any { method -> method.name == "<init>" &&
+                method.instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.type() == PHOTO_LAYOUT } }) menus += classDef.type
+    }
+    val menu = mutableClassDefBy(menus.one("attach menu that builds the gallery"))
+    val menuGallery = menu.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.type == PHOTO_LAYOUT }.one("attach menu's gallery field")
+        .let { ImmutableFieldReference(it.definingClass, it.name, it.type) }
+    val menuShow = menu.methods.filter { it.name == "show" && !it.isStatic() && it.hasShape(emptyList(), "V") }.one("attach menu show")
+    val showStart = menuShow.instructions().firstOrNull()
+    shape(showStart?.opcode == Opcode.INVOKE_SUPER && showStart.call()?.let { it.name == "show" && it.hasShape(emptyList(), "V") } == true,
+        "the attach menu's show no longer starts by showing the dialog")
+    shape(menuShow.localRegisterCount() >= 1 && menuShow.localRegisterCount() <= 15, "the attach menu's show has no room for the sleep")
 
-    for (method in listOf(check, show)) method.requireThisIntact(PATCH, listOf(0))
+    for (method in listOf(check, show, menuShow)) method.requireThisIntact(PATCH, listOf(0))
     check.requireThisIntact(PATCH, listOf(checkExit))
-    return GalleryCameraSites(check, checkExit, show, showExit, open.toReference(), cameraView, tap, 2, asks, opened)
+    return GalleryCameraSites(check, checkExit, show, showExit, open.toReference(), cameraView, tap, 2, asks, menuShow, menuGallery)
 }
 
 /**
@@ -217,7 +231,12 @@ private fun GalleryCameraSites.apply() {
         ask.method.addInstructionsAtControlFlowLabel(ask.index,
             "invoke-static/range {v${ask.layout} .. v${ask.layout}}, $GALLERY_CAMERA->wakeForPermission($OBJECT)V")
     }
-    opened.addInstructions(0, "invoke-static/range {v${opened.localRegisterCount()} .. v${opened.localRegisterCount()}}, $GALLERY_CAMERA->sleep($OBJECT)V")
+    // Before the dialog shows, so nothing in this open finds the gallery still awake from the last.
+    val menuSelf = menuShow.localRegisterCount()
+    menuShow.addInstructions(0, """
+        iget-object v0, v$menuSelf, ${menuGallery.definingClass}->${menuGallery.name}:${menuGallery.type}
+        invoke-static {v0}, $GALLERY_CAMERA->sleep($OBJECT)V
+    """.trimIndent())
 }
 
 /** checkCamera and showCamera return at once while the gallery sleeps. */
@@ -290,3 +309,4 @@ private fun Method.instructions(): List<Instruction> = implementation?.instructi
 private fun Instruction.call(): MethodReference? = (this as? ReferenceInstruction)?.reference as? MethodReference
 private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference
 private fun Instruction.string(): String? = ((this as? ReferenceInstruction)?.reference as? StringReference)?.string
+private fun Instruction.type(): String? = ((this as? ReferenceInstruction)?.reference as? TypeReference)?.type

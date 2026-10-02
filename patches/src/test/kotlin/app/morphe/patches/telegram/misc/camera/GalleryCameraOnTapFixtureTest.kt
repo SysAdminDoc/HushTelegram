@@ -15,6 +15,7 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.util.ControlFlow
+import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
@@ -41,7 +42,7 @@ class GalleryCameraOnTapFixtureTest {
             val show = ImmutableMethod.of(sites.show)
             val tap = ImmutableMethod.of(sites.tap)
             val asks = sites.asks.map { ImmutableMethod.of(it.method) }
-            val opened = ImmutableMethod.of(sites.opened)
+            val menuShow = ImmutableMethod.of(sites.menuShow)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { galleryCameraOnTapPatch.execute(context) })
             val name = build.name
 
@@ -90,12 +91,17 @@ class GalleryCameraOnTapFixtureTest {
                     it.call()?.name == "requestPermissions" })
             }
 
-            // Each open of the gallery starts asleep.
-            val openedAfter = sites.opened.instructions()
-            assertEquals("$name: open puts the gallery to sleep", "$GALLERY_CAMERA->sleep(Ljava/lang/Object;)V", openedAfter[0].reference())
-            assertEquals("$name: sleep is handed this", sites.opened.implementation!!.registerCount - 1,
-                (openedAfter[0] as RegisterRangeInstruction).startRegister)
-            assertEquals("$name: open keeps its stock code", opened.instructions().map(::operation), openedAfter.drop(1).map(::operation))
+            // Each open of the attach menu, on any tab, starts with its gallery asleep, before the dialog shows.
+            val showAfter = sites.menuShow.instructions()
+            assertEquals("$name: show reads its gallery", sites.menuGallery, showAfter[0].field())
+            assertEquals("$name: from this", sites.menuShow.implementation!!.registerCount - 1, showAfter[0].namedRegisters()[1])
+            assertEquals("$name: show puts the gallery to sleep", "$GALLERY_CAMERA->sleep(Ljava/lang/Object;)V", showAfter[1].reference())
+            assertEquals("$name: sleep is handed the gallery", listOf(showAfter[0].namedRegisters()[0]), showAfter[1].namedRegisters())
+            assertEquals("$name: show keeps its stock code", menuShow.instructions().map(::operation), showAfter.drop(2).map(::operation))
+            assertEquals("$name: then shows the dialog", Opcode.INVOKE_SUPER, showAfter[2].opcode)
+            // Nothing in the gallery puts it back to sleep, so a tap made while the menu opens holds.
+            assertEquals("$name: the menu's show is the only sleep", emptyList<String>(), context.mutableClassDefBy(PHOTO_LAYOUT).methods
+                .filter { method -> method.instructions().any { it.reference()?.contains("->sleep(") == true } }.map { it.name })
 
             assertEquals("$name: build fact", 1, statusFlag(context))
         }
@@ -120,6 +126,22 @@ class GalleryCameraOnTapFixtureTest {
     }
 
     @Test
+    fun `the attach menu keeps one gallery for every open`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val sites = contextFor(build).resolveGalleryCameraSites()
+            // The sleep is keyed by the gallery object, so the menu must hand show() the same one each time.
+            val galleryBuilders = FixtureDex.methodsWhere(build, { true }) { method ->
+                method.instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.reference() == PHOTO_LAYOUT } }
+            assertEquals("${build.name}: only the menu's constructor builds a gallery", listOf("${sites.menuGallery.definingClass}-><init>"),
+                galleryBuilders.map { "${it.definingClass}->${it.name}" })
+            val writers = FixtureDex.methodsWhere(build, { true }) { method ->
+                method.instructions().any { it.opcode == Opcode.IPUT_OBJECT && it.field() == sites.menuGallery } }
+            assertEquals("${build.name}: only the menu's constructor sets its gallery", listOf("${sites.menuGallery.definingClass}-><init>"),
+                writers.map { "${it.definingClass}->${it.name}" })
+        }
+    }
+
+    @Test
     fun `changed gallery geometry refuses every site before any partial mutation`() {
         for (build in Fixtures.declaredBuilds()) {
             val changes: List<Pair<String, (GalleryCameraSites) -> Unit>> = listOf(
@@ -129,27 +151,29 @@ class GalleryCameraOnTapFixtureTest {
                     val ask = sites.asks.single { it.index > 0 }
                     ask.method.replaceInstruction(ask.index - 1, "nop")
                 },
-                "open animation calls more" to { sites -> sites.opened.addInstructions(0, "invoke-static {}, Ljava/lang/System;->gc()V") },
+                "menu show no longer shows first" to { sites -> sites.menuShow.addInstructions(0, "invoke-static {}, Ljava/lang/System;->gc()V") },
             )
+            val menu = menuType(build)
             for ((case, change) in changes) {
                 val context = contextFor(build)
                 change(context.resolveGalleryCameraSites())
-                assertRefusedUntouched(build.name, case, context)
+                assertRefusedUntouched(build.name, case, context, menu)
             }
-            assertRefusedUntouched(build.name, "no runtime", contextFor(build, runtime = false))
+            assertRefusedUntouched(build.name, "no runtime", contextFor(build, runtime = false), menu)
         }
     }
 
-    private fun assertRefusedUntouched(build: String, case: String, context: BytecodePatchContext) {
-        val before = context.mutableClassDefBy(PHOTO_LAYOUT).methods.associate { signature(it) to it.instructions().map(::operation) }
+    private fun assertRefusedUntouched(build: String, case: String, context: BytecodePatchContext, menu: String) {
+        val owners = listOf(PHOTO_LAYOUT, menu)
+        val before = owners.associateWith { type -> context.mutableClassDefBy(type).methods.associate { signature(it) to it.instructions().map(::operation) } }
         try {
             galleryCameraOnTapPatch.execute(context)
             fail("$build: $case was accepted")
         } catch (expected: PatchException) {
             assertTrue("$build: $case: ${expected.message}", expected.message.orEmpty().contains("before editing"))
         }
-        assertEquals("$build: $case doesn't partly mutate the gallery", before,
-            context.mutableClassDefBy(PHOTO_LAYOUT).methods.associate { signature(it) to it.instructions().map(::operation) })
+        assertEquals("$build: $case doesn't partly mutate the gallery or the menu", before,
+            owners.associateWith { type -> context.mutableClassDefBy(type).methods.associate { signature(it) to it.instructions().map(::operation) } })
         assertEquals("$build: $case leaves the build fact false", 0, statusFlag(context))
     }
 
@@ -190,10 +214,14 @@ class GalleryCameraOnTapFixtureTest {
 
     private fun contextFor(build: java.io.File, runtime: Boolean = true): BytecodePatchContext {
         val layout = FixtureDex.classes(build, setOf(PHOTO_LAYOUT)).values.single()
-        val fieldTypes = layout.fields.map { it.type }.filter { it.startsWith("L") && it != PHOTO_LAYOUT }.toSet()
+        val fieldTypes = layout.fields.map { it.type }.filter { it.startsWith("L") && it != PHOTO_LAYOUT }.toSet() + menuType(build)
         val extension = ExtensionDex.classes().filter { runtime || it.type != GALLERY_CAMERA }
         return PatchContexts.of(extension + layout + FixtureDex.classes(build, fieldTypes).values)
     }
+
+    /** The attach menu: the one class whose constructor builds the gallery. */
+    private fun menuType(build: java.io.File) = FixtureDex.classesWhere(build, { true }) { method -> method.name == "<init>" &&
+        method.instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.reference() == PHOTO_LAYOUT } }.single().type
 
     private fun statusFlag(context: BytecodePatchContext) = (context.mutableClassDefBy(SETTINGS_STATUS).methods
         .single { it.name == "galleryCameraOnTap" }.instructions()[0] as NarrowLiteralInstruction).narrowLiteral

@@ -67,9 +67,12 @@ public final class GalleryCamera {
         HookStatus.counted(FamilyNames.GALLERY_CAMERA_ON_TAP, "permission request woke the camera");
     }
 
-    /** The end of checkCamera: true once, when the camera a tap woke has its view in time. */
+    /**
+     * The end of checkCamera: true once, when the camera a tap woke has its view in time and the
+     * switch is still on.
+     */
     public static boolean openWhenReady(Object layout, Object cameraView) {
-        if (cameraView == null) return false;
+        if (cameraView == null || !enabled()) return false;
         synchronized (AWAKE) {
             Long due = AWAKE.get(layout);
             if (due == null || due == 0L) return false;
@@ -80,7 +83,10 @@ public final class GalleryCamera {
         return true;
     }
 
-    /** The gallery's open animation ended: a new open, asleep again until a tap. */
+    /**
+     * The attach menu is about to show, on whatever tab: a new open, so its gallery sleeps until a
+     * tap, and a tap made while the menu is still opening holds.
+     */
     public static void sleep(Object layout) {
         synchronized (AWAKE) {
             AWAKE.remove(layout);

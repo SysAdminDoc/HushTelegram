@@ -88,6 +88,18 @@ public class GalleryCameraTest {
         assertFalse(GalleryCamera.openWhenReady(gallery, cameraView));
     }
 
+    @Test public void aWokenCameraDoesNotOpenByItselfOnceTheSwitchIsOffOrPaused() {
+        Settings.GALLERY_CAMERA_ON_TAP.save(true);
+        assertTrue(GalleryCamera.wakeOnTap(gallery, null));
+        Settings.GALLERY_CAMERA_ON_TAP.save(false);
+        assertFalse("switched off after the tap", GalleryCamera.openWhenReady(gallery, cameraView));
+        Settings.GALLERY_CAMERA_ON_TAP.save(true);
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        assertFalse("paused after the tap", GalleryCamera.openWhenReady(gallery, cameraView));
+        PauseForTests.resume();
+        assertTrue("back on, the tap still opens it", GalleryCamera.openWhenReady(gallery, cameraView));
+    }
+
     @Test public void aCameraThatTakesTooLongDoesNotOpenByItself() {
         Settings.GALLERY_CAMERA_ON_TAP.save(true);
         assertTrue(GalleryCamera.wakeOnTap(gallery, null));

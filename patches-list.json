@@ -186,7 +186,7 @@
     },
     {
       "name": "Gallery camera on tap",
-      "description": "Adds a switch, off by default, that stops the attachment gallery starting the camera or asking for camera access when it opens. Tapping the camera tile starts it.",
+      "description": "Adds a switch, off by default, that keeps the attachment gallery from starting the camera or asking for camera access when it opens. Tapping the camera tile starts it.",
       "category": "Privacy",
       "use": true,
       "dependencies": [
