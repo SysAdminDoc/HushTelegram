@@ -1,5 +1,5 @@
 # Shrunk from seed 20261002900085, which WIDE_BLIND got wrong:
-# guard off: (-962439021, 0) instruction 77 reads v1, which the hook borrowed
+# guard off: (-962439021, 0) instruction 7 reads v1, which the hook borrowed
 mode=skip
 anchor=4
 target=5

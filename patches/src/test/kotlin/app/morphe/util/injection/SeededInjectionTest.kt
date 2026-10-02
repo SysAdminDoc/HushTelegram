@@ -32,21 +32,25 @@ class SeededInjectionTest {
     fun `generated hooks keep every path the method had`() {
         val seeds = seeds()
         val failures = mutableListOf<String>()
-        val injected = mutableListOf<Generated>()
+        val reachedCases = mutableListOf<Generated>()
+        var injected = 0
         var comparedOn = 0
         for (seed in seeds) {
             val generated = Generated.of(seed)
             val ran = runCase(generated.case(), Chooser.REAL, scratch)
             ran.failure?.let { failures += report(generated, it, Chooser.REAL) }
             if (failures.size == 3) break
-            if (!ran.refused) injected += generated
+            if (!ran.refused) injected++
+            if (ran.reached) reachedCases += generated
             if (ran.comparedOn) comparedOn++
         }
         assertTrue(failures.joinToString("\n\n"), failures.isEmpty())
         if (seeds.size < 400) return
 
-        // The batch has to keep reaching every shape it exists for.
-        fun count(what: (Stmt) -> Boolean) = injected.count { generated -> generated.program.body.any { it.has(what) } }
+        // The batch has to keep reaching every shape it exists for, counted only where some input
+        // reached the hook. A shape counts wherever it sits in the method, since register choice
+        // reads the whole method's flow, not just the path one input takes.
+        fun count(what: (Stmt) -> Boolean) = reachedCases.count { generated -> generated.program.body.any { it.has(what) } }
         val reached = mapOf(
             "loops" to count { it is Loop },
             "switches" to count { it is Switch },
@@ -54,14 +58,14 @@ class SeededInjectionTest {
             "handlers reading the exception" to count { it is Guarded && it.exception != null },
             "wide registers" to count { it is ConstWide || it is Widen },
             "two-register branches" to count { it is Branch && it.b != null },
-            "jumps" to injected.count { it.mode == Mode.SKIP },
-            "observed answers" to injected.count { it.mode == Mode.OBSERVE },
-            "early returns" to injected.count { it.mode == Mode.RETURN },
+            "jumps" to reachedCases.count { it.mode == Mode.SKIP },
+            "observed answers" to reachedCases.count { it.mode == Mode.OBSERVE },
+            "early returns" to reachedCases.count { it.mode == Mode.RETURN },
             "guard answers compared" to comparedOn,
         )
-        println("${injected.size} of ${seeds.size} seeded cases injected: $reached")
+        println("$injected of ${seeds.size} seeded cases injected, ${reachedCases.size} reached by some input: $reached")
         val thin = reached.filterValues { it < 20 }
-        assertTrue("too few injected cases with $thin of ${injected.size}: $reached", thin.isEmpty())
+        assertTrue("too few reached cases with $thin of ${reachedCases.size}: $reached", thin.isEmpty())
     }
 
     @Test
@@ -73,13 +77,18 @@ class SeededInjectionTest {
                 runCase(generated.case(), chooser, scratch).failure?.let { generated to it }
             }
             assertNotNull("$chooser got through $budget seeded cases", caught)
+            val (generated, failure) = caught!!
+            // Only a failure the real choice doesn't share is the control's own.
+            val real = runCase(generated.case(), Chooser.REAL, scratch)
+            assertNull("seed ${generated.seed} fails with the real choice too, so $chooser wasn't what failed it: ${real.failure}", real.failure)
+            assertFalse("seed ${generated.seed} is refused with the real choice", real.refused)
             if (retain != null) {
-                val (generated, failure) = caught!!
                 val small = minimize(generated) { runCase(it.case(), chooser, scratch).failure }
                 val name = "${chooser.name.lowercase().replace('_', '-')}-seed-${generated.seed}"
+                val shrunk = runCase(small.case(), chooser, scratch).failure ?: failure
                 retain.mkdirs()
                 File(retain, "$name.case").writeText(
-                    small.case().retained("Shrunk from seed ${generated.seed}, which $chooser got wrong:\n$failure", chooser),
+                    small.case().retained("Shrunk from seed ${generated.seed}, which $chooser got wrong:\n$shrunk", chooser),
                 )
             }
         }
@@ -101,7 +110,7 @@ class SeededInjectionTest {
     fun `the device corpus runs the same here after a round trip through dex`() {
         val cases = retainedCases().map { it.first } + seeds().asSequence()
             .map { Generated.of(it).case() }
-            .filter { !runCase(it, Chooser.REAL, scratch).refused }
+            .filter { (it.mode != Mode.SKIP || it.jumpVerifies) && !runCase(it, Chooser.REAL, scratch).refused }
             .take(CORPUS_GENERATED)
             .toList()
         val corpus = cases.map { case -> case to inject(case, assemble(hostClass(HOST, case.method)).methods.single(), Chooser.REAL).method }
@@ -116,7 +125,8 @@ class SeededInjectionTest {
         val file = File("build/injection-regressions/seed-${generated.seed}.case").absoluteFile
         file.parentFile.mkdirs()
         val case = small.case()
-        file.writeText(case.retained("Shrunk from seed ${generated.seed}:\n$failure", null))
+        val shrunk = runCase(case, chooser, scratch).failure ?: failure
+        file.writeText(case.retained("Shrunk from seed ${generated.seed}:\n$shrunk", null))
         return "seed ${generated.seed} (${generated.mode.name.lowercase()}): $failure\n" +
             "Replay it with HUSHTELEGRAM_INJECTION_SEED=${generated.seed}. Shrunk to $file:\n${case.method}"
     }

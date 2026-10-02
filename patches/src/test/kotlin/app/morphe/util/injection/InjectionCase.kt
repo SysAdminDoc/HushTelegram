@@ -189,8 +189,12 @@ internal fun inject(case: Case, original: Method, chooser: Chooser): Injected {
     }
 }
 
-/** A case that ran, and the first thing found wrong with it. */
-internal class Ran(val failure: String?, val refused: Boolean, val comparedOn: Boolean = false)
+/**
+ * A case that ran, and the first thing found wrong with it. [reached] says some input asked the
+ * guard, and [comparedOn] that a guard answer other than off was compared on such an input. A hook
+ * no input reaches proves nothing about what it does.
+ */
+internal class Ran(val failure: String?, val refused: Boolean, val comparedOn: Boolean = false, val reached: Boolean = false)
 
 /** The instructions the generator wrote, without the payloads and alignment that follow them. */
 private fun code(method: Method): List<Instruction> = method.implementation!!.instructions
@@ -303,6 +307,7 @@ internal fun runCase(case: Case, chooser: Chooser, scratch: File): Ran {
 
     val poisonAfter = if (case.mode == Mode.RETURN) 2 else case.anchor + 2
     var comparedOn = false
+    var reached = false
     for ((first, second) in case.inputs) {
         for ((name, answer) in PATTERNS) {
             if (name != "off" && case.mode == Mode.SKIP && !case.jumpVerifies) continue
@@ -334,10 +339,13 @@ internal fun runCase(case: Case, chooser: Chooser, scratch: File): Ran {
             if (machine.guardCalls != asked) {
                 return Ran("guard $name: ($first, $second) asked the guard ${machine.guardCalls} times, expected $asked", false)
             }
-            if (name != "off") comparedOn = true
+            if (asked > 0) {
+                reached = true
+                if (name != "off") comparedOn = true
+            }
         }
     }
-    return Ran(null, false, comparedOn)
+    return Ran(null, false, comparedOn, reached)
 }
 
 /** A generated case: the program, and where in it the hook goes by statement. */

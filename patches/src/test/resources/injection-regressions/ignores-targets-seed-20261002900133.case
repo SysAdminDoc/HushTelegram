@@ -1,5 +1,5 @@
 # Shrunk from seed 20261002900133, which IGNORES_TARGETS got wrong:
-# guard on: (1, -1) instruction 45 reads v0, which the hook borrowed
+# guard on: (-1, 2) instruction 13 reads v0, which the hook borrowed
 mode=skip
 anchor=3
 target=7

@@ -170,6 +170,9 @@ internal object InjectionCorpus {
      * Writes corpus.dex and expected.txt into [directory] for [cases], each with the method its
      * hook was injected into, and returns the expected lines. Every class is read back from the
      * written dex and run again here, so what the phone gets is what was checked.
+     *
+     * A skip whose jump leaves a register undefined can't go in: ART verifies the whole method
+     * when the class loads and throws VerifyError on every run, whatever the guard answers.
      */
     fun write(cases: List<Pair<Case, Method>>, directory: File): List<String> {
         directory.mkdirs()
@@ -177,6 +180,7 @@ internal object InjectionCorpus {
         val methods = mutableMapOf<String, Method>()
         val runs = mutableListOf<Run>()
         cases.forEachIndexed { number, (case, injected) ->
+            require(case.mode != Mode.SKIP || case.jumpVerifies) { "${case.name}: its jump doesn't verify, so ART rejects the class" }
             val original = assemble(hostClass(HOST, case.method)).methods.single()
             val originalType = "Lcase/O$number;"
             val injectedType = "Lcase/I$number;"
@@ -187,7 +191,6 @@ internal object InjectionCorpus {
             case.inputs.forEachIndexed { input, (first, second) ->
                 runs += Run("${case.name}/original/$input", originalType, case.trap, 0, first, second)
                 for ((name, code) in PATTERN_CODES) {
-                    if (name != "off" && case.mode == Mode.SKIP && !case.jumpVerifies) continue
                     runs += Run("${case.name}/injected/$input/$name", injectedType, case.trap, code, first, second)
                 }
             }

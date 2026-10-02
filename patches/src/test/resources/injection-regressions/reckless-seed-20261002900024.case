@@ -1,5 +1,5 @@
 # Shrunk from seed 20261002900024, which RECKLESS got wrong:
-# guard off: (0, 0) instruction 62 reads v2, which the hook borrowed
+# guard off: (-904220856, 3) instruction 12 reads v2, which the hook borrowed
 mode=skip
 anchor=8
 target=9
