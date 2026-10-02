@@ -84,8 +84,8 @@ internal object SendReadMetricsFingerprint : Fingerprint(
 @Suppress("unused")
 val disableAnalyticsPatch = bytecodePatch(
     name = PATCH,
-    description = "Stops Telegram sending your storage folders to its server as a device statistics report, " +
-        "and how long you spent on each channel post. Everything the app needs to work is left alone.",
+    description = "Stops Telegram sending its storage-type statistic and how long you spent on each channel post " +
+        "to its server. Messages and calls work as before.",
     default = true,
 ) {
     category("Privacy")

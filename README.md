@@ -21,7 +21,7 @@ Source version 0.0.5 is prepared for the next release. It hasn't been published;
 ## Why use it
 
 - **Channels and search without sponsored posts.** Telegram never asks for them, so none are drawn, counted as seen or reported as clicked. That covers the sponsored accounts pinned above search results and the ads in its video player too.
-- **Your habits stay your business.** When Telegram's server asks for a device statistics report, the patched app doesn't read your storage folders to build one. It also keeps to itself how long you looked at each post in a channel.
+- **Usage reports stay on your phone.** When Telegram's server requests its storage-type statistic, the patch stops that report. It also stops reports of how long each channel post stayed on screen.
 - **No update offers that can't work.** telegram.org's build offers its own updates, and those can't install over a patched app. That offer is switched off, so you update through Morphe Manager instead.
 - **Controls that recover.** Every feature has a switch, and there's a pause, settings backups and privacy-filtered diagnostics for when Telegram changes.
 
@@ -59,7 +59,7 @@ The current source has 10 patches, all selected by default. Published v0.0.4 con
 
 | Patch | What it does |
 |---|---|
-| `Disable analytics` | Stops Telegram sending your storage folders to its server as a device statistics report, and how long you spent on each channel post. Everything the app needs to work is left alone. |
+| `Disable analytics` | Stops Telegram sending its storage-type statistic and how long you spent on each channel post to its server. Messages and calls work as before. |
 | `Disable update checks` | Stops telegram.org's Telegram offering its own updates, which can't install over a patched build. Patch the new version in Morphe Manager instead. |
 | `Disable call debug upload` | Stops automatic call debug reports and log-file uploads requested by Telegram's server. |
 | `Hide ads` | Hides the sponsored messages in channels, the sponsored accounts in search and the ads in Telegram's video player. Telegram never asks for them, so none are counted as seen. |

@@ -59,7 +59,7 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_hide_sponsored_proxy", TRUE);
 
     /**
-     * The device statistics report the server can ask for (storage directories, sent as a
+     * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
      * never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).
      */

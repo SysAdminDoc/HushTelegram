@@ -161,7 +161,7 @@ channel read metrics	Kanal-Lesemetriken
 This build has no coverage for %1$s.	Dieser Build deckt %1$s nicht ab.
 This build covers %1$s. Missing coverage: %2$s.	Dieser Build deckt %1$s ab. Fehlende Abdeckung: %2$s.
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	Telegram ist dreimal hintereinander innerhalb einer Minute nach dem Start abgestürzt oder hängen geblieben, deshalb hat sich HushTelegram selbst pausiert.
-Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.	Telegram sendet deine Speicherordner nicht als Gerätebericht, wenn sein Server danach fragt, und auch nicht, wie lange du jeden Kanalbeitrag angesehen hast. Nachrichten und Anrufe funktionieren wie bisher.
+Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. Messages and calls work as before.	Telegram sendet seine Statistik zum Speichertyp nicht, wenn der Server danach fragt, und auch nicht, wie lange du jeden Kanalbeitrag angesehen hast. Nachrichten und Anrufe funktionieren wie bisher.
 Telegram's web addresses are selected for this app in Android's settings, so their links open here.	Die Webadressen von Telegram sind in den Android-Einstellungen für diese App ausgewählt, deshalb öffnen sich ihre Links hier.
 Device statistics and read time	Gerätestatistiken und Lesezeit
 Try again, or go back to Telegram.	Versuche es noch einmal oder kehre zu Telegram zurück.

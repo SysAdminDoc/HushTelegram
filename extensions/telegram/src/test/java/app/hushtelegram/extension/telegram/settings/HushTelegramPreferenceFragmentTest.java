@@ -230,7 +230,7 @@ public class HushTelegramPreferenceFragmentTest {
                             + "Leaves proxy settings and shared promo-data updates alone.",
                     String.valueOf(page.findPreference(Settings.HIDE_SPONSORED_PROXY.key).getSummary()));
             assertEquals("Stop usage reports", String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getTitle()));
-            assertEquals("Telegram doesn't send your storage folders as a device report when its server asks, "
+            assertEquals("Telegram doesn't send its storage-type statistic when its server asks, "
                     + "or how long you spent on each channel post. Messages and calls work as before.",
                     String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));
             assertEquals("Turn off Telegram's update checks", String.valueOf(page.findPreference(Settings.DISABLE_UPDATE_CHECKS.key).getTitle()));

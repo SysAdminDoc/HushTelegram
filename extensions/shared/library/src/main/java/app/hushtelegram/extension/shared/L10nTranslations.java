@@ -318,8 +318,8 @@ public final class L10nTranslations {
                 "Zum Wiedereinschalten tippen.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Telegram ist dreimal hintereinander innerhalb einer Minute nach dem Start abgest\u00fcrzt oder h\u00e4ngen geblieben, deshalb hat sich HushTelegram selbst pausiert.");
-        table.put("Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
-                "Telegram sendet deine Speicherordner nicht als Ger\u00e4tebericht, wenn sein Server danach fragt, und auch nicht, wie lange du jeden Kanalbeitrag angesehen hast. Nachrichten und Anrufe funktionieren wie bisher.");
+        table.put("Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
+                "Telegram sendet seine Statistik zum Speichertyp nicht, wenn der Server danach fragt, und auch nicht, wie lange du jeden Kanalbeitrag angesehen hast. Nachrichten und Anrufe funktionieren wie bisher.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram bietet keine Updates von telegram.org mehr an. Sie lie\u00dfen sich nicht \u00fcber diesen gepatchten Build installieren, also patche jede neue Version stattdessen im Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -709,8 +709,8 @@ public final class L10nTranslations {
                 "Toca para volver a activarlo.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Tres veces seguidas, Telegram fall\u00f3 o se congel\u00f3 durante el primer minuto tras iniciarse, as\u00ed que HushTelegram se paus\u00f3 solo.");
-        table.put("Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
-                "Telegram no env\u00eda tus carpetas de almacenamiento como informe del dispositivo cuando su servidor lo pide, ni cu\u00e1nto tiempo pasaste en cada publicaci\u00f3n de un canal. Los mensajes y las llamadas funcionan como antes.");
+        table.put("Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
+                "Telegram no env\u00eda su estad\u00edstica del tipo de almacenamiento cuando su servidor la pide, ni cu\u00e1nto tiempo pasaste en cada publicaci\u00f3n de un canal. Los mensajes y las llamadas funcionan como antes.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram deja de ofrecer actualizaciones de telegram.org. No se pueden instalar sobre este build parcheado, as\u00ed que parchea cada versi\u00f3n nueva en Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -1100,8 +1100,8 @@ public final class L10nTranslations {
                 "Ketuk untuk mengaktifkan HushTelegram lagi.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Telegram berhenti mendadak atau macet dalam satu menit setelah dibuka, tiga kali berturut-turut, jadi HushTelegram menjeda dirinya sendiri.");
-        table.put("Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
-                "Telegram tidak mengirim folder penyimpanan Anda sebagai laporan perangkat saat server-nya meminta, atau berapa lama Anda melihat setiap postingan saluran. Pesan dan panggilan tetap berfungsi seperti biasa.");
+        table.put("Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
+                "Telegram tidak mengirim statistik jenis penyimpanannya saat server meminta, atau berapa lama Anda melihat setiap postingan saluran. Pesan dan panggilan tetap berfungsi seperti biasa.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -1491,8 +1491,8 @@ public final class L10nTranslations {
                 "Toque para reativar.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "O Telegram fechou com erro ou travou no primeiro minuto ap\u00f3s iniciar, tr\u00eas vezes seguidas, ent\u00e3o o HushTelegram foi pausado automaticamente.");
-        table.put("Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
-                "O Telegram n\u00e3o envia suas pastas de armazenamento como relat\u00f3rio do dispositivo quando o servidor dele pede, nem quanto tempo voc\u00ea passou em cada post de um canal. Mensagens e chamadas funcionam como antes.");
+        table.put("Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
+                "O Telegram n\u00e3o envia sua estat\u00edstica do tipo de armazenamento quando o servidor pede, nem quanto tempo voc\u00ea passou em cada post de um canal. Mensagens e chamadas funcionam como antes.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "O Telegram deixa de oferecer atualiza\u00e7\u00f5es do telegram.org. Elas n\u00e3o podem ser instaladas sobre este build corrigido, ent\u00e3o aplique o patch de cada nova vers\u00e3o pelo Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -1882,8 +1882,8 @@ public final class L10nTranslations {
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Telegram a\u00e7\u0131ld\u0131ktan sonraki bir dakika i\u00e7inde \u00fcst \u00fcste \u00fc\u00e7 kez \u00e7\u00f6kt\u00fc veya dondu, bu y\u00fczden HushTelegram kendini duraklatt\u0131.");
-        table.put("Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
-                "Telegram, sunucusu istedi\u011finde depolama klas\u00f6rlerinizi cihaz raporu olarak g\u00f6ndermez, her kanal g\u00f6nderisinde ne kadar kald\u0131\u011f\u0131n\u0131z\u0131 da g\u00f6ndermez. Mesajlar ve aramalar eskisi gibi \u00e7al\u0131\u015f\u0131r.");
+        table.put("Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
+                "Telegram, sunucusu istedi\u011finde depolama t\u00fcr\u00fc istatisti\u011fini veya her kanal g\u00f6nderisinde ne kadar kald\u0131\u011f\u0131n\u0131z\u0131 g\u00f6ndermez. Mesajlar ve aramalar eskisi gibi \u00e7al\u0131\u015f\u0131r.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram, telegram.org g\u00fcncellemelerini sunmay\u0131 b\u0131rak\u0131r. Bunlar bu yamal\u0131 s\u00fcr\u00fcm\u00fcn \u00fczerine kurulamaz, bu y\u00fczden her yeni s\u00fcr\u00fcm\u00fc Morphe Manager'da yamala.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",

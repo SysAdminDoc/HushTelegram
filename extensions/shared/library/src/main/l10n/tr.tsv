@@ -161,7 +161,7 @@ channel read metrics	kanal okuma ölçümleri
 This build has no coverage for %1$s.	Bu derleme %1$s için kapsam sağlamaz.
 This build covers %1$s. Missing coverage: %2$s.	Bu derlemenin kapsamı: %1$s. Eksik kapsam: %2$s.
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	Telegram açıldıktan sonraki bir dakika içinde üst üste üç kez çöktü veya dondu, bu yüzden HushTelegram kendini duraklattı.
-Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.	Telegram, sunucusu istediğinde depolama klasörlerinizi cihaz raporu olarak göndermez, her kanal gönderisinde ne kadar kaldığınızı da göndermez. Mesajlar ve aramalar eskisi gibi çalışır.
+Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. Messages and calls work as before.	Telegram, sunucusu istediğinde depolama türü istatistiğini veya her kanal gönderisinde ne kadar kaldığınızı göndermez. Mesajlar ve aramalar eskisi gibi çalışır.
 Telegram's web addresses are selected for this app in Android's settings, so their links open here.	Telegram'ın web adresleri Android ayarlarında bu uygulama için seçili, bu yüzden bağlantıları burada açılır.
 Device statistics and read time	Cihaz istatistikleri ve okuma süresi
 Try again, or go back to Telegram.	Tekrar dene veya Telegram'a geri dön.

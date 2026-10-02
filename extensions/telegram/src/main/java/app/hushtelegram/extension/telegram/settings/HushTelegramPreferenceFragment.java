@@ -275,7 +275,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             PreferenceCategory privacy = category(screen, L10n.t("Privacy"));
             if (build.contains(PatchFamily.DISABLE_ANALYTICS)) {
                 privacy.addPreference(mark(toggle(context, Settings.DISABLE_ANALYTICS, L10n.t("Stop usage reports"),
-                    PatchFamily.DISABLE_ANALYTICS.coverageSummary(L10n.t("Telegram doesn't send your storage folders as a device report when its server asks, "
+                    PatchFamily.DISABLE_ANALYTICS.coverageSummary(L10n.t("Telegram doesn't send its storage-type statistic when its server asks, "
                             + "or how long you spent on each channel post. Messages and calls work as before."))), SettingsIcons.BLOCK));
             }
             if (build.contains(PatchFamily.DISABLE_CALL_DEBUG)) {
