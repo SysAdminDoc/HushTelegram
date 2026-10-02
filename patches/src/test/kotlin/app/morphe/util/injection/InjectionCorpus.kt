@@ -171,14 +171,24 @@ internal object InjectionCorpus {
      * hook was injected into, and returns the expected lines. Every class is read back from the
      * written dex and run again here, so what the phone gets is what was checked.
      *
-     * A skip whose jump leaves a register undefined can't go in: ART verifies the whole method
-     * when the class loads and throws VerifyError on every run, whatever the guard answers.
+     * A skip whose jump leaves a register undefined can't go in [cases]: ART verifies the whole
+     * method when the class loads and throws VerifyError on every run, whatever the guard answers.
+     * Those go in [rejected], hooked without the check, each run once to show ART refuses it.
      */
-    fun write(cases: List<Pair<Case, Method>>, directory: File): List<String> {
+    fun write(cases: List<Pair<Case, Method>>, directory: File, rejected: List<Pair<Case, Method>> = emptyList()): List<String> {
         directory.mkdirs()
         val classes = mutableListOf<ClassDef>(assemble(probe))
         val methods = mutableMapOf<String, Method>()
         val runs = mutableListOf<Run>()
+        val refusals = mutableListOf<String>()
+        rejected.forEachIndexed { number, (case, injected) ->
+            require(case.mode == Mode.SKIP && !case.jumpVerifies) { "${case.name}: only a skip whose jump doesn't verify is run to be rejected" }
+            val type = "Lcase/R$number;"
+            classes += frozen(type, injected)
+            val (first, second) = case.inputs.first()
+            runs += Run("${case.name}/rejected", type, case.trap, PATTERN_CODES.getValue("on"), first, second)
+            refusals += "${case.name}/rejected=throw:java.lang.VerifyError|"
+        }
         cases.forEachIndexed { number, (case, injected) ->
             require(case.mode != Mode.SKIP || case.jumpVerifies) { "${case.name}: its jump doesn't verify, so ART rejects the class" }
             val original = assemble(hostClass(HOST, case.method)).methods.single()
@@ -200,7 +210,7 @@ internal object InjectionCorpus {
         writeDex(classes, dex)
 
         val written = DexFileFactory.loadDexFile(dex, OPCODES).classes.associateBy { it.type }
-        val expected = runs.map { run ->
+        val expected = refusals + runs.drop(refusals.size).map { run ->
             val answer = PATTERNS.first { PATTERN_CODES[it.first] == run.pattern }.second
             val outcome = DexMachine(methods.getValue(run.type), run.trap, answer).run(run.first, run.second)
             val reread = DexMachine(written.getValue(run.type).methods.single(), run.trap, answer).run(run.first, run.second)

@@ -239,7 +239,19 @@ fun MutableMethod.addInstructionsAtControlFlowLabel(
     if (original in PAYLOADS) {
         throw PatchException("$definingClass->$name: instruction $insertIndex is a $original, data that never runs, so code can't go in front of it")
     }
+    if (externalLabels.isNotEmpty()) requireJumpsKeepRegisters(insertIndex, instructions, externalLabels)
+    insertAtControlFlowLabel(insertIndex, instructions, *externalLabels)
+}
 
+/**
+ * [addInstructionsAtControlFlowLabel] without its checks. Only for tests that build a hostile
+ * method on purpose, one ART would refuse, to show a patch still turns it down.
+ */
+internal fun MutableMethod.insertAtControlFlowLabel(
+    insertIndex: Int,
+    instructions: String,
+    vararg externalLabels: ExternalLabel
+) {
     // Duplicate original instruction and add to +1 index.
     addInstruction(insertIndex + 1, getInstruction(insertIndex))
 
@@ -254,6 +266,72 @@ fun MutableMethod.addInstructionsAtControlFlowLabel(
     // and the original control flow label is on the first instruction of the patch code.
 }
 
+/**
+ * Refuses, before the method changes, a hook whose jump would bring a register to a read that
+ * can't take what it now holds. ART verifies the whole method when its class loads, so one such
+ * jump fails the class on every run, whatever the guard answers. The hook goes into a copy first,
+ * and every read in the copy is checked against what the same read had in the unchanged method,
+ * so a read the model can't type passes only where nothing about its register changed. A
+ * reference of a class that differs between paths, or an array element of a type not known here,
+ * is taken on trust; dex2oat on a phone still checks those.
+ */
+private fun MutableMethod.requireJumpsKeepRegisters(insertIndex: Int, instructions: String, labels: Array<out ExternalLabel>) {
+    fun refuse(reason: String): Nothing = throw PatchException("$definingClass->$name: $reason")
+    val stock = implementation!!.instructions.toList()
+    // The label's instruction is internal to the patcher, but copy and equals are public, and an
+    // instruction is only ever equal to itself.
+    val targets = labels.map { label ->
+        stock.indices.singleOrNull { label.copy(instruction = stock[it]) == label }
+            ?: refuse("a label of the code at instruction $insertIndex points at no instruction of this method")
+    }
+    val trial = MutableMethod(ImmutableMethod.of(this))
+    trial.insertAtControlFlowLabel(insertIndex, instructions,
+        *labels.mapIndexed { n, label -> label.copy(instruction = trial.getInstruction(targets[n])) }.toTypedArray())
+    val added = trial.implementation!!.instructions.size - stock.size
+    val stockKinds: RegisterKinds
+    val trialKinds: RegisterKinds
+    val trialFlow: ControlFlow
+    try {
+        stockKinds = RegisterKinds.of(this)
+        trialKinds = RegisterKinds.of(trial)
+        trialFlow = ControlFlow.of(trial)
+    } catch (unreadable: IllegalArgumentException) {
+        refuse("can't tell whether the code at instruction $insertIndex keeps the registers it jumps with: ${unreadable.message}")
+    }
+    for (from in insertIndex until insertIndex + added) {
+        for (to in trialFlow.normal[from]) {
+            // Inside the hook, or on into the instruction it was put in front of.
+            if (to in insertIndex..insertIndex + added) continue
+            val target = if (to < insertIndex) to else to - added
+            val opcode = stock[target].opcode
+            if (opcode == Opcode.MOVE_EXCEPTION || opcode in MOVE_RESULTS) {
+                refuse("the code at instruction $insertIndex would jump to the $opcode at instruction $target, which only a throw or a call may reach")
+            }
+        }
+    }
+    val copied = trial.implementation!!.instructions.toList()
+    for (index in copied.indices) {
+        // The hook's own reads are the patch's to get right; this checks what it does to the method.
+        if (index in insertIndex until insertIndex + added) continue
+        val now = trialKinds.at(index) ?: continue
+        val at = if (index < insertIndex) index else index - added
+        val before = stockKinds.at(at)
+            ?: refuse("the code at instruction $insertIndex would jump to instruction $at, which nothing reached before")
+        for ((register, use) in registerReads(copied[index])) {
+            val keeps = if (use == RegisterUse.OTHER) {
+                RegisterKind.merge(before[register], now[register]) == before[register]
+            } else {
+                use.fits(now, register) || !use.fits(before, register)
+            }
+            if (!keeps) {
+                refuse("the code at instruction $insertIndex would bring v$register to instruction $at holding ${now[register]}, " +
+                    "where the method's own paths bring ${before[register]}")
+            }
+        }
+    }
+}
+
+private val MOVE_RESULTS = setOf(Opcode.MOVE_RESULT, Opcode.MOVE_RESULT_WIDE, Opcode.MOVE_RESULT_OBJECT)
 private val PAYLOAD_USERS = setOf(Opcode.PACKED_SWITCH, Opcode.SPARSE_SWITCH)
 private val PAYLOADS = setOf(Opcode.PACKED_SWITCH_PAYLOAD, Opcode.SPARSE_SWITCH_PAYLOAD, Opcode.ARRAY_PAYLOAD)
 

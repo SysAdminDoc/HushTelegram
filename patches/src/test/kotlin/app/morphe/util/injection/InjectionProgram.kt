@@ -28,8 +28,12 @@ internal val CATCHES: Map<String, Set<String>> = mapOf(
 /** Whether a handler for [catchType], or a catch-all when null, takes an exception of [type]. */
 internal fun catches(catchType: String?, type: String) = catchType == null || type in CATCHES.getValue(catchType)
 
-/** What a register holds as far as the verifier can tell. */
-internal enum class Kind { UNSET, INT, WIDE_LOW, WIDE_HIGH, REF }
+/**
+ * What a register holds as far as the verifier can tell. [ZERO] is the literal zero, which the
+ * verifier keeps untyped until a read decides, so it can still be an int or null. Only the exact
+ * model makes one.
+ */
+internal enum class Kind { UNSET, INT, WIDE_LOW, WIDE_HIGH, REF, ZERO }
 
 /** Register kinds at one point, merged where paths join the way the verifier merges them. */
 internal class Kinds private constructor(private val kinds: Array<Kind>) {
@@ -38,13 +42,15 @@ internal class Kinds private constructor(private val kinds: Array<Kind>) {
     val size: Int get() = kinds.size
 
     fun copy() = Kinds(kinds.copyOf())
-    fun isInt(register: Int) = kinds[register] == Kind.INT
-    fun isRef(register: Int) = kinds[register] == Kind.REF
+    fun isInt(register: Int) = kinds[register] == Kind.INT || kinds[register] == Kind.ZERO
+    fun isRef(register: Int) = kinds[register] == Kind.REF || kinds[register] == Kind.ZERO
+    fun isZero(register: Int) = kinds[register] == Kind.ZERO
     fun isWide(register: Int) =
         register + 1 < size && kinds[register] == Kind.WIDE_LOW && kinds[register + 1] == Kind.WIDE_HIGH
 
     fun setInt(register: Int) { clear(register); kinds[register] = Kind.INT }
     fun setRef(register: Int) { clear(register); kinds[register] = Kind.REF }
+    fun setZero(register: Int) { clear(register); kinds[register] = Kind.ZERO }
     fun setWide(register: Int) {
         clear(register)
         clear(register + 1)
@@ -63,7 +69,15 @@ internal class Kinds private constructor(private val kinds: Array<Kind>) {
     }
 
     fun merge(other: Kinds): Kinds {
-        val merged = Array(size) { if (kinds[it] == other.kinds[it]) kinds[it] else Kind.UNSET }
+        val merged = Array(size) {
+            val (a, b) = kinds[it] to other.kinds[it]
+            when {
+                a == b -> a
+                a == Kind.ZERO && (b == Kind.INT || b == Kind.REF) -> b
+                b == Kind.ZERO && (a == Kind.INT || a == Kind.REF) -> a
+                else -> Kind.UNSET
+            }
+        }
         for (register in merged.indices) {
             if (merged[register] == Kind.WIDE_LOW && (register + 1 >= size || merged[register + 1] != Kind.WIDE_HIGH)) {
                 merged[register] = Kind.UNSET
@@ -168,9 +182,21 @@ internal data class Jump(val from: Int, val to: Int)
 /**
  * The verifier's view of a generated method: each statement's reads checked against the register
  * kinds that reach it, merged at every join, at the loop heads until nothing changes, and at
- * each handler over every point of its try block.
+ * each handler over every point of its try block. The generator builds only what this accepts,
+ * so every method it writes loads.
  */
-internal object Verify {
+internal object Verify : Verifier(exact = false)
+
+/**
+ * ART's own view, for judging a hook's jump. A handler takes only what reaches it from the calls
+ * and divisions that can throw, the hook's call among them, and a zero stays an untyped literal.
+ * It accepts everything [Verify] does and more. Seed 20261002013 loads on a phone and here: the
+ * register its jump carries holds a long before a loop and a zero after, and only the call after
+ * the loop can reach the handler.
+ */
+internal object VerifyExact : Verifier(exact = true)
+
+internal open class Verifier(private val exact: Boolean) {
     fun program(program: Program, jump: Jump? = null): Boolean =
         block(program.body, program.entry(), jump, emptyList()) != null
 
@@ -181,7 +207,7 @@ internal object Verify {
         for (statement in block) {
             if (jump != null && statement.id == jump.to) state = state.merge(atJump ?: return null)
             if (jump != null && statement.id == jump.from) atJump = state.copy()
-            handlers.forEach { it += state.copy() }
+            if (!exact || statement.throws() || jump?.from == statement.id) handlers.forEach { it += state.copy() }
             state = statement(statement, state, jump, handlers) ?: return null
         }
         return state
@@ -190,14 +216,18 @@ internal object Verify {
     fun statement(statement: Stmt, state: Kinds, jump: Jump?, handlers: List<MutableList<Kinds>>): Kinds? {
         val out = state.copy()
         when (statement) {
-            is Const -> out.setInt(statement.dst)
+            is Const -> if (exact && statement.value == 0) out.setZero(statement.dst) else out.setInt(statement.dst)
             is ConstWide -> out.setWide(statement.dst)
             is Arith -> if (state.isInt(statement.a) && state.isInt(statement.b)) out.setInt(statement.dst) else return null
             is ArithLit -> if (state.isInt(statement.a)) out.setInt(statement.dst) else return null
             is AddWide -> if (state.isWide(statement.a) && state.isWide(statement.b)) out.setWide(statement.dst) else return null
             is Widen -> if (state.isInt(statement.src)) out.setWide(statement.dst) else return null
             is Narrow -> if (state.isWide(statement.src)) out.setInt(statement.dst) else return null
-            is Move -> if (state.isInt(statement.src)) out.setInt(statement.dst) else return null
+            is Move -> when {
+                exact && state.isZero(statement.src) -> out.setZero(statement.dst)
+                state.isInt(statement.src) -> out.setInt(statement.dst)
+                else -> return null
+            }
             is MoveWide -> if (state.isWide(statement.src)) out.setWide(statement.dst) else return null
             is Note -> if (!state.isInt(statement.src)) return null
             is NoteWide -> if (!state.isWide(statement.src)) return null
@@ -229,7 +259,8 @@ internal object Verify {
             is Guarded -> {
                 val seen = mutableListOf<Kinds>()
                 val end = block(statement.body, state, jump, handlers + listOf(seen)) ?: return null
-                if (seen.isEmpty()) return null
+                // Nothing in the block can throw, so nothing reaches the handler and ART skips it.
+                if (seen.isEmpty()) return if (exact) end else null
                 val entry = seen.reduce(Kinds::merge)
                 statement.exception?.let(entry::setRef)
                 val handled = block(statement.handler, entry, jump, handlers) ?: return null
@@ -237,6 +268,14 @@ internal object Verify {
             }
         }
         return out
+    }
+
+    /** Whether the statement's first instruction can throw, so its handlers see what it starts with. */
+    private fun Stmt.throws() = when (this) {
+        is Note, is NoteWide, is Describe, is Mix -> true
+        is Arith -> op.startsWith("div") || op.startsWith("rem")
+        is ArithLit -> op.startsWith("div") || op.startsWith("rem")
+        else -> false
     }
 }
 

@@ -35,11 +35,22 @@ class SeededInjectionTest {
         val reachedCases = mutableListOf<Generated>()
         var injected = 0
         var comparedOn = 0
+        var jumpsRefused = 0
         for (seed in seeds) {
             val generated = Generated.of(seed)
-            val ran = runCase(generated.case(), Chooser.REAL, scratch)
+            val case = generated.case()
+            val ran = runCase(case, Chooser.REAL, scratch)
             ran.failure?.let { failures += report(generated, it, Chooser.REAL) }
-            if (failures.size == 3) break
+            // The jump check has to refuse exactly the skips ART would: any other jump it refuses
+            // costs a patch a hook it could have had.
+            if (case.mode == Mode.SKIP && !case.jumpVerifies && !ran.refused) {
+                failures += "seed $seed: its jump doesn't verify, yet the hook went in. Replay it with HUSHTELEGRAM_INJECTION_SEED=$seed:\n${case.method}"
+            }
+            if (case.mode == Mode.SKIP && case.jumpVerifies && ran.jumpRefused) {
+                failures += "seed $seed: the jump verifies, yet ${ran.refusal}. Replay it with HUSHTELEGRAM_INJECTION_SEED=$seed:\n${case.method}"
+            }
+            if (failures.size >= 3) break
+            if (ran.jumpRefused) jumpsRefused++
             if (!ran.refused) injected++
             if (ran.reached) reachedCases += generated
             if (ran.comparedOn) comparedOn++
@@ -63,7 +74,9 @@ class SeededInjectionTest {
             "early returns" to reachedCases.count { it.mode == Mode.RETURN },
             "guard answers compared" to comparedOn,
         )
-        println("$injected of ${seeds.size} seeded cases injected, ${reachedCases.size} reached by some input: $reached")
+        println("$injected of ${seeds.size} seeded cases injected, $jumpsRefused skips refused for their jump, " +
+            "${reachedCases.size} reached by some input: $reached")
+        assertTrue("only $jumpsRefused skips refused for their jump", jumpsRefused >= 20)
         val thin = reached.filterValues { it < 20 }
         assertTrue("too few reached cases with $thin of ${reachedCases.size}: $reached", thin.isEmpty())
     }
@@ -102,21 +115,34 @@ class SeededInjectionTest {
             val ran = runCase(case, Chooser.REAL, scratch)
             assertNull(case.name, ran.failure)
             assertFalse("${case.name}: freeLocalsAt found no register", ran.refused)
-            control?.let { assertNotNull("${case.name} no longer catches $it", runCase(case, it, scratch).failure) }
+            // The register check refuses some bad choices before the method changes, a wide pair
+            // split by a skip's borrowed register among them. That catches the choice too.
+            control?.let {
+                val caught = runCase(case, it, scratch)
+                assertTrue("${case.name} no longer catches $it", caught.failure != null || caught.jumpRefused)
+            }
         }
     }
 
     @Test
     fun `the device corpus runs the same here after a round trip through dex`() {
-        val cases = retainedCases().map { it.first } + seeds().asSequence()
-            .map { Generated.of(it).case() }
-            .filter { (it.mode != Mode.SKIP || it.jumpVerifies) && !runCase(it, Chooser.REAL, scratch).refused }
-            .take(CORPUS_GENERATED)
-            .toList()
-        val corpus = cases.map { case -> case to inject(case, assemble(hostClass(HOST, case.method)).methods.single(), Chooser.REAL).method }
-        val expected = InjectionCorpus.write(corpus, File("build/injection-corpus"))
+        val generated = seeds().map(Generated::of)
+        fun Generated.injects() = case().let { (it.mode != Mode.SKIP || it.jumpVerifies) && !runCase(it, Chooser.REAL, scratch).refused }
+        // Skips only ART's own rules let in: the generator's stricter model refuses their jump.
+        val boundary = generated.filter { it.mode == Mode.SKIP && !Verify.program(it.program, Jump(it.anchor, it.target!!)) && it.injects() }
+        val cases = retainedCases().map { it.first } + (generated.asSequence().filter { it.injects() }.take(CORPUS_GENERATED) + boundary)
+            .distinctBy { it.seed }.map { it.case() }
+        fun hooked(case: Case, checked: Boolean = true) =
+            inject(case, assemble(hostClass(HOST, case.method)).methods.single(), Chooser.REAL, checked).method
+        // Every jump the check refuses goes to the phone hooked anyway, to show ART refuses it too.
+        val rejected = generated.asSequence().map { it.case() }
+            .filter { it.mode == Mode.SKIP && runCase(it, Chooser.REAL, scratch).jumpRefused }
+            .take(CORPUS_REJECTED).map { it to hooked(it, checked = false) }.toList()
+        val expected = InjectionCorpus.write(cases.map { it to hooked(it) }, File("build/injection-corpus"), rejected)
         assertEquals(expected.size, expected.map { it.substringBefore('=') }.toSet().size)
         assertTrue("the corpus has only ${expected.size} runs", expected.size >= 100)
+        assertTrue("only ${boundary.size} skips past the generator's model", boundary.size >= 2)
+        assertTrue("only ${rejected.size} skips ART should reject", rejected.size >= 20)
     }
 
     /** Shrinks a failure, writes it where it can be kept, and says how to replay it. */
@@ -143,6 +169,7 @@ class SeededInjectionTest {
         const val BASE = 20_261_002_000L
         const val CONTROL_BASE = 20_261_002_900_000L
         const val CORPUS_GENERATED = 24
+        const val CORPUS_REJECTED = 60
         const val REGRESSIONS = "injection-regressions"
     }
 }

@@ -151,6 +151,16 @@
       "via": [],
       "license": "GPL-3.0-only",
       "changes": "Telegram request and presentation guards written for version 12.10.6 from its own dex. Runtime switches retain the stock paths when disabled or paused, with separate target capabilities."
+    },
+    {
+      "paths": [
+        "patches/src/main/kotlin/app/morphe/util/RegisterKinds.kt"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushTelegram",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Register kind analysis written for HushTelegram, so a hook's jump is checked against what ART's verifier accepts before the method changes."
     }
   ]
 }

@@ -9,6 +9,7 @@ import app.morphe.patches.telegram.misc.extension.liveAcrossInjection
 import app.morphe.patches.telegram.misc.extension.localRegisterCount
 import app.morphe.patches.telegram.misc.extension.returnEarlyWhen
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.insertAtControlFlowLabel
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.DexFileFactory
@@ -161,17 +162,17 @@ internal val PATTERNS: List<Pair<String, (Int) -> Boolean>> = listOf(
 /** What a hook looks like once injected, for the structural check. */
 internal class Injected(val method: MutableMethod, val borrowed: Int, val hookSize: Int, val labelMoves: Boolean)
 
-internal fun inject(case: Case, original: Method, chooser: Chooser): Injected {
+/** Injects [case]'s hook. [checked] false skips the jump check, to build a hook ART should refuse. */
+internal fun inject(case: Case, original: Method, chooser: Chooser, checked: Boolean = true): Injected {
     val method = MutableMethod(original)
     return when (case.mode) {
         Mode.SKIP -> {
             val target = case.target!!
             val borrowed = chooser.choose(method, case.anchor, listOf(target), 255)
-            method.addInstructionsAtControlFlowLabel(
-                case.anchor,
-                "invoke-static {}, $PROBE->guard()Z\nmove-result v$borrowed\nif-nez v$borrowed, :hush_skip",
-                ExternalLabel("hush_skip", method.getInstruction(target)),
-            )
+            val hook = "invoke-static {}, $PROBE->guard()Z\nmove-result v$borrowed\nif-nez v$borrowed, :hush_skip"
+            val label = ExternalLabel("hush_skip", method.getInstruction(target))
+            if (checked) method.addInstructionsAtControlFlowLabel(case.anchor, hook, label)
+            else method.insertAtControlFlowLabel(case.anchor, hook, label)
             Injected(method, borrowed, 3, true)
         }
         Mode.OBSERVE -> {
@@ -194,7 +195,17 @@ internal fun inject(case: Case, original: Method, chooser: Chooser): Injected {
  * guard, and [comparedOn] that a guard answer other than off was compared on such an input. A hook
  * no input reaches proves nothing about what it does.
  */
-internal class Ran(val failure: String?, val refused: Boolean, val comparedOn: Boolean = false, val reached: Boolean = false)
+internal class Ran(
+    val failure: String?, val refused: Boolean, val comparedOn: Boolean = false, val reached: Boolean = false,
+    val refusal: String? = null,
+) {
+    /** Refused by the jump check, not for want of a register or a place to put the hook. */
+    val jumpRefused get() = refusal?.let(JUMP_REFUSAL::containsMatchIn) == true
+
+    private companion object {
+        val JUMP_REFUSAL = Regex("the code at instruction \\d+ would")
+    }
+}
 
 /** The instructions the generator wrote, without the payloads and alignment that follow them. */
 private fun code(method: Method): List<Instruction> = method.implementation!!.instructions
@@ -294,7 +305,7 @@ internal fun runCase(case: Case, chooser: Chooser, scratch: File): Ran {
     val injected = try {
         inject(case, original, chooser)
     } catch (refusal: PatchException) {
-        return Ran(null, true)
+        return Ran(null, true, refusal = refusal.message)
     }
     structure(original, injected, case)?.let { return Ran(it, false) }
     try {
@@ -354,7 +365,7 @@ internal class Generated(val seed: Long, val program: Program, val mode: Mode, v
         val rendered = program.render()
         val anchorIndex = if (mode == Mode.RETURN) 0 else rendered.anchors.getValue(anchor)
         val targetIndex = target?.let(rendered.anchors::getValue)
-        val jumpVerifies = mode != Mode.SKIP || Verify.program(program, Jump(anchor, target!!))
+        val jumpVerifies = mode != Mode.SKIP || VerifyExact.program(program, Jump(anchor, target!!))
         return Case("seed-$seed", rendered.method, mode, anchorIndex, targetIndex, program.trap, inputs, jumpVerifies, program)
     }
 

@@ -16,6 +16,7 @@ import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.insertAtControlFlowLabel
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
@@ -246,7 +247,9 @@ class PremiumAppLogFixtureTest {
                 val target = if (change == "event backedge") batch + 1 else type
                 val write = if (change == "event backedge") "const/4 v$eventRegister, 0x0" else
                     "const-string v$typeRegister, \"support.report\""
-                method.addInstructionsAtControlFlowLabel(batch + 2, "$write\ngoto/32 :unverified_reentry",
+                // The reentry carries the batch's registers back to the type store, which ART would
+                // refuse at class load. The patch must still turn it down, so build it unchecked.
+                method.insertAtControlFlowLabel(batch + 2, "$write\ngoto/32 :unverified_reentry",
                     ExternalLabel("unverified_reentry", method.implementation!!.instructions[target]))
                 assertTrue("the overwrite can reenter an already visited use",
                     target in ControlFlow.of(method).normal[batch + 3])
