@@ -60,7 +60,7 @@ try {
                 $directory = ($Arguments[3] -split 'mkdir -p ', 2)[1]
                 [void]$state.RemotePaths.Add($directory)
                 if ($FailureStage -eq 'setup') { $exitCode = 12 }
-            } elseif ($operation -eq 'shell' -and $Arguments[3] -like 'log -t HushTelegramVerify *') {
+            } elseif ($operation -eq 'shell' -and $Arguments[3] -like 'log -p w -t HushTelegramVerify *') {
                 $state.Marker = ($Arguments[3] -split ' ')[-1]
                 if ($FailureStage -eq 'mark') { $exitCode = 13 }
             } elseif ($operation -eq 'logcat' -and $Arguments -contains '-c') {
@@ -72,12 +72,12 @@ try {
                 # Another session's run of the same label, still in the buffer ahead of this one.
                 # Counted, its verifier line changes the tally and its missing file fails the run.
                 $earlier = @(
-                    'I HushTelegramVerify: hushtelegram-verify-case-0123456789abcdef0123456789abcdef',
+                    'W HushTelegramVerify: hushtelegram-verify-case-0123456789abcdef0123456789abcdef',
                     'I dex2oat64: Verification error in Lfixture/Host;',
                     'I dex2oat64: Verification error in Lfixture/Stale;',
                     "W dex2oat64: Skipping non-existent dex file '/data/local/tmp/hushtelegram-verify-case.apk'"
                 )
-                $markLine = "I HushTelegramVerify: $($state.Marker)"
+                $markLine = "W HushTelegramVerify: $($state.Marker)"
                 if ($FailureStage -eq 'log-read-throw') {
                     throw 'fake ADB threw while reading logcat'
                 } elseif ($FailureStage -eq 'log-read') {
@@ -131,7 +131,7 @@ try {
         mark = 'Could not mark logcat on SERIAL before verifying case (ADB exit 13).'
         dex2oat = 'dex2oat on case exited 14.'
         'log-read' = 'Could not read logcat on SERIAL after verifying case (ADB exit 15).'
-        rotated = "The log on SERIAL no longer holds the start of the case run, so its verifier messages can't be counted. Retry when the phone is quieter."
+        rotated = "The log on SERIAL doesn't hold the start of the case run, so its verifier messages can't be counted. A busy log may have dropped it, or the phone may filter warnings out of its log. Retry when the phone is quieter."
         'short-read' = "dex2oat on case read a file of 5 bytes on SERIAL, not the $fixtureSize bytes pushed."
         unread = "dex2oat did not read case on SERIAL: Skipping non-existent dex file '/data/local/tmp/hushtelegram-verify-case.apk'"
     }
@@ -207,12 +207,74 @@ try {
     Assert-BothCleanupCalls -State $successWithCleanupFailure.State -Context 'success cleanup failure'
 
     # Nothing else may clear a shared phone's log either, test scripts that drive a phone included.
-    # Only this suite's fake ADB, which refuses the call, names it.
-    $clearing = @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.ps1' |
+    # Only this suite's fake ADB, which refuses the call, names it. Read as tokens, so comments
+    # don't count and an argument array split over lines does: a logcat word, then a clear flag in
+    # the same array or command, or both inside one shell string. A name held in a variable is
+    # out of reach here, which is why the fake ADB refuses the call as well.
+    $clearFlag = '^(--clear|-[A-Za-z]*c[A-Za-z]*)$'
+    $clearInString = '(?<![\w-])logcat\b[^;|&\r\n]*?\s(--clear|-[A-Za-z]*c[A-Za-z]*)(?![\w-])'
+    function Find-LogBufferClear {
+        param([string]$Path)
+        $tokens = $null
+        $parseErrors = $null
+        [void][System.Management.Automation.Language.Parser]::ParseFile($Path, [ref]$tokens, [ref]$parseErrors)
+        $kinds = [System.Management.Automation.Language.TokenKind]
+        $value = { param($Token) if ($Token -is [System.Management.Automation.Language.StringToken]) { $Token.Value } else { $Token.Text } }
+        $opens = @($kinds::LParen, $kinds::AtParen, $kinds::DollarParen, $kinds::LCurly, $kinds::AtCurly, $kinds::LBracket)
+        $closes = @($kinds::RParen, $kinds::RCurly, $kinds::RBracket)
+        $hits = [System.Collections.Generic.List[string]]::new()
+        $depth = 0
+        for ($i = 0; $i -lt $tokens.Count; $i++) {
+            $token = $tokens[$i]
+            if ($token.Kind -in $opens) { $depth++ } elseif ($token.Kind -in $closes) { $depth-- }
+            if ($token.Kind -eq $kinds::Comment) { continue }
+            $text = "$(& $value $token)"
+            if ($text -cmatch $clearInString) { $hits.Add("$($token.Extent.StartLineNumber)"); continue }
+            if ($text -cnotmatch '(?<![\w-])logcat(?![\w-])') { continue }
+            # The rest of this array, or of this command when the word is bare.
+            $level = 0
+            for ($j = $i + 1; $j -lt $tokens.Count; $j++) {
+                $next = $tokens[$j]
+                if ($next.Kind -in $opens) { $level++; continue }
+                if ($next.Kind -in $closes) { if ($level-- -eq 0) { break } else { continue } }
+                if ($level -eq 0 -and $depth -eq 0 -and $next.Kind -in @($kinds::NewLine, $kinds::Semi, $kinds::Pipe, $kinds::EndOfInput)) { break }
+                if ($next.Kind -eq $kinds::Comment) { continue }
+                if ("$(& $value $next)" -cmatch $clearFlag) { $hits.Add("$($next.Extent.StartLineNumber)"); break }
+            }
+        }
+        return $hits
+    }
+    $clearing = @(Get-ChildItem -LiteralPath $PSScriptRoot -Recurse -Include '*.ps1', '*.psm1' |
         Where-Object { $_.FullName -ne $PSCommandPath } |
-        Select-String -Pattern 'logcat[^\r\n]*[''"\s]-c\b' |
-        ForEach-Object { "$($_.Filename):$($_.LineNumber)" })
+        ForEach-Object { $file = $_; Find-LogBufferClear $file.FullName | ForEach-Object { "$($file.Name):$_" } })
     Assert-True ($clearing.Count -eq 0) "Scripts clear the log buffer of a shared phone: $($clearing -join ', ')"
+
+    # The scan itself, on spellings it has to catch and calls it has to leave alone.
+    $scanCopy = Join-Path ([System.IO.Path]::GetTempPath()) ("hushtelegram-clear-scan-" + [guid]::NewGuid().ToString('N') + '.ps1')
+    try {
+        $scanCases = @(
+            @{ Name = 'a bare adb call'; Clears = $true; Text = '& $adb -s $serial logcat -c' }
+            @{ Name = 'a buffer named first'; Clears = $true; Text = '& $adb -s $serial logcat -b all -c' }
+            @{ Name = 'the long flag'; Clears = $true; Text = 'adb logcat --clear' }
+            @{ Name = 'flags run together'; Clears = $true; Text = "Invoke-Thing -Arguments @('-s', `$s, 'logcat', '-cb', 'main')" }
+            @{ Name = 'an argument array'; Clears = $true; Text = "Invoke-Thing -Arguments @('-s', `$s, 'logcat', '-c')" }
+            @{ Name = 'an argument array split over lines'; Clears = $true; Text = "Invoke-Thing -Arguments @('-s', `$s, 'logcat',`n    '-c') -Description 'x'" }
+            @{ Name = 'a shell string'; Clears = $true; Text = "& `$adb -s `$s shell 'logcat -b main -c'" }
+            @{ Name = 'the dump read'; Clears = $false; Text = "Invoke-Thing -Arguments @('-s', `$s, 'logcat', '-d') -Description 'Could not clear'" }
+            @{ Name = 'a dump with a format'; Clears = $false; Text = '& $adb logcat -d -v color' }
+            @{ Name = 'a comment'; Clears = $false; Text = '# never run logcat -c on a shared phone' }
+            @{ Name = 'a clear on the next command'; Clears = $false; Text = "& `$adb logcat -d`n& `$tool -c" }
+        )
+        $scanFailures = @()
+        foreach ($case in $scanCases) {
+            [System.IO.File]::WriteAllText($scanCopy, $case.Text)
+            $found = @(Find-LogBufferClear $scanCopy).Count -gt 0
+            if ($found -ne $case.Clears) { $scanFailures += "$($case.Name): the scan said $found" }
+        }
+        if ($scanFailures.Count -ne 0) { throw ("The log clear scan misjudged:`n" + ($scanFailures -join "`n")) }
+    } finally {
+        [System.IO.File]::Delete($scanCopy)
+    }
 
     # As the verifier runs them (script-wiring.ps1), so help text, log lines, functions nothing
     # calls and dead branches can't stand in for the calls: the helper dot-sourced, and a tally of

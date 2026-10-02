@@ -69,10 +69,10 @@ function Invoke-AndroidVerifierTally {
         }
 
         # The phones are shared, so the log buffer is never cleared. A unique marker line starts
-        # this run's part of it, and only the lines after it are read.
+        # this run's part of it, and only the lines after it are read. It goes out as a warning so a phone that keeps only warnings still logs it.
         $marker = "hushtelegram-verify-$Label-$([guid]::NewGuid().ToString('N'))"
         $mark = Invoke-HushTelegramAdbCommand -Adb $Adb -Invoker $AdbInvoker `
-            -Arguments @('-s', $Serial, 'shell', "log -t HushTelegramVerify $marker")
+            -Arguments @('-s', $Serial, 'shell', "log -p w -t HushTelegramVerify $marker")
         if ($mark.ExitCode -ne 0) {
             throw (Format-HushTelegramAdbFailure `
                 -Message "Could not mark logcat on $Serial before verifying $Label" `
@@ -116,7 +116,7 @@ function Invoke-AndroidVerifierTally {
             if ("$($logLines[$i])".Contains($marker)) { $markedAt = $i; break }
         }
         if ($markedAt -lt 0) {
-            throw "The log on $Serial no longer holds the start of the $Label run, so its verifier messages can't be counted. Retry when the phone is quieter."
+            throw "The log on $Serial doesn't hold the start of the $Label run, so its verifier messages can't be counted. A busy log may have dropped it, or the phone may filter warnings out of its log. Retry when the phone is quieter."
         }
         $runLines = @($logLines | Select-Object -Skip ($markedAt + 1))
 
