@@ -13,6 +13,7 @@ Prepared for the next release. The published version is still 0.0.4.
 * **Tooling:** The README's sign-in help explains Telegram's `API_ID_PUBLISHED_FLOOD` refusal and the need for registered API credentials.
 * **Tooling:** The README's settings screenshots show the new home summaries and the Chats page with Hide ads and Hide Stories, captured from the current build.
 * **Tooling:** Putting a hook in front of a switch now stops with a clear error before the method changes. It used to fail halfway, with a copy of the switch already in.
+* **Tooling:** Seeded tests build a thousand small methods each run, with branches, switches, loops, try blocks and long values, put a hook in each the way the patches do, and check every path still behaves as before. Shrunk failures are kept as regression cases, and `scripts/test-injection-corpus-device.ps1` runs a set of them on a phone's own runtime.
 
 * **Tooling:** Premium report patching now refuses any path that changes the verified payload or request before editing.
 
