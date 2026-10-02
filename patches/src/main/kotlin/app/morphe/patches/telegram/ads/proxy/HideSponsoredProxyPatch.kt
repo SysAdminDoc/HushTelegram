@@ -194,7 +194,10 @@ internal fun BytecodePatchContext.resolveProxyHooks(): ProxyPlan {
         "isSponsoredProxyDialog" to listOf("Ljava/lang/Object;", "Ljava/lang/Object;"),
     )) shape(runtime.methods.count { it.name == name && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
         AccessFlags.STATIC.isSet(it.accessFlags) && !AccessFlags.ABSTRACT.isSet(it.accessFlags) &&
-        !AccessFlags.NATIVE.isSet(it.accessFlags) && it.implementation != null && it.hasShape(parameters, "Z") } == 1,
+        !AccessFlags.NATIVE.isSet(it.accessFlags) && it.hasShape(parameters, "Z") && it.implementation?.let { body ->
+            body.registerCount >= parameters.sumOf { type -> if (type == "J" || type == "D") 2 else 1 } &&
+                body.instructions.any { instruction -> !instruction.opcode.format.isPayloadFormat }
+        } == true } == 1,
         "extension has no callable $name proxy method")
     val scope = """
         instance-of v0, p0, $MESSAGES_CONTROLLER

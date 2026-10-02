@@ -20,11 +20,15 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.SwitchPayload
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.formats.ArrayPayload
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableArrayPayload
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -251,6 +255,35 @@ class HideSponsoredProxyFixtureTest {
     }
 
     @Test
+    fun `empty cached-dialog runtime refuses before host scope or facts change`() =
+        runtimeRefusal("hideCachedProxyDialog", body = emptyList())
+
+    @Test
+    fun `empty selected-dialog runtime refuses before host scope or facts change`() =
+        runtimeRefusal("showSelectedDialog", body = emptyList())
+
+    @Test
+    fun `empty proxy-scope runtime refuses before host scope or facts change`() =
+        runtimeRefusal("isSponsoredProxyDialog", body = emptyList())
+
+    @Test
+    fun `undersized cached-dialog parameters refuse before host scope or facts change`() =
+        runtimeRefusal("hideCachedProxyDialog", registers = 1)
+
+    @Test
+    fun `undersized selected-dialog parameters refuse before host scope or facts change`() =
+        runtimeRefusal("showSelectedDialog", registers = 2)
+
+    @Test
+    fun `undersized proxy-scope parameters refuse before host scope or facts change`() =
+        runtimeRefusal("isSponsoredProxyDialog", registers = 1)
+
+    @Test
+    fun `data payloads cannot substitute for executable proxy runtime instructions`() {
+        for (name in RUNTIME_WORDS.keys) runtimeRefusal(name, body = listOf(ImmutableArrayPayload(4, listOf(1L))))
+    }
+
+    @Test
     fun `inaccessible status class and uncallable build flags refuse before any mutation`() {
         refusal { context, _ ->
             val status = context.mutableClassDefBy(SETTINGS_STATUS)
@@ -277,6 +310,20 @@ class HideSponsoredProxyFixtureTest {
         }
     }
 
+    private fun runtimeRefusal(name: String, registers: Int? = null, body: List<Instruction>? = null) = refusal { context, _ ->
+        val owner = context.mutableClassDefBy(PROXY_PROMOTIONS)
+        val method = owner.methods.single { it.name == name }
+        val implementation = method.implementation!!
+        assertEquals("$name: exact one-word parameter budget", RUNTIME_WORDS.getValue(name), method.parameterTypes.size)
+        assertTrue("$name: stock budget is valid", implementation.registerCount >= RUNTIME_WORDS.getValue(name))
+        owner.methods.remove(method)
+        owner.methods.add(ImmutableMethod(method.definingClass, method.name, method.parameters, method.returnType,
+            method.accessFlags, method.annotations, method.hiddenApiRestrictions,
+            ImmutableMethodImplementation(registers ?: implementation.registerCount, body ?: implementation.instructions,
+                if (body == null) implementation.tryBlocks else emptyList(),
+                if (body == null) implementation.debugItems else emptyList())).toMutable())
+    }
+
     private fun refusal(change: (BytecodePatchContext, ProxyPlan) -> Unit) {
         for (build in Fixtures.declaredBuilds()) {
             val hosts = hosts(build)
@@ -287,6 +334,7 @@ class HideSponsoredProxyFixtureTest {
             val before = types.associateWith { type -> context.mutableClassDefBy(type).methods.associate {
                 it.signature() to it.state()
             } }
+            val classBefore = types.associateWith { context.mutableClassDefBy(it).state() }
             try {
                 hideSponsoredProxyPatch.execute(context)
                 fail("${build.name}: incompatible shape accepted")
@@ -295,6 +343,8 @@ class HideSponsoredProxyFixtureTest {
             }
             for (type in types) assertEquals("${build.name}: no partial edit to $type", before.getValue(type),
                 context.mutableClassDefBy(type).methods.associate { it.signature() to it.state() })
+            assertEquals("${build.name}: no class, field, method or scope mutation", classBefore,
+                types.associateWith { context.mutableClassDefBy(it).state() })
             for (flag in FLAGS) {
                 val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.singleOrNull { it.name == flag } ?: continue
                 val instructions = status.instructions()
@@ -315,12 +365,21 @@ class HideSponsoredProxyFixtureTest {
     private fun Method.state(): List<Any?> {
         val flow = implementation?.takeIf { instructions().isNotEmpty() }?.let { ControlFlow.of(this) }
         return listOf(accessFlags, implementation?.registerCount, instructions().map(::operation),
-            flow?.normal?.toList(), flow?.exceptional?.toList())
+            flow?.normal?.toList(), flow?.exceptional?.toList(),
+            instructions().map { listOf(it.codeUnits, (it as? OffsetInstruction)?.codeOffset,
+                (it as? SwitchPayload)?.switchElements?.map { element -> element.key to element.offset },
+                (it as? ArrayPayload)?.elementWidth, (it as? ArrayPayload)?.arrayElements) },
+            implementation?.tryBlocks?.map { listOf(it.startCodeAddress, it.codeUnitCount,
+                it.exceptionHandlers.map { handler -> handler.exceptionType to handler.handlerCodeAddress }) })
     }
+    private fun ClassDef.state() = listOf(accessFlags,
+        fields.map { listOf(it.name, it.type, it.accessFlags, it.initialValue) },
+        methods.map { it.signature() to it.state() })
     private fun Instruction.reference() = (this as? ReferenceInstruction)?.reference?.toString()
     private fun operation(instruction: Instruction) = listOf(instruction.opcode, instruction.namedRegisters(),
         instruction.reference(), (instruction as? WideLiteralInstruction)?.wideLiteral)
     private companion object {
         val FLAGS = listOf("hideSponsoredProxy", "cachedProxyDialog", "cachedProxyFilters")
+        val RUNTIME_WORDS = mapOf("hideCachedProxyDialog" to 2, "showSelectedDialog" to 3, "isSponsoredProxyDialog" to 2)
     }
 }
