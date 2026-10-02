@@ -229,6 +229,13 @@ fun MutableMethod.addInstructionsAtControlFlowLabel(
     instructions: String,
     vararg externalLabels: ExternalLabel
 ) {
+    // The copy below shares the original's payload until the original is removed, and dexlib2
+    // refuses two switches on one payload halfway through, with the copy already in the method.
+    val original = getInstruction(insertIndex).opcode
+    if (original in PAYLOAD_USERS) {
+        throw PatchException("$definingClass->$name: code can't go in front of the $original at instruction $insertIndex")
+    }
+
     // Duplicate original instruction and add to +1 index.
     addInstruction(insertIndex + 1, getInstruction(insertIndex))
 
@@ -242,6 +249,8 @@ fun MutableMethod.addInstructionsAtControlFlowLabel(
     // Original instruction is now after the inserted patch instructions,
     // and the original control flow label is on the first instruction of the patch code.
 }
+
+private val PAYLOAD_USERS = setOf(Opcode.PACKED_SWITCH, Opcode.SPARSE_SWITCH)
 
 /**
  * Find the index of the first literal instruction with the given long value.
