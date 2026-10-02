@@ -20,7 +20,7 @@ About	Info
 Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.	Android 11 und älter melden nicht, welche Links sich hier öffnen. Tippe, um die Einstellungen dieser App zu öffnen, dann auf „Standardmäßig öffnen“.
 Back	Zurück
 Cancel	Abbrechen
-Choose a settings file. Before anything is imported, you'll see how many switches it changes.	Wähle eine Einstellungsdatei. Vor dem Import siehst du, wie viele Schalter sie ändert.
+Choose a settings file. Before anything is imported, you'll see how many switches it changes. What you import applies to all the accounts in this Telegram app.	Wähle eine Einstellungsdatei. Vor dem Import siehst du, wie viele Schalter sie ändert. Was du importierst, gilt für alle Konten in dieser Telegram-App.
 Clear diagnostic data	Diagnosedaten löschen
 Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.	Kopiere einen Kurzbericht oder speichere den vollständigen Bericht unter Download/Morphe. Links, IDs, Cookies und Anmeldetokens werden ausgelassen. Prüfe ihn vor dem Teilen auf andere private Angaben.
 Copy quick report	Kurzbericht kopieren
@@ -45,7 +45,7 @@ From the next start, every switch but Debug logging acts as if it were off. Chan
 Hide ads	Werbung ausblenden
 Links, updates, backup and more	Links, Updates, Sicherung und mehr
 Privacy	Datenschutz
-Save your switches to a file. Pause and Debug logging aren't included, and neither is the release check.	Speichert deine Schalter in einer Datei. Pause und Debug-Protokollierung sind nicht enthalten, die Suche nach neuen Versionen auch nicht.
+Save your switches to a file. They cover all the accounts in this Telegram app. Pause and Debug logging aren't included, and neither is the release check.	Speichert deine Schalter in einer Datei. Sie gelten für alle Konten in dieser Telegram-App. Pause und Debug-Protokollierung sind nicht enthalten, die Suche nach neuen Versionen auch nicht.
 Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.	Einstellungen exportiert. Die App, in der die Datei liegt, ließ HushTelegram sie nicht zurücklesen, daher wurde sie nicht geprüft.
 The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.	Die App, in der die Datei liegt, braucht zu lange, deshalb wartet HushTelegram nicht mehr. Es wurde nichts geändert.
 The app holding the last settings file still hasn't answered. Try again later.	Die App mit der letzten Einstellungsdatei hat noch immer nicht geantwortet. Versuche es später noch einmal.
@@ -202,3 +202,5 @@ Premium promo views	Aufrufe der Premium-Angebotsseite
 Premium promo taps	Antippen von Premium-Angeboten
 Premium promo accepts	Bestätigungen von Premium-Angeboten
 Premium promo failures	Fehler bei Premium-Angeboten
+Accounts	Konten
+Every switch here applies to all the accounts in this Telegram app, not only the one you have open.	Jeder Schalter hier gilt für alle Konten in dieser Telegram-App, nicht nur für das gerade geöffnete.

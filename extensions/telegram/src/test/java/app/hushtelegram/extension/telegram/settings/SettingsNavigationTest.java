@@ -657,6 +657,35 @@ public class SettingsNavigationTest {
         assertFalse(Settings.HIDE_ADS.savedValue());
     }
 
+    /**
+     * The switches live in one application-wide store, and Telegram can hold several accounts. The
+     * About row and both backup rows say so, and each shipped language's word for accounts finds
+     * all three in search.
+     */
+    @Test public void theAccountScopeIsSearchableInEveryShippedLanguage() {
+        String[][] languages = {{"en", null}, {"de", "de"}, {"es", "es"}, {"in-rID", "in"}, {"pt-rBR", "pt-rbr"}, {"tr", "tr"}};
+        for (String[] language : languages) {
+            controller.close();
+            org.robolectric.RuntimeEnvironment.setQualifiers("+" + language[0]);
+            controller = Robolectric.buildActivity(Activity.class).setup().visible();
+            dialog = SettingsL10nTest.show(controller.get());
+            page = page(dialog);
+            Map<String, String> table = language[1] == null ? new TreeMap<>() : SettingsL10nTest.TranslationsForTests.of(language[1]);
+            String word = table.getOrDefault("Accounts", "Accounts").toLowerCase(java.util.Locale.ROOT);
+            findSearch(dialog.getView()).setText(word);
+            ShadowLooper.idleMainLooper(1, java.util.concurrent.TimeUnit.SECONDS);
+            List<String> found = new ArrayList<>();
+            for (int i = 0; i < list().getCount(); i++) {
+                Object item = list().getItemAtPosition(i);
+                if (item instanceof Preference && !(item instanceof PreferenceCategory)) found.add(String.valueOf(((Preference) item).getTitle()));
+            }
+            for (String title : Arrays.asList("Accounts", "Export settings", "Import settings")) {
+                assertTrue(language[0] + ": searching " + word + " misses " + title + " in " + found,
+                        found.contains(table.getOrDefault(title, title)));
+            }
+        }
+    }
+
     /** All pages are rendered with the same viewport as the design reference. */
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
     public void renderEveryPageAndSearchOffscreen() throws Exception {
@@ -686,8 +715,12 @@ public class SettingsNavigationTest {
         captureDialog("dialog-import", page.importPreview);
         page.importPreview.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
         page.navigation.navigate("About");
-        Preference about = page.sections().get(page.sections().size() - 1);
-        Preference licenses = ((PreferenceCategory) about).getPreference(2);
+        PreferenceCategory about = (PreferenceCategory) page.sections().get(page.sections().size() - 1);
+        Preference licenses = null;
+        for (int i = 0; i < about.getPreferenceCount(); i++) {
+            if ("Licenses".contentEquals(about.getPreference(i).getTitle())) licenses = about.getPreference(i);
+        }
+        assertNotNull("no Licenses row on About", licenses);
         licenses.getOnPreferenceClickListener().onPreferenceClick(licenses);
         AlertDialog notice = (AlertDialog) org.robolectric.shadows.ShadowDialog.getLatestDialog();
         captureDialog("dialog-licenses", notice);

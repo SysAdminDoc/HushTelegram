@@ -20,7 +20,7 @@ About	Hakkında
 Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.	Android 11 ve öncesi burada hangi bağlantıların açıldığını bildirmez. Bu uygulamanın ayarlarını açmak için dokunun, ardından Varsayılan olarak aç'a gidin.
 Back	Geri
 Cancel	İptal
-Choose a settings file. Before anything is imported, you'll see how many switches it changes.	Bir ayar dosyası seç. İçe aktarmadan önce kaç anahtarın değişeceğini görürsün.
+Choose a settings file. Before anything is imported, you'll see how many switches it changes. What you import applies to all the accounts in this Telegram app.	Bir ayar dosyası seç. İçe aktarmadan önce kaç anahtarın değişeceğini görürsün. İçe aktardıkların bu Telegram uygulamasındaki tüm hesaplar için geçerli olur.
 Clear diagnostic data	Tanılama verilerini temizle
 Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.	Kısa raporu kopyala veya tam raporu Download/Morphe konumuna kaydet. Bağlantılar, kimlikler, çerezler ve oturum belirteçleri çıkarılır. Paylaşmadan önce başka özel bilgi olup olmadığına bak.
 Copy quick report	Hızlı raporu kopyala
@@ -45,7 +45,7 @@ From the next start, every switch but Debug logging acts as if it were off. Chan
 Hide ads	Reklamları gizle
 Links, updates, backup and more	Bağlantılar, güncellemeler, yedekleme ve daha fazlası
 Privacy	Gizlilik
-Save your switches to a file. Pause and Debug logging aren't included, and neither is the release check.	Anahtarlarını bir dosyaya kaydet. Duraklatma ve Hata ayıklama günlüğü dahil edilmez, sürüm denetimi de edilmez.
+Save your switches to a file. They cover all the accounts in this Telegram app. Pause and Debug logging aren't included, and neither is the release check.	Anahtarlarını bir dosyaya kaydet. Anahtarlar bu Telegram uygulamasındaki tüm hesaplar için geçerlidir. Duraklatma ve Hata ayıklama günlüğü dahil edilmez, sürüm denetimi de edilmez.
 Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.	Ayarlar dışa aktarıldı. Dosyayı tutan uygulama HushTelegram'un onu geri okumasına izin vermedi, bu yüzden kontrol edilmedi.
 The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.	O dosyayı tutan uygulama çok uzun sürüyor, bu yüzden HushTelegram beklemeyi bıraktı. Hiçbir şey değiştirilmedi.
 The app holding the last settings file still hasn't answered. Try again later.	Son ayar dosyasını tutan uygulama hâlâ yanıt vermedi. Daha sonra tekrar dene.
@@ -202,3 +202,5 @@ Premium promo views	Premium tanıtım görüntülemeleri
 Premium promo taps	Premium tanıtım dokunuşları
 Premium promo accepts	Premium tanıtım onayları
 Premium promo failures	Premium tanıtım hataları
+Accounts	Hesaplar
+Every switch here applies to all the accounts in this Telegram app, not only the one you have open.	Buradaki her anahtar yalnızca açık olan hesap için değil, bu Telegram uygulamasındaki tüm hesaplar için geçerlidir.

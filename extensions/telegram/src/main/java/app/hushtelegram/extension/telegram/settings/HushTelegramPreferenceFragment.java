@@ -331,13 +331,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         // Morphe Manager can export the patch choices and the signing key, not these switches.
         hushtelegram.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.EXPORT,
                 L10n.t("Export settings"),
-                L10n.t("Save your switches to a file. Pause and Debug logging aren't included, and neither is the "
-                        + "release check.")), SettingsIcons.EXPORT));
+                L10n.t("Save your switches to a file. They cover all the accounts in this Telegram app. Pause and "
+                        + "Debug logging aren't included, and neither is the release check.")), SettingsIcons.EXPORT));
         // The preview gives a count of the switches, not each switch by name.
         hushtelegram.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.IMPORT,
                 L10n.t("Import settings"),
                 L10n.t("Choose a settings file. Before anything is imported, you'll see how many switches it "
-                        + "changes.")), SettingsIcons.DOWNLOADS));
+                        + "changes. What you import applies to all the accounts in this Telegram app.")), SettingsIcons.DOWNLOADS));
         // Debug logging also fills the exported report and turns on error toasts (Logger).
         hushtelegram.addPreference(mark(toggle(context, BaseSettings.DEBUG, L10n.t("Debug logging"),
                 L10n.t("Record patch activity and show errors for a bug report. Leave off during normal use.")), SettingsIcons.BUG));
@@ -359,6 +359,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         PreferenceCategory about = category(screen, L10n.t("About"));
         about.addPreference(mark(info(context, L10n.t("Version"), L10n.f("HushTelegram %1$s on Telegram %2$s",
                 L10n.isolate(Utils.getPatchesReleaseVersion()), L10n.isolate(Utils.getAppVersionName()))), SettingsIcons.ABOUT));
+        // Switches live in one application-wide store, while Telegram can hold several accounts.
+        about.addPreference(mark(info(context, L10n.t("Accounts"), L10n.t("Every switch here applies to all the "
+                + "accounts in this Telegram app, not only the one you have open.")), SettingsIcons.ABOUT));
 
         Preference source = new Row(context);
         source.setTitle(L10n.t("Source code and issues"));

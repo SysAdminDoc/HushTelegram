@@ -102,6 +102,8 @@ Sign-in can fail with `API_ID_PUBLISHED_FLOOD`, which means Telegram rejected th
 
 **What stays the same?** Your chats, contacts and calls work through Telegram's servers exactly as before. HushTelegram doesn't send, read, forward or delete messages on your behalf, and it doesn't change how you sign in.
 
+**More than one account?** HushTelegram's switches belong to the app, not to an account. Every one of them applies to all the accounts you've added, and a settings file you export or import covers them all.
+
 **Could my account be limited?** Nobody can promise it won't be, and this project is young. If you'd rather not risk the account you care about, try HushTelegram with a second account first.
 
 ## What it won't do
