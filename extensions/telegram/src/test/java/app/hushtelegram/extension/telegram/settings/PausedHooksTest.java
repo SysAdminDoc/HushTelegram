@@ -158,7 +158,11 @@ public class PausedHooksTest {
         // A device statistics report is never read or sent, and neither is a channel's read time.
         probes.put(PatchFamily.DISABLE_ANALYTICS, Arrays.asList(
                 () -> Analytics.skipDeviceStats(new DeviceStatsController(true, false)),
-                () -> Analytics.skipReadMetrics(new ArrayList<>())));
+                () -> Analytics.skipReadMetrics(new ArrayList<>()),
+                () -> Analytics.skipPremiumAppLog("premium.promo_screen_show"),
+                () -> Analytics.skipPremiumAppLog("premium.promo_screen_tap"),
+                () -> Analytics.skipPremiumAppLog("premium.promo_screen_accept"),
+                () -> Analytics.skipPremiumAppLog("premium.promo_screen_fail")));
         probes.put(PatchFamily.OPEN_EXTERNAL_LINKS, Collections.singletonList(PausedHooksTest::externalBrowserOpened));
         probes.put(PatchFamily.STRIP_LINK_TRACKING, Arrays.asList(
                 () -> PROBE_URL.equals(LinkRouting.cleanOpenedUri(Uri.parse(TRACKED_URL), false, new boolean[1]).toString()),

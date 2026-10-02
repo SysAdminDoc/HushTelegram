@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(384);
+        Map<String, String> table = new HashMap<>(392);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -261,6 +261,14 @@ public final class L10nTranslations {
                 "Pause, Sicherung und Diagnose");
         table.put("Post Story button",
                 "Schaltfl\u00e4che zum Posten einer Story");
+        table.put("Premium promo accepts",
+                "Best\u00e4tigungen von Premium-Angeboten");
+        table.put("Premium promo failures",
+                "Fehler bei Premium-Angeboten");
+        table.put("Premium promo taps",
+                "Antippen von Premium-Angeboten");
+        table.put("Premium promo views",
+                "Aufrufe der Premium-Angebotsseite");
         table.put("Privacy",
                 "Datenschutz");
         table.put("Reading the settings file",
@@ -291,6 +299,9 @@ public final class L10nTranslations {
                 "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Die Einstellungen lie\u00dfen sich nicht vollst\u00e4ndig aktualisieren. \u00d6ffne sie neu und versuche es noch einmal.");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Settings exported.",
                 "Einstellungen exportiert.");
         table.put("Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.",
@@ -299,9 +310,6 @@ public final class L10nTranslations {
                 "Einstellungen importiert.");
         table.put("Settings imported. %1$d switch changed.",
                 "Einstellungen importiert. %1$d Schalter wurde ge\u00e4ndert.");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("Settings imported. %1$d switches changed.",
                 "Einstellungen importiert. %1$d Schalter wurden ge\u00e4ndert.");
         table.put("Settings sales rows",
@@ -326,8 +334,8 @@ public final class L10nTranslations {
                 "Zum Wiedereinschalten tippen.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Telegram ist dreimal hintereinander innerhalb einer Minute nach dem Start abgest\u00fcrzt oder h\u00e4ngen geblieben, deshalb hat sich HushTelegram selbst pausiert.");
-        table.put("Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
-                "Telegram sendet seine Statistik zum Speichertyp nicht, wenn der Server danach fragt, und auch nicht, wie lange du jeden Kanalbeitrag angesehen hast. Nachrichten und Anrufe funktionieren wie bisher.");
+        table.put("Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. It also stops reports about Premium screen views, feature taps, accepts and purchase failures. Messages and calls work as before.",
+                "Telegram sendet seine Statistik zum Speichertyp nicht, wenn der Server danach fragt, und auch nicht, wie lange du jeden Kanalbeitrag angesehen hast. Auch Berichte \u00fcber Aufrufe des Premium-Bildschirms, angetippte Funktionen, Best\u00e4tigungen und fehlgeschlagene K\u00e4ufe werden nicht gesendet. Nachrichten und Anrufe funktionieren wie bisher.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram bietet keine Updates von telegram.org mehr an. Sie lie\u00dfen sich nicht \u00fcber diesen gepatchten Build installieren, also patche jede neue Version stattdessen im Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -414,6 +422,9 @@ public final class L10nTranslations {
                 "gespeicherte Empfehlungen");
         table.put("call debug reports",
                 "Anrufdiagnoseberichte");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("call log file uploads",
                 "Uploads von Anrufprotokolldateien");
         table.put("call log reports",
@@ -422,9 +433,6 @@ public final class L10nTranslations {
                 "Geschenk-Schaltfl\u00e4che von Kan\u00e4len");
         table.put("channel ads",
                 "Kanalwerbung");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("channel read metrics",
                 "Kanal-Lesemetriken");
         table.put("chat-list story bar",
@@ -452,7 +460,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(384);
+        Map<String, String> table = new HashMap<>(392);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -666,6 +674,14 @@ public final class L10nTranslations {
                 "Pausa, copia de seguridad y diagn\u00f3stico");
         table.put("Post Story button",
                 "bot\u00f3n para publicar una historia");
+        table.put("Premium promo accepts",
+                "aceptaciones de promociones de Premium");
+        table.put("Premium promo failures",
+                "fallos de promociones de Premium");
+        table.put("Premium promo taps",
+                "toques en promociones de Premium");
+        table.put("Premium promo views",
+                "vistas de promociones de Premium");
         table.put("Privacy",
                 "Privacidad");
         table.put("Reading the settings file",
@@ -696,6 +712,9 @@ public final class L10nTranslations {
                 "No se pudo abrir la configuraci\u00f3n");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "No se pudo actualizar la configuraci\u00f3n por completo. Vuelve a abrirla e int\u00e9ntalo de nuevo.");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("Settings exported.",
                 "Configuraci\u00f3n exportada.");
         table.put("Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.",
@@ -704,9 +723,6 @@ public final class L10nTranslations {
                 "Configuraci\u00f3n importada.");
         table.put("Settings imported. %1$d switch changed.",
                 "Configuraci\u00f3n importada. Cambi\u00f3 %1$d interruptor.");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("Settings imported. %1$d switches changed.",
                 "Configuraci\u00f3n importada. Cambiaron %1$d interruptores.");
         table.put("Settings sales rows",
@@ -731,8 +747,8 @@ public final class L10nTranslations {
                 "Toca para volver a activarlo.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Tres veces seguidas, Telegram fall\u00f3 o se congel\u00f3 durante el primer minuto tras iniciarse, as\u00ed que HushTelegram se paus\u00f3 solo.");
-        table.put("Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
-                "Telegram no env\u00eda su estad\u00edstica del tipo de almacenamiento cuando su servidor la pide, ni cu\u00e1nto tiempo pasaste en cada publicaci\u00f3n de un canal. Los mensajes y las llamadas funcionan como antes.");
+        table.put("Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. It also stops reports about Premium screen views, feature taps, accepts and purchase failures. Messages and calls work as before.",
+                "Telegram no env\u00eda su estad\u00edstica del tipo de almacenamiento cuando su servidor la pide, ni cu\u00e1nto tiempo pasaste en cada publicaci\u00f3n de un canal. Tambi\u00e9n bloquea los informes sobre vistas de la pantalla de Premium, toques en funciones, aceptaciones y fallos de compra. Los mensajes y las llamadas funcionan como antes.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram deja de ofrecer actualizaciones de telegram.org. No se pueden instalar sobre este build parcheado, as\u00ed que parchea cada versi\u00f3n nueva en Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -819,6 +835,9 @@ public final class L10nTranslations {
                 "recomendaciones guardadas");
         table.put("call debug reports",
                 "informes de depuraci\u00f3n de llamadas");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("call log file uploads",
                 "subidas de archivos de registro de llamadas");
         table.put("call log reports",
@@ -827,9 +846,6 @@ public final class L10nTranslations {
                 "bot\u00f3n de regalo de los canales");
         table.put("channel ads",
                 "anuncios en canales");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("channel read metrics",
                 "m\u00e9tricas de lectura de canales");
         table.put("chat-list story bar",
@@ -857,7 +873,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(384);
+        Map<String, String> table = new HashMap<>(392);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1071,6 +1087,14 @@ public final class L10nTranslations {
                 "Jeda, cadangan, dan diagnostik");
         table.put("Post Story button",
                 "tombol Kirim Cerita");
+        table.put("Premium promo accepts",
+                "persetujuan promosi Premium");
+        table.put("Premium promo failures",
+                "kegagalan promosi Premium");
+        table.put("Premium promo taps",
+                "ketukan promosi Premium");
+        table.put("Premium promo views",
+                "tampilan promosi Premium");
         table.put("Privacy",
                 "Privasi");
         table.put("Reading the settings file",
@@ -1101,6 +1125,9 @@ public final class L10nTranslations {
                 "Pengaturan tidak dapat dibuka");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Pengaturan tidak dapat dimuat ulang sepenuhnya. Buka kembali pengaturan lalu coba lagi.");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Settings exported.",
                 "Pengaturan diekspor.");
         table.put("Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.",
@@ -1109,9 +1136,6 @@ public final class L10nTranslations {
                 "Pengaturan diimpor.");
         table.put("Settings imported. %1$d switch changed.",
                 "Pengaturan diimpor. %1$d sakelar berubah.");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("Settings imported. %1$d switches changed.",
                 "Pengaturan diimpor. %1$d sakelar berubah.");
         table.put("Settings sales rows",
@@ -1136,8 +1160,8 @@ public final class L10nTranslations {
                 "Ketuk untuk mengaktifkan HushTelegram lagi.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Telegram berhenti mendadak atau macet dalam satu menit setelah dibuka, tiga kali berturut-turut, jadi HushTelegram menjeda dirinya sendiri.");
-        table.put("Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
-                "Telegram tidak mengirim statistik jenis penyimpanannya saat server meminta, atau berapa lama Anda melihat setiap postingan saluran. Pesan dan panggilan tetap berfungsi seperti biasa.");
+        table.put("Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. It also stops reports about Premium screen views, feature taps, accepts and purchase failures. Messages and calls work as before.",
+                "Telegram tidak mengirim statistik jenis penyimpanannya saat server meminta, atau berapa lama Anda melihat setiap postingan saluran. Laporan tentang tampilan layar Premium, ketukan fitur, persetujuan dan kegagalan pembelian juga tidak dikirim. Pesan dan panggilan tetap berfungsi seperti biasa.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -1224,6 +1248,9 @@ public final class L10nTranslations {
                 "rekomendasi tersimpan");
         table.put("call debug reports",
                 "laporan debug panggilan");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("call log file uploads",
                 "unggahan berkas log panggilan");
         table.put("call log reports",
@@ -1232,9 +1259,6 @@ public final class L10nTranslations {
                 "tombol Hadiah pada kanal");
         table.put("channel ads",
                 "iklan saluran");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("channel read metrics",
                 "metrik pembacaan saluran");
         table.put("chat-list story bar",
@@ -1262,7 +1286,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(384);
+        Map<String, String> table = new HashMap<>(392);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1476,6 +1500,14 @@ public final class L10nTranslations {
                 "Pausa, backup e diagn\u00f3stico");
         table.put("Post Story button",
                 "bot\u00e3o de publicar um story");
+        table.put("Premium promo accepts",
+                "aceita\u00e7\u00f5es de promo\u00e7\u00f5es do Premium");
+        table.put("Premium promo failures",
+                "falhas de promo\u00e7\u00f5es do Premium");
+        table.put("Premium promo taps",
+                "toques em promo\u00e7\u00f5es do Premium");
+        table.put("Premium promo views",
+                "visualiza\u00e7\u00f5es de promo\u00e7\u00f5es do Premium");
         table.put("Privacy",
                 "Privacidade");
         table.put("Reading the settings file",
@@ -1506,6 +1538,9 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "N\u00e3o foi poss\u00edvel atualizar completamente as configura\u00e7\u00f5es. Reabra as configura\u00e7\u00f5es e tente novamente.");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Settings exported.",
                 "Configura\u00e7\u00f5es exportadas.");
         table.put("Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.",
@@ -1514,9 +1549,6 @@ public final class L10nTranslations {
                 "Configura\u00e7\u00f5es importadas.");
         table.put("Settings imported. %1$d switch changed.",
                 "Configura\u00e7\u00f5es importadas. %1$d op\u00e7\u00e3o foi alterada.");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Settings imported. %1$d switches changed.",
                 "Configura\u00e7\u00f5es importadas. %1$d op\u00e7\u00f5es foram alteradas.");
         table.put("Settings sales rows",
@@ -1541,8 +1573,8 @@ public final class L10nTranslations {
                 "Toque para reativar.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "O Telegram fechou com erro ou travou no primeiro minuto ap\u00f3s iniciar, tr\u00eas vezes seguidas, ent\u00e3o o HushTelegram foi pausado automaticamente.");
-        table.put("Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
-                "O Telegram n\u00e3o envia sua estat\u00edstica do tipo de armazenamento quando o servidor pede, nem quanto tempo voc\u00ea passou em cada post de um canal. Mensagens e chamadas funcionam como antes.");
+        table.put("Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. It also stops reports about Premium screen views, feature taps, accepts and purchase failures. Messages and calls work as before.",
+                "O Telegram n\u00e3o envia sua estat\u00edstica do tipo de armazenamento quando o servidor pede, nem quanto tempo voc\u00ea passou em cada post de um canal. Tamb\u00e9m bloqueia relat\u00f3rios sobre visualiza\u00e7\u00f5es da tela do Premium, toques em recursos, aceita\u00e7\u00f5es e falhas de compra. Mensagens e chamadas funcionam como antes.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "O Telegram deixa de oferecer atualiza\u00e7\u00f5es do telegram.org. Elas n\u00e3o podem ser instaladas sobre este build corrigido, ent\u00e3o aplique o patch de cada nova vers\u00e3o pelo Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -1629,6 +1661,9 @@ public final class L10nTranslations {
                 "recomenda\u00e7\u00f5es armazenadas");
         table.put("call debug reports",
                 "relat\u00f3rios de depura\u00e7\u00e3o de chamadas");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("call log file uploads",
                 "envios de arquivos de registro de chamadas");
         table.put("call log reports",
@@ -1637,9 +1672,6 @@ public final class L10nTranslations {
                 "bot\u00e3o de presente dos canais");
         table.put("channel ads",
                 "an\u00fancios em canais");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("channel read metrics",
                 "m\u00e9tricas de leitura de canais");
         table.put("chat-list story bar",
@@ -1667,7 +1699,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(384);
+        Map<String, String> table = new HashMap<>(392);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -1881,6 +1913,14 @@ public final class L10nTranslations {
                 "Duraklatma, yedekleme ve tan\u0131lama");
         table.put("Post Story button",
                 "Hik\u00e2ye Payla\u015f d\u00fc\u011fmesi");
+        table.put("Premium promo accepts",
+                "Premium tan\u0131t\u0131m onaylar\u0131");
+        table.put("Premium promo failures",
+                "Premium tan\u0131t\u0131m hatalar\u0131");
+        table.put("Premium promo taps",
+                "Premium tan\u0131t\u0131m dokunu\u015flar\u0131");
+        table.put("Premium promo views",
+                "Premium tan\u0131t\u0131m g\u00f6r\u00fcnt\u00fclemeleri");
         table.put("Privacy",
                 "Gizlilik");
         table.put("Reading the settings file",
@@ -1911,6 +1951,9 @@ public final class L10nTranslations {
                 "Ayarlar a\u00e7\u0131lamad\u0131");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Ayarlar tamamen yenilenemedi. Ayarlar\u0131 yeniden a\u00e7\u0131p tekrar dene.");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("Settings exported.",
                 "Ayarlar d\u0131\u015fa aktar\u0131ld\u0131.");
         table.put("Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.",
@@ -1919,9 +1962,6 @@ public final class L10nTranslations {
                 "Ayarlar i\u00e7e aktar\u0131ld\u0131.");
         table.put("Settings imported. %1$d switch changed.",
                 "Ayarlar i\u00e7e aktar\u0131ld\u0131. %1$d anahtar de\u011fi\u015fti.");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("Settings imported. %1$d switches changed.",
                 "Ayarlar i\u00e7e aktar\u0131ld\u0131. %1$d anahtar de\u011fi\u015fti.");
         table.put("Settings sales rows",
@@ -1946,8 +1986,8 @@ public final class L10nTranslations {
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Telegram a\u00e7\u0131ld\u0131ktan sonraki bir dakika i\u00e7inde \u00fcst \u00fcste \u00fc\u00e7 kez \u00e7\u00f6kt\u00fc veya dondu, bu y\u00fczden HushTelegram kendini duraklatt\u0131.");
-        table.put("Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
-                "Telegram, sunucusu istedi\u011finde depolama t\u00fcr\u00fc istatisti\u011fini veya her kanal g\u00f6nderisinde ne kadar kald\u0131\u011f\u0131n\u0131z\u0131 g\u00f6ndermez. Mesajlar ve aramalar eskisi gibi \u00e7al\u0131\u015f\u0131r.");
+        table.put("Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. It also stops reports about Premium screen views, feature taps, accepts and purchase failures. Messages and calls work as before.",
+                "Telegram, sunucusu istedi\u011finde depolama t\u00fcr\u00fc istatisti\u011fini veya her kanal g\u00f6nderisinde ne kadar kald\u0131\u011f\u0131n\u0131z\u0131 g\u00f6ndermez. Premium ekran g\u00f6r\u00fcnt\u00fclemeleri, \u00f6zelliklere dokunmalar, kabul i\u015flemleri ve sat\u0131n alma hatalar\u0131yla ilgili raporlar\u0131 da durdurur. Mesajlar ve aramalar eskisi gibi \u00e7al\u0131\u015f\u0131r.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram, telegram.org g\u00fcncellemelerini sunmay\u0131 b\u0131rak\u0131r. Bunlar bu yamal\u0131 s\u00fcr\u00fcm\u00fcn \u00fczerine kurulamaz, bu y\u00fczden her yeni s\u00fcr\u00fcm\u00fc Morphe Manager'da yamala.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -2034,6 +2074,9 @@ public final class L10nTranslations {
                 "kay\u0131tl\u0131 \u00f6neriler");
         table.put("call debug reports",
                 "arama hata ay\u0131klama raporlar\u0131");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("call log file uploads",
                 "arama g\u00fcnl\u00fck dosyas\u0131 y\u00fcklemeleri");
         table.put("call log reports",
@@ -2042,9 +2085,6 @@ public final class L10nTranslations {
                 "kanal Hediye d\u00fc\u011fmesi");
         table.put("channel ads",
                 "kanal reklamlar\u0131");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("channel read metrics",
                 "kanal okuma \u00f6l\u00e7\u00fcmleri");
         table.put("chat-list story bar",

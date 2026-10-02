@@ -88,4 +88,9 @@ public final class SettingsStatus {
     public static boolean readMetrics() {
         return false;
     }
+
+    public static boolean premiumPromoShow() { return false; }
+    public static boolean premiumPromoTap() { return false; }
+    public static boolean premiumPromoAccept() { return false; }
+    public static boolean premiumPromoFail() { return false; }
 }

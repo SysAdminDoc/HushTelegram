@@ -158,7 +158,6 @@ channel read metrics	métricas de leitura de canais
 This build has no coverage for %1$s.	Esta versão não cobre %1$s.
 This build covers %1$s. Missing coverage: %2$s.	Esta versão cobre %1$s. Falta cobertura para %2$s.
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	O Telegram fechou com erro ou travou no primeiro minuto após iniciar, três vezes seguidas, então o HushTelegram foi pausado automaticamente.
-Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. Messages and calls work as before.	O Telegram não envia sua estatística do tipo de armazenamento quando o servidor pede, nem quanto tempo você passou em cada post de um canal. Mensagens e chamadas funcionam como antes.
 Telegram's web addresses are selected for this app in Android's settings, so their links open here.	Os endereços web do Telegram estão selecionados para este app nas configurações do Android, então os links deles abrem aqui.
 Device statistics and read time	Estatísticas do dispositivo e tempo de leitura
 Try again, or go back to Telegram.	Tente novamente ou volte para o Telegram.
@@ -195,3 +194,8 @@ Optional local cleaning at link-open and Share Link chooser sites. Removes only 
 external browser routing	abertura em navegador externo
 opened link tracking	rastreamento de links abertos
 shared link tracking	rastreamento de links compartilhados
+Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. It also stops reports about Premium screen views, feature taps, accepts and purchase failures. Messages and calls work as before.	O Telegram não envia sua estatística do tipo de armazenamento quando o servidor pede, nem quanto tempo você passou em cada post de um canal. Também bloqueia relatórios sobre visualizações da tela do Premium, toques em recursos, aceitações e falhas de compra. Mensagens e chamadas funcionam como antes.
+Premium promo views	visualizações de promoções do Premium
+Premium promo taps	toques em promoções do Premium
+Premium promo accepts	aceitações de promoções do Premium
+Premium promo failures	falhas de promoções do Premium

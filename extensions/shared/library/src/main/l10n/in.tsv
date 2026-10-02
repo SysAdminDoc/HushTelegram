@@ -161,7 +161,6 @@ channel read metrics	metrik pembacaan saluran
 This build has no coverage for %1$s.	Versi ini tidak mencakup %1$s.
 This build covers %1$s. Missing coverage: %2$s.	Versi ini mencakup %1$s. Cakupan yang belum tersedia: %2$s.
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	Telegram berhenti mendadak atau macet dalam satu menit setelah dibuka, tiga kali berturut-turut, jadi HushTelegram menjeda dirinya sendiri.
-Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. Messages and calls work as before.	Telegram tidak mengirim statistik jenis penyimpanannya saat server meminta, atau berapa lama Anda melihat setiap postingan saluran. Pesan dan panggilan tetap berfungsi seperti biasa.
 Telegram's web addresses are selected for this app in Android's settings, so their links open here.	Alamat web Telegram dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.
 Device statistics and read time	Statistik perangkat dan waktu baca
 Try again, or go back to Telegram.	Coba lagi, atau kembali ke Telegram.
@@ -198,3 +197,8 @@ Optional local cleaning at link-open and Share Link chooser sites. Removes only 
 external browser routing	pengarahan ke browser eksternal
 opened link tracking	pelacakan tautan yang dibuka
 shared link tracking	pelacakan tautan yang dibagikan
+Telegram doesn't send its storage-type statistic when its server asks, or how long you spent on each channel post. It also stops reports about Premium screen views, feature taps, accepts and purchase failures. Messages and calls work as before.	Telegram tidak mengirim statistik jenis penyimpanannya saat server meminta, atau berapa lama Anda melihat setiap postingan saluran. Laporan tentang tampilan layar Premium, ketukan fitur, persetujuan dan kegagalan pembelian juga tidak dikirim. Pesan dan panggilan tetap berfungsi seperti biasa.
+Premium promo views	tampilan promosi Premium
+Premium promo taps	ketukan promosi Premium
+Premium promo accepts	persetujuan promosi Premium
+Premium promo failures	kegagalan promosi Premium

@@ -110,7 +110,12 @@ class DisableAnalyticsFixtureTest {
             }
             val metrics = metricsClass.methods.single(::sendsReadMetrics)
 
-            val context = PatchContexts.of(ExtensionDex.classes() + classes.values + metricsClass)
+            val appLogClasses = FixtureDex.classesWhere(build, { true }) { method ->
+                method.instructions().any { it.opcode == Opcode.NEW_INSTANCE &&
+                    (it as? ReferenceInstruction)?.reference?.toString() == SAVE_APP_LOG }
+            }
+            val context = PatchContexts.of(ExtensionDex.classes() +
+                (classes.values + metricsClass + appLogClasses).distinctBy { it.type })
             val warnings = PatchLogCapture.warnings { disableAnalyticsPatch.execute(context) }
             assertEquals("$where: the patch log", emptyList<String>(), warnings)
 

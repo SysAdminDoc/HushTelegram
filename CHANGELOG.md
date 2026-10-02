@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Usage-report suppression now covers Premium screen views, feature taps, accepts and purchase failures. Billing cleanup, push-token diagnostics and dual-camera support reports keep their usual behavior.
+
 * **Tooling:** Sponsored-proxy patching rejects changed instance fields, inaccessible runtime hooks and invalid build flags before editing native code or scope stubs.
 
 * **Telegram:** Added external-browser routing and optional local tracking removal for opened links and Share Link choosers. Telegram, login and payment routes stay as they are.

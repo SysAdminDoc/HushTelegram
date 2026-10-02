@@ -233,7 +233,9 @@ public class HushTelegramPreferenceFragmentTest {
                     String.valueOf(page.findPreference(Settings.HIDE_SPONSORED_PROXY.key).getSummary()));
             assertEquals("Stop usage reports", String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getTitle()));
             assertEquals("Telegram doesn't send its storage-type statistic when its server asks, "
-                    + "or how long you spent on each channel post. Messages and calls work as before.",
+                    + "or how long you spent on each channel post. "
+                    + "It also stops reports about Premium screen views, feature taps, accepts and purchase failures. "
+                    + "Messages and calls work as before.",
                     String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));
             assertEquals("Turn off Telegram's update checks", String.valueOf(page.findPreference(Settings.DISABLE_UPDATE_CHECKS.key).getTitle()));
             assertEquals("Telegram stops offering updates from telegram.org. Those can't install over this patched "
@@ -296,7 +298,9 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("This build has no coverage for "
                             + L10n.join(Arrays.asList("channel ads", "video ads", "search ads")) + ".",
                     String.valueOf(page.findPreference(Settings.HIDE_ADS.key).getSummary()));
-            assertEquals("This build has no coverage for device statistics reports and channel read metrics.",
+            assertEquals("This build has no coverage for " + L10n.join(Arrays.asList(
+                            "device statistics reports", "channel read metrics", "Premium promo views",
+                            "Premium promo taps", "Premium promo accepts", "Premium promo failures")) + ".",
                     String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));
         }
     }
