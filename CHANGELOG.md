@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Tooling:** Source-mirror checks now locate clean checkouts through the tracked provenance file.
+
 * **Telegram:** Usage-report help now describes the storage-type boolean Telegram reports, rather than claiming it uploads folder paths. Settings, translations and the patch description agree with the pinned payload.
 
 * **Telegram:** Hide sponsored proxy channel removes the unjoined proxy channel from the chat list and folders. Proxy settings, joined channels and shared account-suggestion updates retain their original behavior. Turning the switch off or using Pause restores the original presentation.
