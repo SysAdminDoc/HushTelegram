@@ -270,7 +270,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             }
         }
 
-        if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)) {
+        if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
+                || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS)) {
             PreferenceCategory privacy = category(screen, L10n.t("Privacy"));
             if (build.contains(PatchFamily.DISABLE_ANALYTICS)) {
                 privacy.addPreference(mark(toggle(context, Settings.DISABLE_ANALYTICS, L10n.t("Stop usage reports"),
@@ -282,6 +283,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             if (build.contains(PatchFamily.DISABLE_CALL_DEBUG)) {
                 privacy.addPreference(mark(toggle(context, Settings.DISABLE_CALL_DEBUG, L10n.t("Stop call diagnostics"),
                         PatchFamily.DISABLE_CALL_DEBUG.coverageSummary(L10n.t("Stops automatic call debug reports and log-file uploads requested by Telegram's server."))),
+                        SettingsIcons.BLOCK));
+            }
+            if (build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS)) {
+                privacy.addPreference(mark(toggle(context, Settings.DISABLE_DRAFT_PREVIEWS, L10n.t("No previews before sending"),
+                        PatchFamily.DISABLE_DRAFT_PREVIEWS.coverageSummary(L10n.t("Telegram doesn't ask its server for a link preview "
+                                + "while a message is still unsent. That covers chats, the share sheet, polls, story links and bot shares. "
+                                + "Sent messages still get their preview. Off by default in settings."))),
                         SettingsIcons.BLOCK));
             }
         }

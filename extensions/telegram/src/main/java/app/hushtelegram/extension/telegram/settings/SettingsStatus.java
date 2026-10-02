@@ -59,6 +59,13 @@ public final class SettingsStatus {
     public static boolean callLogFileUpload() { return false; }
     public static boolean callLogUpload() { return false; }
 
+    public static boolean disableDraftPreviews() { return false; }
+    public static boolean chatDraftPreviews() { return false; }
+    public static boolean shareDraftPreviews() { return false; }
+    public static boolean pollLinkPreviews() { return false; }
+    public static boolean storyLinkPreviews() { return false; }
+    public static boolean botSharePreviews() { return false; }
+
     public static boolean openExternalLinks() { return false; }
     public static boolean externalBrowserRouting() { return false; }
     public static boolean stripLinkTracking() { return false; }

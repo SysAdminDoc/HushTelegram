@@ -206,3 +206,11 @@ Premium promo accepts	aceitações de promoções do Premium
 Premium promo failures	falhas de promoções do Premium
 Accounts	Contas
 Every switch here applies to all the accounts in this Telegram app, not only the one you have open.	Cada opção aqui vale para todas as contas deste app do Telegram, não só para a que está aberta.
+No previews before sending	Sem prévias antes de enviar
+Telegram doesn't ask its server for a link preview while a message is still unsent. That covers chats, the share sheet, polls, story links and bot shares. Sent messages still get their preview. Off by default in settings.	O Telegram não pede ao servidor uma prévia do link enquanto a mensagem ainda não foi enviada. Isso vale para chats, a tela de compartilhamento, enquetes, links de Stories e mensagens compartilhadas por bots. Mensagens enviadas continuam recebendo a prévia. Desativado por padrão nas configurações.
+Draft link previews	Prévias de links em rascunhos
+chat drafts	rascunhos de chat
+share sheet comments	comentários ao compartilhar
+poll links	links de enquetes
+story links	links de Stories
+bot shares	mensagens compartilhadas por bots

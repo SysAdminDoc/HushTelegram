@@ -209,3 +209,11 @@ Premium promo accepts	Premium tanıtım onayları
 Premium promo failures	Premium tanıtım hataları
 Accounts	Hesaplar
 Every switch here applies to all the accounts in this Telegram app, not only the one you have open.	Buradaki her anahtar yalnızca açık olan hesap için değil, bu Telegram uygulamasındaki tüm hesaplar için geçerlidir.
+No previews before sending	Göndermeden önce önizleme yok
+Telegram doesn't ask its server for a link preview while a message is still unsent. That covers chats, the share sheet, polls, story links and bot shares. Sent messages still get their preview. Off by default in settings.	Telegram, bir mesaj henüz gönderilmemişken sunucusundan bağlantı önizlemesi istemez. Bu kural sohbetler, paylaşım sayfası, anketler, hikâye bağlantıları ve botların paylaştığı mesajlar için geçerlidir. Gönderilen mesajlar önizlemelerini almaya devam eder. Ayarlarda varsayılan olarak kapalıdır.
+Draft link previews	Taslaklarda bağlantı önizlemeleri
+chat drafts	sohbet taslakları
+share sheet comments	paylaşım sayfası yorumları
+poll links	anket bağlantıları
+story links	hikâye bağlantıları
+bot shares	botların paylaştığı mesajlar

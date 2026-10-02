@@ -176,14 +176,19 @@ final class SettingsNavigation extends BaseAdapter {
         return ads;
     }
 
-    /** The Privacy row's line, naming only the switches this build put on that page. */
+    /**
+     * The Privacy row's line, naming only the switches this build put on that page. The draft
+     * preview switch is off as shipped, so it adds "and more" rather than a name of its own.
+     */
     @Nullable
     static String privacySummary(Set<PatchFamily> build) {
         boolean reports = build.contains(PatchFamily.DISABLE_ANALYTICS);
         boolean calls = build.contains(PatchFamily.DISABLE_CALL_DEBUG);
-        if (reports && calls) return L10n.t("Usage reports and call diagnostics");
-        if (reports) return L10n.t("Usage reports");
-        return calls ? L10n.t("Call diagnostics") : null;
+        boolean drafts = build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS);
+        String named = reports && calls ? L10n.t("Usage reports and call diagnostics")
+                : reports ? L10n.t("Usage reports") : calls ? L10n.t("Call diagnostics") : null;
+        if (named == null) return drafts ? L10n.t("Draft link previews") : null;
+        return drafts ? L10n.f("%1$s, and more", named) : named;
     }
 
     private static Preference link(Context context, String title, String summary, String icon) {

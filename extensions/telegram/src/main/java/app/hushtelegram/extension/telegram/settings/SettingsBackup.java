@@ -84,6 +84,7 @@ public final class SettingsBackup {
             Settings.HIDE_SPONSORED_PROXY,
             Settings.DISABLE_ANALYTICS,
             Settings.DISABLE_CALL_DEBUG,
+            Settings.DISABLE_DRAFT_PREVIEWS,
             Settings.OPEN_EXTERNAL_LINKS,
             Settings.STRIP_LINK_TRACKING,
             Settings.DISABLE_UPDATE_CHECKS));

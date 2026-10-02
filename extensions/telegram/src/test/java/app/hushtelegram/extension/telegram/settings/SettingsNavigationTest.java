@@ -333,7 +333,7 @@ public class SettingsNavigationTest {
     /** A home row names only what its page holds in this build, down to the ad hooks inserted. */
     @Test public void homeLinesNameOnlyWhatThisBuildPutOnTheirPages() {
         assertEquals("Ads in channels and search, and more", homeLine("Chats"));
-        assertEquals("Usage reports and call diagnostics", homeLine("Privacy"));
+        assertEquals("Usage reports and call diagnostics, and more", homeLine("Privacy"));
         PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_ADS, PatchFamily.DISABLE_ANALYTICS);
         recreate();
         assertEquals("Ads in channels and search", homeLine("Chats"));
@@ -342,6 +342,13 @@ public class SettingsNavigationTest {
         recreate();
         assertNull(homeLine("Chats"));
         assertEquals("Call diagnostics", homeLine("Privacy"));
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.DISABLE_ANALYTICS, PatchFamily.DISABLE_DRAFT_PREVIEWS);
+        recreate();
+        assertEquals("Usage reports, and more", homeLine("Privacy"));
+        // The draft switch is off as shipped, but a page holding only it still names what it holds.
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.DISABLE_DRAFT_PREVIEWS);
+        recreate();
+        assertEquals("Draft link previews", homeLine("Privacy"));
         PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
         PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.CHANNEL_ADS, PatchFamily.Capability.VIDEO_ADS);
         recreate();

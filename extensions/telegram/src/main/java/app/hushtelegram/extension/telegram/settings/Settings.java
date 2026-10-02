@@ -70,6 +70,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting DISABLE_CALL_DEBUG =
             new BooleanSetting("hushtelegram_disable_call_debug", TRUE);
 
+    /** Link previews for unsent messages only; sent messages and received previews stay stock. */
+    public static final BooleanSetting DISABLE_DRAFT_PREVIEWS =
+            new BooleanSetting("hushtelegram_disable_draft_previews", FALSE);
+
     /** Ordinary HTTP(S) browser dispatch only; native and protected Telegram routes stay stock. */
     public static final BooleanSetting OPEN_EXTERNAL_LINKS =
             new BooleanSetting("hushtelegram_open_external_links", TRUE);

@@ -155,6 +155,13 @@ public class PausedHooksTest {
                 () -> app.hushtelegram.extension.telegram.misc.CallDebug.skipCallDebugUpload(true),
                 app.hushtelegram.extension.telegram.misc.CallDebug::skipCallLogFileUpload,
                 app.hushtelegram.extension.telegram.misc.CallDebug::skipCallLogUpload));
+        // An unsent message's link preview is never asked for, on any compose surface.
+        probes.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, Arrays.asList(
+                app.hushtelegram.extension.telegram.misc.DraftPreviews::skipChatPreview,
+                app.hushtelegram.extension.telegram.misc.DraftPreviews::skipSharePreview,
+                app.hushtelegram.extension.telegram.misc.DraftPreviews::skipPollPreview,
+                app.hushtelegram.extension.telegram.misc.DraftPreviews::skipStoryLinkPreview,
+                app.hushtelegram.extension.telegram.misc.DraftPreviews::skipBotSharePreview));
         // A device statistics report is never read or sent, and neither is a channel's read time.
         probes.put(PatchFamily.DISABLE_ANALYTICS, Arrays.asList(
                 () -> Analytics.skipDeviceStats(new DeviceStatsController(true, false)),

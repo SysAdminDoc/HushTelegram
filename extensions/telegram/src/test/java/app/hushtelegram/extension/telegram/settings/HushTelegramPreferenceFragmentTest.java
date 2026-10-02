@@ -90,6 +90,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HIDE_SPONSORED_PROXY, "Hide sponsored proxy channel");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
+        ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
         ROW_TITLES.put(PatchFamily.OPEN_EXTERNAL_LINKS, "Open links externally");
         ROW_TITLES.put(PatchFamily.STRIP_LINK_TRACKING, "Strip link tracking");
         ROW_TITLES.put(PatchFamily.DISABLE_UPDATE_CHECKS, "Turn off Telegram's update checks");
@@ -201,7 +202,8 @@ public class HushTelegramPreferenceFragmentTest {
                 if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_STORIES)
                         || build.contains(PatchFamily.HIDE_RECOMMENDATIONS) || build.contains(PatchFamily.HIDE_COMMERCE)
                         || build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS) || build.contains(PatchFamily.HIDE_SPONSORED_PROXY)) expected.add("Chats");
-                if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)) expected.add("Privacy");
+                if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
+                        || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS)) expected.add("Privacy");
                 expected.addAll(EVERY_BUILD);
                 if (!expected.equals(sections)) wrong.add(build + ": sections " + sections);
             }
@@ -258,6 +260,14 @@ public class HushTelegramPreferenceFragmentTest {
             }
             assertFalse(Settings.STRIP_LINK_TRACKING.key,
                     ((SwitchPreference) page.findPreference(Settings.STRIP_LINK_TRACKING.key)).isChecked());
+            assertEquals("No previews before sending", String.valueOf(page.findPreference(Settings.DISABLE_DRAFT_PREVIEWS.key).getTitle()));
+            assertEquals("Telegram doesn't ask its server for a link preview while a message is still unsent. "
+                            + "That covers chats, the share sheet, polls, story links and bot shares. "
+                            + "Sent messages still get their preview. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.DISABLE_DRAFT_PREVIEWS.key).getSummary()));
+            // Draft previews keep Telegram's behavior until someone turns the switch on.
+            assertFalse(Settings.DISABLE_DRAFT_PREVIEWS.key,
+                    ((SwitchPreference) page.findPreference(Settings.DISABLE_DRAFT_PREVIEWS.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {

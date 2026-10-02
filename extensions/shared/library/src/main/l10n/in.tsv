@@ -209,3 +209,11 @@ Premium promo accepts	persetujuan promosi Premium
 Premium promo failures	kegagalan promosi Premium
 Accounts	Akun
 Every switch here applies to all the accounts in this Telegram app, not only the one you have open.	Setiap sakelar di sini berlaku untuk semua akun di aplikasi Telegram ini, bukan hanya akun yang sedang Anda buka.
+No previews before sending	Tanpa pratinjau sebelum mengirim
+Telegram doesn't ask its server for a link preview while a message is still unsent. That covers chats, the share sheet, polls, story links and bot shares. Sent messages still get their preview. Off by default in settings.	Telegram tidak meminta pratinjau tautan ke servernya selama pesan belum dikirim. Ini berlaku untuk chat, lembar berbagi, polling, tautan cerita, dan pesan yang dibagikan bot. Pesan yang sudah terkirim tetap mendapat pratinjaunya. Secara default nonaktif di pengaturan.
+Draft link previews	Pratinjau tautan di draf
+chat drafts	draf chat
+share sheet comments	komentar di lembar berbagi
+poll links	tautan polling
+story links	tautan cerita
+bot shares	pesan yang dibagikan bot

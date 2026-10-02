@@ -71,6 +71,7 @@ body:
       options:
         - Disable analytics
         - Disable call debug upload
+        - Disable draft link previews
         - Disable update checks
         - Hide ads
         - Hide Stories

@@ -6,7 +6,8 @@ Every HushTelegram release, newest first.
 
 Prepared for the next release. The published version is still 0.0.4.
 
-* **Telegram:** The Chats and Privacy rows on the settings home name what those pages hold in your build. With every patch in, they read "Ads in channels and search, and more" and "Usage reports and call diagnostics". A build that left a patch out or lacks an ad hook gets a shorter line.
+* **Telegram:** No previews before sending is a new Privacy switch, off by default. While it's on, Telegram doesn't ask its server for a link preview of a message you haven't sent yet, in chats, the share sheet, polls, story links and messages a mini app shares. Sent messages still get their preview, and turning the switch off or using Pause brings draft previews back.
+* **Telegram:** The Chats and Privacy rows on the settings home name what those pages hold in your build. With every patch in, they read "Ads in channels and search, and more" and "Usage reports and call diagnostics, and more". A build that left a patch out or lacks an ad hook gets a shorter line.
 * **Telegram:** HushTelegram settings say that every switch applies to all the accounts in the app. About has an Accounts row, Export and Import settings say a settings file covers every account, and searching for accounts in any of the six languages finds all three.
 * **Tooling:** Sponsored-proxy patching rejects empty runtime hooks and methods with too few parameter registers before changing the APK.
 * **Tooling:** Open links externally and Strip link tracking refuse an empty, payload-only or undersized link runtime method before they edit Telegram or switch anything on.
