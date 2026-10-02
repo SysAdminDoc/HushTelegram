@@ -235,6 +235,10 @@ fun MutableMethod.addInstructionsAtControlFlowLabel(
     if (original in PAYLOAD_USERS) {
         throw PatchException("$definingClass->$name: code can't go in front of the $original at instruction $insertIndex")
     }
+    // A payload is data after the code. Nothing runs it, and the copy would be a second payload.
+    if (original in PAYLOADS) {
+        throw PatchException("$definingClass->$name: instruction $insertIndex is a $original, data that never runs, so code can't go in front of it")
+    }
 
     // Duplicate original instruction and add to +1 index.
     addInstruction(insertIndex + 1, getInstruction(insertIndex))
@@ -251,6 +255,7 @@ fun MutableMethod.addInstructionsAtControlFlowLabel(
 }
 
 private val PAYLOAD_USERS = setOf(Opcode.PACKED_SWITCH, Opcode.SPARSE_SWITCH)
+private val PAYLOADS = setOf(Opcode.PACKED_SWITCH_PAYLOAD, Opcode.SPARSE_SWITCH_PAYLOAD, Opcode.ARRAY_PAYLOAD)
 
 /**
  * Find the index of the first literal instruction with the given long value.

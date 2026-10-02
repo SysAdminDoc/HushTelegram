@@ -12,7 +12,7 @@ Prepared for the next release. The published version is still 0.0.4.
 * **Tooling:** Open links externally and Strip link tracking refuse an empty, payload-only or undersized link runtime method before they edit Telegram or switch anything on.
 * **Tooling:** The README's sign-in help explains Telegram's `API_ID_PUBLISHED_FLOOD` refusal and the need for registered API credentials.
 * **Tooling:** The README's settings screenshots show the new home summaries and the Chats page with Hide ads and Hide Stories, captured from the current build.
-* **Tooling:** Putting a hook in front of a switch now stops with a clear error before the method changes. It used to fail halfway, with a copy of the switch already in.
+* **Tooling:** Putting a hook in front of a switch now stops with a clear error before the method changes. It used to fail halfway, with a copy of the switch already in. A hook aimed at the data a switch or array reads stops the same way.
 * **Tooling:** Seeded tests build a thousand small methods each run, with branches, switches, loops, try blocks and long values. Each one a patch could hook gets a hook the way the patches add theirs, and every input that reaches it must behave as it did before. Shrunk failures are kept as regression cases, and `scripts/test-injection-corpus-device.ps1` runs a set of them on a phone's own runtime, where all 492 runs matched on Android 16.
 * **Tooling:** The device register check no longer clears a shared phone's log. It marks where its run starts and counts only the lines after that mark. If a busy log has already dropped the mark, it stops and says so.
 

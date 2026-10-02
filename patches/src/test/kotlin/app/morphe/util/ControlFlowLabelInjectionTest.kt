@@ -11,6 +11,7 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import app.morphe.patcher.patch.PatchException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ControlFlowLabelInjectionTest {
@@ -48,10 +49,28 @@ class ControlFlowLabelInjectionTest {
         )) {
             val method = payloadMethod(switch.first, switch.second)
             val before = method.implementation!!.instructions.map { it.opcode }
-            assertThrows(PatchException::class.java) {
+            val refusal = assertThrows(PatchException::class.java) {
                 method.addInstructionsAtControlFlowLabel(1, "invoke-static {}, Lcom/example/Probe;->hit()V")
             }
+            assertTrue(refusal.message, refusal.message!!.endsWith("in front of the ${before[1]} at instruction 1"))
             assertEquals(switch.first, before, method.implementation!!.instructions.map { it.opcode })
+        }
+    }
+
+    @Test
+    fun `a hook on a payload is refused before the method changes`() {
+        for (user in listOf(
+            "packed-switch p0, :cases" to ":cases\n.packed-switch 0x0\n    :first\n.end packed-switch",
+            "sparse-switch p0, :cases" to ":cases\n.sparse-switch\n    0x5 -> :first\n.end sparse-switch",
+            "fill-array-data v0, :values" to ":values\n.array-data 4\n    0x1\n.end array-data",
+        )) {
+            val method = payloadMethod(user.first, user.second)
+            val before = method.implementation!!.instructions.map { it.opcode }
+            val refusal = assertThrows(PatchException::class.java) {
+                method.addInstructionsAtControlFlowLabel(3, "invoke-static {}, Lcom/example/Probe;->hit()V")
+            }
+            assertTrue(refusal.message, refusal.message!!.contains("instruction 3 is a ${before[3]}, data that never runs"))
+            assertEquals(user.first, before, method.implementation!!.instructions.map { it.opcode })
         }
     }
 

@@ -84,7 +84,7 @@ The same search on the same phone, first with Hide ads off, then on. Telegram pi
 
 Long-press the Telegram icon and tap HushTelegram. You can also open Telegram's App info page and tap Additional settings in the app, which Samsung phones call Configure in Telegram.
 
-<p><img src="assets/settings-overview.png" width="320" alt="HushTelegram settings with search, Pause and the Chats and Privacy pages"><img src="assets/settings-chats.png" width="320" alt="The Chats page with Hide ads and Hide Stories turned on"></p>
+<p><img src="assets/settings-overview.png" width="320" alt="HushTelegram settings with search, Pause, and rows for Chats, Privacy and More settings that say what each page holds"><img src="assets/settings-chats.png" width="320" alt="The Chats page with Hide ads and Hide Stories turned on"></p>
 
 ## Notifications on a patched Telegram
 
