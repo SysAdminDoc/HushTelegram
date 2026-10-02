@@ -11,6 +11,7 @@ import app.morphe.PatchContexts
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
@@ -20,11 +21,14 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.formats.ArrayPayload
 import com.android.tools.smali.dexlib2.iface.instruction.SwitchPayload
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableArrayPayload
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -157,6 +161,59 @@ class LinkRoutingFixtureTest {
         }
     }
 
+    @Test fun `empty external-open runtime refuses before host capability or status changes`() =
+        runtimeRefusal("tryOpenExternal", body = emptyList())
+
+    @Test fun `empty opened-link cleaner refuses before host capability or status changes`() =
+        runtimeRefusal("cleanOpenedUri", body = emptyList())
+
+    @Test fun `empty share-intent cleaner refuses before host capability or status changes`() =
+        runtimeRefusal("cleanShareIntent", body = emptyList())
+
+    @Test fun `undersized external-open parameters refuse before host capability or status changes`() =
+        runtimeRefusal("tryOpenExternal", registers = RUNTIME_WORDS.getValue("tryOpenExternal") - 1)
+
+    @Test fun `undersized opened-link cleaner parameters refuse before host capability or status changes`() =
+        runtimeRefusal("cleanOpenedUri", registers = RUNTIME_WORDS.getValue("cleanOpenedUri") - 1)
+
+    @Test fun `undersized share-intent cleaner parameters refuse before host capability or status changes`() =
+        runtimeRefusal("cleanShareIntent", registers = RUNTIME_WORDS.getValue("cleanShareIntent") - 1)
+
+    @Test fun `data payloads cannot substitute for executable link runtime instructions`() {
+        for (name in RUNTIME_WORDS.keys) runtimeRefusal(name, body = listOf(ImmutableArrayPayload(4, listOf(1L))))
+    }
+
+    /** Replaces one runtime body, then holds every host, runtime and status method to its full prior state. */
+    private fun runtimeRefusal(name: String, registers: Int? = null, body: List<Instruction>? = null) {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hostClasses(build))
+            val plan = context.resolveLinkHooks()
+            val owner = context.mutableClassDefBy(LINKS)
+            val method = owner.methods.single { it.name == name }
+            val implementation = method.implementation!!
+            assertEquals("$name: one register per parameter", RUNTIME_WORDS.getValue(name), method.parameterTypes.size)
+            assertTrue("$name: the stock body is executable within its parameter budget",
+                implementation.registerCount >= RUNTIME_WORDS.getValue(name) &&
+                    implementation.instructions.any { !it.opcode.format.isPayloadFormat })
+            owner.methods.remove(method)
+            owner.methods.add(ImmutableMethod(method.definingClass, method.name, method.parameters, method.returnType,
+                method.accessFlags, method.annotations, method.hiddenApiRestrictions,
+                ImmutableMethodImplementation(registers ?: implementation.registerCount, body ?: implementation.instructions,
+                    if (body == null) implementation.tryBlocks else emptyList(),
+                    if (body == null) implementation.debugItems else emptyList())).toMutable())
+            val hosts = listOf(plan.browser) + plan.shares.map { it.method }
+            val hostsBefore = hosts.map { key(it) to it.state() }
+            val classesBefore = listOf(LINKS, SETTINGS_STATUS).associateWith { context.mutableClassDefBy(it).state() }
+            assertThrows("${build.name}: $name", PatchException::class.java) {
+                (if (name == "tryOpenExternal") openExternalLinksPatch else stripLinkTrackingPatch).execute(context)
+            }
+            assertEquals("${build.name}: $name leaves every host method as it was", hostsBefore, hosts.map { key(it) to it.state() })
+            assertEquals("${build.name}: $name leaves the runtime and status classes as they were", classesBefore,
+                listOf(LINKS, SETTINGS_STATUS).associateWith { context.mutableClassDefBy(it).state() })
+            (trackingFlags + externalFlags).forEach { assertFlag(context, it, false) }
+        }
+    }
+
     private fun hostClasses(build: File): List<ClassDef> {
         val sinks = FixtureDex.classesWhere(build, { true }) { method ->
             (method.returnType == "V" && method.parameterTypes.size == 10 &&
@@ -218,11 +275,25 @@ class LinkRoutingFixtureTest {
         assertEquals(Opcode.RETURN, body[1].opcode)
     }
 
-    private fun key(method: Method) = "${method.definingClass}->${method.name}(${method.parameterTypes.joinToString("")})${method.returnType}"
+    /** Access, frame, instructions with their encoded widths and offsets, both edge sets and the try table. */
+    private fun Method.state(): List<Any?> {
+        val flow = implementation?.takeIf { instructions().isNotEmpty() }?.let { ControlFlow.of(this) }
+        return listOf(accessFlags, implementation?.registerCount, instructions().map(::operands),
+            instructions().map { listOf(it.codeUnits, (it as? OffsetInstruction)?.codeOffset,
+                (it as? SwitchPayload)?.switchElements?.map { element -> element.offset }, (it as? ArrayPayload)?.elementWidth) },
+            flow?.normal?.toList(), flow?.exceptional?.toList(),
+            implementation?.tryBlocks?.map { listOf(it.startCodeAddress, it.codeUnitCount,
+                it.exceptionHandlers.map { handler -> handler.exceptionType to handler.handlerCodeAddress }) })
+    }
+    private fun ClassDef.state() = listOf(accessFlags, fields.map { listOf(it.name, it.type, it.accessFlags, it.initialValue) },
+        methods.map { key(it) to it.state() })
+
+    private fun key(method: Method) ="${method.definingClass}->${method.name}(${method.parameterTypes.joinToString("")})${method.returnType}"
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
     private fun Instruction.ref() = (this as? ReferenceInstruction)?.reference?.toString()
     private companion object {
         const val MC = "Lorg/telegram/messenger/MessagesController;"
         const val UC = "Lorg/telegram/messenger/UserConfig;"
+        val RUNTIME_WORDS = mapOf("tryOpenExternal" to 5, "cleanOpenedUri" to 3, "cleanShareIntent" to 1)
     }
 }

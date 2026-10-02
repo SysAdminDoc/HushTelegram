@@ -7,6 +7,7 @@ Every HushTelegram release, newest first.
 Prepared for the next release. The published version is still 0.0.4.
 
 * **Tooling:** Sponsored-proxy patching rejects empty runtime hooks and methods with too few parameter registers before changing the APK.
+* **Tooling:** Open links externally and Strip link tracking refuse an empty, payload-only or undersized link runtime method before they edit Telegram or switch anything on.
 * **Tooling:** The README's sign-in help explains Telegram's `API_ID_PUBLISHED_FLOOD` refusal and the need for registered API credentials.
 
 * **Tooling:** Premium report patching now refuses any path that changes the verified payload or request before editing.

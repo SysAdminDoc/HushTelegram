@@ -195,11 +195,14 @@ internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
 
 internal fun BytecodePatchContext.requireRuntime(name: String, parameters: List<String>, result: String) {
     val owner = mutableClassDefBy(LINKS)
+    // A static method's frame has to hold its parameters, and a body of only payloads never runs.
+    val parameterWords = parameters.sumOf { if (it == "J" || it == "D") 2 else 1 }
     checkShape(AccessFlags.PUBLIC.isSet(owner.accessFlags) && owner.methods.count {
         it.name == name && it.parameterTypes.map(CharSequence::toString) == parameters && it.returnType == result &&
             AccessFlags.STATIC.isSet(it.accessFlags) && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
             !AccessFlags.NATIVE.isSet(it.accessFlags) && !AccessFlags.ABSTRACT.isSet(it.accessFlags) &&
-            it.implementation != null
+            it.implementation?.let { body -> body.registerCount >= parameterWords &&
+                body.instructions.any { instruction -> !instruction.opcode.format.isPayloadFormat } } == true
     } == 1, "no callable public static runtime $name with the expected signature")
 }
 
