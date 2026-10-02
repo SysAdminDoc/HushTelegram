@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Tooling:** Premium report patching now refuses any path that changes the verified payload or request before editing.
+
 * **Telegram:** Usage-report suppression now covers Premium screen views, feature taps, accepts and purchase failures. Billing cleanup, push-token diagnostics and dual-camera support reports keep their usual behavior.
 
 * **Tooling:** Sponsored-proxy patching rejects changed instance fields, inaccessible runtime hooks and invalid build flags before editing native code or scope stubs.

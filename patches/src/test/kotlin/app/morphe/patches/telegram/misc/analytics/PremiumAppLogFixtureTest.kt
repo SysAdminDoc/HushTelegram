@@ -8,11 +8,14 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
+import app.morphe.patcher.util.smali.ExternalLabel
+import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
@@ -167,6 +170,124 @@ class PremiumAppLogFixtureTest {
     }
 
     @Test
+    fun `an alternate event type cannot branch around the verified literal`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val classes = hosts(build)
+            val context = PatchContexts.of(ExtensionDex.classes() + classes)
+            val method = context.resolvePremiumPromoHooks().getValue(PremiumPromoEvent.SHOW).method
+            val body = method.instructions()
+            val type = body.indexOfFirst { it.reference() == "$APP_EVENT->type:Ljava/lang/String;" }
+            val value = body[type].namedRegisters()[0]
+            val sourceParameter = method.implementation!!.registerCount - 1
+            method.addInstructionsWithLabels(type - 1,
+                "const-string v$value, \"support.report\"\nif-eqz v$sourceParameter, :unverified_type",
+                ExternalLabel("unverified_type", method.implementation!!.instructions[type]))
+            val flow = ControlFlow.of(method)
+            assertTrue("the null source path really bypasses the expected literal", type + 2 in flow.normal[type])
+            assertRefusesUnchanged(context, classes, "alternate event type")
+        }
+    }
+
+    @Test
+    fun `every event request payload and batch binding requires its verified definition`() {
+        val changes = listOf("request bypass", "event bypass", "data bypass", "batch bypass", "type store bypass",
+            "data store bypass", "batch add bypass", "event data overwrite", "event batch overwrite", "wide data overlap")
+        for (build in Fixtures.declaredBuilds()) for (event in PremiumPromoEvent.entries) for (change in changes) {
+            val classes = hosts(build)
+            val context = PatchContexts.of(ExtensionDex.classes() + classes)
+            val method = context.resolvePremiumPromoHooks().getValue(event).method
+            val body = method.instructions()
+            val request = body.indexOfFirst { it.opcode == Opcode.NEW_INSTANCE && it.reference() == SAVE_APP_LOG }
+            val allocation = body.indexOfFirst { it.opcode == Opcode.NEW_INSTANCE && it.reference() == APP_EVENT }
+            val type = body.indexOfFirst { it.reference() == "$APP_EVENT->type:Ljava/lang/String;" }
+            val data = body.indexOfFirst { it.reference() == "$APP_EVENT->data:Lorg/telegram/tgnet/TLRPC\$JSONValue;" }
+            val batch = body.indexOfFirst { it.reference() == "$SAVE_APP_LOG->events:Ljava/util/ArrayList;" }
+            val dataObject = (0 until data).last { body[it].opcode == Opcode.NEW_INSTANCE &&
+                body[it].namedRegisters()[0] == body[data].namedRegisters()[0] }
+            val eventRegister = body[allocation].namedRegisters()[0]
+            fun bypass(at: Int, target: Int, register: Int? = null) {
+                val prefix = register?.let { "const/4 v$it, 0x0\n" }.orEmpty()
+                method.addInstructionsAtControlFlowLabel(at, "${prefix}if-eqz v0, :unverified_binding",
+                    ExternalLabel("unverified_binding", method.implementation!!.instructions[target]))
+                val branch = at + if (register == null) 0 else 1
+                assertEquals("$change has a real alternate entry", 2, ControlFlow.of(method).normal[branch].size)
+            }
+            when (change) {
+                "request bypass" -> bypass(request, allocation, body[request].namedRegisters()[0])
+                "event bypass" -> bypass(allocation, type - 1, eventRegister)
+                "data bypass" -> bypass(dataObject, data, body[data].namedRegisters()[0])
+                "batch bypass" -> bypass(batch, batch + 1, body[batch].namedRegisters()[0])
+                "type store bypass" -> bypass(type - 1, type + 1)
+                "data store bypass" -> bypass(data, data + 1)
+                "batch add bypass" -> bypass(batch, batch + 2)
+                "event data overwrite" -> method.addInstructionsAtControlFlowLabel(data, "const/4 v$eventRegister, 0x0")
+                "event batch overwrite" -> method.addInstructionsAtControlFlowLabel(batch, "const/4 v$eventRegister, 0x0")
+                "wide data overlap" -> method.addInstructionsAtControlFlowLabel(data,
+                    "const-wide/16 v${body[data].namedRegisters()[0] - 1}, 0x0")
+            }
+            assertRefusesUnchanged(context, classes, "$event $change")
+        }
+    }
+
+    @Test
+    fun `exceptional entries and later backedges cannot replace event provenance`() {
+        for (build in Fixtures.declaredBuilds()) for (change in listOf("literal exception", "request handler", "event backedge", "type backedge")) {
+            val classes = hosts(build)
+            val context = PatchContexts.of(ExtensionDex.classes() + classes)
+            val hook = context.resolvePremiumPromoHooks().getValue(PremiumPromoEvent.SHOW)
+            val method = hook.method
+            val body = method.instructions()
+            val type = body.indexOfFirst { it.reference() == "$APP_EVENT->type:Ljava/lang/String;" }
+            val batch = body.indexOfFirst { it.reference() == "$SAVE_APP_LOG->events:Ljava/util/ArrayList;" }
+            val typeRegister = body[type].namedRegisters()[0]
+            val eventRegister = body[type].namedRegisters()[1]
+            val request = body[hook.index].namedRegisters()[1]
+            if (change.endsWith("backedge")) {
+                val target = if (change == "event backedge") batch + 1 else type
+                val write = if (change == "event backedge") "const/4 v$eventRegister, 0x0" else
+                    "const-string v$typeRegister, \"support.report\""
+                method.addInstructionsAtControlFlowLabel(batch + 2, "$write\ngoto/32 :unverified_reentry",
+                    ExternalLabel("unverified_reentry", method.implementation!!.instructions[target]))
+                assertTrue("the overwrite can reenter an already visited use",
+                    target in ControlFlow.of(method).normal[batch + 3])
+            } else {
+                if (change == "literal exception") method.addInstructionsAtControlFlowLabel(type - 1,
+                    "const-string v$typeRegister, \"support.report\"")
+                val now = method.instructions()
+                val literal = now.indexOfFirst { it.string() == PremiumPromoEvent.SHOW.type }
+                val send = now.indexOfFirst { it.call()?.name == "sendRequest" }
+                val protected = if (change == "literal exception") literal else send - 3
+                val target = if (change == "literal exception") literal + 1 else send
+                val handler = now.size
+                val write = if (change == "request handler") "const/4 v$request, 0x0\n" else ""
+                method.addInstructionsWithLabels(handler, "move-exception v5\n${write}goto/32 :unverified_handler_entry",
+                    ExternalLabel("unverified_handler_entry", method.implementation!!.instructions[target]))
+                val implementation = method.implementation!!
+                implementation.addCatch("Ljava/lang/Exception;", implementation.newLabelForIndex(protected),
+                    implementation.newLabelForIndex(protected + 1), implementation.newLabelForIndex(handler))
+                assertEquals("the handler is a real exceptional successor", listOf(handler), ControlFlow.of(method).exceptional[protected])
+            }
+            assertRefusesUnchanged(context, classes, change)
+        }
+    }
+
+    @Test
+    fun `an unrelated alternate entry still reaches the verified literal and keeps all positive controls`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val method = context.resolvePremiumPromoHooks().getValue(PremiumPromoEvent.SHOW).method
+            val literal = method.instructions().indexOfFirst { it.string() == PremiumPromoEvent.SHOW.type }
+            val value = method.instructions()[literal].namedRegisters()[0]
+            method.addInstructionsWithLabels(literal,
+                "const-string v$value, \"support.report\"\nif-eqz v0, :verified_type\nnop",
+                ExternalLabel("verified_type", method.implementation!!.instructions[literal]))
+            assertEquals(PremiumPromoEvent.entries.toSet(), context.resolvePremiumPromoHooks().keys)
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { disableAnalyticsPatch.execute(context) })
+            assertFlags(context, PremiumPromoEvent.entries.toSet())
+        }
+    }
+
+    @Test
     fun `an absent verified type keeps the other five capabilities and reports exactly what is absent`() {
         for (build in Fixtures.declaredBuilds()) {
             val classes = hosts(build)
@@ -228,11 +349,23 @@ class PremiumAppLogFixtureTest {
         it.opcode == Opcode.NEW_INSTANCE && it.reference() == REPORT_READ_METRICS
     } }
     private fun buildsAppLog(method: Method) = method.instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.reference() == SAVE_APP_LOG }
-    private fun snapshots(context: BytecodePatchContext, classes: List<ClassDef>) = classes.flatMap { owner ->
-        context.mutableClassDefBy(owner.type).methods.filter { buildsAppLog(it) || it.instructions().any { instruction ->
+    private fun snapshots(context: BytecodePatchContext, classes: List<ClassDef>) =
+        (classes.map { it.type } + listOf(ANALYTICS, SETTINGS_STATUS)).distinct().flatMap { owner ->
+        context.mutableClassDefBy(owner).methods.filter { owner in listOf(ANALYTICS, SETTINGS_STATUS) || buildsAppLog(it) || it.instructions().any { instruction ->
             instruction.opcode == Opcode.NEW_INSTANCE && instruction.reference() == REPORT_READ_METRICS
-        } }.map { it.toString() to it.instructions().map(::operation) }
+        } }.map { method ->
+            val flow = method.implementation?.let { ControlFlow.of(method) }
+            method.toString() to listOf(method.accessFlags, method.implementation?.registerCount, method.instructions().map(::operation),
+                flow?.normal?.map { it.toList() }, flow?.exceptional?.map { it.toList() })
+        }
     }.toMap()
+    private fun assertRefusesUnchanged(context: BytecodePatchContext, classes: List<ClassDef>, reason: String) {
+        val before = snapshots(context, classes)
+        try { disableAnalyticsPatch.execute(context); fail("$reason was accepted") }
+        catch (expected: PatchException) { assertTrue(expected.message.orEmpty(), expected.message.orEmpty().contains("before editing")) }
+        assertEquals("$reason must preserve all hosts and runtime/status methods", before, snapshots(context, classes))
+        assertFlags(context, emptySet(), oldTargets = false, family = false)
+    }
     private fun withMethods(owner: ClassDef, methods: Iterable<Method>) = ImmutableClassDef(owner.type, owner.accessFlags,
         owner.superclass, owner.interfaces, owner.sourceFile, owner.annotations, owner.fields, methods)
     private fun assertFlags(context: BytecodePatchContext, covered: Set<PremiumPromoEvent>, oldTargets: Boolean = true, family: Boolean = true) {

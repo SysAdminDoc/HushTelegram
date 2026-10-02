@@ -37,6 +37,8 @@ The other Telegram, `org.telegram.messenger`, shares nearly all its code with th
 
 The patched app requires Android 9 or newer. A build that loses one ad or usage-report hook names the missing coverage in its settings and diagnostic report.
 
+Changed Premium report builders are refused before the patch changes any code.
+
 ## Install
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 1.32.0 or newer.
