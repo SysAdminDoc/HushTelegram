@@ -21,6 +21,7 @@ Prepared for the next release. The published version is still 0.0.4.
 * **Tooling:** The jump check refuses code put in front of a call's result or a caught exception, and a hook with a switch table of its own, before the method changes. It also lines up a method with a nop of its own in front of a switch table.
 * **Tooling:** The jump check lines a hook up with the method correctly when the hook's length moves the padding in front of a switch table. It used to read every instruction after the hook against the one next to it and turn down a sound hook.
 * **Tooling:** The device register check no longer clears a shared phone's log. It marks where its run starts and counts only the lines after that mark. If a busy log has already dropped the mark, it stops and says so.
+* **Tooling:** The pre-push check of the source ledger works on a push made while other changes are still uncommitted. It used to stop there, because it read a local page that a clean copy of the commit never has.
 * **Tooling:** The patches stay on Morphe patcher 1.14.1. A 1.15.0 build passed every test, rebuilt byte for byte and patched Telegram the same way on desktop 1.18.0, but Morphe Manager 1.32.0 refuses its bundle and nothing here needs the newer patcher.
 
 * **Tooling:** Premium report patching now refuses any path that changes the verified payload or request before editing.

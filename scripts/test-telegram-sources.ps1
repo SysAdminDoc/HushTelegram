@@ -176,13 +176,22 @@ function Test-SourcesDoc {
     }
     return $problems.ToArray()
 }
-$sourcesDoc = [IO.File]::ReadAllText((Join-Path $Root 'docs/sources.md'))
-$docProblems = @(Test-SourcesDoc $sourcesDoc)
-Assert-True ($docProblems.Count -eq 0) ($docProblems -join ' | ')
-Assert-True ($sourcesDoc.Contains('14 patches for standard and web Telegram 12.10.1, and 15 for Plus Messenger') -and
-    $sourcesDoc.Contains($rush.branches[0].commit) -and $sourcesDoc.Contains($neo.branches[0].commit) -and
-    $sourcesDoc.Contains($nagram.reference.commit) -and $sourcesDoc.Contains('verified archived on 2026-10-01') -and
-    $sourcesDoc.Contains("Its archive date wasn't established.")) 'The source document lost a pinned classification or package count.'
+# docs/sources.md is local operator documentation that git ignores, so the clean worktree the hook
+# checks a pushed commit in never has it. There only the check's own controls below run; in place
+# the page itself is held to the ledger.
+$sourcesDocPath = Join-Path $Root 'docs/sources.md'
+$haveSourcesDoc = Test-Path -LiteralPath $sourcesDocPath
+$sourcesDoc = if ($haveSourcesDoc) { [IO.File]::ReadAllText($sourcesDocPath) } else { '' }
+if ($haveSourcesDoc) {
+    $docProblems = @(Test-SourcesDoc $sourcesDoc)
+    Assert-True ($docProblems.Count -eq 0) ($docProblems -join ' | ')
+    Assert-True ($sourcesDoc.Contains('14 patches for standard and web Telegram 12.10.1, and 15 for Plus Messenger') -and
+        $sourcesDoc.Contains($rush.branches[0].commit) -and $sourcesDoc.Contains($neo.branches[0].commit) -and
+        $sourcesDoc.Contains($nagram.reference.commit) -and $sourcesDoc.Contains('verified archived on 2026-10-01') -and
+        $sourcesDoc.Contains("Its archive date wasn't established.")) 'The source document lost a pinned classification or package count.'
+} else {
+    Write-Host '[sources] docs/sources.md is local and not in this tree, so only the page check''s own controls run here'
+}
 $staleClaims = '(?i)Adds nothing Killergram|frequent feature drops|fifteen Telegram patches for 12\.10\.1, on both packages|sending (?:users.? )?phone numbers to its developer|documented doing harmful things'
 Assert-True (([IO.File]::ReadAllText($ledgerPath) + $sourcesDoc) -notmatch $staleClaims) `
     'The source ledger or its document restored a stale classification or unsupported client allegation.'
@@ -194,7 +203,7 @@ Assert-True (@(@(Test-SourcesDoc ($sourcesDoc + "`n" + $oldLine) $docEntries) -l
 Assert-True (@(@(Test-SourcesDoc ($sourcesDoc + "`nSee https://github.com/unknown-owner/new-telegram-patches.")) -like '*unknown-owner*').Count -gt 0) `
     'A docs link to a source the ledger doesn''t know passed the check.'
 
-Write-Host '[sources] the checked-in ledger and docs/sources.md keep their rules'
+Write-Host $(if ($haveSourcesDoc) { '[sources] the checked-in ledger and docs/sources.md keep their rules' } else { '[sources] the checked-in ledger keeps its rules' })
 
 # --- each rule, broken once -------------------------------------------------------------------------
 
