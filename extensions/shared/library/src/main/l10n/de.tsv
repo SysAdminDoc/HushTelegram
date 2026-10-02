@@ -150,7 +150,10 @@ It targets Telegram %1$s.	Es ist für Telegram %1$s gedacht.
 None of Telegram's web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.	Keine Webadresse von Telegram ist für diese App ausgewählt, deshalb öffnen sich ihre Links woanders. Tippe, um sie in den Android-Einstellungen auszuwählen.
 Only some of Telegram's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Nur einige Webadressen von Telegram sind für diese App ausgewählt, und Links zu den übrigen öffnen sich woanders. Tippe, um sie in den Android-Einstellungen auszuwählen.
 Saved. Restart Telegram to apply this change.	Gespeichert. Starte Telegram neu, um diese Änderung zu übernehmen.
-Ads in channels and search, and more	Werbung in Kanälen und Suche und mehr
+Ads in channels and search	Werbung in Kanälen und in der Suche
+Ads in channels	Werbung in Kanälen
+Ads in search	Werbung in der Suche
+%1$s, and more	%1$s und mehr
 Stop usage reports	Nutzungsberichte stoppen
 # context: Immutable hook coverage shown when a patch has missing targets.
 channel ads	Kanalwerbung
@@ -163,6 +166,8 @@ This build covers %1$s. Missing coverage: %2$s.	Dieser Build deckt %1$s ab. Fehl
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	Telegram ist dreimal hintereinander innerhalb einer Minute nach dem Start abgestürzt oder hängen geblieben, deshalb hat sich HushTelegram selbst pausiert.
 Telegram's web addresses are selected for this app in Android's settings, so their links open here.	Die Webadressen von Telegram sind in den Android-Einstellungen für diese App ausgewählt, deshalb öffnen sich ihre Links hier.
 Usage reports and call diagnostics	Nutzungsberichte und Anrufdiagnosen
+Usage reports	Nutzungsberichte
+Call diagnostics	Anrufdiagnosen
 Try again, or go back to Telegram.	Versuche es noch einmal oder kehre zu Telegram zurück.
 Turn off Telegram's update checks	Telegrams Update-Prüfungen abschalten
 Your choices are saved. Tap Resume, then restart Telegram.	Deine Auswahl bleibt gespeichert. Tippe auf Fortsetzen und starte Telegram dann neu.

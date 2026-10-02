@@ -51,6 +51,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -235,9 +236,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
         // Every row carries an icon, so all pages share one text edge. A switch that stops something
         // Telegram does takes the stop sign.
-        if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_STORIES)
-                || build.contains(PatchFamily.HIDE_RECOMMENDATIONS) || build.contains(PatchFamily.HIDE_COMMERCE)
-                || build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS) || build.contains(PatchFamily.HIDE_SPONSORED_PROXY)) {
+        if (!Collections.disjoint(build, PatchFamily.CHATS_PAGE)) {
             PreferenceCategory chats = category(screen, L10n.t("Chats"));
             if (build.contains(PatchFamily.HIDE_ADS)) {
                 chats.addPreference(mark(toggle(context, Settings.HIDE_ADS, L10n.t("Hide ads"),

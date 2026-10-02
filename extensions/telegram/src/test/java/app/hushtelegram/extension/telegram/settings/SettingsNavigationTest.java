@@ -75,6 +75,7 @@ public class SettingsNavigationTest {
     @After public void close() {
         controller.close();
         PatchFamily.inBuildForTests = null;
+        PatchFamily.capabilitiesForTests = null;
         Settings.HIDE_ADS.resetToDefault();
         Settings.DISABLE_UPDATE_CHECKS.resetToDefault();
         BaseSettings.PAUSED.resetToDefault();
@@ -327,6 +328,30 @@ public class SettingsNavigationTest {
         assertEquals("Links without the link patches", categoryCount("Links"), list().getCount());
         assertFalse(contains(Settings.OPEN_EXTERNAL_LINKS.key));
         assertFalse(contains(Settings.STRIP_LINK_TRACKING.key));
+    }
+
+    /** A home row names only what its page holds in this build, down to the ad hooks inserted. */
+    @Test public void homeLinesNameOnlyWhatThisBuildPutOnTheirPages() {
+        assertEquals("Ads in channels and search, and more", homeLine("Chats"));
+        assertEquals("Usage reports and call diagnostics", homeLine("Privacy"));
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_ADS, PatchFamily.DISABLE_ANALYTICS);
+        recreate();
+        assertEquals("Ads in channels and search", homeLine("Chats"));
+        assertEquals("Usage reports", homeLine("Privacy"));
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_STORIES, PatchFamily.DISABLE_CALL_DEBUG);
+        recreate();
+        assertNull(homeLine("Chats"));
+        assertEquals("Call diagnostics", homeLine("Privacy"));
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.CHANNEL_ADS, PatchFamily.Capability.VIDEO_ADS);
+        recreate();
+        assertEquals("Ads in channels, and more", homeLine("Chats"));
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.SEARCH_ADS);
+        recreate();
+        assertEquals("Ads in search, and more", homeLine("Chats"));
+        PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+        recreate();
+        assertNull(homeLine("Chats"));
     }
 
     /**
@@ -862,6 +887,18 @@ public class SettingsNavigationTest {
     }
 
     private ListView list() { return dialog.getView().findViewById(android.R.id.list); }
+
+    /** The line under a home row, or null when it has none. */
+    private String homeLine(String id) {
+        for (int i = 0; i < list().getCount(); i++) {
+            Object item = list().getItemAtPosition(i);
+            if (item instanceof Preference && ("section_" + id).equals(((Preference) item).getKey())) {
+                CharSequence summary = ((Preference) item).getSummary();
+                return summary == null ? null : summary.toString();
+            }
+        }
+        throw new AssertionError("no home row for " + id);
+    }
 
     private boolean contains(String key) {
         return position(key) >= 0;

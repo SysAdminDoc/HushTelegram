@@ -108,6 +108,10 @@ public enum PatchFamily {
     @Nullable
     static volatile Set<Capability> capabilitiesForTests;
 
+    /** The families whose switches the Chats page holds. The page and its home row both read this. */
+    static final Set<PatchFamily> CHATS_PAGE = Collections.unmodifiableSet(EnumSet.of(HIDE_ADS, HIDE_STORIES,
+            HIDE_RECOMMENDATIONS, HIDE_COMMERCE, HIDE_PROMOTIONAL_BANNERS, HIDE_SPONSORED_PROXY));
+
     /** Each independent hook, its owning family and the flag set only after it was inserted. */
     public enum Capability {
         CHANNEL_ADS(HIDE_ADS, "channelAds", "channel ads"),

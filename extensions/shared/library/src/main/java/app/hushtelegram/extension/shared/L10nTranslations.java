@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(396);
+        Map<String, String> table = new HashMap<>(406);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -68,6 +68,8 @@ public final class L10nTranslations {
                 "%1$d Schalter wird ge\u00e4ndert.");
         table.put("%1$d switches will change.",
                 "%1$d Schalter werden ge\u00e4ndert.");
+        table.put("%1$s, and more",
+                "%1$s und mehr");
         table.put("%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.",
                 "%1$s. Das wurde beim Patchen festgelegt, deshalb kann die Pause es nicht ausschalten. Um es auszuschlie\u00dfen, patche erneut und lass diesen Patch weg.");
         table.put("%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.",
@@ -82,8 +84,12 @@ public final class L10nTranslations {
                 "Info");
         table.put("Accounts",
                 "Konten");
-        table.put("Ads in channels and search, and more",
-                "Werbung in Kan\u00e4len und Suche und mehr");
+        table.put("Ads in channels",
+                "Werbung in Kan\u00e4len");
+        table.put("Ads in channels and search",
+                "Werbung in Kan\u00e4len und in der Suche");
+        table.put("Ads in search",
+                "Werbung in der Suche");
         table.put("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
                 "Android 11 und \u00e4lter melden nicht, welche Links sich hier \u00f6ffnen. Tippe, um die Einstellungen dieser App zu \u00f6ffnen, dann auf \u201eStandardm\u00e4\u00dfig \u00f6ffnen\u201c.");
         table.put("Android didn't say which links open here. Tap to check in Android's settings.",
@@ -102,6 +108,8 @@ public final class L10nTranslations {
                 "Zur\u00fcck");
         table.put("Browse settings",
                 "Einstellungen durchsuchen");
+        table.put("Call diagnostics",
+                "Anrufdiagnosen");
         table.put("Cancel",
                 "Abbrechen");
         table.put("Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.",
@@ -168,6 +176,9 @@ public final class L10nTranslations {
                 "Ab dem n\u00e4chsten Start verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv, und deine Auswahl bleibt gespeichert.");
         table.put("Full report saved to %1$s",
                 "Vollst\u00e4ndiger Bericht gespeichert unter %1$s");
+    }
+
+    private static void fillDe1(Map<String, String> table) {
         table.put("GPL-3.0, with the notices of the projects this is built on",
                 "GPL-3.0, mit den Hinweisen der Projekte, auf denen es aufbaut");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
@@ -176,9 +187,6 @@ public final class L10nTranslations {
                 "Mit der Antwort von GitHub lie\u00df sich nichts anfangen. Versuche es sp\u00e4ter noch einmal.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Direkt zu einer Gruppe von Einstellungen. Zur\u00fcck bringt dich dorthin, wo du warst.");
-    }
-
-    private static void fillDe1(Map<String, String> table) {
         table.put("Hide Premium, gifts and Stars",
                 "Premium, Geschenke und Stars ausblenden");
         table.put("Hide Stories",
@@ -291,6 +299,9 @@ public final class L10nTranslations {
                 "Speichert deine Schalter in einer Datei. Sie gelten f\u00fcr alle Konten in dieser Telegram-App. Pause und Debug-Protokollierung sind nicht enthalten, die Suche nach neuen Versionen auch nicht.");
         table.put("Saved. Restart Telegram to apply this change.",
                 "Gespeichert. Starte Telegram neu, um diese \u00c4nderung zu \u00fcbernehmen.");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Saving the settings file",
                 "Einstellungsdatei wird gespeichert");
         table.put("Search settings",
@@ -299,9 +310,6 @@ public final class L10nTranslations {
                 "Links von Hand ausw\u00e4hlen");
         table.put("Set when you patched",
                 "Beim Patchen festgelegt");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("Settings couldn't open",
                 "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -398,6 +406,8 @@ public final class L10nTranslations {
                 "Bis zum Fortsetzen verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv.");
         table.put("Updates",
                 "Updates");
+        table.put("Usage reports",
+                "Nutzungsberichte");
         table.put("Usage reports and call diagnostics",
                 "Nutzungsberichte und Anrufdiagnosen");
         table.put("Version",
@@ -412,6 +422,9 @@ public final class L10nTranslations {
                 "Deine Einstellungen sind aktiv.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Deine Schalter entsprechen bereits dieser Datei, es \u00e4ndert sich also nichts.");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("avatar story rings",
                 "Story-Ringe an Avataren");
         table.put("avatar story taps",
@@ -422,9 +435,6 @@ public final class L10nTranslations {
                 "gespeicherter Proxy-Kanal");
         table.put("cached proxy folder entries",
                 "gespeicherte Proxy-Eintr\u00e4ge in Ordnern");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("cached recommendations",
                 "gespeicherte Empfehlungen");
         table.put("call debug reports",
@@ -464,7 +474,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(396);
+        Map<String, String> table = new HashMap<>(406);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -485,6 +495,8 @@ public final class L10nTranslations {
                 "Cambiar\u00e1 %1$d interruptor.");
         table.put("%1$d switches will change.",
                 "Cambiar\u00e1n %1$d interruptores.");
+        table.put("%1$s, and more",
+                "%1$s, y m\u00e1s");
         table.put("%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.",
                 "%1$s. Este cambio se aplic\u00f3 al parchear, as\u00ed que Pausar no puede desactivarlo. Para descartarlo, vuelve a parchear sin ese parche.");
         table.put("%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.",
@@ -499,8 +511,12 @@ public final class L10nTranslations {
                 "Acerca de");
         table.put("Accounts",
                 "Cuentas");
-        table.put("Ads in channels and search, and more",
-                "Anuncios en canales y b\u00fasqueda, y m\u00e1s");
+        table.put("Ads in channels",
+                "Anuncios en canales");
+        table.put("Ads in channels and search",
+                "Anuncios en canales y en la b\u00fasqueda");
+        table.put("Ads in search",
+                "Anuncios en la b\u00fasqueda");
         table.put("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
                 "Android 11 y las versiones anteriores no indican qu\u00e9 enlaces se abren aqu\u00ed. Toca para abrir los ajustes de esta app y luego Abrir de forma predeterminada.");
         table.put("Android didn't say which links open here. Tap to check in Android's settings.",
@@ -519,6 +535,8 @@ public final class L10nTranslations {
                 "Atr\u00e1s");
         table.put("Browse settings",
                 "Explorar ajustes");
+        table.put("Call diagnostics",
+                "Diagn\u00f3sticos de llamadas");
         table.put("Cancel",
                 "Cancelar");
         table.put("Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.",
@@ -585,6 +603,9 @@ public final class L10nTranslations {
                 "Desde el pr\u00f3ximo inicio, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene, y tus preferencias quedan guardadas.");
         table.put("Full report saved to %1$s",
                 "Informe completo guardado en %1$s");
+    }
+
+    private static void fillEs1(Map<String, String> table) {
         table.put("GPL-3.0, with the notices of the projects this is built on",
                 "GPL-3.0, con los avisos de los proyectos en los que se basa");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
@@ -593,9 +614,6 @@ public final class L10nTranslations {
                 "No se pudo usar la respuesta de GitHub. Int\u00e9ntalo de nuevo m\u00e1s tarde.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Ve directo a un grupo de ajustes. Atr\u00e1s te devuelve a donde estabas.");
-    }
-
-    private static void fillEs1(Map<String, String> table) {
         table.put("Hide Premium, gifts and Stars",
                 "Ocultar Premium, regalos y Stars");
         table.put("Hide Stories",
@@ -708,6 +726,9 @@ public final class L10nTranslations {
                 "Guarda tus interruptores en un archivo. Cubren todas las cuentas de esta app de Telegram. La pausa y el Registro de depuraci\u00f3n no se incluyen, y la b\u00fasqueda de nuevas versiones tampoco.");
         table.put("Saved. Restart Telegram to apply this change.",
                 "Guardado. Reinicia Telegram para aplicar este cambio.");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("Saving the settings file",
                 "Guardando el archivo de configuraci\u00f3n");
         table.put("Search settings",
@@ -716,9 +737,6 @@ public final class L10nTranslations {
                 "Seleccionar enlaces a mano");
         table.put("Set when you patched",
                 "Aplicado al parchear");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("Settings couldn't open",
                 "No se pudo abrir la configuraci\u00f3n");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -815,6 +833,8 @@ public final class L10nTranslations {
                 "Hasta que reanudes, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene.");
         table.put("Updates",
                 "Actualizaciones");
+        table.put("Usage reports",
+                "Informes de uso");
         table.put("Usage reports and call diagnostics",
                 "Informes de uso y diagn\u00f3sticos de llamadas");
         table.put("Version",
@@ -829,6 +849,9 @@ public final class L10nTranslations {
                 "Tus controles est\u00e1n activos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Tus interruptores ya coinciden con ese archivo, as\u00ed que no cambiar\u00e1 nada.");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("avatar story rings",
                 "anillos de historias en los avatares");
         table.put("avatar story taps",
@@ -839,9 +862,6 @@ public final class L10nTranslations {
                 "canal del proxy almacenado");
         table.put("cached proxy folder entries",
                 "entradas del proxy almacenadas en carpetas");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("cached recommendations",
                 "recomendaciones guardadas");
         table.put("call debug reports",
@@ -881,7 +901,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(396);
+        Map<String, String> table = new HashMap<>(406);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -902,6 +922,8 @@ public final class L10nTranslations {
                 "%1$d sakelar akan berubah.");
         table.put("%1$d switches will change.",
                 "%1$d sakelar akan berubah.");
+        table.put("%1$s, and more",
+                "%1$s, dan lainnya");
         table.put("%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.",
                 "%1$s. Ini diatur saat Anda menambal, jadi Jeda tidak dapat mematikannya. Untuk memastikan bukan ini penyebabnya, tambal ulang tanpa tambalan yang tertera dalam kurung setelahnya.");
         table.put("%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.",
@@ -916,8 +938,12 @@ public final class L10nTranslations {
                 "Tentang");
         table.put("Accounts",
                 "Akun");
-        table.put("Ads in channels and search, and more",
-                "Iklan di saluran dan pencarian, dan lainnya");
+        table.put("Ads in channels",
+                "Iklan di saluran");
+        table.put("Ads in channels and search",
+                "Iklan di saluran dan pencarian");
+        table.put("Ads in search",
+                "Iklan di pencarian");
         table.put("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
                 "Android 11 dan versi sebelumnya tidak memberi tahu tautan mana yang terbuka di sini. Ketuk untuk membuka pengaturan aplikasi ini, lalu Buka secara default.");
         table.put("Android didn't say which links open here. Tap to check in Android's settings.",
@@ -936,6 +962,8 @@ public final class L10nTranslations {
                 "Kembali");
         table.put("Browse settings",
                 "Jelajahi pengaturan");
+        table.put("Call diagnostics",
+                "Diagnostik panggilan");
         table.put("Cancel",
                 "Batal");
         table.put("Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.",
@@ -1002,6 +1030,9 @@ public final class L10nTranslations {
                 "Mulai peluncuran berikutnya, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif, dan pilihan Anda tetap tersimpan.");
         table.put("Full report saved to %1$s",
                 "Laporan lengkap disimpan ke %1$s");
+    }
+
+    private static void fillIn1(Map<String, String> table) {
         table.put("GPL-3.0, with the notices of the projects this is built on",
                 "GPL-3.0, beserta pemberitahuan dari proyek yang menjadi dasarnya");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
@@ -1010,9 +1041,6 @@ public final class L10nTranslations {
                 "Jawaban GitHub tidak dapat digunakan. Coba lagi nanti.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Langsung ke satu kelompok setelan. Kembali membawamu ke tempat semula.");
-    }
-
-    private static void fillIn1(Map<String, String> table) {
         table.put("Hide Premium, gifts and Stars",
                 "Sembunyikan Premium, hadiah dan Stars");
         table.put("Hide Stories",
@@ -1125,6 +1153,9 @@ public final class L10nTranslations {
                 "Simpan sakelar Anda ke sebuah file. Sakelar ini mencakup semua akun di aplikasi Telegram ini. Jeda dan Pencatatan debug tidak disertakan, begitu pula pemeriksaan rilis.");
         table.put("Saved. Restart Telegram to apply this change.",
                 "Tersimpan. Mulai ulang Telegram untuk menerapkan perubahan ini.");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Saving the settings file",
                 "Menyimpan file pengaturan");
         table.put("Search settings",
@@ -1133,9 +1164,6 @@ public final class L10nTranslations {
                 "Memilih tautan secara manual");
         table.put("Set when you patched",
                 "Diatur saat Anda menambal");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("Settings couldn't open",
                 "Pengaturan tidak dapat dibuka");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -1232,6 +1260,8 @@ public final class L10nTranslations {
                 "Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif.");
         table.put("Updates",
                 "Pembaruan");
+        table.put("Usage reports",
+                "Laporan penggunaan");
         table.put("Usage reports and call diagnostics",
                 "Laporan penggunaan dan diagnostik panggilan");
         table.put("Version",
@@ -1246,6 +1276,9 @@ public final class L10nTranslations {
                 "Kontrol Anda aktif.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Sakelar Anda sudah sesuai dengan file itu, jadi tidak ada yang akan berubah.");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("avatar story rings",
                 "lingkaran cerita pada avatar");
         table.put("avatar story taps",
@@ -1256,9 +1289,6 @@ public final class L10nTranslations {
                 "kanal proxy tersimpan");
         table.put("cached proxy folder entries",
                 "entri proxy tersimpan di folder");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("cached recommendations",
                 "rekomendasi tersimpan");
         table.put("call debug reports",
@@ -1298,7 +1328,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(396);
+        Map<String, String> table = new HashMap<>(406);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1319,6 +1349,8 @@ public final class L10nTranslations {
                 "%1$d op\u00e7\u00e3o ser\u00e1 alterada.");
         table.put("%1$d switches will change.",
                 "%1$d op\u00e7\u00f5es ser\u00e3o alteradas.");
+        table.put("%1$s, and more",
+                "%1$s, e mais");
         table.put("%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.",
                 "%1$s. Isso foi definido quando voc\u00ea aplicou os patches, ent\u00e3o a pausa n\u00e3o pode desativ\u00e1-lo. Para descartar essa possibilidade, aplique os patches novamente sem esse patch.");
         table.put("%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.",
@@ -1333,8 +1365,12 @@ public final class L10nTranslations {
                 "Sobre");
         table.put("Accounts",
                 "Contas");
-        table.put("Ads in channels and search, and more",
-                "An\u00fancios em canais e na busca, e mais");
+        table.put("Ads in channels",
+                "An\u00fancios em canais");
+        table.put("Ads in channels and search",
+                "An\u00fancios em canais e na busca");
+        table.put("Ads in search",
+                "An\u00fancios na busca");
         table.put("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
                 "O Android 11 e as vers\u00f5es anteriores n\u00e3o informam quais links abrem aqui. Toque para abrir as configura\u00e7\u00f5es deste app e depois Abrir por padr\u00e3o.");
         table.put("Android didn't say which links open here. Tap to check in Android's settings.",
@@ -1353,6 +1389,8 @@ public final class L10nTranslations {
                 "Voltar");
         table.put("Browse settings",
                 "Explorar configura\u00e7\u00f5es");
+        table.put("Call diagnostics",
+                "Diagn\u00f3sticos de chamadas");
         table.put("Cancel",
                 "Cancelar");
         table.put("Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.",
@@ -1419,6 +1457,9 @@ public final class L10nTranslations {
                 "A partir da pr\u00f3xima abertura, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo, e suas escolhas ficam salvas.");
         table.put("Full report saved to %1$s",
                 "Relat\u00f3rio completo salvo em %1$s");
+    }
+
+    private static void fillPt_rBR1(Map<String, String> table) {
         table.put("GPL-3.0, with the notices of the projects this is built on",
                 "GPL-3.0, com os avisos dos projetos em que o HushTelegram se baseia");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
@@ -1427,9 +1468,6 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel usar a resposta do GitHub. Tente novamente mais tarde.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "V\u00e1 diretamente para um grupo de configura\u00e7\u00f5es. Voltar leva voc\u00ea de volta ao ponto em que estava.");
-    }
-
-    private static void fillPt_rBR1(Map<String, String> table) {
         table.put("Hide Premium, gifts and Stars",
                 "Ocultar Premium, presentes e Stars");
         table.put("Hide Stories",
@@ -1542,6 +1580,9 @@ public final class L10nTranslations {
                 "Salve suas op\u00e7\u00f5es em um arquivo. Elas valem para todas as contas deste app do Telegram. Pausa e Registro de depura\u00e7\u00e3o n\u00e3o s\u00e3o inclu\u00eddos, nem a verifica\u00e7\u00e3o de novas vers\u00f5es.");
         table.put("Saved. Restart Telegram to apply this change.",
                 "Salvo. Reinicie o Telegram para aplicar esta altera\u00e7\u00e3o.");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Saving the settings file",
                 "Salvando o arquivo de configura\u00e7\u00f5es");
         table.put("Search settings",
@@ -1550,9 +1591,6 @@ public final class L10nTranslations {
                 "Selecionar links manualmente");
         table.put("Set when you patched",
                 "Definido ao aplicar os patches");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Settings couldn't open",
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -1649,6 +1687,8 @@ public final class L10nTranslations {
                 "At\u00e9 voc\u00ea retomar, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo.");
         table.put("Updates",
                 "Atualiza\u00e7\u00f5es");
+        table.put("Usage reports",
+                "Relat\u00f3rios de uso");
         table.put("Usage reports and call diagnostics",
                 "Relat\u00f3rios de uso e diagn\u00f3sticos de chamadas");
         table.put("Version",
@@ -1663,6 +1703,9 @@ public final class L10nTranslations {
                 "Seus controles est\u00e3o ativos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Suas op\u00e7\u00f5es j\u00e1 correspondem \u00e0s desse arquivo, ent\u00e3o nada ser\u00e1 alterado.");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("avatar story rings",
                 "an\u00e9is de stories nos avatares");
         table.put("avatar story taps",
@@ -1673,9 +1716,6 @@ public final class L10nTranslations {
                 "canal do proxy armazenado");
         table.put("cached proxy folder entries",
                 "entradas do proxy armazenadas nas pastas");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("cached recommendations",
                 "recomenda\u00e7\u00f5es armazenadas");
         table.put("call debug reports",
@@ -1715,7 +1755,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(396);
+        Map<String, String> table = new HashMap<>(406);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -1736,6 +1776,8 @@ public final class L10nTranslations {
                 "%1$d anahtar de\u011fi\u015fecek.");
         table.put("%1$d switches will change.",
                 "%1$d anahtar de\u011fi\u015fecek.");
+        table.put("%1$s, and more",
+                "%1$s ve fazlas\u0131");
         table.put("%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.",
                 "%1$s. Yamalad\u0131\u011f\u0131nda ayarland\u0131\u011f\u0131 i\u00e7in Duraklatma bunu kapatamaz. Bunu elemek i\u00e7in yeniden yamala ve o yamay\u0131 d\u0131\u015far\u0131da b\u0131rak.");
         table.put("%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.",
@@ -1750,8 +1792,12 @@ public final class L10nTranslations {
                 "Hakk\u0131nda");
         table.put("Accounts",
                 "Hesaplar");
-        table.put("Ads in channels and search, and more",
-                "Kanallarda ve aramada reklamlar ve fazlas\u0131");
+        table.put("Ads in channels",
+                "Kanallarda reklamlar");
+        table.put("Ads in channels and search",
+                "Kanallarda ve aramada reklamlar");
+        table.put("Ads in search",
+                "Aramada reklamlar");
         table.put("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
                 "Android 11 ve \u00f6ncesi burada hangi ba\u011flant\u0131lar\u0131n a\u00e7\u0131ld\u0131\u011f\u0131n\u0131 bildirmez. Bu uygulaman\u0131n ayarlar\u0131n\u0131 a\u00e7mak i\u00e7in dokunun, ard\u0131ndan Varsay\u0131lan olarak a\u00e7'a gidin.");
         table.put("Android didn't say which links open here. Tap to check in Android's settings.",
@@ -1770,6 +1816,8 @@ public final class L10nTranslations {
                 "Geri");
         table.put("Browse settings",
                 "Ayarlar\u0131 ke\u015ffet");
+        table.put("Call diagnostics",
+                "Arama tan\u0131lamalar\u0131");
         table.put("Cancel",
                 "\u0130ptal");
         table.put("Channels show no sponsored messages, search shows no sponsored accounts, and videos play without ads. Telegram never asks for them, so none are counted as seen.",
@@ -1836,6 +1884,9 @@ public final class L10nTranslations {
                 "Sonraki a\u00e7\u0131l\u0131\u015ftan itibaren Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r ve tercihlerin kay\u0131tl\u0131 kal\u0131r.");
         table.put("Full report saved to %1$s",
                 "Tam rapor \u015furaya kaydedildi: %1$s");
+    }
+
+    private static void fillTr1(Map<String, String> table) {
         table.put("GPL-3.0, with the notices of the projects this is built on",
                 "GPL-3.0, \u00fczerine kuruldu\u011fu projelerin lisans bildirimleriyle");
         table.put("GitHub is turning away checks from this network for now. Try again later.",
@@ -1844,9 +1895,6 @@ public final class L10nTranslations {
                 "GitHub'\u0131n yan\u0131t\u0131 kullan\u0131lamad\u0131. Daha sonra tekrar dene.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Do\u011frudan bir ayar grubuna git. Geri, bulundu\u011fun yere d\u00f6nd\u00fcr\u00fcr.");
-    }
-
-    private static void fillTr1(Map<String, String> table) {
         table.put("Hide Premium, gifts and Stars",
                 "Premium, hediyeler ve Stars'\u0131 gizle");
         table.put("Hide Stories",
@@ -1959,6 +2007,9 @@ public final class L10nTranslations {
                 "Anahtarlar\u0131n\u0131 bir dosyaya kaydet. Anahtarlar bu Telegram uygulamas\u0131ndaki t\u00fcm hesaplar i\u00e7in ge\u00e7erlidir. Duraklatma ve Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc dahil edilmez, s\u00fcr\u00fcm denetimi de edilmez.");
         table.put("Saved. Restart Telegram to apply this change.",
                 "Kaydedildi. Bu de\u011fi\u015fikli\u011fi uygulamak i\u00e7in Telegram'\u0131 yeniden ba\u015flat.");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("Saving the settings file",
                 "Ayar dosyas\u0131 kaydediliyor");
         table.put("Search settings",
@@ -1967,9 +2018,6 @@ public final class L10nTranslations {
                 "Ba\u011flant\u0131lar\u0131 elle se\u00e7me");
         table.put("Set when you patched",
                 "Yamalad\u0131\u011f\u0131nda ayarlananlar");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("Settings couldn't open",
                 "Ayarlar a\u00e7\u0131lamad\u0131");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -2066,6 +2114,8 @@ public final class L10nTranslations {
                 "Devam ettirene kadar Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r.");
         table.put("Updates",
                 "G\u00fcncellemeler");
+        table.put("Usage reports",
+                "Kullan\u0131m raporlar\u0131");
         table.put("Usage reports and call diagnostics",
                 "Kullan\u0131m raporlar\u0131 ve arama tan\u0131lamalar\u0131");
         table.put("Version",
@@ -2080,6 +2130,9 @@ public final class L10nTranslations {
                 "Kontrolleriniz etkin.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Anahtarlar\u0131n zaten o dosyayla ayn\u0131, bu y\u00fczden hi\u00e7bir \u015fey de\u011fi\u015fmeyecek.");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("avatar story rings",
                 "avatar hik\u00e2ye halkalar\u0131");
         table.put("avatar story taps",
@@ -2090,9 +2143,6 @@ public final class L10nTranslations {
                 "kay\u0131tl\u0131 proxy kanal\u0131");
         table.put("cached proxy folder entries",
                 "klas\u00f6rlerdeki kay\u0131tl\u0131 proxy girdileri");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("cached recommendations",
                 "kay\u0131tl\u0131 \u00f6neriler");
         table.put("call debug reports",

@@ -27,10 +27,13 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.preference.SwitchPreference;
 
+import androidx.annotation.Nullable;
+
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
@@ -92,8 +95,9 @@ final class SettingsNavigation extends BaseAdapter {
         source = screen.getRootAdapter();
         Context context = screen.getContext();
         // Stable English route IDs survive a locale change; the displayed names are localized.
-        section("Chats", L10n.t("Chats"), L10n.t("Ads in channels and search, and more"), SettingsIcons.CHAT, true);
-        section("Privacy", L10n.t("Privacy"), L10n.t("Usage reports and call diagnostics"), SettingsIcons.BLOCK, true);
+        Set<PatchFamily> build = PatchFamily.inThisBuild();
+        section("Chats", L10n.t("Chats"), chatsSummary(build), SettingsIcons.CHAT, true);
+        section("Privacy", L10n.t("Privacy"), privacySummary(build), SettingsIcons.BLOCK, true);
         section("Links", L10n.t("Links"), null, SettingsIcons.LINKS, false);
         section("Updates", L10n.t("Updates"), null, SettingsIcons.UPDATES, false);
         section("Set when you patched", L10n.t("Set when you patched"), null, SettingsIcons.PATCHED, false);
@@ -149,6 +153,37 @@ final class SettingsNavigation extends BaseAdapter {
             sections.add(new Section(id, (PreferenceCategory) candidate, link, primary));
             return;
         }
+    }
+
+    /**
+     * The Chats row's line, from what this build hides: the ads its hooks cover, and "and more"
+     * only when another Chats switch is there too. Null when Hide ads covers nothing, since the
+     * page then holds only switches the line would leave unnamed.
+     */
+    @Nullable
+    static String chatsSummary(Set<PatchFamily> build) {
+        if (!build.contains(PatchFamily.HIDE_ADS)) return null;
+        Set<PatchFamily.Capability> installed = PatchFamily.HIDE_ADS.installedCapabilities();
+        boolean channels = installed.contains(PatchFamily.Capability.CHANNEL_ADS)
+                || installed.contains(PatchFamily.Capability.VIDEO_ADS);
+        boolean search = installed.contains(PatchFamily.Capability.SEARCH_ADS);
+        if (!channels && !search) return null;
+        String ads = channels && search ? L10n.t("Ads in channels and search")
+                : channels ? L10n.t("Ads in channels") : L10n.t("Ads in search");
+        for (PatchFamily family : PatchFamily.CHATS_PAGE) {
+            if (family != PatchFamily.HIDE_ADS && build.contains(family)) return L10n.f("%1$s, and more", ads);
+        }
+        return ads;
+    }
+
+    /** The Privacy row's line, naming only the switches this build put on that page. */
+    @Nullable
+    static String privacySummary(Set<PatchFamily> build) {
+        boolean reports = build.contains(PatchFamily.DISABLE_ANALYTICS);
+        boolean calls = build.contains(PatchFamily.DISABLE_CALL_DEBUG);
+        if (reports && calls) return L10n.t("Usage reports and call diagnostics");
+        if (reports) return L10n.t("Usage reports");
+        return calls ? L10n.t("Call diagnostics") : null;
     }
 
     private static Preference link(Context context, String title, String summary, String icon) {

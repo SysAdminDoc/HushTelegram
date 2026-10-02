@@ -150,7 +150,10 @@ It targets Telegram %1$s.	Telegram %1$s için hazırlandı.
 None of Telegram's web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.	Telegram'ın web adreslerinden hiçbiri bu uygulama için seçili değil, bu yüzden bağlantıları başka yerde açılır. Android ayarlarında seçmek için dokunun.
 Only some of Telegram's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Telegram'ın web adreslerinden yalnızca bazıları bu uygulama için seçili ve diğerlerinin bağlantıları başka yerde açılır. Android ayarlarında seçmek için dokunun.
 Saved. Restart Telegram to apply this change.	Kaydedildi. Bu değişikliği uygulamak için Telegram'ı yeniden başlat.
-Ads in channels and search, and more	Kanallarda ve aramada reklamlar ve fazlası
+Ads in channels and search	Kanallarda ve aramada reklamlar
+Ads in channels	Kanallarda reklamlar
+Ads in search	Aramada reklamlar
+%1$s, and more	%1$s ve fazlası
 Stop usage reports	Kullanım raporlarını durdur
 # context: Immutable hook coverage shown when a patch has missing targets.
 channel ads	kanal reklamları
@@ -163,6 +166,8 @@ This build covers %1$s. Missing coverage: %2$s.	Bu derlemenin kapsamı: %1$s. Ek
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	Telegram açıldıktan sonraki bir dakika içinde üst üste üç kez çöktü veya dondu, bu yüzden HushTelegram kendini duraklattı.
 Telegram's web addresses are selected for this app in Android's settings, so their links open here.	Telegram'ın web adresleri Android ayarlarında bu uygulama için seçili, bu yüzden bağlantıları burada açılır.
 Usage reports and call diagnostics	Kullanım raporları ve arama tanılamaları
+Usage reports	Kullanım raporları
+Call diagnostics	Arama tanılamaları
 Try again, or go back to Telegram.	Tekrar dene veya Telegram'a geri dön.
 Turn off Telegram's update checks	Telegram'ın güncelleme kontrollerini kapat
 Your choices are saved. Tap Resume, then restart Telegram.	Tercihleriniz kayıtlı. Devam et'e dokunun, sonra Telegram'ı yeniden başlatın.

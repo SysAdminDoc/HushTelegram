@@ -150,7 +150,10 @@ It targets Telegram %1$s.	Está pensado para Telegram %1$s.
 None of Telegram's web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.	Ninguna dirección web de Telegram está seleccionada para esta app, así que sus enlaces se abren en otro sitio. Toca para seleccionarlas en los ajustes de Android.
 Only some of Telegram's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Solo algunas direcciones web de Telegram están seleccionadas para esta app, y los enlaces a las demás se abren en otro sitio. Toca para seleccionarlas en los ajustes de Android.
 Saved. Restart Telegram to apply this change.	Guardado. Reinicia Telegram para aplicar este cambio.
-Ads in channels and search, and more	Anuncios en canales y búsqueda, y más
+Ads in channels and search	Anuncios en canales y en la búsqueda
+Ads in channels	Anuncios en canales
+Ads in search	Anuncios en la búsqueda
+%1$s, and more	%1$s, y más
 Stop usage reports	Detener los informes de uso
 # context: Immutable hook coverage shown when a patch has missing targets.
 channel ads	anuncios en canales
@@ -163,6 +166,8 @@ This build covers %1$s. Missing coverage: %2$s.	Esta versión cubre %1$s. Falta 
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	Tres veces seguidas, Telegram falló o se congeló durante el primer minuto tras iniciarse, así que HushTelegram se pausó solo.
 Telegram's web addresses are selected for this app in Android's settings, so their links open here.	Las direcciones web de Telegram están seleccionadas para esta app en los ajustes de Android, así que sus enlaces se abren aquí.
 Usage reports and call diagnostics	Informes de uso y diagnósticos de llamadas
+Usage reports	Informes de uso
+Call diagnostics	Diagnósticos de llamadas
 Try again, or go back to Telegram.	Inténtalo de nuevo o vuelve a Telegram.
 Turn off Telegram's update checks	Desactivar las comprobaciones de actualización de Telegram
 Your choices are saved. Tap Resume, then restart Telegram.	Tus preferencias están guardadas. Toca Reanudar y luego reinicia Telegram.

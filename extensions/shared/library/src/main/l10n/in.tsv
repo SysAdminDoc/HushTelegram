@@ -150,7 +150,10 @@ It targets Telegram %1$s.	Rilis ini ditujukan untuk Telegram %1$s.
 None of Telegram's web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.	Tidak ada alamat web Telegram yang dipilih untuk aplikasi ini, jadi tautannya terbuka di tempat lain. Ketuk untuk memilihnya di pengaturan Android.
 Only some of Telegram's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Hanya sebagian alamat web Telegram yang dipilih untuk aplikasi ini, dan tautan ke alamat lainnya terbuka di tempat lain. Ketuk untuk memilihnya di pengaturan Android.
 Saved. Restart Telegram to apply this change.	Tersimpan. Mulai ulang Telegram untuk menerapkan perubahan ini.
-Ads in channels and search, and more	Iklan di saluran dan pencarian, dan lainnya
+Ads in channels and search	Iklan di saluran dan pencarian
+Ads in channels	Iklan di saluran
+Ads in search	Iklan di pencarian
+%1$s, and more	%1$s, dan lainnya
 Stop usage reports	Hentikan laporan penggunaan
 # context: Immutable hook coverage shown when a patch has missing targets.
 channel ads	iklan saluran
@@ -163,6 +166,8 @@ This build covers %1$s. Missing coverage: %2$s.	Versi ini mencakup %1$s. Cakupan
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	Telegram berhenti mendadak atau macet dalam satu menit setelah dibuka, tiga kali berturut-turut, jadi HushTelegram menjeda dirinya sendiri.
 Telegram's web addresses are selected for this app in Android's settings, so their links open here.	Alamat web Telegram dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.
 Usage reports and call diagnostics	Laporan penggunaan dan diagnostik panggilan
+Usage reports	Laporan penggunaan
+Call diagnostics	Diagnostik panggilan
 Try again, or go back to Telegram.	Coba lagi, atau kembali ke Telegram.
 Turn off Telegram's update checks	Matikan pemeriksaan pembaruan Telegram
 Your choices are saved. Tap Resume, then restart Telegram.	Pilihan Anda tersimpan. Ketuk Lanjutkan, lalu mulai ulang Telegram.
