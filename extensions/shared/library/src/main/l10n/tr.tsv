@@ -178,3 +178,8 @@ Stops automatic call debug reports and log-file uploads requested by Telegram's 
 call debug reports	arama hata ayıklama raporları
 call log file uploads	arama günlük dosyası yüklemeleri
 call log reports	arama günlük raporları
+Hide Premium, gifts and Stars	Premium, hediyeler ve Stars'ı gizle
+Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.	Ayarlar'daki Premium, Stars, My Grams, Business ve Hediye Gönder seçeneklerini, profillerdeki Hediyeler sekmelerini ve kanallardaki Hediye düğmesini gizler. Satın almalar ve hesap kontrolleri eskisi gibi çalışır.
+Settings sales rows	Ayarlar'daki satış seçenekleri
+profile Gifts tabs	profil Hediyeler sekmeleri
+channel Gift button	kanal Hediye düğmesi

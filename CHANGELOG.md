@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Hide Premium, gifts and Stars removes the five Settings sales rows, profile Gifts tabs and the channel Gift button. Turning the switch off or using Pause restores those entry points. Account, purchase and ordinary channel controls retain their original paths.
+
 * **Telegram:** Undo keeps scrolled settings pages in place when a pending Pause is cancelled, including pages with restart notices. Leaving the page restores its normal spacing.
 
 * **Tooling:** Stories patching refuses changed visibility merges, overwritten peer-state registers and state-store paths that bypass the guard before editing the APK.

@@ -34,6 +34,10 @@ public final class SettingsStatus {
     public static boolean hideRecommendations() { return false; }
     public static boolean channelRecommendations() { return false; }
     public static boolean cachedRecommendations() { return false; }
+    public static boolean hideCommerce() { return false; }
+    public static boolean commerceSettingsRows() { return false; }
+    public static boolean commerceProfileGifts() { return false; }
+    public static boolean commerceChannelGift() { return false; }
     public static boolean storyRequests() { return false; }
     public static boolean storyBar() { return false; }
     public static boolean storyCamera() { return false; }

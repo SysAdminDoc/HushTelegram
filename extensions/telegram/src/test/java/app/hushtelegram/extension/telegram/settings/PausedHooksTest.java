@@ -108,6 +108,9 @@ public class PausedHooksTest {
                 () -> Stories.hideAvatarStoryTouches(DIALOG_AVATAR)));
         probes.put(PatchFamily.HIDE_RECOMMENDATIONS, Arrays.asList(
                 Recommendations::skipRecommendations, Recommendations::skipCachedRecommendations));
+        probes.put(PatchFamily.HIDE_COMMERCE, Arrays.asList(
+                () -> !app.hushtelegram.extension.telegram.misc.Commerce.addSettingsRow(new ArrayList<>(), new Object()),
+                () -> !app.hushtelegram.extension.telegram.misc.Commerce.showGiftsTab(true)));
         probes.put(PatchFamily.DISABLE_CALL_DEBUG, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.CallDebug.skipCallDebugUpload(true),
                 app.hushtelegram.extension.telegram.misc.CallDebug::skipCallLogFileUpload,

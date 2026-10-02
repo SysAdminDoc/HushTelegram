@@ -55,7 +55,7 @@ Morphe Manager signs the patched Telegram with a key it makes on your phone. And
 
 ## Patches
 
-The current source has 7 patches, all selected by default. Published v0.0.4 contains the four original patches. Stories, recommendations and call-diagnostic controls are prepared for the next release. The new call controls still need a live call and audio check.
+The current source has 8 patches, all selected by default. Published v0.0.4 contains the four original patches. Stories, recommendations, call diagnostics and sales controls are prepared for the next release. The new call controls still need a live call and audio check.
 
 | Patch | What it does |
 |---|---|
@@ -66,6 +66,7 @@ The current source has 7 patches, all selected by default. Published v0.0.4 cont
 | `HushTelegram settings` | Adds HushTelegram settings to Telegram. Long-press Telegram's launcher icon, or open Additional settings in the app on Telegram's App info page, to turn features on or off, pause HushTelegram, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
 | `Hide Stories` | Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available. |
 | `Hide recommendations` | Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on. |
+| `Hide Premium, gifts and Stars` | Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior. |
 
 ### Hide ads, before and after
 

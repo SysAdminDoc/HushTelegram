@@ -47,6 +47,8 @@ public enum PatchFamily {
             Settings.HIDE_STORIES),
     HIDE_RECOMMENDATIONS(FamilyNames.HIDE_RECOMMENDATIONS, "hideRecommendations", null,
             Settings.HIDE_RECOMMENDATIONS),
+    HIDE_COMMERCE(FamilyNames.HIDE_COMMERCE, "hideCommerce", null,
+            Settings.HIDE_COMMERCE),
     DISABLE_ANALYTICS(FamilyNames.DISABLE_ANALYTICS, "disableAnalytics", null,
             Settings.DISABLE_ANALYTICS),
     DISABLE_CALL_DEBUG(FamilyNames.DISABLE_CALL_DEBUG, "disableCallDebug", null,
@@ -114,7 +116,10 @@ public enum PatchFamily {
         READ_METRICS(DISABLE_ANALYTICS, "readMetrics", "channel read metrics"),
         CALL_DEBUG_UPLOAD(DISABLE_CALL_DEBUG, "callDebugUpload", "call debug reports"),
         CALL_LOG_FILE_UPLOAD(DISABLE_CALL_DEBUG, "callLogFileUpload", "call log file uploads"),
-        CALL_LOG_UPLOAD(DISABLE_CALL_DEBUG, "callLogUpload", "call log reports");
+        CALL_LOG_UPLOAD(DISABLE_CALL_DEBUG, "callLogUpload", "call log reports"),
+        COMMERCE_SETTINGS_ROWS(HIDE_COMMERCE, "commerceSettingsRows", "Settings sales rows"),
+        COMMERCE_PROFILE_GIFTS(HIDE_COMMERCE, "commerceProfileGifts", "profile Gifts tabs"),
+        COMMERCE_CHANNEL_GIFT(HIDE_COMMERCE, "commerceChannelGift", "channel Gift button");
 
         public final PatchFamily family;
         final String statusMethod;
