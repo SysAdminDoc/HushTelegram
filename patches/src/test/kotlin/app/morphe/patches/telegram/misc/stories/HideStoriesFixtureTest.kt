@@ -8,11 +8,16 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.util.ControlFlow
+import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -189,6 +194,43 @@ class HideStoriesFixtureTest {
             for (flag in listOf("hideStories") + StoryTarget.entries.map { it.capability }) {
                 val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
                 assertEquals("${build.name}: $flag remains false", 0, (status[0] as NarrowLiteralInstruction).narrowLiteral)
+            }
+        }
+    }
+
+    @Test
+    fun `overwritten or unguarded cached bar values refuse before any hook or build fact is written`() {
+        for (build in Fixtures.declaredBuilds()) for (mutation in listOf("self", "visible", "wide", "merge", "bypass")) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val plan = context.resolveStoryHooks()
+            val bar = plan.hooks.getValue(StoryTarget.BAR).method
+            val instructions = bar.instructions()
+            val stores = instructions.indices.filter { instructions[it].opcode == Opcode.IPUT_BOOLEAN &&
+                ((instructions[it] as ReferenceInstruction).reference as FieldReference).definingClass == bar.definingClass }
+            val self = instructions[stores[0]].namedRegisters()[0]
+            val visible = instructions[stores[2]].namedRegisters()[0]
+            when (mutation) {
+                "self" -> bar.addInstruction(stores[0] + 1, "const/16 v$self, 0x1")
+                "visible" -> bar.addInstructionsAtControlFlowLabel(stores[2], "const/16 v$visible, 0x1")
+                "wide" -> bar.addInstructionsAtControlFlowLabel(stores[2], "const-wide/16 v${visible - 1}, 0x1")
+                "merge" -> bar.replaceInstruction(stores[0] + 5, "const/16 v$self, 0x1")
+                "bypass" -> bar.addInstructionsWithLabels(0, "goto/32 :unguarded",
+                    ExternalLabel("unguarded", bar.getInstruction(stores[2])))
+            }
+            val before = plan.hooks.mapValues { it.value.method.instructions().map(::operation) }
+            try {
+                hideStoriesPatch.execute(context)
+                fail("${build.name}: $mutation mutation was accepted")
+            } catch (expected: PatchException) {
+                assertTrue(expected.message.orEmpty().contains("before editing"))
+            }
+            for ((target, hook) in plan.hooks) {
+                assertEquals("${build.name}: $mutation leaves $target intact", before.getValue(target),
+                    hook.method.instructions().map(::operation))
+            }
+            for (flag in listOf("hideStories") + StoryTarget.entries.map { it.capability }) {
+                val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
+                assertEquals("${build.name}: $mutation leaves $flag false", 0, (status[0] as NarrowLiteralInstruction).narrowLiteral)
             }
         }
     }

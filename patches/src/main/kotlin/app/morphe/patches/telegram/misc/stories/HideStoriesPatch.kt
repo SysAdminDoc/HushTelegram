@@ -244,6 +244,59 @@ private fun barHook(method: MutableMethod): StoryHook {
     shape(self != visible && instructions[stores[3]].namedRegisters()[0] == visible &&
         instructions.subList(stores[0] + 1, stores[1]).any { it.opcode == Opcode.IGET_BOOLEAN && it.field() == instructions[stores[1]].field() },
         "cached story bar has changed visibility merge")
+    val flow = ControlFlow.of(method)
+    val first = stores[0]
+    // The first value is deliberately reused for the stock self-or-peer merge. Check that
+    // whole merge, rather than assuming its later writes are harmless.
+    val merge = instructions.subList(first + 1, stores[1])
+    shape(merge.size == 7 && stores[1] == first + 8 &&
+        merge[0].opcode == Opcode.IGET_BOOLEAN && merge[0].field() == instructions[stores[1]].field() &&
+        merge[0].namedRegisters()[0] !in listOf(self, visible) &&
+        merge[1].opcode == Opcode.IF_NEZ && merge[1].namedRegisters() == listOf(self) &&
+        flow.normal[first + 2].toSet() == setOf(first + 3, first + 7) &&
+        merge[2].opcode == Opcode.IF_EQZ && merge[2].namedRegisters() == listOf(visible) &&
+        flow.normal[first + 3].toSet() == setOf(first + 4, first + 5) &&
+        merge[3].opcode in GOTOS && flow.normal[first + 4] == listOf(first + 7) &&
+        merge[4].opcode == Opcode.CONST_4 && merge[4].namedRegisters() == listOf(self) &&
+        (merge[4] as NarrowLiteralInstruction).narrowLiteral == 0 &&
+        merge[5].opcode in GOTOS && flow.normal[first + 6] == listOf(stores[1]) &&
+        merge[6].opcode == Opcode.CONST_4 && merge[6].namedRegisters() == listOf(self) &&
+        (merge[6] as NarrowLiteralInstruction).narrowLiteral == 1 &&
+        instructions[stores[1]].namedRegisters()[0] == self,
+        "cached story bar no longer derives its combined visibility from the guarded values")
+
+    val unguarded = mutableSetOf<Int>()
+    val pending = ArrayDeque<Int>()
+    pending += 0
+    while (pending.isNotEmpty()) {
+        val at = pending.removeFirst()
+        if (at == first || !unguarded.add(at)) continue
+        pending.addAll(flow.normal[at] + flow.exceptional[at])
+    }
+    shape(stores.drop(1).none { it in unguarded }, "cached story state stores can bypass their guard")
+
+    val predecessors = Array(instructions.size) { mutableListOf<Int>() }
+    instructions.indices.forEach { at ->
+        (flow.normal[at] + flow.exceptional[at]).forEach { predecessors[it] += at }
+    }
+    val reachesPeerStore = mutableSetOf<Int>()
+    pending.addAll(stores.drop(2))
+    while (pending.isNotEmpty()) {
+        val at = pending.removeFirst()
+        if (reachesPeerStore.add(at)) pending.addAll(predecessors[at])
+    }
+    val afterGuard = mutableSetOf<Int>()
+    pending += first
+    while (pending.isNotEmpty()) {
+        val at = pending.removeFirst()
+        if (!afterGuard.add(at)) continue
+        val instruction = instructions[at]
+        val destination = instruction.namedRegisters().firstOrNull()
+        shape(at !in reachesPeerStore || !instruction.opcode.setsRegister() || destination == null ||
+            (destination != visible && (!instruction.opcode.setsWideRegister() || destination + 1 != visible)),
+            "cached story bar overwrites guarded peer visibility before its state stores")
+        pending.addAll(flow.normal[at] + flow.exceptional[at])
+    }
     shape(self <= 255 && visible <= 255, "story bar state registers are too high")
     val answer = method.freeLocalsAt(PATCH, stores[0], 1, highest = 255).single()
     return StoryHook(method, stores[0], """

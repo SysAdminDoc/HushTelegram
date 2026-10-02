@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Tooling:** Stories patching refuses changed visibility merges, overwritten peer-state registers and state-store paths that bypass the guard before editing the APK.
+
 * **Telegram:** Stop call diagnostics suppresses automatic debug reports and requested log-file uploads. Call cleanup remains unchanged, and disabling the switch or using Pause restores the original diagnostic paths.
 
 * **Telegram:** Hide recommendations removes similar channels and bots, including cached search sections. Disabling the switch or using Pause restores the original cache and request paths. Resume and Undo retain the settings page's scroll position when their status text changes height.
