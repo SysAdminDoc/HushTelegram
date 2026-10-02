@@ -12,15 +12,24 @@ package app.hushtelegram.extension.telegram.settings;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.Shadows.shadowOf;
+
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadows.ShadowPackageManager;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -42,6 +51,7 @@ import app.hushtelegram.extension.telegram.misc.UpdateChecks;
 import app.hushtelegram.extension.telegram.misc.Stories;
 import app.hushtelegram.extension.telegram.misc.Recommendations;
 import app.hushtelegram.extension.telegram.misc.Suggestions;
+import app.hushtelegram.extension.telegram.misc.LinkRouting;
 import app.hushtelegram.extension.telegram.ads.ProxyPromotions;
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
@@ -58,12 +68,15 @@ import app.hushtelegram.extension.shared.settings.PauseForTests;
  * without a probe here fails the first test.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 30, shadows = {PausedHooksTest.AvatarScope.class, PausedHooksTest.ProxyScope.class},
+@Config(sdk = 30, shadows = {PausedHooksTest.AvatarScope.class, PausedHooksTest.ProxyScope.class, PausedHooksTest.LinkScope.class},
         instrumentedPackages = {"app.hushtelegram.extension.telegram.misc", "app.hushtelegram.extension.telegram.ads"})
 public class PausedHooksTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
     private static final Object DIALOG_AVATAR = new Object();
+    private static final String PROBE_BROWSER = "org.example.probe.browser";
+    private static final String PROBE_URL = "https://example.com/path";
+    private static final String TRACKED_URL = PROBE_URL + "?utm_source=probe";
     private static final Object SPONSORED_PROXY_CONTROLLER = new Object();
     private static final Object SPONSORED_PROXY_DIALOG = new Object();
 
@@ -83,6 +96,12 @@ public class PausedHooksTest {
             calls++;
             return controller == SPONSORED_PROXY_CONTROLLER && dialog == SPONSORED_PROXY_DIALOG;
         }
+    }
+
+    /** Fixture tests cover native classification; these probes use an ordinary unprotected URL. */
+    @Implements(value = LinkRouting.class, isInAndroidSdk = false)
+    public static class LinkScope {
+        @Implementation protected static boolean protectedByTelegram(Uri uri) { return false; }
     }
 
     /** One hook with its switch on: true when it changed what Telegram would have done. */
@@ -112,6 +131,7 @@ public class PausedHooksTest {
     }
 
     private static Map<PatchFamily, List<Probe>> probes() {
+        registerProbeBrowser();
         Map<PatchFamily, List<Probe>> probes = new EnumMap<>(PatchFamily.class);
         // A sponsored messages, video ads or search ads request is answered without ever being made.
         probes.put(PatchFamily.HIDE_ADS, Arrays.asList(Ads::skipSponsoredMessages, Ads::skipVideoAds, Ads::skipSearchAds));
@@ -139,9 +159,47 @@ public class PausedHooksTest {
         probes.put(PatchFamily.DISABLE_ANALYTICS, Arrays.asList(
                 () -> Analytics.skipDeviceStats(new DeviceStatsController(true, false)),
                 () -> Analytics.skipReadMetrics(new ArrayList<>())));
+        probes.put(PatchFamily.OPEN_EXTERNAL_LINKS, Collections.singletonList(PausedHooksTest::externalBrowserOpened));
+        probes.put(PatchFamily.STRIP_LINK_TRACKING, Arrays.asList(
+                () -> PROBE_URL.equals(LinkRouting.cleanOpenedUri(Uri.parse(TRACKED_URL), false, new boolean[1]).toString()),
+                () -> PROBE_URL.equals(LinkRouting.cleanShareIntent(new Intent(Intent.ACTION_SEND).setType("text/plain")
+                        .putExtra(Intent.EXTRA_TEXT, TRACKED_URL)).getStringExtra(Intent.EXTRA_TEXT))));
         // telegram.org's build never asks the server whether a newer one is out.
         probes.put(PatchFamily.DISABLE_UPDATE_CHECKS, Collections.singletonList(UpdateChecks::skipUpdateCheck));
         return probes;
+    }
+
+    /** A browser handling both schemes without a domain restriction, using the runtime's real query. */
+    private static void registerProbeBrowser() {
+        while (shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivity() != null) { }
+        ResolveInfo info = new ResolveInfo();
+        info.activityInfo = new ActivityInfo();
+        info.activityInfo.packageName = PROBE_BROWSER;
+        info.activityInfo.name = PROBE_BROWSER + ".BrowserActivity";
+        info.activityInfo.enabled = true;
+        info.activityInfo.exported = true;
+        info.filter = new IntentFilter(Intent.ACTION_VIEW);
+        info.filter.addCategory(Intent.CATEGORY_DEFAULT);
+        info.filter.addCategory(Intent.CATEGORY_BROWSABLE);
+        info.filter.addDataScheme("http");
+        info.filter.addDataScheme("https");
+        ShadowPackageManager manager = shadowOf(RuntimeEnvironment.getApplication().getPackageManager());
+        for (String scheme : new String[]{"http", "https"}) manager.addResolveInfoForIntent(
+                new Intent(Intent.ACTION_VIEW, Uri.parse(scheme + "://")).addCategory(Intent.CATEGORY_BROWSABLE), info);
+    }
+
+    /** A true probe is an actual sandbox launch; disabled and paused probes must launch nothing. */
+    private static boolean externalBrowserOpened() {
+        boolean redirected = LinkRouting.tryOpenExternal(RuntimeEnvironment.getApplication(),
+                Uri.parse(PROBE_URL), false, new boolean[1], PROBE_BROWSER);
+        Intent launched = shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivity();
+        assertEquals("routing and the actual browser launch disagree", redirected, launched != null);
+        if (launched != null) {
+            assertEquals(Intent.ACTION_VIEW, launched.getAction());
+            assertEquals(PROBE_BROWSER, launched.getPackage());
+            assertEquals(Uri.parse(PROBE_URL), launched.getData());
+        }
+        return redirected;
     }
 
     /** Every switch the settings screen can show, read off the class so a new one can't hide. */

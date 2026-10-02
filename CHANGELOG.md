@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Added external-browser routing and optional local tracking removal for opened links and Share Link choosers. Telegram, login and payment routes stay as they are.
+
 * **Tooling:** Source-mirror checks now locate clean checkouts through the tracked provenance file.
 
 * **Telegram:** Usage-report help now describes the storage-type boolean Telegram reports, rather than claiming it uploads folder paths. Settings, translations and the patch description agree with the pinned payload.

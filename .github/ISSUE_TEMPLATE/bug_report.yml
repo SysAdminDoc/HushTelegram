@@ -78,6 +78,8 @@ body:
         - Hide Premium, gifts and Stars
         - Hide promotional banners
         - Hide sponsored proxy channel
+        - Open links externally
+        - Strip link tracking
         - HushTelegram settings
     validations:
       required: true

@@ -90,6 +90,8 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HIDE_SPONSORED_PROXY, "Hide sponsored proxy channel");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
+        ROW_TITLES.put(PatchFamily.OPEN_EXTERNAL_LINKS, "Open links externally");
+        ROW_TITLES.put(PatchFamily.STRIP_LINK_TRACKING, "Strip link tracking");
         ROW_TITLES.put(PatchFamily.DISABLE_UPDATE_CHECKS, "Turn off Telegram's update checks");
     }
 
@@ -237,11 +239,23 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Telegram stops offering updates from telegram.org. Those can't install over this patched "
                     + "build, so patch each new version in Morphe Manager instead.",
                     String.valueOf(page.findPreference(Settings.DISABLE_UPDATE_CHECKS.key).getSummary()));
-            // These switches are on as they ship, including the cached proxy-channel control.
+            assertEquals("Open links externally", String.valueOf(page.findPreference(Settings.OPEN_EXTERNAL_LINKS.key).getTitle()));
+            assertEquals("Opens ordinary HTTP(S) links in your browser. "
+                            + "Telegram links, login, payment and authenticated routes keep their existing behavior.",
+                    String.valueOf(page.findPreference(Settings.OPEN_EXTERNAL_LINKS.key).getSummary()));
+            assertEquals("Strip link tracking", String.valueOf(page.findPreference(Settings.STRIP_LINK_TRACKING.key).getTitle()));
+            assertEquals("Optional local cleaning at link-open and Share Link chooser sites. "
+                            + "Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. "
+                            + "Any unknown query key preserves the entire URL. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.STRIP_LINK_TRACKING.key).getSummary()));
+            // Browser routing is on as shipped; optional tracking cleaning has its own off default.
             for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.DISABLE_ANALYTICS,
-                    Settings.DISABLE_UPDATE_CHECKS, Settings.HIDE_PROMOTIONAL_BANNERS, Settings.HIDE_SPONSORED_PROXY)) {
+                    Settings.DISABLE_UPDATE_CHECKS, Settings.HIDE_PROMOTIONAL_BANNERS, Settings.HIDE_SPONSORED_PROXY,
+                    Settings.OPEN_EXTERNAL_LINKS)) {
                 assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
+            assertFalse(Settings.STRIP_LINK_TRACKING.key,
+                    ((SwitchPreference) page.findPreference(Settings.STRIP_LINK_TRACKING.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {
@@ -263,12 +277,16 @@ public class HushTelegramPreferenceFragmentTest {
             try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
                 HushTelegramPreferenceFragment page = pageOf(controller);
                 String summary = String.valueOf(page.findPreference(missing.family.switches.get(0).key).getSummary());
-                assertTrue(summary, summary.startsWith("This build covers "));
-                assertTrue(summary, summary.endsWith("Missing coverage: " + missing.label + "."));
-                for (PatchFamily.Capability covered : missing.family.expectedCapabilities()) {
-                    if (covered != missing) assertTrue(summary, summary.contains(covered.label));
+                if (missing.family.expectedCapabilities().size() == 1) {
+                    assertEquals("This build has no coverage for " + missing.label + ".", summary);
+                } else {
+                    assertTrue(summary, summary.startsWith("This build covers "));
+                    assertTrue(summary, summary.endsWith("Missing coverage: " + missing.label + "."));
+                    for (PatchFamily.Capability covered : missing.family.expectedCapabilities()) {
+                        if (covered != missing) assertTrue(summary, summary.contains(covered.label));
+                    }
                 }
-                assertTrue("a surviving target lost its switch", page.findPreference(missing.family.switches.get(0).key).isEnabled());
+                assertTrue("a build family's configuration switch was disabled", page.findPreference(missing.family.switches.get(0).key).isEnabled());
             }
         }
 

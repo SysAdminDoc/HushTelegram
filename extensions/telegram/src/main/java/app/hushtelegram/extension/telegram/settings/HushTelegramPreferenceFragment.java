@@ -288,6 +288,17 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         // In every build: Telegram's own links are never verified for an app, so Android opens them
         // here only for the addresses selected on the app's Open by default page.
         PreferenceCategory links = category(screen, L10n.t("Links"));
+        if (build.contains(PatchFamily.OPEN_EXTERNAL_LINKS)) {
+            links.addPreference(mark(toggle(context, Settings.OPEN_EXTERNAL_LINKS, L10n.t("Open links externally"),
+                    PatchFamily.OPEN_EXTERNAL_LINKS.coverageSummary(L10n.t("Opens ordinary HTTP(S) links in your browser. "
+                            + "Telegram links, login, payment and authenticated routes keep their existing behavior."))), SettingsIcons.LINKS));
+        }
+        if (build.contains(PatchFamily.STRIP_LINK_TRACKING)) {
+            links.addPreference(mark(toggle(context, Settings.STRIP_LINK_TRACKING, L10n.t("Strip link tracking"),
+                    PatchFamily.STRIP_LINK_TRACKING.coverageSummary(L10n.t("Optional local cleaning at link-open and Share Link chooser sites. "
+                            + "Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. "
+                            + "Any unknown query key preserves the entire URL. Off by default in settings."))), SettingsIcons.BLOCK));
+        }
         links.addPreference(mark(supportedLinksRow(context), SettingsIcons.LINKS));
         // An explanation, not a control: the info mark says so, as it does for Version on About.
         links.addPreference(mark(info(context, L10n.t("Selecting links by hand"),

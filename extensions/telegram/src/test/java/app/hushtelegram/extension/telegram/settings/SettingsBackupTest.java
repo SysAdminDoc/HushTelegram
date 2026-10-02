@@ -183,7 +183,8 @@ public class SettingsBackupTest {
                         Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_COMMERCE,
                         Settings.HIDE_PROMOTIONAL_BANNERS,
                         Settings.HIDE_SPONSORED_PROXY,
-                        Settings.DISABLE_ANALYTICS, Settings.DISABLE_CALL_DEBUG, Settings.DISABLE_UPDATE_CHECKS),
+                        Settings.DISABLE_ANALYTICS, Settings.DISABLE_CALL_DEBUG,
+                        Settings.OPEN_EXTERNAL_LINKS, Settings.STRIP_LINK_TRACKING, Settings.DISABLE_UPDATE_CHECKS),
                 SettingsBackup.ALLOWLIST);
     }
 

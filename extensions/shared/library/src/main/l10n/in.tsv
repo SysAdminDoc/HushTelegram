@@ -191,3 +191,10 @@ Hide sponsored proxy channel	Sembunyikan kanal bersponsor proxy
 Hides a proxy's sponsored channel from the chat list and folders. Leaves proxy settings and shared promo-data updates alone.	Menyembunyikan kanal bersponsor milik proxy dari daftar chat dan folder. Pengaturan proxy dan pembaruan data promosi bersama tetap seperti biasa.
 cached proxy channel	kanal proxy tersimpan
 cached proxy folder entries	entri proxy tersimpan di folder
+Open links externally	Buka tautan di luar aplikasi
+Opens ordinary HTTP(S) links in your browser. Telegram links, login, payment and authenticated routes keep their existing behavior.	Membuka tautan HTTP(S) biasa di browser Anda. Tautan Telegram serta jalur login, pembayaran dan autentikasi tetap berperilaku seperti biasa.
+Strip link tracking	Hapus pelacakan tautan
+Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings.	Pembersihan lokal opsional saat membuka tautan dan di pemilih Bagikan Tautan. Hanya menghapus utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid dan fbclid. Parameter kueri yang tidak dikenal membuat seluruh URL tetap utuh. Secara default nonaktif di pengaturan.
+external browser routing	pengarahan ke browser eksternal
+opened link tracking	pelacakan tautan yang dibuka
+shared link tracking	pelacakan tautan yang dibagikan

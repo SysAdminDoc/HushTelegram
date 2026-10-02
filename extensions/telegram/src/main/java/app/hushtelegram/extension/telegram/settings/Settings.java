@@ -70,6 +70,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting DISABLE_CALL_DEBUG =
             new BooleanSetting("hushtelegram_disable_call_debug", TRUE);
 
+    /** Ordinary HTTP(S) browser dispatch only; native and protected Telegram routes stay stock. */
+    public static final BooleanSetting OPEN_EXTERNAL_LINKS =
+            new BooleanSetting("hushtelegram_open_external_links", TRUE);
+
+    /** Optional local URL cleaning at verified open/share sinks; unknown query keys preserve the URL. */
+    public static final BooleanSetting STRIP_LINK_TRACKING =
+            new BooleanSetting("hushtelegram_strip_link_tracking", FALSE);
+
     /**
      * telegram.org's build stops checking for its own updates, which can't install over a re-signed
      * build anyway ({@link app.hushtelegram.extension.telegram.misc.UpdateChecks}).

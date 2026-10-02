@@ -310,11 +310,23 @@ public class SettingsNavigationTest {
         assertEquals(PAUSED_LINE, String.valueOf(((Preference) list().getItemAtPosition(0)).getSummary()));
         assertTrue(contains(Settings.HIDE_ADS.key));
         page.navigation.back();
-        for (String quiet : new String[]{"About", "Links"}) {
-            page.navigation.navigate(quiet);
-            assertEquals(quiet, categoryCount(quiet), list().getCount());
-            while (page.navigation.back()) { }
-        }
+        page.navigation.navigate("Links");
+        assertEquals("Links has Pause-controlled switches", categoryCount("Links") + 1, list().getCount());
+        assertEquals("HushTelegram is paused", String.valueOf(((Preference) list().getItemAtPosition(0)).getTitle()));
+        assertEquals(PAUSED_LINE, String.valueOf(((Preference) list().getItemAtPosition(0)).getSummary()));
+        assertTrue(contains(Settings.OPEN_EXTERNAL_LINKS.key));
+        assertTrue(contains(Settings.STRIP_LINK_TRACKING.key));
+        while (page.navigation.back()) { }
+        page.navigation.navigate("About");
+        assertEquals("About", categoryCount("About"), list().getCount());
+        while (page.navigation.back()) { }
+        // Without either link family the same Links page still has no Pause-controlled setting.
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_ADS);
+        recreate();
+        page.navigation.navigate("Links");
+        assertEquals("Links without the link patches", categoryCount("Links"), list().getCount());
+        assertFalse(contains(Settings.OPEN_EXTERNAL_LINKS.key));
+        assertFalse(contains(Settings.STRIP_LINK_TRACKING.key));
     }
 
     /**

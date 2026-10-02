@@ -188,3 +188,10 @@ Hide sponsored proxy channel	Ocultar canal patrocinado do proxy
 Hides a proxy's sponsored channel from the chat list and folders. Leaves proxy settings and shared promo-data updates alone.	Oculta o canal patrocinado de um proxy da lista de conversas e das pastas. Mantém as configurações do proxy e as atualizações compartilhadas de dados promocionais como estão.
 cached proxy channel	canal do proxy armazenado
 cached proxy folder entries	entradas do proxy armazenadas nas pastas
+Open links externally	Abrir links externamente
+Opens ordinary HTTP(S) links in your browser. Telegram links, login, payment and authenticated routes keep their existing behavior.	Abre links HTTP(S) comuns no seu navegador. Links do Telegram e rotas de login, pagamento e autenticação mantêm o comportamento habitual.
+Strip link tracking	Remover rastreamento de links
+Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings.	Limpeza local opcional ao abrir links e no seletor Compartilhar Link. Remove apenas utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid e fbclid. Qualquer parâmetro de consulta desconhecido preserva a URL inteira. Desativado por padrão nas configurações.
+external browser routing	abertura em navegador externo
+opened link tracking	rastreamento de links abertos
+shared link tracking	rastreamento de links compartilhados

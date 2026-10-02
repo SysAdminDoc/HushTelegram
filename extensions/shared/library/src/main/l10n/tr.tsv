@@ -191,3 +191,10 @@ Hide sponsored proxy channel	Proxy'nin sponsorlu kanalını gizle
 Hides a proxy's sponsored channel from the chat list and folders. Leaves proxy settings and shared promo-data updates alone.	Bir proxy'nin sponsorlu kanalını sohbet listesinden ve klasörlerden gizler. Proxy ayarlarını ve paylaşılan tanıtım verisi güncellemelerini olduğu gibi bırakır.
 cached proxy channel	kayıtlı proxy kanalı
 cached proxy folder entries	klasörlerdeki kayıtlı proxy girdileri
+Open links externally	Bağlantıları harici tarayıcıda aç
+Opens ordinary HTTP(S) links in your browser. Telegram links, login, payment and authenticated routes keep their existing behavior.	Normal HTTP(S) bağlantılarını tarayıcınızda açar. Telegram bağlantıları ile oturum açma, ödeme ve kimlik doğrulama yollarının mevcut davranışı korunur.
+Strip link tracking	Bağlantı takibini kaldır
+Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings.	Bağlantı açarken ve Bağlantıyı Paylaş seçicisinde isteğe bağlı yerel temizleme. Yalnızca utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid ve fbclid kaldırılır. Bilinmeyen herhangi bir sorgu anahtarı varsa URL'nin tamamı korunur. Ayarlarda varsayılan olarak kapalıdır.
+external browser routing	harici tarayıcıya yönlendirme
+opened link tracking	açılan bağlantıların takibi
+shared link tracking	paylaşılan bağlantıların takibi
