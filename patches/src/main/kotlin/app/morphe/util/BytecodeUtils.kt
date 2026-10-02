@@ -287,7 +287,25 @@ private fun MutableMethod.requireJumpsKeepRegisters(insertIndex: Int, instructio
     val trial = MutableMethod(ImmutableMethod.of(this))
     trial.insertAtControlFlowLabel(insertIndex, instructions,
         *labels.mapIndexed { n, label -> label.copy(instruction = trial.getInstruction(targets[n])) }.toTypedArray())
-    val added = trial.implementation!!.instructions.size - stock.size
+    val copied = trial.implementation!!.instructions.toList()
+    // dexlib2 starts every payload on an even code unit with a nop in front where needed, so a hook
+    // of an odd length adds that nop or drops it. Those nops never run, and matching the copy to the
+    // method leaves them out, or every instruction past the hook would be read against its neighbor.
+    val stockReal = stock.indices.filterNot { stock.isPadding(it) }
+    val trialReal = copied.indices.filterNot { copied.isPadding(it) }
+    val hookStart = stockReal.indexOf(insertIndex)
+    if (hookStart < 0) refuse("instruction $insertIndex is the padding in front of a payload, which never runs")
+    val added = trialReal.size - stockReal.size
+    val hook = trialReal.subList(hookStart, hookStart + added).toSet()
+    val resumed = trialReal[hookStart + added]
+    val toStock = IntArray(copied.size) { -1 }
+    trialReal.forEachIndexed { position, index ->
+        toStock[index] = when {
+            position < hookStart -> stockReal[position]
+            position < hookStart + added -> -1
+            else -> stockReal[position - added]
+        }
+    }
     val stockKinds: RegisterKinds
     val trialKinds: RegisterKinds
     val trialFlow: ControlFlow
@@ -298,23 +316,24 @@ private fun MutableMethod.requireJumpsKeepRegisters(insertIndex: Int, instructio
     } catch (unreadable: IllegalArgumentException) {
         refuse("can't tell whether the code at instruction $insertIndex keeps the registers it jumps with: ${unreadable.message}")
     }
-    for (from in insertIndex until insertIndex + added) {
+    for (from in hook) {
         for (to in trialFlow.normal[from]) {
             // Inside the hook, or on into the instruction it was put in front of.
-            if (to in insertIndex..insertIndex + added) continue
-            val target = if (to < insertIndex) to else to - added
+            if (to in hook || to == resumed) continue
+            val target = toStock[to]
+            if (target < 0) refuse("the code at instruction $insertIndex would jump into the padding in front of a payload")
             val opcode = stock[target].opcode
             if (opcode == Opcode.MOVE_EXCEPTION || opcode in MOVE_RESULTS) {
                 refuse("the code at instruction $insertIndex would jump to the $opcode at instruction $target, which only a throw or a call may reach")
             }
         }
     }
-    val copied = trial.implementation!!.instructions.toList()
     for (index in copied.indices) {
         // The hook's own reads are the patch's to get right; this checks what it does to the method.
-        if (index in insertIndex until insertIndex + added) continue
+        if (index in hook) continue
         val now = trialKinds.at(index) ?: continue
-        val at = if (index < insertIndex) index else index - added
+        val at = toStock[index]
+        if (at < 0) refuse("the code at instruction $insertIndex would run into the padding in front of a payload")
         val before = stockKinds.at(at)
             ?: refuse("the code at instruction $insertIndex would jump to instruction $at, which nothing reached before")
         for ((register, use) in registerReads(copied[index])) {
@@ -330,6 +349,10 @@ private fun MutableMethod.requireJumpsKeepRegisters(insertIndex: Int, instructio
         }
     }
 }
+
+/** A nop dexlib2 put in front of a payload to align it, rather than one the code runs. */
+private fun List<Instruction>.isPadding(index: Int) =
+    this[index].opcode == Opcode.NOP && getOrNull(index + 1)?.opcode in PAYLOADS
 
 private val MOVE_RESULTS = setOf(Opcode.MOVE_RESULT, Opcode.MOVE_RESULT_WIDE, Opcode.MOVE_RESULT_OBJECT)
 private val PAYLOAD_USERS = setOf(Opcode.PACKED_SWITCH, Opcode.SPARSE_SWITCH)

@@ -90,6 +90,29 @@ class JumpRegisterCheckTest {
     }
 
     @Test
+    fun `a hook that moves a switch table's padding is matched instruction for instruction`() {
+        // A payload starts on an even code unit, with a nop in front when it would not, so a hook of
+        // an odd length drops that nop or adds one. The check used to count the hook as one
+        // instruction shorter or longer, read every later instruction against its neighbor and
+        // refuse a sound jump. A bad jump in the same method is still named by its own index.
+        for (padded in listOf(true, false)) {
+            val case = if (padded) "const/4 v0, 0x2" else "const/4 v1, 0x2\nconst/4 v0, 0x2"
+            fun switching() = method("I", 3, "packed-switch p0, :table\nconst/4 v0, 0x1\nreturn v0\n:case\n$case\nreturn v0\n" +
+                ":table\n.packed-switch 0x0\n:case\n.end packed-switch")
+            val hooked = switching()
+            assertEquals(if (padded) 1 else 0, hooked.padding())
+            hooked.oddSkip(anchor = 1, target = 3)
+            assertEquals("padded $padded", if (padded) 0 else 1, hooked.padding())
+            val refused = switching()
+            val before = refused.shape()
+            val refusal = assertThrows(PatchException::class.java) { refused.oddSkip(anchor = 1, target = 2) }
+            assertTrue(refusal.message, refusal.message!!.endsWith("the code at instruction 1 would bring v0 to instruction 2 " +
+                "holding nothing usable, where the method's own paths bring const"))
+            assertEquals(before, refused.shape())
+        }
+    }
+
+    @Test
     fun `kinds merge the way the verifier merges them`() {
         val zero = RegisterKind.ZERO
         assertEquals(RegisterKind.INT, RegisterKind.merge(zero, RegisterKind.INT))
@@ -134,6 +157,17 @@ class JumpRegisterCheckTest {
         "invoke-static {}, Lcom/example/Probe;->guard()Z\nmove-result v${borrowed()}\nif-nez v${borrowed()}, :skip",
         ExternalLabel("skip", getInstruction(target)),
     )
+
+    /** [skip] with a leading const, seven code units in all, so the code after it shifts by an odd amount. */
+    private fun MutableMethod.oddSkip(anchor: Int, target: Int) = addInstructionsAtControlFlowLabel(
+        anchor,
+        "const/4 v${borrowed()}, 0x0\ninvoke-static {}, Lcom/example/Probe;->guard()Z\nmove-result v${borrowed()}\n" +
+            "if-nez v${borrowed()}, :skip",
+        ExternalLabel("skip", getInstruction(target)),
+    )
+
+    private fun MutableMethod.padding() = implementation!!.instructions.zipWithNext()
+        .count { (nop, payload) -> nop.opcode == Opcode.NOP && payload.opcode == Opcode.PACKED_SWITCH_PAYLOAD }
 
     private fun MutableMethod.shape() = implementation!!.instructions.map { it.opcode to it.namedRegisters() }
 
