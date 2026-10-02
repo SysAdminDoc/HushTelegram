@@ -119,9 +119,13 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
     val settings = methods.filter { method ->
         method.returnType == "V" && AccessFlags.STATIC.isSet(method.accessFlags) &&
             method.parameterTypes.map { it.toString() } == listOf(method.definingClass, ARRAY_LIST) &&
-            SETTINGS_SALES.all { resource -> method.instructions().any { it.reference() == resource } }
+            SETTINGS_SALES.any { resource -> method.instructions().any { it.reference() == resource } }
     }.unique("Settings sales row builder")
-    if (settings != null) hooks[CommerceTarget.SETTINGS] = settingsEdits(mutable(settings))
+    if (settings != null) {
+        shape(SETTINGS_SALES.all { resource -> settings.instructions().any { it.reference() == resource } },
+            "partially changed Settings sales labels")
+        hooks[CommerceTarget.SETTINGS] = settingsEdits(mutable(settings))
+    }
 
     var giftTabId: Int? = null
     val profile = methods.filter { method -> method.hasShape(listOf("Z"), "V") &&
@@ -157,9 +161,11 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
 
     var giftButtonIndex: Int? = null
     val footer = methods.filter { method -> method.hasShape(listOf("I", "Z", "Z"), "V") &&
-        FOOTER_LABELS.all { resource -> method.instructions().any { it.reference() == resource } }
+        FOOTER_LABELS.any { resource -> method.instructions().any { it.reference() == resource } }
     }.unique("channel footer button visibility")
     if (footer != null) {
+        shape(FOOTER_LABELS.all { resource -> footer.instructions().any { it.reference() == resource } },
+            "partially changed channel footer labels")
         val method = mutable(footer)
         giftButtonIndex = footerGiftIndex(classes.getValue(footer.definingClass), method)
         val index = method.parameterRegisterNumber(0)
@@ -254,11 +260,20 @@ private fun profileEdits(method: MutableMethod, gifts: Int, hasTab: String, clea
     val identityOperand = labelOperands.filter { constantBefore(body, cachedLabelBranch, it) == gifts }
         .unique("cached Gifts label identity") ?: throw PatchException("$PATCH: no cached Gifts label identity (before editing)")
     val tabIndex = labelOperands.single { it != identityOperand }
+    val identitySource = (0 until cachedLabelBranch).last { body[it].writes(identityOperand) }
     val first = body[appends.last() - 1].namedRegisters()[1]
     val cachedBox = (0 until cachedLabelBranch).lastOrNull { body[it].reference() == BOX_INT &&
         body[it].namedRegisters() == listOf(tabIndex) && body.getOrNull(it + 1)?.opcode == Opcode.MOVE_RESULT_OBJECT &&
         body[it + 1].namedRegisters() == listOf(first) }
-    shape(cachedBox != null && (cachedBox!! + 2 until appends.last() - 1).none { body[it].writes(first) },
+    val cachedReceiver = body[appends.last() - 1].namedRegisters().first()
+    shape(cachedBox != null && first != tabIndex && cachedReceiver !in listOf(first, tabIndex) &&
+        body.getOrNull(cachedBox!! - 1)?.opcode == Opcode.NEW_INSTANCE &&
+        body[cachedBox - 1].reference() == "Landroid/util/Pair;" &&
+        body[cachedBox - 1].namedRegisters() == listOf(cachedReceiver) &&
+        flow.preservesValue(identitySource, cachedLabelBranch, identityOperand) &&
+        flow.preservesValue(cachedBox, cachedLabelBranch, tabIndex) &&
+        flow.preservesValue(cachedBox + 1, cachedPair, first) &&
+        flow.preservesValue(cachedBox - 1, cachedPair, cachedReceiver),
         "cached Gifts label and Pair identity do not share the tab index")
     val cached = body.indices.filter { index -> body[index].reference() == hasTab &&
         body[index].namedRegisters().size == 2 && constantBefore(body, index, body[index].namedRegisters()[1]) == gifts
@@ -320,6 +335,41 @@ private fun appendEdit(method: MutableMethod, index: Int, hook: String): Commerc
 private fun constantBefore(body: List<Instruction>, before: Int, register: Int): Int? {
     val write = (0 until before).lastOrNull { body[it].writes(register) } ?: return null
     return if (body[write].opcode in CONSTANTS) (body[write] as? NarrowLiteralInstruction)?.narrowLiteral else null
+}
+
+/** Bound provenance by its source definition, including handlers and paths that jump backward. */
+private fun ControlFlow.preservesValue(source: Int, use: Int, register: Int): Boolean {
+    val pending = ArrayDeque<Int>()
+    val bypass = mutableSetOf<Int>()
+    pending += 0
+    pending.addAll(exceptional[source])
+    while (pending.isNotEmpty()) {
+        val at = pending.removeFirst()
+        if (at == source || !bypass.add(at)) continue
+        if (at == use) return false
+        pending.addAll(normal[at] + exceptional[at])
+    }
+
+    val predecessors = Array(instructions.size) { mutableListOf<Int>() }
+    instructions.indices.forEach { at ->
+        (normal[at] + exceptional[at]).forEach { predecessors[it] += at }
+    }
+    val reachesUse = mutableSetOf<Int>()
+    pending += use
+    while (pending.isNotEmpty()) {
+        val at = pending.removeFirst()
+        if (at == source || !reachesUse.add(at)) continue
+        pending.addAll(predecessors[at])
+    }
+    val afterSource = mutableSetOf<Int>()
+    pending.addAll(normal[source])
+    while (pending.isNotEmpty()) {
+        val at = pending.removeFirst()
+        if (at == source || !afterSource.add(at)) continue
+        if (at in reachesUse && instructions[at].writes(register)) return false
+        pending.addAll(normal[at] + exceptional[at])
+    }
+    return use in afterSource
 }
 
 private fun Instruction.writes(register: Int): Boolean {

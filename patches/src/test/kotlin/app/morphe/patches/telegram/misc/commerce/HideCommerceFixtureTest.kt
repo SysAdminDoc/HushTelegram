@@ -9,6 +9,7 @@ import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
@@ -106,7 +107,7 @@ class HideCommerceFixtureTest {
 
     @Test
     fun `changed candidate provenance and overlapping wide writes refuse before editing`() {
-        for (build in Fixtures.declaredBuilds()) for (change in listOf("allocation", "cached title", "cached ID", "visibility")) {
+        for (build in Fixtures.declaredBuilds()) for (change in listOf("allocation", "cached title", "cached ID", "cached source", "cached backedge", "cached label identity", "visibility")) {
             val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
             val plan = context.resolveCommerceHooks()
             val edits = plan.hooks.getValue(CommerceTarget.PROFILE_GIFTS)
@@ -123,6 +124,25 @@ class HideCommerceFixtureTest {
                     val first = body[cachedPair].namedRegisters()[1]
                     method.addInstructionsAtControlFlowLabel(branch, "const-wide/16 v${first - 1}, 0x0")
                 }
+                "cached source", "cached backedge", "cached label identity" -> {
+                    val branch = body.indices.single { body[it].opcode == Opcode.IF_EQ &&
+                        labels.last() in ControlFlow.of(method).normal[it] }
+                    val first = body[cachedPair].namedRegisters()[1]
+                    val box = (0 until branch).last { body[it].reference() == "Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;" &&
+                        body[it + 1].opcode == Opcode.MOVE_RESULT_OBJECT && body[it + 1].namedRegisters() == listOf(first) }
+                    val tabIndex = body[box].namedRegisters().single()
+                    val identity = body[branch].namedRegisters().single { it != tabIndex }
+                    if (change == "cached source") {
+                        method.addInstructionsAtControlFlowLabel(branch, "move/from16 v$tabIndex, v$identity")
+                    } else {
+                        val write = if (change == "cached label identity") {
+                            "move/from16 v$identity, v$tabIndex"
+                        } else "move/from16 v$tabIndex, v$identity"
+                        method.addInstructionsAtControlFlowLabel(branch + 1,
+                            "$write\ngoto/32 :hush_changed_comparison",
+                            ExternalLabel("hush_changed_comparison", body[branch]))
+                    }
+                }
                 "visibility" -> {
                     val guard = labels.first() - 4
                     val visible = body[guard].namedRegisters().single()
@@ -134,6 +154,35 @@ class HideCommerceFixtureTest {
             for ((target, targetEdits) in plan.hooks) {
                 assertEquals("${build.name}: $change preserves $target", before.getValue(target),
                     targetEdits.first().method.instructions().map(::operation))
+            }
+            assertFact(context, "hideCommerce", 0)
+            CommerceTarget.entries.forEach { assertFact(context, it.capability, 0) }
+            assertUnwrittenIdentities(context)
+        }
+    }
+
+    @Test
+    fun `partial anchor changes are not misreported as missing sales modules`() {
+        for (build in Fixtures.declaredBuilds()) for (anchor in SETTINGS_SALES + listOf(PROFILE_GIFTS, GIFT_BUTTON, GIFT_ICON)) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val plan = context.resolveCommerceHooks()
+            val target = when (anchor) {
+                PROFILE_GIFTS -> CommerceTarget.PROFILE_GIFTS
+                GIFT_BUTTON, GIFT_ICON -> CommerceTarget.CHANNEL_GIFT
+                else -> CommerceTarget.SETTINGS
+            }
+            val host = plan.hooks.getValue(target).first().method
+            val method = if (anchor == GIFT_ICON) {
+                context.mutableClassDefBy(host.definingClass).methods.single { it.name == "<clinit>" }
+            } else host
+            val at = method.instructions().indices.first { method.instructions()[it].reference() == anchor }
+            val register = method.instructions()[at].namedRegisters().single()
+            method.replaceInstruction(at, "const/16 v$register, 0x1")
+            val before = plan.hooks.mapValues { it.value.first().method.instructions().map(::operation) }
+            assertRefuses { hideCommercePatch.execute(context) }
+            for ((surface, edits) in plan.hooks) {
+                assertEquals("${build.name}: changed $anchor preserves $surface", before.getValue(surface),
+                    edits.first().method.instructions().map(::operation))
             }
             assertFact(context, "hideCommerce", 0)
             CommerceTarget.entries.forEach { assertFact(context, it.capability, 0) }
