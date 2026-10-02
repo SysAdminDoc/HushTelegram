@@ -176,11 +176,16 @@ function Test-SourcesDoc {
     }
     return $problems.ToArray()
 }
-# docs/sources.md is local operator documentation that git ignores, so the clean worktree the hook
-# checks a pushed commit in never has it. There only the check's own controls below run; in place
-# the page itself is held to the ledger.
+# docs/sources.md is local operator documentation that git ignores. The pre-push hook copies it
+# into the clean worktree it checks a pushed commit in, so the page is held to the ledger in both
+# modes. Only a checkout that never had the page, such as a fresh clone, runs the check's own
+# controls alone, and only while git still ignores the page.
 $sourcesDocPath = Join-Path $Root 'docs/sources.md'
 $haveSourcesDoc = Test-Path -LiteralPath $sourcesDocPath
+if (-not $haveSourcesDoc) {
+    & git -C $Root check-ignore -q -- 'docs/sources.md' 2>$null
+    Assert-True ($LASTEXITCODE -eq 0) 'docs/sources.md is missing but git no longer ignores it, so it should be in this tree.'
+}
 $sourcesDoc = if ($haveSourcesDoc) { [IO.File]::ReadAllText($sourcesDocPath) } else { '' }
 if ($haveSourcesDoc) {
     $docProblems = @(Test-SourcesDoc $sourcesDoc)
@@ -190,7 +195,7 @@ if ($haveSourcesDoc) {
         $sourcesDoc.Contains($nagram.reference.commit) -and $sourcesDoc.Contains('verified archived on 2026-10-01') -and
         $sourcesDoc.Contains("Its archive date wasn't established.")) 'The source document lost a pinned classification or package count.'
 } else {
-    Write-Host '[sources] docs/sources.md is local and not in this tree, so only the page check''s own controls run here'
+    Write-Host '[sources] docs/sources.md is local and this checkout has none, so only the page check''s own controls run here'
 }
 $staleClaims = '(?i)Adds nothing Killergram|frequent feature drops|fifteen Telegram patches for 12\.10\.1, on both packages|sending (?:users.? )?phone numbers to its developer|documented doing harmful things'
 Assert-True (([IO.File]::ReadAllText($ledgerPath) + $sourcesDoc) -notmatch $staleClaims) `
