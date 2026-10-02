@@ -40,6 +40,7 @@ import app.hushtelegram.extension.telegram.misc.Analytics;
 import app.hushtelegram.extension.telegram.misc.AnalyticsTest.DeviceStatsController;
 import app.hushtelegram.extension.telegram.misc.UpdateChecks;
 import app.hushtelegram.extension.telegram.misc.Stories;
+import app.hushtelegram.extension.telegram.misc.Recommendations;
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
@@ -105,6 +106,8 @@ public class PausedHooksTest {
                 () -> !Stories.showStoryCamera(true),
                 () -> Stories.hideAvatarStories(DIALOG_AVATAR),
                 () -> Stories.hideAvatarStoryTouches(DIALOG_AVATAR)));
+        probes.put(PatchFamily.HIDE_RECOMMENDATIONS, Arrays.asList(
+                Recommendations::skipRecommendations, Recommendations::skipCachedRecommendations));
         // A device statistics report is never read or sent, and neither is a channel's read time.
         probes.put(PatchFamily.DISABLE_ANALYTICS, Arrays.asList(
                 () -> Analytics.skipDeviceStats(new DeviceStatsController(true, false)),

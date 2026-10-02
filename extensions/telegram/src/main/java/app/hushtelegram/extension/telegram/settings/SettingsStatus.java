@@ -31,6 +31,9 @@ public final class SettingsStatus {
     }
 
     public static boolean hideStories() { return false; }
+    public static boolean hideRecommendations() { return false; }
+    public static boolean channelRecommendations() { return false; }
+    public static boolean cachedRecommendations() { return false; }
     public static boolean storyRequests() { return false; }
     public static boolean storyBar() { return false; }
     public static boolean storyCamera() { return false; }

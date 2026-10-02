@@ -235,7 +235,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
         // Every row carries an icon, so all pages share one text edge. A switch that stops something
         // Telegram does takes the stop sign.
-        if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_STORIES)) {
+        if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_STORIES)
+                || build.contains(PatchFamily.HIDE_RECOMMENDATIONS)) {
             PreferenceCategory chats = category(screen, L10n.t("Chats"));
             if (build.contains(PatchFamily.HIDE_ADS)) {
                 chats.addPreference(mark(toggle(context, Settings.HIDE_ADS, L10n.t("Hide ads"),
@@ -246,6 +247,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 chats.addPreference(mark(toggle(context, Settings.HIDE_STORIES, L10n.t("Hide Stories"),
                         PatchFamily.HIDE_STORIES.coverageSummary(L10n.t("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching "
                                 + "the story list. Profile stories and archives remain available."))), SettingsIcons.BLOCK));
+            }
+            if (build.contains(PatchFamily.HIDE_RECOMMENDATIONS)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_RECOMMENDATIONS, L10n.t("Hide recommendations"),
+                        PatchFamily.HIDE_RECOMMENDATIONS.coverageSummary(L10n.t("Hides similar channels and bots, including cached recommendations. "
+                                + "Telegram doesn't ask for new recommendations while the switch is on."))), SettingsIcons.BLOCK));
             }
         }
 

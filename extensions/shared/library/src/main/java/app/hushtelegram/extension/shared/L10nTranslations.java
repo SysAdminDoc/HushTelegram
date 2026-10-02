@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(326);
+        Map<String, String> table = new HashMap<>(334);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -178,6 +178,10 @@ public final class L10nTranslations {
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("Hide recommendations",
+                "Empfehlungen ausblenden");
+        table.put("Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.",
+                "Blendet \u00e4hnliche Kan\u00e4le und Bots sowie gespeicherte Empfehlungen aus. Solange der Schalter an ist, fragt Telegram keine neuen Empfehlungen ab.");
         table.put("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.",
                 "Blendet die Story-Leiste der Chatliste, Story-Ringe an Avataren und die Schaltfl\u00e4che zum Posten einer Story aus und ruft die Story-Liste nicht mehr ab. Profil-Stories und Archive bleiben verf\u00fcgbar.");
         table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
@@ -294,13 +298,13 @@ public final class L10nTranslations {
                 "Telegram ist dreimal hintereinander innerhalb einer Minute nach dem Start abgest\u00fcrzt oder h\u00e4ngen geblieben, deshalb hat sich HushTelegram selbst pausiert.");
         table.put("Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
                 "Telegram sendet deine Speicherordner nicht als Ger\u00e4tebericht, wenn sein Server danach fragt, und auch nicht, wie lange du jeden Kanalbeitrag angesehen hast. Nachrichten und Anrufe funktionieren wie bisher.");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram bietet keine Updates von telegram.org mehr an. Sie lie\u00dfen sich nicht \u00fcber diesen gepatchten Build installieren, also patche jede neue Version stattdessen im Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Die Webadressen von Telegram sind in den Android-Einstellungen f\u00fcr diese App ausgew\u00e4hlt, deshalb \u00f6ffnen sich ihre Links hier.");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Diese Datei ist zu gro\u00df f\u00fcr eine Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -373,6 +377,8 @@ public final class L10nTranslations {
                 "Story-Ringe an Avataren");
         table.put("avatar story taps",
                 "Story-Tipps auf Avatare");
+        table.put("cached recommendations",
+                "gespeicherte Empfehlungen");
         table.put("channel ads",
                 "Kanalwerbung");
         table.put("channel read metrics",
@@ -383,6 +389,8 @@ public final class L10nTranslations {
                 "Ger\u00e4testatistikberichte");
         table.put("search ads",
                 "Suchwerbung");
+        table.put("similar channels and bots",
+                "\u00e4hnliche Kan\u00e4le und Bots");
         table.put("story list requests",
                 "Anfragen zur Story-Liste");
         table.put("video ads",
@@ -390,7 +398,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(326);
+        Map<String, String> table = new HashMap<>(334);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -521,6 +529,10 @@ public final class L10nTranslations {
     }
 
     private static void fillEs1(Map<String, String> table) {
+        table.put("Hide recommendations",
+                "Ocultar recomendaciones");
+        table.put("Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.",
+                "Oculta canales y bots similares, incluidas las recomendaciones guardadas. Telegram no solicita nuevas recomendaciones mientras el interruptor est\u00e1 activado.");
         table.put("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.",
                 "Oculta la barra de historias de la lista de chats, los anillos de historias en los avatares y el bot\u00f3n para publicar una historia, y deja de consultar la lista de historias. Las historias de los perfiles y los archivos siguen disponibles.");
         table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
@@ -637,13 +649,13 @@ public final class L10nTranslations {
                 "Tres veces seguidas, Telegram fall\u00f3 o se congel\u00f3 durante el primer minuto tras iniciarse, as\u00ed que HushTelegram se paus\u00f3 solo.");
         table.put("Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
                 "Telegram no env\u00eda tus carpetas de almacenamiento como informe del dispositivo cuando su servidor lo pide, ni cu\u00e1nto tiempo pasaste en cada publicaci\u00f3n de un canal. Los mensajes y las llamadas funcionan como antes.");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram deja de ofrecer actualizaciones de telegram.org. No se pueden instalar sobre este build parcheado, as\u00ed que parchea cada versi\u00f3n nueva en Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Las direcciones web de Telegram est\u00e1n seleccionadas para esta app en los ajustes de Android, as\u00ed que sus enlaces se abren aqu\u00ed.");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Ese archivo es demasiado grande para ser un archivo de configuraci\u00f3n. No se cambi\u00f3 nada.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -716,6 +728,8 @@ public final class L10nTranslations {
                 "anillos de historias en los avatares");
         table.put("avatar story taps",
                 "toques de historias en los avatares");
+        table.put("cached recommendations",
+                "recomendaciones guardadas");
         table.put("channel ads",
                 "anuncios en canales");
         table.put("channel read metrics",
@@ -726,6 +740,8 @@ public final class L10nTranslations {
                 "informes de estad\u00edsticas del dispositivo");
         table.put("search ads",
                 "anuncios en b\u00fasquedas");
+        table.put("similar channels and bots",
+                "canales y bots similares");
         table.put("story list requests",
                 "consultas de la lista de historias");
         table.put("video ads",
@@ -733,7 +749,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(326);
+        Map<String, String> table = new HashMap<>(334);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -864,6 +880,10 @@ public final class L10nTranslations {
     }
 
     private static void fillIn1(Map<String, String> table) {
+        table.put("Hide recommendations",
+                "Sembunyikan rekomendasi");
+        table.put("Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.",
+                "Menyembunyikan saluran dan bot serupa, termasuk rekomendasi tersimpan. Telegram tidak meminta rekomendasi baru selama sakelar aktif.");
         table.put("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.",
                 "Menyembunyikan bilah cerita di daftar chat, lingkaran cerita pada avatar dan tombol Kirim Cerita, serta berhenti mengambil daftar cerita. Cerita profil dan arsip tetap tersedia.");
         table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
@@ -980,13 +1000,13 @@ public final class L10nTranslations {
                 "Telegram berhenti mendadak atau macet dalam satu menit setelah dibuka, tiga kali berturut-turut, jadi HushTelegram menjeda dirinya sendiri.");
         table.put("Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
                 "Telegram tidak mengirim folder penyimpanan Anda sebagai laporan perangkat saat server-nya meminta, atau berapa lama Anda melihat setiap postingan saluran. Pesan dan panggilan tetap berfungsi seperti biasa.");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Alamat web Telegram dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "File itu terlalu besar untuk sebuah file pengaturan. Tidak ada yang diubah.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -1059,6 +1079,8 @@ public final class L10nTranslations {
                 "lingkaran cerita pada avatar");
         table.put("avatar story taps",
                 "ketukan cerita pada avatar");
+        table.put("cached recommendations",
+                "rekomendasi tersimpan");
         table.put("channel ads",
                 "iklan saluran");
         table.put("channel read metrics",
@@ -1069,6 +1091,8 @@ public final class L10nTranslations {
                 "laporan statistik perangkat");
         table.put("search ads",
                 "iklan pencarian");
+        table.put("similar channels and bots",
+                "saluran dan bot serupa");
         table.put("story list requests",
                 "permintaan daftar cerita");
         table.put("video ads",
@@ -1076,7 +1100,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(326);
+        Map<String, String> table = new HashMap<>(334);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1207,6 +1231,10 @@ public final class L10nTranslations {
     }
 
     private static void fillPt_rBR1(Map<String, String> table) {
+        table.put("Hide recommendations",
+                "Ocultar recomenda\u00e7\u00f5es");
+        table.put("Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.",
+                "Oculta canais e bots semelhantes, incluindo recomenda\u00e7\u00f5es armazenadas. O Telegram n\u00e3o solicita novas recomenda\u00e7\u00f5es enquanto a op\u00e7\u00e3o est\u00e1 ativada.");
         table.put("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.",
                 "Oculta a barra de stories da lista de conversas, os an\u00e9is de stories nos avatares e o bot\u00e3o de publicar um story, e deixa de buscar a lista de stories. Os stories dos perfis e os arquivos continuam dispon\u00edveis.");
         table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
@@ -1323,13 +1351,13 @@ public final class L10nTranslations {
                 "O Telegram fechou com erro ou travou no primeiro minuto ap\u00f3s iniciar, tr\u00eas vezes seguidas, ent\u00e3o o HushTelegram foi pausado automaticamente.");
         table.put("Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
                 "O Telegram n\u00e3o envia suas pastas de armazenamento como relat\u00f3rio do dispositivo quando o servidor dele pede, nem quanto tempo voc\u00ea passou em cada post de um canal. Mensagens e chamadas funcionam como antes.");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "O Telegram deixa de oferecer atualiza\u00e7\u00f5es do telegram.org. Elas n\u00e3o podem ser instaladas sobre este build corrigido, ent\u00e3o aplique o patch de cada nova vers\u00e3o pelo Morphe Manager.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Os endere\u00e7os web do Telegram est\u00e3o selecionados para este app nas configura\u00e7\u00f5es do Android, ent\u00e3o os links deles abrem aqui.");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Esse arquivo \u00e9 grande demais para ser um arquivo de configura\u00e7\u00f5es. Nada foi alterado.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -1402,6 +1430,8 @@ public final class L10nTranslations {
                 "an\u00e9is de stories nos avatares");
         table.put("avatar story taps",
                 "toques de stories nos avatares");
+        table.put("cached recommendations",
+                "recomenda\u00e7\u00f5es armazenadas");
         table.put("channel ads",
                 "an\u00fancios em canais");
         table.put("channel read metrics",
@@ -1412,6 +1442,8 @@ public final class L10nTranslations {
                 "relat\u00f3rios de estat\u00edsticas do dispositivo");
         table.put("search ads",
                 "an\u00fancios na busca");
+        table.put("similar channels and bots",
+                "canais e bots semelhantes");
         table.put("story list requests",
                 "solicita\u00e7\u00f5es da lista de stories");
         table.put("video ads",
@@ -1419,7 +1451,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(326);
+        Map<String, String> table = new HashMap<>(334);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -1550,6 +1582,10 @@ public final class L10nTranslations {
     }
 
     private static void fillTr1(Map<String, String> table) {
+        table.put("Hide recommendations",
+                "\u00d6nerileri gizle");
+        table.put("Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.",
+                "Benzer kanallar\u0131 ve botlar\u0131, kay\u0131tl\u0131 \u00f6neriler dahil gizler. Anahtar a\u00e7\u0131kken Telegram yeni \u00f6neri istemez.");
         table.put("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.",
                 "Sohbet listesindeki hik\u00e2ye \u00e7ubu\u011funu, avatar hik\u00e2ye halkalar\u0131n\u0131 ve Hik\u00e2ye Payla\u015f d\u00fc\u011fmesini gizler, hik\u00e2ye listesini almay\u0131 durdurur. Profil hik\u00e2yeleri ve ar\u015fivler kullan\u0131labilir durumda kal\u0131r.");
         table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
@@ -1666,13 +1702,13 @@ public final class L10nTranslations {
                 "Telegram a\u00e7\u0131ld\u0131ktan sonraki bir dakika i\u00e7inde \u00fcst \u00fcste \u00fc\u00e7 kez \u00e7\u00f6kt\u00fc veya dondu, bu y\u00fczden HushTelegram kendini duraklatt\u0131.");
         table.put("Telegram doesn't send your storage folders as a device report when its server asks, or how long you spent on each channel post. Messages and calls work as before.",
                 "Telegram, sunucusu istedi\u011finde depolama klas\u00f6rlerinizi cihaz raporu olarak g\u00f6ndermez, her kanal g\u00f6nderisinde ne kadar kald\u0131\u011f\u0131n\u0131z\u0131 da g\u00f6ndermez. Mesajlar ve aramalar eskisi gibi \u00e7al\u0131\u015f\u0131r.");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram, telegram.org g\u00fcncellemelerini sunmay\u0131 b\u0131rak\u0131r. Bunlar bu yamal\u0131 s\u00fcr\u00fcm\u00fcn \u00fczerine kurulamaz, bu y\u00fczden her yeni s\u00fcr\u00fcm\u00fc Morphe Manager'da yamala.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Telegram'\u0131n web adresleri Android ayarlar\u0131nda bu uygulama i\u00e7in se\u00e7ili, bu y\u00fczden ba\u011flant\u0131lar\u0131 burada a\u00e7\u0131l\u0131r.");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("That file is too large to be a settings file. Nothing was changed.",
                 "Bu dosya bir ayar dosyas\u0131 olamayacak kadar b\u00fcy\u00fck. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
@@ -1745,6 +1781,8 @@ public final class L10nTranslations {
                 "avatar hik\u00e2ye halkalar\u0131");
         table.put("avatar story taps",
                 "avatarlardaki hik\u00e2ye dokunu\u015flar\u0131");
+        table.put("cached recommendations",
+                "kay\u0131tl\u0131 \u00f6neriler");
         table.put("channel ads",
                 "kanal reklamlar\u0131");
         table.put("channel read metrics",
@@ -1755,6 +1793,8 @@ public final class L10nTranslations {
                 "cihaz istatistik raporlar\u0131");
         table.put("search ads",
                 "arama reklamlar\u0131");
+        table.put("similar channels and bots",
+                "benzer kanallar ve botlar");
         table.put("story list requests",
                 "hik\u00e2ye listesi istekleri");
         table.put("video ads",

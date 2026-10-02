@@ -24,6 +24,7 @@ package app.hushtelegram.extension.telegram.settings;
 public final class FamilyNames {
     public static final String HIDE_ADS = "Hide ads";
     public static final String HIDE_STORIES = "Hide Stories";
+    public static final String HIDE_RECOMMENDATIONS = "Hide recommendations";
     public static final String DISABLE_ANALYTICS = "Disable analytics";
     public static final String DISABLE_UPDATE_CHECKS = "Disable update checks";
 

@@ -4,6 +4,7 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Hide recommendations removes similar channels and bots, including cached search sections. Disabling the switch or using Pause restores the original cache and request paths. Resume and Undo retain the settings page's scroll position when their status text changes height.
 * **Telegram:** Hide Stories removes the chat-list story bar, its camera button and avatar story interactions. Profile stories and archives remain available, and the switch or Pause restores Telegram's behavior.
 
 ## 0.0.5 (2026-10-01)

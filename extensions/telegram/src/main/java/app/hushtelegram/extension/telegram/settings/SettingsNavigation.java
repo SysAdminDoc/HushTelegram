@@ -62,6 +62,8 @@ final class SettingsNavigation extends BaseAdapter {
     private final Preference pageStatus;
     /** Whether that line is about Pause, and so carries Resume or Undo. */
     private boolean pageAction;
+    /** Keep a status action from shortening this page and clamping its current scroll offset. */
+    private int pageStatusHeight;
     private String route = "";
     private String query = "";
     /**
@@ -220,6 +222,7 @@ final class SettingsNavigation extends BaseAdapter {
     }
 
     private void showAt(int position, int offset) {
+        pageStatusHeight = 0;
         // A header resize otherwise syncs the old page's visible children back over this
         // selection in touch mode. Rebind when changing pages; normal preference updates
         // still keep their current views and scroll position through notifyDataSetChanged.
@@ -386,7 +389,8 @@ final class SettingsNavigation extends BaseAdapter {
         }
         if (item == screen.getPreference(0)) bindStatus(row);
         if (item == pageStatus && pageAction) {
-            bindAction(row, HushTelegramPause.isPaused(), HushTelegramPause.pausesNextStart(screen.getContext()));
+            row.setMinimumHeight(Math.max(row.getMinimumHeight(), pageStatusHeight));
+            bindAction(row, HushTelegramPause.isPaused(), HushTelegramPause.pausesNextStart(screen.getContext()), true);
         }
         return row;
     }
@@ -402,14 +406,14 @@ final class SettingsNavigation extends BaseAdapter {
             // A marker Resume couldn't remove keeps the card's own line, which says what to do.
             summary.setText(L10n.t("Your choices are saved. Tap Resume, then restart Telegram."));
         }
-        bindAction(row, paused, nextPaused);
+        bindAction(row, paused, nextPaused, false);
     }
 
     /**
      * Pause, Resume or Undo in [row], whichever changes the next start. The list keeps its place,
      * so the page the button is on stays where it was.
      */
-    private void bindAction(View row, boolean paused, boolean nextPaused) {
+    private void bindAction(View row, boolean paused, boolean nextPaused, boolean pageStatusAction) {
         ViewGroup frame = row.findViewById(android.R.id.widget_frame);
         frame.removeAllViews();
         Button action = new Button(screen.getContext());
@@ -424,6 +428,7 @@ final class SettingsNavigation extends BaseAdapter {
         action.setMinimumHeight(dp(48));
         action.setPadding(0, 0, 0, 0);
         action.setOnClickListener(ignored -> {
+            if (pageStatusAction) pageStatusHeight = Math.max(pageStatusHeight, row.getHeight());
             if (nextPaused) {
                 page.resumeFromOverview();
             } else {

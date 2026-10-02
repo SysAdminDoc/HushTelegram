@@ -169,3 +169,7 @@ Turn off Telegram's update checks	Desactivar las comprobaciones de actualizació
 Your choices are saved. Tap Resume, then restart Telegram.	Tus preferencias están guardadas. Toca Reanudar y luego reinicia Telegram.
 Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.	Telegram deja de ofrecer actualizaciones de telegram.org. No se pueden instalar sobre este build parcheado, así que parchea cada versión nueva en Morphe Manager.
 No HushTelegram release is out yet.	Todavía no hay ninguna versión de HushTelegram.
+Hide recommendations	Ocultar recomendaciones
+Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.	Oculta canales y bots similares, incluidas las recomendaciones guardadas. Telegram no solicita nuevas recomendaciones mientras el interruptor está activado.
+similar channels and bots	canales y bots similares
+cached recommendations	recomendaciones guardadas

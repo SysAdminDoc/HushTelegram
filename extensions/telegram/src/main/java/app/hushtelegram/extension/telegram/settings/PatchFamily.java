@@ -45,6 +45,8 @@ public enum PatchFamily {
             Settings.HIDE_ADS),
     HIDE_STORIES(FamilyNames.HIDE_STORIES, "hideStories", null,
             Settings.HIDE_STORIES),
+    HIDE_RECOMMENDATIONS(FamilyNames.HIDE_RECOMMENDATIONS, "hideRecommendations", null,
+            Settings.HIDE_RECOMMENDATIONS),
     DISABLE_ANALYTICS(FamilyNames.DISABLE_ANALYTICS, "disableAnalytics", null,
             Settings.DISABLE_ANALYTICS),
     DISABLE_UPDATE_CHECKS(FamilyNames.DISABLE_UPDATE_CHECKS, "disableUpdateChecks", null,
@@ -104,6 +106,8 @@ public enum PatchFamily {
         STORY_CAMERA(HIDE_STORIES, "storyCamera", "Post Story button"),
         STORY_AVATARS(HIDE_STORIES, "storyAvatars", "avatar story rings"),
         STORY_TOUCHES(HIDE_STORIES, "storyTouches", "avatar story taps"),
+        CHANNEL_RECOMMENDATIONS(HIDE_RECOMMENDATIONS, "channelRecommendations", "similar channels and bots"),
+        CACHED_RECOMMENDATIONS(HIDE_RECOMMENDATIONS, "cachedRecommendations", "cached recommendations"),
         DEVICE_STATS(DISABLE_ANALYTICS, "deviceStats", "device statistics reports"),
         READ_METRICS(DISABLE_ANALYTICS, "readMetrics", "channel read metrics");
 

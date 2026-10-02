@@ -219,7 +219,7 @@ public class PatchFamilyTest {
         assertEquals(Arrays.asList(
                 "Hide ads: on (hushtelegram_hide_ads=on)",
                 "Disable analytics: disabled by its switch (hushtelegram_disable_analytics=off)",
-                "not in this build: Hide Stories, Disable update checks",
+                "not in this build: Hide Stories, Hide recommendations, Disable update checks",
                 "Hide ads coverage: channel ads, video ads, search ads",
                 "Disable analytics coverage: device statistics reports, channel read metrics"),
                 running);

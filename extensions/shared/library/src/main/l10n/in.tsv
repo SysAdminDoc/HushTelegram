@@ -169,3 +169,7 @@ Turn off Telegram's update checks	Matikan pemeriksaan pembaruan Telegram
 Your choices are saved. Tap Resume, then restart Telegram.	Pilihan Anda tersimpan. Ketuk Lanjutkan, lalu mulai ulang Telegram.
 Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.	Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.
 No HushTelegram release is out yet.	Belum ada rilis HushTelegram.
+Hide recommendations	Sembunyikan rekomendasi
+Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.	Menyembunyikan saluran dan bot serupa, termasuk rekomendasi tersimpan. Telegram tidak meminta rekomendasi baru selama sakelar aktif.
+similar channels and bots	saluran dan bot serupa
+cached recommendations	rekomendasi tersimpan

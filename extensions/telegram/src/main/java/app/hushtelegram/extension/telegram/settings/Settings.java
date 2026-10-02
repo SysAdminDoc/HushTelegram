@@ -42,6 +42,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_STORIES =
             new BooleanSetting("hushtelegram_hide_stories", TRUE);
 
+    /** Similar channels/bots and their cached search sections. */
+    public static final BooleanSetting HIDE_RECOMMENDATIONS =
+            new BooleanSetting("hushtelegram_hide_recommendations", TRUE);
+
     /**
      * The device statistics report the server can ask for (storage directories, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
