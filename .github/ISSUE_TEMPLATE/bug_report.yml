@@ -71,6 +71,7 @@ body:
       options:
         - Disable analytics
         - Disable call debug upload
+        - Disable chat swipe actions
         - Disable draft link previews
         - Disable update checks
         - Gallery camera on tap

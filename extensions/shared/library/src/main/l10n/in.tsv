@@ -220,3 +220,5 @@ bot shares	pesan yang dibagikan bot
 Camera only on tap	Kamera hanya saat diketuk
 Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it. Off by default in settings.	Membuka galeri lampiran tidak menyalakan kamera atau meminta akses kamera. Ketuk ubin kamera untuk menyalakannya. Secara default nonaktif di pengaturan.
 Gallery camera	Kamera galeri
+No swipe actions on chats	Tanpa aksi geser pada chat
+Swiping a chat sideways in the chat list does nothing, so you can't archive, mute, pin, delete or read a chat by accident. Long-press still has every action. Off by default in settings.	Menggeser chat ke samping di daftar chat tidak melakukan apa pun, jadi kamu tidak bisa mengarsipkan, membisukan, menyematkan, menghapus, atau menandai chat sebagai dibaca secara tidak sengaja. Tekan lama tetap menampilkan semua aksi. Secara default nonaktif di pengaturan.

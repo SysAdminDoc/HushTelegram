@@ -268,6 +268,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         PatchFamily.HIDE_SPONSORED_PROXY.coverageSummary(L10n.t("Hides a proxy's sponsored channel from the chat list and folders. "
                                 + "Leaves proxy settings and shared promo-data updates alone."))), SettingsIcons.BLOCK));
             }
+            if (build.contains(PatchFamily.DISABLE_CHAT_SWIPE)) {
+                chats.addPreference(mark(toggle(context, Settings.DISABLE_CHAT_SWIPE, L10n.t("No swipe actions on chats"),
+                        PatchFamily.DISABLE_CHAT_SWIPE.coverageSummary(L10n.t("Swiping a chat sideways in the chat list does nothing, "
+                                + "so you can't archive, mute, pin, delete or read a chat by accident. Long-press still has every action. "
+                                + "Off by default in settings."))), SettingsIcons.BLOCK));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

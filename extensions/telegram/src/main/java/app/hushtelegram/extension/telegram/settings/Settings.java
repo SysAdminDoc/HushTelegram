@@ -58,6 +58,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_SPONSORED_PROXY =
             new BooleanSetting("hushtelegram_hide_sponsored_proxy", TRUE);
 
+    /** The chat list's sideways swipe on a chat row only; long-press, drag to reorder and folder swipes stay stock. */
+    public static final BooleanSetting DISABLE_CHAT_SWIPE =
+            new BooleanSetting("hushtelegram_disable_chat_swipe", FALSE);
+
     /**
      * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are

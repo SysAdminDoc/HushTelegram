@@ -162,6 +162,9 @@ public class PausedHooksTest {
                 app.hushtelegram.extension.telegram.misc.DraftPreviews::skipPollPreview,
                 app.hushtelegram.extension.telegram.misc.DraftPreviews::skipStoryLinkPreview,
                 app.hushtelegram.extension.telegram.misc.DraftPreviews::skipBotSharePreview));
+        // A sideways swipe on a chat row starts nothing.
+        probes.put(PatchFamily.DISABLE_CHAT_SWIPE, Collections.singletonList(
+                app.hushtelegram.extension.telegram.misc.ChatSwipe::keepRowStill));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),

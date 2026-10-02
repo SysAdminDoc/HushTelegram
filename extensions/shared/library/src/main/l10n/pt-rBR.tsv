@@ -217,3 +217,5 @@ bot shares	mensagens compartilhadas por bots
 Camera only on tap	Câmera só ao tocar
 Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it. Off by default in settings.	Abrir a galeria de anexos não liga a câmera nem pede acesso a ela. Toque no quadro da câmera para ligá-la. Desativado por padrão nas configurações.
 Gallery camera	Câmera da galeria
+No swipe actions on chats	Sem ações ao deslizar chats
+Swiping a chat sideways in the chat list does nothing, so you can't archive, mute, pin, delete or read a chat by accident. Long-press still has every action. Off by default in settings.	Deslizar um chat para o lado na lista de chats não faz nada, então você não arquiva, silencia, fixa, apaga nem marca um chat como lido sem querer. Tocar e segurar continua mostrando todas as ações. Desativado por padrão nas configurações.
