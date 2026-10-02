@@ -113,6 +113,47 @@ class JumpRegisterCheckTest {
     }
 
     @Test
+    fun `a real nop in front of a table's padding is told apart from the padding`() {
+        // With two nops in front of a table, an odd hook drops the second. Telling padding by the
+        // instruction after it took the first for padding in the copy only and refused this sound jump.
+        val code = "packed-switch p0, :table\nconst/4 v0, 0x1\nreturn v0\n:case\nconst/4 v1, 0x2\nconst/4 v0, 0x2\nreturn v0\nnop\nnop\n" +
+            ":table\n.packed-switch 0x0\n:case\n.end packed-switch"
+        val hooked = method("I", 3, code)
+        assertEquals(listOf(Opcode.NOP, Opcode.NOP), hooked.implementation!!.instructions.map { it.opcode }.takeLast(3).take(2))
+        hooked.oddSkip(anchor = 1, target = 3)
+        assertEquals(1, hooked.implementation!!.instructions.count { it.opcode == Opcode.NOP })
+    }
+
+    @Test
+    fun `code in front of a result or an exception move is refused even without a jump`() {
+        val result = method("I", 3, "invoke-static {p0}, Lcom/example/Probe;->id(I)I\nmove-result v0\nreturn p0")
+        val before = result.shape()
+        val refusal = assertThrows(PatchException::class.java) {
+            result.addInstructionsAtControlFlowLabel(1, "invoke-static {}, Lcom/example/Probe;->hit()V")
+        }
+        assertTrue(refusal.message, refusal.message!!.endsWith("code can't go in front of the ${Opcode.MOVE_RESULT} at instruction 1, " +
+            "which only a throw or a call may reach"))
+        assertEquals(before, result.shape())
+        val handled = method("V", 3, "invoke-static {}, Lcom/example/Probe;->hit()V\nreturn-void\nmove-exception v0\nreturn-void").apply {
+            catchAll(protected = 0, handler = 2)
+        }
+        assertThrows(PatchException::class.java) { handled.addInstructionsAtControlFlowLabel(2, "nop") }
+        // The instruction after the move takes code as before.
+        result.addInstructionsAtControlFlowLabel(2, "invoke-static {}, Lcom/example/Probe;->hit()V")
+    }
+
+    @Test
+    fun `a hook with a switch table of its own is refused before the method changes`() {
+        val host = method("I", 3, "const/4 v0, 0x1\nreturn v0")
+        val before = host.shape()
+        val refusal = assertThrows(PatchException::class.java) {
+            host.addInstructionsAtControlFlowLabel(0, "packed-switch p0, :table\n:case\nnop\n:table\n.packed-switch 0x0\n:case\n.end packed-switch")
+        }
+        assertTrue(refusal.message, refusal.message!!.endsWith("has a ${Opcode.PACKED_SWITCH} of its own, which can't be checked"))
+        assertEquals(before, host.shape())
+    }
+
+    @Test
     fun `kinds merge the way the verifier merges them`() {
         val zero = RegisterKind.ZERO
         assertEquals(RegisterKind.INT, RegisterKind.merge(zero, RegisterKind.INT))

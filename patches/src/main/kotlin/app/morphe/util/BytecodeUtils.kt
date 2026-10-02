@@ -63,6 +63,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutab
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patcher.util.smali.ExternalLabel
+import app.morphe.patcher.util.smali.toInstructions
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcode.CONST_STRING
@@ -239,7 +240,23 @@ fun MutableMethod.addInstructionsAtControlFlowLabel(
     if (original in PAYLOADS) {
         throw PatchException("$definingClass->$name: instruction $insertIndex is a $original, data that never runs, so code can't go in front of it")
     }
-    if (externalLabels.isNotEmpty()) requireJumpsKeepRegisters(insertIndex, instructions, externalLabels)
+    // A result is taken right after its call and a caught exception at its handler's start. Code in
+    // front of either leaves the move to a place ART refuses it, whether or not the code jumps.
+    if (original == Opcode.MOVE_EXCEPTION || original in MOVE_RESULTS) {
+        throw PatchException("$definingClass->$name: code can't go in front of the $original at instruction $insertIndex, " +
+            "which only a throw or a call may reach")
+    }
+    // Compiled the way the patcher compiles it, with a stand-in nop for each label the code names but
+    // doesn't hold, to know its length. A label's name is internal to the patcher, so the names come
+    // from the code; a type after a colon gets a stand-in too, which is counted the same way.
+    val held = Regex("""^\s*:(\w+)\s*$""", RegexOption.MULTILINE).findAll(instructions).map { it.groupValues[1] }.toSet()
+    val standIns = Regex(""":(\w+)""").findAll(instructions).map { it.groupValues[1] }.toSet() - held
+    val compiled = (instructions + standIns.joinToString("") { "\n:$it\nnop" }).toInstructions(this)
+    // A switch or array table of the hook's own would be checked, and copied, against the method's padding.
+    compiled.firstOrNull { it.opcode in PAYLOAD_USERS || it.opcode == Opcode.FILL_ARRAY_DATA }?.let {
+        throw PatchException("$definingClass->$name: the code at instruction $insertIndex has a ${it.opcode} of its own, which can't be checked")
+    }
+    if (externalLabels.isNotEmpty()) requireJumpsKeepRegisters(insertIndex, instructions, externalLabels, compiled.size - standIns.size)
     insertAtControlFlowLabel(insertIndex, instructions, *externalLabels)
 }
 
@@ -275,7 +292,7 @@ internal fun MutableMethod.insertAtControlFlowLabel(
  * reference of a class that differs between paths, or an array element of a type not known here,
  * is taken on trust; dex2oat on a phone still checks those.
  */
-private fun MutableMethod.requireJumpsKeepRegisters(insertIndex: Int, instructions: String, labels: Array<out ExternalLabel>) {
+private fun MutableMethod.requireJumpsKeepRegisters(insertIndex: Int, instructions: String, labels: Array<out ExternalLabel>, hookSize: Int) {
     fun refuse(reason: String): Nothing = throw PatchException("$definingClass->$name: $reason")
     val stock = implementation!!.instructions.toList()
     // The label's instruction is internal to the patcher, but copy and equals are public, and an
@@ -289,23 +306,30 @@ private fun MutableMethod.requireJumpsKeepRegisters(insertIndex: Int, instructio
         *labels.mapIndexed { n, label -> label.copy(instruction = trial.getInstruction(targets[n])) }.toTypedArray())
     val copied = trial.implementation!!.instructions.toList()
     // dexlib2 starts every payload on an even code unit with a nop in front where needed, so a hook
-    // of an odd length adds that nop or drops it. Those nops never run, and matching the copy to the
-    // method leaves them out, or every instruction past the hook would be read against its neighbor.
-    val stockReal = stock.indices.filterNot { stock.isPadding(it) }
-    val trialReal = copied.indices.filterNot { copied.isPadding(it) }
-    val hookStart = stockReal.indexOf(insertIndex)
-    if (hookStart < 0) refuse("instruction $insertIndex is the padding in front of a payload, which never runs")
-    val added = trialReal.size - stockReal.size
-    val hook = trialReal.subList(hookStart, hookStart + added).toSet()
-    val resumed = trialReal[hookStart + added]
+    // of an odd length adds that nop or drops it, and a goto the hook pushes out of reach grows to
+    // goto/16. The copy is matched to the method one instruction at a time around both, with the
+    // hook's own length taken from its compiled code, or every instruction past a changed nop would
+    // be read against its neighbor.
+    if (stock.isPadding(insertIndex)) refuse("instruction $insertIndex is the padding in front of a payload, which never runs")
     val toStock = IntArray(copied.size) { -1 }
-    trialReal.forEachIndexed { position, index ->
-        toStock[index] = when {
-            position < hookStart -> stockReal[position]
-            position < hookStart + added -> -1
-            else -> stockReal[position - added]
+    var s = 0
+    var t = 0
+    var hookStart = -1
+    while (s < stock.size || t < copied.size) {
+        if (s == insertIndex && hookStart < 0) {
+            hookStart = t
+            t += hookSize
+            continue
+        }
+        when {
+            s < stock.size && t < copied.size && stock[s].opcode.kind() == copied[t].opcode.kind() -> toStock[t++] = s++
+            s < stock.size && stock.isPadding(s) -> s++
+            t < copied.size && copied.isPadding(t) -> t++
+            else -> refuse("can't line the copy with the code at instruction $insertIndex up with the method at instruction $s")
         }
     }
+    val hook = hookStart until hookStart + hookSize
+    val resumed = hookStart + hookSize
     val stockKinds: RegisterKinds
     val trialKinds: RegisterKinds
     val trialFlow: ControlFlow
@@ -350,9 +374,15 @@ private fun MutableMethod.requireJumpsKeepRegisters(insertIndex: Int, instructio
     }
 }
 
-/** A nop dexlib2 put in front of a payload to align it, rather than one the code runs. */
+/** A nop in front of a payload, which dexlib2 adds or drops to align it. */
 private fun List<Instruction>.isPadding(index: Int) =
     this[index].opcode == Opcode.NOP && getOrNull(index + 1)?.opcode in PAYLOADS
+
+/** An opcode with its wider forms folded in, which dexlib2 picks by the distance a jump needs. */
+private fun Opcode.kind() = when (this) {
+    Opcode.GOTO_16, Opcode.GOTO_32 -> Opcode.GOTO
+    else -> this
+}
 
 private val MOVE_RESULTS = setOf(Opcode.MOVE_RESULT, Opcode.MOVE_RESULT_WIDE, Opcode.MOVE_RESULT_OBJECT)
 private val PAYLOAD_USERS = setOf(Opcode.PACKED_SWITCH, Opcode.SPARSE_SWITCH)
