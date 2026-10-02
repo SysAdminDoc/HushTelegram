@@ -108,6 +108,10 @@ public class PausedHooksTest {
                 () -> Stories.hideAvatarStoryTouches(DIALOG_AVATAR)));
         probes.put(PatchFamily.HIDE_RECOMMENDATIONS, Arrays.asList(
                 Recommendations::skipRecommendations, Recommendations::skipCachedRecommendations));
+        probes.put(PatchFamily.DISABLE_CALL_DEBUG, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.CallDebug.skipCallDebugUpload(true),
+                app.hushtelegram.extension.telegram.misc.CallDebug::skipCallLogFileUpload,
+                app.hushtelegram.extension.telegram.misc.CallDebug::skipCallLogUpload));
         // A device statistics report is never read or sent, and neither is a channel's read time.
         probes.put(PatchFamily.DISABLE_ANALYTICS, Arrays.asList(
                 () -> Analytics.skipDeviceStats(new DeviceStatsController(true, false)),

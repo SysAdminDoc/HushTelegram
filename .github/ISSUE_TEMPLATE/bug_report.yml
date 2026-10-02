@@ -70,6 +70,7 @@ body:
       multiple: true
       options:
         - Disable analytics
+        - Disable call debug upload
         - Disable update checks
         - Hide ads
         - Hide Stories

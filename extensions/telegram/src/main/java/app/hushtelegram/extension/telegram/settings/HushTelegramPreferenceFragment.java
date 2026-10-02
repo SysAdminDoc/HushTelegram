@@ -255,11 +255,18 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             }
         }
 
-        if (build.contains(PatchFamily.DISABLE_ANALYTICS)) {
+        if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)) {
             PreferenceCategory privacy = category(screen, L10n.t("Privacy"));
-            privacy.addPreference(mark(toggle(context, Settings.DISABLE_ANALYTICS, L10n.t("Stop usage reports"),
+            if (build.contains(PatchFamily.DISABLE_ANALYTICS)) {
+                privacy.addPreference(mark(toggle(context, Settings.DISABLE_ANALYTICS, L10n.t("Stop usage reports"),
                     PatchFamily.DISABLE_ANALYTICS.coverageSummary(L10n.t("Telegram doesn't send your storage folders as a device report when its server asks, "
                             + "or how long you spent on each channel post. Messages and calls work as before."))), SettingsIcons.BLOCK));
+            }
+            if (build.contains(PatchFamily.DISABLE_CALL_DEBUG)) {
+                privacy.addPreference(mark(toggle(context, Settings.DISABLE_CALL_DEBUG, L10n.t("Stop call diagnostics"),
+                        PatchFamily.DISABLE_CALL_DEBUG.coverageSummary(L10n.t("Stops automatic call debug reports and log-file uploads requested by Telegram's server."))),
+                        SettingsIcons.BLOCK));
+            }
         }
 
         // In every build: Telegram's own links are never verified for an app, so Android opens them

@@ -128,11 +128,13 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/UpdateChecks.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/Stories.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/Recommendations.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/CallDebug.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/ads/HideAdsPatch.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/analytics/DisableAnalyticsPatch.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/updates/DisableUpdateChecksPatch.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/stories/HideStoriesPatch.kt",
-        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/recommendations/HideRecommendationsPatch.kt"
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/recommendations/HideRecommendationsPatch.kt",
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/calldebug/DisableCallDebugPatch.kt"
       ],
       "origin": "original",
       "upstream": "https://github.com/SysAdminDoc/HushTelegram",

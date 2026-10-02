@@ -173,3 +173,8 @@ Hide recommendations	Önerileri gizle
 Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.	Benzer kanalları ve botları, kayıtlı öneriler dahil gizler. Anahtar açıkken Telegram yeni öneri istemez.
 similar channels and bots	benzer kanallar ve botlar
 cached recommendations	kayıtlı öneriler
+Stop call diagnostics	Arama tanılamalarını durdur
+Stops automatic call debug reports and log-file uploads requested by Telegram's server.	Telegram sunucusunun istediği otomatik arama hata ayıklama raporlarını ve günlük dosyası yüklemelerini durdurur.
+call debug reports	arama hata ayıklama raporları
+call log file uploads	arama günlük dosyası yüklemeleri
+call log reports	arama günlük raporları

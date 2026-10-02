@@ -44,6 +44,11 @@ public final class SettingsStatus {
         return false;
     }
 
+    public static boolean disableCallDebug() { return false; }
+    public static boolean callDebugUpload() { return false; }
+    public static boolean callLogFileUpload() { return false; }
+    public static boolean callLogUpload() { return false; }
+
     public static boolean disableUpdateChecks() {
         return false;
     }

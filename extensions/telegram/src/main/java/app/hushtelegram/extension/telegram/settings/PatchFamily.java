@@ -49,6 +49,8 @@ public enum PatchFamily {
             Settings.HIDE_RECOMMENDATIONS),
     DISABLE_ANALYTICS(FamilyNames.DISABLE_ANALYTICS, "disableAnalytics", null,
             Settings.DISABLE_ANALYTICS),
+    DISABLE_CALL_DEBUG(FamilyNames.DISABLE_CALL_DEBUG, "disableCallDebug", null,
+            Settings.DISABLE_CALL_DEBUG),
     DISABLE_UPDATE_CHECKS(FamilyNames.DISABLE_UPDATE_CHECKS, "disableUpdateChecks", null,
             Settings.DISABLE_UPDATE_CHECKS);
 
@@ -109,7 +111,10 @@ public enum PatchFamily {
         CHANNEL_RECOMMENDATIONS(HIDE_RECOMMENDATIONS, "channelRecommendations", "similar channels and bots"),
         CACHED_RECOMMENDATIONS(HIDE_RECOMMENDATIONS, "cachedRecommendations", "cached recommendations"),
         DEVICE_STATS(DISABLE_ANALYTICS, "deviceStats", "device statistics reports"),
-        READ_METRICS(DISABLE_ANALYTICS, "readMetrics", "channel read metrics");
+        READ_METRICS(DISABLE_ANALYTICS, "readMetrics", "channel read metrics"),
+        CALL_DEBUG_UPLOAD(DISABLE_CALL_DEBUG, "callDebugUpload", "call debug reports"),
+        CALL_LOG_FILE_UPLOAD(DISABLE_CALL_DEBUG, "callLogFileUpload", "call log file uploads"),
+        CALL_LOG_UPLOAD(DISABLE_CALL_DEBUG, "callLogUpload", "call log reports");
 
         public final PatchFamily family;
         final String statusMethod;

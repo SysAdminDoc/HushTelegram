@@ -173,3 +173,8 @@ Hide recommendations	Sembunyikan rekomendasi
 Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.	Menyembunyikan saluran dan bot serupa, termasuk rekomendasi tersimpan. Telegram tidak meminta rekomendasi baru selama sakelar aktif.
 similar channels and bots	saluran dan bot serupa
 cached recommendations	rekomendasi tersimpan
+Stop call diagnostics	Hentikan diagnostik panggilan
+Stops automatic call debug reports and log-file uploads requested by Telegram's server.	Menghentikan laporan debug panggilan otomatis dan unggahan berkas log yang diminta server Telegram.
+call debug reports	laporan debug panggilan
+call log file uploads	unggahan berkas log panggilan
+call log reports	laporan log panggilan

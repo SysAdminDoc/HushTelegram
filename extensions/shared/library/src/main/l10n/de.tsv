@@ -173,3 +173,8 @@ Hide recommendations	Empfehlungen ausblenden
 Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.	Blendet ähnliche Kanäle und Bots sowie gespeicherte Empfehlungen aus. Solange der Schalter an ist, fragt Telegram keine neuen Empfehlungen ab.
 similar channels and bots	ähnliche Kanäle und Bots
 cached recommendations	gespeicherte Empfehlungen
+Stop call diagnostics	Anrufdiagnosen stoppen
+Stops automatic call debug reports and log-file uploads requested by Telegram's server.	Stoppt automatische Anrufdiagnoseberichte und Protokolldatei-Uploads, die der Telegram-Server anfordert.
+call debug reports	Anrufdiagnoseberichte
+call log file uploads	Uploads von Anrufprotokolldateien
+call log reports	Anrufprotokollberichte

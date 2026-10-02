@@ -170,3 +170,8 @@ Hide recommendations	Ocultar recomendações
 Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.	Oculta canais e bots semelhantes, incluindo recomendações armazenadas. O Telegram não solicita novas recomendações enquanto a opção está ativada.
 similar channels and bots	canais e bots semelhantes
 cached recommendations	recomendações armazenadas
+Stop call diagnostics	Interromper diagnósticos de chamadas
+Stops automatic call debug reports and log-file uploads requested by Telegram's server.	Interrompe relatórios automáticos de depuração de chamadas e envios de arquivos de registro solicitados pelo servidor do Telegram.
+call debug reports	relatórios de depuração de chamadas
+call log file uploads	envios de arquivos de registro de chamadas
+call log reports	relatórios de registro de chamadas
