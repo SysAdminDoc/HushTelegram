@@ -42,6 +42,7 @@ import app.hushtelegram.extension.telegram.misc.UpdateChecks;
 import app.hushtelegram.extension.telegram.misc.Stories;
 import app.hushtelegram.extension.telegram.misc.Recommendations;
 import app.hushtelegram.extension.telegram.misc.Suggestions;
+import app.hushtelegram.extension.telegram.ads.ProxyPromotions;
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
@@ -57,18 +58,30 @@ import app.hushtelegram.extension.shared.settings.PauseForTests;
  * without a probe here fails the first test.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 30, shadows = PausedHooksTest.AvatarScope.class,
-        instrumentedPackages = "app.hushtelegram.extension.telegram.misc")
+@Config(sdk = 30, shadows = {PausedHooksTest.AvatarScope.class, PausedHooksTest.ProxyScope.class},
+        instrumentedPackages = {"app.hushtelegram.extension.telegram.misc", "app.hushtelegram.extension.telegram.ads"})
 public class PausedHooksTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
     private static final Object DIALOG_AVATAR = new Object();
+    private static final Object SPONSORED_PROXY_CONTROLLER = new Object();
+    private static final Object SPONSORED_PROXY_DIALOG = new Object();
 
     /** The fixture tests cover the real scope bytecode; this supplies a dialog avatar to probes. */
     @Implements(value = Stories.class, isInAndroidSdk = false)
     public static class AvatarScope {
         @Implementation protected static boolean isDialogAvatar(Object params) {
             return params == DIALOG_AVATAR;
+        }
+    }
+
+    /** Supplies a known unjoined proxy sponsor; fixture tests cover the real host bridge. */
+    @Implements(value = ProxyPromotions.class, isInAndroidSdk = false)
+    public static class ProxyScope {
+        static int calls;
+        @Implementation protected static boolean isSponsoredProxyDialog(Object controller, Object dialog) {
+            calls++;
+            return controller == SPONSORED_PROXY_CONTROLLER && dialog == SPONSORED_PROXY_DIALOG;
         }
     }
 
@@ -115,6 +128,9 @@ public class PausedHooksTest {
         probes.put(PatchFamily.HIDE_PROMOTIONAL_BANNERS, Arrays.asList(
                 () -> !Suggestions.filterChatList(Collections.singleton("PREMIUM_UPGRADE")).contains("PREMIUM_UPGRADE"),
                 () -> Suggestions.birthdayGiftBannerDismissed(false)));
+        probes.put(PatchFamily.HIDE_SPONSORED_PROXY, Arrays.asList(
+                () -> ProxyPromotions.hideCachedProxyDialog(SPONSORED_PROXY_CONTROLLER, SPONSORED_PROXY_DIALOG),
+                () -> !ProxyPromotions.showSelectedDialog(true, SPONSORED_PROXY_CONTROLLER, SPONSORED_PROXY_DIALOG)));
         probes.put(PatchFamily.DISABLE_CALL_DEBUG, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.CallDebug.skipCallDebugUpload(true),
                 app.hushtelegram.extension.telegram.misc.CallDebug::skipCallLogFileUpload,
@@ -153,6 +169,7 @@ public class PausedHooksTest {
     /** Adds a line to [wrong] for every probe that didn't answer [changes]. */
     private static void everyProbe(Map<PatchFamily, List<Probe>> probes, boolean changes, String when,
                                    List<String> wrong) {
+        ProxyScope.calls = 0;
         for (Map.Entry<PatchFamily, List<Probe>> entry : probes.entrySet()) {
             for (int i = 0; i < entry.getValue().size(); i++) {
                 if (entry.getValue().get(i).changedTelegram() != changes) {
@@ -160,6 +177,11 @@ public class PausedHooksTest {
                             + (changes ? ": left Telegram alone" : ": still changed Telegram"));
                 }
             }
+        }
+        int expectedProxyScopeCalls = changes ? 2 : 0;
+        if (ProxyScope.calls != expectedProxyScopeCalls) {
+            wrong.add("proxy host scope, " + when + ": expected " + expectedProxyScopeCalls
+                    + " calls, got " + ProxyScope.calls);
         }
     }
 

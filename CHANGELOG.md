@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Hide sponsored proxy channel removes the unjoined proxy channel from the chat list and folders. Proxy settings, joined channels and shared account-suggestion updates retain their original behavior. Turning the switch off or using Pause restores the original presentation.
+
 * **Telegram:** Hide promotional banners filters seven Premium, birthday and low Stars balance prompts from the chat list. Account security notices and unknown suggestions remain. Disabling it or using Pause restores the original presentation without dismissing anything.
 
 * **Tooling:** Sales patching refuses changed labels, missing Gift icons and cached tab IDs that lose their boxed source before editing. The bug form lists the sales patch as a separate selection.

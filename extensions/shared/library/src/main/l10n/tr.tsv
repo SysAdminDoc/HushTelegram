@@ -187,3 +187,7 @@ Hide promotional banners	Tanıtım afişlerini gizle
 Hides Premium, birthday and low Stars balance banners in the chat list. Account security notices and other suggestions remain. Nothing is dismissed for you.	Sohbet listesinde Premium, doğum günü ve düşük Stars bakiyesi afişlerini gizler. Hesap güvenliği bildirimleri ve diğer öneriler gösterilmeye devam eder. Hiçbir şey sizin adınıza kapatılmaz.
 promotional suggestions	tanıtım önerileri
 birthday gift banner	doğum günü hediyesi afişi
+Hide sponsored proxy channel	Proxy'nin sponsorlu kanalını gizle
+Hides a proxy's sponsored channel from the chat list and folders. Leaves proxy settings and shared promo-data updates alone.	Bir proxy'nin sponsorlu kanalını sohbet listesinden ve klasörlerden gizler. Proxy ayarlarını ve paylaşılan tanıtım verisi güncellemelerini olduğu gibi bırakır.
+cached proxy channel	kayıtlı proxy kanalı
+cached proxy folder entries	klasörlerdeki kayıtlı proxy girdileri

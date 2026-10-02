@@ -77,6 +77,7 @@ body:
         - Hide recommendations
         - Hide Premium, gifts and Stars
         - Hide promotional banners
+        - Hide sponsored proxy channel
         - HushTelegram settings
     validations:
       required: true

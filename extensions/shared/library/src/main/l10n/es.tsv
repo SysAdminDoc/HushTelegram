@@ -187,3 +187,7 @@ Hide promotional banners	Ocultar banners promocionales
 Hides Premium, birthday and low Stars balance banners in the chat list. Account security notices and other suggestions remain. Nothing is dismissed for you.	Oculta los banners de Premium, cumpleaños y saldo bajo de Stars en la lista de chats. Los avisos de seguridad de la cuenta y otras sugerencias se mantienen. No se descarta nada por ti.
 promotional suggestions	sugerencias promocionales
 birthday gift banner	banner de regalos de cumpleaños
+Hide sponsored proxy channel	Ocultar canal patrocinado del proxy
+Hides a proxy's sponsored channel from the chat list and folders. Leaves proxy settings and shared promo-data updates alone.	Oculta el canal patrocinado de un proxy en la lista de chats y las carpetas. No cambia los ajustes del proxy ni las actualizaciones compartidas de datos promocionales.
+cached proxy channel	canal del proxy almacenado
+cached proxy folder entries	entradas del proxy almacenadas en carpetas

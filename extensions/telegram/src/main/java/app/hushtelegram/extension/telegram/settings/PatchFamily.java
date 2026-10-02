@@ -51,6 +51,8 @@ public enum PatchFamily {
             Settings.HIDE_COMMERCE),
     HIDE_PROMOTIONAL_BANNERS(FamilyNames.HIDE_PROMOTIONAL_BANNERS, "hidePromotionalBanners", null,
             Settings.HIDE_PROMOTIONAL_BANNERS),
+    HIDE_SPONSORED_PROXY(FamilyNames.HIDE_SPONSORED_PROXY, "hideSponsoredProxy", null,
+            Settings.HIDE_SPONSORED_PROXY),
     DISABLE_ANALYTICS(FamilyNames.DISABLE_ANALYTICS, "disableAnalytics", null,
             Settings.DISABLE_ANALYTICS),
     DISABLE_CALL_DEBUG(FamilyNames.DISABLE_CALL_DEBUG, "disableCallDebug", null,
@@ -123,7 +125,9 @@ public enum PatchFamily {
         COMMERCE_PROFILE_GIFTS(HIDE_COMMERCE, "commerceProfileGifts", "profile Gifts tabs"),
         COMMERCE_CHANNEL_GIFT(HIDE_COMMERCE, "commerceChannelGift", "channel Gift button"),
         PROMOTIONAL_SUGGESTIONS(HIDE_PROMOTIONAL_BANNERS, "promotionalSuggestions", "promotional suggestions"),
-        BIRTHDAY_GIFT_BANNER(HIDE_PROMOTIONAL_BANNERS, "birthdayGiftBanner", "birthday gift banner");
+        BIRTHDAY_GIFT_BANNER(HIDE_PROMOTIONAL_BANNERS, "birthdayGiftBanner", "birthday gift banner"),
+        CACHED_PROXY_DIALOG(HIDE_SPONSORED_PROXY, "cachedProxyDialog", "cached proxy channel"),
+        CACHED_PROXY_FILTERS(HIDE_SPONSORED_PROXY, "cachedProxyFilters", "cached proxy folder entries");
 
         public final PatchFamily family;
         final String statusMethod;

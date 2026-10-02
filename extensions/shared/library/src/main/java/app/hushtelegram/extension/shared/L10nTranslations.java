@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(362);
+        Map<String, String> table = new HashMap<>(370);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -185,10 +185,14 @@ public final class L10nTranslations {
                 "Werbebanner ausblenden");
         table.put("Hide recommendations",
                 "Empfehlungen ausblenden");
+        table.put("Hide sponsored proxy channel",
+                "Gesponserten Proxy-Kanal ausblenden");
         table.put("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.",
                 "Blendet Premium, Stars, My Grams, Business und Geschenk senden in den Einstellungen, die Geschenke-Tabs in Profilen und die Geschenk-Schaltfl\u00e4che von Kan\u00e4len aus. K\u00e4ufe und Kontofunktionen bleiben unver\u00e4ndert.");
         table.put("Hides Premium, birthday and low Stars balance banners in the chat list. Account security notices and other suggestions remain. Nothing is dismissed for you.",
                 "Blendet Premium-Banner, Geburtstagsbanner und Hinweise auf einen niedrigen Stars-Kontostand in der Chatliste aus. Sicherheitshinweise zum Konto und andere Empfehlungen bleiben erhalten. Es wird nichts in deinem Namen verworfen.");
+        table.put("Hides a proxy's sponsored channel from the chat list and folders. Leaves proxy settings and shared promo-data updates alone.",
+                "Blendet den gesponserten Kanal eines Proxys aus der Chatliste und den Ordnern aus. Proxy-Einstellungen und gemeinsame Aktualisierungen von Promo-Daten bleiben unver\u00e4ndert.");
         table.put("Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.",
                 "Blendet \u00e4hnliche Kan\u00e4le und Bots sowie gespeicherte Empfehlungen aus. Solange der Schalter an ist, fragt Telegram keine neuen Empfehlungen ab.");
         table.put("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.",
@@ -295,13 +299,13 @@ public final class L10nTranslations {
                 "Verkaufsangebote in den Einstellungen");
         table.put("Source code and issues",
                 "Quellcode und Issues");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Sponsored messages and video ads",
                 "Gesponserte Nachrichten und Videowerbung");
         table.put("Stays in while paused",
                 "Bleibt w\u00e4hrend der Pause aktiv");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("Stop call diagnostics",
                 "Anrufdiagnosen stoppen");
         table.put("Stop usage reports",
@@ -394,6 +398,10 @@ public final class L10nTranslations {
                 "Story-Tipps auf Avatare");
         table.put("birthday gift banner",
                 "Banner f\u00fcr Geburtstagsgeschenke");
+        table.put("cached proxy channel",
+                "gespeicherter Proxy-Kanal");
+        table.put("cached proxy folder entries",
+                "gespeicherte Proxy-Eintr\u00e4ge in Ordnern");
         table.put("cached recommendations",
                 "gespeicherte Empfehlungen");
         table.put("call debug reports",
@@ -414,6 +422,9 @@ public final class L10nTranslations {
                 "Ger\u00e4testatistikberichte");
         table.put("profile Gifts tabs",
                 "Geschenke-Tabs in Profilen");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("promotional suggestions",
                 "Werbeempfehlungen");
         table.put("search ads",
@@ -422,15 +433,12 @@ public final class L10nTranslations {
                 "\u00e4hnliche Kan\u00e4le und Bots");
         table.put("story list requests",
                 "Anfragen zur Story-Liste");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("video ads",
                 "Videowerbung");
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(362);
+        Map<String, String> table = new HashMap<>(370);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -568,10 +576,14 @@ public final class L10nTranslations {
                 "Ocultar banners promocionales");
         table.put("Hide recommendations",
                 "Ocultar recomendaciones");
+        table.put("Hide sponsored proxy channel",
+                "Ocultar canal patrocinado del proxy");
         table.put("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.",
                 "Oculta Premium, Stars, My Grams, Business y Enviar un regalo en Ajustes, las pesta\u00f1as de regalos de los perfiles y el bot\u00f3n de regalo de los canales. Las compras y los controles de la cuenta siguen funcionando igual.");
         table.put("Hides Premium, birthday and low Stars balance banners in the chat list. Account security notices and other suggestions remain. Nothing is dismissed for you.",
                 "Oculta los banners de Premium, cumplea\u00f1os y saldo bajo de Stars en la lista de chats. Los avisos de seguridad de la cuenta y otras sugerencias se mantienen. No se descarta nada por ti.");
+        table.put("Hides a proxy's sponsored channel from the chat list and folders. Leaves proxy settings and shared promo-data updates alone.",
+                "Oculta el canal patrocinado de un proxy en la lista de chats y las carpetas. No cambia los ajustes del proxy ni las actualizaciones compartidas de datos promocionales.");
         table.put("Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.",
                 "Oculta canales y bots similares, incluidas las recomendaciones guardadas. Telegram no solicita nuevas recomendaciones mientras el interruptor est\u00e1 activado.");
         table.put("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.",
@@ -678,13 +690,13 @@ public final class L10nTranslations {
                 "Ofertas en Ajustes");
         table.put("Source code and issues",
                 "C\u00f3digo fuente e incidencias");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("Sponsored messages and video ads",
                 "Mensajes patrocinados y anuncios de video");
         table.put("Stays in while paused",
                 "Se mantiene durante la pausa");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("Stop call diagnostics",
                 "Detener diagn\u00f3sticos de llamadas");
         table.put("Stop usage reports",
@@ -777,6 +789,10 @@ public final class L10nTranslations {
                 "toques de historias en los avatares");
         table.put("birthday gift banner",
                 "banner de regalos de cumplea\u00f1os");
+        table.put("cached proxy channel",
+                "canal del proxy almacenado");
+        table.put("cached proxy folder entries",
+                "entradas del proxy almacenadas en carpetas");
         table.put("cached recommendations",
                 "recomendaciones guardadas");
         table.put("call debug reports",
@@ -797,6 +813,9 @@ public final class L10nTranslations {
                 "informes de estad\u00edsticas del dispositivo");
         table.put("profile Gifts tabs",
                 "pesta\u00f1as de regalos de los perfiles");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("promotional suggestions",
                 "sugerencias promocionales");
         table.put("search ads",
@@ -805,15 +824,12 @@ public final class L10nTranslations {
                 "canales y bots similares");
         table.put("story list requests",
                 "consultas de la lista de historias");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("video ads",
                 "anuncios en videos");
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(362);
+        Map<String, String> table = new HashMap<>(370);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -951,10 +967,14 @@ public final class L10nTranslations {
                 "Sembunyikan banner promosi");
         table.put("Hide recommendations",
                 "Sembunyikan rekomendasi");
+        table.put("Hide sponsored proxy channel",
+                "Sembunyikan kanal bersponsor proxy");
         table.put("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.",
                 "Menyembunyikan Premium, Stars, My Grams, Business dan Kirim Hadiah di Pengaturan, tab Hadiah pada profil dan tombol Hadiah pada kanal. Pembelian dan kontrol akun tetap berfungsi seperti biasa.");
         table.put("Hides Premium, birthday and low Stars balance banners in the chat list. Account security notices and other suggestions remain. Nothing is dismissed for you.",
                 "Menyembunyikan banner Premium, ulang tahun dan saldo Stars rendah di daftar chat. Pemberitahuan keamanan akun dan saran lainnya tetap ada. Tidak ada yang ditutup atas nama Anda.");
+        table.put("Hides a proxy's sponsored channel from the chat list and folders. Leaves proxy settings and shared promo-data updates alone.",
+                "Menyembunyikan kanal bersponsor milik proxy dari daftar chat dan folder. Pengaturan proxy dan pembaruan data promosi bersama tetap seperti biasa.");
         table.put("Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.",
                 "Menyembunyikan saluran dan bot serupa, termasuk rekomendasi tersimpan. Telegram tidak meminta rekomendasi baru selama sakelar aktif.");
         table.put("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.",
@@ -1061,13 +1081,13 @@ public final class L10nTranslations {
                 "Penawaran di Pengaturan");
         table.put("Source code and issues",
                 "Kode sumber dan laporan masalah");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Sponsored messages and video ads",
                 "Pesan bersponsor dan iklan video");
         table.put("Stays in while paused",
                 "Tetap aktif saat dijeda");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("Stop call diagnostics",
                 "Hentikan diagnostik panggilan");
         table.put("Stop usage reports",
@@ -1160,6 +1180,10 @@ public final class L10nTranslations {
                 "ketukan cerita pada avatar");
         table.put("birthday gift banner",
                 "banner hadiah ulang tahun");
+        table.put("cached proxy channel",
+                "kanal proxy tersimpan");
+        table.put("cached proxy folder entries",
+                "entri proxy tersimpan di folder");
         table.put("cached recommendations",
                 "rekomendasi tersimpan");
         table.put("call debug reports",
@@ -1180,6 +1204,9 @@ public final class L10nTranslations {
                 "laporan statistik perangkat");
         table.put("profile Gifts tabs",
                 "tab Hadiah pada profil");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("promotional suggestions",
                 "saran promosi");
         table.put("search ads",
@@ -1188,15 +1215,12 @@ public final class L10nTranslations {
                 "saluran dan bot serupa");
         table.put("story list requests",
                 "permintaan daftar cerita");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("video ads",
                 "iklan video");
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(362);
+        Map<String, String> table = new HashMap<>(370);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1334,10 +1358,14 @@ public final class L10nTranslations {
                 "Ocultar banners promocionais");
         table.put("Hide recommendations",
                 "Ocultar recomenda\u00e7\u00f5es");
+        table.put("Hide sponsored proxy channel",
+                "Ocultar canal patrocinado do proxy");
         table.put("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.",
                 "Oculta Premium, Stars, My Grams, Business e Enviar um presente nas Configura\u00e7\u00f5es, as abas de presentes dos perfis e o bot\u00e3o de presente dos canais. As compras e os controles da conta continuam funcionando como antes.");
         table.put("Hides Premium, birthday and low Stars balance banners in the chat list. Account security notices and other suggestions remain. Nothing is dismissed for you.",
                 "Oculta banners de Premium, anivers\u00e1rios e saldo baixo de Stars na lista de conversas. Os avisos de seguran\u00e7a da conta e outras sugest\u00f5es continuam aparecendo. Nada \u00e9 descartado em seu nome.");
+        table.put("Hides a proxy's sponsored channel from the chat list and folders. Leaves proxy settings and shared promo-data updates alone.",
+                "Oculta o canal patrocinado de um proxy da lista de conversas e das pastas. Mant\u00e9m as configura\u00e7\u00f5es do proxy e as atualiza\u00e7\u00f5es compartilhadas de dados promocionais como est\u00e3o.");
         table.put("Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.",
                 "Oculta canais e bots semelhantes, incluindo recomenda\u00e7\u00f5es armazenadas. O Telegram n\u00e3o solicita novas recomenda\u00e7\u00f5es enquanto a op\u00e7\u00e3o est\u00e1 ativada.");
         table.put("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.",
@@ -1444,13 +1472,13 @@ public final class L10nTranslations {
                 "Ofertas nas Configura\u00e7\u00f5es");
         table.put("Source code and issues",
                 "C\u00f3digo-fonte e relatos de problemas");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Sponsored messages and video ads",
                 "Mensagens patrocinadas e an\u00fancios em v\u00eddeo");
         table.put("Stays in while paused",
                 "O que continua ativo na pausa");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Stop call diagnostics",
                 "Interromper diagn\u00f3sticos de chamadas");
         table.put("Stop usage reports",
@@ -1543,6 +1571,10 @@ public final class L10nTranslations {
                 "toques de stories nos avatares");
         table.put("birthday gift banner",
                 "banner de presentes de anivers\u00e1rio");
+        table.put("cached proxy channel",
+                "canal do proxy armazenado");
+        table.put("cached proxy folder entries",
+                "entradas do proxy armazenadas nas pastas");
         table.put("cached recommendations",
                 "recomenda\u00e7\u00f5es armazenadas");
         table.put("call debug reports",
@@ -1563,6 +1595,9 @@ public final class L10nTranslations {
                 "relat\u00f3rios de estat\u00edsticas do dispositivo");
         table.put("profile Gifts tabs",
                 "abas de presentes dos perfis");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("promotional suggestions",
                 "sugest\u00f5es promocionais");
         table.put("search ads",
@@ -1571,15 +1606,12 @@ public final class L10nTranslations {
                 "canais e bots semelhantes");
         table.put("story list requests",
                 "solicita\u00e7\u00f5es da lista de stories");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("video ads",
                 "an\u00fancios em v\u00eddeos");
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(362);
+        Map<String, String> table = new HashMap<>(370);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -1717,10 +1749,14 @@ public final class L10nTranslations {
                 "Tan\u0131t\u0131m afi\u015flerini gizle");
         table.put("Hide recommendations",
                 "\u00d6nerileri gizle");
+        table.put("Hide sponsored proxy channel",
+                "Proxy'nin sponsorlu kanal\u0131n\u0131 gizle");
         table.put("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.",
                 "Ayarlar'daki Premium, Stars, My Grams, Business ve Hediye G\u00f6nder se\u00e7eneklerini, profillerdeki Hediyeler sekmelerini ve kanallardaki Hediye d\u00fc\u011fmesini gizler. Sat\u0131n almalar ve hesap kontrolleri eskisi gibi \u00e7al\u0131\u015f\u0131r.");
         table.put("Hides Premium, birthday and low Stars balance banners in the chat list. Account security notices and other suggestions remain. Nothing is dismissed for you.",
                 "Sohbet listesinde Premium, do\u011fum g\u00fcn\u00fc ve d\u00fc\u015f\u00fck Stars bakiyesi afi\u015flerini gizler. Hesap g\u00fcvenli\u011fi bildirimleri ve di\u011fer \u00f6neriler g\u00f6sterilmeye devam eder. Hi\u00e7bir \u015fey sizin ad\u0131n\u0131za kapat\u0131lmaz.");
+        table.put("Hides a proxy's sponsored channel from the chat list and folders. Leaves proxy settings and shared promo-data updates alone.",
+                "Bir proxy'nin sponsorlu kanal\u0131n\u0131 sohbet listesinden ve klas\u00f6rlerden gizler. Proxy ayarlar\u0131n\u0131 ve payla\u015f\u0131lan tan\u0131t\u0131m verisi g\u00fcncellemelerini oldu\u011fu gibi b\u0131rak\u0131r.");
         table.put("Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on.",
                 "Benzer kanallar\u0131 ve botlar\u0131, kay\u0131tl\u0131 \u00f6neriler dahil gizler. Anahtar a\u00e7\u0131kken Telegram yeni \u00f6neri istemez.");
         table.put("Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available.",
@@ -1827,13 +1863,13 @@ public final class L10nTranslations {
                 "Ayarlar'daki sat\u0131\u015f se\u00e7enekleri");
         table.put("Source code and issues",
                 "Kaynak kodu ve sorunlar");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("Sponsored messages and video ads",
                 "Sponsorlu mesajlar ve video reklamlar\u0131");
         table.put("Stays in while paused",
                 "Duraklat\u0131lsa da devrede kal\u0131r");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("Stop call diagnostics",
                 "Arama tan\u0131lamalar\u0131n\u0131 durdur");
         table.put("Stop usage reports",
@@ -1926,6 +1962,10 @@ public final class L10nTranslations {
                 "avatarlardaki hik\u00e2ye dokunu\u015flar\u0131");
         table.put("birthday gift banner",
                 "do\u011fum g\u00fcn\u00fc hediyesi afi\u015fi");
+        table.put("cached proxy channel",
+                "kay\u0131tl\u0131 proxy kanal\u0131");
+        table.put("cached proxy folder entries",
+                "klas\u00f6rlerdeki kay\u0131tl\u0131 proxy girdileri");
         table.put("cached recommendations",
                 "kay\u0131tl\u0131 \u00f6neriler");
         table.put("call debug reports",
@@ -1946,6 +1986,9 @@ public final class L10nTranslations {
                 "cihaz istatistik raporlar\u0131");
         table.put("profile Gifts tabs",
                 "profil Hediyeler sekmeleri");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("promotional suggestions",
                 "tan\u0131t\u0131m \u00f6nerileri");
         table.put("search ads",
@@ -1954,9 +1997,6 @@ public final class L10nTranslations {
                 "benzer kanallar ve botlar");
         table.put("story list requests",
                 "hik\u00e2ye listesi istekleri");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("video ads",
                 "video reklamlar\u0131");
     }

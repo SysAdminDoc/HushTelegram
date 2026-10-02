@@ -41,6 +41,9 @@ public final class SettingsStatus {
     public static boolean hidePromotionalBanners() { return false; }
     public static boolean promotionalSuggestions() { return false; }
     public static boolean birthdayGiftBanner() { return false; }
+    public static boolean hideSponsoredProxy() { return false; }
+    public static boolean cachedProxyDialog() { return false; }
+    public static boolean cachedProxyFilters() { return false; }
     public static boolean storyRequests() { return false; }
     public static boolean storyBar() { return false; }
     public static boolean storyCamera() { return false; }

@@ -54,6 +54,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_PROMOTIONAL_BANNERS =
             new BooleanSetting("hushtelegram_hide_promotional_banners", TRUE);
 
+    /** Cached proxy-channel presentation only; proxy settings and shared promo updates stay stock. */
+    public static final BooleanSetting HIDE_SPONSORED_PROXY =
+            new BooleanSetting("hushtelegram_hide_sponsored_proxy", TRUE);
+
     /**
      * The device statistics report the server can ask for (storage directories, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are

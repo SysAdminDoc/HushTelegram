@@ -237,7 +237,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         // Telegram does takes the stop sign.
         if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_STORIES)
                 || build.contains(PatchFamily.HIDE_RECOMMENDATIONS) || build.contains(PatchFamily.HIDE_COMMERCE)
-                || build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS)) {
+                || build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS) || build.contains(PatchFamily.HIDE_SPONSORED_PROXY)) {
             PreferenceCategory chats = category(screen, L10n.t("Chats"));
             if (build.contains(PatchFamily.HIDE_ADS)) {
                 chats.addPreference(mark(toggle(context, Settings.HIDE_ADS, L10n.t("Hide ads"),
@@ -263,6 +263,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 chats.addPreference(mark(toggle(context, Settings.HIDE_PROMOTIONAL_BANNERS, L10n.t("Hide promotional banners"),
                         PatchFamily.HIDE_PROMOTIONAL_BANNERS.coverageSummary(L10n.t("Hides Premium, birthday and low Stars balance banners in the chat list. "
                                 + "Account security notices and other suggestions remain. Nothing is dismissed for you."))), SettingsIcons.BLOCK));
+            }
+            if (build.contains(PatchFamily.HIDE_SPONSORED_PROXY)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_SPONSORED_PROXY, L10n.t("Hide sponsored proxy channel"),
+                        PatchFamily.HIDE_SPONSORED_PROXY.coverageSummary(L10n.t("Hides a proxy's sponsored channel from the chat list and folders. "
+                                + "Leaves proxy settings and shared promo-data updates alone."))), SettingsIcons.BLOCK));
             }
         }
 

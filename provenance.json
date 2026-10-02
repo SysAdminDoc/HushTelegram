@@ -131,6 +131,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/CallDebug.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/Commerce.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/Suggestions.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/ads/ProxyPromotions.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/ads/HideAdsPatch.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/analytics/DisableAnalyticsPatch.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/updates/DisableUpdateChecksPatch.kt",
@@ -138,7 +139,8 @@
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/recommendations/HideRecommendationsPatch.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/calldebug/DisableCallDebugPatch.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/commerce/HideCommercePatch.kt",
-        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/suggestions/HideSuggestionsPatch.kt"
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/suggestions/HideSuggestionsPatch.kt",
+        "patches/src/main/kotlin/app/morphe/patches/telegram/ads/proxy/HideSponsoredProxyPatch.kt"
       ],
       "origin": "original",
       "upstream": "https://github.com/SysAdminDoc/HushTelegram",
