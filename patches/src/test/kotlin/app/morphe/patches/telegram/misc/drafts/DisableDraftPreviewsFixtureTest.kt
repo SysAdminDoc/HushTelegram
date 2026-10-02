@@ -69,6 +69,23 @@ class DisableDraftPreviewsFixtureTest {
                     assertEquals("${build.name}: a skip hands the callback no preview", "${callback.reference()}->run(Ljava/lang/Object;)V", guard[5].reference())
                     assertEquals("${build.name}: false fetches as before", listOf(hook.index + 7), newFlow.normal[hook.index + 2].filter { it != hook.index + 3 })
                     assertEquals("${build.name}: a skip leaves through the request's own exit", listOf(moved(hook.finish)), newFlow.normal[hook.index + 6])
+                } else if (target == DraftPreviewTarget.CHAT || target == DraftPreviewTarget.SHARE) {
+                    // A skip leaves the found links as a draft with none leaves them: null in chat,
+                    // an emptied list on the share sheet, the same field the builder stores them in.
+                    val forget = if (target == DraftPreviewTarget.CHAT) listOf(Opcode.CONST_4, Opcode.IPUT_OBJECT)
+                        else listOf(Opcode.IGET_OBJECT, Opcode.INVOKE_VIRTUAL)
+                    assertEquals("${build.name}: $target exact guard", listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ) + forget +
+                        listOf(Opcode.GOTO_16, Opcode.NOP), guard.map { it.opcode })
+                    val stored = old.filter { (it.opcode == Opcode.IPUT_OBJECT || it.opcode == Opcode.IGET_OBJECT) &&
+                        (it as ReferenceInstruction).reference.let { field -> field is FieldReference && field.definingClass == original.definingClass &&
+                            field.type == "Ljava/util/ArrayList;" } }.map { it.reference() }.distinct()
+                    val forgotten = guard[if (target == DraftPreviewTarget.CHAT) 4 else 3].reference()
+                    assertEquals("${build.name}: $target forgets the links it stored", listOf(forgotten), stored)
+                    if (target == DraftPreviewTarget.SHARE) {
+                        assertEquals("${build.name}: share empties that list", "Ljava/util/ArrayList;->clear()V", guard[4].reference())
+                    }
+                    assertEquals("${build.name}: $target false fetches as before", listOf(hook.index + 6), newFlow.normal[hook.index + 2].filter { it != hook.index + 3 })
+                    assertEquals("${build.name}: $target skip leaves through the no-preview exit", listOf(moved(hook.finish)), newFlow.normal[hook.index + 5])
                 } else {
                     assertEquals("${build.name}: $target exact guard", listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_NEZ),
                         guard.map { it.opcode })

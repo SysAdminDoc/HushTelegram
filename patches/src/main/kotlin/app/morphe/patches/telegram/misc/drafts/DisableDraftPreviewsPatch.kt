@@ -17,6 +17,7 @@ import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
 import app.morphe.patches.telegram.misc.extension.requireParameterIntact
+import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.settings.settingsPatch
@@ -162,7 +163,12 @@ private fun chatHook(method: MutableMethod): DraftPreviewHook {
         (it..it + 3).all { at -> flow.exceptional[at].isEmpty() } }.one("no-link clear outside the link search")
     shape(finish > secret, "no-link clear outside the link search moved in front of the request")
     method.requireParameterIntact(PATCH, 0, listOf(secret, finish + 2))
-    return gate(DraftPreviewTarget.CHAT, method, secret, finish, request)
+    // The links were stored before the hook. A draft with none stores null there, and so does a skip,
+    // or the same links would read as unchanged and fetch nothing once the switch is off again.
+    shape(fragment <= 15, "chat fragment register v$fragment is out of iput-object's reach")
+    val links = body[store].field()!!
+    return gate(DraftPreviewTarget.CHAT, method, secret, finish, request,
+        forget = { scratch -> "const/4 v$scratch, 0x0\niput-object v$scratch, v$fragment, $links" })
 }
 
 /** The share sheet's comment field: after it has links, before it joins them for the request. */
@@ -192,7 +198,21 @@ private fun shareHook(method: MutableMethod): DraftPreviewHook {
         body[finish].namedRegisters() == listOf(thisRegister) && body.getOrNull(finish + 1)?.opcode == Opcode.IPUT_OBJECT &&
         body[finish + 1].field()?.let { it.definingClass == method.definingClass && it.type == WEB_PAGE } == true,
         "share no-link reset changed")
-    return gate(DraftPreviewTarget.SHARE, method, index, finish, request)
+    // The sheet keeps the links it last saw in a list it empties and refills before the hook. A
+    // draft with none leaves it empty, and so does a skip, so the same links fetch once the switch is off.
+    val reset = body.indices.filter { body[it].call()?.let { call -> call.definingClass == ARRAY_LIST && call.name == "clear" &&
+        call.parameterTypes.isEmpty() } == true }.one("share link list reset")
+    val held = body[reset].namedRegisters().single()
+    val load = (reset - 1 downTo 0).firstOrNull { held in body[it].writes() } ?: refuse("share link list isn't loaded")
+    shape(reset < index && body[load].opcode == Opcode.IGET_OBJECT && body[load].namedRegisters()[1] == thisRegister &&
+        body[load].field()?.let { it.definingClass == method.definingClass && it.type == ARRAY_LIST } == true &&
+        body.getOrNull(reset + 2)?.call()?.let { it.definingClass == ARRAY_LIST && it.name == "addAll" } == true &&
+        body[reset + 2].namedRegisters() == listOf(held, links), "share link list no longer holds the links it saw")
+    shape(thisRegister <= 15, "share sheet register v$thisRegister is out of iget-object's reach")
+    method.requireThisIntact(PATCH, listOf(index))
+    val list = body[load].field()!!
+    return gate(DraftPreviewTarget.SHARE, method, index, finish, request,
+        forget = { scratch -> "iget-object v$scratch, v$thisRegister, $list\ninvoke-virtual {v$scratch}, $ARRAY_LIST->clear()V" })
 }
 
 /** A link attached to a poll, with WebPageLoader.get inlined: the hook takes the cache miss only. */
@@ -305,11 +325,15 @@ private fun BytecodePatchContext.botShareHook(method: MutableMethod): DraftPrevi
     return DraftPreviewHook(method, index, finish, code, 8)
 }
 
-private fun gate(target: DraftPreviewTarget, method: MutableMethod, index: Int, finish: Int, request: Int): DraftPreviewHook {
+/** A skip to [finish]; [forget], given a free register, is two instructions run on a skip before it leaves. */
+private fun gate(target: DraftPreviewTarget, method: MutableMethod, index: Int, finish: Int, request: Int,
+                 forget: ((Int) -> String)? = null): DraftPreviewHook {
     requireGuarded(method, index, request)
-    val answer = method.freeLocalsAt(PATCH, index, 1, targets = listOf(finish), highest = 255).single()
+    val answer = method.freeLocalsAt(PATCH, index, 1, targets = listOf(finish), highest = if (forget == null) 255 else 15).single()
+    val ask = "invoke-static {}, $DRAFT_PREVIEWS->${target.hook}()Z\nmove-result v$answer"
+    if (forget == null) return DraftPreviewHook(method, index, finish, "$ask\nif-nez v$answer, :hush_done", 3)
     return DraftPreviewHook(method, index, finish,
-        "invoke-static {}, $DRAFT_PREVIEWS->${target.hook}()Z\nmove-result v$answer\nif-nez v$answer, :hush_done", 3)
+        "$ask\nif-eqz v$answer, :hush_fetch\n${forget(answer)}\ngoto/16 :hush_done\n:hush_fetch\nnop", 7)
 }
 
 /** Nothing, thrown or not, reaches the request without passing the hook first. */
