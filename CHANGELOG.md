@@ -6,6 +6,7 @@ Every HushTelegram release, newest first.
 
 Prepared for the next release. The published version is still 0.0.4.
 
+* **Telegram:** The settings home describes Chats and Privacy as they are now. Chats covers ads in channels and search, and more, and Privacy covers usage reports and call diagnostics.
 * **Telegram:** HushTelegram settings say that every switch applies to all the accounts in the app. About has an Accounts row, Export and Import settings say a settings file covers every account, and searching for accounts in any of the six languages finds all three.
 * **Tooling:** Sponsored-proxy patching rejects empty runtime hooks and methods with too few parameter registers before changing the APK.
 * **Tooling:** Open links externally and Strip link tracking refuse an empty, payload-only or undersized link runtime method before they edit Telegram or switch anything on.
@@ -44,6 +45,7 @@ Prepared for the next release. The published version is still 0.0.4.
 
 Prepared for the next release. The published version is still 0.0.4.
 
+* **Telegram:** The settings home describes Chats and Privacy as they are now. Chats covers ads in channels and search, and more, and Privacy covers usage reports and call diagnostics.
 * **Telegram:** HushTelegram settings say that every switch applies to all the accounts in the app. About has an Accounts row, Export and Import settings say a settings file covers every account, and searching for accounts in any of the six languages finds all three.
 * **Telegram:** Patched APKs require Android 9 or Telegram's higher minimum. Settings and diagnostic reports name any ad or usage-report hook missing from a partially supported build.
 * **Tooling:** Patch-changing pushes require every declared Telegram fixture. Release receipts record and verify the binary Android installation floor while retaining checks for published older receipts.

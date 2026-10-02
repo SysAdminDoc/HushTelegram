@@ -82,6 +82,8 @@ public final class L10nTranslations {
                 "Info");
         table.put("Accounts",
                 "Konten");
+        table.put("Ads in channels and search, and more",
+                "Werbung in Kan\u00e4len und Suche und mehr");
         table.put("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
                 "Android 11 und \u00e4lter melden nicht, welche Links sich hier \u00f6ffnen. Tippe, um die Einstellungen dieser App zu \u00f6ffnen, dann auf \u201eStandardm\u00e4\u00dfig \u00f6ffnen\u201c.");
         table.put("Android didn't say which links open here. Tap to check in Android's settings.",
@@ -146,8 +148,6 @@ public final class L10nTranslations {
                 "HushTelegram lie\u00df sich nicht wieder einschalten. Versuche es noch einmal.");
         table.put("Debug logging",
                 "Debug-Protokollierung");
-        table.put("Device statistics and read time",
-                "Ger\u00e4testatistiken und Lesezeit");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Diagnosedaten gel\u00f6scht. Tippe erneut, um sie wiederherzustellen.");
         table.put("Diagnostic data put back.",
@@ -320,8 +320,6 @@ public final class L10nTranslations {
                 "Verkaufsangebote in den Einstellungen");
         table.put("Source code and issues",
                 "Quellcode und Issues");
-        table.put("Sponsored messages and video ads",
-                "Gesponserte Nachrichten und Videowerbung");
         table.put("Stays in while paused",
                 "Bleibt w\u00e4hrend der Pause aktiv");
         table.put("Stop call diagnostics",
@@ -400,6 +398,8 @@ public final class L10nTranslations {
                 "Bis zum Fortsetzen verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv.");
         table.put("Updates",
                 "Updates");
+        table.put("Usage reports and call diagnostics",
+                "Nutzungsberichte und Anrufdiagnosen");
         table.put("Version",
                 "Version");
         table.put("You have the newest HushTelegram release.",
@@ -499,6 +499,8 @@ public final class L10nTranslations {
                 "Acerca de");
         table.put("Accounts",
                 "Cuentas");
+        table.put("Ads in channels and search, and more",
+                "Anuncios en canales y b\u00fasqueda, y m\u00e1s");
         table.put("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
                 "Android 11 y las versiones anteriores no indican qu\u00e9 enlaces se abren aqu\u00ed. Toca para abrir los ajustes de esta app y luego Abrir de forma predeterminada.");
         table.put("Android didn't say which links open here. Tap to check in Android's settings.",
@@ -563,8 +565,6 @@ public final class L10nTranslations {
                 "No se pudo volver a activar HushTelegram. Int\u00e9ntalo de nuevo.");
         table.put("Debug logging",
                 "Registro de depuraci\u00f3n");
-        table.put("Device statistics and read time",
-                "Estad\u00edsticas del dispositivo y tiempo de lectura");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Se borraron los datos de diagn\u00f3stico. Toca de nuevo para restaurarlos.");
         table.put("Diagnostic data put back.",
@@ -737,8 +737,6 @@ public final class L10nTranslations {
                 "Ofertas en Ajustes");
         table.put("Source code and issues",
                 "C\u00f3digo fuente e incidencias");
-        table.put("Sponsored messages and video ads",
-                "Mensajes patrocinados y anuncios de video");
         table.put("Stays in while paused",
                 "Se mantiene durante la pausa");
         table.put("Stop call diagnostics",
@@ -817,6 +815,8 @@ public final class L10nTranslations {
                 "Hasta que reanudes, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene.");
         table.put("Updates",
                 "Actualizaciones");
+        table.put("Usage reports and call diagnostics",
+                "Informes de uso y diagn\u00f3sticos de llamadas");
         table.put("Version",
                 "Versi\u00f3n");
         table.put("You have the newest HushTelegram release.",
@@ -916,6 +916,8 @@ public final class L10nTranslations {
                 "Tentang");
         table.put("Accounts",
                 "Akun");
+        table.put("Ads in channels and search, and more",
+                "Iklan di saluran dan pencarian, dan lainnya");
         table.put("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
                 "Android 11 dan versi sebelumnya tidak memberi tahu tautan mana yang terbuka di sini. Ketuk untuk membuka pengaturan aplikasi ini, lalu Buka secara default.");
         table.put("Android didn't say which links open here. Tap to check in Android's settings.",
@@ -980,8 +982,6 @@ public final class L10nTranslations {
                 "HushTelegram tidak dapat diaktifkan lagi. Coba lagi.");
         table.put("Debug logging",
                 "Pencatatan debug");
-        table.put("Device statistics and read time",
-                "Statistik perangkat dan waktu baca");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Data diagnostik dihapus. Ketuk lagi untuk mengembalikannya.");
         table.put("Diagnostic data put back.",
@@ -1154,8 +1154,6 @@ public final class L10nTranslations {
                 "Penawaran di Pengaturan");
         table.put("Source code and issues",
                 "Kode sumber dan laporan masalah");
-        table.put("Sponsored messages and video ads",
-                "Pesan bersponsor dan iklan video");
         table.put("Stays in while paused",
                 "Tetap aktif saat dijeda");
         table.put("Stop call diagnostics",
@@ -1234,6 +1232,8 @@ public final class L10nTranslations {
                 "Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif.");
         table.put("Updates",
                 "Pembaruan");
+        table.put("Usage reports and call diagnostics",
+                "Laporan penggunaan dan diagnostik panggilan");
         table.put("Version",
                 "Versi");
         table.put("You have the newest HushTelegram release.",
@@ -1333,6 +1333,8 @@ public final class L10nTranslations {
                 "Sobre");
         table.put("Accounts",
                 "Contas");
+        table.put("Ads in channels and search, and more",
+                "An\u00fancios em canais e na busca, e mais");
         table.put("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
                 "O Android 11 e as vers\u00f5es anteriores n\u00e3o informam quais links abrem aqui. Toque para abrir as configura\u00e7\u00f5es deste app e depois Abrir por padr\u00e3o.");
         table.put("Android didn't say which links open here. Tap to check in Android's settings.",
@@ -1397,8 +1399,6 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel reativar o HushTelegram. Tente novamente.");
         table.put("Debug logging",
                 "Registro de depura\u00e7\u00e3o");
-        table.put("Device statistics and read time",
-                "Estat\u00edsticas do dispositivo e tempo de leitura");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Dados de diagn\u00f3stico apagados. Toque de novo para restaur\u00e1-los.");
         table.put("Diagnostic data put back.",
@@ -1571,8 +1571,6 @@ public final class L10nTranslations {
                 "Ofertas nas Configura\u00e7\u00f5es");
         table.put("Source code and issues",
                 "C\u00f3digo-fonte e relatos de problemas");
-        table.put("Sponsored messages and video ads",
-                "Mensagens patrocinadas e an\u00fancios em v\u00eddeo");
         table.put("Stays in while paused",
                 "O que continua ativo na pausa");
         table.put("Stop call diagnostics",
@@ -1651,6 +1649,8 @@ public final class L10nTranslations {
                 "At\u00e9 voc\u00ea retomar, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo.");
         table.put("Updates",
                 "Atualiza\u00e7\u00f5es");
+        table.put("Usage reports and call diagnostics",
+                "Relat\u00f3rios de uso e diagn\u00f3sticos de chamadas");
         table.put("Version",
                 "Vers\u00e3o");
         table.put("You have the newest HushTelegram release.",
@@ -1750,6 +1750,8 @@ public final class L10nTranslations {
                 "Hakk\u0131nda");
         table.put("Accounts",
                 "Hesaplar");
+        table.put("Ads in channels and search, and more",
+                "Kanallarda ve aramada reklamlar ve fazlas\u0131");
         table.put("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
                 "Android 11 ve \u00f6ncesi burada hangi ba\u011flant\u0131lar\u0131n a\u00e7\u0131ld\u0131\u011f\u0131n\u0131 bildirmez. Bu uygulaman\u0131n ayarlar\u0131n\u0131 a\u00e7mak i\u00e7in dokunun, ard\u0131ndan Varsay\u0131lan olarak a\u00e7'a gidin.");
         table.put("Android didn't say which links open here. Tap to check in Android's settings.",
@@ -1814,8 +1816,6 @@ public final class L10nTranslations {
                 "HushTelegram yeniden a\u00e7\u0131lamad\u0131. Tekrar dene.");
         table.put("Debug logging",
                 "Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc");
-        table.put("Device statistics and read time",
-                "Cihaz istatistikleri ve okuma s\u00fcresi");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Tan\u0131lama verileri temizlendi. Geri getirmek i\u00e7in tekrar dokun.");
         table.put("Diagnostic data put back.",
@@ -1988,8 +1988,6 @@ public final class L10nTranslations {
                 "Ayarlar'daki sat\u0131\u015f se\u00e7enekleri");
         table.put("Source code and issues",
                 "Kaynak kodu ve sorunlar");
-        table.put("Sponsored messages and video ads",
-                "Sponsorlu mesajlar ve video reklamlar\u0131");
         table.put("Stays in while paused",
                 "Duraklat\u0131lsa da devrede kal\u0131r");
         table.put("Stop call diagnostics",
@@ -2068,6 +2066,8 @@ public final class L10nTranslations {
                 "Devam ettirene kadar Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r.");
         table.put("Updates",
                 "G\u00fcncellemeler");
+        table.put("Usage reports and call diagnostics",
+                "Kullan\u0131m raporlar\u0131 ve arama tan\u0131lamalar\u0131");
         table.put("Version",
                 "S\u00fcr\u00fcm");
         table.put("You have the newest HushTelegram release.",
