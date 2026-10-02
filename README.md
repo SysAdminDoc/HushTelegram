@@ -1,7 +1,7 @@
 ![HushTelegram. Keep the chat. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.0.5-2AABEE" alt="Version 0.0.5">
+  <img src="https://img.shields.io/badge/version-0.0.6-2AABEE" alt="Version 0.0.6">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Telegram-12.10.6-2AABEE" alt="Telegram 12.10.6">
@@ -14,7 +14,7 @@ HushTelegram is a Morphe patch bundle for Android that takes the sponsored messa
 
 The latest release is [v0.0.4](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.4), with 4 patches. It's the first one. Every patch has been applied to Telegram 12.10.6 and exercised on a signed-in phone, where Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
 
-Source version 0.0.5 is prepared for the next release. It hasn't been published; Morphe Manager still downloads v0.0.4.
+Source version 0.0.6 is prepared for the next release. It hasn't been published, so Morphe Manager still downloads v0.0.4.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) | [Download a release](https://github.com/SysAdminDoc/HushTelegram/releases/latest) | [Browse the patches](#patches)
 
@@ -95,6 +95,8 @@ Telegram has its own fallback for phones without Google's services. Under Settin
 The map in the location picker stays blank for the same reason. Google's Maps key only answers an app with Telegram's own signature.
 
 ## Your Telegram account
+
+Sign-in can fail with `API_ID_PUBLISHED_FLOOD`, which means Telegram rejected the API ID bundled with the app. Getting past it needs [registered API credentials](https://core.telegram.org/api/obtaining_api_id), and the current patches don't replace them. Keep any existing signed-in installation.
 
 **Can Telegram tell?** Assume it can. A patched Telegram is signed with your key rather than Telegram's, and Telegram's app reports a fingerprint of that key to its servers when it connects.
 
