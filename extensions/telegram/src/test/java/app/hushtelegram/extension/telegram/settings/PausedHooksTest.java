@@ -169,6 +169,10 @@ public class PausedHooksTest {
         // A sideways swipe on a chat row starts nothing.
         probes.put(PatchFamily.DISABLE_CHAT_SWIPE, Collections.singletonList(
                 app.hushtelegram.extension.telegram.misc.ChatSwipe::keepRowStill));
+        // After a "Not now", the Contacts tab neither asks again nor marks its icon.
+        probes.put(PatchFamily.QUIET_CONTACTS_NAG, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.ContactsNag.skipAsk(declinedContactsPrompt()),
+                () -> app.hushtelegram.extension.telegram.misc.ContactsNag.hideBadge(declinedContactsPrompt())));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),
@@ -194,6 +198,14 @@ public class PausedHooksTest {
         // telegram.org's build never asks the server whether a newer one is out.
         probes.put(PatchFamily.DISABLE_UPDATE_CHECKS, Collections.singletonList(UpdateChecks::skipUpdateCheck));
         return probes;
+    }
+
+    /** Telegram's prompt flags after a "Not now" in the Contacts tab. */
+    private static android.content.SharedPreferences declinedContactsPrompt() {
+        android.content.SharedPreferences prefs = org.robolectric.RuntimeEnvironment.getApplication()
+                .getSharedPreferences("paused_hooks_contacts", android.content.Context.MODE_PRIVATE);
+        prefs.edit().putBoolean("askAboutContacts2", false).commit();
+        return prefs;
     }
 
     /** A browser handling both schemes without a domain restriction, using the runtime's real query. */

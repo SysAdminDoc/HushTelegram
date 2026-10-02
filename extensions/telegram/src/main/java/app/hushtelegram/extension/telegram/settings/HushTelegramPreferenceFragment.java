@@ -280,6 +280,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "so you can't archive, mute, pin, delete or read a chat by accident. Long-press still has every action. "
                                 + "Off by default in settings."))), SettingsIcons.BLOCK));
             }
+            if (build.contains(PatchFamily.QUIET_CONTACTS_NAG)) {
+                chats.addPreference(mark(toggle(context, Settings.QUIET_CONTACTS_NAG, L10n.t("Quiet contacts prompts"),
+                        PatchFamily.QUIET_CONTACTS_NAG.coverageSummary(L10n.t("Once you've said no to contacts access, the Contacts tab stops "
+                                + "asking again and its warning badge goes away. The first request, the tab's own buttons and contact sync stay."))),
+                        SettingsIcons.BLOCK));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

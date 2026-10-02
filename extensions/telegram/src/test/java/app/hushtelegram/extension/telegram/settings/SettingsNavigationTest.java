@@ -352,6 +352,9 @@ public class SettingsNavigationTest {
         PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.DISABLE_CHAT_SWIPE);
         recreate();
         assertNull(homeLine("Chats"));
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_ADS, PatchFamily.QUIET_CONTACTS_NAG);
+        recreate();
+        assertEquals("Ads in channels and search, and more", homeLine("Chats"));
         PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.DISABLE_ANALYTICS, PatchFamily.DISABLE_DRAFT_PREVIEWS);
         recreate();
         assertEquals("Usage reports, and more", homeLine("Privacy"));

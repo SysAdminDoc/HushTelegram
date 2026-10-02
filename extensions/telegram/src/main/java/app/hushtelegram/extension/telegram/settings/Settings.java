@@ -67,6 +67,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_disable_chat_swipe", FALSE);
 
     /**
+     * The Contacts tab's automatic prompt and its "!" badge once a contacts prompt was declined;
+     * the first request, the tab's own buttons and contact sync stay stock.
+     */
+    public static final BooleanSetting QUIET_CONTACTS_NAG =
+            new BooleanSetting("hushtelegram_quiet_contacts_nag", TRUE);
+
+    /**
      * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
      * never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

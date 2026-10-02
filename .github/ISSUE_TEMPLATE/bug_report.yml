@@ -83,6 +83,7 @@ body:
         - Hide promotional banners
         - Hide sponsored proxy channel
         - Open links externally
+        - Quiet contacts nag
         - Strip link tracking
         - HushTelegram settings
     validations:
