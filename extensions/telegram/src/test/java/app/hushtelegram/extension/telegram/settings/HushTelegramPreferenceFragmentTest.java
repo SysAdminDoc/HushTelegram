@@ -286,8 +286,8 @@ public class HushTelegramPreferenceFragmentTest {
                             + "and Telegram doesn't ask for it. Apps you've opened and other results stay.",
                     String.valueOf(page.findPreference(Settings.HIDE_POPULAR_APPS.key).getSummary()));
             assertEquals("No swipe actions on chats", String.valueOf(page.findPreference(Settings.DISABLE_CHAT_SWIPE.key).getTitle()));
-            assertEquals("Swiping a chat sideways in the chat list does nothing, so you can't archive, mute, pin, delete or read a chat "
-                            + "by accident. Long-press still has every action. Off by default in settings.",
+            assertEquals("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, "
+                            + "so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
                     String.valueOf(page.findPreference(Settings.DISABLE_CHAT_SWIPE.key).getSummary()));
             // Chat rows swipe as Telegram's do until someone turns the switch on.
             assertFalse(Settings.DISABLE_CHAT_SWIPE.key,

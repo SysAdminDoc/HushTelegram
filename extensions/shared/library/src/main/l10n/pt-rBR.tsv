@@ -218,7 +218,7 @@ Camera only on tap	Câmera só ao tocar
 Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it. Off by default in settings.	Abrir a galeria de anexos não liga a câmera nem pede acesso a ela. Toque no quadro da câmera para ligá-la. Desativado por padrão nas configurações.
 Gallery camera	Câmera da galeria
 No swipe actions on chats	Sem ações ao deslizar chats
-Swiping a chat sideways in the chat list does nothing, so you can't archive, mute, pin, delete or read a chat by accident. Long-press still has every action. Off by default in settings.	Deslizar um chat para o lado na lista de chats não faz nada, então você não arquiva, silencia, fixa, apaga nem marca um chat como lido sem querer. Tocar e segurar continua mostrando todas as ações. Desativado por padrão nas configurações.
+A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.	Deslizar um chat para o lado na lista de chats não arquiva, silencia, fixa, apaga nem marca mais o chat como lido, então um deslize sem querer não muda o chat. Tocar e segurar continua mostrando todas as ações. Desativado por padrão nas configurações.
 Hide popular apps	Ocultar apps populares
 Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.	A aba Apps da busca não mostra a lista Apps populares do Telegram, nem o título e as linhas de carregamento, e o Telegram não a solicita. Os apps que você abriu e os outros resultados continuam.
 Quiet contacts prompts	Silenciar pedidos de contatos

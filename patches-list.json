@@ -78,7 +78,7 @@
     },
     {
       "name": "Disable chat swipe actions",
-      "description": "Adds a switch, off by default, that stops a sideways swipe on a chat in the chat list from archiving, muting, pinning, deleting or reading it. Long-press keeps every action.",
+      "description": "Adds a switch, off by default, that stops a sideways swipe on a chat in the chat list from archiving, muting, pinning, deleting or marking it read. A swipe set to change folders still does. Long-press keeps every action.",
       "category": "Chats",
       "use": true,
       "dependencies": [
@@ -330,7 +330,7 @@
     },
     {
       "name": "Hide popular apps",
-      "description": "Hides the Popular apps list in search's Apps tab and stops Telegram asking its server for it. Apps you've opened and other search results stay.",
+      "description": "Hides the Popular apps list in search's Apps tab and stops Telegram from asking its server for it. Apps you've opened and other search results stay.",
       "category": "Chats",
       "use": true,
       "dependencies": [

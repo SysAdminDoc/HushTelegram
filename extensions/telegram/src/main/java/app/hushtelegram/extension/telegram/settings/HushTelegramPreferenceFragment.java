@@ -276,8 +276,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             }
             if (build.contains(PatchFamily.DISABLE_CHAT_SWIPE)) {
                 chats.addPreference(mark(toggle(context, Settings.DISABLE_CHAT_SWIPE, L10n.t("No swipe actions on chats"),
-                        PatchFamily.DISABLE_CHAT_SWIPE.coverageSummary(L10n.t("Swiping a chat sideways in the chat list does nothing, "
-                                + "so you can't archive, mute, pin, delete or read a chat by accident. Long-press still has every action. "
+                        PatchFamily.DISABLE_CHAT_SWIPE.coverageSummary(L10n.t("A sideways swipe on a chat in the chat list no longer archives, "
+                                + "mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. "
                                 + "Off by default in settings."))), SettingsIcons.BLOCK));
             }
             if (build.contains(PatchFamily.QUIET_CONTACTS_NAG)) {

@@ -80,6 +80,8 @@ public final class L10nTranslations {
                 "Ein Diagnosebericht wird bereits gespeichert.");
         table.put("A file named %1$s in %2$s paused HushTelegram.",
                 "Eine Datei namens %1$s in %2$s hat HushTelegram pausiert.");
+        table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
+                "Ein seitliches Wischen \u00fcber einen Chat in der Chatliste archiviert ihn nicht mehr, schaltet ihn nicht stumm, heftet ihn nicht an, l\u00f6scht ihn nicht und markiert ihn nicht als gelesen, sodass ein versehentliches Wischen den Chat nicht ver\u00e4ndert. Langes Dr\u00fccken bietet weiterhin alle Aktionen. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("About",
                 "Info");
         table.put("Accounts",
@@ -174,11 +176,11 @@ public final class L10nTranslations {
                 "Jeder Schalter hier gilt f\u00fcr alle Konten in dieser Telegram-App, nicht nur f\u00fcr das gerade ge\u00f6ffnete.");
         table.put("Export diagnostic report",
                 "Diagnosebericht exportieren");
-        table.put("Export settings",
-                "Einstellungen exportieren");
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("Export settings",
+                "Einstellungen exportieren");
         table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
                 "Ab dem n\u00e4chsten Start verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv, und deine Auswahl bleibt gespeichert.");
         table.put("Full report saved to %1$s",
@@ -297,11 +299,11 @@ public final class L10nTranslations {
                 "Antippen von Premium-Angeboten");
         table.put("Premium promo views",
                 "Aufrufe der Premium-Angebotsseite");
-        table.put("Privacy",
-                "Datenschutz");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("Privacy",
+                "Datenschutz");
         table.put("Quiet contacts prompts",
                 "Kontaktanfragen beruhigen");
         table.put("Reading the settings file",
@@ -360,8 +362,6 @@ public final class L10nTranslations {
                 "Link-Tracking entfernen");
         table.put("Supported links",
                 "Unterst\u00fctzte Links");
-        table.put("Swiping a chat sideways in the chat list does nothing, so you can't archive, mute, pin, delete or read a chat by accident. Long-press still has every action. Off by default in settings.",
-                "Seitliches Wischen \u00fcber einen Chat in der Chatliste bewirkt nichts, sodass du einen Chat nicht versehentlich archivierst, stummschaltest, anheftest, l\u00f6schst oder als gelesen markierst. Langes Dr\u00fccken bietet weiterhin alle Aktionen. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("Tap to turn it back on.",
                 "Zum Wiedereinschalten tippen.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -541,6 +541,8 @@ public final class L10nTranslations {
                 "Ya se est\u00e1 guardando un informe de diagn\u00f3stico.");
         table.put("A file named %1$s in %2$s paused HushTelegram.",
                 "Un archivo llamado %1$s en %2$s paus\u00f3 HushTelegram.");
+        table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
+                "Deslizar un chat hacia un lado en la lista de chats ya no lo archiva, silencia, fija, elimina ni marca como le\u00eddo, as\u00ed que un deslizamiento accidental no cambia el chat. Mantener pulsado sigue ofreciendo todas las acciones. Desactivado por defecto en los ajustes.");
         table.put("About",
                 "Acerca de");
         table.put("Accounts",
@@ -635,11 +637,11 @@ public final class L10nTranslations {
                 "Cada interruptor de aqu\u00ed se aplica a todas las cuentas de esta app de Telegram, no solo a la que tienes abierta.");
         table.put("Export diagnostic report",
                 "Exportar informe de diagn\u00f3stico");
-        table.put("Export settings",
-                "Exportar configuraci\u00f3n");
     }
 
     private static void fillEs1(Map<String, String> table) {
+        table.put("Export settings",
+                "Exportar configuraci\u00f3n");
         table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
                 "Desde el pr\u00f3ximo inicio, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene, y tus preferencias quedan guardadas.");
         table.put("Full report saved to %1$s",
@@ -758,11 +760,11 @@ public final class L10nTranslations {
                 "toques en promociones de Premium");
         table.put("Premium promo views",
                 "vistas de promociones de Premium");
-        table.put("Privacy",
-                "Privacidad");
     }
 
     private static void fillEs2(Map<String, String> table) {
+        table.put("Privacy",
+                "Privacidad");
         table.put("Quiet contacts prompts",
                 "Silenciar avisos de contactos");
         table.put("Reading the settings file",
@@ -821,8 +823,6 @@ public final class L10nTranslations {
                 "Eliminar seguimiento de enlaces");
         table.put("Supported links",
                 "Enlaces compatibles");
-        table.put("Swiping a chat sideways in the chat list does nothing, so you can't archive, mute, pin, delete or read a chat by accident. Long-press still has every action. Off by default in settings.",
-                "Deslizar un chat hacia un lado en la lista de chats no hace nada, as\u00ed que no puedes archivar, silenciar, fijar, eliminar ni marcar como le\u00eddo un chat por accidente. Mantener pulsado sigue ofreciendo todas las acciones. Desactivado por defecto en los ajustes.");
         table.put("Tap to turn it back on.",
                 "Toca para volver a activarlo.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -1002,6 +1002,8 @@ public final class L10nTranslations {
                 "Sudah ada laporan diagnostik yang sedang disimpan.");
         table.put("A file named %1$s in %2$s paused HushTelegram.",
                 "File bernama %1$s di %2$s menjeda HushTelegram.");
+        table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
+                "Menggeser chat ke samping di daftar chat tidak lagi mengarsipkan, membisukan, menyematkan, menghapus, atau menandainya sebagai dibaca, jadi geseran tak sengaja tidak mengubah chat. Tekan lama tetap menampilkan semua aksi. Secara default nonaktif di pengaturan.");
         table.put("About",
                 "Tentang");
         table.put("Accounts",
@@ -1096,11 +1098,11 @@ public final class L10nTranslations {
                 "Setiap sakelar di sini berlaku untuk semua akun di aplikasi Telegram ini, bukan hanya akun yang sedang Anda buka.");
         table.put("Export diagnostic report",
                 "Ekspor laporan diagnostik");
-        table.put("Export settings",
-                "Ekspor pengaturan");
     }
 
     private static void fillIn1(Map<String, String> table) {
+        table.put("Export settings",
+                "Ekspor pengaturan");
         table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
                 "Mulai peluncuran berikutnya, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif, dan pilihan Anda tetap tersimpan.");
         table.put("Full report saved to %1$s",
@@ -1219,11 +1221,11 @@ public final class L10nTranslations {
                 "ketukan promosi Premium");
         table.put("Premium promo views",
                 "tampilan promosi Premium");
-        table.put("Privacy",
-                "Privasi");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("Privacy",
+                "Privasi");
         table.put("Quiet contacts prompts",
                 "Senyapkan permintaan kontak");
         table.put("Reading the settings file",
@@ -1282,8 +1284,6 @@ public final class L10nTranslations {
                 "Hapus pelacakan tautan");
         table.put("Supported links",
                 "Tautan yang didukung");
-        table.put("Swiping a chat sideways in the chat list does nothing, so you can't archive, mute, pin, delete or read a chat by accident. Long-press still has every action. Off by default in settings.",
-                "Menggeser chat ke samping di daftar chat tidak melakukan apa pun, jadi kamu tidak bisa mengarsipkan, membisukan, menyematkan, menghapus, atau menandai chat sebagai dibaca secara tidak sengaja. Tekan lama tetap menampilkan semua aksi. Secara default nonaktif di pengaturan.");
         table.put("Tap to turn it back on.",
                 "Ketuk untuk mengaktifkan HushTelegram lagi.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -1463,6 +1463,8 @@ public final class L10nTranslations {
                 "Um relat\u00f3rio de diagn\u00f3stico j\u00e1 est\u00e1 sendo salvo.");
         table.put("A file named %1$s in %2$s paused HushTelegram.",
                 "Um arquivo chamado %1$s em %2$s pausou o HushTelegram.");
+        table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
+                "Deslizar um chat para o lado na lista de chats n\u00e3o arquiva, silencia, fixa, apaga nem marca mais o chat como lido, ent\u00e3o um deslize sem querer n\u00e3o muda o chat. Tocar e segurar continua mostrando todas as a\u00e7\u00f5es. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("About",
                 "Sobre");
         table.put("Accounts",
@@ -1557,11 +1559,11 @@ public final class L10nTranslations {
                 "Cada op\u00e7\u00e3o aqui vale para todas as contas deste app do Telegram, n\u00e3o s\u00f3 para a que est\u00e1 aberta.");
         table.put("Export diagnostic report",
                 "Exportar relat\u00f3rio de diagn\u00f3stico");
-        table.put("Export settings",
-                "Exportar configura\u00e7\u00f5es");
     }
 
     private static void fillPt_rBR1(Map<String, String> table) {
+        table.put("Export settings",
+                "Exportar configura\u00e7\u00f5es");
         table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
                 "A partir da pr\u00f3xima abertura, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo, e suas escolhas ficam salvas.");
         table.put("Full report saved to %1$s",
@@ -1680,11 +1682,11 @@ public final class L10nTranslations {
                 "toques em promo\u00e7\u00f5es do Premium");
         table.put("Premium promo views",
                 "visualiza\u00e7\u00f5es de promo\u00e7\u00f5es do Premium");
-        table.put("Privacy",
-                "Privacidade");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
+        table.put("Privacy",
+                "Privacidade");
         table.put("Quiet contacts prompts",
                 "Silenciar pedidos de contatos");
         table.put("Reading the settings file",
@@ -1743,8 +1745,6 @@ public final class L10nTranslations {
                 "Remover rastreamento de links");
         table.put("Supported links",
                 "Links compat\u00edveis");
-        table.put("Swiping a chat sideways in the chat list does nothing, so you can't archive, mute, pin, delete or read a chat by accident. Long-press still has every action. Off by default in settings.",
-                "Deslizar um chat para o lado na lista de chats n\u00e3o faz nada, ent\u00e3o voc\u00ea n\u00e3o arquiva, silencia, fixa, apaga nem marca um chat como lido sem querer. Tocar e segurar continua mostrando todas as a\u00e7\u00f5es. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Tap to turn it back on.",
                 "Toque para reativar.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -1924,6 +1924,8 @@ public final class L10nTranslations {
                 "Bir tan\u0131lama raporu zaten kaydediliyor.");
         table.put("A file named %1$s in %2$s paused HushTelegram.",
                 "%2$s i\u00e7indeki %1$s adl\u0131 bir dosya HushTelegram'u duraklatt\u0131.");
+        table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
+                "Sohbet listesinde bir sohbeti yana kayd\u0131rmak art\u0131k onu ar\u015fivlemez, sessize almaz, sabitlemez, silmez veya okundu olarak i\u015faretlemez, b\u00f6ylece yanl\u0131\u015fl\u0131kla yap\u0131lan bir kayd\u0131rma sohbeti de\u011fi\u015ftirmez. Uzun basma t\u00fcm eylemleri sunmaya devam eder. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("About",
                 "Hakk\u0131nda");
         table.put("Accounts",
@@ -2018,11 +2020,11 @@ public final class L10nTranslations {
                 "Buradaki her anahtar yaln\u0131zca a\u00e7\u0131k olan hesap i\u00e7in de\u011fil, bu Telegram uygulamas\u0131ndaki t\u00fcm hesaplar i\u00e7in ge\u00e7erlidir.");
         table.put("Export diagnostic report",
                 "Tan\u0131lama raporunu d\u0131\u015fa aktar");
-        table.put("Export settings",
-                "Ayarlar\u0131 d\u0131\u015fa aktar");
     }
 
     private static void fillTr1(Map<String, String> table) {
+        table.put("Export settings",
+                "Ayarlar\u0131 d\u0131\u015fa aktar");
         table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
                 "Sonraki a\u00e7\u0131l\u0131\u015ftan itibaren Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r ve tercihlerin kay\u0131tl\u0131 kal\u0131r.");
         table.put("Full report saved to %1$s",
@@ -2141,11 +2143,11 @@ public final class L10nTranslations {
                 "Premium tan\u0131t\u0131m dokunu\u015flar\u0131");
         table.put("Premium promo views",
                 "Premium tan\u0131t\u0131m g\u00f6r\u00fcnt\u00fclemeleri");
-        table.put("Privacy",
-                "Gizlilik");
     }
 
     private static void fillTr2(Map<String, String> table) {
+        table.put("Privacy",
+                "Gizlilik");
         table.put("Quiet contacts prompts",
                 "Ki\u015fi isteklerini sustur");
         table.put("Reading the settings file",
@@ -2204,8 +2206,6 @@ public final class L10nTranslations {
                 "Ba\u011flant\u0131 takibini kald\u0131r");
         table.put("Supported links",
                 "Desteklenen ba\u011flant\u0131lar");
-        table.put("Swiping a chat sideways in the chat list does nothing, so you can't archive, mute, pin, delete or read a chat by accident. Long-press still has every action. Off by default in settings.",
-                "Sohbet listesinde bir sohbeti yana kayd\u0131rmak hi\u00e7bir \u015fey yapmaz, b\u00f6ylece bir sohbeti yanl\u0131\u015fl\u0131kla ar\u015fivlemez, sessize almaz, sabitlemez, silmez veya okundu olarak i\u015faretlemezsiniz. Uzun basma t\u00fcm eylemleri sunmaya devam eder. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Tap to turn it back on.",
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
