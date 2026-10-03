@@ -93,19 +93,97 @@ function Copy-Entries {
     return ,$copies
 }
 
+function Assert-StoredZipEntries {
+    param([string]$Apk, [object[]]$Entries)
+    # Read the synthetic ZIP headers and raw bytes independently of ZipArchive and the checker.
+    $bytes = [IO.File]::ReadAllBytes($Apk)
+    Assert-True ($bytes.Length -ge 22) 'Stored fixture has no ZIP directory.'
+    $end = $bytes.Length - 22
+    Assert-True ([BitConverter]::ToUInt32($bytes, $end) -eq 0x06054b50 -and
+        [BitConverter]::ToUInt16($bytes, $end + 20) -eq 0) 'Stored fixture has no ordinary ZIP end record.'
+    $count = [BitConverter]::ToUInt16($bytes, $end + 10)
+    $centralStart = [int][BitConverter]::ToUInt32($bytes, $end + 16)
+    $central = $centralStart
+    $verified = 0
+    for ($index = 0; $index -lt $count; $index++) {
+        Assert-True ($central -ge 0 -and $central + 46 -le $end -and
+            [BitConverter]::ToUInt32($bytes, $central) -eq 0x02014b50) 'Stored fixture has an invalid central header.'
+        $nameLength = [BitConverter]::ToUInt16($bytes, $central + 28)
+        $extraLength = [BitConverter]::ToUInt16($bytes, $central + 30)
+        $commentLength = [BitConverter]::ToUInt16($bytes, $central + 32)
+        $next = $central + 46 + $nameLength + $extraLength + $commentLength
+        Assert-True ($next -le $end) 'Stored fixture central entry is truncated.'
+        $name = [Text.Encoding]::UTF8.GetString($bytes, $central + 46, $nameLength)
+        $expected = @($Entries | Where-Object { $_.Name -ceq $name })
+        if ($expected.Count -gt 0) {
+            Assert-True ($expected.Count -eq 1 -and [BitConverter]::ToUInt16($bytes, $central + 10) -eq 0 -and
+                [BitConverter]::ToUInt32($bytes, $central + 20) -eq $expected[0].Bytes.Length -and
+                [BitConverter]::ToUInt32($bytes, $central + 24) -eq $expected[0].Bytes.Length) "Stored fixture central method or sizes differ: $name"
+            $local = [int][BitConverter]::ToUInt32($bytes, $central + 42)
+            Assert-True ($local -ge 0 -and $local + 30 -le $centralStart -and
+                [BitConverter]::ToUInt32($bytes, $local) -eq 0x04034b50 -and
+                [BitConverter]::ToUInt16($bytes, $local + 8) -eq 0 -and
+                [BitConverter]::ToUInt32($bytes, $local + 18) -eq $expected[0].Bytes.Length -and
+                [BitConverter]::ToUInt32($bytes, $local + 22) -eq $expected[0].Bytes.Length) "Stored fixture local method or sizes differ: $name"
+            $localNameLength = [BitConverter]::ToUInt16($bytes, $local + 26)
+            $payload = $local + 30 + $localNameLength + [BitConverter]::ToUInt16($bytes, $local + 28)
+            Assert-True ($payload + $expected[0].Bytes.Length -le $centralStart -and
+                [Text.Encoding]::UTF8.GetString($bytes, $local + 30, $localNameLength) -ceq $name) "Stored fixture local name or payload range differs: $name"
+            $raw = [byte[]]::new($expected[0].Bytes.Length)
+            [Array]::Copy($bytes, $payload, $raw, 0, $raw.Length)
+            Assert-True ([Convert]::ToBase64String($raw) -ceq [Convert]::ToBase64String($expected[0].Bytes)) "Stored fixture raw bytes differ: $name"
+            $verified++
+        }
+        $central = $next
+    }
+    Assert-True ($verified -eq $Entries.Count) 'Stored fixture is missing a requested entry or has duplicate entries.'
+}
+
 function New-NativeApk {
     param([string]$Name, [object[]]$Entries, [string]$Resource = 'unrelated resource')
     $apk = Join-Path $caseRoot "$Name.apk"
     $zip = [IO.Compression.ZipFile]::Open($apk, [IO.Compression.ZipArchiveMode]::Create)
     try {
         foreach ($entry in $Entries) {
-            $level = if ($entry.Compression -eq 'STORE') { [IO.Compression.CompressionLevel]::NoCompression } else { [IO.Compression.CompressionLevel]::Optimal }
-            $stream = $zip.CreateEntry($entry.Name, $level).Open()
+            $stream = $zip.CreateEntry($entry.Name, [IO.Compression.CompressionLevel]::Optimal).Open()
             try { $stream.Write($entry.Bytes, 0, $entry.Bytes.Length) } finally { $stream.Dispose() }
         }
         $stream = $zip.CreateEntry('res/raw/other.txt').Open()
         try { $bytes = [Text.Encoding]::UTF8.GetBytes($Resource); $stream.Write($bytes, 0, $bytes.Length) } finally { $stream.Dispose() }
     } finally { $zip.Dispose() }
+    $storedEntries = @($Entries | Where-Object { $_.Compression -ceq 'STORE' })
+    if ($storedEntries.Count -gt 0) {
+        # Framework's NoCompression still emits method 8. The required JDK writes genuine method 0.
+        $payloadDirectory = [IO.Path]::GetFullPath((Join-Path $caseRoot ('stored-' + [guid]::NewGuid().ToString('N'))))
+        $ownedPrefix = $caseRoot + [IO.Path]::DirectorySeparatorChar
+        Assert-True ($payloadDirectory.StartsWith($ownedPrefix, [StringComparison]::OrdinalIgnoreCase)) 'Unsafe stored payload directory.'
+        try {
+            New-Item -ItemType Directory -Path $payloadDirectory | Out-Null
+            $payloadPrefix = $payloadDirectory + [IO.Path]::DirectorySeparatorChar
+            $arguments = @('--update', '--file', $apk, '--no-manifest', '--no-compress')
+            foreach ($entry in $storedEntries) {
+                $file = [IO.Path]::GetFullPath((Join-Path $payloadDirectory $entry.Name))
+                Assert-True ($file.StartsWith($payloadPrefix, [StringComparison]::OrdinalIgnoreCase)) 'Unsafe stored payload path.'
+                New-Item -ItemType Directory -Force -Path (Split-Path -Parent $file) | Out-Null
+                [IO.File]::WriteAllBytes($file, $entry.Bytes)
+                $arguments += @('-C', $payloadDirectory, $entry.Name)
+            }
+            $preference = $ErrorActionPreference
+            try {
+                $ErrorActionPreference = 'Continue'
+                $global:LASTEXITCODE = -1
+                $jarOutput = @(& $archiver @arguments 2>&1 | ForEach-Object { "$_" })
+                $jarExit = $LASTEXITCODE
+            } finally { $ErrorActionPreference = $preference }
+            Assert-True ($jarExit -eq 0) "Stored fixture creation failed.`n$($jarOutput -join "`n")"
+            Assert-StoredZipEntries -Apk $apk -Entries $storedEntries
+        } finally {
+            if ($payloadDirectory.StartsWith($ownedPrefix, [StringComparison]::OrdinalIgnoreCase) -and
+                (Test-Path -LiteralPath $payloadDirectory -PathType Container)) {
+                Remove-Item -LiteralPath $payloadDirectory -Recurse -Force
+            }
+        }
+    }
     return $apk
 }
 
@@ -146,11 +224,14 @@ $tempBase = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
 $caseRoot = [IO.Path]::GetFullPath((Join-Path $tempBase ('hushtelegram-native-check-' + [guid]::NewGuid().ToString('N'))))
 $requiredPrefix = $tempBase.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
 Assert-True ($caseRoot.StartsWith($requiredPrefix, [StringComparison]::OrdinalIgnoreCase)) "Unsafe temporary path: $caseRoot"
+Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 try {
     New-Item -ItemType Directory -Path $caseRoot | Out-Null
     $compiler = Join-Path (Split-Path -Parent (Get-Command $Java).Source) $(if ($IsWindows -or $env:OS -eq 'Windows_NT') { 'javac.exe' } else { 'javac' })
     Assert-True (Test-Path -LiteralPath $compiler -PathType Leaf) "No compiler beside the resolved JDK: $compiler"
+    $archiver = Join-Path (Split-Path -Parent $compiler) $(if ($IsWindows -or $env:OS -eq 'Windows_NT') { 'jar.exe' } else { 'jar' })
+    Assert-True (Test-Path -LiteralPath $archiver -PathType Leaf) "No archiver beside the resolved JDK: $archiver"
     $preference = $ErrorActionPreference
     try {
         $ErrorActionPreference = 'Continue'
