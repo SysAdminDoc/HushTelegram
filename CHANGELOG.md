@@ -4,6 +4,8 @@
 
 Working version 0.0.7.
 
+* **Tooling:** Independent pushes and manual checks use separate commit snapshots and output directories. Every pushed commit keeps its required checks, and cleanup removes only its own temporary files.
+
 * **Tooling:** Native test fixtures now contain genuine stored ZIP entries on both supported PowerShell versions. Independent header and byte checks preserve the compression and alignment refusal tests.
 
 * **Tooling:** The settings and Android test result-listener graphs use reviewed Commons Lang 3.20.0 and HttpClient 4.5.14. Unrelated runtime requests and the shipped dependency inventory stay unchanged.

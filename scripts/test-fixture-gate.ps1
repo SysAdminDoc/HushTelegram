@@ -78,6 +78,10 @@ function Assert-HookFails([string]$Pattern, [string]$Refs) {
     Assert-True ($failure -like $Pattern) "Expected [$Pattern], got [$failure]."
     Assert-True (-not (Test-Path -LiteralPath $marker)) 'The build started before its fixture setup was refused.'
     Assert-True ($env:HUSHTELEGRAM_REQUIRE_FIXTURES -eq 'prior-value') 'A failed gate did not restore the strict fixture environment.'
+    if ($Refs) {
+        $trees = @(Invoke-FixtureGit @('worktree', 'list', '--porcelain') | Where-Object { $_ -like 'worktree *' })
+        Assert-True ($trees.Count -eq 1) 'A refused fixture check left its owned checkout registered.'
+    }
     $script:cases++
 }
 
@@ -194,6 +198,8 @@ try {
     Invoke-FixtureHook -Refs $refs
     $ran = Get-Content -LiteralPath $marker -Raw | ConvertFrom-Json
     Assert-True ($ran.ProjectDir -ne $repo -and @($ran.Versions) -contains '12.10.5') 'The gate checked HEAD instead of the pushed commit''s fixture catalog.'
+    Assert-True (-not (Test-Path -LiteralPath $ran.ProjectDir) -and
+        -not (Test-Path -LiteralPath (Split-Path -Parent $ran.ProjectDir))) 'A successful fixture gate left its owned scratch checkout or parent behind.'
     $cases++
     Write-Host "[fixtures] pre-push fixture contracts passed ($cases cases)"
 } finally {

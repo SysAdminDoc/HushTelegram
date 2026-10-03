@@ -2544,7 +2544,8 @@ try {
     $routed = Get-Content -LiteralPath $factsMarker -Raw
     Assert-True ($routed -like '*verify=True*') `
         'An index push with a built release bundle did not compare it against the published asset.'
-    Assert-True ($routed -like "*artifact=$releaseCopy hosted=False*") `
+    Assert-True ($routed -like '*artifact=*patches*build*release*patches-9.9.9.mpp hosted=False*' -and
+        $routed -notlike "*artifact=$releaseCopy hosted=False*") `
         "The index push compared something other than the release copy: $routed"
     Remove-Item -LiteralPath (Join-Path $hookRoot 'patches') -Recurse -Force
 
@@ -3041,8 +3042,8 @@ try {
         Assert-True (Test-Path -LiteralPath $wrapperMarker) `
             'The hook did not run the build through the wrapper HUSHTELEGRAM_BUILD_WRAPPER names.'
         $wrapped = Get-Content -LiteralPath $wrapperMarker -Raw
-        Assert-True ($wrapped -like "dir=$hookRoot tasks=*:extensions:telegram:test*:patches:test*") `
-            "The build wrapper was not handed the repository and the test tasks: $wrapped"
+        Assert-True ($wrapped -like 'dir=* tasks=*:extensions:telegram:test*:patches:test*' -and $wrapped -notlike "dir=$hookRoot *") `
+            "The build wrapper was not handed an isolated snapshot and the test tasks: $wrapped"
 
         # The Gradle file that writes the release bundle. The contract tests hold it to the
         # directory common.ps1 reads the bundle from, and a push that moved only it ran the build
@@ -3106,15 +3107,15 @@ try {
             Assert-True ((& git -C $gateRepo status --porcelain) -like '*extensions/marker.txt*') `
                 'Building the pushed commit touched the working tree it was kept apart from.'
 
-            # A clean tree still builds in place.
+            # Clean HEAD gets its own checkout and outputs too.
             $fixed = Save-GateCommit 'good'
             & $prePushScript -Root $gateRepo -PushedRefs "refs/heads/main $fixed refs/heads/main $broken" 6> $null
             Assert-True ($LASTEXITCODE -eq 0) 'A clean tree with a good commit did not pass.'
-            Assert-True ((Get-Content -LiteralPath $gateMarker -Raw) -like "*dir=$gateRepo marker=good*") `
-                'A clean tree was not built in place.'
+            Assert-True ((Get-Content -LiteralPath $gateMarker -Raw) -like '*marker=good*' -and
+                (Get-Content -LiteralPath $gateMarker -Raw) -notlike "*dir=$gateRepo marker=good*") `
+                'Clean HEAD shared the source checkout or its build outputs.'
 
-            # A tree that changes while it is built in place: an edit landing mid-build was tested
-            # along with the commit, so that build says nothing about the commit alone.
+            # A build that rewrites its own source cannot establish the pushed commit's result.
             $meddler = Join-Path $hookRoot 'gate-wrapper-meddles.ps1'
             $meddled = Join-Path $gateRepo 'README.md'
             Set-Content -LiteralPath $meddler -Encoding UTF8 -Value @(
@@ -3124,8 +3125,8 @@ try {
             $env:HUSHTELEGRAM_BUILD_WRAPPER = $meddler
             try {
                 Assert-Throws { & $prePushScript -Root $gateRepo -PushedRefs "refs/heads/main $fixed refs/heads/main $broken" 6> $null } `
-                    '*changed while the runtime test build ran in place*' `
-                    'A working tree that changed during an in-place build passed on that build.'
+                    '*owned gate worktree changed during the runtime test build*' `
+                    'A gate whose build changed its owned source passed on that build.'
             } finally {
                 $env:HUSHTELEGRAM_BUILD_WRAPPER = $gateStub
                 Remove-Item -LiteralPath $meddled -Force -ErrorAction SilentlyContinue
@@ -3166,43 +3167,6 @@ try {
                 (& git -C $gateRepo symbolic-ref HEAD).Trim() -eq $headBefore) `
                 "With GIT_DIR set, building the pushed commit rewrote the working tree it was kept apart from."
 
-            # One push at a time through the gate worktree. With the lock held here, a hook in
-            # another process has to give up rather than check its commit out under a running build.
-            $gateHasher = [System.Security.Cryptography.SHA256]::Create()
-            try {
-                $gateDigest = $gateHasher.ComputeHash([Text.Encoding]::UTF8.GetBytes(
-                    [IO.Path]::GetFullPath($gateRepo).ToLowerInvariant()))
-            } finally {
-                $gateHasher.Dispose()
-            }
-            $gateKey = -join ($gateDigest[0..5] | ForEach-Object { $_.ToString('x2') })
-            $shell = (Get-Process -Id $PID).Path
-            $childRefs = "refs/heads/main $fixed refs/heads/main $broken"
-            function Invoke-ChildPush {
-                # Windows PowerShell stops on a native command's first line of standard error.
-                $preference = $ErrorActionPreference
-                $ErrorActionPreference = 'Continue'
-                try {
-                    return (& $shell -NoProfile -File $prePushScript -Root $gateRepo -PushedRefs $childRefs `
-                        -GateLockTimeoutSeconds 1 2>&1 | Out-String)
-                } finally {
-                    $ErrorActionPreference = $preference
-                }
-            }
-            $held = New-Object System.Threading.Mutex($false, "Local\hushtelegram-pre-push-$gateKey")
-            Assert-True ($held.WaitOne(0)) 'The contract could not take the gate lock itself.'
-            try {
-                $waited = Invoke-ChildPush
-                Assert-True ($LASTEXITCODE -ne 0 -and $waited -like '*held the gate worktree*') `
-                    "A second push used the gate worktree while another push held it: $waited"
-            } finally {
-                $held.ReleaseMutex()
-                $held.Dispose()
-            }
-            # The control: the same child push, with the lock free, goes through.
-            $free = Invoke-ChildPush
-            Assert-True ($LASTEXITCODE -eq 0) "The child push failed with the gate lock free: $free"
-
             # The release facts half checks the files a push carries as well. A stub check, committed
             # the way the real one is, fails on a README that says broken and records where it ran
             # and whether it read test results. Its own commit is never in a pushed range, so no
@@ -3239,7 +3203,7 @@ try {
             Set-Content -LiteralPath $gateReadme -Value 'broken' -Encoding ASCII
             & $prePushScript -Root $gateRepo -PushedRefs "refs/heads/main $factsGood refs/heads/main $factsBase" 6> $null
             $checked = Get-Content -LiteralPath $gateFacts -Raw
-            Assert-True ($LASTEXITCODE -eq 0 -and $checked -like '*readme=good results=False*' -and
+            Assert-True ($LASTEXITCODE -eq 0 -and $checked -like '*readme=good results=True*' -and
                 $checked -notlike "*root=$gateRepo *") `
                 "The release facts were read from the working tree instead of the pushed commit: $checked"
 
@@ -3258,13 +3222,13 @@ try {
             Assert-Throws { & $prePushScript -Root $gateRepo -PushedRefs "refs/heads/main $factsIndex refs/heads/main $factsBroken" 6> $null } `
                 '*clean checkout of the commit it pushes*' 'An index push from a dirty tree was checked against files it does not carry.'
 
-            # The control: a clean tree pushing HEAD is checked in place, results and all.
+            # A source-changing gate checks its own freshly built results from isolated HEAD.
             & git -C $gateRepo checkout --quiet -- README.md
             $factsFixed = Save-GateReadme 'good'
             & $prePushScript -Root $gateRepo -PushedRefs "refs/heads/main $factsFixed refs/heads/main $factsIndex" 6> $null
             $checked = Get-Content -LiteralPath $gateFacts -Raw
-            Assert-True ($LASTEXITCODE -eq 0 -and $checked -like "*root=$gateRepo readme=good results=True*") `
-                "A clean tree pushing HEAD was not checked in place: $checked"
+            Assert-True ($LASTEXITCODE -eq 0 -and $checked -like '*readme=good results=True*' -and $checked -notlike "*root=$gateRepo *") `
+                "Clean HEAD did not check its own isolated results: $checked"
 
             # The script suites are the pushed commit's too, run against that commit: they copy the
             # root files into their fixtures, and ran from the working tree until 2026-09-21. A stub
@@ -3289,8 +3253,8 @@ try {
             & git -C $gateRepo checkout --quiet -- scripts/test-script-contracts.ps1
             & $prePushScript -Root $gateRepo -PushedRefs "refs/heads/main $contractsGood refs/heads/main $factsFixed" 6> $null
             $ran = Get-Content -LiteralPath $gateContracts -Raw
-            Assert-True ($LASTEXITCODE -eq 0 -and $ran -like "*root=$gateRepo state=good*") `
-                "A clean tree pushing HEAD did not run its script contract tests in place: $ran"
+            Assert-True ($LASTEXITCODE -eq 0 -and $ran -like '*state=good*' -and $ran -notlike "*root=$gateRepo *") `
+                "Clean HEAD did not run its own isolated script contracts: $ran"
             $contractsBroken = Save-GateContracts 'broken'
             Assert-Throws { & $prePushScript -Root $gateRepo -PushedRefs "refs/heads/main $contractsBroken refs/heads/main $contractsGood" 6> $null } `
                 '*script contract tests did not pass*' 'A push whose own script contract tests fail was let through.'
@@ -3383,6 +3347,8 @@ try {
 }
 
 Write-Host '[scripts] pre-push routing contracts passed'
+& (Join-Path $PSScriptRoot 'test-pre-push-concurrency.ps1') -Root $Root
+if ($LASTEXITCODE -ne 0) { throw 'The concurrent pre-push lifecycle contracts did not pass.' }
 & (Join-Path $PSScriptRoot 'test-fixture-gate.ps1') -Root $Root
 if ($LASTEXITCODE -ne 0) { throw 'The pre-push fixture contracts did not pass.' }
 & (Join-Path $PSScriptRoot 'test-build-advisories.ps1') -Root $Root
@@ -5119,11 +5085,23 @@ class AlignmentFixture {
             $env:HUSHTELEGRAM_DESKTOP_JAR = $stubJar
             $env:HUSHTELEGRAM_JAVA = $listJava
             try {
-                . $publishedStandIns
-                . $osvStandIn
+                # The validator runs in its own process now. Put the same transports and each
+                # case's data in that fixture, rather than relying on the caller's functions.
+                $transportState = [ordered]@{ servedBundle = $servedBundle; servedSbom = $servedSbom;
+                    servedSums = $servedSums; servedReceipt = $servedReceipt; releaseReceipt = $releaseReceipt;
+                    indexVersionHere = $indexVersionHere; releaseVersionHere = $releaseVersionHere;
+                    releaseNames = $releaseNames; releaseTarget = @{ PackageVersion = $releaseTarget.PackageVersion };
+                    osvAnswers = $osvAnswers }
+                $transportState | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $releaseRepo 'scripts/index-test-state.json') -Encoding UTF8
                 $global:LASTEXITCODE = 0
-                $said = @(& $prePushScript -Root $releaseRepo -ChangedPaths @('patches-bundle.json') 3>&1 6>&1 |
-                    ForEach-Object { "$_" }) -join "`n"
+                $lines = New-Object System.Collections.Generic.List[string]
+                try {
+                    & $prePushScript -Root $releaseRepo -ChangedPaths @('patches-bundle.json') 3>&1 6>&1 |
+                        ForEach-Object { $lines.Add("$_") }
+                } catch {
+                    throw (($lines -join "`n") + "`n" + $_.Exception.Message)
+                }
+                $said = $lines -join "`n"
                 if ($LASTEXITCODE -ne 0) { throw "The index push exited $LASTEXITCODE`: $said" }
                 return $said
             } finally {
@@ -5142,6 +5120,23 @@ class AlignmentFixture {
             Assert-True ($now -eq (@($Builds | Sort-Object) -join ', ')) "The $Case changed patches/build/release: $now"
         }
         Copy-Item -LiteralPath $PSScriptRoot -Destination (Join-Path $releaseRepo 'scripts') -Recurse
+        $fixtureValidator = Join-Path $releaseRepo 'scripts/validate-release-facts.ps1'
+        $validatorText = [IO.File]::ReadAllText($fixtureValidator)
+        $validatorTokens = $null
+        $validatorErrors = $null
+        $validatorAst = [Management.Automation.Language.Parser]::ParseFile($fixtureValidator, [ref]$validatorTokens, [ref]$validatorErrors)
+        Assert-True ($validatorErrors.Count -eq 0) 'The fixture validator could not be parsed before adding its transport.'
+        $at = $validatorAst.ParamBlock.Extent.EndOffset
+        [IO.File]::WriteAllText($fixtureValidator, $validatorText.Substring(0, $at) +
+            "`r`n. (Join-Path `$PSScriptRoot 'index-test-transport.ps1')`r`n" + $validatorText.Substring($at),
+            (New-Object Text.UTF8Encoding($false)))
+        Set-Content -LiteralPath (Join-Path $releaseRepo 'scripts/index-test-transport.ps1') -Encoding UTF8 -Value (@(
+            '$state = Get-Content -LiteralPath (Join-Path $PSScriptRoot ''index-test-state.json'') -Raw | ConvertFrom-Json',
+            'foreach ($property in $state.PSObject.Properties) { Set-Variable -Scope Script -Name $property.Name -Value $property.Value }',
+            '$answers = @{}',
+            'foreach ($property in $osvAnswers.PSObject.Properties) { $answers[$property.Name] = $property.Value }',
+            '$osvAnswers = $answers', '$osvAsked = New-Object System.Collections.Generic.List[string]') +
+            @($publishedStandIns.ToString(), $osvStandIn.ToString()))
         foreach ($results in @(
                 @{ Folder = 'extensions/telegram/build/test-results/testDebugUnitTest'; Suite = 'RuntimeTest'; Quote = '\b(\d+) runtime tests passed\b' },
                 @{ Folder = 'patches/build/test-results/test'; Suite = 'PatchTest'; Quote = '\b(\d+) patch tests passed\b' })) {
@@ -5198,7 +5193,7 @@ class AlignmentFixture {
             $servedBundle = $releaseBundle
             New-TestBundleArchive -Path $otherBuilds[0] -Entries ([ordered]@{ 'META-INF/MANIFEST.MF' = "Manifest-Version: 1.0`nVersion: 9.9.8`n`n" })
             $said = Invoke-IndexPushHook
-            Assert-True ($said -like "*found 2 bundles, so the hosted asset is compared with patches-$indexVersionHere.mpp, built here*" -and
+            Assert-True ($said -like "*found 2 bundles, so the hosted asset is compared with the owned copy of patches-$indexVersionHere.mpp*" -and
                 $said -like "*the hosted patches-$indexVersionHere.mpp matches the bundle built here byte for byte*" -and
                 $said -like "*the receipt proves $($releaseNames.Count) patches on*") `
                 "An index push with several bundles did not compare the hosted one with the bundle for its version: $said"
