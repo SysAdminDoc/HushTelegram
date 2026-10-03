@@ -352,6 +352,7 @@ foreach ($name in $consumerScripts) {
 # --- release receipt -------------------------------------------------------------------------
 
 . (Join-Path $PSScriptRoot 'release-receipt.ps1')
+. (Join-Path $PSScriptRoot 'checks/native-packaging-fixture.ps1')
 
 $manifestLines = @(
     'N: android=http://schemas.android.com/apk/res/android (line=1)',
@@ -591,6 +592,11 @@ try {
                 exportedComponentsAdded = @(); exportedComponentsRemoved = @() }
         })
     }
+    foreach ($target in $template.targets) {
+        $packaging = New-NativePackagingFixture -SourceSha256 $target.source.sha256
+        $target.nativeLibraries = $packaging.NativeLibraries
+        $target.zipAlignment = $packaging.ZipAlignment
+    }
     $templateJson = $template | ConvertTo-Json -Depth 12
 
     function New-TestReceipt {
@@ -672,6 +678,12 @@ try {
         'no target at all'                      = { param($r) $r.targets = @() }
         'an unhashed source APK'                = { param($r) $r.targets[0].source.sha256 = '' }
         'a target with no binary SDK facts'      = { param($r) $r.targets[0].PSObject.Properties.Remove('sdk') }
+        'a target with no native evidence'       = { param($r) $r.targets[0].PSObject.Properties.Remove('nativeLibraries') }
+        'a target with failed native evidence'   = { param($r) $r.targets[0].nativeLibraries.passed = $false }
+        'a target with a removed native entry'   = { param($r) $r.targets[0].nativeLibraries.patched.entries = @() }
+        'a target with changed native bytes'     = { param($r) $r.targets[0].nativeLibraries.patched.entries[0].sha256 = ('f' * 64) }
+        'a target with damaged LOAD alignment'   = { param($r) $r.targets[0].nativeLibraries.patched.entries[0].elf.loadSegments[0].alignmentBytes = 4096 }
+        'a target with no APK alignment proof'   = { param($r) $r.targets[0].PSObject.Properties.Remove('zipAlignment') }
         'a target with no stock minimum'        = { param($r) $r.targets[0].sdk.PSObject.Properties.Remove('stockMinSdk') }
         'a target with no patched minimum'      = { param($r) $r.targets[0].sdk.PSObject.Properties.Remove('patchedMinSdk') }
         'a string SDK minimum'                  = { param($r) $r.targets[0].sdk.patchedMinSdk = '28' }
@@ -997,7 +1009,11 @@ try {
         param($r)
         $r.schemaVersion = 1
         $r.PSObject.Properties.Remove('sbom')
-        foreach ($target in $r.targets) { $target.PSObject.Properties.Remove('sdk') }
+        foreach ($target in $r.targets) {
+            $target.PSObject.Properties.Remove('sdk')
+            $target.PSObject.Properties.Remove('nativeLibraries')
+            $target.PSObject.Properties.Remove('zipAlignment')
+        }
     }
     $oneAtOne = Test-ReleaseReceipt -Receipt $schemaOne -ExpectedVersion '9.9.9' -ExpectedPatchNames @('Alpha', 'Beta') `
         -ExpectedPatcherVersion '1.12.0' -ExpectedManagerFloor '1.29.0' -ExpectedPackageName 'com.example.host' `
@@ -1009,7 +1025,11 @@ try {
     $schemaTwo = New-TestReceipt -Mutate {
         param($r)
         $r.schemaVersion = 2
-        foreach ($target in $r.targets) { $target.PSObject.Properties.Remove('sdk') }
+        foreach ($target in $r.targets) {
+            $target.PSObject.Properties.Remove('sdk')
+            $target.PSObject.Properties.Remove('nativeLibraries')
+            $target.PSObject.Properties.Remove('zipAlignment')
+        }
     }
     $twoAtOne = Test-ReceiptWithSbom $schemaTwo -Schema 1
     Assert-True ($twoAtOne.Reason -like '*schema version 2; its release is read at version 1*') `
@@ -1020,8 +1040,19 @@ try {
     $twoAtTwo = Test-ReceiptWithSbom $schemaTwo -Schema 2
     Assert-True $twoAtTwo.Valid "A shipped schema 2 receipt with its SBOM and no SDK facts was refused: $($twoAtTwo.Reason)"
     $twoAtCurrent = Test-TestReceipt -Receipt $schemaTwo
-    Assert-True ($twoAtCurrent.Reason -like '*schema version 2; its release is read at version 3*') `
+    Assert-True ($twoAtCurrent.Reason -like "*schema version 2; its release is read at version $(Get-ReleaseReceiptSchemaVersion)*") `
         "A schema 2 receipt was accepted where binary SDK facts are required: $($twoAtCurrent.Reason)"
+    $schemaThree = New-TestReceipt -Mutate {
+        param($r)
+        $r.schemaVersion = 3
+        foreach ($target in $r.targets) {
+            $target.PSObject.Properties.Remove('nativeLibraries')
+            $target.PSObject.Properties.Remove('zipAlignment')
+        }
+    }
+    $threeAtThree = Test-ReceiptWithSbom $schemaThree -Schema 3
+    Assert-True $threeAtThree.Valid 'A historical schema 3 receipt without native packaging facts was refused.'
+    Assert-True (-not (Test-TestReceipt $schemaThree).Valid) 'A schema 3 receipt supplied current native proof.'
 } finally {
     Remove-Item -LiteralPath $allowlistRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
@@ -4053,6 +4084,13 @@ try {
                 manifestDelta = $approvedDelta
             }
         })
+        if ($Schema -ge 4) {
+            foreach ($target in $targets) {
+                $packaging = New-NativePackagingFixture -SourceSha256 $target.source.sha256
+                $target.nativeLibraries = $packaging.NativeLibraries
+                $target.zipAlignment = $packaging.ZipAlignment
+            }
+        }
         $document = [ordered]@{
             schemaVersion = $Schema
             release   = [ordered]@{ version = $releaseVersionHere; tag = "v$releaseVersionHere"; commit = $Commit
@@ -4161,6 +4199,7 @@ try {
         'if /i "%~nx4"=="MergeSplits.java" goto merge',
         'if /i "%~nx4"=="ResourceTableCheck.java" goto resources',
         'if /i "%~nx4"=="DexDiff.java" goto dexdiff',
+        'if /i "%~nx1"=="NativeLibraryCheck.java" goto native',
         'set "OUT=" & set "RESULT=" & set "LAST=" & set "PREV=" & set "FORCED=0"',
         'shift',
         'shift',
@@ -4225,7 +4264,33 @@ try {
         'exit /b 0',
         ':dexdiff',
         'echo [diff] structural findings: 0',
+        'exit /b 0',
+        ':native',
+        'copy /y "!HERE!native-libraries.json" "%~4" >nul || exit /b 11',
         'exit /b 0') -join "`r`n") + "`r`n"), [System.Text.Encoding]::ASCII)
+    $nativeStandIn = (New-NativePackagingFixture).NativeLibraries
+    foreach ($property in @('sourceApkSha256', 'stockApkSha256', 'patchedApkSha256', 'checkerSha256')) {
+        $nativeStandIn.PSObject.Properties.Remove($property)
+    }
+    Set-Content -LiteralPath (Join-Path $tools 'native-libraries.json') -Value ($nativeStandIn | ConvertTo-Json -Depth 12)
+    # Mandatory packaging evidence needs a real executable stand-in beside the aapt2 fixture.
+    # The independent checker suite still validates actual binary ZIP/ELF mutations.
+    $alignmentStub = Join-Path $tools 'AlignmentFixture.cs'
+    [IO.File]::WriteAllText($alignmentStub, @'
+using System;
+using System.IO;
+class AlignmentFixture {
+    static int Main(string[] args) {
+        if (args.Length != 6 || args[0] != "-c" || args[1] != "-P" || args[2] != "16" || args[3] != "-v" || args[4] != "4") return 2;
+        if (File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "zipalign-fails.txt"))) return 3;
+        Console.WriteLine("Verification successful");
+        return 0;
+    }
+}
+'@)
+    $fixtureCompiler = Join-Path $env:WINDIR 'Microsoft.NET/Framework64/v4.0.30319/csc.exe'
+    & $fixtureCompiler /nologo /target:exe "/out:$(Join-Path $tools 'zipalign.exe')" $alignmentStub
+    Assert-True ($LASTEXITCODE -eq 0) 'The isolated alignment executable could not be built.'
     [System.IO.File]::WriteAllText($stubAapt2, ((@(
         '@echo off',
         'setlocal EnableExtensions DisableDelayedExpansion',
@@ -5239,8 +5304,8 @@ try {
                 $said -like "*the receipt proves $($releaseNames.Count) patches on*from commit $($schemaTwoCommit.Substring(0, 8))*") `
             "A shipped receipt with no binary SDK facts was not read at its own schema: $said"
         Save-ReleaseReceipt -Builds $releaseTarget.PackageVersions -Commit $schemaTwoCommit -Seconds $schemaTwoSeconds
-        Assert-Throws { Invoke-ReleaseCheck } '*schema version 3; its release is read at version 2*' `
-            'A schema 3 receipt was accepted for a commit whose builder wrote schema 2.'
+        Assert-Throws { Invoke-ReleaseCheck } "*schema version $(Get-ReleaseReceiptSchemaVersion); its release is read at version 2*" `
+            'A current receipt was accepted for a commit whose builder wrote schema 2.'
     } finally {
         [System.IO.File]::WriteAllBytes($releaseReceipt, $receiptBytes)
     }
@@ -5384,6 +5449,8 @@ Write-Host '[scripts] tracked-file machine name contracts passed'
 # Raw CLI results can carry configured credentials. Exercise the separate allowlisted export,
 # including hostile report fields and all failure streams, before accepting any script change.
 & (Join-Path $Root 'scripts/test-public-patch-summary.ps1') -Root $Root
+& (Join-Path $Root 'scripts/test-native-packaging.ps1') -Root $Root
+& (Join-Path $Root 'scripts/test-native-library-check.ps1') -Root $Root
 
 # --- README artwork --------------------------------------------------------------------------
 $artworkReadme = Get-Content -LiteralPath (Join-Path $Root 'README.md') -Raw

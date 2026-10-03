@@ -186,6 +186,10 @@ try {
         # to the receipt, which needs every declared build to decide it.
         $stockManifest = Get-ApkManifestFacts -Apk $patchInput -Aapt2 $Aapt2
         $patchedManifest = Get-ApkManifestFacts -Apk $out -Aapt2 $Aapt2
+        $nativeReport = Resolve-WithinRoot -Root $workRoot -Path (Join-Path $workRoot "verify-all-native-$runId.json")
+        $packaging = Get-NativePackagingEvidence -StockApk $patchInput -PatchedApk $out -Java $Java `
+            -Aapt2 $Aapt2 -ReportPath $nativeReport -SourceApk $Apk
+        Write-Host "[verify] native libraries: $($packaging.NativeLibraries.patched.nativeEntryCount) preserved; 64-bit LOAD and zipalign -c -P 16 -v 4 passed"
         $floor = Test-PatchedMinSdk -StockMinSdk $stockManifest.minSdk -PatchedMinSdk $patchedManifest.minSdk
         if (-not $floor.Valid) { throw "[verify] $($floor.Reason)" }
         Write-Host "[verify] binary minSdk: $($stockManifest.minSdk) -> $($patchedManifest.minSdk) (max(stock, 28))"

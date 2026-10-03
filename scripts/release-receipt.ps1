@@ -24,6 +24,8 @@
     bundle's, so neither can be swapped for another build's without the pair coming apart.
 #>
 
+. (Join-Path $PSScriptRoot 'native-packaging.ps1')
+
 function Get-ReleaseReceiptSchemaVersion {
     <#
     .SYNOPSIS
@@ -37,8 +39,9 @@ function Get-ReleaseReceiptSchemaVersion {
 
         2 added sbom: the file name, SHA-256 and component count of the release SBOM.
         3 added each target's stock and patched binary minSdk, held to max(stock, 28).
+        4 added native-library preservation, 64-bit ELF LOAD and APK zip alignment evidence.
     #>
-    return 3
+    return 4
 }
 
 function Resolve-ReceiptSchema {
@@ -47,7 +50,8 @@ function Resolve-ReceiptSchema {
         The schema a receipt should be held to: the one its own commit's builder wrote.
     .DESCRIPTION
         A receipt describes a release that has shipped. One cut before schema 2 has no SBOM,
-        and one cut before schema 3 has no binary SDK facts. Holding it to today's schema would
+        and one cut before schema 3 has no binary SDK facts. Schema 4 adds native packaging proof.
+        Holding an older receipt to today's schema would
         refuse every later push from the checkout that cut it, which is the trap
         Resolve-ReceiptToolchain describes for the patcher pin. So the
         number is read out of scripts/release-receipt.ps1 at the receipt's commit. On a release
@@ -1330,6 +1334,11 @@ function Test-ReleaseReceipt {
             }
             $floor = Test-PatchedMinSdk -StockMinSdk $sdk.Value.stockMinSdk -PatchedMinSdk $sdk.Value.patchedMinSdk
             if (-not $floor.Valid) { return Fail "${label}: $($floor.Reason)" }
+        }
+        if ($ExpectedSchemaVersion -ge 4) {
+            $native = Test-NativePackagingEvidence -NativeLibraries $target.nativeLibraries `
+                -ZipAlignment $target.zipAlignment -ExpectedSourceSha256 ([string]$target.source.sha256)
+            if (-not $native.Valid) { return Fail "${label}: $($native.Reason)" }
         }
         # Whether the CLI was told to ignore the declared version. Recorded as a boolean by the
         # builder; a receipt that leaves it out cannot say which of its runs were the real one.

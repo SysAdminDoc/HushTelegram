@@ -361,6 +361,9 @@ foreach ($apk in $Fixture) {
         if ($cliExitCode -ne 0) { throw "The desktop CLI exited with $cliExitCode on $label." }
 
         $patched = Get-ApkManifestFacts -Apk $out -Aapt2 $Aapt2
+        $nativeReportPath = Resolve-WithinRoot -Root $workRoot -Path (Join-Path $runDir 'native-libraries.json')
+        $packaging = Get-NativePackagingEvidence -StockApk $patchInput -PatchedApk $out -Java $Java `
+            -Aapt2 $Aapt2 -ReportPath $nativeReportPath -SourceApk $apk
         # The manifest the patches started from is the APK the CLI patched, the merge for a split
         # bundle, not the base APK's: the merge rewrites the manifest itself, and a delta against
         # the base would record its changes as the patches' own.
@@ -386,6 +389,8 @@ foreach ($apk in $Fixture) {
             }
             patches       = $verdicts
             sdk           = [ordered]@{ stockMinSdk = $baseline.minSdk; patchedMinSdk = $patched.minSdk }
+            nativeLibraries = $packaging.NativeLibraries
+            zipAlignment  = $packaging.ZipAlignment
             manifestDelta = [ordered]@{
                 permissionsAdded          = @($delta.permissionsAdded)
                 permissionsRemoved        = @($delta.permissionsRemoved)
@@ -394,10 +399,7 @@ foreach ($apk in $Fixture) {
             }
         })
     } finally {
-        if ($runDir.StartsWith($workRoot, [System.StringComparison]::OrdinalIgnoreCase) -and
-            (Test-Path -LiteralPath $runDir)) {
-            Remove-Item -LiteralPath $runDir -Recurse -Force -ErrorAction SilentlyContinue
-        }
+        Remove-GeneratedPath -Root $workRoot -Path $runDir
     }
 }
 
