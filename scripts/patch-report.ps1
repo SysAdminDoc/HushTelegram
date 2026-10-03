@@ -403,10 +403,53 @@ function Export-PublicPatchSummary {
             $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($SummaryPath))
         if ([System.IO.Path]::GetExtension($destination) -ine '.json' -or
             (Test-Path -LiteralPath $destination -PathType Container)) { throw 'SUMMARY_PATH_INVALID' }
+        # Resolve actual entries before comparing or writing. This covers parent junctions,
+        # symbolic links and short names without confusing distinct hard-link entries.
+        if (-not ('HushTelegram.Tooling.PublicSummaryPath' -as [type])) {
+            Add-Type -TypeDefinition @'
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
+using Microsoft.Win32.SafeHandles;
+namespace HushTelegram.Tooling {
+    public static class PublicSummaryPath {
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern SafeFileHandle CreateFileW(string path, uint access, uint share,
+            IntPtr security, uint disposition, uint flags, IntPtr template);
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern uint GetFinalPathNameByHandleW(SafeFileHandle handle,
+            StringBuilder path, uint size, uint flags);
+        public static string Resolve(string path) {
+            var suffix = new Stack<string>();
+            while (!File.Exists(path) && !Directory.Exists(path)) {
+                suffix.Push(Path.GetFileName(path));
+                path = Path.GetDirectoryName(path);
+                if (String.IsNullOrEmpty(path)) throw new IOException("Path cannot be resolved.");
+            }
+            using (var handle = CreateFileW(path, 0, 7, IntPtr.Zero, 3, 0x02000000, IntPtr.Zero)) {
+                if (handle.IsInvalid) throw new IOException("Path cannot be resolved.");
+                var buffer = new StringBuilder(32768);
+                uint length = GetFinalPathNameByHandleW(handle, buffer, (uint)buffer.Capacity, 0);
+                if (length == 0 || length >= buffer.Capacity) throw new IOException("Path cannot be resolved.");
+                path = buffer.ToString();
+            }
+            if (path.StartsWith(@"\\?\UNC\", StringComparison.OrdinalIgnoreCase)) path = @"\\" + path.Substring(8);
+            else if (path.StartsWith(@"\\?\", StringComparison.Ordinal)) path = path.Substring(4);
+            while (suffix.Count > 0) path = Path.Combine(path, suffix.Pop());
+            return Path.GetFullPath(path);
+        }
+    }
+}
+'@
+        }
+        $destination = [HushTelegram.Tooling.PublicSummaryPath]::Resolve($destination)
         foreach ($privatePath in @($ReportPath, $OutputPath)) {
             if ($privatePath -isnot [string] -or [string]::IsNullOrWhiteSpace($privatePath)) { continue }
             $privateFullPath = [System.IO.Path]::GetFullPath(
                 $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($privatePath))
+            $privateFullPath = [HushTelegram.Tooling.PublicSummaryPath]::Resolve($privateFullPath)
             if ([string]::Equals($destination, $privateFullPath, [System.StringComparison]::OrdinalIgnoreCase)) {
                 throw 'SUMMARY_PATH_INVALID'
             }

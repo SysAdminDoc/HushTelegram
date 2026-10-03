@@ -4,6 +4,8 @@
 
 Working version 0.0.7.
 
+* **Tooling:** Public summaries refuse destinations that reach a private report through a directory alias. Separate exports and hard links keep the private report intact. The checks pass on PowerShell 7 and Windows PowerShell 5.1.
+
 * **Telegram:** Diagnostics remove named API IDs and hashes, including quoted and escaped aliases, from events, crash sections, clipboard exports and files. Versions, counters and unrelated hashes remain readable. Synthetic canaries pass on the desktop runtime and Samsung's Android runtime.
 
 * **Tooling:** Fixture verification and receipt schema 4 require native-library preservation, relevant 64-bit ELF LOAD alignment and a successful 16 KB ZIP alignment check. Receipts record library hashes and compression with the checker and tool identities. Historical receipts retain their original schema rules. Changed or missing libraries and damaged alignment fail validation; valid compressed libraries remain supported.

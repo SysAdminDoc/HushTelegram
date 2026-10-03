@@ -112,6 +112,7 @@ if (-not $caseRoot.StartsWith($requiredPrefix, [System.StringComparison]::Ordina
 try {
     New-Item -ItemType Directory -Path $caseRoot | Out-Null
     $testApk = Join-Path $caseRoot 'synthetic-private-path.apk'
+    Add-Type -AssemblyName System.IO.Compression
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $archive = [System.IO.Compression.ZipFile]::Open($testApk, [System.IO.Compression.ZipArchiveMode]::Create)
     try {
@@ -270,6 +271,37 @@ try {
     Assert-True (Invoke-Export -SummaryPath $hardLink).Written 'Atomic replacement could not replace a hard-linked summary.'
     Assert-Summary (Get-Content -LiteralPath $hardLink -Raw | ConvertFrom-Json)
     Assert-True ((Get-FileHash -LiteralPath $privateReport).Hash -ceq $reportHash) 'Export through a hard link changed the private report.'
+    # Directory aliases name the same directory entry, unlike a separate hard link.
+    # Check both path directions, a nested alias and an ordinary separate output through it.
+    $directoryAlias = Join-Path $caseRoot 'directory-alias'
+    $nestedAlias = Join-Path $caseRoot 'nested-alias'
+    try {
+        New-Item -ItemType Junction -Path $directoryAlias -Target $caseRoot | Out-Null
+        New-Item -ItemType Junction -Path $nestedAlias -Target $directoryAlias | Out-Null
+        foreach ($alias in @($directoryAlias, $nestedAlias)) {
+            $aliasedReport = Join-Path $alias (Split-Path -Leaf $privateReport)
+            foreach ($paths in @(
+                @{ ReportPath = $privateReport; SummaryPath = $aliasedReport },
+                @{ ReportPath = $aliasedReport; SummaryPath = $privateReport }
+            )) {
+                $export = Invoke-Export @paths
+                Assert-True (-not $export.Written -and $export.FailureCode -ceq 'SUMMARY_PATH_INVALID') `
+                    'A directory alias allowed the public summary to replace its private report.'
+                Assert-True ((Get-FileHash -LiteralPath $privateReport).Hash -ceq $reportHash) `
+                    'A directory alias changed the private report.'
+            }
+            $export = Invoke-Export -ReportPath (Join-Path $alias (Split-Path -Leaf $privateReport)) `
+                -SummaryPath (Join-Path $alias 'separate-summary.json')
+            Assert-True $export.Written 'A separate public summary through a directory alias was refused.'
+            Assert-Summary (Get-Content -LiteralPath (Join-Path $caseRoot 'separate-summary.json') -Raw | ConvertFrom-Json)
+            Assert-True ((Get-FileHash -LiteralPath $privateReport).Hash -ceq $reportHash) `
+                'A separate alias export changed its private report.'
+        }
+    } finally {
+        foreach ($alias in @($nestedAlias, $directoryAlias)) {
+            if ([System.IO.Directory]::Exists($alias)) { [System.IO.Directory]::Delete($alias) }
+        }
+    }
     $locked = [System.IO.File]::Open($privateReport, [System.IO.FileMode]::Open,
         [System.IO.FileAccess]::Read, [System.IO.FileShare]::None)
     try {
@@ -317,7 +349,8 @@ $result.Summary | ConvertTo-Json -Depth 4
         $savedPreference = $ErrorActionPreference
         try {
             $ErrorActionPreference = 'Continue'
-            $output = @(& (Join-Path $PSHOME 'pwsh.exe') -NoLogo -NoProfile -File $harness `
+            $shellName = if ($PSEdition -ceq 'Desktop') { 'powershell.exe' } else { 'pwsh.exe' }
+            $output = @(& (Join-Path $PSHOME $shellName) -NoLogo -NoProfile -File $harness `
                 -Tools $PSScriptRoot -CatalogPath (Join-Path $Root 'patches-list.json') `
                 -ReportPath $privateReport -SummaryPath $destination -Apk $testApk *>&1)
             $childExit = $LASTEXITCODE
