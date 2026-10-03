@@ -85,6 +85,7 @@ public final class SettingsBackup {
             Settings.HIDE_POPULAR_APPS,
             Settings.DISABLE_CHAT_SWIPE,
             Settings.QUIET_CONTACTS_NAG,
+            Settings.HOLIDAY_LOOK,
             Settings.DISABLE_ANALYTICS,
             Settings.DISABLE_CALL_DEBUG,
             Settings.DISABLE_DRAFT_PREVIEWS,

@@ -286,6 +286,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "asking again and its warning badge goes away. The first request, the tab's own buttons and contact sync stay."))),
                         SettingsIcons.BLOCK));
             }
+            if (build.contains(PatchFamily.HOLIDAY_LOOK)) {
+                chats.addPreference(mark(toggle(context, Settings.HOLIDAY_LOOK, L10n.t("New Year look all year"),
+                        PatchFamily.HOLIDAY_LOOK.coverageSummary(L10n.t("Telegram's New Year look stays on every day, with the Santa hat "
+                                + "on the chat list title and snow over the top bar and chat backgrounds. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

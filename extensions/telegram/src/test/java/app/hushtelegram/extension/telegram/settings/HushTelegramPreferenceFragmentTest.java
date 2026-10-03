@@ -91,6 +91,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HIDE_POPULAR_APPS, "Hide popular apps");
         ROW_TITLES.put(PatchFamily.DISABLE_CHAT_SWIPE, "No swipe actions on chats");
         ROW_TITLES.put(PatchFamily.QUIET_CONTACTS_NAG, "Quiet contacts prompts");
+        ROW_TITLES.put(PatchFamily.HOLIDAY_LOOK, "New Year look all year");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -207,7 +208,7 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.HIDE_RECOMMENDATIONS) || build.contains(PatchFamily.HIDE_COMMERCE)
                         || build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS) || build.contains(PatchFamily.HIDE_SPONSORED_PROXY)
                         || build.contains(PatchFamily.HIDE_POPULAR_APPS) || build.contains(PatchFamily.DISABLE_CHAT_SWIPE)
-                        || build.contains(PatchFamily.QUIET_CONTACTS_NAG)) expected.add("Chats");
+                        || build.contains(PatchFamily.QUIET_CONTACTS_NAG) || build.contains(PatchFamily.HOLIDAY_LOOK)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 expected.addAll(EVERY_BUILD);
@@ -299,6 +300,13 @@ public class HushTelegramPreferenceFragmentTest {
             // Telegram asks once as before, so the switch ships on.
             assertTrue(Settings.QUIET_CONTACTS_NAG.key,
                     ((SwitchPreference) page.findPreference(Settings.QUIET_CONTACTS_NAG.key)).isChecked());
+            assertEquals("New Year look all year", String.valueOf(page.findPreference(Settings.HOLIDAY_LOOK.key).getTitle()));
+            assertEquals("Telegram's New Year look stays on every day, with the Santa hat on the chat list title and snow over "
+                            + "the top bar and chat backgrounds. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.HOLIDAY_LOOK.key).getSummary()));
+            // Telegram keeps its own holiday dates until someone turns the switch on.
+            assertFalse(Settings.HOLIDAY_LOOK.key,
+                    ((SwitchPreference) page.findPreference(Settings.HOLIDAY_LOOK.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {

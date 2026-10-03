@@ -473,6 +473,42 @@
       "options": []
     },
     {
+      "name": "Holiday look all year",
+      "description": "Adds a switch, off by default, that keeps Telegram's New Year look all year, with the Santa hat on the chat list title and falling snow. Telegram's own holiday dates apply while it's off.",
+      "category": "Chats",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger.web": [
+          "12.10.6"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "12.10.6",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71129
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "HushTelegram settings",
       "description": "Adds HushTelegram settings to Telegram. Long-press Telegram's launcher icon, or open Additional settings in the app on Telegram's App info page, to turn features on or off, pause HushTelegram, save your switches to a file or load them, and export diagnostics. The licenses are there too.",
       "category": "Settings",

@@ -31,6 +31,7 @@ public final class FamilyNames {
     public static final String HIDE_POPULAR_APPS = "Hide popular apps";
     public static final String DISABLE_CHAT_SWIPE = "Disable chat swipe actions";
     public static final String QUIET_CONTACTS_NAG = "Quiet contacts nag";
+    public static final String HOLIDAY_LOOK = "Holiday look all year";
     public static final String DISABLE_ANALYTICS = "Disable analytics";
     public static final String DISABLE_CALL_DEBUG = "Disable call debug upload";
     public static final String DISABLE_DRAFT_PREVIEWS = "Disable draft link previews";

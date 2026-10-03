@@ -74,6 +74,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_quiet_contacts_nag", TRUE);
 
     /**
+     * Telegram's New Year look on any day: the Santa hat on the chat list title, and snow over the
+     * top bar and chat backgrounds. Telegram's own holiday dates apply while it's off.
+     */
+    public static final BooleanSetting HOLIDAY_LOOK =
+            new BooleanSetting("hushtelegram_holiday_look", FALSE);
+
+    /**
      * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
      * never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).
