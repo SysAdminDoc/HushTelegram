@@ -12,9 +12,7 @@
 
 HushTelegram is a Morphe patch bundle for Android that takes the sponsored messages out of Telegram and keeps a few things on your phone that Telegram would otherwise send home.
 
-The latest release is [v0.0.4](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.4), with 4 patches. It's the first one. Every patch has been applied to Telegram 12.10.6 and exercised on a signed-in phone, where Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
-
-Source version 0.0.6 is prepared for the next release. It hasn't been published, so Morphe Manager still downloads v0.0.4.
+The latest release is [v0.0.6](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.6), with 18 patches. They're built for Telegram 12.10.6, and on a signed-in phone Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) | [Download a release](https://github.com/SysAdminDoc/HushTelegram/releases/latest) | [Browse the patches](#patches)
 
@@ -57,7 +55,7 @@ Morphe Manager signs the patched Telegram with a key it makes on your phone. And
 
 ## Patches
 
-The current source has 18 patches, all selected by default. Published v0.0.4 contains the four original patches. The new controls are prepared for the next release. Tracking cleaning and draft link previews stay off in settings until you turn them on. The new call controls still need a live call and audio check, and the draft preview switch still needs a check on a signed-in phone.
+There are 18 patches, all selected by default. A few of their switches stay off until you turn them on in settings, like tracking cleaning and draft link previews.
 
 | Patch | What it does |
 |---|---|

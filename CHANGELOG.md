@@ -4,7 +4,7 @@ Every HushTelegram release, newest first.
 
 ## 0.0.6 (2026-10-02)
 
-Prepared for the next release. The published version is still 0.0.4.
+The second release, with 18 patches for telegram.org's Telegram 12.10.6. It also brings everything listed under 0.0.5.
 
 * **Telegram:** No previews before sending is a new Privacy switch, off by default. While it's on, Telegram doesn't ask its server for a link preview of a message you haven't sent yet, in chats, the share sheet, polls, story links and messages a mini app shares. Sent messages still get their preview. After you turn the switch off or use Pause, the next change to a draft fetches its preview again.
 * **Telegram:** Camera only on tap is a new Privacy switch, off by default. While it's on, opening the attachment gallery doesn't start the camera or ask for camera access, so the camera light stays off while you pick a photo. Tap the camera tile and the camera starts, asking for access first if Telegram doesn't have it yet, and opens once it's ready. Each new open of the attach menu starts with the camera off again, whichever tab it opens on, and a tap made while the menu is still opening holds. Pause and a switched-off setting bring Telegram's own behavior back.
@@ -58,7 +58,7 @@ Prepared for the next release. The published version is still 0.0.4.
 
 ## 0.0.5 (2026-10-01)
 
-Prepared for the next release. The published version is still 0.0.4.
+These changes ship in the 0.0.6 release.
 
 * **Telegram:** Patched APKs require Android 9 or Telegram's higher minimum. Settings and diagnostic reports name any ad or usage-report hook missing from a partially supported build.
 * **Tooling:** Patch-changing pushes require every declared Telegram fixture. Release receipts record and verify the binary Android installation floor while retaining checks for published older receipts.
