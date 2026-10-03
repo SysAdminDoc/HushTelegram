@@ -4,6 +4,8 @@
 
 Working version 0.0.7.
 
+* **Tooling:** The settings and Android test result-listener graphs use reviewed Commons Lang 3.20.0 and HttpClient 4.5.14. Unrelated runtime requests and the shipped dependency inventory stay unchanged.
+
 * **Telegram:** Diagnostics remove named API identity values from multiline and reordered JSON, including escaped quotes. Counters and unrelated hashes stay intact.
 * **Tooling:** The current bundle uses Morphe Patcher 1.15.0, desktop CLI 1.18.0 and Manager 1.33.0. The settings and label compatibility checks cover the pinned internals, and both official Telegram targets remain supported. Manager 1.33 imported the bundle and applied all 22 patches on a phone.
 
