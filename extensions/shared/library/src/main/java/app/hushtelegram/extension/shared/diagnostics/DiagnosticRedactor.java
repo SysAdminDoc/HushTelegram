@@ -355,18 +355,21 @@ public final class DiagnosticRedactor {
             int keyStart = at;
             int[] key = json.string(at);
             if (key == null) return;
-            String name = text.substring(key[0], key[1]);
+            String name = jsonName(text, key);
             boolean escaped = key[0] - keyStart > 1;
             at = jsonSpaceEnd(text, key[2], escaped);
             if (at >= text.length() || text.charAt(at++) != ':') return;
             int start = jsonSpaceEnd(text, at, escaped);
             int end = json.valueEnd(start, escaped);
             if (end < 0) return;
-            if (JSON_API_NAME.matcher(name).matches()) direct.add(new int[]{start, end});
+            if (JSON_API_NAME.matcher(name).matches()
+                    || (!name.equals(text.substring(key[0], key[1])) && JSON_PRIVATE_NAME.matcher(name).matches())) {
+                direct.add(new int[]{start, end});
+            }
             if (name.equalsIgnoreCase("name")) {
                 int[] identity = json.string(start);
                 if (identity != null) {
-                    privateName |= JSON_PRIVATE_NAME.matcher(text.substring(identity[0], identity[1])).matches();
+                    privateName |= JSON_PRIVATE_NAME.matcher(jsonName(text, identity)).matches();
                 }
             } else if (name.equalsIgnoreCase("value")) {
                 values.add(new int[]{start, end});
@@ -382,6 +385,44 @@ public final class DiagnosticRedactor {
             if (separator != ',') return;
             at = jsonSpaceEnd(text, at, escaped);
         }
+    }
+
+    /** Decode names for matching only. A literal escaped backslash never becomes a unicode escape. */
+    private static String jsonName(String text, int[] quoted) {
+        String name = text.substring(quoted[0], quoted[1]);
+        for (int pass = 0; pass < quoted[3] && name.indexOf('\\') >= 0; pass++) {
+            StringBuilder decoded = new StringBuilder(name.length());
+            for (int at = 0; at < name.length(); at++) {
+                char letter = name.charAt(at);
+                if (letter != '\\') { decoded.append(letter); continue; }
+                if (++at == name.length()) return text.substring(quoted[0], quoted[1]);
+                switch (name.charAt(at)) {
+                    case '"': case '\\': case '/': decoded.append(name.charAt(at)); break;
+                    case 'b': decoded.append('\b'); break;
+                    case 'f': decoded.append('\f'); break;
+                    case 'n': decoded.append('\n'); break;
+                    case 'r': decoded.append('\r'); break;
+                    case 't': decoded.append('\t'); break;
+                    case 'u': {
+                        if (at + 4 >= name.length()) return text.substring(quoted[0], quoted[1]);
+                        int value = 0;
+                        for (int digitAt = 0; digitAt < 4; digitAt++) {
+                            char hex = name.charAt(++at);
+                            int digit = hex >= '0' && hex <= '9' ? hex - '0'
+                                    : hex >= 'a' && hex <= 'f' ? hex - 'a' + 10
+                                    : hex >= 'A' && hex <= 'F' ? hex - 'A' + 10 : -1;
+                            if (digit < 0) return text.substring(quoted[0], quoted[1]);
+                            value = value * 16 + digit;
+                        }
+                        decoded.append((char) value);
+                        break;
+                    }
+                    default: return text.substring(quoted[0], quoted[1]);
+                }
+            }
+            name = decoded.toString();
+        }
+        return withPlainLetters(withStandIns(name));
     }
 
     /** Quoted spans and nested value ends are indexed once, without recursive matching. */
@@ -445,7 +486,10 @@ public final class DiagnosticRedactor {
         private int[] string(int start) {
             if (start >= text.length() || marks[start] == 0) return null;
             int width = marks[start];
-            return new int[]{start + width, ends[start] - width, ends[start]};
+            int escapeWidth = text.charAt(start) != '\\' ? 1
+                    : text.charAt(start + width - 1) == '2' ? width - 5 : width;
+            return new int[]{start + width, ends[start] - width, ends[start],
+                    1 + Integer.numberOfTrailingZeros(escapeWidth)};
         }
 
         /** Nested objects are skipped as values, then read separately for their own members. */

@@ -4,6 +4,8 @@
 
 Working version 0.0.7.
 
+* **Telegram:** Diagnostics match credential names encoded with JSON Unicode escapes. Backup imports reject invalid string escapes before changing preferences. Fixed-seed grammar checks cover preservation and idempotence.
+
 * **Tooling:** Fixture tests reuse bounded query facts keyed by the exact APK content. Mutable test copies remain isolated, and changed fixtures invalidate retained facts.
 
 * **Tooling:** First installations accept both genuine package-absence exit forms after exact-device and signer preflight. Ambiguous package-manager results still fail. Updates retain their signing and permission checks.
