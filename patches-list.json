@@ -474,7 +474,7 @@
     },
     {
       "name": "Holiday look all year",
-      "description": "Adds a switch, off by default, that keeps Telegram's New Year look all year, with the Santa hat on the chat list title and falling snow. Telegram's own holiday dates apply while it's off.",
+      "description": "Adds a switch, off by default, that keeps Telegram's New Year snow falling all year over the chat list's top bar and chat backgrounds. Telegram's own holiday dates apply while it's off.",
       "category": "Chats",
       "use": true,
       "dependencies": [

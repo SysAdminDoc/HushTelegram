@@ -374,8 +374,8 @@ public final class L10nTranslations {
                 "Telegram sendet seine Statistik zum Speichertyp nicht, wenn der Server danach fragt, und auch nicht, wie lange du jeden Kanalbeitrag angesehen hast. Auch Berichte \u00fcber Aufrufe des Premium-Bildschirms, angetippte Funktionen, Best\u00e4tigungen und fehlgeschlagene K\u00e4ufe werden nicht gesendet. Nachrichten und Anrufe funktionieren wie bisher.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram bietet keine Updates von telegram.org mehr an. Sie lie\u00dfen sich nicht \u00fcber diesen gepatchten Build installieren, also patche jede neue Version stattdessen im Morphe Manager.");
-        table.put("Telegram's New Year look stays on every day, with the Santa hat on the chat list title and snow over the top bar and chat backgrounds. Off by default in settings.",
-                "Telegrams Neujahrs-Look bleibt jeden Tag an, mit der Weihnachtsm\u00fctze auf dem Titel der Chatliste und Schnee \u00fcber der oberen Leiste und den Chat-Hintergr\u00fcnden. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
+        table.put("Telegram's New Year snow falls every day over the chat list's top bar and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings.",
+                "Telegrams Neujahrsschnee f\u00e4llt jeden Tag \u00fcber der oberen Leiste der Chatliste und, wenn animierte Chat-Hintergr\u00fcnde an sind, \u00fcber den Chat-Hintergr\u00fcnden. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Die Webadressen von Telegram sind in den Android-Einstellungen f\u00fcr diese App ausgew\u00e4hlt, deshalb \u00f6ffnen sich ihre Links hier.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -839,8 +839,8 @@ public final class L10nTranslations {
                 "Telegram no env\u00eda su estad\u00edstica del tipo de almacenamiento cuando su servidor la pide, ni cu\u00e1nto tiempo pasaste en cada publicaci\u00f3n de un canal. Tambi\u00e9n bloquea los informes sobre vistas de la pantalla de Premium, toques en funciones, aceptaciones y fallos de compra. Los mensajes y las llamadas funcionan como antes.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram deja de ofrecer actualizaciones de telegram.org. No se pueden instalar sobre este build parcheado, as\u00ed que parchea cada versi\u00f3n nueva en Morphe Manager.");
-        table.put("Telegram's New Year look stays on every day, with the Santa hat on the chat list title and snow over the top bar and chat backgrounds. Off by default in settings.",
-                "El aspecto de A\u00f1o Nuevo de Telegram se queda todos los d\u00edas, con el gorro de Pap\u00e1 Noel en el t\u00edtulo de la lista de chats y nieve sobre la barra superior y los fondos de chat. Desactivado por defecto en los ajustes.");
+        table.put("Telegram's New Year snow falls every day over the chat list's top bar and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings.",
+                "La nieve de A\u00f1o Nuevo de Telegram cae todos los d\u00edas sobre la barra superior de la lista de chats y, con los fondos de chat animados activados, sobre los fondos de chat. Desactivado por defecto en los ajustes.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Las direcciones web de Telegram est\u00e1n seleccionadas para esta app en los ajustes de Android, as\u00ed que sus enlaces se abren aqu\u00ed.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -1304,8 +1304,8 @@ public final class L10nTranslations {
                 "Telegram tidak mengirim statistik jenis penyimpanannya saat server meminta, atau berapa lama Anda melihat setiap postingan saluran. Laporan tentang tampilan layar Premium, ketukan fitur, persetujuan dan kegagalan pembelian juga tidak dikirim. Pesan dan panggilan tetap berfungsi seperti biasa.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.");
-        table.put("Telegram's New Year look stays on every day, with the Santa hat on the chat list title and snow over the top bar and chat backgrounds. Off by default in settings.",
-                "Tampilan Tahun Baru Telegram tetap aktif setiap hari, dengan topi Sinterklas di judul daftar chat dan salju di bilah atas serta latar belakang chat. Secara default nonaktif di pengaturan.");
+        table.put("Telegram's New Year snow falls every day over the chat list's top bar and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings.",
+                "Salju Tahun Baru Telegram turun setiap hari di bilah atas daftar chat dan, saat latar belakang chat animasi aktif, di latar belakang chat. Secara default nonaktif di pengaturan.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Alamat web Telegram dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -1769,8 +1769,8 @@ public final class L10nTranslations {
                 "O Telegram n\u00e3o envia sua estat\u00edstica do tipo de armazenamento quando o servidor pede, nem quanto tempo voc\u00ea passou em cada post de um canal. Tamb\u00e9m bloqueia relat\u00f3rios sobre visualiza\u00e7\u00f5es da tela do Premium, toques em recursos, aceita\u00e7\u00f5es e falhas de compra. Mensagens e chamadas funcionam como antes.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "O Telegram deixa de oferecer atualiza\u00e7\u00f5es do telegram.org. Elas n\u00e3o podem ser instaladas sobre este build corrigido, ent\u00e3o aplique o patch de cada nova vers\u00e3o pelo Morphe Manager.");
-        table.put("Telegram's New Year look stays on every day, with the Santa hat on the chat list title and snow over the top bar and chat backgrounds. Off by default in settings.",
-                "O visual de Ano Novo do Telegram fica ativo todos os dias, com o gorro de Papai Noel no t\u00edtulo da lista de chats e neve sobre a barra superior e os fundos dos chats. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
+        table.put("Telegram's New Year snow falls every day over the chat list's top bar and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings.",
+                "A neve de Ano Novo do Telegram cai todos os dias sobre a barra superior da lista de chats e, com os fundos de chat animados ativados, sobre os fundos dos chats. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Os endere\u00e7os web do Telegram est\u00e3o selecionados para este app nas configura\u00e7\u00f5es do Android, ent\u00e3o os links deles abrem aqui.");
         table.put("That file is too large to be a settings file. Nothing was changed.",
@@ -2234,8 +2234,8 @@ public final class L10nTranslations {
                 "Telegram, sunucusu istedi\u011finde depolama t\u00fcr\u00fc istatisti\u011fini veya her kanal g\u00f6nderisinde ne kadar kald\u0131\u011f\u0131n\u0131z\u0131 g\u00f6ndermez. Premium ekran g\u00f6r\u00fcnt\u00fclemeleri, \u00f6zelliklere dokunmalar, kabul i\u015flemleri ve sat\u0131n alma hatalar\u0131yla ilgili raporlar\u0131 da durdurur. Mesajlar ve aramalar eskisi gibi \u00e7al\u0131\u015f\u0131r.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram, telegram.org g\u00fcncellemelerini sunmay\u0131 b\u0131rak\u0131r. Bunlar bu yamal\u0131 s\u00fcr\u00fcm\u00fcn \u00fczerine kurulamaz, bu y\u00fczden her yeni s\u00fcr\u00fcm\u00fc Morphe Manager'da yamala.");
-        table.put("Telegram's New Year look stays on every day, with the Santa hat on the chat list title and snow over the top bar and chat backgrounds. Off by default in settings.",
-                "Telegram'\u0131n y\u0131lba\u015f\u0131 g\u00f6r\u00fcn\u00fcm\u00fc her g\u00fcn a\u00e7\u0131k kal\u0131r, sohbet listesi ba\u015fl\u0131\u011f\u0131nda Noel Baba \u015fapkas\u0131 olur ve \u00fcst \u00e7ubukla sohbet arka planlar\u0131na kar ya\u011far. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
+        table.put("Telegram's New Year snow falls every day over the chat list's top bar and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings.",
+                "Telegram'\u0131n y\u0131lba\u015f\u0131 kar\u0131 her g\u00fcn sohbet listesinin \u00fcst \u00e7ubu\u011funa, animasyonlu sohbet arka planlar\u0131 a\u00e7\u0131kken de sohbet arka planlar\u0131na ya\u011far. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Telegram'\u0131n web adresleri Android ayarlar\u0131nda bu uygulama i\u00e7in se\u00e7ili, bu y\u00fczden ba\u011flant\u0131lar\u0131 burada a\u00e7\u0131l\u0131r.");
         table.put("That file is too large to be a settings file. Nothing was changed.",

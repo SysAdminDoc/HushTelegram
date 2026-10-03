@@ -39,7 +39,7 @@ private const val APP_CONTEXT = "Lorg/telegram/messenger/ApplicationLoader;->app
 @Suppress("unused")
 val holidayLookPatch = bytecodePatch(
     name = PATCH,
-    description = "Adds a switch, off by default, that keeps Telegram's New Year look all year, with the Santa hat on the chat list title and falling snow. Telegram's own holiday dates apply while it's off.",
+    description = "Adds a switch, off by default, that keeps Telegram's New Year snow falling all year over the chat list's top bar and chat backgrounds. Telegram's own holiday dates apply while it's off.",
     default = true,
 ) {
     category("Chats")
@@ -59,7 +59,8 @@ val holidayLookPatch = bytecodePatch(
  * timed by [checked], it sets [snow] (snow may start by itself) for Jan 1 and loads [hat] for
  * Dec 31 and Jan 1. [load] starts the hat's load and [done] the method's one exit, which returns
  * [hat]. [readers] are the methods that read [snow]: the top bar's draw, which also draws the hat,
- * and the chat background's.
+ * and the chat background's. The bar draws the hat only over a plain-text title, and 12.10.6's chat
+ * list title is Telegram's logo, so only the snow shows there. The hat still loads Telegram's way.
  */
 internal class HolidayLookSites(
     val check: MutableMethod,

@@ -76,7 +76,7 @@ The current source has 18 patches, all selected by default. Published v0.0.4 con
 | `Hide popular apps` | Hides the Popular apps list in search's Apps tab and stops Telegram from asking its server for it. Apps you've opened and other search results stay. |
 | `Disable chat swipe actions` | Adds a switch, off by default, that stops a sideways swipe on a chat in the chat list from archiving, muting, pinning, deleting or marking it read. A swipe set to change folders still does. Long-press keeps every action. |
 | `Quiet contacts nag` | Keeps the Contacts tab from asking for contacts access again, and clears its warning badge, once you've said no. The first request, the tab's own buttons and contact sync stay as they are. |
-| `Holiday look all year` | Adds a switch, off by default, that keeps Telegram's New Year look all year, with the Santa hat on the chat list title and falling snow. Telegram's own holiday dates apply while it's off. |
+| `Holiday look all year` | Adds a switch, off by default, that keeps Telegram's New Year snow falling all year over the chat list's top bar and chat backgrounds. Telegram's own holiday dates apply while it's off. |
 | `Open links externally` | Opens ordinary HTTP(S) links in your browser. Telegram links, login, payment and authenticated routes keep their existing behavior. |
 | `Strip link tracking` | Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings. |
 

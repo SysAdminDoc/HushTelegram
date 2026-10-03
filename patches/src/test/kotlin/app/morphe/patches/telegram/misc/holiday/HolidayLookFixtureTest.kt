@@ -93,6 +93,30 @@ class HolidayLookFixtureTest {
         }
     }
 
+    // The switch's text promises only the snow. If a build draws the chat list title as plain text
+    // again, the hat shows too and this fails so the text can say so.
+    @Test
+    fun `the bar draws the hat only over a plain-text title, and the chat list title is Telegram's logo`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val check = FixtureDex.methodsWhere(build, { true }) { method -> method.instructions().any { it.reference() == NEW_YEAR_HAT } }.single()
+            val asks = { method: Method -> method.instructions().any { it.reference()?.endsWith("->${check.name}()$DRAWABLE") == true } }
+            val bar = FixtureDex.methodsWhere(build, { true }) { method -> method.name == "drawChild" && asks(method) }.single().instructions()
+            val ask = bar.indexOfFirst { it.reference()?.endsWith("->${check.name}()$DRAWABLE") == true }
+            val draw = (ask until bar.size).first { bar[it].reference() == "Landroid/graphics/drawable/Drawable;->draw(Landroid/graphics/Canvas;)V" }
+            assertTrue("$name: the hat draws only over a String title",
+                (ask until draw).any { bar[it].opcode == Opcode.INSTANCE_OF && bar[it].reference() == "Ljava/lang/String;" })
+
+            val screens = FixtureDex.methodsWhere(build, { true }) { method -> method.name == "createView" && method.instructions().any {
+                it.reference()?.endsWith("->setSupportsHolidayImage(Z)V") == true } }
+            assertEquals("$name: one screen wants the holiday image", 1, screens.size)
+            val title = screens.single().instructions()
+            assertTrue("$name: its title is the logo", title.any { it.reference() == "Lorg/telegram/messenger/R\$drawable;->telegram_logo_2:I" })
+            assertTrue("$name: spanned over the app name", title.any {
+                it.opcode == Opcode.NEW_INSTANCE && it.reference() == "Landroid/text/style/ImageSpan;" })
+        }
+    }
+
     @Test
     fun `changed holiday check geometry refuses before any partial mutation`() {
         for (build in Fixtures.declaredBuilds()) {

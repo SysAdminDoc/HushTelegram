@@ -14,7 +14,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * list title only on Dec 31 and Jan 1, and lets snow start by itself only on Jan 1, over the chat
  * list's top bar and, with animated chat backgrounds on, over chat backgrounds. The check runs
  * whenever the top bar draws its title, so the hook at its start asks here on every frame and the
- * counts below move only when the answer changes.
+ * counts below move only when the answer changes. The bar draws the hat only over a plain-text
+ * title, and 12.10.6's chat list title is Telegram's logo, so there only the snow shows.
  */
 public final class HolidayLook {
     /** Telegram's own check runs. */
