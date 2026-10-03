@@ -168,6 +168,8 @@ The bundle lands in `patches/build/release/patches-<version>.mpp`, beside its SH
 
 Tests: `./gradlew :patches:test :extensions:telegram:test`. Set `HUSHTELEGRAM_FIXTURE_DIR` to the directory containing every APK named in `AppCompatibilities.kt` before pushing a patch change. The push check rejects missing fixtures.
 
+Text input fingerprints ignore LF/CRLF differences, so validated tests can be reused in a temporary checkout. Source changes still invalidate the results, and APK fixture bytes remain exact. `pwsh -NoProfile -File scripts/test-gradle-test-cache.ps1` exercises both test tasks in isolated copies, checks cache reuse and changes source and binary inputs to verify invalidation.
+
 Build dependencies have a separate advisory check. Run `./gradlew :patches:buildDependencyReport`, then `pwsh -NoProfile -File scripts/build-advisories.ps1`. The report is in `patches/build/dependency-reports/`; the shipped SBOM continues to describe only libraries carried by the bundle. High, critical or unrated findings and failed queries stop a push. Lower-severity findings are reported.
 
 `pwsh -NoProfile -File scripts/test-bouncycastle-test-graph.ps1` checks the real dependency review in both task orders and verifies that unreviewed unit-test requests still fail. `pwsh -NoProfile -File scripts/test-host-advisory-alignment.ps1` checks the settings and Android result-listener graphs while proving unrelated runtime requests keep their original versions.

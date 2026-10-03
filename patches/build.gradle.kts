@@ -885,22 +885,27 @@ tasks {
         inputs.file(rootProject.file("README.md"))
             .withPropertyName("readme")
             .withPathSensitivity(PathSensitivity.RELATIVE)
+            .normalizeLineEndings()
         inputs.file(rootProject.file("patches-list.json"))
             .withPropertyName("patchList")
             .withPathSensitivity(PathSensitivity.RELATIVE)
+            .normalizeLineEndings()
         inputs.file(rootProject.file("provenance.json"))
             .withPropertyName("provenance")
             .withPathSensitivity(PathSensitivity.RELATIVE)
+            .normalizeLineEndings()
         // ProvenanceTest also reads NOTICE and every shipped source's header. A header-only edit
         // compiles to the same classes, so without these the task came back up to date and the
         // check never saw the change.
         inputs.file(rootProject.file("NOTICE"))
             .withPropertyName("notice")
             .withPathSensitivity(PathSensitivity.RELATIVE)
+            .normalizeLineEndings()
         // ShortcutCallsTest holds the settings patch's shortcut rewrite to the no-call rules there.
         inputs.file(rootProject.file("scripts/injected-mutation-contracts.txt"))
             .withPropertyName("mutationContracts")
             .withPathSensitivity(PathSensitivity.RELATIVE)
+            .normalizeLineEndings()
         inputs.files(
             rootProject.fileTree("patches/src/main"),
             rootProject.fileTree("patches/stub/src/main"),
@@ -911,6 +916,7 @@ tasks {
         )
             .withPropertyName("shippedSources")
             .withPathSensitivity(PathSensitivity.RELATIVE)
+            .normalizeLineEndings()
         // The fixture tests skip when this is unset and read the folder when it is set. What the
         // folder holds is the input, not its name: a run whose APK was swapped, re-signed or
         // deleted under the same path has to run again, not come back up to date or out of the
