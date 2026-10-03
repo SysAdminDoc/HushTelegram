@@ -4,6 +4,10 @@
 
 Working version 0.0.7.
 
+* **Tooling:** The directory ledger records four confirmed HushTelegram listings. Only the Awesome Morphe request remains pending.
+* **Telegram:** A native push registration check returned APP_PUSH_APIKEY_MISSING with an existing token. Application push configuration is still required, and incoming delivery remains unverified.
+* **Telegram:** Selected-text translation stays unimplemented after provider review. Offline processing and cancellation custody could not be verified. The existing request remains open.
+
 * **Telegram:** Diagnostics match credential names encoded with JSON Unicode escapes. Backup imports reject invalid string escapes before changing preferences. Fixed-seed grammar checks cover preservation and idempotence.
 
 * **Tooling:** Fixture tests reuse bounded query facts keyed by the exact APK content. Mutable test copies remain isolated, and changed fixtures invalidate retained facts.

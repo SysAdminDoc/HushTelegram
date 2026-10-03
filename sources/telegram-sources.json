@@ -22,8 +22,9 @@
       "name": "Morphe community directory",
       "url": "https://morphe-patches.software",
       "hushtelegram": {
-        "status": "not-listed",
-        "checked": "2026-10-01"
+        "status": "listed",
+        "checked": "2026-10-03",
+        "url": "https://morphe-patches.software/data/bundles.json"
       }
     },
     {
@@ -32,7 +33,7 @@
       "url": "https://github.com/nvbangg/awesome-morphe",
       "hushtelegram": {
         "status": "not-listed",
-        "checked": "2026-10-01"
+        "checked": "2026-10-03"
       }
     },
     {
@@ -40,8 +41,9 @@
       "name": "Morphe Patch Tracker",
       "url": "https://drnx64.github.io/morphe-track-patches/",
       "hushtelegram": {
-        "status": "not-listed",
-        "checked": "2026-10-01"
+        "status": "listed",
+        "checked": "2026-10-03",
+        "url": "https://drnx64.github.io/morphe-track-patches/data/bundles/hushtelegram_stable.json"
       }
     },
     {
@@ -49,8 +51,9 @@
       "name": "Jman's ReVanced Patch Bundles",
       "url": "https://github.com/Jman-Github/ReVanced-Patch-Bundles",
       "hushtelegram": {
-        "status": "not-listed",
-        "checked": "2026-10-01"
+        "status": "listed",
+        "checked": "2026-10-03",
+        "url": "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/hushtelegram-patch-bundles/hushtelegram-stable-patches-bundle.json"
       }
     },
     {
@@ -58,8 +61,9 @@
       "name": "Morphe Archive",
       "url": "https://github.com/rushiforai/morphe-archive",
       "hushtelegram": {
-        "status": "not-listed",
-        "checked": "2026-10-01"
+        "status": "listed",
+        "checked": "2026-10-03",
+        "url": "https://raw.githubusercontent.com/rushiforai/morphe-archive/main/repos.txt"
       }
     }
   ],
