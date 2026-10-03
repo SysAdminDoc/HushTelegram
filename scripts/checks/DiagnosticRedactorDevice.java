@@ -26,11 +26,13 @@ public final class DiagnosticRedactorDevice {
             Class<?> test = Class.forName("app.hushtelegram.extension.shared.diagnostics.DiagnosticRedactorTest");
             String[][] corpus = (String[][]) test.getField("CREDENTIAL_CORPUS").get(null);
             String[][] apiCorpus = (String[][]) test.getField("API_IDENTITY_CORPUS").get(null);
+            String[][] boundaries = (String[][]) test.getField("JSON_PAIR_BOUNDARY_CORPUS").get(null);
             String apiControls = (String) test.getField("API_IDENTITY_CONTROLS").get(null);
             String probe = (String) test.getField("TELEGRAM_EXPORT_PROBE").get(null);
             String expected = (String) test.getField("TELEGRAM_EXPORT_REDACTED").get(null);
             if (corpus.length == 0) throw new AssertionError("The test corpus is empty");
             if (apiCorpus.length == 0) throw new AssertionError("The API identity corpus is empty");
+            if (boundaries.length == 0) throw new AssertionError("The JSON pair boundary corpus is empty");
             for (String[] apiRow : apiCorpus) {
                 boolean included = false;
                 for (String[] row : corpus) included |= Arrays.equals(apiRow, row);
@@ -46,9 +48,10 @@ public final class DiagnosticRedactorDevice {
                     String[] row = apiCorpus[i];
                     int counter = row[0].indexOf("counter");
                     String counterField = row[0].substring(counter, row[0].indexOf('8', counter) + 1);
-                    writeRow(out, "P", new String[]{"api_case_" + i + " " + row[0] + " " + apiControls,
+                    writeRow(out, "P", new String[]{"api_case_" + i + " " + row[0] + " api_end_" + i + " " + apiControls,
                             row[1], counterField, apiControls});
                 }
+                for (String[] row : boundaries) writeRow(out, "B", row);
                 writeRow(out, "E", new String[]{probe, expected});
             }
             System.out.println("HUSHTELEGRAM_REDACTOR_EXPORT rows=" + corpus.length + " exact=1");
@@ -58,11 +61,13 @@ public final class DiagnosticRedactorDevice {
         List<String[]> corpus = new ArrayList<>();
         List<String[]> exact = new ArrayList<>();
         List<String[]> preservation = new ArrayList<>();
+        List<String[]> boundaries = new ArrayList<>();
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 new FileInputStream(args[1]), StandardCharsets.UTF_8))) {
             for (String line; (line = in.readLine()) != null;) {
                 String[] fields = line.split("\t", -1);
-                if (fields.length < 3 || !("C".equals(fields[0]) || "E".equals(fields[0]) || "P".equals(fields[0]))) {
+                if (fields.length < 3 || !("C".equals(fields[0]) || "E".equals(fields[0])
+                        || "P".equals(fields[0]) || "B".equals(fields[0]))) {
                     throw new AssertionError("Invalid corpus record");
                 }
                 String[] row = new String[fields.length - 1];
@@ -75,14 +80,17 @@ public final class DiagnosticRedactorDevice {
                 } else if ("P".equals(fields[0])) {
                     if (row.length != 4) throw new AssertionError("A preservation record needs input, canary and two controls");
                     preservation.add(row);
+                } else if ("B".equals(fields[0])) {
+                    if (row.length != 2) throw new AssertionError("A boundary record needs input and exact output");
+                    boundaries.add(row);
                 } else {
                     if (row.length != 2) throw new AssertionError("An exact record needs input and expected text");
                     exact.add(row);
                 }
             }
         }
-        if (corpus.isEmpty() || exact.size() != 1 || preservation.isEmpty()) {
-            throw new AssertionError("The corpus, API preservation records or Telegram expectation is missing");
+        if (corpus.isEmpty() || exact.size() != 1 || preservation.isEmpty() || boundaries.isEmpty()) {
+            throw new AssertionError("The corpus, API preservation records, boundaries or Telegram expectation is missing");
         }
 
         StringBuilder joined = new StringBuilder("MORPHE DIAGNOSTIC REPORT\nschema: 1\n");
@@ -96,6 +104,12 @@ public final class DiagnosticRedactorDevice {
             requireControls(row, DiagnosticRedactor.redact(row[0]), "API row " + i);
             joined.append(row[0]).append('\n');
         }
+        for (String[] row : boundaries) {
+            if (!row[1].equals(DiagnosticRedactor.redact(row[0]))) {
+                throw new AssertionError("A JSON pair crossed object boundaries or changed an unrelated field");
+            }
+            joined.append(row[0]).append('\n');
+        }
         String report = DiagnosticRedactor.redact(joined.toString());
         for (int i = 0; i < corpus.size(); i++) {
             requireNoSecrets(corpus.get(i), report, "joined row " + i);
@@ -103,9 +117,13 @@ public final class DiagnosticRedactorDevice {
         for (int i = 0; i < preservation.size(); i++) {
             String[] row = preservation.get(i);
             int from = report.indexOf("api_case_" + i + " ");
-            int to = from < 0 ? -1 : report.indexOf('\n', from);
+            String end = "api_end_" + i + " " + row[3];
+            int to = from < 0 ? -1 : report.indexOf(end, from);
             if (from < 0 || to < from) throw new AssertionError("Joined report lost API row " + i);
-            requireControls(row, report.substring(from, to), "joined API row " + i);
+            requireControls(row, report.substring(from, to + end.length()), "joined API row " + i);
+        }
+        for (String[] row : boundaries) {
+            if (!report.contains(row[1] + "\n")) throw new AssertionError("Joined JSON pair boundaries changed");
         }
         for (String[] row : exact) {
             String actual = DiagnosticRedactor.redact(row[0]);

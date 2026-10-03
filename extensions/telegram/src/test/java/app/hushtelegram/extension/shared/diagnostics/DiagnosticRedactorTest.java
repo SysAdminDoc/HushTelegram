@@ -311,6 +311,7 @@ public class DiagnosticRedactorTest {
                     + API_IDENTITY_CONTROLS;
 
     public static final String[][] API_IDENTITY_CORPUS = apiIdentityCorpus();
+    public static final String[][] JSON_PAIR_BOUNDARY_CORPUS = jsonPairBoundaryCorpus();
 
     public static final String[][] CREDENTIAL_CORPUS = inEveryForm(NAMES_IN_EVERY_FORM, new String[][]{
             {"{\"access_token\":\"EAABjsonKeyA1\",\"locale\":\"en_US\"}", "EAABjsonKeyA1"},
@@ -538,6 +539,89 @@ public class DiagnosticRedactorTest {
         }
     }
 
+    @Test public void jsonIdentityPairsPreserveEveryNeighborExactly() {
+        for (String[] row : JSON_PAIR_BOUNDARY_CORPUS) {
+            assertEquals("Separate or nested fields changed: " + row[0], row[1], DiagnosticRedactor.redact(row[0]));
+        }
+    }
+
+    /** Exact object boundaries and neighboring fields, also replayed by the ART harness. */
+    private static String[][] jsonPairBoundaryCorpus() {
+        String ordinary = "82539999";
+        String digest = "abcdef0123456789abcdef0123456789";
+        String[] unchanged = {
+                "{\"name\":\"api_id\",\"counter\":8} {\"value\":" + ordinary + "}",
+                "{\"value\":" + ordinary + "} {\"name\":\"api_id\",\"counter\":8}",
+                "{\"name\":\"ordinary\",\"nested\":{\"name\":\"api_id\"},\"value\":" + ordinary + ",\"counter\":8}",
+                "{\"name\":\"api_id\",\"nested\":{\"value\":" + ordinary + "},\"counter\":8}",
+                "{\"value\":\"" + digest + "\",\"nested\":{\"name\":\"apiHash\"},\"name\":\"ordinary\",\"counter\":8}"
+        };
+        String input = "{\n\"value\":82531234,\n\"nested\":{\"value\":" + ordinary
+                + ",\"sha256\":\"" + digest + "\",\"note\":\"} \\\"quoted\\\" {\"},\n\"counter\":8,\n\"name\":\"aPi_Id\"\n}";
+        String expected = input.replace("82531234", "[omitted]");
+        List<String[]> rows = new ArrayList<>();
+        for (int encoding = 0; encoding < 5; encoding++) {
+            rows.add(new String[]{encodeJsonPair(input, encoding), encodeJsonPair(expected, encoding)});
+            for (String text : unchanged) {
+                String encoded = encodeJsonPair(text, encoding);
+                rows.add(new String[]{encoded, encoded});
+            }
+        }
+        String trailing = "{\"name\":\"api_id\",\"note\":\"\\\\\",\"value\":82531234,\"counter\":8,\"sha256\":\"" + digest + "\"}";
+        String trailingExpected = trailing.replace("82531234", "[omitted]");
+        rows.add(new String[]{encodeJsonPair(trailing, 3), encodeJsonPair(trailingExpected, 3)});
+        for (int level = 0; level < 3; level++) {
+            rows.add(new String[]{trailing, trailingExpected});
+            trailing = embeddedJson(trailing);
+            trailingExpected = embeddedJson(trailingExpected);
+        }
+        char[] braces = new char[4000];
+        Arrays.fill(braces, '{');
+        String quotedBraces = "{\"ordinary\":\"" + new String(braces) + "\"}";
+        rows.add(new String[]{quotedBraces, quotedBraces});
+        return rows.toArray(new String[0][]);
+    }
+
+    private static String embeddedJson(String text) {
+        return "{\"ordinary\":\"" + text.replace("\\", "\\\\").replace("\"", "\\\"") + "\"}";
+    }
+
+    @Test public void directJsonIdentityValuesMayStartOnTheNextLine() {
+        String input = "{\"api_id\":\n82531234,\"counter\":8}";
+        assertFalse(DiagnosticRedactor.redact(input).contains("82531234"));
+        assertTrue(DiagnosticRedactor.redact(input).contains("\"counter\":8"));
+    }
+
+    @Test(timeout = 2000) public void deepOrdinaryJsonCompletesWithoutRepeatedSubtreeScans() {
+        StringBuilder json = new StringBuilder();
+        for (int i = 0; i < 8000; i++) json.append("{\"ordinary\":");
+        json.append('0');
+        for (int i = 0; i < 8000; i++) json.append('}');
+        String input = json.toString();
+        assertEquals(input, DiagnosticRedactor.redact(input));
+    }
+
+    @Test public void quotedOrdinaryBracesDoNotUseRecursiveMatching() {
+        String[] row = JSON_PAIR_BOUNDARY_CORPUS[JSON_PAIR_BOUNDARY_CORPUS.length - 1];
+        assertEquals(row[1], DiagnosticRedactor.redact(row[0]));
+    }
+
+    @Test(timeout = 2000) public void ordinaryStringsWithInvalidJsonFragmentsCompleteWithoutRescanning() {
+        String input = "{\"ordinary\":\"" + "{\\\"ordinary\\\":x".repeat(10000) + "\"}";
+        assertEquals(input, DiagnosticRedactor.redact(input));
+    }
+
+    /** Quotation levels used by reports that embed a JSON body in another string. */
+    private static String encodeJsonPair(String text, int encoding) {
+        switch (encoding) {
+            case 1: return text.replace("\"", "\\\"");
+            case 2: return text.replace("\"", "\\\\\\\"");
+            case 3: return text.replace("\"", U);
+            case 4: return text.replace("\"", "\\\"").replace("\n", "\\n");
+            default: return text;
+        }
+    }
+
     /** Named API identities, with short numeric ids and hash canaries that have no bare-id shape. */
     private static String[][] apiIdentityCorpus() {
         String[] names = {"apiHash", "api_hash", "APP_HASH", "api_id", "APP_ID"};
@@ -568,6 +652,20 @@ public class DiagnosticRedactorTest {
                 String number = Integer.toString(82531100 + at);
                 rows.add(new String[]{"{\"" + names[at] + "\":" + number + ",\"counter\":8}", number});
                 rows.add(new String[]{"{\"name\":\"" + mixed[at] + "\",\"value\":" + number + ",\"counter\":8}", number});
+            }
+            String secret = at < 3 ? "aef0dcba9876543210abcdef" + Integer.toHexString(0x20000000 + at)
+                    : Integer.toString(82531200 + at);
+            String value = at < 3 ? "\"" + secret + "\"" : secret;
+            String[] pairs = {
+                    "{\"name\":\"" + mixed[at] + "\",\n\"value\":\n" + value + ",\"counter\":8}",
+                    "{\"value\":" + value + ",\"name\":\"" + mixed[at] + "\",\"counter\":8}",
+                    "{\"value\":" + value + ",\n\"nested\":{\"value\":82539999,\"note\":\"} \\\"quoted\\\" {\"},\n\"name\":\""
+                            + mixed[at] + "\",\n\"counter\":8}"
+            };
+            for (String pair : pairs) {
+                for (int encoding = 0; encoding < 5; encoding++) {
+                    rows.add(new String[]{encodeJsonPair(pair, encoding), secret});
+                }
             }
         }
         return rows.toArray(new String[0][]);

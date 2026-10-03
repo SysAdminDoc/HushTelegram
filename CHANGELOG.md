@@ -4,6 +4,7 @@
 
 Working version 0.0.7.
 
+* **Telegram:** Diagnostics remove named API identity values from multiline and reordered JSON, including escaped quotes. Counters and unrelated hashes stay intact.
 * **Tooling:** The current bundle uses Morphe Patcher 1.15.0, desktop CLI 1.18.0 and Manager 1.33.0. The settings and label compatibility checks cover the pinned internals, and both official Telegram targets remain supported. Manager 1.33 imported the bundle and applied all 22 patches on a phone.
 
 * **Tooling:** Native receipts reject ELF values outside their binary field widths and overflowing LOAD ranges, even when both library records agree. Exact boundary values and historical receipts remain valid on both supported PowerShell versions.
