@@ -71,4 +71,99 @@ foreach ($side in @('stock', 'patched')) {
 }
 if (-not (Check-Packaging $evidence).Valid) { throw 'Valid 32-bit LOAD alignment was refused.' }
 $cases++
+
+# Keep both inventories identical and use parsed JSON, so preservation comparisons cannot
+# hide malformed ELF facts. The placeholder keeps the out-of-uint64 integer exact on older hosts.
+function Check-IdenticalElfMutation {
+    param([string]$Name, [scriptblock]$Change, [switch]$Elf32, [switch]$Valid)
+    $evidence = New-NativePackagingFixture
+    foreach ($side in @('stock', 'patched')) {
+        $entry = $evidence.NativeLibraries.$side.entries[0]
+        if ($Elf32) {
+            $entry.name = 'lib/armeabi-v7a/libfixture.so'; $entry.abi = 'armeabi-v7a'
+            $entry.elf.classBits = 32; $entry.elf.machine = 40; $entry.elf.requiredLoadAlignmentBytes = 0
+            $entry.elf.loadSegments[0].alignmentBytes = 4096
+        }
+        & $Change $entry
+    }
+    $json = ($evidence | ConvertTo-Json -Depth 12).Replace('"UINT64_OVERFLOW"', '18446744073709551616')
+    $evidence = $json | ConvertFrom-Json
+    $stockEntry = $evidence.NativeLibraries.stock.entries[0] | ConvertTo-Json -Depth 8 -Compress
+    $patchedEntry = $evidence.NativeLibraries.patched.entries[0] | ConvertTo-Json -Depth 8 -Compress
+    if ($stockEntry -cne $patchedEntry) { throw "The $Name mutation differs between stock and patched evidence." }
+    $result = Check-Packaging $evidence
+    if ($result.Valid -ne $Valid.IsPresent) { throw "Unexpected native verdict for ${Name}: $($result.Reason)" }
+    $script:cases++
+}
+
+foreach ($bits in @(32, 64)) {
+    $elf32 = $bits -eq 32
+    foreach ($field in @('virtualAddress', 'memorySize', 'alignmentBytes')) {
+        Check-IdenticalElfMutation "$bits-bit $field exceeds its field width" -Elf32:$elf32 -Change {
+            param($entry)
+            $entry.elf.loadSegments[0].$field = if ($elf32) { [long]4294967296 } else { 'UINT64_OVERFLOW' }
+        }
+    }
+    Check-IdenticalElfMutation "$bits-bit memory range exceeds its address space" -Elf32:$elf32 -Change {
+        param($entry)
+        $entry.elf.loadSegments[0].virtualAddress = if ($elf32) { [long]4294963200 }
+            else { [uint64]::Parse('18446744073709535232') }
+        $entry.elf.loadSegments[0].memorySize = if ($elf32) { 8192 } else { 32768 }
+    }
+    Check-IdenticalElfMutation "$bits-bit memory range ends at its address-space boundary" -Elf32:$elf32 -Valid -Change {
+        param($entry)
+        $entry.elf.loadSegments[0].virtualAddress = if ($elf32) { [long]4294963200 }
+            else { [uint64]::Parse('18446744073709535232') }
+        $entry.elf.loadSegments[0].memorySize = if ($elf32) { 4096 } else { 16384 }
+    }
+    Check-IdenticalElfMutation "$bits-bit non-power-of-two alignment" -Elf32:$elf32 -Change {
+        param($entry) $entry.elf.loadSegments[0].alignmentBytes = 24576
+    }
+    Check-IdenticalElfMutation "$bits-bit out-of-order LOAD addresses" -Elf32:$elf32 -Change {
+        param($entry)
+        $entry.elf.loadSegments[0].virtualAddress = 16384
+        $second = $entry.elf.loadSegments[0] | ConvertTo-Json | ConvertFrom-Json
+        $second.index = 1; $second.virtualAddress = 0
+        $entry.elf.loadSegments += $second
+    }
+    foreach ($field in @('offset', 'fileSize')) {
+        Check-IdenticalElfMutation "$bits-bit $field exceeds its binary checker width" -Elf32:$elf32 -Change {
+            param($entry)
+            $value = if ($elf32) { [long]4294967296 } else { [uint64]::Parse('9223372036854775808') }
+            $entry.size = if ($elf32) { [long]4294967360 } else { [uint64]::Parse('9223372036854775872') }
+            $entry.elf.loadSegments[0].$field = $value
+            if ($field -eq 'fileSize') { $entry.elf.loadSegments[0].memorySize = $value }
+            if ($elf32) { $entry.elf.loadSegments[0].alignmentBytes = 1 }
+        }
+    }
+}
+Check-IdenticalElfMutation 'native ZIP size exceeds Java long' -Change {
+    param($entry) $entry.size = [uint64]::Parse('9223372036854775808')
+}
+Check-IdenticalElfMutation 'coerced ELF class' -Change { param($entry) $entry.elf.classBits = '64' }
+Check-IdenticalElfMutation 'program-header index exceeds its possible count' -Change {
+    param($entry) $entry.elf.loadSegments[0].index = [long]4294967295
+}
+Check-IdenticalElfMutation 'out-of-order program-header indices' -Change {
+    param($entry)
+    $entry.elf.loadSegments[0].index = 1
+    $second = $entry.elf.loadSegments[0] | ConvertTo-Json | ConvertFrom-Json
+    $second.index = 0
+    $entry.elf.loadSegments += $second
+}
+foreach ($machine in @(65535, 65536)) {
+    Check-IdenticalElfMutation "ELF machine width $machine" -Valid:($machine -eq 65535) -Change {
+        param($entry)
+        $entry.name = 'lib/other64/libfixture.so'; $entry.abi = 'other64'
+        $entry.elf.machine = $machine; $entry.elf.requiredLoadAlignmentBytes = 0
+    }
+}
+Check-IdenticalElfMutation 'largest ELF64 power-of-two alignment' -Valid -Change {
+    param($entry) $entry.elf.loadSegments[0].alignmentBytes = [uint64]::Parse('9223372036854775808')
+}
+foreach ($alignment in @(0, 1)) {
+    Check-IdenticalElfMutation "legal ELF32 alignment $alignment" -Elf32 -Valid -Change {
+        param($entry) $entry.elf.loadSegments[0].alignmentBytes = $alignment
+    }
+}
 Write-Host "[scripts] native packaging evidence contracts passed ($cases cases)"

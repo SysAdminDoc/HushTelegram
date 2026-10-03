@@ -7,11 +7,16 @@ function Test-NativePackagingEvidence {
     param([object]$NativeLibraries, [object]$ZipAlignment, [string]$ExpectedSourceSha256)
 
     function Fail-Native([string]$Reason) { return [pscustomobject]@{ Valid = $false; Reason = $Reason } }
-    function Read-NativeInteger([object]$Value) {
+    function Read-NativeInteger([object]$Value, [System.Numerics.BigInteger]$Maximum = [long]::MaxValue) {
         if ($Value -isnot [byte] -and $Value -isnot [int] -and $Value -isnot [long] -and
-            $Value -isnot [System.Numerics.BigInteger]) { throw 'Invalid native integer.' }
-        $number = [System.Numerics.BigInteger]::Parse([string]$Value, [Globalization.CultureInfo]::InvariantCulture)
-        if ($number -lt 0) { throw 'Negative native integer.' }
+            $Value -isnot [System.Numerics.BigInteger] -and $Value -isnot [decimal]) { throw 'Invalid native integer.' }
+        # Windows PowerShell's JSON parser uses Decimal for integers above Int64.MaxValue.
+        if ($Value -is [decimal]) {
+            if ([decimal]::Truncate($Value) -ne $Value) { throw 'Native integer has a fractional part.' }
+            $text = $Value.ToString('0', [Globalization.CultureInfo]::InvariantCulture)
+        } else { $text = [string]$Value }
+        $number = [System.Numerics.BigInteger]::Parse($text, [Globalization.CultureInfo]::InvariantCulture)
+        if ($number -lt 0 -or $number -gt $Maximum) { throw 'Native integer is outside its field width.' }
         return $number
     }
     try {
@@ -54,27 +59,44 @@ function Test-NativePackagingEvidence {
                 $relevant = $entry.abi -cin @('arm64-v8a', 'x86_64')
                 $required = if ($relevant) { 16384 } else { 0 }
                 $machine = @{ 'arm64-v8a' = 183; 'x86_64' = 62; 'armeabi-v7a' = 40; 'armeabi' = 40; 'x86' = 3 }
-                if ($elf -isnot [pscustomobject] -or $elf.classBits -notin @(32, 64) -or
-                    $elf.byteOrder -cnotin @('little', 'big') -or $elf.requiredLoadAlignmentBytes -ne $required -or
-                    ($machine.ContainsKey($entry.abi) -and $elf.machine -ne $machine[$entry.abi]) -or
-                    ($machine.ContainsKey($entry.abi) -and (($elf.classBits -eq 64) -ne $relevant)) -or
+                if ($elf -isnot [pscustomobject]) { return Fail-Native 'Native ELF evidence is missing or inconsistent.' }
+                $classBits = Read-NativeInteger $elf.classBits -Maximum 64
+                $machineCode = Read-NativeInteger $elf.machine -Maximum 65535
+                $recordedAlignment = Read-NativeInteger $elf.requiredLoadAlignmentBytes -Maximum 16384
+                if ($classBits -notin @(32, 64) -or
+                    $elf.byteOrder -cnotin @('little', 'big') -or $recordedAlignment -ne $required -or
+                    ($machine.ContainsKey($entry.abi) -and $machineCode -ne $machine[$entry.abi]) -or
+                    ($machine.ContainsKey($entry.abi) -and (($classBits -eq 64) -ne $relevant)) -or
                     $elf.loadSegments -isnot [System.Collections.IList] -or $elf.loadSegments.Count -eq 0) {
                     return Fail-Native 'Native ELF evidence is missing or inconsistent.'
                 }
-                $indices = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+                $addressSpace = [System.Numerics.BigInteger]::Pow(2, [int]$classBits)
+                $fieldMaximum = [System.Numerics.BigInteger]::Subtract($addressSpace, [System.Numerics.BigInteger]::One)
+                # The binary checker reads ELF64 file offsets/sizes as nonnegative Java longs.
+                $fileMaximum = if ($classBits -eq 32) { $fieldMaximum } else { [System.Numerics.BigInteger][long]::MaxValue }
+                $previousIndex = [System.Numerics.BigInteger]::MinusOne
+                $previousAddress = [System.Numerics.BigInteger]::MinusOne
                 foreach ($load in $elf.loadSegments) {
-                    $index = Read-NativeInteger $load.index
-                    $offset = Read-NativeInteger $load.offset
-                    $address = Read-NativeInteger $load.virtualAddress
-                    $fileSize = Read-NativeInteger $load.fileSize
-                    $memorySize = Read-NativeInteger $load.memorySize
-                    $alignment = Read-NativeInteger $load.alignmentBytes
-                    if (-not $indices.Add([string]$index) -or $offset + $fileSize -gt $size -or
+                    # An extended program-header count is at most UINT32_MAX; its indices are smaller.
+                    $index = Read-NativeInteger $load.index -Maximum 4294967294
+                    $offset = Read-NativeInteger $load.offset -Maximum $fileMaximum
+                    $address = Read-NativeInteger $load.virtualAddress -Maximum $fieldMaximum
+                    $fileSize = Read-NativeInteger $load.fileSize -Maximum $fileMaximum
+                    $memorySize = Read-NativeInteger $load.memorySize -Maximum $fieldMaximum
+                    $alignment = Read-NativeInteger $load.alignmentBytes -Maximum $fieldMaximum
+                    if ($index -le $previousIndex -or $address -lt $previousAddress -or
+                        [System.Numerics.BigInteger]::Add($offset, $fileSize) -gt $size -or
+                        [System.Numerics.BigInteger]::Add($address, $memorySize) -gt $addressSpace -or
                         $fileSize -gt $memorySize -or ($alignment -gt 1 -and
-                            (($alignment -band ($alignment - 1)) -ne 0 -or $offset % $alignment -ne $address % $alignment)) -or
-                        ($relevant -and ($alignment -lt 16384 -or $offset % 16384 -ne $address % 16384))) {
+                            ([System.Numerics.BigInteger]::op_BitwiseAnd($alignment,
+                                [System.Numerics.BigInteger]::Subtract($alignment, [System.Numerics.BigInteger]::One)) -ne 0 -or
+                                [System.Numerics.BigInteger]::Remainder($offset, $alignment) -ne
+                                [System.Numerics.BigInteger]::Remainder($address, $alignment))) -or
+                        ($relevant -and $alignment -lt 16384)) {
                         return Fail-Native 'Native ELF LOAD ranges or alignment are invalid.'
                     }
+                    $previousIndex = $index
+                    $previousAddress = $address
                 }
                 $entries.Add($entry.name, $entry)
             }

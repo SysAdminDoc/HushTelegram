@@ -4,6 +4,8 @@
 
 Working version 0.0.7.
 
+* **Tooling:** Native receipts reject ELF values outside their binary field widths and overflowing LOAD ranges, even when both library records agree. Exact boundary values and historical receipts remain valid on both supported PowerShell versions.
+
 * **Tooling:** Public summaries refuse destinations that reach a private report through a directory alias. Separate exports and hard links keep the private report intact. The checks pass on PowerShell 7 and Windows PowerShell 5.1.
 
 * **Telegram:** Diagnostics remove named API IDs and hashes, including quoted and escaped aliases, from events, crash sections, clipboard exports and files. Versions, counters and unrelated hashes remain readable. Synthetic canaries pass on the desktop runtime and Samsung's Android runtime.
