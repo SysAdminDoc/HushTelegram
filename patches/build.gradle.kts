@@ -838,7 +838,7 @@ dependencies {
     // Reads the resource tables of the fixtures, for the Material You theme's colour table. The
     // patcher already brings this exact version at run time; this puts it on the test compile
     // classpath as well.
-    testImplementation("com.github.REAndroid:arsclib:a28c6fb2a7")
+    testImplementation("com.github.MorpheApp:ARSCLib:88d5e0811f")
 }
 
 val buildDependencyReport = tasks.register<WriteBuildDependencyReport>("buildDependencyReport") {

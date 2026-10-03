@@ -2097,7 +2097,16 @@ try {
     # And its patch list, which names the catalog's patches: one left out, one the catalog doesn't
     # have and one listed twice are each refused by name, and a form with no list at all is refused.
     $listedPatch = [string]@($catalog.patches)[0].name
-    $listedLine = '(?m)^( +)- ' + [regex]::Escape($listedPatch) + '$'
+    $listedLine = '(?m)^( +)- ' + [regex]::Escape($listedPatch) + '\r?$'
+    # Git's Windows checkout can use CRLF. Each negative fixture must actually change its row.
+    foreach ($lineEnding in @("`n", "`r`n")) {
+        $rows = "        - $listedPatch" + $lineEnding + '        - Unchanged control' + $lineEnding
+        Assert-True ([regex]::Matches($rows, $listedLine).Count -eq 1) 'The patch-row mutation missed a supported line ending.'
+        $removed = $rows -replace ($listedLine + '\n'), ''
+        Assert-True ($removed -ceq ('        - Unchanged control' + $lineEnding)) 'Removing a listed patch changed a neighboring row.'
+        $duplicated = $rows -replace $listedLine, "`${1}- $listedPatch`n`${1}- $listedPatch"
+        Assert-True ([regex]::Matches($duplicated, $listedLine).Count -eq 2) 'The duplicate-patch fixture did not contain two rows.'
+    }
     foreach ($listCase in @(
             @{ Name = 'leaves a patch out'; Pattern = "*bug report form's patch list*leaves out $listedPatch*"
                 Edit = { param($text) $text -replace ($listedLine + '\n'), '' } },
