@@ -142,6 +142,8 @@ HushTelegram doesn't collect anything and has no server. The patched app goes on
 
 The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.org`. Those open in your browser, and only when you tap one.
 
+Diagnostics omit named Telegram API IDs and hashes from buffered events, crash sections and exported reports. Versions, counters and unrelated hashes stay readable. Review a report before sharing it.
+
 ## Where the patches come from
 
 | Source | What came from it |

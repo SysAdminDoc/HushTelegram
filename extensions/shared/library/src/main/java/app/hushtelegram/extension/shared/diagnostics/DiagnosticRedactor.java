@@ -73,6 +73,13 @@ public final class DiagnosticRedactor {
     /** Telegram's phone fields, matched whole so phoneCount and headphone remain readable. */
     private static final String PHONE_NAMES = "phone(?:[_-]?number)?";
     /**
+     * Telegram's API identity aliases, matched whole so counters and unrelated hashes stay.
+     * A literal JSON unicode quote has ASCII digits before the name. Its u0022 may be taken only
+     * after a backslash, preserving the same bounded name rule for that encoded quotation.
+     */
+    private static final String API_IDENTITY_NAMES =
+            "(?:(?<=\\\\)u0022)?(?:api_?(?:id|hash)|app_(?:id|hash))";
+    /**
      * Credential and device names kept from the shared redaction rules this class was built on:
      * sessionid, ds_user_id and csrftoken are cookie names a session can use, and rur, mid and
      * ig_did go with them. family_device_id, X-IG-Device-ID, X-IG-Android-ID and advertiser_id are
@@ -92,7 +99,7 @@ public final class DiagnosticRedactor {
                     + "|openudid|android[_-]?id|ds_user_id|ig_did|machine[_-]?id|advertiser[_-]?id"
                     + "|advertising[_-]?id|adid)[a-z0-9_-]*"
                     + "|(?!" + ORDINARY_WORDS + "(?![a-z0-9_]|-(?!>)))[a-z0-9_-]*(?:sid|uid|iid|auth)[a-z0-9_-]*"
-                    + "|rur|mid|pwd|access[_-]?hash|" + PHONE_NAMES;
+                    + "|rur|mid|pwd|access[_-]?hash|" + PHONE_NAMES + "|" + API_IDENTITY_NAMES;
     /** Names whose unquoted value can hold spaces and semicolons, so it runs to the end of its line. */
     private static final String PASSWORD_NAMES = "[a-z0-9_-]*(?:password|passwd|passphrase|passcode)[a-z0-9_-]*|pwd";
     /**
@@ -164,11 +171,13 @@ public final class DiagnosticRedactor {
                     + "|[^\\r\\n]*(?:\\r?\\n[ \\t]++" + NOT_TRACE + "[^\\r\\n]*)*))";
     /**
      * A name and value pair as HAR files and header dumps print them, {"name": ..., "value": ...},
-     * where the name is a header, cookie or id the rules know. Only the value goes.
+     * where the name is a header, cookie or id the rules know. Only the value goes. A named id
+     * can be an unquoted JSON integer, bounded by the next field, closing brace or end of text.
      */
     private static final String NAME_VALUE_PAIR =
             "(?i)(\\\\*\"name\\\\*\"[ \\t]*:[ \\t]*\\\\*\"(?:(?:proxy-)?authorization|set-cookie|" + CREDENTIAL_NAMES
-                    + "|" + USER_ID_NAMES + "|" + CONTENT_ID_NAMES + ")\\\\*\"[ \\t]*,[ \\t]*\\\\*\"value\\\\*\"[ \\t]*:[ \\t]*)" + QUOTED;
+                    + "|" + USER_ID_NAMES + "|" + CONTENT_ID_NAMES + ")\\\\*\"[ \\t]*,[ \\t]*\\\\*\"value\\\\*\"[ \\t]*:[ \\t]*)"
+                    + "(?:" + QUOTED + "|-?[0-9]++(?=[ \\t]*(?:[,}]|$)))";
     /**
      * A Bearer, OAuth or Basic credential written with no header name in front of it. A word
      * counts as one only with a digit, +, / or = in it, so "OAuth callback" and "Basic settings"

@@ -4,6 +4,8 @@
 
 Working version 0.0.7.
 
+* **Telegram:** Diagnostics remove named API IDs and hashes, including quoted and escaped aliases, from events, crash sections, clipboard exports and files. Versions, counters and unrelated hashes remain readable. Synthetic canaries pass on the desktop runtime and Samsung's Android runtime.
+
 * **Tooling:** Fixture verification and receipt schema 4 require native-library preservation, relevant 64-bit ELF LOAD alignment and a successful 16 KB ZIP alignment check. Receipts record library hashes and compression with the checker and tool identities. Historical receipts retain their original schema rules. Changed or missing libraries and damaged alignment fail validation; valid compressed libraries remain supported.
 
 * **Tooling:** Desktop patching scripts write a separate public summary with supported targets, catalog patch names and fixed failure codes. Raw CLI reports and configured APKs stay private. Credential canaries in options, names, targets and error fields are excluded, and bug instructions now request the safe summary.

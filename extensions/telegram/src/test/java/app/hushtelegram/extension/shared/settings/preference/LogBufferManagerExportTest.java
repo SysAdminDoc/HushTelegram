@@ -289,6 +289,67 @@ public class LogBufferManagerExportTest {
         }
     }
 
+    @Test public void everyApiIdentityFormReachesEachExportSourceWithoutItsCanary() throws Exception {
+        Context context = RuntimeEnvironment.getApplication();
+        app.hushtelegram.extension.shared.Utils.setContext(context);
+        app.hushtelegram.extension.shared.settings.BaseSettings.DEBUG_LOG_FILTERS.save("all");
+        app.hushtelegram.extension.shared.diagnostics.HookStatus.clear();
+        LogBufferManager.clearLogBuffer();
+        String[][] corpus = app.hushtelegram.extension.shared.diagnostics.DiagnosticRedactorTest.API_IDENTITY_CORPUS;
+        String controls = app.hushtelegram.extension.shared.diagnostics.DiagnosticRedactorTest.API_IDENTITY_CONTROLS;
+        java.util.List<String> section = new java.util.ArrayList<>();
+        StringBuilder crash = new StringBuilder("complete: true\njava.io.IOException: 401\n");
+        for (int i = 0; i < corpus.length; i++) {
+            String message = corpus[i][0] + " api_end_" + i + " " + controls;
+            LogBufferManager.appendEvent(app.hushtelegram.extension.shared.diagnostics.DiagnosticCategory.FEED,
+                    "ApiIdentity" + i, "INFO", message);
+            crash.append("crash_api_").append(i).append(' ').append(message).append('\n');
+            section.add("section_api_" + i + " " + message);
+        }
+        LogBufferManager.persistCrashReport(context, crash.toString());
+        LogBufferManager.registerReportSection(new LogBufferManager.ReportSection() {
+            @Override public String title() { return "API IDENTITY PROBE"; }
+            @Override public java.util.List<String> lines() { return section; }
+        });
+        try {
+            String report = LogBufferManager.buildExportText();
+            LogBufferManager.exportToClipboard();
+            app.hushtelegram.extension.shared.Utils.awaitBackgroundTasksForTests();
+            org.robolectric.shadows.ShadowLooper.idleMainLooper();
+            android.content.ClipboardManager clipboard = context.getSystemService(android.content.ClipboardManager.class);
+            String copied = String.valueOf(clipboard.getPrimaryClip().getItemAt(0).getText());
+            Downloads downloads = Robolectric.setupContentProvider(Downloads.class, MediaStore.AUTHORITY);
+            ByteArrayOutputStream body = new ByteArrayOutputStream();
+            Shadows.shadowOf(context.getContentResolver()).registerOutputStream(downloads.uriFor(1), body);
+            LogBufferManager.exportToFile();
+            app.hushtelegram.extension.shared.Utils.awaitBackgroundTasksForTests();
+            org.robolectric.shadows.ShadowLooper.idleMainLooper();
+            String[][] exports = {{"report", report}, {"clipboard", copied},
+                    {"file", body.toString(StandardCharsets.UTF_8.name())}};
+            for (String[] export : exports) {
+                for (int i = 0; i < corpus.length; i++) {
+                    String end = "api_end_" + i + " " + controls;
+                    String[] sources = {" | ApiIdentity" + i + " | INFO | ",
+                            "crash_api_" + i + " ", "section_api_" + i + " "};
+                    for (String source : sources) {
+                        int from = export[1].indexOf(source);
+                        int to = from < 0 ? -1 : export[1].indexOf(end, from);
+                        assertTrue(export[0] + " lost source " + source, from >= 0 && to > from);
+                        String text = export[1].substring(from, to + end.length());
+                        assertTrue(export[0] + " carried a synthetic canary in " + source,
+                                !text.contains(corpus[i][1]));
+                        int counter = corpus[i][0].indexOf("counter");
+                        String counterField = corpus[i][0].substring(counter, corpus[i][0].indexOf('8', counter) + 1);
+                        assertTrue(export[0] + " changed the counter in " + source, text.contains(counterField));
+                    }
+                }
+            }
+        } finally {
+            LogBufferManager.clearReportSectionsForTests();
+            LogBufferManager.clearLogBuffer();
+        }
+    }
+
     /** MediaStore's Downloads table, as much of it as an export touches. */
     public static final class Downloads extends ContentProvider {
         private final Map<Long, ContentValues> rows = new HashMap<>();
