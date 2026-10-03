@@ -1,7 +1,7 @@
 ![HushTelegram. Keep the chat. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.0.7-2AABEE" alt="Version 0.0.7">
+  <img src="https://img.shields.io/badge/version-0.0.8-2AABEE" alt="Version 0.0.8">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Telegram-12.10.6-2AABEE" alt="Telegram 12.10.6">
@@ -14,7 +14,7 @@ HushTelegram is a Morphe patch bundle for Android that takes the sponsored messa
 
 The latest release is [v0.0.6](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.6), with 18 patches. They're built for Telegram 12.10.6, and on a signed-in phone Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
 
-The current source is v0.0.7. It adds official beta support, a Firebase certificate-header repair and a control that stops pulling up at the bottom of a channel from opening the next unread channel. Two optional patches let you supply your own registered Telegram API credentials and Google Maps key when patching.
+The current source is v0.0.8. It adds official beta support, a Firebase certificate-header repair and a control that stops pulling up at the bottom of a channel from opening the next unread channel. Two optional patches let you supply your own registered Telegram API credentials and Google Maps key when patching.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) | [Download a release](https://github.com/SysAdminDoc/HushTelegram/releases/latest) | [Browse the patches](#patches)
 
@@ -102,7 +102,7 @@ Long-press the Telegram icon and tap HushTelegram. You can also open Telegram's 
 
 <p><img src="assets/settings-overview.png" width="320" alt="HushTelegram settings with search, Pause, and rows for Chats, Privacy and More settings that say what each page holds"><img src="assets/settings-chats.png" width="320" alt="The Chats page with Hide ads and Hide Stories turned on"></p>
 
-The working v0.0.7 source adds a Notifications page and the channel-pull switch. Both are shown below.
+The working v0.0.8 source adds a Notifications page and the channel-pull switch. Both are shown below.
 
 <p><img src="assets/settings-notifications.png" width="320" alt="Notifications settings with the Firebase push registration repair switch"><img src="assets/settings-channel-pull.png" width="320" alt="Chats settings with Stop pull to next channel turned on"></p>
 

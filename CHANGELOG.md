@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-Working version 0.0.7.
+Working version 0.0.8.
 
 * **Tooling:** Cached tests survive equivalent text line endings in temporary checkouts. Source changes still rerun the affected checks, and fixture bytes keep their exact comparisons. Isolated controls exercise cache reuse and invalidation through both real test tasks.
 
