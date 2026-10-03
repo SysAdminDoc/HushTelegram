@@ -4,6 +4,7 @@
 
 Working version 0.0.7.
 
+* **Tooling:** The README's install steps point to the Download Telegram button on telegram.org/android and say the file saves as plain `Telegram.apk`, since nothing in its name says it's the 12.10.6 web build.
 * **Tooling:** The directory ledger records four confirmed HushTelegram listings. Only the Awesome Morphe request remains pending.
 * **Telegram:** A native push registration check returned APP_PUSH_APIKEY_MISSING with an existing token. Application push configuration is still required, and incoming delivery remains unverified.
 * **Telegram:** Selected-text translation stays unimplemented after provider review. Offline processing and cancellation custody could not be verified. The existing request remains open.

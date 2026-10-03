@@ -45,7 +45,7 @@ Changed Premium report builders are refused before the patch changes any code.
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 1.33.0 or newer.
 2. Add HushTelegram as a patch source: https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram
-3. Download Telegram 12.10.6 from telegram.org.
+3. Get Telegram 12.10.6 from [telegram.org/android](https://telegram.org/android) by tapping Download Telegram. Skip the Google Play link, which installs a different package. The download saves as plain `Telegram.apk`, with no version in its name.
 4. In Morphe Manager, pick that file, keep the default patch selection or change it, and patch.
 
 Android accepts an update only when it carries the installed app's signing key. Use your retained Morphe key to update an existing patched Telegram in place. Its data and permission choices stay intact.
