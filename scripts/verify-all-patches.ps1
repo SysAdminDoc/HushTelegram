@@ -78,7 +78,6 @@ try {
 } catch {
     throw "Could not read patch list ${PatchList}: $($_.Exception.Message)"
 }
-$expectedTarget = Get-PatchTarget -PatchList $catalog
 if ($names.Count -eq 0 -or @($names | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -ne 0) {
     throw "No valid patches listed in $PatchList."
 }
@@ -104,9 +103,7 @@ $stockApk = Get-BaseApk -Apk $Apk -Destination (Resolve-WithinRoot -Path (Join-P
 . (Join-Path $PSScriptRoot 'release-receipt.ps1')
 $Aapt2 = Resolve-Aapt2 -Explicit $Aapt2 -Root $root
 $stock = Get-ApkManifestFacts -Apk $stockApk -Aapt2 $Aapt2
-if ($stock.package -ne $expectedTarget.PackageName) {
-    throw "$(Split-Path -Leaf $Apk) is $($stock.package), not the catalog's target $($expectedTarget.PackageName)."
-}
+$expectedTarget = Get-PatchTarget -PatchList $catalog -PackageName ([string]$stock.package)
 if ([string]::IsNullOrWhiteSpace($stock.versionName)) {
     throw "$(Split-Path -Leaf $Apk) carries no versionName, so there is nothing to hold the result to."
 }

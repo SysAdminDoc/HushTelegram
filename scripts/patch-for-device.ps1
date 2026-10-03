@@ -38,6 +38,8 @@ param(
     # an earlier build on purpose. Without it a stale bundle stops the run.
     [switch]$AllowStaleBundle,
     [string]$Apk,
+    # Used only to choose a default fixture. An explicit APK selects its declared native package.
+    [string]$PackageName,
     [string]$DesktopJar,
     [string]$Java,
     [string]$Aapt2,
@@ -67,11 +69,15 @@ $catalogPath = Join-Path $root 'patches-list.json'
 if (-not (Test-Path -LiteralPath $catalogPath -PathType Leaf)) { throw "No patch list found: $catalogPath" }
 try { $catalog = Get-Content -LiteralPath $catalogPath -Raw | ConvertFrom-Json }
 catch { throw "Could not read patch list ${catalogPath}: $($_.Exception.Message)" }
-$target = Get-PatchTarget -PatchList $catalog
+$target = Get-PatchTarget -PatchList $catalog -PackageName $PackageName
 if (-not $Apk -and $env:HUSHTELEGRAM_FIXTURE_DIR -and (Test-Path -LiteralPath $env:HUSHTELEGRAM_FIXTURE_DIR -PathType Container)) {
-    $Apk = (Get-ChildItem -LiteralPath $env:HUSHTELEGRAM_FIXTURE_DIR `
-        -File | Where-Object { $_.Name -like "*$($target.PackageVersion)*" -and $_.Extension -in '.apk', '.apkm', '.xapk' } |
-        Select-Object -First 1).FullName
+    $fixtureNames = @(foreach ($code in @($target.PackageVersionCodes[$target.PackageVersion])) {
+        Get-VendorFixtureName -Target $target -VersionName $target.PackageVersion -VersionCode $code
+    })
+    $matching = @(Get-ChildItem -LiteralPath $env:HUSHTELEGRAM_FIXTURE_DIR -File |
+        Where-Object { $fixtureNames -ccontains $_.Name })
+    if ($matching.Count -gt 1) { throw 'More than one declared default fixture is present. Pass an exact -Apk.' }
+    if ($matching.Count -eq 1) { $Apk = $matching[0].FullName }
 }
 if (-not $Apk -or -not (Test-Path -LiteralPath $Apk -PathType Leaf)) {
     throw ("No vendor APK. Pass -Apk with the $($target.PackageVersion) build, or set " +
@@ -91,9 +97,10 @@ try {
     # Only the copy taken out of a bundle. A plain APK is read where it is and stays there.
     Remove-Item -LiteralPath $stockBase -Force -ErrorAction SilentlyContinue
 }
-if ($stock.package -ne $target.PackageName) {
+if ($PackageName -and $stock.package -cne $PackageName) {
     throw "$(Split-Path -Leaf $Apk) is $($stock.package), not the catalog's target $($target.PackageName)."
 }
+$target = Get-PatchTarget -PatchList $catalog -PackageName ([string]$stock.package)
 # Its version code as well: another arm64 build of a declared version has its own dex, and nothing
 # proved the patches on it.
 if (-not (Test-DeclaredBuild -Target $target -VersionName ([string]$stock.versionName) -VersionCode ([string]$stock.versionCode))) {

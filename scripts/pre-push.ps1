@@ -100,13 +100,10 @@ function Assert-PatchFixtures {
         throw "Patch verification requires the pushed tree's scripts/patch-target.ps1 at $helper. Restore it, then push again."
     }
     . $helper
-    $target = Get-PatchTarget -PatchList (Get-Content -LiteralPath $catalogPath -Raw | ConvertFrom-Json)
-    if ($target.PackageName -cne 'org.telegram.messenger.web') {
-        throw ("Patch verification has no retained fixture naming rule for $($target.PackageName). " +
-            'Update the fixture tests and this gate together before declaring another package.')
-    }
+    $targets = @(Get-PatchTargets -PatchList (Get-Content -LiteralPath $catalogPath -Raw | ConvertFrom-Json))
     $missing = @()
     $count = 0
+    foreach ($target in $targets) {
     foreach ($version in @($target.PackageVersions)) {
         $codes = @($target.PackageVersionCodes[$version] | Where-Object { $_ })
         if ($codes.Count -eq 0) {
@@ -116,7 +113,7 @@ function Assert-PatchFixtures {
             if ($code -notmatch '^\d+$') {
                 throw "patches-list.json declares the invalid version code $code for $($target.PackageName) $version. Correct it, then push again."
             }
-            $name = "telegram-web-$version-$code.apk"
+            $name = Get-VendorFixtureName -Target $target -VersionName $version -VersionCode $code
             $file = Join-Path $directory $name
             if (-not (Test-Path -LiteralPath $file -PathType Leaf) -or (Get-Item -LiteralPath $file).Length -eq 0) {
                 $missing += $name
@@ -124,8 +121,9 @@ function Assert-PatchFixtures {
             $count++
         }
     }
+    }
     if ($missing.Count -gt 0) {
-        throw ("HUSHTELEGRAM_FIXTURE_DIR is missing retained $($target.PackageName) build(s): " +
+        throw ('HUSHTELEGRAM_FIXTURE_DIR is missing retained Telegram build(s): ' +
             ($missing -join ', ') + ". Restore those vendor APKs in $directory, then push again.")
     }
     Write-Step "$count declared Telegram fixture(s) found"

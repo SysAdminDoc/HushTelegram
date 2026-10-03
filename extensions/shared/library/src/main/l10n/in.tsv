@@ -229,3 +229,11 @@ Once you've said no to contacts access, the Contacts tab stops asking again and 
 
 New Year look all year	Tampilan Tahun Baru sepanjang tahun
 Telegram's New Year snow falls every day over the chat list's top bar and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings.	Salju Tahun Baru Telegram turun setiap hari di bilah atas daftar chat dan, saat latar belakang chat animasi aktif, di latar belakang chat. Secara default nonaktif di pengaturan.
+
+# context: Notifications repair and bottom-pull controls.
+Notifications	Notifikasi
+Repair Firebase push registration	Perbaiki pendaftaran notifikasi Firebase
+Uses Telegram's official certificate for Firebase push registration. Notification permission and battery settings still apply.	Menggunakan sertifikat resmi Telegram untuk pendaftaran notifikasi Firebase. Izin notifikasi dan pengaturan baterai tetap berlaku.
+Firebase certificate header	Header sertifikat Firebase
+Stop pull to next channel	Hentikan tarikan ke kanal berikutnya
+Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.	Menarik ke atas di bagian bawah kanal hanya menggulir tampilan. Buka kanal berikutnya dari daftar obrolan.

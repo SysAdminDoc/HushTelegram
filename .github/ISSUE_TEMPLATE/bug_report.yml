@@ -66,12 +66,13 @@ body:
     id: selected_patches
     attributes:
       label: Which patches were in your build?
-      description: All of them are selected by default. If you kept the manager's own selection, pick them all.
+      description: Pick the patches included in your build. The manager shows which ones it selected by default.
       multiple: true
       options:
         - Disable analytics
         - Disable call debug upload
         - Disable chat swipe actions
+        - Disable pull to next channel
         - Disable draft link previews
         - Disable update checks
         - Gallery camera on tap
@@ -85,6 +86,9 @@ body:
         - Holiday look all year
         - Open links externally
         - Quiet contacts nag
+        - Repair Firebase push registration
+        - Use registered Telegram API credentials
+        - Use registered Maps API key
         - Strip link tracking
         - HushTelegram settings
     validations:

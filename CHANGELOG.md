@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+Working version 0.0.7.
+
+* **Telegram:** Two optional patch-time controls accept your own registered Telegram API ID/hash and Android Maps key. Unset options retain the original credentials. Incomplete API pairs and ambiguous Maps metadata are refused before editing.
+* **Telegram:** The restart notice now stays visible when it follows an informational row in settings.
+* **Tooling:** Source checks accept an explicit working version under Unreleased while published-release checks still require a dated entry.
+* **Telegram:** The official beta 12.10.7 joins the web 12.10.6 target. Each package has its own pinned fixture, version code and verified vendor signer. Build and release checks require both targets.
+
+* **Telegram:** A separate default-on switch stops the bottom pull gesture from opening the next unread broadcast channel. Ordinary scrolling and topic pulls keep their usual behavior.
+* **Telegram:** Repair Firebase push registration changes only the certificate header on the web and beta apps' Firebase Installations requests. Its switch and Pause restore the original header. Live push acceptance remains open.
+
 Every HushTelegram release, newest first.
 
 ## 0.0.6 (2026-10-02)
