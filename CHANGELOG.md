@@ -4,6 +4,8 @@
 
 Working version 0.0.7.
 
+* **Telegram:** Settings navigation and backups were checked on Samsung Android 16 at normal and 200% text. Matching imports, damaged-file recovery and Pause restart/resume kept saved choices intact. TalkBack reached all settings pages and exposed each switch's state.
+
 * **Telegram:** Two optional patch-time controls accept your own registered Telegram API ID/hash and Android Maps key. Unset options retain the original credentials. Incomplete API pairs and ambiguous Maps metadata are refused before editing.
 * **Telegram:** The restart notice now stays visible when it follows an informational row in settings.
 * **Tooling:** Source checks accept an explicit working version under Unreleased while published-release checks still require a dated entry.
