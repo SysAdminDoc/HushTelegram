@@ -149,6 +149,7 @@ New-Item -ItemType Directory -Force $OutDir | Out-Null
 $out = Resolve-WithinRoot -Root $OutDir -Path (Join-Path $OutDir "hushtelegram-$version-signed.apk")
 $temp = Resolve-WithinRoot -Root $OutDir -Path (Join-Path $OutDir 'tmp')
 $result = Resolve-WithinRoot -Root $OutDir -Path (Join-Path $OutDir 'result.json')
+$summaryPath = Resolve-WithinRoot -Root $OutDir -Path (Join-Path $OutDir 'public-summary.json')
 if (Test-Path $out) { Remove-Item $out -Force }
 
 Write-Host "[device] $($names.Count) patches from $(Split-Path -Leaf $bundle) onto $(Split-Path -Leaf $Apk)"
@@ -178,13 +179,18 @@ try {
         $global:LASTEXITCODE = -1
         & $Java -jar $DesktopJar "@$argumentFile" 2>&1 | ForEach-Object {
             $line = [string]$_
-            if ($ShowPatchLog -or $line -match 'SEVERE|ERROR|WARNING|Exception|Saved to') { Write-Host "[device] $line" }
+            if ($ShowPatchLog) { Write-Host "[device] $line" }
         }
         $cliExitCode = $LASTEXITCODE
     } finally {
         $ErrorActionPreference = $preference
     }
-    if ($cliExitCode -ne 0) { throw "The desktop CLI exited with $cliExitCode" }
+    $public = Export-PublicPatchSummary -ReportPath $result -SummaryPath $summaryPath -PatchList $catalog `
+        -RequestedNames $names -BundleVersion $version -OutputPath $out -CliExitCode $cliExitCode `
+        -ExpectedPackageName $target.PackageName -ExpectedPackageVersion $stock.versionName
+    if (-not $public.Written) { throw $public.FailureCode }
+    Write-Host '[device] public-summary.json contains the shareable patch summary'
+    if ($cliExitCode -ne 0) { throw ('Patching failed: ' + ($public.Summary.failureCodes -join ', ')) }
 } finally {
     Remove-GeneratedPath -Root $OutDir -Path $argumentFile -NoRecurse
     # The CLI unpacks the whole APK here and a run against Telegram leaves gigabytes behind.
@@ -193,11 +199,13 @@ try {
 # The same report check the throwaway verification applies: every requested patch, every
 # step, the target, and a real APK. The build that goes onto a phone deserves no less.
 $report = $null
-if (Test-Path -LiteralPath $result -PathType Leaf) { $report = Get-Content -LiteralPath $result -Raw | ConvertFrom-Json }
+if (Test-Path -LiteralPath $result -PathType Leaf) {
+    try { $report = Get-Content -LiteralPath $result -Raw | ConvertFrom-Json } catch { throw 'REPORT_INVALID' }
+}
 $validation = Test-PatchingReport -Report $report -ExpectedNames $names `
     -AllowedDependencyNames $dependencyNames -OutputPath $out `
     -ExpectedPackageName $target.PackageName -ExpectedPackageVersion $stock.versionName
-if (-not $validation.Valid) { throw "Patching did not produce a complete APK: $($validation.Reason)" }
+if (-not $validation.Valid) { throw ('Patching failed: ' + ($public.Summary.failureCodes -join ', ')) }
 Write-Host "[device] applied $(@($report.appliedPatches).Count), failed $(@($report.failedPatches).Count), target $($report.packageName) $($report.packageVersion)"
 Write-Host "[device] $out"
 

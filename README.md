@@ -120,6 +120,8 @@ Sign-in can fail with `API_ID_PUBLISHED_FLOOD`, which means Telegram rejected th
 
 Credential options are compiled into the APK and recorded in the patching result report. Keep both private. These two patches have no runtime switch, and Pause doesn't change their credentials. Updating with the retained signing key preserves the installed app's data.
 
+For a patching bug, attach the separate public summary. `patch-for-device.ps1` writes `public-summary.json`; `verify-all-patches.ps1` writes `verify-all-public-summary-*.json`. They contain only supported package and bundle versions, catalog patch names and counts, and fixed failure codes. They omit credentials, options and private error text, including when patching fails. Keep the original result report and configured APK private. `-ShowPatchLog` prints the private CLI log locally, so don't copy that output into a report without reviewing it.
+
 **Can Telegram tell?** Assume it can. A patched Telegram is signed with your key rather than Telegram's, and Telegram's app reports a fingerprint of that key to its servers when it connects.
 
 **What stays the same?** Your chats, contacts and calls use Telegram's servers and native account flow. HushTelegram doesn't send, read, forward or delete messages on your behalf.

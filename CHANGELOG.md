@@ -4,6 +4,8 @@
 
 Working version 0.0.7.
 
+* **Tooling:** Desktop patching scripts write a separate public summary with supported targets, catalog patch names and fixed failure codes. Raw CLI reports and configured APKs stay private. Credential canaries in options, names, targets and error fields are excluded, and bug instructions now request the safe summary.
+
 * **Tooling:** Device updates require an owned, unexpired lease and the expected device identity. Installed signing certificates and version codes are checked before installation, and updates preserve data and existing permissions. The script refuses the old uninstall option. Isolated checks cover refusal and command ordering, and a retained-key Samsung update kept its first-install identity and every permission grant and flag.
 
 * **Telegram:** Settings navigation and backups were checked on Samsung Android 16 at normal and 200% text. Matching imports, damaged-file recovery and Pause restart/resume kept saved choices intact. TalkBack reached all settings pages and exposed each switch's state.

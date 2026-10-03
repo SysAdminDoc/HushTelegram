@@ -5381,6 +5381,10 @@ Assert-Throws { Find-MachineNames -Root (Join-Path ([System.IO.Path]::GetTempPat
 
 Write-Host '[scripts] tracked-file machine name contracts passed'
 
+# Raw CLI results can carry configured credentials. Exercise the separate allowlisted export,
+# including hostile report fields and all failure streams, before accepting any script change.
+& (Join-Path $Root 'scripts/test-public-patch-summary.ps1') -Root $Root
+
 # --- README artwork --------------------------------------------------------------------------
 $artworkReadme = Get-Content -LiteralPath (Join-Path $Root 'README.md') -Raw
 Assert-True ($artworkReadme.StartsWith('![HushTelegram. Keep the chat. Cut the noise.](assets/readme-hero.png)') -and

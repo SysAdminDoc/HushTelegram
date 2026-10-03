@@ -67,6 +67,7 @@ if (-not $Bundle) {
     }
 }
 if (-not $PatchList) { $PatchList = Join-Path $root 'patches-list.json' }
+$bundleVersion = Get-BundleVersion -Root $root
 if (-not $Bundle -or -not (Test-Path -LiteralPath $Bundle -PathType Leaf)) { throw "No bundle found. Run :patches:buildAndroid first." }
 if (-not (Test-Path -LiteralPath $PatchList -PathType Leaf)) { throw "No patch list found: $PatchList" }
 if (-not (Test-Path -LiteralPath $Apk -PathType Leaf)) { throw "APK not found: $Apk" }
@@ -125,6 +126,7 @@ if ($forced) {
 $out = Resolve-WithinRoot -Path (Join-Path $runDir 'verify-all.apk') -Root $workRoot
 $temp = Resolve-WithinRoot -Path (Join-Path $runDir 'verify-all-tmp') -Root $workRoot
 $result = Resolve-WithinRoot -Path (Join-Path $workRoot "verify-all-result-$runId.json") -Root $workRoot
+$summaryPath = Resolve-WithinRoot -Path (Join-Path $workRoot "verify-all-public-summary-$runId.json") -Root $workRoot
 $exitCode = 1
 
 try {
@@ -154,32 +156,28 @@ try {
     }
     # WARNING lines are the patches' own: a patch that works down a list of targets names each one
     # the build lacks there, and still applies.
-    $cliOutput | ForEach-Object {
-        $line = [string]$_
-        if ($line -match 'SEVERE|ERROR|WARNING|Exception|result saved|Saved to') { Write-Host "[verify] $line" }
-    }
+    $public = Export-PublicPatchSummary -ReportPath $result -SummaryPath $summaryPath -PatchList $catalog `
+        -RequestedNames $names -BundleVersion $bundleVersion -OutputPath $out -CliExitCode $cliExitCode `
+        -ExpectedPackageName $expectedTarget.PackageName -ExpectedPackageVersion $expectedVersion
+    if (-not $public.Written) { throw $public.FailureCode }
+    Write-Host "[verify] public summary: $summaryPath"
 
     $report = $null
     if (Test-Path -LiteralPath $result -PathType Leaf) {
         try { $report = Get-Content -LiteralPath $result -Raw | ConvertFrom-Json }
-        catch { Write-Warning "Could not parse result JSON: $($_.Exception.Message)" }
+        catch { Write-Warning 'REPORT_INVALID' }
     }
     $validation = Test-PatchingReport -Report $report -ExpectedNames $names `
         -AllowedDependencyNames $dependencyNames -OutputPath $out `
         -ExpectedPackageName $expectedTarget.PackageName -ExpectedPackageVersion $expectedVersion
     $reportApplied = if ($null -ne $report) { @($report.appliedPatches).Count } else { 0 }
     $reportFailed = if ($null -ne $report) { @($report.failedPatches).Count } else { 0 }
-    $target = if ($null -ne $report) { "$($report.packageName) $($report.packageVersion)" } else { 'unknown target' }
+    $target = if ($public.Summary.packageName) { "$($public.Summary.packageName) $($public.Summary.packageVersion)" } else { 'unknown target' }
     Write-Host "[verify] ${target}: applied $reportApplied, failed $reportFailed, CLI exit $cliExitCode"
-    if ($null -ne $report) {
-        foreach ($failure in @($report.failedPatches)) {
-            $patchName = if ($null -ne $failure.patch) { $failure.patch.name } else { 'unknown patch' }
-            Write-Host "[verify] FAILED ${patchName}: $($failure.reason -split "`n" | Select-Object -First 1)"
-        }
-    }
+    foreach ($code in @($public.Summary.failureCodes)) { Write-Warning "[verify] $code" }
     Write-Host "[verify] result file: $result"
     if ($cliExitCode -ne 0) { Write-Warning "The desktop CLI exited with $cliExitCode." }
-    if (-not $validation.Valid) { Write-Warning "[verify] $($validation.Reason)" }
+    if (-not $validation.Valid) { Write-Warning '[verify] patch summary reports an unsuccessful result' }
     $unapprovedChanges = @()
     if ($cliExitCode -eq 0 -and $validation.Valid) {
         # What patching did to the manifest, read the way the release receipt reads it, against the

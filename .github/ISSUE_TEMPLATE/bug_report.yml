@@ -11,7 +11,7 @@ body:
         Thanks for taking the time to report this. Before you start:
 
         - **Check whether it's already reported.** Search the [open and closed bug reports](https://github.com/SysAdminDoc/HushTelegram/issues?q=is%3Aissue%20label%3Abug). If yours was closed and it still happens, comment on it and we'll reopen it. GitHub doesn't let the person who reported something reopen it.
-        - **Patching stopped with an error?** That usually means Telegram moved something in a new build. Say which Telegram version you picked, and paste the error.
+        - **Patching stopped with an error?** Say which Telegram version you picked. The desktop scripts write a public patch summary you can attach below. Keep raw patching reports and configured APKs private because they can contain credentials.
   - type: input
     id: versions
     attributes:
@@ -140,6 +140,11 @@ body:
     attributes:
       label: Anything else?
       description: A workaround you found, an older version where it still worked, or anything else that might help.
+  - type: textarea
+    id: public_patch_summary
+    attributes:
+      label: Public patch summary
+      description: If you used the desktop scripts, attach public-summary.json or verify-all-public-summary-*.json. These contain validated targets, patch names and fixed failure codes. Don't attach result.json, a configured APK, option values or keystore details. If you used Morphe Manager, describe the visible error after removing private values.
   - type: checkboxes
     id: acknowledgements
     attributes:
