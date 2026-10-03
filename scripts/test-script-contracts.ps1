@@ -243,62 +243,10 @@ try {
     Assert-True $reportValidation.Valid `
         "A complete result with a declared dependency was rejected: $($reportValidation.Reason)"
 
-    $fakeAdb = Join-Path $caseRoot 'adb.cmd'
-    $log = Join-Path $caseRoot 'adb.log'
-    $mode = Join-Path $caseRoot 'mode.txt'
-    $fakeBody = @'
-@echo off
-set /p FAKE_ADB_MODE=<"%~dp0mode.txt"
-echo mode=%FAKE_ADB_MODE% args=%*>>"%~dp0adb.log"
-if "%3|%4|%5"=="shell|pm|path" goto package_path
-if "%3"=="uninstall" goto uninstall
-exit /b 0
-:package_path
-if "%FAKE_ADB_MODE%"=="check-fail" goto check_fail
-if "%FAKE_ADB_MODE%"=="present" echo package:/data/app/example/base.apk
-if "%FAKE_ADB_MODE%"=="uninstall-fail" echo package:/data/app/example/base.apk
-exit /b 0
-:uninstall
-if "%FAKE_ADB_MODE%"=="uninstall-fail" goto uninstall_fail
-echo Success
-exit /b 0
-:check_fail
-exit /b 17
-:uninstall_fail
-exit /b 19
-'@
-    [System.IO.File]::WriteAllText($fakeAdb, $fakeBody, [System.Text.Encoding]::ASCII)
-
-    [System.IO.File]::WriteAllText($mode, 'absent', [System.Text.Encoding]::ASCII)
-    $removed = Remove-AndroidPackageIfInstalled -Adb $fakeAdb -Serial 'CLEAN' -PackageName 'com.example.app'
-    $calls = @(Get-Content -LiteralPath $log)
-    Assert-True (-not $removed) 'An absent package was reported as removed.'
-    Assert-True ($calls.Count -eq 1 -and $calls[0] -like '*shell pm path com.example.app') `
-        'The absent-package path attempted an uninstall.'
-
-    Remove-Item -LiteralPath $log -Force
-    [System.IO.File]::WriteAllText($mode, 'present', [System.Text.Encoding]::ASCII)
-    $removed = Remove-AndroidPackageIfInstalled -Adb $fakeAdb -Serial 'READY' -PackageName 'com.example.app'
-    $calls = @(Get-Content -LiteralPath $log)
-    Assert-True $removed 'An installed package was not removed.'
-    Assert-True ($calls.Count -eq 2 -and $calls[0] -like '*shell pm path com.example.app' -and
-        $calls[1] -like '*uninstall com.example.app') 'The installed-package path did not check then uninstall.'
-
-    Remove-Item -LiteralPath $log -Force
-    [System.IO.File]::WriteAllText($mode, 'check-fail', [System.Text.Encoding]::ASCII)
-    Assert-Throws {
-        Remove-AndroidPackageIfInstalled -Adb $fakeAdb -Serial 'BROKEN' -PackageName 'com.example.app'
-    } '*could not check*' 'An ADB transport failure was treated as an absent package.'
-    $calls = @(Get-Content -LiteralPath $log)
-    Assert-True ($calls.Count -eq 1) 'The check-failure path continued after ADB failed.'
-
-    Remove-Item -LiteralPath $log -Force
-    [System.IO.File]::WriteAllText($mode, 'uninstall-fail', [System.Text.Encoding]::ASCII)
-    Assert-Throws {
-        Remove-AndroidPackageIfInstalled -Adb $fakeAdb -Serial 'LOCKED' -PackageName 'com.example.app'
-    } '*uninstall failed*' 'An uninstall failure was accepted.'
-    $calls = @(Get-Content -LiteralPath $log)
-    Assert-True ($calls.Count -eq 2) 'The uninstall-failure path did not perform exactly a check and uninstall.'
+    # Replacement uninstall assertions contradicted the data-preserving installation contract.
+    # The isolated suite retains absent-package and ADB-failure coverage and proves owned leases,
+    # signer/version refusal and install ordering without touching any shared device.
+    & (Join-Path $Root 'scripts/test-device-install.ps1') -Root $Root
 
     $emptyJdk = Join-Path $caseRoot 'empty-jdk'
     New-Item -ItemType Directory -Path $emptyJdk | Out-Null

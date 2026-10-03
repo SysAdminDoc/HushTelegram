@@ -48,7 +48,9 @@ Changed Premium report builders are refused before the patch changes any code.
 3. Download Telegram 12.10.6 from telegram.org.
 4. In Morphe Manager, pick that file, keep the default patch selection or change it, and patch.
 
-A patched Telegram can't install over the stock one, because Android only accepts an update signed with the same key. Uninstall the stock Telegram first. Your chats live on Telegram's servers, so signing in again brings them back. Secret chats don't come back, since they only ever lived on that phone.
+Android accepts an update only when it carries the installed app's signing key. Use your retained Morphe key to update an existing patched Telegram in place. Its data and permission choices stay intact.
+
+Moving from stock Telegram needs a deliberate migration because the signing keys differ. Keep a signed-in fallback on another device and save any important local files before removing stock Telegram yourself. Removing it permanently deletes this phone's local secret chats. Cloud chats return after a successful sign-in, but secret chats can't be recovered that way. Verify that you can sign in before giving up your only working installation.
 
 ## Keep your signing key
 
@@ -56,6 +58,8 @@ Morphe Manager signs the patched Telegram with a key it makes on your phone. And
 
 - **Back it up right after your first patch.** In Morphe Manager, open Settings, then System, then Import & export, then Signing key, and tap Export. Keep the `Morphe.keystore` file somewhere private, because anyone who has it can sign an APK your phone will accept as an update.
 - **On a new phone, import it before you patch anything.** Without your exported copy, nothing you patched earlier can be updated in place.
+
+The developer installation script requires the exact device serial, expected model (and AVD profile for an emulator), shared lease directory, owned lease token and chat identity. Supply `-LeaseDirectory`, `-LeaseToken` and `-ChatIdentity`, or their `HUSHTELEGRAM_DEVICE_LEASE_DIR`, `HUSHTELEGRAM_DEVICE_LEASE_TOKEN` and `HUSHTELEGRAM_DEVICE_CHAT` environment variables. It checks ownership before every device command and verifies the installed signer and version before updating. It never uninstalls the app, grants permissions or permits a downgrade. The old `-Replace` option is refused.
 
 ## Patches
 
