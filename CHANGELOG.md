@@ -4,6 +4,8 @@
 
 Working version 0.0.7.
 
+* **Tooling:** Fixture tests reuse bounded query facts keyed by the exact APK content. Mutable test copies remain isolated, and changed fixtures invalidate retained facts.
+
 * **Tooling:** First installations accept both genuine package-absence exit forms after exact-device and signer preflight. Ambiguous package-manager results still fail. Updates retain their signing and permission checks.
 
 * **Tooling:** Independent pushes and manual checks use separate commit snapshots and output directories. Every pushed commit keeps its required checks, and cleanup removes only its own temporary files.
