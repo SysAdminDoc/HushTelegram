@@ -68,6 +68,7 @@ import app.hushtelegram.extension.shared.settings.preference.ClearLogBufferPrefe
 import app.hushtelegram.extension.shared.settings.preference.ExportDiagnosticReportPreference;
 import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
+import app.hushtelegram.extension.telegram.misc.FirebasePush;
 
 /**
  * The preference list, built in code rather than from an XML resource so the bundle adds no
@@ -101,6 +102,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     /** The row that asks GitHub for the newest release now, and says what the last try found. */
     @Nullable
     private Preference checkNowRow;
+
+    @Nullable
+    private Preference localNotificationStatus;
 
     /** Where a settings file waiting on the person's answer is kept across the page being rebuilt. */
     static final String PENDING_IMPORT_STATE = "hushtelegram_pending_import";
@@ -163,6 +167,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         super.onResume();
         SettingsBackupPreference.onPageResumed(this);
         showSupportedLinks();
+        if (localNotificationStatus != null) localNotificationStatus.setSummary(FirebasePush.localStatus(getContext()).summary());
     }
 
     @Override
@@ -233,6 +238,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         PatchFamily.registerDiagnostics();
         LogBufferManager.registerReportSection(ReleaseCheck.REPORT);
         Set<PatchFamily> build = PatchFamily.inThisBuild();
+        localNotificationStatus = null;
 
         // Every row carries an icon, so all pages share one text edge. A switch that stops something
         // Telegram does takes the stop sign.
@@ -331,6 +337,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
         if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) {
             PreferenceCategory notifications = category(screen, L10n.t("Notifications"));
+            localNotificationStatus = info(context, L10n.t("Local notification status"), FirebasePush.localStatus(context).summary());
+            localNotificationStatus.setKey("local_notification_status");
+            notifications.addPreference(mark(localNotificationStatus, SettingsIcons.ABOUT));
             notifications.addPreference(mark(toggle(context, Settings.REPAIR_FIREBASE_PUSH, L10n.t("Repair Firebase push registration"),
                     PatchFamily.REPAIR_FIREBASE_PUSH.coverageSummary(L10n.t("Uses Telegram's official certificate for Firebase push registration. "
                             + "Notification permission and battery settings still apply."))), SettingsIcons.BELL));

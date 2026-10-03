@@ -329,6 +329,38 @@ public class HushTelegramPreferenceFragmentTest {
         }
     }
 
+    @Test
+    public void localNotificationFactsStayReadableWhenTheRepairIsOffOrPaused() {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.REPAIR_FIREBASE_PUSH);
+        Settings.REPAIR_FIREBASE_PUSH.save(false);
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            PauseForTests.pause(reason);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                Preference status = pageOf(controller).findPreference("local_notification_status");
+                assertNotNull("local facts must remain visible with repair off and Pause " + reason, status);
+                assertEquals("Local notification status", status.getTitle());
+                assertFalse("reading local status must not be an action", status.isSelectable());
+                assertFalse("local facts must not become a saved preference", status.isPersistent());
+                assertTrue(String.valueOf(status.getSummary()), String.valueOf(status.getSummary()).contains("Push token saved: Unknown"));
+                assertTrue(String.valueOf(status.getSummary()), String.valueOf(status.getSummary()).contains("Signed-in accounts: Unknown"));
+                assertTrue(String.valueOf(status.getSummary()), String.valueOf(status.getSummary()).contains("Accounts confirmed for push: Unknown"));
+            }
+            PauseForTests.resume();
+        }
+        Settings.REPAIR_FIREBASE_PUSH.resetToDefault();
+    }
+
+    @Test
+    public void omittedRepairHasNoLocalNotificationRowOrUnrelatedNotificationControls() {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_ADS);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            assertEquals(null, page.findPreference("local_notification_status"));
+            assertEquals(null, page.findPreference(Settings.REPAIR_FIREBASE_PUSH.key));
+            assertFalse(sections(page).contains("Notifications"));
+        }
+    }
+
     /** Partial target matches used to show the complete-build promise beside the family switch. */
     @Test
     public void partialBuildRowsNameTheirSurvivingAndMissingCoverage() {

@@ -26,6 +26,7 @@ import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
+import app.hushtelegram.extension.telegram.misc.FirebasePush;
 
 /**
  * Every patch in this source, and what Pause does to it.
@@ -165,7 +166,8 @@ public enum PatchFamily {
         EXTERNAL_BROWSER_ROUTING(OPEN_EXTERNAL_LINKS, "externalBrowserRouting", "external browser routing"),
         OPENED_LINK_TRACKING(STRIP_LINK_TRACKING, "openedLinkTracking", "opened link tracking"),
         SHARED_LINK_TRACKING(STRIP_LINK_TRACKING, "sharedLinkTracking", "shared link tracking"),
-        FIREBASE_CERTIFICATE_HEADER(REPAIR_FIREBASE_PUSH, "firebaseCertificateHeader", "Firebase certificate header");
+        FIREBASE_CERTIFICATE_HEADER(REPAIR_FIREBASE_PUSH, "firebaseCertificateHeader", "Firebase certificate header"),
+        FIREBASE_LOCAL_STATUS(REPAIR_FIREBASE_PUSH, "firebaseLocalStatus", "local notification status");
 
         public final PatchFamily family;
         final String statusMethod;
@@ -362,7 +364,9 @@ public enum PatchFamily {
 
         @Override
         public List<String> lines() {
-            return reportLines(inThisBuild(), HushTelegramPause.isPaused());
+            List<String> lines = reportLines(inThisBuild(), HushTelegramPause.isPaused());
+            lines.addAll(FirebasePush.localReportLines());
+            return lines;
         }
     };
 }

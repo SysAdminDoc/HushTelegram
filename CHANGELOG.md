@@ -4,8 +4,8 @@
 
 Working version 0.0.8.
 
+* **Telegram:** The Notifications page shows a read-only local status: whether notifications are allowed, whether a push token is saved, and how many signed-in accounts Telegram has confirmed for push. It reads what's already loaded, never asks for a new registration, and the diagnostic report gets the same counts without the token.
 * **Tooling:** Cached tests survive equivalent text line endings in temporary checkouts. Source changes still rerun the affected checks, and fixture bytes keep their exact comparisons. Isolated controls exercise cache reuse and invalidation through both real test tasks.
-
 * **Tooling:** The README's install steps point to the Download Telegram button on telegram.org/android and say the file saves as plain `Telegram.apk`, since nothing in its name says it's the 12.10.6 web build.
 * **Tooling:** The directory ledger records four confirmed HushTelegram listings. Only the Awesome Morphe request remains pending.
 * **Telegram:** A native push registration check returned APP_PUSH_APIKEY_MISSING with an existing token. Application push configuration is still required, and incoming delivery remains unverified.

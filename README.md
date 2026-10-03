@@ -104,11 +104,13 @@ Long-press the Telegram icon and tap HushTelegram. You can also open Telegram's 
 
 The working v0.0.8 source adds a Notifications page and the channel-pull switch. Both are shown below.
 
-<p><img src="assets/settings-notifications.png" width="320" alt="Notifications settings with the Firebase push registration repair switch"><img src="assets/settings-channel-pull.png" width="320" alt="Chats settings with Stop pull to next channel turned on"></p>
+<p><img src="assets/settings-notifications.png" width="320" alt="Notifications settings with the local notification status and the Firebase push registration repair switch"><img src="assets/settings-channel-pull.png" width="320" alt="Chats settings with Stop pull to next channel turned on"></p>
 
 ## Notifications on a patched Telegram
 
 Telegram's push notifications go through Google's Firebase. Its Android API key checks the package and certificate header, so a re-signed build can get `API_KEY_ANDROID_APP_BLOCKED` before it receives a push token. The current source includes Repair Firebase push registration, which repairs only that header on Firebase Installations requests from the declared web and beta packages. It preserves Android's package signatures and TLS checks.
+
+The Notifications page also shows what this phone knows about push. It says whether notifications are allowed and whether Telegram has saved a push token, then counts your signed-in accounts and how many of them Telegram has confirmed for push. It only reads what's already on the phone. It doesn't send anything, and it can't tell you whether a notification will actually arrive. The diagnostic report carries the same facts, without the token itself.
 
 The current build obtained a Firebase push token in an Android 16 emulator. A native registration check returned `APP_PUSH_APIKEY_MISSING`. That response is consistent with missing application push configuration, which [Telegram documents separately](https://core.telegram.org/api/push-updates). The application's push credentials need to match the client's Firebase project. A new API ID/hash alone doesn't provision push. Telegram acknowledgement and incoming message/call delivery still need live checks, including idle delivery and Samsung hardware. Telegram also has its own fallback. Under Settings, Notifications and Sounds, turn on Keep-Alive Service and Background Connection to keep its connection open. That costs some battery.
 

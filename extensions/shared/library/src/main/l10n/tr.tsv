@@ -237,3 +237,16 @@ Uses Telegram's official certificate for Firebase push registration. Notificatio
 Firebase certificate header	Firebase sertifika başlığı
 Stop pull to next channel	Sonraki kanala çekmeyi durdur
 Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.	Kanalın sonunda yukarı çekmek yalnızca içeriği kaydırır. Sonraki kanalı sohbet listenizden açın.
+# context: Read-only local notification facts, independent of repair and Pause.
+Local notification status	Yerel bildirim durumu
+local notification status	yerel bildirim durumu
+Notification permission: %1$s	Bildirim izni: %1$s
+Push token saved: %1$s	Push belirteci kayıtlı: %1$s
+Signed-in accounts: %1$s	Oturum açmış hesaplar: %1$s
+Accounts confirmed for push: %1$s	Push kaydı onaylanan hesaplar: %1$s
+Read-only local state. This doesn't confirm notification delivery.	Yalnızca yerel durum okunur. Bu, bildirimlerin teslim edildiğini doğrulamaz.
+Unknown	Bilinmiyor
+Allowed	İzin verildi
+Blocked	Engellendi
+Yes	Evet
+No	Hayır
