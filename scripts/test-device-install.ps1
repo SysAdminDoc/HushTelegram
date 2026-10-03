@@ -19,6 +19,7 @@ try {
     [IO.File]::WriteAllText($candidate, 'synthetic APK')
     $fakeAdb = Join-Path $caseRoot 'adb.cmd'
     $log = Join-Path $caseRoot 'adb.log'
+    $script:fixtureEventLog = Join-Path $caseRoot 'events.log'
     $modePath = Join-Path $caseRoot 'mode.txt'
     $leasePath = Join-Path $leaseDir 'emulator-7778.json'
     $script:fixtureLeasePath = $leasePath
@@ -28,11 +29,13 @@ try {
 @echo off
 set /p FAKE_ADB_MODE=<"%~dp0mode.txt"
 echo %*>>"%~dp0adb.log"
+echo adb %*>>"%~dp0events.log"
 if "%3"=="get-state" goto state
 if "%3"=="get-serialno" echo %2
 if "%3|%4|%5"=="shell|getprop|ro.product.model" echo FakeModel
 if "%3|%4|%5"=="emu|avd|name" echo FakeAVD
 if "%3|%4|%5"=="shell|pm|path" goto package_path
+if "%3|%4|%5|%6"=="shell|pm|list|packages" goto inventory
 if "%3"=="pull" goto pull
 if "%3"=="install" goto install
 exit /b 0
@@ -44,8 +47,73 @@ exit /b 0
 if "%FAKE_ADB_MODE%"=="check-fail" exit /b 18
 if "%FAKE_ADB_MODE%"=="check-text" echo Error: package manager unavailable
 if "%FAKE_ADB_MODE%"=="absent" exit /b 0
+if "%FAKE_ADB_MODE%"=="absent-exit1" exit /b 1
+if "%FAKE_ADB_MODE%"=="absent-lease-before-inventory" goto path_lease_loss
+if "%FAKE_ADB_MODE%"=="absent-lease-before-install" exit /b 1
+if "%FAKE_ADB_MODE:~0,10%"=="inventory-" exit /b 1
+if "%FAKE_ADB_MODE%"=="path-exit1-package" goto path_failed_package
+if "%FAKE_ADB_MODE%"=="path-exit1-error" goto path_error
+if "%FAKE_ADB_MODE%"=="path-offline" goto path_offline
+if "%FAKE_ADB_MODE%"=="path-permission" goto path_permission
+if "%FAKE_ADB_MODE%"=="path-exit1-blank" goto path_failed_blank
+if "%FAKE_ADB_MODE%"=="path-exit2-empty" exit /b 2
+if "%FAKE_ADB_MODE%"=="path-exit0-blank" goto path_blank
 if not "%FAKE_ADB_MODE%"=="check-text" echo package:/data/app/example/base.apk
 exit /b 0
+:path_lease_loss
+del /q "%~dp0device-leases\emulator-7778.json"
+exit /b 1
+:path_failed_package
+echo package:/data/app/example/base.apk
+exit /b 1
+:path_error
+echo Error: package manager unavailable
+exit /b 1
+:path_offline
+echo error: device offline 1>&2
+exit /b 1
+:path_permission
+echo SecurityException: Permission Denial 1>&2
+exit /b 1
+:path_failed_blank
+echo.
+exit /b 1
+:path_blank
+echo.
+exit /b 0
+:inventory
+if "%FAKE_ADB_MODE%"=="inventory-fail" exit /b 21
+if "%FAKE_ADB_MODE%"=="inventory-exit1-empty" exit /b 1
+if "%FAKE_ADB_MODE%"=="inventory-exit1-data" goto inventory_failed_data
+if "%FAKE_ADB_MODE%"=="inventory-offline" goto inventory_offline
+if "%FAKE_ADB_MODE%"=="inventory-permission" goto inventory_permission
+if "%FAKE_ADB_MODE%"=="inventory-empty" exit /b 0
+if "%FAKE_ADB_MODE%"=="inventory-malformed" echo package:com..example
+if "%FAKE_ADB_MODE%"=="inventory-error" echo Error: package manager unavailable
+if "%FAKE_ADB_MODE%"=="inventory-path" echo package:/data/app/example/base.apk
+if "%FAKE_ADB_MODE%"=="inventory-unprefixed" echo com.example.other
+if "%FAKE_ADB_MODE%"=="inventory-prefix-case" echo Package:com.example.other
+if "%FAKE_ADB_MODE%"=="inventory-blank" echo.
+if "%FAKE_ADB_MODE%"=="inventory-spaced" echo package: android
+if "%FAKE_ADB_MODE%"=="inventory-duplicate" echo package:android
+if "%FAKE_ADB_MODE%"=="inventory-candidate" echo package:com.example.app
+if "%FAKE_ADB_MODE%"=="inventory-android-case" echo package:Android
+if "%FAKE_ADB_MODE%"=="inventory-android-prefix" echo package:android.other
+if not "%FAKE_ADB_MODE%"=="inventory-no-android" if not "%FAKE_ADB_MODE%"=="inventory-android-case" if not "%FAKE_ADB_MODE%"=="inventory-android-prefix" echo package:android
+echo package:com.example.other
+echo package:com.example.app.debug
+echo package:com.example.application
+if "%FAKE_ADB_MODE%"=="absent-lease-before-install" del /q "%~dp0device-leases\emulator-7778.json"
+exit /b 0
+:inventory_failed_data
+echo package:android
+exit /b 1
+:inventory_offline
+echo error: device offline 1>&2
+exit /b 1
+:inventory_permission
+echo SecurityException: Permission Denial 1>&2
+exit /b 1
 :pull
 if "%FAKE_ADB_MODE%"=="pull-fail" exit /b 19
 copy /y "%~dp0candidate.apk" "%~5" >nul
@@ -62,12 +130,22 @@ exit /b 0
     function Get-ApkManifestFacts {
         param([string]$Apk, [string]$Aapt2)
         $installed = (Split-Path -Leaf $Apk) -ceq 'installed.apk'
+        $kind = if ($installed) { 'installed' } else { 'candidate' }
+        [IO.File]::AppendAllText($script:fixtureEventLog, "manifest:$kind`r`n", [Text.Encoding]::ASCII)
         $package = if ($script:mode -ceq 'wrong-package' -and -not $installed) { 'com.example.other' } else { 'com.example.app' }
         $version = if ($script:mode -ceq 'downgrade' -and $installed) { '21' } else { '20' }
+        if ($script:mode -ceq 'invalid-version' -and -not $installed) { $version = 'invalid' }
         return [pscustomobject]@{ package = $package; versionCode = $version; versionName = '1.0' }
     }
     function Get-VendorSignerDigests {
         param([string]$Apk, [string]$Aapt2)
+        $installed = (Split-Path -Leaf $Apk) -ceq 'installed.apk'
+        $kind = if ($installed) { 'installed' } else { 'candidate' }
+        [IO.File]::AppendAllText($script:fixtureEventLog, "signer:$kind`r`n", [Text.Encoding]::ASCII)
+        if ($script:mode -ceq 'no-signer' -and -not $installed) { return @() }
+        if ($script:mode -ceq 'lose-lease-before-path' -and -not $installed) {
+            Remove-Item -LiteralPath $script:fixtureLeasePath -Force
+        }
         if ($script:mode -ceq 'lose-lease' -and (Split-Path -Leaf $Apk) -ceq 'installed.apk') {
             Remove-Item -LiteralPath $script:fixtureLeasePath -Force
         }
@@ -79,6 +157,7 @@ exit /b 0
         $script:mode = $Mode
         [IO.File]::WriteAllText($modePath, $Mode, [Text.Encoding]::ASCII)
         if (Test-Path -LiteralPath $log) { Remove-Item -LiteralPath $log -Force }
+        if (Test-Path -LiteralPath $script:fixtureEventLog) { Remove-Item -LiteralPath $script:fixtureEventLog -Force }
         $now = [DateTimeOffset]::UtcNow
         $script:lease = [ordered]@{
             schemaVersion = 1; serial = 'emulator-7778'; project = 'HushTelegram'; chatIdentity = $chat;
@@ -93,6 +172,17 @@ exit /b 0
             -Apk $candidate -Aapt2 'unused' -LeaseDirectory $leaseDir -LeaseToken $token -ChatIdentity $chat `
             -ExpectedModel $Model -ExpectedAvd $Avd -WorkDirectory $caseRoot
     }
+    function Assert-Cleanup {
+        if (@(Get-ChildItem -LiteralPath $caseRoot -Directory -Filter 'install-*').Count) { throw 'Owned install scratch was not removed.' }
+    }
+    function Assert-SafeCalls {
+        param([string[]]$Calls)
+        if ($null -eq $Calls -or $Calls.Length -eq 0) { return }
+        if (@($Calls | Where-Object { $_ -notmatch '^-s emulator-7778 ' }).Count) { throw 'ADB did not select the exact leased serial.' }
+        if (@($Calls | Where-Object { $_ -match '\s(-g|-d|uninstall)\b| shell pm (grant|revoke|clear)\b' }).Count) {
+            throw 'Install changed grants, cleared data, downgraded or uninstalled.'
+        }
+    }
     function Assert-Refusal {
         param([scriptblock]$Action, [bool]$NoAdb = $false)
         $caught = $false
@@ -101,9 +191,11 @@ exit /b 0
         $calls = if (Test-Path -LiteralPath $log) { @(Get-Content -LiteralPath $log) } else { @() }
         if ($NoAdb -and $calls.Count) { throw 'ADB ran before lease ownership was proved.' }
         if (@($calls | Where-Object { $_ -match '\s(install|uninstall)\s' }).Count) { throw 'A refused preflight reached mutation.' }
+        Assert-SafeCalls -Calls $calls
+        Assert-Cleanup
         $script:cases++
     }
-    foreach ($modeValue in @('present', 'absent')) {
+    foreach ($modeValue in @('present', 'absent', 'absent-exit1', 'inventory-lookalikes')) {
         Reset-Case $modeValue
         Run-Install
         $calls = @(Get-Content -LiteralPath $log)
@@ -114,6 +206,22 @@ exit /b 0
         $installIndex = [Array]::FindIndex([string[]]$calls, [Predicate[string]]{ param($line) $line -match ' install -r ' })
         if ($pathIndex -lt 0 -or $installIndex -le $pathIndex) { throw 'Install preceded package preflight.' }
         if (@(Get-ChildItem -LiteralPath $caseRoot -Directory -Filter 'install-*').Count) { throw 'Owned install scratch was not removed.' }
+        Assert-SafeCalls -Calls $calls
+        $events = [string[]]@(Get-Content -LiteralPath $script:fixtureEventLog)
+        $manifestIndex = [Array]::IndexOf($events, 'manifest:candidate')
+        $signerIndex = [Array]::IndexOf($events, 'signer:candidate')
+        $queryIndex = [Array]::FindIndex($events, [Predicate[string]]{ param($line) $line -match '^adb -s emulator-7778 shell pm (path|list packages) ' })
+        if ($manifestIndex -lt 0 -or $signerIndex -le $manifestIndex -or $queryIndex -le $signerIndex) {
+            throw 'A package query preceded candidate identity, version or signer preflight.'
+        }
+        $inventoryIndex = [Array]::FindIndex([string[]]$calls, [Predicate[string]]{ param($line) $line -match ' shell pm list packages$' })
+        $pulls = @($calls | Where-Object { $_ -match ' pull ' })
+        if ($modeValue -ceq 'present') {
+            if ($inventoryIndex -ge 0 -or $pulls.Count -ne 1 -or
+                [Array]::IndexOf($events, 'signer:installed') -le $queryIndex) { throw 'Update preflight changed.' }
+        } elseif ($inventoryIndex -le $pathIndex -or $inventoryIndex -ge $installIndex -or $pulls.Count) {
+            throw 'First install lacked independent package-absence proof.'
+        }
         $cases++
     }
     foreach ($field in @('ownershipToken', 'project', 'chatIdentity', 'serial', 'schemaVersion')) {
@@ -140,6 +248,37 @@ exit /b 0
         Reset-Case $modeValue
         Assert-Refusal { Run-Install }
     }
+    foreach ($modeValue in @('wrong-package', 'invalid-version', 'no-signer', 'lose-lease-before-path')) {
+        Reset-Case $modeValue
+        Assert-Refusal { Run-Install }
+        if (@(Get-Content -LiteralPath $log | Where-Object { $_ -match ' shell pm (path|list packages)' }).Count) {
+            throw 'An invalid candidate or lost lease reached package queries.'
+        }
+    }
+    foreach ($modeValue in @('path-exit1-package', 'path-exit1-error', 'path-offline', 'path-permission', 'path-exit1-blank', 'path-exit2-empty', 'path-exit0-blank')) {
+        Reset-Case $modeValue
+        Assert-Refusal { Run-Install }
+        if (@(Get-Content -LiteralPath $log | Where-Object { $_ -match ' shell pm list packages$' }).Count) {
+            throw 'An ambiguous or failed package path reached absence corroboration.'
+        }
+    }
+    foreach ($modeValue in @('inventory-fail', 'inventory-exit1-empty', 'inventory-exit1-data', 'inventory-offline', 'inventory-permission',
+            'inventory-empty', 'inventory-malformed', 'inventory-error', 'inventory-path', 'inventory-unprefixed', 'inventory-prefix-case',
+            'inventory-blank', 'inventory-spaced', 'inventory-duplicate', 'inventory-candidate', 'inventory-no-android',
+            'inventory-android-case', 'inventory-android-prefix')) {
+        Reset-Case $modeValue
+        Assert-Refusal { Run-Install }
+        if (@(Get-Content -LiteralPath $log | Where-Object { $_ -match ' shell pm list packages$' }).Count -ne 1) {
+            throw 'The inventory refusal did not exercise absence corroboration.'
+        }
+    }
+    foreach ($modeValue in @('absent-lease-before-inventory', 'absent-lease-before-install')) {
+        Reset-Case $modeValue
+        Assert-Refusal { Run-Install }
+        $inventoryCalls = @(Get-Content -LiteralPath $log | Where-Object { $_ -match ' shell pm list packages$' })
+        $expectedCalls = if ($modeValue -ceq 'absent-lease-before-inventory') { 0 } else { 1 }
+        if ($inventoryCalls.Count -ne $expectedCalls) { throw 'Lease loss was not fenced before the next ADB command.' }
+    }
     Reset-Case 'present'
     Assert-Refusal { Run-Install -Model 'WrongModel' }
     Reset-Case 'present'
@@ -149,6 +288,8 @@ exit /b 0
         $caught = $false
         try { Run-Install } catch { $caught = $true }
         if (-not $caught) { throw 'An unconfirmed install was reported as successful.' }
+        Assert-SafeCalls -Calls @(Get-Content -LiteralPath $log)
+        Assert-Cleanup
         $cases++
     }
     Reset-Case 'present'

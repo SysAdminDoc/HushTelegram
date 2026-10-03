@@ -4,6 +4,8 @@
 
 Working version 0.0.7.
 
+* **Tooling:** First installations accept both genuine package-absence exit forms after exact-device and signer preflight. Ambiguous package-manager results still fail. Updates retain their signing and permission checks.
+
 * **Tooling:** Independent pushes and manual checks use separate commit snapshots and output directories. Every pushed commit keeps its required checks, and cleanup removes only its own temporary files.
 
 * **Tooling:** Native test fixtures now contain genuine stored ZIP entries on both supported PowerShell versions. Independent header and byte checks preserve the compression and alignment refusal tests.

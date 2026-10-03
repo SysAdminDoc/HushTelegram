@@ -56,7 +56,13 @@ function Install-AndroidPackage {
         }
         $global:LASTEXITCODE = -1
         $output = @(& $Adb -s $Serial @Arguments 2>&1 | ForEach-Object { [string]$_ })
-        if ($LASTEXITCODE -ne 0) { throw "ADB $($Arguments[0]) failed on the selected device." }
+        # Android can return 1 with no output when this exact package is absent. Only
+        # that read may defer the error, and its caller must corroborate the absence.
+        $absentPathResult = $LASTEXITCODE -eq 1 -and $output.Count -eq 0 -and
+            $Arguments.Count -eq 4 -and $Arguments[0] -ceq 'shell' -and
+            $Arguments[1] -ceq 'pm' -and $Arguments[2] -ceq 'path' -and
+            $Arguments[3] -ceq $PackageName
+        if ($LASTEXITCODE -ne 0 -and -not $absentPathResult) { throw "ADB $($Arguments[0]) failed on the selected device." }
         return $output
     }
 
@@ -80,6 +86,20 @@ function Install-AndroidPackage {
     $paths = @($pathOutput | Where-Object { $_.StartsWith('package:', [StringComparison]::Ordinal) })
     if (@($pathOutput | Where-Object { $_.Trim() -and -not $_.StartsWith('package:', [StringComparison]::Ordinal) }).Count -gt 0) {
         throw 'The installed package could not be checked.'
+    }
+    if ($paths.Count -eq 0) {
+        if ($pathOutput.Count -ne 0) { throw 'The installed package could not be checked.' }
+        $inventory = @(Invoke-OwnedAdb -Arguments @('shell', 'pm', 'list', 'packages'))
+        $packages = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+        foreach ($entry in $inventory) {
+            if ($entry -cnotmatch '^package:[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)*$' -or
+                -not $packages.Add($entry.Substring('package:'.Length))) {
+                throw 'The installed package inventory could not be verified.'
+            }
+        }
+        if (-not $packages.Contains('android') -or $packages.Contains($PackageName)) {
+            throw 'The installed package inventory did not confirm absence.'
+        }
     }
     New-Item -ItemType Directory -Force -Path $runDirectory | Out-Null
     try {
