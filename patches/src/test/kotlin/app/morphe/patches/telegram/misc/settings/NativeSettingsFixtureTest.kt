@@ -9,6 +9,7 @@ import app.morphe.ExtensionDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -19,6 +20,7 @@ import app.morphe.patches.telegram.misc.commerce.hideCommercePatch
 import app.morphe.patches.telegram.misc.commerce.resolveCommerceHooks
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
+import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
 import app.morphe.util.ControlFlow
 import app.morphe.util.RegisterKinds
 import app.morphe.util.namedRegisters
@@ -42,6 +44,29 @@ import java.io.File
 import java.security.MessageDigest
 
 class NativeSettingsFixtureTest {
+    @Test fun clickInputAndCallbackCastsRefuseDriftAtomically() {
+        for (build in Fixtures.declaredBuilds()) for (change in listOf("item clobber", "owner clobber", "item cast", "view cast", "boxed argument")) {
+            val context = context(build)
+            val plan = context.resolveNativeSettings()!!
+            if (change.endsWith("clobber")) {
+                val input = plan.click.parameterRegisterNumber(if (change == "item clobber") 1 else 0)
+                plan.click.addInstruction(plan.clickIndex - 1, "const/16 v$input, 0x0")
+            } else {
+                val tap = classes(context).flatMap { it.methods.toList() }.single { method ->
+                    method.name == "run" && method.returnType == "V" && method.parameterTypes.size == 5 &&
+                        method.body().any { it.ref() == plan.click.toString() }
+                }
+                val mutable = context.mutableClassDefBy(tap.definingClass).methods.single { it.toString() == tap.toString() }
+                when (change) {
+                    "item cast" -> mutable.replaceInstruction(1, "check-cast v1, Ljava/lang/String;")
+                    "view cast" -> mutable.replaceInstruction(1, "check-cast v2, Ljava/lang/String;")
+                    else -> mutable.replaceInstruction(3, "invoke-virtual {v1}, Ljava/lang/Integer;->intValue()I")
+                }
+            }
+            refusesUnchanged("$build $change", context)
+        }
+    }
+
     @Test fun nativeCellsAndDispatchKeepOrdinaryRowsOnBothFixtures() {
         for (build in Fixtures.declaredBuilds()) {
             val context = context(build)

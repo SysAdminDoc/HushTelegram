@@ -438,13 +438,30 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
     val string = clickBody.getOrNull(clickAt)?.let { (it as? ReferenceInstruction)?.reference as? StringReference }
     val scratch = clickBody.getOrNull(clickAt)?.namedRegisters()?.singleOrNull() ?: -1
     val clickFlow = click.nativeFlow()
+    val inputs = setOf(click.parameterRegisterNumber(0), click.parameterRegisterNumber(1))
+    val predecessors = clickBody.indices.map { mutableSetOf<Int>() }
+    for (from in clickBody.indices) for (to in clickFlow.normal[from] + clickFlow.exceptional[from]) {
+        predecessors[to].add(from)
+    }
+    val reaching = mutableSetOf<Int>()
+    val pending = ArrayDeque(predecessors[idRead])
+    while (pending.isNotEmpty()) {
+        val at = pending.removeFirst()
+        if (reaching.add(at)) pending.addAll(predecessors[at])
+    }
+    nativeShape(0 in reaching && idRead !in reaching && reaching.none { at ->
+        val instruction = clickBody[at]
+        instruction.opcode.setsRegister() && instruction.namedRegisters().firstOrNull()?.let { written ->
+            written in inputs || instruction.opcode.setsWideRegister() && written + 1 in inputs
+        } == true
+    }, "incoming click item or owner can be overwritten")
     nativeShape(clickBody[idRead].namedRegisters().getOrNull(1) == click.parameterRegisterNumber(1) &&
         string?.string == "settings" && clickBody[clickAt].opcode == Opcode.CONST_STRING &&
         clickBody.getOrNull(clickAt + 1)?.opcode == Opcode.PACKED_SWITCH &&
         clickBody[clickAt + 1].namedRegisters() == listOf(idRegister) &&
         scratch in 0..15 && scratch !in RegisterLiveness.of(click).liveInto(clickAt) &&
         clickFlow.normal[idRead] == listOf(clickAt) && clickFlow.exceptional[clickAt].isEmpty() &&
-        clickBody.indices.none { it != idRead && clickAt in clickFlow.normal[it] },
+        clickBody.indices.none { it != idRead && clickAt in clickFlow.normal[it] || clickAt in clickFlow.exceptional[it] },
         "click identity or scratch register changed")
     val payload = clickBody.filterIsInstance<SwitchPayload>().nativeSingle("click switch")
     nativeShape(payload.switchElements.map { it.key } == (1..24).toList(), "ordinary click identities changed")
@@ -611,6 +628,14 @@ private fun validateSettingsCallbacks(classes: Map<String, ClassDef>, owner: Cla
             Opcode.CHECK_CAST, Opcode.INVOKE_VIRTUAL, Opcode.CHECK_CAST, Opcode.INVOKE_VIRTUAL,
             Opcode.IGET_OBJECT, Opcode.INVOKE_STATIC, Opcode.RETURN_VOID) &&
         taps[0].nativeRef() == item && taps[0].namedRegisters() == listOf(1) &&
+        taps[1].nativeRef() == "Landroid/view/View;" && taps[1].namedRegisters() == listOf(2) &&
+        taps[2].nativeRef() == "Ljava/lang/Integer;" && taps[2].namedRegisters() == listOf(3) &&
+        taps[4].nativeRef() == "Ljava/lang/Float;" && taps[4].namedRegisters() == listOf(4) &&
+        taps[6].nativeRef() == "Ljava/lang/Float;" && taps[6].namedRegisters() == listOf(5) &&
+        listOf(3 to 3, 5 to 4, 7 to 5).all { (at, register) ->
+            taps[at].nativeRef() == "Ljava/lang/Object;->getClass()Ljava/lang/Class;" &&
+                taps[at].namedRegisters() == listOf(register)
+        } &&
         taps[8].nativeField()?.type == owner.type && taps[8].namedRegisters() == listOf(2, 0) &&
         taps[9].nativeRef() == click.toString() && taps[9].namedRegisters() == listOf(2, 1),
         "click callback no longer calls this dispatcher")
