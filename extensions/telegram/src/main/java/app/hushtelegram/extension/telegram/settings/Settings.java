@@ -78,9 +78,8 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_quiet_contacts_nag", TRUE);
 
     /**
-     * Telegram's New Year snow on any day, over the chat list's top bar and chat backgrounds. Its Santa
-     * hat only draws over a plain-text title, and 12.10.6's chat list title is the logo, so it doesn't
-     * show. Telegram's own holiday dates apply while it's off.
+     * Telegram's Santa hat over the chat list logo and New Year snow on any day, over the chat list's
+     * top bar and chat backgrounds. Telegram's own holiday dates apply while it's off.
      */
     public static final BooleanSetting HOLIDAY_LOOK =
             new BooleanSetting("hushtelegram_holiday_look", FALSE);

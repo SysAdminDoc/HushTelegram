@@ -299,7 +299,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             }
             if (build.contains(PatchFamily.HOLIDAY_LOOK)) {
                 chats.addPreference(mark(toggle(context, Settings.HOLIDAY_LOOK, L10n.t("New Year look all year"),
-                        PatchFamily.HOLIDAY_LOOK.coverageSummary(L10n.t("Telegram's New Year snow falls every day over the chat list's top bar "
+                        PatchFamily.HOLIDAY_LOOK.coverageSummary(L10n.t("Telegram's Santa hat sits on the chat list logo, and New Year snow falls every day over the chat list's top bar "
                                 + "and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings."))),
                         SettingsIcons.CHAT));
             }
