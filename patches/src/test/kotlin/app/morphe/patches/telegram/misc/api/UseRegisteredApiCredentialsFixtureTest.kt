@@ -8,10 +8,13 @@ import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patcher.util.proxy.mutableTypes.encodedValue.MutableEncodedValue.Companion.toMutable
 import app.morphe.util.ControlFlow
@@ -21,6 +24,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
@@ -37,7 +41,7 @@ import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File
 
-/** Registered credentials change two initialization literals. Existing authentication stays intact. */
+/** Registered credentials change two initialization literals and tag the native init version. Authentication stays intact. */
 class UseRegisteredApiCredentialsFixtureTest {
     @Test
     fun `credential patch is optional and both input options remain optional`() {
@@ -47,13 +51,14 @@ class UseRegisteredApiCredentialsFixtureTest {
     }
 
     @Test
-    fun `patch options replace only the ID and hash literal on every declared build`() {
+    fun `patch options replace the ID and hash literals and tag only the native version on every declared build`() {
         for (build in Fixtures.declaredBuilds()) {
             val hosts = hosts(build)
             val context = PatchContexts.of(hosts)
             val plan = context.resolveApiCredentials()
             val before = state(context, hosts)
             val oldInitializer = ImmutableMethod.of(plan.initializer)
+            val oldConnection = ImmutableMethod.of(plan.connectionInitializer).instructions()
             withOptions(ID, HASH) { useRegisteredApiCredentialsPatch.execute(context) }
             val body = plan.initializer.instructions()
             assertEquals(ID.toLong(), (body[plan.id.index] as WideLiteralInstruction).wideLiteral)
@@ -63,15 +68,47 @@ class UseRegisteredApiCredentialsFixtureTest {
                 assertEquals("${build.name}: unchanged instruction $index", operation(oldInitializer.instructions()[index]), operation(body[index]))
             }
             val after = state(context, hosts)
-            assertEquals("${build.name}: every class other than BuildVars stays intact",
-                before - BUILD_VARS, after - BUILD_VARS)
+            assertEquals("${build.name}: every class other than BuildVars and ConnectionsManager stays intact",
+                before - BUILD_VARS - CONNECTIONS, after - BUILD_VARS - CONNECTIONS)
+            assertEquals("${build.name}: every other connection method stays intact",
+                otherMethods(before, plan.connectionInitializer), otherMethods(after, plan.connectionInitializer))
+            val connection = plan.connectionInitializer.instructions()
+            val tag = connection[plan.nativeCall]
+            assertEquals(Opcode.XOR_INT_LIT8, tag.opcode)
+            assertEquals(listOf(plan.versionRegister, plan.versionRegister), tag.namedRegisters())
+            assertEquals(nativeVersionTag(ID.toInt()), (tag as NarrowLiteralInstruction).narrowLiteral)
+            assertEquals("native_init", connection[plan.nativeCall + 1].call()?.name)
+            assertEquals(plan.versionRegister, connection[plan.nativeCall + 1].namedRegisters()[1])
+            assertEquals("${build.name}: only the version tag is added", oldConnection.map(::operation),
+                connection.filterIndexed { index, _ -> index != plan.nativeCall }.map(::operation))
             assertEquals("${build.name}: initializer branches stay intact", ControlFlow.of(oldInitializer).normal.toList(),
                 ControlFlow.of(plan.initializer).normal.toList())
             assertEquals("${build.name}: initializer exception edges stay intact", ControlFlow.of(oldInitializer).exceptional.toList(),
                 ControlFlow.of(plan.initializer).exceptional.toList())
-            val verified = context.resolveApiCredentials()
-            assertEquals(5, verified.readers.size)
-            assertEquals(CONNECTIONS, verified.connectionInitializer.definingClass)
+            assertEquals(5, plan.readers.size)
+            assertEquals(CONNECTIONS, plan.connectionInitializer.definingClass)
+        }
+    }
+
+    @Test
+    fun `native version tag is negative for every API ID and follows the ID`() {
+        for (id in listOf(1, 127, 128, 255, ID.toInt(), Int.MAX_VALUE)) {
+            val tag = nativeVersionTag(id)
+            assertTrue("$id: tag fits xor-int/lit8", tag in -128..-1)
+            assertTrue("$id: tagged version can't equal a stock build version", (71129 xor tag) < 0)
+        }
+        assertTrue(nativeVersionTag(1) != nativeVersionTag(2))
+    }
+
+    @Test
+    fun `a changed native version argument or a second entry into native initialization refuses before edits`() {
+        refusal { _, plan ->
+            plan.connectionInitializer.addInstruction(plan.nativeCall, "const v${plan.versionRegister}, 0x1")
+        }
+        refusal { _, plan ->
+            val method = plan.connectionInitializer
+            method.addInstructionsWithLabels(plan.nativeCall - 1, "if-eqz v${plan.versionRegister}, :native",
+                ExternalLabel("native", method.getInstruction<Instruction>(plan.nativeCall)))
         }
     }
 
@@ -254,6 +291,10 @@ class UseRegisteredApiCredentialsFixtureTest {
             assertEquals("${build.name}: refusal leaves every method and field unchanged", before, state(context, hosts))
         }
     }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun otherMethods(state: Map<String, List<Any?>>, method: Method) =
+        (state.getValue(CONNECTIONS)[2] as List<List<Any?>>).filterNot { it[0] == method.name && it[1] == method.parameterTypes }
 
     private fun withOptions(id: String?, hash: String?, action: () -> Unit) {
         useRegisteredApiCredentialsPatch.options["apiId"] = id

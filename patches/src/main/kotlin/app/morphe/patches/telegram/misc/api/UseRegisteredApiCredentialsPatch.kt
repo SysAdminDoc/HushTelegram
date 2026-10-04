@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.api
 
+import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -59,7 +60,8 @@ internal class ApiCredentials(val id: Int, val hash: String)
 internal data class ApiLiteral(val index: Int, val register: Int)
 internal data class ApiCredentialsPlan(
     val initializer: MutableMethod, val id: ApiLiteral, val hash: ApiLiteral,
-    val readers: List<Method>, val connectionInitializer: Method,
+    val readers: List<Method>, val connectionInitializer: MutableMethod,
+    val nativeCall: Int, val versionRegister: Int,
 )
 
 /** Error messages name an option, never echo either supplied credential. */
@@ -79,7 +81,14 @@ internal fun BytecodePatchContext.applyRegisteredApiCredentials(id: String?, has
     val plan = resolveApiCredentials()
     plan.initializer.replaceInstruction(plan.id.index, "const v${plan.id.register}, ${credentials.id}")
     plan.initializer.replaceInstruction(plan.hash.index, "const-string v${plan.hash.register}, \"${credentials.hash}\"")
+    // Telegram resends initConnection only when this native version differs from the one it last saved,
+    // so an in-place update from the stock identity would keep announcing the old API ID.
+    plan.connectionInitializer.addInstruction(plan.nativeCall,
+        "xor-int/lit8 v${plan.versionRegister}, v${plan.versionRegister}, ${nativeVersionTag(credentials.id)}")
 }
+
+/** Negative, so the tagged version never equals a stock build version; it also changes with the API ID. */
+internal fun nativeVersionTag(id: Int) = -1 - id % 128
 
 /** All writers, authentication readers and native identity arguments are proved before either edit. */
 internal fun BytecodePatchContext.resolveApiCredentials(): ApiCredentialsPlan {
@@ -193,6 +202,13 @@ internal fun BytecodePatchContext.resolveApiCredentials(): ApiCredentialsPlan {
         nativeCall.call()?.parameterTypes?.take(4) == listOf("I", "I", "I", "I") &&
         origin(javaInit, nativeSites.second, nativeArguments[3]) == setOf(parameterToken(parameter)),
         "native initialization no longer receives the intact API ID parameter")
+    val versionRegister = nativeArguments[1]
+    requireShape(versionRegister <= 0xff && origin(javaInit, nativeSites.second, versionRegister) ==
+        setOf(parameterToken(parameter - 2)), "native initialization no longer receives the intact build version parameter")
+    val initFlow = ControlFlow.of(javaInit)
+    requireShape(javaInit.instructions().indices.filter { nativeSites.second in initFlow.normal[it] ||
+        nativeSites.second in initFlow.exceptional[it] } == listOf(nativeSites.second - 1),
+        "native initialization is reachable from more than its preceding instruction")
     for (read in reads.filter { it.method !in authentication && it.method !== constructor }) {
         val body = read.method.instructions()
         requireShape(read.field.name == "APP_ID" && body.indices.count { index ->
@@ -201,7 +217,7 @@ internal fun BytecodePatchContext.resolveApiCredentials(): ApiCredentialsPlan {
                 body[index].namedRegisters().getOrNull(1)?.let { origin(read.method, index, it) == setOf(read.index) } == true
         } == 1, "an API ID read has an unrecognized use")
     }
-    return ApiCredentialsPlan(initializer, id, hash, reads.map { it.method }.distinct(), javaInit)
+    return ApiCredentialsPlan(initializer, id, hash, reads.map { it.method }.distinct(), javaInit, nativeSites.second, versionRegister)
 }
 
 private data class ApiAccess(val method: Method, val index: Int, val instruction: Instruction, val field: FieldReference)
