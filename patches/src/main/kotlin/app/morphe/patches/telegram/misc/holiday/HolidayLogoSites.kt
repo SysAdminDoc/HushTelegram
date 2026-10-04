@@ -234,6 +234,79 @@ internal fun BytecodePatchContext.resolveHolidayLogoSites(holiday: HolidayLookSi
             !AccessFlags.ABSTRACT.isSet(it.accessFlags) && !AccessFlags.NATIVE.isSet(it.accessFlags) && it.body().isNotEmpty() } == 1,
             "the title's $name is no longer callable")
     }
+    val geometryTitle = mutableClassDefBy(titleType)
+    val height = geometryTitle.methods.single { it.name == "getTextHeight" && it.parameterTypes.isEmpty() }
+    val startX = geometryTitle.methods.single { it.name == "getTextStartX" && it.parameterTypes.isEmpty() }
+    val startY = geometryTitle.methods.single { it.name == "getTextStartY" && it.parameterTypes.isEmpty() }
+    // These two complete field layouts belong to the declared web and beta fixtures. Keep them
+    // coherent: accepting any same-typed field would also accept a width as the line height.
+    val heightField = ownField(height, height.body().first(), "I")
+    val (padding, rightInside, offset) = when (heightField.name) {
+        "f0" -> Triple("H", "E", "b0")
+        "g0" -> Triple("I", "F", "c0")
+        else -> refuse("the title geometry field layout changed")
+    }
+    for ((getter, registers, count) in listOf(Triple(height, 2, 2), Triple(startX, 5, 33), Triple(startY, 2, 8))) {
+        shape(getter.implementation!!.registerCount == registers && getter.body().size == count &&
+            getter.implementation!!.tryBlocks.isEmpty(), "the title's ${getter.name} geometry shape changed")
+        getter.body().filter { it.field() != null }.forEach { ownField(getter, it, null) }
+    }
+    window(height, 0, """
+        iget v0, p0, $heightField
+        return v0
+        nop
+    """.trimIndent(), "title line height")
+    window(startX, 0, """
+        iget-object v0, p0, $titleType->c:Landroid/text/StaticLayout;
+        const/4 v1, 0x0
+        if-nez v0, :layout
+        return v1
+        :layout
+        iget-object v0, p0, $titleType->v:$DRAWABLE
+        const/4 v2, 0x3
+        if-eqz v0, :right
+        iget v3, p0, $titleType->n:I
+        and-int/lit8 v3, v3, 0x7
+        if-ne v3, v2, :right
+        iget v1, p0, $titleType->$padding:I
+        invoke-virtual {v0}, $DRAWABLE->getIntrinsicWidth()I
+        move-result v0
+        add-int/2addr v1, v0
+        :right
+        iget-object v0, p0, $titleType->y:$DRAWABLE
+        if-eqz v0, :position
+        iget v3, p0, $titleType->$rightInside:I
+        if-gez v3, :position
+        iget v3, p0, $titleType->n:I
+        and-int/lit8 v3, v3, 0x7
+        if-ne v3, v2, :position
+        iget v2, p0, $titleType->$padding:I
+        invoke-virtual {v0}, $DRAWABLE->getIntrinsicWidth()I
+        move-result v0
+        add-int/2addr v0, v2
+        add-int/2addr v1, v0
+        :position
+        invoke-virtual {p0}, $VIEW->getX()F
+        move-result v0
+        float-to-int v0, v0
+        iget v2, p0, $titleType->$offset:I
+        add-int/2addr v0, v2
+        add-int/2addr v0, v1
+        return v0
+        nop
+    """.trimIndent(), "title horizontal placement")
+    window(startY, 0, """
+        iget-object v0, p0, $titleType->c:Landroid/text/StaticLayout;
+        if-nez v0, :layout
+        const/4 v0, 0x0
+        return v0
+        :layout
+        invoke-virtual {p0}, $VIEW->getY()F
+        move-result v0
+        float-to-int v0, v0
+        return v0
+        nop
+    """.trimIndent(), "title vertical placement")
     for (offset in listOf("D1", "E1")) {
         shape(classDefByOrNull(theme)?.fields?.count { it.name == offset && it.type == "I" &&
             AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) } == 1,

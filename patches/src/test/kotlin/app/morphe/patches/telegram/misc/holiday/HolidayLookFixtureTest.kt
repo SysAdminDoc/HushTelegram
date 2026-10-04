@@ -296,6 +296,46 @@ class HolidayLookFixtureTest {
     }
 
     @Test
+    fun `changed title geometry getter bodies refuse before editing`() {
+        for (build in Fixtures.declaredBuilds()) {
+            for (name in listOf("getTextHeight", "getTextStartX", "getTextStartY")) {
+                val context = contextFor(build)
+                val logo = context.resolveHolidayLogoSites(context.resolveHolidayLookSites())
+                val type = logo.bar.instructions().first { it.reference()?.endsWith("->getTextStartX()I") == true }
+                    .reference()!!.substringBefore("->")
+                val getter = context.mutableClassDefBy(type).methods.single { it.name == name }
+                getter.replaceInstruction(0, "const/4 v0, 0x0")
+                assertRefusedUntouched(build, "changed $name geometry", context)
+            }
+        }
+    }
+
+    @Test
+    fun `changed title geometry fields arithmetic and branches refuse atomically`() {
+        for (build in Fixtures.declaredBuilds()) {
+            for (case in listOf("height field", "horizontal addition", "vertical branch")) {
+                val context = contextFor(build)
+                val logo = context.resolveHolidayLogoSites(context.resolveHolidayLookSites())
+                val type = logo.bar.instructions().first { it.reference()?.endsWith("->getTextStartX()I") == true }
+                    .reference()!!.substringBefore("->")
+                val methods = context.mutableClassDefBy(type).methods
+                when (case) {
+                    "height field" -> methods.single { it.name == "getTextHeight" }
+                        .replaceInstruction(0, "iget v0, p0, $type->n:I")
+                    "horizontal addition" -> methods.single { it.name == "getTextStartX" }
+                        .replaceInstruction(30, "sub-int/2addr v0, v2")
+                    else -> {
+                        val getter = methods.single { it.name == "getTextStartY" }
+                        val branch = getter.getInstruction(1) as BuilderOffsetInstruction
+                        getter.replaceInstruction(1, BuilderInstruction21t(Opcode.IF_EQZ, 0, branch.target))
+                    }
+                }
+                assertRefusedUntouched(build, "changed $case", context)
+            }
+        }
+    }
+
+    @Test
     fun `changed holiday check geometry refuses before any partial mutation`() {
         for (build in Fixtures.declaredBuilds()) {
             val changes: List<Pair<String, (BytecodePatchContext, HolidayLookSites) -> Unit>> = listOf(
