@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Tooling:** The source-ledger paragraph now identifies v0.0.8 as the published bundle and distinguishes newer source changes.
+
 * **Telegram:** External links now recognize browser aliases that Android enables at runtime, even when their manifest default is disabled. Disabled or private components stay excluded, and the browser chooser keeps its existing order.
 
 * **Telegram:** HushTelegram settings now opens from a row in Telegram's own Settings. Repeated taps share one screen, and the launcher and Android App-info entries remain available. Partial patch selections show only their installed controls. Changed incoming item registers or callback casts refuse before any hook is edited.
