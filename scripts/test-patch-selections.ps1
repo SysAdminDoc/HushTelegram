@@ -61,6 +61,10 @@ $numeric = $plans | Where-Object Id -CEQ 'api-number-id'
 $numericDocument = @(New-SelectionOptionsDocument -Catalog $catalog -Selection $numeric -BundleName 'fixture.mpp' -BundleHash ('a' * 64) | ConvertFrom-Json)[0]
 Assert-Selection ($numericDocument.patches.'Use registered Telegram API credentials'.options.apiId -is [long] -or
     $numericDocument.patches.'Use registered Telegram API credentials'.options.apiId -is [int]) 'The upstream numeric-ID case stopped reaching the actual CLI as a JSON number.'
+$configured = $plans | Where-Object Id -CEQ 'credentials-configured'
+Assert-Selection ($numeric.ApiId -ne $configured.ApiId -and [int]$numeric.ApiId % 128 -eq [int]$configured.ApiId % 128 -and
+    $numericDocument.patches.'Use registered Telegram API credentials'.options.apiId -eq [int]$numeric.ApiId -and
+    $numeric.Canaries -ccontains $numeric.ApiId) 'The compiled cases lost the colliding-ID pair or its private expectation.'
 
 $invalidId = $plans | Where-Object Id -CEQ 'api-invalid-id'
 $stock = [pscustomobject]@{ package = 'org.telegram.messenger.web'; versionName = '12.10.6' }
@@ -123,7 +127,7 @@ try {
     $nativeOutput = Join-Path $scratch 'native-private.txt'
     $native = Invoke-SelectionTool -Program $java -Arguments (@('-Xmx512m', '-XX:ActiveProcessorCount=2', '-cp',
         ($classes + [IO.Path]::PathSeparator + $desktop), 'SelectionCheckNativeVersionTest') + $fixtures) -PrivateOutput $nativeOutput
-    Assert-Selection ($native -eq 0 -and (Get-Content $nativeOutput -Raw).Contains('NATIVE_VERSION_CHECKS_PASSED checks=62')) `
+    Assert-Selection ($native -eq 0 -and (Get-Content $nativeOutput -Raw).Contains('NATIVE_VERSION_CHECKS_PASSED checks=84')) `
         'The native-version checker lost its exact insertion or refusal controls.'
     $canary = 'private_selection_error_canary_529771'
     Assert-Selection (-not (Test-SelectionPublicText -Text ('before ' + $canary + ' after') -Canaries @($canary))) 'The output guard accepted a credential sentinel.'

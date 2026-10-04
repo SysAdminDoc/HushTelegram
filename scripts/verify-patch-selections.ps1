@@ -87,8 +87,11 @@ function Get-PatchSelectionCases {
     New-SelectionCase 'credentials-unset' @($api, $maps)
     New-SelectionCase 'credentials-null' @($api, $maps) @{ $api = @{ apiId = $null; apiHash = $null }; $maps = @{ apiKey = $null } }
     New-SelectionCase 'credentials-configured' @($api, $maps) $configured -ApiConfigured $true -MapsConfigured $true
-    # The upstream string-option loader accepts a numeric JSON primitive by reading its content.
-    New-SelectionCase 'api-number-id' @($api) @{ $api = @{ apiId = [int]$syntheticApiId; apiHash = $hash } } -ApiConfigured $true
+    # The upstream loader accepts a numeric primitive. This ID collided with the configured ID in the old marker.
+    $numeric = New-SelectionCase 'api-number-id' @($api) @{ $api = @{ apiId = 19077129; apiHash = $hash } } -ApiConfigured $true
+    $numeric.ApiId = '19077129'
+    $numeric.Canaries += $numeric.ApiId
+    $numeric
     New-SelectionCase 'maps-configured-only' @($maps) @{ $maps = $configured[$maps] } -MapsConfigured $true
     New-SelectionCase 'full-configured' $all $configured -ApiConfigured $true -MapsConfigured $true
     New-SelectionCase 'api-incomplete-id' @($api) @{ $api = @{ apiId = $syntheticApiId } } -Failure $true

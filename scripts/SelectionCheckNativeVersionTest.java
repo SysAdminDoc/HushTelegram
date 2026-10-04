@@ -5,6 +5,9 @@ import com.android.tools.smali.dexlib2.Opcodes;
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation;
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction10x;
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction22b;
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21t;
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction22s;
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction23x;
 import com.android.tools.smali.dexlib2.iface.Method;
 import com.android.tools.smali.dexlib2.iface.ClassDef;
 import com.android.tools.smali.dexlib2.iface.Field;
@@ -54,27 +57,52 @@ public final class SelectionCheckNativeVersionTest {
         }
         if (at < 0) throw new AssertionError("NATIVE_INIT_MISSING");
         int version = ((RegisterRangeInstruction) original.getInstructions().get(at)).getStartRegister() + 1;
+        int api = version + 2;
         verify(source, source, false, 19077001, true);
         verify(source, source, true, 19077001, false);
-        for (int[] pair : new int[][]{{1, -2}, {127, -128}, {128, -1}, {19077001, -10}, {Integer.MAX_VALUE, -128}}) {
+        for (int id : new int[]{1, 129, 71129, 71159, 19077001, 19077129, Integer.MAX_VALUE}) {
             var body = new MutableMethodImplementation(source.getImplementation());
-            body.addInstruction(at, new BuilderInstruction22b(Opcode.XOR_INT_LIT8, version, version, pair[1]));
-            verify(source, copy(source, body, source.getAccessFlags()), true, pair[0], true);
-            verify(source, copy(source, body, source.getAccessFlags()), false, pair[0], false);
+            var nativeCall = body.newLabelForIndex(at);
+            body.addInstruction(at, new BuilderInstruction23x(Opcode.XOR_INT, version, version, api));
+            body.addInstruction(at + 1, new BuilderInstruction21t(Opcode.IF_NEZ, version, nativeCall));
+            body.addInstruction(at + 2, new BuilderInstruction22s(Opcode.XOR_INT_LIT16, version, api, 128));
+            body.addInstruction(at + 3, new BuilderInstruction22b(Opcode.XOR_INT_LIT8, version, version, -1));
+            verify(source, copy(source, body, source.getAccessFlags()), true, id, true);
+            verify(source, copy(source, body, source.getAccessFlags()), false, id, false);
         }
-        for (String mutation : new String[]{"tag", "destination", "source", "duplicate", "extra", "position", "flags"}) {
+        for (String mutation : new String[]{"mask", "destination", "source", "api", "branch", "target",
+                "fallback", "invert", "missing", "legacy", "duplicate", "extra", "position", "flags"}) {
             var body = new MutableMethodImplementation(source.getImplementation());
-            body.addInstruction(at, new BuilderInstruction22b(Opcode.XOR_INT_LIT8, version, version, -10));
+            var nativeCall = body.newLabelForIndex(at);
+            body.addInstruction(at, new BuilderInstruction23x(Opcode.XOR_INT, version, version, api));
+            body.addInstruction(at + 1, new BuilderInstruction21t(Opcode.IF_NEZ, version, nativeCall));
+            body.addInstruction(at + 2, new BuilderInstruction22s(Opcode.XOR_INT_LIT16, version, api, 128));
+            body.addInstruction(at + 3, new BuilderInstruction22b(Opcode.XOR_INT_LIT8, version, version, -1));
             int flags = source.getAccessFlags();
             switch (mutation) {
-                case "tag" -> body.replaceInstruction(at,
-                        new BuilderInstruction22b(Opcode.XOR_INT_LIT8, version, version, -11));
+                case "mask" -> body.replaceInstruction(at + 2,
+                        new BuilderInstruction22s(Opcode.XOR_INT_LIT16, version, api, 127));
                 case "destination" -> body.replaceInstruction(at,
-                        new BuilderInstruction22b(Opcode.XOR_INT_LIT8, version + 1, version, -10));
+                        new BuilderInstruction23x(Opcode.XOR_INT, version + 1, version, api));
                 case "source" -> body.replaceInstruction(at,
-                        new BuilderInstruction22b(Opcode.XOR_INT_LIT8, version, version + 1, -10));
+                        new BuilderInstruction23x(Opcode.XOR_INT, version, version + 1, api));
+                case "api" -> body.replaceInstruction(at,
+                        new BuilderInstruction23x(Opcode.XOR_INT, version, version, api + 1));
+                case "branch" -> body.replaceInstruction(at + 1,
+                        new BuilderInstruction21t(Opcode.IF_EQZ, version, nativeCall));
+                case "target" -> body.replaceInstruction(at + 1,
+                        new BuilderInstruction21t(Opcode.IF_NEZ, version, body.newLabelForIndex(at + 3)));
+                case "fallback" -> body.replaceInstruction(at + 2,
+                        new BuilderInstruction22s(Opcode.XOR_INT_LIT16, version, version, 128));
+                case "invert" -> body.replaceInstruction(at + 3,
+                        new BuilderInstruction22b(Opcode.XOR_INT_LIT8, version, version, -2));
+                case "missing" -> body.removeInstruction(at);
+                case "legacy" -> {
+                    for (int i = 0; i < 4; i++) body.removeInstruction(at);
+                    body.addInstruction(at, new BuilderInstruction22b(Opcode.XOR_INT_LIT8, version, version, -10));
+                }
                 case "duplicate" -> body.addInstruction(at,
-                        new BuilderInstruction22b(Opcode.XOR_INT_LIT8, version, version, -10));
+                        new BuilderInstruction23x(Opcode.XOR_INT, version, version, api));
                 case "extra" -> body.addInstruction(0, new BuilderInstruction10x(Opcode.NOP));
                 case "position" -> body.swapInstructions(at, at + 1);
                 case "flags" -> flags ^= AccessFlags.SYNCHRONIZED.getValue();

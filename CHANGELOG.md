@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Changing the registered API ID now refreshes the native connection identity for every valid ID. IDs that differ by 128 no longer share a marker. Updates also stay distinct from the previous marker scheme, without changing saved account keys or the app version. Changed native argument shapes refuse before either credential is edited.
+
 * **Tooling:** A bounded selection matrix checks both declared Telegram builds 41 ways each, from the defaults and the full catalog down to single patches and bad credential options. It checks each build's dependencies, minimum Android version, preserved resources, native libraries and settings switches. Configured credentials must change only their own values and the native connection version marker. Mutation controls reject missing, duplicated or altered markers.
 
 ## 0.0.8 (2026-10-03)

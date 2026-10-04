@@ -4,6 +4,9 @@ import com.android.tools.smali.dexlib2.Opcode;
 import com.android.tools.smali.dexlib2.Opcodes;
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation;
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction22b;
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21t;
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction22s;
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction23x;
 import com.android.tools.smali.dexlib2.iface.ClassDef;
 import com.android.tools.smali.dexlib2.iface.Field;
 import com.android.tools.smali.dexlib2.iface.Method;
@@ -344,8 +347,12 @@ public final class SelectionCheck {
             }
             require(at >= 0 && apiId > 0);
             int version = ((RegisterRangeInstruction) body.get(at)).getStartRegister() + 1;
-            expected.addInstruction(at, new BuilderInstruction22b(Opcode.XOR_INT_LIT8,
-                    version, version, -1 - apiId % 128));
+            int api = version + 2;
+            var nativeCall = expected.newLabelForIndex(at);
+            expected.addInstruction(at, new BuilderInstruction23x(Opcode.XOR_INT, version, version, api));
+            expected.addInstruction(at + 1, new BuilderInstruction21t(Opcode.IF_NEZ, version, nativeCall));
+            expected.addInstruction(at + 2, new BuilderInstruction22s(Opcode.XOR_INT_LIT16, version, api, 128));
+            expected.addInstruction(at + 3, new BuilderInstruction22b(Opcode.XOR_INT_LIT8, version, version, -1));
         }
         require(expected.getRegisterCount() == patched.getImplementation().getRegisterCount()
                 && expected.getInstructions().stream().map(DexDiff::render).toList()
