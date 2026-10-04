@@ -73,7 +73,7 @@ There are 22 patches. Twenty are selected by default. A few of their switches st
 | `Disable draft link previews` | Adds a switch, off by default, that stops Telegram fetching link previews for messages you haven't sent yet, in chats, the share sheet, polls, story links and bot shares. Sent messages still get their preview. |
 | `Gallery camera on tap` | Adds a switch, off by default, that keeps the attachment gallery from starting the camera or asking for camera access when it opens. Tapping the camera tile starts it. |
 | `Hide ads` | Hides the sponsored messages in channels, the sponsored accounts in search and the ads in Telegram's video player. Telegram never asks for them, so none are counted as seen. |
-| `HushTelegram settings` | Adds HushTelegram settings to Telegram. Long-press Telegram's launcher icon, or open Additional settings in the app on Telegram's App info page, to turn features on or off, pause HushTelegram, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
+| `HushTelegram settings` | Adds a HushTelegram row to Telegram's Settings. You can also long-press Telegram's launcher icon, or open Additional settings in the app on Telegram's App info page, to turn features on or off, pause HushTelegram, save your switches to a file or load them, and export diagnostics. The licenses are there too. |
 | `Hide Stories` | Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching the story list. Profile stories and archives remain available. |
 | `Hide recommendations` | Hides similar channels and bots, including cached recommendations. Telegram doesn't ask for new recommendations while the switch is on. |
 | `Hide Premium, gifts and Stars` | Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior. |
@@ -98,7 +98,7 @@ The same search on the same phone, first with Hide ads off, then on. Telegram pi
 
 ## Settings
 
-Long-press the Telegram icon and tap HushTelegram. You can also open Telegram's App info page and tap Additional settings in the app, which Samsung phones call Configure in Telegram.
+Open Telegram's Settings and tap HushTelegram settings. You can also long-press the Telegram icon and tap HushTelegram, or open Telegram's App info page and tap Additional settings in the app, which Samsung phones call Configure in Telegram. The launcher and App-info entries remain available if the native settings surface is absent.
 
 <p><img src="assets/settings-overview.png" width="320" alt="HushTelegram settings with search, Pause, and rows for Chats, Privacy and More settings that say what each page holds"><img src="assets/settings-chats.png" width="320" alt="The Chats page with Hide ads and Hide Stories turned on"></p>
 

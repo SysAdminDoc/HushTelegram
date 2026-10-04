@@ -23,6 +23,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -44,6 +45,7 @@ public class CompiledSelectionUiTest {
         PatchFamily.inBuildForTests = null;
         PatchFamily.capabilitiesForTests = null;
         PauseForTests.resume();
+        SettingsEntry.onClosedByUser();
     }
 
     private static JSONArray compiledCases() throws Exception {
@@ -111,8 +113,16 @@ public class CompiledSelectionUiTest {
             Set<PatchFamily> families = useCompiledFlags(item.getJSONObject("flags"));
             PauseForTests.resume();
             try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-                HushTelegramPreferenceFragment page = new HushTelegramPreferenceFragment();
-                controller.get().getFragmentManager().beginTransaction().add(android.R.id.content, page).commitNow();
+                SettingsEntry.openFromNative(controller.get());
+                SettingsEntry.openFromNative(controller.get());
+                ShadowLooper.idleMainLooper();
+                List<android.app.Fragment> dialogs = controller.get().getFragmentManager().getFragments();
+                assertEquals(1, dialogs.stream().filter(fragment -> fragment instanceof SettingsDialog).count());
+                SettingsDialog dialog = (SettingsDialog) dialogs.stream()
+                        .filter(fragment -> fragment instanceof SettingsDialog).findFirst().get();
+                HushTelegramPreferenceFragment page = (HushTelegramPreferenceFragment) dialog.getChildFragmentManager()
+                        .findFragmentById(SettingsDialog.CONTAINER_ID);
+                assertNotNull(page);
                 for (PatchFamily family : PatchFamily.values()) {
                     for (BooleanSetting setting : family.switches) {
                         Preference row = page.findPreference(setting.key);
@@ -136,6 +146,7 @@ public class CompiledSelectionUiTest {
                 PauseForTests.resume();
                 for (PatchFamily family : families) for (BooleanSetting setting : family.switches) assertTrue(setting.get());
                 screens++;
+                SettingsEntry.onClosedByUser();
             }
         }
         String evidencePath = System.getenv("HUSHTELEGRAM_SELECTION_FACTS");
