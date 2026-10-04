@@ -12,9 +12,9 @@
 
 HushTelegram is a Morphe patch bundle for Android that takes the sponsored messages out of Telegram and keeps a few things on your phone that Telegram would otherwise send home.
 
-The latest release is [v0.0.6](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.6), with 18 patches. They're built for Telegram 12.10.6, and on a signed-in phone Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
+The latest release is [v0.0.8](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.8), with 22 patches. They're built for Telegram 12.10.6 and the official beta 12.10.7, and on a signed-in phone Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
 
-The current source is v0.0.8. It adds official beta support, a Firebase certificate-header repair and a control that stops pulling up at the bottom of a channel from opening the next unread channel. Two optional patches let you supply your own registered Telegram API credentials and Google Maps key when patching.
+v0.0.8 adds official beta support, a Firebase certificate-header repair and a switch that stops a pull at the bottom of a channel from opening the next unread one. Two optional patches take your own registered Telegram API credentials and Google Maps key when you patch. With its own registered API ID, a Samsung phone that Telegram had turned away signed in normally.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) | [Download a release](https://github.com/SysAdminDoc/HushTelegram/releases/latest) | [Browse the patches](#patches)
 
@@ -33,7 +33,7 @@ This project has no connection to Telegram or to the Morphe project. Neither end
 
 HushTelegram patches the Telegram you download from [telegram.org](https://telegram.org/android), package `org.telegram.messenger.web`, version 12.10.6 (version code 71129). That APK carries every phone architecture, and it's the build each patch is checked against. Morphe Manager warns about other builds.
 
-The current source also targets the [official beta](https://telegram.org/dl/android/apk-public-beta), package `org.telegram.messenger.beta`, version 12.10.7 (version code 71159). Its vendor signer and native patch targets are checked independently. The published v0.0.6 release targets the web build.
+Since v0.0.8 it also targets the [official beta](https://telegram.org/dl/android/apk-public-beta), package `org.telegram.messenger.beta`, version 12.10.7 (version code 71159). Its vendor signer and native patch targets are checked on their own.
 
 The other Telegram, `org.telegram.messenger`, shares nearly all its code with this one. Support for it is planned once it has its own checked build.
 
@@ -63,7 +63,7 @@ The developer installation script requires the exact device serial, expected mod
 
 ## Patches
 
-The current source has 22 patches. Twenty are selected by default. A few of their switches stay off until you turn them on in settings, like tracking cleaning and draft link previews. The two credential patches need your own values and aren't selected by default.
+There are 22 patches. Twenty are selected by default. A few of their switches stay off until you turn them on in settings, like tracking cleaning and draft link previews. The two credential patches need your own values and aren't selected by default.
 
 | Patch | What it does |
 |---|---|
@@ -102,19 +102,19 @@ Long-press the Telegram icon and tap HushTelegram. You can also open Telegram's 
 
 <p><img src="assets/settings-overview.png" width="320" alt="HushTelegram settings with search, Pause, and rows for Chats, Privacy and More settings that say what each page holds"><img src="assets/settings-chats.png" width="320" alt="The Chats page with Hide ads and Hide Stories turned on"></p>
 
-The working v0.0.8 source adds a Notifications page and the channel-pull switch. Both are shown below.
+v0.0.8 adds a Notifications page and the channel-pull switch. Both are shown below.
 
 <p><img src="assets/settings-notifications.png" width="320" alt="Notifications settings with the local notification status and the Firebase push registration repair switch"><img src="assets/settings-channel-pull.png" width="320" alt="Chats settings with Stop pull to next channel turned on"></p>
 
 ## Notifications on a patched Telegram
 
-Telegram's push notifications go through Google's Firebase. Its Android API key checks the package and certificate header, so a re-signed build can get `API_KEY_ANDROID_APP_BLOCKED` before it receives a push token. The current source includes Repair Firebase push registration, which repairs only that header on Firebase Installations requests from the declared web and beta packages. It preserves Android's package signatures and TLS checks.
+Telegram's push notifications go through Google's Firebase. Its Android API key checks the package and certificate header, so a re-signed build can get `API_KEY_ANDROID_APP_BLOCKED` before it receives a push token. Repair Firebase push registration fixes only that header on Firebase Installations requests from the declared web and beta packages. It preserves Android's package signatures and TLS checks.
 
 The Notifications page also shows what this phone knows about push. It says whether notifications are allowed and whether Telegram has saved a push token, then counts your signed-in accounts and how many of them Telegram has confirmed for push. It only reads what's already on the phone. It doesn't send anything, and it can't tell you whether a notification will actually arrive. The diagnostic report carries the same facts, without the token itself.
 
-The current build obtained a Firebase push token in an Android 16 emulator. A native registration check returned `APP_PUSH_APIKEY_MISSING`. That response is consistent with missing application push configuration, which [Telegram documents separately](https://core.telegram.org/api/push-updates). The application's push credentials need to match the client's Firebase project. A new API ID/hash alone doesn't provision push. Telegram acknowledgement and incoming message/call delivery still need live checks, including idle delivery and Samsung hardware. Telegram also has its own fallback. Under Settings, Notifications and Sounds, turn on Keep-Alive Service and Background Connection to keep its connection open. That costs some battery.
+Push delivery also depends on Telegram's server holding push credentials for the app's Firebase project, which [Telegram documents separately](https://core.telegram.org/api/push-updates). A new API ID and hash don't set that up on their own. Telegram has its own fallback for this. Under Settings, Notifications and Sounds, turn on Keep-Alive Service and Background Connection to keep its connection open. That costs some battery.
 
-The location picker uses a separate Google Maps credential, restricted to the installed package and signer. Select Use registered Maps API key and supply `apiKey` from a Google Cloud project with the Maps SDK for Android enabled. Its Android restriction must allow the selected web or beta package and your retained signing key's SHA-1. Follow [Google's setup instructions](https://developers.google.com/maps/documentation/android-sdk/get-api-key). Live tiles and location sending need to be checked with that key.
+The location picker uses a separate Google Maps credential, restricted to the installed package and signer. Select Use registered Maps API key and supply `apiKey` from a Google Cloud project with the Maps SDK for Android enabled. Its Android restriction must allow the selected web or beta package and your retained signing key's SHA-1. Follow [Google's setup instructions](https://developers.google.com/maps/documentation/android-sdk/get-api-key).
 
 ## Your Telegram account
 

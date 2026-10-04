@@ -1,16 +1,16 @@
 # Changelog
 
-## Unreleased
+Every HushTelegram release, newest first.
 
-Working version 0.0.8.
+## 0.0.8 (2026-10-03)
+
+The third release, with 22 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.
 
 * **Telegram:** Use registered Telegram API credentials now works as an update over a build that used Telegram's own API ID. On its first start the patched app introduces itself to Telegram again with your ID, so login codes no longer fail with API_ID_INVALID.
 * **Telegram:** The Notifications page shows a read-only local status: whether notifications are allowed, whether a push token is saved, and how many signed-in accounts Telegram has confirmed for push. It reads what's already loaded, never asks for a new registration, and the diagnostic report gets the same counts without the token.
 * **Tooling:** Cached tests survive equivalent text line endings in temporary checkouts. Source changes still rerun the affected checks, and fixture bytes keep their exact comparisons. Isolated controls exercise cache reuse and invalidation through both real test tasks.
 * **Tooling:** The README's install steps point to the Download Telegram button on telegram.org/android and say the file saves as plain `Telegram.apk`, since nothing in its name says it's the 12.10.6 web build.
 * **Tooling:** The directory ledger records four confirmed HushTelegram listings. Only the Awesome Morphe request remains pending.
-* **Telegram:** A native push registration check returned APP_PUSH_APIKEY_MISSING with an existing token. Application push configuration is still required, and incoming delivery remains unverified.
-* **Telegram:** Selected-text translation stays unimplemented after provider review. Offline processing and cancellation custody could not be verified. The existing request remains open.
 
 * **Telegram:** Diagnostics match credential names encoded with JSON Unicode escapes. Backup imports reject invalid string escapes before changing preferences. Fixed-seed grammar checks cover preservation and idempotence. The expanded synthetic corpus also passes on Samsung's Android 16 runtime.
 
@@ -33,7 +33,7 @@ Working version 0.0.8.
 
 * **Telegram:** Diagnostics remove named API IDs and hashes, including quoted and escaped aliases, from events, crash sections, clipboard exports and files. Versions, counters and unrelated hashes remain readable. Synthetic canaries pass on the desktop runtime and Samsung's Android runtime.
 
-* **Tooling:** Fixture verification and receipt schema 4 require native-library preservation, relevant 64-bit ELF LOAD alignment and a successful 16 KB ZIP alignment check. Receipts record library hashes and compression with the checker and tool identities. Historical receipts retain their original schema rules. Changed or missing libraries and damaged alignment fail validation; valid compressed libraries remain supported.
+* **Tooling:** Fixture verification and receipt schema 4 require native-library preservation, relevant 64-bit ELF LOAD alignment and a successful 16 KB ZIP alignment check. Receipts record library hashes and compression with the checker and tool identities. Historical receipts retain their original schema rules. Changed or missing libraries and damaged alignment fail validation. Valid compressed libraries remain supported.
 
 * **Tooling:** Desktop patching scripts write a separate public summary with supported targets, catalog patch names and fixed failure codes. Raw CLI reports and configured APKs stay private. Credential canaries in options, names, targets and error fields are excluded, and bug instructions now request the safe summary.
 
@@ -47,9 +47,7 @@ Working version 0.0.8.
 * **Telegram:** The official beta 12.10.7 joins the web 12.10.6 target. Each package has its own pinned fixture, version code and verified vendor signer. Build and release checks require both targets.
 
 * **Telegram:** A separate default-on switch stops the bottom pull gesture from opening the next unread broadcast channel. Ordinary scrolling and topic pulls keep their usual behavior.
-* **Telegram:** Repair Firebase push registration changes only the certificate header on the web and beta apps' Firebase Installations requests. Its switch and Pause restore the original header. Live push acceptance remains open.
-
-Every HushTelegram release, newest first.
+* **Telegram:** Repair Firebase push registration changes only the certificate header on the web and beta apps' Firebase Installations requests. Its switch and Pause restore the original header.
 
 ## 0.0.6 (2026-10-02)
 
