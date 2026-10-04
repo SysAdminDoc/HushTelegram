@@ -105,7 +105,7 @@ public class HushTelegramPreferenceFragmentTest {
 
     /** The sections every build has, in the order they're drawn. */
     private static final List<String> EVERY_BUILD = Arrays.asList(
-            "Links", "Updates", "Pause, backup and diagnostics", "About");
+            "Links", "Updates", "Pause", "Settings backup", "Diagnostics", "About");
 
     @After
     public void restore() {
@@ -155,6 +155,7 @@ public class HushTelegramPreferenceFragmentTest {
             }
             assertEquals("a switch Pause turns off is missing from the screen", switchKeys, shown);
             assertNotNull("nothing on the screen says what Pause can't reach", stays);
+            assertEquals("Pause", stays.getParent().getTitle());
             assertEquals(PatchFamily.staysWhilePausedSummary(EnumSet.allOf(PatchFamily.class)),
                     String.valueOf(stays.getSummary()));
 

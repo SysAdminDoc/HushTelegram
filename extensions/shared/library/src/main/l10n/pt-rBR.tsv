@@ -112,7 +112,9 @@ Copy a short report to the clipboard.	Copie um relatório curto para a área de 
 Save the full report in Download/Morphe.	Salve o relatório completo em Download/Morphe.
 Settings imported.	Configurações importadas.
 No app on this phone can open the link. The address is %1$s.	Nenhum aplicativo neste dispositivo consegue abrir o link. O endereço é %1$s.
-Pause, backup and diagnostics	Pausa, backup e diagnóstico
+# context: Separate pages under More settings. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
+Settings backup	Backup de configurações
+Diagnostics	Diagnóstico
 Updates	Atualizações
 Jump to a section	Ir para uma seção
 Go straight to one group of settings. Back returns to where you were.	Vá diretamente para um grupo de configurações. Voltar leva você de volta ao ponto em que estava.

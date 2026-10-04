@@ -380,24 +380,27 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         updates.addPreference(mark(checkNowRow(context), SettingsIcons.UPDATES));
         ReleaseCheck.watch(this);
 
-        // Named for its rows: the screen's own title already says HushTelegram.
-        PreferenceCategory hushtelegram = category(screen, L10n.t("Pause, backup and diagnostics"));
-        hushtelegram.addPreference(mark(toggle(context, BaseSettings.PAUSED, L10n.t("Pause HushTelegram"),
+        PreferenceCategory pause = category(screen, L10n.t("Pause"));
+        pause.addPreference(mark(toggle(context, BaseSettings.PAUSED, L10n.t("Pause HushTelegram"),
                 L10n.t("From the next start, every switch but Debug logging acts as if it were off. "
                         + "Changes made when you patched stay in, and your choices stay saved.")), SettingsIcons.PATCHED));
         String stays = PatchFamily.staysWhilePausedSummary(build);
+        if (stays != null) pause.addPreference(mark(info(context, L10n.t(STAYS_WHILE_PAUSED), stays), SettingsIcons.ABOUT));
+
+        PreferenceCategory backup = category(screen, L10n.t("Settings backup"));
         // Morphe Manager can export the patch choices and the signing key, not these switches.
-        hushtelegram.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.EXPORT,
+        backup.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.EXPORT,
                 L10n.t("Export settings"),
                 L10n.t("Save your switches to a file. They cover all the accounts in this Telegram app. Pause and "
                         + "Debug logging aren't included, and neither is the release check.")), SettingsIcons.EXPORT));
         // The preview gives a count of the switches, not each switch by name.
-        hushtelegram.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.IMPORT,
+        backup.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.IMPORT,
                 L10n.t("Import settings"),
                 L10n.t("Choose a settings file. Before anything is imported, you'll see how many switches it "
                         + "changes. What you import applies to all the accounts in this Telegram app.")), SettingsIcons.DOWNLOADS));
+        PreferenceCategory diagnostics = category(screen, L10n.t("Diagnostics"));
         // Debug logging also fills the exported report and turns on error toasts (Logger).
-        hushtelegram.addPreference(mark(toggle(context, BaseSettings.DEBUG, L10n.t("Debug logging"),
+        diagnostics.addPreference(mark(toggle(context, BaseSettings.DEBUG, L10n.t("Debug logging"),
                 L10n.t("Record patch activity and show errors for a bug report. Leave off during normal use.")), SettingsIcons.BUG));
         // Both rows come without a title of their own: Hushfeed's gave them one from string
         // resources that Telegram's APK doesn't have, and untitled they showed as blank rows.
@@ -405,14 +408,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         export.setTitle(L10n.t("Export diagnostic report"));
         export.setSummary(L10n.t("Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies "
                 + "and sign-in tokens are left out. Check it for other private text before you share it."));
-        hushtelegram.addPreference(mark(export, SettingsIcons.LICENSE));
+        diagnostics.addPreference(mark(export, SettingsIcons.LICENSE));
         ClearLogBufferPreference clear = new ClearRow(context);
         clear.setTitle(L10n.t("Clear diagnostic data"));
         clear.setClearAndUndoSummaries(L10n.t("Empties the log and the hook findings a report would include."),
                 L10n.t("Diagnostic data cleared. Tap again to put it back."));
-        hushtelegram.addPreference(mark(clear, SettingsIcons.DELETE));
-        // Keep the detailed patch-time exception list after the controls people come here for.
-        if (stays != null) hushtelegram.addPreference(mark(info(context, L10n.t(STAYS_WHILE_PAUSED), stays), SettingsIcons.ABOUT));
+        diagnostics.addPreference(mark(clear, SettingsIcons.DELETE));
 
         PreferenceCategory about = category(screen, L10n.t("About"));
         about.addPreference(mark(info(context, L10n.t("Version"), L10n.f("HushTelegram %1$s on Telegram %2$s",

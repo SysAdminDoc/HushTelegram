@@ -113,7 +113,9 @@ Copy a short report to the clipboard.	Kısa raporu panoya kopyalar.
 Save the full report in Download/Morphe.	Tam raporu Download/Morphe konumuna kaydeder.
 Settings imported.	Ayarlar içe aktarıldı.
 No app on this phone can open the link. The address is %1$s.	Bu telefondaki hiçbir uygulama bağlantıyı açamıyor. Adres: %1$s.
-Pause, backup and diagnostics	Duraklatma, yedekleme ve tanılama
+# context: Separate pages under More settings. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
+Settings backup	Ayar yedeği
+Diagnostics	Tanılama
 Updates	Güncellemeler
 Jump to a section	Bir bölüme git
 Go straight to one group of settings. Back returns to where you were.	Doğrudan bir ayar grubuna git. Geri, bulunduğun yere döndürür.

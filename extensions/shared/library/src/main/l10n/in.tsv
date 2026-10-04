@@ -113,7 +113,9 @@ Copy a short report to the clipboard.	Salin laporan singkat ke papan klip.
 Save the full report in Download/Morphe.	Simpan laporan lengkap di Download/Morphe.
 Settings imported.	Pengaturan diimpor.
 No app on this phone can open the link. The address is %1$s.	Tidak ada aplikasi di ponsel ini yang dapat membuka tautan ini. Alamatnya %1$s.
-Pause, backup and diagnostics	Jeda, cadangan, dan diagnostik
+# context: Separate pages under More settings. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
+Settings backup	Cadangan setelan
+Diagnostics	Diagnostik
 Updates	Pembaruan
 Jump to a section	Lompat ke bagian
 Go straight to one group of settings. Back returns to where you were.	Langsung ke satu kelompok setelan. Kembali membawamu ke tempat semula.

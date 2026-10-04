@@ -1230,7 +1230,16 @@ public class SettingsBackupTest {
 
     /** Taps a row and hands back the picker it opened. */
     private static ShadowActivity.IntentForResult tap(Activity activity, HushTelegramPreferenceFragment page, String row) {
-        click(page.findPreference(row));
+        Preference control = page.findPreference(row);
+        assertNotNull("no such row", control);
+        assertEquals(L10n.t("Settings backup"), control.getParent().getTitle());
+        assertTrue("the backup page wasn't reachable", page.navigation.open(control));
+        android.widget.ListView list = page.getView().findViewById(android.R.id.list);
+        int position = -1;
+        for (int i = 0; i < list.getCount(); i++) if (list.getItemAtPosition(i) == control) position = i;
+        assertTrue("the backup control wasn't visible", position >= 0);
+        android.view.View view = list.getAdapter().getView(position, null, list);
+        assertTrue(list.performItemClick(view, position, list.getAdapter().getItemId(position)));
         ShadowActivity.IntentForResult started = shadowOf(activity).getNextStartedActivityForResult();
         assertNotNull(row + " opened no picker", started);
         return started;
