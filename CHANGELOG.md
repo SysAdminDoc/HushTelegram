@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Three independent switches add plain-text paste, copyable local user and chat IDs, and a way to stop double-tap reactions. They start off. Pause restores the stock behavior, and the existing clipboard and explicit reaction actions stay available.
+
 * **Telegram:** Pause, Settings backup and Diagnostics now have separate pages with shorter headings. Search still reaches every control, and all five translations include the new page names.
 
 * **Telegram:** New Year look all year now puts Telegram's Santa hat over the chat list logo. It follows the logo's bounds and color so it stays visible in light and dark themes. Other titles keep their original drawing path. Changed title geometry getters refuse before patching. The switch remains off by default, and Pause restores Telegram's seasonal behavior.

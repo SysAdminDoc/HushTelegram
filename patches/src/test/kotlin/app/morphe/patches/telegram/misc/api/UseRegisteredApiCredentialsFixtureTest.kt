@@ -42,6 +42,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File
+import java.lang.ref.SoftReference
 
 /** Registered credentials change two initialization literals and tag the native init version. Authentication stays intact. */
 class UseRegisteredApiCredentialsFixtureTest {
@@ -411,12 +412,12 @@ class UseRegisteredApiCredentialsFixtureTest {
                     })
             })
     }
-    private fun hosts(build: File) = HOSTS.getOrPut(build.absolutePath) {
+    private fun hosts(build: File) = HOSTS[build.absolutePath]?.get() ?: run {
         val selected = FixtureDex.classesWhere(build,
             { dex -> dex.fieldSection.any { it.isCredential() } },
             { method -> method.instructions().any { it.field()?.isCredential() == true } }).associateBy { it.type }.toMutableMap()
         selected.putAll(FixtureDex.classes(build, setOf(BUILD_VARS, CONNECTIONS, "Lorg/telegram/messenger/PasskeysController;")))
-        selected.values.toList()
+        selected.values.toList().also { HOSTS[build.absolutePath] = SoftReference(it) }
     }
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
     private fun Instruction.field() = (this as? ReferenceInstruction)?.reference as? FieldReference
@@ -431,6 +432,6 @@ class UseRegisteredApiCredentialsFixtureTest {
     private companion object {
         const val ID = "12345678"
         const val HASH = "0123456789abcdef0123456789abcdef"
-        val HOSTS = mutableMapOf<String, List<ClassDef>>()
+        val HOSTS = mutableMapOf<String, SoftReference<List<ClassDef>>>()
     }
 }

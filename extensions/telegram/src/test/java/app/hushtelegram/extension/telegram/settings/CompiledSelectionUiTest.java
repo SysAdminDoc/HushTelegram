@@ -63,7 +63,7 @@ public class CompiledSelectionUiTest {
                     .put("passed", true).put("refused", false).put("settings", true).put("flags", flags));
         }
         JSONArray cases = new JSONArray(new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8));
-        assertEquals("both complete bounded fixture matrices are required", 82, cases.length());
+        assertEquals("both complete bounded fixture matrices are required", 88, cases.length());
         Set<String> identities = new HashSet<>();
         int web = 0, beta = 0;
         for (int i = 0; i < cases.length(); i++) {
@@ -75,8 +75,8 @@ public class CompiledSelectionUiTest {
             else if (target.equals("org.telegram.messenger.beta")) beta++;
             else throw new AssertionError("undeclared compiled target");
         }
-        assertEquals(41, web);
-        assertEquals(41, beta);
+        assertEquals(44, web);
+        assertEquals(44, beta);
         return cases;
     }
 
@@ -150,7 +150,7 @@ public class CompiledSelectionUiTest {
             }
         }
         String evidencePath = System.getenv("HUSHTELEGRAM_SELECTION_FACTS");
-        assertEquals(evidencePath == null || evidencePath.isEmpty() ? 1 : 50, screens);
+        assertEquals(evidencePath == null || evidencePath.isEmpty() ? 1 : 56, screens);
     }
 
     @Test

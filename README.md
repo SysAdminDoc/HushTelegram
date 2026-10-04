@@ -63,7 +63,7 @@ The developer installation script requires the exact device serial, expected mod
 
 ## Patches
 
-There are 22 patches. Twenty are selected by default. A few of their switches stay off until you turn them on in settings, like tracking cleaning and draft link previews. The two credential patches need your own values and aren't selected by default.
+The source catalog has 25 patches, with 23 selected by default. The three new local controls below are unreleased. A few of their switches stay off until you turn them on in settings, like tracking cleaning and draft link previews. The two credential patches need your own values and aren't selected by default.
 
 | Patch | What it does |
 |---|---|
@@ -82,6 +82,9 @@ There are 22 patches. Twenty are selected by default. A few of their switches st
 | `Hide popular apps` | Hides the Popular apps list in search's Apps tab and stops Telegram from asking its server for it. Apps you've opened and other search results stay. |
 | `Disable chat swipe actions` | Adds a switch, off by default, that stops a sideways swipe on a chat in the chat list from archiving, muting, pinning, deleting or marking it read. A swipe set to change folders still does. Long-press keeps every action. |
 | `Disable pull to next channel` | Adds a switch, on by default, that stops pulling past the bottom of a channel from opening the next channel. Scrolling, opening channels directly and pulling between forum topics still work. |
+| `Use normal paste` | Adds a switch, off by default, that pastes text with Android's plain-text action. Whitespace and URLs stay intact without Telegram's HTML, table or monospace conversion. Other clipboard actions stay available. |
+| `Show user and chat IDs` | Adds a switch, off by default, that shows a copyable local user or chat ID in the inspected profile's menu. It doesn't expose access hashes or ask Telegram's server for anything. |
+| `Disable double-tap reactions` | Adds a switch, off by default, that stops reactions from a double tap in chats and the reaction-settings preview. Scrolling, taps, selection and explicit reaction menus keep their usual behavior. |
 | `Repair Firebase push registration` | Restores Telegram's official certificate header in Firebase Installations requests on re-signed builds. Other signature checks keep their usual behavior. |
 | `Use registered Telegram API credentials` | Uses the API ID and hash registered for your application at my.telegram.org. Supply both patch options. Leaving both unset keeps the original credentials. |
 | `Use registered Maps API key` | Uses your Google Maps Android SDK key, authorized for Telegram's package and the installed signer. Leaving the option unset keeps the original key. |

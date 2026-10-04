@@ -249,3 +249,20 @@ Allowed	Permitido
 Blocked	Bloqueado
 Yes	Sim
 No	Não
+Use normal paste	Usar colagem normal
+Show user and chat IDs	Mostrar IDs de usuário e chat
+Disable double-tap reactions	Desativar reações por toque duplo
+Pastes text without Telegram's HTML, table or monospace conversion. Whitespace and URLs stay intact. Other clipboard actions stay available. Off by default in settings.	Cola texto sem a conversão de HTML, tabelas ou monoespaçado do Telegram. Espaços e URLs ficam intactos. As outras ações da área de transferência continuam disponíveis. Desativado por padrão nas configurações.
+Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.	Mostra um ID local de usuário ou chat que pode ser copiado no menu do perfil aberto. Os hashes de acesso ficam ocultos. Não adiciona solicitações ao servidor. Desativado por padrão nas configurações.
+Double taps don't add reactions in chats or the reaction-settings preview. Scrolling, taps, selection and explicit reaction menus stay as they are. Off by default in settings.	Toques duplos não adicionam reações nos chats ou na prévia de reações. Rolagem, toques, seleção e menus de reação continuam iguais. Desativado por padrão nas configurações.
+compose text paste	colagem de texto ao escrever
+caption text paste	colagem de texto em legendas
+profile local IDs	IDs locais do perfil
+chat double-tap reactions	reações por toque duplo nos chats
+preview double-tap reactions	reações por toque duplo na prévia
+User ID %1$s	ID de usuário %1$s
+Chat ID %1$s	ID de chat %1$s
+Copy user ID %1$s	Copiar ID de usuário %1$s
+Copy chat ID %1$s	Copiar ID de chat %1$s
+ID	ID
+ID copied	ID copiado

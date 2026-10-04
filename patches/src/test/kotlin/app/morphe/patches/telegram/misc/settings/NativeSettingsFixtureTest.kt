@@ -41,6 +41,7 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.junit.Assert.*
 import org.junit.Test
 import java.io.File
+import java.lang.ref.SoftReference
 import java.security.MessageDigest
 
 class NativeSettingsFixtureTest {
@@ -403,8 +404,8 @@ class NativeSettingsFixtureTest {
 
 /** Loads only the native owner and the factory/callback types its actual list constructor binds. */
 internal object NativeSettingsFixtures {
-    private val cached = mutableMapOf<File, List<ClassDef>>()
-    fun hosts(build: File): List<ClassDef> = cached.getOrPut(build) {
+    private val cached = mutableMapOf<File, SoftReference<List<ClassDef>>>()
+    fun hosts(build: File): List<ClassDef> = cached[build]?.get() ?: run {
         val owners = FixtureDex.classesWhere(build, { true }) { method ->
             method.parameterTypes.map { it.toString() } == listOf(method.definingClass, "Ljava/util/ArrayList;") &&
                 method.implementation?.instructions?.any { instruction ->
@@ -443,7 +444,7 @@ internal object NativeSettingsFixtures {
                 call.returnType in listOf("Landroid/widget/TextView;", "Landroid/widget/LinearLayout;")
             }?.definingClass
         }
-        owners + listOf(factoryClass, cell) + FixtureDex.classes(build, (callbacks + helperTypes +
-            listOf(owner.superclass!!, factory.returnType)).toSet()).values
+        (owners + listOf(factoryClass, cell) + FixtureDex.classes(build, (callbacks + helperTypes +
+            listOf(owner.superclass!!, factory.returnType)).toSet()).values).also { cached[build] = SoftReference(it) }
     }
 }

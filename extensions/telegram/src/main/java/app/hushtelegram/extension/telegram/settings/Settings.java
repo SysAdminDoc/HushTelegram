@@ -70,6 +70,15 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting DISABLE_CHANNEL_PULL =
             new BooleanSetting("hushtelegram_disable_channel_pull", TRUE);
 
+    public static final BooleanSetting NORMAL_PASTE =
+            new BooleanSetting("hushtelegram_normal_paste", FALSE);
+
+    public static final BooleanSetting SHOW_LOCAL_IDS =
+            new BooleanSetting("hushtelegram_show_local_ids", FALSE);
+
+    public static final BooleanSetting DISABLE_DOUBLE_TAP_REACTIONS =
+            new BooleanSetting("hushtelegram_disable_double_tap_reactions", FALSE);
+
     /**
      * The Contacts tab's automatic prompt and its "!" badge once a contacts prompt was declined;
      * the first request, the tab's own buttons and contact sync stay stock.

@@ -185,6 +185,7 @@ public class SettingsBackupTest {
                         Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_COMMERCE,
                         Settings.HIDE_PROMOTIONAL_BANNERS,
                         Settings.HIDE_SPONSORED_PROXY, Settings.HIDE_POPULAR_APPS, Settings.DISABLE_CHAT_SWIPE, Settings.DISABLE_CHANNEL_PULL,
+                        Settings.NORMAL_PASTE, Settings.SHOW_LOCAL_IDS, Settings.DISABLE_DOUBLE_TAP_REACTIONS,
                         Settings.QUIET_CONTACTS_NAG, Settings.HOLIDAY_LOOK,
                         Settings.DISABLE_ANALYTICS, Settings.DISABLE_CALL_DEBUG, Settings.DISABLE_DRAFT_PREVIEWS,
                         Settings.GALLERY_CAMERA_ON_TAP,
