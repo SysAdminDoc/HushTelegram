@@ -12,11 +12,10 @@
 
 HushTelegram is a Morphe patch bundle for Android that takes the sponsored messages out of Telegram and keeps a few things on your phone that Telegram would otherwise send home.
 
-The latest release is [v0.0.8](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.8), with 22 patches. They're built for Telegram 12.10.6 and the official beta 12.10.7, and on a signed-in phone Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
+The latest release is [v0.0.9](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.9), with 25 patches. They're built for Telegram 12.10.6 and the official beta 12.10.7, and on a signed-in phone Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
 
-v0.0.8 adds official beta support, a Firebase certificate-header repair and a switch that stops a pull at the bottom of a channel from opening the next unread one. Two optional patches take your own registered Telegram API credentials and Google Maps key when you patch. With its own registered API ID, a Samsung phone that Telegram had turned away signed in normally.
+v0.0.9 fixes push registration on slower phones and follows telegram.org's rebuilt beta, build 71179. HushTelegram settings now open from a row in Telegram's own Settings. Plain-text paste and copyable user and chat IDs are new switches, off until you turn them on, and so is one that stops double-tap reactions. Two optional patches take your own registered Telegram API credentials and Google Maps key when you patch. With its own registered API ID, a Samsung phone that Telegram had turned away signed in normally.
 
-The current source is v0.0.9. It fixes push registration on slower phones and follows telegram.org's rebuilt beta, build 71179.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) | [Download a release](https://github.com/SysAdminDoc/HushTelegram/releases/latest) | [Browse the patches](#patches)
 
@@ -103,15 +102,15 @@ The same search on the same phone, first with Hide ads off, then on. Telegram pi
 
 ## Settings
 
-On v0.0.8, the current release, long-press the Telegram icon on your home screen or app drawer and tap HushTelegram. You can also open Telegram's App info page and tap Additional settings in the app, which Samsung phones call Configure in Telegram. There's no HushTelegram row inside Telegram's own Settings in v0.0.8.
+Open Telegram's Settings and tap HushTelegram settings. You can also long-press the Telegram icon on your home screen or app drawer and tap HushTelegram, or open Telegram's App info page and tap Additional settings in the app, which Samsung phones call Configure in Telegram. Those two stay available too, so there's a way in even when the Settings row isn't there.
 
-Builds from the current source add that row, so you can open Telegram's Settings and tap HushTelegram settings. The launcher and App-info entries stay available there too, including when the native settings surface is absent.
+On v0.0.8 there's no row in Telegram's Settings, so use the long-press or App info.
 
 More settings has separate pages for Pause, Settings backup and Diagnostics. Search finds each control by its name or page. Your saved switches and backup files work as before.
 
 <p><img src="assets/settings-overview.png" width="320" alt="HushTelegram settings with search, Pause, and rows for Chats, Privacy and More settings that say what each page holds"><img src="assets/settings-chats.png" width="320" alt="The Chats page with Hide ads and Hide Stories turned on"></p>
 
-v0.0.8 adds a Notifications page and the channel-pull switch. Both are shown below.
+v0.0.8 added a Notifications page and the channel-pull switch. Both are shown below.
 
 <p><img src="assets/settings-notifications.png" width="320" alt="Notifications settings with the local notification status and the Firebase push registration repair switch"><img src="assets/settings-channel-pull.png" width="320" alt="Chats settings with Stop pull to next channel turned on"></p>
 
