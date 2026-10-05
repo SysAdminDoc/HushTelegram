@@ -1,7 +1,7 @@
 ![HushTelegram. Keep the chat. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.0.8-2AABEE" alt="Version 0.0.8">
+  <img src="https://img.shields.io/badge/version-0.0.9-2AABEE" alt="Version 0.0.9">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Telegram-12.10.6-2AABEE" alt="Telegram 12.10.6">
@@ -15,6 +15,8 @@ HushTelegram is a Morphe patch bundle for Android that takes the sponsored messa
 The latest release is [v0.0.8](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.8), with 22 patches. They're built for Telegram 12.10.6 and the official beta 12.10.7, and on a signed-in phone Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
 
 v0.0.8 adds official beta support, a Firebase certificate-header repair and a switch that stops a pull at the bottom of a channel from opening the next unread one. Two optional patches take your own registered Telegram API credentials and Google Maps key when you patch. With its own registered API ID, a Samsung phone that Telegram had turned away signed in normally.
+
+The current source is v0.0.9. It fixes push registration on slower phones and follows telegram.org's rebuilt beta, build 71179.
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) | [Download a release](https://github.com/SysAdminDoc/HushTelegram/releases/latest) | [Browse the patches](#patches)
 

@@ -4,13 +4,15 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+Working version 0.0.9.
+
 * **Tooling:** Builds use Morphe patcher 1.15.1, which brings faster fingerprint matching and signing, and stricter DEX path checks. Morphe Manager 1.34.0 is the first stable Manager that carries it, so the README now asks for 1.34.0 or newer. Fixture checks use the desktop CLI 1.18.1.
 
 * **Telegram:** Repair Firebase push registration now works on slower phones. Firebase starts its first Installations request while Telegram is still starting, and on a slow phone that request could get there before HushTelegram's settings were ready. It then went out with the re-signed certificate, Firebase refused it, and no push token was saved. The request now waits for the settings, up to 10 seconds, on Firebase's own background thread. The diagnostic report counts requests that waited and any that still went out early.
 
 * **Telegram:** The beta target is now telegram.org's current 12.10.7 build, version code 71179, which replaced build 71159. Every patch applies and passes its fixture tests on it.
 
-* **Docs:** The README says where HushTelegram settings are in v0.0.8 (long-press the Telegram icon, or App info), and walks through the my.telegram.org form for your own API ID, including what causes "Incorrect app name!".
+* **Telegram:** The README now says where HushTelegram settings are in v0.0.8 (long-press the Telegram icon, or App info), and walks through the my.telegram.org form for your own API ID, including what causes "Incorrect app name!".
 
 * **Telegram:** Three independent switches add plain-text paste, copyable local user and chat IDs, and a way to stop double-tap reactions. They start off. Pause restores the stock behavior, and the existing clipboard and explicit reaction actions stay available.
 
