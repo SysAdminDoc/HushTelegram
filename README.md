@@ -113,7 +113,7 @@ v0.0.8 adds a Notifications page and the channel-pull switch. Both are shown bel
 
 ## Notifications on a patched Telegram
 
-Telegram's push notifications go through Google's Firebase. Its Android API key checks the package and certificate header, so a re-signed build can get `API_KEY_ANDROID_APP_BLOCKED` before it receives a push token. Repair Firebase push registration fixes only that header on Firebase Installations requests from the declared web and beta packages. It preserves Android's package signatures and TLS checks.
+Telegram's push notifications go through Google's Firebase. Its Android API key checks the package and certificate header, so a re-signed build can get `API_KEY_ANDROID_APP_BLOCKED` before it receives a push token. Repair Firebase push registration fixes only that header on Firebase Installations requests from the declared web and beta packages. It preserves Android's package signatures and TLS checks. Firebase starts its first request while Telegram is still starting up, so on slower phones that request now waits for HushTelegram's settings (up to 10 seconds) instead of going out with the re-signed header.
 
 The Notifications page also shows what this phone knows about push. It says whether notifications are allowed and whether Telegram has saved a push token, then counts your signed-in accounts and how many of them Telegram has confirmed for push. It only reads what's already on the phone. It doesn't send anything, and it can't tell you whether a notification will actually arrive. The diagnostic report carries the same facts, without the token itself.
 

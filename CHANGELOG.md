@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Repair Firebase push registration now works on slower phones. Firebase starts its first Installations request while Telegram is still starting, and on a slow phone that request could get there before HushTelegram's settings were ready. It then went out with the re-signed certificate, Firebase refused it, and no push token was saved. The request now waits for the settings, up to 10 seconds, on Firebase's own background thread. The diagnostic report counts requests that waited and any that still went out early.
+
 * **Telegram:** Three independent switches add plain-text paste, copyable local user and chat IDs, and a way to stop double-tap reactions. They start off. Pause restores the stock behavior, and the existing clipboard and explicit reaction actions stay available.
 
 * **Telegram:** Pause, Settings backup and Diagnostics now have separate pages with shorter headings. Search still reaches every control, and all five translations include the new page names.
