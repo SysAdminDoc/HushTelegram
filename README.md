@@ -101,7 +101,9 @@ The same search on the same phone, first with Hide ads off, then on. Telegram pi
 
 ## Settings
 
-Open Telegram's Settings and tap HushTelegram settings. You can also long-press the Telegram icon and tap HushTelegram, or open Telegram's App info page and tap Additional settings in the app, which Samsung phones call Configure in Telegram. The launcher and App-info entries remain available if the native settings surface is absent.
+On v0.0.8, the current release, long-press the Telegram icon on your home screen or app drawer and tap HushTelegram. You can also open Telegram's App info page and tap Additional settings in the app, which Samsung phones call Configure in Telegram. There's no HushTelegram row inside Telegram's own Settings in v0.0.8.
+
+Builds from the current source add that row, so you can open Telegram's Settings and tap HushTelegram settings. The launcher and App-info entries stay available there too, including when the native settings surface is absent.
 
 More settings has separate pages for Pause, Settings backup and Diagnostics. Search finds each control by its name or page. Your saved switches and backup files work as before.
 
@@ -124,6 +126,16 @@ The location picker uses a separate Google Maps credential, restricted to the in
 ## Your Telegram account
 
 Sign-in can fail with `API_ID_PUBLISHED_FLOOD`, which means Telegram rejected the API ID bundled with the app. Register your own app at [Telegram's developer portal](https://my.telegram.org/apps), then select Use registered Telegram API credentials and supply both `apiId` and `apiHash` when patching. This changes the shared app credentials used by native initialization, phone and passkey login. You can install the result as an update over your current HushTelegram build. On its first start it introduces itself to Telegram with your ID, so login codes are requested under your app instead of the bundled one. Changing from one registered API ID to another also refreshes that connection identity, while keeping saved account keys and the app version intact. Telegram still decides which login methods are available. Keep any existing signed-in installation.
+
+Filling in the form at my.telegram.org/apps:
+
+1. Sign in with your phone number. The code for the portal arrives as a message in Telegram, not by SMS.
+2. **App title:** plain words, for example `My HushTelegram`.
+3. **Short name:** 5 to 32 letters and numbers only, for example `myhushtg1`. Spaces, underscores, dashes and other symbols here are what usually cause "Incorrect app name!".
+4. **Platform:** Android. URL and Description can stay empty.
+5. Tap Create application, then copy `App api_id` and `App api_hash` into the patch's `apiId` and `apiHash` options.
+
+If the page shows a bare "ERROR" instead, turn off any VPN or ad blocker and try again in a private browser window. When the patched app asks for a login code, it usually shows up as a message in Telegram on another phone or app where you're already signed in, so keep that one signed in until the patched app finishes.
 
 Credential options are compiled into the APK and recorded in the patching result report. Keep both private. These two patches have no runtime switch, and Pause doesn't change their credentials. Updating with the retained signing key preserves the installed app's data.
 

@@ -8,6 +8,8 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** The beta target is now telegram.org's current 12.10.7 build, version code 71179, which replaced build 71159. Every patch applies and passes its fixture tests on it.
 
+* **Docs:** The README says where HushTelegram settings are in v0.0.8 (long-press the Telegram icon, or App info), and walks through the my.telegram.org form for your own API ID, including what causes "Incorrect app name!".
+
 * **Telegram:** Three independent switches add plain-text paste, copyable local user and chat IDs, and a way to stop double-tap reactions. They start off. Pause restores the stock behavior, and the existing clipboard and explicit reaction actions stay available.
 
 * **Telegram:** Pause, Settings backup and Diagnostics now have separate pages with shorter headings. Search still reaches every control, and all five translations include the new page names.
