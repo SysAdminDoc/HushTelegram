@@ -315,6 +315,15 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, "
                             + "and Telegram doesn't ask for it. Apps you've opened and other results stay.",
                     String.valueOf(page.findPreference(Settings.HIDE_POPULAR_APPS.key).getSummary()));
+            assertEquals("A short chat list no longer lists your contacts on Telegram under it, with their heading and loading rows. "
+                            + "Your chats, folders, contact sync and search stay. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.HIDE_CONTACTS_BLOCK.key).getSummary()));
+            assertEquals("An empty private chat no longer offers a sticker to send as a greeting. "
+                            + "Its text, business introductions, paid-message notices and the sticker picker stay. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.HIDE_GREETING_STICKERS.key).getSummary()));
+            // Contact suggestions and greeting stickers stay as Telegram shows them until someone turns their switch on.
+            assertFalse(Settings.HIDE_CONTACTS_BLOCK.key, ((SwitchPreference) page.findPreference(Settings.HIDE_CONTACTS_BLOCK.key)).isChecked());
+            assertFalse(Settings.HIDE_GREETING_STICKERS.key, ((SwitchPreference) page.findPreference(Settings.HIDE_GREETING_STICKERS.key)).isChecked());
             assertEquals("No swipe actions on chats", String.valueOf(page.findPreference(Settings.DISABLE_CHAT_SWIPE.key).getTitle()));
             assertEquals("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, "
                             + "so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
