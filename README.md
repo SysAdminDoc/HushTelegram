@@ -114,7 +114,7 @@ More settings has separate pages for Pause, Settings backup and Diagnostics. Sea
 
 v0.0.8 added a Notifications page and the channel-pull switch. Both are shown below.
 
-<p><img src="assets/settings-notifications.png" width="320" alt="Notifications settings with the local notification status and the Firebase push registration repair switch"><img src="assets/settings-channel-pull.png" width="320" alt="Chats settings with Stop pull to next channel turned on"></p>
+<p><img src="assets/settings-notifications.png" width="320" alt="Notifications settings with the local notification status and the Firebase push registration repair switch"><img src="assets/settings-channel-pull.png" width="320" alt="Chats settings with Stop pull to next channel turned on, and Stop pull to next topic and Hide greeting stickers off by default"></p>
 
 ## Notifications on a patched Telegram
 

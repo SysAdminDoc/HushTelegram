@@ -4,7 +4,7 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
-* **Telegram:** A new Hide contacts on Telegram switch, off by default, takes the Your contacts on Telegram list off a short chat list, along with its heading and the loading rows shown while contacts sync. Chats, folders, contact sync and search don't change. Turning it off or pausing HushTelegram brings the same rows back. A change shows up the next time Telegram rebuilds the chat list, and a restart always does.
+* **Telegram:** A new Hide contacts on Telegram switch, off by default, takes the Your contacts on Telegram list off a short chat list, along with its heading and the loading rows shown while contacts sync. Chats, folders, contact sync and search don't change. With no chats at all, you get the welcome screen Telegram shows when none of your contacts use it. Turning it off or pausing HushTelegram brings the same rows back. A change shows up the next time Telegram rebuilds the chat list, and a restart always does.
 * **Telegram:** A new Hide greeting stickers switch, off by default, takes away the sticker an empty private chat offers to send as a greeting, so a stray tap can't send it. The empty chat's text stays, and business introductions keep their sticker. Premium and paid-message notices, the sticker picker and sending don't change.
 * **Telegram:** Disable pull to next channel has a second switch, Stop pull to next topic, off by default. With it on, pulling up at the bottom of a forum topic only scrolls instead of opening the next topic. Each switch covers only its own pull, and a switch flipped mid-drag counts when you let go.
 
