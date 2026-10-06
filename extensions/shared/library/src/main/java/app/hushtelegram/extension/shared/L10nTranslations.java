@@ -350,7 +350,7 @@ public final class L10nTranslations {
         table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                 "Wenn du am unteren Ende eines Kanals nach oben ziehst, scrollt die Ansicht nur. \u00d6ffne den n\u00e4chsten Kanal \u00fcber deine Chatliste.");
         table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.",
-                "Hochziehen am Ende eines Forenthemas scrollt nur. \u00d6ffne das n\u00e4chste Thema aus der Themenliste. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
+                "Wenn du am unteren Ende eines Forenthemas nach oben ziehst, scrollt die Ansicht nur. \u00d6ffne das n\u00e4chste Thema \u00fcber die Themenliste. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("Push token saved: %1$s",
                 "Push-Token gespeichert: %1$s");
         table.put("Quiet contacts prompts",
@@ -418,7 +418,7 @@ public final class L10nTranslations {
         table.put("Stop pull to next channel",
                 "Ziehen zum n\u00e4chsten Kanal verhindern");
         table.put("Stop pull to next topic",
-                "Pull zum n\u00e4chsten Thema stoppen");
+                "Ziehen zum n\u00e4chsten Thema verhindern");
         table.put("Stop usage reports",
                 "Nutzungsberichte stoppen");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
@@ -903,7 +903,7 @@ public final class L10nTranslations {
         table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                 "Al deslizar hacia arriba al final de un canal, solo se desplaza el contenido. Abre el siguiente canal desde tu lista de chats.");
         table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.",
-                "Tirar hacia arriba al final de un tema del foro solo desplaza. Abre el siguiente tema desde la lista de temas. Desactivado por defecto en los ajustes.");
+                "Al deslizar hacia arriba al final de un tema del foro, solo se desplaza el contenido. Abre el siguiente tema desde la lista de temas. Desactivado por defecto en los ajustes.");
         table.put("Push token saved: %1$s",
                 "Token push guardado: %1$s");
         table.put("Quiet contacts prompts",
@@ -971,7 +971,7 @@ public final class L10nTranslations {
         table.put("Stop pull to next channel",
                 "Impedir el salto al siguiente canal al deslizar");
         table.put("Stop pull to next topic",
-                "Detener tirar al siguiente tema");
+                "Impedir el salto al siguiente tema al deslizar");
         table.put("Stop usage reports",
                 "Detener los informes de uso");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
@@ -1456,7 +1456,7 @@ public final class L10nTranslations {
         table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                 "Menarik ke atas di bagian bawah kanal hanya menggulir tampilan. Buka kanal berikutnya dari daftar obrolan.");
         table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.",
-                "Menarik ke atas di bagian bawah topik forum hanya menggulir. Buka topik berikutnya dari daftar topik. Secara default nonaktif di pengaturan.");
+                "Menarik ke atas di bagian bawah topik forum hanya menggulir tampilan. Buka topik berikutnya dari daftar topik. Secara default nonaktif di pengaturan.");
         table.put("Push token saved: %1$s",
                 "Token push tersimpan: %1$s");
         table.put("Quiet contacts prompts",
@@ -1524,7 +1524,7 @@ public final class L10nTranslations {
         table.put("Stop pull to next channel",
                 "Hentikan tarikan ke kanal berikutnya");
         table.put("Stop pull to next topic",
-                "Hentikan tarik ke topik berikutnya");
+                "Hentikan tarikan ke topik berikutnya");
         table.put("Stop usage reports",
                 "Hentikan laporan penggunaan");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
@@ -2009,7 +2009,7 @@ public final class L10nTranslations {
         table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                 "Deslizar para cima no fim de um canal apenas rola o conte\u00fado. Abra o pr\u00f3ximo canal pela sua lista de conversas.");
         table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.",
-                "Puxar para cima no fim de um t\u00f3pico do f\u00f3rum s\u00f3 rola a tela. Abra o pr\u00f3ximo t\u00f3pico pela lista de t\u00f3picos. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
+                "Deslizar para cima no fim de um t\u00f3pico do f\u00f3rum apenas rola o conte\u00fado. Abra o pr\u00f3ximo t\u00f3pico pela lista de t\u00f3picos. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Push token saved: %1$s",
                 "Token de push salvo: %1$s");
         table.put("Quiet contacts prompts",
@@ -2077,7 +2077,7 @@ public final class L10nTranslations {
         table.put("Stop pull to next channel",
                 "Impedir o salto para o pr\u00f3ximo canal ao deslizar");
         table.put("Stop pull to next topic",
-                "Parar puxar para o pr\u00f3ximo t\u00f3pico");
+                "Impedir o salto para o pr\u00f3ximo t\u00f3pico ao deslizar");
         table.put("Stop usage reports",
                 "Parar os relat\u00f3rios de uso");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
@@ -2562,7 +2562,7 @@ public final class L10nTranslations {
         table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                 "Kanal\u0131n sonunda yukar\u0131 \u00e7ekmek yaln\u0131zca i\u00e7eri\u011fi kayd\u0131r\u0131r. Sonraki kanal\u0131 sohbet listenizden a\u00e7\u0131n.");
         table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.",
-                "Bir forum konusunun sonunda yukar\u0131 \u00e7ekmek yaln\u0131zca kayd\u0131r\u0131r. Sonraki konuyu konu listesinden a\u00e7. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
+                "Bir forum konusunun sonunda yukar\u0131 \u00e7ekmek yaln\u0131zca i\u00e7eri\u011fi kayd\u0131r\u0131r. Sonraki konuyu konu listesinden a\u00e7\u0131n. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Push token saved: %1$s",
                 "Push belirteci kay\u0131tl\u0131: %1$s");
         table.put("Quiet contacts prompts",

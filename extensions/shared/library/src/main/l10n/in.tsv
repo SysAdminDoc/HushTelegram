@@ -243,8 +243,8 @@ Uses Telegram's official certificate for Firebase push registration. Notificatio
 Firebase certificate header	Header sertifikat Firebase
 Stop pull to next channel	Hentikan tarikan ke kanal berikutnya
 Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.	Menarik ke atas di bagian bawah kanal hanya menggulir tampilan. Buka kanal berikutnya dari daftar obrolan.
-Stop pull to next topic	Hentikan tarik ke topik berikutnya
-Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.	Menarik ke atas di bagian bawah topik forum hanya menggulir. Buka topik berikutnya dari daftar topik. Secara default nonaktif di pengaturan.
+Stop pull to next topic	Hentikan tarikan ke topik berikutnya
+Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.	Menarik ke atas di bagian bawah topik forum hanya menggulir tampilan. Buka topik berikutnya dari daftar topik. Secara default nonaktif di pengaturan.
 # context: Read-only local notification facts, independent of repair and Pause.
 Local notification status	Status notifikasi lokal
 local notification status	status notifikasi lokal
