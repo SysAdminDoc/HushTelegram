@@ -1,7 +1,7 @@
 ![HushTelegram. Keep the chat. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.0.9-2AABEE" alt="Version 0.0.9">
+  <img src="https://img.shields.io/badge/version-0.0.10-2AABEE" alt="Version 0.0.10">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Telegram-12.10.6-2AABEE" alt="Telegram 12.10.6">
@@ -15,6 +15,8 @@ HushTelegram is a Morphe patch bundle for Android that takes the sponsored messa
 The latest release is [v0.0.9](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.9), with 25 patches. They're built for Telegram 12.10.6 and the official beta 12.10.7, and on a signed-in phone Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
 
 v0.0.9 fixes push registration on slower phones and follows telegram.org's rebuilt beta, build 71179. HushTelegram settings now open from a row in Telegram's own Settings. Plain-text paste and copyable user and chat IDs are new switches, off until you turn them on, and so is one that stops double-tap reactions. Two optional patches take your own registered Telegram API credentials and Google Maps key when you patch. With its own registered API ID, a Samsung phone that Telegram had turned away signed in normally.
+
+The current source is v0.0.10, which isn't released yet. It follows telegram.org's beta build 71239. Hide contacts on Telegram and Hide greeting stickers are new switches, and Disable pull to next channel gained a second one for forum topics. All of them start off.
 
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) | [Download a release](https://github.com/SysAdminDoc/HushTelegram/releases/latest) | [Browse the patches](#patches)
@@ -64,7 +66,7 @@ The developer installation script requires the exact device serial, expected mod
 
 ## Patches
 
-The source catalog has 27 patches, with 25 selected by default. Hide contacts on Telegram and Hide greeting stickers are new since v0.0.9 and aren't in a release yet. A few of their switches stay off until you turn them on in settings, like tracking cleaning and draft link previews. The two credential patches need your own values and aren't selected by default.
+The source catalog has 27 patches, with 25 selected by default. Hide contacts on Telegram and Hide greeting stickers are new since v0.0.9, and so is the forum topic switch in Disable pull to next channel. None of them is in a release yet. Several patches keep their switch off until you turn it on in settings, like tracking cleaning and draft link previews. The two credential patches need your own values and aren't selected by default.
 
 | Patch | What it does |
 |---|---|
