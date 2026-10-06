@@ -84,6 +84,7 @@ public final class SettingsBackup {
             Settings.HIDE_SPONSORED_PROXY,
             Settings.HIDE_POPULAR_APPS,
             Settings.HIDE_CONTACTS_BLOCK,
+            Settings.HIDE_GREETING_STICKERS,
             Settings.DISABLE_CHAT_SWIPE,
             Settings.DISABLE_CHANNEL_PULL,
             Settings.NORMAL_PASTE,

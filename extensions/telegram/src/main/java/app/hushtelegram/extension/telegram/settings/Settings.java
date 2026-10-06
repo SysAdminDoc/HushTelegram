@@ -69,6 +69,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_CONTACTS_BLOCK =
             new BooleanSetting("hushtelegram_hide_contacts_block", FALSE);
 
+    /**
+     * The sticker an empty private chat offers to send as a greeting only; the empty chat's text,
+     * business introductions, Premium and paid-message notices and the sticker picker stay stock.
+     */
+    public static final BooleanSetting HIDE_GREETING_STICKERS =
+            new BooleanSetting("hushtelegram_hide_greeting_stickers", FALSE);
+
     /** The chat list's sideways swipe on a chat row only; long-press, drag to reorder and folder swipes stay stock. */
     public static final BooleanSetting DISABLE_CHAT_SWIPE =
             new BooleanSetting("hushtelegram_disable_chat_swipe", FALSE);

@@ -199,6 +199,11 @@ public class PausedHooksTest {
         probes.put(PatchFamily.HIDE_CONTACTS_BLOCK, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.ContactsBlock.rows(new java.util.ArrayList<>(Collections.singletonList("contact"))) == null,
                 () -> !app.hushtelegram.extension.telegram.misc.ContactsBlock.placeholder(true)));
+        probes.put(PatchFamily.HIDE_GREETING_STICKERS, Collections.singletonList(() -> {
+            android.widget.FrameLayout stickers = new android.widget.FrameLayout(RuntimeEnvironment.getApplication());
+            app.hushtelegram.extension.telegram.misc.GreetingStickers.measure(stickers, false);
+            return stickers.getVisibility() == android.view.View.GONE;
+        }));
         // After a "Not now", the Contacts tab neither asks again nor marks its icon.
         probes.put(PatchFamily.QUIET_CONTACTS_NAG, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.ContactsNag.skipAsk(declinedContactsPrompt()),

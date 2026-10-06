@@ -5,6 +5,7 @@ Every HushTelegram release, newest first.
 ## Unreleased
 
 * **Telegram:** A new Hide contacts on Telegram switch, off by default, takes the Your contacts on Telegram list off a short chat list, along with its heading and the loading rows shown while contacts sync. Chats, folders, contact sync and search don't change. Turning it off or pausing HushTelegram brings the same rows back. A change shows up the next time Telegram rebuilds the chat list, and a restart always does.
+* **Telegram:** A new Hide greeting stickers switch, off by default, takes away the sticker an empty private chat offers to send as a greeting, so a stray tap can't send it. The empty chat's text stays, and business introductions keep their sticker. Premium and paid-message notices, the sticker picker and sending don't change.
 
 * **Telegram:** The beta target is now telegram.org's current 12.10.7 build, version code 71239, which replaced build 71179. Every patch applies and passes its fixture tests on it.
 

@@ -57,6 +57,7 @@ public enum PatchFamily {
     HIDE_POPULAR_APPS(FamilyNames.HIDE_POPULAR_APPS, "hidePopularApps", null,
             Settings.HIDE_POPULAR_APPS),
     HIDE_CONTACTS_BLOCK(FamilyNames.HIDE_CONTACTS_BLOCK, "hideContactsBlock", null, Settings.HIDE_CONTACTS_BLOCK),
+    HIDE_GREETING_STICKERS(FamilyNames.HIDE_GREETING_STICKERS, "hideGreetingStickers", null, Settings.HIDE_GREETING_STICKERS),
     DISABLE_CHAT_SWIPE(FamilyNames.DISABLE_CHAT_SWIPE, "disableChatSwipe", null,
             Settings.DISABLE_CHAT_SWIPE),
     DISABLE_CHANNEL_PULL(FamilyNames.DISABLE_CHANNEL_PULL, "disableChannelPull", null,
@@ -131,7 +132,7 @@ public enum PatchFamily {
 
     /** The families whose switches the Chats page holds. The page and its home row both read this. */
     static final Set<PatchFamily> CHATS_PAGE = Collections.unmodifiableSet(EnumSet.of(HIDE_ADS, HIDE_STORIES,
-            HIDE_RECOMMENDATIONS, HIDE_COMMERCE, HIDE_PROMOTIONAL_BANNERS, HIDE_SPONSORED_PROXY, HIDE_POPULAR_APPS, HIDE_CONTACTS_BLOCK, DISABLE_CHAT_SWIPE, DISABLE_CHANNEL_PULL, NORMAL_PASTE, SHOW_LOCAL_IDS, DISABLE_DOUBLE_TAP_REACTIONS,
+            HIDE_RECOMMENDATIONS, HIDE_COMMERCE, HIDE_PROMOTIONAL_BANNERS, HIDE_SPONSORED_PROXY, HIDE_POPULAR_APPS, HIDE_CONTACTS_BLOCK, HIDE_GREETING_STICKERS, DISABLE_CHAT_SWIPE, DISABLE_CHANNEL_PULL, NORMAL_PASTE, SHOW_LOCAL_IDS, DISABLE_DOUBLE_TAP_REACTIONS,
             QUIET_CONTACTS_NAG, HOLIDAY_LOOK));
 
     /** Each independent hook, its owning family and the flag set only after it was inserted. */

@@ -286,6 +286,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "with their heading and loading rows. Your chats, folders, contact sync and search stay. Off by default in settings."))),
                         SettingsIcons.BLOCK));
             }
+            if (build.contains(PatchFamily.HIDE_GREETING_STICKERS)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_GREETING_STICKERS, L10n.t("Hide greeting stickers"),
+                        PatchFamily.HIDE_GREETING_STICKERS.coverageSummary(L10n.t("An empty private chat no longer offers a sticker to send as a greeting. "
+                                + "Its text, business introductions, paid-message notices and the sticker picker stay. Off by default in settings."))),
+                        SettingsIcons.BLOCK));
+            }
             if (build.contains(PatchFamily.DISABLE_CHAT_SWIPE)) {
                 chats.addPreference(mark(toggle(context, Settings.DISABLE_CHAT_SWIPE, L10n.t("No swipe actions on chats"),
                         PatchFamily.DISABLE_CHAT_SWIPE.coverageSummary(L10n.t("A sideways swipe on a chat in the chat list no longer archives, "

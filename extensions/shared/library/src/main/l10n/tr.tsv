@@ -228,6 +228,8 @@ Hide popular apps	Popüler uygulamaları gizle
 Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.	Aramadaki Uygulamalar sekmesi, Telegram'ın Popüler uygulamalar listesini başlığı ve yükleme satırlarıyla birlikte atlar ve Telegram bu listeyi istemez. Açtığınız uygulamalar ve diğer sonuçlar kalır.
 Hide contacts on Telegram	Telegram'daki kişileri gizle
 A short chat list no longer lists your contacts on Telegram under it, with their heading and loading rows. Your chats, folders, contact sync and search stay. Off by default in settings.	Kısa bir sohbet listesi, altında Telegram'daki kişilerinizi başlığı ve yükleme satırlarıyla artık göstermez. Sohbetleriniz, klasörleriniz, kişi senkronizasyonu ve arama kalır. Ayarlarda varsayılan olarak kapalıdır.
+Hide greeting stickers	Selamlama çıkartmalarını gizle
+An empty private chat no longer offers a sticker to send as a greeting. Its text, business introductions, paid-message notices and the sticker picker stay. Off by default in settings.	Boş bir özel sohbet artık selamlama olarak gönderilecek bir çıkartma önermez. Metni, işletme tanıtımları, ücretli mesaj bildirimleri ve çıkartma seçici kalır. Ayarlarda varsayılan olarak kapalıdır.
 Quiet contacts prompts	Kişi isteklerini sustur
 Once you've said no to contacts access, the Contacts tab stops asking again and its warning badge goes away. The first request, the tab's own buttons and contact sync stay.	Kişilere erişimi reddettikten sonra Kişiler sekmesi yeniden sormaz ve uyarı rozeti kaybolur. İlk istek, sekmenin kendi düğmeleri ve kişi eşitleme aynı kalır.
 
