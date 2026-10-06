@@ -10,6 +10,8 @@ Working version 0.0.10.
 
 * **Telegram:** A new Hide greeting stickers switch, off by default, takes away the sticker an empty private chat offers to send as a greeting, so a stray tap can't send it. The empty chat's text stays, and business introductions keep their sticker. Premium and paid-message notices, the sticker picker and sending don't change.
 
+* **Telegram:** A new Use system font switch, off by default, draws Telegram's bold and italic text in your phone's own font instead of the Roboto files the app carries, so headings match the rest of the text on a phone with a custom font. Code blocks take the phone's monospace font. Some number displays and Instant View pages keep Telegram's fonts. A change takes effect after Telegram restarts.
+
 * **Telegram:** Disable pull to next channel has a second switch, Stop pull to next topic, off by default. With it on, pulling up at the bottom of a forum topic only scrolls instead of opening the next topic. Each switch covers only its own pull, and a switch flipped mid-drag counts when you let go.
 
 * **Telegram:** The beta target is now telegram.org's current 12.10.7 build, version code 71239, which replaced build 71179. Every patch applies and passes its fixture tests on it.

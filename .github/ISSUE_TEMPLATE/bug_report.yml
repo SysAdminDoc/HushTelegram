@@ -94,6 +94,7 @@ body:
         - Repair Firebase push registration
         - Use registered Telegram API credentials
         - Use registered Maps API key
+        - Use system font
         - Strip link tracking
         - HushTelegram settings
     validations:

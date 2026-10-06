@@ -213,6 +213,9 @@ public class PausedHooksTest {
         // Telegram's holiday check skips its date test and shows the New Year look.
         probes.put(PatchFamily.HOLIDAY_LOOK, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.HolidayLook.mode() == app.hushtelegram.extension.telegram.misc.HolidayLook.SHOW));
+        // Telegram's medium font file is answered with the phone's own face.
+        probes.put(PatchFamily.USE_SYSTEM_FONT, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.SystemFont.typeface("fonts/rmedium.ttf") != null));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),

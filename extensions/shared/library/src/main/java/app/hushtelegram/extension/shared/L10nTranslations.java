@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(528);
+        Map<String, String> table = new HashMap<>(532);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -119,6 +119,8 @@ public final class L10nTranslations {
                 "Zur\u00fcck");
         table.put("Blocked",
                 "Blockiert");
+        table.put("Bold and italic text stops using the Roboto files built into Telegram and takes your phone's font, the one regular text already uses. Code takes the phone's monospace font. Some number displays and Instant View pages keep Telegram's own. Off by default in settings.",
+                "Fetter und kursiver Text nutzt nicht mehr die in Telegram eingebauten Roboto-Dateien, sondern die Schrift deines Handys, die normaler Text schon verwendet. Code nutzt die Monospace-Schrift des Handys. Manche Zahlenanzeigen und Instant-View-Seiten behalten Telegrams eigene Schrift. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("Browse settings",
                 "Einstellungen durchsuchen");
         table.put("Call diagnostics",
@@ -175,11 +177,11 @@ public final class L10nTranslations {
                 "Der Export des Berichts lie\u00df sich nicht starten. Versuche es gleich noch einmal.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "HushTelegram lie\u00df sich nicht wieder einschalten. Versuche es noch einmal.");
-        table.put("Debug logging",
-                "Debug-Protokollierung");
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("Debug logging",
+                "Debug-Protokollierung");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Diagnosedaten gel\u00f6scht. Tippe erneut, um sie wiederherzustellen.");
         table.put("Diagnostic data put back.",
@@ -298,11 +300,11 @@ public final class L10nTranslations {
                 "Es gibt noch keine Version von HushTelegram.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Keine App auf diesem Handy kann den Link \u00f6ffnen. Die Adresse ist %1$s.");
-        table.put("No matching settings",
-                "Keine passenden Einstellungen");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("No matching settings",
+                "Keine passenden Einstellungen");
         table.put("No previews before sending",
                 "Keine Vorschau vor dem Senden");
         table.put("No swipe actions on chats",
@@ -421,11 +423,11 @@ public final class L10nTranslations {
                 "Ziehen zum n\u00e4chsten Thema verhindern");
         table.put("Stop usage reports",
                 "Nutzungsberichte stoppen");
-        table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
-                "Stoppt automatische Anrufdiagnoseberichte und Protokolldatei-Uploads, die der Telegram-Server anfordert.");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
+                "Stoppt automatische Anrufdiagnoseberichte und Protokolldatei-Uploads, die der Telegram-Server anfordert.");
         table.put("Strip link tracking",
                 "Link-Tracking entfernen");
         table.put("Supported links",
@@ -508,6 +510,8 @@ public final class L10nTranslations {
                 "Nutzungsberichte und Anrufdiagnosen");
         table.put("Use normal paste",
                 "Normal einf\u00fcgen");
+        table.put("Use system font",
+                "Systemschrift verwenden");
         table.put("User ID %1$s",
                 "Benutzer-ID %1$s");
         table.put("Uses Telegram's official certificate for Firebase push registration. Notification permission and battery settings still apply.",
@@ -542,13 +546,13 @@ public final class L10nTranslations {
                 "gespeicherte Empfehlungen");
         table.put("call debug reports",
                 "Anrufdiagnoseberichte");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("call log file uploads",
                 "Uploads von Anrufprotokolldateien");
         table.put("call log reports",
                 "Anrufprotokollberichte");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("caption text paste",
                 "Texteinf\u00fcgen in Beschriftungen");
         table.put("channel Gift button",
@@ -600,7 +604,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(528);
+        Map<String, String> table = new HashMap<>(532);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -672,6 +676,8 @@ public final class L10nTranslations {
                 "Atr\u00e1s");
         table.put("Blocked",
                 "Bloqueado");
+        table.put("Bold and italic text stops using the Roboto files built into Telegram and takes your phone's font, the one regular text already uses. Code takes the phone's monospace font. Some number displays and Instant View pages keep Telegram's own. Off by default in settings.",
+                "El texto en negrita y cursiva deja de usar los archivos Roboto incluidos en Telegram y pasa a la fuente de tu tel\u00e9fono, la que ya usa el texto normal. El c\u00f3digo usa la fuente monoespaciada del tel\u00e9fono. Algunos n\u00fameros y las p\u00e1ginas de Instant View mantienen la fuente de Telegram. Desactivado por defecto en los ajustes.");
         table.put("Browse settings",
                 "Explorar ajustes");
         table.put("Call diagnostics",
@@ -728,11 +734,11 @@ public final class L10nTranslations {
                 "No se pudo iniciar la exportaci\u00f3n del informe. Int\u00e9ntalo de nuevo en breve.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "No se pudo volver a activar HushTelegram. Int\u00e9ntalo de nuevo.");
-        table.put("Debug logging",
-                "Registro de depuraci\u00f3n");
     }
 
     private static void fillEs1(Map<String, String> table) {
+        table.put("Debug logging",
+                "Registro de depuraci\u00f3n");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Se borraron los datos de diagn\u00f3stico. Toca de nuevo para restaurarlos.");
         table.put("Diagnostic data put back.",
@@ -851,11 +857,11 @@ public final class L10nTranslations {
                 "Todav\u00eda no hay ninguna versi\u00f3n de HushTelegram.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Ninguna app de este tel\u00e9fono puede abrir el enlace. La direcci\u00f3n es %1$s.");
-        table.put("No matching settings",
-                "No hay ajustes coincidentes");
     }
 
     private static void fillEs2(Map<String, String> table) {
+        table.put("No matching settings",
+                "No hay ajustes coincidentes");
         table.put("No previews before sending",
                 "Sin vistas previas antes de enviar");
         table.put("No swipe actions on chats",
@@ -974,11 +980,11 @@ public final class L10nTranslations {
                 "Impedir el salto al siguiente tema al deslizar");
         table.put("Stop usage reports",
                 "Detener los informes de uso");
-        table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
-                "Detiene los informes autom\u00e1ticos de depuraci\u00f3n y las subidas de archivos de registro de llamadas solicitados por el servidor de Telegram.");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
+                "Detiene los informes autom\u00e1ticos de depuraci\u00f3n y las subidas de archivos de registro de llamadas solicitados por el servidor de Telegram.");
         table.put("Strip link tracking",
                 "Eliminar seguimiento de enlaces");
         table.put("Supported links",
@@ -1061,6 +1067,8 @@ public final class L10nTranslations {
                 "Informes de uso y diagn\u00f3sticos de llamadas");
         table.put("Use normal paste",
                 "Usar pegado normal");
+        table.put("Use system font",
+                "Usar fuente del sistema");
         table.put("User ID %1$s",
                 "ID de usuario %1$s");
         table.put("Uses Telegram's official certificate for Firebase push registration. Notification permission and battery settings still apply.",
@@ -1095,13 +1103,13 @@ public final class L10nTranslations {
                 "recomendaciones guardadas");
         table.put("call debug reports",
                 "informes de depuraci\u00f3n de llamadas");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("call log file uploads",
                 "subidas de archivos de registro de llamadas");
         table.put("call log reports",
                 "informes de registro de llamadas");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("caption text paste",
                 "pegado de texto en leyendas");
         table.put("channel Gift button",
@@ -1153,7 +1161,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(528);
+        Map<String, String> table = new HashMap<>(532);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1225,6 +1233,8 @@ public final class L10nTranslations {
                 "Kembali");
         table.put("Blocked",
                 "Diblokir");
+        table.put("Bold and italic text stops using the Roboto files built into Telegram and takes your phone's font, the one regular text already uses. Code takes the phone's monospace font. Some number displays and Instant View pages keep Telegram's own. Off by default in settings.",
+                "Teks tebal dan miring tidak lagi memakai file Roboto bawaan Telegram dan beralih ke font ponsel Anda, yang sudah dipakai teks biasa. Kode memakai font monospace ponsel. Beberapa tampilan angka dan halaman Instant View tetap memakai font Telegram. Nonaktif secara default di pengaturan.");
         table.put("Browse settings",
                 "Jelajahi pengaturan");
         table.put("Call diagnostics",
@@ -1281,11 +1291,11 @@ public final class L10nTranslations {
                 "Ekspor laporan tidak dapat dimulai. Coba lagi dalam beberapa saat.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "HushTelegram tidak dapat diaktifkan lagi. Coba lagi.");
-        table.put("Debug logging",
-                "Pencatatan debug");
     }
 
     private static void fillIn1(Map<String, String> table) {
+        table.put("Debug logging",
+                "Pencatatan debug");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Data diagnostik dihapus. Ketuk lagi untuk mengembalikannya.");
         table.put("Diagnostic data put back.",
@@ -1404,11 +1414,11 @@ public final class L10nTranslations {
                 "Belum ada rilis HushTelegram.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Tidak ada aplikasi di ponsel ini yang dapat membuka tautan ini. Alamatnya %1$s.");
-        table.put("No matching settings",
-                "Tidak ada pengaturan yang cocok");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("No matching settings",
+                "Tidak ada pengaturan yang cocok");
         table.put("No previews before sending",
                 "Tanpa pratinjau sebelum mengirim");
         table.put("No swipe actions on chats",
@@ -1527,11 +1537,11 @@ public final class L10nTranslations {
                 "Hentikan tarikan ke topik berikutnya");
         table.put("Stop usage reports",
                 "Hentikan laporan penggunaan");
-        table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
-                "Menghentikan laporan debug panggilan otomatis dan unggahan berkas log yang diminta server Telegram.");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
+                "Menghentikan laporan debug panggilan otomatis dan unggahan berkas log yang diminta server Telegram.");
         table.put("Strip link tracking",
                 "Hapus pelacakan tautan");
         table.put("Supported links",
@@ -1614,6 +1624,8 @@ public final class L10nTranslations {
                 "Laporan penggunaan dan diagnostik panggilan");
         table.put("Use normal paste",
                 "Gunakan tempel biasa");
+        table.put("Use system font",
+                "Gunakan font sistem");
         table.put("User ID %1$s",
                 "ID pengguna %1$s");
         table.put("Uses Telegram's official certificate for Firebase push registration. Notification permission and battery settings still apply.",
@@ -1648,13 +1660,13 @@ public final class L10nTranslations {
                 "rekomendasi tersimpan");
         table.put("call debug reports",
                 "laporan debug panggilan");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("call log file uploads",
                 "unggahan berkas log panggilan");
         table.put("call log reports",
                 "laporan log panggilan");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("caption text paste",
                 "tempel teks keterangan");
         table.put("channel Gift button",
@@ -1706,7 +1718,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(528);
+        Map<String, String> table = new HashMap<>(532);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1778,6 +1790,8 @@ public final class L10nTranslations {
                 "Voltar");
         table.put("Blocked",
                 "Bloqueado");
+        table.put("Bold and italic text stops using the Roboto files built into Telegram and takes your phone's font, the one regular text already uses. Code takes the phone's monospace font. Some number displays and Instant View pages keep Telegram's own. Off by default in settings.",
+                "Texto em negrito e it\u00e1lico deixa de usar os arquivos Roboto embutidos no Telegram e passa a usar a fonte do seu celular, a mesma do texto normal. C\u00f3digo usa a fonte monoespa\u00e7ada do celular. Algumas exibi\u00e7\u00f5es de n\u00fameros e as p\u00e1ginas do Instant View mant\u00eam a fonte do Telegram. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Browse settings",
                 "Explorar configura\u00e7\u00f5es");
         table.put("Call diagnostics",
@@ -1834,11 +1848,11 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel iniciar a exporta\u00e7\u00e3o do relat\u00f3rio. Tente de novo daqui a pouco.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "N\u00e3o foi poss\u00edvel reativar o HushTelegram. Tente novamente.");
-        table.put("Debug logging",
-                "Registro de depura\u00e7\u00e3o");
     }
 
     private static void fillPt_rBR1(Map<String, String> table) {
+        table.put("Debug logging",
+                "Registro de depura\u00e7\u00e3o");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Dados de diagn\u00f3stico apagados. Toque de novo para restaur\u00e1-los.");
         table.put("Diagnostic data put back.",
@@ -1957,11 +1971,11 @@ public final class L10nTranslations {
                 "Ainda n\u00e3o h\u00e1 nenhuma vers\u00e3o do HushTelegram.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Nenhum aplicativo neste dispositivo consegue abrir o link. O endere\u00e7o \u00e9 %1$s.");
-        table.put("No matching settings",
-                "Nenhuma configura\u00e7\u00e3o encontrada");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
+        table.put("No matching settings",
+                "Nenhuma configura\u00e7\u00e3o encontrada");
         table.put("No previews before sending",
                 "Sem pr\u00e9vias antes de enviar");
         table.put("No swipe actions on chats",
@@ -2080,11 +2094,11 @@ public final class L10nTranslations {
                 "Impedir o salto para o pr\u00f3ximo t\u00f3pico ao deslizar");
         table.put("Stop usage reports",
                 "Parar os relat\u00f3rios de uso");
-        table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
-                "Interrompe relat\u00f3rios autom\u00e1ticos de depura\u00e7\u00e3o de chamadas e envios de arquivos de registro solicitados pelo servidor do Telegram.");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
+                "Interrompe relat\u00f3rios autom\u00e1ticos de depura\u00e7\u00e3o de chamadas e envios de arquivos de registro solicitados pelo servidor do Telegram.");
         table.put("Strip link tracking",
                 "Remover rastreamento de links");
         table.put("Supported links",
@@ -2167,6 +2181,8 @@ public final class L10nTranslations {
                 "Relat\u00f3rios de uso e diagn\u00f3sticos de chamadas");
         table.put("Use normal paste",
                 "Usar colagem normal");
+        table.put("Use system font",
+                "Usar fonte do sistema");
         table.put("User ID %1$s",
                 "ID de usu\u00e1rio %1$s");
         table.put("Uses Telegram's official certificate for Firebase push registration. Notification permission and battery settings still apply.",
@@ -2201,13 +2217,13 @@ public final class L10nTranslations {
                 "recomenda\u00e7\u00f5es armazenadas");
         table.put("call debug reports",
                 "relat\u00f3rios de depura\u00e7\u00e3o de chamadas");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("call log file uploads",
                 "envios de arquivos de registro de chamadas");
         table.put("call log reports",
                 "relat\u00f3rios de registro de chamadas");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("caption text paste",
                 "colagem de texto em legendas");
         table.put("channel Gift button",
@@ -2259,7 +2275,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(528);
+        Map<String, String> table = new HashMap<>(532);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2331,6 +2347,8 @@ public final class L10nTranslations {
                 "Geri");
         table.put("Blocked",
                 "Engellendi");
+        table.put("Bold and italic text stops using the Roboto files built into Telegram and takes your phone's font, the one regular text already uses. Code takes the phone's monospace font. Some number displays and Instant View pages keep Telegram's own. Off by default in settings.",
+                "Kal\u0131n ve italik metin, Telegram'a g\u00f6m\u00fcl\u00fc Roboto dosyalar\u0131 yerine telefonunuzun yaz\u0131 tipini kullan\u0131r. Normal metin zaten onu kullan\u0131yor. Kod, telefonun e\u015f aral\u0131kl\u0131 yaz\u0131 tipini kullan\u0131r. Baz\u0131 say\u0131 g\u00f6stergeleri ve Instant View sayfalar\u0131 Telegram'\u0131n kendi yaz\u0131 tipini korur. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Browse settings",
                 "Ayarlar\u0131 ke\u015ffet");
         table.put("Call diagnostics",
@@ -2387,11 +2405,11 @@ public final class L10nTranslations {
                 "Rapor d\u0131\u015fa aktar\u0131m\u0131 ba\u015flat\u0131lamad\u0131. Birazdan tekrar dene.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "HushTelegram yeniden a\u00e7\u0131lamad\u0131. Tekrar dene.");
-        table.put("Debug logging",
-                "Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc");
     }
 
     private static void fillTr1(Map<String, String> table) {
+        table.put("Debug logging",
+                "Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Tan\u0131lama verileri temizlendi. Geri getirmek i\u00e7in tekrar dokun.");
         table.put("Diagnostic data put back.",
@@ -2510,11 +2528,11 @@ public final class L10nTranslations {
                 "Hen\u00fcz bir HushTelegram s\u00fcr\u00fcm\u00fc yay\u0131nlanmad\u0131.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Bu telefondaki hi\u00e7bir uygulama ba\u011flant\u0131y\u0131 a\u00e7am\u0131yor. Adres: %1$s.");
-        table.put("No matching settings",
-                "E\u015fle\u015fen ayar yok");
     }
 
     private static void fillTr2(Map<String, String> table) {
+        table.put("No matching settings",
+                "E\u015fle\u015fen ayar yok");
         table.put("No previews before sending",
                 "G\u00f6ndermeden \u00f6nce \u00f6nizleme yok");
         table.put("No swipe actions on chats",
@@ -2633,11 +2651,11 @@ public final class L10nTranslations {
                 "Sonraki konuya \u00e7ekmeyi durdur");
         table.put("Stop usage reports",
                 "Kullan\u0131m raporlar\u0131n\u0131 durdur");
-        table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
-                "Telegram sunucusunun istedi\u011fi otomatik arama hata ay\u0131klama raporlar\u0131n\u0131 ve g\u00fcnl\u00fck dosyas\u0131 y\u00fcklemelerini durdurur.");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
+                "Telegram sunucusunun istedi\u011fi otomatik arama hata ay\u0131klama raporlar\u0131n\u0131 ve g\u00fcnl\u00fck dosyas\u0131 y\u00fcklemelerini durdurur.");
         table.put("Strip link tracking",
                 "Ba\u011flant\u0131 takibini kald\u0131r");
         table.put("Supported links",
@@ -2720,6 +2738,8 @@ public final class L10nTranslations {
                 "Kullan\u0131m raporlar\u0131 ve arama tan\u0131lamalar\u0131");
         table.put("Use normal paste",
                 "Normal yap\u0131\u015ft\u0131rmay\u0131 kullan");
+        table.put("Use system font",
+                "Sistem yaz\u0131 tipini kullan");
         table.put("User ID %1$s",
                 "Kullan\u0131c\u0131 kimli\u011fi %1$s");
         table.put("Uses Telegram's official certificate for Firebase push registration. Notification permission and battery settings still apply.",
@@ -2754,13 +2774,13 @@ public final class L10nTranslations {
                 "kay\u0131tl\u0131 \u00f6neriler");
         table.put("call debug reports",
                 "arama hata ay\u0131klama raporlar\u0131");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("call log file uploads",
                 "arama g\u00fcnl\u00fck dosyas\u0131 y\u00fcklemeleri");
         table.put("call log reports",
                 "arama g\u00fcnl\u00fck raporlar\u0131");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("caption text paste",
                 "a\u00e7\u0131klama metni yap\u0131\u015ft\u0131rma");
         table.put("channel Gift button",

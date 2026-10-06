@@ -93,6 +93,7 @@ public final class SettingsBackup {
             Settings.DISABLE_DOUBLE_TAP_REACTIONS,
             Settings.QUIET_CONTACTS_NAG,
             Settings.HOLIDAY_LOOK,
+            Settings.USE_SYSTEM_FONT,
             Settings.DISABLE_ANALYTICS,
             Settings.DISABLE_CALL_DEBUG,
             Settings.DISABLE_DRAFT_PREVIEWS,

@@ -235,6 +235,8 @@ Once you've said no to contacts access, the Contacts tab stops asking again and 
 
 New Year look all year	Tampilan Tahun Baru sepanjang tahun
 Telegram's Santa hat sits on the chat list logo, and New Year snow falls every day over the chat list's top bar and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings.	Topi Santa Telegram berada di logo daftar chat. Salju Tahun Baru turun setiap hari di bilah atas daftar chat dan, saat latar belakang chat animasi aktif, di latar belakang chat. Secara default nonaktif di pengaturan.
+Use system font	Gunakan font sistem
+Bold and italic text stops using the Roboto files built into Telegram and takes your phone's font, the one regular text already uses. Code takes the phone's monospace font. Some number displays and Instant View pages keep Telegram's own. Off by default in settings.	Teks tebal dan miring tidak lagi memakai file Roboto bawaan Telegram dan beralih ke font ponsel Anda, yang sudah dipakai teks biasa. Kode memakai font monospace ponsel. Beberapa tampilan angka dan halaman Instant View tetap memakai font Telegram. Nonaktif secara default di pengaturan.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Notifikasi

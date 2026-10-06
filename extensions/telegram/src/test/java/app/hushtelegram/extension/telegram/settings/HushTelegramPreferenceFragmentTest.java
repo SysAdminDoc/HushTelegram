@@ -98,6 +98,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS, "Disable double-tap reactions");
         ROW_TITLES.put(PatchFamily.QUIET_CONTACTS_NAG, "Quiet contacts prompts");
         ROW_TITLES.put(PatchFamily.HOLIDAY_LOOK, "New Year look all year");
+        ROW_TITLES.put(PatchFamily.USE_SYSTEM_FONT, "Use system font");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -221,7 +222,8 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.DISABLE_CHANNEL_PULL)
                         || build.contains(PatchFamily.NORMAL_PASTE) || build.contains(PatchFamily.SHOW_LOCAL_IDS)
                         || build.contains(PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS)
-                        || build.contains(PatchFamily.QUIET_CONTACTS_NAG) || build.contains(PatchFamily.HOLIDAY_LOOK)) expected.add("Chats");
+                        || build.contains(PatchFamily.QUIET_CONTACTS_NAG) || build.contains(PatchFamily.HOLIDAY_LOOK)
+                        || build.contains(PatchFamily.USE_SYSTEM_FONT)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
@@ -345,6 +347,13 @@ public class HushTelegramPreferenceFragmentTest {
             // Telegram keeps its own holiday dates until someone turns the switch on.
             assertFalse(Settings.HOLIDAY_LOOK.key,
                     ((SwitchPreference) page.findPreference(Settings.HOLIDAY_LOOK.key)).isChecked());
+            assertEquals("Use system font", String.valueOf(page.findPreference(Settings.USE_SYSTEM_FONT.key).getTitle()));
+            assertEquals("Bold and italic text stops using the Roboto files built into Telegram and takes your phone's font, the one regular text already uses. "
+                            + "Code takes the phone's monospace font. Some number displays and Instant View pages keep Telegram's own. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.USE_SYSTEM_FONT.key).getSummary()));
+            // Telegram's bundled fonts stay until someone turns the switch on.
+            assertFalse(Settings.USE_SYSTEM_FONT.key,
+                    ((SwitchPreference) page.findPreference(Settings.USE_SYSTEM_FONT.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {

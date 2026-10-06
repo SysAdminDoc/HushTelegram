@@ -235,6 +235,8 @@ Once you've said no to contacts access, the Contacts tab stops asking again and 
 
 New Year look all year	Yıl boyu yılbaşı görünümü
 Telegram's Santa hat sits on the chat list logo, and New Year snow falls every day over the chat list's top bar and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings.	Telegram'ın Noel Baba şapkası sohbet listesi logosunun üzerinde görünür. Yılbaşı karı her gün sohbet listesinin üst çubuğuna, animasyonlu sohbet arka planları açıkken de sohbet arka planlarına yağar. Ayarlarda varsayılan olarak kapalıdır.
+Use system font	Sistem yazı tipini kullan
+Bold and italic text stops using the Roboto files built into Telegram and takes your phone's font, the one regular text already uses. Code takes the phone's monospace font. Some number displays and Instant View pages keep Telegram's own. Off by default in settings.	Kalın ve italik metin, Telegram'a gömülü Roboto dosyaları yerine telefonunuzun yazı tipini kullanır. Normal metin zaten onu kullanıyor. Kod, telefonun eş aralıklı yazı tipini kullanır. Bazı sayı göstergeleri ve Instant View sayfaları Telegram'ın kendi yazı tipini korur. Ayarlarda varsayılan olarak kapalıdır.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Bildirimler

@@ -112,6 +112,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_holiday_look", FALSE);
 
     /**
+     * Medium, italic, extra bold, condensed and monospace text in the phone's own font instead of
+     * Telegram's bundled Roboto files. Telegram keeps the faces it loaded, so a change waits for a restart.
+     */
+    public static final BooleanSetting USE_SYSTEM_FONT =
+            new BooleanSetting("hushtelegram_use_system_font", FALSE, true);
+
+    /**
      * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
      * never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

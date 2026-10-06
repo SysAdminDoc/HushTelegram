@@ -38,6 +38,7 @@ public final class FamilyNames {
     public static final String DISABLE_DOUBLE_TAP_REACTIONS = "Disable double-tap reactions";
     public static final String QUIET_CONTACTS_NAG = "Quiet contacts nag";
     public static final String HOLIDAY_LOOK = "Holiday look all year";
+    public static final String USE_SYSTEM_FONT = "Use system font";
     public static final String DISABLE_ANALYTICS = "Disable analytics";
     public static final String DISABLE_CALL_DEBUG = "Disable call debug upload";
     public static final String DISABLE_DRAFT_PREVIEWS = "Disable draft link previews";

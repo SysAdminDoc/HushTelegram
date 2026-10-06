@@ -235,6 +235,8 @@ Once you've said no to contacts access, the Contacts tab stops asking again and 
 
 New Year look all year	Neujahrs-Look das ganze Jahr
 Telegram's Santa hat sits on the chat list logo, and New Year snow falls every day over the chat list's top bar and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings.	Telegrams Weihnachtsmütze sitzt auf dem Logo der Chatliste. Neujahrsschnee fällt jeden Tag über der oberen Leiste der Chatliste und, wenn animierte Chat-Hintergründe an sind, über den Chat-Hintergründen. In den Einstellungen standardmäßig ausgeschaltet.
+Use system font	Systemschrift verwenden
+Bold and italic text stops using the Roboto files built into Telegram and takes your phone's font, the one regular text already uses. Code takes the phone's monospace font. Some number displays and Instant View pages keep Telegram's own. Off by default in settings.	Fetter und kursiver Text nutzt nicht mehr die in Telegram eingebauten Roboto-Dateien, sondern die Schrift deines Handys, die normaler Text schon verwendet. Code nutzt die Monospace-Schrift des Handys. Manche Zahlenanzeigen und Instant-View-Seiten behalten Telegrams eigene Schrift. In den Einstellungen standardmäßig ausgeschaltet.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Benachrichtigungen

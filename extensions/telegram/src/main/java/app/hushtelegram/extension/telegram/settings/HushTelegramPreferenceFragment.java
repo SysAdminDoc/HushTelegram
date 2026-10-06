@@ -331,6 +331,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.USE_SYSTEM_FONT)) {
+                chats.addPreference(mark(toggle(context, Settings.USE_SYSTEM_FONT, L10n.t("Use system font"),
+                        PatchFamily.USE_SYSTEM_FONT.coverageSummary(L10n.t("Bold and italic text stops using the Roboto files built into Telegram "
+                                + "and takes your phone's font, the one regular text already uses. Code takes the phone's monospace font. "
+                                + "Some number displays and Instant View pages keep Telegram's own. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
