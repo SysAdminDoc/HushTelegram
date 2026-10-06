@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** A new Hide contacts on Telegram switch, off by default, takes the Your contacts on Telegram list off a short chat list, along with its heading and the loading rows shown while contacts sync. Chats, folders, contact sync and search don't change. Turning it off or pausing HushTelegram brings the same rows back. A change shows up the next time Telegram rebuilds the chat list, and a restart always does.
+
 * **Telegram:** The beta target is now telegram.org's current 12.10.7 build, version code 71239, which replaced build 71179. Every patch applies and passes its fixture tests on it.
 
 ## 0.0.9 (2026-10-05)

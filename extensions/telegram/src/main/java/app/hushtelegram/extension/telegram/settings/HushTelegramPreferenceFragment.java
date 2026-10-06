@@ -280,6 +280,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay."))),
                         SettingsIcons.BLOCK));
             }
+            if (build.contains(PatchFamily.HIDE_CONTACTS_BLOCK)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_CONTACTS_BLOCK, L10n.t("Hide contacts on Telegram"),
+                        PatchFamily.HIDE_CONTACTS_BLOCK.coverageSummary(L10n.t("A short chat list no longer lists your contacts on Telegram under it, "
+                                + "with their heading and loading rows. Your chats, folders, contact sync and search stay. Off by default in settings."))),
+                        SettingsIcons.BLOCK));
+            }
             if (build.contains(PatchFamily.DISABLE_CHAT_SWIPE)) {
                 chats.addPreference(mark(toggle(context, Settings.DISABLE_CHAT_SWIPE, L10n.t("No swipe actions on chats"),
                         PatchFamily.DISABLE_CHAT_SWIPE.coverageSummary(L10n.t("A sideways swipe on a chat in the chat list no longer archives, "

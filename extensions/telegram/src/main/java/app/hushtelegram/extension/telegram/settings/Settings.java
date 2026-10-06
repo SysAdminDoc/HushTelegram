@@ -62,6 +62,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_POPULAR_APPS =
             new BooleanSetting("hushtelegram_hide_popular_apps", TRUE);
 
+    /**
+     * The chat list's Your contacts on Telegram heading, rows and loading rows only; chats, folders,
+     * contact sync and search stay stock.
+     */
+    public static final BooleanSetting HIDE_CONTACTS_BLOCK =
+            new BooleanSetting("hushtelegram_hide_contacts_block", FALSE);
+
     /** The chat list's sideways swipe on a chat row only; long-press, drag to reorder and folder swipes stay stock. */
     public static final BooleanSetting DISABLE_CHAT_SWIPE =
             new BooleanSetting("hushtelegram_disable_chat_swipe", FALSE);

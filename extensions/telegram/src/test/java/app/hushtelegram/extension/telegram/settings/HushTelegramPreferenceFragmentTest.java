@@ -89,6 +89,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HIDE_PROMOTIONAL_BANNERS, "Hide promotional banners");
         ROW_TITLES.put(PatchFamily.HIDE_SPONSORED_PROXY, "Hide sponsored proxy channel");
         ROW_TITLES.put(PatchFamily.HIDE_POPULAR_APPS, "Hide popular apps");
+        ROW_TITLES.put(PatchFamily.HIDE_CONTACTS_BLOCK, "Hide contacts on Telegram");
         ROW_TITLES.put(PatchFamily.DISABLE_CHAT_SWIPE, "No swipe actions on chats");
         ROW_TITLES.put(PatchFamily.DISABLE_CHANNEL_PULL, "Stop pull to next channel");
         ROW_TITLES.put(PatchFamily.NORMAL_PASTE, "Use normal paste");
@@ -213,7 +214,8 @@ public class HushTelegramPreferenceFragmentTest {
                 if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_STORIES)
                         || build.contains(PatchFamily.HIDE_RECOMMENDATIONS) || build.contains(PatchFamily.HIDE_COMMERCE)
                         || build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS) || build.contains(PatchFamily.HIDE_SPONSORED_PROXY)
-                        || build.contains(PatchFamily.HIDE_POPULAR_APPS) || build.contains(PatchFamily.DISABLE_CHAT_SWIPE)
+                        || build.contains(PatchFamily.HIDE_POPULAR_APPS) || build.contains(PatchFamily.HIDE_CONTACTS_BLOCK)
+                        || build.contains(PatchFamily.DISABLE_CHAT_SWIPE)
                         || build.contains(PatchFamily.DISABLE_CHANNEL_PULL)
                         || build.contains(PatchFamily.NORMAL_PASTE) || build.contains(PatchFamily.SHOW_LOCAL_IDS)
                         || build.contains(PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS)

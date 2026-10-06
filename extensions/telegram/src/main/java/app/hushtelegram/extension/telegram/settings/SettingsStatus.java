@@ -45,6 +45,7 @@ public final class SettingsStatus {
     public static boolean cachedProxyDialog() { return false; }
     public static boolean cachedProxyFilters() { return false; }
     public static boolean hidePopularApps() { return false; }
+    public static boolean hideContactsBlock() { return false; }
     public static boolean disableChatSwipe() { return false; }
     public static boolean disableChannelPull() { return false; }
     public static boolean normalPaste() { return false; }

@@ -72,6 +72,7 @@ public class PatchFamilyTest {
         Settings.NORMAL_PASTE.resetToDefault();
         Settings.SHOW_LOCAL_IDS.resetToDefault();
         Settings.DISABLE_DOUBLE_TAP_REACTIONS.resetToDefault();
+        Settings.HIDE_CONTACTS_BLOCK.resetToDefault();
         HookStatus.clear();
     }
 
@@ -148,6 +149,17 @@ public class PatchFamilyTest {
         assertEquals(EnumSet.of(PatchFamily.Capability.READ_METRICS),
                 PatchFamily.DISABLE_ANALYTICS.installedCapabilities());
         assertEquals("capabilities must never become saved settings", 0, SettingsStatus.class.getDeclaredFields().length);
+    }
+
+    @Test
+    public void contactsBlockHasItsOwnOffByDefaultSwitchApartFromTheContactsPrompt() {
+        PatchFamily family = PatchFamily.HIDE_CONTACTS_BLOCK;
+        assertEquals("Hide contacts on Telegram", family.patchName);
+        assertEquals(Collections.singletonList(Settings.HIDE_CONTACTS_BLOCK), family.switches);
+        assertFalse(Settings.HIDE_CONTACTS_BLOCK.defaultValue);
+        assertTrue(family.expectedCapabilities().isEmpty());
+        assertFalse(PatchFamily.QUIET_CONTACTS_NAG.switches.contains(Settings.HIDE_CONTACTS_BLOCK));
+        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
     }
 
     @Test
@@ -271,7 +283,7 @@ public class PatchFamilyTest {
         assertEquals(Arrays.asList(
                 "Hide ads: on (hushtelegram_hide_ads=on)",
                 "Disable analytics: disabled by its switch (hushtelegram_disable_analytics=off)",
-                "not in this build: Hide Stories, Hide recommendations, Hide Premium, gifts and Stars, Hide promotional banners, Hide sponsored proxy channel, Hide popular apps, Disable chat swipe actions, Disable pull to next channel, Use normal paste, Show user and chat IDs, Disable double-tap reactions, Quiet contacts nag, Holiday look all year, Disable call debug upload, Disable draft link previews, Gallery camera on tap, Open links externally, Strip link tracking, Disable update checks, Repair Firebase push registration",
+                "not in this build: Hide Stories, Hide recommendations, Hide Premium, gifts and Stars, Hide promotional banners, Hide sponsored proxy channel, Hide popular apps, Hide contacts on Telegram, Disable chat swipe actions, Disable pull to next channel, Use normal paste, Show user and chat IDs, Disable double-tap reactions, Quiet contacts nag, Holiday look all year, Disable call debug upload, Disable draft link previews, Gallery camera on tap, Open links externally, Strip link tracking, Disable update checks, Repair Firebase push registration",
                 "Hide ads coverage: channel ads, video ads, search ads",
                 "Disable analytics coverage: device statistics reports, channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures"),
                 running);

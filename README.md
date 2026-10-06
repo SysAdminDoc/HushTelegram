@@ -64,7 +64,7 @@ The developer installation script requires the exact device serial, expected mod
 
 ## Patches
 
-The source catalog has 25 patches, with 23 selected by default. The three new local controls below are unreleased. A few of their switches stay off until you turn them on in settings, like tracking cleaning and draft link previews. The two credential patches need your own values and aren't selected by default.
+The source catalog has 26 patches, with 24 selected by default. Hide contacts on Telegram is new since v0.0.9 and isn't in a release yet. A few of their switches stay off until you turn them on in settings, like tracking cleaning and draft link previews. The two credential patches need your own values and aren't selected by default.
 
 | Patch | What it does |
 |---|---|
@@ -81,6 +81,7 @@ The source catalog has 25 patches, with 23 selected by default. The three new lo
 | `Hide promotional banners` | Hides Premium, birthday and low Stars balance banners in the chat list. Account security notices and other suggestions remain. Nothing is dismissed for you. |
 | `Hide sponsored proxy channel` | Hides a proxy's sponsored channel from the chat list and folders. Leaves proxy settings and shared promo-data updates alone. |
 | `Hide popular apps` | Hides the Popular apps list in search's Apps tab and stops Telegram from asking its server for it. Apps you've opened and other search results stay. |
+| `Hide contacts on Telegram` | Adds a switch, off by default, that hides the Your contacts on Telegram list under a short chat list, with its heading and loading rows. Chats, folders, contact sync and search keep their usual behavior. |
 | `Disable chat swipe actions` | Adds a switch, off by default, that stops a sideways swipe on a chat in the chat list from archiving, muting, pinning, deleting or marking it read. A swipe set to change folders still does. Long-press keeps every action. |
 | `Disable pull to next channel` | Adds a switch, on by default, that stops pulling past the bottom of a channel from opening the next channel. Scrolling, opening channels directly and pulling between forum topics still work. |
 | `Use normal paste` | Adds a switch, off by default, that pastes text with Android's plain-text action. Whitespace and URLs stay intact without Telegram's HTML, table or monospace conversion. Other clipboard actions stay available. |

@@ -196,6 +196,9 @@ public class PausedHooksTest {
         }));
         probes.put(PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS, Collections.singletonList(
                 app.hushtelegram.extension.telegram.misc.DoubleTapReactions::stopReaction));
+        probes.put(PatchFamily.HIDE_CONTACTS_BLOCK, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.ContactsBlock.rows(new java.util.ArrayList<>(Collections.singletonList("contact"))) == null,
+                () -> !app.hushtelegram.extension.telegram.misc.ContactsBlock.placeholder(true)));
         // After a "Not now", the Contacts tab neither asks again nor marks its icon.
         probes.put(PatchFamily.QUIET_CONTACTS_NAG, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.ContactsNag.skipAsk(declinedContactsPrompt()),
