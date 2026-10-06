@@ -1,7 +1,7 @@
 ![HushTelegram. Keep the chat. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.0.10-2AABEE" alt="Version 0.0.10">
+  <img src="https://img.shields.io/badge/version-0.0.11-2AABEE" alt="Version 0.0.11">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Telegram-12.10.6-2AABEE" alt="Telegram 12.10.6">
@@ -16,7 +16,7 @@ The latest release is [v0.0.9](https://github.com/SysAdminDoc/HushTelegram/relea
 
 v0.0.9 fixes push registration on slower phones and follows telegram.org's rebuilt beta, build 71179. HushTelegram settings now open from a row in Telegram's own Settings. Plain-text paste and copyable user and chat IDs are new switches, off until you turn them on, and so is one that stops double-tap reactions. Two optional patches take your own registered Telegram API credentials and Google Maps key when you patch. With its own registered API ID, a Samsung phone that Telegram had turned away signed in normally.
 
-The current source is v0.0.10, which isn't released yet. It follows telegram.org's beta build 71239. Hide contacts on Telegram, Hide greeting stickers and Use system font are new patches, and Disable pull to next channel gained a second switch for forum topics. Every new switch starts off.
+The current source is v0.0.11, which isn't released yet. It follows telegram.org's beta build 71239. Hide contacts on Telegram, Hide greeting stickers and Use system font are new patches, and Disable pull to next channel gained a second switch for forum topics. Every new switch starts off.
 
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) | [Download a release](https://github.com/SysAdminDoc/HushTelegram/releases/latest) | [Browse the patches](#patches)
