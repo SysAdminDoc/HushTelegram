@@ -2,6 +2,10 @@
 
 Every HushTelegram release, newest first.
 
+## Unreleased
+
+* **Telegram:** The beta target is now telegram.org's current 12.10.7 build, version code 71239, which replaced build 71179. Every patch applies and passes its fixture tests on it.
+
 ## 0.0.9 (2026-10-05)
 
 The fourth release, with 25 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.
