@@ -62,6 +62,7 @@ public final class SettingsStatus {
     public static boolean useSystemFont() { return false; }
     public static boolean amoledBlack() { return false; }
     public static boolean hideTranslateBar() { return false; }
+    public static boolean exactNumbers() { return false; }
     public static boolean storyRequests() { return false; }
     public static boolean storyBar() { return false; }
     public static boolean storyCamera() { return false; }

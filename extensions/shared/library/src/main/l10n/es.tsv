@@ -241,6 +241,8 @@ AMOLED black	Negro AMOLED
 Telegram's Night and Dark themes draw their screens and chat background in pure black, while message bubbles and pop-up menus keep their colors. Themes you've installed from a file stay as they are. Off by default in settings.	Los temas Noche y Oscuro de Telegram muestran las pantallas y el fondo del chat en negro puro, y las burbujas de mensajes y los menús emergentes mantienen sus colores. Los temas instalados desde un archivo se quedan como están. Desactivado por defecto en los ajustes.
 Hide translate bar	Ocultar barra de traducción
 Chats in another language stop showing Telegram's translate bar at the top, and Translate moves to the chat's menu. A chat you're translating keeps its bar so you can go back to the original. Off by default in settings.	Los chats en otro idioma dejan de mostrar arriba la barra de traducción de Telegram, y Traducir pasa al menú del chat. Un chat que estás traduciendo mantiene su barra para que puedas volver al original. Desactivado por defecto en los ajustes.
+Exact numbers	Números exactos
+Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.	Los contadores de miembros, suscriptores, vistas, respuestas y reacciones muestran el número completo, como 12,345 en vez de 12.3K. Desactivado por defecto en los ajustes.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Notificaciones

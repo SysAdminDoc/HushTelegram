@@ -130,6 +130,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_hide_translate_bar", FALSE);
 
     /**
+     * Member, subscriber, view, reply and reaction counts written in full instead of shortened to
+     * 12.3K.
+     */
+    public static final BooleanSetting EXACT_NUMBERS =
+            new BooleanSetting("hushtelegram_exact_numbers", FALSE);
+
+    /**
      * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
      * never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

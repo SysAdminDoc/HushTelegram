@@ -16,6 +16,8 @@ Working version 0.0.11.
 
 * **Telegram:** A new Hide translate bar switch, off by default, takes the translate bar off the top of chats in another language. Translate is still in the chat's menu, and a chat you're translating keeps its bar so the original is one tap away.
 
+* **Telegram:** A new Exact numbers switch, off by default, shows member, subscriber, view, reply and reaction counts in full, so a channel reads 12,345 subscribers instead of 12.3K.
+
 * **Telegram:** Disable pull to next channel has a second switch, Stop pull to next topic, off by default. With it on, pulling up at the bottom of a forum topic only scrolls instead of opening the next topic. Each switch covers only its own pull, and a switch flipped mid-drag counts when you let go.
 
 * **Telegram:** The beta target is now telegram.org's current 12.10.7 build, version code 71239, which replaced build 71179. Every patch applies and passes its fixture tests on it.

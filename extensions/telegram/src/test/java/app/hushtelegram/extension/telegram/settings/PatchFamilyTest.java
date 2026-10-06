@@ -77,6 +77,7 @@ public class PatchFamilyTest {
         Settings.USE_SYSTEM_FONT.resetToDefault();
         Settings.AMOLED_BLACK.resetToDefault();
         Settings.HIDE_TRANSLATE_BAR.resetToDefault();
+        Settings.EXACT_NUMBERS.resetToDefault();
         HookStatus.clear();
     }
 
@@ -84,6 +85,17 @@ public class PatchFamilyTest {
      * A switch is a family's, or the settings entry's own (the release check), and never both: a
      * switch in neither list goes unmentioned by the screen and the tests that hold Pause to it.
      */
+    @Test
+    public void exactNumbersHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
+        PatchFamily family = PatchFamily.EXACT_NUMBERS;
+        assertEquals("Exact numbers", family.patchName);
+        assertEquals(Collections.singletonList(Settings.EXACT_NUMBERS), family.switches);
+        assertFalse(Settings.EXACT_NUMBERS.defaultValue);
+        assertFalse(Settings.EXACT_NUMBERS.rebootApp);
+        assertTrue(family.expectedCapabilities().isEmpty());
+        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+    }
+
     @Test
     public void everySwitchBelongsToExactlyOneFamily() {
         Map<BooleanSetting, String> owners = new HashMap<>();
@@ -330,7 +342,7 @@ public class PatchFamilyTest {
         assertEquals(Arrays.asList(
                 "Hide ads: on (hushtelegram_hide_ads=on)",
                 "Disable analytics: disabled by its switch (hushtelegram_disable_analytics=off)",
-                "not in this build: Hide Stories, Hide recommendations, Hide Premium, gifts and Stars, Hide promotional banners, Hide sponsored proxy channel, Hide popular apps, Hide contacts on Telegram, Hide greeting stickers, Disable chat swipe actions, Disable pull to next channel, Use normal paste, Show user and chat IDs, Disable double-tap reactions, Quiet contacts nag, Holiday look all year, Use system font, AMOLED black, Hide translate bar, Disable call debug upload, Disable draft link previews, Gallery camera on tap, Open links externally, Strip link tracking, Disable update checks, Repair Firebase push registration",
+                "not in this build: Hide Stories, Hide recommendations, Hide Premium, gifts and Stars, Hide promotional banners, Hide sponsored proxy channel, Hide popular apps, Hide contacts on Telegram, Hide greeting stickers, Disable chat swipe actions, Disable pull to next channel, Use normal paste, Show user and chat IDs, Disable double-tap reactions, Quiet contacts nag, Holiday look all year, Use system font, AMOLED black, Hide translate bar, Exact numbers, Disable call debug upload, Disable draft link previews, Gallery camera on tap, Open links externally, Strip link tracking, Disable update checks, Repair Firebase push registration",
                 "Hide ads coverage: channel ads, video ads, search ads",
                 "Disable analytics coverage: device statistics reports, channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures"),
                 running);

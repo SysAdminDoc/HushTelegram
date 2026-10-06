@@ -97,6 +97,7 @@ body:
         - Use system font
         - AMOLED black
         - Hide translate bar
+        - Exact numbers
         - Strip link tracking
         - HushTelegram settings
     validations:

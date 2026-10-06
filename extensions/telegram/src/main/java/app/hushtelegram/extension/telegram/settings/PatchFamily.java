@@ -72,6 +72,7 @@ public enum PatchFamily {
     USE_SYSTEM_FONT(FamilyNames.USE_SYSTEM_FONT, "useSystemFont", null, Settings.USE_SYSTEM_FONT),
     AMOLED_BLACK(FamilyNames.AMOLED_BLACK, "amoledBlack", null, Settings.AMOLED_BLACK),
     HIDE_TRANSLATE_BAR(FamilyNames.HIDE_TRANSLATE_BAR, "hideTranslateBar", null, Settings.HIDE_TRANSLATE_BAR),
+    EXACT_NUMBERS(FamilyNames.EXACT_NUMBERS, "exactNumbers", null, Settings.EXACT_NUMBERS),
     DISABLE_ANALYTICS(FamilyNames.DISABLE_ANALYTICS, "disableAnalytics", null,
             Settings.DISABLE_ANALYTICS),
     DISABLE_CALL_DEBUG(FamilyNames.DISABLE_CALL_DEBUG, "disableCallDebug", null,
@@ -136,7 +137,7 @@ public enum PatchFamily {
     /** The families whose switches the Chats page holds. The page and its home row both read this. */
     static final Set<PatchFamily> CHATS_PAGE = Collections.unmodifiableSet(EnumSet.of(HIDE_ADS, HIDE_STORIES,
             HIDE_RECOMMENDATIONS, HIDE_COMMERCE, HIDE_PROMOTIONAL_BANNERS, HIDE_SPONSORED_PROXY, HIDE_POPULAR_APPS, HIDE_CONTACTS_BLOCK, HIDE_GREETING_STICKERS, DISABLE_CHAT_SWIPE, DISABLE_CHANNEL_PULL, NORMAL_PASTE, SHOW_LOCAL_IDS, DISABLE_DOUBLE_TAP_REACTIONS,
-            QUIET_CONTACTS_NAG, HOLIDAY_LOOK, USE_SYSTEM_FONT, AMOLED_BLACK, HIDE_TRANSLATE_BAR));
+            QUIET_CONTACTS_NAG, HOLIDAY_LOOK, USE_SYSTEM_FONT, AMOLED_BLACK, HIDE_TRANSLATE_BAR, EXACT_NUMBERS));
 
     /** Each independent hook, its owning family and the flag set only after it was inserted. */
     public enum Capability {

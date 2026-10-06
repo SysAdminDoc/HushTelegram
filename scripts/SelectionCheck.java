@@ -252,6 +252,7 @@ public final class SelectionCheck {
         hook(calls, flags, "useSystemFont", "misc/SystemFont", "typeface");
         hook(calls, flags, "amoledBlack", "misc/BlackTheme", "loaded");
         hook(calls, flags, "hideTranslateBar", "misc/TranslateBar", "hidden");
+        hook(calls, flags, "exactNumbers", "misc/ExactNumbers", "format");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");
         hook(calls, flags, "disableUpdateChecks", "misc/UpdateChecks", "skipUpdateCheck");
         for (String[] bridge : List.of(

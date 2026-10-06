@@ -227,6 +227,9 @@ public class PausedHooksTest {
         // A chat that isn't being translated answers that its translate bar is hidden.
         probes.put(PatchFamily.HIDE_TRANSLATE_BAR, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.TranslateBar.hidden(new Object(), 42L)));
+        // A count comes back written in full.
+        probes.put(PatchFamily.EXACT_NUMBERS, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.ExactNumbers.format(12345, null) != null));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),

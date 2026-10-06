@@ -352,6 +352,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "so you can go back to the original. Off by default in settings."))),
                         SettingsIcons.BLOCK));
             }
+            if (build.contains(PatchFamily.EXACT_NUMBERS)) {
+                chats.addPreference(mark(toggle(context, Settings.EXACT_NUMBERS, L10n.t("Exact numbers"),
+                        PatchFamily.EXACT_NUMBERS.coverageSummary(L10n.t("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 "
+                                + "instead of 12.3K. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

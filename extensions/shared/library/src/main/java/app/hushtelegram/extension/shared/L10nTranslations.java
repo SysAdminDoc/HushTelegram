@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(540);
+        Map<String, String> table = new HashMap<>(544);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -206,6 +206,8 @@ public final class L10nTranslations {
                 "Jeder Schalter au\u00dfer der Debug-Protokollierung verh\u00e4lt sich, als w\u00e4re er aus, und was beim Patchen festgelegt wurde, bleibt aktiv. Deine Einstellungen bleiben, wie sie sind.");
         table.put("Every switch here applies to all the accounts in this Telegram app, not only the one you have open.",
                 "Jeder Schalter hier gilt f\u00fcr alle Konten in dieser Telegram-App, nicht nur f\u00fcr das gerade ge\u00f6ffnete.");
+        table.put("Exact numbers",
+                "Genaue Zahlen");
         table.put("Export diagnostic report",
                 "Diagnosebericht exportieren");
         table.put("Export settings",
@@ -296,13 +298,15 @@ public final class L10nTranslations {
                 "Links, Updates, Sicherung und mehr");
         table.put("Local notification status",
                 "Lokaler Benachrichtigungsstatus");
+        table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
+                "Mitglieder-, Abonnenten-, Aufruf-, Antwort- und Reaktionszahlen erscheinen vollst\u00e4ndig, etwa 12,345 statt 12.3K. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("More settings",
                 "Weitere Einstellungen");
         table.put("New Year look all year",
                 "Neujahrs-Look das ganze Jahr");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("No",
                 "Nein");
         table.put("No HushTelegram release is out yet.",
@@ -419,13 +423,13 @@ public final class L10nTranslations {
                 "Angemeldete Konten: %1$s");
         table.put("Source code and issues",
                 "Quellcode und Issues");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Stays in while paused",
                 "Bleibt w\u00e4hrend der Pause aktiv");
         table.put("Stop call diagnostics",
                 "Anrufdiagnosen stoppen");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Stop pull to next channel",
                 "Ziehen zum n\u00e4chsten Kanal verhindern");
         table.put("Stop pull to next topic",
@@ -542,13 +546,13 @@ public final class L10nTranslations {
                 "Story-Ringe an Avataren");
         table.put("avatar story taps",
                 "Story-Tipps auf Avatare");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("birthday gift banner",
                 "Banner f\u00fcr Geburtstagsgeschenke");
         table.put("bot shares",
                 "von Bots geteilte Nachrichten");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("cached proxy channel",
                 "gespeicherter Proxy-Kanal");
         table.put("cached proxy folder entries",
@@ -612,7 +616,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(540);
+        Map<String, String> table = new HashMap<>(544);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -771,6 +775,8 @@ public final class L10nTranslations {
                 "Todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados, y lo que se aplic\u00f3 al parchear se mantiene. Tu configuraci\u00f3n no cambia.");
         table.put("Every switch here applies to all the accounts in this Telegram app, not only the one you have open.",
                 "Cada interruptor de aqu\u00ed se aplica a todas las cuentas de esta app de Telegram, no solo a la que tienes abierta.");
+        table.put("Exact numbers",
+                "N\u00fameros exactos");
         table.put("Export diagnostic report",
                 "Exportar informe de diagn\u00f3stico");
         table.put("Export settings",
@@ -861,13 +867,15 @@ public final class L10nTranslations {
                 "Enlaces, actualizaciones, copia de seguridad y m\u00e1s");
         table.put("Local notification status",
                 "Estado local de notificaciones");
+        table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
+                "Los contadores de miembros, suscriptores, vistas, respuestas y reacciones muestran el n\u00famero completo, como 12,345 en vez de 12.3K. Desactivado por defecto en los ajustes.");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("More settings",
                 "M\u00e1s ajustes");
         table.put("New Year look all year",
                 "Aspecto de A\u00f1o Nuevo todo el a\u00f1o");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("No",
                 "No");
         table.put("No HushTelegram release is out yet.",
@@ -984,13 +992,13 @@ public final class L10nTranslations {
                 "Cuentas con sesi\u00f3n iniciada: %1$s");
         table.put("Source code and issues",
                 "C\u00f3digo fuente e incidencias");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Stays in while paused",
                 "Se mantiene durante la pausa");
         table.put("Stop call diagnostics",
                 "Detener diagn\u00f3sticos de llamadas");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Stop pull to next channel",
                 "Impedir el salto al siguiente canal al deslizar");
         table.put("Stop pull to next topic",
@@ -1107,13 +1115,13 @@ public final class L10nTranslations {
                 "anillos de historias en los avatares");
         table.put("avatar story taps",
                 "toques de historias en los avatares");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("birthday gift banner",
                 "banner de regalos de cumplea\u00f1os");
         table.put("bot shares",
                 "mensajes que comparten los bots");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("cached proxy channel",
                 "canal del proxy almacenado");
         table.put("cached proxy folder entries",
@@ -1177,7 +1185,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(540);
+        Map<String, String> table = new HashMap<>(544);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1336,6 +1344,8 @@ public final class L10nTranslations {
                 "Semua sakelar kecuali Pencatatan debug dianggap nonaktif, dan yang diatur saat Anda menambal tetap aktif. Pengaturan Anda tetap seperti semula.");
         table.put("Every switch here applies to all the accounts in this Telegram app, not only the one you have open.",
                 "Setiap sakelar di sini berlaku untuk semua akun di aplikasi Telegram ini, bukan hanya akun yang sedang Anda buka.");
+        table.put("Exact numbers",
+                "Angka lengkap");
         table.put("Export diagnostic report",
                 "Ekspor laporan diagnostik");
         table.put("Export settings",
@@ -1426,13 +1436,15 @@ public final class L10nTranslations {
                 "Tautan, pembaruan, cadangan, dan lainnya");
         table.put("Local notification status",
                 "Status notifikasi lokal");
+        table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
+                "Jumlah anggota, pelanggan, tayangan, balasan, dan reaksi ditampilkan lengkap, misalnya 12,345, bukan 12.3K. Nonaktif secara default di pengaturan.");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("More settings",
                 "Pengaturan lainnya");
         table.put("New Year look all year",
                 "Tampilan Tahun Baru sepanjang tahun");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("No",
                 "Tidak");
         table.put("No HushTelegram release is out yet.",
@@ -1549,13 +1561,13 @@ public final class L10nTranslations {
                 "Akun yang masuk: %1$s");
         table.put("Source code and issues",
                 "Kode sumber dan laporan masalah");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Stays in while paused",
                 "Tetap aktif saat dijeda");
         table.put("Stop call diagnostics",
                 "Hentikan diagnostik panggilan");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Stop pull to next channel",
                 "Hentikan tarikan ke kanal berikutnya");
         table.put("Stop pull to next topic",
@@ -1672,13 +1684,13 @@ public final class L10nTranslations {
                 "lingkaran cerita pada avatar");
         table.put("avatar story taps",
                 "ketukan cerita pada avatar");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("birthday gift banner",
                 "banner hadiah ulang tahun");
         table.put("bot shares",
                 "pesan yang dibagikan bot");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("cached proxy channel",
                 "kanal proxy tersimpan");
         table.put("cached proxy folder entries",
@@ -1742,7 +1754,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(540);
+        Map<String, String> table = new HashMap<>(544);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1901,6 +1913,8 @@ public final class L10nTranslations {
                 "Todas as op\u00e7\u00f5es, exceto Registro de depura\u00e7\u00e3o, funcionam como se estivessem desativadas, e o que foi definido ao aplicar os patches permanece ativo. Suas configura\u00e7\u00f5es n\u00e3o s\u00e3o alteradas.");
         table.put("Every switch here applies to all the accounts in this Telegram app, not only the one you have open.",
                 "Cada op\u00e7\u00e3o aqui vale para todas as contas deste app do Telegram, n\u00e3o s\u00f3 para a que est\u00e1 aberta.");
+        table.put("Exact numbers",
+                "N\u00fameros exatos");
         table.put("Export diagnostic report",
                 "Exportar relat\u00f3rio de diagn\u00f3stico");
         table.put("Export settings",
@@ -1991,13 +2005,15 @@ public final class L10nTranslations {
                 "Links, atualiza\u00e7\u00f5es, backup e mais");
         table.put("Local notification status",
                 "Estado local das notifica\u00e7\u00f5es");
+        table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
+                "Contagens de membros, inscritos, visualiza\u00e7\u00f5es, respostas e rea\u00e7\u00f5es aparecem completas, como 12,345 em vez de 12.3K. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("More settings",
                 "Mais configura\u00e7\u00f5es");
         table.put("New Year look all year",
                 "Visual de Ano Novo o ano todo");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("No",
                 "N\u00e3o");
         table.put("No HushTelegram release is out yet.",
@@ -2114,13 +2130,13 @@ public final class L10nTranslations {
                 "Contas conectadas: %1$s");
         table.put("Source code and issues",
                 "C\u00f3digo-fonte e relatos de problemas");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Stays in while paused",
                 "O que continua ativo na pausa");
         table.put("Stop call diagnostics",
                 "Interromper diagn\u00f3sticos de chamadas");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Stop pull to next channel",
                 "Impedir o salto para o pr\u00f3ximo canal ao deslizar");
         table.put("Stop pull to next topic",
@@ -2237,13 +2253,13 @@ public final class L10nTranslations {
                 "an\u00e9is de stories nos avatares");
         table.put("avatar story taps",
                 "toques de stories nos avatares");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("birthday gift banner",
                 "banner de presentes de anivers\u00e1rio");
         table.put("bot shares",
                 "mensagens compartilhadas por bots");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("cached proxy channel",
                 "canal do proxy armazenado");
         table.put("cached proxy folder entries",
@@ -2307,7 +2323,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(540);
+        Map<String, String> table = new HashMap<>(544);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2466,6 +2482,8 @@ public final class L10nTranslations {
                 "Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r, yamalad\u0131\u011f\u0131nda ayarlananlar ise devrede kal\u0131r. Ayarlar\u0131n oldu\u011fu gibi kal\u0131r.");
         table.put("Every switch here applies to all the accounts in this Telegram app, not only the one you have open.",
                 "Buradaki her anahtar yaln\u0131zca a\u00e7\u0131k olan hesap i\u00e7in de\u011fil, bu Telegram uygulamas\u0131ndaki t\u00fcm hesaplar i\u00e7in ge\u00e7erlidir.");
+        table.put("Exact numbers",
+                "Say\u0131lar\u0131 tam g\u00f6ster");
         table.put("Export diagnostic report",
                 "Tan\u0131lama raporunu d\u0131\u015fa aktar");
         table.put("Export settings",
@@ -2556,13 +2574,15 @@ public final class L10nTranslations {
                 "Ba\u011flant\u0131lar, g\u00fcncellemeler, yedekleme ve daha fazlas\u0131");
         table.put("Local notification status",
                 "Yerel bildirim durumu");
+        table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
+                "\u00dcye, abone, g\u00f6r\u00fcnt\u00fclenme, yan\u0131t ve tepki say\u0131lar\u0131 k\u0131salt\u0131lmadan g\u00f6sterilir, \u00f6rne\u011fin 12.3K yerine 12,345. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("More settings",
                 "Di\u011fer ayarlar");
         table.put("New Year look all year",
                 "Y\u0131l boyu y\u0131lba\u015f\u0131 g\u00f6r\u00fcn\u00fcm\u00fc");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("No",
                 "Hay\u0131r");
         table.put("No HushTelegram release is out yet.",
@@ -2679,13 +2699,13 @@ public final class L10nTranslations {
                 "Oturum a\u00e7m\u0131\u015f hesaplar: %1$s");
         table.put("Source code and issues",
                 "Kaynak kodu ve sorunlar");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Stays in while paused",
                 "Duraklat\u0131lsa da devrede kal\u0131r");
         table.put("Stop call diagnostics",
                 "Arama tan\u0131lamalar\u0131n\u0131 durdur");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Stop pull to next channel",
                 "Sonraki kanala \u00e7ekmeyi durdur");
         table.put("Stop pull to next topic",
@@ -2802,13 +2822,13 @@ public final class L10nTranslations {
                 "avatar hik\u00e2ye halkalar\u0131");
         table.put("avatar story taps",
                 "avatarlardaki hik\u00e2ye dokunu\u015flar\u0131");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("birthday gift banner",
                 "do\u011fum g\u00fcn\u00fc hediyesi afi\u015fi");
         table.put("bot shares",
                 "botlar\u0131n payla\u015ft\u0131\u011f\u0131 mesajlar");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("cached proxy channel",
                 "kay\u0131tl\u0131 proxy kanal\u0131");
         table.put("cached proxy folder entries",
