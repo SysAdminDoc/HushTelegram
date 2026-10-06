@@ -8,10 +8,15 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.removeInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
@@ -120,6 +125,16 @@ class HideContactsBlockFixtureTest {
                     reader.method.replaceInstruction(reader.reads.first { !it.rows }.index, "nop") },
                 "reader skips its null test" to { _, m -> val reader = m.first { it.method != builder(m) && it.reads.any { r -> r.rows } }
                     reader.method.replaceInstruction(reader.reads.first { it.rows }.index + 1, "nop") },
+                "reader reads the rows where the block is absent" to { _, m -> val reader = m.first { it.method != builder(m) && it.reads.any { r -> r.rows } }
+                    // The test's null branch now lands on a raw read of the copy, which the hook never answers.
+                    val method = reader.method; val read = reader.reads.first { it.rows }.index; val body = method.controlBody()
+                    val (value, holder) = body[read].namedRegisters(); val field = body[read].controlRef()
+                    val absent = ControlFlow.of(method).normal[read + 1].single { it != read + 2 }
+                    method.addInstructions(absent, "iget-object v$value, v$holder, $field")
+                    val leak = method.getInstruction(absent)
+                    val test = if (absent <= read + 1) read + 2 else read + 1
+                    method.removeInstruction(test)
+                    method.addInstructionsWithLabels(test, "if-eqz v$value, :hush_leak", ExternalLabel("hush_leak", leak)) },
                 "second builder" to { c, m -> val b = builder(m)
                     c.mutableClassDefBy(b.definingClass).methods.add(ImmutableMethod(b.definingClass, b.name + "Copy", b.parameters, b.returnType,
                         b.accessFlags, b.annotations, b.hiddenApiRestrictions, b.implementation).toMutable()) },

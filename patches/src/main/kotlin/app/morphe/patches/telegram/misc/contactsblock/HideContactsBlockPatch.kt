@@ -128,8 +128,11 @@ internal fun BytecodePatchContext.resolveContactsBlock(): List<ContactsBlockMeth
             // One test decides whether the block goes in; the rest read the copy it just built.
             controlShape(tests.size == 1, "the contacts block decision has ${tests.size} null tests")
         } else {
-            // Any other read must follow its own null test, which the hook answers first.
+            // Any other read must follow its own null test, which the hook answers first, and none may
+            // run on the way the test sends Telegram when the block is absent.
             controlShape(tests.size == 1 && reads.all { it >= tests.single() }, "a contacts reader skips its null test")
+            val absent = ControlFlow.of(method).absentPath(tests.single())
+            controlShape(reads.none { it in absent }, "a contacts reader reads the rows where the block is absent")
         }
         presentation.getOrPut(method) { mutableListOf() } += ContactsBlockRead(tests.single(), methodBody.register(tests.single()), rows = true)
     }
@@ -179,6 +182,19 @@ private fun BytecodePatchContext.fieldReads(field: FieldReference, opcode: Opcod
 private fun List<Instruction>.register(at: Int) = (this[at] as OneRegisterInstruction).registerA
 private fun List<Instruction>.nullTest(at: Int) = getOrNull(at + 1)?.opcode == Opcode.IF_EQZ &&
     this[at + 1].namedRegisters() == listOf(register(at))
+
+/** Every instruction reachable once the null test at [test] finds no block, until the method asks again. */
+private fun ControlFlow.absentPath(test: Int): Set<Int> {
+    val seen = mutableSetOf<Int>()
+    val queue = ArrayDeque(normal[test + 1].filter { it != test + 2 })
+    while (queue.isNotEmpty()) {
+        val at = queue.removeFirst()
+        if (at == test || !seen.add(at)) continue
+        queue += normal[at]
+        queue += exceptional[at]
+    }
+    return seen
+}
 
 /** True when an instruction other than [previous] can reach [next]. */
 private fun ControlFlow.hasOtherEntry(next: Int, previous: Int): Boolean =
