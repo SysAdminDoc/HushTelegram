@@ -250,6 +250,7 @@ public final class SelectionCheck {
         hook(calls, flags, "quietContactsNag", "misc/ContactsNag", "skipAsk", "hideBadge");
         hook(calls, flags, "holidayLook", "misc/HolidayLook", "mode");
         hook(calls, flags, "useSystemFont", "misc/SystemFont", "typeface");
+        hook(calls, flags, "amoledBlack", "misc/BlackTheme", "loaded");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");
         hook(calls, flags, "disableUpdateChecks", "misc/UpdateChecks", "skipUpdateCheck");
         for (String[] bridge : List.of(

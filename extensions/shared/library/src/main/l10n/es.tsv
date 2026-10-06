@@ -237,6 +237,8 @@ New Year look all year	Aspecto de Año Nuevo todo el año
 Telegram's Santa hat sits on the chat list logo, and New Year snow falls every day over the chat list's top bar and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings.	El gorro de Papá Noel de Telegram aparece sobre el logo de la lista de chats. La nieve de Año Nuevo cae todos los días sobre la barra superior y, con los fondos de chat animados activados, sobre los fondos de chat. Desactivado por defecto en los ajustes.
 Use system font	Usar fuente del sistema
 Bold and italic text stops using the Roboto files built into Telegram and takes your phone's font, the one regular text already uses. Code takes the phone's monospace font. Some number displays and Instant View pages keep Telegram's own. Off by default in settings.	El texto en negrita y cursiva deja de usar los archivos Roboto incluidos en Telegram y pasa a la fuente de tu teléfono, la que ya usa el texto normal. El código usa la fuente monoespaciada del teléfono. Algunos números y las páginas de Instant View mantienen la fuente de Telegram. Desactivado por defecto en los ajustes.
+AMOLED black	Negro AMOLED
+Telegram's Night and Dark themes draw their screens and chat background in pure black, while message bubbles and pop-up menus keep their colors. Themes you've installed from a file stay as they are. Off by default in settings.	Los temas Noche y Oscuro de Telegram muestran las pantallas y el fondo del chat en negro puro, y las burbujas de mensajes y los menús emergentes mantienen sus colores. Los temas instalados desde un archivo se quedan como están. Desactivado por defecto en los ajustes.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Notificaciones

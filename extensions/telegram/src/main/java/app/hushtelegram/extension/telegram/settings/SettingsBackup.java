@@ -94,6 +94,7 @@ public final class SettingsBackup {
             Settings.QUIET_CONTACTS_NAG,
             Settings.HOLIDAY_LOOK,
             Settings.USE_SYSTEM_FONT,
+            Settings.AMOLED_BLACK,
             Settings.DISABLE_ANALYTICS,
             Settings.DISABLE_CALL_DEBUG,
             Settings.DISABLE_DRAFT_PREVIEWS,

@@ -95,6 +95,7 @@ body:
         - Use registered Telegram API credentials
         - Use registered Maps API key
         - Use system font
+        - AMOLED black
         - Strip link tracking
         - HushTelegram settings
     validations:

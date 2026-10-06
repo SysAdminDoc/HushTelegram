@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(532);
+        Map<String, String> table = new HashMap<>(536);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -85,6 +85,8 @@ public final class L10nTranslations {
                 "Unter einer kurzen Chatliste stehen deine Kontakte auf Telegram nicht mehr, auch nicht ihre \u00dcberschrift und Ladezeilen. Deine Chats, Ordner, die Kontaktsynchronisierung und die Suche bleiben. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
                 "Ein seitliches Wischen \u00fcber einen Chat in der Chatliste archiviert ihn nicht mehr, schaltet ihn nicht stumm, heftet ihn nicht an, l\u00f6scht ihn nicht und markiert ihn nicht als gelesen, sodass ein versehentliches Wischen den Chat nicht ver\u00e4ndert. Langes Dr\u00fccken bietet weiterhin alle Aktionen. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
+        table.put("AMOLED black",
+                "AMOLED-Schwarz");
         table.put("About",
                 "Info");
         table.put("Accounts",
@@ -175,11 +177,11 @@ public final class L10nTranslations {
                 "Das lie\u00df sich nicht starten. Versuche es gleich noch einmal.");
         table.put("Couldn't start the report export. Try again shortly.",
                 "Der Export des Berichts lie\u00df sich nicht starten. Versuche es gleich noch einmal.");
-        table.put("Couldn't turn HushTelegram back on. Try again.",
-                "HushTelegram lie\u00df sich nicht wieder einschalten. Versuche es noch einmal.");
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("Couldn't turn HushTelegram back on. Try again.",
+                "HushTelegram lie\u00df sich nicht wieder einschalten. Versuche es noch einmal.");
         table.put("Debug logging",
                 "Debug-Protokollierung");
         table.put("Diagnostic data cleared. Tap again to put it back.",
@@ -298,11 +300,11 @@ public final class L10nTranslations {
                 "Nein");
         table.put("No HushTelegram release is out yet.",
                 "Es gibt noch keine Version von HushTelegram.");
-        table.put("No app on this phone can open the link. The address is %1$s.",
-                "Keine App auf diesem Handy kann den Link \u00f6ffnen. Die Adresse ist %1$s.");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("No app on this phone can open the link. The address is %1$s.",
+                "Keine App auf diesem Handy kann den Link \u00f6ffnen. Die Adresse ist %1$s.");
         table.put("No matching settings",
                 "Keine passenden Einstellungen");
         table.put("No previews before sending",
@@ -421,11 +423,11 @@ public final class L10nTranslations {
                 "Ziehen zum n\u00e4chsten Kanal verhindern");
         table.put("Stop pull to next topic",
                 "Ziehen zum n\u00e4chsten Thema verhindern");
-        table.put("Stop usage reports",
-                "Nutzungsberichte stoppen");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Stop usage reports",
+                "Nutzungsberichte stoppen");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
                 "Stoppt automatische Anrufdiagnoseberichte und Protokolldatei-Uploads, die der Telegram-Server anfordert.");
         table.put("Strip link tracking",
@@ -442,6 +444,8 @@ public final class L10nTranslations {
                 "Telegram sendet seine Statistik zum Speichertyp nicht, wenn der Server danach fragt, und auch nicht, wie lange du jeden Kanalbeitrag angesehen hast. Auch Berichte \u00fcber Aufrufe des Premium-Bildschirms, angetippte Funktionen, Best\u00e4tigungen und fehlgeschlagene K\u00e4ufe werden nicht gesendet. Nachrichten und Anrufe funktionieren wie bisher.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram bietet keine Updates von telegram.org mehr an. Sie lie\u00dfen sich nicht \u00fcber diesen gepatchten Build installieren, also patche jede neue Version stattdessen im Morphe Manager.");
+        table.put("Telegram's Night and Dark themes draw their screens and chat background in pure black, while message bubbles and pop-up menus keep their colors. Themes you've installed from a file stay as they are. Off by default in settings.",
+                "Telegrams Designs Nacht und Dunkel zeigen Bildschirme und Chat-Hintergrund in reinem Schwarz, Nachrichtenblasen und Popup-Men\u00fcs behalten ihre Farben. Aus einer Datei installierte Designs bleiben, wie sie sind. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("Telegram's Santa hat sits on the chat list logo, and New Year snow falls every day over the chat list's top bar and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings.",
                 "Telegrams Weihnachtsm\u00fctze sitzt auf dem Logo der Chatliste. Neujahrsschnee f\u00e4llt jeden Tag \u00fcber der oberen Leiste der Chatliste und, wenn animierte Chat-Hintergr\u00fcnde an sind, \u00fcber den Chat-Hintergr\u00fcnden. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -542,13 +546,13 @@ public final class L10nTranslations {
                 "gespeicherter Proxy-Kanal");
         table.put("cached proxy folder entries",
                 "gespeicherte Proxy-Eintr\u00e4ge in Ordnern");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("cached recommendations",
                 "gespeicherte Empfehlungen");
         table.put("call debug reports",
                 "Anrufdiagnoseberichte");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("call log file uploads",
                 "Uploads von Anrufprotokolldateien");
         table.put("call log reports",
@@ -604,7 +608,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(532);
+        Map<String, String> table = new HashMap<>(536);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -642,6 +646,8 @@ public final class L10nTranslations {
                 "Una lista de chats corta ya no muestra debajo tus contactos en Telegram, ni su encabezado ni sus filas de carga. Tus chats, carpetas, la sincronizaci\u00f3n de contactos y la b\u00fasqueda se mantienen. Desactivado por defecto en los ajustes.");
         table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
                 "Deslizar un chat hacia un lado en la lista de chats ya no lo archiva, silencia, fija, elimina ni marca como le\u00eddo, as\u00ed que un deslizamiento accidental no cambia el chat. Mantener pulsado sigue ofreciendo todas las acciones. Desactivado por defecto en los ajustes.");
+        table.put("AMOLED black",
+                "Negro AMOLED");
         table.put("About",
                 "Acerca de");
         table.put("Accounts",
@@ -732,11 +738,11 @@ public final class L10nTranslations {
                 "No se pudo iniciar. Int\u00e9ntalo de nuevo en un momento.");
         table.put("Couldn't start the report export. Try again shortly.",
                 "No se pudo iniciar la exportaci\u00f3n del informe. Int\u00e9ntalo de nuevo en breve.");
-        table.put("Couldn't turn HushTelegram back on. Try again.",
-                "No se pudo volver a activar HushTelegram. Int\u00e9ntalo de nuevo.");
     }
 
     private static void fillEs1(Map<String, String> table) {
+        table.put("Couldn't turn HushTelegram back on. Try again.",
+                "No se pudo volver a activar HushTelegram. Int\u00e9ntalo de nuevo.");
         table.put("Debug logging",
                 "Registro de depuraci\u00f3n");
         table.put("Diagnostic data cleared. Tap again to put it back.",
@@ -855,11 +861,11 @@ public final class L10nTranslations {
                 "No");
         table.put("No HushTelegram release is out yet.",
                 "Todav\u00eda no hay ninguna versi\u00f3n de HushTelegram.");
-        table.put("No app on this phone can open the link. The address is %1$s.",
-                "Ninguna app de este tel\u00e9fono puede abrir el enlace. La direcci\u00f3n es %1$s.");
     }
 
     private static void fillEs2(Map<String, String> table) {
+        table.put("No app on this phone can open the link. The address is %1$s.",
+                "Ninguna app de este tel\u00e9fono puede abrir el enlace. La direcci\u00f3n es %1$s.");
         table.put("No matching settings",
                 "No hay ajustes coincidentes");
         table.put("No previews before sending",
@@ -978,11 +984,11 @@ public final class L10nTranslations {
                 "Impedir el salto al siguiente canal al deslizar");
         table.put("Stop pull to next topic",
                 "Impedir el salto al siguiente tema al deslizar");
-        table.put("Stop usage reports",
-                "Detener los informes de uso");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Stop usage reports",
+                "Detener los informes de uso");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
                 "Detiene los informes autom\u00e1ticos de depuraci\u00f3n y las subidas de archivos de registro de llamadas solicitados por el servidor de Telegram.");
         table.put("Strip link tracking",
@@ -999,6 +1005,8 @@ public final class L10nTranslations {
                 "Telegram no env\u00eda su estad\u00edstica del tipo de almacenamiento cuando su servidor la pide, ni cu\u00e1nto tiempo pasaste en cada publicaci\u00f3n de un canal. Tambi\u00e9n bloquea los informes sobre vistas de la pantalla de Premium, toques en funciones, aceptaciones y fallos de compra. Los mensajes y las llamadas funcionan como antes.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram deja de ofrecer actualizaciones de telegram.org. No se pueden instalar sobre este build parcheado, as\u00ed que parchea cada versi\u00f3n nueva en Morphe Manager.");
+        table.put("Telegram's Night and Dark themes draw their screens and chat background in pure black, while message bubbles and pop-up menus keep their colors. Themes you've installed from a file stay as they are. Off by default in settings.",
+                "Los temas Noche y Oscuro de Telegram muestran las pantallas y el fondo del chat en negro puro, y las burbujas de mensajes y los men\u00fas emergentes mantienen sus colores. Los temas instalados desde un archivo se quedan como est\u00e1n. Desactivado por defecto en los ajustes.");
         table.put("Telegram's Santa hat sits on the chat list logo, and New Year snow falls every day over the chat list's top bar and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings.",
                 "El gorro de Pap\u00e1 Noel de Telegram aparece sobre el logo de la lista de chats. La nieve de A\u00f1o Nuevo cae todos los d\u00edas sobre la barra superior y, con los fondos de chat animados activados, sobre los fondos de chat. Desactivado por defecto en los ajustes.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -1099,13 +1107,13 @@ public final class L10nTranslations {
                 "canal del proxy almacenado");
         table.put("cached proxy folder entries",
                 "entradas del proxy almacenadas en carpetas");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("cached recommendations",
                 "recomendaciones guardadas");
         table.put("call debug reports",
                 "informes de depuraci\u00f3n de llamadas");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("call log file uploads",
                 "subidas de archivos de registro de llamadas");
         table.put("call log reports",
@@ -1161,7 +1169,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(532);
+        Map<String, String> table = new HashMap<>(536);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1199,6 +1207,8 @@ public final class L10nTranslations {
                 "Daftar chat yang pendek tidak lagi menampilkan kontakmu di Telegram di bawahnya, beserta judul dan baris pemuatannya. Chat, folder, sinkronisasi kontak, dan pencarian tetap ada. Secara default nonaktif di pengaturan.");
         table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
                 "Menggeser chat ke samping di daftar chat tidak lagi mengarsipkan, membisukan, menyematkan, menghapus, atau menandainya sebagai dibaca, jadi geseran tak sengaja tidak mengubah chat. Tekan lama tetap menampilkan semua aksi. Secara default nonaktif di pengaturan.");
+        table.put("AMOLED black",
+                "Hitam AMOLED");
         table.put("About",
                 "Tentang");
         table.put("Accounts",
@@ -1289,11 +1299,11 @@ public final class L10nTranslations {
                 "Tidak dapat dimulai. Coba lagi dalam beberapa saat.");
         table.put("Couldn't start the report export. Try again shortly.",
                 "Ekspor laporan tidak dapat dimulai. Coba lagi dalam beberapa saat.");
-        table.put("Couldn't turn HushTelegram back on. Try again.",
-                "HushTelegram tidak dapat diaktifkan lagi. Coba lagi.");
     }
 
     private static void fillIn1(Map<String, String> table) {
+        table.put("Couldn't turn HushTelegram back on. Try again.",
+                "HushTelegram tidak dapat diaktifkan lagi. Coba lagi.");
         table.put("Debug logging",
                 "Pencatatan debug");
         table.put("Diagnostic data cleared. Tap again to put it back.",
@@ -1412,11 +1422,11 @@ public final class L10nTranslations {
                 "Tidak");
         table.put("No HushTelegram release is out yet.",
                 "Belum ada rilis HushTelegram.");
-        table.put("No app on this phone can open the link. The address is %1$s.",
-                "Tidak ada aplikasi di ponsel ini yang dapat membuka tautan ini. Alamatnya %1$s.");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("No app on this phone can open the link. The address is %1$s.",
+                "Tidak ada aplikasi di ponsel ini yang dapat membuka tautan ini. Alamatnya %1$s.");
         table.put("No matching settings",
                 "Tidak ada pengaturan yang cocok");
         table.put("No previews before sending",
@@ -1535,11 +1545,11 @@ public final class L10nTranslations {
                 "Hentikan tarikan ke kanal berikutnya");
         table.put("Stop pull to next topic",
                 "Hentikan tarikan ke topik berikutnya");
-        table.put("Stop usage reports",
-                "Hentikan laporan penggunaan");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Stop usage reports",
+                "Hentikan laporan penggunaan");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
                 "Menghentikan laporan debug panggilan otomatis dan unggahan berkas log yang diminta server Telegram.");
         table.put("Strip link tracking",
@@ -1556,6 +1566,8 @@ public final class L10nTranslations {
                 "Telegram tidak mengirim statistik jenis penyimpanannya saat server meminta, atau berapa lama Anda melihat setiap postingan saluran. Laporan tentang tampilan layar Premium, ketukan fitur, persetujuan dan kegagalan pembelian juga tidak dikirim. Pesan dan panggilan tetap berfungsi seperti biasa.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.");
+        table.put("Telegram's Night and Dark themes draw their screens and chat background in pure black, while message bubbles and pop-up menus keep their colors. Themes you've installed from a file stay as they are. Off by default in settings.",
+                "Tema Malam dan Gelap Telegram menampilkan layar dan latar obrolan dalam hitam pekat, sedangkan gelembung pesan dan menu pop-up tetap memakai warnanya. Tema yang dipasang dari file tetap seperti semula. Nonaktif secara default di pengaturan.");
         table.put("Telegram's Santa hat sits on the chat list logo, and New Year snow falls every day over the chat list's top bar and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings.",
                 "Topi Santa Telegram berada di logo daftar chat. Salju Tahun Baru turun setiap hari di bilah atas daftar chat dan, saat latar belakang chat animasi aktif, di latar belakang chat. Secara default nonaktif di pengaturan.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -1656,13 +1668,13 @@ public final class L10nTranslations {
                 "kanal proxy tersimpan");
         table.put("cached proxy folder entries",
                 "entri proxy tersimpan di folder");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("cached recommendations",
                 "rekomendasi tersimpan");
         table.put("call debug reports",
                 "laporan debug panggilan");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("call log file uploads",
                 "unggahan berkas log panggilan");
         table.put("call log reports",
@@ -1718,7 +1730,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(532);
+        Map<String, String> table = new HashMap<>(536);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1756,6 +1768,8 @@ public final class L10nTranslations {
                 "Uma lista de conversas curta n\u00e3o mostra mais seus contatos no Telegram embaixo dela, nem o t\u00edtulo e as linhas de carregamento. Suas conversas, pastas, a sincroniza\u00e7\u00e3o de contatos e a busca continuam. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
                 "Deslizar um chat para o lado na lista de chats n\u00e3o arquiva, silencia, fixa, apaga nem marca mais o chat como lido, ent\u00e3o um deslize sem querer n\u00e3o muda o chat. Tocar e segurar continua mostrando todas as a\u00e7\u00f5es. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
+        table.put("AMOLED black",
+                "Preto AMOLED");
         table.put("About",
                 "Sobre");
         table.put("Accounts",
@@ -1846,11 +1860,11 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel iniciar isso. Tente de novo em instantes.");
         table.put("Couldn't start the report export. Try again shortly.",
                 "N\u00e3o foi poss\u00edvel iniciar a exporta\u00e7\u00e3o do relat\u00f3rio. Tente de novo daqui a pouco.");
-        table.put("Couldn't turn HushTelegram back on. Try again.",
-                "N\u00e3o foi poss\u00edvel reativar o HushTelegram. Tente novamente.");
     }
 
     private static void fillPt_rBR1(Map<String, String> table) {
+        table.put("Couldn't turn HushTelegram back on. Try again.",
+                "N\u00e3o foi poss\u00edvel reativar o HushTelegram. Tente novamente.");
         table.put("Debug logging",
                 "Registro de depura\u00e7\u00e3o");
         table.put("Diagnostic data cleared. Tap again to put it back.",
@@ -1969,11 +1983,11 @@ public final class L10nTranslations {
                 "N\u00e3o");
         table.put("No HushTelegram release is out yet.",
                 "Ainda n\u00e3o h\u00e1 nenhuma vers\u00e3o do HushTelegram.");
-        table.put("No app on this phone can open the link. The address is %1$s.",
-                "Nenhum aplicativo neste dispositivo consegue abrir o link. O endere\u00e7o \u00e9 %1$s.");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
+        table.put("No app on this phone can open the link. The address is %1$s.",
+                "Nenhum aplicativo neste dispositivo consegue abrir o link. O endere\u00e7o \u00e9 %1$s.");
         table.put("No matching settings",
                 "Nenhuma configura\u00e7\u00e3o encontrada");
         table.put("No previews before sending",
@@ -2092,11 +2106,11 @@ public final class L10nTranslations {
                 "Impedir o salto para o pr\u00f3ximo canal ao deslizar");
         table.put("Stop pull to next topic",
                 "Impedir o salto para o pr\u00f3ximo t\u00f3pico ao deslizar");
-        table.put("Stop usage reports",
-                "Parar os relat\u00f3rios de uso");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Stop usage reports",
+                "Parar os relat\u00f3rios de uso");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
                 "Interrompe relat\u00f3rios autom\u00e1ticos de depura\u00e7\u00e3o de chamadas e envios de arquivos de registro solicitados pelo servidor do Telegram.");
         table.put("Strip link tracking",
@@ -2113,6 +2127,8 @@ public final class L10nTranslations {
                 "O Telegram n\u00e3o envia sua estat\u00edstica do tipo de armazenamento quando o servidor pede, nem quanto tempo voc\u00ea passou em cada post de um canal. Tamb\u00e9m bloqueia relat\u00f3rios sobre visualiza\u00e7\u00f5es da tela do Premium, toques em recursos, aceita\u00e7\u00f5es e falhas de compra. Mensagens e chamadas funcionam como antes.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "O Telegram deixa de oferecer atualiza\u00e7\u00f5es do telegram.org. Elas n\u00e3o podem ser instaladas sobre este build corrigido, ent\u00e3o aplique o patch de cada nova vers\u00e3o pelo Morphe Manager.");
+        table.put("Telegram's Night and Dark themes draw their screens and chat background in pure black, while message bubbles and pop-up menus keep their colors. Themes you've installed from a file stay as they are. Off by default in settings.",
+                "Os temas Noite e Escuro do Telegram mostram as telas e o fundo do chat em preto puro, e os bal\u00f5es de mensagem e os menus pop-up mant\u00eam suas cores. Temas instalados de um arquivo ficam como est\u00e3o. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Telegram's Santa hat sits on the chat list logo, and New Year snow falls every day over the chat list's top bar and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings.",
                 "O gorro de Papai Noel do Telegram aparece sobre o logo da lista de chats. A neve de Ano Novo cai todos os dias sobre a barra superior e, com os fundos de chat animados ativados, sobre os fundos dos chats. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -2213,13 +2229,13 @@ public final class L10nTranslations {
                 "canal do proxy armazenado");
         table.put("cached proxy folder entries",
                 "entradas do proxy armazenadas nas pastas");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("cached recommendations",
                 "recomenda\u00e7\u00f5es armazenadas");
         table.put("call debug reports",
                 "relat\u00f3rios de depura\u00e7\u00e3o de chamadas");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("call log file uploads",
                 "envios de arquivos de registro de chamadas");
         table.put("call log reports",
@@ -2275,7 +2291,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(532);
+        Map<String, String> table = new HashMap<>(536);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2313,6 +2329,8 @@ public final class L10nTranslations {
                 "K\u0131sa bir sohbet listesi, alt\u0131nda Telegram'daki ki\u015filerinizi ba\u015fl\u0131\u011f\u0131 ve y\u00fckleme sat\u0131rlar\u0131yla art\u0131k g\u00f6stermez. Sohbetleriniz, klas\u00f6rleriniz, ki\u015fi senkronizasyonu ve arama kal\u0131r. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
                 "Sohbet listesinde bir sohbeti yana kayd\u0131rmak art\u0131k onu ar\u015fivlemez, sessize almaz, sabitlemez, silmez veya okundu olarak i\u015faretlemez, b\u00f6ylece yanl\u0131\u015fl\u0131kla yap\u0131lan bir kayd\u0131rma sohbeti de\u011fi\u015ftirmez. Uzun basma t\u00fcm eylemleri sunmaya devam eder. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
+        table.put("AMOLED black",
+                "AMOLED siyah\u0131");
         table.put("About",
                 "Hakk\u0131nda");
         table.put("Accounts",
@@ -2403,11 +2421,11 @@ public final class L10nTranslations {
                 "Bu i\u015flem ba\u015flat\u0131lamad\u0131. Birazdan tekrar dene.");
         table.put("Couldn't start the report export. Try again shortly.",
                 "Rapor d\u0131\u015fa aktar\u0131m\u0131 ba\u015flat\u0131lamad\u0131. Birazdan tekrar dene.");
-        table.put("Couldn't turn HushTelegram back on. Try again.",
-                "HushTelegram yeniden a\u00e7\u0131lamad\u0131. Tekrar dene.");
     }
 
     private static void fillTr1(Map<String, String> table) {
+        table.put("Couldn't turn HushTelegram back on. Try again.",
+                "HushTelegram yeniden a\u00e7\u0131lamad\u0131. Tekrar dene.");
         table.put("Debug logging",
                 "Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc");
         table.put("Diagnostic data cleared. Tap again to put it back.",
@@ -2526,11 +2544,11 @@ public final class L10nTranslations {
                 "Hay\u0131r");
         table.put("No HushTelegram release is out yet.",
                 "Hen\u00fcz bir HushTelegram s\u00fcr\u00fcm\u00fc yay\u0131nlanmad\u0131.");
-        table.put("No app on this phone can open the link. The address is %1$s.",
-                "Bu telefondaki hi\u00e7bir uygulama ba\u011flant\u0131y\u0131 a\u00e7am\u0131yor. Adres: %1$s.");
     }
 
     private static void fillTr2(Map<String, String> table) {
+        table.put("No app on this phone can open the link. The address is %1$s.",
+                "Bu telefondaki hi\u00e7bir uygulama ba\u011flant\u0131y\u0131 a\u00e7am\u0131yor. Adres: %1$s.");
         table.put("No matching settings",
                 "E\u015fle\u015fen ayar yok");
         table.put("No previews before sending",
@@ -2649,11 +2667,11 @@ public final class L10nTranslations {
                 "Sonraki kanala \u00e7ekmeyi durdur");
         table.put("Stop pull to next topic",
                 "Sonraki konuya \u00e7ekmeyi durdur");
-        table.put("Stop usage reports",
-                "Kullan\u0131m raporlar\u0131n\u0131 durdur");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Stop usage reports",
+                "Kullan\u0131m raporlar\u0131n\u0131 durdur");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
                 "Telegram sunucusunun istedi\u011fi otomatik arama hata ay\u0131klama raporlar\u0131n\u0131 ve g\u00fcnl\u00fck dosyas\u0131 y\u00fcklemelerini durdurur.");
         table.put("Strip link tracking",
@@ -2670,6 +2688,8 @@ public final class L10nTranslations {
                 "Telegram, sunucusu istedi\u011finde depolama t\u00fcr\u00fc istatisti\u011fini veya her kanal g\u00f6nderisinde ne kadar kald\u0131\u011f\u0131n\u0131z\u0131 g\u00f6ndermez. Premium ekran g\u00f6r\u00fcnt\u00fclemeleri, \u00f6zelliklere dokunmalar, kabul i\u015flemleri ve sat\u0131n alma hatalar\u0131yla ilgili raporlar\u0131 da durdurur. Mesajlar ve aramalar eskisi gibi \u00e7al\u0131\u015f\u0131r.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram, telegram.org g\u00fcncellemelerini sunmay\u0131 b\u0131rak\u0131r. Bunlar bu yamal\u0131 s\u00fcr\u00fcm\u00fcn \u00fczerine kurulamaz, bu y\u00fczden her yeni s\u00fcr\u00fcm\u00fc Morphe Manager'da yamala.");
+        table.put("Telegram's Night and Dark themes draw their screens and chat background in pure black, while message bubbles and pop-up menus keep their colors. Themes you've installed from a file stay as they are. Off by default in settings.",
+                "Telegram'\u0131n Gece ve Koyu temalar\u0131 ekranlar\u0131 ve sohbet arka plan\u0131n\u0131 saf siyah g\u00f6sterir, mesaj balonlar\u0131 ve a\u00e7\u0131l\u0131r men\u00fcler renklerini korur. Dosyadan y\u00fcklenen temalar oldu\u011fu gibi kal\u0131r. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Telegram's Santa hat sits on the chat list logo, and New Year snow falls every day over the chat list's top bar and, with animated chat backgrounds on, over chat backgrounds. Off by default in settings.",
                 "Telegram'\u0131n Noel Baba \u015fapkas\u0131 sohbet listesi logosunun \u00fczerinde g\u00f6r\u00fcn\u00fcr. Y\u0131lba\u015f\u0131 kar\u0131 her g\u00fcn sohbet listesinin \u00fcst \u00e7ubu\u011funa, animasyonlu sohbet arka planlar\u0131 a\u00e7\u0131kken de sohbet arka planlar\u0131na ya\u011far. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
@@ -2770,13 +2790,13 @@ public final class L10nTranslations {
                 "kay\u0131tl\u0131 proxy kanal\u0131");
         table.put("cached proxy folder entries",
                 "klas\u00f6rlerdeki kay\u0131tl\u0131 proxy girdileri");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("cached recommendations",
                 "kay\u0131tl\u0131 \u00f6neriler");
         table.put("call debug reports",
                 "arama hata ay\u0131klama raporlar\u0131");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("call log file uploads",
                 "arama g\u00fcnl\u00fck dosyas\u0131 y\u00fcklemeleri");
         table.put("call log reports",

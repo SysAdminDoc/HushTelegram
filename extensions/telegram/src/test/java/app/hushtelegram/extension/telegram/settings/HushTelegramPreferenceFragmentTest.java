@@ -99,6 +99,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.QUIET_CONTACTS_NAG, "Quiet contacts prompts");
         ROW_TITLES.put(PatchFamily.HOLIDAY_LOOK, "New Year look all year");
         ROW_TITLES.put(PatchFamily.USE_SYSTEM_FONT, "Use system font");
+        ROW_TITLES.put(PatchFamily.AMOLED_BLACK, "AMOLED black");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -223,7 +224,7 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.NORMAL_PASTE) || build.contains(PatchFamily.SHOW_LOCAL_IDS)
                         || build.contains(PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS)
                         || build.contains(PatchFamily.QUIET_CONTACTS_NAG) || build.contains(PatchFamily.HOLIDAY_LOOK)
-                        || build.contains(PatchFamily.USE_SYSTEM_FONT)) expected.add("Chats");
+                        || build.contains(PatchFamily.USE_SYSTEM_FONT) || build.contains(PatchFamily.AMOLED_BLACK)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
@@ -354,6 +355,13 @@ public class HushTelegramPreferenceFragmentTest {
             // Telegram's bundled fonts stay until someone turns the switch on.
             assertFalse(Settings.USE_SYSTEM_FONT.key,
                     ((SwitchPreference) page.findPreference(Settings.USE_SYSTEM_FONT.key)).isChecked());
+            assertEquals("AMOLED black", String.valueOf(page.findPreference(Settings.AMOLED_BLACK.key).getTitle()));
+            assertEquals("Telegram's Night and Dark themes draw their screens and chat background in pure black, while message bubbles and pop-up menus keep their colors. "
+                            + "Themes you've installed from a file stay as they are. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.AMOLED_BLACK.key).getSummary()));
+            // Telegram's own theme colors stay until someone turns the switch on.
+            assertFalse(Settings.AMOLED_BLACK.key,
+                    ((SwitchPreference) page.findPreference(Settings.AMOLED_BLACK.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {

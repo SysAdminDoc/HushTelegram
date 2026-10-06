@@ -338,6 +338,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "Some number displays and Instant View pages keep Telegram's own. Off by default in settings."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.AMOLED_BLACK)) {
+                chats.addPreference(mark(toggle(context, Settings.AMOLED_BLACK, L10n.t("AMOLED black"),
+                        PatchFamily.AMOLED_BLACK.coverageSummary(L10n.t("Telegram's Night and Dark themes draw their screens and chat background "
+                                + "in pure black, while message bubbles and pop-up menus keep their colors. "
+                                + "Themes you've installed from a file stay as they are. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

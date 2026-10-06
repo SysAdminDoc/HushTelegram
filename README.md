@@ -16,7 +16,7 @@ The latest release is [v0.0.9](https://github.com/SysAdminDoc/HushTelegram/relea
 
 v0.0.9 fixes push registration on slower phones and follows telegram.org's rebuilt beta, build 71179. HushTelegram settings now open from a row in Telegram's own Settings. Plain-text paste and copyable user and chat IDs are new switches, off until you turn them on, and so is one that stops double-tap reactions. Two optional patches take your own registered Telegram API credentials and Google Maps key when you patch. With its own registered API ID, a Samsung phone that Telegram had turned away signed in normally.
 
-The current source is v0.0.11, which isn't released yet. It follows telegram.org's beta build 71239. Hide contacts on Telegram, Hide greeting stickers and Use system font are new patches, and Disable pull to next channel gained a second switch for forum topics. Every new switch starts off.
+The current source is v0.0.11, which isn't released yet. It follows telegram.org's beta build 71239. Hide contacts on Telegram, Hide greeting stickers, Use system font and AMOLED black are new patches, and Disable pull to next channel gained a second switch for forum topics. Every new switch starts off.
 
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) | [Download a release](https://github.com/SysAdminDoc/HushTelegram/releases/latest) | [Browse the patches](#patches)
@@ -66,7 +66,7 @@ The developer installation script requires the exact device serial, expected mod
 
 ## Patches
 
-The source catalog has 28 patches, with 26 selected by default. Hide contacts on Telegram, Hide greeting stickers and Use system font are new since v0.0.9, and so is the forum topic switch in Disable pull to next channel. None of them is in a release yet. Several patches keep their switch off until you turn it on in settings, like tracking cleaning and draft link previews. The two credential patches need your own values and aren't selected by default.
+The source catalog has 29 patches, with 27 selected by default. Hide contacts on Telegram, Hide greeting stickers, Use system font and AMOLED black are new since v0.0.9, and so is the forum topic switch in Disable pull to next channel. None of them is in a release yet. Several patches keep their switch off until you turn it on in settings, like tracking cleaning and draft link previews. The two credential patches need your own values and aren't selected by default.
 
 | Patch | What it does |
 |---|---|
@@ -96,6 +96,7 @@ The source catalog has 28 patches, with 26 selected by default. Hide contacts on
 | `Quiet contacts nag` | Keeps the Contacts tab from asking for contacts access again, and clears its warning badge, once you've said no. The first request, the tab's own buttons and contact sync stay as they are. |
 | `Holiday look all year` | Adds a switch, off by default, that puts a Santa hat over the chat list logo and keeps Telegram's New Year snow falling all year over the chat list's top bar and chat backgrounds. Telegram's own holiday dates apply while it's off. |
 | `Use system font` | Adds a switch, off by default, that draws Telegram's bold, italic and monospace text in your phone's font instead of the Roboto files built into the app. Regular text already uses the phone's font. Some number displays and Instant View pages keep Telegram's own. A change takes effect after Telegram restarts. |
+| `AMOLED black` | Adds a switch, off by default, that turns the backgrounds of Telegram's Night and Dark themes pure black. Message bubbles and pop-up menus keep the theme's colors. A change takes effect after Telegram restarts. |
 | `Open links externally` | Opens ordinary HTTP(S) links in your browser. Telegram links, login, payment and authenticated routes keep their existing behavior. |
 | `Strip link tracking` | Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings. |
 
@@ -195,7 +196,7 @@ Tests: `./gradlew :patches:test :extensions:telegram:test`. Set `HUSHTELEGRAM_FI
 
 Text input fingerprints ignore LF/CRLF differences, so validated tests can be reused in a temporary checkout. Source changes still invalidate the results, and APK fixture bytes remain exact. `pwsh -NoProfile -File scripts/test-gradle-test-cache.ps1` exercises both test tasks in isolated copies, checks cache reuse and changes source and binary inputs to verify invalidation.
 
-`pwsh -NoProfile -File scripts/verify-patch-selections.ps1 -Apk <declared APK> -WorkDir <private folder>` patches one declared Telegram build 47 ways. That covers the defaults, the full catalog, settings alone, each runtime patch by itself, the link and preview/camera pairs, and the two credential patches unset, configured and fed bad values. Every build is checked for its dependency closure, minimum Android version, preserved resources and native libraries, and the switches its settings screen offers. Configured credentials must change exactly their two literals and the native version marker that refreshes the connection identity. The Maps option changes only its metadata value.
+`pwsh -NoProfile -File scripts/verify-patch-selections.ps1 -Apk <declared APK> -WorkDir <private folder>` patches one declared Telegram build 48 ways. That covers the defaults, the full catalog, settings alone, each runtime patch by itself, the link and preview/camera pairs, and the two credential patches unset, configured and fed bad values. Every build is checked for its dependency closure, minimum Android version, preserved resources and native libraries, and the switches its settings screen offers. Configured credentials must change exactly their two literals and the native version marker that refreshes the connection identity. The Maps option changes only its metadata value.
 
 Malformed options and rejected credential values must stop the build without echoing them. Ignored optional values must preserve stock behavior. The console prints only case names and fixed result codes. Keep the work folder private, since it holds the raw patcher reports. Combine both runs' `matrix-private.json` arrays into one file and set `HUSHTELEGRAM_SELECTION_FACTS` to it when running `CompiledSelectionUiTest`. The test task tracks that file's contents, so source-only results can't satisfy the compiled UI check.
 

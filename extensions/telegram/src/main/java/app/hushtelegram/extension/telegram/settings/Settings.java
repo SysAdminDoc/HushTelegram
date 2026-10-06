@@ -119,6 +119,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_use_system_font", FALSE, true);
 
     /**
+     * Pure black backgrounds for Telegram's built-in Night and Dark themes. Telegram keeps the colors
+     * it loaded until it applies a theme again, so a change waits for a restart.
+     */
+    public static final BooleanSetting AMOLED_BLACK =
+            new BooleanSetting("hushtelegram_amoled_black", FALSE, true);
+
+    /**
      * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
      * never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

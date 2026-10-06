@@ -216,6 +216,14 @@ public class PausedHooksTest {
         // Telegram's medium font file is answered with the phone's own face.
         probes.put(PatchFamily.USE_SYSTEM_FONT, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.SystemFont.typeface("fonts/rmedium.ttf") != null));
+        // Night's window color, as Telegram reads it from the theme file, turns black.
+        probes.put(PatchFamily.AMOLED_BLACK, Collections.singletonList(() -> {
+            app.hushtelegram.extension.telegram.misc.BlackThemeForTests.useStandInIds();
+            android.util.SparseIntArray night = new android.util.SparseIntArray();
+            night.put(1, 0xFF181819);
+            app.hushtelegram.extension.telegram.misc.BlackTheme.loaded("night.attheme", night);
+            return night.get(1) == 0xFF000000;
+        }));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),
