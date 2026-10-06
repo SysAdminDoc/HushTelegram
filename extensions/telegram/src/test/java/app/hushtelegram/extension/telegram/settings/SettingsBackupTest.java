@@ -184,7 +184,7 @@ public class SettingsBackupTest {
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES,
                         Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_COMMERCE,
                         Settings.HIDE_PROMOTIONAL_BANNERS,
-                        Settings.HIDE_SPONSORED_PROXY, Settings.HIDE_POPULAR_APPS, Settings.HIDE_CONTACTS_BLOCK, Settings.HIDE_GREETING_STICKERS, Settings.DISABLE_CHAT_SWIPE, Settings.DISABLE_CHANNEL_PULL,
+                        Settings.HIDE_SPONSORED_PROXY, Settings.HIDE_POPULAR_APPS, Settings.HIDE_CONTACTS_BLOCK, Settings.HIDE_GREETING_STICKERS, Settings.DISABLE_CHAT_SWIPE, Settings.DISABLE_CHANNEL_PULL, Settings.DISABLE_TOPIC_PULL,
                         Settings.NORMAL_PASTE, Settings.SHOW_LOCAL_IDS, Settings.DISABLE_DOUBLE_TAP_REACTIONS,
                         Settings.QUIET_CONTACTS_NAG, Settings.HOLIDAY_LOOK,
                         Settings.DISABLE_ANALYTICS, Settings.DISABLE_CALL_DEBUG, Settings.DISABLE_DRAFT_PREVIEWS,

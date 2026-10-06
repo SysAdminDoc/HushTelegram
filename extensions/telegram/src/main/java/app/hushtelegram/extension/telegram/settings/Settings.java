@@ -84,6 +84,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting DISABLE_CHANNEL_PULL =
             new BooleanSetting("hushtelegram_disable_channel_pull", TRUE);
 
+    /** Bottom pulls stay in the current forum topic; opening topics from the topic list stays stock. */
+    public static final BooleanSetting DISABLE_TOPIC_PULL =
+            new BooleanSetting("hushtelegram_disable_topic_pull", FALSE);
+
     public static final BooleanSetting NORMAL_PASTE =
             new BooleanSetting("hushtelegram_normal_paste", FALSE);
 

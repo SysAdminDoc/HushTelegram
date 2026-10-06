@@ -267,6 +267,13 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Stop pull to next channel", String.valueOf(page.findPreference(Settings.DISABLE_CHANNEL_PULL.key).getTitle()));
             assertEquals("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                     String.valueOf(page.findPreference(Settings.DISABLE_CHANNEL_PULL.key).getSummary()));
+            assertEquals("Stop pull to next topic", String.valueOf(page.findPreference(Settings.DISABLE_TOPIC_PULL.key).getTitle()));
+            assertEquals("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. "
+                            + "Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.DISABLE_TOPIC_PULL.key).getSummary()));
+            // Topic pulls keep Telegram's behavior until someone turns their own switch on.
+            assertFalse(Settings.DISABLE_TOPIC_PULL.key,
+                    ((SwitchPreference) page.findPreference(Settings.DISABLE_TOPIC_PULL.key)).isChecked());
             assertEquals("Repair Firebase push registration", String.valueOf(page.findPreference(Settings.REPAIR_FIREBASE_PUSH.key).getTitle()));
             assertEquals("Uses Telegram's official certificate for Firebase push registration. "
                             + "Notification permission and battery settings still apply.",

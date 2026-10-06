@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(524);
+        Map<String, String> table = new HashMap<>(528);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -349,6 +349,8 @@ public final class L10nTranslations {
                 "Datenschutz");
         table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                 "Wenn du am unteren Ende eines Kanals nach oben ziehst, scrollt die Ansicht nur. \u00d6ffne den n\u00e4chsten Kanal \u00fcber deine Chatliste.");
+        table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.",
+                "Hochziehen am Ende eines Forenthemas scrollt nur. \u00d6ffne das n\u00e4chste Thema aus der Themenliste. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("Push token saved: %1$s",
                 "Push-Token gespeichert: %1$s");
         table.put("Quiet contacts prompts",
@@ -415,17 +417,19 @@ public final class L10nTranslations {
                 "Anrufdiagnosen stoppen");
         table.put("Stop pull to next channel",
                 "Ziehen zum n\u00e4chsten Kanal verhindern");
+        table.put("Stop pull to next topic",
+                "Pull zum n\u00e4chsten Thema stoppen");
         table.put("Stop usage reports",
                 "Nutzungsberichte stoppen");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
                 "Stoppt automatische Anrufdiagnoseberichte und Protokolldatei-Uploads, die der Telegram-Server anfordert.");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Strip link tracking",
                 "Link-Tracking entfernen");
         table.put("Supported links",
                 "Unterst\u00fctzte Links");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Zum Wiedereinschalten tippen.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -542,13 +546,13 @@ public final class L10nTranslations {
                 "Uploads von Anrufprotokolldateien");
         table.put("call log reports",
                 "Anrufprotokollberichte");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("caption text paste",
                 "Texteinf\u00fcgen in Beschriftungen");
         table.put("channel Gift button",
                 "Geschenk-Schaltfl\u00e4che von Kan\u00e4len");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("channel ads",
                 "Kanalwerbung");
         table.put("channel read metrics",
@@ -596,7 +600,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(524);
+        Map<String, String> table = new HashMap<>(528);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -898,6 +902,8 @@ public final class L10nTranslations {
                 "Privacidad");
         table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                 "Al deslizar hacia arriba al final de un canal, solo se desplaza el contenido. Abre el siguiente canal desde tu lista de chats.");
+        table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.",
+                "Tirar hacia arriba al final de un tema del foro solo desplaza. Abre el siguiente tema desde la lista de temas. Desactivado por defecto en los ajustes.");
         table.put("Push token saved: %1$s",
                 "Token push guardado: %1$s");
         table.put("Quiet contacts prompts",
@@ -964,17 +970,19 @@ public final class L10nTranslations {
                 "Detener diagn\u00f3sticos de llamadas");
         table.put("Stop pull to next channel",
                 "Impedir el salto al siguiente canal al deslizar");
+        table.put("Stop pull to next topic",
+                "Detener tirar al siguiente tema");
         table.put("Stop usage reports",
                 "Detener los informes de uso");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
                 "Detiene los informes autom\u00e1ticos de depuraci\u00f3n y las subidas de archivos de registro de llamadas solicitados por el servidor de Telegram.");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Strip link tracking",
                 "Eliminar seguimiento de enlaces");
         table.put("Supported links",
                 "Enlaces compatibles");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Toca para volver a activarlo.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -1091,13 +1099,13 @@ public final class L10nTranslations {
                 "subidas de archivos de registro de llamadas");
         table.put("call log reports",
                 "informes de registro de llamadas");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("caption text paste",
                 "pegado de texto en leyendas");
         table.put("channel Gift button",
                 "bot\u00f3n de regalo de los canales");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("channel ads",
                 "anuncios en canales");
         table.put("channel read metrics",
@@ -1145,7 +1153,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(524);
+        Map<String, String> table = new HashMap<>(528);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1447,6 +1455,8 @@ public final class L10nTranslations {
                 "Privasi");
         table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                 "Menarik ke atas di bagian bawah kanal hanya menggulir tampilan. Buka kanal berikutnya dari daftar obrolan.");
+        table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.",
+                "Menarik ke atas di bagian bawah topik forum hanya menggulir. Buka topik berikutnya dari daftar topik. Secara default nonaktif di pengaturan.");
         table.put("Push token saved: %1$s",
                 "Token push tersimpan: %1$s");
         table.put("Quiet contacts prompts",
@@ -1513,17 +1523,19 @@ public final class L10nTranslations {
                 "Hentikan diagnostik panggilan");
         table.put("Stop pull to next channel",
                 "Hentikan tarikan ke kanal berikutnya");
+        table.put("Stop pull to next topic",
+                "Hentikan tarik ke topik berikutnya");
         table.put("Stop usage reports",
                 "Hentikan laporan penggunaan");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
                 "Menghentikan laporan debug panggilan otomatis dan unggahan berkas log yang diminta server Telegram.");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Strip link tracking",
                 "Hapus pelacakan tautan");
         table.put("Supported links",
                 "Tautan yang didukung");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Ketuk untuk mengaktifkan HushTelegram lagi.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -1640,13 +1652,13 @@ public final class L10nTranslations {
                 "unggahan berkas log panggilan");
         table.put("call log reports",
                 "laporan log panggilan");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("caption text paste",
                 "tempel teks keterangan");
         table.put("channel Gift button",
                 "tombol Hadiah pada kanal");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("channel ads",
                 "iklan saluran");
         table.put("channel read metrics",
@@ -1694,7 +1706,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(524);
+        Map<String, String> table = new HashMap<>(528);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1996,6 +2008,8 @@ public final class L10nTranslations {
                 "Privacidade");
         table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                 "Deslizar para cima no fim de um canal apenas rola o conte\u00fado. Abra o pr\u00f3ximo canal pela sua lista de conversas.");
+        table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.",
+                "Puxar para cima no fim de um t\u00f3pico do f\u00f3rum s\u00f3 rola a tela. Abra o pr\u00f3ximo t\u00f3pico pela lista de t\u00f3picos. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Push token saved: %1$s",
                 "Token de push salvo: %1$s");
         table.put("Quiet contacts prompts",
@@ -2062,17 +2076,19 @@ public final class L10nTranslations {
                 "Interromper diagn\u00f3sticos de chamadas");
         table.put("Stop pull to next channel",
                 "Impedir o salto para o pr\u00f3ximo canal ao deslizar");
+        table.put("Stop pull to next topic",
+                "Parar puxar para o pr\u00f3ximo t\u00f3pico");
         table.put("Stop usage reports",
                 "Parar os relat\u00f3rios de uso");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
                 "Interrompe relat\u00f3rios autom\u00e1ticos de depura\u00e7\u00e3o de chamadas e envios de arquivos de registro solicitados pelo servidor do Telegram.");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Strip link tracking",
                 "Remover rastreamento de links");
         table.put("Supported links",
                 "Links compat\u00edveis");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Toque para reativar.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -2189,13 +2205,13 @@ public final class L10nTranslations {
                 "envios de arquivos de registro de chamadas");
         table.put("call log reports",
                 "relat\u00f3rios de registro de chamadas");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("caption text paste",
                 "colagem de texto em legendas");
         table.put("channel Gift button",
                 "bot\u00e3o de presente dos canais");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("channel ads",
                 "an\u00fancios em canais");
         table.put("channel read metrics",
@@ -2243,7 +2259,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(524);
+        Map<String, String> table = new HashMap<>(528);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2545,6 +2561,8 @@ public final class L10nTranslations {
                 "Gizlilik");
         table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                 "Kanal\u0131n sonunda yukar\u0131 \u00e7ekmek yaln\u0131zca i\u00e7eri\u011fi kayd\u0131r\u0131r. Sonraki kanal\u0131 sohbet listenizden a\u00e7\u0131n.");
+        table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.",
+                "Bir forum konusunun sonunda yukar\u0131 \u00e7ekmek yaln\u0131zca kayd\u0131r\u0131r. Sonraki konuyu konu listesinden a\u00e7. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Push token saved: %1$s",
                 "Push belirteci kay\u0131tl\u0131: %1$s");
         table.put("Quiet contacts prompts",
@@ -2611,17 +2629,19 @@ public final class L10nTranslations {
                 "Arama tan\u0131lamalar\u0131n\u0131 durdur");
         table.put("Stop pull to next channel",
                 "Sonraki kanala \u00e7ekmeyi durdur");
+        table.put("Stop pull to next topic",
+                "Sonraki konuya \u00e7ekmeyi durdur");
         table.put("Stop usage reports",
                 "Kullan\u0131m raporlar\u0131n\u0131 durdur");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
                 "Telegram sunucusunun istedi\u011fi otomatik arama hata ay\u0131klama raporlar\u0131n\u0131 ve g\u00fcnl\u00fck dosyas\u0131 y\u00fcklemelerini durdurur.");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Strip link tracking",
                 "Ba\u011flant\u0131 takibini kald\u0131r");
         table.put("Supported links",
                 "Desteklenen ba\u011flant\u0131lar");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Tap to turn it back on.",
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -2738,13 +2758,13 @@ public final class L10nTranslations {
                 "arama g\u00fcnl\u00fck dosyas\u0131 y\u00fcklemeleri");
         table.put("call log reports",
                 "arama g\u00fcnl\u00fck raporlar\u0131");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("caption text paste",
                 "a\u00e7\u0131klama metni yap\u0131\u015ft\u0131rma");
         table.put("channel Gift button",
                 "kanal Hediye d\u00fc\u011fmesi");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("channel ads",
                 "kanal reklamlar\u0131");
         table.put("channel read metrics",

@@ -181,7 +181,9 @@ public class PausedHooksTest {
                 app.hushtelegram.extension.telegram.misc.ChatSwipe::keepRowStill));
         probes.put(PatchFamily.DISABLE_CHANNEL_PULL, Arrays.asList(
                 app.hushtelegram.extension.telegram.misc.ChannelPull::stopBottomPull,
-                app.hushtelegram.extension.telegram.misc.ChannelPull::keepChannelStill));
+                app.hushtelegram.extension.telegram.misc.ChannelPull::keepChannelStill,
+                app.hushtelegram.extension.telegram.misc.ForumTopicPull::stopTopicPull,
+                app.hushtelegram.extension.telegram.misc.ForumTopicPull::keepTopicStill));
         probes.put(PatchFamily.NORMAL_PASTE, Collections.singletonList(() -> {
             android.content.ClipboardManager clipboard = (android.content.ClipboardManager) RuntimeEnvironment.getApplication()
                     .getSystemService(android.content.Context.CLIPBOARD_SERVICE);

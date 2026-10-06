@@ -243,6 +243,8 @@ Uses Telegram's official certificate for Firebase push registration. Notificatio
 Firebase certificate header	Encabezado del certificado de Firebase
 Stop pull to next channel	Impedir el salto al siguiente canal al deslizar
 Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.	Al deslizar hacia arriba al final de un canal, solo se desplaza el contenido. Abre el siguiente canal desde tu lista de chats.
+Stop pull to next topic	Detener tirar al siguiente tema
+Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.	Tirar hacia arriba al final de un tema del foro solo desplaza. Abre el siguiente tema desde la lista de temas. Desactivado por defecto en los ajustes.
 # context: Read-only local notification facts, independent of repair and Pause.
 Local notification status	Estado local de notificaciones
 local notification status	estado local de notificaciones

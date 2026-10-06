@@ -138,6 +138,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/DoubleTapReactions.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ContactsBlock.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GreetingStickers.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ForumTopicPull.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/localcontrols/**",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/paste/**",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/ids/**",

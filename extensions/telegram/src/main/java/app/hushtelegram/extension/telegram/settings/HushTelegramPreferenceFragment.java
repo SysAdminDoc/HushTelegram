@@ -308,6 +308,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 chats.addPreference(mark(toggle(context, Settings.DISABLE_CHANNEL_PULL, L10n.t("Stop pull to next channel"),
                         L10n.t("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.")),
                         SettingsIcons.BLOCK));
+                chats.addPreference(mark(toggle(context, Settings.DISABLE_TOPIC_PULL, L10n.t("Stop pull to next topic"),
+                        L10n.t("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. "
+                                + "Off by default in settings.")),
+                        SettingsIcons.BLOCK));
             }
             if (build.contains(PatchFamily.NORMAL_PASTE)) {
                 chats.addPreference(mark(toggle(context, Settings.NORMAL_PASTE, L10n.t("Use normal paste"),

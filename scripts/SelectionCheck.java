@@ -246,6 +246,7 @@ public final class SelectionCheck {
         hook(calls, flags, "hideGreetingStickers", "misc/GreetingStickers", "measure");
         hook(calls, flags, "disableChatSwipe", "misc/ChatSwipe", "keepRowStill");
         hook(calls, flags, "disableChannelPull", "misc/ChannelPull", "stopBottomPull", "keepChannelStill");
+        hook(calls, flags, "disableChannelPull", "misc/ForumTopicPull", "stopTopicPull", "keepTopicStill");
         hook(calls, flags, "quietContactsNag", "misc/ContactsNag", "skipAsk", "hideBadge");
         hook(calls, flags, "holidayLook", "misc/HolidayLook", "mode");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");

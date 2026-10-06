@@ -87,6 +87,7 @@ public final class SettingsBackup {
             Settings.HIDE_GREETING_STICKERS,
             Settings.DISABLE_CHAT_SWIPE,
             Settings.DISABLE_CHANNEL_PULL,
+            Settings.DISABLE_TOPIC_PULL,
             Settings.NORMAL_PASTE,
             Settings.SHOW_LOCAL_IDS,
             Settings.DISABLE_DOUBLE_TAP_REACTIONS,

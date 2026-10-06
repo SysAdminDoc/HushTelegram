@@ -292,7 +292,7 @@
     },
     {
       "name": "Disable pull to next channel",
-      "description": "Adds a switch, on by default, that stops pulling past the bottom of a channel from opening the next channel. Scrolling, opening channels directly and pulling between forum topics still work.",
+      "description": "Adds a switch, on by default, that stops pulling past the bottom of a channel from opening the next channel, and a second one, off by default, that does the same for the next forum topic. Scrolling and opening channels or topics directly still work.",
       "category": "Chats",
       "use": true,
       "dependencies": [
