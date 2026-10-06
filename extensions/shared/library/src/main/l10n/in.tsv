@@ -239,6 +239,8 @@ Use system font	Gunakan font sistem
 Bold and italic text stops using the Roboto files built into Telegram and takes your phone's font, the one regular text already uses. Code takes the phone's monospace font. Some number displays and Instant View pages keep Telegram's own. Off by default in settings.	Teks tebal dan miring tidak lagi memakai file Roboto bawaan Telegram dan beralih ke font ponsel Anda, yang sudah dipakai teks biasa. Kode memakai font monospace ponsel. Beberapa tampilan angka dan halaman Instant View tetap memakai font Telegram. Nonaktif secara default di pengaturan.
 AMOLED black	Hitam AMOLED
 Telegram's Night and Dark themes draw their screens and chat background in pure black, while message bubbles and pop-up menus keep their colors. Themes you've installed from a file stay as they are. Off by default in settings.	Tema Malam dan Gelap Telegram menampilkan layar dan latar obrolan dalam hitam pekat, sedangkan gelembung pesan dan menu pop-up tetap memakai warnanya. Tema yang dipasang dari file tetap seperti semula. Nonaktif secara default di pengaturan.
+Hide translate bar	Sembunyikan bilah terjemahan
+Chats in another language stop showing Telegram's translate bar at the top, and Translate moves to the chat's menu. A chat you're translating keeps its bar so you can go back to the original. Off by default in settings.	Obrolan dalam bahasa lain tidak lagi menampilkan bilah terjemahan Telegram di atas, dan Terjemahkan pindah ke menu obrolan. Obrolan yang sedang Anda terjemahkan tetap memiliki bilahnya agar Anda bisa kembali ke teks asli. Nonaktif secara default di pengaturan.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Notifikasi

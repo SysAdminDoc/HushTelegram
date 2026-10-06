@@ -96,6 +96,7 @@ body:
         - Use registered Maps API key
         - Use system font
         - AMOLED black
+        - Hide translate bar
         - Strip link tracking
         - HushTelegram settings
     validations:

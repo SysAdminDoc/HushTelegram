@@ -345,6 +345,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "Themes you've installed from a file stay as they are. Off by default in settings."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.HIDE_TRANSLATE_BAR)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_TRANSLATE_BAR, L10n.t("Hide translate bar"),
+                        PatchFamily.HIDE_TRANSLATE_BAR.coverageSummary(L10n.t("Chats in another language stop showing Telegram's translate bar "
+                                + "at the top, and Translate moves to the chat's menu. A chat you're translating keeps its bar "
+                                + "so you can go back to the original. Off by default in settings."))),
+                        SettingsIcons.BLOCK));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

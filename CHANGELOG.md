@@ -14,6 +14,8 @@ Working version 0.0.11.
 
 * **Telegram:** A new AMOLED black switch, off by default, turns the backgrounds of Telegram's Night and Dark themes pure black, which looks deeper on an OLED screen. Message bubbles and pop-up menus keep the theme's colors, and a theme you've installed from a file stays as it is. A change takes effect after Telegram restarts.
 
+* **Telegram:** A new Hide translate bar switch, off by default, takes the translate bar off the top of chats in another language. Translate is still in the chat's menu, and a chat you're translating keeps its bar so the original is one tap away.
+
 * **Telegram:** Disable pull to next channel has a second switch, Stop pull to next topic, off by default. With it on, pulling up at the bottom of a forum topic only scrolls instead of opening the next topic. Each switch covers only its own pull, and a switch flipped mid-drag counts when you let go.
 
 * **Telegram:** The beta target is now telegram.org's current 12.10.7 build, version code 71239, which replaced build 71179. Every patch applies and passes its fixture tests on it.

@@ -125,6 +125,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting AMOLED_BLACK =
             new BooleanSetting("hushtelegram_amoled_black", FALSE, true);
 
+    /** No translate bar at the top of a chat in another language unless the chat is being translated. */
+    public static final BooleanSetting HIDE_TRANSLATE_BAR =
+            new BooleanSetting("hushtelegram_hide_translate_bar", FALSE);
+
     /**
      * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are

@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(536);
+        Map<String, String> table = new HashMap<>(540);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -137,6 +137,8 @@ public final class L10nTranslations {
                 "Chat-ID %1$s");
         table.put("Chats",
                 "Chats");
+        table.put("Chats in another language stop showing Telegram's translate bar at the top, and Translate moves to the chat's menu. A chat you're translating keeps its bar so you can go back to the original. Off by default in settings.",
+                "Chats in einer anderen Sprache zeigen oben nicht mehr Telegrams \u00dcbersetzungsleiste, und \u00dcbersetzen wandert ins Men\u00fc des Chats. Ein Chat, den du gerade \u00fcbersetzt, beh\u00e4lt seine Leiste, damit du zum Original zur\u00fcckkommst. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("Check for new HushTelegram releases",
                 "Nach neuen HushTelegram-Versionen suchen");
         table.put("Check now",
@@ -175,11 +177,11 @@ public final class L10nTranslations {
                 "Die Einstellungsdatei lie\u00df sich nicht speichern. Versuche es noch einmal.");
         table.put("Couldn't start that. Try again in a moment.",
                 "Das lie\u00df sich nicht starten. Versuche es gleich noch einmal.");
-        table.put("Couldn't start the report export. Try again shortly.",
-                "Der Export des Berichts lie\u00df sich nicht starten. Versuche es gleich noch einmal.");
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("Couldn't start the report export. Try again shortly.",
+                "Der Export des Berichts lie\u00df sich nicht starten. Versuche es gleich noch einmal.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "HushTelegram lie\u00df sich nicht wieder einschalten. Versuche es noch einmal.");
         table.put("Debug logging",
@@ -242,6 +244,8 @@ public final class L10nTranslations {
                 "Empfehlungen ausblenden");
         table.put("Hide sponsored proxy channel",
                 "Gesponserten Proxy-Kanal ausblenden");
+        table.put("Hide translate bar",
+                "\u00dcbersetzungsleiste ausblenden");
         table.put("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.",
                 "Blendet Premium, Stars, My Grams, Business und Geschenk senden in den Einstellungen, die Geschenke-Tabs in Profilen und die Geschenk-Schaltfl\u00e4che von Kan\u00e4len aus. K\u00e4ufe und Kontofunktionen bleiben unver\u00e4ndert.");
         table.put("Hides Premium, birthday and low Stars balance banners in the chat list. Account security notices and other suggestions remain. Nothing is dismissed for you.",
@@ -296,13 +300,13 @@ public final class L10nTranslations {
                 "Weitere Einstellungen");
         table.put("New Year look all year",
                 "Neujahrs-Look das ganze Jahr");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("No",
                 "Nein");
         table.put("No HushTelegram release is out yet.",
                 "Es gibt noch keine Version von HushTelegram.");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Keine App auf diesem Handy kann den Link \u00f6ffnen. Die Adresse ist %1$s.");
         table.put("No matching settings",
@@ -419,13 +423,13 @@ public final class L10nTranslations {
                 "Bleibt w\u00e4hrend der Pause aktiv");
         table.put("Stop call diagnostics",
                 "Anrufdiagnosen stoppen");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Stop pull to next channel",
                 "Ziehen zum n\u00e4chsten Kanal verhindern");
         table.put("Stop pull to next topic",
                 "Ziehen zum n\u00e4chsten Thema verhindern");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Stop usage reports",
                 "Nutzungsberichte stoppen");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
@@ -542,13 +546,13 @@ public final class L10nTranslations {
                 "Banner f\u00fcr Geburtstagsgeschenke");
         table.put("bot shares",
                 "von Bots geteilte Nachrichten");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("cached proxy channel",
                 "gespeicherter Proxy-Kanal");
         table.put("cached proxy folder entries",
                 "gespeicherte Proxy-Eintr\u00e4ge in Ordnern");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("cached recommendations",
                 "gespeicherte Empfehlungen");
         table.put("call debug reports",
@@ -608,7 +612,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(536);
+        Map<String, String> table = new HashMap<>(540);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -698,6 +702,8 @@ public final class L10nTranslations {
                 "ID de chat %1$s");
         table.put("Chats",
                 "Chats");
+        table.put("Chats in another language stop showing Telegram's translate bar at the top, and Translate moves to the chat's menu. A chat you're translating keeps its bar so you can go back to the original. Off by default in settings.",
+                "Los chats en otro idioma dejan de mostrar arriba la barra de traducci\u00f3n de Telegram, y Traducir pasa al men\u00fa del chat. Un chat que est\u00e1s traduciendo mantiene su barra para que puedas volver al original. Desactivado por defecto en los ajustes.");
         table.put("Check for new HushTelegram releases",
                 "Buscar nuevas versiones de HushTelegram");
         table.put("Check now",
@@ -736,11 +742,11 @@ public final class L10nTranslations {
                 "No se pudo guardar el archivo de configuraci\u00f3n. Int\u00e9ntalo de nuevo.");
         table.put("Couldn't start that. Try again in a moment.",
                 "No se pudo iniciar. Int\u00e9ntalo de nuevo en un momento.");
-        table.put("Couldn't start the report export. Try again shortly.",
-                "No se pudo iniciar la exportaci\u00f3n del informe. Int\u00e9ntalo de nuevo en breve.");
     }
 
     private static void fillEs1(Map<String, String> table) {
+        table.put("Couldn't start the report export. Try again shortly.",
+                "No se pudo iniciar la exportaci\u00f3n del informe. Int\u00e9ntalo de nuevo en breve.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "No se pudo volver a activar HushTelegram. Int\u00e9ntalo de nuevo.");
         table.put("Debug logging",
@@ -803,6 +809,8 @@ public final class L10nTranslations {
                 "Ocultar recomendaciones");
         table.put("Hide sponsored proxy channel",
                 "Ocultar canal patrocinado del proxy");
+        table.put("Hide translate bar",
+                "Ocultar barra de traducci\u00f3n");
         table.put("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.",
                 "Oculta Premium, Stars, My Grams, Business y Enviar un regalo en Ajustes, las pesta\u00f1as de regalos de los perfiles y el bot\u00f3n de regalo de los canales. Las compras y los controles de la cuenta siguen funcionando igual.");
         table.put("Hides Premium, birthday and low Stars balance banners in the chat list. Account security notices and other suggestions remain. Nothing is dismissed for you.",
@@ -857,13 +865,13 @@ public final class L10nTranslations {
                 "M\u00e1s ajustes");
         table.put("New Year look all year",
                 "Aspecto de A\u00f1o Nuevo todo el a\u00f1o");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("No",
                 "No");
         table.put("No HushTelegram release is out yet.",
                 "Todav\u00eda no hay ninguna versi\u00f3n de HushTelegram.");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Ninguna app de este tel\u00e9fono puede abrir el enlace. La direcci\u00f3n es %1$s.");
         table.put("No matching settings",
@@ -980,13 +988,13 @@ public final class L10nTranslations {
                 "Se mantiene durante la pausa");
         table.put("Stop call diagnostics",
                 "Detener diagn\u00f3sticos de llamadas");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Stop pull to next channel",
                 "Impedir el salto al siguiente canal al deslizar");
         table.put("Stop pull to next topic",
                 "Impedir el salto al siguiente tema al deslizar");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Stop usage reports",
                 "Detener los informes de uso");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
@@ -1103,13 +1111,13 @@ public final class L10nTranslations {
                 "banner de regalos de cumplea\u00f1os");
         table.put("bot shares",
                 "mensajes que comparten los bots");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("cached proxy channel",
                 "canal del proxy almacenado");
         table.put("cached proxy folder entries",
                 "entradas del proxy almacenadas en carpetas");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("cached recommendations",
                 "recomendaciones guardadas");
         table.put("call debug reports",
@@ -1169,7 +1177,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(536);
+        Map<String, String> table = new HashMap<>(540);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1259,6 +1267,8 @@ public final class L10nTranslations {
                 "ID chat %1$s");
         table.put("Chats",
                 "Chat");
+        table.put("Chats in another language stop showing Telegram's translate bar at the top, and Translate moves to the chat's menu. A chat you're translating keeps its bar so you can go back to the original. Off by default in settings.",
+                "Obrolan dalam bahasa lain tidak lagi menampilkan bilah terjemahan Telegram di atas, dan Terjemahkan pindah ke menu obrolan. Obrolan yang sedang Anda terjemahkan tetap memiliki bilahnya agar Anda bisa kembali ke teks asli. Nonaktif secara default di pengaturan.");
         table.put("Check for new HushTelegram releases",
                 "Periksa rilis HushTelegram baru");
         table.put("Check now",
@@ -1297,11 +1307,11 @@ public final class L10nTranslations {
                 "File pengaturan tidak dapat disimpan. Coba lagi.");
         table.put("Couldn't start that. Try again in a moment.",
                 "Tidak dapat dimulai. Coba lagi dalam beberapa saat.");
-        table.put("Couldn't start the report export. Try again shortly.",
-                "Ekspor laporan tidak dapat dimulai. Coba lagi dalam beberapa saat.");
     }
 
     private static void fillIn1(Map<String, String> table) {
+        table.put("Couldn't start the report export. Try again shortly.",
+                "Ekspor laporan tidak dapat dimulai. Coba lagi dalam beberapa saat.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "HushTelegram tidak dapat diaktifkan lagi. Coba lagi.");
         table.put("Debug logging",
@@ -1364,6 +1374,8 @@ public final class L10nTranslations {
                 "Sembunyikan rekomendasi");
         table.put("Hide sponsored proxy channel",
                 "Sembunyikan kanal bersponsor proxy");
+        table.put("Hide translate bar",
+                "Sembunyikan bilah terjemahan");
         table.put("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.",
                 "Menyembunyikan Premium, Stars, My Grams, Business dan Kirim Hadiah di Pengaturan, tab Hadiah pada profil dan tombol Hadiah pada kanal. Pembelian dan kontrol akun tetap berfungsi seperti biasa.");
         table.put("Hides Premium, birthday and low Stars balance banners in the chat list. Account security notices and other suggestions remain. Nothing is dismissed for you.",
@@ -1418,13 +1430,13 @@ public final class L10nTranslations {
                 "Pengaturan lainnya");
         table.put("New Year look all year",
                 "Tampilan Tahun Baru sepanjang tahun");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("No",
                 "Tidak");
         table.put("No HushTelegram release is out yet.",
                 "Belum ada rilis HushTelegram.");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Tidak ada aplikasi di ponsel ini yang dapat membuka tautan ini. Alamatnya %1$s.");
         table.put("No matching settings",
@@ -1541,13 +1553,13 @@ public final class L10nTranslations {
                 "Tetap aktif saat dijeda");
         table.put("Stop call diagnostics",
                 "Hentikan diagnostik panggilan");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Stop pull to next channel",
                 "Hentikan tarikan ke kanal berikutnya");
         table.put("Stop pull to next topic",
                 "Hentikan tarikan ke topik berikutnya");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Stop usage reports",
                 "Hentikan laporan penggunaan");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
@@ -1664,13 +1676,13 @@ public final class L10nTranslations {
                 "banner hadiah ulang tahun");
         table.put("bot shares",
                 "pesan yang dibagikan bot");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("cached proxy channel",
                 "kanal proxy tersimpan");
         table.put("cached proxy folder entries",
                 "entri proxy tersimpan di folder");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("cached recommendations",
                 "rekomendasi tersimpan");
         table.put("call debug reports",
@@ -1730,7 +1742,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(536);
+        Map<String, String> table = new HashMap<>(540);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1820,6 +1832,8 @@ public final class L10nTranslations {
                 "ID de chat %1$s");
         table.put("Chats",
                 "Conversas");
+        table.put("Chats in another language stop showing Telegram's translate bar at the top, and Translate moves to the chat's menu. A chat you're translating keeps its bar so you can go back to the original. Off by default in settings.",
+                "Chats em outro idioma deixam de mostrar a barra de tradu\u00e7\u00e3o do Telegram no topo, e Traduzir passa para o menu do chat. Um chat que voc\u00ea est\u00e1 traduzindo mant\u00e9m a barra para voc\u00ea voltar ao original. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Check for new HushTelegram releases",
                 "Procurar novas vers\u00f5es do HushTelegram");
         table.put("Check now",
@@ -1858,11 +1872,11 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel salvar o arquivo de configura\u00e7\u00f5es. Tente de novo.");
         table.put("Couldn't start that. Try again in a moment.",
                 "N\u00e3o foi poss\u00edvel iniciar isso. Tente de novo em instantes.");
-        table.put("Couldn't start the report export. Try again shortly.",
-                "N\u00e3o foi poss\u00edvel iniciar a exporta\u00e7\u00e3o do relat\u00f3rio. Tente de novo daqui a pouco.");
     }
 
     private static void fillPt_rBR1(Map<String, String> table) {
+        table.put("Couldn't start the report export. Try again shortly.",
+                "N\u00e3o foi poss\u00edvel iniciar a exporta\u00e7\u00e3o do relat\u00f3rio. Tente de novo daqui a pouco.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "N\u00e3o foi poss\u00edvel reativar o HushTelegram. Tente novamente.");
         table.put("Debug logging",
@@ -1925,6 +1939,8 @@ public final class L10nTranslations {
                 "Ocultar recomenda\u00e7\u00f5es");
         table.put("Hide sponsored proxy channel",
                 "Ocultar canal patrocinado do proxy");
+        table.put("Hide translate bar",
+                "Ocultar barra de tradu\u00e7\u00e3o");
         table.put("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.",
                 "Oculta Premium, Stars, My Grams, Business e Enviar um presente nas Configura\u00e7\u00f5es, as abas de presentes dos perfis e o bot\u00e3o de presente dos canais. As compras e os controles da conta continuam funcionando como antes.");
         table.put("Hides Premium, birthday and low Stars balance banners in the chat list. Account security notices and other suggestions remain. Nothing is dismissed for you.",
@@ -1979,13 +1995,13 @@ public final class L10nTranslations {
                 "Mais configura\u00e7\u00f5es");
         table.put("New Year look all year",
                 "Visual de Ano Novo o ano todo");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("No",
                 "N\u00e3o");
         table.put("No HushTelegram release is out yet.",
                 "Ainda n\u00e3o h\u00e1 nenhuma vers\u00e3o do HushTelegram.");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Nenhum aplicativo neste dispositivo consegue abrir o link. O endere\u00e7o \u00e9 %1$s.");
         table.put("No matching settings",
@@ -2102,13 +2118,13 @@ public final class L10nTranslations {
                 "O que continua ativo na pausa");
         table.put("Stop call diagnostics",
                 "Interromper diagn\u00f3sticos de chamadas");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Stop pull to next channel",
                 "Impedir o salto para o pr\u00f3ximo canal ao deslizar");
         table.put("Stop pull to next topic",
                 "Impedir o salto para o pr\u00f3ximo t\u00f3pico ao deslizar");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Stop usage reports",
                 "Parar os relat\u00f3rios de uso");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
@@ -2225,13 +2241,13 @@ public final class L10nTranslations {
                 "banner de presentes de anivers\u00e1rio");
         table.put("bot shares",
                 "mensagens compartilhadas por bots");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("cached proxy channel",
                 "canal do proxy armazenado");
         table.put("cached proxy folder entries",
                 "entradas do proxy armazenadas nas pastas");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("cached recommendations",
                 "recomenda\u00e7\u00f5es armazenadas");
         table.put("call debug reports",
@@ -2291,7 +2307,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(536);
+        Map<String, String> table = new HashMap<>(540);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2381,6 +2397,8 @@ public final class L10nTranslations {
                 "Sohbet kimli\u011fi %1$s");
         table.put("Chats",
                 "Sohbetler");
+        table.put("Chats in another language stop showing Telegram's translate bar at the top, and Translate moves to the chat's menu. A chat you're translating keeps its bar so you can go back to the original. Off by default in settings.",
+                "Ba\u015fka dildeki sohbetler \u00fcstte Telegram'\u0131n \u00e7eviri \u00e7ubu\u011funu art\u0131k g\u00f6stermez ve \u00c7evir, sohbetin men\u00fcs\u00fcne ta\u015f\u0131n\u0131r. \u00c7evirdi\u011finiz bir sohbet, orijinale d\u00f6nebilmeniz i\u00e7in \u00e7ubu\u011funu korur. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Check for new HushTelegram releases",
                 "Yeni HushTelegram s\u00fcr\u00fcmlerini denetle");
         table.put("Check now",
@@ -2419,11 +2437,11 @@ public final class L10nTranslations {
                 "Ayar dosyas\u0131 kaydedilemedi. Tekrar dene.");
         table.put("Couldn't start that. Try again in a moment.",
                 "Bu i\u015flem ba\u015flat\u0131lamad\u0131. Birazdan tekrar dene.");
-        table.put("Couldn't start the report export. Try again shortly.",
-                "Rapor d\u0131\u015fa aktar\u0131m\u0131 ba\u015flat\u0131lamad\u0131. Birazdan tekrar dene.");
     }
 
     private static void fillTr1(Map<String, String> table) {
+        table.put("Couldn't start the report export. Try again shortly.",
+                "Rapor d\u0131\u015fa aktar\u0131m\u0131 ba\u015flat\u0131lamad\u0131. Birazdan tekrar dene.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "HushTelegram yeniden a\u00e7\u0131lamad\u0131. Tekrar dene.");
         table.put("Debug logging",
@@ -2486,6 +2504,8 @@ public final class L10nTranslations {
                 "\u00d6nerileri gizle");
         table.put("Hide sponsored proxy channel",
                 "Proxy'nin sponsorlu kanal\u0131n\u0131 gizle");
+        table.put("Hide translate bar",
+                "\u00c7eviri \u00e7ubu\u011funu gizle");
         table.put("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.",
                 "Ayarlar'daki Premium, Stars, My Grams, Business ve Hediye G\u00f6nder se\u00e7eneklerini, profillerdeki Hediyeler sekmelerini ve kanallardaki Hediye d\u00fc\u011fmesini gizler. Sat\u0131n almalar ve hesap kontrolleri eskisi gibi \u00e7al\u0131\u015f\u0131r.");
         table.put("Hides Premium, birthday and low Stars balance banners in the chat list. Account security notices and other suggestions remain. Nothing is dismissed for you.",
@@ -2540,13 +2560,13 @@ public final class L10nTranslations {
                 "Di\u011fer ayarlar");
         table.put("New Year look all year",
                 "Y\u0131l boyu y\u0131lba\u015f\u0131 g\u00f6r\u00fcn\u00fcm\u00fc");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("No",
                 "Hay\u0131r");
         table.put("No HushTelegram release is out yet.",
                 "Hen\u00fcz bir HushTelegram s\u00fcr\u00fcm\u00fc yay\u0131nlanmad\u0131.");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Bu telefondaki hi\u00e7bir uygulama ba\u011flant\u0131y\u0131 a\u00e7am\u0131yor. Adres: %1$s.");
         table.put("No matching settings",
@@ -2663,13 +2683,13 @@ public final class L10nTranslations {
                 "Duraklat\u0131lsa da devrede kal\u0131r");
         table.put("Stop call diagnostics",
                 "Arama tan\u0131lamalar\u0131n\u0131 durdur");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Stop pull to next channel",
                 "Sonraki kanala \u00e7ekmeyi durdur");
         table.put("Stop pull to next topic",
                 "Sonraki konuya \u00e7ekmeyi durdur");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Stop usage reports",
                 "Kullan\u0131m raporlar\u0131n\u0131 durdur");
         table.put("Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
@@ -2786,13 +2806,13 @@ public final class L10nTranslations {
                 "do\u011fum g\u00fcn\u00fc hediyesi afi\u015fi");
         table.put("bot shares",
                 "botlar\u0131n payla\u015ft\u0131\u011f\u0131 mesajlar");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("cached proxy channel",
                 "kay\u0131tl\u0131 proxy kanal\u0131");
         table.put("cached proxy folder entries",
                 "klas\u00f6rlerdeki kay\u0131tl\u0131 proxy girdileri");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("cached recommendations",
                 "kay\u0131tl\u0131 \u00f6neriler");
         table.put("call debug reports",

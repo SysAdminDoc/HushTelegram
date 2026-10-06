@@ -100,6 +100,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HOLIDAY_LOOK, "New Year look all year");
         ROW_TITLES.put(PatchFamily.USE_SYSTEM_FONT, "Use system font");
         ROW_TITLES.put(PatchFamily.AMOLED_BLACK, "AMOLED black");
+        ROW_TITLES.put(PatchFamily.HIDE_TRANSLATE_BAR, "Hide translate bar");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -224,7 +225,8 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.NORMAL_PASTE) || build.contains(PatchFamily.SHOW_LOCAL_IDS)
                         || build.contains(PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS)
                         || build.contains(PatchFamily.QUIET_CONTACTS_NAG) || build.contains(PatchFamily.HOLIDAY_LOOK)
-                        || build.contains(PatchFamily.USE_SYSTEM_FONT) || build.contains(PatchFamily.AMOLED_BLACK)) expected.add("Chats");
+                        || build.contains(PatchFamily.USE_SYSTEM_FONT) || build.contains(PatchFamily.AMOLED_BLACK)
+                        || build.contains(PatchFamily.HIDE_TRANSLATE_BAR)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
@@ -362,6 +364,13 @@ public class HushTelegramPreferenceFragmentTest {
             // Telegram's own theme colors stay until someone turns the switch on.
             assertFalse(Settings.AMOLED_BLACK.key,
                     ((SwitchPreference) page.findPreference(Settings.AMOLED_BLACK.key)).isChecked());
+            assertEquals("Hide translate bar", String.valueOf(page.findPreference(Settings.HIDE_TRANSLATE_BAR.key).getTitle()));
+            assertEquals("Chats in another language stop showing Telegram's translate bar at the top, and Translate moves to the chat's menu. "
+                            + "A chat you're translating keeps its bar so you can go back to the original. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.HIDE_TRANSLATE_BAR.key).getSummary()));
+            // Telegram's translate bar stays until someone turns the switch on.
+            assertFalse(Settings.HIDE_TRANSLATE_BAR.key,
+                    ((SwitchPreference) page.findPreference(Settings.HIDE_TRANSLATE_BAR.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {
