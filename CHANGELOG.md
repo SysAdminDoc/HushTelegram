@@ -54,6 +54,12 @@ Working version 0.0.11.
 
 * **Telegram:** A new Hide time on stickers switch, off by default, takes the little time bubble off stickers and big animated emoji, read checks included. Every other message keeps its time.
 
+* **Telegram:** A new Ignore mentions in muted chats switch, off by default, keeps a mention or a reply to you quiet in a group or channel you've muted. Telegram normally lets those through the mute. Chats you haven't muted notify as before.
+
+* **Telegram:** A new Hide blocked users in groups switch, off by default, leaves messages from people you've blocked out of the groups and supergroups you open. Private chats and channel posts aren't touched, and nothing is deleted, so turning it off and reopening the chat brings them back.
+
+* **Telegram:** A new Hide Telegram Features and Invite Friends switch, off by default, takes the Telegram Features row out of Settings and Invite Friends out of Contacts. If you have no contacts yet, the invite list Contacts shows in their place goes too.
+
 * **Telegram:** Show user and chat IDs has a second switch, Show profile data center, off by default. It adds a row to a profile's menu with the data center, 1 to 5, that holds the profile's photo, read from the copy Telegram already has. A profile without a photo shows no row. Either switch works without the other.
 
 * **Telegram:** Disable pull to next channel has a second switch, Stop pull to next topic, off by default. With it on, pulling up at the bottom of a forum topic only scrolls instead of opening the next topic. Each switch covers only its own pull, and a switch flipped mid-drag counts when you let go.

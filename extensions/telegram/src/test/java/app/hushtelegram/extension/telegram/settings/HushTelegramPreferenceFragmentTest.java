@@ -120,6 +120,9 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.REAR_CAMERA_FIRST, "Start the camera on the rear lens");
         ROW_TITLES.put(PatchFamily.HIDE_GALLERY_CAMERA_TILE, "Hide gallery camera tile");
         ROW_TITLES.put(PatchFamily.HIDE_STICKER_TIME, "Hide time on stickers");
+        ROW_TITLES.put(PatchFamily.IGNORE_MUTED_MENTIONS, "Ignore mentions in muted chats");
+        ROW_TITLES.put(PatchFamily.HIDE_BLOCKED_IN_GROUPS, "Hide blocked users in groups");
+        ROW_TITLES.put(PatchFamily.HIDE_FEATURES_AND_INVITE, "Hide Telegram Features and Invite Friends");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -264,7 +267,10 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.DISABLE_ARCHIVE_PULL)
                         || build.contains(PatchFamily.REAR_CAMERA_FIRST)
                         || build.contains(PatchFamily.HIDE_GALLERY_CAMERA_TILE)
-                        || build.contains(PatchFamily.HIDE_STICKER_TIME)) expected.add("Chats");
+                        || build.contains(PatchFamily.HIDE_STICKER_TIME)
+                        || build.contains(PatchFamily.IGNORE_MUTED_MENTIONS)
+                        || build.contains(PatchFamily.HIDE_BLOCKED_IN_GROUPS)
+                        || build.contains(PatchFamily.HIDE_FEATURES_AND_INVITE)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
@@ -560,6 +566,31 @@ public class HushTelegramPreferenceFragmentTest {
             // A sticker shows its time until the switch is turned on.
             assertFalse(Settings.HIDE_STICKER_TIME.key,
                     ((SwitchPreference) page.findPreference(Settings.HIDE_STICKER_TIME.key)).isChecked());
+            assertEquals("Ignore mentions in muted chats", String.valueOf(page.findPreference(Settings.IGNORE_MUTED_MENTIONS.key).getTitle()));
+            assertEquals("Telegram still notifies you when someone mentions you or replies to you in a group or "
+                            + "channel you've muted. With this on, those stay as quiet as the rest of the chat. Chats you "
+                            + "haven't muted notify as before. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.IGNORE_MUTED_MENTIONS.key).getSummary()));
+            // Mentions in a muted chat notify until the switch is turned on.
+            assertFalse(Settings.IGNORE_MUTED_MENTIONS.key,
+                    ((SwitchPreference) page.findPreference(Settings.IGNORE_MUTED_MENTIONS.key)).isChecked());
+            assertEquals("Hide blocked users in groups", String.valueOf(page.findPreference(Settings.HIDE_BLOCKED_IN_GROUPS.key).getTitle()));
+            assertEquals("Messages from people you've blocked are left out of the groups and supergroups you open. "
+                            + "Private chats and channel posts stay as they are. Nothing is deleted, so turning it off "
+                            + "and reopening the chat brings them back. Telegram loads a long blocked list a bit at a "
+                            + "time, so someone it hasn't loaded yet still shows. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.HIDE_BLOCKED_IN_GROUPS.key).getSummary()));
+            // Blocked people's group messages show until the switch is turned on.
+            assertFalse(Settings.HIDE_BLOCKED_IN_GROUPS.key,
+                    ((SwitchPreference) page.findPreference(Settings.HIDE_BLOCKED_IN_GROUPS.key)).isChecked());
+            assertEquals("Hide Telegram Features and Invite Friends", String.valueOf(page.findPreference(Settings.HIDE_FEATURES_AND_INVITE.key).getTitle()));
+            assertEquals("Settings drops its Telegram Features row and Contacts drops Invite Friends. When you have "
+                            + "no contacts yet, the invite list Contacts shows in their place goes too. Off by default in "
+                            + "settings.",
+                    String.valueOf(page.findPreference(Settings.HIDE_FEATURES_AND_INVITE.key).getSummary()));
+            // Telegram Features and Invite Friends show until the switch is turned on.
+            assertFalse(Settings.HIDE_FEATURES_AND_INVITE.key,
+                    ((SwitchPreference) page.findPreference(Settings.HIDE_FEATURES_AND_INVITE.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {

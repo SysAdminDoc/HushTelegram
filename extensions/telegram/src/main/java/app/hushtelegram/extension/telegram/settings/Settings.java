@@ -252,6 +252,24 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_hide_sticker_time", FALSE);
 
     /**
+     * A mention or a reply to you in a muted group or channel stays as quiet as the rest of the chat.
+     */
+    public static final BooleanSetting IGNORE_MUTED_MENTIONS =
+            new BooleanSetting("hushtelegram_ignore_muted_mentions", FALSE);
+
+    /**
+     * Messages from people you've blocked are left out of the groups and supergroups you open.
+     */
+    public static final BooleanSetting HIDE_BLOCKED_IN_GROUPS =
+            new BooleanSetting("hushtelegram_hide_blocked_in_groups", FALSE);
+
+    /**
+     * Settings drops its Telegram Features row and Contacts drops its Invite Friends rows.
+     */
+    public static final BooleanSetting HIDE_FEATURES_AND_INVITE =
+            new BooleanSetting("hushtelegram_hide_features_and_invite", FALSE);
+
+    /**
      * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
      * never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

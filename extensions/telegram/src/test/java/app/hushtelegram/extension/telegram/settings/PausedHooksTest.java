@@ -286,6 +286,15 @@ public class PausedHooksTest {
         // A sticker skips its time.
         probes.put(PatchFamily.HIDE_STICKER_TIME, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.StickerTimeForTests.on()));
+        // A mention in a muted chat stays quiet.
+        probes.put(PatchFamily.IGNORE_MUTED_MENTIONS, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.MutedMentionsForTests.on()));
+        // A blocked person's group messages are left out.
+        probes.put(PatchFamily.HIDE_BLOCKED_IN_GROUPS, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.BlockedSendersForTests.on()));
+        // Settings loses Telegram Features and Contacts loses Invite Friends.
+        probes.put(PatchFamily.HIDE_FEATURES_AND_INVITE, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.FeaturesInviteForTests.on()));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),

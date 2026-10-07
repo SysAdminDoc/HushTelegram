@@ -271,6 +271,9 @@ public final class SelectionCheck {
         hook(calls, flags, "rearCameraFirst", "misc/RearCamera", "front");
         hook(calls, flags, "hideGalleryCameraTile", "misc/GalleryCameraTile", "tile");
         hook(calls, flags, "hideStickerTime", "misc/StickerTime", "hidden");
+        hook(calls, flags, "ignoreMutedMentions", "misc/MutedMentions", "notifyDialog");
+        hook(calls, flags, "hideBlockedInGroups", "misc/BlockedSenders", "type");
+        hook(calls, flags, "hideFeaturesAndInvite", "misc/FeaturesInvite", "addFeaturesRow");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");
         hook(calls, flags, "disableUpdateChecks", "misc/UpdateChecks", "skipUpdateCheck");
         for (String[] bridge : List.of(

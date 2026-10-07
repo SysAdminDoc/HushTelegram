@@ -484,6 +484,29 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "corner. Every other message keeps its time. Off by default in settings."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.IGNORE_MUTED_MENTIONS)) {
+                chats.addPreference(mark(toggle(context, Settings.IGNORE_MUTED_MENTIONS, L10n.t("Ignore mentions in muted chats"),
+                        PatchFamily.IGNORE_MUTED_MENTIONS.coverageSummary(L10n.t("Telegram still notifies you when someone mentions you or replies to you in a group or "
+                                + "channel you've muted. With this on, those stay as quiet as the rest of the chat. Chats "
+                                + "you haven't muted notify as before. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
+            if (build.contains(PatchFamily.HIDE_BLOCKED_IN_GROUPS)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_BLOCKED_IN_GROUPS, L10n.t("Hide blocked users in groups"),
+                        PatchFamily.HIDE_BLOCKED_IN_GROUPS.coverageSummary(L10n.t("Messages from people you've blocked are left out of the groups and supergroups you "
+                                + "open. Private chats and channel posts stay as they are. Nothing is deleted, so turning "
+                                + "it off and reopening the chat brings them back. Telegram loads a long blocked list a "
+                                + "bit at a time, so someone it hasn't loaded yet still shows. Off by default in "
+                                + "settings."))),
+                        SettingsIcons.CHAT));
+            }
+            if (build.contains(PatchFamily.HIDE_FEATURES_AND_INVITE)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_FEATURES_AND_INVITE, L10n.t("Hide Telegram Features and Invite Friends"),
+                        PatchFamily.HIDE_FEATURES_AND_INVITE.coverageSummary(L10n.t("Settings drops its Telegram Features row and Contacts drops Invite Friends. When you "
+                                + "have no contacts yet, the invite list Contacts shows in their place goes too. Off by "
+                                + "default in settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

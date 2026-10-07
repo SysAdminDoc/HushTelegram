@@ -804,9 +804,123 @@
       "options": []
     },
     {
+      "name": "Hide Telegram Features and Invite Friends",
+      "description": "Adds a switch, off by default, that takes the Telegram Features row out of Settings and the Invite Friends rows out of Contacts.",
+      "category": "Chats",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger.web": [
+          "12.10.6"
+        ],
+        "org.telegram.messenger.beta": [
+          "12.10.7"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "12.10.6",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71129
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram Beta",
+          "packageName": "org.telegram.messenger.beta",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "12.10.7",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71239
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Hide ads",
       "description": "Hides the sponsored messages in channels, the sponsored accounts in search and the ads in Telegram's video player. Telegram never asks for them, so none are counted as seen.",
       "category": "Ads",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger.web": [
+          "12.10.6"
+        ],
+        "org.telegram.messenger.beta": [
+          "12.10.7"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "12.10.6",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71129
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram Beta",
+          "packageName": "org.telegram.messenger.beta",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "12.10.7",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71239
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Hide blocked users in groups",
+      "description": "Adds a switch, off by default, that leaves messages from people you've blocked out of groups and supergroups you open. Private chats and channel posts stay as they are, and nothing is deleted.",
+      "category": "Chats",
       "use": true,
       "dependencies": [
         "BytecodePatch",
@@ -1666,6 +1780,63 @@
       "dependencies": [
         "BytecodePatch",
         "ResourcePatch"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger.web": [
+          "12.10.6"
+        ],
+        "org.telegram.messenger.beta": [
+          "12.10.7"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "12.10.6",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71129
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram Beta",
+          "packageName": "org.telegram.messenger.beta",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "12.10.7",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71239
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Ignore mentions in muted chats",
+      "description": "Adds a switch, off by default, so a mention or a reply to you in a group or channel you've muted doesn't notify. Unmuted chats notify as before.",
+      "category": "Chats",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
       ],
       "compatiblePackages": {
         "org.telegram.messenger.web": [
