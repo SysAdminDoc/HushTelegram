@@ -115,6 +115,7 @@ public final class SettingsBackup {
             Settings.DISABLE_ARCHIVE_PULL,
             Settings.REAR_CAMERA_FIRST,
             Settings.HIDE_GALLERY_CAMERA_TILE,
+            Settings.HIDE_STICKER_TIME,
             Settings.DISABLE_ANALYTICS,
             Settings.DISABLE_CALL_DEBUG,
             Settings.DISABLE_DRAFT_PREVIEWS,

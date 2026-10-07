@@ -478,6 +478,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "tile. A chat picks it up the next time you open it. Off by default in settings."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.HIDE_STICKER_TIME)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_STICKER_TIME, L10n.t("Hide time on stickers"),
+                        PatchFamily.HIDE_STICKER_TIME.coverageSummary(L10n.t("Stickers and big animated emoji no longer carry the time and read checks in their "
+                                + "corner. Every other message keeps its time. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

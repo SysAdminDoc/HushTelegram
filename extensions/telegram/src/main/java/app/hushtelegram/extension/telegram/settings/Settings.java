@@ -246,6 +246,12 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_hide_gallery_camera_tile", FALSE);
 
     /**
+     * Stickers and big animated emoji show no time or read checks.
+     */
+    public static final BooleanSetting HIDE_STICKER_TIME =
+            new BooleanSetting("hushtelegram_hide_sticker_time", FALSE);
+
+    /**
      * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
      * never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

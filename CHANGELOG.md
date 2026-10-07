@@ -52,6 +52,8 @@ Working version 0.0.11.
 
 * **Telegram:** A new Hide gallery camera tile switch, off by default, takes the live camera tile out of the attachment menu's photo grid so it starts with your photos.
 
+* **Telegram:** A new Hide time on stickers switch, off by default, takes the little time bubble off stickers and big animated emoji, read checks included. Every other message keeps its time.
+
 * **Telegram:** Show user and chat IDs has a second switch, Show profile data center, off by default. It adds a row to a profile's menu with the data center, 1 to 5, that holds the profile's photo, read from the copy Telegram already has. A profile without a photo shows no row. Either switch works without the other.
 
 * **Telegram:** Disable pull to next channel has a second switch, Stop pull to next topic, off by default. With it on, pulling up at the bottom of a forum topic only scrolls instead of opening the next topic. Each switch covers only its own pull, and a switch flipped mid-drag counts when you let go.

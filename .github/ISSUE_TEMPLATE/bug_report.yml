@@ -115,6 +115,7 @@ body:
         - Disable pull to archive
         - Start the camera on the rear lens
         - Hide gallery camera tile
+        - Hide time on stickers
         - Strip link tracking
         - HushTelegram settings
     validations:

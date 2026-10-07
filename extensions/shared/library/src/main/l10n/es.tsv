@@ -277,6 +277,8 @@ Start the camera on the rear lens	Abrir la cámara con la lente trasera
 The camera in the attachment menu starts on the rear lens every time you open it, instead of the lens you used last. You can still flip it while it's open. Off by default in settings.	La cámara del menú de adjuntos se abre siempre con la lente trasera, en vez de con la que usaste la última vez. Puedes cambiarla mientras está abierta. Desactivado por defecto en los ajustes.
 Hide gallery camera tile	Ocultar el recuadro de cámara de la galería
 The photo grid in the attachment menu starts with your photos instead of a live camera tile. A chat picks it up the next time you open it. Off by default in settings.	La cuadrícula de fotos del menú de adjuntos empieza con tus fotos en vez de con un recuadro de cámara en vivo. Un chat lo aplica la próxima vez que lo abras. Desactivado por defecto en los ajustes.
+Hide time on stickers	Ocultar la hora en los stickers
+Stickers and big animated emoji no longer carry the time and read checks in their corner. Every other message keeps its time. Off by default in settings.	Los stickers y los emojis animados grandes ya no muestran la hora ni las marcas de lectura en su esquina. Los demás mensajes conservan su hora. Desactivado por defecto en los ajustes.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Notificaciones

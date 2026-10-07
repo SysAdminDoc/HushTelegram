@@ -119,6 +119,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.DISABLE_ARCHIVE_PULL, "Disable pull to archive");
         ROW_TITLES.put(PatchFamily.REAR_CAMERA_FIRST, "Start the camera on the rear lens");
         ROW_TITLES.put(PatchFamily.HIDE_GALLERY_CAMERA_TILE, "Hide gallery camera tile");
+        ROW_TITLES.put(PatchFamily.HIDE_STICKER_TIME, "Hide time on stickers");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -262,7 +263,8 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.SILENCE_NON_CONTACTS)
                         || build.contains(PatchFamily.DISABLE_ARCHIVE_PULL)
                         || build.contains(PatchFamily.REAR_CAMERA_FIRST)
-                        || build.contains(PatchFamily.HIDE_GALLERY_CAMERA_TILE)) expected.add("Chats");
+                        || build.contains(PatchFamily.HIDE_GALLERY_CAMERA_TILE)
+                        || build.contains(PatchFamily.HIDE_STICKER_TIME)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
@@ -551,6 +553,13 @@ public class HushTelegramPreferenceFragmentTest {
             // The gallery shows its camera tile until the switch is turned on.
             assertFalse(Settings.HIDE_GALLERY_CAMERA_TILE.key,
                     ((SwitchPreference) page.findPreference(Settings.HIDE_GALLERY_CAMERA_TILE.key)).isChecked());
+            assertEquals("Hide time on stickers", String.valueOf(page.findPreference(Settings.HIDE_STICKER_TIME.key).getTitle()));
+            assertEquals("Stickers and big animated emoji no longer carry the time and read checks in their corner. "
+                            + "Every other message keeps its time. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.HIDE_STICKER_TIME.key).getSummary()));
+            // A sticker shows its time until the switch is turned on.
+            assertFalse(Settings.HIDE_STICKER_TIME.key,
+                    ((SwitchPreference) page.findPreference(Settings.HIDE_STICKER_TIME.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {

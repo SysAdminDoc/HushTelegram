@@ -270,6 +270,7 @@ public final class SelectionCheck {
         hook(calls, flags, "disableArchivePull", "misc/ArchivePull", "keepsOut", "leavesOut", "menu");
         hook(calls, flags, "rearCameraFirst", "misc/RearCamera", "front");
         hook(calls, flags, "hideGalleryCameraTile", "misc/GalleryCameraTile", "tile");
+        hook(calls, flags, "hideStickerTime", "misc/StickerTime", "hidden");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");
         hook(calls, flags, "disableUpdateChecks", "misc/UpdateChecks", "skipUpdateCheck");
         for (String[] bridge : List.of(
