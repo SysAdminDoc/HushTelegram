@@ -245,6 +245,8 @@ Exact numbers	Números exactos
 Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.	Los contadores de miembros, suscriptores, vistas, respuestas y reacciones muestran el número completo, como 12,345 en vez de 12.3K. Desactivado por defecto en los ajustes.
 Reveal spoilers	Mostrar spoilers
 Spoiler text, photos and videos show right away instead of waiting for a tap. View-once media, sensitive content and login codes stay covered, and text you're typing keeps its spoiler. Off by default in settings.	El texto, las fotos y los videos con spoiler se ven al momento, sin tener que tocarlos. Los archivos de una sola visualización, el contenido sensible y los códigos de inicio de sesión siguen cubiertos, y el texto que escribes conserva su spoiler. Desactivado por defecto en los ajustes.
+Hide keyboard on scroll	Ocultar teclado al desplazar
+Starting to scroll through a chat closes the keyboard, the way Telegram already does while you search a chat. Telegram's emoji and sticker panel stays open. Off by default in settings.	Al empezar a desplazarte por un chat se cierra el teclado, como Telegram ya hace mientras buscas en un chat. El panel de emojis y stickers de Telegram sigue abierto. Desactivado por defecto en los ajustes.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Notificaciones

@@ -99,6 +99,7 @@ body:
         - Hide translate bar
         - Exact numbers
         - Reveal spoilers
+        - Hide keyboard on scroll
         - Strip link tracking
         - HushTelegram settings
     validations:

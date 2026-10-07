@@ -98,6 +98,7 @@ public final class SettingsBackup {
             Settings.HIDE_TRANSLATE_BAR,
             Settings.EXACT_NUMBERS,
             Settings.REVEAL_SPOILERS,
+            Settings.HIDE_KEYBOARD_ON_SCROLL,
             Settings.DISABLE_ANALYTICS,
             Settings.DISABLE_CALL_DEBUG,
             Settings.DISABLE_DRAFT_PREVIEWS,

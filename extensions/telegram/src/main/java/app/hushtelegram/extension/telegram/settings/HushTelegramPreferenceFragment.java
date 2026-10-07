@@ -365,6 +365,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "typing keeps its spoiler. Off by default in settings."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.HIDE_KEYBOARD_ON_SCROLL)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_KEYBOARD_ON_SCROLL, L10n.t("Hide keyboard on scroll"),
+                        PatchFamily.HIDE_KEYBOARD_ON_SCROLL.coverageSummary(L10n.t("Starting to scroll through a chat closes the keyboard, the way Telegram already does "
+                                + "while you search a chat. Telegram's emoji and sticker panel stays open. Off by default "
+                                + "in settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

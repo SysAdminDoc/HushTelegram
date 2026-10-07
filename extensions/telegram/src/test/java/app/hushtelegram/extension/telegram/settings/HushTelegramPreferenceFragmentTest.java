@@ -103,6 +103,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HIDE_TRANSLATE_BAR, "Hide translate bar");
         ROW_TITLES.put(PatchFamily.EXACT_NUMBERS, "Exact numbers");
         ROW_TITLES.put(PatchFamily.REVEAL_SPOILERS, "Reveal spoilers");
+        ROW_TITLES.put(PatchFamily.HIDE_KEYBOARD_ON_SCROLL, "Hide keyboard on scroll");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -230,7 +231,8 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.USE_SYSTEM_FONT) || build.contains(PatchFamily.AMOLED_BLACK)
                         || build.contains(PatchFamily.HIDE_TRANSLATE_BAR)
                         || build.contains(PatchFamily.EXACT_NUMBERS)
-                        || build.contains(PatchFamily.REVEAL_SPOILERS)) expected.add("Chats");
+                        || build.contains(PatchFamily.REVEAL_SPOILERS)
+                        || build.contains(PatchFamily.HIDE_KEYBOARD_ON_SCROLL)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
@@ -390,6 +392,14 @@ public class HushTelegramPreferenceFragmentTest {
             // Spoilers stay covered until the switch is turned on.
             assertFalse(Settings.REVEAL_SPOILERS.key,
                     ((SwitchPreference) page.findPreference(Settings.REVEAL_SPOILERS.key)).isChecked());
+            assertEquals("Hide keyboard on scroll", String.valueOf(page.findPreference(Settings.HIDE_KEYBOARD_ON_SCROLL.key).getTitle()));
+            assertEquals("Starting to scroll through a chat closes the keyboard, the way Telegram already does while "
+                            + "you search a chat. Telegram's emoji and sticker panel stays open. Off by default in "
+                            + "settings.",
+                    String.valueOf(page.findPreference(Settings.HIDE_KEYBOARD_ON_SCROLL.key).getSummary()));
+            // The keyboard stays up on scroll until the switch is turned on.
+            assertFalse(Settings.HIDE_KEYBOARD_ON_SCROLL.key,
+                    ((SwitchPreference) page.findPreference(Settings.HIDE_KEYBOARD_ON_SCROLL.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {

@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(548);
+        Map<String, String> table = new HashMap<>(552);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -238,6 +238,8 @@ public final class L10nTranslations {
                 "Kontakte auf Telegram ausblenden");
         table.put("Hide greeting stickers",
                 "Begr\u00fc\u00dfungssticker ausblenden");
+        table.put("Hide keyboard on scroll",
+                "Tastatur beim Scrollen ausblenden");
         table.put("Hide popular apps",
                 "Beliebte Apps ausblenden");
         table.put("Hide promotional banners",
@@ -298,11 +300,11 @@ public final class L10nTranslations {
                 "Links, Updates, Sicherung und mehr");
         table.put("Local notification status",
                 "Lokaler Benachrichtigungsstatus");
-        table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
-                "Mitglieder-, Abonnenten-, Aufruf-, Antwort- und Reaktionszahlen erscheinen vollst\u00e4ndig, etwa 12,345 statt 12.3K. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
+                "Mitglieder-, Abonnenten-, Aufruf-, Antwort- und Reaktionszahlen erscheinen vollst\u00e4ndig, etwa 12,345 statt 12.3K. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("More settings",
                 "Weitere Einstellungen");
         table.put("New Year look all year",
@@ -421,15 +423,17 @@ public final class L10nTranslations {
                 "Benutzer- und Chat-IDs anzeigen");
         table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
                 "Zeigt die lokale Benutzer- oder Chat-ID zum Kopieren im Men\u00fc des ge\u00f6ffneten Profils. Zugriffshashes bleiben verborgen. Es kommt keine Serveranfrage hinzu. In den Einstellungen standardm\u00e4\u00dfig aus.");
-        table.put("Signed-in accounts: %1$s",
-                "Angemeldete Konten: %1$s");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Signed-in accounts: %1$s",
+                "Angemeldete Konten: %1$s");
         table.put("Source code and issues",
                 "Quellcode und Issues");
         table.put("Spoiler text, photos and videos show right away instead of waiting for a tap. View-once media, sensitive content and login codes stay covered, and text you're typing keeps its spoiler. Off by default in settings.",
                 "Spoiler-Text, -Fotos und -Videos erscheinen sofort, ohne dass du tippen musst. Einmal ansehbare Medien, sensible Inhalte und Anmeldecodes bleiben verdeckt, und Text, den du tippst, beh\u00e4lt seinen Spoiler. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
+        table.put("Starting to scroll through a chat closes the keyboard, the way Telegram already does while you search a chat. Telegram's emoji and sticker panel stays open. Off by default in settings.",
+                "Sobald du in einem Chat zu scrollen beginnst, schlie\u00dft sich die Tastatur, so wie Telegram es schon bei der Suche in einem Chat macht. Telegrams Emoji- und Sticker-Leiste bleibt offen. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("Stays in while paused",
                 "Bleibt w\u00e4hrend der Pause aktiv");
         table.put("Stop call diagnostics",
@@ -542,13 +546,13 @@ public final class L10nTranslations {
                 "Du hast HushTelegram pausiert.");
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
                 "Deine Auswahl bleibt gespeichert. Tippe auf Fortsetzen und starte Telegram dann neu.");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Your controls are active.",
                 "Deine Einstellungen sind aktiv.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Deine Schalter entsprechen bereits dieser Datei, es \u00e4ndert sich also nichts.");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("avatar story rings",
                 "Story-Ringe an Avataren");
         table.put("avatar story taps",
@@ -620,7 +624,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(548);
+        Map<String, String> table = new HashMap<>(552);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -811,6 +815,8 @@ public final class L10nTranslations {
                 "Ocultar contactos en Telegram");
         table.put("Hide greeting stickers",
                 "Ocultar stickers de saludo");
+        table.put("Hide keyboard on scroll",
+                "Ocultar teclado al desplazar");
         table.put("Hide popular apps",
                 "Ocultar apps populares");
         table.put("Hide promotional banners",
@@ -871,11 +877,11 @@ public final class L10nTranslations {
                 "Enlaces, actualizaciones, copia de seguridad y m\u00e1s");
         table.put("Local notification status",
                 "Estado local de notificaciones");
-        table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
-                "Los contadores de miembros, suscriptores, vistas, respuestas y reacciones muestran el n\u00famero completo, como 12,345 en vez de 12.3K. Desactivado por defecto en los ajustes.");
     }
 
     private static void fillEs2(Map<String, String> table) {
+        table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
+                "Los contadores de miembros, suscriptores, vistas, respuestas y reacciones muestran el n\u00famero completo, como 12,345 en vez de 12.3K. Desactivado por defecto en los ajustes.");
         table.put("More settings",
                 "M\u00e1s ajustes");
         table.put("New Year look all year",
@@ -994,15 +1000,17 @@ public final class L10nTranslations {
                 "Mostrar IDs de usuario y chat");
         table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
                 "Muestra un ID local de usuario o chat que se puede copiar en el men\u00fa del perfil abierto. Los hashes de acceso siguen ocultos. No a\u00f1ade solicitudes al servidor. Desactivado por defecto en los ajustes.");
-        table.put("Signed-in accounts: %1$s",
-                "Cuentas con sesi\u00f3n iniciada: %1$s");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Signed-in accounts: %1$s",
+                "Cuentas con sesi\u00f3n iniciada: %1$s");
         table.put("Source code and issues",
                 "C\u00f3digo fuente e incidencias");
         table.put("Spoiler text, photos and videos show right away instead of waiting for a tap. View-once media, sensitive content and login codes stay covered, and text you're typing keeps its spoiler. Off by default in settings.",
                 "El texto, las fotos y los videos con spoiler se ven al momento, sin tener que tocarlos. Los archivos de una sola visualizaci\u00f3n, el contenido sensible y los c\u00f3digos de inicio de sesi\u00f3n siguen cubiertos, y el texto que escribes conserva su spoiler. Desactivado por defecto en los ajustes.");
+        table.put("Starting to scroll through a chat closes the keyboard, the way Telegram already does while you search a chat. Telegram's emoji and sticker panel stays open. Off by default in settings.",
+                "Al empezar a desplazarte por un chat se cierra el teclado, como Telegram ya hace mientras buscas en un chat. El panel de emojis y stickers de Telegram sigue abierto. Desactivado por defecto en los ajustes.");
         table.put("Stays in while paused",
                 "Se mantiene durante la pausa");
         table.put("Stop call diagnostics",
@@ -1115,13 +1123,13 @@ public final class L10nTranslations {
                 "Pausaste HushTelegram.");
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
                 "Tus preferencias est\u00e1n guardadas. Toca Reanudar y luego reinicia Telegram.");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Your controls are active.",
                 "Tus controles est\u00e1n activos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Tus interruptores ya coinciden con ese archivo, as\u00ed que no cambiar\u00e1 nada.");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("avatar story rings",
                 "anillos de historias en los avatares");
         table.put("avatar story taps",
@@ -1193,7 +1201,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(548);
+        Map<String, String> table = new HashMap<>(552);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1384,6 +1392,8 @@ public final class L10nTranslations {
                 "Sembunyikan kontak di Telegram");
         table.put("Hide greeting stickers",
                 "Sembunyikan stiker sapaan");
+        table.put("Hide keyboard on scroll",
+                "Sembunyikan keyboard saat menggulir");
         table.put("Hide popular apps",
                 "Sembunyikan aplikasi populer");
         table.put("Hide promotional banners",
@@ -1444,11 +1454,11 @@ public final class L10nTranslations {
                 "Tautan, pembaruan, cadangan, dan lainnya");
         table.put("Local notification status",
                 "Status notifikasi lokal");
-        table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
-                "Jumlah anggota, pelanggan, tayangan, balasan, dan reaksi ditampilkan lengkap, misalnya 12,345, bukan 12.3K. Nonaktif secara default di pengaturan.");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
+                "Jumlah anggota, pelanggan, tayangan, balasan, dan reaksi ditampilkan lengkap, misalnya 12,345, bukan 12.3K. Nonaktif secara default di pengaturan.");
         table.put("More settings",
                 "Pengaturan lainnya");
         table.put("New Year look all year",
@@ -1567,15 +1577,17 @@ public final class L10nTranslations {
                 "Tampilkan ID pengguna dan chat");
         table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
                 "Menampilkan ID pengguna atau chat lokal yang dapat disalin di menu profil yang dibuka. Hash akses tetap tersembunyi. Tidak menambah permintaan server. Nonaktif secara default di pengaturan.");
-        table.put("Signed-in accounts: %1$s",
-                "Akun yang masuk: %1$s");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Signed-in accounts: %1$s",
+                "Akun yang masuk: %1$s");
         table.put("Source code and issues",
                 "Kode sumber dan laporan masalah");
         table.put("Spoiler text, photos and videos show right away instead of waiting for a tap. View-once media, sensitive content and login codes stay covered, and text you're typing keeps its spoiler. Off by default in settings.",
                 "Teks, foto, dan video spoiler langsung terlihat tanpa perlu diketuk. Media sekali lihat, konten sensitif, dan kode masuk tetap tertutup, dan teks yang sedang kamu ketik tetap memakai spoiler-nya. Nonaktif secara default di pengaturan.");
+        table.put("Starting to scroll through a chat closes the keyboard, the way Telegram already does while you search a chat. Telegram's emoji and sticker panel stays open. Off by default in settings.",
+                "Mulai menggulir obrolan akan menutup keyboard, seperti yang sudah dilakukan Telegram saat kamu mencari di obrolan. Panel emoji dan stiker Telegram tetap terbuka. Nonaktif secara default di pengaturan.");
         table.put("Stays in while paused",
                 "Tetap aktif saat dijeda");
         table.put("Stop call diagnostics",
@@ -1688,13 +1700,13 @@ public final class L10nTranslations {
                 "Anda menjeda HushTelegram.");
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
                 "Pilihan Anda tersimpan. Ketuk Lanjutkan, lalu mulai ulang Telegram.");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Your controls are active.",
                 "Kontrol Anda aktif.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Sakelar Anda sudah sesuai dengan file itu, jadi tidak ada yang akan berubah.");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("avatar story rings",
                 "lingkaran cerita pada avatar");
         table.put("avatar story taps",
@@ -1766,7 +1778,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(548);
+        Map<String, String> table = new HashMap<>(552);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1957,6 +1969,8 @@ public final class L10nTranslations {
                 "Ocultar contatos no Telegram");
         table.put("Hide greeting stickers",
                 "Ocultar figurinhas de sauda\u00e7\u00e3o");
+        table.put("Hide keyboard on scroll",
+                "Ocultar teclado ao rolar");
         table.put("Hide popular apps",
                 "Ocultar apps populares");
         table.put("Hide promotional banners",
@@ -2017,11 +2031,11 @@ public final class L10nTranslations {
                 "Links, atualiza\u00e7\u00f5es, backup e mais");
         table.put("Local notification status",
                 "Estado local das notifica\u00e7\u00f5es");
-        table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
-                "Contagens de membros, inscritos, visualiza\u00e7\u00f5es, respostas e rea\u00e7\u00f5es aparecem completas, como 12,345 em vez de 12.3K. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
+        table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
+                "Contagens de membros, inscritos, visualiza\u00e7\u00f5es, respostas e rea\u00e7\u00f5es aparecem completas, como 12,345 em vez de 12.3K. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("More settings",
                 "Mais configura\u00e7\u00f5es");
         table.put("New Year look all year",
@@ -2140,15 +2154,17 @@ public final class L10nTranslations {
                 "Mostrar IDs de usu\u00e1rio e chat");
         table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
                 "Mostra um ID local de usu\u00e1rio ou chat que pode ser copiado no menu do perfil aberto. Os hashes de acesso ficam ocultos. N\u00e3o adiciona solicita\u00e7\u00f5es ao servidor. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
-        table.put("Signed-in accounts: %1$s",
-                "Contas conectadas: %1$s");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Signed-in accounts: %1$s",
+                "Contas conectadas: %1$s");
         table.put("Source code and issues",
                 "C\u00f3digo-fonte e relatos de problemas");
         table.put("Spoiler text, photos and videos show right away instead of waiting for a tap. View-once media, sensitive content and login codes stay covered, and text you're typing keeps its spoiler. Off by default in settings.",
                 "Textos, fotos e v\u00eddeos com spoiler aparecem na hora, sem precisar tocar. M\u00eddias de visualiza\u00e7\u00e3o \u00fanica, conte\u00fado sens\u00edvel e c\u00f3digos de login continuam cobertos, e o texto que voc\u00ea est\u00e1 digitando mant\u00e9m o spoiler. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
+        table.put("Starting to scroll through a chat closes the keyboard, the way Telegram already does while you search a chat. Telegram's emoji and sticker panel stays open. Off by default in settings.",
+                "Come\u00e7ar a rolar um chat fecha o teclado, como o Telegram j\u00e1 faz enquanto voc\u00ea pesquisa em um chat. O painel de emojis e figurinhas do Telegram continua aberto. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Stays in while paused",
                 "O que continua ativo na pausa");
         table.put("Stop call diagnostics",
@@ -2261,13 +2277,13 @@ public final class L10nTranslations {
                 "Voc\u00ea pausou o HushTelegram.");
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
                 "Suas escolhas est\u00e3o salvas. Toque em Retomar e depois reinicie o Telegram.");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Your controls are active.",
                 "Seus controles est\u00e3o ativos.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Suas op\u00e7\u00f5es j\u00e1 correspondem \u00e0s desse arquivo, ent\u00e3o nada ser\u00e1 alterado.");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("avatar story rings",
                 "an\u00e9is de stories nos avatares");
         table.put("avatar story taps",
@@ -2339,7 +2355,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(548);
+        Map<String, String> table = new HashMap<>(552);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2530,6 +2546,8 @@ public final class L10nTranslations {
                 "Telegram'daki ki\u015fileri gizle");
         table.put("Hide greeting stickers",
                 "Selamlama \u00e7\u0131kartmalar\u0131n\u0131 gizle");
+        table.put("Hide keyboard on scroll",
+                "Kayd\u0131r\u0131nca klavyeyi gizle");
         table.put("Hide popular apps",
                 "Pop\u00fcler uygulamalar\u0131 gizle");
         table.put("Hide promotional banners",
@@ -2590,11 +2608,11 @@ public final class L10nTranslations {
                 "Ba\u011flant\u0131lar, g\u00fcncellemeler, yedekleme ve daha fazlas\u0131");
         table.put("Local notification status",
                 "Yerel bildirim durumu");
-        table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
-                "\u00dcye, abone, g\u00f6r\u00fcnt\u00fclenme, yan\u0131t ve tepki say\u0131lar\u0131 k\u0131salt\u0131lmadan g\u00f6sterilir, \u00f6rne\u011fin 12.3K yerine 12,345. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
     }
 
     private static void fillTr2(Map<String, String> table) {
+        table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
+                "\u00dcye, abone, g\u00f6r\u00fcnt\u00fclenme, yan\u0131t ve tepki say\u0131lar\u0131 k\u0131salt\u0131lmadan g\u00f6sterilir, \u00f6rne\u011fin 12.3K yerine 12,345. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("More settings",
                 "Di\u011fer ayarlar");
         table.put("New Year look all year",
@@ -2713,15 +2731,17 @@ public final class L10nTranslations {
                 "Kullan\u0131c\u0131 ve sohbet kimliklerini g\u00f6ster");
         table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
                 "A\u00e7\u0131lan profilin men\u00fcs\u00fcnde kopyalanabilir yerel kullan\u0131c\u0131 veya sohbet kimli\u011fini g\u00f6sterir. Eri\u015fim karmalar\u0131 gizli kal\u0131r. Sunucu iste\u011fi eklenmez. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
-        table.put("Signed-in accounts: %1$s",
-                "Oturum a\u00e7m\u0131\u015f hesaplar: %1$s");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Signed-in accounts: %1$s",
+                "Oturum a\u00e7m\u0131\u015f hesaplar: %1$s");
         table.put("Source code and issues",
                 "Kaynak kodu ve sorunlar");
         table.put("Spoiler text, photos and videos show right away instead of waiting for a tap. View-once media, sensitive content and login codes stay covered, and text you're typing keeps its spoiler. Off by default in settings.",
                 "Spoiler metinleri, foto\u011fraflar\u0131 ve videolar\u0131 dokunmana gerek kalmadan hemen g\u00f6r\u00fcn\u00fcr. Tek g\u00f6r\u00fcnt\u00fclemelik medya, hassas i\u00e7erik ve giri\u015f kodlar\u0131 kapal\u0131 kal\u0131r, yazd\u0131\u011f\u0131n metin de spoiler\u2019\u0131n\u0131 korur. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
+        table.put("Starting to scroll through a chat closes the keyboard, the way Telegram already does while you search a chat. Telegram's emoji and sticker panel stays open. Off by default in settings.",
+                "Bir sohbette kayd\u0131rmaya ba\u015flamak klavyeyi kapat\u0131r, t\u0131pk\u0131 Telegram\u2019\u0131n sohbet i\u00e7inde arama yaparken yapt\u0131\u011f\u0131 gibi. Telegram\u2019\u0131n emoji ve \u00e7\u0131kartma paneli a\u00e7\u0131k kal\u0131r. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Stays in while paused",
                 "Duraklat\u0131lsa da devrede kal\u0131r");
         table.put("Stop call diagnostics",
@@ -2834,13 +2854,13 @@ public final class L10nTranslations {
                 "HushTelegram'u duraklatt\u0131n.");
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
                 "Tercihleriniz kay\u0131tl\u0131. Devam et'e dokunun, sonra Telegram'\u0131 yeniden ba\u015flat\u0131n.");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Your controls are active.",
                 "Kontrolleriniz etkin.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Anahtarlar\u0131n zaten o dosyayla ayn\u0131, bu y\u00fczden hi\u00e7bir \u015fey de\u011fi\u015fmeyecek.");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("avatar story rings",
                 "avatar hik\u00e2ye halkalar\u0131");
         table.put("avatar story taps",

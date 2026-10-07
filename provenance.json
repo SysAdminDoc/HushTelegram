@@ -144,6 +144,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TranslateBar.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ExactNumbers.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/Spoilers.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ScrollKeyboard.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/localcontrols/**",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/paste/**",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/ids/**",

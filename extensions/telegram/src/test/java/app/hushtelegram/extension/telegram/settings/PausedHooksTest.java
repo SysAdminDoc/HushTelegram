@@ -234,6 +234,9 @@ public class PausedHooksTest {
         probes.put(PatchFamily.REVEAL_SPOILERS, Arrays.asList(
                 app.hushtelegram.extension.telegram.misc.SpoilersForTests::textUncovered,
                 app.hushtelegram.extension.telegram.misc.SpoilersForTests::mediaUncovered));
+        // A drag closes the keyboard.
+        probes.put(PatchFamily.HIDE_KEYBOARD_ON_SCROLL, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.ScrollKeyboardForTests.dragCloses()));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),
