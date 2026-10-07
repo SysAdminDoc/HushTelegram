@@ -12,6 +12,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
+import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlCall
@@ -49,7 +50,9 @@ class AmoledBlackFixtureTest {
             val site = context.resolveBlackTheme()
             val reader = key(site.method)
             val old = ImmutableMethod.of(site.method)
-            val untouched = hostState(build, context, setOf(reader))
+            val wallpaper = key(site.wallpaper)
+            val oldWallpaper = ImmutableMethod.of(site.wallpaper)
+            val untouched = hostState(build, context, setOf(reader, wallpaper))
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { amoledBlackPatch.execute(context) })
 
             val before = old.controlBody()
@@ -84,7 +87,20 @@ class AmoledBlackFixtureTest {
             assertEquals(listOf(at + 2), b0.normal[at + 1])
             assertEquals(listOf(at + 3), b0.normal[at + 2])
             assertTrue("$name: some stock path reaches the hook", (0 until at).any { at in b0.normal[it] })
-            assertEquals("$name: every caller and every other host method", untouched, hostState(build, context, setOf(reader)))
+            assertEquals("$name: every caller and every other host method", untouched, hostState(build, context, setOf(reader, wallpaper)))
+
+            // The chat background builder hands its pattern strength, colors and picked wallpaper to the extension first.
+            val shown = site.wallpaper.controlBody()
+            val stock = oldWallpaper.controlBody()
+            assertEquals("$name: six instructions in front", stock.size + 6, shown.size)
+            val p = { i: Int -> site.wallpaper.parameterRegisterNumber(i) }
+            assertEquals(listOf(Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_FROM16, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.MOVE_FROM16),
+                shown.take(6).map { it.opcode })
+            assertEquals(listOf(p(WALLPAPER_COLORS), p(WALLPAPER_PICKED), p(WALLPAPER_INTENSITY)), shown.take(3).map { it.namedRegisters()[1] })
+            assertEquals(PATTERN_INTENSITY, shown[3].controlRef())
+            assertEquals(shown.take(3).map { it.namedRegisters()[0] }, shown[3].namedRegisters())
+            assertEquals("$name: the answer replaces the strength", listOf(p(WALLPAPER_INTENSITY), shown[4].namedRegisters()[0]), shown[5].namedRegisters())
+            assertEquals("$name: stock body", stock.map { it.operand() }, shown.drop(6).map { it.operand() })
 
             // The stub asks Telegram's own lookup, the one the reader uses for every key.
             val stub = context.mutableClassDefBy(BLACK_THEME).methods.single { it.name == "keyId" }.controlBody()

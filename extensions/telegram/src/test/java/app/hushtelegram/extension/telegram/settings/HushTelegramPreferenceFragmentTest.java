@@ -374,8 +374,8 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse(Settings.USE_SYSTEM_FONT.key,
                     ((SwitchPreference) page.findPreference(Settings.USE_SYSTEM_FONT.key)).isChecked());
             assertEquals("AMOLED black", String.valueOf(page.findPreference(Settings.AMOLED_BLACK.key).getTitle()));
-            assertEquals("Telegram's Night and Dark themes draw their screens in pure black, while message bubbles, pop-up menus and patterned chat wallpapers keep their colors. "
-                            + "Themes you've installed from a file stay as they are. Off by default in settings.",
+            assertEquals("Telegram's Night and Dark themes draw their screens in pure black, and a patterned chat background shows its pattern over black. "
+                            + "Message bubbles and pop-up menus keep their colors, and themes you've installed from a file stay as they are. Off by default in settings.",
                     String.valueOf(page.findPreference(Settings.AMOLED_BLACK.key).getSummary()));
             // Telegram's own theme colors stay until someone turns the switch on.
             assertFalse(Settings.AMOLED_BLACK.key,

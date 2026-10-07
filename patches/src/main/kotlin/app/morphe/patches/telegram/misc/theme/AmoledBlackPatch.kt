@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.theme
 
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -46,10 +47,22 @@ private const val FILE = "Ljava/io/File;"
 /** Telegram's theme file reader takes the file, the built-in theme's asset and a wallpaper slot. */
 internal val THEME_FILE_PARAMETERS = listOf(FILE, STRING, "[$STRING")
 
+internal const val PATTERN_INTENSITY = "$BLACK_THEME->patternIntensity($SPARSE_INT_ARRAY" + "Ljava/lang/Object;I)I"
+
+/**
+ * Theme.createBackgroundDrawable(theme, picked wallpaper, colors, wallpaper file, link, file offset,
+ * intensity, phase, default theme, previous theme, applying accent, motion, document, local), by type.
+ */
+internal val WALLPAPER_SHAPE = listOf(null, null, SPARSE_INT_ARRAY, FILE, STRING, "I", "I", "I", "Z", "Z", "Z", "Z",
+    "Lorg/telegram/tgnet/TLRPC\$Document;", "Z")
+internal const val WALLPAPER_PICKED = 1
+internal const val WALLPAPER_COLORS = 2
+internal const val WALLPAPER_INTENSITY = 6
+
 @Suppress("unused")
 val amoledBlackPatch = bytecodePatch(
     name = "AMOLED black",
-    description = "Adds a switch, off by default, that turns the screens of Telegram's Night and Dark themes pure black. Message bubbles, pop-up menus and patterned chat wallpapers keep the theme's colors. A change takes effect after Telegram restarts.",
+    description = "Adds a switch, off by default, that turns the screens of Telegram's Night and Dark themes pure black and shows a patterned chat background's pattern over black. Message bubbles and pop-up menus keep the theme's colors. A change takes effect after Telegram restarts.",
     default = true,
 ) {
     category("Chats")
@@ -59,18 +72,33 @@ val amoledBlackPatch = bytecodePatch(
         val site = resolveBlackTheme()
         // Assembled on a copy first, so a refusal leaves the app untouched.
         site.insert(MutableMethod(ImmutableMethod.of(site.method)))
+        site.insertPattern(MutableMethod(ImmutableMethod.of(site.wallpaper)))
         writeStub(BLACK_THEME, "keyId", 1, """
             invoke-static {p0}, ${site.keyLookup}
             move-result p0
             return p0
         """)
         site.insert(site.method)
+        site.insertPattern(site.wallpaper)
         enableStatus("amoledBlack")
     }
 }
 
-/** Telegram's theme file reader, the register its color set lives in, and its key lookup. */
-internal class BlackThemeSite(val method: MutableMethod, val returns: List<Int>, val colors: Int, val keyLookup: MethodReference) {
+/** Telegram's theme file reader, the register its color set lives in, its key lookup, and the chat background builder. */
+internal class BlackThemeSite(val method: MutableMethod, val returns: List<Int>, val colors: Int, val keyLookup: MethodReference, val wallpaper: MutableMethod) {
+    /** The pattern's strength goes through the extension first, from the background builder's own parameters. */
+    fun insertPattern(target: MutableMethod) {
+        val (set, picked, strength) = target.freeLocalsAt("AMOLED black", 0, 3)
+        target.addInstructions(0, """
+            move-object/from16 v$set, ${target.parameterRegister(WALLPAPER_COLORS)}
+            move-object/from16 v$picked, ${target.parameterRegister(WALLPAPER_PICKED)}
+            move/from16 v$strength, ${target.parameterRegister(WALLPAPER_INTENSITY)}
+            invoke-static {v$set, v$picked, v$strength}, $PATTERN_INTENSITY
+            move-result v$strength
+            move/from16 ${target.parameterRegister(WALLPAPER_INTENSITY)}, v$strength
+        """)
+    }
+
     fun insert(target: MutableMethod) {
         // From the last return up, so each index still names its return.
         for (at in returns.sortedDescending()) {
@@ -143,7 +171,21 @@ internal fun BytecodePatchContext.resolveBlackTheme(): BlackThemeSite {
         AccessFlags.PUBLIC.isSet(lookup.accessFlags) && AccessFlags.STATIC.isSet(lookup.accessFlags),
         "the theme key lookup can't be called from outside Telegram's theme code")
 
-    return BlackThemeSite(reader, returns, colors, keyLookup)
+    // The chat background builder sits beside the reader and takes the pattern's strength as a parameter.
+    controlHook(BLACK_THEME, "patternIntensity", listOf(SPARSE_INT_ARRAY, "Ljava/lang/Object;", "I"), "I")
+    val wallpaper = mutableClassDefBy(reader.definingClass).methods.filter { m ->
+        AccessFlags.STATIC.isSet(m.accessFlags) && m.parameterTypes.size == WALLPAPER_SHAPE.size &&
+            WALLPAPER_SHAPE.indices.all { WALLPAPER_SHAPE[it] == null || WALLPAPER_SHAPE[it] == m.parameterTypes[it].toString() }
+    }.controlSingle("chat background builder")
+    controlShape(wallpaper.parameterTypes[WALLPAPER_PICKED].toString().let { it.startsWith("Lorg/telegram/") && it != wallpaper.parameterTypes[0].toString() },
+        "the chat background builder no longer takes a picked wallpaper")
+    controlShape(wallpaper.implementation!!.registerCount <= 256, "the chat background builder has too many registers to copy its parameters")
+    controlShape(ControlFlow.of(wallpaper).normal.none { 0 in it }, "something jumps back to the start of the chat background builder")
+    // The strength is read further down, so the answer reaches the pattern.
+    val strength = wallpaper.parameterRegisterNumber(WALLPAPER_INTENSITY)
+    controlShape(wallpaper.controlBody().any { strength in it.namedRegisters() }, "the chat background builder no longer reads the pattern's strength")
+
+    return BlackThemeSite(reader, returns, colors, keyLookup, wallpaper)
 }
 
 private fun Instruction.isStaticCall(parameters: List<String>, result: String) =

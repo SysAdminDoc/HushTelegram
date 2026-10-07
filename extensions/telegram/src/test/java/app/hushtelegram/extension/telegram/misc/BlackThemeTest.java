@@ -62,6 +62,18 @@ public class BlackThemeTest {
         assertTrue(String.join("\n", HookStatus.report()).contains("dark theme turned black 1"));
     }
 
+    @Test public void aBuiltInPatternIsDrawnOverBlackOnlyOnAThemeTheSwitchTurnedBlack() {
+        SparseIntArray night = night();
+        assertEquals(40, BlackTheme.patternIntensity(night, null, 40));
+        Settings.AMOLED_BLACK.save(true);
+        assertEquals(40, BlackTheme.patternIntensity(night, null, 40));
+        BlackTheme.loaded("night.attheme", night);
+        assertEquals(-40, BlackTheme.patternIntensity(night, null, 40));
+        // A picked wallpaper, and a pattern Telegram already draws over black, stay as they are.
+        assertEquals(40, BlackTheme.patternIntensity(night, new Object(), 40));
+        assertEquals(-35, BlackTheme.patternIntensity(night, null, -35));
+    }
+
     @Test public void lightThemesAndThemeFilesKeepTheirColors() {
         Settings.AMOLED_BLACK.save(true);
         SparseIntArray day = night();

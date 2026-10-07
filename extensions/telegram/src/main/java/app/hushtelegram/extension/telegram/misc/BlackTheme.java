@@ -15,8 +15,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * Telegram reads a theme's colors from a key=value file, the built-in ones from its assets, and
  * hands each set here before using it. With the switch on, a dark built-in theme (Night, or Dark,
  * which was Tinted Night) gets pure black for its screens and bars, and for a plain chat background. Bubbles, menus,
- * dialogs and text keep the theme's colors, and so does a patterned chat wallpaper, which takes its colors from the
- * theme's accent rather than from this file.
+ * dialogs and text keep the theme's colors. A patterned chat background takes its colors from the theme's accent
+ * rather than from this file, so it's drawn over black instead, with the accent's colors showing through the pattern.
  *
  * <p>A theme installed from a file keeps its own colors: the theme editor and a new chat background
  * can save the colors in use back to that file, and black written there would outlast the switch.
@@ -56,6 +56,36 @@ public final class BlackTheme {
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.AMOLED_BLACK, "black theme", failure);
         }
+    }
+
+    /**
+     * Called before Telegram draws the chat background, with the pattern's strength. Telegram draws a
+     * built-in theme's pattern on the accent's colors, and a dark cloud wallpaper's pattern over black
+     * with the colors showing through it, which it asks for with a negative strength. With the switch
+     * on, the theme's own pattern on a theme this switch turned black is drawn the second way.
+     *
+     * @param colors the colors in use, with the accent applied
+     * @param picked a wallpaper picked for the theme, which keeps Telegram's drawing, or null
+     * @param intensity the pattern's strength, negative when Telegram already draws it over black
+     * @return the strength to draw with
+     */
+    public static int patternIntensity(SparseIntArray colors, Object picked, int intensity) {
+        HookStatus.invoked(FamilyNames.AMOLED_BLACK);
+        if (picked != null || colors == null || intensity <= 0) return intensity;
+        try {
+            if (!Utils.settingsReady() || !Settings.AMOLED_BLACK.get() || !black(colors, ids())) return intensity;
+            HookStatus.counted(FamilyNames.AMOLED_BLACK, "pattern drawn over black");
+            return -intensity;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.AMOLED_BLACK, "black pattern", failure);
+            return intensity;
+        }
+    }
+
+    /** Whether the set's screens are the black this switch puts there. */
+    static boolean black(SparseIntArray colors, int[] surfaces) {
+        int window = surfaces[0] < 0 ? -1 : colors.indexOfKey(surfaces[0]);
+        return window >= 0 && colors.valueAt(window) == BLACK;
     }
 
     /** Turns the surfaces the set has black when it's dark, and answers how many it changed. */

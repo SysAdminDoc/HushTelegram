@@ -7,7 +7,7 @@
   "patches": [
     {
       "name": "AMOLED black",
-      "description": "Adds a switch, off by default, that turns the screens of Telegram's Night and Dark themes pure black. Message bubbles, pop-up menus and patterned chat wallpapers keep the theme's colors. A change takes effect after Telegram restarts.",
+      "description": "Adds a switch, off by default, that turns the screens of Telegram's Night and Dark themes pure black and shows a patterned chat background's pattern over black. Message bubbles and pop-up menus keep the theme's colors. A change takes effect after Telegram restarts.",
       "category": "Chats",
       "use": true,
       "dependencies": [
