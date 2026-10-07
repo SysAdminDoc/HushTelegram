@@ -211,6 +211,18 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_forward_hide_sender", FALSE);
 
     /**
+     * Tapping the bar above a chat while a voice message plays opens the full music player.
+     */
+    public static final BooleanSetting VOICE_MUSIC_PLAYER =
+            new BooleanSetting("hushtelegram_voice_music_player", FALSE);
+
+    /**
+     * A private message from someone outside your contacts notifies without sound or vibration.
+     */
+    public static final BooleanSetting SILENCE_NON_CONTACTS =
+            new BooleanSetting("hushtelegram_silence_non_contacts", FALSE);
+
+    /**
      * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
      * never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

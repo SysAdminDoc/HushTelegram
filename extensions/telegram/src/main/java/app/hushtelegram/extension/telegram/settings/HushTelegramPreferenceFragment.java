@@ -440,6 +440,20 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "and article forwards follow Telegram's Premium rule. Off by default in settings."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.VOICE_MUSIC_PLAYER)) {
+                chats.addPreference(mark(toggle(context, Settings.VOICE_MUSIC_PLAYER, L10n.t("Voice messages in the music player"),
+                        PatchFamily.VOICE_MUSIC_PLAYER.coverageSummary(L10n.t("While a voice message plays, tapping the bar above the chat opens Telegram's full "
+                                + "music player with its seek bar, instead of jumping to the message. View-once voice "
+                                + "messages stay as they are. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
+            if (build.contains(PatchFamily.SILENCE_NON_CONTACTS)) {
+                chats.addPreference(mark(toggle(context, Settings.SILENCE_NON_CONTACTS, L10n.t("Silence people outside your contacts"),
+                        PatchFamily.SILENCE_NON_CONTACTS.coverageSummary(L10n.t("A private message from someone who isn't in your contacts still shows a notification, "
+                                + "just without sound or vibration. Bots, reminders and Telegram's login codes keep their "
+                                + "sound. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

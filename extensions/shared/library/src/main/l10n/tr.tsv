@@ -267,6 +267,10 @@ Hide folder tab counters	Klasör sekmesi sayaçlarını gizle
 The folder tabs above the chat list show just their names, without the number of unread chats. Chats stay unread and the app icon's badge doesn't change. Off by default in settings.	Sohbet listesinin üstündeki klasör sekmeleri okunmamış sohbet sayısı olmadan yalnızca adlarını gösterir. Sohbetler okunmamış kalır ve uygulama simgesindeki rozet değişmez. Ayarlarda varsayılan olarak kapalıdır.
 Hide sender names when forwarding	İletirken gönderen adlarını gizle
 Each new forward starts with Telegram's Hide sender's name option turned on, so the copies arrive without the original author. You can still turn it off before sending, and article forwards follow Telegram's Premium rule. Off by default in settings.	Her yeni iletme, Telegram'ın Gönderen adını gizle seçeneği açık olarak başlar, böylece kopyalar asıl gönderen olmadan ulaşır. Göndermeden önce yine kapatabilirsiniz, makaleler ise Telegram'ın Premium kuralına uyar. Ayarlarda varsayılan olarak kapalıdır.
+Voice messages in the music player	Sesli mesajlar müzik çalarda
+While a voice message plays, tapping the bar above the chat opens Telegram's full music player with its seek bar, instead of jumping to the message. View-once voice messages stay as they are. Off by default in settings.	Bir sesli mesaj çalarken sohbetin üstündeki çubuğa dokunduğunuzda, mesaja atlamak yerine Telegram'ın arama çubuklu tam müzik çaları açılır. Tek seferlik sesli mesajlar olduğu gibi kalır. Ayarlarda varsayılan olarak kapalıdır.
+Silence people outside your contacts	Kişileriniz dışındakileri sessize al
+A private message from someone who isn't in your contacts still shows a notification, just without sound or vibration. Bots, reminders and Telegram's login codes keep their sound. Off by default in settings.	Kişileriniz arasında olmayan birinden gelen özel mesaj yine bildirim gösterir, yalnızca sessiz ve titreşimsiz. Botlar, hatırlatıcılar ve Telegram giriş kodları seslerini korur. Ayarlarda varsayılan olarak kapalıdır.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Bildirimler

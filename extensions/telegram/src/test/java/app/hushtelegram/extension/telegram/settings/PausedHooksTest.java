@@ -267,6 +267,12 @@ public class PausedHooksTest {
         // New forwards start with the sender hidden.
         probes.put(PatchFamily.FORWARD_HIDE_SENDER, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.ForwardSenderForTests.on()));
+        // A voice message opens the full player.
+        probes.put(PatchFamily.VOICE_MUSIC_PLAYER, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.VoicePlayerForTests.voiceOpensThePlayer()));
+        // A stranger's notification goes out silently.
+        probes.put(PatchFamily.SILENCE_NON_CONTACTS, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.NonContactsForTests.on()));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),

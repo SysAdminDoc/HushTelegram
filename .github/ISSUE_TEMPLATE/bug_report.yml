@@ -110,6 +110,8 @@ body:
         - Turn off reaction effects
         - Hide folder tab counters
         - Hide sender names when forwarding
+        - Voice messages in the music player
+        - Silence people outside your contacts
         - Strip link tracking
         - HushTelegram settings
     validations:

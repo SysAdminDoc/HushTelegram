@@ -265,6 +265,8 @@ public final class SelectionCheck {
         hook(calls, flags, "reactionEffectsOff", "misc/ReactionEffects", "skipped");
         hook(calls, flags, "hideFolderCounters", "misc/FolderTabs", "countersHidden");
         hook(calls, flags, "forwardHideSender", "misc/ForwardSender", "starts");
+        hook(calls, flags, "voiceMusicPlayer", "misc/VoicePlayer", "music");
+        hook(calls, flags, "silenceNonContacts", "misc/NonContacts", "silenced");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");
         hook(calls, flags, "disableUpdateChecks", "misc/UpdateChecks", "skipUpdateCheck");
         for (String[] bridge : List.of(

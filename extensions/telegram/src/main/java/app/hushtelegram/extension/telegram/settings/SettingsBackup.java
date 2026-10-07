@@ -109,6 +109,8 @@ public final class SettingsBackup {
             Settings.REACTION_EFFECTS_OFF,
             Settings.HIDE_FOLDER_COUNTERS,
             Settings.FORWARD_HIDE_SENDER,
+            Settings.VOICE_MUSIC_PLAYER,
+            Settings.SILENCE_NON_CONTACTS,
             Settings.DISABLE_ANALYTICS,
             Settings.DISABLE_CALL_DEBUG,
             Settings.DISABLE_DRAFT_PREVIEWS,

@@ -54,6 +54,8 @@ public final class FamilyNames {
     public static final String REACTION_EFFECTS_OFF = "Turn off reaction effects";
     public static final String HIDE_FOLDER_COUNTERS = "Hide folder tab counters";
     public static final String FORWARD_HIDE_SENDER = "Hide sender names when forwarding";
+    public static final String VOICE_MUSIC_PLAYER = "Voice messages in the music player";
+    public static final String SILENCE_NON_CONTACTS = "Silence people outside your contacts";
     public static final String DISABLE_ANALYTICS = "Disable analytics";
     public static final String DISABLE_CALL_DEBUG = "Disable call debug upload";
     public static final String DISABLE_DRAFT_PREVIEWS = "Disable draft link previews";

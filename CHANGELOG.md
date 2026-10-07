@@ -42,6 +42,10 @@ Working version 0.0.11.
 
 * **Telegram:** A new Hide sender names when forwarding switch, off by default, starts each forward with Telegram's Hide sender's name option on. You can still turn it off before sending, and an article forward from an account without Premium keeps the sender, as Telegram requires.
 
+* **Telegram:** A new Voice messages in the music player switch, off by default, opens Telegram's full music player when you tap the bar above a chat while a voice message plays, so you get the big seek bar and speed controls. Without it the tap jumps to the message, as before. View-once voice messages never open the player.
+
+* **Telegram:** A new Silence people outside your contacts switch, off by default, lets a private message from someone who isn't in your contacts arrive quietly. You still get the notification, it just doesn't ring or buzz. Bots, reminders and Telegram's login codes keep their sound.
+
 * **Telegram:** Disable pull to next channel has a second switch, Stop pull to next topic, off by default. With it on, pulling up at the bottom of a forum topic only scrolls instead of opening the next topic. Each switch covers only its own pull, and a switch flipped mid-drag counts when you let go.
 
 * **Telegram:** The beta target is now telegram.org's current 12.10.7 build, version code 71239, which replaced build 71179. Every patch applies and passes its fixture tests on it.

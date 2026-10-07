@@ -114,6 +114,8 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.REACTION_EFFECTS_OFF, "Turn off reaction effects");
         ROW_TITLES.put(PatchFamily.HIDE_FOLDER_COUNTERS, "Hide folder tab counters");
         ROW_TITLES.put(PatchFamily.FORWARD_HIDE_SENDER, "Hide sender names when forwarding");
+        ROW_TITLES.put(PatchFamily.VOICE_MUSIC_PLAYER, "Voice messages in the music player");
+        ROW_TITLES.put(PatchFamily.SILENCE_NON_CONTACTS, "Silence people outside your contacts");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -252,7 +254,9 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.NO_HAPTICS)
                         || build.contains(PatchFamily.REACTION_EFFECTS_OFF)
                         || build.contains(PatchFamily.HIDE_FOLDER_COUNTERS)
-                        || build.contains(PatchFamily.FORWARD_HIDE_SENDER)) expected.add("Chats");
+                        || build.contains(PatchFamily.FORWARD_HIDE_SENDER)
+                        || build.contains(PatchFamily.VOICE_MUSIC_PLAYER)
+                        || build.contains(PatchFamily.SILENCE_NON_CONTACTS)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
@@ -495,6 +499,22 @@ public class HushTelegramPreferenceFragmentTest {
             // Forwards show the sender until the switch is turned on.
             assertFalse(Settings.FORWARD_HIDE_SENDER.key,
                     ((SwitchPreference) page.findPreference(Settings.FORWARD_HIDE_SENDER.key)).isChecked());
+            assertEquals("Voice messages in the music player", String.valueOf(page.findPreference(Settings.VOICE_MUSIC_PLAYER.key).getTitle()));
+            assertEquals("While a voice message plays, tapping the bar above the chat opens Telegram's full music "
+                            + "player with its seek bar, instead of jumping to the message. View-once voice messages stay "
+                            + "as they are. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.VOICE_MUSIC_PLAYER.key).getSummary()));
+            // A voice message keeps jumping to the chat until the switch is turned on.
+            assertFalse(Settings.VOICE_MUSIC_PLAYER.key,
+                    ((SwitchPreference) page.findPreference(Settings.VOICE_MUSIC_PLAYER.key)).isChecked());
+            assertEquals("Silence people outside your contacts", String.valueOf(page.findPreference(Settings.SILENCE_NON_CONTACTS.key).getTitle()));
+            assertEquals("A private message from someone who isn't in your contacts still shows a notification, just "
+                            + "without sound or vibration. Bots, reminders and Telegram's login codes keep their sound. "
+                            + "Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.SILENCE_NON_CONTACTS.key).getSummary()));
+            // A stranger's message rings until the switch is turned on.
+            assertFalse(Settings.SILENCE_NON_CONTACTS.key,
+                    ((SwitchPreference) page.findPreference(Settings.SILENCE_NON_CONTACTS.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {
