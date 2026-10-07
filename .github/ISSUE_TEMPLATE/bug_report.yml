@@ -98,6 +98,7 @@ body:
         - AMOLED black
         - Hide translate bar
         - Exact numbers
+        - Reveal spoilers
         - Strip link tracking
         - HushTelegram settings
     validations:

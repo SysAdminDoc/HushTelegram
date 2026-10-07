@@ -102,6 +102,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.AMOLED_BLACK, "AMOLED black");
         ROW_TITLES.put(PatchFamily.HIDE_TRANSLATE_BAR, "Hide translate bar");
         ROW_TITLES.put(PatchFamily.EXACT_NUMBERS, "Exact numbers");
+        ROW_TITLES.put(PatchFamily.REVEAL_SPOILERS, "Reveal spoilers");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -228,7 +229,8 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.QUIET_CONTACTS_NAG) || build.contains(PatchFamily.HOLIDAY_LOOK)
                         || build.contains(PatchFamily.USE_SYSTEM_FONT) || build.contains(PatchFamily.AMOLED_BLACK)
                         || build.contains(PatchFamily.HIDE_TRANSLATE_BAR)
-                        || build.contains(PatchFamily.EXACT_NUMBERS)) expected.add("Chats");
+                        || build.contains(PatchFamily.EXACT_NUMBERS)
+                        || build.contains(PatchFamily.REVEAL_SPOILERS)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
@@ -380,6 +382,14 @@ public class HushTelegramPreferenceFragmentTest {
             // Counts stay short until the switch is turned on.
             assertFalse(Settings.EXACT_NUMBERS.key,
                     ((SwitchPreference) page.findPreference(Settings.EXACT_NUMBERS.key)).isChecked());
+            assertEquals("Reveal spoilers", String.valueOf(page.findPreference(Settings.REVEAL_SPOILERS.key).getTitle()));
+            assertEquals("Spoiler text, photos and videos show right away instead of waiting for a tap. View-once "
+                            + "media, sensitive content and login codes stay covered, and text you're typing keeps its "
+                            + "spoiler. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.REVEAL_SPOILERS.key).getSummary()));
+            // Spoilers stay covered until the switch is turned on.
+            assertFalse(Settings.REVEAL_SPOILERS.key,
+                    ((SwitchPreference) page.findPreference(Settings.REVEAL_SPOILERS.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {

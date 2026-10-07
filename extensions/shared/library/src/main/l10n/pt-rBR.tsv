@@ -240,6 +240,8 @@ Hide translate bar	Ocultar barra de tradução
 Chats in another language stop showing Telegram's translate bar at the top, and Translate moves to the chat's menu. A chat you're translating keeps its bar so you can go back to the original. Off by default in settings.	Chats em outro idioma deixam de mostrar a barra de tradução do Telegram no topo, e Traduzir passa para o menu do chat. Um chat que você está traduzindo mantém a barra para você voltar ao original. Desativado por padrão nas configurações.
 Exact numbers	Números exatos
 Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.	Contagens de membros, inscritos, visualizações, respostas e reações aparecem completas, como 12,345 em vez de 12.3K. Desativado por padrão nas configurações.
+Reveal spoilers	Revelar spoilers
+Spoiler text, photos and videos show right away instead of waiting for a tap. View-once media, sensitive content and login codes stay covered, and text you're typing keeps its spoiler. Off by default in settings.	Textos, fotos e vídeos com spoiler aparecem na hora, sem precisar tocar. Mídias de visualização única, conteúdo sensível e códigos de login continuam cobertos, e o texto que você está digitando mantém o spoiler. Desativado por padrão nas configurações.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Notificações

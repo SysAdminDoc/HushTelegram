@@ -358,6 +358,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "instead of 12.3K. Off by default in settings."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.REVEAL_SPOILERS)) {
+                chats.addPreference(mark(toggle(context, Settings.REVEAL_SPOILERS, L10n.t("Reveal spoilers"),
+                        PatchFamily.REVEAL_SPOILERS.coverageSummary(L10n.t("Spoiler text, photos and videos show right away instead of waiting for a tap. "
+                                + "View-once media, sensitive content and login codes stay covered, and text you're "
+                                + "typing keeps its spoiler. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

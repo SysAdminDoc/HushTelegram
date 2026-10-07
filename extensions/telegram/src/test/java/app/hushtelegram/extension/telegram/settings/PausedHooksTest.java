@@ -230,6 +230,10 @@ public class PausedHooksTest {
         // A count comes back written in full.
         probes.put(PatchFamily.EXACT_NUMBERS, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.ExactNumbers.format(12345, null) != null));
+        // Spoiler text and media only the sender covered come back uncovered.
+        probes.put(PatchFamily.REVEAL_SPOILERS, Arrays.asList(
+                app.hushtelegram.extension.telegram.misc.SpoilersForTests::textUncovered,
+                app.hushtelegram.extension.telegram.misc.SpoilersForTests::mediaUncovered));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),

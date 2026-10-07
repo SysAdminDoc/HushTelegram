@@ -243,6 +243,8 @@ Hide translate bar	Çeviri çubuğunu gizle
 Chats in another language stop showing Telegram's translate bar at the top, and Translate moves to the chat's menu. A chat you're translating keeps its bar so you can go back to the original. Off by default in settings.	Başka dildeki sohbetler üstte Telegram'ın çeviri çubuğunu artık göstermez ve Çevir, sohbetin menüsüne taşınır. Çevirdiğiniz bir sohbet, orijinale dönebilmeniz için çubuğunu korur. Ayarlarda varsayılan olarak kapalıdır.
 Exact numbers	Sayıları tam göster
 Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.	Üye, abone, görüntülenme, yanıt ve tepki sayıları kısaltılmadan gösterilir, örneğin 12.3K yerine 12,345. Ayarlarda varsayılan olarak kapalıdır.
+Reveal spoilers	Spoilerları göster
+Spoiler text, photos and videos show right away instead of waiting for a tap. View-once media, sensitive content and login codes stay covered, and text you're typing keeps its spoiler. Off by default in settings.	Spoiler metinleri, fotoğrafları ve videoları dokunmana gerek kalmadan hemen görünür. Tek görüntülemelik medya, hassas içerik ve giriş kodları kapalı kalır, yazdığın metin de spoiler’ını korur. Ayarlarda varsayılan olarak kapalıdır.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Bildirimler

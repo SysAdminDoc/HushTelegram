@@ -42,6 +42,7 @@ public final class FamilyNames {
     public static final String AMOLED_BLACK = "AMOLED black";
     public static final String HIDE_TRANSLATE_BAR = "Hide translate bar";
     public static final String EXACT_NUMBERS = "Exact numbers";
+    public static final String REVEAL_SPOILERS = "Reveal spoilers";
     public static final String DISABLE_ANALYTICS = "Disable analytics";
     public static final String DISABLE_CALL_DEBUG = "Disable call debug upload";
     public static final String DISABLE_DRAFT_PREVIEWS = "Disable draft link previews";
