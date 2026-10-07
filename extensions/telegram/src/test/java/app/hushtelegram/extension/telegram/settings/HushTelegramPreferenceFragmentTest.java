@@ -105,6 +105,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.REVEAL_SPOILERS, "Reveal spoilers");
         ROW_TITLES.put(PatchFamily.HIDE_KEYBOARD_ON_SCROLL, "Hide keyboard on scroll");
         ROW_TITLES.put(PatchFamily.KEEP_VIDEOS_MUTED, "Keep videos muted on volume keys");
+        ROW_TITLES.put(PatchFamily.SWIPE_BACK_ON_PROFILES, "Swipe back on profiles");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -234,7 +235,8 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.EXACT_NUMBERS)
                         || build.contains(PatchFamily.REVEAL_SPOILERS)
                         || build.contains(PatchFamily.HIDE_KEYBOARD_ON_SCROLL)
-                        || build.contains(PatchFamily.KEEP_VIDEOS_MUTED)) expected.add("Chats");
+                        || build.contains(PatchFamily.KEEP_VIDEOS_MUTED)
+                        || build.contains(PatchFamily.SWIPE_BACK_ON_PROFILES)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
@@ -409,6 +411,14 @@ public class HushTelegramPreferenceFragmentTest {
             // The chat gets volume keys until the switch is turned on.
             assertFalse(Settings.KEEP_VIDEOS_MUTED.key,
                     ((SwitchPreference) page.findPreference(Settings.KEEP_VIDEOS_MUTED.key)).isChecked());
+            assertEquals("Swipe back on profiles", String.valueOf(page.findPreference(Settings.SWIPE_BACK_ON_PROFILES.key).getTitle()));
+            assertEquals("A swipe to the right on a profile's photos or media tabs goes back, like it does on the "
+                            + "rest of the profile, instead of showing the previous photo or tab. Swiping left still "
+                            + "moves forward. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.SWIPE_BACK_ON_PROFILES.key).getSummary()));
+            // The profile keeps its swipes until the switch is turned on.
+            assertFalse(Settings.SWIPE_BACK_ON_PROFILES.key,
+                    ((SwitchPreference) page.findPreference(Settings.SWIPE_BACK_ON_PROFILES.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {

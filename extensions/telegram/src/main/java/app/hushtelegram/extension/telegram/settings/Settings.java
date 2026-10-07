@@ -156,6 +156,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_keep_videos_muted", FALSE);
 
     /**
+     * A swipe to the right on a profile's photos or media tabs goes back instead of to the previous
+     * photo or tab.
+     */
+    public static final BooleanSetting SWIPE_BACK_ON_PROFILES =
+            new BooleanSetting("hushtelegram_swipe_back_on_profiles", FALSE);
+
+    /**
      * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
      * never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

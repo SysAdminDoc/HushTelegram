@@ -100,6 +100,7 @@ public final class SettingsBackup {
             Settings.REVEAL_SPOILERS,
             Settings.HIDE_KEYBOARD_ON_SCROLL,
             Settings.KEEP_VIDEOS_MUTED,
+            Settings.SWIPE_BACK_ON_PROFILES,
             Settings.DISABLE_ANALYTICS,
             Settings.DISABLE_CALL_DEBUG,
             Settings.DISABLE_DRAFT_PREVIEWS,

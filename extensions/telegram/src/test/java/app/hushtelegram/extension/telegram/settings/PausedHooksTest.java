@@ -240,6 +240,9 @@ public class PausedHooksTest {
         // A volume key in a chat goes to the volume.
         probes.put(PatchFamily.KEEP_VIDEOS_MUTED, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.VolumeKeysForTests.keyGoesToTheVolume()));
+        // A swipe on a profile's photos goes back.
+        probes.put(PatchFamily.SWIPE_BACK_ON_PROFILES, Collections.singletonList(
+                () -> !app.hushtelegram.extension.telegram.misc.SwipeBack.touchBlocks(true)));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),

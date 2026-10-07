@@ -101,6 +101,7 @@ body:
         - Reveal spoilers
         - Hide keyboard on scroll
         - Keep videos muted on volume keys
+        - Swipe back on profiles
         - Strip link tracking
         - HushTelegram settings
     validations:

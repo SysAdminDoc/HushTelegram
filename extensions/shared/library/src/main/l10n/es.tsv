@@ -249,6 +249,8 @@ Hide keyboard on scroll	Ocultar teclado al desplazar
 Starting to scroll through a chat closes the keyboard, the way Telegram already does while you search a chat. Telegram's emoji and sticker panel stays open. Off by default in settings.	Al empezar a desplazarte por un chat se cierra el teclado, como Telegram ya hace mientras buscas en un chat. El panel de emojis y stickers de Telegram sigue abierto. Desactivado por defecto en los ajustes.
 Keep videos muted on volume keys	Mantener videos sin sonido con las teclas de volumen
 Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.	Las teclas de volumen en un chat cambian el volumen en vez de reproducir con sonido el video o videomensaje en pantalla. Toca un video para escucharlo. Desactivado por defecto en los ajustes.
+Swipe back on profiles	Deslizar para volver en perfiles
+A swipe to the right on a profile's photos or media tabs goes back, like it does on the rest of the profile, instead of showing the previous photo or tab. Swiping left still moves forward. Off by default in settings.	Deslizar a la derecha sobre las fotos o las pestañas de multimedia de un perfil vuelve atrás, como en el resto del perfil, en vez de mostrar la foto o la pestaña anterior. Deslizar a la izquierda sigue avanzando. Desactivado por defecto en los ajustes.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Notificaciones

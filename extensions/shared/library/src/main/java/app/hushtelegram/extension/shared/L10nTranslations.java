@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(556);
+        Map<String, String> table = new HashMap<>(560);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -85,6 +85,8 @@ public final class L10nTranslations {
                 "Unter einer kurzen Chatliste stehen deine Kontakte auf Telegram nicht mehr, auch nicht ihre \u00dcberschrift und Ladezeilen. Deine Chats, Ordner, die Kontaktsynchronisierung und die Suche bleiben. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
                 "Ein seitliches Wischen \u00fcber einen Chat in der Chatliste archiviert ihn nicht mehr, schaltet ihn nicht stumm, heftet ihn nicht an, l\u00f6scht ihn nicht und markiert ihn nicht als gelesen, sodass ein versehentliches Wischen den Chat nicht ver\u00e4ndert. Langes Dr\u00fccken bietet weiterhin alle Aktionen. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
+        table.put("A swipe to the right on a profile's photos or media tabs goes back, like it does on the rest of the profile, instead of showing the previous photo or tab. Swiping left still moves forward. Off by default in settings.",
+                "Ein Wisch nach rechts auf den Fotos oder Medien-Tabs eines Profils geht zur\u00fcck, wie \u00fcberall sonst auf dem Profil, statt das vorige Foto oder den vorigen Tab zu zeigen. Nach links wischen geht weiterhin vorw\u00e4rts. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("AMOLED black",
                 "AMOLED-Schwarz");
         table.put("About",
@@ -175,11 +177,11 @@ public final class L10nTranslations {
                 "GitHub war nicht erreichbar. Versuche es sp\u00e4ter noch einmal.");
         table.put("Couldn't save the settings file. Try again.",
                 "Die Einstellungsdatei lie\u00df sich nicht speichern. Versuche es noch einmal.");
-        table.put("Couldn't start that. Try again in a moment.",
-                "Das lie\u00df sich nicht starten. Versuche es gleich noch einmal.");
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("Couldn't start that. Try again in a moment.",
+                "Das lie\u00df sich nicht starten. Versuche es gleich noch einmal.");
         table.put("Couldn't start the report export. Try again shortly.",
                 "Der Export des Berichts lie\u00df sich nicht starten. Versuche es gleich noch einmal.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
@@ -298,11 +300,11 @@ public final class L10nTranslations {
                 "Lizenzen");
         table.put("Links",
                 "Links");
-        table.put("Links, updates, backup and more",
-                "Links, Updates, Sicherung und mehr");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("Links, updates, backup and more",
+                "Links, Updates, Sicherung und mehr");
         table.put("Local notification status",
                 "Lokaler Benachrichtigungsstatus");
         table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
@@ -421,11 +423,11 @@ public final class L10nTranslations {
                 "Einstellungen importiert. %1$d Schalter wurden ge\u00e4ndert.");
         table.put("Settings sales rows",
                 "Verkaufsangebote in den Einstellungen");
-        table.put("Show user and chat IDs",
-                "Benutzer- und Chat-IDs anzeigen");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Show user and chat IDs",
+                "Benutzer- und Chat-IDs anzeigen");
         table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
                 "Zeigt die lokale Benutzer- oder Chat-ID zum Kopieren im Men\u00fc des ge\u00f6ffneten Profils. Zugriffshashes bleiben verborgen. Es kommt keine Serveranfrage hinzu. In den Einstellungen standardm\u00e4\u00dfig aus.");
         table.put("Signed-in accounts: %1$s",
@@ -452,6 +454,8 @@ public final class L10nTranslations {
                 "Link-Tracking entfernen");
         table.put("Supported links",
                 "Unterst\u00fctzte Links");
+        table.put("Swipe back on profiles",
+                "Auf Profilen zur\u00fcckwischen");
         table.put("Tap to turn it back on.",
                 "Zum Wiedereinschalten tippen.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -542,13 +546,13 @@ public final class L10nTranslations {
                 "Version");
         table.put("Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.",
                 "Die Lautst\u00e4rketasten \u00e4ndern in einem Chat die Lautst\u00e4rke, statt das Video oder Rundvideo auf dem Bildschirm mit Ton abzuspielen. Tippe auf ein Video, um es zu h\u00f6ren. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Yes",
                 "Ja");
         table.put("You have the newest HushTelegram release.",
                 "Du hast die neueste Version von HushTelegram.");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("You paused HushTelegram.",
                 "Du hast HushTelegram pausiert.");
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
@@ -628,7 +632,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(556);
+        Map<String, String> table = new HashMap<>(560);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -666,6 +670,8 @@ public final class L10nTranslations {
                 "Una lista de chats corta ya no muestra debajo tus contactos en Telegram, ni su encabezado ni sus filas de carga. Tus chats, carpetas, la sincronizaci\u00f3n de contactos y la b\u00fasqueda se mantienen. Desactivado por defecto en los ajustes.");
         table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
                 "Deslizar un chat hacia un lado en la lista de chats ya no lo archiva, silencia, fija, elimina ni marca como le\u00eddo, as\u00ed que un deslizamiento accidental no cambia el chat. Mantener pulsado sigue ofreciendo todas las acciones. Desactivado por defecto en los ajustes.");
+        table.put("A swipe to the right on a profile's photos or media tabs goes back, like it does on the rest of the profile, instead of showing the previous photo or tab. Swiping left still moves forward. Off by default in settings.",
+                "Deslizar a la derecha sobre las fotos o las pesta\u00f1as de multimedia de un perfil vuelve atr\u00e1s, como en el resto del perfil, en vez de mostrar la foto o la pesta\u00f1a anterior. Deslizar a la izquierda sigue avanzando. Desactivado por defecto en los ajustes.");
         table.put("AMOLED black",
                 "Negro AMOLED");
         table.put("About",
@@ -756,11 +762,11 @@ public final class L10nTranslations {
                 "No se pudo contactar con GitHub. Int\u00e9ntalo de nuevo m\u00e1s tarde.");
         table.put("Couldn't save the settings file. Try again.",
                 "No se pudo guardar el archivo de configuraci\u00f3n. Int\u00e9ntalo de nuevo.");
-        table.put("Couldn't start that. Try again in a moment.",
-                "No se pudo iniciar. Int\u00e9ntalo de nuevo en un momento.");
     }
 
     private static void fillEs1(Map<String, String> table) {
+        table.put("Couldn't start that. Try again in a moment.",
+                "No se pudo iniciar. Int\u00e9ntalo de nuevo en un momento.");
         table.put("Couldn't start the report export. Try again shortly.",
                 "No se pudo iniciar la exportaci\u00f3n del informe. Int\u00e9ntalo de nuevo en breve.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
@@ -879,11 +885,11 @@ public final class L10nTranslations {
                 "Licencias");
         table.put("Links",
                 "Enlaces");
-        table.put("Links, updates, backup and more",
-                "Enlaces, actualizaciones, copia de seguridad y m\u00e1s");
     }
 
     private static void fillEs2(Map<String, String> table) {
+        table.put("Links, updates, backup and more",
+                "Enlaces, actualizaciones, copia de seguridad y m\u00e1s");
         table.put("Local notification status",
                 "Estado local de notificaciones");
         table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
@@ -1002,11 +1008,11 @@ public final class L10nTranslations {
                 "Configuraci\u00f3n importada. Cambiaron %1$d interruptores.");
         table.put("Settings sales rows",
                 "Ofertas en Ajustes");
-        table.put("Show user and chat IDs",
-                "Mostrar IDs de usuario y chat");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Show user and chat IDs",
+                "Mostrar IDs de usuario y chat");
         table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
                 "Muestra un ID local de usuario o chat que se puede copiar en el men\u00fa del perfil abierto. Los hashes de acceso siguen ocultos. No a\u00f1ade solicitudes al servidor. Desactivado por defecto en los ajustes.");
         table.put("Signed-in accounts: %1$s",
@@ -1033,6 +1039,8 @@ public final class L10nTranslations {
                 "Eliminar seguimiento de enlaces");
         table.put("Supported links",
                 "Enlaces compatibles");
+        table.put("Swipe back on profiles",
+                "Deslizar para volver en perfiles");
         table.put("Tap to turn it back on.",
                 "Toca para volver a activarlo.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -1123,13 +1131,13 @@ public final class L10nTranslations {
                 "Versi\u00f3n");
         table.put("Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.",
                 "Las teclas de volumen en un chat cambian el volumen en vez de reproducir con sonido el video o videomensaje en pantalla. Toca un video para escucharlo. Desactivado por defecto en los ajustes.");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Yes",
                 "S\u00ed");
         table.put("You have the newest HushTelegram release.",
                 "Tienes la versi\u00f3n m\u00e1s reciente de HushTelegram.");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("You paused HushTelegram.",
                 "Pausaste HushTelegram.");
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
@@ -1209,7 +1217,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(556);
+        Map<String, String> table = new HashMap<>(560);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1247,6 +1255,8 @@ public final class L10nTranslations {
                 "Daftar chat yang pendek tidak lagi menampilkan kontakmu di Telegram di bawahnya, beserta judul dan baris pemuatannya. Chat, folder, sinkronisasi kontak, dan pencarian tetap ada. Secara default nonaktif di pengaturan.");
         table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
                 "Menggeser chat ke samping di daftar chat tidak lagi mengarsipkan, membisukan, menyematkan, menghapus, atau menandainya sebagai dibaca, jadi geseran tak sengaja tidak mengubah chat. Tekan lama tetap menampilkan semua aksi. Secara default nonaktif di pengaturan.");
+        table.put("A swipe to the right on a profile's photos or media tabs goes back, like it does on the rest of the profile, instead of showing the previous photo or tab. Swiping left still moves forward. Off by default in settings.",
+                "Geser ke kanan pada foto atau tab media profil akan kembali, seperti di bagian profil lainnya, bukan menampilkan foto atau tab sebelumnya. Geser ke kiri tetap maju. Nonaktif secara default di pengaturan.");
         table.put("AMOLED black",
                 "Hitam AMOLED");
         table.put("About",
@@ -1337,11 +1347,11 @@ public final class L10nTranslations {
                 "GitHub tidak dapat dihubungi. Coba lagi nanti.");
         table.put("Couldn't save the settings file. Try again.",
                 "File pengaturan tidak dapat disimpan. Coba lagi.");
-        table.put("Couldn't start that. Try again in a moment.",
-                "Tidak dapat dimulai. Coba lagi dalam beberapa saat.");
     }
 
     private static void fillIn1(Map<String, String> table) {
+        table.put("Couldn't start that. Try again in a moment.",
+                "Tidak dapat dimulai. Coba lagi dalam beberapa saat.");
         table.put("Couldn't start the report export. Try again shortly.",
                 "Ekspor laporan tidak dapat dimulai. Coba lagi dalam beberapa saat.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
@@ -1460,11 +1470,11 @@ public final class L10nTranslations {
                 "Lisensi");
         table.put("Links",
                 "Tautan");
-        table.put("Links, updates, backup and more",
-                "Tautan, pembaruan, cadangan, dan lainnya");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("Links, updates, backup and more",
+                "Tautan, pembaruan, cadangan, dan lainnya");
         table.put("Local notification status",
                 "Status notifikasi lokal");
         table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
@@ -1583,11 +1593,11 @@ public final class L10nTranslations {
                 "Pengaturan diimpor. %1$d sakelar berubah.");
         table.put("Settings sales rows",
                 "Penawaran di Pengaturan");
-        table.put("Show user and chat IDs",
-                "Tampilkan ID pengguna dan chat");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Show user and chat IDs",
+                "Tampilkan ID pengguna dan chat");
         table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
                 "Menampilkan ID pengguna atau chat lokal yang dapat disalin di menu profil yang dibuka. Hash akses tetap tersembunyi. Tidak menambah permintaan server. Nonaktif secara default di pengaturan.");
         table.put("Signed-in accounts: %1$s",
@@ -1614,6 +1624,8 @@ public final class L10nTranslations {
                 "Hapus pelacakan tautan");
         table.put("Supported links",
                 "Tautan yang didukung");
+        table.put("Swipe back on profiles",
+                "Geser kembali di profil");
         table.put("Tap to turn it back on.",
                 "Ketuk untuk mengaktifkan HushTelegram lagi.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -1704,13 +1716,13 @@ public final class L10nTranslations {
                 "Versi");
         table.put("Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.",
                 "Tombol volume di obrolan mengubah volume, bukan memutar video atau video bulat di layar dengan suara. Ketuk video untuk mendengarnya. Nonaktif secara default di pengaturan.");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Yes",
                 "Ya");
         table.put("You have the newest HushTelegram release.",
                 "Anda sudah memakai rilis HushTelegram terbaru.");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("You paused HushTelegram.",
                 "Anda menjeda HushTelegram.");
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
@@ -1790,7 +1802,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(556);
+        Map<String, String> table = new HashMap<>(560);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -1828,6 +1840,8 @@ public final class L10nTranslations {
                 "Uma lista de conversas curta n\u00e3o mostra mais seus contatos no Telegram embaixo dela, nem o t\u00edtulo e as linhas de carregamento. Suas conversas, pastas, a sincroniza\u00e7\u00e3o de contatos e a busca continuam. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
                 "Deslizar um chat para o lado na lista de chats n\u00e3o arquiva, silencia, fixa, apaga nem marca mais o chat como lido, ent\u00e3o um deslize sem querer n\u00e3o muda o chat. Tocar e segurar continua mostrando todas as a\u00e7\u00f5es. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
+        table.put("A swipe to the right on a profile's photos or media tabs goes back, like it does on the rest of the profile, instead of showing the previous photo or tab. Swiping left still moves forward. Off by default in settings.",
+                "Deslizar para a direita nas fotos ou abas de m\u00eddia de um perfil volta, como no resto do perfil, em vez de mostrar a foto ou a aba anterior. Deslizar para a esquerda continua avan\u00e7ando. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("AMOLED black",
                 "Preto AMOLED");
         table.put("About",
@@ -1918,11 +1932,11 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel conectar-se ao GitHub. Tente novamente mais tarde.");
         table.put("Couldn't save the settings file. Try again.",
                 "N\u00e3o foi poss\u00edvel salvar o arquivo de configura\u00e7\u00f5es. Tente de novo.");
-        table.put("Couldn't start that. Try again in a moment.",
-                "N\u00e3o foi poss\u00edvel iniciar isso. Tente de novo em instantes.");
     }
 
     private static void fillPt_rBR1(Map<String, String> table) {
+        table.put("Couldn't start that. Try again in a moment.",
+                "N\u00e3o foi poss\u00edvel iniciar isso. Tente de novo em instantes.");
         table.put("Couldn't start the report export. Try again shortly.",
                 "N\u00e3o foi poss\u00edvel iniciar a exporta\u00e7\u00e3o do relat\u00f3rio. Tente de novo daqui a pouco.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
@@ -2041,11 +2055,11 @@ public final class L10nTranslations {
                 "Licen\u00e7as");
         table.put("Links",
                 "Links");
-        table.put("Links, updates, backup and more",
-                "Links, atualiza\u00e7\u00f5es, backup e mais");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
+        table.put("Links, updates, backup and more",
+                "Links, atualiza\u00e7\u00f5es, backup e mais");
         table.put("Local notification status",
                 "Estado local das notifica\u00e7\u00f5es");
         table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
@@ -2164,11 +2178,11 @@ public final class L10nTranslations {
                 "Configura\u00e7\u00f5es importadas. %1$d op\u00e7\u00f5es foram alteradas.");
         table.put("Settings sales rows",
                 "Ofertas nas Configura\u00e7\u00f5es");
-        table.put("Show user and chat IDs",
-                "Mostrar IDs de usu\u00e1rio e chat");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Show user and chat IDs",
+                "Mostrar IDs de usu\u00e1rio e chat");
         table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
                 "Mostra um ID local de usu\u00e1rio ou chat que pode ser copiado no menu do perfil aberto. Os hashes de acesso ficam ocultos. N\u00e3o adiciona solicita\u00e7\u00f5es ao servidor. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Signed-in accounts: %1$s",
@@ -2195,6 +2209,8 @@ public final class L10nTranslations {
                 "Remover rastreamento de links");
         table.put("Supported links",
                 "Links compat\u00edveis");
+        table.put("Swipe back on profiles",
+                "Deslizar para voltar em perfis");
         table.put("Tap to turn it back on.",
                 "Toque para reativar.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -2285,13 +2301,13 @@ public final class L10nTranslations {
                 "Vers\u00e3o");
         table.put("Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.",
                 "As teclas de volume em um chat mudam o volume em vez de tocar com som o v\u00eddeo ou v\u00eddeo redondo na tela. Toque em um v\u00eddeo para ouvi-lo. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Yes",
                 "Sim");
         table.put("You have the newest HushTelegram release.",
                 "Voc\u00ea j\u00e1 est\u00e1 usando a vers\u00e3o mais nova do HushTelegram.");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("You paused HushTelegram.",
                 "Voc\u00ea pausou o HushTelegram.");
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
@@ -2371,7 +2387,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(556);
+        Map<String, String> table = new HashMap<>(560);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2409,6 +2425,8 @@ public final class L10nTranslations {
                 "K\u0131sa bir sohbet listesi, alt\u0131nda Telegram'daki ki\u015filerinizi ba\u015fl\u0131\u011f\u0131 ve y\u00fckleme sat\u0131rlar\u0131yla art\u0131k g\u00f6stermez. Sohbetleriniz, klas\u00f6rleriniz, ki\u015fi senkronizasyonu ve arama kal\u0131r. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
                 "Sohbet listesinde bir sohbeti yana kayd\u0131rmak art\u0131k onu ar\u015fivlemez, sessize almaz, sabitlemez, silmez veya okundu olarak i\u015faretlemez, b\u00f6ylece yanl\u0131\u015fl\u0131kla yap\u0131lan bir kayd\u0131rma sohbeti de\u011fi\u015ftirmez. Uzun basma t\u00fcm eylemleri sunmaya devam eder. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
+        table.put("A swipe to the right on a profile's photos or media tabs goes back, like it does on the rest of the profile, instead of showing the previous photo or tab. Swiping left still moves forward. Off by default in settings.",
+                "Bir profilin foto\u011fraflar\u0131nda veya medya sekmelerinde sa\u011fa kayd\u0131rmak, \u00f6nceki foto\u011fraf\u0131 veya sekmeyi g\u00f6stermek yerine profilin geri kalan\u0131nda oldu\u011fu gibi geri gider. Sola kayd\u0131rmak yine ileri gider. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("AMOLED black",
                 "AMOLED siyah\u0131");
         table.put("About",
@@ -2499,11 +2517,11 @@ public final class L10nTranslations {
                 "GitHub'a ula\u015f\u0131lamad\u0131. Daha sonra tekrar dene.");
         table.put("Couldn't save the settings file. Try again.",
                 "Ayar dosyas\u0131 kaydedilemedi. Tekrar dene.");
-        table.put("Couldn't start that. Try again in a moment.",
-                "Bu i\u015flem ba\u015flat\u0131lamad\u0131. Birazdan tekrar dene.");
     }
 
     private static void fillTr1(Map<String, String> table) {
+        table.put("Couldn't start that. Try again in a moment.",
+                "Bu i\u015flem ba\u015flat\u0131lamad\u0131. Birazdan tekrar dene.");
         table.put("Couldn't start the report export. Try again shortly.",
                 "Rapor d\u0131\u015fa aktar\u0131m\u0131 ba\u015flat\u0131lamad\u0131. Birazdan tekrar dene.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
@@ -2622,11 +2640,11 @@ public final class L10nTranslations {
                 "Lisanslar");
         table.put("Links",
                 "Ba\u011flant\u0131lar");
-        table.put("Links, updates, backup and more",
-                "Ba\u011flant\u0131lar, g\u00fcncellemeler, yedekleme ve daha fazlas\u0131");
     }
 
     private static void fillTr2(Map<String, String> table) {
+        table.put("Links, updates, backup and more",
+                "Ba\u011flant\u0131lar, g\u00fcncellemeler, yedekleme ve daha fazlas\u0131");
         table.put("Local notification status",
                 "Yerel bildirim durumu");
         table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
@@ -2745,11 +2763,11 @@ public final class L10nTranslations {
                 "Ayarlar i\u00e7e aktar\u0131ld\u0131. %1$d anahtar de\u011fi\u015fti.");
         table.put("Settings sales rows",
                 "Ayarlar'daki sat\u0131\u015f se\u00e7enekleri");
-        table.put("Show user and chat IDs",
-                "Kullan\u0131c\u0131 ve sohbet kimliklerini g\u00f6ster");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Show user and chat IDs",
+                "Kullan\u0131c\u0131 ve sohbet kimliklerini g\u00f6ster");
         table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
                 "A\u00e7\u0131lan profilin men\u00fcs\u00fcnde kopyalanabilir yerel kullan\u0131c\u0131 veya sohbet kimli\u011fini g\u00f6sterir. Eri\u015fim karmalar\u0131 gizli kal\u0131r. Sunucu iste\u011fi eklenmez. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Signed-in accounts: %1$s",
@@ -2776,6 +2794,8 @@ public final class L10nTranslations {
                 "Ba\u011flant\u0131 takibini kald\u0131r");
         table.put("Supported links",
                 "Desteklenen ba\u011flant\u0131lar");
+        table.put("Swipe back on profiles",
+                "Profillerde geri kayd\u0131r");
         table.put("Tap to turn it back on.",
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -2866,13 +2886,13 @@ public final class L10nTranslations {
                 "S\u00fcr\u00fcm");
         table.put("Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.",
                 "Bir sohbetteki ses tu\u015flar\u0131, ekrandaki videoyu veya yuvarlak videoyu sesli oynatmak yerine sesi de\u011fi\u015ftirir. Duymak i\u00e7in videoya dokun. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Yes",
                 "Evet");
         table.put("You have the newest HushTelegram release.",
                 "En yeni HushTelegram s\u00fcr\u00fcm\u00fcn\u00fc kullan\u0131yorsun.");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("You paused HushTelegram.",
                 "HushTelegram'u duraklatt\u0131n.");
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",

@@ -378,6 +378,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "screen with sound. Tap a video to hear it. Off by default in settings."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.SWIPE_BACK_ON_PROFILES)) {
+                chats.addPreference(mark(toggle(context, Settings.SWIPE_BACK_ON_PROFILES, L10n.t("Swipe back on profiles"),
+                        PatchFamily.SWIPE_BACK_ON_PROFILES.coverageSummary(L10n.t("A swipe to the right on a profile's photos or media tabs goes back, like it does on "
+                                + "the rest of the profile, instead of showing the previous photo or tab. Swiping left "
+                                + "still moves forward. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

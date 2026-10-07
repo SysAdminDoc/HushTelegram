@@ -249,6 +249,8 @@ Hide keyboard on scroll	Kaydırınca klavyeyi gizle
 Starting to scroll through a chat closes the keyboard, the way Telegram already does while you search a chat. Telegram's emoji and sticker panel stays open. Off by default in settings.	Bir sohbette kaydırmaya başlamak klavyeyi kapatır, tıpkı Telegram’ın sohbet içinde arama yaparken yaptığı gibi. Telegram’ın emoji ve çıkartma paneli açık kalır. Ayarlarda varsayılan olarak kapalıdır.
 Keep videos muted on volume keys	Ses tuşlarında videoları sessiz tut
 Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.	Bir sohbetteki ses tuşları, ekrandaki videoyu veya yuvarlak videoyu sesli oynatmak yerine sesi değiştirir. Duymak için videoya dokun. Ayarlarda varsayılan olarak kapalıdır.
+Swipe back on profiles	Profillerde geri kaydır
+A swipe to the right on a profile's photos or media tabs goes back, like it does on the rest of the profile, instead of showing the previous photo or tab. Swiping left still moves forward. Off by default in settings.	Bir profilin fotoğraflarında veya medya sekmelerinde sağa kaydırmak, önceki fotoğrafı veya sekmeyi göstermek yerine profilin geri kalanında olduğu gibi geri gider. Sola kaydırmak yine ileri gider. Ayarlarda varsayılan olarak kapalıdır.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Bildirimler
