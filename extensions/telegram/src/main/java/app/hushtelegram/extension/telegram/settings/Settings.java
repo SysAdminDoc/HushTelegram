@@ -275,6 +275,12 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting MESSAGE_MENU_REPEAT =
             new BooleanSetting("hushtelegram_message_menu_repeat", FALSE);
 
+    /**
+     * A message someone else deletes stays on this phone, marked deleted next to its time.
+     */
+    public static final BooleanSetting KEEP_DELETED_MESSAGES =
+            new BooleanSetting("hushtelegram_keep_deleted_messages", FALSE);
+
     /** A photo's long-press menu gets Copy photo, which puts the downloaded picture on the clipboard. */
     public static final BooleanSetting MESSAGE_MENU_COPY_PHOTO =
             new BooleanSetting("hushtelegram_message_menu_copy_photo", FALSE);

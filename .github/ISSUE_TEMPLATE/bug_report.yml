@@ -120,6 +120,7 @@ body:
         - Hide blocked users in groups
         - Hide Telegram Features and Invite Friends
         - Add Repeat to the message menu
+        - Keep deleted messages
         - Strip link tracking
         - HushTelegram settings
     validations:

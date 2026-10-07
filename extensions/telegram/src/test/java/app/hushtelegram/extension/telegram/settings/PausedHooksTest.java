@@ -300,6 +300,9 @@ public class PausedHooksTest {
                 () -> app.hushtelegram.extension.telegram.misc.MessageMenuForTests.repeatOn(),
                 () -> app.hushtelegram.extension.telegram.misc.MessageMenuForTests.copyPhotoOn(),
                 () -> app.hushtelegram.extension.telegram.misc.MessageMenuForTests.detailsOn()));
+        // A message another person deletes stays on the phone.
+        probes.put(PatchFamily.KEEP_DELETED_MESSAGES, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.KeepDeleted.on()));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),

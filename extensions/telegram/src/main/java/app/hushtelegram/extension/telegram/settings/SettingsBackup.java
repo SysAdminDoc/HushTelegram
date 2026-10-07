@@ -120,6 +120,7 @@ public final class SettingsBackup {
             Settings.HIDE_BLOCKED_IN_GROUPS,
             Settings.HIDE_FEATURES_AND_INVITE,
             Settings.MESSAGE_MENU_REPEAT,
+            Settings.KEEP_DELETED_MESSAGES,
             Settings.MESSAGE_MENU_COPY_PHOTO,
             Settings.MESSAGE_MENU_DETAILS,
             Settings.DISABLE_ANALYTICS,

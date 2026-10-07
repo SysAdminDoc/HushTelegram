@@ -525,6 +525,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "center and size, with a Copy button. Off by default in settings."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.KEEP_DELETED_MESSAGES)) {
+                chats.addPreference(mark(toggle(context, Settings.KEEP_DELETED_MESSAGES, L10n.t("Keep deleted messages"),
+                        PatchFamily.KEEP_DELETED_MESSAGES.coverageSummary(L10n.t("Messages other people delete stay in your chats on this phone, marked deleted next to "
+                                + "the time. Your own deletes and anything that disappears or is protected work as usual. "
+                                + "Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

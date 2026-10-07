@@ -275,6 +275,7 @@ public final class SelectionCheck {
         hook(calls, flags, "hideBlockedInGroups", "misc/BlockedSenders", "type");
         hook(calls, flags, "hideFeaturesAndInvite", "misc/FeaturesInvite", "addFeaturesRow");
         hook(calls, flags, "messageMenuRepeat", "misc/MessageMenu", "fill");
+        hook(calls, flags, "keepDeleted", "misc/KeepDeleted", "userUpdate", "channelUpdate", "push", "measuring");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");
         hook(calls, flags, "disableUpdateChecks", "misc/UpdateChecks", "skipUpdateCheck");
         for (String[] bridge : List.of(
