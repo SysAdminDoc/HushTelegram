@@ -252,6 +252,21 @@ public class PausedHooksTest {
         // Any phone may blur chats.
         probes.put(PatchFamily.ALLOW_CHAT_BLUR, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.ChatBlur.allowed()));
+        // The next voice message doesn't start on its own.
+        probes.put(PatchFamily.VOICE_ONE_AT_A_TIME, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.VoicePlaylist.queue(new java.util.ArrayList<>(Collections.singletonList("next"))) == null));
+        // Telegram's taps stop vibrating.
+        probes.put(PatchFamily.NO_HAPTICS, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.HapticsForTests.quiet()));
+        // Reaction effects don't play.
+        probes.put(PatchFamily.REACTION_EFFECTS_OFF, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.ReactionEffects.skipped()));
+        // Folder tabs show no unread counts.
+        probes.put(PatchFamily.HIDE_FOLDER_COUNTERS, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.FolderTabs.countersHidden()));
+        // New forwards start with the sender hidden.
+        probes.put(PatchFamily.FORWARD_HIDE_SENDER, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.ForwardSenderForTests.on()));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),

@@ -257,6 +257,16 @@ Message times with seconds	Saniyeli mesaj saati
 The time on each message shows seconds too, like 9:41:27 PM, so messages sent close together are easy to tell apart. Off by default in settings.	Her mesajın saati saniyeleri de gösterir, örneğin 21:41:27, böylece art arda gönderilen mesajlar kolayca ayırt edilir. Ayarlarda varsayılan olarak kapalıdır.
 Allow chat blur on slower phones	Daha yavaş telefonlarda sohbet bulanıklığına izin ver
 Telegram only blurs the chat header and panels on phones it rates as fast. This lets any phone use it once Blur in chat is on under Power saving. Off by default in settings.	Telegram sohbet başlığını ve panelleri yalnızca hızlı saydığı telefonlarda bulanıklaştırır. Bu, Güç tasarrufu altında Sohbette bulanıklık açıldığında her telefonun bunu kullanmasını sağlar. Ayarlarda varsayılan olarak kapalıdır.
+Play voice messages one at a time	Sesli mesajları tek tek oynat
+When a voice or video message ends, the next one in the chat doesn't start on its own. Off by default in settings.	Bir sesli ya da görüntülü mesaj bittiğinde sohbetteki sonraki kendiliğinden başlamaz. Ayarlarda varsayılan olarak kapalıdır.
+Turn off haptic feedback	Dokunsal geri bildirimi kapat
+Taps, long presses, swipes and wrong entries in Telegram stop vibrating the phone. Incoming calls still vibrate, and notifications vibrate the way you set them. Off by default in settings.	Telegram'da dokunmalar, uzun basmalar, kaydırmalar ve hatalı girişler artık telefonu titreştirmez. Gelen aramalar titremeye devam eder, bildirimler de ayarladığınız gibi titrer. Ayarlarda varsayılan olarak kapalıdır.
+Turn off reaction effects	Tepki efektlerini kapat
+When you or someone else reacts to a message, the emoji no longer flies across the screen and bursts. The reaction still shows on the message. Off by default in settings.	Siz ya da başka biri bir mesaja tepki verdiğinde emoji artık ekranda uçup patlamaz. Tepki yine mesajda görünür. Ayarlarda varsayılan olarak kapalıdır.
+Hide folder tab counters	Klasör sekmesi sayaçlarını gizle
+The folder tabs above the chat list show just their names, without the number of unread chats. Chats stay unread and the app icon's badge doesn't change. Off by default in settings.	Sohbet listesinin üstündeki klasör sekmeleri okunmamış sohbet sayısı olmadan yalnızca adlarını gösterir. Sohbetler okunmamış kalır ve uygulama simgesindeki rozet değişmez. Ayarlarda varsayılan olarak kapalıdır.
+Hide sender names when forwarding	İletirken gönderen adlarını gizle
+Each new forward starts with Telegram's Hide sender's name option turned on, so the copies arrive without the original author. You can still turn it off before sending, and article forwards follow Telegram's Premium rule. Off by default in settings.	Her yeni iletme, Telegram'ın Gönderen adını gizle seçeneği açık olarak başlar, böylece kopyalar asıl gönderen olmadan ulaşır. Göndermeden önce yine kapatabilirsiniz, makaleler ise Telegram'ın Premium kuralına uyar. Ayarlarda varsayılan olarak kapalıdır.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Bildirimler

@@ -85,6 +85,11 @@ public class PatchFamilyTest {
         Settings.HIDE_PHONE_NUMBER.resetToDefault();
         Settings.MESSAGE_SECONDS.resetToDefault();
         Settings.ALLOW_CHAT_BLUR.resetToDefault();
+        Settings.VOICE_ONE_AT_A_TIME.resetToDefault();
+        Settings.NO_HAPTICS.resetToDefault();
+        Settings.REACTION_EFFECTS_OFF.resetToDefault();
+        Settings.HIDE_FOLDER_COUNTERS.resetToDefault();
+        Settings.FORWARD_HIDE_SENDER.resetToDefault();
         HookStatus.clear();
     }
 
@@ -92,6 +97,61 @@ public class PatchFamilyTest {
      * A switch is a family's, or the settings entry's own (the release check), and never both: a
      * switch in neither list goes unmentioned by the screen and the tests that hold Pause to it.
      */
+    @Test
+    public void forwardHideSenderHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
+        PatchFamily family = PatchFamily.FORWARD_HIDE_SENDER;
+        assertEquals("Hide sender names when forwarding", family.patchName);
+        assertEquals(Collections.singletonList(Settings.FORWARD_HIDE_SENDER), family.switches);
+        assertFalse(Settings.FORWARD_HIDE_SENDER.defaultValue);
+        assertFalse(Settings.FORWARD_HIDE_SENDER.rebootApp);
+        assertTrue(family.expectedCapabilities().isEmpty());
+        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+    }
+
+    @Test
+    public void hideFolderCountersHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
+        PatchFamily family = PatchFamily.HIDE_FOLDER_COUNTERS;
+        assertEquals("Hide folder tab counters", family.patchName);
+        assertEquals(Collections.singletonList(Settings.HIDE_FOLDER_COUNTERS), family.switches);
+        assertFalse(Settings.HIDE_FOLDER_COUNTERS.defaultValue);
+        assertFalse(Settings.HIDE_FOLDER_COUNTERS.rebootApp);
+        assertTrue(family.expectedCapabilities().isEmpty());
+        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+    }
+
+    @Test
+    public void reactionEffectsOffHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
+        PatchFamily family = PatchFamily.REACTION_EFFECTS_OFF;
+        assertEquals("Turn off reaction effects", family.patchName);
+        assertEquals(Collections.singletonList(Settings.REACTION_EFFECTS_OFF), family.switches);
+        assertFalse(Settings.REACTION_EFFECTS_OFF.defaultValue);
+        assertFalse(Settings.REACTION_EFFECTS_OFF.rebootApp);
+        assertTrue(family.expectedCapabilities().isEmpty());
+        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+    }
+
+    @Test
+    public void noHapticsHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
+        PatchFamily family = PatchFamily.NO_HAPTICS;
+        assertEquals("Turn off haptic feedback", family.patchName);
+        assertEquals(Collections.singletonList(Settings.NO_HAPTICS), family.switches);
+        assertFalse(Settings.NO_HAPTICS.defaultValue);
+        assertFalse(Settings.NO_HAPTICS.rebootApp);
+        assertTrue(family.expectedCapabilities().isEmpty());
+        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+    }
+
+    @Test
+    public void voiceOneAtATimeHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
+        PatchFamily family = PatchFamily.VOICE_ONE_AT_A_TIME;
+        assertEquals("Play voice messages one at a time", family.patchName);
+        assertEquals(Collections.singletonList(Settings.VOICE_ONE_AT_A_TIME), family.switches);
+        assertFalse(Settings.VOICE_ONE_AT_A_TIME.defaultValue);
+        assertFalse(Settings.VOICE_ONE_AT_A_TIME.rebootApp);
+        assertTrue(family.expectedCapabilities().isEmpty());
+        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+    }
+
     @Test
     public void allowChatBlurHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
         PatchFamily family = PatchFamily.ALLOW_CHAT_BLUR;
@@ -426,7 +486,7 @@ public class PatchFamilyTest {
         assertEquals(Arrays.asList(
                 "Hide ads: on (hushtelegram_hide_ads=on)",
                 "Disable analytics: disabled by its switch (hushtelegram_disable_analytics=off)",
-                "not in this build: Hide Stories, Hide recommendations, Hide Premium, gifts and Stars, Hide promotional banners, Hide sponsored proxy channel, Hide popular apps, Hide contacts on Telegram, Hide greeting stickers, Disable chat swipe actions, Disable pull to next channel, Use normal paste, Show user and chat IDs, Disable double-tap reactions, Quiet contacts nag, Holiday look all year, Use system font, AMOLED black, Hide translate bar, Exact numbers, Reveal spoilers, Hide keyboard on scroll, Keep videos muted on volume keys, Swipe back on profiles, Hide phone number, Message times with seconds, Allow chat blur on slower phones, Disable call debug upload, Disable draft link previews, Gallery camera on tap, Open links externally, Strip link tracking, Disable update checks, Repair Firebase push registration",
+                "not in this build: Hide Stories, Hide recommendations, Hide Premium, gifts and Stars, Hide promotional banners, Hide sponsored proxy channel, Hide popular apps, Hide contacts on Telegram, Hide greeting stickers, Disable chat swipe actions, Disable pull to next channel, Use normal paste, Show user and chat IDs, Disable double-tap reactions, Quiet contacts nag, Holiday look all year, Use system font, AMOLED black, Hide translate bar, Exact numbers, Reveal spoilers, Hide keyboard on scroll, Keep videos muted on volume keys, Swipe back on profiles, Hide phone number, Message times with seconds, Allow chat blur on slower phones, Play voice messages one at a time, Turn off haptic feedback, Turn off reaction effects, Hide folder tab counters, Hide sender names when forwarding, Disable call debug upload, Disable draft link previews, Gallery camera on tap, Open links externally, Strip link tracking, Disable update checks, Repair Firebase push registration",
                 "Hide ads coverage: channel ads, video ads, search ads",
                 "Disable analytics coverage: device statistics reports, channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures"),
                 running);

@@ -260,6 +260,11 @@ public final class SelectionCheck {
         hook(calls, flags, "hidePhoneNumber", "misc/HidePhone", "shown");
         hook(calls, flags, "messageSeconds", "misc/MessageTime", "shown");
         hook(calls, flags, "allowChatBlur", "misc/ChatBlur", "allowed");
+        hook(calls, flags, "voiceOneAtATime", "misc/VoicePlaylist", "queue");
+        hook(calls, flags, "noHaptics", "misc/Haptics", "tap");
+        hook(calls, flags, "reactionEffectsOff", "misc/ReactionEffects", "skipped");
+        hook(calls, flags, "hideFolderCounters", "misc/FolderTabs", "countersHidden");
+        hook(calls, flags, "forwardHideSender", "misc/ForwardSender", "starts");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");
         hook(calls, flags, "disableUpdateChecks", "misc/UpdateChecks", "skipUpdateCheck");
         for (String[] bridge : List.of(

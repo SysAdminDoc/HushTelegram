@@ -257,6 +257,16 @@ Message times with seconds	Hora de los mensajes con segundos
 The time on each message shows seconds too, like 9:41:27 PM, so messages sent close together are easy to tell apart. Off by default in settings.	La hora de cada mensaje también muestra los segundos, como 21:41:27, para distinguir fácilmente mensajes enviados casi a la vez. Desactivado por defecto en los ajustes.
 Allow chat blur on slower phones	Permitir el desenfoque del chat en teléfonos más lentos
 Telegram only blurs the chat header and panels on phones it rates as fast. This lets any phone use it once Blur in chat is on under Power saving. Off by default in settings.	Telegram solo desenfoca la cabecera y los paneles del chat en teléfonos que considera rápidos. Así cualquier teléfono puede usarlo cuando Desenfoque en el chat está activado en Ahorro de energía. Desactivado por defecto en los ajustes.
+Play voice messages one at a time	Reproducir los mensajes de voz de uno en uno
+When a voice or video message ends, the next one in the chat doesn't start on its own. Off by default in settings.	Cuando termina un mensaje de voz o de video, el siguiente del chat no empieza solo. Desactivado por defecto en los ajustes.
+Turn off haptic feedback	Desactivar la respuesta háptica
+Taps, long presses, swipes and wrong entries in Telegram stop vibrating the phone. Incoming calls still vibrate, and notifications vibrate the way you set them. Off by default in settings.	Los toques, las pulsaciones largas, los deslizamientos y las entradas incorrectas dejan de hacer vibrar el teléfono en Telegram. Las llamadas entrantes siguen vibrando y las notificaciones vibran como las configuraste. Desactivado por defecto en los ajustes.
+Turn off reaction effects	Desactivar los efectos de las reacciones
+When you or someone else reacts to a message, the emoji no longer flies across the screen and bursts. The reaction still shows on the message. Off by default in settings.	Cuando tú u otra persona reaccionan a un mensaje, el emoji ya no cruza la pantalla ni estalla. La reacción sigue apareciendo en el mensaje. Desactivado por defecto en los ajustes.
+Hide folder tab counters	Ocultar los contadores de las pestañas de carpetas
+The folder tabs above the chat list show just their names, without the number of unread chats. Chats stay unread and the app icon's badge doesn't change. Off by default in settings.	Las pestañas de carpetas sobre la lista de chats muestran solo su nombre, sin el número de chats no leídos. Los chats siguen sin leer y el globo del icono de la app no cambia. Desactivado por defecto en los ajustes.
+Hide sender names when forwarding	Ocultar remitentes al reenviar
+Each new forward starts with Telegram's Hide sender's name option turned on, so the copies arrive without the original author. You can still turn it off before sending, and article forwards follow Telegram's Premium rule. Off by default in settings.	Cada reenvío nuevo empieza con la opción Ocultar nombre del remitente de Telegram activada, así las copias llegan sin el autor original. Aún puedes desactivarla antes de enviar, y los artículos siguen la regla de Premium de Telegram. Desactivado por defecto en los ajustes.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Notificaciones

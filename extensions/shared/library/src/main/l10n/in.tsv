@@ -257,6 +257,16 @@ Message times with seconds	Waktu pesan dengan detik
 The time on each message shows seconds too, like 9:41:27 PM, so messages sent close together are easy to tell apart. Off by default in settings.	Waktu di setiap pesan juga menampilkan detik, misalnya 21:41:27, sehingga pesan yang dikirim berdekatan mudah dibedakan. Nonaktif secara default di pengaturan.
 Allow chat blur on slower phones	Izinkan blur obrolan di ponsel yang lebih lambat
 Telegram only blurs the chat header and panels on phones it rates as fast. This lets any phone use it once Blur in chat is on under Power saving. Off by default in settings.	Telegram hanya memburamkan header dan panel obrolan di ponsel yang dianggapnya cepat. Ini membuat ponsel mana pun bisa memakainya setelah Blur di obrolan dinyalakan di Hemat daya. Nonaktif secara default di pengaturan.
+Play voice messages one at a time	Putar pesan suara satu per satu
+When a voice or video message ends, the next one in the chat doesn't start on its own. Off by default in settings.	Saat pesan suara atau video selesai, pesan berikutnya di obrolan tidak diputar sendiri. Nonaktif secara default di pengaturan.
+Turn off haptic feedback	Matikan getaran haptik
+Taps, long presses, swipes and wrong entries in Telegram stop vibrating the phone. Incoming calls still vibrate, and notifications vibrate the way you set them. Off by default in settings.	Ketukan, tekan lama, geser, dan entri yang salah di Telegram tidak lagi membuat ponsel bergetar. Panggilan masuk tetap bergetar, dan notifikasi bergetar sesuai pengaturan Anda. Nonaktif secara default di pengaturan.
+Turn off reaction effects	Matikan efek reaksi
+When you or someone else reacts to a message, the emoji no longer flies across the screen and bursts. The reaction still shows on the message. Off by default in settings.	Saat Anda atau orang lain bereaksi pada pesan, emoji tidak lagi terbang melintasi layar dan meledak. Reaksinya tetap muncul di pesan. Nonaktif secara default di pengaturan.
+Hide folder tab counters	Sembunyikan penghitung tab folder
+The folder tabs above the chat list show just their names, without the number of unread chats. Chats stay unread and the app icon's badge doesn't change. Off by default in settings.	Tab folder di atas daftar obrolan hanya menampilkan namanya, tanpa jumlah obrolan yang belum dibaca. Obrolan tetap belum dibaca dan lencana ikon aplikasi tidak berubah. Nonaktif secara default di pengaturan.
+Hide sender names when forwarding	Sembunyikan nama pengirim saat meneruskan
+Each new forward starts with Telegram's Hide sender's name option turned on, so the copies arrive without the original author. You can still turn it off before sending, and article forwards follow Telegram's Premium rule. Off by default in settings.	Setiap penerusan baru dimulai dengan opsi Sembunyikan nama pengirim milik Telegram menyala, sehingga salinannya tiba tanpa pengirim aslinya. Anda tetap bisa mematikannya sebelum mengirim, dan artikel mengikuti aturan Premium Telegram. Nonaktif secara default di pengaturan.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Notifikasi

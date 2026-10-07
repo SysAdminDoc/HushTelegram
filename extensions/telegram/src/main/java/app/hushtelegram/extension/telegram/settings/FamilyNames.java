@@ -49,6 +49,11 @@ public final class FamilyNames {
     public static final String HIDE_PHONE_NUMBER = "Hide phone number";
     public static final String MESSAGE_SECONDS = "Message times with seconds";
     public static final String ALLOW_CHAT_BLUR = "Allow chat blur on slower phones";
+    public static final String VOICE_ONE_AT_A_TIME = "Play voice messages one at a time";
+    public static final String NO_HAPTICS = "Turn off haptic feedback";
+    public static final String REACTION_EFFECTS_OFF = "Turn off reaction effects";
+    public static final String HIDE_FOLDER_COUNTERS = "Hide folder tab counters";
+    public static final String FORWARD_HIDE_SENDER = "Hide sender names when forwarding";
     public static final String DISABLE_ANALYTICS = "Disable analytics";
     public static final String DISABLE_CALL_DEBUG = "Disable call debug upload";
     public static final String DISABLE_DRAFT_PREVIEWS = "Disable draft link previews";

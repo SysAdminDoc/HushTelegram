@@ -105,6 +105,11 @@ body:
         - Hide phone number
         - Message times with seconds
         - Allow chat blur on slower phones
+        - Play voice messages one at a time
+        - Turn off haptic feedback
+        - Turn off reaction effects
+        - Hide folder tab counters
+        - Hide sender names when forwarding
         - Strip link tracking
         - HushTelegram settings
     validations:

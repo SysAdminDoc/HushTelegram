@@ -32,6 +32,16 @@ Working version 0.0.11.
 
 * **Telegram:** A new Allow chat blur on slower phones switch, off by default, lets phones Telegram rates as slow turn on its blurred chat header and panels under Power saving.
 
+* **Telegram:** A new Play voice messages one at a time switch, off by default, stops Telegram playing the next voice or video message in a chat when one ends.
+
+* **Telegram:** A new Turn off haptic feedback switch, off by default, stops the vibration Telegram adds to taps, long presses, swipes and wrong entries. Incoming calls and notifications still vibrate.
+
+* **Telegram:** A new Turn off reaction effects switch, off by default, stops the fly-in and burst Telegram plays over the screen when you or someone else reacts. The reaction still lands on the message.
+
+* **Telegram:** A new Hide folder tab counters switch, off by default, takes the unread counts off the folder tabs above the chat list. Chats stay unread.
+
+* **Telegram:** A new Hide sender names when forwarding switch, off by default, starts each forward with Telegram's Hide sender's name option on. You can still turn it off before sending, and an article forward from an account without Premium keeps the sender, as Telegram requires.
+
 * **Telegram:** Disable pull to next channel has a second switch, Stop pull to next topic, off by default. With it on, pulling up at the bottom of a forum topic only scrolls instead of opening the next topic. Each switch covers only its own pull, and a switch flipped mid-drag counts when you let go.
 
 * **Telegram:** The beta target is now telegram.org's current 12.10.7 build, version code 71239, which replaced build 71179. Every patch applies and passes its fixture tests on it.

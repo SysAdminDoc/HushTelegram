@@ -70,6 +70,11 @@ public final class SettingsStatus {
     public static boolean hidePhoneNumber() { return false; }
     public static boolean messageSeconds() { return false; }
     public static boolean allowChatBlur() { return false; }
+    public static boolean voiceOneAtATime() { return false; }
+    public static boolean noHaptics() { return false; }
+    public static boolean reactionEffectsOff() { return false; }
+    public static boolean hideFolderCounters() { return false; }
+    public static boolean forwardHideSender() { return false; }
     public static boolean storyRequests() { return false; }
     public static boolean storyBar() { return false; }
     public static boolean storyCamera() { return false; }

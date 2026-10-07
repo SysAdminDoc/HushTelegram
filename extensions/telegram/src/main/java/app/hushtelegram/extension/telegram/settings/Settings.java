@@ -181,6 +181,36 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_allow_chat_blur", FALSE);
 
     /**
+     * A voice or video message stops when it ends instead of playing the next one.
+     */
+    public static final BooleanSetting VOICE_ONE_AT_A_TIME =
+            new BooleanSetting("hushtelegram_voice_one_at_a_time", FALSE);
+
+    /**
+     * Telegram stops vibrating for taps, long presses, swipes and wrong entries.
+     */
+    public static final BooleanSetting NO_HAPTICS =
+            new BooleanSetting("hushtelegram_no_haptics", FALSE);
+
+    /**
+     * Reactions land on the message without the fly-in and burst effect.
+     */
+    public static final BooleanSetting REACTION_EFFECTS_OFF =
+            new BooleanSetting("hushtelegram_reaction_effects_off", FALSE);
+
+    /**
+     * Folder tabs above the chat list show no unread counts.
+     */
+    public static final BooleanSetting HIDE_FOLDER_COUNTERS =
+            new BooleanSetting("hushtelegram_hide_folder_counters", FALSE);
+
+    /**
+     * Forwards start with Telegram's Hide sender's name option turned on.
+     */
+    public static final BooleanSetting FORWARD_HIDE_SENDER =
+            new BooleanSetting("hushtelegram_forward_hide_sender", FALSE);
+
+    /**
      * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
      * never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

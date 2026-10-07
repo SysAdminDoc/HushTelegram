@@ -406,6 +406,40 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "settings."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.VOICE_ONE_AT_A_TIME)) {
+                chats.addPreference(mark(toggle(context, Settings.VOICE_ONE_AT_A_TIME, L10n.t("Play voice messages one at a time"),
+                        PatchFamily.VOICE_ONE_AT_A_TIME.coverageSummary(L10n.t("When a voice or video message ends, the next one in the chat doesn't start on its own. "
+                                + "Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
+            if (build.contains(PatchFamily.NO_HAPTICS)) {
+                chats.addPreference(mark(toggle(context, Settings.NO_HAPTICS, L10n.t("Turn off haptic feedback"),
+                        PatchFamily.NO_HAPTICS.coverageSummary(L10n.t("Taps, long presses, swipes and wrong entries in Telegram stop vibrating the phone. "
+                                + "Incoming calls still vibrate, and notifications vibrate the way you set them. Off by "
+                                + "default in settings."))),
+                        SettingsIcons.CHAT));
+            }
+            if (build.contains(PatchFamily.REACTION_EFFECTS_OFF)) {
+                chats.addPreference(mark(toggle(context, Settings.REACTION_EFFECTS_OFF, L10n.t("Turn off reaction effects"),
+                        PatchFamily.REACTION_EFFECTS_OFF.coverageSummary(L10n.t("When you or someone else reacts to a message, the emoji no longer flies across the "
+                                + "screen and bursts. The reaction still shows on the message. Off by default in "
+                                + "settings."))),
+                        SettingsIcons.CHAT));
+            }
+            if (build.contains(PatchFamily.HIDE_FOLDER_COUNTERS)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_FOLDER_COUNTERS, L10n.t("Hide folder tab counters"),
+                        PatchFamily.HIDE_FOLDER_COUNTERS.coverageSummary(L10n.t("The folder tabs above the chat list show just their names, without the number of "
+                                + "unread chats. Chats stay unread and the app icon's badge doesn't change. Off by "
+                                + "default in settings."))),
+                        SettingsIcons.CHAT));
+            }
+            if (build.contains(PatchFamily.FORWARD_HIDE_SENDER)) {
+                chats.addPreference(mark(toggle(context, Settings.FORWARD_HIDE_SENDER, L10n.t("Hide sender names when forwarding"),
+                        PatchFamily.FORWARD_HIDE_SENDER.coverageSummary(L10n.t("Each new forward starts with Telegram's Hide sender's name option turned on, so the "
+                                + "copies arrive without the original author. You can still turn it off before sending, "
+                                + "and article forwards follow Telegram's Premium rule. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

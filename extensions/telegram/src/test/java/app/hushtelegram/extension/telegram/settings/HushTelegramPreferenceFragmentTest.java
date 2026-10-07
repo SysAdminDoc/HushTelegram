@@ -109,6 +109,11 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HIDE_PHONE_NUMBER, "Hide phone number");
         ROW_TITLES.put(PatchFamily.MESSAGE_SECONDS, "Message times with seconds");
         ROW_TITLES.put(PatchFamily.ALLOW_CHAT_BLUR, "Allow chat blur on slower phones");
+        ROW_TITLES.put(PatchFamily.VOICE_ONE_AT_A_TIME, "Play voice messages one at a time");
+        ROW_TITLES.put(PatchFamily.NO_HAPTICS, "Turn off haptic feedback");
+        ROW_TITLES.put(PatchFamily.REACTION_EFFECTS_OFF, "Turn off reaction effects");
+        ROW_TITLES.put(PatchFamily.HIDE_FOLDER_COUNTERS, "Hide folder tab counters");
+        ROW_TITLES.put(PatchFamily.FORWARD_HIDE_SENDER, "Hide sender names when forwarding");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -242,7 +247,12 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.SWIPE_BACK_ON_PROFILES)
                         || build.contains(PatchFamily.HIDE_PHONE_NUMBER)
                         || build.contains(PatchFamily.MESSAGE_SECONDS)
-                        || build.contains(PatchFamily.ALLOW_CHAT_BLUR)) expected.add("Chats");
+                        || build.contains(PatchFamily.ALLOW_CHAT_BLUR)
+                        || build.contains(PatchFamily.VOICE_ONE_AT_A_TIME)
+                        || build.contains(PatchFamily.NO_HAPTICS)
+                        || build.contains(PatchFamily.REACTION_EFFECTS_OFF)
+                        || build.contains(PatchFamily.HIDE_FOLDER_COUNTERS)
+                        || build.contains(PatchFamily.FORWARD_HIDE_SENDER)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
@@ -447,6 +457,44 @@ public class HushTelegramPreferenceFragmentTest {
             // Telegram rates the phone until the switch is turned on.
             assertFalse(Settings.ALLOW_CHAT_BLUR.key,
                     ((SwitchPreference) page.findPreference(Settings.ALLOW_CHAT_BLUR.key)).isChecked());
+            assertEquals("Play voice messages one at a time", String.valueOf(page.findPreference(Settings.VOICE_ONE_AT_A_TIME.key).getTitle()));
+            assertEquals("When a voice or video message ends, the next one in the chat doesn't start on its own. Off "
+                            + "by default in settings.",
+                    String.valueOf(page.findPreference(Settings.VOICE_ONE_AT_A_TIME.key).getSummary()));
+            // Telegram plays the next voice message until the switch is turned on.
+            assertFalse(Settings.VOICE_ONE_AT_A_TIME.key,
+                    ((SwitchPreference) page.findPreference(Settings.VOICE_ONE_AT_A_TIME.key)).isChecked());
+            assertEquals("Turn off haptic feedback", String.valueOf(page.findPreference(Settings.NO_HAPTICS.key).getTitle()));
+            assertEquals("Taps, long presses, swipes and wrong entries in Telegram stop vibrating the phone. "
+                            + "Incoming calls still vibrate, and notifications vibrate the way you set them. Off by "
+                            + "default in settings.",
+                    String.valueOf(page.findPreference(Settings.NO_HAPTICS.key).getSummary()));
+            // Telegram vibrates until the switch is turned on.
+            assertFalse(Settings.NO_HAPTICS.key,
+                    ((SwitchPreference) page.findPreference(Settings.NO_HAPTICS.key)).isChecked());
+            assertEquals("Turn off reaction effects", String.valueOf(page.findPreference(Settings.REACTION_EFFECTS_OFF.key).getTitle()));
+            assertEquals("When you or someone else reacts to a message, the emoji no longer flies across the screen "
+                            + "and bursts. The reaction still shows on the message. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.REACTION_EFFECTS_OFF.key).getSummary()));
+            // Reaction effects play until the switch is turned on.
+            assertFalse(Settings.REACTION_EFFECTS_OFF.key,
+                    ((SwitchPreference) page.findPreference(Settings.REACTION_EFFECTS_OFF.key)).isChecked());
+            assertEquals("Hide folder tab counters", String.valueOf(page.findPreference(Settings.HIDE_FOLDER_COUNTERS.key).getTitle()));
+            assertEquals("The folder tabs above the chat list show just their names, without the number of unread "
+                            + "chats. Chats stay unread and the app icon's badge doesn't change. Off by default in "
+                            + "settings.",
+                    String.valueOf(page.findPreference(Settings.HIDE_FOLDER_COUNTERS.key).getSummary()));
+            // Folder tabs show their counts until the switch is turned on.
+            assertFalse(Settings.HIDE_FOLDER_COUNTERS.key,
+                    ((SwitchPreference) page.findPreference(Settings.HIDE_FOLDER_COUNTERS.key)).isChecked());
+            assertEquals("Hide sender names when forwarding", String.valueOf(page.findPreference(Settings.FORWARD_HIDE_SENDER.key).getTitle()));
+            assertEquals("Each new forward starts with Telegram's Hide sender's name option turned on, so the copies "
+                            + "arrive without the original author. You can still turn it off before sending, and article "
+                            + "forwards follow Telegram's Premium rule. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.FORWARD_HIDE_SENDER.key).getSummary()));
+            // Forwards show the sender until the switch is turned on.
+            assertFalse(Settings.FORWARD_HIDE_SENDER.key,
+                    ((SwitchPreference) page.findPreference(Settings.FORWARD_HIDE_SENDER.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {
