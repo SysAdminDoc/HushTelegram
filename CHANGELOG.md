@@ -12,7 +12,7 @@ Working version 0.0.11.
 
 * **Telegram:** A new Use system font switch, off by default, draws Telegram's bold and italic text in your phone's own font instead of the Roboto files the app carries, so headings match the rest of the text on a phone with a custom font. Code blocks take the phone's monospace font. Some number displays and Instant View pages keep Telegram's fonts. A change takes effect after Telegram restarts.
 
-* **Telegram:** A new AMOLED black switch, off by default, turns the backgrounds of Telegram's Night and Dark themes pure black, which looks deeper on an OLED screen. Message bubbles and pop-up menus keep the theme's colors, and a theme you've installed from a file stays as it is. A change takes effect after Telegram restarts.
+* **Telegram:** A new AMOLED black switch, off by default, turns the screens of Telegram's Night and Dark themes pure black, which looks deeper on an OLED screen. Message bubbles, pop-up menus and patterned chat wallpapers keep the theme's colors, and a theme you've installed from a file stays as it is. A change takes effect after Telegram restarts.
 
 * **Telegram:** A new Hide translate bar switch, off by default, takes the translate bar off the top of chats in another language. Translate is still in the chat's menu, and a chat you're translating keeps its bar so the original is one tap away.
 

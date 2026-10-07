@@ -49,7 +49,7 @@ internal val THEME_FILE_PARAMETERS = listOf(FILE, STRING, "[$STRING")
 @Suppress("unused")
 val amoledBlackPatch = bytecodePatch(
     name = "AMOLED black",
-    description = "Adds a switch, off by default, that turns the backgrounds of Telegram's Night and Tinted Night themes pure black. Message bubbles, menus and pop-up sheets keep the theme's colors. A change takes effect after Telegram restarts.",
+    description = "Adds a switch, off by default, that turns the screens of Telegram's Night and Dark themes pure black. Message bubbles, pop-up menus and patterned chat wallpapers keep the theme's colors. A change takes effect after Telegram restarts.",
     default = true,
 ) {
     category("Chats")

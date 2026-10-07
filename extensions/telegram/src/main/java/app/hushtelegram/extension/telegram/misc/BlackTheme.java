@@ -14,8 +14,9 @@ import app.hushtelegram.extension.telegram.settings.Settings;
 /**
  * Telegram reads a theme's colors from a key=value file, the built-in ones from its assets, and
  * hands each set here before using it. With the switch on, a dark built-in theme (Night, or Dark,
- * which was Tinted Night) gets pure black for its screens, bars and chat background. Bubbles, menus, dialogs and text
- * keep the theme's colors.
+ * which was Tinted Night) gets pure black for its screens and bars, and for a plain chat background. Bubbles, menus,
+ * dialogs and text keep the theme's colors, and so does a patterned chat wallpaper, which takes its colors from the
+ * theme's accent rather than from this file.
  *
  * <p>A theme installed from a file keeps its own colors: the theme editor and a new chat background
  * can save the colors in use back to that file, and black written there would outlast the switch.
