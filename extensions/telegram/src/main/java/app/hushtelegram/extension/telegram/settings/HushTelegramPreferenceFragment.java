@@ -385,6 +385,26 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "still moves forward. Off by default in settings."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.HIDE_PHONE_NUMBER)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_PHONE_NUMBER, L10n.t("Hide phone number"),
+                        PatchFamily.HIDE_PHONE_NUMBER.coverageSummary(L10n.t("Your own phone number shows as dots in the side menu, Settings, your profile and "
+                                + "anywhere else Telegram displays it, which helps with screenshots and screen sharing. "
+                                + "Other people's numbers stay visible. Off by default in settings."))),
+                        SettingsIcons.BLOCK));
+            }
+            if (build.contains(PatchFamily.MESSAGE_SECONDS)) {
+                chats.addPreference(mark(toggle(context, Settings.MESSAGE_SECONDS, L10n.t("Message times with seconds"),
+                        PatchFamily.MESSAGE_SECONDS.coverageSummary(L10n.t("The time on each message shows seconds too, like 9:41:27 PM, so messages sent close "
+                                + "together are easy to tell apart. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
+            if (build.contains(PatchFamily.ALLOW_CHAT_BLUR)) {
+                chats.addPreference(mark(toggle(context, Settings.ALLOW_CHAT_BLUR, L10n.t("Allow chat blur on slower phones"),
+                        PatchFamily.ALLOW_CHAT_BLUR.coverageSummary(L10n.t("Telegram only blurs the chat header and panels on phones it rates as fast. This lets "
+                                + "any phone use it once Blur in chat is on under Power saving. Off by default in "
+                                + "settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

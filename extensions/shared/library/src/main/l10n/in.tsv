@@ -251,6 +251,12 @@ Keep videos muted on volume keys	Biarkan video tanpa suara saat tombol volume di
 Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.	Tombol volume di obrolan mengubah volume, bukan memutar video atau video bulat di layar dengan suara. Ketuk video untuk mendengarnya. Nonaktif secara default di pengaturan.
 Swipe back on profiles	Geser kembali di profil
 A swipe to the right on a profile's photos or media tabs goes back, like it does on the rest of the profile, instead of showing the previous photo or tab. Swiping left still moves forward. Off by default in settings.	Geser ke kanan pada foto atau tab media profil akan kembali, seperti di bagian profil lainnya, bukan menampilkan foto atau tab sebelumnya. Geser ke kiri tetap maju. Nonaktif secara default di pengaturan.
+Hide phone number	Sembunyikan nomor telepon
+Your own phone number shows as dots in the side menu, Settings, your profile and anywhere else Telegram displays it, which helps with screenshots and screen sharing. Other people's numbers stay visible. Off by default in settings.	Nomor teleponmu sendiri tampil sebagai titik di menu samping, Pengaturan, profilmu, dan di mana pun Telegram menampilkannya, berguna untuk tangkapan layar dan berbagi layar. Nomor orang lain tetap terlihat. Nonaktif secara default di pengaturan.
+Message times with seconds	Waktu pesan dengan detik
+The time on each message shows seconds too, like 9:41:27 PM, so messages sent close together are easy to tell apart. Off by default in settings.	Waktu di setiap pesan juga menampilkan detik, misalnya 21:41:27, sehingga pesan yang dikirim berdekatan mudah dibedakan. Nonaktif secara default di pengaturan.
+Allow chat blur on slower phones	Izinkan blur obrolan di ponsel yang lebih lambat
+Telegram only blurs the chat header and panels on phones it rates as fast. This lets any phone use it once Blur in chat is on under Power saving. Off by default in settings.	Telegram hanya memburamkan header dan panel obrolan di ponsel yang dianggapnya cepat. Ini membuat ponsel mana pun bisa memakainya setelah Blur di obrolan dinyalakan di Hemat daya. Nonaktif secara default di pengaturan.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Notifikasi

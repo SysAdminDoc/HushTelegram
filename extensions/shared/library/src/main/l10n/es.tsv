@@ -251,6 +251,12 @@ Keep videos muted on volume keys	Mantener videos sin sonido con las teclas de vo
 Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.	Las teclas de volumen en un chat cambian el volumen en vez de reproducir con sonido el video o videomensaje en pantalla. Toca un video para escucharlo. Desactivado por defecto en los ajustes.
 Swipe back on profiles	Deslizar para volver en perfiles
 A swipe to the right on a profile's photos or media tabs goes back, like it does on the rest of the profile, instead of showing the previous photo or tab. Swiping left still moves forward. Off by default in settings.	Deslizar a la derecha sobre las fotos o las pestañas de multimedia de un perfil vuelve atrás, como en el resto del perfil, en vez de mostrar la foto o la pestaña anterior. Deslizar a la izquierda sigue avanzando. Desactivado por defecto en los ajustes.
+Hide phone number	Ocultar número de teléfono
+Your own phone number shows as dots in the side menu, Settings, your profile and anywhere else Telegram displays it, which helps with screenshots and screen sharing. Other people's numbers stay visible. Off by default in settings.	Tu propio número aparece como puntos en el menú lateral, los ajustes, tu perfil y en cualquier otro lugar donde Telegram lo muestre, algo útil para capturas y para compartir pantalla. Los números de los demás siguen visibles. Desactivado por defecto en los ajustes.
+Message times with seconds	Hora de los mensajes con segundos
+The time on each message shows seconds too, like 9:41:27 PM, so messages sent close together are easy to tell apart. Off by default in settings.	La hora de cada mensaje también muestra los segundos, como 21:41:27, para distinguir fácilmente mensajes enviados casi a la vez. Desactivado por defecto en los ajustes.
+Allow chat blur on slower phones	Permitir el desenfoque del chat en teléfonos más lentos
+Telegram only blurs the chat header and panels on phones it rates as fast. This lets any phone use it once Blur in chat is on under Power saving. Off by default in settings.	Telegram solo desenfoca la cabecera y los paneles del chat en teléfonos que considera rápidos. Así cualquier teléfono puede usarlo cuando Desenfoque en el chat está activado en Ahorro de energía. Desactivado por defecto en los ajustes.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Notificaciones

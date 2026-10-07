@@ -251,6 +251,12 @@ Keep videos muted on volume keys	Videos bei Lautstärketasten stumm lassen
 Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.	Die Lautstärketasten ändern in einem Chat die Lautstärke, statt das Video oder Rundvideo auf dem Bildschirm mit Ton abzuspielen. Tippe auf ein Video, um es zu hören. In den Einstellungen standardmäßig ausgeschaltet.
 Swipe back on profiles	Auf Profilen zurückwischen
 A swipe to the right on a profile's photos or media tabs goes back, like it does on the rest of the profile, instead of showing the previous photo or tab. Swiping left still moves forward. Off by default in settings.	Ein Wisch nach rechts auf den Fotos oder Medien-Tabs eines Profils geht zurück, wie überall sonst auf dem Profil, statt das vorige Foto oder den vorigen Tab zu zeigen. Nach links wischen geht weiterhin vorwärts. In den Einstellungen standardmäßig ausgeschaltet.
+Hide phone number	Telefonnummer ausblenden
+Your own phone number shows as dots in the side menu, Settings, your profile and anywhere else Telegram displays it, which helps with screenshots and screen sharing. Other people's numbers stay visible. Off by default in settings.	Deine eigene Telefonnummer erscheint als Punkte im Seitenmenü, in den Einstellungen, in deinem Profil und überall sonst, wo Telegram sie zeigt. Praktisch für Screenshots und Bildschirmfreigaben. Die Nummern anderer bleiben sichtbar. In den Einstellungen standardmäßig ausgeschaltet.
+Message times with seconds	Nachrichtenzeit mit Sekunden
+The time on each message shows seconds too, like 9:41:27 PM, so messages sent close together are easy to tell apart. Off by default in settings.	Die Uhrzeit an jeder Nachricht zeigt auch die Sekunden, etwa 21:41:27, damit kurz nacheinander gesendete Nachrichten leicht zu unterscheiden sind. In den Einstellungen standardmäßig ausgeschaltet.
+Allow chat blur on slower phones	Chat-Unschärfe auf langsameren Handys erlauben
+Telegram only blurs the chat header and panels on phones it rates as fast. This lets any phone use it once Blur in chat is on under Power saving. Off by default in settings.	Telegram macht Chat-Kopfzeile und Leisten nur auf Handys unscharf, die es als schnell einstuft. Damit kann jedes Handy das nutzen, sobald Unschärfe im Chat unter Energiesparen an ist. In den Einstellungen standardmäßig ausgeschaltet.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Benachrichtigungen

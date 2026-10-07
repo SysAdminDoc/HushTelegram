@@ -251,6 +251,12 @@ Keep videos muted on volume keys	Ses tuşlarında videoları sessiz tut
 Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.	Bir sohbetteki ses tuşları, ekrandaki videoyu veya yuvarlak videoyu sesli oynatmak yerine sesi değiştirir. Duymak için videoya dokun. Ayarlarda varsayılan olarak kapalıdır.
 Swipe back on profiles	Profillerde geri kaydır
 A swipe to the right on a profile's photos or media tabs goes back, like it does on the rest of the profile, instead of showing the previous photo or tab. Swiping left still moves forward. Off by default in settings.	Bir profilin fotoğraflarında veya medya sekmelerinde sağa kaydırmak, önceki fotoğrafı veya sekmeyi göstermek yerine profilin geri kalanında olduğu gibi geri gider. Sola kaydırmak yine ileri gider. Ayarlarda varsayılan olarak kapalıdır.
+Hide phone number	Telefon numarasını gizle
+Your own phone number shows as dots in the side menu, Settings, your profile and anywhere else Telegram displays it, which helps with screenshots and screen sharing. Other people's numbers stay visible. Off by default in settings.	Kendi telefon numaran yan menüde, Ayarlarda, profilinde ve Telegram'ın gösterdiği her yerde nokta olarak görünür. Ekran görüntüleri ve ekran paylaşımı için kullanışlıdır. Başkalarının numaraları görünür kalır. Ayarlarda varsayılan olarak kapalıdır.
+Message times with seconds	Saniyeli mesaj saati
+The time on each message shows seconds too, like 9:41:27 PM, so messages sent close together are easy to tell apart. Off by default in settings.	Her mesajın saati saniyeleri de gösterir, örneğin 21:41:27, böylece art arda gönderilen mesajlar kolayca ayırt edilir. Ayarlarda varsayılan olarak kapalıdır.
+Allow chat blur on slower phones	Daha yavaş telefonlarda sohbet bulanıklığına izin ver
+Telegram only blurs the chat header and panels on phones it rates as fast. This lets any phone use it once Blur in chat is on under Power saving. Off by default in settings.	Telegram sohbet başlığını ve panelleri yalnızca hızlı saydığı telefonlarda bulanıklaştırır. Bu, Güç tasarrufu altında Sohbette bulanıklık açıldığında her telefonun bunu kullanmasını sağlar. Ayarlarda varsayılan olarak kapalıdır.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Bildirimler

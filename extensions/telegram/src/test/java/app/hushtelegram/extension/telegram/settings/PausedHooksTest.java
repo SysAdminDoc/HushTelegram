@@ -243,6 +243,15 @@ public class PausedHooksTest {
         // A swipe on a profile's photos goes back.
         probes.put(PatchFamily.SWIPE_BACK_ON_PROFILES, Collections.singletonList(
                 () -> !app.hushtelegram.extension.telegram.misc.SwipeBack.touchBlocks(true)));
+        // Your own number gets covered.
+        probes.put(PatchFamily.HIDE_PHONE_NUMBER, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.HidePhoneForTests.covers()));
+        // Message times get their seconds.
+        probes.put(PatchFamily.MESSAGE_SECONDS, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.MessageTimeForTests.addsSeconds()));
+        // Any phone may blur chats.
+        probes.put(PatchFamily.ALLOW_CHAT_BLUR, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.ChatBlur.allowed()));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),

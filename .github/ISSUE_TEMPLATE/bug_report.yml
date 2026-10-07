@@ -102,6 +102,9 @@ body:
         - Hide keyboard on scroll
         - Keep videos muted on volume keys
         - Swipe back on profiles
+        - Hide phone number
+        - Message times with seconds
+        - Allow chat blur on slower phones
         - Strip link tracking
         - HushTelegram settings
     validations:

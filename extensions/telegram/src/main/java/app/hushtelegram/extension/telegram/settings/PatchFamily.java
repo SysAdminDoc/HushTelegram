@@ -77,6 +77,9 @@ public enum PatchFamily {
     HIDE_KEYBOARD_ON_SCROLL(FamilyNames.HIDE_KEYBOARD_ON_SCROLL, "hideKeyboardOnScroll", null, Settings.HIDE_KEYBOARD_ON_SCROLL),
     KEEP_VIDEOS_MUTED(FamilyNames.KEEP_VIDEOS_MUTED, "keepVideosMuted", null, Settings.KEEP_VIDEOS_MUTED),
     SWIPE_BACK_ON_PROFILES(FamilyNames.SWIPE_BACK_ON_PROFILES, "swipeBackOnProfiles", null, Settings.SWIPE_BACK_ON_PROFILES),
+    HIDE_PHONE_NUMBER(FamilyNames.HIDE_PHONE_NUMBER, "hidePhoneNumber", null, Settings.HIDE_PHONE_NUMBER),
+    MESSAGE_SECONDS(FamilyNames.MESSAGE_SECONDS, "messageSeconds", null, Settings.MESSAGE_SECONDS),
+    ALLOW_CHAT_BLUR(FamilyNames.ALLOW_CHAT_BLUR, "allowChatBlur", null, Settings.ALLOW_CHAT_BLUR),
     DISABLE_ANALYTICS(FamilyNames.DISABLE_ANALYTICS, "disableAnalytics", null,
             Settings.DISABLE_ANALYTICS),
     DISABLE_CALL_DEBUG(FamilyNames.DISABLE_CALL_DEBUG, "disableCallDebug", null,
@@ -141,7 +144,7 @@ public enum PatchFamily {
     /** The families whose switches the Chats page holds. The page and its home row both read this. */
     static final Set<PatchFamily> CHATS_PAGE = Collections.unmodifiableSet(EnumSet.of(HIDE_ADS, HIDE_STORIES,
             HIDE_RECOMMENDATIONS, HIDE_COMMERCE, HIDE_PROMOTIONAL_BANNERS, HIDE_SPONSORED_PROXY, HIDE_POPULAR_APPS, HIDE_CONTACTS_BLOCK, HIDE_GREETING_STICKERS, DISABLE_CHAT_SWIPE, DISABLE_CHANNEL_PULL, NORMAL_PASTE, SHOW_LOCAL_IDS, DISABLE_DOUBLE_TAP_REACTIONS,
-            QUIET_CONTACTS_NAG, HOLIDAY_LOOK, USE_SYSTEM_FONT, AMOLED_BLACK, HIDE_TRANSLATE_BAR, EXACT_NUMBERS, REVEAL_SPOILERS, HIDE_KEYBOARD_ON_SCROLL, KEEP_VIDEOS_MUTED, SWIPE_BACK_ON_PROFILES));
+            QUIET_CONTACTS_NAG, HOLIDAY_LOOK, USE_SYSTEM_FONT, AMOLED_BLACK, HIDE_TRANSLATE_BAR, EXACT_NUMBERS, REVEAL_SPOILERS, HIDE_KEYBOARD_ON_SCROLL, KEEP_VIDEOS_MUTED, SWIPE_BACK_ON_PROFILES, HIDE_PHONE_NUMBER, MESSAGE_SECONDS, ALLOW_CHAT_BLUR));
 
     /** Each independent hook, its owning family and the flag set only after it was inserted. */
     public enum Capability {

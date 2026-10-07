@@ -106,6 +106,9 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HIDE_KEYBOARD_ON_SCROLL, "Hide keyboard on scroll");
         ROW_TITLES.put(PatchFamily.KEEP_VIDEOS_MUTED, "Keep videos muted on volume keys");
         ROW_TITLES.put(PatchFamily.SWIPE_BACK_ON_PROFILES, "Swipe back on profiles");
+        ROW_TITLES.put(PatchFamily.HIDE_PHONE_NUMBER, "Hide phone number");
+        ROW_TITLES.put(PatchFamily.MESSAGE_SECONDS, "Message times with seconds");
+        ROW_TITLES.put(PatchFamily.ALLOW_CHAT_BLUR, "Allow chat blur on slower phones");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -236,7 +239,10 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.REVEAL_SPOILERS)
                         || build.contains(PatchFamily.HIDE_KEYBOARD_ON_SCROLL)
                         || build.contains(PatchFamily.KEEP_VIDEOS_MUTED)
-                        || build.contains(PatchFamily.SWIPE_BACK_ON_PROFILES)) expected.add("Chats");
+                        || build.contains(PatchFamily.SWIPE_BACK_ON_PROFILES)
+                        || build.contains(PatchFamily.HIDE_PHONE_NUMBER)
+                        || build.contains(PatchFamily.MESSAGE_SECONDS)
+                        || build.contains(PatchFamily.ALLOW_CHAT_BLUR)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
@@ -419,6 +425,28 @@ public class HushTelegramPreferenceFragmentTest {
             // The profile keeps its swipes until the switch is turned on.
             assertFalse(Settings.SWIPE_BACK_ON_PROFILES.key,
                     ((SwitchPreference) page.findPreference(Settings.SWIPE_BACK_ON_PROFILES.key)).isChecked());
+            assertEquals("Hide phone number", String.valueOf(page.findPreference(Settings.HIDE_PHONE_NUMBER.key).getTitle()));
+            assertEquals("Your own phone number shows as dots in the side menu, Settings, your profile and anywhere "
+                            + "else Telegram displays it, which helps with screenshots and screen sharing. Other people's "
+                            + "numbers stay visible. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.HIDE_PHONE_NUMBER.key).getSummary()));
+            // Your number shows until the switch is turned on.
+            assertFalse(Settings.HIDE_PHONE_NUMBER.key,
+                    ((SwitchPreference) page.findPreference(Settings.HIDE_PHONE_NUMBER.key)).isChecked());
+            assertEquals("Message times with seconds", String.valueOf(page.findPreference(Settings.MESSAGE_SECONDS.key).getTitle()));
+            assertEquals("The time on each message shows seconds too, like 9:41:27 PM, so messages sent close "
+                            + "together are easy to tell apart. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.MESSAGE_SECONDS.key).getSummary()));
+            // Message times keep Telegram's format until the switch is turned on.
+            assertFalse(Settings.MESSAGE_SECONDS.key,
+                    ((SwitchPreference) page.findPreference(Settings.MESSAGE_SECONDS.key)).isChecked());
+            assertEquals("Allow chat blur on slower phones", String.valueOf(page.findPreference(Settings.ALLOW_CHAT_BLUR.key).getTitle()));
+            assertEquals("Telegram only blurs the chat header and panels on phones it rates as fast. This lets any "
+                            + "phone use it once Blur in chat is on under Power saving. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.ALLOW_CHAT_BLUR.key).getSummary()));
+            // Telegram rates the phone until the switch is turned on.
+            assertFalse(Settings.ALLOW_CHAT_BLUR.key,
+                    ((SwitchPreference) page.findPreference(Settings.ALLOW_CHAT_BLUR.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {

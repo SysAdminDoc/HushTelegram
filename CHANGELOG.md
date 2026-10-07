@@ -26,6 +26,12 @@ Working version 0.0.11.
 
 * **Telegram:** A new Swipe back on profiles switch, off by default, lets a swipe to the right on a profile's photos or media tabs go back instead of flipping to the previous photo or tab.
 
+* **Telegram:** A new Hide phone number switch, off by default, shows your own number as dots in the side menu, Settings, your profile and everywhere else Telegram displays it. Handy for screenshots. Other people's numbers stay visible.
+
+* **Telegram:** A new Message times with seconds switch, off by default, adds seconds to the time on each message, like 9:41:27 PM.
+
+* **Telegram:** A new Allow chat blur on slower phones switch, off by default, lets phones Telegram rates as slow turn on its blurred chat header and panels under Power saving.
+
 * **Telegram:** Disable pull to next channel has a second switch, Stop pull to next topic, off by default. With it on, pulling up at the bottom of a forum topic only scrolls instead of opening the next topic. Each switch covers only its own pull, and a switch flipped mid-drag counts when you let go.
 
 * **Telegram:** The beta target is now telegram.org's current 12.10.7 build, version code 71239, which replaced build 71179. Every patch applies and passes its fixture tests on it.

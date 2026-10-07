@@ -46,6 +46,9 @@ public final class FamilyNames {
     public static final String HIDE_KEYBOARD_ON_SCROLL = "Hide keyboard on scroll";
     public static final String KEEP_VIDEOS_MUTED = "Keep videos muted on volume keys";
     public static final String SWIPE_BACK_ON_PROFILES = "Swipe back on profiles";
+    public static final String HIDE_PHONE_NUMBER = "Hide phone number";
+    public static final String MESSAGE_SECONDS = "Message times with seconds";
+    public static final String ALLOW_CHAT_BLUR = "Allow chat blur on slower phones";
     public static final String DISABLE_ANALYTICS = "Disable analytics";
     public static final String DISABLE_CALL_DEBUG = "Disable call debug upload";
     public static final String DISABLE_DRAFT_PREVIEWS = "Disable draft link previews";
