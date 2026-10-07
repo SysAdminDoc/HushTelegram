@@ -399,8 +399,9 @@ public class PatchFamilyTest {
         for (Map.Entry<PatchFamily, Set<PatchFamily.Capability>> entry : expected.entrySet()) {
             PatchFamily family = entry.getKey();
             assertEquals(entry.getValue(), family.expectedCapabilities());
-            assertEquals(1, family.switches.size());
-            assertFalse(family.switches.get(0).defaultValue);
+            // Show user and chat IDs carries a second switch, for the profile's data center.
+            assertEquals(family == PatchFamily.SHOW_LOCAL_IDS ? 2 : 1, family.switches.size());
+            for (BooleanSetting setting : family.switches) assertFalse(setting.key, setting.defaultValue);
             for (PatchFamily.Capability only : entry.getValue()) {
                 PatchFamily.capabilitiesForTests = EnumSet.of(only);
                 assertEquals(EnumSet.of(only), family.installedCapabilities());

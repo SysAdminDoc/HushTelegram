@@ -63,7 +63,7 @@ public enum PatchFamily {
     DISABLE_CHANNEL_PULL(FamilyNames.DISABLE_CHANNEL_PULL, "disableChannelPull", null,
             Settings.DISABLE_CHANNEL_PULL, Settings.DISABLE_TOPIC_PULL),
     NORMAL_PASTE(FamilyNames.NORMAL_PASTE, "normalPaste", null, Settings.NORMAL_PASTE),
-    SHOW_LOCAL_IDS(FamilyNames.SHOW_LOCAL_IDS, "showLocalIds", null, Settings.SHOW_LOCAL_IDS),
+    SHOW_LOCAL_IDS(FamilyNames.SHOW_LOCAL_IDS, "showLocalIds", null, Settings.SHOW_LOCAL_IDS, Settings.PROFILE_DATA_CENTER),
     DISABLE_DOUBLE_TAP_REACTIONS(FamilyNames.DISABLE_DOUBLE_TAP_REACTIONS, "disableDoubleTapReactions", null, Settings.DISABLE_DOUBLE_TAP_REACTIONS),
     QUIET_CONTACTS_NAG(FamilyNames.QUIET_CONTACTS_NAG, "quietContactsNag", null,
             Settings.QUIET_CONTACTS_NAG),

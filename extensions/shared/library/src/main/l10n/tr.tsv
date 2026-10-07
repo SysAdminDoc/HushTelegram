@@ -299,6 +299,8 @@ Show user and chat IDs	Kullanıcı ve sohbet kimliklerini göster
 Disable double-tap reactions	Çift dokunma tepkilerini kapat
 Pastes text without Telegram's HTML, table or monospace conversion. Whitespace and URLs stay intact. Other clipboard actions stay available. Off by default in settings.	Metni Telegram'ın HTML, tablo veya eş aralıklı yazı dönüşümü olmadan yapıştırır. Boşluklar ve URL'ler korunur. Diğer pano işlemleri kullanılabilir. Ayarlarda varsayılan olarak kapalıdır.
 Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.	Açılan profilin menüsünde kopyalanabilir yerel kullanıcı veya sohbet kimliğini gösterir. Erişim karmaları gizli kalır. Sunucu isteği eklenmez. Ayarlarda varsayılan olarak kapalıdır.
+Show profile data center	Profilin veri merkezini göster
+A profile's menu also shows which of Telegram's data centers, 1 to 5, holds the profile photo. A profile without a photo shows none, and no server request is added. Off by default in settings.	Bir profilin menüsü, profil fotoğrafının Telegram'ın 1 ile 5 arasındaki hangi veri merkezinde durduğunu da gösterir. Fotoğrafı olmayan bir profilde gösterilmez ve sunucuya ek istek gönderilmez. Ayarlarda varsayılan olarak kapalıdır.
 Double taps don't add reactions in chats or the reaction-settings preview. Scrolling, taps, selection and explicit reaction menus stay as they are. Off by default in settings.	Çift dokunma sohbetlerde veya tepki önizlemesinde tepki eklemez. Kaydırma, dokunma, seçim ve tepki menüleri aynı kalır. Ayarlarda varsayılan olarak kapalıdır.
 compose text paste	mesaj yazarken metin yapıştırma
 caption text paste	açıklama metni yapıştırma
@@ -311,3 +313,6 @@ Copy user ID %1$s	Kullanıcı kimliğini kopyala %1$s
 Copy chat ID %1$s	Sohbet kimliğini kopyala %1$s
 ID	Kimlik
 ID copied	Kimlik kopyalandı
+Data center %1$s	Veri merkezi %1$s
+Copy data center %1$s	Veri merkezini kopyala %1$s
+Data center copied	Veri merkezi kopyalandı

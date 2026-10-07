@@ -47,12 +47,13 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(600);
+        Map<String, String> table = new HashMap<>(610);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
         fillDe3(table);
         fillDe4(table);
+        fillDe5(table);
         return table;
     }
 
@@ -83,6 +84,8 @@ public final class L10nTranslations {
                 "Eine Datei namens %1$s in %2$s hat HushTelegram pausiert.");
         table.put("A private message from someone who isn't in your contacts still shows a notification, just without sound or vibration. Bots, reminders and Telegram's login codes keep their sound. Off by default in settings.",
                 "Eine private Nachricht von jemandem, der nicht in deinen Kontakten ist, zeigt weiter eine Benachrichtigung, nur ohne Ton und Vibration. Bots, Erinnerungen und Telegrams Anmeldecodes behalten ihren Ton. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
+        table.put("A profile's menu also shows which of Telegram's data centers, 1 to 5, holds the profile photo. A profile without a photo shows none, and no server request is added. Off by default in settings.",
+                "Das Men\u00fc eines Profils zeigt zus\u00e4tzlich, in welchem Telegram-Rechenzentrum, 1 bis 5, das Profilbild liegt. Ein Profil ohne Bild zeigt keins, und es kommt keine Serveranfrage hinzu. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("A short chat list no longer lists your contacts on Telegram under it, with their heading and loading rows. Your chats, folders, contact sync and search stay. Off by default in settings.",
                 "Unter einer kurzen Chatliste stehen deine Kontakte auf Telegram nicht mehr, auch nicht ihre \u00dcberschrift und Ladezeilen. Deine Chats, Ordner, die Kontaktsynchronisierung und die Suche bleiben. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
@@ -163,6 +166,8 @@ public final class L10nTranslations {
                 "Kurzen Bericht in die Zwischenablage kopieren.");
         table.put("Copy chat ID %1$s",
                 "Chat-ID %1$s kopieren");
+        table.put("Copy data center %1$s",
+                "Rechenzentrum %1$s kopieren");
         table.put("Copy quick report",
                 "Kurzbericht kopieren");
         table.put("Copy user ID %1$s",
@@ -173,13 +178,13 @@ public final class L10nTranslations {
                 "Die Einstellungen lie\u00dfen sich nicht importieren. Es wurde nichts ge\u00e4ndert.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "Diese Datei lie\u00df sich nicht \u00f6ffnen. Es wurde nichts ge\u00e4ndert.");
+    }
+
+    private static void fillDe1(Map<String, String> table) {
         table.put("Couldn't open the file picker. Try again.",
                 "Die Dateiauswahl lie\u00df sich nicht \u00f6ffnen. Versuche es noch einmal.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "Die Diagnosedaten lie\u00dfen sich nicht wiederherstellen. Versuche es noch einmal.");
-    }
-
-    private static void fillDe1(Map<String, String> table) {
         table.put("Couldn't reach GitHub. Try again later.",
                 "GitHub war nicht erreichbar. Versuche es sp\u00e4ter noch einmal.");
         table.put("Couldn't save the settings file. Try again.",
@@ -190,6 +195,10 @@ public final class L10nTranslations {
                 "Der Export des Berichts lie\u00df sich nicht starten. Versuche es gleich noch einmal.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "HushTelegram lie\u00df sich nicht wieder einschalten. Versuche es noch einmal.");
+        table.put("Data center %1$s",
+                "Rechenzentrum %1$s");
+        table.put("Data center copied",
+                "Rechenzentrum kopiert");
         table.put("Debug logging",
                 "Debug-Protokollierung");
         table.put("Diagnostic data cleared. Tap again to put it back.",
@@ -292,6 +301,9 @@ public final class L10nTranslations {
                 "HushTelegram-Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
         table.put("HushTelegram turns back on when Telegram restarts.",
                 "HushTelegram ist wieder aktiv, sobald Telegram neu startet.");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("ID",
                 "ID");
         table.put("ID copied",
@@ -300,9 +312,6 @@ public final class L10nTranslations {
                 "Importieren");
         table.put("Import settings",
                 "Einstellungen importieren");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("Importing settings",
                 "Einstellungen werden importiert");
         table.put("It targets Telegram %1$s.",
@@ -415,6 +424,9 @@ public final class L10nTranslations {
                 "Einstellungsdatei wird gespeichert");
         table.put("Search settings",
                 "Einstellungen suchen");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.",
                 "Der Apps-Tab der Suche l\u00e4sst die Liste Beliebte Apps von Telegram samt \u00dcberschrift und Ladezeilen weg, und Telegram fragt sie nicht ab. Von dir ge\u00f6ffnete Apps und andere Ergebnisse bleiben.");
         table.put("Selecting links by hand",
@@ -423,9 +435,6 @@ public final class L10nTranslations {
                 "Beim Patchen festgelegt");
         table.put("Settings backup",
                 "Sicherung der Einstellungen");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Settings couldn't open",
                 "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -442,6 +451,8 @@ public final class L10nTranslations {
                 "Einstellungen importiert. %1$d Schalter wurden ge\u00e4ndert.");
         table.put("Settings sales rows",
                 "Verkaufsangebote in den Einstellungen");
+        table.put("Show profile data center",
+                "Rechenzentrum im Profil anzeigen");
         table.put("Show user and chat IDs",
                 "Benutzer- und Chat-IDs anzeigen");
         table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
@@ -536,6 +547,9 @@ public final class L10nTranslations {
                 "Es gibt keine Diagnosedaten zum L\u00f6schen.");
         table.put("There's no diagnostic data to put back.",
                 "Es gibt keine Diagnosedaten zum Wiederherstellen.");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("This build covers %1$s. Missing coverage: %2$s.",
                 "Dieser Build deckt %1$s ab. Fehlende Abdeckung: %2$s.");
         table.put("This build has no coverage for %1$s.",
@@ -546,9 +560,6 @@ public final class L10nTranslations {
                 "Versuch ein anderes Wort oder l\u00f6sche die Suche.");
         table.put("Try again, or go back to Telegram.",
                 "Versuche es noch einmal oder kehre zu Telegram zur\u00fcck.");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Turn off Telegram's update checks",
                 "Telegrams Update-Pr\u00fcfungen abschalten");
         table.put("Turn off haptic feedback",
@@ -659,6 +670,9 @@ public final class L10nTranslations {
                 "Suchwerbung");
         table.put("share sheet comments",
                 "Kommentare im Teilen-Men\u00fc");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("shared link tracking",
                 "Tracking bei geteilten Links");
         table.put("similar channels and bots",
@@ -672,12 +686,13 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(600);
+        Map<String, String> table = new HashMap<>(610);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
         fillEs3(table);
         fillEs4(table);
+        fillEs5(table);
         return table;
     }
 
@@ -708,6 +723,8 @@ public final class L10nTranslations {
                 "Un archivo llamado %1$s en %2$s paus\u00f3 HushTelegram.");
         table.put("A private message from someone who isn't in your contacts still shows a notification, just without sound or vibration. Bots, reminders and Telegram's login codes keep their sound. Off by default in settings.",
                 "Un mensaje privado de alguien que no est\u00e1 en tus contactos sigue mostrando la notificaci\u00f3n, pero sin sonido ni vibraci\u00f3n. Los bots, los recordatorios y los c\u00f3digos de inicio de sesi\u00f3n de Telegram mantienen su sonido. Desactivado por defecto en los ajustes.");
+        table.put("A profile's menu also shows which of Telegram's data centers, 1 to 5, holds the profile photo. A profile without a photo shows none, and no server request is added. Off by default in settings.",
+                "El men\u00fa de un perfil tambi\u00e9n muestra en qu\u00e9 centro de datos de Telegram, del 1 al 5, est\u00e1 la foto del perfil. Un perfil sin foto no muestra ninguno y no se a\u00f1ade ninguna solicitud al servidor. Desactivado por defecto en los ajustes.");
         table.put("A short chat list no longer lists your contacts on Telegram under it, with their heading and loading rows. Your chats, folders, contact sync and search stay. Off by default in settings.",
                 "Una lista de chats corta ya no muestra debajo tus contactos en Telegram, ni su encabezado ni sus filas de carga. Tus chats, carpetas, la sincronizaci\u00f3n de contactos y la b\u00fasqueda se mantienen. Desactivado por defecto en los ajustes.");
         table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
@@ -788,6 +805,8 @@ public final class L10nTranslations {
                 "Copia un informe breve en el portapapeles.");
         table.put("Copy chat ID %1$s",
                 "Copiar ID de chat %1$s");
+        table.put("Copy data center %1$s",
+                "Copiar centro de datos %1$s");
         table.put("Copy quick report",
                 "Copiar informe r\u00e1pido");
         table.put("Copy user ID %1$s",
@@ -798,13 +817,13 @@ public final class L10nTranslations {
                 "No se pudo importar la configuraci\u00f3n. No se cambi\u00f3 nada.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "No se pudo abrir ese archivo. No se cambi\u00f3 nada.");
+    }
+
+    private static void fillEs1(Map<String, String> table) {
         table.put("Couldn't open the file picker. Try again.",
                 "No se pudo abrir el selector de archivos. Int\u00e9ntalo de nuevo.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "No se pudieron restaurar los datos de diagn\u00f3stico. Int\u00e9ntalo de nuevo.");
-    }
-
-    private static void fillEs1(Map<String, String> table) {
         table.put("Couldn't reach GitHub. Try again later.",
                 "No se pudo contactar con GitHub. Int\u00e9ntalo de nuevo m\u00e1s tarde.");
         table.put("Couldn't save the settings file. Try again.",
@@ -815,6 +834,10 @@ public final class L10nTranslations {
                 "No se pudo iniciar la exportaci\u00f3n del informe. Int\u00e9ntalo de nuevo en breve.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "No se pudo volver a activar HushTelegram. Int\u00e9ntalo de nuevo.");
+        table.put("Data center %1$s",
+                "Centro de datos %1$s");
+        table.put("Data center copied",
+                "Centro de datos copiado");
         table.put("Debug logging",
                 "Registro de depuraci\u00f3n");
         table.put("Diagnostic data cleared. Tap again to put it back.",
@@ -917,6 +940,9 @@ public final class L10nTranslations {
                 "No se pudo abrir la configuraci\u00f3n de HushTelegram");
         table.put("HushTelegram turns back on when Telegram restarts.",
                 "HushTelegram vuelve a activarse cuando Telegram se reinicie.");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("ID",
                 "ID");
         table.put("ID copied",
@@ -925,9 +951,6 @@ public final class L10nTranslations {
                 "Importar");
         table.put("Import settings",
                 "Importar configuraci\u00f3n");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("Importing settings",
                 "Importando la configuraci\u00f3n");
         table.put("It targets Telegram %1$s.",
@@ -1040,6 +1063,9 @@ public final class L10nTranslations {
                 "Guardando el archivo de configuraci\u00f3n");
         table.put("Search settings",
                 "Buscar ajustes");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.",
                 "La pesta\u00f1a Apps de la b\u00fasqueda omite la lista Apps populares de Telegram, con su encabezado y sus filas de carga, y Telegram no la solicita. Las apps que has abierto y los dem\u00e1s resultados se mantienen.");
         table.put("Selecting links by hand",
@@ -1048,9 +1074,6 @@ public final class L10nTranslations {
                 "Aplicado al parchear");
         table.put("Settings backup",
                 "Copia de ajustes");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Settings couldn't open",
                 "No se pudo abrir la configuraci\u00f3n");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -1067,6 +1090,8 @@ public final class L10nTranslations {
                 "Configuraci\u00f3n importada. Cambiaron %1$d interruptores.");
         table.put("Settings sales rows",
                 "Ofertas en Ajustes");
+        table.put("Show profile data center",
+                "Mostrar el centro de datos del perfil");
         table.put("Show user and chat IDs",
                 "Mostrar IDs de usuario y chat");
         table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
@@ -1161,6 +1186,9 @@ public final class L10nTranslations {
                 "No hay datos de diagn\u00f3stico que borrar.");
         table.put("There's no diagnostic data to put back.",
                 "No hay datos de diagn\u00f3stico que restaurar.");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("This build covers %1$s. Missing coverage: %2$s.",
                 "Esta versi\u00f3n cubre %1$s. Falta cobertura de %2$s.");
         table.put("This build has no coverage for %1$s.",
@@ -1171,9 +1199,6 @@ public final class L10nTranslations {
                 "Prueba otra palabra o borra la b\u00fasqueda.");
         table.put("Try again, or go back to Telegram.",
                 "Int\u00e9ntalo de nuevo o vuelve a Telegram.");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("Turn off Telegram's update checks",
                 "Desactivar las comprobaciones de actualizaci\u00f3n de Telegram");
         table.put("Turn off haptic feedback",
@@ -1284,6 +1309,9 @@ public final class L10nTranslations {
                 "anuncios en b\u00fasquedas");
         table.put("share sheet comments",
                 "comentarios del men\u00fa de compartir");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("shared link tracking",
                 "seguimiento de enlaces compartidos");
         table.put("similar channels and bots",
@@ -1297,12 +1325,13 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(600);
+        Map<String, String> table = new HashMap<>(610);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
         fillIn3(table);
         fillIn4(table);
+        fillIn5(table);
         return table;
     }
 
@@ -1333,6 +1362,8 @@ public final class L10nTranslations {
                 "File bernama %1$s di %2$s menjeda HushTelegram.");
         table.put("A private message from someone who isn't in your contacts still shows a notification, just without sound or vibration. Bots, reminders and Telegram's login codes keep their sound. Off by default in settings.",
                 "Pesan pribadi dari orang yang tidak ada di kontak Anda tetap menampilkan notifikasi, hanya tanpa suara atau getaran. Bot, pengingat, dan kode masuk Telegram tetap bersuara. Nonaktif secara default di pengaturan.");
+        table.put("A profile's menu also shows which of Telegram's data centers, 1 to 5, holds the profile photo. A profile without a photo shows none, and no server request is added. Off by default in settings.",
+                "Menu profil juga menampilkan pusat data Telegram, 1 sampai 5, tempat foto profil disimpan. Profil tanpa foto tidak menampilkannya, dan tidak ada permintaan server tambahan. Nonaktif secara default di pengaturan.");
         table.put("A short chat list no longer lists your contacts on Telegram under it, with their heading and loading rows. Your chats, folders, contact sync and search stay. Off by default in settings.",
                 "Daftar chat yang pendek tidak lagi menampilkan kontakmu di Telegram di bawahnya, beserta judul dan baris pemuatannya. Chat, folder, sinkronisasi kontak, dan pencarian tetap ada. Secara default nonaktif di pengaturan.");
         table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
@@ -1413,6 +1444,8 @@ public final class L10nTranslations {
                 "Salin laporan singkat ke papan klip.");
         table.put("Copy chat ID %1$s",
                 "Salin ID chat %1$s");
+        table.put("Copy data center %1$s",
+                "Salin pusat data %1$s");
         table.put("Copy quick report",
                 "Salin laporan singkat");
         table.put("Copy user ID %1$s",
@@ -1423,13 +1456,13 @@ public final class L10nTranslations {
                 "Pengaturan tidak dapat diimpor. Tidak ada yang diubah.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "File itu tidak dapat dibuka. Tidak ada yang diubah.");
+    }
+
+    private static void fillIn1(Map<String, String> table) {
         table.put("Couldn't open the file picker. Try again.",
                 "Pemilih file tidak dapat dibuka. Coba lagi.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "Data diagnostik tidak dapat dikembalikan. Coba lagi.");
-    }
-
-    private static void fillIn1(Map<String, String> table) {
         table.put("Couldn't reach GitHub. Try again later.",
                 "GitHub tidak dapat dihubungi. Coba lagi nanti.");
         table.put("Couldn't save the settings file. Try again.",
@@ -1440,6 +1473,10 @@ public final class L10nTranslations {
                 "Ekspor laporan tidak dapat dimulai. Coba lagi dalam beberapa saat.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "HushTelegram tidak dapat diaktifkan lagi. Coba lagi.");
+        table.put("Data center %1$s",
+                "Pusat data %1$s");
+        table.put("Data center copied",
+                "Pusat data disalin");
         table.put("Debug logging",
                 "Pencatatan debug");
         table.put("Diagnostic data cleared. Tap again to put it back.",
@@ -1542,6 +1579,9 @@ public final class L10nTranslations {
                 "Pengaturan HushTelegram tidak dapat dibuka");
         table.put("HushTelegram turns back on when Telegram restarts.",
                 "HushTelegram aktif lagi saat Telegram dimulai ulang.");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("ID",
                 "ID");
         table.put("ID copied",
@@ -1550,9 +1590,6 @@ public final class L10nTranslations {
                 "Impor");
         table.put("Import settings",
                 "Impor pengaturan");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("Importing settings",
                 "Mengimpor pengaturan");
         table.put("It targets Telegram %1$s.",
@@ -1665,6 +1702,9 @@ public final class L10nTranslations {
                 "Menyimpan file pengaturan");
         table.put("Search settings",
                 "Cari pengaturan");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.",
                 "Tab Aplikasi di pencarian melewati daftar Aplikasi populer dari Telegram, beserta judul dan baris pemuatannya, dan Telegram tidak memintanya. Aplikasi yang pernah kamu buka dan hasil lainnya tetap ada.");
         table.put("Selecting links by hand",
@@ -1673,9 +1713,6 @@ public final class L10nTranslations {
                 "Diatur saat Anda menambal");
         table.put("Settings backup",
                 "Cadangan setelan");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Settings couldn't open",
                 "Pengaturan tidak dapat dibuka");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -1692,6 +1729,8 @@ public final class L10nTranslations {
                 "Pengaturan diimpor. %1$d sakelar berubah.");
         table.put("Settings sales rows",
                 "Penawaran di Pengaturan");
+        table.put("Show profile data center",
+                "Tampilkan pusat data profil");
         table.put("Show user and chat IDs",
                 "Tampilkan ID pengguna dan chat");
         table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
@@ -1786,6 +1825,9 @@ public final class L10nTranslations {
                 "Tidak ada data diagnostik yang dapat dihapus.");
         table.put("There's no diagnostic data to put back.",
                 "Tidak ada data diagnostik yang dapat dikembalikan.");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("This build covers %1$s. Missing coverage: %2$s.",
                 "Versi ini mencakup %1$s. Cakupan yang belum tersedia: %2$s.");
         table.put("This build has no coverage for %1$s.",
@@ -1796,9 +1838,6 @@ public final class L10nTranslations {
                 "Coba kata lain atau hapus pencarian.");
         table.put("Try again, or go back to Telegram.",
                 "Coba lagi, atau kembali ke Telegram.");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Turn off Telegram's update checks",
                 "Matikan pemeriksaan pembaruan Telegram");
         table.put("Turn off haptic feedback",
@@ -1909,6 +1948,9 @@ public final class L10nTranslations {
                 "iklan pencarian");
         table.put("share sheet comments",
                 "komentar di lembar berbagi");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("shared link tracking",
                 "pelacakan tautan yang dibagikan");
         table.put("similar channels and bots",
@@ -1922,12 +1964,13 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(600);
+        Map<String, String> table = new HashMap<>(610);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
         fillPt_rBR3(table);
         fillPt_rBR4(table);
+        fillPt_rBR5(table);
         return table;
     }
 
@@ -1958,6 +2001,8 @@ public final class L10nTranslations {
                 "Um arquivo chamado %1$s em %2$s pausou o HushTelegram.");
         table.put("A private message from someone who isn't in your contacts still shows a notification, just without sound or vibration. Bots, reminders and Telegram's login codes keep their sound. Off by default in settings.",
                 "Uma mensagem privada de algu\u00e9m que n\u00e3o est\u00e1 nos seus contatos ainda mostra a notifica\u00e7\u00e3o, s\u00f3 que sem som nem vibra\u00e7\u00e3o. Bots, lembretes e os c\u00f3digos de login do Telegram mant\u00eam o som. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
+        table.put("A profile's menu also shows which of Telegram's data centers, 1 to 5, holds the profile photo. A profile without a photo shows none, and no server request is added. Off by default in settings.",
+                "O menu de um perfil tamb\u00e9m mostra em qual data center do Telegram, de 1 a 5, fica a foto do perfil. Um perfil sem foto n\u00e3o mostra nenhum, e nenhuma solicita\u00e7\u00e3o ao servidor \u00e9 adicionada. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("A short chat list no longer lists your contacts on Telegram under it, with their heading and loading rows. Your chats, folders, contact sync and search stay. Off by default in settings.",
                 "Uma lista de conversas curta n\u00e3o mostra mais seus contatos no Telegram embaixo dela, nem o t\u00edtulo e as linhas de carregamento. Suas conversas, pastas, a sincroniza\u00e7\u00e3o de contatos e a busca continuam. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
@@ -2038,6 +2083,8 @@ public final class L10nTranslations {
                 "Copie um relat\u00f3rio curto para a \u00e1rea de transfer\u00eancia.");
         table.put("Copy chat ID %1$s",
                 "Copiar ID de chat %1$s");
+        table.put("Copy data center %1$s",
+                "Copiar data center %1$s");
         table.put("Copy quick report",
                 "Copiar relat\u00f3rio r\u00e1pido");
         table.put("Copy user ID %1$s",
@@ -2048,13 +2095,13 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel importar as configura\u00e7\u00f5es. Nada foi alterado.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "N\u00e3o foi poss\u00edvel abrir esse arquivo. Nada foi alterado.");
+    }
+
+    private static void fillPt_rBR1(Map<String, String> table) {
         table.put("Couldn't open the file picker. Try again.",
                 "N\u00e3o foi poss\u00edvel abrir o seletor de arquivos. Tente de novo.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "N\u00e3o foi poss\u00edvel restaurar os dados de diagn\u00f3stico. Tente de novo.");
-    }
-
-    private static void fillPt_rBR1(Map<String, String> table) {
         table.put("Couldn't reach GitHub. Try again later.",
                 "N\u00e3o foi poss\u00edvel conectar-se ao GitHub. Tente novamente mais tarde.");
         table.put("Couldn't save the settings file. Try again.",
@@ -2065,6 +2112,10 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel iniciar a exporta\u00e7\u00e3o do relat\u00f3rio. Tente de novo daqui a pouco.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "N\u00e3o foi poss\u00edvel reativar o HushTelegram. Tente novamente.");
+        table.put("Data center %1$s",
+                "Data center %1$s");
+        table.put("Data center copied",
+                "Data center copiado");
         table.put("Debug logging",
                 "Registro de depura\u00e7\u00e3o");
         table.put("Diagnostic data cleared. Tap again to put it back.",
@@ -2167,6 +2218,9 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es do HushTelegram");
         table.put("HushTelegram turns back on when Telegram restarts.",
                 "O HushTelegram ser\u00e1 reativado quando o Telegram for reiniciado.");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("ID",
                 "ID");
         table.put("ID copied",
@@ -2175,9 +2229,6 @@ public final class L10nTranslations {
                 "Importar");
         table.put("Import settings",
                 "Importar configura\u00e7\u00f5es");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Importing settings",
                 "Importando as configura\u00e7\u00f5es");
         table.put("It targets Telegram %1$s.",
@@ -2290,6 +2341,9 @@ public final class L10nTranslations {
                 "Salvando o arquivo de configura\u00e7\u00f5es");
         table.put("Search settings",
                 "Buscar configura\u00e7\u00f5es");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.",
                 "A aba Apps da busca n\u00e3o mostra a lista Apps populares do Telegram, nem o t\u00edtulo e as linhas de carregamento, e o Telegram n\u00e3o a solicita. Os apps que voc\u00ea abriu e os outros resultados continuam.");
         table.put("Selecting links by hand",
@@ -2298,9 +2352,6 @@ public final class L10nTranslations {
                 "Definido ao aplicar os patches");
         table.put("Settings backup",
                 "Backup de configura\u00e7\u00f5es");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Settings couldn't open",
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -2317,6 +2368,8 @@ public final class L10nTranslations {
                 "Configura\u00e7\u00f5es importadas. %1$d op\u00e7\u00f5es foram alteradas.");
         table.put("Settings sales rows",
                 "Ofertas nas Configura\u00e7\u00f5es");
+        table.put("Show profile data center",
+                "Mostrar o data center do perfil");
         table.put("Show user and chat IDs",
                 "Mostrar IDs de usu\u00e1rio e chat");
         table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
@@ -2411,6 +2464,9 @@ public final class L10nTranslations {
                 "N\u00e3o h\u00e1 dados de diagn\u00f3stico para limpar.");
         table.put("There's no diagnostic data to put back.",
                 "N\u00e3o h\u00e1 dados de diagn\u00f3stico para restaurar.");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("This build covers %1$s. Missing coverage: %2$s.",
                 "Esta vers\u00e3o cobre %1$s. Falta cobertura para %2$s.");
         table.put("This build has no coverage for %1$s.",
@@ -2421,9 +2477,6 @@ public final class L10nTranslations {
                 "Tente outra palavra ou limpe a busca.");
         table.put("Try again, or go back to Telegram.",
                 "Tente novamente ou volte para o Telegram.");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Turn off Telegram's update checks",
                 "Desativar as verifica\u00e7\u00f5es de atualiza\u00e7\u00e3o do Telegram");
         table.put("Turn off haptic feedback",
@@ -2534,6 +2587,9 @@ public final class L10nTranslations {
                 "an\u00fancios na busca");
         table.put("share sheet comments",
                 "coment\u00e1rios ao compartilhar");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("shared link tracking",
                 "rastreamento de links compartilhados");
         table.put("similar channels and bots",
@@ -2547,12 +2603,13 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(600);
+        Map<String, String> table = new HashMap<>(610);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
         fillTr3(table);
         fillTr4(table);
+        fillTr5(table);
         return table;
     }
 
@@ -2583,6 +2640,8 @@ public final class L10nTranslations {
                 "%2$s i\u00e7indeki %1$s adl\u0131 bir dosya HushTelegram'u duraklatt\u0131.");
         table.put("A private message from someone who isn't in your contacts still shows a notification, just without sound or vibration. Bots, reminders and Telegram's login codes keep their sound. Off by default in settings.",
                 "Ki\u015fileriniz aras\u0131nda olmayan birinden gelen \u00f6zel mesaj yine bildirim g\u00f6sterir, yaln\u0131zca sessiz ve titre\u015fimsiz. Botlar, hat\u0131rlat\u0131c\u0131lar ve Telegram giri\u015f kodlar\u0131 seslerini korur. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
+        table.put("A profile's menu also shows which of Telegram's data centers, 1 to 5, holds the profile photo. A profile without a photo shows none, and no server request is added. Off by default in settings.",
+                "Bir profilin men\u00fcs\u00fc, profil foto\u011fraf\u0131n\u0131n Telegram'\u0131n 1 ile 5 aras\u0131ndaki hangi veri merkezinde durdu\u011funu da g\u00f6sterir. Foto\u011fraf\u0131 olmayan bir profilde g\u00f6sterilmez ve sunucuya ek istek g\u00f6nderilmez. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("A short chat list no longer lists your contacts on Telegram under it, with their heading and loading rows. Your chats, folders, contact sync and search stay. Off by default in settings.",
                 "K\u0131sa bir sohbet listesi, alt\u0131nda Telegram'daki ki\u015filerinizi ba\u015fl\u0131\u011f\u0131 ve y\u00fckleme sat\u0131rlar\u0131yla art\u0131k g\u00f6stermez. Sohbetleriniz, klas\u00f6rleriniz, ki\u015fi senkronizasyonu ve arama kal\u0131r. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("A sideways swipe on a chat in the chat list no longer archives, mutes, pins, deletes or marks it read, so a stray swipe can't change the chat. Long-press still has every action. Off by default in settings.",
@@ -2663,6 +2722,8 @@ public final class L10nTranslations {
                 "K\u0131sa raporu panoya kopyalar.");
         table.put("Copy chat ID %1$s",
                 "Sohbet kimli\u011fini kopyala %1$s");
+        table.put("Copy data center %1$s",
+                "Veri merkezini kopyala %1$s");
         table.put("Copy quick report",
                 "H\u0131zl\u0131 raporu kopyala");
         table.put("Copy user ID %1$s",
@@ -2673,13 +2734,13 @@ public final class L10nTranslations {
                 "Ayarlar i\u00e7e aktar\u0131lamad\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "Bu dosya a\u00e7\u0131lamad\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+    }
+
+    private static void fillTr1(Map<String, String> table) {
         table.put("Couldn't open the file picker. Try again.",
                 "Dosya se\u00e7ici a\u00e7\u0131lamad\u0131. Tekrar dene.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "Tan\u0131lama verileri geri getirilemedi. Tekrar dene.");
-    }
-
-    private static void fillTr1(Map<String, String> table) {
         table.put("Couldn't reach GitHub. Try again later.",
                 "GitHub'a ula\u015f\u0131lamad\u0131. Daha sonra tekrar dene.");
         table.put("Couldn't save the settings file. Try again.",
@@ -2690,6 +2751,10 @@ public final class L10nTranslations {
                 "Rapor d\u0131\u015fa aktar\u0131m\u0131 ba\u015flat\u0131lamad\u0131. Birazdan tekrar dene.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "HushTelegram yeniden a\u00e7\u0131lamad\u0131. Tekrar dene.");
+        table.put("Data center %1$s",
+                "Veri merkezi %1$s");
+        table.put("Data center copied",
+                "Veri merkezi kopyaland\u0131");
         table.put("Debug logging",
                 "Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc");
         table.put("Diagnostic data cleared. Tap again to put it back.",
@@ -2792,6 +2857,9 @@ public final class L10nTranslations {
                 "HushTelegram ayarlar\u0131 a\u00e7\u0131lamad\u0131");
         table.put("HushTelegram turns back on when Telegram restarts.",
                 "HushTelegram, Telegram yeniden ba\u015flad\u0131\u011f\u0131nda tekrar a\u00e7\u0131l\u0131r.");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("ID",
                 "Kimlik");
         table.put("ID copied",
@@ -2800,9 +2868,6 @@ public final class L10nTranslations {
                 "\u0130\u00e7e aktar");
         table.put("Import settings",
                 "Ayarlar\u0131 i\u00e7e aktar");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("Importing settings",
                 "Ayarlar i\u00e7e aktar\u0131l\u0131yor");
         table.put("It targets Telegram %1$s.",
@@ -2915,6 +2980,9 @@ public final class L10nTranslations {
                 "Ayar dosyas\u0131 kaydediliyor");
         table.put("Search settings",
                 "Ayarlarda ara");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.",
                 "Aramadaki Uygulamalar sekmesi, Telegram'\u0131n Pop\u00fcler uygulamalar listesini ba\u015fl\u0131\u011f\u0131 ve y\u00fckleme sat\u0131rlar\u0131yla birlikte atlar ve Telegram bu listeyi istemez. A\u00e7t\u0131\u011f\u0131n\u0131z uygulamalar ve di\u011fer sonu\u00e7lar kal\u0131r.");
         table.put("Selecting links by hand",
@@ -2923,9 +2991,6 @@ public final class L10nTranslations {
                 "Yamalad\u0131\u011f\u0131nda ayarlananlar");
         table.put("Settings backup",
                 "Ayar yede\u011fi");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Settings couldn't open",
                 "Ayarlar a\u00e7\u0131lamad\u0131");
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
@@ -2942,6 +3007,8 @@ public final class L10nTranslations {
                 "Ayarlar i\u00e7e aktar\u0131ld\u0131. %1$d anahtar de\u011fi\u015fti.");
         table.put("Settings sales rows",
                 "Ayarlar'daki sat\u0131\u015f se\u00e7enekleri");
+        table.put("Show profile data center",
+                "Profilin veri merkezini g\u00f6ster");
         table.put("Show user and chat IDs",
                 "Kullan\u0131c\u0131 ve sohbet kimliklerini g\u00f6ster");
         table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
@@ -3036,6 +3103,9 @@ public final class L10nTranslations {
                 "Temizlenecek tan\u0131lama verisi yok.");
         table.put("There's no diagnostic data to put back.",
                 "Geri getirilecek tan\u0131lama verisi yok.");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("This build covers %1$s. Missing coverage: %2$s.",
                 "Bu derlemenin kapsam\u0131: %1$s. Eksik kapsam: %2$s.");
         table.put("This build has no coverage for %1$s.",
@@ -3046,9 +3116,6 @@ public final class L10nTranslations {
                 "Ba\u015fka bir kelime deneyin veya aramay\u0131 temizleyin.");
         table.put("Try again, or go back to Telegram.",
                 "Tekrar dene veya Telegram'a geri d\u00f6n.");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("Turn off Telegram's update checks",
                 "Telegram'\u0131n g\u00fcncelleme kontrollerini kapat");
         table.put("Turn off haptic feedback",
@@ -3159,6 +3226,9 @@ public final class L10nTranslations {
                 "arama reklamlar\u0131");
         table.put("share sheet comments",
                 "payla\u015f\u0131m sayfas\u0131 yorumlar\u0131");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("shared link tracking",
                 "payla\u015f\u0131lan ba\u011flant\u0131lar\u0131n takibi");
         table.put("similar channels and bots",

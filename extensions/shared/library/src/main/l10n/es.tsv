@@ -299,6 +299,8 @@ Show user and chat IDs	Mostrar IDs de usuario y chat
 Disable double-tap reactions	Desactivar reacciones al tocar dos veces
 Pastes text without Telegram's HTML, table or monospace conversion. Whitespace and URLs stay intact. Other clipboard actions stay available. Off by default in settings.	Pega texto sin la conversión HTML, de tablas o monoespaciado de Telegram. Conserva los espacios y las URLs. Las demás acciones del portapapeles siguen disponibles. Desactivado por defecto en los ajustes.
 Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.	Muestra un ID local de usuario o chat que se puede copiar en el menú del perfil abierto. Los hashes de acceso siguen ocultos. No añade solicitudes al servidor. Desactivado por defecto en los ajustes.
+Show profile data center	Mostrar el centro de datos del perfil
+A profile's menu also shows which of Telegram's data centers, 1 to 5, holds the profile photo. A profile without a photo shows none, and no server request is added. Off by default in settings.	El menú de un perfil también muestra en qué centro de datos de Telegram, del 1 al 5, está la foto del perfil. Un perfil sin foto no muestra ninguno y no se añade ninguna solicitud al servidor. Desactivado por defecto en los ajustes.
 Double taps don't add reactions in chats or the reaction-settings preview. Scrolling, taps, selection and explicit reaction menus stay as they are. Off by default in settings.	Tocar dos veces no añade reacciones en chats ni en la vista previa de reacciones. El desplazamiento, los toques, la selección y los menús de reacciones siguen igual. Desactivado por defecto en los ajustes.
 compose text paste	pegado de texto al escribir
 caption text paste	pegado de texto en leyendas
@@ -311,3 +313,6 @@ Copy user ID %1$s	Copiar ID de usuario %1$s
 Copy chat ID %1$s	Copiar ID de chat %1$s
 ID	ID
 ID copied	ID copiado
+Data center %1$s	Centro de datos %1$s
+Copy data center %1$s	Copiar centro de datos %1$s
+Data center copied	Centro de datos copiado

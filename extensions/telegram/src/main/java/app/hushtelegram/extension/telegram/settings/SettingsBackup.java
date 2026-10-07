@@ -90,6 +90,7 @@ public final class SettingsBackup {
             Settings.DISABLE_TOPIC_PULL,
             Settings.NORMAL_PASTE,
             Settings.SHOW_LOCAL_IDS,
+            Settings.PROFILE_DATA_CENTER,
             Settings.DISABLE_DOUBLE_TAP_REACTIONS,
             Settings.QUIET_CONTACTS_NAG,
             Settings.HOLIDAY_LOOK,

@@ -135,6 +135,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ChannelPull.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/NormalPaste.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LocalIds.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ProfileDc.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/DoubleTapReactions.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ContactsBlock.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GreetingStickers.java",

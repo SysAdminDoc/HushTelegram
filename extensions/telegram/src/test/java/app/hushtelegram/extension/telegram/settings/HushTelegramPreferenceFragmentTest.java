@@ -309,6 +309,13 @@ public class HushTelegramPreferenceFragmentTest {
             // Topic pulls keep Telegram's behavior until someone turns their own switch on.
             assertFalse(Settings.DISABLE_TOPIC_PULL.key,
                     ((SwitchPreference) page.findPreference(Settings.DISABLE_TOPIC_PULL.key)).isChecked());
+            assertEquals("Show profile data center", String.valueOf(page.findPreference(Settings.PROFILE_DATA_CENTER.key).getTitle()));
+            assertEquals("A profile's menu also shows which of Telegram's data centers, 1 to 5, holds the profile photo. "
+                            + "A profile without a photo shows none, and no server request is added. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.PROFILE_DATA_CENTER.key).getSummary()));
+            // The data center row stays out of profile menus until its own switch is turned on.
+            assertFalse(Settings.PROFILE_DATA_CENTER.key,
+                    ((SwitchPreference) page.findPreference(Settings.PROFILE_DATA_CENTER.key)).isChecked());
             assertEquals("Repair Firebase push registration", String.valueOf(page.findPreference(Settings.REPAIR_FIREBASE_PUSH.key).getTitle()));
             assertEquals("Uses Telegram's official certificate for Firebase push registration. "
                             + "Notification permission and battery settings still apply.",

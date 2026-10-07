@@ -94,6 +94,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting SHOW_LOCAL_IDS =
             new BooleanSetting("hushtelegram_show_local_ids", FALSE);
 
+    /** The profile menu also shows the data center of the profile photo Telegram already caches. */
+    public static final BooleanSetting PROFILE_DATA_CENTER =
+            new BooleanSetting("hushtelegram_profile_data_center", FALSE);
+
     public static final BooleanSetting DISABLE_DOUBLE_TAP_REACTIONS =
             new BooleanSetting("hushtelegram_disable_double_tap_reactions", FALSE);
 

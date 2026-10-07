@@ -299,6 +299,8 @@ Show user and chat IDs	Tampilkan ID pengguna dan chat
 Disable double-tap reactions	Nonaktifkan reaksi ketuk dua kali
 Pastes text without Telegram's HTML, table or monospace conversion. Whitespace and URLs stay intact. Other clipboard actions stay available. Off by default in settings.	Menempel teks tanpa konversi HTML, tabel, atau monospace Telegram. Spasi dan URL tetap utuh. Tindakan papan klip lainnya tetap tersedia. Nonaktif secara default di pengaturan.
 Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.	Menampilkan ID pengguna atau chat lokal yang dapat disalin di menu profil yang dibuka. Hash akses tetap tersembunyi. Tidak menambah permintaan server. Nonaktif secara default di pengaturan.
+Show profile data center	Tampilkan pusat data profil
+A profile's menu also shows which of Telegram's data centers, 1 to 5, holds the profile photo. A profile without a photo shows none, and no server request is added. Off by default in settings.	Menu profil juga menampilkan pusat data Telegram, 1 sampai 5, tempat foto profil disimpan. Profil tanpa foto tidak menampilkannya, dan tidak ada permintaan server tambahan. Nonaktif secara default di pengaturan.
 Double taps don't add reactions in chats or the reaction-settings preview. Scrolling, taps, selection and explicit reaction menus stay as they are. Off by default in settings.	Ketuk dua kali tidak menambahkan reaksi di chat atau pratinjau reaksi. Menggulir, mengetuk, memilih, dan menu reaksi tetap seperti biasa. Nonaktif secara default di pengaturan.
 compose text paste	tempel teks saat menulis
 caption text paste	tempel teks keterangan
@@ -311,3 +313,6 @@ Copy user ID %1$s	Salin ID pengguna %1$s
 Copy chat ID %1$s	Salin ID chat %1$s
 ID	ID
 ID copied	ID disalin
+Data center %1$s	Pusat data %1$s
+Copy data center %1$s	Salin pusat data %1$s
+Data center copied	Pusat data disalin

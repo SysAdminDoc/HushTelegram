@@ -320,6 +320,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             if (build.contains(PatchFamily.SHOW_LOCAL_IDS)) {
                 chats.addPreference(mark(toggle(context, Settings.SHOW_LOCAL_IDS, L10n.t("Show user and chat IDs"),
                         PatchFamily.SHOW_LOCAL_IDS.coverageSummary(L10n.t("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings."))), SettingsIcons.CHAT));
+                chats.addPreference(mark(toggle(context, Settings.PROFILE_DATA_CENTER, L10n.t("Show profile data center"),
+                        L10n.t("A profile's menu also shows which of Telegram's data centers, 1 to 5, holds the profile photo. "
+                                + "A profile without a photo shows none, and no server request is added. Off by default in settings.")),
+                        SettingsIcons.CHAT));
             }
             if (build.contains(PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS)) {
                 chats.addPreference(mark(toggle(context, Settings.DISABLE_DOUBLE_TAP_REACTIONS, L10n.t("Disable double-tap reactions"),

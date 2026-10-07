@@ -191,11 +191,12 @@ public class PausedHooksTest {
             return app.hushtelegram.extension.telegram.misc.NormalPaste.contextMenuAction(
                     new android.widget.EditText(RuntimeEnvironment.getApplication()), android.R.id.paste) == android.R.id.pasteAsPlainText;
         }));
-        probes.put(PatchFamily.SHOW_LOCAL_IDS, Collections.singletonList(() -> {
+        probes.put(PatchFamily.SHOW_LOCAL_IDS, Arrays.asList(() -> {
             android.widget.FrameLayout menu = new android.widget.FrameLayout(RuntimeEnvironment.getApplication());
             app.hushtelegram.extension.telegram.misc.LocalIds.addToProfile(menu, 42, 0);
             return menu.getChildCount() == 1;
-        }));
+        }, () -> app.hushtelegram.extension.telegram.misc.ProfileDcForTests.row(
+                new android.widget.FrameLayout(RuntimeEnvironment.getApplication()))));
         probes.put(PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS, Collections.singletonList(
                 app.hushtelegram.extension.telegram.misc.DoubleTapReactions::stopReaction));
         probes.put(PatchFamily.HIDE_CONTACTS_BLOCK, Arrays.asList(

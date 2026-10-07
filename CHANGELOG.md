@@ -46,6 +46,8 @@ Working version 0.0.11.
 
 * **Telegram:** A new Silence people outside your contacts switch, off by default, lets a private message from someone who isn't in your contacts arrive quietly. You still get the notification, it just doesn't ring or buzz. Bots, reminders and Telegram's login codes keep their sound.
 
+* **Telegram:** Show user and chat IDs has a second switch, Show profile data center, off by default. It adds a row to a profile's menu with the data center, 1 to 5, that holds the profile's photo, read from the copy Telegram already has. A profile without a photo shows no row. Either switch works without the other.
+
 * **Telegram:** Disable pull to next channel has a second switch, Stop pull to next topic, off by default. With it on, pulling up at the bottom of a forum topic only scrolls instead of opening the next topic. Each switch covers only its own pull, and a switch flipped mid-drag counts when you let go.
 
 * **Telegram:** The beta target is now telegram.org's current 12.10.7 build, version code 71239, which replaced build 71179. Every patch applies and passes its fixture tests on it.
