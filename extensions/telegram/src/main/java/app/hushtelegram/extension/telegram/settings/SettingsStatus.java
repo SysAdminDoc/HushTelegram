@@ -65,6 +65,7 @@ public final class SettingsStatus {
     public static boolean exactNumbers() { return false; }
     public static boolean revealSpoilers() { return false; }
     public static boolean hideKeyboardOnScroll() { return false; }
+    public static boolean keepVideosMuted() { return false; }
     public static boolean storyRequests() { return false; }
     public static boolean storyBar() { return false; }
     public static boolean storyCamera() { return false; }

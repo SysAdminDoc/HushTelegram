@@ -247,6 +247,8 @@ Reveal spoilers	Mostrar spoilers
 Spoiler text, photos and videos show right away instead of waiting for a tap. View-once media, sensitive content and login codes stay covered, and text you're typing keeps its spoiler. Off by default in settings.	El texto, las fotos y los videos con spoiler se ven al momento, sin tener que tocarlos. Los archivos de una sola visualización, el contenido sensible y los códigos de inicio de sesión siguen cubiertos, y el texto que escribes conserva su spoiler. Desactivado por defecto en los ajustes.
 Hide keyboard on scroll	Ocultar teclado al desplazar
 Starting to scroll through a chat closes the keyboard, the way Telegram already does while you search a chat. Telegram's emoji and sticker panel stays open. Off by default in settings.	Al empezar a desplazarte por un chat se cierra el teclado, como Telegram ya hace mientras buscas en un chat. El panel de emojis y stickers de Telegram sigue abierto. Desactivado por defecto en los ajustes.
+Keep videos muted on volume keys	Mantener videos sin sonido con las teclas de volumen
+Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.	Las teclas de volumen en un chat cambian el volumen en vez de reproducir con sonido el video o videomensaje en pantalla. Toca un video para escucharlo. Desactivado por defecto en los ajustes.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Notificaciones

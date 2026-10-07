@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(552);
+        Map<String, String> table = new HashMap<>(556);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -292,17 +292,19 @@ public final class L10nTranslations {
                 "Es ist f\u00fcr Telegram %1$s gedacht.");
         table.put("Jump to a section",
                 "Zu einem Abschnitt springen");
+        table.put("Keep videos muted on volume keys",
+                "Videos bei Lautst\u00e4rketasten stumm lassen");
         table.put("Licenses",
                 "Lizenzen");
         table.put("Links",
                 "Links");
         table.put("Links, updates, backup and more",
                 "Links, Updates, Sicherung und mehr");
-        table.put("Local notification status",
-                "Lokaler Benachrichtigungsstatus");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("Local notification status",
+                "Lokaler Benachrichtigungsstatus");
         table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
                 "Mitglieder-, Abonnenten-, Aufruf-, Antwort- und Reaktionszahlen erscheinen vollst\u00e4ndig, etwa 12,345 statt 12.3K. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("More settings",
@@ -421,11 +423,11 @@ public final class L10nTranslations {
                 "Verkaufsangebote in den Einstellungen");
         table.put("Show user and chat IDs",
                 "Benutzer- und Chat-IDs anzeigen");
-        table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
-                "Zeigt die lokale Benutzer- oder Chat-ID zum Kopieren im Men\u00fc des ge\u00f6ffneten Profils. Zugriffshashes bleiben verborgen. Es kommt keine Serveranfrage hinzu. In den Einstellungen standardm\u00e4\u00dfig aus.");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
+                "Zeigt die lokale Benutzer- oder Chat-ID zum Kopieren im Men\u00fc des ge\u00f6ffneten Profils. Zugriffshashes bleiben verborgen. Es kommt keine Serveranfrage hinzu. In den Einstellungen standardm\u00e4\u00dfig aus.");
         table.put("Signed-in accounts: %1$s",
                 "Angemeldete Konten: %1$s");
         table.put("Source code and issues",
@@ -538,17 +540,19 @@ public final class L10nTranslations {
                 "Verwendet das offizielle Telegram-Zertifikat f\u00fcr die Firebase-Push-Registrierung. Die Berechtigung f\u00fcr Benachrichtigungen und die Akku-Einstellungen gelten weiterhin.");
         table.put("Version",
                 "Version");
+        table.put("Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.",
+                "Die Lautst\u00e4rketasten \u00e4ndern in einem Chat die Lautst\u00e4rke, statt das Video oder Rundvideo auf dem Bildschirm mit Ton abzuspielen. Tippe auf ein Video, um es zu h\u00f6ren. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("Yes",
                 "Ja");
         table.put("You have the newest HushTelegram release.",
                 "Du hast die neueste Version von HushTelegram.");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("You paused HushTelegram.",
                 "Du hast HushTelegram pausiert.");
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
                 "Deine Auswahl bleibt gespeichert. Tippe auf Fortsetzen und starte Telegram dann neu.");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Your controls are active.",
                 "Deine Einstellungen sind aktiv.");
         table.put("Your switches already match that file, so nothing will change.",
@@ -624,7 +628,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(552);
+        Map<String, String> table = new HashMap<>(556);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -869,17 +873,19 @@ public final class L10nTranslations {
                 "Est\u00e1 pensado para Telegram %1$s.");
         table.put("Jump to a section",
                 "Ir a una secci\u00f3n");
+        table.put("Keep videos muted on volume keys",
+                "Mantener videos sin sonido con las teclas de volumen");
         table.put("Licenses",
                 "Licencias");
         table.put("Links",
                 "Enlaces");
         table.put("Links, updates, backup and more",
                 "Enlaces, actualizaciones, copia de seguridad y m\u00e1s");
-        table.put("Local notification status",
-                "Estado local de notificaciones");
     }
 
     private static void fillEs2(Map<String, String> table) {
+        table.put("Local notification status",
+                "Estado local de notificaciones");
         table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
                 "Los contadores de miembros, suscriptores, vistas, respuestas y reacciones muestran el n\u00famero completo, como 12,345 en vez de 12.3K. Desactivado por defecto en los ajustes.");
         table.put("More settings",
@@ -998,11 +1004,11 @@ public final class L10nTranslations {
                 "Ofertas en Ajustes");
         table.put("Show user and chat IDs",
                 "Mostrar IDs de usuario y chat");
-        table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
-                "Muestra un ID local de usuario o chat que se puede copiar en el men\u00fa del perfil abierto. Los hashes de acceso siguen ocultos. No a\u00f1ade solicitudes al servidor. Desactivado por defecto en los ajustes.");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
+                "Muestra un ID local de usuario o chat que se puede copiar en el men\u00fa del perfil abierto. Los hashes de acceso siguen ocultos. No a\u00f1ade solicitudes al servidor. Desactivado por defecto en los ajustes.");
         table.put("Signed-in accounts: %1$s",
                 "Cuentas con sesi\u00f3n iniciada: %1$s");
         table.put("Source code and issues",
@@ -1115,17 +1121,19 @@ public final class L10nTranslations {
                 "Usa el certificado oficial de Telegram para registrar las notificaciones de Firebase. El permiso de notificaciones y los ajustes de bater\u00eda siguen siendo necesarios.");
         table.put("Version",
                 "Versi\u00f3n");
+        table.put("Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.",
+                "Las teclas de volumen en un chat cambian el volumen en vez de reproducir con sonido el video o videomensaje en pantalla. Toca un video para escucharlo. Desactivado por defecto en los ajustes.");
         table.put("Yes",
                 "S\u00ed");
         table.put("You have the newest HushTelegram release.",
                 "Tienes la versi\u00f3n m\u00e1s reciente de HushTelegram.");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("You paused HushTelegram.",
                 "Pausaste HushTelegram.");
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
                 "Tus preferencias est\u00e1n guardadas. Toca Reanudar y luego reinicia Telegram.");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("Your controls are active.",
                 "Tus controles est\u00e1n activos.");
         table.put("Your switches already match that file, so nothing will change.",
@@ -1201,7 +1209,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(552);
+        Map<String, String> table = new HashMap<>(556);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1446,17 +1454,19 @@ public final class L10nTranslations {
                 "Rilis ini ditujukan untuk Telegram %1$s.");
         table.put("Jump to a section",
                 "Lompat ke bagian");
+        table.put("Keep videos muted on volume keys",
+                "Biarkan video tanpa suara saat tombol volume ditekan");
         table.put("Licenses",
                 "Lisensi");
         table.put("Links",
                 "Tautan");
         table.put("Links, updates, backup and more",
                 "Tautan, pembaruan, cadangan, dan lainnya");
-        table.put("Local notification status",
-                "Status notifikasi lokal");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("Local notification status",
+                "Status notifikasi lokal");
         table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
                 "Jumlah anggota, pelanggan, tayangan, balasan, dan reaksi ditampilkan lengkap, misalnya 12,345, bukan 12.3K. Nonaktif secara default di pengaturan.");
         table.put("More settings",
@@ -1575,11 +1585,11 @@ public final class L10nTranslations {
                 "Penawaran di Pengaturan");
         table.put("Show user and chat IDs",
                 "Tampilkan ID pengguna dan chat");
-        table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
-                "Menampilkan ID pengguna atau chat lokal yang dapat disalin di menu profil yang dibuka. Hash akses tetap tersembunyi. Tidak menambah permintaan server. Nonaktif secara default di pengaturan.");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
+                "Menampilkan ID pengguna atau chat lokal yang dapat disalin di menu profil yang dibuka. Hash akses tetap tersembunyi. Tidak menambah permintaan server. Nonaktif secara default di pengaturan.");
         table.put("Signed-in accounts: %1$s",
                 "Akun yang masuk: %1$s");
         table.put("Source code and issues",
@@ -1692,17 +1702,19 @@ public final class L10nTranslations {
                 "Menggunakan sertifikat resmi Telegram untuk pendaftaran notifikasi Firebase. Izin notifikasi dan pengaturan baterai tetap berlaku.");
         table.put("Version",
                 "Versi");
+        table.put("Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.",
+                "Tombol volume di obrolan mengubah volume, bukan memutar video atau video bulat di layar dengan suara. Ketuk video untuk mendengarnya. Nonaktif secara default di pengaturan.");
         table.put("Yes",
                 "Ya");
         table.put("You have the newest HushTelegram release.",
                 "Anda sudah memakai rilis HushTelegram terbaru.");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("You paused HushTelegram.",
                 "Anda menjeda HushTelegram.");
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
                 "Pilihan Anda tersimpan. Ketuk Lanjutkan, lalu mulai ulang Telegram.");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Your controls are active.",
                 "Kontrol Anda aktif.");
         table.put("Your switches already match that file, so nothing will change.",
@@ -1778,7 +1790,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(552);
+        Map<String, String> table = new HashMap<>(556);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2023,17 +2035,19 @@ public final class L10nTranslations {
                 "Compat\u00edvel com o Telegram %1$s.");
         table.put("Jump to a section",
                 "Ir para uma se\u00e7\u00e3o");
+        table.put("Keep videos muted on volume keys",
+                "Manter v\u00eddeos mudos nas teclas de volume");
         table.put("Licenses",
                 "Licen\u00e7as");
         table.put("Links",
                 "Links");
         table.put("Links, updates, backup and more",
                 "Links, atualiza\u00e7\u00f5es, backup e mais");
-        table.put("Local notification status",
-                "Estado local das notifica\u00e7\u00f5es");
     }
 
     private static void fillPt_rBR2(Map<String, String> table) {
+        table.put("Local notification status",
+                "Estado local das notifica\u00e7\u00f5es");
         table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
                 "Contagens de membros, inscritos, visualiza\u00e7\u00f5es, respostas e rea\u00e7\u00f5es aparecem completas, como 12,345 em vez de 12.3K. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("More settings",
@@ -2152,11 +2166,11 @@ public final class L10nTranslations {
                 "Ofertas nas Configura\u00e7\u00f5es");
         table.put("Show user and chat IDs",
                 "Mostrar IDs de usu\u00e1rio e chat");
-        table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
-                "Mostra um ID local de usu\u00e1rio ou chat que pode ser copiado no menu do perfil aberto. Os hashes de acesso ficam ocultos. N\u00e3o adiciona solicita\u00e7\u00f5es ao servidor. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
+                "Mostra um ID local de usu\u00e1rio ou chat que pode ser copiado no menu do perfil aberto. Os hashes de acesso ficam ocultos. N\u00e3o adiciona solicita\u00e7\u00f5es ao servidor. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Signed-in accounts: %1$s",
                 "Contas conectadas: %1$s");
         table.put("Source code and issues",
@@ -2269,17 +2283,19 @@ public final class L10nTranslations {
                 "Usa o certificado oficial do Telegram para registrar notifica\u00e7\u00f5es do Firebase. A permiss\u00e3o de notifica\u00e7\u00f5es e as configura\u00e7\u00f5es de bateria continuam necess\u00e1rias.");
         table.put("Version",
                 "Vers\u00e3o");
+        table.put("Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.",
+                "As teclas de volume em um chat mudam o volume em vez de tocar com som o v\u00eddeo ou v\u00eddeo redondo na tela. Toque em um v\u00eddeo para ouvi-lo. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Yes",
                 "Sim");
         table.put("You have the newest HushTelegram release.",
                 "Voc\u00ea j\u00e1 est\u00e1 usando a vers\u00e3o mais nova do HushTelegram.");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("You paused HushTelegram.",
                 "Voc\u00ea pausou o HushTelegram.");
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
                 "Suas escolhas est\u00e3o salvas. Toque em Retomar e depois reinicie o Telegram.");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Your controls are active.",
                 "Seus controles est\u00e3o ativos.");
         table.put("Your switches already match that file, so nothing will change.",
@@ -2355,7 +2371,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(552);
+        Map<String, String> table = new HashMap<>(556);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2600,17 +2616,19 @@ public final class L10nTranslations {
                 "Telegram %1$s i\u00e7in haz\u0131rland\u0131.");
         table.put("Jump to a section",
                 "Bir b\u00f6l\u00fcme git");
+        table.put("Keep videos muted on volume keys",
+                "Ses tu\u015flar\u0131nda videolar\u0131 sessiz tut");
         table.put("Licenses",
                 "Lisanslar");
         table.put("Links",
                 "Ba\u011flant\u0131lar");
         table.put("Links, updates, backup and more",
                 "Ba\u011flant\u0131lar, g\u00fcncellemeler, yedekleme ve daha fazlas\u0131");
-        table.put("Local notification status",
-                "Yerel bildirim durumu");
     }
 
     private static void fillTr2(Map<String, String> table) {
+        table.put("Local notification status",
+                "Yerel bildirim durumu");
         table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
                 "\u00dcye, abone, g\u00f6r\u00fcnt\u00fclenme, yan\u0131t ve tepki say\u0131lar\u0131 k\u0131salt\u0131lmadan g\u00f6sterilir, \u00f6rne\u011fin 12.3K yerine 12,345. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("More settings",
@@ -2729,11 +2747,11 @@ public final class L10nTranslations {
                 "Ayarlar'daki sat\u0131\u015f se\u00e7enekleri");
         table.put("Show user and chat IDs",
                 "Kullan\u0131c\u0131 ve sohbet kimliklerini g\u00f6ster");
-        table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
-                "A\u00e7\u0131lan profilin men\u00fcs\u00fcnde kopyalanabilir yerel kullan\u0131c\u0131 veya sohbet kimli\u011fini g\u00f6sterir. Eri\u015fim karmalar\u0131 gizli kal\u0131r. Sunucu iste\u011fi eklenmez. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Shows a copyable local user or chat ID in the inspected profile's menu. Access hashes stay hidden. No server request is added. Off by default in settings.",
+                "A\u00e7\u0131lan profilin men\u00fcs\u00fcnde kopyalanabilir yerel kullan\u0131c\u0131 veya sohbet kimli\u011fini g\u00f6sterir. Eri\u015fim karmalar\u0131 gizli kal\u0131r. Sunucu iste\u011fi eklenmez. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Signed-in accounts: %1$s",
                 "Oturum a\u00e7m\u0131\u015f hesaplar: %1$s");
         table.put("Source code and issues",
@@ -2846,17 +2864,19 @@ public final class L10nTranslations {
                 "Firebase bildirim kayd\u0131 i\u00e7in Telegram'\u0131n resmi sertifikas\u0131n\u0131 kullan\u0131r. Bildirim izni ve pil ayarlar\u0131 yine ge\u00e7erlidir.");
         table.put("Version",
                 "S\u00fcr\u00fcm");
+        table.put("Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.",
+                "Bir sohbetteki ses tu\u015flar\u0131, ekrandaki videoyu veya yuvarlak videoyu sesli oynatmak yerine sesi de\u011fi\u015ftirir. Duymak i\u00e7in videoya dokun. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Yes",
                 "Evet");
         table.put("You have the newest HushTelegram release.",
                 "En yeni HushTelegram s\u00fcr\u00fcm\u00fcn\u00fc kullan\u0131yorsun.");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("You paused HushTelegram.",
                 "HushTelegram'u duraklatt\u0131n.");
         table.put("Your choices are saved. Tap Resume, then restart Telegram.",
                 "Tercihleriniz kay\u0131tl\u0131. Devam et'e dokunun, sonra Telegram'\u0131 yeniden ba\u015flat\u0131n.");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("Your controls are active.",
                 "Kontrolleriniz etkin.");
         table.put("Your switches already match that file, so nothing will change.",

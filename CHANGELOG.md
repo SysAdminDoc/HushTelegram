@@ -22,6 +22,8 @@ Working version 0.0.11.
 
 * **Telegram:** A new Hide keyboard on scroll switch, off by default, closes the keyboard as soon as you start scrolling through a chat.
 
+* **Telegram:** A new Keep videos muted on volume keys switch, off by default, stops the volume keys from playing the video on screen with sound in a chat. They just change the volume.
+
 * **Telegram:** Disable pull to next channel has a second switch, Stop pull to next topic, off by default. With it on, pulling up at the bottom of a forum topic only scrolls instead of opening the next topic. Each switch covers only its own pull, and a switch flipped mid-drag counts when you let go.
 
 * **Telegram:** The beta target is now telegram.org's current 12.10.7 build, version code 71239, which replaced build 71179. Every patch applies and passes its fixture tests on it.

@@ -247,6 +247,8 @@ Reveal spoilers	Spoilerları göster
 Spoiler text, photos and videos show right away instead of waiting for a tap. View-once media, sensitive content and login codes stay covered, and text you're typing keeps its spoiler. Off by default in settings.	Spoiler metinleri, fotoğrafları ve videoları dokunmana gerek kalmadan hemen görünür. Tek görüntülemelik medya, hassas içerik ve giriş kodları kapalı kalır, yazdığın metin de spoiler’ını korur. Ayarlarda varsayılan olarak kapalıdır.
 Hide keyboard on scroll	Kaydırınca klavyeyi gizle
 Starting to scroll through a chat closes the keyboard, the way Telegram already does while you search a chat. Telegram's emoji and sticker panel stays open. Off by default in settings.	Bir sohbette kaydırmaya başlamak klavyeyi kapatır, tıpkı Telegram’ın sohbet içinde arama yaparken yaptığı gibi. Telegram’ın emoji ve çıkartma paneli açık kalır. Ayarlarda varsayılan olarak kapalıdır.
+Keep videos muted on volume keys	Ses tuşlarında videoları sessiz tut
+Volume keys in a chat change the volume instead of playing the video or round video on screen with sound. Tap a video to hear it. Off by default in settings.	Bir sohbetteki ses tuşları, ekrandaki videoyu veya yuvarlak videoyu sesli oynatmak yerine sesi değiştirir. Duymak için videoya dokun. Ayarlarda varsayılan olarak kapalıdır.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Bildirimler

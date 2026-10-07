@@ -372,6 +372,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "in settings."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.KEEP_VIDEOS_MUTED)) {
+                chats.addPreference(mark(toggle(context, Settings.KEEP_VIDEOS_MUTED, L10n.t("Keep videos muted on volume keys"),
+                        PatchFamily.KEEP_VIDEOS_MUTED.coverageSummary(L10n.t("Volume keys in a chat change the volume instead of playing the video or round video on "
+                                + "screen with sound. Tap a video to hear it. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

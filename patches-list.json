@@ -1317,6 +1317,63 @@
       "options": []
     },
     {
+      "name": "Keep videos muted on volume keys",
+      "description": "Adds a switch, off by default, that stops the volume keys in a chat from playing the video or round video on screen with sound, so they only change the volume.",
+      "category": "Chats",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger.web": [
+          "12.10.6"
+        ],
+        "org.telegram.messenger.beta": [
+          "12.10.7"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "12.10.6",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71129
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram Beta",
+          "packageName": "org.telegram.messenger.beta",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "12.10.7",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71239
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Open links externally",
       "description": "Opens ordinary HTTP(S) links in your browser. Telegram links, login, payment and authenticated routes keep their existing behavior.",
       "category": "Privacy",

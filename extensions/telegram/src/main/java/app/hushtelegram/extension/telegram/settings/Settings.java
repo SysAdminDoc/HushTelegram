@@ -150,6 +150,12 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_hide_keyboard_on_scroll", FALSE);
 
     /**
+     * Volume keys in a chat change the volume instead of playing the video on screen with sound.
+     */
+    public static final BooleanSetting KEEP_VIDEOS_MUTED =
+            new BooleanSetting("hushtelegram_keep_videos_muted", FALSE);
+
+    /**
      * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
      * never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

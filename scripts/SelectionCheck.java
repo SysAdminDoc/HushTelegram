@@ -255,6 +255,7 @@ public final class SelectionCheck {
         hook(calls, flags, "exactNumbers", "misc/ExactNumbers", "format");
         hook(calls, flags, "revealSpoilers", "misc/Spoilers", "mediaCovered");
         hook(calls, flags, "hideKeyboardOnScroll", "misc/ScrollKeyboard", "chatScrolled");
+        hook(calls, flags, "keepVideosMuted", "misc/VolumeKeys", "chatTakesKey");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");
         hook(calls, flags, "disableUpdateChecks", "misc/UpdateChecks", "skipUpdateCheck");
         for (String[] bridge : List.of(

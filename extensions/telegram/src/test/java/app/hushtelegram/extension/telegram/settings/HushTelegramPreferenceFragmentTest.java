@@ -104,6 +104,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.EXACT_NUMBERS, "Exact numbers");
         ROW_TITLES.put(PatchFamily.REVEAL_SPOILERS, "Reveal spoilers");
         ROW_TITLES.put(PatchFamily.HIDE_KEYBOARD_ON_SCROLL, "Hide keyboard on scroll");
+        ROW_TITLES.put(PatchFamily.KEEP_VIDEOS_MUTED, "Keep videos muted on volume keys");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -232,7 +233,8 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.HIDE_TRANSLATE_BAR)
                         || build.contains(PatchFamily.EXACT_NUMBERS)
                         || build.contains(PatchFamily.REVEAL_SPOILERS)
-                        || build.contains(PatchFamily.HIDE_KEYBOARD_ON_SCROLL)) expected.add("Chats");
+                        || build.contains(PatchFamily.HIDE_KEYBOARD_ON_SCROLL)
+                        || build.contains(PatchFamily.KEEP_VIDEOS_MUTED)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
@@ -400,6 +402,13 @@ public class HushTelegramPreferenceFragmentTest {
             // The keyboard stays up on scroll until the switch is turned on.
             assertFalse(Settings.HIDE_KEYBOARD_ON_SCROLL.key,
                     ((SwitchPreference) page.findPreference(Settings.HIDE_KEYBOARD_ON_SCROLL.key)).isChecked());
+            assertEquals("Keep videos muted on volume keys", String.valueOf(page.findPreference(Settings.KEEP_VIDEOS_MUTED.key).getTitle()));
+            assertEquals("Volume keys in a chat change the volume instead of playing the video or round video on "
+                            + "screen with sound. Tap a video to hear it. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.KEEP_VIDEOS_MUTED.key).getSummary()));
+            // The chat gets volume keys until the switch is turned on.
+            assertFalse(Settings.KEEP_VIDEOS_MUTED.key,
+                    ((SwitchPreference) page.findPreference(Settings.KEEP_VIDEOS_MUTED.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {

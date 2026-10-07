@@ -80,6 +80,7 @@ public class PatchFamilyTest {
         Settings.EXACT_NUMBERS.resetToDefault();
         Settings.REVEAL_SPOILERS.resetToDefault();
         Settings.HIDE_KEYBOARD_ON_SCROLL.resetToDefault();
+        Settings.KEEP_VIDEOS_MUTED.resetToDefault();
         HookStatus.clear();
     }
 
@@ -87,6 +88,17 @@ public class PatchFamilyTest {
      * A switch is a family's, or the settings entry's own (the release check), and never both: a
      * switch in neither list goes unmentioned by the screen and the tests that hold Pause to it.
      */
+    @Test
+    public void keepVideosMutedHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
+        PatchFamily family = PatchFamily.KEEP_VIDEOS_MUTED;
+        assertEquals("Keep videos muted on volume keys", family.patchName);
+        assertEquals(Collections.singletonList(Settings.KEEP_VIDEOS_MUTED), family.switches);
+        assertFalse(Settings.KEEP_VIDEOS_MUTED.defaultValue);
+        assertFalse(Settings.KEEP_VIDEOS_MUTED.rebootApp);
+        assertTrue(family.expectedCapabilities().isEmpty());
+        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+    }
+
     @Test
     public void keyboardOnScrollHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
         PatchFamily family = PatchFamily.HIDE_KEYBOARD_ON_SCROLL;
@@ -366,7 +378,7 @@ public class PatchFamilyTest {
         assertEquals(Arrays.asList(
                 "Hide ads: on (hushtelegram_hide_ads=on)",
                 "Disable analytics: disabled by its switch (hushtelegram_disable_analytics=off)",
-                "not in this build: Hide Stories, Hide recommendations, Hide Premium, gifts and Stars, Hide promotional banners, Hide sponsored proxy channel, Hide popular apps, Hide contacts on Telegram, Hide greeting stickers, Disable chat swipe actions, Disable pull to next channel, Use normal paste, Show user and chat IDs, Disable double-tap reactions, Quiet contacts nag, Holiday look all year, Use system font, AMOLED black, Hide translate bar, Exact numbers, Reveal spoilers, Hide keyboard on scroll, Disable call debug upload, Disable draft link previews, Gallery camera on tap, Open links externally, Strip link tracking, Disable update checks, Repair Firebase push registration",
+                "not in this build: Hide Stories, Hide recommendations, Hide Premium, gifts and Stars, Hide promotional banners, Hide sponsored proxy channel, Hide popular apps, Hide contacts on Telegram, Hide greeting stickers, Disable chat swipe actions, Disable pull to next channel, Use normal paste, Show user and chat IDs, Disable double-tap reactions, Quiet contacts nag, Holiday look all year, Use system font, AMOLED black, Hide translate bar, Exact numbers, Reveal spoilers, Hide keyboard on scroll, Keep videos muted on volume keys, Disable call debug upload, Disable draft link previews, Gallery camera on tap, Open links externally, Strip link tracking, Disable update checks, Repair Firebase push registration",
                 "Hide ads coverage: channel ads, video ads, search ads",
                 "Disable analytics coverage: device statistics reports, channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures"),
                 running);
