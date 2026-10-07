@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(610);
+        Map<String, String> table = new HashMap<>(622);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -211,6 +211,8 @@ public final class L10nTranslations {
                 "Diagnose");
         table.put("Disable double-tap reactions",
                 "Reaktionen durch Doppeltippen deaktivieren");
+        table.put("Disable pull to archive",
+                "Ziehen zum Archiv ausschalten");
         table.put("Double taps don't add reactions in chats or the reaction-settings preview. Scrolling, taps, selection and explicit reaction menus stay as they are. Off by default in settings.",
                 "Doppeltippen f\u00fcgt in Chats oder der Reaktionsvorschau keine Reaktion hinzu. Scrollen, Tippen, Auswahl und Reaktionsmen\u00fcs bleiben wie gewohnt. In den Einstellungen standardm\u00e4\u00dfig aus.");
         table.put("Draft link previews",
@@ -255,6 +257,8 @@ public final class L10nTranslations {
                 "Kontakte auf Telegram ausblenden");
         table.put("Hide folder tab counters",
                 "Z\u00e4hler der Ordner-Tabs ausblenden");
+        table.put("Hide gallery camera tile",
+                "Kamerakachel in der Galerie ausblenden");
         table.put("Hide greeting stickers",
                 "Begr\u00fc\u00dfungssticker ausblenden");
         table.put("Hide keyboard on scroll",
@@ -297,13 +301,13 @@ public final class L10nTranslations {
                 "HushTelegram pausiert, sobald Telegram neu startet.");
         table.put("HushTelegram settings",
                 "HushTelegram-Einstellungen");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("HushTelegram settings couldn't open",
                 "HushTelegram-Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
         table.put("HushTelegram turns back on when Telegram restarts.",
                 "HushTelegram ist wieder aktiv, sobald Telegram neu startet.");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("ID",
                 "ID");
         table.put("ID copied",
@@ -390,6 +394,8 @@ public final class L10nTranslations {
                 "Aufrufe der Premium-Angebotsseite");
         table.put("Privacy",
                 "Datenschutz");
+        table.put("Pulling down the chat list no longer brings up a hidden archive. You can open it from Archived chats in the chat list's menu, or pin it to keep it in the list. Off by default in settings.",
+                "Wenn du die Chatliste nach unten ziehst, erscheint ein ausgeblendetes Archiv nicht mehr. Du kannst es \u00fcber Archivierte Chats im Men\u00fc der Chatliste \u00f6ffnen oder es anheften, damit es in der Liste bleibt. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                 "Wenn du am unteren Ende eines Kanals nach oben ziehst, scrollt die Ansicht nur. \u00d6ffne den n\u00e4chsten Kanal \u00fcber deine Chatliste.");
         table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.",
@@ -418,15 +424,15 @@ public final class L10nTranslations {
                 "Vollst\u00e4ndigen Bericht unter Download/Morphe speichern.");
         table.put("Save your switches to a file. They cover all the accounts in this Telegram app. Pause and Debug logging aren't included, and neither is the release check.",
                 "Speichert deine Schalter in einer Datei. Sie gelten f\u00fcr alle Konten in dieser Telegram-App. Pause und Debug-Protokollierung sind nicht enthalten, die Suche nach neuen Versionen auch nicht.");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Saved. Restart Telegram to apply this change.",
                 "Gespeichert. Starte Telegram neu, um diese \u00c4nderung zu \u00fcbernehmen.");
         table.put("Saving the settings file",
                 "Einstellungsdatei wird gespeichert");
         table.put("Search settings",
                 "Einstellungen suchen");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.",
                 "Der Apps-Tab der Suche l\u00e4sst die Liste Beliebte Apps von Telegram samt \u00dcberschrift und Ladezeilen weg, und Telegram fragt sie nicht ab. Von dir ge\u00f6ffnete Apps und andere Ergebnisse bleiben.");
         table.put("Selecting links by hand",
@@ -465,6 +471,8 @@ public final class L10nTranslations {
                 "Quellcode und Issues");
         table.put("Spoiler text, photos and videos show right away instead of waiting for a tap. View-once media, sensitive content and login codes stay covered, and text you're typing keeps its spoiler. Off by default in settings.",
                 "Spoiler-Text, -Fotos und -Videos erscheinen sofort, ohne dass du tippen musst. Einmal ansehbare Medien, sensible Inhalte und Anmeldecodes bleiben verdeckt, und Text, den du tippst, beh\u00e4lt seinen Spoiler. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
+        table.put("Start the camera on the rear lens",
+                "Kamera mit der R\u00fcckkamera starten");
         table.put("Starting to scroll through a chat closes the keyboard, the way Telegram already does while you search a chat. Telegram's emoji and sticker panel stays open. Off by default in settings.",
                 "Sobald du in einem Chat zu scrollen beginnst, schlie\u00dft sich die Tastatur, so wie Telegram es schon bei der Suche in einem Chat macht. Telegrams Emoji- und Sticker-Leiste bleibt offen. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("Stays in while paused",
@@ -525,6 +533,8 @@ public final class L10nTranslations {
                 "Die App mit der letzten Einstellungsdatei hat noch immer nicht geantwortet. Versuche es sp\u00e4ter noch einmal.");
         table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Die App, in der die Einstellungsdatei liegt, braucht zu lange, deshalb wartet HushTelegram nicht mehr. Sie kann das Speichern noch abschlie\u00dfen, also pr\u00fcfe die Datei, bevor du dich darauf verl\u00e4sst.");
+        table.put("The camera in the attachment menu starts on the rear lens every time you open it, instead of the lens you used last. You can still flip it while it's open. Off by default in settings.",
+                "Die Kamera im Anhangmen\u00fc startet jedes Mal mit der R\u00fcckkamera statt mit der zuletzt benutzten. Du kannst sie weiterhin umschalten, w\u00e4hrend sie offen ist. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Der Diagnosebericht lie\u00df sich noch nicht speichern. Versuche es gleich noch einmal.");
         table.put("The diagnostic report couldn't be saved. Try again.",
@@ -537,6 +547,11 @@ public final class L10nTranslations {
                 "Die Ordner-Tabs \u00fcber der Chatliste zeigen nur ihre Namen, ohne die Zahl ungelesener Chats. Die Chats bleiben ungelesen, und das Badge am App-Symbol \u00e4ndert sich nicht. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("The newest HushTelegram release is %1$s.",
                 "Die neueste Version von HushTelegram ist %1$s.");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
+        table.put("The photo grid in the attachment menu starts with your photos instead of a live camera tile. A chat picks it up the next time you open it. Off by default in settings.",
+                "Das Fotoraster im Anhangmen\u00fc beginnt mit deinen Fotos statt mit einer Live-Kamerakachel. Ein Chat \u00fcbernimmt das, wenn du ihn das n\u00e4chste Mal \u00f6ffnest. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("The setting couldn't finish updating. Its saved value is shown.",
                 "Die Einstellung lie\u00df sich nicht vollst\u00e4ndig aktualisieren. Der gespeicherte Wert wird angezeigt.");
         table.put("The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.",
@@ -547,9 +562,6 @@ public final class L10nTranslations {
                 "Es gibt keine Diagnosedaten zum L\u00f6schen.");
         table.put("There's no diagnostic data to put back.",
                 "Es gibt keine Diagnosedaten zum Wiederherstellen.");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("This build covers %1$s. Missing coverage: %2$s.",
                 "Dieser Build deckt %1$s ab. Fehlende Abdeckung: %2$s.");
         table.put("This build has no coverage for %1$s.",
@@ -658,6 +670,9 @@ public final class L10nTranslations {
                 "Tracking beim \u00d6ffnen von Links");
         table.put("poll links",
                 "Umfrage-Links");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("preview double-tap reactions",
                 "Vorschaureaktionen durch Doppeltippen");
         table.put("profile Gifts tabs",
@@ -670,9 +685,6 @@ public final class L10nTranslations {
                 "Suchwerbung");
         table.put("share sheet comments",
                 "Kommentare im Teilen-Men\u00fc");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("shared link tracking",
                 "Tracking bei geteilten Links");
         table.put("similar channels and bots",
@@ -686,7 +698,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(610);
+        Map<String, String> table = new HashMap<>(622);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -850,6 +862,8 @@ public final class L10nTranslations {
                 "Diagn\u00f3stico");
         table.put("Disable double-tap reactions",
                 "Desactivar reacciones al tocar dos veces");
+        table.put("Disable pull to archive",
+                "Desactivar deslizar para ver el archivo");
         table.put("Double taps don't add reactions in chats or the reaction-settings preview. Scrolling, taps, selection and explicit reaction menus stay as they are. Off by default in settings.",
                 "Tocar dos veces no a\u00f1ade reacciones en chats ni en la vista previa de reacciones. El desplazamiento, los toques, la selecci\u00f3n y los men\u00fas de reacciones siguen igual. Desactivado por defecto en los ajustes.");
         table.put("Draft link previews",
@@ -894,6 +908,8 @@ public final class L10nTranslations {
                 "Ocultar contactos en Telegram");
         table.put("Hide folder tab counters",
                 "Ocultar los contadores de las pesta\u00f1as de carpetas");
+        table.put("Hide gallery camera tile",
+                "Ocultar el recuadro de c\u00e1mara de la galer\u00eda");
         table.put("Hide greeting stickers",
                 "Ocultar stickers de saludo");
         table.put("Hide keyboard on scroll",
@@ -936,13 +952,13 @@ public final class L10nTranslations {
                 "HushTelegram se pausa cuando Telegram se reinicie.");
         table.put("HushTelegram settings",
                 "Configuraci\u00f3n de HushTelegram");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("HushTelegram settings couldn't open",
                 "No se pudo abrir la configuraci\u00f3n de HushTelegram");
         table.put("HushTelegram turns back on when Telegram restarts.",
                 "HushTelegram vuelve a activarse cuando Telegram se reinicie.");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("ID",
                 "ID");
         table.put("ID copied",
@@ -1029,6 +1045,8 @@ public final class L10nTranslations {
                 "vistas de promociones de Premium");
         table.put("Privacy",
                 "Privacidad");
+        table.put("Pulling down the chat list no longer brings up a hidden archive. You can open it from Archived chats in the chat list's menu, or pin it to keep it in the list. Off by default in settings.",
+                "Al deslizar hacia abajo la lista de chats ya no aparece un archivo oculto. Puedes abrirlo desde Chats archivados en el men\u00fa de la lista de chats, o fijarlo para que se quede en la lista. Desactivado por defecto en los ajustes.");
         table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                 "Al deslizar hacia arriba al final de un canal, solo se desplaza el contenido. Abre el siguiente canal desde tu lista de chats.");
         table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.",
@@ -1057,15 +1075,15 @@ public final class L10nTranslations {
                 "Guarda el informe completo en Download/Morphe.");
         table.put("Save your switches to a file. They cover all the accounts in this Telegram app. Pause and Debug logging aren't included, and neither is the release check.",
                 "Guarda tus interruptores en un archivo. Cubren todas las cuentas de esta app de Telegram. La pausa y el Registro de depuraci\u00f3n no se incluyen, y la b\u00fasqueda de nuevas versiones tampoco.");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Saved. Restart Telegram to apply this change.",
                 "Guardado. Reinicia Telegram para aplicar este cambio.");
         table.put("Saving the settings file",
                 "Guardando el archivo de configuraci\u00f3n");
         table.put("Search settings",
                 "Buscar ajustes");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.",
                 "La pesta\u00f1a Apps de la b\u00fasqueda omite la lista Apps populares de Telegram, con su encabezado y sus filas de carga, y Telegram no la solicita. Las apps que has abierto y los dem\u00e1s resultados se mantienen.");
         table.put("Selecting links by hand",
@@ -1104,6 +1122,8 @@ public final class L10nTranslations {
                 "C\u00f3digo fuente e incidencias");
         table.put("Spoiler text, photos and videos show right away instead of waiting for a tap. View-once media, sensitive content and login codes stay covered, and text you're typing keeps its spoiler. Off by default in settings.",
                 "El texto, las fotos y los videos con spoiler se ven al momento, sin tener que tocarlos. Los archivos de una sola visualizaci\u00f3n, el contenido sensible y los c\u00f3digos de inicio de sesi\u00f3n siguen cubiertos, y el texto que escribes conserva su spoiler. Desactivado por defecto en los ajustes.");
+        table.put("Start the camera on the rear lens",
+                "Abrir la c\u00e1mara con la lente trasera");
         table.put("Starting to scroll through a chat closes the keyboard, the way Telegram already does while you search a chat. Telegram's emoji and sticker panel stays open. Off by default in settings.",
                 "Al empezar a desplazarte por un chat se cierra el teclado, como Telegram ya hace mientras buscas en un chat. El panel de emojis y stickers de Telegram sigue abierto. Desactivado por defecto en los ajustes.");
         table.put("Stays in while paused",
@@ -1164,6 +1184,8 @@ public final class L10nTranslations {
                 "La app del \u00faltimo archivo de configuraci\u00f3n a\u00fan no ha respondido. Int\u00e9ntalo m\u00e1s tarde.");
         table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "La app que guarda el archivo de configuraci\u00f3n tarda demasiado, as\u00ed que HushTelegram dej\u00f3 de esperar. Esa app a\u00fan puede terminar de guardarlo, as\u00ed que revisa el archivo antes de confiar en \u00e9l.");
+        table.put("The camera in the attachment menu starts on the rear lens every time you open it, instead of the lens you used last. You can still flip it while it's open. Off by default in settings.",
+                "La c\u00e1mara del men\u00fa de adjuntos se abre siempre con la lente trasera, en vez de con la que usaste la \u00faltima vez. Puedes cambiarla mientras est\u00e1 abierta. Desactivado por defecto en los ajustes.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Todav\u00eda no se pudo guardar el informe de diagn\u00f3stico. Int\u00e9ntalo de nuevo en un momento.");
         table.put("The diagnostic report couldn't be saved. Try again.",
@@ -1176,6 +1198,11 @@ public final class L10nTranslations {
                 "Las pesta\u00f1as de carpetas sobre la lista de chats muestran solo su nombre, sin el n\u00famero de chats no le\u00eddos. Los chats siguen sin leer y el globo del icono de la app no cambia. Desactivado por defecto en los ajustes.");
         table.put("The newest HushTelegram release is %1$s.",
                 "La versi\u00f3n m\u00e1s reciente de HushTelegram es la %1$s.");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
+        table.put("The photo grid in the attachment menu starts with your photos instead of a live camera tile. A chat picks it up the next time you open it. Off by default in settings.",
+                "La cuadr\u00edcula de fotos del men\u00fa de adjuntos empieza con tus fotos en vez de con un recuadro de c\u00e1mara en vivo. Un chat lo aplica la pr\u00f3xima vez que lo abras. Desactivado por defecto en los ajustes.");
         table.put("The setting couldn't finish updating. Its saved value is shown.",
                 "No se pudo terminar de actualizar el ajuste. Se muestra su valor guardado.");
         table.put("The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.",
@@ -1186,9 +1213,6 @@ public final class L10nTranslations {
                 "No hay datos de diagn\u00f3stico que borrar.");
         table.put("There's no diagnostic data to put back.",
                 "No hay datos de diagn\u00f3stico que restaurar.");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("This build covers %1$s. Missing coverage: %2$s.",
                 "Esta versi\u00f3n cubre %1$s. Falta cobertura de %2$s.");
         table.put("This build has no coverage for %1$s.",
@@ -1297,6 +1321,9 @@ public final class L10nTranslations {
                 "seguimiento de enlaces abiertos");
         table.put("poll links",
                 "enlaces de encuestas");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("preview double-tap reactions",
                 "reacciones al tocar dos veces en la vista previa");
         table.put("profile Gifts tabs",
@@ -1309,9 +1336,6 @@ public final class L10nTranslations {
                 "anuncios en b\u00fasquedas");
         table.put("share sheet comments",
                 "comentarios del men\u00fa de compartir");
-    }
-
-    private static void fillEs5(Map<String, String> table) {
         table.put("shared link tracking",
                 "seguimiento de enlaces compartidos");
         table.put("similar channels and bots",
@@ -1325,7 +1349,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(610);
+        Map<String, String> table = new HashMap<>(622);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1489,6 +1513,8 @@ public final class L10nTranslations {
                 "Diagnostik");
         table.put("Disable double-tap reactions",
                 "Nonaktifkan reaksi ketuk dua kali");
+        table.put("Disable pull to archive",
+                "Nonaktifkan tarik ke arsip");
         table.put("Double taps don't add reactions in chats or the reaction-settings preview. Scrolling, taps, selection and explicit reaction menus stay as they are. Off by default in settings.",
                 "Ketuk dua kali tidak menambahkan reaksi di chat atau pratinjau reaksi. Menggulir, mengetuk, memilih, dan menu reaksi tetap seperti biasa. Nonaktif secara default di pengaturan.");
         table.put("Draft link previews",
@@ -1533,6 +1559,8 @@ public final class L10nTranslations {
                 "Sembunyikan kontak di Telegram");
         table.put("Hide folder tab counters",
                 "Sembunyikan penghitung tab folder");
+        table.put("Hide gallery camera tile",
+                "Sembunyikan kotak kamera galeri");
         table.put("Hide greeting stickers",
                 "Sembunyikan stiker sapaan");
         table.put("Hide keyboard on scroll",
@@ -1575,13 +1603,13 @@ public final class L10nTranslations {
                 "HushTelegram dijeda saat Telegram dimulai ulang.");
         table.put("HushTelegram settings",
                 "Pengaturan HushTelegram");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("HushTelegram settings couldn't open",
                 "Pengaturan HushTelegram tidak dapat dibuka");
         table.put("HushTelegram turns back on when Telegram restarts.",
                 "HushTelegram aktif lagi saat Telegram dimulai ulang.");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("ID",
                 "ID");
         table.put("ID copied",
@@ -1668,6 +1696,8 @@ public final class L10nTranslations {
                 "tampilan promosi Premium");
         table.put("Privacy",
                 "Privasi");
+        table.put("Pulling down the chat list no longer brings up a hidden archive. You can open it from Archived chats in the chat list's menu, or pin it to keep it in the list. Off by default in settings.",
+                "Menarik daftar obrolan ke bawah tidak lagi memunculkan arsip yang tersembunyi. Anda bisa membukanya dari Obrolan yang diarsipkan di menu daftar obrolan, atau menyematkannya agar tetap ada di daftar. Nonaktif secara default di pengaturan.");
         table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                 "Menarik ke atas di bagian bawah kanal hanya menggulir tampilan. Buka kanal berikutnya dari daftar obrolan.");
         table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.",
@@ -1696,15 +1726,15 @@ public final class L10nTranslations {
                 "Simpan laporan lengkap di Download/Morphe.");
         table.put("Save your switches to a file. They cover all the accounts in this Telegram app. Pause and Debug logging aren't included, and neither is the release check.",
                 "Simpan sakelar Anda ke sebuah file. Sakelar ini mencakup semua akun di aplikasi Telegram ini. Jeda dan Pencatatan debug tidak disertakan, begitu pula pemeriksaan rilis.");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Saved. Restart Telegram to apply this change.",
                 "Tersimpan. Mulai ulang Telegram untuk menerapkan perubahan ini.");
         table.put("Saving the settings file",
                 "Menyimpan file pengaturan");
         table.put("Search settings",
                 "Cari pengaturan");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.",
                 "Tab Aplikasi di pencarian melewati daftar Aplikasi populer dari Telegram, beserta judul dan baris pemuatannya, dan Telegram tidak memintanya. Aplikasi yang pernah kamu buka dan hasil lainnya tetap ada.");
         table.put("Selecting links by hand",
@@ -1743,6 +1773,8 @@ public final class L10nTranslations {
                 "Kode sumber dan laporan masalah");
         table.put("Spoiler text, photos and videos show right away instead of waiting for a tap. View-once media, sensitive content and login codes stay covered, and text you're typing keeps its spoiler. Off by default in settings.",
                 "Teks, foto, dan video spoiler langsung terlihat tanpa perlu diketuk. Media sekali lihat, konten sensitif, dan kode masuk tetap tertutup, dan teks yang sedang kamu ketik tetap memakai spoiler-nya. Nonaktif secara default di pengaturan.");
+        table.put("Start the camera on the rear lens",
+                "Mulai kamera dengan lensa belakang");
         table.put("Starting to scroll through a chat closes the keyboard, the way Telegram already does while you search a chat. Telegram's emoji and sticker panel stays open. Off by default in settings.",
                 "Mulai menggulir obrolan akan menutup keyboard, seperti yang sudah dilakukan Telegram saat kamu mencari di obrolan. Panel emoji dan stiker Telegram tetap terbuka. Nonaktif secara default di pengaturan.");
         table.put("Stays in while paused",
@@ -1803,6 +1835,8 @@ public final class L10nTranslations {
                 "Aplikasi yang menyimpan file pengaturan terakhir masih belum merespons. Coba lagi nanti.");
         table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Aplikasi yang menyimpan file pengaturan terlalu lama, jadi HushTelegram berhenti menunggu. Aplikasi itu mungkin masih menyelesaikan penyimpanannya, jadi periksa file itu sebelum mengandalkannya.");
+        table.put("The camera in the attachment menu starts on the rear lens every time you open it, instead of the lens you used last. You can still flip it while it's open. Off by default in settings.",
+                "Kamera di menu lampiran selalu dimulai dengan lensa belakang, bukan lensa yang terakhir Anda pakai. Anda tetap bisa membaliknya saat kamera terbuka. Nonaktif secara default di pengaturan.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Laporan diagnostik belum dapat disimpan. Coba lagi dalam beberapa saat.");
         table.put("The diagnostic report couldn't be saved. Try again.",
@@ -1815,6 +1849,11 @@ public final class L10nTranslations {
                 "Tab folder di atas daftar obrolan hanya menampilkan namanya, tanpa jumlah obrolan yang belum dibaca. Obrolan tetap belum dibaca dan lencana ikon aplikasi tidak berubah. Nonaktif secara default di pengaturan.");
         table.put("The newest HushTelegram release is %1$s.",
                 "Rilis HushTelegram terbaru adalah %1$s.");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
+        table.put("The photo grid in the attachment menu starts with your photos instead of a live camera tile. A chat picks it up the next time you open it. Off by default in settings.",
+                "Kisi foto di menu lampiran dimulai dengan foto Anda, bukan kotak kamera langsung. Sebuah obrolan menerapkannya saat Anda membukanya lagi. Nonaktif secara default di pengaturan.");
         table.put("The setting couldn't finish updating. Its saved value is shown.",
                 "Pengaturan ini tidak dapat selesai diperbarui. Nilai yang tersimpan ditampilkan.");
         table.put("The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.",
@@ -1825,9 +1864,6 @@ public final class L10nTranslations {
                 "Tidak ada data diagnostik yang dapat dihapus.");
         table.put("There's no diagnostic data to put back.",
                 "Tidak ada data diagnostik yang dapat dikembalikan.");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("This build covers %1$s. Missing coverage: %2$s.",
                 "Versi ini mencakup %1$s. Cakupan yang belum tersedia: %2$s.");
         table.put("This build has no coverage for %1$s.",
@@ -1936,6 +1972,9 @@ public final class L10nTranslations {
                 "pelacakan tautan yang dibuka");
         table.put("poll links",
                 "tautan polling");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("preview double-tap reactions",
                 "reaksi ketuk dua kali di pratinjau");
         table.put("profile Gifts tabs",
@@ -1948,9 +1987,6 @@ public final class L10nTranslations {
                 "iklan pencarian");
         table.put("share sheet comments",
                 "komentar di lembar berbagi");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("shared link tracking",
                 "pelacakan tautan yang dibagikan");
         table.put("similar channels and bots",
@@ -1964,7 +2000,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(610);
+        Map<String, String> table = new HashMap<>(622);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2128,6 +2164,8 @@ public final class L10nTranslations {
                 "Diagn\u00f3stico");
         table.put("Disable double-tap reactions",
                 "Desativar rea\u00e7\u00f5es por toque duplo");
+        table.put("Disable pull to archive",
+                "Desativar puxar para o arquivo");
         table.put("Double taps don't add reactions in chats or the reaction-settings preview. Scrolling, taps, selection and explicit reaction menus stay as they are. Off by default in settings.",
                 "Toques duplos n\u00e3o adicionam rea\u00e7\u00f5es nos chats ou na pr\u00e9via de rea\u00e7\u00f5es. Rolagem, toques, sele\u00e7\u00e3o e menus de rea\u00e7\u00e3o continuam iguais. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Draft link previews",
@@ -2172,6 +2210,8 @@ public final class L10nTranslations {
                 "Ocultar contatos no Telegram");
         table.put("Hide folder tab counters",
                 "Ocultar os contadores das abas de pastas");
+        table.put("Hide gallery camera tile",
+                "Ocultar o bloco da c\u00e2mera na galeria");
         table.put("Hide greeting stickers",
                 "Ocultar figurinhas de sauda\u00e7\u00e3o");
         table.put("Hide keyboard on scroll",
@@ -2214,13 +2254,13 @@ public final class L10nTranslations {
                 "O HushTelegram ser\u00e1 pausado quando o Telegram for reiniciado.");
         table.put("HushTelegram settings",
                 "Configura\u00e7\u00f5es do HushTelegram");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("HushTelegram settings couldn't open",
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es do HushTelegram");
         table.put("HushTelegram turns back on when Telegram restarts.",
                 "O HushTelegram ser\u00e1 reativado quando o Telegram for reiniciado.");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("ID",
                 "ID");
         table.put("ID copied",
@@ -2307,6 +2347,8 @@ public final class L10nTranslations {
                 "visualiza\u00e7\u00f5es de promo\u00e7\u00f5es do Premium");
         table.put("Privacy",
                 "Privacidade");
+        table.put("Pulling down the chat list no longer brings up a hidden archive. You can open it from Archived chats in the chat list's menu, or pin it to keep it in the list. Off by default in settings.",
+                "Puxar a lista de conversas para baixo n\u00e3o mostra mais um arquivo oculto. Voc\u00ea pode abri-lo em Conversas arquivadas no menu da lista de conversas, ou fix\u00e1-lo para mant\u00ea-lo na lista. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                 "Deslizar para cima no fim de um canal apenas rola o conte\u00fado. Abra o pr\u00f3ximo canal pela sua lista de conversas.");
         table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.",
@@ -2335,15 +2377,15 @@ public final class L10nTranslations {
                 "Salve o relat\u00f3rio completo em Download/Morphe.");
         table.put("Save your switches to a file. They cover all the accounts in this Telegram app. Pause and Debug logging aren't included, and neither is the release check.",
                 "Salve suas op\u00e7\u00f5es em um arquivo. Elas valem para todas as contas deste app do Telegram. Pausa e Registro de depura\u00e7\u00e3o n\u00e3o s\u00e3o inclu\u00eddos, nem a verifica\u00e7\u00e3o de novas vers\u00f5es.");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Saved. Restart Telegram to apply this change.",
                 "Salvo. Reinicie o Telegram para aplicar esta altera\u00e7\u00e3o.");
         table.put("Saving the settings file",
                 "Salvando o arquivo de configura\u00e7\u00f5es");
         table.put("Search settings",
                 "Buscar configura\u00e7\u00f5es");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.",
                 "A aba Apps da busca n\u00e3o mostra a lista Apps populares do Telegram, nem o t\u00edtulo e as linhas de carregamento, e o Telegram n\u00e3o a solicita. Os apps que voc\u00ea abriu e os outros resultados continuam.");
         table.put("Selecting links by hand",
@@ -2382,6 +2424,8 @@ public final class L10nTranslations {
                 "C\u00f3digo-fonte e relatos de problemas");
         table.put("Spoiler text, photos and videos show right away instead of waiting for a tap. View-once media, sensitive content and login codes stay covered, and text you're typing keeps its spoiler. Off by default in settings.",
                 "Textos, fotos e v\u00eddeos com spoiler aparecem na hora, sem precisar tocar. M\u00eddias de visualiza\u00e7\u00e3o \u00fanica, conte\u00fado sens\u00edvel e c\u00f3digos de login continuam cobertos, e o texto que voc\u00ea est\u00e1 digitando mant\u00e9m o spoiler. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
+        table.put("Start the camera on the rear lens",
+                "Abrir a c\u00e2mera na lente traseira");
         table.put("Starting to scroll through a chat closes the keyboard, the way Telegram already does while you search a chat. Telegram's emoji and sticker panel stays open. Off by default in settings.",
                 "Come\u00e7ar a rolar um chat fecha o teclado, como o Telegram j\u00e1 faz enquanto voc\u00ea pesquisa em um chat. O painel de emojis e figurinhas do Telegram continua aberto. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Stays in while paused",
@@ -2442,6 +2486,8 @@ public final class L10nTranslations {
                 "O app do \u00faltimo arquivo de configura\u00e7\u00f5es ainda n\u00e3o respondeu. Tente de novo mais tarde.");
         table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "O app que guarda o arquivo de configura\u00e7\u00f5es est\u00e1 demorando demais, ent\u00e3o o HushTelegram parou de esperar. Esse app ainda pode terminar de salv\u00e1-lo, ent\u00e3o confira o arquivo antes de confiar nele.");
+        table.put("The camera in the attachment menu starts on the rear lens every time you open it, instead of the lens you used last. You can still flip it while it's open. Off by default in settings.",
+                "A c\u00e2mera do menu de anexos abre sempre na lente traseira, em vez da \u00faltima que voc\u00ea usou. Voc\u00ea ainda pode trocar de lente com ela aberta. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "O relat\u00f3rio de diagn\u00f3stico ainda n\u00e3o p\u00f4de ser salvo. Tente de novo em instantes.");
         table.put("The diagnostic report couldn't be saved. Try again.",
@@ -2454,6 +2500,11 @@ public final class L10nTranslations {
                 "As abas de pastas acima da lista de chats mostram s\u00f3 o nome, sem o n\u00famero de chats n\u00e3o lidos. Os chats continuam n\u00e3o lidos e o selo do \u00edcone do app n\u00e3o muda. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("The newest HushTelegram release is %1$s.",
                 "A vers\u00e3o mais nova do HushTelegram \u00e9 %1$s.");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
+        table.put("The photo grid in the attachment menu starts with your photos instead of a live camera tile. A chat picks it up the next time you open it. Off by default in settings.",
+                "A grade de fotos do menu de anexos come\u00e7a com suas fotos em vez de um bloco com a c\u00e2mera ao vivo. Uma conversa passa a usar isso na pr\u00f3xima vez que voc\u00ea abri-la. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("The setting couldn't finish updating. Its saved value is shown.",
                 "N\u00e3o foi poss\u00edvel concluir a atualiza\u00e7\u00e3o da configura\u00e7\u00e3o. O valor salvo est\u00e1 sendo mostrado.");
         table.put("The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.",
@@ -2464,9 +2515,6 @@ public final class L10nTranslations {
                 "N\u00e3o h\u00e1 dados de diagn\u00f3stico para limpar.");
         table.put("There's no diagnostic data to put back.",
                 "N\u00e3o h\u00e1 dados de diagn\u00f3stico para restaurar.");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("This build covers %1$s. Missing coverage: %2$s.",
                 "Esta vers\u00e3o cobre %1$s. Falta cobertura para %2$s.");
         table.put("This build has no coverage for %1$s.",
@@ -2575,6 +2623,9 @@ public final class L10nTranslations {
                 "rastreamento de links abertos");
         table.put("poll links",
                 "links de enquetes");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("preview double-tap reactions",
                 "rea\u00e7\u00f5es por toque duplo na pr\u00e9via");
         table.put("profile Gifts tabs",
@@ -2587,9 +2638,6 @@ public final class L10nTranslations {
                 "an\u00fancios na busca");
         table.put("share sheet comments",
                 "coment\u00e1rios ao compartilhar");
-    }
-
-    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("shared link tracking",
                 "rastreamento de links compartilhados");
         table.put("similar channels and bots",
@@ -2603,7 +2651,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(610);
+        Map<String, String> table = new HashMap<>(622);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2767,6 +2815,8 @@ public final class L10nTranslations {
                 "Tan\u0131lama");
         table.put("Disable double-tap reactions",
                 "\u00c7ift dokunma tepkilerini kapat");
+        table.put("Disable pull to archive",
+                "Ar\u015five \u00e7ekmeyi kapat");
         table.put("Double taps don't add reactions in chats or the reaction-settings preview. Scrolling, taps, selection and explicit reaction menus stay as they are. Off by default in settings.",
                 "\u00c7ift dokunma sohbetlerde veya tepki \u00f6nizlemesinde tepki eklemez. Kayd\u0131rma, dokunma, se\u00e7im ve tepki men\u00fcleri ayn\u0131 kal\u0131r. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Draft link previews",
@@ -2811,6 +2861,8 @@ public final class L10nTranslations {
                 "Telegram'daki ki\u015fileri gizle");
         table.put("Hide folder tab counters",
                 "Klas\u00f6r sekmesi saya\u00e7lar\u0131n\u0131 gizle");
+        table.put("Hide gallery camera tile",
+                "Galerideki kamera kutucu\u011funu gizle");
         table.put("Hide greeting stickers",
                 "Selamlama \u00e7\u0131kartmalar\u0131n\u0131 gizle");
         table.put("Hide keyboard on scroll",
@@ -2853,13 +2905,13 @@ public final class L10nTranslations {
                 "HushTelegram, Telegram yeniden ba\u015flad\u0131\u011f\u0131nda duraklat\u0131l\u0131r.");
         table.put("HushTelegram settings",
                 "HushTelegram ayarlar\u0131");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("HushTelegram settings couldn't open",
                 "HushTelegram ayarlar\u0131 a\u00e7\u0131lamad\u0131");
         table.put("HushTelegram turns back on when Telegram restarts.",
                 "HushTelegram, Telegram yeniden ba\u015flad\u0131\u011f\u0131nda tekrar a\u00e7\u0131l\u0131r.");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("ID",
                 "Kimlik");
         table.put("ID copied",
@@ -2946,6 +2998,8 @@ public final class L10nTranslations {
                 "Premium tan\u0131t\u0131m g\u00f6r\u00fcnt\u00fclemeleri");
         table.put("Privacy",
                 "Gizlilik");
+        table.put("Pulling down the chat list no longer brings up a hidden archive. You can open it from Archived chats in the chat list's menu, or pin it to keep it in the list. Off by default in settings.",
+                "Sohbet listesini a\u015fa\u011f\u0131 \u00e7ekti\u011finizde gizli ar\u015fiv art\u0131k g\u00f6r\u00fcnmez. Ar\u015fivi sohbet listesinin men\u00fcs\u00fcndeki Ar\u015fivlenmi\u015f sohbetler ile a\u00e7abilir ya da listede kalmas\u0131 i\u00e7in sabitleyebilirsiniz. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
                 "Kanal\u0131n sonunda yukar\u0131 \u00e7ekmek yaln\u0131zca i\u00e7eri\u011fi kayd\u0131r\u0131r. Sonraki kanal\u0131 sohbet listenizden a\u00e7\u0131n.");
         table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list. Off by default in settings.",
@@ -2974,15 +3028,15 @@ public final class L10nTranslations {
                 "Tam raporu Download/Morphe konumuna kaydeder.");
         table.put("Save your switches to a file. They cover all the accounts in this Telegram app. Pause and Debug logging aren't included, and neither is the release check.",
                 "Anahtarlar\u0131n\u0131 bir dosyaya kaydet. Anahtarlar bu Telegram uygulamas\u0131ndaki t\u00fcm hesaplar i\u00e7in ge\u00e7erlidir. Duraklatma ve Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc dahil edilmez, s\u00fcr\u00fcm denetimi de edilmez.");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Saved. Restart Telegram to apply this change.",
                 "Kaydedildi. Bu de\u011fi\u015fikli\u011fi uygulamak i\u00e7in Telegram'\u0131 yeniden ba\u015flat.");
         table.put("Saving the settings file",
                 "Ayar dosyas\u0131 kaydediliyor");
         table.put("Search settings",
                 "Ayarlarda ara");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Search's Apps tab skips Telegram's Popular apps list, with its heading and loading rows, and Telegram doesn't ask for it. Apps you've opened and other results stay.",
                 "Aramadaki Uygulamalar sekmesi, Telegram'\u0131n Pop\u00fcler uygulamalar listesini ba\u015fl\u0131\u011f\u0131 ve y\u00fckleme sat\u0131rlar\u0131yla birlikte atlar ve Telegram bu listeyi istemez. A\u00e7t\u0131\u011f\u0131n\u0131z uygulamalar ve di\u011fer sonu\u00e7lar kal\u0131r.");
         table.put("Selecting links by hand",
@@ -3021,6 +3075,8 @@ public final class L10nTranslations {
                 "Kaynak kodu ve sorunlar");
         table.put("Spoiler text, photos and videos show right away instead of waiting for a tap. View-once media, sensitive content and login codes stay covered, and text you're typing keeps its spoiler. Off by default in settings.",
                 "Spoiler metinleri, foto\u011fraflar\u0131 ve videolar\u0131 dokunmana gerek kalmadan hemen g\u00f6r\u00fcn\u00fcr. Tek g\u00f6r\u00fcnt\u00fclemelik medya, hassas i\u00e7erik ve giri\u015f kodlar\u0131 kapal\u0131 kal\u0131r, yazd\u0131\u011f\u0131n metin de spoiler\u2019\u0131n\u0131 korur. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
+        table.put("Start the camera on the rear lens",
+                "Kameray\u0131 arka lensle ba\u015flat");
         table.put("Starting to scroll through a chat closes the keyboard, the way Telegram already does while you search a chat. Telegram's emoji and sticker panel stays open. Off by default in settings.",
                 "Bir sohbette kayd\u0131rmaya ba\u015flamak klavyeyi kapat\u0131r, t\u0131pk\u0131 Telegram\u2019\u0131n sohbet i\u00e7inde arama yaparken yapt\u0131\u011f\u0131 gibi. Telegram\u2019\u0131n emoji ve \u00e7\u0131kartma paneli a\u00e7\u0131k kal\u0131r. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Stays in while paused",
@@ -3081,6 +3137,8 @@ public final class L10nTranslations {
                 "Son ayar dosyas\u0131n\u0131 tutan uygulama h\u00e2l\u00e2 yan\u0131t vermedi. Daha sonra tekrar dene.");
         table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Ayar dosyas\u0131n\u0131 tutan uygulama \u00e7ok uzun s\u00fcr\u00fcyor, bu y\u00fczden HushTelegram beklemeyi b\u0131rakt\u0131. O uygulama kaydetmeyi yine de bitirebilir, bu y\u00fczden dosyaya g\u00fcvenmeden \u00f6nce onu kontrol et.");
+        table.put("The camera in the attachment menu starts on the rear lens every time you open it, instead of the lens you used last. You can still flip it while it's open. Off by default in settings.",
+                "Ek men\u00fcs\u00fcndeki kamera, en son kulland\u0131\u011f\u0131n\u0131z lens yerine her seferinde arka lensle a\u00e7\u0131l\u0131r. Kamera a\u00e7\u0131kken yine de lensi de\u011fi\u015ftirebilirsiniz. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Tan\u0131lama raporu hen\u00fcz kaydedilemedi. Birazdan tekrar dene.");
         table.put("The diagnostic report couldn't be saved. Try again.",
@@ -3093,6 +3151,11 @@ public final class L10nTranslations {
                 "Sohbet listesinin \u00fcst\u00fcndeki klas\u00f6r sekmeleri okunmam\u0131\u015f sohbet say\u0131s\u0131 olmadan yaln\u0131zca adlar\u0131n\u0131 g\u00f6sterir. Sohbetler okunmam\u0131\u015f kal\u0131r ve uygulama simgesindeki rozet de\u011fi\u015fmez. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("The newest HushTelegram release is %1$s.",
                 "En yeni HushTelegram s\u00fcr\u00fcm\u00fc %1$s.");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
+        table.put("The photo grid in the attachment menu starts with your photos instead of a live camera tile. A chat picks it up the next time you open it. Off by default in settings.",
+                "Ek men\u00fcs\u00fcndeki foto\u011fraf \u0131zgaras\u0131 canl\u0131 kamera kutucu\u011fu yerine foto\u011fraflar\u0131n\u0131zla ba\u015flar. Bir sohbet bunu, onu bir sonraki a\u00e7\u0131\u015f\u0131n\u0131zda uygular. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("The setting couldn't finish updating. Its saved value is shown.",
                 "Ayar\u0131n g\u00fcncellenmesi tamamlanamad\u0131. Kay\u0131tl\u0131 de\u011feri g\u00f6steriliyor.");
         table.put("The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.",
@@ -3103,9 +3166,6 @@ public final class L10nTranslations {
                 "Temizlenecek tan\u0131lama verisi yok.");
         table.put("There's no diagnostic data to put back.",
                 "Geri getirilecek tan\u0131lama verisi yok.");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("This build covers %1$s. Missing coverage: %2$s.",
                 "Bu derlemenin kapsam\u0131: %1$s. Eksik kapsam: %2$s.");
         table.put("This build has no coverage for %1$s.",
@@ -3214,6 +3274,9 @@ public final class L10nTranslations {
                 "a\u00e7\u0131lan ba\u011flant\u0131lar\u0131n takibi");
         table.put("poll links",
                 "anket ba\u011flant\u0131lar\u0131");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("preview double-tap reactions",
                 "\u00f6nizlemede \u00e7ift dokunma tepkileri");
         table.put("profile Gifts tabs",
@@ -3226,9 +3289,6 @@ public final class L10nTranslations {
                 "arama reklamlar\u0131");
         table.put("share sheet comments",
                 "payla\u015f\u0131m sayfas\u0131 yorumlar\u0131");
-    }
-
-    private static void fillTr5(Map<String, String> table) {
         table.put("shared link tracking",
                 "payla\u015f\u0131lan ba\u011flant\u0131lar\u0131n takibi");
         table.put("similar channels and bots",

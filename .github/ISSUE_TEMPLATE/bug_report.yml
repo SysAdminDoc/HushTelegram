@@ -112,6 +112,9 @@ body:
         - Hide sender names when forwarding
         - Voice messages in the music player
         - Silence people outside your contacts
+        - Disable pull to archive
+        - Start the camera on the rear lens
+        - Hide gallery camera tile
         - Strip link tracking
         - HushTelegram settings
     validations:

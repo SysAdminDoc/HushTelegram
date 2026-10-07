@@ -271,6 +271,12 @@ Voice messages in the music player	Sesli mesajlar müzik çalarda
 While a voice message plays, tapping the bar above the chat opens Telegram's full music player with its seek bar, instead of jumping to the message. View-once voice messages stay as they are. Off by default in settings.	Bir sesli mesaj çalarken sohbetin üstündeki çubuğa dokunduğunuzda, mesaja atlamak yerine Telegram'ın arama çubuklu tam müzik çaları açılır. Tek seferlik sesli mesajlar olduğu gibi kalır. Ayarlarda varsayılan olarak kapalıdır.
 Silence people outside your contacts	Kişileriniz dışındakileri sessize al
 A private message from someone who isn't in your contacts still shows a notification, just without sound or vibration. Bots, reminders and Telegram's login codes keep their sound. Off by default in settings.	Kişileriniz arasında olmayan birinden gelen özel mesaj yine bildirim gösterir, yalnızca sessiz ve titreşimsiz. Botlar, hatırlatıcılar ve Telegram giriş kodları seslerini korur. Ayarlarda varsayılan olarak kapalıdır.
+Disable pull to archive	Arşive çekmeyi kapat
+Pulling down the chat list no longer brings up a hidden archive. You can open it from Archived chats in the chat list's menu, or pin it to keep it in the list. Off by default in settings.	Sohbet listesini aşağı çektiğinizde gizli arşiv artık görünmez. Arşivi sohbet listesinin menüsündeki Arşivlenmiş sohbetler ile açabilir ya da listede kalması için sabitleyebilirsiniz. Ayarlarda varsayılan olarak kapalıdır.
+Start the camera on the rear lens	Kamerayı arka lensle başlat
+The camera in the attachment menu starts on the rear lens every time you open it, instead of the lens you used last. You can still flip it while it's open. Off by default in settings.	Ek menüsündeki kamera, en son kullandığınız lens yerine her seferinde arka lensle açılır. Kamera açıkken yine de lensi değiştirebilirsiniz. Ayarlarda varsayılan olarak kapalıdır.
+Hide gallery camera tile	Galerideki kamera kutucuğunu gizle
+The photo grid in the attachment menu starts with your photos instead of a live camera tile. A chat picks it up the next time you open it. Off by default in settings.	Ek menüsündeki fotoğraf ızgarası canlı kamera kutucuğu yerine fotoğraflarınızla başlar. Bir sohbet bunu, onu bir sonraki açışınızda uygular. Ayarlarda varsayılan olarak kapalıdır.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Bildirimler

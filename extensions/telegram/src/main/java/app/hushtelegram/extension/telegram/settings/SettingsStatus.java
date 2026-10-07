@@ -77,6 +77,9 @@ public final class SettingsStatus {
     public static boolean forwardHideSender() { return false; }
     public static boolean voiceMusicPlayer() { return false; }
     public static boolean silenceNonContacts() { return false; }
+    public static boolean disableArchivePull() { return false; }
+    public static boolean rearCameraFirst() { return false; }
+    public static boolean hideGalleryCameraTile() { return false; }
     public static boolean storyRequests() { return false; }
     public static boolean storyBar() { return false; }
     public static boolean storyCamera() { return false; }

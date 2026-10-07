@@ -458,6 +458,26 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "sound. Off by default in settings."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.DISABLE_ARCHIVE_PULL)) {
+                chats.addPreference(mark(toggle(context, Settings.DISABLE_ARCHIVE_PULL, L10n.t("Disable pull to archive"),
+                        PatchFamily.DISABLE_ARCHIVE_PULL.coverageSummary(L10n.t("Pulling down the chat list no longer brings up a hidden archive. You can open it from "
+                                + "Archived chats in the chat list's menu, or pin it to keep it in the list. Off by "
+                                + "default in settings."))),
+                        SettingsIcons.CHAT));
+            }
+            if (build.contains(PatchFamily.REAR_CAMERA_FIRST)) {
+                chats.addPreference(mark(toggle(context, Settings.REAR_CAMERA_FIRST, L10n.t("Start the camera on the rear lens"),
+                        PatchFamily.REAR_CAMERA_FIRST.coverageSummary(L10n.t("The camera in the attachment menu starts on the rear lens every time you open it, "
+                                + "instead of the lens you used last. You can still flip it while it's open. Off by "
+                                + "default in settings."))),
+                        SettingsIcons.CHAT));
+            }
+            if (build.contains(PatchFamily.HIDE_GALLERY_CAMERA_TILE)) {
+                chats.addPreference(mark(toggle(context, Settings.HIDE_GALLERY_CAMERA_TILE, L10n.t("Hide gallery camera tile"),
+                        PatchFamily.HIDE_GALLERY_CAMERA_TILE.coverageSummary(L10n.t("The photo grid in the attachment menu starts with your photos instead of a live camera "
+                                + "tile. A chat picks it up the next time you open it. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

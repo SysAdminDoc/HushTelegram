@@ -56,6 +56,9 @@ public final class FamilyNames {
     public static final String FORWARD_HIDE_SENDER = "Hide sender names when forwarding";
     public static final String VOICE_MUSIC_PLAYER = "Voice messages in the music player";
     public static final String SILENCE_NON_CONTACTS = "Silence people outside your contacts";
+    public static final String DISABLE_ARCHIVE_PULL = "Disable pull to archive";
+    public static final String REAR_CAMERA_FIRST = "Start the camera on the rear lens";
+    public static final String HIDE_GALLERY_CAMERA_TILE = "Hide gallery camera tile";
     public static final String DISABLE_ANALYTICS = "Disable analytics";
     public static final String DISABLE_CALL_DEBUG = "Disable call debug upload";
     public static final String DISABLE_DRAFT_PREVIEWS = "Disable draft link previews";

@@ -116,6 +116,9 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.FORWARD_HIDE_SENDER, "Hide sender names when forwarding");
         ROW_TITLES.put(PatchFamily.VOICE_MUSIC_PLAYER, "Voice messages in the music player");
         ROW_TITLES.put(PatchFamily.SILENCE_NON_CONTACTS, "Silence people outside your contacts");
+        ROW_TITLES.put(PatchFamily.DISABLE_ARCHIVE_PULL, "Disable pull to archive");
+        ROW_TITLES.put(PatchFamily.REAR_CAMERA_FIRST, "Start the camera on the rear lens");
+        ROW_TITLES.put(PatchFamily.HIDE_GALLERY_CAMERA_TILE, "Hide gallery camera tile");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -256,7 +259,10 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.HIDE_FOLDER_COUNTERS)
                         || build.contains(PatchFamily.FORWARD_HIDE_SENDER)
                         || build.contains(PatchFamily.VOICE_MUSIC_PLAYER)
-                        || build.contains(PatchFamily.SILENCE_NON_CONTACTS)) expected.add("Chats");
+                        || build.contains(PatchFamily.SILENCE_NON_CONTACTS)
+                        || build.contains(PatchFamily.DISABLE_ARCHIVE_PULL)
+                        || build.contains(PatchFamily.REAR_CAMERA_FIRST)
+                        || build.contains(PatchFamily.HIDE_GALLERY_CAMERA_TILE)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
@@ -522,6 +528,29 @@ public class HushTelegramPreferenceFragmentTest {
             // A stranger's message rings until the switch is turned on.
             assertFalse(Settings.SILENCE_NON_CONTACTS.key,
                     ((SwitchPreference) page.findPreference(Settings.SILENCE_NON_CONTACTS.key)).isChecked());
+            assertEquals("Disable pull to archive", String.valueOf(page.findPreference(Settings.DISABLE_ARCHIVE_PULL.key).getTitle()));
+            assertEquals("Pulling down the chat list no longer brings up a hidden archive. You can open it from "
+                            + "Archived chats in the chat list's menu, or pin it to keep it in the list. Off by default "
+                            + "in settings.",
+                    String.valueOf(page.findPreference(Settings.DISABLE_ARCHIVE_PULL.key).getSummary()));
+            // A pull brings the hidden archive back until the switch is turned on.
+            assertFalse(Settings.DISABLE_ARCHIVE_PULL.key,
+                    ((SwitchPreference) page.findPreference(Settings.DISABLE_ARCHIVE_PULL.key)).isChecked());
+            assertEquals("Start the camera on the rear lens", String.valueOf(page.findPreference(Settings.REAR_CAMERA_FIRST.key).getTitle()));
+            assertEquals("The camera in the attachment menu starts on the rear lens every time you open it, instead "
+                            + "of the lens you used last. You can still flip it while it's open. Off by default in "
+                            + "settings.",
+                    String.valueOf(page.findPreference(Settings.REAR_CAMERA_FIRST.key).getSummary()));
+            // The camera opens on the last lens until the switch is turned on.
+            assertFalse(Settings.REAR_CAMERA_FIRST.key,
+                    ((SwitchPreference) page.findPreference(Settings.REAR_CAMERA_FIRST.key)).isChecked());
+            assertEquals("Hide gallery camera tile", String.valueOf(page.findPreference(Settings.HIDE_GALLERY_CAMERA_TILE.key).getTitle()));
+            assertEquals("The photo grid in the attachment menu starts with your photos instead of a live camera "
+                            + "tile. A chat picks it up the next time you open it. Off by default in settings.",
+                    String.valueOf(page.findPreference(Settings.HIDE_GALLERY_CAMERA_TILE.key).getSummary()));
+            // The gallery shows its camera tile until the switch is turned on.
+            assertFalse(Settings.HIDE_GALLERY_CAMERA_TILE.key,
+                    ((SwitchPreference) page.findPreference(Settings.HIDE_GALLERY_CAMERA_TILE.key)).isChecked());
             List<Preference> rows = new ArrayList<>();
             collect(page.getPreferenceScreen(), rows);
             for (Preference row : rows) {

@@ -46,6 +46,12 @@ Working version 0.0.11.
 
 * **Telegram:** A new Silence people outside your contacts switch, off by default, lets a private message from someone who isn't in your contacts arrive quietly. You still get the notification, it just doesn't ring or buzz. Bots, reminders and Telegram's login codes keep their sound.
 
+* **Telegram:** A new Disable pull to archive switch, off by default, keeps a hidden archive out of the chat list so pulling down doesn't bring it up. The chat list's menu gets an Archived chats entry, and a pinned archive stays where it is.
+
+* **Telegram:** A new Start the camera on the rear lens switch, off by default, opens the attachment menu's camera on the rear lens each time instead of the lens you used last.
+
+* **Telegram:** A new Hide gallery camera tile switch, off by default, takes the live camera tile out of the attachment menu's photo grid so it starts with your photos.
+
 * **Telegram:** Show user and chat IDs has a second switch, Show profile data center, off by default. It adds a row to a profile's menu with the data center, 1 to 5, that holds the profile's photo, read from the copy Telegram already has. A profile without a photo shows no row. Either switch works without the other.
 
 * **Telegram:** Disable pull to next channel has a second switch, Stop pull to next topic, off by default. With it on, pulling up at the bottom of a forum topic only scrolls instead of opening the next topic. Each switch covers only its own pull, and a switch flipped mid-drag counts when you let go.

@@ -227,6 +227,25 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_silence_non_contacts", FALSE);
 
     /**
+     * A hidden archive stays out of the chat list, so pulling down doesn't bring it up. The chat
+     * list's menu opens it instead.
+     */
+    public static final BooleanSetting DISABLE_ARCHIVE_PULL =
+            new BooleanSetting("hushtelegram_disable_archive_pull", FALSE, true);
+
+    /**
+     * The attachment menu's camera starts on the rear lens each time, instead of the lens used last.
+     */
+    public static final BooleanSetting REAR_CAMERA_FIRST =
+            new BooleanSetting("hushtelegram_rear_camera_first", FALSE);
+
+    /**
+     * The attachment menu's photo grid starts with your photos, without the live camera tile.
+     */
+    public static final BooleanSetting HIDE_GALLERY_CAMERA_TILE =
+            new BooleanSetting("hushtelegram_hide_gallery_camera_tile", FALSE);
+
+    /**
      * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
      * never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

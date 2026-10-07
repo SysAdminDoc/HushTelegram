@@ -271,6 +271,12 @@ Voice messages in the music player	Pesan suara di pemutar musik
 While a voice message plays, tapping the bar above the chat opens Telegram's full music player with its seek bar, instead of jumping to the message. View-once voice messages stay as they are. Off by default in settings.	Saat pesan suara diputar, mengetuk bilah di atas obrolan membuka pemutar musik lengkap Telegram dengan bilah geser, bukan melompat ke pesannya. Pesan suara sekali dengar tetap seperti semula. Nonaktif secara default di pengaturan.
 Silence people outside your contacts	Senyapkan orang di luar kontak Anda
 A private message from someone who isn't in your contacts still shows a notification, just without sound or vibration. Bots, reminders and Telegram's login codes keep their sound. Off by default in settings.	Pesan pribadi dari orang yang tidak ada di kontak Anda tetap menampilkan notifikasi, hanya tanpa suara atau getaran. Bot, pengingat, dan kode masuk Telegram tetap bersuara. Nonaktif secara default di pengaturan.
+Disable pull to archive	Nonaktifkan tarik ke arsip
+Pulling down the chat list no longer brings up a hidden archive. You can open it from Archived chats in the chat list's menu, or pin it to keep it in the list. Off by default in settings.	Menarik daftar obrolan ke bawah tidak lagi memunculkan arsip yang tersembunyi. Anda bisa membukanya dari Obrolan yang diarsipkan di menu daftar obrolan, atau menyematkannya agar tetap ada di daftar. Nonaktif secara default di pengaturan.
+Start the camera on the rear lens	Mulai kamera dengan lensa belakang
+The camera in the attachment menu starts on the rear lens every time you open it, instead of the lens you used last. You can still flip it while it's open. Off by default in settings.	Kamera di menu lampiran selalu dimulai dengan lensa belakang, bukan lensa yang terakhir Anda pakai. Anda tetap bisa membaliknya saat kamera terbuka. Nonaktif secara default di pengaturan.
+Hide gallery camera tile	Sembunyikan kotak kamera galeri
+The photo grid in the attachment menu starts with your photos instead of a live camera tile. A chat picks it up the next time you open it. Off by default in settings.	Kisi foto di menu lampiran dimulai dengan foto Anda, bukan kotak kamera langsung. Sebuah obrolan menerapkannya saat Anda membukanya lagi. Nonaktif secara default di pengaturan.
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Notifikasi

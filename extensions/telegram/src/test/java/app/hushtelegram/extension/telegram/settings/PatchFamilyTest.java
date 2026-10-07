@@ -92,6 +92,9 @@ public class PatchFamilyTest {
         Settings.FORWARD_HIDE_SENDER.resetToDefault();
         Settings.VOICE_MUSIC_PLAYER.resetToDefault();
         Settings.SILENCE_NON_CONTACTS.resetToDefault();
+        Settings.DISABLE_ARCHIVE_PULL.resetToDefault();
+        Settings.REAR_CAMERA_FIRST.resetToDefault();
+        Settings.HIDE_GALLERY_CAMERA_TILE.resetToDefault();
         HookStatus.clear();
     }
 
@@ -99,6 +102,39 @@ public class PatchFamilyTest {
      * A switch is a family's, or the settings entry's own (the release check), and never both: a
      * switch in neither list goes unmentioned by the screen and the tests that hold Pause to it.
      */
+    @Test
+    public void hideGalleryCameraTileHasItsOwnOffByDefaultSwitch() {
+        PatchFamily family = PatchFamily.HIDE_GALLERY_CAMERA_TILE;
+        assertEquals("Hide gallery camera tile", family.patchName);
+        assertEquals(Collections.singletonList(Settings.HIDE_GALLERY_CAMERA_TILE), family.switches);
+        assertFalse(Settings.HIDE_GALLERY_CAMERA_TILE.defaultValue);
+        assertFalse(Settings.HIDE_GALLERY_CAMERA_TILE.rebootApp);
+        assertTrue(family.expectedCapabilities().isEmpty());
+        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+    }
+
+    @Test
+    public void rearCameraFirstHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
+        PatchFamily family = PatchFamily.REAR_CAMERA_FIRST;
+        assertEquals("Start the camera on the rear lens", family.patchName);
+        assertEquals(Collections.singletonList(Settings.REAR_CAMERA_FIRST), family.switches);
+        assertFalse(Settings.REAR_CAMERA_FIRST.defaultValue);
+        assertFalse(Settings.REAR_CAMERA_FIRST.rebootApp);
+        assertTrue(family.expectedCapabilities().isEmpty());
+        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+    }
+
+    @Test
+    public void disableArchivePullHasItsOwnOffByDefaultSwitchThatRestartsTheApp() {
+        PatchFamily family = PatchFamily.DISABLE_ARCHIVE_PULL;
+        assertEquals("Disable pull to archive", family.patchName);
+        assertEquals(Collections.singletonList(Settings.DISABLE_ARCHIVE_PULL), family.switches);
+        assertFalse(Settings.DISABLE_ARCHIVE_PULL.defaultValue);
+        assertTrue(Settings.DISABLE_ARCHIVE_PULL.rebootApp);
+        assertTrue(family.expectedCapabilities().isEmpty());
+        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+    }
+
     @Test
     public void silenceNonContactsHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
         PatchFamily family = PatchFamily.SILENCE_NON_CONTACTS;
@@ -511,7 +547,7 @@ public class PatchFamilyTest {
         assertEquals(Arrays.asList(
                 "Hide ads: on (hushtelegram_hide_ads=on)",
                 "Disable analytics: disabled by its switch (hushtelegram_disable_analytics=off)",
-                "not in this build: Hide Stories, Hide recommendations, Hide Premium, gifts and Stars, Hide promotional banners, Hide sponsored proxy channel, Hide popular apps, Hide contacts on Telegram, Hide greeting stickers, Disable chat swipe actions, Disable pull to next channel, Use normal paste, Show user and chat IDs, Disable double-tap reactions, Quiet contacts nag, Holiday look all year, Use system font, AMOLED black, Hide translate bar, Exact numbers, Reveal spoilers, Hide keyboard on scroll, Keep videos muted on volume keys, Swipe back on profiles, Hide phone number, Message times with seconds, Allow chat blur on slower phones, Play voice messages one at a time, Turn off haptic feedback, Turn off reaction effects, Hide folder tab counters, Hide sender names when forwarding, Voice messages in the music player, Silence people outside your contacts, Disable call debug upload, Disable draft link previews, Gallery camera on tap, Open links externally, Strip link tracking, Disable update checks, Repair Firebase push registration",
+                "not in this build: Hide Stories, Hide recommendations, Hide Premium, gifts and Stars, Hide promotional banners, Hide sponsored proxy channel, Hide popular apps, Hide contacts on Telegram, Hide greeting stickers, Disable chat swipe actions, Disable pull to next channel, Use normal paste, Show user and chat IDs, Disable double-tap reactions, Quiet contacts nag, Holiday look all year, Use system font, AMOLED black, Hide translate bar, Exact numbers, Reveal spoilers, Hide keyboard on scroll, Keep videos muted on volume keys, Swipe back on profiles, Hide phone number, Message times with seconds, Allow chat blur on slower phones, Play voice messages one at a time, Turn off haptic feedback, Turn off reaction effects, Hide folder tab counters, Hide sender names when forwarding, Voice messages in the music player, Silence people outside your contacts, Disable pull to archive, Start the camera on the rear lens, Hide gallery camera tile, Disable call debug upload, Disable draft link previews, Gallery camera on tap, Open links externally, Strip link tracking, Disable update checks, Repair Firebase push registration",
                 "Hide ads coverage: channel ads, video ads, search ads",
                 "Disable analytics coverage: device statistics reports, channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures"),
                 running);

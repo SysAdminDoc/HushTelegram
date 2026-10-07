@@ -274,6 +274,15 @@ public class PausedHooksTest {
         // A stranger's notification goes out silently.
         probes.put(PatchFamily.SILENCE_NON_CONTACTS, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.NonContactsForTests.on()));
+        // A hidden archive stays out of the chat list.
+        probes.put(PatchFamily.DISABLE_ARCHIVE_PULL, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.ArchivePullForTests.on()));
+        // The attachment camera starts on the rear lens.
+        probes.put(PatchFamily.REAR_CAMERA_FIRST, Collections.singletonList(
+                () -> !app.hushtelegram.extension.telegram.misc.RearCamera.front(true)));
+        // The attachment gallery is built without its camera tile.
+        probes.put(PatchFamily.HIDE_GALLERY_CAMERA_TILE, Collections.singletonList(
+                () -> !app.hushtelegram.extension.telegram.misc.GalleryCameraTile.tile(true)));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),
