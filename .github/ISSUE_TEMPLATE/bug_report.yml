@@ -119,6 +119,7 @@ body:
         - Ignore mentions in muted chats
         - Hide blocked users in groups
         - Hide Telegram Features and Invite Friends
+        - Add Repeat to the message menu
         - Strip link tracking
         - HushTelegram settings
     validations:

@@ -282,6 +282,28 @@ Hide blocked users in groups	Ocultar usuários bloqueados em grupos
 Messages from people you've blocked are left out of the groups and supergroups you open. Private chats and channel posts stay as they are. Nothing is deleted, so turning it off and reopening the chat brings them back. Telegram loads a long blocked list a bit at a time, so someone it hasn't loaded yet still shows. Off by default in settings.	Mensagens de pessoas que você bloqueou ficam de fora dos grupos e supergrupos que você abre. Chats privados e posts de canais continuam como estão. Nada é apagado, então desativar e reabrir o chat traz as mensagens de volta. O Telegram carrega uma lista longa de bloqueados aos poucos, então alguém que ele ainda não carregou continua aparecendo. Desativado por padrão nas configurações.
 Hide Telegram Features and Invite Friends	Ocultar Recursos do Telegram e Convidar amigos
 Settings drops its Telegram Features row and Contacts drops Invite Friends. When you have no contacts yet, the invite list Contacts shows in their place goes too. Off by default in settings.	As configurações deixam de mostrar a linha Recursos do Telegram e os Contatos deixam de mostrar Convidar amigos. Se você ainda não tem contatos, a lista de convites que aparece no lugar deles também some. Desativado por padrão nas configurações.
+Add Repeat to the message menu	Adicionar Repetir ao menu de mensagens
+Puts Repeat under Forward in a message's long-press menu. It sends the message again to the same chat as a new message from you. It only shows where Telegram offers Forward and you can write, so it won't appear in protected or secret chats. Off by default in settings.	Coloca Repetir abaixo de Encaminhar no menu que você abre ao tocar e segurar uma mensagem. Ele envia a mensagem de novo para o mesmo chat, como uma nova mensagem sua. Só aparece onde o Telegram oferece Encaminhar e você pode escrever, então nunca em chats protegidos ou secretos. Desativado por padrão nas configurações.
+Add Copy photo to the message menu	Adicionar Copiar foto ao menu de mensagens
+Puts Copy photo under Forward in a photo's long-press menu once the photo has downloaded. It copies the picture itself, so you can paste it into another app. It won't appear in protected or secret chats. Off by default in settings.	Coloca Copiar foto abaixo de Encaminhar no menu que você abre ao tocar e segurar uma foto, depois que ela foi baixada. Copia a própria imagem, para você colar em outro app. Não aparece em chats protegidos ou secretos. Desativado por padrão nas configurações.
+Add Message details to the message menu	Adicionar Detalhes da mensagem ao menu de mensagens
+Puts Message details at the end of a message's long-press menu. It shows the message's IDs, when it was sent and edited, where it was forwarded from and the file's data center and size, with a Copy button. Off by default in settings.	Coloca Detalhes da mensagem no fim do menu que você abre ao tocar e segurar uma mensagem. Mostra os IDs da mensagem, quando ela foi enviada e editada, de onde foi encaminhada e o data center e o tamanho do arquivo, com um botão para copiar. Desativado por padrão nas configurações.
+Repeat	Repetir
+Copy photo	Copiar foto
+Photo copied	Foto copiada
+Message details	Detalhes da mensagem
+Message ID: %1$s	ID da mensagem: %1$s
+Chat ID: %1$s	ID do chat: %1$s
+Sender ID: %1$s	ID do remetente: %1$s
+Sent: %1$s	Enviada: %1$s
+Edited: %1$s	Editada: %1$s
+Forwarded from: %1$s	Encaminhada de: %1$s
+Original sender ID: %1$s	ID do remetente original: %1$s
+Originally sent: %1$s	Enviada originalmente: %1$s
+File data center: %1$s	Data center do arquivo: %1$s
+File size: %1$s	Tamanho do arquivo: %1$s
+Copy	Copiar
+Message details copied	Detalhes da mensagem copiados
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Notificações

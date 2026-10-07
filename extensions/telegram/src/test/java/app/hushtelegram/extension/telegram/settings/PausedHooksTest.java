@@ -295,6 +295,11 @@ public class PausedHooksTest {
         // Settings loses Telegram Features and Contacts loses Invite Friends.
         probes.put(PatchFamily.HIDE_FEATURES_AND_INVITE, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.FeaturesInviteForTests.on()));
+        // A message's long-press menu offers Repeat, Copy photo and Message details, each under its own switch.
+        probes.put(PatchFamily.MESSAGE_MENU_REPEAT, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.MessageMenuForTests.repeatOn(),
+                () -> app.hushtelegram.extension.telegram.misc.MessageMenuForTests.copyPhotoOn(),
+                () -> app.hushtelegram.extension.telegram.misc.MessageMenuForTests.detailsOn()));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),

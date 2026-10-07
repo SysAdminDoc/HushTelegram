@@ -507,6 +507,24 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "default in settings."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.MESSAGE_MENU_REPEAT)) {
+                chats.addPreference(mark(toggle(context, Settings.MESSAGE_MENU_REPEAT, L10n.t("Add Repeat to the message menu"),
+                        PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Puts Repeat under Forward in a message's long-press menu. It sends the message again "
+                                + "to the same chat as a new message from you. It only shows where Telegram offers "
+                                + "Forward and you can write, so it won't appear in protected or secret chats. Off by "
+                                + "default in settings."))),
+                        SettingsIcons.CHAT));
+                chats.addPreference(mark(toggle(context, Settings.MESSAGE_MENU_COPY_PHOTO, L10n.t("Add Copy photo to the message menu"),
+                        PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Puts Copy photo under Forward in a photo's long-press menu once the photo has "
+                                + "downloaded. It copies the picture itself, so you can paste it into another app. It "
+                                + "won't appear in protected or secret chats. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+                chats.addPreference(mark(toggle(context, Settings.MESSAGE_MENU_DETAILS, L10n.t("Add Message details to the message menu"),
+                        PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Puts Message details at the end of a message's long-press menu. It shows the message's "
+                                + "IDs, when it was sent and edited, where it was forwarded from and the file's data "
+                                + "center and size, with a Copy button. Off by default in settings."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

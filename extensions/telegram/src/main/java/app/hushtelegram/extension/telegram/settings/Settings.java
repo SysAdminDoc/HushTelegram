@@ -270,6 +270,20 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_hide_features_and_invite", FALSE);
 
     /**
+     * A message's long-press menu gets Repeat, which sends the message again to the same chat.
+     */
+    public static final BooleanSetting MESSAGE_MENU_REPEAT =
+            new BooleanSetting("hushtelegram_message_menu_repeat", FALSE);
+
+    /** A photo's long-press menu gets Copy photo, which puts the downloaded picture on the clipboard. */
+    public static final BooleanSetting MESSAGE_MENU_COPY_PHOTO =
+            new BooleanSetting("hushtelegram_message_menu_copy_photo", FALSE);
+
+    /** A message's long-press menu gets Message details, a dialog of its IDs, times and file facts. */
+    public static final BooleanSetting MESSAGE_MENU_DETAILS =
+            new BooleanSetting("hushtelegram_message_menu_details", FALSE);
+
+    /**
      * The device statistics report the server can ask for (a storage-type boolean, sent as a
      * help.saveAppLog event) and a channel's read metrics (how long each post stayed on screen) are
      * never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

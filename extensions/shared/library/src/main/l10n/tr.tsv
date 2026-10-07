@@ -285,6 +285,28 @@ Hide blocked users in groups	Gruplarda engellenen kullanıcıları gizle
 Messages from people you've blocked are left out of the groups and supergroups you open. Private chats and channel posts stay as they are. Nothing is deleted, so turning it off and reopening the chat brings them back. Telegram loads a long blocked list a bit at a time, so someone it hasn't loaded yet still shows. Off by default in settings.	Engellediğiniz kişilerin mesajları açtığınız gruplarda ve süper gruplarda gösterilmez. Özel sohbetler ve kanal gönderileri olduğu gibi kalır. Hiçbir şey silinmez, bu yüzden kapatıp sohbeti yeniden açtığınızda mesajlar geri gelir. Telegram uzun bir engellenenler listesini parça parça yükler, bu yüzden henüz yüklemediği biri görünmeye devam eder. Ayarlarda varsayılan olarak kapalıdır.
 Hide Telegram Features and Invite Friends	Telegram Özellikleri ve Arkadaşlarını Davet Et satırlarını gizle
 Settings drops its Telegram Features row and Contacts drops Invite Friends. When you have no contacts yet, the invite list Contacts shows in their place goes too. Off by default in settings.	Ayarlar'da Telegram Özellikleri satırı, Kişiler'de ise Arkadaşlarını Davet Et satırı görünmez. Henüz hiç kişiniz yoksa Kişiler'in onların yerine gösterdiği davet listesi de kaldırılır. Ayarlarda varsayılan olarak kapalıdır.
+Add Repeat to the message menu	Mesaj menüsüne Tekrarla ekle
+Puts Repeat under Forward in a message's long-press menu. It sends the message again to the same chat as a new message from you. It only shows where Telegram offers Forward and you can write, so it won't appear in protected or secret chats. Off by default in settings.	Bir mesaja uzun bastığınızda açılan menüde İlet'in altına Tekrarla koyar. Mesajı aynı sohbete sizden yeni bir mesaj olarak yeniden gönderir. Yalnızca Telegram'ın İlet seçeneği sunduğu ve yazabildiğiniz yerlerde görünür, yani korumalı veya gizli sohbetlerde asla görünmez. Ayarlarda varsayılan olarak kapalıdır.
+Add Copy photo to the message menu	Mesaj menüsüne Fotoğrafı kopyala ekle
+Puts Copy photo under Forward in a photo's long-press menu once the photo has downloaded. It copies the picture itself, so you can paste it into another app. It won't appear in protected or secret chats. Off by default in settings.	Bir fotoğrafa uzun bastığınızda açılan menüde, fotoğraf indirildikten sonra İlet'in altına Fotoğrafı kopyala koyar. Resmin kendisini kopyalar, böylece başka bir uygulamaya yapıştırabilirsiniz. Korumalı veya gizli sohbetlerde görünmez. Ayarlarda varsayılan olarak kapalıdır.
+Add Message details to the message menu	Mesaj menüsüne Mesaj ayrıntıları ekle
+Puts Message details at the end of a message's long-press menu. It shows the message's IDs, when it was sent and edited, where it was forwarded from and the file's data center and size, with a Copy button. Off by default in settings.	Bir mesaja uzun bastığınızda açılan menünün sonuna Mesaj ayrıntıları koyar. Mesajın kimliklerini, ne zaman gönderilip düzenlendiğini, nereden iletildiğini ve dosyanın veri merkezi ile boyutunu bir Kopyala düğmesiyle gösterir. Ayarlarda varsayılan olarak kapalıdır.
+Repeat	Tekrarla
+Copy photo	Fotoğrafı kopyala
+Photo copied	Fotoğraf kopyalandı
+Message details	Mesaj ayrıntıları
+Message ID: %1$s	Mesaj kimliği: %1$s
+Chat ID: %1$s	Sohbet kimliği: %1$s
+Sender ID: %1$s	Gönderen kimliği: %1$s
+Sent: %1$s	Gönderildi: %1$s
+Edited: %1$s	Düzenlendi: %1$s
+Forwarded from: %1$s	Şuradan iletildi: %1$s
+Original sender ID: %1$s	Asıl gönderenin kimliği: %1$s
+Originally sent: %1$s	İlk gönderilme: %1$s
+File data center: %1$s	Dosyanın veri merkezi: %1$s
+File size: %1$s	Dosya boyutu: %1$s
+Copy	Kopyala
+Message details copied	Mesaj ayrıntıları kopyalandı
 
 # context: Notifications repair and bottom-pull controls.
 Notifications	Bildirimler

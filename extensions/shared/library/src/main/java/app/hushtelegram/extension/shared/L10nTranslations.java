@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(638);
+        Map<String, String> table = new HashMap<>(682);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -100,6 +100,12 @@ public final class L10nTranslations {
                 "Konten");
         table.put("Accounts confirmed for push: %1$s",
                 "F\u00fcr Push best\u00e4tigte Konten: %1$s");
+        table.put("Add Copy photo to the message menu",
+                "Foto kopieren zum Nachrichtenmen\u00fc hinzuf\u00fcgen");
+        table.put("Add Message details to the message menu",
+                "Nachrichtendetails zum Nachrichtenmen\u00fc hinzuf\u00fcgen");
+        table.put("Add Repeat to the message menu",
+                "Wiederholen zum Nachrichtenmen\u00fc hinzuf\u00fcgen");
         table.put("Ads in channels",
                 "Werbung in Kan\u00e4len");
         table.put("Ads in channels and search",
@@ -144,6 +150,8 @@ public final class L10nTranslations {
                 "Kan\u00e4le zeigen keine gesponserten Nachrichten, die Suche zeigt keine gesponserten Konten, und Videos laufen ohne Werbung. Telegram fragt nie danach, deshalb gilt keine davon als gesehen.");
         table.put("Chat ID %1$s",
                 "Chat-ID %1$s");
+        table.put("Chat ID: %1$s",
+                "Chat-ID: %1$s");
         table.put("Chats",
                 "Chats");
         table.put("Chats in another language stop showing Telegram's translate bar at the top, and Translate moves to the chat's menu. A chat you're translating keeps its bar so you can go back to the original. Off by default in settings.",
@@ -160,6 +168,8 @@ public final class L10nTranslations {
                 "Diagnosedaten l\u00f6schen");
         table.put("Clear search",
                 "Suche l\u00f6schen");
+        table.put("Copy",
+                "Kopieren");
         table.put("Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
                 "Kopiere einen Kurzbericht oder speichere den vollst\u00e4ndigen Bericht unter Download/Morphe. Links, IDs, Cookies und Anmeldetokens werden ausgelassen. Pr\u00fcfe ihn vor dem Teilen auf andere private Angaben.");
         table.put("Copy a short report to the clipboard.",
@@ -168,6 +178,11 @@ public final class L10nTranslations {
                 "Chat-ID %1$s kopieren");
         table.put("Copy data center %1$s",
                 "Rechenzentrum %1$s kopieren");
+    }
+
+    private static void fillDe1(Map<String, String> table) {
+        table.put("Copy photo",
+                "Foto kopieren");
         table.put("Copy quick report",
                 "Kurzbericht kopieren");
         table.put("Copy user ID %1$s",
@@ -178,9 +193,6 @@ public final class L10nTranslations {
                 "Die Einstellungen lie\u00dfen sich nicht importieren. Es wurde nichts ge\u00e4ndert.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "Diese Datei lie\u00df sich nicht \u00f6ffnen. Es wurde nichts ge\u00e4ndert.");
-    }
-
-    private static void fillDe1(Map<String, String> table) {
         table.put("Couldn't open the file picker. Try again.",
                 "Die Dateiauswahl lie\u00df sich nicht \u00f6ffnen. Versuche es noch einmal.");
         table.put("Couldn't put back the diagnostic data. Try again.",
@@ -219,6 +231,8 @@ public final class L10nTranslations {
                 "Linkvorschau in Entw\u00fcrfen");
         table.put("Each new forward starts with Telegram's Hide sender's name option turned on, so the copies arrive without the original author. You can still turn it off before sending, and article forwards follow Telegram's Premium rule. Off by default in settings.",
                 "Jede neue Weiterleitung beginnt mit eingeschalteter Telegram-Option Absendernamen verbergen, sodass die Kopien ohne den urspr\u00fcnglichen Absender ankommen. Du kannst sie vor dem Senden trotzdem ausschalten, und f\u00fcr Artikel gilt Telegrams Premium-Regel. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
+        table.put("Edited: %1$s",
+                "Bearbeitet: %1$s");
         table.put("Empties the log and the hook findings a report would include.",
                 "Leert das Protokoll und die Hook-Ergebnisse, die ein Bericht enthalten w\u00fcrde.");
         table.put("Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.",
@@ -231,8 +245,14 @@ public final class L10nTranslations {
                 "Diagnosebericht exportieren");
         table.put("Export settings",
                 "Einstellungen exportieren");
+        table.put("File data center: %1$s",
+                "Rechenzentrum der Datei: %1$s");
+        table.put("File size: %1$s",
+                "Dateigr\u00f6\u00dfe: %1$s");
         table.put("Firebase certificate header",
                 "Firebase-Zertifikat-Header");
+        table.put("Forwarded from: %1$s",
+                "Weitergeleitet von: %1$s");
         table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
                 "Ab dem n\u00e4chsten Start verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Was beim Patchen festgelegt wurde, bleibt aktiv, und deine Auswahl bleibt gespeichert.");
         table.put("Full report saved to %1$s",
@@ -281,6 +301,9 @@ public final class L10nTranslations {
                 "Gesponserten Proxy-Kanal ausblenden");
         table.put("Hide time on stickers",
                 "Uhrzeit auf Stickern ausblenden");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Hide translate bar",
                 "\u00dcbersetzungsleiste ausblenden");
         table.put("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.",
@@ -301,9 +324,6 @@ public final class L10nTranslations {
                 "HushTelegram %1$s ist f\u00fcr Telegram %2$s gedacht.");
         table.put("HushTelegram is on",
                 "HushTelegram ist aktiv");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("HushTelegram is paused",
                 "HushTelegram ist pausiert");
         table.put("HushTelegram pauses when Telegram restarts.",
@@ -342,6 +362,12 @@ public final class L10nTranslations {
                 "Lokaler Benachrichtigungsstatus");
         table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
                 "Mitglieder-, Abonnenten-, Aufruf-, Antwort- und Reaktionszahlen erscheinen vollst\u00e4ndig, etwa 12,345 statt 12.3K. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
+        table.put("Message ID: %1$s",
+                "Nachrichten-ID: %1$s");
+        table.put("Message details",
+                "Nachrichtendetails");
+        table.put("Message details copied",
+                "Nachrichtendetails kopiert");
         table.put("Message times with seconds",
                 "Nachrichtenzeit mit Sekunden");
         table.put("Messages from people you've blocked are left out of the groups and supergroups you open. Private chats and channel posts stay as they are. Nothing is deleted, so turning it off and reopening the chat brings them back. Telegram loads a long blocked list a bit at a time, so someone it hasn't loaded yet still shows. Off by default in settings.",
@@ -384,14 +410,23 @@ public final class L10nTranslations {
                 "\u00d6ffnet normale HTTP(S)-Links in deinem Browser. Telegram-Links sowie Anmelde-, Zahlungs- und authentifizierte Links behalten ihr bisheriges Verhalten.");
         table.put("Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings.",
                 "Optionale lokale Bereinigung beim \u00d6ffnen von Links und in der Auswahl f\u00fcr \u201eLink teilen\u201c. Entfernt nur utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid und fbclid. Bei einem unbekannten Abfrageparameter bleibt die gesamte URL erhalten. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
+        table.put("Original sender ID: %1$s",
+                "ID des urspr\u00fcnglichen Absenders: %1$s");
+        table.put("Originally sent: %1$s",
+                "Urspr\u00fcnglich gesendet: %1$s");
         table.put("Pastes text without Telegram's HTML, table or monospace conversion. Whitespace and URLs stay intact. Other clipboard actions stay available. Off by default in settings.",
                 "F\u00fcgt Text ohne Telegrams HTML-, Tabellen- oder Monospace-Umwandlung ein. Leerzeichen und URLs bleiben erhalten. Andere Zwischenablageaktionen bleiben verf\u00fcgbar. In den Einstellungen standardm\u00e4\u00dfig aus.");
         table.put("Pause",
                 "Pausieren");
         table.put("Pause HushTelegram",
                 "HushTelegram pausieren");
+        table.put("Photo copied",
+                "Foto kopiert");
         table.put("Play voice messages one at a time",
                 "Sprachnachrichten einzeln abspielen");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Post Story button",
                 "Schaltfl\u00e4che zum Posten einer Story");
         table.put("Premium promo accepts",
@@ -412,6 +447,12 @@ public final class L10nTranslations {
                 "Wenn du am unteren Ende eines Forenthemas nach oben ziehst, scrollt die Ansicht nur. \u00d6ffne das n\u00e4chste Thema \u00fcber die Themenliste. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("Push token saved: %1$s",
                 "Push-Token gespeichert: %1$s");
+        table.put("Puts Copy photo under Forward in a photo's long-press menu once the photo has downloaded. It copies the picture itself, so you can paste it into another app. It won't appear in protected or secret chats. Off by default in settings.",
+                "Setzt Foto kopieren unter Weiterleiten in das Men\u00fc, das du mit langem Dr\u00fccken auf ein Foto \u00f6ffnest, sobald es heruntergeladen ist. Es kopiert das Bild selbst, damit du es in eine andere App einf\u00fcgen kannst. In gesch\u00fctzten oder geheimen Chats erscheint es nicht. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
+        table.put("Puts Message details at the end of a message's long-press menu. It shows the message's IDs, when it was sent and edited, where it was forwarded from and the file's data center and size, with a Copy button. Off by default in settings.",
+                "Setzt Nachrichtendetails ans Ende des Men\u00fcs, das du mit langem Dr\u00fccken auf eine Nachricht \u00f6ffnest. Es zeigt die IDs der Nachricht, wann sie gesendet und bearbeitet wurde, woher sie weitergeleitet wurde und Rechenzentrum und Gr\u00f6\u00dfe der Datei, mit einer Schaltfl\u00e4che zum Kopieren. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
+        table.put("Puts Repeat under Forward in a message's long-press menu. It sends the message again to the same chat as a new message from you. It only shows where Telegram offers Forward and you can write, so it won't appear in protected or secret chats. Off by default in settings.",
+                "Setzt Wiederholen unter Weiterleiten in das Men\u00fc, das du mit langem Dr\u00fccken auf eine Nachricht \u00f6ffnest. Es sendet die Nachricht noch einmal in denselben Chat, als neue Nachricht von dir. Es erscheint nur, wo Telegram Weiterleiten anbietet und du schreiben darfst, also nie in gesch\u00fctzten oder geheimen Chats. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("Quiet contacts prompts",
                 "Kontaktanfragen beruhigen");
         table.put("Read-only local state. This doesn't confirm notification delivery.",
@@ -422,11 +463,10 @@ public final class L10nTranslations {
                 "Zeichnet Patch-Aktivit\u00e4t auf und zeigt Fehler f\u00fcr einen Fehlerbericht. Im Alltag ausgeschaltet lassen.");
         table.put("Repair Firebase push registration",
                 "Firebase-Push-Registrierung reparieren");
+        table.put("Repeat",
+                "Wiederholen");
         table.put("Resume",
                 "Fortsetzen");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Retry",
                 "Erneut versuchen");
         table.put("Reveal spoilers",
@@ -447,6 +487,10 @@ public final class L10nTranslations {
                 "Der Apps-Tab der Suche l\u00e4sst die Liste Beliebte Apps von Telegram samt \u00dcberschrift und Ladezeilen weg, und Telegram fragt sie nicht ab. Von dir ge\u00f6ffnete Apps und andere Ergebnisse bleiben.");
         table.put("Selecting links by hand",
                 "Links von Hand ausw\u00e4hlen");
+        table.put("Sender ID: %1$s",
+                "Absender-ID: %1$s");
+        table.put("Sent: %1$s",
+                "Gesendet: %1$s");
         table.put("Set when you patched",
                 "Beim Patchen festgelegt");
         table.put("Settings backup",
@@ -503,6 +547,9 @@ public final class L10nTranslations {
                 "Stoppt automatische Anrufdiagnoseberichte und Protokolldatei-Uploads, die der Telegram-Server anfordert.");
         table.put("Strip link tracking",
                 "Link-Tracking entfernen");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Supported links",
                 "Unterst\u00fctzte Links");
         table.put("Swipe back on profiles",
@@ -547,9 +594,6 @@ public final class L10nTranslations {
                 "Die App, in der die Datei liegt, braucht zu lange, deshalb wartet HushTelegram nicht mehr. Es wurde nichts ge\u00e4ndert.");
         table.put("The app holding the last settings file still hasn't answered. Try again later.",
                 "Die App mit der letzten Einstellungsdatei hat noch immer nicht geantwortet. Versuche es sp\u00e4ter noch einmal.");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Die App, in der die Einstellungsdatei liegt, braucht zu lange, deshalb wartet HushTelegram nicht mehr. Sie kann das Speichern noch abschlie\u00dfen, also pr\u00fcfe die Datei, bevor du dich darauf verl\u00e4sst.");
         table.put("The camera in the attachment menu starts on the rear lens every time you open it, instead of the lens you used last. You can still flip it while it's open. Off by default in settings.",
@@ -626,6 +670,9 @@ public final class L10nTranslations {
                 "Wenn du oder jemand anderes auf eine Nachricht reagiert, fliegt das Emoji nicht mehr \u00fcber den Bildschirm und platzt. Die Reaktion erscheint trotzdem an der Nachricht. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
         table.put("While a voice message plays, tapping the bar above the chat opens Telegram's full music player with its seek bar, instead of jumping to the message. View-once voice messages stay as they are. Off by default in settings.",
                 "W\u00e4hrend eine Sprachnachricht l\u00e4uft, \u00f6ffnet ein Tippen auf die Leiste \u00fcber dem Chat Telegrams gro\u00dfen Musikplayer mit Suchleiste, statt zur Nachricht zu springen. Einmal-Sprachnachrichten bleiben, wie sie sind. In den Einstellungen standardm\u00e4\u00dfig ausgeschaltet.");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("Yes",
                 "Ja");
         table.put("You have the newest HushTelegram release.",
@@ -670,9 +717,6 @@ public final class L10nTranslations {
                 "Kanal-Lesemetriken");
         table.put("chat double-tap reactions",
                 "Chat-Reaktionen durch Doppeltippen");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("chat drafts",
                 "Chat-Entw\u00fcrfe");
         table.put("chat-list story bar",
@@ -714,7 +758,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(638);
+        Map<String, String> table = new HashMap<>(682);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -767,6 +811,12 @@ public final class L10nTranslations {
                 "Cuentas");
         table.put("Accounts confirmed for push: %1$s",
                 "Cuentas con registro push confirmado: %1$s");
+        table.put("Add Copy photo to the message menu",
+                "A\u00f1adir Copiar foto al men\u00fa de mensajes");
+        table.put("Add Message details to the message menu",
+                "A\u00f1adir Detalles del mensaje al men\u00fa de mensajes");
+        table.put("Add Repeat to the message menu",
+                "A\u00f1adir Repetir al men\u00fa de mensajes");
         table.put("Ads in channels",
                 "Anuncios en canales");
         table.put("Ads in channels and search",
@@ -811,6 +861,8 @@ public final class L10nTranslations {
                 "Los canales no muestran mensajes patrocinados, la b\u00fasqueda no muestra cuentas patrocinadas y los videos se reproducen sin anuncios. Telegram nunca los solicita, as\u00ed que ninguno cuenta como visto.");
         table.put("Chat ID %1$s",
                 "ID de chat %1$s");
+        table.put("Chat ID: %1$s",
+                "ID del chat: %1$s");
         table.put("Chats",
                 "Chats");
         table.put("Chats in another language stop showing Telegram's translate bar at the top, and Translate moves to the chat's menu. A chat you're translating keeps its bar so you can go back to the original. Off by default in settings.",
@@ -827,6 +879,8 @@ public final class L10nTranslations {
                 "Borrar datos de diagn\u00f3stico");
         table.put("Clear search",
                 "Borrar b\u00fasqueda");
+        table.put("Copy",
+                "Copiar");
         table.put("Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
                 "Copia un informe r\u00e1pido o guarda el completo en Download/Morphe. Se omiten enlaces, ID, cookies y tokens de inicio de sesi\u00f3n. Revisa si queda otro texto privado antes de compartirlo.");
         table.put("Copy a short report to the clipboard.",
@@ -835,6 +889,11 @@ public final class L10nTranslations {
                 "Copiar ID de chat %1$s");
         table.put("Copy data center %1$s",
                 "Copiar centro de datos %1$s");
+    }
+
+    private static void fillEs1(Map<String, String> table) {
+        table.put("Copy photo",
+                "Copiar foto");
         table.put("Copy quick report",
                 "Copiar informe r\u00e1pido");
         table.put("Copy user ID %1$s",
@@ -845,9 +904,6 @@ public final class L10nTranslations {
                 "No se pudo importar la configuraci\u00f3n. No se cambi\u00f3 nada.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "No se pudo abrir ese archivo. No se cambi\u00f3 nada.");
-    }
-
-    private static void fillEs1(Map<String, String> table) {
         table.put("Couldn't open the file picker. Try again.",
                 "No se pudo abrir el selector de archivos. Int\u00e9ntalo de nuevo.");
         table.put("Couldn't put back the diagnostic data. Try again.",
@@ -886,6 +942,8 @@ public final class L10nTranslations {
                 "Vistas previas de enlaces en borradores");
         table.put("Each new forward starts with Telegram's Hide sender's name option turned on, so the copies arrive without the original author. You can still turn it off before sending, and article forwards follow Telegram's Premium rule. Off by default in settings.",
                 "Cada reenv\u00edo nuevo empieza con la opci\u00f3n Ocultar nombre del remitente de Telegram activada, as\u00ed las copias llegan sin el autor original. A\u00fan puedes desactivarla antes de enviar, y los art\u00edculos siguen la regla de Premium de Telegram. Desactivado por defecto en los ajustes.");
+        table.put("Edited: %1$s",
+                "Editado: %1$s");
         table.put("Empties the log and the hook findings a report would include.",
                 "Vac\u00eda el registro y los resultados de los hooks que incluir\u00eda un informe.");
         table.put("Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.",
@@ -898,8 +956,14 @@ public final class L10nTranslations {
                 "Exportar informe de diagn\u00f3stico");
         table.put("Export settings",
                 "Exportar configuraci\u00f3n");
+        table.put("File data center: %1$s",
+                "Centro de datos del archivo: %1$s");
+        table.put("File size: %1$s",
+                "Tama\u00f1o del archivo: %1$s");
         table.put("Firebase certificate header",
                 "Encabezado del certificado de Firebase");
+        table.put("Forwarded from: %1$s",
+                "Reenviado de: %1$s");
         table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
                 "Desde el pr\u00f3ximo inicio, todos los interruptores, salvo el Registro de depuraci\u00f3n, funcionan como si estuvieran desactivados. Lo que se aplic\u00f3 al parchear se mantiene, y tus preferencias quedan guardadas.");
         table.put("Full report saved to %1$s",
@@ -948,6 +1012,9 @@ public final class L10nTranslations {
                 "Ocultar canal patrocinado del proxy");
         table.put("Hide time on stickers",
                 "Ocultar la hora en los stickers");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("Hide translate bar",
                 "Ocultar barra de traducci\u00f3n");
         table.put("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.",
@@ -968,9 +1035,6 @@ public final class L10nTranslations {
                 "HushTelegram %1$s est\u00e1 pensado para Telegram %2$s.");
         table.put("HushTelegram is on",
                 "HushTelegram est\u00e1 activado");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("HushTelegram is paused",
                 "HushTelegram est\u00e1 en pausa");
         table.put("HushTelegram pauses when Telegram restarts.",
@@ -1009,6 +1073,12 @@ public final class L10nTranslations {
                 "Estado local de notificaciones");
         table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
                 "Los contadores de miembros, suscriptores, vistas, respuestas y reacciones muestran el n\u00famero completo, como 12,345 en vez de 12.3K. Desactivado por defecto en los ajustes.");
+        table.put("Message ID: %1$s",
+                "ID del mensaje: %1$s");
+        table.put("Message details",
+                "Detalles del mensaje");
+        table.put("Message details copied",
+                "Detalles del mensaje copiados");
         table.put("Message times with seconds",
                 "Hora de los mensajes con segundos");
         table.put("Messages from people you've blocked are left out of the groups and supergroups you open. Private chats and channel posts stay as they are. Nothing is deleted, so turning it off and reopening the chat brings them back. Telegram loads a long blocked list a bit at a time, so someone it hasn't loaded yet still shows. Off by default in settings.",
@@ -1051,14 +1121,23 @@ public final class L10nTranslations {
                 "Abre enlaces HTTP(S) normales en tu navegador. Los enlaces de Telegram y las rutas de inicio de sesi\u00f3n, pago o autenticaci\u00f3n conservan su comportamiento habitual.");
         table.put("Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings.",
                 "Limpieza local opcional al abrir enlaces y en el selector Compartir enlace. Elimina solo utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid y fbclid. Si hay alg\u00fan par\u00e1metro de consulta desconocido, conserva la URL completa. Desactivado por defecto en los ajustes.");
+        table.put("Original sender ID: %1$s",
+                "ID del remitente original: %1$s");
+        table.put("Originally sent: %1$s",
+                "Enviado originalmente: %1$s");
         table.put("Pastes text without Telegram's HTML, table or monospace conversion. Whitespace and URLs stay intact. Other clipboard actions stay available. Off by default in settings.",
                 "Pega texto sin la conversi\u00f3n HTML, de tablas o monoespaciado de Telegram. Conserva los espacios y las URLs. Las dem\u00e1s acciones del portapapeles siguen disponibles. Desactivado por defecto en los ajustes.");
         table.put("Pause",
                 "Pausar");
         table.put("Pause HushTelegram",
                 "Pausar HushTelegram");
+        table.put("Photo copied",
+                "Foto copiada");
         table.put("Play voice messages one at a time",
                 "Reproducir los mensajes de voz de uno en uno");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Post Story button",
                 "bot\u00f3n para publicar una historia");
         table.put("Premium promo accepts",
@@ -1079,6 +1158,12 @@ public final class L10nTranslations {
                 "Al deslizar hacia arriba al final de un tema del foro, solo se desplaza el contenido. Abre el siguiente tema desde la lista de temas. Desactivado por defecto en los ajustes.");
         table.put("Push token saved: %1$s",
                 "Token push guardado: %1$s");
+        table.put("Puts Copy photo under Forward in a photo's long-press menu once the photo has downloaded. It copies the picture itself, so you can paste it into another app. It won't appear in protected or secret chats. Off by default in settings.",
+                "Pone Copiar foto debajo de Reenviar en el men\u00fa que abres al mantener pulsada una foto, cuando ya se ha descargado. Copia la imagen en s\u00ed, para que puedas pegarla en otra app. No aparece en chats protegidos o secretos. Desactivado por defecto en los ajustes.");
+        table.put("Puts Message details at the end of a message's long-press menu. It shows the message's IDs, when it was sent and edited, where it was forwarded from and the file's data center and size, with a Copy button. Off by default in settings.",
+                "Pone Detalles del mensaje al final del men\u00fa que abres al mantener pulsado un mensaje. Muestra los ID del mensaje, cu\u00e1ndo se envi\u00f3 y se edit\u00f3, de d\u00f3nde se reenvi\u00f3 y el centro de datos y el tama\u00f1o del archivo, con un bot\u00f3n para copiar. Desactivado por defecto en los ajustes.");
+        table.put("Puts Repeat under Forward in a message's long-press menu. It sends the message again to the same chat as a new message from you. It only shows where Telegram offers Forward and you can write, so it won't appear in protected or secret chats. Off by default in settings.",
+                "Pone Repetir debajo de Reenviar en el men\u00fa que abres al mantener pulsado un mensaje. Env\u00eda el mensaje otra vez al mismo chat, como un mensaje nuevo tuyo. Solo aparece donde Telegram ofrece Reenviar y puedes escribir, as\u00ed que nunca en chats protegidos o secretos. Desactivado por defecto en los ajustes.");
         table.put("Quiet contacts prompts",
                 "Silenciar avisos de contactos");
         table.put("Read-only local state. This doesn't confirm notification delivery.",
@@ -1089,11 +1174,10 @@ public final class L10nTranslations {
                 "Registra la actividad de los parches y muestra errores para un informe. D\u00e9jalo desactivado en el uso normal.");
         table.put("Repair Firebase push registration",
                 "Reparar el registro de notificaciones de Firebase");
+        table.put("Repeat",
+                "Repetir");
         table.put("Resume",
                 "Reanudar");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Retry",
                 "Reintentar");
         table.put("Reveal spoilers",
@@ -1114,6 +1198,10 @@ public final class L10nTranslations {
                 "La pesta\u00f1a Apps de la b\u00fasqueda omite la lista Apps populares de Telegram, con su encabezado y sus filas de carga, y Telegram no la solicita. Las apps que has abierto y los dem\u00e1s resultados se mantienen.");
         table.put("Selecting links by hand",
                 "Seleccionar enlaces a mano");
+        table.put("Sender ID: %1$s",
+                "ID del remitente: %1$s");
+        table.put("Sent: %1$s",
+                "Enviado: %1$s");
         table.put("Set when you patched",
                 "Aplicado al parchear");
         table.put("Settings backup",
@@ -1170,6 +1258,9 @@ public final class L10nTranslations {
                 "Detiene los informes autom\u00e1ticos de depuraci\u00f3n y las subidas de archivos de registro de llamadas solicitados por el servidor de Telegram.");
         table.put("Strip link tracking",
                 "Eliminar seguimiento de enlaces");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Supported links",
                 "Enlaces compatibles");
         table.put("Swipe back on profiles",
@@ -1214,9 +1305,6 @@ public final class L10nTranslations {
                 "La app que guarda ese archivo tarda demasiado, as\u00ed que HushTelegram dej\u00f3 de esperar. No se cambi\u00f3 nada.");
         table.put("The app holding the last settings file still hasn't answered. Try again later.",
                 "La app del \u00faltimo archivo de configuraci\u00f3n a\u00fan no ha respondido. Int\u00e9ntalo m\u00e1s tarde.");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "La app que guarda el archivo de configuraci\u00f3n tarda demasiado, as\u00ed que HushTelegram dej\u00f3 de esperar. Esa app a\u00fan puede terminar de guardarlo, as\u00ed que revisa el archivo antes de confiar en \u00e9l.");
         table.put("The camera in the attachment menu starts on the rear lens every time you open it, instead of the lens you used last. You can still flip it while it's open. Off by default in settings.",
@@ -1293,6 +1381,9 @@ public final class L10nTranslations {
                 "Cuando t\u00fa u otra persona reaccionan a un mensaje, el emoji ya no cruza la pantalla ni estalla. La reacci\u00f3n sigue apareciendo en el mensaje. Desactivado por defecto en los ajustes.");
         table.put("While a voice message plays, tapping the bar above the chat opens Telegram's full music player with its seek bar, instead of jumping to the message. View-once voice messages stay as they are. Off by default in settings.",
                 "Mientras suena un mensaje de voz, tocar la barra sobre el chat abre el reproductor de m\u00fasica completo de Telegram con su barra de progreso, en vez de saltar al mensaje. Los mensajes de voz de una sola escucha se quedan como est\u00e1n. Desactivado por defecto en los ajustes.");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("Yes",
                 "S\u00ed");
         table.put("You have the newest HushTelegram release.",
@@ -1337,9 +1428,6 @@ public final class L10nTranslations {
                 "m\u00e9tricas de lectura de canales");
         table.put("chat double-tap reactions",
                 "reacciones al tocar dos veces en chats");
-    }
-
-    private static void fillEs5(Map<String, String> table) {
         table.put("chat drafts",
                 "borradores de chat");
         table.put("chat-list story bar",
@@ -1381,7 +1469,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(638);
+        Map<String, String> table = new HashMap<>(682);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1434,6 +1522,12 @@ public final class L10nTranslations {
                 "Akun");
         table.put("Accounts confirmed for push: %1$s",
                 "Akun dengan pendaftaran push terkonfirmasi: %1$s");
+        table.put("Add Copy photo to the message menu",
+                "Tambahkan Salin foto ke menu pesan");
+        table.put("Add Message details to the message menu",
+                "Tambahkan Detail pesan ke menu pesan");
+        table.put("Add Repeat to the message menu",
+                "Tambahkan Ulangi ke menu pesan");
         table.put("Ads in channels",
                 "Iklan di saluran");
         table.put("Ads in channels and search",
@@ -1478,6 +1572,8 @@ public final class L10nTranslations {
                 "Saluran tidak menampilkan pesan bersponsor, pencarian tidak menampilkan akun bersponsor, dan video diputar tanpa iklan. Telegram tidak pernah memintanya, jadi tidak ada yang dihitung sebagai dilihat.");
         table.put("Chat ID %1$s",
                 "ID chat %1$s");
+        table.put("Chat ID: %1$s",
+                "ID obrolan: %1$s");
         table.put("Chats",
                 "Chat");
         table.put("Chats in another language stop showing Telegram's translate bar at the top, and Translate moves to the chat's menu. A chat you're translating keeps its bar so you can go back to the original. Off by default in settings.",
@@ -1494,6 +1590,8 @@ public final class L10nTranslations {
                 "Hapus data diagnostik");
         table.put("Clear search",
                 "Hapus pencarian");
+        table.put("Copy",
+                "Salin");
         table.put("Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
                 "Salin laporan singkat atau simpan laporan lengkap di Download/Morphe. Tautan, ID, cookie, dan token masuk dihilangkan. Periksa teks pribadi lainnya sebelum membagikannya.");
         table.put("Copy a short report to the clipboard.",
@@ -1502,6 +1600,11 @@ public final class L10nTranslations {
                 "Salin ID chat %1$s");
         table.put("Copy data center %1$s",
                 "Salin pusat data %1$s");
+    }
+
+    private static void fillIn1(Map<String, String> table) {
+        table.put("Copy photo",
+                "Salin foto");
         table.put("Copy quick report",
                 "Salin laporan singkat");
         table.put("Copy user ID %1$s",
@@ -1512,9 +1615,6 @@ public final class L10nTranslations {
                 "Pengaturan tidak dapat diimpor. Tidak ada yang diubah.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "File itu tidak dapat dibuka. Tidak ada yang diubah.");
-    }
-
-    private static void fillIn1(Map<String, String> table) {
         table.put("Couldn't open the file picker. Try again.",
                 "Pemilih file tidak dapat dibuka. Coba lagi.");
         table.put("Couldn't put back the diagnostic data. Try again.",
@@ -1553,6 +1653,8 @@ public final class L10nTranslations {
                 "Pratinjau tautan di draf");
         table.put("Each new forward starts with Telegram's Hide sender's name option turned on, so the copies arrive without the original author. You can still turn it off before sending, and article forwards follow Telegram's Premium rule. Off by default in settings.",
                 "Setiap penerusan baru dimulai dengan opsi Sembunyikan nama pengirim milik Telegram menyala, sehingga salinannya tiba tanpa pengirim aslinya. Anda tetap bisa mematikannya sebelum mengirim, dan artikel mengikuti aturan Premium Telegram. Nonaktif secara default di pengaturan.");
+        table.put("Edited: %1$s",
+                "Diedit: %1$s");
         table.put("Empties the log and the hook findings a report would include.",
                 "Mengosongkan log dan temuan hook yang akan dimasukkan ke laporan.");
         table.put("Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.",
@@ -1565,8 +1667,14 @@ public final class L10nTranslations {
                 "Ekspor laporan diagnostik");
         table.put("Export settings",
                 "Ekspor pengaturan");
+        table.put("File data center: %1$s",
+                "Pusat data file: %1$s");
+        table.put("File size: %1$s",
+                "Ukuran file: %1$s");
         table.put("Firebase certificate header",
                 "Header sertifikat Firebase");
+        table.put("Forwarded from: %1$s",
+                "Diteruskan dari: %1$s");
         table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
                 "Mulai peluncuran berikutnya, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif, dan pilihan Anda tetap tersimpan.");
         table.put("Full report saved to %1$s",
@@ -1615,6 +1723,9 @@ public final class L10nTranslations {
                 "Sembunyikan kanal bersponsor proxy");
         table.put("Hide time on stickers",
                 "Sembunyikan waktu pada stiker");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Hide translate bar",
                 "Sembunyikan bilah terjemahan");
         table.put("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.",
@@ -1635,9 +1746,6 @@ public final class L10nTranslations {
                 "HushTelegram %1$s ditujukan untuk Telegram %2$s.");
         table.put("HushTelegram is on",
                 "HushTelegram aktif");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("HushTelegram is paused",
                 "HushTelegram dijeda");
         table.put("HushTelegram pauses when Telegram restarts.",
@@ -1676,6 +1784,12 @@ public final class L10nTranslations {
                 "Status notifikasi lokal");
         table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
                 "Jumlah anggota, pelanggan, tayangan, balasan, dan reaksi ditampilkan lengkap, misalnya 12,345, bukan 12.3K. Nonaktif secara default di pengaturan.");
+        table.put("Message ID: %1$s",
+                "ID pesan: %1$s");
+        table.put("Message details",
+                "Detail pesan");
+        table.put("Message details copied",
+                "Detail pesan disalin");
         table.put("Message times with seconds",
                 "Waktu pesan dengan detik");
         table.put("Messages from people you've blocked are left out of the groups and supergroups you open. Private chats and channel posts stay as they are. Nothing is deleted, so turning it off and reopening the chat brings them back. Telegram loads a long blocked list a bit at a time, so someone it hasn't loaded yet still shows. Off by default in settings.",
@@ -1718,14 +1832,23 @@ public final class L10nTranslations {
                 "Membuka tautan HTTP(S) biasa di browser Anda. Tautan Telegram serta jalur login, pembayaran dan autentikasi tetap berperilaku seperti biasa.");
         table.put("Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings.",
                 "Pembersihan lokal opsional saat membuka tautan dan di pemilih Bagikan Tautan. Hanya menghapus utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid dan fbclid. Parameter kueri yang tidak dikenal membuat seluruh URL tetap utuh. Secara default nonaktif di pengaturan.");
+        table.put("Original sender ID: %1$s",
+                "ID pengirim asli: %1$s");
+        table.put("Originally sent: %1$s",
+                "Awalnya dikirim: %1$s");
         table.put("Pastes text without Telegram's HTML, table or monospace conversion. Whitespace and URLs stay intact. Other clipboard actions stay available. Off by default in settings.",
                 "Menempel teks tanpa konversi HTML, tabel, atau monospace Telegram. Spasi dan URL tetap utuh. Tindakan papan klip lainnya tetap tersedia. Nonaktif secara default di pengaturan.");
         table.put("Pause",
                 "Jeda");
         table.put("Pause HushTelegram",
                 "Jeda HushTelegram");
+        table.put("Photo copied",
+                "Foto disalin");
         table.put("Play voice messages one at a time",
                 "Putar pesan suara satu per satu");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Post Story button",
                 "tombol Kirim Cerita");
         table.put("Premium promo accepts",
@@ -1746,6 +1869,12 @@ public final class L10nTranslations {
                 "Menarik ke atas di bagian bawah topik forum hanya menggulir tampilan. Buka topik berikutnya dari daftar topik. Secara default nonaktif di pengaturan.");
         table.put("Push token saved: %1$s",
                 "Token push tersimpan: %1$s");
+        table.put("Puts Copy photo under Forward in a photo's long-press menu once the photo has downloaded. It copies the picture itself, so you can paste it into another app. It won't appear in protected or secret chats. Off by default in settings.",
+                "Menaruh Salin foto di bawah Teruskan pada menu yang Anda buka dengan menekan lama sebuah foto, setelah foto itu terunduh. Gambarnya sendiri yang disalin, jadi Anda bisa menempelkannya di aplikasi lain. Tidak muncul di obrolan terlindungi atau rahasia. Nonaktif secara default di pengaturan.");
+        table.put("Puts Message details at the end of a message's long-press menu. It shows the message's IDs, when it was sent and edited, where it was forwarded from and the file's data center and size, with a Copy button. Off by default in settings.",
+                "Menaruh Detail pesan di akhir menu yang Anda buka dengan menekan lama sebuah pesan. Menampilkan ID pesan, kapan dikirim dan diedit, dari mana diteruskan, serta pusat data dan ukuran file, dengan tombol Salin. Nonaktif secara default di pengaturan.");
+        table.put("Puts Repeat under Forward in a message's long-press menu. It sends the message again to the same chat as a new message from you. It only shows where Telegram offers Forward and you can write, so it won't appear in protected or secret chats. Off by default in settings.",
+                "Menaruh Ulangi di bawah Teruskan pada menu yang Anda buka dengan menekan lama sebuah pesan. Pesan itu dikirim lagi ke obrolan yang sama sebagai pesan baru dari Anda. Hanya muncul jika Telegram menawarkan Teruskan dan Anda bisa menulis, jadi tidak pernah di obrolan terlindungi atau rahasia. Nonaktif secara default di pengaturan.");
         table.put("Quiet contacts prompts",
                 "Senyapkan permintaan kontak");
         table.put("Read-only local state. This doesn't confirm notification delivery.",
@@ -1756,11 +1885,10 @@ public final class L10nTranslations {
                 "Catat aktivitas patch dan tampilkan kesalahan untuk laporan bug. Matikan saat penggunaan biasa.");
         table.put("Repair Firebase push registration",
                 "Perbaiki pendaftaran notifikasi Firebase");
+        table.put("Repeat",
+                "Ulangi");
         table.put("Resume",
                 "Lanjutkan");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Retry",
                 "Coba lagi");
         table.put("Reveal spoilers",
@@ -1781,6 +1909,10 @@ public final class L10nTranslations {
                 "Tab Aplikasi di pencarian melewati daftar Aplikasi populer dari Telegram, beserta judul dan baris pemuatannya, dan Telegram tidak memintanya. Aplikasi yang pernah kamu buka dan hasil lainnya tetap ada.");
         table.put("Selecting links by hand",
                 "Memilih tautan secara manual");
+        table.put("Sender ID: %1$s",
+                "ID pengirim: %1$s");
+        table.put("Sent: %1$s",
+                "Dikirim: %1$s");
         table.put("Set when you patched",
                 "Diatur saat Anda menambal");
         table.put("Settings backup",
@@ -1837,6 +1969,9 @@ public final class L10nTranslations {
                 "Menghentikan laporan debug panggilan otomatis dan unggahan berkas log yang diminta server Telegram.");
         table.put("Strip link tracking",
                 "Hapus pelacakan tautan");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Supported links",
                 "Tautan yang didukung");
         table.put("Swipe back on profiles",
@@ -1881,9 +2016,6 @@ public final class L10nTranslations {
                 "Aplikasi yang menyimpan file itu terlalu lama, jadi HushTelegram berhenti menunggu. Tidak ada yang diubah.");
         table.put("The app holding the last settings file still hasn't answered. Try again later.",
                 "Aplikasi yang menyimpan file pengaturan terakhir masih belum merespons. Coba lagi nanti.");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Aplikasi yang menyimpan file pengaturan terlalu lama, jadi HushTelegram berhenti menunggu. Aplikasi itu mungkin masih menyelesaikan penyimpanannya, jadi periksa file itu sebelum mengandalkannya.");
         table.put("The camera in the attachment menu starts on the rear lens every time you open it, instead of the lens you used last. You can still flip it while it's open. Off by default in settings.",
@@ -1960,6 +2092,9 @@ public final class L10nTranslations {
                 "Saat Anda atau orang lain bereaksi pada pesan, emoji tidak lagi terbang melintasi layar dan meledak. Reaksinya tetap muncul di pesan. Nonaktif secara default di pengaturan.");
         table.put("While a voice message plays, tapping the bar above the chat opens Telegram's full music player with its seek bar, instead of jumping to the message. View-once voice messages stay as they are. Off by default in settings.",
                 "Saat pesan suara diputar, mengetuk bilah di atas obrolan membuka pemutar musik lengkap Telegram dengan bilah geser, bukan melompat ke pesannya. Pesan suara sekali dengar tetap seperti semula. Nonaktif secara default di pengaturan.");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("Yes",
                 "Ya");
         table.put("You have the newest HushTelegram release.",
@@ -2004,9 +2139,6 @@ public final class L10nTranslations {
                 "metrik pembacaan saluran");
         table.put("chat double-tap reactions",
                 "reaksi ketuk dua kali di chat");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("chat drafts",
                 "draf chat");
         table.put("chat-list story bar",
@@ -2048,7 +2180,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(638);
+        Map<String, String> table = new HashMap<>(682);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2101,6 +2233,12 @@ public final class L10nTranslations {
                 "Contas");
         table.put("Accounts confirmed for push: %1$s",
                 "Contas com registro push confirmado: %1$s");
+        table.put("Add Copy photo to the message menu",
+                "Adicionar Copiar foto ao menu de mensagens");
+        table.put("Add Message details to the message menu",
+                "Adicionar Detalhes da mensagem ao menu de mensagens");
+        table.put("Add Repeat to the message menu",
+                "Adicionar Repetir ao menu de mensagens");
         table.put("Ads in channels",
                 "An\u00fancios em canais");
         table.put("Ads in channels and search",
@@ -2145,6 +2283,8 @@ public final class L10nTranslations {
                 "Os canais n\u00e3o mostram mensagens patrocinadas, a busca n\u00e3o mostra contas patrocinadas e os v\u00eddeos tocam sem an\u00fancios. O Telegram nunca os solicita, ent\u00e3o nenhum conta como visto.");
         table.put("Chat ID %1$s",
                 "ID de chat %1$s");
+        table.put("Chat ID: %1$s",
+                "ID do chat: %1$s");
         table.put("Chats",
                 "Conversas");
         table.put("Chats in another language stop showing Telegram's translate bar at the top, and Translate moves to the chat's menu. A chat you're translating keeps its bar so you can go back to the original. Off by default in settings.",
@@ -2161,6 +2301,8 @@ public final class L10nTranslations {
                 "Limpar dados de diagn\u00f3stico");
         table.put("Clear search",
                 "Limpar busca");
+        table.put("Copy",
+                "Copiar");
         table.put("Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
                 "Copie um relat\u00f3rio r\u00e1pido ou salve o relat\u00f3rio completo em Download/Morphe. Links, IDs, cookies e tokens de login s\u00e3o omitidos. Verifique se h\u00e1 outros textos privados antes de compartilhar.");
         table.put("Copy a short report to the clipboard.",
@@ -2169,6 +2311,11 @@ public final class L10nTranslations {
                 "Copiar ID de chat %1$s");
         table.put("Copy data center %1$s",
                 "Copiar data center %1$s");
+    }
+
+    private static void fillPt_rBR1(Map<String, String> table) {
+        table.put("Copy photo",
+                "Copiar foto");
         table.put("Copy quick report",
                 "Copiar relat\u00f3rio r\u00e1pido");
         table.put("Copy user ID %1$s",
@@ -2179,9 +2326,6 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel importar as configura\u00e7\u00f5es. Nada foi alterado.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "N\u00e3o foi poss\u00edvel abrir esse arquivo. Nada foi alterado.");
-    }
-
-    private static void fillPt_rBR1(Map<String, String> table) {
         table.put("Couldn't open the file picker. Try again.",
                 "N\u00e3o foi poss\u00edvel abrir o seletor de arquivos. Tente de novo.");
         table.put("Couldn't put back the diagnostic data. Try again.",
@@ -2220,6 +2364,8 @@ public final class L10nTranslations {
                 "Pr\u00e9vias de links em rascunhos");
         table.put("Each new forward starts with Telegram's Hide sender's name option turned on, so the copies arrive without the original author. You can still turn it off before sending, and article forwards follow Telegram's Premium rule. Off by default in settings.",
                 "Cada novo encaminhamento come\u00e7a com a op\u00e7\u00e3o Ocultar nome do remetente do Telegram ativada, ent\u00e3o as c\u00f3pias chegam sem o autor original. Voc\u00ea ainda pode desativ\u00e1-la antes de enviar, e artigos seguem a regra do Premium do Telegram. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
+        table.put("Edited: %1$s",
+                "Editada: %1$s");
         table.put("Empties the log and the hook findings a report would include.",
                 "Apaga o registro e os resultados dos hooks que seriam inclu\u00eddos em um relat\u00f3rio.");
         table.put("Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.",
@@ -2232,8 +2378,14 @@ public final class L10nTranslations {
                 "Exportar relat\u00f3rio de diagn\u00f3stico");
         table.put("Export settings",
                 "Exportar configura\u00e7\u00f5es");
+        table.put("File data center: %1$s",
+                "Data center do arquivo: %1$s");
+        table.put("File size: %1$s",
+                "Tamanho do arquivo: %1$s");
         table.put("Firebase certificate header",
                 "Cabe\u00e7alho do certificado do Firebase");
+        table.put("Forwarded from: %1$s",
+                "Encaminhada de: %1$s");
         table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
                 "A partir da pr\u00f3xima abertura, todas as op\u00e7\u00f5es, menos o Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. O que foi definido ao aplicar os patches continua ativo, e suas escolhas ficam salvas.");
         table.put("Full report saved to %1$s",
@@ -2282,6 +2434,9 @@ public final class L10nTranslations {
                 "Ocultar canal patrocinado do proxy");
         table.put("Hide time on stickers",
                 "Ocultar a hora nas figurinhas");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Hide translate bar",
                 "Ocultar barra de tradu\u00e7\u00e3o");
         table.put("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.",
@@ -2302,9 +2457,6 @@ public final class L10nTranslations {
                 "O HushTelegram %1$s \u00e9 compat\u00edvel com o Telegram %2$s.");
         table.put("HushTelegram is on",
                 "O HushTelegram est\u00e1 ativo");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("HushTelegram is paused",
                 "O HushTelegram est\u00e1 pausado");
         table.put("HushTelegram pauses when Telegram restarts.",
@@ -2343,6 +2495,12 @@ public final class L10nTranslations {
                 "Estado local das notifica\u00e7\u00f5es");
         table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
                 "Contagens de membros, inscritos, visualiza\u00e7\u00f5es, respostas e rea\u00e7\u00f5es aparecem completas, como 12,345 em vez de 12.3K. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
+        table.put("Message ID: %1$s",
+                "ID da mensagem: %1$s");
+        table.put("Message details",
+                "Detalhes da mensagem");
+        table.put("Message details copied",
+                "Detalhes da mensagem copiados");
         table.put("Message times with seconds",
                 "Hor\u00e1rio das mensagens com segundos");
         table.put("Messages from people you've blocked are left out of the groups and supergroups you open. Private chats and channel posts stay as they are. Nothing is deleted, so turning it off and reopening the chat brings them back. Telegram loads a long blocked list a bit at a time, so someone it hasn't loaded yet still shows. Off by default in settings.",
@@ -2385,14 +2543,23 @@ public final class L10nTranslations {
                 "Abre links HTTP(S) comuns no seu navegador. Links do Telegram e rotas de login, pagamento e autentica\u00e7\u00e3o mant\u00eam o comportamento habitual.");
         table.put("Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings.",
                 "Limpeza local opcional ao abrir links e no seletor Compartilhar Link. Remove apenas utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid e fbclid. Qualquer par\u00e2metro de consulta desconhecido preserva a URL inteira. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
+        table.put("Original sender ID: %1$s",
+                "ID do remetente original: %1$s");
+        table.put("Originally sent: %1$s",
+                "Enviada originalmente: %1$s");
         table.put("Pastes text without Telegram's HTML, table or monospace conversion. Whitespace and URLs stay intact. Other clipboard actions stay available. Off by default in settings.",
                 "Cola texto sem a convers\u00e3o de HTML, tabelas ou monoespa\u00e7ado do Telegram. Espa\u00e7os e URLs ficam intactos. As outras a\u00e7\u00f5es da \u00e1rea de transfer\u00eancia continuam dispon\u00edveis. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Pause",
                 "Pausar");
         table.put("Pause HushTelegram",
                 "Pausar o HushTelegram");
+        table.put("Photo copied",
+                "Foto copiada");
         table.put("Play voice messages one at a time",
                 "Tocar mensagens de voz uma de cada vez");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Post Story button",
                 "bot\u00e3o de publicar um story");
         table.put("Premium promo accepts",
@@ -2413,6 +2580,12 @@ public final class L10nTranslations {
                 "Deslizar para cima no fim de um t\u00f3pico do f\u00f3rum apenas rola o conte\u00fado. Abra o pr\u00f3ximo t\u00f3pico pela lista de t\u00f3picos. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Push token saved: %1$s",
                 "Token de push salvo: %1$s");
+        table.put("Puts Copy photo under Forward in a photo's long-press menu once the photo has downloaded. It copies the picture itself, so you can paste it into another app. It won't appear in protected or secret chats. Off by default in settings.",
+                "Coloca Copiar foto abaixo de Encaminhar no menu que voc\u00ea abre ao tocar e segurar uma foto, depois que ela foi baixada. Copia a pr\u00f3pria imagem, para voc\u00ea colar em outro app. N\u00e3o aparece em chats protegidos ou secretos. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
+        table.put("Puts Message details at the end of a message's long-press menu. It shows the message's IDs, when it was sent and edited, where it was forwarded from and the file's data center and size, with a Copy button. Off by default in settings.",
+                "Coloca Detalhes da mensagem no fim do menu que voc\u00ea abre ao tocar e segurar uma mensagem. Mostra os IDs da mensagem, quando ela foi enviada e editada, de onde foi encaminhada e o data center e o tamanho do arquivo, com um bot\u00e3o para copiar. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
+        table.put("Puts Repeat under Forward in a message's long-press menu. It sends the message again to the same chat as a new message from you. It only shows where Telegram offers Forward and you can write, so it won't appear in protected or secret chats. Off by default in settings.",
+                "Coloca Repetir abaixo de Encaminhar no menu que voc\u00ea abre ao tocar e segurar uma mensagem. Ele envia a mensagem de novo para o mesmo chat, como uma nova mensagem sua. S\u00f3 aparece onde o Telegram oferece Encaminhar e voc\u00ea pode escrever, ent\u00e3o nunca em chats protegidos ou secretos. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("Quiet contacts prompts",
                 "Silenciar pedidos de contatos");
         table.put("Read-only local state. This doesn't confirm notification delivery.",
@@ -2423,11 +2596,10 @@ public final class L10nTranslations {
                 "Registra a atividade dos patches e mostra os erros para um relat\u00f3rio de problema. Mantenha desativado durante o uso normal.");
         table.put("Repair Firebase push registration",
                 "Corrigir o registro de notifica\u00e7\u00f5es do Firebase");
+        table.put("Repeat",
+                "Repetir");
         table.put("Resume",
                 "Retomar");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Retry",
                 "Tentar novamente");
         table.put("Reveal spoilers",
@@ -2448,6 +2620,10 @@ public final class L10nTranslations {
                 "A aba Apps da busca n\u00e3o mostra a lista Apps populares do Telegram, nem o t\u00edtulo e as linhas de carregamento, e o Telegram n\u00e3o a solicita. Os apps que voc\u00ea abriu e os outros resultados continuam.");
         table.put("Selecting links by hand",
                 "Selecionar links manualmente");
+        table.put("Sender ID: %1$s",
+                "ID do remetente: %1$s");
+        table.put("Sent: %1$s",
+                "Enviada: %1$s");
         table.put("Set when you patched",
                 "Definido ao aplicar os patches");
         table.put("Settings backup",
@@ -2504,6 +2680,9 @@ public final class L10nTranslations {
                 "Interrompe relat\u00f3rios autom\u00e1ticos de depura\u00e7\u00e3o de chamadas e envios de arquivos de registro solicitados pelo servidor do Telegram.");
         table.put("Strip link tracking",
                 "Remover rastreamento de links");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Supported links",
                 "Links compat\u00edveis");
         table.put("Swipe back on profiles",
@@ -2548,9 +2727,6 @@ public final class L10nTranslations {
                 "O app que guarda esse arquivo est\u00e1 demorando demais, ent\u00e3o o HushTelegram parou de esperar. Nada foi alterado.");
         table.put("The app holding the last settings file still hasn't answered. Try again later.",
                 "O app do \u00faltimo arquivo de configura\u00e7\u00f5es ainda n\u00e3o respondeu. Tente de novo mais tarde.");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "O app que guarda o arquivo de configura\u00e7\u00f5es est\u00e1 demorando demais, ent\u00e3o o HushTelegram parou de esperar. Esse app ainda pode terminar de salv\u00e1-lo, ent\u00e3o confira o arquivo antes de confiar nele.");
         table.put("The camera in the attachment menu starts on the rear lens every time you open it, instead of the lens you used last. You can still flip it while it's open. Off by default in settings.",
@@ -2627,6 +2803,9 @@ public final class L10nTranslations {
                 "Quando voc\u00ea ou outra pessoa reage a uma mensagem, o emoji n\u00e3o atravessa mais a tela nem explode. A rea\u00e7\u00e3o continua aparecendo na mensagem. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
         table.put("While a voice message plays, tapping the bar above the chat opens Telegram's full music player with its seek bar, instead of jumping to the message. View-once voice messages stay as they are. Off by default in settings.",
                 "Enquanto uma mensagem de voz toca, tocar na barra acima do chat abre o player de m\u00fasica completo do Telegram com a barra de progresso, em vez de pular para a mensagem. Mensagens de voz de visualiza\u00e7\u00e3o \u00fanica ficam como est\u00e3o. Desativado por padr\u00e3o nas configura\u00e7\u00f5es.");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("Yes",
                 "Sim");
         table.put("You have the newest HushTelegram release.",
@@ -2671,9 +2850,6 @@ public final class L10nTranslations {
                 "m\u00e9tricas de leitura de canais");
         table.put("chat double-tap reactions",
                 "rea\u00e7\u00f5es por toque duplo nos chats");
-    }
-
-    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("chat drafts",
                 "rascunhos de chat");
         table.put("chat-list story bar",
@@ -2715,7 +2891,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(638);
+        Map<String, String> table = new HashMap<>(682);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -2768,6 +2944,12 @@ public final class L10nTranslations {
                 "Hesaplar");
         table.put("Accounts confirmed for push: %1$s",
                 "Push kayd\u0131 onaylanan hesaplar: %1$s");
+        table.put("Add Copy photo to the message menu",
+                "Mesaj men\u00fcs\u00fcne Foto\u011fraf\u0131 kopyala ekle");
+        table.put("Add Message details to the message menu",
+                "Mesaj men\u00fcs\u00fcne Mesaj ayr\u0131nt\u0131lar\u0131 ekle");
+        table.put("Add Repeat to the message menu",
+                "Mesaj men\u00fcs\u00fcne Tekrarla ekle");
         table.put("Ads in channels",
                 "Kanallarda reklamlar");
         table.put("Ads in channels and search",
@@ -2812,6 +2994,8 @@ public final class L10nTranslations {
                 "Kanallarda sponsorlu mesaj, aramada sponsorlu hesap g\u00f6sterilmez ve videolar reklams\u0131z oynar. Telegram bunlar\u0131 hi\u00e7 istemez, bu y\u00fczden hi\u00e7biri g\u00f6r\u00fcnt\u00fclenmi\u015f say\u0131lmaz.");
         table.put("Chat ID %1$s",
                 "Sohbet kimli\u011fi %1$s");
+        table.put("Chat ID: %1$s",
+                "Sohbet kimli\u011fi: %1$s");
         table.put("Chats",
                 "Sohbetler");
         table.put("Chats in another language stop showing Telegram's translate bar at the top, and Translate moves to the chat's menu. A chat you're translating keeps its bar so you can go back to the original. Off by default in settings.",
@@ -2828,6 +3012,8 @@ public final class L10nTranslations {
                 "Tan\u0131lama verilerini temizle");
         table.put("Clear search",
                 "Aramay\u0131 temizle");
+        table.put("Copy",
+                "Kopyala");
         table.put("Copy a quick report or save the full one to Download/Morphe. Links, IDs, cookies and sign-in tokens are left out. Check it for other private text before you share it.",
                 "K\u0131sa raporu kopyala veya tam raporu Download/Morphe konumuna kaydet. Ba\u011flant\u0131lar, kimlikler, \u00e7erezler ve oturum belirte\u00e7leri \u00e7\u0131kar\u0131l\u0131r. Payla\u015fmadan \u00f6nce ba\u015fka \u00f6zel bilgi olup olmad\u0131\u011f\u0131na bak.");
         table.put("Copy a short report to the clipboard.",
@@ -2836,6 +3022,11 @@ public final class L10nTranslations {
                 "Sohbet kimli\u011fini kopyala %1$s");
         table.put("Copy data center %1$s",
                 "Veri merkezini kopyala %1$s");
+    }
+
+    private static void fillTr1(Map<String, String> table) {
+        table.put("Copy photo",
+                "Foto\u011fraf\u0131 kopyala");
         table.put("Copy quick report",
                 "H\u0131zl\u0131 raporu kopyala");
         table.put("Copy user ID %1$s",
@@ -2846,9 +3037,6 @@ public final class L10nTranslations {
                 "Ayarlar i\u00e7e aktar\u0131lamad\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "Bu dosya a\u00e7\u0131lamad\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-    }
-
-    private static void fillTr1(Map<String, String> table) {
         table.put("Couldn't open the file picker. Try again.",
                 "Dosya se\u00e7ici a\u00e7\u0131lamad\u0131. Tekrar dene.");
         table.put("Couldn't put back the diagnostic data. Try again.",
@@ -2887,6 +3075,8 @@ public final class L10nTranslations {
                 "Taslaklarda ba\u011flant\u0131 \u00f6nizlemeleri");
         table.put("Each new forward starts with Telegram's Hide sender's name option turned on, so the copies arrive without the original author. You can still turn it off before sending, and article forwards follow Telegram's Premium rule. Off by default in settings.",
                 "Her yeni iletme, Telegram'\u0131n G\u00f6nderen ad\u0131n\u0131 gizle se\u00e7ene\u011fi a\u00e7\u0131k olarak ba\u015flar, b\u00f6ylece kopyalar as\u0131l g\u00f6nderen olmadan ula\u015f\u0131r. G\u00f6ndermeden \u00f6nce yine kapatabilirsiniz, makaleler ise Telegram'\u0131n Premium kural\u0131na uyar. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
+        table.put("Edited: %1$s",
+                "D\u00fczenlendi: %1$s");
         table.put("Empties the log and the hook findings a report would include.",
                 "Bir raporun i\u00e7erece\u011fi g\u00fcnl\u00fc\u011f\u00fc ve hook bulgular\u0131n\u0131 bo\u015falt\u0131r.");
         table.put("Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.",
@@ -2899,8 +3089,14 @@ public final class L10nTranslations {
                 "Tan\u0131lama raporunu d\u0131\u015fa aktar");
         table.put("Export settings",
                 "Ayarlar\u0131 d\u0131\u015fa aktar");
+        table.put("File data center: %1$s",
+                "Dosyan\u0131n veri merkezi: %1$s");
+        table.put("File size: %1$s",
+                "Dosya boyutu: %1$s");
         table.put("Firebase certificate header",
                 "Firebase sertifika ba\u015fl\u0131\u011f\u0131");
+        table.put("Forwarded from: %1$s",
+                "\u015euradan iletildi: %1$s");
         table.put("From the next start, every switch but Debug logging acts as if it were off. Changes made when you patched stay in, and your choices stay saved.",
                 "Sonraki a\u00e7\u0131l\u0131\u015ftan itibaren Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Yamalad\u0131\u011f\u0131nda ayarlananlar devrede kal\u0131r ve tercihlerin kay\u0131tl\u0131 kal\u0131r.");
         table.put("Full report saved to %1$s",
@@ -2949,6 +3145,9 @@ public final class L10nTranslations {
                 "Proxy'nin sponsorlu kanal\u0131n\u0131 gizle");
         table.put("Hide time on stickers",
                 "\u00c7\u0131kartmalarda saati gizle");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("Hide translate bar",
                 "\u00c7eviri \u00e7ubu\u011funu gizle");
         table.put("Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs and the channel Gift button. Purchases and account controls keep their usual behavior.",
@@ -2969,9 +3168,6 @@ public final class L10nTranslations {
                 "HushTelegram %1$s, Telegram %2$s i\u00e7in haz\u0131rland\u0131.");
         table.put("HushTelegram is on",
                 "HushTelegram a\u00e7\u0131k");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("HushTelegram is paused",
                 "HushTelegram duraklat\u0131ld\u0131");
         table.put("HushTelegram pauses when Telegram restarts.",
@@ -3010,6 +3206,12 @@ public final class L10nTranslations {
                 "Yerel bildirim durumu");
         table.put("Member, subscriber, view, reply and reaction counts show the full number, like 12,345 instead of 12.3K. Off by default in settings.",
                 "\u00dcye, abone, g\u00f6r\u00fcnt\u00fclenme, yan\u0131t ve tepki say\u0131lar\u0131 k\u0131salt\u0131lmadan g\u00f6sterilir, \u00f6rne\u011fin 12.3K yerine 12,345. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
+        table.put("Message ID: %1$s",
+                "Mesaj kimli\u011fi: %1$s");
+        table.put("Message details",
+                "Mesaj ayr\u0131nt\u0131lar\u0131");
+        table.put("Message details copied",
+                "Mesaj ayr\u0131nt\u0131lar\u0131 kopyaland\u0131");
         table.put("Message times with seconds",
                 "Saniyeli mesaj saati");
         table.put("Messages from people you've blocked are left out of the groups and supergroups you open. Private chats and channel posts stay as they are. Nothing is deleted, so turning it off and reopening the chat brings them back. Telegram loads a long blocked list a bit at a time, so someone it hasn't loaded yet still shows. Off by default in settings.",
@@ -3052,14 +3254,23 @@ public final class L10nTranslations {
                 "Normal HTTP(S) ba\u011flant\u0131lar\u0131n\u0131 taray\u0131c\u0131n\u0131zda a\u00e7ar. Telegram ba\u011flant\u0131lar\u0131 ile oturum a\u00e7ma, \u00f6deme ve kimlik do\u011frulama yollar\u0131n\u0131n mevcut davran\u0131\u015f\u0131 korunur.");
         table.put("Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings.",
                 "Ba\u011flant\u0131 a\u00e7arken ve Ba\u011flant\u0131y\u0131 Payla\u015f se\u00e7icisinde iste\u011fe ba\u011fl\u0131 yerel temizleme. Yaln\u0131zca utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid ve fbclid kald\u0131r\u0131l\u0131r. Bilinmeyen herhangi bir sorgu anahtar\u0131 varsa URL'nin tamam\u0131 korunur. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
+        table.put("Original sender ID: %1$s",
+                "As\u0131l g\u00f6nderenin kimli\u011fi: %1$s");
+        table.put("Originally sent: %1$s",
+                "\u0130lk g\u00f6nderilme: %1$s");
         table.put("Pastes text without Telegram's HTML, table or monospace conversion. Whitespace and URLs stay intact. Other clipboard actions stay available. Off by default in settings.",
                 "Metni Telegram'\u0131n HTML, tablo veya e\u015f aral\u0131kl\u0131 yaz\u0131 d\u00f6n\u00fc\u015f\u00fcm\u00fc olmadan yap\u0131\u015ft\u0131r\u0131r. Bo\u015fluklar ve URL'ler korunur. Di\u011fer pano i\u015flemleri kullan\u0131labilir. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Pause",
                 "Duraklat");
         table.put("Pause HushTelegram",
                 "HushTelegram'u duraklat");
+        table.put("Photo copied",
+                "Foto\u011fraf kopyaland\u0131");
         table.put("Play voice messages one at a time",
                 "Sesli mesajlar\u0131 tek tek oynat");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Post Story button",
                 "Hik\u00e2ye Payla\u015f d\u00fc\u011fmesi");
         table.put("Premium promo accepts",
@@ -3080,6 +3291,12 @@ public final class L10nTranslations {
                 "Bir forum konusunun sonunda yukar\u0131 \u00e7ekmek yaln\u0131zca i\u00e7eri\u011fi kayd\u0131r\u0131r. Sonraki konuyu konu listesinden a\u00e7\u0131n. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Push token saved: %1$s",
                 "Push belirteci kay\u0131tl\u0131: %1$s");
+        table.put("Puts Copy photo under Forward in a photo's long-press menu once the photo has downloaded. It copies the picture itself, so you can paste it into another app. It won't appear in protected or secret chats. Off by default in settings.",
+                "Bir foto\u011frafa uzun bast\u0131\u011f\u0131n\u0131zda a\u00e7\u0131lan men\u00fcde, foto\u011fraf indirildikten sonra \u0130let'in alt\u0131na Foto\u011fraf\u0131 kopyala koyar. Resmin kendisini kopyalar, b\u00f6ylece ba\u015fka bir uygulamaya yap\u0131\u015ft\u0131rabilirsiniz. Korumal\u0131 veya gizli sohbetlerde g\u00f6r\u00fcnmez. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
+        table.put("Puts Message details at the end of a message's long-press menu. It shows the message's IDs, when it was sent and edited, where it was forwarded from and the file's data center and size, with a Copy button. Off by default in settings.",
+                "Bir mesaja uzun bast\u0131\u011f\u0131n\u0131zda a\u00e7\u0131lan men\u00fcn\u00fcn sonuna Mesaj ayr\u0131nt\u0131lar\u0131 koyar. Mesaj\u0131n kimliklerini, ne zaman g\u00f6nderilip d\u00fczenlendi\u011fini, nereden iletildi\u011fini ve dosyan\u0131n veri merkezi ile boyutunu bir Kopyala d\u00fc\u011fmesiyle g\u00f6sterir. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
+        table.put("Puts Repeat under Forward in a message's long-press menu. It sends the message again to the same chat as a new message from you. It only shows where Telegram offers Forward and you can write, so it won't appear in protected or secret chats. Off by default in settings.",
+                "Bir mesaja uzun bast\u0131\u011f\u0131n\u0131zda a\u00e7\u0131lan men\u00fcde \u0130let'in alt\u0131na Tekrarla koyar. Mesaj\u0131 ayn\u0131 sohbete sizden yeni bir mesaj olarak yeniden g\u00f6nderir. Yaln\u0131zca Telegram'\u0131n \u0130let se\u00e7ene\u011fi sundu\u011fu ve yazabildi\u011finiz yerlerde g\u00f6r\u00fcn\u00fcr, yani korumal\u0131 veya gizli sohbetlerde asla g\u00f6r\u00fcnmez. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("Quiet contacts prompts",
                 "Ki\u015fi isteklerini sustur");
         table.put("Read-only local state. This doesn't confirm notification delivery.",
@@ -3090,11 +3307,10 @@ public final class L10nTranslations {
                 "Hata raporu i\u00e7in yama etkinli\u011fini kaydeder ve hatalar\u0131 g\u00f6sterir. Normal kullan\u0131mda kapal\u0131 b\u0131rak\u0131n.");
         table.put("Repair Firebase push registration",
                 "Firebase bildirim kayd\u0131n\u0131 d\u00fczelt");
+        table.put("Repeat",
+                "Tekrarla");
         table.put("Resume",
                 "Devam et");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Retry",
                 "Yeniden dene");
         table.put("Reveal spoilers",
@@ -3115,6 +3331,10 @@ public final class L10nTranslations {
                 "Aramadaki Uygulamalar sekmesi, Telegram'\u0131n Pop\u00fcler uygulamalar listesini ba\u015fl\u0131\u011f\u0131 ve y\u00fckleme sat\u0131rlar\u0131yla birlikte atlar ve Telegram bu listeyi istemez. A\u00e7t\u0131\u011f\u0131n\u0131z uygulamalar ve di\u011fer sonu\u00e7lar kal\u0131r.");
         table.put("Selecting links by hand",
                 "Ba\u011flant\u0131lar\u0131 elle se\u00e7me");
+        table.put("Sender ID: %1$s",
+                "G\u00f6nderen kimli\u011fi: %1$s");
+        table.put("Sent: %1$s",
+                "G\u00f6nderildi: %1$s");
         table.put("Set when you patched",
                 "Yamalad\u0131\u011f\u0131nda ayarlananlar");
         table.put("Settings backup",
@@ -3171,6 +3391,9 @@ public final class L10nTranslations {
                 "Telegram sunucusunun istedi\u011fi otomatik arama hata ay\u0131klama raporlar\u0131n\u0131 ve g\u00fcnl\u00fck dosyas\u0131 y\u00fcklemelerini durdurur.");
         table.put("Strip link tracking",
                 "Ba\u011flant\u0131 takibini kald\u0131r");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Supported links",
                 "Desteklenen ba\u011flant\u0131lar");
         table.put("Swipe back on profiles",
@@ -3215,9 +3438,6 @@ public final class L10nTranslations {
                 "O dosyay\u0131 tutan uygulama \u00e7ok uzun s\u00fcr\u00fcyor, bu y\u00fczden HushTelegram beklemeyi b\u0131rakt\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("The app holding the last settings file still hasn't answered. Try again later.",
                 "Son ayar dosyas\u0131n\u0131 tutan uygulama h\u00e2l\u00e2 yan\u0131t vermedi. Daha sonra tekrar dene.");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
                 "Ayar dosyas\u0131n\u0131 tutan uygulama \u00e7ok uzun s\u00fcr\u00fcyor, bu y\u00fczden HushTelegram beklemeyi b\u0131rakt\u0131. O uygulama kaydetmeyi yine de bitirebilir, bu y\u00fczden dosyaya g\u00fcvenmeden \u00f6nce onu kontrol et.");
         table.put("The camera in the attachment menu starts on the rear lens every time you open it, instead of the lens you used last. You can still flip it while it's open. Off by default in settings.",
@@ -3294,6 +3514,9 @@ public final class L10nTranslations {
                 "Siz ya da ba\u015fka biri bir mesaja tepki verdi\u011finde emoji art\u0131k ekranda u\u00e7up patlamaz. Tepki yine mesajda g\u00f6r\u00fcn\u00fcr. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
         table.put("While a voice message plays, tapping the bar above the chat opens Telegram's full music player with its seek bar, instead of jumping to the message. View-once voice messages stay as they are. Off by default in settings.",
                 "Bir sesli mesaj \u00e7alarken sohbetin \u00fcst\u00fcndeki \u00e7ubu\u011fa dokundu\u011funuzda, mesaja atlamak yerine Telegram'\u0131n arama \u00e7ubuklu tam m\u00fczik \u00e7alar\u0131 a\u00e7\u0131l\u0131r. Tek seferlik sesli mesajlar oldu\u011fu gibi kal\u0131r. Ayarlarda varsay\u0131lan olarak kapal\u0131d\u0131r.");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("Yes",
                 "Evet");
         table.put("You have the newest HushTelegram release.",
@@ -3338,9 +3561,6 @@ public final class L10nTranslations {
                 "kanal okuma \u00f6l\u00e7\u00fcmleri");
         table.put("chat double-tap reactions",
                 "sohbette \u00e7ift dokunma tepkileri");
-    }
-
-    private static void fillTr5(Map<String, String> table) {
         table.put("chat drafts",
                 "sohbet taslaklar\u0131");
         table.put("chat-list story bar",
