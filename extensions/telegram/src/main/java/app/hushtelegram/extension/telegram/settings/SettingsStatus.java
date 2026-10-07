@@ -86,6 +86,7 @@ public final class SettingsStatus {
     public static boolean hideFeaturesAndInvite() { return false; }
     public static boolean messageMenuRepeat() { return false; }
     public static boolean keepDeleted() { return false; }
+    public static boolean askBeforeSending() { return false; }
     public static boolean storyRequests() { return false; }
     public static boolean storyBar() { return false; }
     public static boolean storyCamera() { return false; }

@@ -121,6 +121,7 @@ body:
         - Hide Telegram Features and Invite Friends
         - Add Repeat to the message menu
         - Keep deleted messages
+        - Ask before sending a sticker
         - Strip link tracking
         - HushTelegram settings
     validations:
