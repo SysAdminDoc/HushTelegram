@@ -356,6 +356,11 @@ Notification permission: %1$s	Izin notifikasi: %1$s
 Push token saved: %1$s	Token push tersimpan: %1$s
 Signed-in accounts: %1$s	Akun yang masuk: %1$s
 Accounts confirmed for push: %1$s	Akun dengan pendaftaran push terkonfirmasi: %1$s
+Telegram's push answer: %1$s	Jawaban Telegram untuk pendaftaran push: %1$s
+None since Telegram started	Belum ada sejak Telegram dibuka
+Accepted	Diterima
+Refused	Ditolak
+Refused (%1$s)	Ditolak (%1$s)
 Read-only local state. This doesn't confirm notification delivery.	Hanya membaca status lokal. Ini tidak memastikan bahwa notifikasi telah terkirim.
 Unknown	Tidak diketahui
 Allowed	Diizinkan

@@ -356,6 +356,11 @@ Notification permission: %1$s	Bildirim izni: %1$s
 Push token saved: %1$s	Push belirteci kayıtlı: %1$s
 Signed-in accounts: %1$s	Oturum açmış hesaplar: %1$s
 Accounts confirmed for push: %1$s	Push kaydı onaylanan hesaplar: %1$s
+Telegram's push answer: %1$s	Telegram'ın push kaydı yanıtı: %1$s
+None since Telegram started	Telegram açıldığından beri yok
+Accepted	Kabul edildi
+Refused	Reddedildi
+Refused (%1$s)	Reddedildi (%1$s)
 Read-only local state. This doesn't confirm notification delivery.	Yalnızca yerel durum okunur. Bu, bildirimlerin teslim edildiğini doğrulamaz.
 Unknown	Bilinmiyor
 Allowed	İzin verildi

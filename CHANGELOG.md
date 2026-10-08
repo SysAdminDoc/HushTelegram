@@ -6,6 +6,8 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.11.
 
+* **Telegram:** Local notification status has a new line for Telegram's answer to its latest push registration. It reads Accepted, Refused, or Refused with the error name Telegram's server sent back, and the diagnostic report carries the same line. Telegram throws a refusal away without saying anything, so until now a phone with a saved push token and no confirmed accounts had no way to show why. Telegram only asks again when an account isn't registered yet or its push token changes, so "None since Telegram started" is normal on a phone that's already set up.
+
 * **Telegram:** A new Hide contacts on Telegram switch, off by default, takes the Your contacts on Telegram list off a short chat list, along with its heading and the loading rows shown while contacts sync. Chats, folders, contact sync and search don't change. With no chats at all, you get the welcome screen Telegram shows when none of your contacts use it. Turning it off or pausing HushTelegram brings the same rows back. A change shows up the next time Telegram rebuilds the chat list, and a restart always does.
 
 * **Telegram:** A new Hide greeting stickers switch, off by default, takes away the sticker an empty private chat offers to send as a greeting, so a stray tap can't send it. The empty chat's text stays, and business introductions keep their sticker. Premium and paid-message notices, the sticker picker and sending don't change.

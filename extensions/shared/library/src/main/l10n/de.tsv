@@ -356,6 +356,11 @@ Notification permission: %1$s	Benachrichtigungsberechtigung: %1$s
 Push token saved: %1$s	Push-Token gespeichert: %1$s
 Signed-in accounts: %1$s	Angemeldete Konten: %1$s
 Accounts confirmed for push: %1$s	Für Push bestätigte Konten: %1$s
+Telegram's push answer: %1$s	Antwort von Telegram zur Push-Anmeldung: %1$s
+None since Telegram started	Keine seit dem Start von Telegram
+Accepted	Angenommen
+Refused	Abgelehnt
+Refused (%1$s)	Abgelehnt (%1$s)
 Read-only local state. This doesn't confirm notification delivery.	Lokaler Status, nur lesend. Die Zustellung von Benachrichtigungen wird dadurch nicht bestätigt.
 Unknown	Unbekannt
 Allowed	Erlaubt

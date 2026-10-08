@@ -356,6 +356,11 @@ Notification permission: %1$s	Permiso de notificaciones: %1$s
 Push token saved: %1$s	Token push guardado: %1$s
 Signed-in accounts: %1$s	Cuentas con sesión iniciada: %1$s
 Accounts confirmed for push: %1$s	Cuentas con registro push confirmado: %1$s
+Telegram's push answer: %1$s	Respuesta de Telegram al registro push: %1$s
+None since Telegram started	Ninguna desde que se abrió Telegram
+Accepted	Aceptado
+Refused	Rechazado
+Refused (%1$s)	Rechazado (%1$s)
 Read-only local state. This doesn't confirm notification delivery.	Solo se consulta el estado local. Esto no confirma la entrega de notificaciones.
 Unknown	Desconocido
 Allowed	Permitido
