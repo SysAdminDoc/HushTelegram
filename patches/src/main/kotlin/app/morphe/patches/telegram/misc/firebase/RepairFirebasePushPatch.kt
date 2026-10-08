@@ -114,10 +114,12 @@ internal fun BytecodePatchContext.resolvePushAnswer(): PushAnswerPlan {
     val owners = mutableListOf<String>()
     classDefForEach { if (it.type == PUSH_CONTROLLER) owners += it.type }
     shape(owners.size == 1, "push registration owner is missing or ambiguous")
-    val callback = mutableClassDefBy(PUSH_CONTROLLER).methods.filter { it.name.startsWith("lambda\$registerForPush\$") }
-        .unique("push registration answer callback")
-    shape(callback.hasShape(listOf("I", STRING, TL_OBJECT, TL_ERROR), "V") && !AccessFlags.STATIC.isSet(callback.accessFlags) &&
-        callback.implementation != null, "push registration answer callback changed its parameters")
+    // registerForPush also owns a no-argument lambda that clears its in-flight flag, so the name alone isn't enough.
+    val callback = mutableClassDefBy(PUSH_CONTROLLER).methods.filter {
+        it.name.startsWith("lambda\$registerForPush\$") && it.hasShape(listOf("I", STRING, TL_OBJECT, TL_ERROR), "V")
+    }.unique("push registration answer callback")
+    shape(!AccessFlags.STATIC.isSet(callback.accessFlags) && callback.implementation != null,
+        "push registration answer callback is static or has no body")
     // Parameters fill the last registers: this, push type, token, response, error.
     val registers = callback.implementation!!.registerCount
     val response = registers - 2

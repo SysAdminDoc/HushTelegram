@@ -47,6 +47,11 @@ import java.io.File
 import java.security.MessageDigest
 
 private const val ANSWER_CALLBACK = "lambda\$registerForPush\$"
+private val ANSWER_PARAMETERS = listOf("I", "Ljava/lang/String;", "Lorg/telegram/tgnet/TLObject;", "Lorg/telegram/tgnet/TLRPC\$TL_error;")
+
+/** The account.registerDevice answer, not registerForPush's no-argument lambda that clears its in-flight flag. */
+private fun Method.isAnswerCallback() =
+    name.startsWith(ANSWER_CALLBACK) && parameterTypes.map(CharSequence::toString) == ANSWER_PARAMETERS && returnType == "V"
 
 /** Independent signer and request census, with complete pre-mutation refusal snapshots. */
 class RepairFirebasePushFixtureTest {
@@ -113,7 +118,7 @@ class RepairFirebasePushFixtureTest {
                     oldFlow.exceptional[index].map(::destination), newFlow.exceptional[moved(index)])
             }
             for (owner in hosts) for (method in owner.methods) {
-                if (method.signature() == original.signature() || method.name.startsWith(ANSWER_CALLBACK)) continue
+                if (method.signature() == original.signature() || method.isAnswerCallback()) continue
                 assertEquals("${build.name}: untouched ${method.signature()}", snapshot(method),
                     snapshot(context.mutableClassDefBy(owner.type).methods.single { it.signature() == method.signature() }))
             }
@@ -129,10 +134,9 @@ class RepairFirebasePushFixtureTest {
             val hosts = hosts(build)
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
             val controller = hosts.single { it.type == PUSH_CONTROLLER }
-            val original = controller.methods.single { it.name.startsWith(ANSWER_CALLBACK) }
-            assertEquals("${build.name}: account, token, response and error",
-                listOf("I", "Ljava/lang/String;", "Lorg/telegram/tgnet/TLObject;", "Lorg/telegram/tgnet/TLRPC\$TL_error;"),
-                original.parameterTypes.map(CharSequence::toString))
+            assertEquals("${build.name}: the answer and the in-flight reset share the name", 2,
+                controller.methods.count { it.name.startsWith(ANSWER_CALLBACK) })
+            val original = controller.methods.single { it.isAnswerCallback() }
             assertTrue("${build.name}: instance callback", !AccessFlags.STATIC.isSet(original.accessFlags))
             val registers = original.implementation!!.registerCount
             val before = original.instructions()
@@ -301,9 +305,9 @@ class RepairFirebasePushFixtureTest {
             }
         }
         fun callback(context: BytecodePatchContext) =
-            context.mutableClassDefBy(PUSH_CONTROLLER).methods.single { it.name.startsWith(ANSWER_CALLBACK) }
+            context.mutableClassDefBy(PUSH_CONTROLLER).methods.single { it.isAnswerCallback() }
         mutations["missing push answer callback"] = { context ->
-            context.mutableClassDefBy(PUSH_CONTROLLER).methods.removeAll { it.name.startsWith(ANSWER_CALLBACK) }
+            context.mutableClassDefBy(PUSH_CONTROLLER).methods.removeAll { it.isAnswerCallback() }
         }
         mutations["ambiguous push answer callback"] = { context ->
             val method = callback(context)
