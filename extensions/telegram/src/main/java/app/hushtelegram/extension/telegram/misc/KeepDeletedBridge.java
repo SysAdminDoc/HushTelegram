@@ -6,6 +6,7 @@ package app.hushtelegram.extension.telegram.misc;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -106,6 +107,48 @@ final class KeepDeletedBridge implements KeepDeleted.Source {
         } finally {
             KeepDeleted.STOCK.remove();
         }
+    }
+
+    @Override public void clearNotifications(ArrayList<Integer> ids, long channelId) throws Exception {
+        Object notifications = call(controller, "getNotificationsController");
+        Method[] cleanup = cleanup(notifications.getClass());
+        Object deleted = cleanup[0].getParameterTypes()[0].getConstructor().newInstance();
+        // Telegram's own key: 0 outside channels, the channel's dialog ID inside one.
+        cleanup[1].invoke(deleted, ids, -channelId);
+        cleanup[0].invoke(notifications, deleted, false);
+    }
+
+    /**
+     * The cleanup and the put that fills its argument. The argument is androidx's LongSparseArray,
+     * which R8 renames, so its type comes from the cleanup's own signature and its put is the one
+     * (Object, long) method that type has. The patch refuses a build where either isn't single.
+     */
+    private static Method[] cleanup(Class<?> notifications) throws Exception {
+        String key = notifications.getName() + "#cleanup";
+        Method clear = METHODS.get(key);
+        Method put = METHODS.get(key + "#put");
+        if (clear != null && put != null) return new Method[] {clear, put};
+        clear = null;
+        for (Method candidate : notifications.getMethods()) {
+            Class<?>[] parameters = candidate.getParameterTypes();
+            if (!candidate.getName().equals("removeDeletedMessagesFromNotifications") || parameters.length != 2
+                    || parameters[1] != boolean.class) continue;
+            if (clear != null) throw new IllegalStateException("two notification cleanups");
+            clear = candidate;
+        }
+        if (clear == null) throw new NoSuchMethodException("removeDeletedMessagesFromNotifications");
+        put = null;
+        for (Method candidate : clear.getParameterTypes()[0].getMethods()) {
+            Class<?>[] parameters = candidate.getParameterTypes();
+            if (Modifier.isStatic(candidate.getModifiers()) || candidate.getReturnType() != void.class || parameters.length != 2
+                    || parameters[0] != Object.class || parameters[1] != long.class) continue;
+            if (put != null) throw new IllegalStateException("two sparse array puts");
+            put = candidate;
+        }
+        if (put == null) throw new NoSuchMethodException("sparse array put");
+        METHODS.put(key, clear);
+        METHODS.put(key + "#put", put);
+        return new Method[] {clear, put};
     }
 
     /** Whether the message is sent by me, disappears on a timer, or can't be saved. Null when it can't be read. */

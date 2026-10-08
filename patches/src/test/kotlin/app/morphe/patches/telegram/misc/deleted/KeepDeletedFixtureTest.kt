@@ -8,6 +8,9 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.extension.localRegisterCount
@@ -19,13 +22,19 @@ import app.morphe.patches.telegram.misc.time.MESSAGE_TIME_SHOWN
 import app.morphe.patches.telegram.misc.time.messageSecondsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
+
+private const val OBJECT = "Ljava/lang/Object;"
 
 /** The update loop, the push deletion, the bubble's time measuring and the runtime. */
 class KeepDeletedFixtureTest {
@@ -41,15 +50,12 @@ class KeepDeletedFixtureTest {
     @Test fun `each deletion is asked about first and the stock code follows unchanged`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
-            val telegram = FixtureDex.classes(build, KEEP_DELETED_TYPES)
-            assertEquals("$name: every class the extension reads", KEEP_DELETED_TYPES, telegram.keys)
-            val hosts = FixtureDex.classesWhere(build, { true }) { m ->
-                m.definingClass == FAST_DATE_FORMAT || m.controlBody().any { it.controlRef() == EDITED_MESSAGE }
-            }.map(ImmutableClassDef::of)
-            val context = PatchContexts.of(ExtensionDex.classes() + telegram.values + hosts)
+            val context = context(build)
             // The label rides the time hook of Message times with seconds, which patches first.
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { messageSecondsPatch.execute(context) })
             val plan = context.resolveKeepDeleted()
+            assertEquals("$name: the cleanup's sparse array is the one the update loop fills", sparseType(build),
+                context.requireNotificationCleanup(plan.updates))
 
             val updatesBefore = plan.updates.controlBody().map(::shape)
             val pushBefore = plan.push.controlBody().map(::shape)
@@ -105,4 +111,63 @@ class KeepDeletedFixtureTest {
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }
     }
+
+    @Test fun `a changed notification cleanup or sparse array refuses before any edit`() {
+        val changes = linkedMapOf<String, (BytecodePatchContext, String) -> Unit>(
+            "missing cleanup" to { context, _ ->
+                context.mutableClassDefBy(NOTIFICATIONS).methods.removeAll { it.name == NOTIFICATION_CLEANUP }
+            },
+            "static cleanup" to { context, _ ->
+                val cleanup = context.mutableClassDefBy(NOTIFICATIONS).methods.single { it.name == NOTIFICATION_CLEANUP }
+                cleanup.accessFlags = cleanup.accessFlags or AccessFlags.STATIC.value
+            },
+            "no put" to { context, sparse ->
+                context.mutableClassDefBy(sparse).methods.removeAll { it.parameterTypes.map(CharSequence::toString) == listOf(OBJECT, "J") && it.returnType == "V" }
+            },
+            "two puts" to { context, sparse ->
+                val owner = context.mutableClassDefBy(sparse)
+                val put = owner.methods.single { it.parameterTypes.map(CharSequence::toString) == listOf(OBJECT, "J") && it.returnType == "V" }
+                owner.methods.add(ImmutableMethod(sparse, "putAgain", put.parameters, put.returnType, put.accessFlags, put.annotations,
+                    put.hiddenApiRestrictions, put.implementation).toMutable())
+            },
+            "no empty constructor" to { context, sparse ->
+                context.mutableClassDefBy(sparse).methods.removeAll { it.name == "<init>" && it.parameterTypes.isEmpty() }
+            },
+            "update loop uses another put" to { context, sparse ->
+                val owner = context.mutableClassDefBy(sparse)
+                val put = owner.methods.single { it.parameterTypes.map(CharSequence::toString) == listOf(OBJECT, "J") && it.returnType == "V" }
+                owner.methods.remove(put)
+                owner.methods.add(ImmutableMethod(sparse, "renamedPut", put.parameters, put.returnType, put.accessFlags, put.annotations,
+                    put.hiddenApiRestrictions, put.implementation).toMutable())
+            },
+        )
+        for (build in Fixtures.declaredBuilds()) for ((change, mutate) in changes) {
+            val context = context(build)
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { messageSecondsPatch.execute(context) })
+            mutate(context, sparseType(build))
+            val before = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.associate { it.toString() to it.controlBody().map(::shape) }
+            val failure = assertThrows("${build.name}: $change", PatchException::class.java) { keepDeletedPatch.execute(context) }
+            assertTrue("${build.name}: $change refuses for the cleanup: ${failure.message}",
+                failure.message.orEmpty().let { "notification cleanup" in it || "sparse array" in it })
+            assertEquals("${build.name}: $change leaves the controller as it was", before,
+                context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.associate { it.toString() to it.controlBody().map(::shape) })
+            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "keepDeleted" }.controlBody()
+            assertEquals(0L, (status.first() as WideLiteralInstruction).wideLiteral)
+        }
+    }
+
+    private fun context(build: File): BytecodePatchContext {
+        val telegram = FixtureDex.classes(build, KEEP_DELETED_TYPES)
+        assertEquals("${build.name}: every class the extension reads", KEEP_DELETED_TYPES, telegram.keys)
+        val sparse = FixtureDex.classes(build, setOf(sparseType(build)))
+        assertEquals("${build.name}: the renamed sparse array", setOf(sparseType(build)), sparse.keys)
+        val hosts = FixtureDex.classesWhere(build, { true }) { m ->
+            m.definingClass == FAST_DATE_FORMAT || m.controlBody().any { it.controlRef() == EDITED_MESSAGE }
+        }.map(ImmutableClassDef::of)
+        return PatchContexts.of(ExtensionDex.classes() + telegram.values + sparse.values + hosts)
+    }
+
+    /** Read independently of the patch: the cleanup's first parameter, as the fixture declares it. */
+    private fun sparseType(build: File) = FixtureDex.classes(build, setOf(NOTIFICATIONS)).getValue(NOTIFICATIONS).methods
+        .single { it.name == NOTIFICATION_CLEANUP }.parameterTypes[0].toString()
 }

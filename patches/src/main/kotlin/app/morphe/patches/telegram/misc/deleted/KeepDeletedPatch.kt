@@ -33,6 +33,7 @@ import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
@@ -148,9 +149,12 @@ private const val TL_MESSAGE = "Lorg/telegram/tgnet/TLRPC\$Message;"
 private const val TL_MEDIA = "Lorg/telegram/tgnet/TLRPC\$MessageMedia;"
 private const val TL_CHAT = "Lorg/telegram/tgnet/TLRPC\$Chat;"
 private const val USER_CONFIG = "Lorg/telegram/messenger/UserConfig;"
+internal const val NOTIFICATIONS = "Lorg/telegram/messenger/NotificationsController;"
+internal const val NOTIFICATION_CLEANUP = "removeDeletedMessagesFromNotifications"
 
 private val API = listOf(
     Api(BASE_CONTROLLER, "getMessagesStorage", "", STORAGE),
+    Api(BASE_CONTROLLER, "getNotificationsController", "", NOTIFICATIONS),
     Api(BASE_CONTROLLER, "getUserConfig", "", USER_CONFIG),
     Api(MESSAGES_CONTROLLER, "deleteMessagesByPush", "J${LIST}J", "V"),
     Api(MESSAGES_CONTROLLER, "getChat", "Ljava/lang/Long;", TL_CHAT),
@@ -187,7 +191,7 @@ private val FIELDS = listOf(
 
 /** Every type the extension reaches by name, for a test to load. */
 internal val KEEP_DELETED_TYPES: Set<String> =
-    (API.map { it.owner } + FIELDS.map { it.first } + listOf(MESSAGES_CONTROLLER, STORAGE)).toSet()
+    (API.map { it.owner } + FIELDS.map { it.first } + listOf(MESSAGES_CONTROLLER, STORAGE, NOTIFICATIONS)).toSet()
 
 /**
  * The extension reads Telegram's storage and message objects by name, and the patch refuses a build
@@ -243,6 +247,7 @@ internal fun BytecodePatchContext.resolveKeepDeleted(): KeepDeletedPlan {
         resolveBranch(updates, CHANNEL_DELETE, CHANNEL_DELETE_MESSAGES, "channelUpdate"),
     )
     updates.requireThisIntact(PATCH, branches.map { it.insertAt })
+    requireNotificationCleanup(updates)
 
     // The push deletion, whose own entry the extension answers first.
     val push = controller.methods.filter { m ->
@@ -277,6 +282,37 @@ internal fun BytecodePatchContext.resolveKeepDeleted(): KeepDeletedPlan {
         it.parameterTypes[0].toString() == MESSAGE_OBJECT && it.returnType == "V" }
     controlShape(ControlFlow.of(measure).normal.none { 0 in it }, "something jumps back to the start of the message time measuring")
     return KeepDeletedPlan(updates, branches, push, pushResult, measure, measure.parameterRegisterNumber(0))
+}
+
+/**
+ * A message handed back after its update was taken still needs the notification cleanup the update
+ * loop would have run. That cleanup takes androidx's LongSparseArray, which R8 renames, so the
+ * extension takes the type from the cleanup's signature and fills it with the one public
+ * (Object, long) put the type has. The update loop fills its own deleted lists with that same put.
+ *
+ * @return the renamed sparse array type
+ */
+internal fun BytecodePatchContext.requireNotificationCleanup(updates: Method): String {
+    val notifications = classDefByOrNull(NOTIFICATIONS)
+    val cleanups = notifications?.methods?.filter {
+        it.name == NOTIFICATION_CLEANUP && it.parameterTypes.size == 2 && it.parameterTypes[1].toString() == "Z" && it.returnType == "V"
+    }.orEmpty()
+    controlShape(notifications != null && AccessFlags.PUBLIC.isSet(notifications.accessFlags) && cleanups.size == 1 &&
+        AccessFlags.PUBLIC.isSet(cleanups.single().accessFlags) && !AccessFlags.STATIC.isSet(cleanups.single().accessFlags),
+        "Telegram's notification cleanup for deleted messages changed")
+    val sparseType = cleanups.single().parameterTypes[0].toString()
+    val sparse = classDefByOrNull(sparseType)
+    val puts = sparse?.methods?.filter {
+        it.parameterTypes.map(CharSequence::toString) == listOf(OBJECT, "J") && it.returnType == "V" &&
+            AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
+    }.orEmpty()
+    controlShape(sparse != null && AccessFlags.PUBLIC.isSet(sparse.accessFlags) && puts.size == 1 && sparse.methods.any {
+        it.name == "<init>" && it.parameterTypes.isEmpty() && AccessFlags.PUBLIC.isSet(it.accessFlags)
+    }, "the notification cleanup's sparse array no longer has one public put and a public empty constructor")
+    val put = "$sparseType->${puts.single().name}(${OBJECT}J)V"
+    controlShape(updates.controlBody().any { it.controlRef() == put },
+        "the update loop no longer fills its deleted lists with the sparse array's put")
+    return sparseType
 }
 
 /**

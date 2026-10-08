@@ -65,6 +65,9 @@ public final class KeepDeleted {
 
         /** Telegram's own deletion of [ids]. */
         void stock(long dialogId, ArrayList<Integer> ids, long channelId) throws Exception;
+
+        /** Telegram's notification cleanup for deleted [ids], which its update path runs and its push deletion doesn't. */
+        void clearNotifications(ArrayList<Integer> ids, long channelId) throws Exception;
     }
 
     /** Where the remembered messages live between runs. */
@@ -202,6 +205,15 @@ public final class KeepDeleted {
             HookStatus.counted(FamilyNames.KEEP_DELETED_MESSAGES, "left to Telegram");
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "stock deletion", failure);
+            return;
+        }
+        // Taking an update skipped the notification cleanup Telegram runs for it, and the push deletion
+        // runs none, so a message that still goes would leave its notification behind. A push has
+        // already cleared its own, and clearing them again finds nothing.
+        try {
+            source.clearNotifications(new ArrayList<>(release), channelId);
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "notification cleanup", failure);
         }
     }
 
