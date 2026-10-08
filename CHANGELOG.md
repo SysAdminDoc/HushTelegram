@@ -2,9 +2,9 @@
 
 Every HushTelegram release, newest first.
 
-## Unreleased
+## 0.0.11 (2026-10-08)
 
-Working version 0.0.11.
+The fifth release, with 55 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.
 
 * **Telegram:** Local notification status has a new line for Telegram's answer to its latest push registration. It reads Accepted, Refused, or Refused with the error name Telegram's server sent back, and the diagnostic report carries the same line. Telegram throws a refusal away without saying anything, so until now a phone with a saved push token and no confirmed accounts had no way to show why. Telegram only asks again when an account isn't registered yet or its push token changes, so "None since Telegram started" is normal on a phone that's already set up.
 
