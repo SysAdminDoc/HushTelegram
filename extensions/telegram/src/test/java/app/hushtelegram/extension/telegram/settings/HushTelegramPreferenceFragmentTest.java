@@ -200,7 +200,7 @@ public class HushTelegramPreferenceFragmentTest {
             }
             assertTrue("Debug logging is drawn above the Pause row", indexOfKey(rows, BaseSettings.DEBUG.key) > pause);
             assertTrue(String.valueOf(rows.get(pause).getSummary()),
-                    String.valueOf(rows.get(pause).getSummary()).contains("every switch but Debug logging acts as if it were off. Changes made when you patched stay in"));
+                    String.valueOf(rows.get(pause).getSummary()).contains("every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in"));
         }
     }
 
@@ -719,9 +719,9 @@ public class HushTelegramPreferenceFragmentTest {
         for (HushTelegramPause.Reason why : HushTelegramPause.Reason.values()) {
             String summary = HushTelegramPreferenceFragment.pausedSummary(why, "org.telegram.messenger.web");
             assertFalse(why + ": " + summary, UNPATCHED.matcher(summary).find());
-            assertTrue(why + ": " + summary, summary.contains("what was set when you patched stays in"));
+            assertTrue(why + ": " + summary, summary.contains("Edits made when you patched stay in"));
             // Debug logging is kept as saved while paused, so the card can't say every switch is off.
-            assertTrue(why + ": " + summary, summary.contains("Every switch but Debug logging"));
+            assertTrue(why + ": " + summary, summary.contains("Every switch except Debug logging"));
         }
 
         // The marker counts only in the app's own files folder, and the card names that folder,

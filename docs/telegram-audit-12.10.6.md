@@ -100,6 +100,9 @@ These are runtime switch defaults and settings locations from the current patch 
 | [Hide contacts on Telegram](../patches/src/main/kotlin/app/morphe/patches/telegram/misc/contactsblock/HideContactsBlockPatch.kt) | The suggested-contacts block below a short chat list | Off, HushTelegram settings > Chats |
 | [Quiet contacts nag](../patches/src/main/kotlin/app/morphe/patches/telegram/misc/contacts/QuietContactsNagPatch.kt) | Repeated contact permission prompts after the user declines | On, HushTelegram settings > Chats |
 | [Strip link tracking](../patches/src/main/kotlin/app/morphe/patches/telegram/misc/links/StripLinkTrackingPatch.kt) | Recognized tracking query tags on opened and shared links | Off, HushTelegram settings > More settings > Links |
+| [Turn off haptic feedback](../patches/src/main/kotlin/app/morphe/patches/telegram/misc/haptics/NoHapticsPatch.kt) | Tap, long-press, swipe and wrong-entry vibration | Off, HushTelegram settings > Chats |
+
+The titles in this table are Morphe Manager patch names. A few HushTelegram settings rows use different wording. `Strip link tracking` appears as `Remove link tracking tags`, and `Turn off haptic feedback` appears as `Stop vibrations on taps`. Build reports use the Manager names so a patch can be matched to the catalog entry. The settings row keeps its own title.
 
 ## Friction users may notice
 
@@ -113,6 +116,7 @@ These are runtime switch defaults and settings locations from the current patch 
 | Premium, Stars and gifts | Promotion can appear in Settings, profile gift areas, channel buttons and chat-list banners. | `Hide Premium, gifts and Stars` and `Hide promotional banners` handle different UI areas. Security notices remain visible. |
 | Contact prompts and suggested contacts | Contact access can be requested again, and a suggested list can occupy space in the chat list. | `Quiet contacts nag` and `Hide contacts on Telegram` affect those UI elements only. |
 | Sponsored impressions and clicks | The API records ad views and actions for the campaign, while Telegram says it doesn't target ads from private chat contents. | `Hide ads` prevents normal fetches. Direct report paths aren't independently hooked. |
+| Haptic feedback | Tap and gesture vibrations can be distracting in quiet settings. | `Turn off haptic feedback` disables taps, long presses, swipes and wrong-entry haptics. Calls and notifications still vibrate. It starts off. |
 | Long settings pages | The Hush settings page has many independent switches. | The page split and polish work are already in `ROADMAP.md`. |
 
 The first-run flow has its own friction. Telegram explains call-based verification, requests phone-related permission, then moves to phone entry if permission is denied. The precise dialog varies by Android version and permission history. The factory reference records the observed Android 13 flow.
