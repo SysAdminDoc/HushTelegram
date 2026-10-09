@@ -42,9 +42,8 @@ internal val HAPTIC_CALLS = mapOf(
 @Suppress("unused")
 val noHapticsPatch = bytecodePatch(
     name = "Turn off haptic feedback",
-    description = "Adds a switch, off by default, that stops Telegram vibrating for taps, long presses, " +
-        "swipes and wrong entries. Calls and notifications still vibrate. Its switch is on the Chats page of " +
-        "HushTelegram settings.",
+    description = "Stops Telegram from vibrating for taps, long presses, swipes and wrong entries. Calls and " +
+        "notifications still vibrate. Starts off. Turn it on in HushTelegram settings > Chats.",
     default = true,
 ) {
     category("Interface")

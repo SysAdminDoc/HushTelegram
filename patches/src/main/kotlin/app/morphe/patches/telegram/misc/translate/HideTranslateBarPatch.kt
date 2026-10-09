@@ -35,9 +35,8 @@ private const val SWIPE_BACK = "isSwipeBackEnabled(Landroid/view/MotionEvent;)Z"
 @Suppress("unused")
 val hideTranslateBarPatch = bytecodePatch(
     name = "Hide translate bar",
-    description = "Adds a switch, off by default, that hides the translate bar at the top of chats in " +
-        "another language. Translate moves to the chat's menu, and a chat you're translating keeps its bar " +
-        "so you can go back to the original. Its switch is on the Chats page of HushTelegram settings.",
+    description = "Hides the translate bar at the top of chats in another language. Translate moves to the chat's menu." +
+        " Starts off. Turn it on in HushTelegram settings > Chats.",
     default = true,
 ) {
     category("Conversations")

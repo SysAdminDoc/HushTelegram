@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Every patch description in Morphe Manager is rewritten in plain English. Each one now says what changes on screen, why you might want it, and ends with where to find its switch in HushTelegram settings and whether it starts on or off.
+
 * **Telegram:** Each patch's description in Morphe Manager now says which page of HushTelegram settings holds its switch, under the switch's own name when that differs, and whether it starts on or off. Nothing is hidden behind Expert mode: every patch but the two credential patches was already in the default selection, and the README's install steps now say so.
 
 * **Telegram:** Expert mode's Chats group held 41 of the 55 patches. It's now split into groups you'd look in: Chats for the chat list, Conversations for inside a chat, Playback, Notifications, Theme, Interface, Stories and Search. Hide promotional banners and Hide Premium, gifts and Stars moved to Ads, and Disable update checks moved to Updates.

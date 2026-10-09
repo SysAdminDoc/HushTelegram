@@ -67,9 +67,9 @@ private val INVOKES = listOf(Opcode.INVOKE_VIRTUAL, Opcode.INVOKE_VIRTUAL_RANGE)
 @Suppress("unused")
 val disableArchivePullPatch = bytecodePatch(
     name = PATCH,
-    description = "Adds a switch, off by default, so pulling down the chat list doesn't bring up a hidden " +
-        "archive. The chat list's menu opens it instead. Its switch is on the Chats page of HushTelegram " +
-        "settings.",
+    description = "Stops pulling down the chat list from opening the hidden archive. Open it from Archived chats in the" +
+        " chat list's menu instead. Starts off. Turn it on in HushTelegram settings > Chats, then restart " +
+        "Telegram.",
     default = true,
 ) {
     category("Chats")

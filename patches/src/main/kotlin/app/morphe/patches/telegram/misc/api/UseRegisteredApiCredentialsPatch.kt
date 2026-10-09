@@ -40,9 +40,9 @@ private const val UNKNOWN = -1
 @Suppress("unused")
 val useRegisteredApiCredentialsPatch = bytecodePatch(
     name = PATCH,
-    description = "Uses the API ID and hash registered for your application at my.telegram.org. Supply both " +
-        "patch options. Leaving both unset keeps the original credentials. It has no switch and isn't " +
-        "selected by default, so turn on Expert mode in Morphe Manager to pick it and enter them.",
+    description = "Signs in to Telegram with the API ID and hash you registered at my.telegram.org. Fill in both " +
+        "options, or leave both empty to keep the originals. It has no switch and isn't selected by default. " +
+        "Use Expert mode in Morphe Manager.",
     default = false,
 ) {
     category("Fixes")

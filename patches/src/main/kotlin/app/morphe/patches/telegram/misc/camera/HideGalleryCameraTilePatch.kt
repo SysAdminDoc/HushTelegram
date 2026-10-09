@@ -38,9 +38,8 @@ private val MOVES = listOf(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_16)
 @Suppress("unused")
 val hideGalleryCameraTilePatch = bytecodePatch(
     name = PATCH,
-    description = "Adds a switch, off by default, that takes the live camera tile out of the attachment " +
-        "menu's photo grid, so the grid starts with your photos. Its switch is on the Chats page of " +
-        "HushTelegram settings.",
+    description = "Removes the live camera tile from the attachment menu's photo grid, so the grid starts with your " +
+        "photos. Starts off. Turn it on in HushTelegram settings > Chats.",
     default = true,
 ) {
     category("Conversations")

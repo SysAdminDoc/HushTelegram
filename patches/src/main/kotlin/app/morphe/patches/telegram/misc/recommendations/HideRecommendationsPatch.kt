@@ -64,9 +64,8 @@ internal object GetCachedChannelRecommendationsFingerprint : Fingerprint(
 @Suppress("unused")
 val hideRecommendationsPatch = bytecodePatch(
     name = PATCH,
-    description = "Hides similar channels and bots, including cached recommendations. Telegram doesn't ask " +
-        "for new recommendations while the switch is on. Its switch is on the Chats page of HushTelegram " +
-        "settings and starts on.",
+    description = "Hides suggested similar channels and bots, and stops Telegram from loading new suggestions. On by " +
+        "default. Turn it off in HushTelegram settings > Chats.",
     default = true,
 ) {
     category("Interface")
