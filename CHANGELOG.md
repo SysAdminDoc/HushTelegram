@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Messages inside HushTelegram are plainer too: the notification status lines, the pause and safe mode notes, update check results, settings file errors, and the "this build doesn't change" notes now say what happened and what to do next, with no technical words. All five languages are updated.
+
 * **Telegram:** The rows in HushTelegram settings now say in plain English what you'll notice when a switch is on, and a few titles are clearer (Stop vibrations on taps, Remove link tracking tags, Show where a profile photo is stored). The translations are updated to match.
 
 * **Telegram:** Every patch description in Morphe Manager is rewritten in plain English. Each one now says what changes on screen, why you might want it, and ends with where to find its switch in HushTelegram settings and whether it starts on or off.

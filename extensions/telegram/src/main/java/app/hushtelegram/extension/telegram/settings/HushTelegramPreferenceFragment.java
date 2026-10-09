@@ -560,7 +560,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
         if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) {
             PreferenceCategory notifications = category(screen, L10n.t("Notifications"));
-            localNotificationStatus = info(context, L10n.t("Local notification status"), FirebasePush.localStatus(context).summary());
+            localNotificationStatus = info(context, L10n.t("Notification status on this phone"), FirebasePush.localStatus(context).summary());
             localNotificationStatus.setKey("local_notification_status");
             notifications.addPreference(mark(localNotificationStatus, SettingsIcons.ABOUT));
             notifications.addPreference(mark(toggle(context, Settings.REPAIR_FIREBASE_PUSH, L10n.t("Repair Firebase push registration"),
@@ -833,7 +833,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         String status;
         if (!HushTelegramPause.isPaused()) {
             // The version lives on the About page. Here it pushed the line that matters below it.
-            status = pausedNext ? L10n.t("HushTelegram pauses when Telegram restarts.") : L10n.t("Your controls are active.");
+            status = pausedNext ? L10n.t("HushTelegram pauses when Telegram restarts.") : L10n.t("Your switches are working.");
         } else if (pausedNext) {
             status = pausedSummary(HushTelegramPause.reason(), context.getPackageName())
                     + " " + L10n.t("Tap to turn it back on.");
@@ -931,8 +931,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 why = L10n.t("You paused HushTelegram.");
                 break;
         }
-        return why + " " + L10n.t("Every switch but Debug logging acts as if it were off, and what was set when you "
-                + "patched stays in. Your settings stay as they are.");
+        return why + " " + L10n.t("Every switch except Debug logging acts as if it were off. Edits made when you patched stay in. "
+                + "Your choices stay saved.");
     }
 
     /**

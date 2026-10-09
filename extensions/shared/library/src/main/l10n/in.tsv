@@ -12,8 +12,8 @@ avatar story taps	ketukan cerita pada avatar
 %1$d items in that file aren't settings this version of HushTelegram knows, so they'll be left out.	%1$d item dalam file itu bukan pengaturan yang dikenali versi HushTelegram ini, jadi tidak akan disertakan.
 %1$d switch will change.	%1$d sakelar akan berubah.
 %1$d switches will change.	%1$d sakelar akan berubah.
-%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.	%1$s. Ini diatur saat Anda menambal, jadi Jeda tidak dapat mematikannya. Untuk memastikan bukan ini penyebabnya, tambal ulang tanpa tambalan yang tertera dalam kurung setelahnya.
-%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.	%1$s. Ini diatur saat Anda menambal, jadi Jeda tidak dapat mematikannya. Untuk memastikan bukan ini penyebabnya, tambal ulang tanpa tambalan yang tertera dalam kurung setelahnya.
+%1$s. It was set when you patched, so Pause can't turn it off. To get rid of it, patch again without that patch.	%1$s. Ini diatur saat Anda menambal, jadi Jeda tidak bisa mematikannya. Untuk menghilangkannya, tambal ulang tanpa tambalan itu.
+%1$s. They were set when you patched, so Pause can't turn them off. To get rid of one, patch again without the patch named in brackets after it.	%1$s. Ini diatur saat Anda menambal, jadi Jeda tidak bisa mematikannya. Untuk menghilangkan salah satunya, tambal ulang tanpa tambalan yang disebut dalam tanda kurung setelahnya.
 A diagnostic report is already being saved.	Sudah ada laporan diagnostik yang sedang disimpan.
 A file named %1$s in %2$s paused HushTelegram.	File bernama %1$s di %2$s menjeda HushTelegram.
 About	Tentang
@@ -38,7 +38,7 @@ Diagnostic data cleared. Tap again to put it back.	Data diagnostik dihapus. Ketu
 Diagnostic data put back.	Data diagnostik dikembalikan.
 Diagnostic report copied to the clipboard.	Laporan diagnostik disalin ke papan klip.
 Clears the activity log and patch checks that a report would include.	Menghapus catatan aktivitas dan hasil pemeriksaan tambalan yang akan disertakan dalam laporan.
-Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.	Semua sakelar kecuali Pencatatan debug dianggap nonaktif, dan yang diatur saat Anda menambal tetap aktif. Pengaturan Anda tetap seperti semula.
+Every switch except Debug logging acts as if it were off. Edits made when you patched stay in. Your choices stay saved.	Semua sakelar kecuali Pencatatan debug dianggap mati. Perubahan yang dibuat saat menambal tetap berlaku. Pilihan Anda tetap tersimpan.
 Export diagnostic report	Ekspor laporan diagnostik
 Export settings	Ekspor pengaturan
 After Telegram restarts, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.	Setelah Telegram dimulai ulang, semua sakelar kecuali Pencatatan debug dianggap mati. Pilihan Anda tetap tersimpan. Perubahan yang dibuat saat menambal tetap berlaku.
@@ -51,8 +51,8 @@ The app holding that file is taking too long, so HushTelegram stopped waiting. N
 The app holding the last settings file still hasn't answered. Try again later.	Aplikasi yang menyimpan file pengaturan terakhir masih belum merespons. Coba lagi nanti.
 The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.	Aplikasi yang menyimpan file pengaturan terlalu lama, jadi HushTelegram berhenti menunggu. Aplikasi itu mungkin masih menyelesaikan penyimpanannya, jadi periksa file itu sebelum mengandalkannya.
 The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.	File %1$s tidak dapat dihapus. Hapus file itu dari %2$s, lalu ketuk Lanjutkan lagi.
-The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.	File pengaturan sudah disimpan, tetapi isinya saat dibaca kembali tidak sama dengan yang ditulis. Simpan lagi sebagai file baru.
-Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.	Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap nonaktif. Yang diatur saat Anda menambal tetap aktif.
+The settings file was saved, but what's in it doesn't match what was written. Save it again as a new file.	Berkas pengaturan tersimpan, tetapi isinya tidak sama dengan yang ditulis. Simpan lagi sebagai berkas baru.
+Until you resume, every switch except Debug logging acts as if it were off. Edits made when you patched stay in.	Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap mati. Perubahan yang dibuat saat menambal tetap berlaku.
 Full report saved to %1$s	Laporan lengkap disimpan ke %1$s
 The GPL-3.0 license, and credits for the projects HushTelegram is built on	Lisensi GPL-3.0 dan kredit untuk proyek-proyek yang menjadi dasar HushTelegram
 HushTelegram is on	HushTelegram aktif
@@ -73,14 +73,14 @@ Save full report	Simpan laporan lengkap
 Check for new HushTelegram releases	Periksa rilis HushTelegram baru
 Once a day, when Telegram starts, checks GitHub for a newer HushTelegram and shows it at the top of these settings. Nothing is downloaded.	Sekali sehari, saat Telegram dimulai, memeriksa GitHub untuk HushTelegram yang lebih baru dan menampilkannya di bagian atas pengaturan ini. Tidak ada yang diunduh.
 Check now	Periksa sekarang
-Asks GitHub for the newest release right now, even with the switch above off.	Menanyakan rilis terbaru ke GitHub sekarang juga, meski sakelar di atas mati.
+Checks GitHub for the newest release right now, even if the switch above is off.	Memeriksa GitHub sekarang untuk rilis terbaru, meski sakelar di atas mati.
 Checking GitHub now.	Sedang memeriksa GitHub.
 HushTelegram %1$s is out. Update it in Morphe Manager.	HushTelegram %1$s sudah dirilis. Perbarui di Morphe Manager.
 You have the newest HushTelegram release.	Anda sudah memakai rilis HushTelegram terbaru.
 The newest HushTelegram release is %1$s.	Rilis HushTelegram terbaru adalah %1$s.
 Couldn't reach GitHub. Try again later.	GitHub tidak dapat dihubungi. Coba lagi nanti.
-GitHub is turning away checks from this network for now. Try again later.	GitHub sedang menolak pemeriksaan dari jaringan ini. Coba lagi nanti.
-GitHub's answer couldn't be used. Try again later.	Jawaban GitHub tidak dapat digunakan. Coba lagi nanti.
+GitHub is blocking checks from this network for now. Try again later.	GitHub sedang memblokir pemeriksaan dari jaringan ini untuk sementara. Coba lagi nanti.
+GitHub sent a reply HushTelegram couldn't read. Try again later.	GitHub mengirim balasan yang tidak bisa dibaca HushTelegram. Coba lagi nanti.
 Saving the settings file	Menyimpan file pengaturan
 Set when you patched	Diatur saat Anda menambal
 Settings couldn't open	Pengaturan tidak dapat dibuka
@@ -101,7 +101,7 @@ That settings file was written by a newer HushTelegram than this one. Nothing wa
 The diagnostic report couldn't be saved yet. Try again in a moment.	Laporan diagnostik belum dapat disimpan. Coba lagi dalam beberapa saat.
 The diagnostic report couldn't be saved. Try again.	Laporan diagnostik tidak dapat disimpan. Coba lagi.
 The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.	File %1$s tidak dapat dihapus. Hapus file itu dari %2$s untuk mengaktifkan HushTelegram lagi.
-The setting couldn't finish updating. Its saved value is shown.	Pengaturan ini tidak dapat selesai diperbarui. Nilai yang tersimpan ditampilkan.
+That setting couldn't be updated. The switch shows the value that is saved.	Pengaturan itu tidak bisa diperbarui. Sakelar menampilkan nilai yang tersimpan.
 There's no diagnostic data to clear.	Tidak ada data diagnostik yang dapat dihapus.
 There's no diagnostic data to put back.	Tidak ada data diagnostik yang dapat dikembalikan.
 This phone has no file picker, so there's no way to choose a file here.	Ponsel ini tidak memiliki pemilih file, jadi file tidak dapat dipilih di sini.
@@ -127,7 +127,7 @@ No matching settings	Tidak ada pengaturan yang cocok
 Try a different word or clear the search.	Coba kata lain atau hapus pencarian.
 Search settings	Cari pengaturan
 Clear search	Hapus pencarian
-Your controls are active.	Kontrol Anda aktif.
+Your switches are working.	Sakelar Anda aktif.
 Pause	Jeda
 Resume	Lanjutkan
 Undo	Urungkan
@@ -145,10 +145,10 @@ Android's settings for this app didn't open. Open App info from Telegram's icon,
 Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.	Menghapus pesan bersponsor di kanal, akun bersponsor di pencarian, dan iklan di video. Semuanya tidak pernah dimuat, jadi tidak ada yang dihitung sebagai dilihat.
 Chats	Chat
 HushTelegram %1$s on Telegram %2$s	HushTelegram %1$s di Telegram %2$s
-HushTelegram %1$s targets Telegram %2$s.	HushTelegram %1$s ditujukan untuk Telegram %2$s.
+HushTelegram %1$s is made for Telegram %2$s.	HushTelegram %1$s dibuat untuk Telegram %2$s.
 HushTelegram pauses when Telegram restarts.	HushTelegram dijeda saat Telegram dimulai ulang.
 HushTelegram turns back on when Telegram restarts.	HushTelegram aktif lagi saat Telegram dimulai ulang.
-It targets Telegram %1$s.	Rilis ini ditujukan untuk Telegram %1$s.
+It's made for Telegram %1$s.	Rilis ini dibuat untuk Telegram %1$s.
 None of Telegram's web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.	Tidak ada alamat web Telegram yang dipilih untuk aplikasi ini, jadi tautannya terbuka di tempat lain. Ketuk untuk memilihnya di pengaturan Android.
 Only some of Telegram's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Hanya sebagian alamat web Telegram yang dipilih untuk aplikasi ini, dan tautan ke alamat lainnya terbuka di tempat lain. Ketuk untuk memilihnya di pengaturan Android.
 Saved. Restart Telegram to apply this change.	Tersimpan. Mulai ulang Telegram untuk menerapkan perubahan ini.
@@ -163,8 +163,8 @@ video ads	iklan video
 search ads	iklan pencarian
 device statistics reports	laporan statistik perangkat
 channel read metrics	metrik pembacaan saluran
-This build has no coverage for %1$s.	Versi ini tidak mencakup %1$s.
-This build covers %1$s. Missing coverage: %2$s.	Versi ini mencakup %1$s. Cakupan yang belum tersedia: %2$s.
+This patched app doesn't change %1$s.	Aplikasi yang ditambal ini tidak mengubah %1$s.
+This patched app changes %1$s but not %2$s.	Aplikasi yang ditambal ini mengubah %1$s, tetapi tidak %2$s.
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	Telegram berhenti mendadak atau macet dalam satu menit setelah dibuka, tiga kali berturut-turut, jadi HushTelegram menjeda dirinya sendiri.
 Telegram's web addresses are selected for this app in Android's settings, so their links open here.	Alamat web Telegram dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.
 Usage reports and call diagnostics	Laporan penggunaan dan diagnostik panggilan
@@ -350,18 +350,18 @@ Pulling up at the bottom of a channel only scrolls. Open the next channel from y
 Stop pull to next topic	Hentikan tarikan ke topik berikutnya
 Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list.	Menarik ke atas di bagian bawah topik forum hanya menggulir tampilan. Buka topik berikutnya dari daftar topik.
 # context: Read-only local notification facts, independent of repair and Pause.
-Local notification status	Status notifikasi lokal
+Notification status on this phone	Status notifikasi di ponsel ini
 local notification status	status notifikasi lokal
 Notification permission: %1$s	Izin notifikasi: %1$s
-Push token saved: %1$s	Token push tersimpan: %1$s
+Notification ID saved on this phone: %1$s	ID notifikasi tersimpan di ponsel ini: %1$s
 Signed-in accounts: %1$s	Akun yang masuk: %1$s
-Accounts confirmed for push: %1$s	Akun dengan pendaftaran push terkonfirmasi: %1$s
-Telegram's push answer: %1$s	Jawaban Telegram untuk pendaftaran push: %1$s
-None since Telegram started	Belum ada sejak Telegram dibuka
+Accounts Telegram confirmed for notifications: %1$s	Akun yang dikonfirmasi Telegram untuk notifikasi: %1$s
+Telegram's reply to notification sign-up: %1$s	Balasan Telegram atas pendaftaran notifikasi: %1$s
+No reply since Telegram started	Belum ada balasan sejak Telegram dibuka
 Accepted	Diterima
 Refused	Ditolak
 Refused (%1$s)	Ditolak (%1$s)
-Read-only local state. This doesn't confirm notification delivery.	Hanya membaca status lokal. Ini tidak memastikan bahwa notifikasi telah terkirim.
+This only shows what's saved on this phone. It doesn't prove notifications will arrive.	Ini hanya menunjukkan apa yang tersimpan di ponsel ini. Ini tidak membuktikan bahwa notifikasi akan sampai.
 Unknown	Tidak diketahui
 Allowed	Diizinkan
 Blocked	Diblokir

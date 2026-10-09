@@ -606,8 +606,8 @@ public class PatchFamilyTest {
         PatchFamily.staysWhilePausedForTests = Collections.singletonMap(PatchFamily.HIDE_ADS,
                 "the sponsored message cache cleared when you patched");
         assertEquals("The sponsored message cache cleared when you patched (" + L10n.isolate("Hide ads")
-                        + "). It was set when you patched, so Pause can't turn it off. To rule it out, patch again "
-                        + "and leave out that patch.",
+                        + "). It was set when you patched, so Pause can't turn it off. To get rid of it, patch again "
+                        + "without that patch.",
                 PatchFamily.staysWhilePausedSummary(EnumSet.of(PatchFamily.HIDE_ADS)));
 
         Map<PatchFamily, String> two = new LinkedHashMap<>();
@@ -617,8 +617,8 @@ public class PatchFamilyTest {
         assertEquals("The sponsored message cache cleared when you patched (" + L10n.isolate("Hide ads")
                         + ") and the device stats endpoint rewritten when you patched ("
                         + L10n.isolate("Disable analytics")
-                        + "). They were set when you patched, so Pause can't turn them off. To rule one out, patch "
-                        + "again and leave out the patch in brackets after it.",
+                        + "). They were set when you patched, so Pause can't turn them off. To get rid of one, patch "
+                        + "again without the patch named in brackets after it.",
                 PatchFamily.staysWhilePausedSummary(EnumSet.of(PatchFamily.HIDE_ADS, PatchFamily.DISABLE_ANALYTICS)));
 
         String everything = PatchFamily.staysWhilePausedSummary(EnumSet.allOf(PatchFamily.class));

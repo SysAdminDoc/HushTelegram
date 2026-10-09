@@ -1022,7 +1022,8 @@ public class SettingsBackupTest {
             "The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.";
     private static final String STALLED = "The app holding the last settings file still hasn't answered. Try again later.";
     private static final String MISMATCH =
-            "The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.";
+            "The settings file was saved, but what's in it doesn't match what was written. Save it again "
+                    + "as a new file.";
     private static final String UNCHECKED = "Settings exported. The app holding the file wouldn't let HushTelegram "
             + "read it back, so it wasn't checked.";
 

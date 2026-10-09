@@ -261,8 +261,8 @@ public enum PatchFamily {
         for (Capability capability : expected) {
             (installed.contains(capability) ? covered : missing).add(L10n.t(capability.label));
         }
-        if (covered.isEmpty()) return L10n.f("This build has no coverage for %1$s.", L10n.join(missing));
-        return L10n.f("This build covers %1$s. Missing coverage: %2$s.", L10n.join(covered), L10n.join(missing));
+        if (covered.isEmpty()) return L10n.f("This patched app doesn't change %1$s.", L10n.join(missing));
+        return L10n.f("This patched app changes %1$s but not %2$s.", L10n.join(covered), L10n.join(missing));
     }
 
     private String coverageReportLine() {
@@ -331,10 +331,10 @@ public enum PatchFamily {
         }
         if (parts.isEmpty()) return null;
         return L10n.capitalize(L10n.quantity(parts.size(),
-                "%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again "
-                        + "and leave out that patch.",
-                "%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch "
-                        + "again and leave out the patch in brackets after it.",
+                "%1$s. It was set when you patched, so Pause can't turn it off. To get rid of it, patch "
+                        + "again without that patch.",
+                "%1$s. They were set when you patched, so Pause can't turn them off. To get rid of one, "
+                        + "patch again without the patch named in brackets after it.",
                 L10n.join(parts)));
     }
 

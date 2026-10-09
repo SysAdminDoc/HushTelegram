@@ -654,12 +654,12 @@ public class HushTelegramPreferenceFragmentTest {
             try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
                 Preference status = pageOf(controller).findPreference("local_notification_status");
                 assertNotNull("local facts must remain visible with repair off and Pause " + reason, status);
-                assertEquals("Local notification status", status.getTitle());
+                assertEquals("Notification status on this phone", status.getTitle());
                 assertFalse("reading local status must not be an action", status.isSelectable());
                 assertFalse("local facts must not become a saved preference", status.isPersistent());
-                assertTrue(String.valueOf(status.getSummary()), String.valueOf(status.getSummary()).contains("Push token saved: Unknown"));
+                assertTrue(String.valueOf(status.getSummary()), String.valueOf(status.getSummary()).contains("Notification ID saved on this phone: Unknown"));
                 assertTrue(String.valueOf(status.getSummary()), String.valueOf(status.getSummary()).contains("Signed-in accounts: Unknown"));
-                assertTrue(String.valueOf(status.getSummary()), String.valueOf(status.getSummary()).contains("Accounts confirmed for push: Unknown"));
+                assertTrue(String.valueOf(status.getSummary()), String.valueOf(status.getSummary()).contains("Accounts Telegram confirmed for notifications: Unknown"));
             }
             PauseForTests.resume();
         }
@@ -689,10 +689,10 @@ public class HushTelegramPreferenceFragmentTest {
                 HushTelegramPreferenceFragment page = pageOf(controller);
                 String summary = String.valueOf(page.findPreference(missing.family.switches.get(0).key).getSummary());
                 if (missing.family.expectedCapabilities().size() == 1) {
-                    assertEquals("This build has no coverage for " + missing.label + ".", summary);
+                    assertEquals("This patched app doesn't change " + missing.label + ".", summary);
                 } else {
-                    assertTrue(summary, summary.startsWith("This build covers "));
-                    assertTrue(summary, summary.endsWith("Missing coverage: " + missing.label + "."));
+                    assertTrue(summary, summary.startsWith("This patched app changes "));
+                    assertTrue(summary, summary.endsWith(" but not " + missing.label + "."));
                     for (PatchFamily.Capability covered : missing.family.expectedCapabilities()) {
                         if (covered != missing) assertTrue(summary, summary.contains(covered.label));
                     }
@@ -704,10 +704,10 @@ public class HushTelegramPreferenceFragmentTest {
         PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             HushTelegramPreferenceFragment page = pageOf(controller);
-            assertEquals("This build has no coverage for "
+            assertEquals("This patched app doesn't change "
                             + L10n.join(Arrays.asList("channel ads", "video ads", "search ads")) + ".",
                     String.valueOf(page.findPreference(Settings.HIDE_ADS.key).getSummary()));
-            assertEquals("This build has no coverage for " + L10n.join(Arrays.asList(
+            assertEquals("This patched app doesn't change " + L10n.join(Arrays.asList(
                             "device statistics reports", "channel read metrics", "Premium promo views",
                             "Premium promo taps", "Premium promo accepts", "Premium promo failures")) + ".",
                     String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));
@@ -760,7 +760,7 @@ public class HushTelegramPreferenceFragmentTest {
             List<Preference> rows = rowsOf(controller);
             Preference card = rows.get(0);
             assertEquals("HushTelegram is on", String.valueOf(card.getTitle()));
-            assertEquals("Your controls are active.", String.valueOf(card.getSummary()));
+            assertEquals("Your switches are working.", String.valueOf(card.getSummary()));
             Preference version = null;
             for (Preference row : rows) {
                 if ("Version".contentEquals(row.getTitle())) version = row;

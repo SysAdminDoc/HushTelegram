@@ -12,8 +12,8 @@ avatar story taps	Story-Tipps auf Avatare
 %1$d items in that file aren't settings this version of HushTelegram knows, so they'll be left out.	%1$d Einträge in dieser Datei sind keine Einstellungen, die diese Version von HushTelegram kennt, und werden deshalb ausgelassen.
 %1$d switch will change.	%1$d Schalter wird geändert.
 %1$d switches will change.	%1$d Schalter werden geändert.
-%1$s. It was set when you patched, so Pause can't turn it off. To rule it out, patch again and leave out that patch.	%1$s. Das wurde beim Patchen festgelegt, deshalb kann die Pause es nicht ausschalten. Um es auszuschließen, patche erneut und lass diesen Patch weg.
-%1$s. They were set when you patched, so Pause can't turn them off. To rule one out, patch again and leave out the patch in brackets after it.	%1$s. Diese wurden beim Patchen festgelegt, deshalb kann die Pause sie nicht ausschalten. Um eines davon auszuschließen, patche erneut und lass den Patch weg, der in Klammern dahinter steht.
+%1$s. It was set when you patched, so Pause can't turn it off. To get rid of it, patch again without that patch.	%1$s. Das wurde beim Patchen festgelegt, daher kann Pausieren es nicht ausschalten. Um es loszuwerden, patche erneut ohne diesen Patch.
+%1$s. They were set when you patched, so Pause can't turn them off. To get rid of one, patch again without the patch named in brackets after it.	%1$s. Diese wurden beim Patchen festgelegt, daher kann Pausieren sie nicht ausschalten. Um eines loszuwerden, patche erneut ohne den Patch, der dahinter in Klammern steht.
 A diagnostic report is already being saved.	Ein Diagnosebericht wird bereits gespeichert.
 A file named %1$s in %2$s paused HushTelegram.	Eine Datei namens %1$s in %2$s hat HushTelegram pausiert.
 About	Info
@@ -38,7 +38,7 @@ Diagnostic data cleared. Tap again to put it back.	Diagnosedaten gelöscht. Tipp
 Diagnostic data put back.	Diagnosedaten wiederhergestellt.
 Diagnostic report copied to the clipboard.	Diagnosebericht in die Zwischenablage kopiert.
 Clears the activity log and patch checks that a report would include.	Löscht das Aktivitätsprotokoll und die Patch-Prüfungen, die ein Bericht enthalten würde.
-Every switch but Debug logging acts as if it were off, and what was set when you patched stays in. Your settings stay as they are.	Jeder Schalter außer der Debug-Protokollierung verhält sich, als wäre er aus, und was beim Patchen festgelegt wurde, bleibt aktiv. Deine Einstellungen bleiben, wie sie sind.
+Every switch except Debug logging acts as if it were off. Edits made when you patched stay in. Your choices stay saved.	Jeder Schalter außer der Debug-Protokollierung verhält sich, als wäre er aus. Änderungen, die beim Patchen gemacht wurden, bleiben aktiv. Deine Auswahl bleibt gespeichert.
 Export diagnostic report	Diagnosebericht exportieren
 Export settings	Einstellungen exportieren
 After Telegram restarts, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.	Nach einem Neustart von Telegram verhält sich jeder Schalter außer Debug-Protokollierung, als wäre er aus. Deine Auswahl bleibt gespeichert. Änderungen, die beim Patchen gemacht wurden, bleiben aktiv.
@@ -51,8 +51,8 @@ The app holding that file is taking too long, so HushTelegram stopped waiting. N
 The app holding the last settings file still hasn't answered. Try again later.	Die App mit der letzten Einstellungsdatei hat noch immer nicht geantwortet. Versuche es später noch einmal.
 The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.	Die App, in der die Einstellungsdatei liegt, braucht zu lange, deshalb wartet HushTelegram nicht mehr. Sie kann das Speichern noch abschließen, also prüfe die Datei, bevor du dich darauf verlässt.
 The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.	Die Datei %1$s ließ sich nicht entfernen. Lösche sie aus %2$s und tippe dann noch einmal auf Fortsetzen.
-The settings file was saved, but it doesn't read back as what was written. Save it again as a new file.	Die Einstellungsdatei wurde gespeichert, liest sich aber nicht so zurück, wie sie geschrieben wurde. Speichere sie noch einmal als neue Datei.
-Until you resume, every switch but Debug logging acts as if it were off. Changes made when you patched stay in.	Bis zum Fortsetzen verhält sich jeder Schalter außer der Debug-Protokollierung, als wäre er aus. Was beim Patchen festgelegt wurde, bleibt aktiv.
+The settings file was saved, but what's in it doesn't match what was written. Save it again as a new file.	Die Einstellungsdatei wurde gespeichert, aber ihr Inhalt stimmt nicht mit dem überein, was geschrieben wurde. Speichere sie erneut als neue Datei.
+Until you resume, every switch except Debug logging acts as if it were off. Edits made when you patched stay in.	Bis du fortsetzt, verhält sich jeder Schalter außer der Debug-Protokollierung, als wäre er aus. Änderungen, die beim Patchen gemacht wurden, bleiben aktiv.
 Full report saved to %1$s	Vollständiger Bericht gespeichert unter %1$s
 The GPL-3.0 license, and credits for the projects HushTelegram is built on	Die Lizenz GPL-3.0 und die Hinweise zu den Projekten, auf denen HushTelegram aufbaut
 HushTelegram is on	HushTelegram ist aktiv
@@ -73,14 +73,14 @@ Save full report	Vollständigen Bericht speichern
 Check for new HushTelegram releases	Nach neuen HushTelegram-Versionen suchen
 Once a day, when Telegram starts, checks GitHub for a newer HushTelegram and shows it at the top of these settings. Nothing is downloaded.	Prüft einmal am Tag beim Start von Telegram auf GitHub, ob es ein neueres HushTelegram gibt, und zeigt es oben in diesen Einstellungen an. Es wird nichts heruntergeladen.
 Check now	Jetzt prüfen
-Asks GitHub for the newest release right now, even with the switch above off.	Fragt GitHub sofort nach der neuesten Version, auch wenn der Schalter darüber aus ist.
+Checks GitHub for the newest release right now, even if the switch above is off.	Fragt GitHub sofort nach der neuesten Version, auch wenn der Schalter darüber aus ist.
 Checking GitHub now.	GitHub wird gerade gefragt.
 HushTelegram %1$s is out. Update it in Morphe Manager.	HushTelegram %1$s ist erschienen. Aktualisiere es im Morphe Manager.
 You have the newest HushTelegram release.	Du hast die neueste Version von HushTelegram.
 The newest HushTelegram release is %1$s.	Die neueste Version von HushTelegram ist %1$s.
 Couldn't reach GitHub. Try again later.	GitHub war nicht erreichbar. Versuche es später noch einmal.
-GitHub is turning away checks from this network for now. Try again later.	GitHub weist Anfragen aus diesem Netz gerade ab. Versuche es später noch einmal.
-GitHub's answer couldn't be used. Try again later.	Mit der Antwort von GitHub ließ sich nichts anfangen. Versuche es später noch einmal.
+GitHub is blocking checks from this network for now. Try again later.	GitHub blockiert Prüfungen aus diesem Netzwerk im Moment. Versuche es später erneut.
+GitHub sent a reply HushTelegram couldn't read. Try again later.	GitHub hat eine Antwort gesendet, die HushTelegram nicht lesen konnte. Versuche es später erneut.
 Saving the settings file	Einstellungsdatei wird gespeichert
 Set when you patched	Beim Patchen festgelegt
 Settings couldn't open	Einstellungen ließen sich nicht öffnen
@@ -101,7 +101,7 @@ That settings file was written by a newer HushTelegram than this one. Nothing wa
 The diagnostic report couldn't be saved yet. Try again in a moment.	Der Diagnosebericht ließ sich noch nicht speichern. Versuche es gleich noch einmal.
 The diagnostic report couldn't be saved. Try again.	Der Diagnosebericht ließ sich nicht speichern. Versuche es noch einmal.
 The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.	Die Datei %1$s ließ sich nicht entfernen. Lösche sie aus %2$s, um HushTelegram wieder einzuschalten.
-The setting couldn't finish updating. Its saved value is shown.	Die Einstellung ließ sich nicht vollständig aktualisieren. Der gespeicherte Wert wird angezeigt.
+That setting couldn't be updated. The switch shows the value that is saved.	Diese Einstellung ließ sich nicht aktualisieren. Der Schalter zeigt den gespeicherten Wert.
 There's no diagnostic data to clear.	Es gibt keine Diagnosedaten zum Löschen.
 There's no diagnostic data to put back.	Es gibt keine Diagnosedaten zum Wiederherstellen.
 This phone has no file picker, so there's no way to choose a file here.	Dieses Handy hat keine Dateiauswahl, hier lässt sich also keine Datei wählen.
@@ -127,7 +127,7 @@ No matching settings	Keine passenden Einstellungen
 Try a different word or clear the search.	Versuch ein anderes Wort oder lösche die Suche.
 Search settings	Einstellungen suchen
 Clear search	Suche löschen
-Your controls are active.	Deine Einstellungen sind aktiv.
+Your switches are working.	Deine Schalter sind aktiv.
 Pause	Pausieren
 Resume	Fortsetzen
 Undo	Rückgängig
@@ -145,10 +145,10 @@ Android's settings for this app didn't open. Open App info from Telegram's icon,
 Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.	Entfernt gesponserte Nachrichten in Kanälen, gesponserte Konten in der Suche und Werbung in Videos. Sie werden nie geladen, daher zählt keine als gesehen.
 Chats	Chats
 HushTelegram %1$s on Telegram %2$s	HushTelegram %1$s auf Telegram %2$s
-HushTelegram %1$s targets Telegram %2$s.	HushTelegram %1$s ist für Telegram %2$s gedacht.
+HushTelegram %1$s is made for Telegram %2$s.	HushTelegram %1$s ist für Telegram %2$s gemacht.
 HushTelegram pauses when Telegram restarts.	HushTelegram pausiert, sobald Telegram neu startet.
 HushTelegram turns back on when Telegram restarts.	HushTelegram ist wieder aktiv, sobald Telegram neu startet.
-It targets Telegram %1$s.	Es ist für Telegram %1$s gedacht.
+It's made for Telegram %1$s.	Es ist für Telegram %1$s gemacht.
 None of Telegram's web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.	Keine Webadresse von Telegram ist für diese App ausgewählt, deshalb öffnen sich ihre Links woanders. Tippe, um sie in den Android-Einstellungen auszuwählen.
 Only some of Telegram's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Nur einige Webadressen von Telegram sind für diese App ausgewählt, und Links zu den übrigen öffnen sich woanders. Tippe, um sie in den Android-Einstellungen auszuwählen.
 Saved. Restart Telegram to apply this change.	Gespeichert. Starte Telegram neu, um diese Änderung zu übernehmen.
@@ -163,8 +163,8 @@ video ads	Videowerbung
 search ads	Suchwerbung
 device statistics reports	Gerätestatistikberichte
 channel read metrics	Kanal-Lesemetriken
-This build has no coverage for %1$s.	Dieser Build deckt %1$s nicht ab.
-This build covers %1$s. Missing coverage: %2$s.	Dieser Build deckt %1$s ab. Fehlende Abdeckung: %2$s.
+This patched app doesn't change %1$s.	Diese gepatchte App ändert %1$s nicht.
+This patched app changes %1$s but not %2$s.	Diese gepatchte App ändert %1$s, aber nicht %2$s.
 Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.	Telegram ist dreimal hintereinander innerhalb einer Minute nach dem Start abgestürzt oder hängen geblieben, deshalb hat sich HushTelegram selbst pausiert.
 Telegram's web addresses are selected for this app in Android's settings, so their links open here.	Die Webadressen von Telegram sind in den Android-Einstellungen für diese App ausgewählt, deshalb öffnen sich ihre Links hier.
 Usage reports and call diagnostics	Nutzungsberichte und Anrufdiagnosen
@@ -350,18 +350,18 @@ Pulling up at the bottom of a channel only scrolls. Open the next channel from y
 Stop pull to next topic	Ziehen zum nächsten Thema verhindern
 Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list.	Wenn du am unteren Ende eines Forenthemas nach oben ziehst, scrollt die Ansicht nur. Öffne das nächste Thema in der Themenliste.
 # context: Read-only local notification facts, independent of repair and Pause.
-Local notification status	Lokaler Benachrichtigungsstatus
+Notification status on this phone	Benachrichtigungsstatus auf diesem Handy
 local notification status	lokaler Benachrichtigungsstatus
 Notification permission: %1$s	Benachrichtigungsberechtigung: %1$s
-Push token saved: %1$s	Push-Token gespeichert: %1$s
+Notification ID saved on this phone: %1$s	Benachrichtigungs-ID auf diesem Handy gespeichert: %1$s
 Signed-in accounts: %1$s	Angemeldete Konten: %1$s
-Accounts confirmed for push: %1$s	Für Push bestätigte Konten: %1$s
-Telegram's push answer: %1$s	Antwort von Telegram zur Push-Anmeldung: %1$s
-None since Telegram started	Keine seit dem Start von Telegram
+Accounts Telegram confirmed for notifications: %1$s	Konten, die Telegram für Benachrichtigungen bestätigt hat: %1$s
+Telegram's reply to notification sign-up: %1$s	Telegrams Antwort auf die Anmeldung für Benachrichtigungen: %1$s
+No reply since Telegram started	Keine Antwort seit dem Start von Telegram
 Accepted	Angenommen
 Refused	Abgelehnt
 Refused (%1$s)	Abgelehnt (%1$s)
-Read-only local state. This doesn't confirm notification delivery.	Lokaler Status, nur lesend. Die Zustellung von Benachrichtigungen wird dadurch nicht bestätigt.
+This only shows what's saved on this phone. It doesn't prove notifications will arrive.	Das zeigt nur, was auf diesem Handy gespeichert ist. Es beweist nicht, dass Benachrichtigungen ankommen.
 Unknown	Unbekannt
 Allowed	Erlaubt
 Blocked	Blockiert
