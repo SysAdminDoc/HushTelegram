@@ -39,7 +39,9 @@ internal const val SILENT_FLAG = "Lorg/telegram/tgnet/TLRPC\$Message;->silent:Z"
 @Suppress("unused")
 val silenceNonContactsPatch = bytecodePatch(
     name = "Silence people outside your contacts",
-    description = "Adds a switch, off by default, so a private message from someone who isn't in your contacts shows its notification without sound or vibration. Bots, reminders and Telegram's login codes keep their sound.",
+    description = "Adds a switch, off by default, so a private message from someone who isn't in your " +
+        "contacts shows its notification without sound or vibration. Bots, reminders and Telegram's login " +
+        "codes keep their sound. Its switch is on the Chats page of HushTelegram settings.",
     default = true,
 ) {
     category("Chats")

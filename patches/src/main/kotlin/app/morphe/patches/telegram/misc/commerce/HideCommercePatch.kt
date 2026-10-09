@@ -56,7 +56,8 @@ private val CONSTANTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST, Opc
 val hideCommercePatch = bytecodePatch(
     name = PATCH,
     description = "Hides Premium, Stars, My Grams, Business and Send a Gift in Settings, profile Gifts tabs " +
-        "and the channel Gift button. Purchases and account controls keep their usual behavior.",
+        "and the channel Gift button. Purchases and account controls keep their usual behavior. Its switch " +
+        "is on the Chats page of HushTelegram settings and starts on.",
     default = true,
 ) {
     category("Chats")

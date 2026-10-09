@@ -41,7 +41,9 @@ internal val KEPT = setOf("Lorg/telegram/messenger/AndroidUtilities\$VcardItem;"
 @Suppress("unused")
 val hidePhoneNumberPatch = bytecodePatch(
     name = "Hide phone number",
-    description = "Adds a switch, off by default, that covers the digits of your own phone number wherever Telegram shows it, like the side menu, Settings and your profile.",
+    description = "Adds a switch, off by default, that covers the digits of your own phone number wherever " +
+        "Telegram shows it, like the side menu, Settings and your profile. Its switch is on the Chats page " +
+        "of HushTelegram settings.",
     default = true,
 ) {
     category("Privacy")

@@ -62,7 +62,10 @@ internal const val WALLPAPER_INTENSITY = 6
 @Suppress("unused")
 val amoledBlackPatch = bytecodePatch(
     name = "AMOLED black",
-    description = "Adds a switch, off by default, that turns the screens of Telegram's Night and Dark themes pure black and shows a patterned chat background's pattern over black. Message bubbles and pop-up menus keep the theme's colors. A change takes effect after Telegram restarts.",
+    description = "Adds a switch, off by default, that turns the screens of Telegram's Night and Dark themes " +
+        "pure black and shows a patterned chat background's pattern over black. Message bubbles and pop-up " +
+        "menus keep the theme's colors. A change takes effect after Telegram restarts. Its switch is on the " +
+        "Chats page of HushTelegram settings.",
     default = true,
 ) {
     category("Chats")

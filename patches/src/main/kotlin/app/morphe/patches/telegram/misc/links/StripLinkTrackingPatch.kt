@@ -16,7 +16,9 @@ import app.morphe.util.addInstructionsAtControlFlowLabel
 @Suppress("unused")
 val stripLinkTrackingPatch = bytecodePatch(
     name = "Strip link tracking",
-    description = "Optional local cleaning at link-open and Share Link chooser sites. Removes only utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid. Any unknown query key preserves the entire URL. Off by default in settings.",
+    description = "Removes utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid and fbclid " +
+        "from links you open or share with Share Link. A link with any other query key is left whole. Its " +
+        "switch is on the Links page, under More settings in HushTelegram settings, and starts off.",
     default = true,
 ) {
     category("Privacy")

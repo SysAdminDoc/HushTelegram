@@ -50,8 +50,9 @@ private val MOVES = setOf(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_16)
 @Suppress("unused")
 val hideStoriesPatch = bytecodePatch(
     name = PATCH,
-    description = "Hides the chat-list story bar, avatar story rings and Post Story button, and stops fetching " +
-        "the story list. Profile stories and archives remain available.",
+    description = "Hides the chat-list story bar, avatar story rings and Post Story button, and stops " +
+        "fetching the story list. Profile stories and archives remain available. Its switch is on the Chats " +
+        "page of HushTelegram settings and starts on.",
     default = true,
 ) {
     category("Chats")

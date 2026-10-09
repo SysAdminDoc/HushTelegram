@@ -33,7 +33,9 @@ internal const val ANIMATIONS_KEY = "view_animations"
 @Suppress("unused")
 val reactionEffectsOffPatch = bytecodePatch(
     name = "Turn off reaction effects",
-    description = "Adds a switch, off by default, that stops the burst and fly-in effect Telegram plays when someone reacts. The reaction still shows on the message.",
+    description = "Adds a switch, off by default, that stops the burst and fly-in effect Telegram plays when " +
+        "someone reacts. The reaction still shows on the message. Its switch is on the Chats page of " +
+        "HushTelegram settings.",
     default = true,
 ) {
     category("Chats")

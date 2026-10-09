@@ -42,7 +42,10 @@ private const val ACTIVITY = "Landroid/app/Activity;"
 @Suppress("unused")
 val quietContactsNagPatch = bytecodePatch(
     name = PATCH,
-    description = "Keeps the Contacts tab from asking for contacts access again, and clears its warning badge, once you've said no. The first request, the tab's own buttons and contact sync stay as they are.",
+    description = "Keeps the Contacts tab from asking for contacts access again, and clears its warning " +
+        "badge, once you've said no. The first request, the tab's own buttons and contact sync stay as they " +
+        "are. Its switch, Quiet contacts prompts, is on the Chats page of HushTelegram settings and starts " +
+        "on.",
     default = true,
 ) {
     category("Chats")

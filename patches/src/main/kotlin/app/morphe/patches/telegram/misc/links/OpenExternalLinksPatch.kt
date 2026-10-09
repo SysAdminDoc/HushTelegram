@@ -16,7 +16,9 @@ import app.morphe.util.addInstructionsAtControlFlowLabel
 @Suppress("unused")
 val openExternalLinksPatch = bytecodePatch(
     name = "Open links externally",
-    description = "Opens ordinary HTTP(S) links in your browser. Telegram links, login, payment and authenticated routes keep their existing behavior.",
+    description = "Opens ordinary HTTP(S) links in your browser. Telegram links, login, payment and " +
+        "authenticated routes keep their existing behavior. Its switch is on the Links page, under More " +
+        "settings in HushTelegram settings, and starts on.",
     default = true,
 ) {
     category("Privacy")

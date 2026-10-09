@@ -2,6 +2,12 @@
 
 Every HushTelegram release, newest first.
 
+## Unreleased
+
+* **Telegram:** Each patch's description in Morphe Manager now says which page of HushTelegram settings holds its switch, under the switch's own name when that differs, and whether it starts on or off. Nothing is hidden behind Expert mode: every patch but the two credential patches was already in the default selection, and the README's install steps now say so.
+
+* **Telegram:** Strip link tracking's description now reads plainly. It still removes only the listed tracking keys and still starts off.
+
 ## 0.0.11 (2026-10-08)
 
 The fifth release, with 55 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.

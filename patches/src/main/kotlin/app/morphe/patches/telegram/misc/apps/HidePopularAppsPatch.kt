@@ -40,7 +40,9 @@ private const val STRINGS = "Lorg/telegram/messenger/R\$string;"
 @Suppress("unused")
 val hidePopularAppsPatch = bytecodePatch(
     name = PATCH,
-    description = "Hides the Popular apps list in search's Apps tab and stops Telegram from asking its server for it. Apps you've opened and other search results stay.",
+    description = "Hides the Popular apps list in search's Apps tab and stops Telegram from asking its " +
+        "server for it. Apps you've opened and other search results stay. Its switch is on the Chats page of " +
+        "HushTelegram settings and starts on.",
     default = true,
 ) {
     category("Chats")

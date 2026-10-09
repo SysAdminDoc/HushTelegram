@@ -48,7 +48,9 @@ private const val OBJECT = "Ljava/lang/Object;"
 @Suppress("unused")
 val galleryCameraOnTapPatch = bytecodePatch(
     name = PATCH,
-    description = "Adds a switch, off by default, that keeps the attachment gallery from starting the camera or asking for camera access when it opens. Tapping the camera tile starts it.",
+    description = "Adds a switch, off by default, that keeps the attachment gallery from starting the camera " +
+        "or asking for camera access when it opens. Tapping the camera tile starts it. Its switch, Camera " +
+        "only on tap, is on the Privacy page of HushTelegram settings.",
     default = true,
 ) {
     category("Privacy")

@@ -63,8 +63,9 @@ private const val BOOL_TRUE = "Lorg/telegram/tgnet/TLRPC\$TL_boolTrue;"
 @Suppress("unused")
 val repairFirebasePushPatch = bytecodePatch(
     name = PATCH,
-    description = "Restores Telegram's official certificate header in Firebase Installations requests " +
-        "on re-signed builds. Other signature checks keep their usual behavior.",
+    description = "Restores Telegram's official certificate header in Firebase Installations requests on " +
+        "re-signed builds. Other signature checks keep their usual behavior. Its switch is on the " +
+        "Notifications page, under More settings in HushTelegram settings, and starts on.",
     default = true,
 ) {
     category("Fixes")

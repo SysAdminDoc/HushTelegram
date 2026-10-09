@@ -48,7 +48,10 @@ private val TWO_TEXTS = listOf("Ljava/lang/CharSequence;", "Ljava/lang/CharSeque
 @Suppress("unused")
 val hideGreetingStickersPatch = bytecodePatch(
     name = "Hide greeting stickers",
-    description = "Adds a switch, off by default, that hides the sticker an empty private chat offers to send as a greeting. The empty chat's text, business introductions, Premium and paid-message notices, the sticker picker and sending keep their usual behavior.",
+    description = "Adds a switch, off by default, that hides the sticker an empty private chat offers to " +
+        "send as a greeting. The empty chat's text, business introductions, Premium and paid-message " +
+        "notices, the sticker picker and sending keep their usual behavior. Its switch is on the Chats page " +
+        "of HushTelegram settings.",
     default = true,
 ) {
     category("Chats")

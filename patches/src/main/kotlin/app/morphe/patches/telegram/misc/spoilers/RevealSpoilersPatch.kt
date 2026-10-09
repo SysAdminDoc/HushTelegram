@@ -66,7 +66,9 @@ internal val ASKS_TELEGRAM = setOf(
 @Suppress("unused")
 val revealSpoilersPatch = bytecodePatch(
     name = "Reveal spoilers",
-    description = "Adds a switch, off by default, that shows spoiler text, photos and videos without the cover. View-once media, sensitive content and login codes stay covered.",
+    description = "Adds a switch, off by default, that shows spoiler text, photos and videos without the " +
+        "cover. View-once media, sensitive content and login codes stay covered. Its switch is on the Chats " +
+        "page of HushTelegram settings.",
     default = true,
 ) {
     category("Chats")

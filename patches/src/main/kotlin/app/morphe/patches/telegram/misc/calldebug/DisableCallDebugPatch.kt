@@ -45,7 +45,8 @@ private val GOTOS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)
 @Suppress("unused")
 val disableCallDebugPatch = bytecodePatch(
     name = PATCH,
-    description = "Stops automatic call debug reports and log-file uploads requested by Telegram's server.",
+    description = "Stops automatic call debug reports and log-file uploads requested by Telegram's server. " +
+        "Its switch, Stop call diagnostics, is on the Privacy page of HushTelegram settings and starts on.",
     default = true,
 ) {
     category("Privacy")

@@ -58,8 +58,10 @@ private val MOVE_OBJECTS = setOf(Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, 
 @Suppress("unused")
 val keepDeletedPatch = bytecodePatch(
     name = "Keep deleted messages",
-    description = "Adds a switch, off by default, that keeps a message on your phone when someone else deletes it, and shows a deleted label next to its time. " +
-        "Your own deletes, disappearing messages and protected chats work as usual, and turning it off keeps what's already saved.",
+    description = "Adds a switch, off by default, that keeps a message on your phone when someone else " +
+        "deletes it, and shows a deleted label next to its time. Your own deletes, disappearing messages and " +
+        "protected chats work as usual, and turning it off keeps what's already saved. Its switch is on the " +
+        "Chats page of HushTelegram settings.",
     default = true,
 ) {
     category("Chats")

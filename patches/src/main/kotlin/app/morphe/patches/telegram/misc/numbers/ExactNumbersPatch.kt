@@ -34,7 +34,9 @@ internal const val SHORT_NUMBER = "$LOCALE_CONTROLLER->formatShortNumber(I[I)Lja
 @Suppress("unused")
 val exactNumbersPatch = bytecodePatch(
     name = "Exact numbers",
-    description = "Adds a switch, off by default, that shows member, subscriber, view, reply and reaction counts in full, like 12,345 instead of 12.3K.",
+    description = "Adds a switch, off by default, that shows member, subscriber, view, reply and reaction " +
+        "counts in full, like 12,345 instead of 12.3K. Its switch is on the Chats page of HushTelegram " +
+        "settings.",
     default = true,
 ) {
     category("Chats")

@@ -97,7 +97,10 @@ internal object SendReadMetricsFingerprint : Fingerprint(
 @Suppress("unused")
 val disableAnalyticsPatch = bytecodePatch(
     name = PATCH,
-    description = "Stops Telegram sending its storage-type statistic and how long you spent on each channel post to its server. Also stops reports about Premium screen views, feature taps, accepts and purchase failures. Messages and calls work as before.",
+    description = "Stops Telegram sending its storage-type statistic and how long you spent on each channel " +
+        "post to its server. Also stops reports about Premium screen views, feature taps, accepts and " +
+        "purchase failures. Messages and calls work as before. Its switch, Stop usage reports, is on the " +
+        "Privacy page of HushTelegram settings and starts on.",
     default = true,
 ) {
     category("Privacy")

@@ -72,7 +72,8 @@ internal enum class VideoShape(val target: List<String>, val hook: String, val r
 @Suppress("unused")
 val sendConfirmPatch = bytecodePatch(
     name = NAME,
-    description = "Adds switches, off by default, that ask before a sticker, a GIF, a voice or video message or a call goes out. Cancel drops it.",
+    description = "Adds switches, off by default, that ask before a sticker, a GIF, a voice or video message " +
+        "or a call goes out. Cancel drops it. The switches are on the Chats page of HushTelegram settings.",
     default = true,
 ) {
     category("Chats")

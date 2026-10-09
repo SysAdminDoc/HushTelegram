@@ -40,7 +40,10 @@ private const val APP_CONTEXT = "Lorg/telegram/messenger/ApplicationLoader;->app
 @Suppress("unused")
 val holidayLookPatch = bytecodePatch(
     name = PATCH,
-    description = "Adds a switch, off by default, that puts a Santa hat over the chat list logo and keeps Telegram's New Year snow falling all year over the chat list's top bar and chat backgrounds. Telegram's own holiday dates apply while it's off.",
+    description = "Adds a switch, off by default, that puts a Santa hat over the chat list logo and keeps " +
+        "Telegram's New Year snow falling all year over the chat list's top bar and chat backgrounds. " +
+        "Telegram's own holiday dates apply while it's off. Its switch, New Year look all year, is on the " +
+        "Chats page of HushTelegram settings.",
     default = true,
 ) {
     category("Chats")

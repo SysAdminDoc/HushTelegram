@@ -44,7 +44,10 @@ private const val VIEW = "Landroid/view/View;"
 @Suppress("unused")
 val disableChannelPullPatch = bytecodePatch(
     name = PATCH,
-    description = "Adds a switch, on by default, that stops pulling past the bottom of a channel from opening the next channel, and a second one, off by default, that does the same for the next forum topic. Scrolling and opening channels or topics directly still work.",
+    description = "Adds a switch, on by default, that stops pulling past the bottom of a channel from " +
+        "opening the next channel, and a second one, off by default, that does the same for the next forum " +
+        "topic. Scrolling and opening channels or topics directly still work. Both switches are on the Chats " +
+        "page of HushTelegram settings.",
     default = true,
 ) {
     category("Chats")

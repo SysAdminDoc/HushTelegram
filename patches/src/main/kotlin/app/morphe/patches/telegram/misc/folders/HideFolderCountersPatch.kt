@@ -34,7 +34,8 @@ private const val FILTERS = "Lorg/telegram/messenger/MessagesController;->getDia
 @Suppress("unused")
 val hideFolderCountersPatch = bytecodePatch(
     name = "Hide folder tab counters",
-    description = "Adds a switch, off by default, that hides the unread count on each folder tab above the chat list.",
+    description = "Adds a switch, off by default, that hides the unread count on each folder tab above the " +
+        "chat list. Its switch is on the Chats page of HushTelegram settings.",
     default = true,
 ) {
     category("Chats")

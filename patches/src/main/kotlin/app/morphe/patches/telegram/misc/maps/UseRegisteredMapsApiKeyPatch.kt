@@ -22,8 +22,9 @@ private val KEY_FORMAT = Regex("AIza[0-9A-Za-z_-]{35}")
 @Suppress("unused")
 val useRegisteredMapsApiKeyPatch = resourcePatch(
     name = PATCH,
-    description = "Uses your Google Maps Android SDK key, authorized for Telegram's package and the installed signer. " +
-        "Leaving the option unset keeps the original key.",
+    description = "Uses your Google Maps Android SDK key, authorized for Telegram's package and the " +
+        "installed signer. Leaving the option unset keeps the original key. It has no switch and isn't " +
+        "selected by default, so turn on Expert mode in Morphe Manager to pick it and enter the key.",
     default = false,
 ) {
     category("Fixes")

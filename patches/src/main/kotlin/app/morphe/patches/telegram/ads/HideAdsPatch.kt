@@ -91,7 +91,8 @@ internal object SearchSponsoredPeersFingerprint : Fingerprint(
 val hideAdsPatch = bytecodePatch(
     name = PATCH,
     description = "Hides the sponsored messages in channels, the sponsored accounts in search and the ads in " +
-        "Telegram's video player. Telegram never asks for them, so none are counted as seen.",
+        "Telegram's video player. Telegram never asks for them, so none are counted as seen. Its switch is " +
+        "on the Chats page of HushTelegram settings and starts on.",
     default = true,
 ) {
     category("Ads")
