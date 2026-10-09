@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Added a signed-in stock beta audit on the S22, with a live search ad, native settings screenshots, local network observations and measured foreground/background activity. The reference now distinguishes contact sync from contact suggestions and records limits on encrypted traffic analysis.
+
 * **Telegram:** Added an app audit for sponsored-message delivery, ad reporting, telemetry, contact sync and current patch opportunities on the pinned 12.10.6 APK.
 
 * **Telegram:** Build and Pause reports now use Morphe Manager's patch names for haptic feedback and link tracking. The pause card's test now matches its current wording about Debug logging.

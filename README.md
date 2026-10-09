@@ -205,7 +205,7 @@ The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.o
 
 Diagnostics omit named Telegram API IDs and hashes from buffered events, crash sections and exported reports. Versions, counters and unrelated hashes stay readable. Review a report before sharing it.
 
-The patched app still connects to Telegram for messaging and Telegram's own service data. The [factory app reference](docs/telegram-app-reference.md) records the APK and first-run flow, and the [Telegram app audit](docs/telegram-audit-12.10.6.md) maps ad delivery and telemetry.
+The patched app still connects to Telegram for messaging and Telegram's own service data. The [factory app reference](docs/telegram-app-reference.md) records the APK and first-run flow. The [code audit](docs/telegram-audit-12.10.6.md) maps ad delivery and telemetry, while the [stock phone audit](docs/telegram-runtime-audit-12.10.7.md) adds a live search ad, native settings and measured network/background activity.
 
 ## Where the patches come from
 
@@ -214,7 +214,7 @@ The patched app still connects to Telegram for messaging and Telegram's own serv
 | [SysAdminDoc/HushThreads](https://github.com/SysAdminDoc/HushThreads) at `b141524` | The Gradle build, the shared extension library with its settings screen, diagnostics and pause, the bytecode helpers and the checks that apply every patch to real builds before a release. Most of that came to HushThreads from [Hushfacebook](https://github.com/SysAdminDoc/Hushfacebook), and some of it from [Hushfeed](https://github.com/SysAdminDoc/hushfeed), [Andrew Liang's patches](https://github.com/andrewliang25/morphe-patches) and [FroggoMorphePatches](https://github.com/SapitoSucio/FroggoMorphePatches). |
 | [Morphe](https://github.com/MorpheApp) and [ReVanced](https://gitlab.com/ReVanced/revanced-patches) | The patcher and the patch template. Everything above grew from their code. |
 
-The Telegram patches were written for this project by reading Telegram 12.10.6 itself. Every source file says where it came from in its header, and [provenance.json](provenance.json) maps each file to the project and commit it came from, with its license. The [source ledger](sources/telegram-sources.json) records the other Telegram references, their reviewed commits and adoption decisions. A listed feature is a research candidate, not an approved addition or a dependency. The ledger also records four confirmed directory listings. The published bundle is v0.0.8. Changes under Unreleased in the changelog are newer source work.
+The Telegram patches were written for this project by reading Telegram 12.10.6 itself. Every source file says where it came from in its header, and [provenance.json](provenance.json) maps each file to the project and commit it came from, with its license. The [source ledger](sources/telegram-sources.json) records the other Telegram references, their reviewed commits and adoption decisions. A listed feature is a research candidate, not an approved addition or a dependency. The ledger also records four confirmed directory listings. The published bundle is v0.0.11. Changes under Unreleased in the changelog are newer source work.
 
 ## Building from source
 

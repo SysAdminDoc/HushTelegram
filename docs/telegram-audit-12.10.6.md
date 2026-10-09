@@ -6,7 +6,7 @@ Audit date: 2026-10-09. The binary is Telegram 12.10.6, version code 71129, pack
 
 ## What the evidence establishes
 
-This report keeps four kinds of evidence separate:
+This report keeps the following kinds of evidence separate:
 
 | Evidence | What it establishes | What it cannot establish |
 |---|---|---|
@@ -14,8 +14,9 @@ This report keeps four kinds of evidence separate:
 | HushTelegram source and fixture tests | Which paths the current patches target, their on/off behavior, and the coverage the repo currently proves | That a new Telegram build has the same bytecode shape |
 | Telegram's current privacy policy and API documentation | What Telegram says it does and how clients are expected to implement the documented API | That every policy-described placement is implemented in build 12.10.6 |
 | First-run screenshots in the factory reference | The welcome and phone-entry flow before sign-in | Account-only screens, signed-in settings, live ads, and server-returned recommendations |
+| [Signed-in S22 runtime audit](telegram-runtime-audit-12.10.7.md) | Official beta 12.10.7 UI, a live sponsored search row, native request names, app-filtered packet observations and bounded background measurements | Exact encrypted RPC payloads, overnight battery life or patched behavior |
 
-The DEX pass inspected 21,640 classes and followed the ad request constructors and the app-log event builders. It was a targeted static inspection. It didn't decompile all source, inventory third-party SDKs or capture live network traffic. No account was signed in during this audit. A runtime capture is still needed to confirm current server responses and account-dependent screens. This report doesn't establish whether the APK contains other analytics libraries or what every network destination is. The factory welcome, phone-verification and permission flow is recorded in the [Telegram factory APK reference](telegram-app-reference.md).
+The DEX pass inspected 21,640 classes and followed the ad request constructors and the app-log event builders. It was a targeted static inspection, without a full source decompile or third-party SDK inventory. Subsequent runtime work captured signed-out 12.10.6 traffic on an Android 13 emulator, followed by signed-in 12.10.7 traffic on a physical S22. The [runtime report](telegram-runtime-audit-12.10.7.md) records those observations separately, including a live search ad and native send-path logs for sponsored fetches, an impression report and read metrics. The captures don't decode Telegram RPC payloads or establish every analytics destination. The factory welcome, phone-verification and permission flow is recorded in the [Telegram factory APK reference](telegram-app-reference.md).
 
 ## How sponsored content reaches the app
 
@@ -141,9 +142,11 @@ Extend the ad fixture checks around three requests: channel or bot sponsored mes
 
 Treat `MessagesController.getSponsoredMessages(long)`, `VideoAds.load()` and the kept `TL_messages_getSponsoredMessages` and `TL_contacts_getSponsoredPeers` types as stable anchors. The search class and method are renamed by R8. Find them by request type, `ConnectionsManager.sendRequest`, query assignment and branch shape. The view and click request classes stay readable, but their UI callers can be obfuscated.
 
-### Add a true contact-sync control
+### Respect the native contact-sync control
 
-The current contact patches change prompts and presentation. A real sync control would need to stop Telegram from reading and uploading the address book while the switch is on. Decide whether turning it off should also remove contacts already uploaded to Telegram. Keep those actions explicit, and test account state and Android permission states independently.
+The current contact patches change prompts and presentation. The signed-in stock app already exposes **Sync Contacts**, **Suggest Frequent Contacts** and **Delete Synced Contacts** under Privacy and Security. Use those controls before adding another switch. Hiding a prompt or a suggested list must never be described as disabling upload or deleting cloud contacts.
+
+The S22 inspection found Sync Contacts enabled while Android contact read/write permissions were denied. Account contacts could still appear in the UI. A regression check should therefore vary native sync, OS permission and existing cloud-contact state independently. A future patch would need a clear reason to enforce behavior beyond those native controls. Deleting previously uploaded contacts is a separate, explicit account action.
 
 ### Continue the customization work already tracked
 

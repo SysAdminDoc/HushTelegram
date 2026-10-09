@@ -4,6 +4,8 @@ This guide describes the factory Telegram APK that HushTelegram patches. It give
 
 For a deeper map of ad delivery, telemetry, common friction and patch opportunities, see the [Telegram 12.10.6 app audit](telegram-audit-12.10.6.md).
 
+The [signed-in runtime audit](telegram-runtime-audit-12.10.7.md) adds a physical S22 walkthrough of official beta 12.10.7, live search-ad evidence, network captures and background measurements.
+
 The reference uses Telegram 12.10.6, version code 71129, from telegram.org's single APK. Its SHA-256 is `7827ea506d297644b1d350266bdfbd8d5d38a7869fa3fc1a0fbcb1ebc81f45ad`. The APK stays in the local, gitignored `fixtures/` folder.
 
 ## Factory install inspected
@@ -18,7 +20,7 @@ Start Messaging opens Telegram's call-verification explanation. Android then dis
 
 ![Telegram's factory phone-number page](images/telegram-12.10.6-factory-phone-entry.png)
 
-No phone number or login code was entered. `READ_PHONE_NUMBERS` and `READ_PHONE_STATE` remained ungranted. Signed-in screens still need a user-assisted login before they can be documented. Android's permission dialog can vary by system version and prior permission history.
+No phone number or login code was entered during this emulator flow. `READ_PHONE_NUMBERS` and `READ_PHONE_STATE` remained ungranted. The later [S22 walkthrough](telegram-runtime-audit-12.10.7.md) covers signed-in screens on the official beta. Android's permission dialog can vary by system version and prior permission history.
 
 ## APK identity
 
