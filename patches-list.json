@@ -2969,8 +2969,8 @@
       "options": [
         {
           "key": "apiKey",
-          "title": "Registered Maps API key",
-          "description": "An Android SDK key from your Google Cloud project. Restrict it to the app package and your signing certificate SHA-1.",
+          "title": "Your Google Maps key",
+          "description": "A Google Maps key for Android apps, made in your own Google Cloud project. Limit it to Telegram's package name and your signing certificate (SHA-1).",
           "required": false,
           "type": "kotlin.String",
           "default": null,
@@ -3033,8 +3033,8 @@
       "options": [
         {
           "key": "apiId",
-          "title": "Registered API ID",
-          "description": "The positive application ID from your Telegram API development tools.",
+          "title": "Your API ID",
+          "description": "The number shown as App api_id at my.telegram.org/apps. Fill in the API hash too, or leave both empty.",
           "required": false,
           "type": "kotlin.String",
           "default": null,
@@ -3042,8 +3042,8 @@
         },
         {
           "key": "apiHash",
-          "title": "Registered API hash",
-          "description": "The 32 hexadecimal characters paired with that API ID. Keep this value in local patch inputs.",
+          "title": "Your API hash",
+          "description": "The 32-character code shown as App api_hash at my.telegram.org/apps. Keep it private, and fill in the API ID too.",
           "required": false,
           "type": "kotlin.String",
           "default": null,

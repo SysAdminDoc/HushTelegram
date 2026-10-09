@@ -30,8 +30,9 @@ val useRegisteredMapsApiKeyPatch = resourcePatch(
     category("Fixes")
     compatibleWith(*AppCompatibilities.telegram())
     val apiKey by stringOption(
-        key = "apiKey", default = null, title = "Registered Maps API key",
-        description = "An Android SDK key from your Google Cloud project. Restrict it to the app package and your signing certificate SHA-1.",
+        key = "apiKey", default = null, title = "Your Google Maps key",
+        description = "A Google Maps key for Android apps, made in your own Google Cloud project. Limit it " +
+            "to Telegram's package name and your signing certificate (SHA-1).",
         required = false,
     )
     execute { applyRegisteredMapsApiKey(apiKey) }
