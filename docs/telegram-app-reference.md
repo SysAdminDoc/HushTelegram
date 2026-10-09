@@ -2,6 +2,8 @@
 
 This guide describes the factory Telegram APK that HushTelegram patches. It gives patch work a shared starting point for app identity, first-run screens, manifest entry points, bytecode anchors and target updates.
 
+For a deeper map of ad delivery, telemetry, common friction and patch opportunities, see the [Telegram 12.10.6 app audit](telegram-audit-12.10.6.md).
+
 The reference uses Telegram 12.10.6, version code 71129, from telegram.org's single APK. Its SHA-256 is `7827ea506d297644b1d350266bdfbd8d5d38a7869fa3fc1a0fbcb1ebc81f45ad`. The APK stays in the local, gitignored `fixtures/` folder.
 
 ## Factory install inspected

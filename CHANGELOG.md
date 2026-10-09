@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Added an app audit for sponsored-message delivery, ad reporting, telemetry, contact sync and current patch opportunities on the pinned 12.10.6 APK.
+
 * **Telegram:** Contributors now have a factory-app reference for the pinned APK, with the first-run flow, manifest entry points, stable anchors and fixture-update steps.
 
 * **Telegram:** The three patch options (your Telegram API ID and hash, and your Google Maps key) have clearer names and say where to find each value.
@@ -252,7 +254,7 @@ The first release, with 4 patches for telegram.org's Telegram 12.10.6.
 * **Telegram:** Every row on the Chats, Updates and Links pages has an icon now, so the text starts at the same edge on every page, and Chats has a chat bubble.
 * **Telegram:** With large text on a Samsung phone, switch rows show their icon at full size and line up with the rows around them.
 * **Telegram:** A row that opens another page has a gray icon on More settings too, as it already did on the settings home, so blue marks only the rows that do something where they are.
-* **Telegram:** The Licenses page shows the notice's headings in bold instead of under rows of = and - signs.
+* **Telegram:** The Licenses page now shows each notice heading in bold, without the old rows of equals signs and hyphens.
 * **Tooling:** The README has a HushTelegram logo and a matching banner in the Hush family style.
 * **Tooling:** The README shows a search before and after, with Hide ads off and then on, taken on a signed-in phone.
 * **Tooling:** The build, extension library, settings screen and diagnostics start from HushThreads at b141524, renamed to `app.hushtelegram.extension` so they can't collide with another Morphe source's classes.

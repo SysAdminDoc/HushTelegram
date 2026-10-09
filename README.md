@@ -181,9 +181,9 @@ If the page shows a bare "ERROR" instead, turn off any VPN or ad blocker and try
 
 Credential options are compiled into the APK and recorded in the patching result report. Keep both private. These two patches have no runtime switch, and Pause doesn't change their credentials. Updating with the retained signing key preserves the installed app's data.
 
-For a patching bug, attach the separate public summary. `patch-for-device.ps1` writes `public-summary.json`; `verify-all-patches.ps1` writes `verify-all-public-summary-*.json`. They contain only supported package and bundle versions, catalog patch names and counts, and fixed failure codes. They omit credentials, options and private error text, including when patching fails. Keep the original result report and configured APK private. `-ShowPatchLog` prints the private CLI log locally, so don't copy that output into a report without reviewing it.
+For a patching bug, attach the separate public summary. `patch-for-device.ps1` writes `public-summary.json`, and `verify-all-patches.ps1` writes `verify-all-public-summary-*.json`. They contain only supported package and bundle versions, catalog patch names and counts, and fixed failure codes. They omit credentials, options and private error text, even when patching fails. Keep the original result report and configured APK private. `-ShowPatchLog` prints the private CLI log locally, so don't copy that output into a report without reviewing it.
 
-Fixture verification and new release receipts check native-library names, bytes and compression against the original APK. They also check relevant 64-bit ELF LOAD alignment and run `zipalign -c -P 16 -v 4`. Compressed native libraries remain valid. Receipt schema 4 records this evidence and the checker/tool hashes; older receipts use the schema pinned by their own commit. These packaging checks don't establish that Telegram has booted on a device with 16 KB memory pages. Native regression fixtures check their ZIP headers and bytes independently on PowerShell 7 and Windows PowerShell 5.1.
+Fixture verification and new release receipts check native-library names, bytes and compression against the original APK. They also check relevant 64-bit ELF LOAD alignment and run `zipalign -c -P 16 -v 4`. Compressed native libraries remain valid. Receipt schema 4 records this evidence and the checker and tool hashes. Older receipts use the schema pinned by their own commit. These packaging checks don't establish that Telegram has booted on a device with 16 KB memory pages. Native regression fixtures check their ZIP headers and bytes independently on PowerShell 7 and Windows PowerShell 5.1.
 
 **Can Telegram tell?** Assume it can. A patched Telegram is signed with your key rather than Telegram's, and Telegram's app reports a fingerprint of that key to its servers when it connects.
 
@@ -195,7 +195,7 @@ Fixture verification and new release receipts check native-library names, bytes 
 
 ## What it won't do
 
-Some patches other people publish for Telegram unlock Premium features, get past a channel's forward and save protection, or open content Telegram hides for age or legal reasons. HushTelegram won't ship any of those. They take away something someone else controls, and the first two take something people pay for.
+Some other Telegram patches enable paid Premium features without a subscription, bypass channel forwarding and saving restrictions, or expose content Telegram limits for age or legal reasons. HushTelegram won't ship those changes. They override controls set by someone else, and the Premium bypass takes away a paid feature.
 
 ## Privacy
 
@@ -204,6 +204,8 @@ HushTelegram doesn't collect anything and has no server. The patched app goes on
 The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.org`. Those open in your browser, and only when you tap one.
 
 Diagnostics omit named Telegram API IDs and hashes from buffered events, crash sections and exported reports. Versions, counters and unrelated hashes stay readable. Review a report before sharing it.
+
+The patched app still connects to Telegram for messaging and Telegram's own service data. The [factory app reference](docs/telegram-app-reference.md) records the APK and first-run flow, and the [Telegram app audit](docs/telegram-audit-12.10.6.md) maps ad delivery and telemetry.
 
 ## Where the patches come from
 
@@ -235,7 +237,7 @@ Text input fingerprints ignore LF/CRLF differences, so validated tests can be re
 
 Malformed options and rejected credential values must stop the build without echoing them. Ignored optional values must preserve stock behavior. The console prints only case names and fixed result codes. Keep the work folder private, since it holds the raw patcher reports. Combine both runs' `matrix-private.json` arrays into one file and set `HUSHTELEGRAM_SELECTION_FACTS` to it when running `CompiledSelectionUiTest`. The test task tracks that file's contents, so source-only results can't satisfy the compiled UI check.
 
-Build dependencies have a separate advisory check. Run `./gradlew :patches:buildDependencyReport`, then `pwsh -NoProfile -File scripts/build-advisories.ps1`. The report is in `patches/build/dependency-reports/`; the shipped SBOM continues to describe only libraries carried by the bundle. High, critical or unrated findings and failed queries stop a push. Lower-severity findings are reported.
+Build dependencies have a separate advisory check. Run `./gradlew :patches:buildDependencyReport`, then `pwsh -NoProfile -File scripts/build-advisories.ps1`. The report is in `patches/build/dependency-reports/`. The shipped SBOM continues to describe only libraries carried by the bundle. High, critical or unrated findings and failed queries stop a push. Lower-severity findings are reported.
 
 `pwsh -NoProfile -File scripts/test-bouncycastle-test-graph.ps1` checks the real dependency review in both task orders and verifies that unreviewed unit-test requests still fail. `pwsh -NoProfile -File scripts/test-host-advisory-alignment.ps1` checks the settings and Android result-listener graphs while proving unrelated runtime requests keep their original versions.
 
