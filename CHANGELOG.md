@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** The rows in HushTelegram settings now say in plain English what you'll notice when a switch is on, and a few titles are clearer (Stop vibrations on taps, Remove link tracking tags, Show where a profile photo is stored). The translations are updated to match.
+
 * **Telegram:** Every patch description in Morphe Manager is rewritten in plain English. Each one now says what changes on screen, why you might want it, and ends with where to find its switch in HushTelegram settings and whether it starts on or off.
 
 * **Telegram:** Each patch's description in Morphe Manager now says which page of HushTelegram settings holds its switch, under the switch's own name when that differs, and whether it starts on or off. Nothing is hidden behind Expert mode: every patch but the two credential patches was already in the default selection, and the README's install steps now say so.

@@ -50,7 +50,7 @@ public final class FamilyNames {
     public static final String MESSAGE_SECONDS = "Message times with seconds";
     public static final String ALLOW_CHAT_BLUR = "Allow chat blur on slower phones";
     public static final String VOICE_ONE_AT_A_TIME = "Play voice messages one at a time";
-    public static final String NO_HAPTICS = "Turn off haptic feedback";
+    public static final String NO_HAPTICS = "Stop vibrations on taps";
     public static final String REACTION_EFFECTS_OFF = "Turn off reaction effects";
     public static final String HIDE_FOLDER_COUNTERS = "Hide folder tab counters";
     public static final String FORWARD_HIDE_SENDER = "Hide sender names when forwarding";
@@ -71,7 +71,7 @@ public final class FamilyNames {
     public static final String DISABLE_DRAFT_PREVIEWS = "Disable draft link previews";
     public static final String GALLERY_CAMERA_ON_TAP = "Gallery camera on tap";
     public static final String OPEN_EXTERNAL_LINKS = "Open links externally";
-    public static final String STRIP_LINK_TRACKING = "Strip link tracking";
+    public static final String STRIP_LINK_TRACKING = "Remove link tracking tags";
     public static final String DISABLE_UPDATE_CHECKS = "Disable update checks";
     public static final String REPAIR_FIREBASE_PUSH = "Repair Firebase push registration";
 
