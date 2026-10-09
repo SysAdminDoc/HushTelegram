@@ -69,7 +69,7 @@ val hideRecommendationsPatch = bytecodePatch(
         "settings and starts on.",
     default = true,
 ) {
-    category("Chats")
+    category("Interface")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
 

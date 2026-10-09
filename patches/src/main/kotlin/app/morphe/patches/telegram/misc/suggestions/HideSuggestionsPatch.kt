@@ -59,7 +59,7 @@ val hideSuggestionsPatch = bytecodePatch(
         "of HushTelegram settings and starts on.",
     default = true,
 ) {
-    category("Chats")
+    category("Ads")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
 

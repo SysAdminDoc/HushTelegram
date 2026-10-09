@@ -48,7 +48,7 @@ val quietContactsNagPatch = bytecodePatch(
         "on.",
     default = true,
 ) {
-    category("Chats")
+    category("Interface")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
 

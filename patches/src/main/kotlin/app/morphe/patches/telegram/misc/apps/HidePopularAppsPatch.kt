@@ -45,7 +45,7 @@ val hidePopularAppsPatch = bytecodePatch(
         "HushTelegram settings and starts on.",
     default = true,
 ) {
-    category("Chats")
+    category("Search")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
 

@@ -44,7 +44,7 @@ val silenceNonContactsPatch = bytecodePatch(
         "codes keep their sound. Its switch is on the Chats page of HushTelegram settings.",
     default = true,
 ) {
-    category("Chats")
+    category("Notifications")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
     execute {

@@ -55,7 +55,7 @@ val hideStoriesPatch = bytecodePatch(
         "page of HushTelegram settings and starts on.",
     default = true,
 ) {
-    category("Chats")
+    category("Stories")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
 

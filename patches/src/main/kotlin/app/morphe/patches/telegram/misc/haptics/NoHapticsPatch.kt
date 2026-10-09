@@ -47,7 +47,7 @@ val noHapticsPatch = bytecodePatch(
         "HushTelegram settings.",
     default = true,
 ) {
-    category("Chats")
+    category("Interface")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
     execute {

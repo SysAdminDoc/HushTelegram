@@ -46,7 +46,7 @@ val holidayLookPatch = bytecodePatch(
         "Chats page of HushTelegram settings.",
     default = true,
 ) {
-    category("Chats")
+    category("Theme")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
 

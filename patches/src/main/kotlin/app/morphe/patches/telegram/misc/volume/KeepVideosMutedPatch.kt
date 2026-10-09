@@ -45,7 +45,7 @@ val keepVideosMutedPatch = bytecodePatch(
         "Chats page of HushTelegram settings.",
     default = true,
 ) {
-    category("Chats")
+    category("Playback")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
     execute {

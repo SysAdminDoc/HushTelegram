@@ -99,7 +99,7 @@ val messageMenuPatch = bytecodePatch(
         "Chats page of HushTelegram settings.",
     default = true,
 ) {
-    category("Chats")
+    category("Conversations")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
     execute {

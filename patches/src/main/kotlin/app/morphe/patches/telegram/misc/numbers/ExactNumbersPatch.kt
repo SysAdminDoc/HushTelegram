@@ -39,7 +39,7 @@ val exactNumbersPatch = bytecodePatch(
         "settings.",
     default = true,
 ) {
-    category("Chats")
+    category("Interface")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
     execute {

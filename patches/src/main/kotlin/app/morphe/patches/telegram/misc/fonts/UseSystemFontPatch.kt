@@ -51,7 +51,7 @@ val useSystemFontPatch = bytecodePatch(
         "effect after Telegram restarts. Its switch is on the Chats page of HushTelegram settings.",
     default = true,
 ) {
-    category("Chats")
+    category("Theme")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
     execute {

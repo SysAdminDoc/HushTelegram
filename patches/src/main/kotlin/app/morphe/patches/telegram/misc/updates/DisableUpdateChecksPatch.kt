@@ -55,7 +55,7 @@ val disableUpdateChecksPatch = bytecodePatch(
         "update checks, is on the Updates page, under More settings in HushTelegram settings, and starts on.",
     default = true,
 ) {
-    category("Fixes")
+    category("Updates")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
 

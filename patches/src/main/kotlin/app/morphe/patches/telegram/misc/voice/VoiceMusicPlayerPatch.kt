@@ -51,7 +51,7 @@ val voiceMusicPlayerPatch = bytecodePatch(
         "settings.",
     default = true,
 ) {
-    category("Chats")
+    category("Playback")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
     execute {

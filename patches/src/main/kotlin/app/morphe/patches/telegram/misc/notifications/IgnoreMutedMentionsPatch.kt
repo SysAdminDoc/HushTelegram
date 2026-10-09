@@ -48,7 +48,7 @@ val ignoreMutedMentionsPatch = bytecodePatch(
         "HushTelegram settings.",
     default = true,
 ) {
-    category("Chats")
+    category("Notifications")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
     execute {

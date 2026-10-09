@@ -40,7 +40,7 @@ val messageSecondsPatch = bytecodePatch(
         "9:41:27 PM. Its switch is on the Chats page of HushTelegram settings.",
     default = true,
 ) {
-    category("Chats")
+    category("Interface")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
     execute {

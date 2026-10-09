@@ -76,7 +76,7 @@ val sendConfirmPatch = bytecodePatch(
         "or a call goes out. Cancel drops it. The switches are on the Chats page of HushTelegram settings.",
     default = true,
 ) {
-    category("Chats")
+    category("Conversations")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
     execute {
