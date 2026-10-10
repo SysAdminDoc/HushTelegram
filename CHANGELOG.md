@@ -46,6 +46,8 @@ Every HushTelegram release, newest first.
 
 * **Tooling:** `verify-all-patches.ps1 -KeepIn <dir>` keeps a clean run's patched APK and CLI report, stamped with the commit and the hashes of the fixture, bundle, patch list and CLI. `build-release-receipt.ps1 -AppliedDir <dir>` reads a kept run whose stamp matches instead of patching that fixture a second time, and still runs every check on it. Anything that doesn't match gets patched as before.
 
+* **Tooling:** Releases now run from `scripts/release/release.ps1`, one command per stage: prepare, preflight, build, publish and index. Each stage records the commit it finished on and won't start until the one before it has finished. A stage can be run again after a fix, and one that already finished checks its work and says so. Preflight is a five-minute check of the scripts, release text, facts and the patch tests without the fixture suite. Build runs the full tests, the bundle and every declared Telegram build once, and the receipt reads those runs. The release notes builder now lives in the repo too, and it carries every bullet of the version's CHANGELOG section and checks the published notes still do.
+
 ## 0.0.11 (2026-10-08)
 
 The fifth release, with 55 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.

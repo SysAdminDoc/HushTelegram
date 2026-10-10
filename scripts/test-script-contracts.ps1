@@ -190,6 +190,10 @@ Assert-True ($importCalls.Count -eq 1 -and $importCalls[0].Extent.Text -match "'
     'pre-push.ps1 no longer fills an unset or empty build wrapper from the user environment.'
 Write-Host '[scripts] user environment contracts passed'
 
+# The release stages' text (CHANGELOG cut, notes, Manager index, bug form, description) and the
+# order release.ps1 holds its stages to.
+& (Join-Path $PSScriptRoot 'release/test-release-text.ps1') -Root $Root
+
 # --- patch-target.ps1 ------------------------------------------------------------------------
 #
 # Telegram ships a build a week, so the catalog declares the build the bundle was last proved on
