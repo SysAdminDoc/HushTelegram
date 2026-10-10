@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/version-0.0.12-2AABEE" alt="Version 0.0.12">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
-  <img src="https://img.shields.io/badge/Telegram-13.0.0-2AABEE" alt="Telegram 13.0.0">
+  <img src="https://img.shields.io/badge/Telegram-13.0.1-2AABEE" alt="Telegram 13.0.1">
   <img src="https://img.shields.io/badge/for-Morphe%20Manager%201.34.0%2B-8A2BE2" alt="For Morphe Manager 1.34.0 or newer">
 </p>
 
@@ -22,7 +22,7 @@
 
 HushTelegram is a Morphe patch bundle for Android that takes the sponsored messages out of Telegram and keeps a few things on your phone that Telegram would otherwise send home.
 
-The latest release is [v0.0.12](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.12), with 56 patches built for Telegram 12.10.6 and the official beta 12.10.7. On a signed-in phone Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after). The source here has since moved on to Telegram 13.0.0 and beta 13.0.1, and the next release will be built for those.
+The latest release is [v0.0.12](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.12), with 56 patches built for Telegram 12.10.6 and the official beta 12.10.7. On a signed-in phone Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after). The source here has since moved on to Telegram 13.0.1, both telegram.org's build and the beta, and the next release will be built for those.
 
 v0.0.12 is mostly about reading easier. Every patch description in Morphe Manager, every row in HushTelegram settings and every message the app shows is rewritten in plain English, and Expert mode groups the patches the way you'd look for them. Keep deleted messages now marks a message the moment it's deleted while the chat is open, and a new row clears what it kept. On the beta, Disable analytics also stops Firebase's crash and session reports, and the new Turn off beta debug logs switch (off by default) stops the beta from writing debug logs all the time. Two optional patches take your own registered Telegram API credentials and Google Maps key when you patch.
 
@@ -42,7 +42,7 @@ This project has no connection to Telegram or to the Morphe project. Neither end
 
 ## Which Telegram
 
-HushTelegram patches telegram.org's own Telegram build, package `org.telegram.messenger.web`, version 13.0.0 (version code 71589). That's what telegram.org's [Download button](https://telegram.org/android) gives you now. The APK carries every phone architecture, and it's the build each patch is checked against. Morphe Manager warns about other builds. Until the next release is out, v0.0.12 still needs 12.10.6 (version code 71129) from [APKMirror's Telegram (Web version) page](https://www.apkmirror.com/apk/telegram-fz-llc/telegram-web-version/telegram-web-version-12-10-6-release/).
+HushTelegram patches telegram.org's own Telegram build, package `org.telegram.messenger.web`, version 13.0.1 (version code 71679). That's what telegram.org's [Download button](https://telegram.org/android) gives you now. The APK carries every phone architecture, and it's the build each patch is checked against. Morphe Manager warns about other builds. Until the next release is out, v0.0.12 still needs 12.10.6 (version code 71129) from [APKMirror's Telegram (Web version) page](https://www.apkmirror.com/apk/telegram-fz-llc/telegram-web-version/telegram-web-version-12-10-6-release/).
 
 Since v0.0.8 it also targets the [official beta](https://telegram.org/dl/android/apk-public-beta), package `org.telegram.messenger.beta`, version 13.0.1 (version code 71669). Its vendor signer and native patch targets are checked on their own.
 
@@ -56,7 +56,7 @@ Changed Premium report builders are refused before the patch changes any code.
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 1.34.0 or newer.
 2. Add HushTelegram as a patch source: https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram
-3. Get Telegram 13.0.0, version code 71589, from telegram.org's [Download button](https://telegram.org/android). The release out now, v0.0.12, needs 12.10.6 instead. Get it from [APKMirror's Telegram (Web version) page](https://www.apkmirror.com/apk/telegram-fz-llc/telegram-web-version/telegram-web-version-12-10-6-release/) and pick the universal APK. Skip the Google Play version either way, since it's a different package.
+3. Get Telegram 13.0.1, version code 71679, from telegram.org's [Download button](https://telegram.org/android). The release out now, v0.0.12, needs 12.10.6 instead. Get it from [APKMirror's Telegram (Web version) page](https://www.apkmirror.com/apk/telegram-fz-llc/telegram-web-version/telegram-web-version-12-10-6-release/) and pick the universal APK. Skip the Google Play version either way, since it's a different package.
 4. In Morphe Manager, pick that file, keep the default patch selection and patch. It holds every feature, so you don't need Expert mode.
 5. Only the two credential patches are left out. If you have your own Telegram API ID and hash or a Google Maps key, turn on **Settings → Advanced → Expert mode** in Morphe Manager, pick Use registered Telegram API credentials or Use registered Maps API key, and fill in its options before you patch.
 
