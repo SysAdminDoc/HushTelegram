@@ -68,8 +68,10 @@ public class SectionJumpTest {
 
         assertEquals("Browse settings", ((Preference) list.getItemAtPosition(1)).getTitle());
         List<String> titles = new ArrayList<>();
-        for (int i = 2; i < list.getCount() - 1; i++) titles.add(((Preference) list.getItemAtPosition(i)).getTitle().toString());
-        Preference more = (Preference) list.getItemAtPosition(list.getCount() - 1);
+        // More settings, then Support HushTelegram, which opens a web page rather than a section.
+        assertEquals(HushTelegramPreferenceFragment.SUPPORT, ((Preference) list.getItemAtPosition(list.getCount() - 1)).getKey());
+        for (int i = 2; i < list.getCount() - 2; i++) titles.add(((Preference) list.getItemAtPosition(i)).getTitle().toString());
+        Preference more = (Preference) list.getItemAtPosition(list.getCount() - 2);
         assertEquals("More settings", more.getTitle());
         assertTrue(more.getOnPreferenceClickListener().onPreferenceClick(more));
         for (int i = 0; i < list.getCount(); i++) titles.add(((Preference) list.getItemAtPosition(i)).getTitle().toString());

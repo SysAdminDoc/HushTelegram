@@ -91,6 +91,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     /** The repository as a link, and as a person reads it. ExtensionHostsTest reads the link. */
     static final String SOURCE_URL = "https://github.com/SysAdminDoc/HushTelegram";
     static final String SOURCE_ADDRESS = SOURCE_URL.substring(SOURCE_URL.indexOf("://") + 3);
+    /** Where Support HushTelegram goes: the maintainer's Ko-fi page. */
+    static final String SUPPORT_URL = "https://ko-fi.com/X8K126YVER";
+    static final String SUPPORT_ADDRESS = SUPPORT_URL.substring(SUPPORT_URL.indexOf("://") + 3);
+    /** The key of Support HushTelegram, the settings home page's last row. It stores nothing. */
+    static final String SUPPORT = "action_support_hushtelegram";
     /** The English of the row listing what Pause can't reach, and its key in {@link L10n}. */
     static final String STAYS_WHILE_PAUSED = "Stays in while paused";
     /** The Check now row's key. It stores nothing: no setting has this name. */
@@ -1018,6 +1023,25 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         Logger.printInfo(() -> "No settings page opened for supported links");
         Utils.showToastLong(L10n.t("Android's settings for this app didn't open. Open App info from Telegram's icon, "
                 + "then Open by default."));
+    }
+
+    /** The Ko-fi page, for a browser, in a task of its own so it never opens inside Telegram's. */
+    static Intent supportIntent() {
+        return new Intent(Intent.ACTION_VIEW, Uri.parse(SUPPORT_URL))
+                .addCategory(Intent.CATEGORY_BROWSABLE)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    }
+
+    /** Opens the Ko-fi page, or says no app here can, as Source code and issues does. */
+    static void openSupport(Context context) {
+        try {
+            context.startActivity(supportIntent());
+        } catch (ActivityNotFoundException | SecurityException missing) {
+            // No browser, or none switched on. Uncaught, Android's exception closed Telegram.
+            Logger.printInfo(() -> "No app opened the support link");
+            Utils.showToastLong(L10n.f("No app on this phone can open the link. The address is %1$s.",
+                    L10n.isolate(SUPPORT_ADDRESS)));
+        }
     }
 
     /** A switch whose change waits for a restart: the card says what the next start brings. */

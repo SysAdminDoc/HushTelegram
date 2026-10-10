@@ -154,7 +154,7 @@ Open Telegram's Settings and tap HushTelegram settings. You can also long-press 
 
 On v0.0.8 there's no row in Telegram's Settings, so use the long-press or App info.
 
-More settings has separate pages for Pause, Settings backup and Diagnostics. Search finds each control by its name or page. Your saved switches and backup files work as before.
+More settings has separate pages for Pause, Settings backup and Diagnostics. Search finds each control by its name or page. Your saved switches and backup files work as before. Support HushTelegram, the last row on the home page, opens the project's Ko-fi page in your browser.
 
 After v0.0.12 the source splits the old Chats page into Ads, Chat list, Conversations, Playback, Notifications, Look and feel and Privacy, matching the groups Morphe Manager shows. Each patch description below names its page. The screenshots still show v0.0.12.
 
@@ -212,7 +212,7 @@ HushTelegram doesn't collect anything and has no server. The patched app goes on
 
 The second is Translate with an outside service. With its switch on, a message you translate with Translate here, and the messages you open in a chat you turned on with Translate this chat, go to Google's web translate at `translate.googleapis.com`, one message at a time. Each request carries that message's text and the language you're translating into, with `HushTelegram` as its User-Agent. Google sees the text and your IP address. Your own messages and service messages aren't sent, and nothing goes out for a chat or message you haven't turned on. Which chats are on stays on the phone, and translations are kept in memory only.
 
-The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.org`. Those open in your browser, and only when you tap one.
+The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.org`, and Support HushTelegram at the bottom of the settings home page links to `ko-fi.com`. Those open in your browser, and only when you tap one.
 
 Diagnostics omit named Telegram API IDs and hashes from buffered events, crash sections and exported reports. Versions, counters and unrelated hashes stay readable. Review a report before sharing it.
 

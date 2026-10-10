@@ -133,10 +133,11 @@ class ExtensionHostsTest {
         /**
          * The hosts the README's Privacy section names. 127.0.0.1 is where Disable analytics sends
          * Telegram's event logs: the phone itself, on a port nothing listens on.
-         * translate.googleapis.com is Translate with an outside service.
+         * translate.googleapis.com is Translate with an outside service. ko-fi.com is the
+         * Support HushTelegram row, opened in the browser.
          */
         val ALLOWED_HOSTS = setOf("github.com", "api.github.com", "gitlab.com", "www.gnu.org", "127.0.0.1",
-            "translate.googleapis.com")
+            "translate.googleapis.com", "ko-fi.com")
         const val RELEASE_CHECK =
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/ReleaseCheck.java"
         const val FIREBASE_HEADER =
