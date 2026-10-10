@@ -16,11 +16,11 @@ import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.localRegisterCount
-import app.morphe.patches.telegram.misc.extension.requireParameterIntact
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.settings.settingsPatch
+import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -42,6 +42,7 @@ private const val SHARED_CONFIG = "Lorg/telegram/messenger/SharedConfig;"
 private const val CAMERA_CONTROLLER = "Lorg/telegram/messenger/camera/CameraController;"
 private const val CAMERA_VIEW = "Lorg/telegram/messenger/camera/CameraView;"
 private const val ACTIVITY = "Landroid/app/Activity;"
+private const val CONTEXT = "Landroid/content/Context;"
 private const val CAMERA_PERMISSION = "android.permission.CAMERA"
 private const val OBJECT = "Ljava/lang/Object;"
 
@@ -87,8 +88,12 @@ internal class GalleryCameraSites(
     val menuGallery: FieldReference,
 )
 
-/** A camera permission request the user's tap leads to, with the register that holds the layout there. */
-internal class PermissionAsk(val method: MutableMethod, val index: Int, val layout: Int)
+/**
+ * A camera permission request the user's tap leads to. The wake goes in at [index], handed the
+ * layout in [layout]; when [load] is set, the hook first reads the layout into [layout] from that
+ * field of the method's own object, since the request's code keeps it nowhere it can be proven.
+ */
+internal class PermissionAsk(val method: MutableMethod, val index: Int, val layout: Int, val load: FieldReference? = null)
 
 internal fun BytecodePatchContext.resolveGalleryCameraSites(): GalleryCameraSites {
     requireRuntimeHooks()
@@ -130,7 +135,7 @@ internal fun BytecodePatchContext.resolveGalleryCameraSites(): GalleryCameraSite
         .one("camera tile tap")
     tap.requireThisIntact(PATCH, listOf(2))
 
-    val asks = permissionAsks(methods, check, tap)
+    val asks = permissionAsks(check, tap)
 
     // The attach menu builds its one gallery when it's made and reuses it for every open. Its
     // show() runs first on each open, on whatever tab, so that's where the gallery goes to sleep.
@@ -160,41 +165,70 @@ internal fun BytecodePatchContext.resolveGalleryCameraSites(): GalleryCameraSite
  * button's. A grant brings checkCamera(true) back through the permission result, which a sleeping
  * gallery would refuse, so the tap that asks wakes it first.
  */
-private fun permissionAsks(methods: List<MutableMethod>, check: Method, tap: Method): List<PermissionAsk> {
+private fun BytecodePatchContext.permissionAsks(check: Method, tap: Method): List<PermissionAsk> {
     val checkBody = check.instructions()
-    // checkCamera stores whether the permission is missing right after asking the system.
+    // checkCamera stores whether the permission is missing right after asking the system, through
+    // Activity or, since Telegram 13.0, Context, which declares checkSelfPermission.
     val missingStore = checkBody.indices.filter { checkBody[it].opcode == Opcode.IPUT_BOOLEAN &&
         checkBody[it].field()?.definingClass == PHOTO_LAYOUT &&
-        (maxOf(0, it - 6) until it).any { at -> checkBody[at].call()?.let { call -> call.definingClass == ACTIVITY && call.name == "checkSelfPermission" } == true } }
+        (maxOf(0, it - 6) until it).any { at -> checkBody[at].call()?.let { call ->
+            call.definingClass in setOf(ACTIVITY, CONTEXT) && call.name == "checkSelfPermission" } == true } }
         .one("missing camera permission store")
     val missing = checkBody[missingStore].field()!!
 
-    val requesters = methods.filter { it.isStatic() && it.params().firstOrNull() == PHOTO_LAYOUT && it.cameraOnlyRequests().isNotEmpty() }
-    shape(requesters.size == 2, "found ${requesters.size} camera permission requests, expected the tile's and the camera button's")
-    return requesters.map { method ->
+    // Since Telegram 13.0, R8 merges the gallery's click lambdas into classes they share with
+    // unrelated code, so the two requests are found by what they do wherever they are: a
+    // camera-only request that reads the missing flag (the tile) or leads to the tile's tap (the
+    // camera button).
+    val found = mutableListOf<Pair<String, Method>>()
+    classDefForEach { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+        for (method in classDef.methods) {
+            val body = method.instructions()
+            if (body.none { it.call()?.name == "requestPermissions" } || method.cameraOnlyRequests().isEmpty()) continue
+            if (body.any { it.field() == missing } || body.any { it.leadsTo(tap) }) found += classDef.type to method
+        }
+    }
+    shape(found.size == 2, "found ${found.size} camera permission requests, expected the tile's and the camera button's")
+    return found.map { (type, stock) ->
+        val method = mutableClassDefBy(type).methods.filter { it.name == stock.name && it.params() == stock.params() &&
+            it.returnType == stock.returnType }.one("${stock.name} camera request")
         val body = method.instructions()
         val reads = body.indices.filter { body[it].opcode == Opcode.IGET_BOOLEAN && body[it].field() == missing }
+        val request = method.cameraOnlyRequests().one("${stock.name} camera request")
         if (reads.isEmpty()) {
-            // The camera button: asks when the permission is missing and opens the tile's tap otherwise.
-            shape(body.any { it.call()?.let { call -> call.definingClass == PHOTO_LAYOUT && call.name == tap.name } == true },
-                "camera button no longer leads to the tile's tap")
-            method.requireParameterIntact(PATCH, 0, listOf(0))
-            PermissionAsk(method, 0, method.localRegisterCount())
+            // The camera button: asks when the permission is missing and opens the tile's tap
+            // otherwise. Its lambda holds the gallery in its one gallery field, read again here.
+            shape(body.count { it.leadsTo(tap) } == 1, "camera button no longer leads to the tile's tap")
+            shape(!method.isStatic(), "camera button is no longer a lambda that holds its gallery")
+            val galleries = method.instructions().mapNotNull { instruction -> instruction.takeIf { it.opcode == Opcode.IGET_OBJECT }
+                ?.field()?.takeIf { it.definingClass == method.definingClass && it.type == PHOTO_LAYOUT } }.distinct()
+            val gallery = galleries.one("camera button's gallery field")
+            val self = method.localRegisterCount()
+            shape(self <= 15, "camera button keeps this past v15")
+            method.requireThisIntact(PATCH, listOf(request))
+            val layout = method.freeLocalsAt(PATCH, request, 1, highest = 15).single()
+            PermissionAsk(method, request, layout, gallery)
         } else {
-            // The grid's click on the tile while the permission is missing.
+            // The grid's click on the tile while the permission is missing. The flag's read names
+            // the gallery's register, and the wake goes in on the branch that asks.
             val read = reads.one("tile's missing permission read")
-            val value = body[read].namedRegisters()[0]
+            val (value, layout) = body[read].namedRegisters()
             val index = read + 2
-            val request = method.cameraOnlyRequests().one("tile's camera request")
+            val flow = ControlFlow.of(method)
             shape(body[read + 1].opcode == Opcode.IF_EQZ && body[read + 1].namedRegisters() == listOf(value) &&
                 request in index until index + 8 && (index until request).none { at -> body[at].opcode.let { op ->
-                    op.canContinue().not() || op == Opcode.GOTO || op == Opcode.GOTO_16 || op == Opcode.GOTO_32 } },
+                    op.canContinue().not() || op == Opcode.GOTO || op == Opcode.GOTO_16 || op == Opcode.GOTO_32 } } &&
+                flow.normal.indices.filter { index in flow.normal[it] } == listOf(read + 1),
                 "tile's permission request no longer follows the missing permission check")
-            method.requireParameterIntact(PATCH, 0, listOf(index))
-            PermissionAsk(method, index, method.localRegisterCount())
+            PermissionAsk(method, index, layout)
         }
     }
 }
+
+/** Whether this calls the camera tile's tap. */
+private fun Instruction.leadsTo(tap: Method) =
+    call()?.let { it.definingClass == PHOTO_LAYOUT && it.name == tap.name && it.hasShape(emptyList(), "V") } == true
 
 private fun GalleryCameraSites.apply() {
     // The exit goes in first, so the gate's jump can land on the return after it.
@@ -229,8 +263,9 @@ private fun GalleryCameraSites.apply() {
     """.trimIndent())
 
     for (ask in asks) {
+        val load = ask.load?.let { "iget-object v${ask.layout}, v${ask.method.localRegisterCount()}, ${it.definingClass}->${it.name}:${it.type}\n" }
         ask.method.addInstructionsAtControlFlowLabel(ask.index,
-            "invoke-static/range {v${ask.layout} .. v${ask.layout}}, $GALLERY_CAMERA->wakeForPermission($OBJECT)V")
+            "${load.orEmpty()}invoke-static/range {v${ask.layout} .. v${ask.layout}}, $GALLERY_CAMERA->wakeForPermission($OBJECT)V")
     }
     // Before the dialog shows, so nothing in this open finds the gallery still awake from the last.
     val menuSelf = menuShow.localRegisterCount()

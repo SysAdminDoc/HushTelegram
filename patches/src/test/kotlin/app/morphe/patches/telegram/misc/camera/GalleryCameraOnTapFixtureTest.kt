@@ -79,16 +79,32 @@ class GalleryCameraOnTapFixtureTest {
             assertEquals("$name: tile starts the camera", signature(sites.check), tapAfter[wake + 5].call()?.let(::signature))
             assertEquals("$name: tile false opens as before", setOf(wake + 4, wake + 7), ControlFlow.of(sites.tap).normal[wake + 3].toSet())
 
-            // The user's permission requests wake the gallery first, with the layout they were handed.
+            // The user's permission requests wake the gallery first, with the gallery they ask for:
+            // the tile with the one its missing-permission read named, the camera button with the
+            // one its lambda holds.
             assertEquals("$name: both permission requests", 2, sites.asks.size)
+            assertEquals("$name: one tile request and one camera button", 1, sites.asks.count { it.load == null })
             for ((ask, original) in sites.asks.zip(asks)) {
-                assertKeepsStock("$name: ${ask.method.name} request", original, ask.method, mapOf(ask.index to 1))
-                val call = ask.method.instructions()[ask.index]
+                val size = if (ask.load == null) 1 else 2
+                assertKeepsStock("$name: ${ask.method.name} request", original, ask.method, mapOf(ask.index to size))
+                val body = ask.method.instructions()
+                val call = body[ask.index + size - 1]
                 assertEquals("$name: ${ask.method.name} wakes", "$GALLERY_CAMERA->wakeForPermission(Ljava/lang/Object;)V", call.reference())
-                assertEquals("$name: ${ask.method.name} hands over its layout", firstParameterRegister(original),
-                    (call as RegisterRangeInstruction).startRegister)
-                assertTrue("$name: ${ask.method.name} asks after the wake", ask.method.instructions().drop(ask.index).any {
-                    it.call()?.name == "requestPermissions" })
+                assertEquals("$name: ${ask.method.name} hands over its layout", ask.layout, (call as RegisterRangeInstruction).startRegister)
+                if (ask.load == null) {
+                    val read = original.instructions()[ask.index - 2]
+                    assertEquals("$name: the tile's read of the missing flag", Opcode.IGET_BOOLEAN, read.opcode)
+                    assertEquals("$name: the tile hands over the gallery it read", read.namedRegisters()[1], ask.layout)
+                } else {
+                    assertEquals("$name: the button reads its gallery", listOf(Opcode.IGET_OBJECT), listOf(body[ask.index].opcode))
+                    assertEquals("$name: from its own gallery field", ask.load, body[ask.index].field())
+                    assertEquals("$name: of this", listOf(ask.layout, ask.method.implementation!!.registerCount - 1 - original.parameterTypes.size),
+                        body[ask.index].namedRegisters())
+                    assertEquals("$name: the button's field is a gallery", PHOTO_LAYOUT, ask.load!!.type)
+                }
+                assertTrue("$name: ${ask.method.name} asks right after the wake",
+                    body[ask.index + size].call()?.name == "requestPermissions" || ask.load == null &&
+                        body.drop(ask.index + size).take(8).any { it.call()?.name == "requestPermissions" })
             }
 
             // Each open of the attach menu, on any tab, starts with its gallery asleep, before the dialog shows.
@@ -148,8 +164,13 @@ class GalleryCameraOnTapFixtureTest {
                 "showCamera call moved" to { sites -> sites.check.replaceInstruction(sites.checkExit - 1, "nop") },
                 "tile tap changed" to { sites -> sites.tap.replaceInstruction(sites.tapIndex + 2, "nop") },
                 "tile request unguarded" to { sites ->
-                    val ask = sites.asks.single { it.index > 0 }
+                    val ask = sites.asks.single { it.load == null }
                     ask.method.replaceInstruction(ask.index - 1, "nop")
+                },
+                "camera button no longer leads to the tap" to { sites ->
+                    val ask = sites.asks.single { it.load != null }
+                    val tap = ask.method.instructions().indexOfFirst { it.call()?.name == sites.tap.name }
+                    ask.method.replaceInstruction(tap, "nop")
                 },
                 "menu show no longer shows first" to { sites -> sites.menuShow.addInstructions(0, "invoke-static {}, Ljava/lang/System;->gc()V") },
             )
@@ -164,7 +185,7 @@ class GalleryCameraOnTapFixtureTest {
     }
 
     private fun assertRefusedUntouched(build: String, case: String, context: BytecodePatchContext, menu: String) {
-        val owners = listOf(PHOTO_LAYOUT, menu)
+        val owners = listOf(PHOTO_LAYOUT, menu) + requesters.getValue(build)
         val before = owners.associateWith { type -> context.mutableClassDefBy(type).methods.associate { signature(it) to it.instructions().map(::operation) } }
         try {
             galleryCameraOnTapPatch.execute(context)
@@ -212,12 +233,25 @@ class GalleryCameraOnTapFixtureTest {
         return to
     }
 
+    private val requesters = mutableMapOf<String, Set<String>>()
+
     private fun contextFor(build: java.io.File, runtime: Boolean = true): BytecodePatchContext {
         val layout = FixtureDex.classes(build, setOf(PHOTO_LAYOUT)).values.single()
-        val fieldTypes = layout.fields.map { it.type }.filter { it.startsWith("L") && it != PHOTO_LAYOUT }.toSet() + menuType(build)
+        val fieldTypes = layout.fields.map { it.type }.filter { it.startsWith("L") && it != PHOTO_LAYOUT }.toSet() + menuType(build) +
+            requesters.getOrPut(build.name) { requesterTypes(build) }
         val extension = ExtensionDex.classes().filter { runtime || it.type != GALLERY_CAMERA }
         return PatchContexts.of(extension + layout + FixtureDex.classes(build, fieldTypes).values)
     }
+
+    /**
+     * The classes outside the gallery that ask for a permission with the gallery in hand: R8 merges
+     * the gallery's click lambdas, the camera tile's and the camera button's requests among them,
+     * into classes they share with other code.
+     */
+    private fun requesterTypes(build: java.io.File) = FixtureDex.classesWhere(build, { true }) { method ->
+        method.instructions().any { it.call()?.name == "requestPermissions" } &&
+            method.instructions().any { it.reference()?.contains(PHOTO_LAYOUT) == true } }
+        .map { it.type }.filter { it != PHOTO_LAYOUT }.toSet()
 
     /** The attach menu: the one class whose constructor builds the gallery. */
     private fun menuType(build: java.io.File) = FixtureDex.classesWhere(build, { true }) { method -> method.name == "<init>" &&
@@ -225,9 +259,6 @@ class GalleryCameraOnTapFixtureTest {
 
     private fun statusFlag(context: BytecodePatchContext) = (context.mutableClassDefBy(SETTINGS_STATUS).methods
         .single { it.name == "galleryCameraOnTap" }.instructions()[0] as NarrowLiteralInstruction).narrowLiteral
-
-    private fun firstParameterRegister(method: Method) = method.implementation!!.registerCount -
-        method.parameterTypes.sumOf { if (it.toString() == "J" || it.toString() == "D") 2L else 1L }.toInt()
 
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
     private fun List<Instruction>.isPadding(index: Int) = this[index].opcode == Opcode.NOP && getOrNull(index + 1)?.opcode in
