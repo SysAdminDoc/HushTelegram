@@ -1,7 +1,7 @@
 ![HushTelegram. Keep the chat. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.0.11-2AABEE" alt="Version 0.0.11">
+  <img src="https://img.shields.io/badge/version-0.0.12-2AABEE" alt="Version 0.0.12">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Telegram-12.10.6-2AABEE" alt="Telegram 12.10.6">
@@ -22,9 +22,9 @@
 
 HushTelegram is a Morphe patch bundle for Android that takes the sponsored messages out of Telegram and keeps a few things on your phone that Telegram would otherwise send home.
 
-The latest release is [v0.0.11](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.11), with 55 patches. They're built for Telegram 12.10.6 and the official beta 12.10.7, and on a signed-in phone Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
+The latest release is [v0.0.12](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.12), with 56 patches. They're built for Telegram 12.10.6 and the official beta 12.10.7, and on a signed-in phone Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
 
-v0.0.11 follows telegram.org's beta build 71239. Hide contacts on Telegram, Hide greeting stickers, Use system font, AMOLED black, Hide translate bar, Exact numbers, Reveal spoilers, Hide keyboard on scroll, Keep videos muted on volume keys, Swipe back on profiles, Hide phone number, Message times with seconds, Allow chat blur on slower phones, Play voice messages one at a time, Turn off haptic feedback, Turn off reaction effects, Hide folder tab counters, Hide sender names when forwarding, Voice messages in the music player, Silence people outside your contacts, Disable pull to archive, Start the camera on the rear lens, Hide gallery camera tile, Hide time on stickers, Ignore mentions in muted chats, Hide blocked users in groups, Hide Telegram Features and Invite Friends, Add Repeat to the message menu, Keep deleted messages and Ask before sending a sticker are new patches, and Disable pull to next channel gained a second switch for forum topics. Every new switch starts off. Local notification status now also shows Telegram's own answer when it registers your phone for push. Two optional patches take your own registered Telegram API credentials and Google Maps key when you patch.
+v0.0.12 is mostly about reading easier. Every patch description in Morphe Manager, every row in HushTelegram settings and every message the app shows is rewritten in plain English, and Expert mode groups the patches the way you'd look for them. Keep deleted messages now marks a message the moment it's deleted while the chat is open, and a new row clears what it kept. On the beta, Disable analytics also stops Firebase's crash and session reports, and the new Turn off beta debug logs switch (off by default) stops the beta from writing debug logs all the time. Two optional patches take your own registered Telegram API credentials and Google Maps key when you patch.
 
 
 [Add to Morphe](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) | [Download a release](https://github.com/SysAdminDoc/HushTelegram/releases/latest) | [Browse the patches](#patches)
@@ -42,7 +42,7 @@ This project has no connection to Telegram or to the Morphe project. Neither end
 
 ## Which Telegram
 
-HushTelegram patches the Telegram you download from [telegram.org](https://telegram.org/android), package `org.telegram.messenger.web`, version 12.10.6 (version code 71129). That APK carries every phone architecture, and it's the build each patch is checked against. Morphe Manager warns about other builds.
+HushTelegram patches telegram.org's own Telegram build, package `org.telegram.messenger.web`, version 12.10.6 (version code 71129). telegram.org's download has moved on to 13.0.0, so get 12.10.6 from [APKMirror's Telegram (Web version) page](https://www.apkmirror.com/apk/telegram-fz-llc/telegram-web-version/telegram-web-version-12-10-6-release/). That APK carries every phone architecture, and it's the build each patch is checked against. Morphe Manager warns about other builds.
 
 Since v0.0.8 it also targets the [official beta](https://telegram.org/dl/android/apk-public-beta), package `org.telegram.messenger.beta`, version 12.10.7 (version code 71239). Its vendor signer and native patch targets are checked on their own.
 
@@ -56,7 +56,7 @@ Changed Premium report builders are refused before the patch changes any code.
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 1.34.0 or newer.
 2. Add HushTelegram as a patch source: https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram
-3. Get Telegram 12.10.6 from [telegram.org/android](https://telegram.org/android) by tapping Download Telegram. Skip the Google Play link, which installs a different package. The download saves as plain `Telegram.apk`, with no version in its name.
+3. Get Telegram 12.10.6, version code 71129, from [APKMirror's Telegram (Web version) page](https://www.apkmirror.com/apk/telegram-fz-llc/telegram-web-version/telegram-web-version-12-10-6-release/) and pick the universal APK. telegram.org's own Download button now gives you 13.0.0. Skip the Google Play version too, since it's a different package.
 4. In Morphe Manager, pick that file, keep the default patch selection and patch. It holds every feature, so you don't need Expert mode.
 5. Only the two credential patches are left out. If you have your own Telegram API ID and hash or a Google Maps key, turn on **Settings → Advanced → Expert mode** in Morphe Manager, pick Use registered Telegram API credentials or Use registered Maps API key, and fill in its options before you patch.
 
@@ -75,7 +75,7 @@ The developer installation script requires the exact device serial, expected mod
 
 ## Patches
 
-The source catalog has 56 patches, with 54 selected by default. New since v0.0.11: Turn off beta debug logs. v0.0.11 has 55 patches, with 53 selected by default. Hide contacts on Telegram, Hide greeting stickers, Use system font, AMOLED black, Hide translate bar, Exact numbers, Reveal spoilers, Hide keyboard on scroll, Keep videos muted on volume keys, Swipe back on profiles, Hide phone number, Message times with seconds, Allow chat blur on slower phones, Play voice messages one at a time, Turn off haptic feedback, Turn off reaction effects, Hide folder tab counters, Hide sender names when forwarding, Voice messages in the music player, Silence people outside your contacts, Disable pull to archive, Start the camera on the rear lens, Hide gallery camera tile, Hide time on stickers, Ignore mentions in muted chats, Hide blocked users in groups, Hide Telegram Features and Invite Friends, Add Repeat to the message menu, Keep deleted messages and Ask before sending a sticker are new in v0.0.11, and so is the forum topic switch in Disable pull to next channel. Every patch but the two credential patches is selected by default, so you don't need Expert mode to find a feature. Each description below says which page of HushTelegram settings holds its switch and whether it starts on or off. The credential patches need your own values, which Morphe Manager only asks for in Expert mode. Expert mode groups the patches the way you'd look for them: Chats for the chat list, Conversations for what happens inside a chat, then Playback, Notifications, Theme, Interface and a few smaller groups.
+v0.0.12 has 56 patches, with 54 selected by default. Turn off beta debug logs is new in v0.0.12. Every patch but the two credential patches is selected by default, so you don't need Expert mode to find a feature. Each description below says which page of HushTelegram settings holds its switch and whether it starts on or off. The credential patches need your own values, which Morphe Manager only asks for in Expert mode. Expert mode groups the patches the way you'd look for them: Chats for the chat list, Conversations for what happens inside a chat, then Playback, Notifications, Theme, Interface and a few smaller groups.
 
 | Patch | What it does |
 |---|---|

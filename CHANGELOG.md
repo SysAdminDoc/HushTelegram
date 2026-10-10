@@ -2,7 +2,9 @@
 
 Every HushTelegram release, newest first.
 
-## Unreleased
+## 0.0.12 (2026-10-09)
+
+The sixth release, with 56 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.
 
 * **Telegram:** On Telegram Beta, Disable analytics now also turns off Firebase's crash and session reports. Telegram's own crash reporter setup, which handed Crashlytics your user ID and username and switched collection back on at every launch, no longer runs, and Crashlytics' own setting is saved off, so it stops collecting and sending from the next start. Session reports stop right away. Push notifications don't change, and the regular build has neither reporter. Turning the switch off brings both back at the next launch.
 
@@ -12,7 +14,7 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** Keep deleted messages now marks a message as deleted the moment someone deletes it while you have that chat open. Before, the label only showed up after you left the chat and came back.
 
-* **Telegram:** Added a signed-in stock beta audit on the S22, with a live search ad, native settings screenshots, local network observations and measured foreground/background activity. The reference now distinguishes contact sync from contact suggestions and records limits on encrypted traffic analysis.
+* **Telegram:** Contributors have a new audit of the stock beta, signed in on a real phone. It covers a live search ad, the app's own settings screens, what the app sends on the local network, and how busy it stays in the foreground and background. It also separates contact sync from contact suggestions and notes what you can't learn from encrypted traffic.
 
 * **Telegram:** Added an app audit for sponsored-message delivery, ad reporting, telemetry, contact sync and current patch opportunities on the pinned 12.10.6 APK.
 
