@@ -636,8 +636,9 @@ public class PatchFamilyTest {
         for (int i = 0; i < patches.length(); i++) {
             JSONObject patch = patches.getJSONObject(i);
             String name = patch.getString("name");
-            if ("Use registered Telegram API credentials".equals(name) || "Use registered Maps API key".equals(name)) {
-                assertFalse("patch-time credentials must be optional", patch.getBoolean("use"));
+            if ("Use registered Telegram API credentials".equals(name) || "Use registered Maps API key".equals(name)
+                    || "HushTelegram icon and name".equals(name)) {
+                assertFalse("patch-time choices must be optional", patch.getBoolean("use"));
                 JSONArray options = patch.getJSONArray("options");
                 Set<String> keys = new TreeSet<>();
                 for (int option = 0; option < options.length(); option++) {
@@ -648,7 +649,7 @@ public class PatchFamilyTest {
                 }
                 Set<String> expected = "Use registered Telegram API credentials".equals(name)
                         ? new TreeSet<>(Arrays.asList("apiId", "apiHash"))
-                        : Collections.singleton("apiKey");
+                        : Collections.singleton("Use registered Maps API key".equals(name) ? "apiKey" : "appName");
                 assertEquals(expected, keys);
                 assertEquals(expected.size(), options.length());
             } else listed.add(patch.getString("name"));

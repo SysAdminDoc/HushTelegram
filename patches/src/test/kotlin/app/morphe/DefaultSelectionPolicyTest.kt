@@ -24,6 +24,9 @@ class DefaultSelectionPolicyTest {
             "and Morphe Manager shows patch options in Expert mode, so selecting it for everyone would add nothing.",
         "Use registered Telegram API credentials" to "It swaps the API ID and hash Telegram signs in with for ones " +
             "you type into its patch options, which only Expert mode shows, and a wrong pair stops sign-in.",
+        "HushTelegram icon and name" to "It changes the home screen icon when the app is patched, which no switch in " +
+            "HushTelegram settings can turn back, and it has Morphe rebuild Telegram's resources, which a patch " +
+            "with the defaults never needs.",
     )
 
     private fun shippedPatches() = run {

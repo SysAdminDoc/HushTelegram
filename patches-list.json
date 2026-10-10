@@ -2115,6 +2115,70 @@
       "options": []
     },
     {
+      "name": "HushTelegram icon and name",
+      "description": "Gives your patched Telegram HushTelegram's own home screen icon, with a themed version on Android 13 and up, and can change the name under it. An alternate icon picked in Telegram's settings keeps its own look. It isn't selected by default. Turn on Expert mode in Morphe Manager to pick it and name the app. Only patching again without it puts Telegram's icon back.",
+      "category": "Interface",
+      "use": false,
+      "dependencies": [],
+      "compatiblePackages": {
+        "org.telegram.messenger.web": [
+          "13.0.1"
+        ],
+        "org.telegram.messenger.beta": [
+          "13.0.1"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.0.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71679
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram Beta",
+          "packageName": "org.telegram.messenger.beta",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.0.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71669
+              }
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "appName",
+          "title": "App name",
+          "description": "The name under the icon, up to 30 characters. Leave it empty to keep Telegram.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": null,
+          "values": null
+        }
+      ]
+    },
+    {
       "name": "HushTelegram settings",
       "description": "Adds a HushTelegram row to Telegram's Settings, where you turn features on or off, pause HushTelegram, save your choices and export a report. You can also press and hold Telegram's app icon. Works as soon as you patch it in, with no switch.",
       "category": "Settings",

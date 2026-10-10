@@ -16,7 +16,7 @@ Assert-Selection ($plans.Count -eq 80 -and @($plans.Id | Sort-Object -Unique).Co
 Assert-Selection (@($plans | Where-Object Failure).Count -eq 10) 'A malformed, incomplete or typed-input refusal is missing.'
 Assert-Selection (@($plans | Where-Object Id -CEQ 'maps-array-noop').Count -eq 1) 'The CLI typed-option no-op case is missing.'
 Assert-Selection (@($plans | Where-Object Default).Count -eq 1 -and $plans[0].Id -ceq 'default58') 'Defaults must be exercised through the actual CLI defaults.'
-Assert-Selection ($plans[0].Names.Count -eq 59 -and ($plans | Where-Object Id -CEQ 'full61').Names.Count -eq 61) 'Default and full catalog counts changed.'
+Assert-Selection ($plans[0].Names.Count -eq 59 -and ($plans | Where-Object Id -CEQ 'full62').Names.Count -eq 62) 'Default and full catalog counts changed.'
 $hostile = $catalog | ConvertTo-Json -Depth 20 | ConvertFrom-Json
 ($hostile.patches | Where-Object name -CEQ 'Use registered Telegram API credentials').name = 'private_catalog_name_canary_472009'
 $refusal = $null
