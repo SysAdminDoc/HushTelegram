@@ -8,8 +8,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -38,6 +40,7 @@ public class CommercePremiumStickersTest {
 
     private static final Object CONTROLLER = new Object();
     private static final Object MESSAGE = new Object();
+    private static final Object VIEW = new Object();
 
     @Before public void setUp() {
         Settings.HIDE_COMMERCE.resetToDefault();
@@ -119,6 +122,61 @@ public class CommercePremiumStickersTest {
         assertNoSuppression();
     }
 
+    @Test public void anAccountWithoutPremiumSeesOnlyEmojiItCanSend() {
+        List<Object> packs = new ArrayList<>(Arrays.asList("group", "free", "locked part", "featured", "locked featured"));
+        Commerce.dropLockedEmojiPacks(VIEW, packs);
+        assertEquals(Arrays.asList("group", "free", "featured"), packs);
+        String report = HookStatus.report().get(0);
+        assertTrue(report, report.contains("Premium emoji packs left out 1"));
+    }
+
+    @Test public void premiumOrAViewThatShowsEveryEmojiKeepsEveryPack() {
+        Reads.premium = true;
+        List<Object> packs = new ArrayList<>(Arrays.asList("free", "locked part"));
+        Commerce.dropLockedEmojiPacks(VIEW, packs);
+        assertEquals(Arrays.asList("free", "locked part"), packs);
+        assertNoSuppression();
+    }
+
+    @Test public void onlyFreePacksLeaveTheListAlone() {
+        List<Object> packs = new ArrayList<>(Arrays.asList("free", "featured"));
+        Commerce.dropLockedEmojiPacks(VIEW, packs);
+        assertEquals(Arrays.asList("free", "featured"), packs);
+        assertNoSuppression();
+    }
+
+    @Test public void theSwitchOffOrAPauseKeepsEveryEmojiPack() {
+        List<Object> packs = new ArrayList<>(Arrays.asList("free", "locked part"));
+        Settings.HIDE_COMMERCE.save(false);
+        Commerce.dropLockedEmojiPacks(VIEW, packs);
+        assertEquals(2, packs.size());
+        Settings.HIDE_COMMERCE.save(true);
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
+            PauseForTests.pause(reason);
+            Commerce.dropLockedEmojiPacks(VIEW, packs);
+            assertEquals(reason.name(), 2, packs.size());
+            PauseForTests.resume();
+        }
+        assertNoSuppression();
+    }
+
+    @Test public void nothingToSortOrAFailedPackReadKeepsEveryEmojiPack() {
+        List<Object> lone = new ArrayList<>(Arrays.asList("locked part"));
+        Commerce.dropLockedEmojiPacks(null, lone);
+        assertEquals(1, lone.size());
+        Commerce.dropLockedEmojiPacks(VIEW, null);
+        Commerce.dropLockedEmojiPacks(VIEW, new ArrayList<>());
+        // The locked pack was already found when the next read fails, and still stays.
+        List<Object> packs = new ArrayList<>(Arrays.asList("free", "locked part", "broken"));
+        Commerce.dropLockedEmojiPacks(VIEW, packs);
+        assertEquals(Arrays.asList("free", "locked part", "broken"), packs);
+        assertNoSuppression();
+        assertEquals(new HashSet<>(Arrays.asList(
+                        "a working 'Premium emoji pack read' hook (it threw java.lang.IllegalStateException)")),
+                new HashSet<>(HookStatus.missing(FamilyNames.HIDE_COMMERCE)));
+    }
+
     private void assertNoSuppression() {
         assertFalse(HookStatus.report().stream().anyMatch(row -> row.contains("Counted:")));
     }
@@ -146,6 +204,15 @@ public class CommercePremiumStickersTest {
 
         @Implementation protected static boolean messageAccountPremium(Object message) {
             return premium;
+        }
+
+        @Implementation protected static boolean emojiViewPremium(Object view) {
+            return premium;
+        }
+
+        @Implementation protected static boolean emojiPackFree(Object pack) {
+            if ("broken".equals(pack)) throw new IllegalStateException("pack");
+            return !String.valueOf(pack).startsWith("locked");
         }
     }
 }

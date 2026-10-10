@@ -262,6 +262,7 @@ public enum PatchFamily {
         COMMERCE_TRANSFER_SEND_GRAM(HIDE_COMMERCE, "commerceTransferSendGram", "Gram transfer Send Gram item"),
         COMMERCE_PREMIUM_STICKERS(HIDE_COMMERCE, "commercePremiumStickers", "Premium stickers in the keyboard and packs"),
         COMMERCE_PREMIUM_EFFECTS(HIDE_COMMERCE, "commercePremiumEffects", "Premium sticker effects"),
+        COMMERCE_PREMIUM_EMOJI_PACKS(HIDE_COMMERCE, "commercePremiumEmojiPacks", "Premium emoji packs in the emoji keyboard"),
         PROMOTIONAL_SUGGESTIONS(HIDE_PROMOTIONAL_BANNERS, "promotionalSuggestions", "promotional suggestions"),
         BIRTHDAY_GIFT_BANNER(HIDE_PROMOTIONAL_BANNERS, "birthdayGiftBanner", "birthday gift banner"),
         CACHED_PROXY_DIALOG(HIDE_SPONSORED_PROXY, "cachedProxyDialog", "cached proxy channel"),

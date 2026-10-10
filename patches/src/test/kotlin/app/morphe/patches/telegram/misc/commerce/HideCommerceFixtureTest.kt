@@ -143,7 +143,7 @@ class HideCommerceFixtureTest {
             val originals = plan.hooks.mapValues { (_, edits) -> ImmutableMethod.of(edits.first().method) }
             // The Premium sticker places are checked edit by edit in PremiumStickerFixtureTest.
             val stickers = context.resolvePremiumStickerHooks()
-            assertEquals("${build.name}: both Premium sticker targets", PremiumStickerTarget.entries.toSet(), stickers.keys)
+            assertEquals("${build.name}: every Premium sticker and emoji target", PremiumStickerTarget.entries.toSet(), stickers.keys)
             val changed = originals.values.map { it.definingClass to it.name }.toSet() +
                 stickers.values.flatten().map { it.method.definingClass to it.method.name }
             val untouched = hosts.flatMap { it.methods.toList() }.filter { (it.definingClass to it.name) !in changed }
@@ -627,7 +627,8 @@ class HideCommerceFixtureTest {
                 (refs.containsAll(SETTINGS_SALES) && AccessFlags.STATIC.isSet(method.accessFlags) &&
                     method.parameterTypes.map { it.toString() } == listOf(method.definingClass, "Ljava/util/ArrayList;")) ||
                 (refs.contains(JOIN) && refs.contains(UNMUTE)) ||
-                refs.contains(STICKER_TOOLTIP) || (refs.contains(PREMIUM_BLOCKED) && refs.contains(PREMIUM_DOCUMENT))
+                refs.contains(STICKER_TOOLTIP) || (refs.contains(PREMIUM_BLOCKED) && refs.contains(PREMIUM_DOCUMENT)) ||
+                (refs.contains(PREMIUM_EMOJI_PACK) && refs.contains(FREE_EMOJI))
         }
         return (anchors + FixtureDex.classes(build, setOf(TABS, CONTROLLER, USER_CONFIG)).values).distinctBy { it.type }
     }

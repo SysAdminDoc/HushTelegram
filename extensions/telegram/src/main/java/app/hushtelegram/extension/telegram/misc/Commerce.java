@@ -7,6 +7,7 @@ package app.hushtelegram.extension.telegram.misc;
 import android.util.Pair;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
@@ -163,6 +164,29 @@ public final class Commerce {
         return true;
     }
 
+    /**
+     * Handed the emoji keyboard's packs once Telegram has sorted them, before the tab strip and the
+     * rows read them. For an account without Premium, a pack whose emoji need Premium (or the
+     * Premium part Telegram split off a pack) is taken out, so the tab lists only emoji that can be
+     * sent. A view that shows every emoji without Premium, and an account with Premium, keep all.
+     */
+    public static void dropLockedEmojiPacks(Object view, List<?> packs) {
+        if (view == null || packs == null || packs.isEmpty() || !enabled()) return;
+        List<Object> locked = new ArrayList<>();
+        try {
+            if (emojiViewPremium(view)) return;
+            for (Object pack : packs) {
+                if (pack != null && !emojiPackFree(pack)) locked.add(pack);
+            }
+            if (locked.isEmpty()) return;
+            packs.removeAll(locked);
+        } catch (Throwable t) {
+            HookStatus.threw(FamilyNames.HIDE_COMMERCE, "Premium emoji pack read", t);
+            return;
+        }
+        HookStatus.counted(FamilyNames.HIDE_COMMERCE, "Premium emoji packs left out");
+    }
+
     private static boolean enabled() {
         HookStatus.invoked(FamilyNames.HIDE_COMMERCE);
         try {
@@ -200,6 +224,16 @@ public final class Commerce {
 
     /** Rewritten to read whether the MessageObject's account has Premium. */
     static boolean messageAccountPremium(Object message) {
+        return true;
+    }
+
+    /** Rewritten to read whether the emoji view's account has Premium or the view shows every emoji anyway. */
+    static boolean emojiViewPremium(Object view) {
+        return true;
+    }
+
+    /** Rewritten to read the emoji pack's free flag. */
+    static boolean emojiPackFree(Object pack) {
         return true;
     }
 }

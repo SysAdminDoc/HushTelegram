@@ -83,8 +83,8 @@ private val STORES = listOf("IPUT", "SPUT", "APUT").flatMap { kind ->
 val hideCommercePatch = bytecodePatch(
     name = PATCH,
     description = "Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram " +
-        "from the chat, profile and link menus, Gifts tabs on profiles, the Gift button in channels, and Premium stickers " +
-        "and their effects for an account without Premium, for a less cluttered app. On by default. Turn it off in " +
+        "from the chat, profile and link menus, Gifts tabs on profiles, the Gift button in channels, and Premium stickers, " +
+        "their effects and Premium emoji packs for an account without Premium, for a less cluttered app. On by default. Turn it off in " +
         "HushTelegram settings > Ads.",
     default = true,
 ) {
@@ -104,11 +104,7 @@ val hideCommercePatch = bytecodePatch(
             "const/16 v0, ${plan.giftTabId}\nreturn v0")
         if (plan.giftButtonIndex != null) writeStub(COMMERCE, "giftButtonIndex", 1,
             "const/16 v0, ${plan.giftButtonIndex}\nreturn v0")
-        // Both sticker targets ask premiumStickersBlocked; only the effect player reads a message.
-        val stubs = PREMIUM_STUBS.keys.filter { stub ->
-            stickers.isNotEmpty() && (stub in setOf("premiumBlocked", "premiumAccount") || PremiumStickerTarget.EFFECTS in stickers)
-        }
-        stubs.forEach { writeStub(COMMERCE, it, 2, PREMIUM_STUBS.getValue(it)) }
+        stickers.stubs.forEach { (stub, smali) -> writeStub(COMMERCE, stub, 2, smali) }
         // One list, so the patch refuses only when the build has none of them at all.
         handleTargets(PATCH, "sales presentation targets", CommerceTarget.entries + PremiumStickerTarget.entries) { target ->
             val edits = if (target is CommerceTarget) plan.hooks[target] else stickers[target as PremiumStickerTarget]
@@ -130,6 +126,7 @@ val hideCommercePatch = bytecodePatch(
                     CommerceTarget.TRANSFER_SEND_GRAM -> enableCapability("commerceTransferSendGram")
                     PremiumStickerTarget.STICKERS -> enableCapability("commercePremiumStickers")
                     PremiumStickerTarget.EFFECTS -> enableCapability("commercePremiumEffects")
+                    PremiumStickerTarget.EMOJI_PACKS -> enableCapability("commercePremiumEmojiPacks")
                 }
                 null
             }

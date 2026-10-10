@@ -22,6 +22,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.junit.Assert.assertEquals
@@ -30,14 +31,14 @@ import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File
 
-/** Premium stickers under Hide Premium, gifts and Stars, against both real builds. */
+/** Premium stickers and emoji packs under Hide Premium, gifts and Stars, against both real builds. */
 class PremiumStickerFixtureTest {
     @Test
     fun `the sticker filters and the keyboard ask Commerce and the effect player asks first`() {
         for (build in Fixtures.declaredBuilds()) {
             val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
             val plan = context.resolvePremiumStickerHooks()
-            assertEquals("${build.name}: both targets", PremiumStickerTarget.entries.toSet(), plan.keys)
+            assertEquals("${build.name}: every target", PremiumStickerTarget.entries.toSet(), plan.keys)
 
             val stickers = plan.getValue(PremiumStickerTarget.STICKERS)
             assertEquals("${build.name}: two filters and the keyboard pass", 3, stickers.size)
@@ -56,9 +57,12 @@ class PremiumStickerFixtureTest {
             assertEquals("${build.name}: the guard comes first", 0, player.index)
             assertEquals("${build.name}: one class plays effects and shows the tooltip", tooltip.method.definingClass, player.method.definingClass)
 
+            val emoji = plan.getValue(PremiumStickerTarget.EMOJI_PACKS).single()
+
             val swaps = stickers + tooltip
             val originals = swaps.associate { it.method.key() to ImmutableMethod.of(it.method) }
             val playerBefore = ImmutableMethod.of(player.method)
+            val sorterBefore = ImmutableMethod.of(emoji.method)
             val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
             // Every warning names the patch, so look for the sticker capabilities themselves.
             assertTrue("${build.name}: no Premium sticker warning $warnings",
@@ -106,8 +110,49 @@ class PremiumStickerFixtureTest {
             assertTrue("${build.name}: nothing jumps back into the guard",
                 (guard until after.size).none { from -> flow.normal[from].any { it < guard } })
 
+            // The emoji pass hands the view's cleared-and-refilled pack list to Commerce right before
+            // the tab strip's read, and every way out of its loops still runs through it.
+            val sorted = sorterBefore.instructions()
+            val handed = emoji.method.instructions()
+            val at = emoji.index
+            assertEquals("${build.name}: two instructions before the strip", sorted.size + 2, handed.size)
+            for (index in sorted.indices) {
+                assertEquals("${build.name}: the pack pass keeps $index", operation(sorted[index]),
+                    operation(handed[if (index < at) index else index + 2]))
+            }
+            assertTrue("${build.name}: the strip takes the packs two later", handed[at + 4].reference()!!.endsWith(EMOJI_PACKS))
+            val view = handed[at + 4].reference()!!.substringBefore("->")
+            val viewRegister = handed[at + 4].namedRegisters().single()
+            val borrowed = handed[at] as TwoRegisterInstruction
+            val clear = sorted.indexOfFirst { it.reference() == "Ljava/util/ArrayList;->clear()V" }
+            assertEquals(Opcode.IGET_OBJECT, handed[at].opcode)
+            assertEquals("${build.name}: the list the pass cleared is handed over", sorted[clear - 1].reference(), handed[at].reference())
+            assertTrue("${build.name}: the list is the view's", handed[at].reference()!!.startsWith("$view->"))
+            assertEquals("${build.name}: read from the view", viewRegister, borrowed.registerB)
+            assertEquals("$COMMERCE->dropLockedEmojiPacks(Ljava/lang/Object;Ljava/util/List;)V", handed[at + 1].reference())
+            assertEquals("${build.name}: the view and its packs", listOf(viewRegister, borrowed.registerA), handed[at + 1].namedRegisters())
+            assertEquals("${build.name}: the strip's read overwrites the borrowed register", borrowed.registerA,
+                (handed[at + 2] as TwoRegisterInstruction).registerA)
+            val sortedFlow = ControlFlow.of(sorterBefore).normal
+            val handedFlow = ControlFlow.of(emoji.method).normal
+            val into = sortedFlow.indices.filter { at in sortedFlow[it] }
+            assertTrue("${build.name}: the loops reach the strip", into.isNotEmpty())
+            for (from in into) {
+                assertTrue("${build.name}: $from reaches the hand-over", at in handedFlow[if (from < at) from else from + 2])
+            }
+            assertTrue("${build.name}: nothing skips the hand-over", handedFlow.indices.none { it != at + 1 && at + 2 in handedFlow[it] })
+
             for (target in PremiumStickerTarget.entries) assertFact(context, target.capability, 1)
             val stubs = context.mutableClassDefBy(COMMERCE).methods.associateBy { it.name }
+            val viewPremium = stubs.getValue("emojiViewPremium").instructions()
+            assertTrue(viewPremium.any { it.reference() == "Lorg/telegram/messenger/UserConfig;->isPremium()Z" })
+            assertEquals("${build.name}: the view's account and its every-emoji flag", listOf(Opcode.IGET, Opcode.IGET_BOOLEAN),
+                viewPremium.filter { it.reference()?.startsWith("$view->") == true }.map { it.opcode })
+            val free = stubs.getValue("emojiPackFree").instructions().single { it.opcode == Opcode.IGET_BOOLEAN }.reference()!!
+            assertTrue("${build.name}: the free flag is on the pack the pass builds", sorted.any {
+                it.opcode == Opcode.NEW_INSTANCE && it.reference() == free.substringBefore("->") })
+            assertTrue("${build.name}: a featured pack's free answer goes into it", sorted.indices.any {
+                sorted[it].opcode == Opcode.XOR_INT_2ADDR && sorted[it + 1].reference() == free })
             assertTrue(stubs.getValue("premiumBlocked").instructions().any { it.reference() == "$CONTROLLER->premiumFeaturesBlocked()Z" })
             assertTrue(stubs.getValue("premiumAccount").instructions().any { it.reference() == "Lorg/telegram/messenger/UserConfig;->isPremium()Z" })
             assertTrue(stubs.getValue("premiumSticker").instructions().any { it.reference() == "Lorg/telegram/messenger/MessageObject;->isPremiumSticker()Z" })
@@ -130,9 +175,30 @@ class PremiumStickerFixtureTest {
             assertTrue("${build.name}: $warnings", warnings.any { "commercePremiumStickers" in it })
             assertFact(context, "commercePremiumStickers", 0)
             assertFact(context, "commercePremiumEffects", 1)
+            assertFact(context, "commercePremiumEmojiPacks", 1)
             for ((method, before) in filters) {
                 assertEquals("${build.name}: ${method.name} is left as it was", before, method.instructions().map(::operation))
             }
+        }
+    }
+
+    @Test
+    fun `an emoji pass that no longer hands its packs to the strip is left out and the stickers still apply`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val sorter = context.resolvePremiumStickerHooks().getValue(PremiumStickerTarget.EMOJI_PACKS).single().method
+            val body = sorter.instructions()
+            val tabs = body.indexOfFirst { it.reference()?.endsWith(EMOJI_PACKS) == true }
+            sorter.replaceInstruction(tabs, "invoke-virtual {v${body[tabs].namedRegisters().single()}}, Ljava/lang/Object;->toString()Ljava/lang/String;")
+            val before = sorter.instructions().map(::operation)
+            val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
+            assertTrue("${build.name}: $warnings", warnings.any { "commercePremiumEmojiPacks" in it })
+            assertFact(context, "commercePremiumEmojiPacks", 0)
+            assertFact(context, "commercePremiumStickers", 1)
+            assertFact(context, "commercePremiumEffects", 1)
+            assertEquals("${build.name}: the pack pass is left as it was", before, sorter.instructions().map(::operation))
+            assertTrue("${build.name}: no emoji stubs without the pass", context.mutableClassDefBy(COMMERCE).methods
+                .single { it.name == "emojiPackFree" }.instructions().none { it.opcode == Opcode.IGET_BOOLEAN })
         }
     }
 
@@ -167,7 +233,8 @@ class PremiumStickerFixtureTest {
     private fun hosts(build: File): List<ClassDef> {
         val anchors = FixtureDex.classesWhere(build, { true }) { method ->
             val refs = method.instructions().mapNotNull { it.reference() }.toSet()
-            refs.contains(STICKER_TOOLTIP) || (refs.contains(PREMIUM_BLOCKED) && refs.contains(PREMIUM_DOCUMENT))
+            refs.contains(STICKER_TOOLTIP) || (refs.contains(PREMIUM_BLOCKED) && refs.contains(PREMIUM_DOCUMENT)) ||
+                (refs.contains(PREMIUM_EMOJI_PACK) && refs.contains(FREE_EMOJI))
         }
         return (anchors + FixtureDex.classes(build, setOf(CONTROLLER)).values).distinctBy { it.type }
     }

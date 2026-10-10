@@ -8,12 +8,15 @@ import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
+import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 
 private const val PATCH = "Hide Premium, gifts and Stars"
 internal const val STICKER_CONTROLLER = "Lorg/telegram/messenger/MessagesController;"
@@ -22,25 +25,37 @@ internal const val PREMIUM_DOCUMENT = "Lorg/telegram/messenger/MessageObject;->i
 internal const val PREMIUM_MESSAGE = "Lorg/telegram/messenger/MessageObject;->isPremiumSticker()Z"
 internal const val STICKER_TOOLTIP = "Lorg/telegram/messenger/R\$string;->PremiumStickerTooltip:I"
 internal const val TAP_HINT = "Lorg/telegram/messenger/R\$string;->EmojiInteractionTapHint:I"
+internal const val PREMIUM_EMOJI_PACK = "Lorg/telegram/messenger/MessageObject;->isPremiumEmojiPack(Lorg/telegram/tgnet/TLRPC\$TL_messages_stickerSet;)Z"
+internal const val FREE_EMOJI = "Lorg/telegram/messenger/MessageObject;->isFreeEmoji(Lorg/telegram/tgnet/TLRPC\$Document;)Z"
+internal const val EMOJI_PACKS = "->getEmojipacks()Ljava/util/ArrayList;"
 private const val FILTER = "filterPremiumStickers"
 private const val GET_MESSAGE = "->getMessageObject()Lorg/telegram/messenger/MessageObject;"
 private const val USER_CONFIG = "Lorg/telegram/messenger/UserConfig;"
 private const val ACCOUNT_CONFIG = "Lorg/telegram/messenger/BaseController;->getUserConfig()$USER_CONFIG"
+private const val ACCOUNT_INSTANCE = "$USER_CONFIG->getInstance(I)$USER_CONFIG"
 private const val IS_PREMIUM = "$USER_CONFIG->isPremium()Z"
 private const val ASK_BLOCKED = "$COMMERCE->premiumStickersBlocked(Ljava/lang/Object;)Z"
+private const val CLEAR = "Ljava/util/ArrayList;->clear()V"
 
 /**
- * Premium stickers for an account without Premium, under Hide Premium, gifts and Stars. Telegram
- * already knows how to leave them out: where Premium can't be bought, premiumFeaturesBlocked
- * answers yes and its sticker filters drop them. [STICKERS] asks Commerce instead at just those
- * places, and [EFFECTS] keeps a Premium sticker's full-screen effect and its upsell tooltip from
- * playing in a chat.
+ * Premium stickers and emoji for an account without Premium, under Hide Premium, gifts and Stars.
+ * Telegram already knows how to leave stickers out: where Premium can't be bought,
+ * premiumFeaturesBlocked answers yes and its sticker filters drop them. [STICKERS] asks Commerce
+ * instead at just those places, [EFFECTS] keeps a Premium sticker's full-screen effect and its
+ * upsell tooltip from playing in a chat, and [EMOJI_PACKS] takes the locked packs out of the emoji
+ * keyboard's tab.
  */
 internal enum class PremiumStickerTarget(val capability: String) {
-    STICKERS("commercePremiumStickers"), EFFECTS("commercePremiumEffects"),
+    STICKERS("commercePremiumStickers"), EFFECTS("commercePremiumEffects"), EMOJI_PACKS("commercePremiumEmojiPacks"),
 }
 
-/** The stubs Commerce's two questions read, written only for the targets that apply. */
+/** The edits for each target that applies, read as a map, and the Commerce stubs those targets read. */
+internal class PremiumStickerPlan(
+    edits: Map<PremiumStickerTarget, List<CommerceEdit>>,
+    val stubs: Map<String, String>,
+) : Map<PremiumStickerTarget, List<CommerceEdit>> by edits
+
+/** The stubs Commerce's two sticker questions read, written only for the targets that apply. */
 internal val PREMIUM_STUBS = mapOf(
     "premiumBlocked" to """
         check-cast p0, $STICKER_CONTROLLER
@@ -78,19 +93,36 @@ internal val PREMIUM_STUBS = mapOf(
  * of packs) and the keyboard pass that takes Premium stickers out of favorites and recents, each
  * gated on one premiumFeaturesBlocked. [PremiumStickerTarget.EFFECTS]: the effect player's class,
  * found by the tooltip it shows a person without Premium, and its handler that plays a sticker's
- * effect, which a chat calls when the sticker scrolls into view and when it's tapped. A target is
- * left out whole when any of its places is missing; two candidates for one place refuse.
+ * effect, which a chat calls when the sticker scrolls into view and when it's tapped.
+ * [PremiumStickerTarget.EMOJI_PACKS]: the emoji keyboard's pass that sorts installed and featured
+ * emoji packs, splitting a Premium pack's free emoji from the rest, and hands them to the tab
+ * strip. A target is left out whole when any of its places is missing; two candidates for one
+ * place refuse.
  */
-internal fun BytecodePatchContext.resolvePremiumStickerHooks(): Map<PremiumStickerTarget, List<CommerceEdit>> {
+internal fun BytecodePatchContext.resolvePremiumStickerHooks(): PremiumStickerPlan {
     val methods = mutableListOf<Method>()
     classDefForEach { if (!it.type.startsWith("Lapp/hushtelegram/extension/")) methods += it.methods }
     fun mutable(method: Method) = mutableClassDefBy(method.definingClass).methods.single { it.sameSignature(method) }
     val hooks = mutableMapOf<PremiumStickerTarget, List<CommerceEdit>>()
+    val stubs = mutableMapOf<String, String>()
+
+    val sorter = methods.filter { method ->
+        !AccessFlags.STATIC.isSet(method.accessFlags) && method.hasShape(listOf("Z"), "V") &&
+            method.instructions().let { body ->
+                body.any { it.reference() == PREMIUM_EMOJI_PACK } && body.any { it.reference() == FREE_EMOJI } &&
+                    body.any { it.reference()?.endsWith(EMOJI_PACKS) == true }
+            }
+    }.unique("emoji keyboard's pack pass")
+    if (sorter != null) {
+        val (edit, reads) = emojiEdit(mutable(sorter))
+        hooks[PremiumStickerTarget.EMOJI_PACKS] = listOf(edit)
+        stubs += reads
+    }
 
     val blocked = methods.singleOrNull { it.definingClass == STICKER_CONTROLLER && it.name == "premiumFeaturesBlocked" }
     // The stubs read the account the same way Telegram's own answer does.
     val answer = blocked?.instructions()?.mapNotNull { it.reference() }.orEmpty()
-    if (blocked == null || ACCOUNT_CONFIG !in answer || IS_PREMIUM !in answer) return hooks
+    if (blocked == null || ACCOUNT_CONFIG !in answer || IS_PREMIUM !in answer) return PremiumStickerPlan(hooks, stubs)
 
     val filters = methods.filter { it.definingClass == STICKER_CONTROLLER && it.name == FILTER }
     shape(filters.size <= 2, "more than two Premium sticker filters (${filters.size})")
@@ -115,7 +147,12 @@ internal fun BytecodePatchContext.resolvePremiumStickerHooks(): Map<PremiumStick
         }.unique("sticker effect player")
         if (player != null) hooks[PremiumStickerTarget.EFFECTS] = listOf(blockedEdit(mutable(tooltip)), effectEdit(mutable(player)))
     }
-    return hooks
+    // Both sticker targets ask premiumStickersBlocked; only the effect player reads a message.
+    val sticker = setOf("premiumBlocked", "premiumAccount")
+    PREMIUM_STUBS.filterKeys { stub ->
+        (PremiumStickerTarget.STICKERS in hooks && stub in sticker) || PremiumStickerTarget.EFFECTS in hooks
+    }.forEach { (stub, smali) -> stubs[stub] = smali }
+    return PremiumStickerPlan(hooks, stubs)
 }
 
 /**
@@ -159,7 +196,84 @@ private fun effectEdit(method: MutableMethod): CommerceEdit {
     """)
 }
 
+/**
+ * Where the emoji keyboard's pack pass hands its sorted packs to the tab strip. Every way out of
+ * its sorting loops reaches the read of the strip's field, so the packs go to Commerce right
+ * before it, and the strip, the rows and the taps that index into the list all see what's left.
+ * The stubs read the view's account, its "every emoji without Premium" flag and a pack's free flag
+ * through the same fields the pass itself reads and writes.
+ */
+private fun emojiEdit(method: MutableMethod): Pair<CommerceEdit, Map<String, String>> {
+    val body = method.instructions()
+    val tabs = body.indices.filter { body[it].reference()?.endsWith(EMOJI_PACKS) == true }.singleOrNull()
+        ?: throw PatchException("$PATCH: the emoji pack pass no longer hands its packs to the tab strip once (before editing)")
+    val view = body[tabs].owner()
+    val viewRegister = body[tabs].namedRegisters().single()
+    val at = tabs - 2
+    val strip = body.getOrNull(at) as? TwoRegisterInstruction
+    shape(strip != null && body[at].opcode == Opcode.IGET_OBJECT && body[at].owner() == view && strip.registerB == viewRegister &&
+        body[at + 1].opcode == Opcode.IF_EQZ && body[at + 1].namedRegisters() == listOf(strip.registerA),
+        "the emoji tab strip isn't read right before it takes the packs")
+    val flow = ControlFlow.of(method).normal
+    shape(flow.indices.none { it != at && at + 1 in flow[it] } && flow.indices.none { it != at + 1 && tabs in flow[it] },
+        "something jumps past the emoji tab strip's read")
+
+    val clear = body.indexOfFirst { it.reference() == CLEAR }
+    val list = body.getOrNull(clear - 1) as? TwoRegisterInstruction
+    shape(list != null && body[clear - 1].opcode == Opcode.IGET_OBJECT && body[clear - 1].owner() == view &&
+        body[clear].namedRegisters() == listOf(list.registerA),
+        "the emoji pack pass no longer starts by clearing the view's pack list")
+
+    val premium = body.indices.filter { body[it].reference() == IS_PREMIUM }.singleOrNull() ?: -1
+    shape(premium >= 2 && body[premium - 2].reference() == ACCOUNT_INSTANCE && body.getOrNull(premium + 1)?.opcode == Opcode.MOVE_RESULT,
+        "the emoji pack pass no longer asks once whether the account has Premium")
+    val account = body.filter { it.opcode == Opcode.IGET && it.owner() == view }.singleOrNull()
+    shape(account != null && (account as TwoRegisterInstruction).registerA == body[premium - 2].namedRegisters().single(),
+        "the emoji pack pass no longer reads its view's account once")
+    val answer = (body[premium + 1] as OneRegisterInstruction).registerA
+    val allow = (premium + 2 until minOf(premium + 8, body.size)).firstOrNull { body[it].opcode == Opcode.IGET_BOOLEAN }
+    shape(allow != null && body[allow].owner() == view && (body[allow] as TwoRegisterInstruction).registerA == answer &&
+        (premium + 2 until allow).any { body[it].opcode == Opcode.IF_NEZ && body[it].namedRegisters() == listOf(answer) },
+        "the emoji pack pass no longer lets its view show every emoji without Premium")
+
+    // A featured pack is free when none of its emoji needs Premium (the one xor in the pass); an
+    // installed pack that isn't a Premium pack gets the same flag set first after the question.
+    val xor = body.indices.filter { body[it].opcode == Opcode.XOR_INT_2ADDR }.singleOrNull()
+    val free = xor?.let { body.getOrNull(it + 1) }
+    val ask = body.indexOfFirst { it.reference() == PREMIUM_EMOJI_PACK }
+    shape(free?.opcode == Opcode.IPUT_BOOLEAN &&
+        body.drop(ask).firstOrNull { it.opcode == Opcode.IPUT_BOOLEAN }?.reference() == free?.reference(),
+        "the emoji pack pass no longer marks a pack free the same way for installed and featured packs")
+    val freeField = free!!.reference()!!
+
+    val reads = mapOf(
+        "emojiViewPremium" to """
+            check-cast p0, $view
+            iget v0, p0, ${account!!.reference()}
+            invoke-static {v0}, $ACCOUNT_INSTANCE
+            move-result-object v0
+            invoke-virtual {v0}, $IS_PREMIUM
+            move-result v0
+            if-nez v0, :premium
+            iget-boolean v0, p0, ${body[allow!!].reference()}
+            :premium
+            return v0
+        """,
+        "emojiPackFree" to """
+            check-cast p0, ${free.owner()}
+            iget-boolean v0, p0, $freeField
+            return v0
+        """,
+    )
+    // The strip's register is written by the read the code goes in front of, so it holds nothing yet.
+    return CommerceEdit(method, at, """
+        iget-object v${strip!!.registerA}, v$viewRegister, ${body[clear - 1].reference()}
+        invoke-static {v$viewRegister, v${strip.registerA}}, $COMMERCE->dropLockedEmojiPacks(Ljava/lang/Object;Ljava/util/List;)V
+    """) to reads
+}
+
 private fun Instruction.reference() = (this as? ReferenceInstruction)?.reference?.toString()
+private fun Instruction.owner() = reference()?.substringBefore("->")
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Method.hasShape(parameters: List<String>, result: String) =
     parameterTypes.map { it.toString() } == parameters && returnType == result

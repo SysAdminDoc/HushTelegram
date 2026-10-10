@@ -330,7 +330,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.HIDE_COMMERCE).addPreference(mark(toggle(context, Settings.HIDE_COMMERCE, L10n.t("Hide Premium, gifts and Stars"),
                     PatchFamily.HIDE_COMMERCE.coverageSummary(L10n.t("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, "
                             + "Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, the Gift button in channels, "
-                            + "and Premium stickers and their effects if you don't have Premium."))),
+                            + "and Premium stickers, their effects and Premium emoji packs if you don't have Premium."))),
                     SettingsIcons.BLOCK));
         }
         if (build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS)) {

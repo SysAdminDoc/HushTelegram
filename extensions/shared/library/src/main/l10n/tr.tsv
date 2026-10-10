@@ -183,7 +183,7 @@ call debug reports	arama hata ayıklama raporları
 call log file uploads	arama günlük dosyası yüklemeleri
 call log reports	arama günlük raporları
 Hide Premium, gifts and Stars	Premium, hediyeler ve Stars'ı gizle
-Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, the Gift button in channels, and Premium stickers and their effects if you don't have Premium.	Premium, Stars, My Grams, Cüzdan, Business ve Hediye Gönder'i Ayarlar'dan, Cüzdan ve Gram Gönder'i sohbet, profil ve bağlantı menülerinden, profillerdeki Hediyeler sekmelerini, kanallardaki Hediye düğmesini ve Premium'unuz yoksa Premium çıkartmaları ile efektlerini kaldırır.
+Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, the Gift button in channels, and Premium stickers, their effects and Premium emoji packs if you don't have Premium.	Premium, Stars, My Grams, Cüzdan, Business ve Hediye Gönder'i Ayarlar'dan, Cüzdan ve Gram Gönder'i sohbet, profil ve bağlantı menülerinden, profillerdeki Hediyeler sekmelerini, kanallardaki Hediye düğmesini ve Premium'unuz yoksa Premium çıkartmaları, efektlerini ve Premium emoji paketlerini kaldırır.
 Settings sales rows	Ayarlar'daki satış seçenekleri
 profile Gifts tabs	profil Hediyeler sekmeleri
 channel Gift button	kanal Hediye düğmesi
@@ -194,6 +194,7 @@ TON link Send Gram item	TON bağlantısındaki Gram Gönder öğesi
 Gram transfer Send Gram item	Gram transferindeki Gram Gönder öğesi
 Premium stickers in the keyboard and packs	klavye ve paketlerdeki Premium çıkartmalar
 Premium sticker effects	Premium çıkartma efektleri
+Premium emoji packs in the emoji keyboard	emoji klavyesindeki Premium emoji paketleri
 Hide promotional banners	Tanıtım afişlerini gizle
 Hides the Premium, birthday and low Stars balance banners above your chat list. Account security notices and other suggestions still show.	Sohbet listenizin üstündeki Premium, doğum günü ve düşük Stars bakiyesi afişlerini gizler. Hesap güvenliği bildirimleri ve diğer öneriler görünmeye devam eder.
 promotional suggestions	tanıtım önerileri

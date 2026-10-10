@@ -147,7 +147,7 @@ class NativeSettingsFixtureTest {
             for ((name, expected) in mapOf("hideCommerce" to 1, "commerceSettingsRows" to 1,
                 "commerceProfileGifts" to 0, "commerceChannelGift" to 0, "commerceAttachWallet" to 0, "commerceMenuWallet" to 0,
                 "commerceProfileSendGram" to 0, "commerceAddressSendGram" to 0, "commerceTransferSendGram" to 0,
-                "commercePremiumStickers" to 0, "commercePremiumEffects" to 0)) {
+                "commercePremiumStickers" to 0, "commercePremiumEffects" to 0, "commercePremiumEmojiPacks" to 0)) {
                 val flag = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }
                 assertEquals(expected, (flag.body().first() as NarrowLiteralInstruction).narrowLiteral)
             }
