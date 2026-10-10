@@ -18,8 +18,9 @@
       preflight  What a release gate would otherwise only reach late, in about five minutes: every
                  tracked PowerShell script parses, the release text and stage order tests, the facts
                  check, the patch tests without the fixture suite, and the translation tests. Then
-                 push with BUILD_QUEUE_PRIORITY=release, so the full pre-push gate runs ahead of
-                 everyday builds.
+                 push with HUSHTELEGRAM_SKIP_PRE_PUSH=1: the build stage runs the same full suite
+                 and applies every patch to every fixture on the pushed commit, so the pre-push gate
+                 would only run it all twice.
       build      From the pushed, clean release commit: the full test and lint run with every fixture
                  required, the patch list and bundle (classes.dex in it, its Timestamp the commit's
                  time), verify-all-patches.ps1 on every declared Telegram build (one target per
@@ -329,8 +330,8 @@ switch ($Stage) {
             Write-Warning "preflight took $minutes minutes, over its five-minute budget. Look for a slow step before the next release."
         }
         Save-StageRecord 'preflight' @{ minutes = $minutes }
-        Write-Step ("preflight passed in $minutes minutes. Push with BUILD_QUEUE_PRIORITY=release so the full gate runs " +
-            'at release priority, then run -Stage build.')
+        Write-Step ("preflight passed in $minutes minutes. Push with HUSHTELEGRAM_SKIP_PRE_PUSH=1, since -Stage build runs " +
+            'the full suite and every fixture apply on the pushed commit, then run -Stage build.')
     }
     'build' {
         Assert-NotPublished
