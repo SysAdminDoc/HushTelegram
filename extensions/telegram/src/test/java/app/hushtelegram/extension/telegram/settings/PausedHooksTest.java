@@ -294,6 +294,9 @@ public class PausedHooksTest {
         // A sticker skips its time.
         probes.put(PatchFamily.HIDE_STICKER_TIME, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.StickerTimeForTests.on()));
+        // A sticker takes the picked size.
+        probes.put(PatchFamily.CHANGE_STICKER_SIZE, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.StickerSizeForTests.on()));
         // A mention in a muted chat stays quiet.
         probes.put(PatchFamily.IGNORE_MUTED_MENTIONS, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.MutedMentionsForTests.on()));

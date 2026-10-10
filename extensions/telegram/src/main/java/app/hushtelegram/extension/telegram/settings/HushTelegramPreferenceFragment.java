@@ -50,6 +50,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -73,6 +74,7 @@ import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
 import app.hushtelegram.extension.telegram.misc.KeepDeleted;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
+import app.hushtelegram.extension.telegram.misc.StickerSize;
 
 /**
  * The preference list, built in code rather than from an XML resource so the bundle adds no
@@ -97,6 +99,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String SUPPORTED_LINKS = "action_supported_links";
     /** The Clear kept messages row's key, which stores nothing. */
     static final String CLEAR_KEPT = "action_clear_kept_messages";
+    /** The Sticker size row's key. The size itself is saved under {@link Settings#STICKER_SIZE}. */
+    static final String STICKER_SIZE_ROW = "action_sticker_size";
 
     /** Thrown by the next initialize() and then cleared: how a test reaches the recovery page. */
     static volatile RuntimeException failNextInitialization;
@@ -225,6 +229,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (groups != null) groups.setSummary(FilterEditor.summary(Settings.MESSAGE_FILTERS_GROUPS));
         Preference channels = findPreference(FilterEditor.CHANNELS);
         if (channels != null) channels.setSummary(FilterEditor.summary(Settings.MESSAGE_FILTERS_CHANNELS));
+        Preference size = findPreference(STICKER_SIZE_ROW);
+        if (size != null) size.setSummary(stickerSizeSummary());
     }
 
     @Override
@@ -529,6 +535,14 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.HIDE_STICKER_TIME.coverageSummary(L10n.t("Stickers and big animated emoji no longer show the time and read checks in their"
                             + " corner. Other messages keep their time."))),
                     SettingsIcons.CHAT));
+        }
+        if (build.contains(PatchFamily.CHANGE_STICKER_SIZE)) {
+            PreferenceCategory page = on(pages, PatchFamily.CHANGE_STICKER_SIZE);
+            page.addPreference(mark(toggle(context, Settings.CHANGE_STICKER_SIZE, L10n.t("Change sticker size"),
+                    PatchFamily.CHANGE_STICKER_SIZE.coverageSummary(L10n.t("Stickers in chats show at the size you pick below. "
+                            + "Animated emoji and dice keep Telegram's size. A chat picks this up the next time you open it."))),
+                    SettingsIcons.CHAT));
+            page.addPreference(mark(stickerSizeRow(context), SettingsIcons.CHAT));
         }
         if (build.contains(PatchFamily.HIDE_CHANNEL_BUTTONS)) {
             on(pages, PatchFamily.HIDE_CHANNEL_BUTTONS).addPreference(mark(toggle(context, Settings.HIDE_CHANNEL_BUTTONS, L10n.t("Hide channel bar buttons"),
@@ -954,6 +968,51 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             return true;
         });
         return row;
+    }
+
+    /** The size stickers show at: the row says the one picked, and a tap lists the others. */
+    private Preference stickerSizeRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(STICKER_SIZE_ROW);
+        row.setTitle(L10n.t("Sticker size"));
+        row.setPersistent(false);
+        row.setSummary(stickerSizeSummary());
+        row.setOnPreferenceClickListener(p -> {
+            showStickerSizes(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    /** The choices with the saved one checked. A tap saves it at once and closes the list. */
+    void showStickerSizes(Context context, Preference row) {
+        int saved = StickerSize.percent(Settings.STICKER_SIZE.savedValue());
+        CharSequence[] labels = new CharSequence[StickerSize.CHOICES.length];
+        int checked = -1;
+        for (int i = 0; i < labels.length; i++) {
+            labels[i] = percent(StickerSize.CHOICES[i]);
+            if (StickerSize.CHOICES[i] == saved) checked = i;
+        }
+        show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Sticker size"))
+                .setSingleChoiceItems(labels, checked, (dialog, which) -> {
+                    if (Settings.STICKER_SIZE.save(StickerSize.CHOICES[which])) {
+                        row.setSummary(stickerSizeSummary());
+                    } else {
+                        Utils.showToastLong(L10n.t("Couldn't save the size. Try again in a moment."));
+                    }
+                    dialog.dismiss();
+                })
+                .setNegativeButton(L10n.t("Cancel"), null));
+    }
+
+    static String stickerSizeSummary() {
+        return L10n.f("%1$s of Telegram's size", percent(StickerSize.percent(Settings.STICKER_SIZE.savedValue())));
+    }
+
+    /** A percent the way this language writes one. */
+    private static String percent(int value) {
+        return NumberFormat.getPercentInstance(L10n.locale()).format(value / 100.0);
     }
 
     /** One list of message filters: the row says how many it holds, and a tap opens the list to edit. */

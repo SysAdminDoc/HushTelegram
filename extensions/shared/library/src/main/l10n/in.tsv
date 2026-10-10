@@ -445,3 +445,10 @@ Couldn't save the filters. Try again in a moment.	Filter tidak dapat disimpan. C
 Filters saved.	Filter disimpan.
 %1$d list of message filters will change.	%1$d daftar filter pesan akan berubah.
 %1$d lists of message filters will change.	%1$d daftar filter pesan akan berubah.
+# context: Change sticker size. The person picks a size for stickers in chats as a percent of Telegram's own size (50%, 75%, 125% or 150%), from a list that opens when they tap the Sticker size row. %1$s is that percent, already written the way the language writes one, for example 75%.
+Change sticker size	Ubah ukuran stiker
+Stickers in chats show at the size you pick below. Animated emoji and dice keep Telegram's size. A chat picks this up the next time you open it.	Stiker di obrolan ditampilkan dengan ukuran yang Anda pilih di bawah. Emoji animasi dan dadu tetap memakai ukuran Telegram. Obrolan menerapkannya saat Anda membukanya lagi.
+Sticker size	Ukuran stiker
+%1$s of Telegram's size	%1$s dari ukuran Telegram
+Couldn't save the size. Try again in a moment.	Ukuran tidak dapat disimpan. Coba lagi sebentar lagi.
+The sticker size will change.	Ukuran stiker akan berubah.

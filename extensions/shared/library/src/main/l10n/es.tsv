@@ -445,3 +445,10 @@ Couldn't save the filters. Try again in a moment.	No se pudieron guardar los fil
 Filters saved.	Filtros guardados.
 %1$d list of message filters will change.	Cambiará %1$d lista de filtros de mensajes.
 %1$d lists of message filters will change.	Cambiarán %1$d listas de filtros de mensajes.
+# context: Change sticker size. The person picks a size for stickers in chats as a percent of Telegram's own size (50%, 75%, 125% or 150%), from a list that opens when they tap the Sticker size row. %1$s is that percent, already written the way the language writes one, for example 75%.
+Change sticker size	Cambiar el tamaño de los stickers
+Stickers in chats show at the size you pick below. Animated emoji and dice keep Telegram's size. A chat picks this up the next time you open it.	Los stickers en los chats se muestran al tamaño que elijas abajo. Los emojis animados y los dados mantienen el tamaño de Telegram. Un chat lo aplica la próxima vez que lo abras.
+Sticker size	Tamaño de los stickers
+%1$s of Telegram's size	%1$s del tamaño de Telegram
+Couldn't save the size. Try again in a moment.	No se pudo guardar el tamaño. Inténtalo de nuevo en un momento.
+The sticker size will change.	Cambiará el tamaño de los stickers.

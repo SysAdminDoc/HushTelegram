@@ -445,3 +445,10 @@ Couldn't save the filters. Try again in a moment.	Filtreler kaydedilemedi. Biraz
 Filters saved.	Filtreler kaydedildi.
 %1$d list of message filters will change.	%1$d mesaj filtresi listesi değişecek.
 %1$d lists of message filters will change.	%1$d mesaj filtresi listesi değişecek.
+# context: Change sticker size. The person picks a size for stickers in chats as a percent of Telegram's own size (50%, 75%, 125% or 150%), from a list that opens when they tap the Sticker size row. %1$s is that percent, already written the way the language writes one, for example 75%.
+Change sticker size	Çıkartma boyutunu değiştir
+Stickers in chats show at the size you pick below. Animated emoji and dice keep Telegram's size. A chat picks this up the next time you open it.	Sohbetlerdeki çıkartmalar aşağıda seçtiğiniz boyutta gösterilir. Hareketli emojiler ve zarlar Telegram'ın boyutunu korur. Bir sohbet bunu bir sonraki açışınızda uygular.
+Sticker size	Çıkartma boyutu
+%1$s of Telegram's size	Telegram boyutunun %1$s kadarı
+Couldn't save the size. Try again in a moment.	Boyut kaydedilemedi. Birazdan tekrar deneyin.
+The sticker size will change.	Çıkartma boyutu değişecek.

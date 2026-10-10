@@ -116,6 +116,7 @@ body:
         - Start the camera on the rear lens
         - Hide gallery camera tile
         - Hide time on stickers
+        - Change sticker size
         - Ignore mentions in muted chats
         - Hide blocked users in groups
         - Hide Telegram Features and Invite Friends

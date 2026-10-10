@@ -89,6 +89,7 @@ public final class SettingsStatus {
     public static boolean ignoreMutedMentions() { return false; }
     public static boolean hideBlockedInGroups() { return false; }
     public static boolean hideByKeyword() { return false; }
+    public static boolean stickerSize() { return false; }
     public static boolean hideFeaturesAndInvite() { return false; }
     public static boolean messageMenuRepeat() { return false; }
     public static boolean keepDeleted() { return false; }

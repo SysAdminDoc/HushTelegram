@@ -17,6 +17,7 @@ import static java.lang.Boolean.TRUE;
 
 import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
+import app.hushtelegram.extension.shared.settings.IntegerSetting;
 import app.hushtelegram.extension.shared.settings.StringSetting;
 
 /**
@@ -251,6 +252,17 @@ public class Settings extends BaseSettings {
      */
     public static final BooleanSetting HIDE_STICKER_TIME =
             new BooleanSetting("hushtelegram_hide_sticker_time", FALSE);
+
+    /**
+     * Stickers in chats show at {@link #STICKER_SIZE} percent of Telegram's size
+     * ({@link app.hushtelegram.extension.telegram.misc.StickerSize}).
+     */
+    public static final BooleanSetting CHANGE_STICKER_SIZE =
+            new BooleanSetting("hushtelegram_change_sticker_size", FALSE);
+
+    /** The picked sticker size, a percent of Telegram's: one of StickerSize.CHOICES. */
+    public static final IntegerSetting STICKER_SIZE =
+            new IntegerSetting("hushtelegram_sticker_size", 75).withRange(50, 150);
 
     /**
      * A mention or a reply to you in a muted group or channel stays as quiet as the rest of the chat.

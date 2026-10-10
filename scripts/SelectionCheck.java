@@ -298,6 +298,7 @@ public final class SelectionCheck {
         hook(calls, flags, "rearCameraFirst", "misc/RearCamera", "front");
         hook(calls, flags, "hideGalleryCameraTile", "misc/GalleryCameraTile", "tile");
         hook(calls, flags, "hideStickerTime", "misc/StickerTime", "hidden");
+        hook(calls, flags, "stickerSize", "misc/StickerSize", "size");
         hook(calls, flags, "ignoreMutedMentions", "misc/MutedMentions", "notifyDialog");
         hook(calls, flags, "hideBlockedInGroups", "misc/BlockedSenders", "type");
         hook(calls, flags, "hideFeaturesAndInvite", "misc/FeaturesInvite", "addFeaturesRow");

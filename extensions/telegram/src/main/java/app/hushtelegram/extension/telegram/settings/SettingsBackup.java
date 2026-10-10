@@ -40,10 +40,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
+import app.hushtelegram.extension.shared.settings.IntegerSetting;
 import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.SettingsJson;
 import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
+import app.hushtelegram.extension.telegram.misc.StickerSize;
 
 /**
  * HushTelegram's switches as a file, and back.
@@ -55,8 +57,8 @@ import app.hushtelegram.extension.telegram.misc.MessageFilters;
  * <p>Only the switches in {@link #ALLOWLIST} go out or come in. Pause, safe mode, the debug
  * settings, the app language and the counters HushTelegram keeps for itself stay out, and so do
  * the log, the diagnostic data and anything about the person or the phone: a file is a format
- * name, a version number, one true or false per switch and the message filters the person wrote,
- * one list of lines for groups and one for channels. An import applies what it read in one
+ * name, a version number, one true or false per switch, the sticker size the person picked and
+ * the message filters they wrote, one list of lines for groups and one for channels. An import applies what it read in one
  * preference commit. A file that is too large, isn't JSON, names something twice, holds a value of
  * the wrong type or comes from a newer version changes nothing.
  * <p>The release check stays out of the file: it puts the phone online, so it's switched on
@@ -121,6 +123,7 @@ public final class SettingsBackup {
             Settings.REAR_CAMERA_FIRST,
             Settings.HIDE_GALLERY_CAMERA_TILE,
             Settings.HIDE_STICKER_TIME,
+            Settings.CHANGE_STICKER_SIZE,
             Settings.IGNORE_MUTED_MENTIONS,
             Settings.HIDE_BLOCKED_IN_GROUPS,
             Settings.HIDE_BY_KEYWORD,
@@ -156,6 +159,12 @@ public final class SettingsBackup {
             Settings.MESSAGE_FILTERS_CHANNELS));
 
     /**
+     * The numbers a file carries, each one of a few choices: today the sticker size. A build from
+     * before them counts the name as unknown and leaves it out.
+     */
+    static final List<IntegerSetting> NUMBERS = Collections.singletonList(Settings.STICKER_SIZE);
+
+    /**
      * Bounds for the parser, well past anything this class writes, so a file built to be
      * expensive to read is refused before it is.
      */
@@ -185,7 +194,10 @@ public final class SettingsBackup {
         FORMAT,
         /** A settings file from a newer HushTelegram, in a shape this build doesn't know. */
         SCHEMA,
-        /** A switch whose value isn't true or false, or a filter list that isn't a short list of short lines. */
+        /**
+         * A switch whose value isn't true or false, a size that isn't one of its choices, or a
+         * filter list that isn't a short list of short lines.
+         */
         VALUE,
         /** The file couldn't be opened or read to the end. */
         UNREADABLE
@@ -215,18 +227,23 @@ public final class SettingsBackup {
     public static final class Snapshot {
         private static final String SWITCHES = "switches";
         private static final String LISTS = "lists";
+        private static final String NUMBER_VALUES = "numbers";
         private static final String UNKNOWN = "unknown";
 
         /** In {@link #ALLOWLIST} order, and only the switches the file named. */
         final Map<BooleanSetting, Boolean> values;
         /** In {@link #FILTER_LISTS} order, each one's lines as they're saved, and only the lists the file named. */
         final Map<StringSetting, String> lists;
+        /** In {@link #NUMBERS} order, and only the numbers the file named. */
+        final Map<IntegerSetting, Integer> numbers;
         /** Names the file holds that aren't settings this build knows. They're left out. */
         final int unknown;
 
-        Snapshot(Map<BooleanSetting, Boolean> values, Map<StringSetting, String> lists, int unknown) {
+        Snapshot(Map<BooleanSetting, Boolean> values, Map<StringSetting, String> lists,
+                 Map<IntegerSetting, Integer> numbers, int unknown) {
             this.values = Collections.unmodifiableMap(values);
             this.lists = Collections.unmodifiableMap(lists);
+            this.numbers = Collections.unmodifiableMap(numbers);
             this.unknown = unknown;
         }
 
@@ -246,6 +263,11 @@ public final class SettingsBackup {
                     changes.put(entry.getKey(), entry.getValue());
                 }
             }
+            for (Map.Entry<IntegerSetting, Integer> entry : numbers.entrySet()) {
+                if (!entry.getValue().equals(entry.getKey().savedValue())) {
+                    changes.put(entry.getKey(), entry.getValue());
+                }
+            }
             return changes;
         }
 
@@ -258,7 +280,14 @@ public final class SettingsBackup {
 
         /** How many filter lists this file changes. */
         int listChanges() {
-            return changes().size() - switchChanges();
+            int count = 0;
+            for (Setting<?> setting : changes().keySet()) if (setting instanceof StringSetting) count++;
+            return count;
+        }
+
+        /** Whether this file changes the sticker size. */
+        boolean sizeChanges() {
+            return changes().containsKey(Settings.STICKER_SIZE);
         }
 
         /** For the settings page's saved state, so a preview outlives the page being rebuilt. */
@@ -271,9 +300,14 @@ public final class SettingsBackup {
             for (Map.Entry<StringSetting, String> entry : lists.entrySet()) {
                 texts.putString(entry.getKey().key, entry.getValue());
             }
+            Bundle sizes = new Bundle();
+            for (Map.Entry<IntegerSetting, Integer> entry : numbers.entrySet()) {
+                sizes.putInt(entry.getKey().key, entry.getValue());
+            }
             Bundle state = new Bundle();
             state.putBundle(SWITCHES, switches);
             state.putBundle(LISTS, texts);
+            state.putBundle(NUMBER_VALUES, sizes);
             state.putInt(UNKNOWN, unknown);
             return state;
         }
@@ -304,7 +338,15 @@ public final class SettingsBackup {
                     if (usable(lines)) lists.put(setting, MessageFilters.join(lines));
                 }
             }
-            return new Snapshot(values, lists, unknown);
+            Map<IntegerSetting, Integer> numbers = new LinkedHashMap<>();
+            Bundle sizes = state.getBundle(NUMBER_VALUES);
+            if (sizes != null) {
+                for (IntegerSetting setting : NUMBERS) {
+                    Object value = sizes.get(setting.key);
+                    if (value instanceof Integer && allowed(setting, (Integer) value)) numbers.put(setting, (Integer) value);
+                }
+            }
+            return new Snapshot(values, lists, numbers, unknown);
         }
     }
 
@@ -316,6 +358,9 @@ public final class SettingsBackup {
         JSONObject switches = new JSONObject();
         for (BooleanSetting setting : ALLOWLIST) {
             switches.put(setting.key, setting.savedValue().booleanValue());
+        }
+        for (IntegerSetting setting : NUMBERS) {
+            switches.put(setting.key, setting.savedValue().intValue());
         }
         for (StringSetting setting : FILTER_LISTS) {
             switches.put(setting.key, new JSONArray(MessageFilters.lines(setting.savedValue())));
@@ -405,14 +450,26 @@ public final class SettingsBackup {
         for (BooleanSetting setting : ALLOWLIST) known.put(setting.key, setting);
         Map<String, StringSetting> knownLists = new HashMap<>();
         for (StringSetting setting : FILTER_LISTS) knownLists.put(setting.key, setting);
+        Map<String, IntegerSetting> knownNumbers = new HashMap<>();
+        for (IntegerSetting setting : NUMBERS) knownNumbers.put(setting.key, setting);
         Map<BooleanSetting, Boolean> found = new HashMap<>();
         Map<StringSetting, String> foundLists = new HashMap<>();
+        Map<IntegerSetting, Integer> foundNumbers = new HashMap<>();
         JSONObject values = (JSONObject) settings;
         for (Iterator<String> names = values.keys(); names.hasNext(); ) {
             String name = names.next();
             StringSetting list = knownLists.get(name);
             if (list != null) {
                 foundLists.put(list, filterList(name, values.opt(name)));
+                continue;
+            }
+            IntegerSetting number = knownNumbers.get(name);
+            if (number != null) {
+                Object value = values.opt(name);
+                if (!(value instanceof Integer) || !allowed(number, (Integer) value)) {
+                    throw new Rejected(Reason.VALUE, "Not one of its choices: " + name);
+                }
+                foundNumbers.put(number, (Integer) value);
                 continue;
             }
             BooleanSetting setting = known.get(name);
@@ -438,7 +495,17 @@ public final class SettingsBackup {
             String value = foundLists.get(setting);
             if (value != null) orderedLists.put(setting, value);
         }
-        return new Snapshot(ordered, orderedLists, unknown);
+        Map<IntegerSetting, Integer> orderedNumbers = new LinkedHashMap<>();
+        for (IntegerSetting setting : NUMBERS) {
+            Integer value = foundNumbers.get(setting);
+            if (value != null) orderedNumbers.put(setting, value);
+        }
+        return new Snapshot(ordered, orderedLists, orderedNumbers, unknown);
+    }
+
+    /** Whether a number is one of its setting's choices. */
+    static boolean allowed(IntegerSetting setting, int value) {
+        return setting == Settings.STICKER_SIZE && StickerSize.percent(value) == value;
     }
 
     /**

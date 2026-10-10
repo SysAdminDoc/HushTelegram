@@ -30,6 +30,7 @@ import android.preference.SwitchPreference;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
 import android.widget.EditText;
+import android.widget.ListView;
 
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.SettingsContextRule;
@@ -127,6 +128,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.REAR_CAMERA_FIRST, "Start the camera on the rear lens");
         ROW_TITLES.put(PatchFamily.HIDE_GALLERY_CAMERA_TILE, "Hide gallery camera tile");
         ROW_TITLES.put(PatchFamily.HIDE_STICKER_TIME, "Hide time on stickers");
+        ROW_TITLES.put(PatchFamily.CHANGE_STICKER_SIZE, "Change sticker size");
         ROW_TITLES.put(PatchFamily.IGNORE_MUTED_MENTIONS, "Ignore mentions in muted chats");
         ROW_TITLES.put(PatchFamily.HIDE_BLOCKED_IN_GROUPS, "Hide blocked users in groups");
         ROW_TITLES.put(PatchFamily.HIDE_BY_KEYWORD, "Hide messages by keyword");
@@ -533,6 +535,15 @@ public class HushTelegramPreferenceFragmentTest {
             // A sticker shows its time until the switch is turned on.
             assertFalse(Settings.HIDE_STICKER_TIME.key,
                     ((SwitchPreference) page.findPreference(Settings.HIDE_STICKER_TIME.key)).isChecked());
+            assertEquals("Change sticker size", String.valueOf(page.findPreference(Settings.CHANGE_STICKER_SIZE.key).getTitle()));
+            assertEquals("Stickers in chats show at the size you pick below. Animated emoji and dice keep Telegram's "
+                    + "size. A chat picks this up the next time you open it.",
+                    String.valueOf(page.findPreference(Settings.CHANGE_STICKER_SIZE.key).getSummary()));
+            // Stickers keep Telegram's size until the switch is turned on.
+            assertFalse(((SwitchPreference) page.findPreference(Settings.CHANGE_STICKER_SIZE.key)).isChecked());
+            assertEquals("Sticker size", String.valueOf(page.findPreference(HushTelegramPreferenceFragment.STICKER_SIZE_ROW).getTitle()));
+            assertEquals("75% of Telegram's size",
+                    String.valueOf(page.findPreference(HushTelegramPreferenceFragment.STICKER_SIZE_ROW).getSummary()));
             assertEquals("Ignore mentions in muted chats", String.valueOf(page.findPreference(Settings.IGNORE_MUTED_MENTIONS.key).getTitle()));
             assertEquals("Mentions and replies in groups or channels you've muted no longer notify you. Chats you "
                     + "haven't muted notify as before.",
@@ -754,6 +765,50 @@ public class HushTelegramPreferenceFragmentTest {
         } finally {
             Settings.MESSAGE_FILTERS_GROUPS.resetToDefault();
             Settings.MESSAGE_FILTERS_CHANNELS.resetToDefault();
+        }
+    }
+
+    /**
+     * Change sticker size brings a row for the size under its switch. A tap lists the four sizes
+     * with the saved one checked, and a pick saves it at once and closes the list.
+     */
+    @Test
+    public void theStickerSizeRowListsTheSizesAndSavesThePick() {
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
+        PatchFamily.inBuildForTests.remove(PatchFamily.CHANGE_STICKER_SIZE);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            assertNull(pageOf(controller).findPreference(HushTelegramPreferenceFragment.STICKER_SIZE_ROW));
+        }
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.CHANGE_STICKER_SIZE);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            int toggle = indexOfKey(rows, Settings.CHANGE_STICKER_SIZE.key);
+            Preference size = rows.get(toggle + 1);
+            assertEquals(HushTelegramPreferenceFragment.STICKER_SIZE_ROW, size.getKey());
+            assertEquals("Look and feel", String.valueOf(size.getParent().getTitle()));
+            assertFalse("it stores nothing itself", size.isPersistent());
+
+            assertTrue(size.getOnPreferenceClickListener().onPreferenceClick(size));
+            ShadowLooper.idleMainLooper();
+            AlertDialog list = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertTrue(list.isShowing());
+            assertEquals("Sticker size", String.valueOf(shadowOf(list).getTitle()));
+            ListView choices = list.getListView();
+            assertEquals(4, choices.getCount());
+            List<String> labels = new ArrayList<>();
+            for (int i = 0; i < choices.getCount(); i++) labels.add(String.valueOf(choices.getAdapter().getItem(i)));
+            assertEquals(Arrays.asList("50%", "75%", "125%", "150%"), labels);
+            assertEquals("the saved size is checked", 1, choices.getCheckedItemPosition());
+
+            shadowOf(list).clickOnItem(3);
+            ShadowLooper.idleMainLooper();
+            assertFalse(list.isShowing());
+            assertEquals(150, (int) Settings.STICKER_SIZE.savedValue());
+            assertEquals("150% of Telegram's size", String.valueOf(size.getSummary()));
+            assertFalse("picking a size leaves the switch alone", Settings.CHANGE_STICKER_SIZE.savedValue());
+        } finally {
+            Settings.STICKER_SIZE.resetToDefault();
         }
     }
 

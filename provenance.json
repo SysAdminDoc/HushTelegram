@@ -162,6 +162,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/RearCamera.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GalleryCameraTile.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/StickerTime.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/StickerSize.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/MutedMentions.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/BlockedSenders.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FeaturesInvite.java",

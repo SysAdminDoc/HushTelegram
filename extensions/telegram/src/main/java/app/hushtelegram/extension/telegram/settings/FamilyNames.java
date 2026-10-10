@@ -60,6 +60,7 @@ public final class FamilyNames {
     public static final String REAR_CAMERA_FIRST = "Start the camera on the rear lens";
     public static final String HIDE_GALLERY_CAMERA_TILE = "Hide gallery camera tile";
     public static final String HIDE_STICKER_TIME = "Hide time on stickers";
+    public static final String CHANGE_STICKER_SIZE = "Change sticker size";
     public static final String IGNORE_MUTED_MENTIONS = "Ignore mentions in muted chats";
     public static final String HIDE_BLOCKED_IN_GROUPS = "Hide blocked users in groups";
     public static final String HIDE_BY_KEYWORD = "Hide messages by keyword";

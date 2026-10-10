@@ -82,6 +82,7 @@ import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.settings.FailingStore;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
+import app.hushtelegram.extension.shared.settings.IntegerSetting;
 import app.hushtelegram.extension.shared.settings.PauseForTests;
 import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.StringSetting;
@@ -130,6 +131,7 @@ public class SettingsBackupTest {
     public void startClean() {
         for (BooleanSetting setting : SettingsBackup.ALLOWLIST) setting.resetToDefault();
         for (StringSetting list : SettingsBackup.FILTER_LISTS) list.resetToDefault();
+        for (IntegerSetting number : SettingsBackup.NUMBERS) number.resetToDefault();
         PatchFamily.inBuildForTests = java.util.EnumSet.allOf(PatchFamily.class);
         ShadowToast.reset();
         ShadowAlertDialog.reset();
@@ -147,6 +149,7 @@ public class SettingsBackupTest {
         ShadowLooper.idleMainLooper();
         for (BooleanSetting setting : SettingsBackup.ALLOWLIST) setting.resetToDefault();
         for (StringSetting list : SettingsBackup.FILTER_LISTS) list.resetToDefault();
+        for (IntegerSetting number : SettingsBackup.NUMBERS) number.resetToDefault();
         // The release check stays out of every file, so the list above doesn't reach it.
         Settings.CHECK_FOR_RELEASES.resetToDefault();
         BaseSettings.PAUSED.resetToDefault();
@@ -176,22 +179,24 @@ public class SettingsBackupTest {
         assertTrue("STAYS_OUT names a switch Settings no longer has", switches.containsAll(STAYS_OUT.keySet()));
         assertEquals("the list names a switch twice", SettingsBackup.ALLOWLIST.size(),
                 new HashSet<>(SettingsBackup.ALLOWLIST).size());
-        // A file carries true or false, and the message filters as lists of lines. Any other
-        // setting in Settings that isn't a switch needs a format that can carry it before it can
-        // be decided on.
+        // A file carries true or false, the message filters as lists of lines and the sticker size
+        // as one of its choices. Any other setting in Settings that isn't a switch needs a format
+        // that can carry it before it can be decided on.
         List<String> notSwitches = new ArrayList<>();
         for (Setting<?> setting : declaredSettings(Settings.class)) {
-            if (!(setting instanceof BooleanSetting) && !SettingsBackup.FILTER_LISTS.contains(setting)) notSwitches.add(setting.key);
+            if (!(setting instanceof BooleanSetting) && !SettingsBackup.FILTER_LISTS.contains(setting)
+                    && !SettingsBackup.NUMBERS.contains(setting)) notSwitches.add(setting.key);
         }
         assertEquals("a setting in Settings isn't a switch, and a settings file has no format for it",
                 Collections.emptyList(), notSwitches);
         assertEquals(Arrays.asList(Settings.MESSAGE_FILTERS_GROUPS, Settings.MESSAGE_FILTERS_CHANNELS), SettingsBackup.FILTER_LISTS);
+        assertEquals(Collections.singletonList(Settings.STICKER_SIZE), SettingsBackup.NUMBERS);
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES,
                         Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_COMMERCE,
                         Settings.HIDE_PROMOTIONAL_BANNERS,
                         Settings.HIDE_SPONSORED_PROXY, Settings.HIDE_POPULAR_APPS, Settings.HIDE_CONTACTS_BLOCK, Settings.HIDE_GREETING_STICKERS, Settings.DISABLE_CHAT_SWIPE, Settings.DISABLE_CHANNEL_PULL, Settings.DISABLE_TOPIC_PULL,
                         Settings.NORMAL_PASTE, Settings.SHOW_LOCAL_IDS, Settings.PROFILE_DATA_CENTER, Settings.DISABLE_DOUBLE_TAP_REACTIONS,
-                        Settings.QUIET_CONTACTS_NAG, Settings.HOLIDAY_LOOK, Settings.USE_SYSTEM_FONT, Settings.AMOLED_BLACK, Settings.HIDE_TRANSLATE_BAR, Settings.EXACT_NUMBERS, Settings.REVEAL_SPOILERS, Settings.HIDE_KEYBOARD_ON_SCROLL, Settings.KEEP_VIDEOS_MUTED, Settings.SWIPE_BACK_ON_PROFILES, Settings.HIDE_PHONE_NUMBER, Settings.MESSAGE_SECONDS, Settings.ALLOW_CHAT_BLUR, Settings.VOICE_ONE_AT_A_TIME, Settings.NO_HAPTICS, Settings.REACTION_EFFECTS_OFF, Settings.HIDE_FOLDER_COUNTERS, Settings.FORWARD_HIDE_SENDER, Settings.VOICE_MUSIC_PLAYER, Settings.SILENCE_NON_CONTACTS, Settings.DISABLE_ARCHIVE_PULL, Settings.REAR_CAMERA_FIRST, Settings.HIDE_GALLERY_CAMERA_TILE, Settings.HIDE_STICKER_TIME, Settings.IGNORE_MUTED_MENTIONS, Settings.HIDE_BLOCKED_IN_GROUPS, Settings.HIDE_BY_KEYWORD, Settings.HIDE_FEATURES_AND_INVITE, Settings.MESSAGE_MENU_REPEAT, Settings.KEEP_DELETED_MESSAGES, Settings.ASK_BEFORE_STICKER, Settings.BETA_LOGS_OFF, Settings.OUTSIDE_TRANSLATE, Settings.HIDE_CHANNEL_BUTTONS, Settings.HIDE_SEND_AS, Settings.ASK_BEFORE_GIF, Settings.ASK_BEFORE_VOICE_VIDEO, Settings.ASK_BEFORE_CALL, Settings.MESSAGE_MENU_COPY_PHOTO, Settings.MESSAGE_MENU_DETAILS, Settings.MESSAGE_MENU_QUICK_FORWARD,
+                        Settings.QUIET_CONTACTS_NAG, Settings.HOLIDAY_LOOK, Settings.USE_SYSTEM_FONT, Settings.AMOLED_BLACK, Settings.HIDE_TRANSLATE_BAR, Settings.EXACT_NUMBERS, Settings.REVEAL_SPOILERS, Settings.HIDE_KEYBOARD_ON_SCROLL, Settings.KEEP_VIDEOS_MUTED, Settings.SWIPE_BACK_ON_PROFILES, Settings.HIDE_PHONE_NUMBER, Settings.MESSAGE_SECONDS, Settings.ALLOW_CHAT_BLUR, Settings.VOICE_ONE_AT_A_TIME, Settings.NO_HAPTICS, Settings.REACTION_EFFECTS_OFF, Settings.HIDE_FOLDER_COUNTERS, Settings.FORWARD_HIDE_SENDER, Settings.VOICE_MUSIC_PLAYER, Settings.SILENCE_NON_CONTACTS, Settings.DISABLE_ARCHIVE_PULL, Settings.REAR_CAMERA_FIRST, Settings.HIDE_GALLERY_CAMERA_TILE, Settings.HIDE_STICKER_TIME, Settings.CHANGE_STICKER_SIZE, Settings.IGNORE_MUTED_MENTIONS, Settings.HIDE_BLOCKED_IN_GROUPS, Settings.HIDE_BY_KEYWORD, Settings.HIDE_FEATURES_AND_INVITE, Settings.MESSAGE_MENU_REPEAT, Settings.KEEP_DELETED_MESSAGES, Settings.ASK_BEFORE_STICKER, Settings.BETA_LOGS_OFF, Settings.OUTSIDE_TRANSLATE, Settings.HIDE_CHANNEL_BUTTONS, Settings.HIDE_SEND_AS, Settings.ASK_BEFORE_GIF, Settings.ASK_BEFORE_VOICE_VIDEO, Settings.ASK_BEFORE_CALL, Settings.MESSAGE_MENU_COPY_PHOTO, Settings.MESSAGE_MENU_DETAILS, Settings.MESSAGE_MENU_QUICK_FORWARD,
                         Settings.DISABLE_ANALYTICS, Settings.DISABLE_CALL_DEBUG, Settings.DISABLE_DRAFT_PREVIEWS,
                         Settings.GALLERY_CAMERA_ON_TAP,
                         Settings.OPEN_EXTERNAL_LINKS, Settings.STRIP_LINK_TRACKING, Settings.DISABLE_UPDATE_CHECKS,
@@ -238,10 +243,12 @@ public class SettingsBackupTest {
         JSONObject switches = root.getJSONObject("settings");
         Set<String> carried = keys(SettingsBackup.ALLOWLIST);
         carried.addAll(keys(SettingsBackup.FILTER_LISTS));
+        carried.addAll(keys(SettingsBackup.NUMBERS));
         assertEquals(carried, names(switches));
         for (StringSetting list : SettingsBackup.FILTER_LISTS) {
             assertEquals(list.key, 0, switches.getJSONArray(list.key).length());
         }
+        assertEquals(75, switches.get(Settings.STICKER_SIZE.key));
         for (BooleanSetting setting : SettingsBackup.ALLOWLIST) {
             // Saved, not what a paused Telegram is answered: paused, every switch answers false.
             assertFalse(setting.get());
@@ -250,7 +257,8 @@ public class SettingsBackupTest {
         assertEquals(false, switches.get(Settings.HIDE_ADS.key));
         assertEquals(true, switches.get(Settings.DISABLE_ANALYTICS.key));
         for (Setting<?> setting : Setting.allLoadedSettings()) {
-            if (SettingsBackup.ALLOWLIST.contains(setting) || SettingsBackup.FILTER_LISTS.contains(setting)) continue;
+            if (SettingsBackup.ALLOWLIST.contains(setting) || SettingsBackup.FILTER_LISTS.contains(setting)
+                    || SettingsBackup.NUMBERS.contains(setting)) continue;
             assertFalse(setting.key + " is in the file", text.contains(setting.key));
         }
         for (String leak : new String[]{"sentinel", "sessionid", "ds_user_id", "100012345678901", "secret-session",
@@ -497,6 +505,47 @@ public class SettingsBackupTest {
         JSONObject file = new JSONObject(SettingsBackup.create());
         file.getJSONObject("settings").put(Settings.MESSAGE_FILTERS_GROUPS.key, new org.json.JSONArray(Arrays.asList("/(unclosed/", "/(a+)+/")));
         assertEquals("/(unclosed/\n/(a+)+/", SettingsBackup.parse(file.toString()).lists.get(Settings.MESSAGE_FILTERS_GROUPS));
+    }
+
+    /**
+     * The sticker size goes out as its number and comes back only as one of the choices, and a
+     * file from before it leaves the size alone.
+     */
+    @Test
+    public void theStickerSizeRoundTripsAsOneOfItsChoices() throws Exception {
+        Settings.STICKER_SIZE.save(150);
+        String file = SettingsBackup.create();
+        assertEquals(150, new JSONObject(file).getJSONObject("settings").get(Settings.STICKER_SIZE.key));
+
+        Settings.STICKER_SIZE.save(50);
+        SettingsBackup.Snapshot snapshot = SettingsBackup.parse(file);
+        assertEquals(0, snapshot.switchChanges());
+        assertEquals(0, snapshot.listChanges());
+        assertTrue(snapshot.sizeChanges());
+        SettingsBackup.Snapshot kept = SettingsBackup.Snapshot.fromBundle(snapshot.toBundle());
+        assertEquals(snapshot.numbers, kept.numbers);
+        assertEquals(1, SettingsBackup.apply(kept));
+        assertEquals(150, (int) Settings.STICKER_SIZE.savedValue());
+        assertEquals("a file read back is the file", file, SettingsBackup.create());
+        assertFalse(SettingsBackup.parse(file).sizeChanges());
+
+        SettingsBackup.Snapshot older = SettingsBackup.parse(fileWith(Settings.HIDE_ADS, false));
+        assertTrue(older.numbers.isEmpty());
+        SettingsBackup.apply(older);
+        assertEquals("a file without the size left it alone", 150, (int) Settings.STICKER_SIZE.savedValue());
+
+        for (Object bad : new Object[]{100, 0, -75, 1000, 75.5, "75", true, JSONObject.NULL, new org.json.JSONArray()}) {
+            JSONObject wrong = new JSONObject(file);
+            wrong.getJSONObject("settings").put(Settings.STICKER_SIZE.key, bad);
+            assertEquals(String.valueOf(bad), SettingsBackup.Reason.VALUE, reasonFor(wrong.toString()));
+        }
+
+        // A saved state is read back as strictly: a size that isn't a choice is left out.
+        Bundle state = snapshot.toBundle();
+        state.getBundle("numbers").putInt(Settings.STICKER_SIZE.key, 100);
+        assertTrue(SettingsBackup.Snapshot.fromBundle(state).numbers.isEmpty());
+        state.getBundle("numbers").putString(Settings.STICKER_SIZE.key, "150");
+        assertTrue(SettingsBackup.Snapshot.fromBundle(state).numbers.isEmpty());
     }
 
     // ---- Refusals ------------------------------------------------------------------------------
@@ -812,6 +861,27 @@ public class SettingsBackupTest {
             preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             settle();
             assertNull(page.pendingImport);
+        }
+    }
+
+    @Test
+    public void aFileThatChangesOnlyTheSizeSaysSoAndImportsIt() throws Exception {
+        Settings.STICKER_SIZE.save(125);
+        String file = SettingsBackup.create();
+        Settings.STICKER_SIZE.resetToDefault();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            deliver(activity, tap(activity, page, IMPORT_ROW), file);
+            AlertDialog preview = shownPreview();
+            assertEquals("The sticker size will change.", String.valueOf(shadowOf(preview).getMessage()));
+            assertEquals("Import", String.valueOf(preview.getButton(AlertDialog.BUTTON_POSITIVE).getText()));
+            preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertEquals("Settings imported.", ShadowToast.getTextOfLatestToast());
+            assertEquals(125, (int) Settings.STICKER_SIZE.savedValue());
+            assertEquals("the row still shows the old size", "125% of Telegram's size",
+                    String.valueOf(page.findPreference(HushTelegramPreferenceFragment.STICKER_SIZE_ROW).getSummary()));
         }
     }
 
