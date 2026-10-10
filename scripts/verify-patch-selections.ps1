@@ -239,7 +239,12 @@ function Invoke-PatchSelectionMatrix {
         (Join-Path $PSScriptRoot 'ResourceTableCheck.java')) -PrivateOutput (Join-Path $run 'compiler-private.txt')
     if ($compiled -ne 0) { throw 'CHECKER_COMPILE_FAILED' }
     $classPath = $classes + [IO.Path]::PathSeparator + $DesktopJar
+    # The fixture is hashed once a run, not once a case: every case compares its size and write
+    # time, which a rewrite moves, and the whole hash is read again once after the last case.
     $sourceHash = Get-Sha256Hex -Path $Apk
+    $sourceItem = Get-Item -LiteralPath $Apk
+    $sourceLength = $sourceItem.Length
+    $sourceWritten = $sourceItem.LastWriteTimeUtc
     $bundleHash = (Get-Sha256Hex -Path $Bundle).ToLowerInvariant()
     $evidence = [Collections.Generic.List[object]]::new()
     $elapsed = [Diagnostics.Stopwatch]::StartNew()
@@ -277,7 +282,8 @@ function Invoke-PatchSelectionMatrix {
             if (-not $public.Written -or -not (Test-SelectionPublicText -Text (Get-Content $summaryPath -Raw) -Canaries $selection.Canaries)) {
                 throw 'PUBLIC_SUMMARY_FAILED'
             }
-            if ((Get-Sha256Hex -Path $Apk) -cne $sourceHash -or
+            $sourceNow = Get-Item -LiteralPath $Apk
+            if ($sourceNow.Length -ne $sourceLength -or $sourceNow.LastWriteTimeUtc -ne $sourceWritten -or
                 ((Test-Path $optionPath) -and (Get-Sha256Hex -Path $optionPath) -cne $optionHash)) { throw 'INPUT_MUTATED' }
             if ($selection.Failure) {
                 if ($cliCode -eq 0 -or (Test-Path -LiteralPath $output)) { throw 'REFUSAL_NOT_ATOMIC' }
@@ -322,7 +328,7 @@ function Invoke-PatchSelectionMatrix {
                 $resourceText -cnotmatch '\[resources\] renamed by the rebuild[^\r\n]*: 0' -or
                 $resourceText -cnotmatch '\[resources\] added resources: 0') { throw 'RESOURCE_PRESERVATION_FAILED' }
             $native = Get-NativePackagingEvidence -StockApk $Apk -PatchedApk $output -Java $Java -Aapt2 $Aapt2 `
-                -ReportPath (Join-Path $caseDir 'native-private.json')
+                -ReportPath (Join-Path $caseDir 'native-private.json') -StockSha256 $sourceHash -SourceSha256 $sourceHash
             if ($expected.settings) {
                 # Preserve the full validator's nonempty-extension premises and all mutation contracts.
                 $dexCode = Invoke-SelectionTool -Program $Java -Arguments @('-Xmx2g', '-XX:ActiveProcessorCount=2', '-cp', $classPath, 'DexDiff',
@@ -351,6 +357,7 @@ function Invoke-PatchSelectionMatrix {
         }
     }
     $elapsed.Stop()
+    if ((Get-Sha256Hex -Path $Apk) -cne $sourceHash) { throw 'INPUT_MUTATED' }
     [IO.File]::WriteAllText((Join-Path $run 'matrix-private.json'), (ConvertTo-Json -InputObject $evidence.ToArray() -Depth 8) + "`n", [Text.UTF8Encoding]::new($false))
     Write-Host "[selections] MATRIX_PASSED cases=$($plans.Count) seconds=$([int]$elapsed.Elapsed.TotalSeconds)"
 }

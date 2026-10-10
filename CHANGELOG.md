@@ -38,6 +38,8 @@ Every HushTelegram release, newest first.
 
 * **Tooling:** The pre-push hook now reads `HUSHTELEGRAM_BUILD_WRAPPER` and its other settings from your user environment when the shell has them empty, not only when they're missing, since pwsh keeps an empty variable around. With no wrapper at all, its own `gradlew` run waits in the build queue too.
 
+* **Tooling:** The selection matrix reads the whole fixture APK for its hash twice a run, before the first case and after the last, instead of up to three times in each of its 74 cases. Each case still checks the APK's size and write time, and a changed APK still fails the run.
+
 ## 0.0.11 (2026-10-08)
 
 The fifth release, with 55 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.

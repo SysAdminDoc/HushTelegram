@@ -133,6 +133,18 @@ $matrixTool = @($matrixCalls | Where-Object { $_.GetCommandName() -eq 'Invoke-Se
 Assert-True ($matrixQueue.Count -eq 1 -and $matrixTool.Count -gt 0 -and
     $matrixQueue[0].Extent.StartOffset -lt $matrixTool[0].Extent.StartOffset) `
     'The selection matrix does not ask for a build queue slot before it compiles or patches.'
+# And it reads the whole fixture for a hash twice a run, before the first case and after the last,
+# never once a case: each case compares size and write time, and the native packaging evidence is
+# handed the digest.
+$matrixLoop = $matrixAst.Body.Find({ param($node) $node -is [System.Management.Automation.Language.ForEachStatementAst] -and
+    $node.Condition.Extent.Text -eq '$plans' }, $true)
+$apkHashes = @($matrixCalls | Where-Object { $_.GetCommandName() -eq 'Get-Sha256Hex' -and $_.Extent.Text -match '-Path \$Apk\b' })
+$hashedInLoop = @($apkHashes | Where-Object { $_.Extent.StartOffset -ge $matrixLoop.Extent.StartOffset -and
+    $_.Extent.EndOffset -le $matrixLoop.Extent.EndOffset })
+$nativeEvidence = @($matrixCalls | Where-Object { $_.GetCommandName() -eq 'Get-NativePackagingEvidence' })
+Assert-True ($null -ne $matrixLoop -and $apkHashes.Count -eq 2 -and $hashedInLoop.Count -eq 0 -and
+    $nativeEvidence.Count -eq 1 -and $nativeEvidence[0].Extent.Text -match '-StockSha256 \$sourceHash') `
+    'The selection matrix reads the whole fixture for its hash once a case again.'
 # The pre-push hook's own gradlew run, when no wrapper is set, waits for a slot as well.
 $prePushAst = [System.Management.Automation.Language.Parser]::ParseFile(
     (Join-Path $PSScriptRoot 'pre-push.ps1'), [ref]$null, [ref]$null)
