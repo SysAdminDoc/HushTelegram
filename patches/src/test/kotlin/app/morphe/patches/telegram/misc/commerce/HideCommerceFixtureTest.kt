@@ -8,10 +8,18 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patches.telegram.misc.archive.ARCHIVED_CHATS
+import app.morphe.patches.telegram.misc.archive.ARCHIVE_HIDDEN
+import app.morphe.patches.telegram.misc.archive.ARCHIVE_ICON
+import app.morphe.patches.telegram.misc.archive.ARCHIVE_MENU
+import app.morphe.patches.telegram.misc.archive.MESSAGES_CONTROLLER
+import app.morphe.patches.telegram.misc.archive.SELECTED_ACCOUNT
+import app.morphe.patches.telegram.misc.archive.disableArchivePullPatch
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.util.ControlFlow
@@ -66,6 +74,43 @@ class HideCommerceFixtureTest {
             assertEquals(1, channel.size)
             assertEquals("${build.name}: footer visibility guard is before stock UI work", 0, channel.single().index)
 
+            // 13.0's attach menu gives Wallet's button its number only past the gate. Gallery and
+            // File get theirs outside it, so their buttons don't depend on the answer.
+            val attach = plan.hooks.getValue(CommerceTarget.ATTACH_WALLET).single()
+            assertFalse(attach.replace)
+            val numbering = attach.method.instructions()
+            assertEquals("${build.name}: attach gate reads walletAvailable", WALLET_AVAILABLE, numbering[attach.index - 3].reference())
+            assertEquals(Opcode.IF_EQZ, numbering[attach.index].opcode)
+            val skipped = attach.index + 1 until ControlFlow.of(attach.method).normal[attach.index].single { it != attach.index + 1 }
+            val bound = binder(context, attach.method.definingClass).instructions()
+            fun numberOf(label: String): String {
+                val at = bound.indexOfFirst { it.reference() == label }
+                return bound[(0 until at).last { bound[it].opcode == Opcode.IGET }].reference()!!
+            }
+            val walletNumber = numberOf(WALLET_LABEL)
+            val walletWrites = numbering.indices.filter { numbering[it].opcode == Opcode.IPUT && numbering[it].reference() == walletNumber }
+            assertEquals("${build.name}: Wallet's number is reset, then given only past the gate", listOf(false, true),
+                walletWrites.map { it in skipped })
+            for (label in listOf("ChatGallery", "ChatDocument").map { "Lorg/telegram/messenger/R\$string;->$it:I" }) {
+                val number = numberOf(label)
+                assertTrue("${build.name}: $label is numbered outside the Wallet block", numbering.indices.any {
+                    numbering[it].opcode == Opcode.IPUT && numbering[it].reference() == number && it !in skipped })
+                assertFalse("${build.name}: $label is not numbered inside it", skipped.any { numbering[it].reference() == number })
+            }
+
+            // The chat list menu: the hook starts the Wallet entry and jumps to where the menu goes
+            // on after it, a path that never reaches the side menu mini apps.
+            val menu = plan.hooks.getValue(CommerceTarget.MENU_WALLET).single()
+            val entries = menu.method.instructions()
+            assertEquals("${build.name}: menu gate reads walletAvailable", WALLET_AVAILABLE, entries[menu.index - 4].reference())
+            assertEquals(Opcode.IF_EQZ, entries[menu.index - 1].opcode)
+            val menuExit = labelTarget(menu)
+            assertEquals("${build.name}: the entry holds one Wallet label", 1, (menu.index until menuExit).count { entries[it].reference() == WALLET_LABEL })
+            val menuFlow = ControlFlow.of(menu.method)
+            val miniApps = reach(menuFlow, menuFlow.normal[menu.index - 1].single { it != menu.index })
+            assertTrue("${build.name}: the side menu mini apps sit behind the gate", miniApps.any { entries[it].reference() == SIDE_MENU })
+            assertTrue("${build.name}: the jump never reaches them", reach(menuFlow, menuExit).none { entries[it].reference() == SIDE_MENU })
+
             val originals = plan.hooks.mapValues { (_, edits) -> ImmutableMethod.of(edits.first().method) }
             val changed = originals.values.map { it.definingClass to it.name }.toSet()
             val untouched = hosts.flatMap { it.methods.toList() }.filter { (it.definingClass to it.name) !in changed }
@@ -82,7 +127,8 @@ class HideCommerceFixtureTest {
             assertEquals("${build.name}: no missing surface", emptyList<String>(), warnings)
 
             for ((target, edits) in plan.hooks) {
-                assertEdits("${build.name}: $target", originals.getValue(target), edits)
+                if (target == CommerceTarget.MENU_WALLET) assertMenuEdit("${build.name}: $target", originals.getValue(target), edits.single(), menuExit)
+                else assertEdits("${build.name}: $target", originals.getValue(target), edits)
             }
             for (method in untouched) {
                 val after = context.mutableClassDefBy(method.definingClass).methods.single { it.sameSignature(method) }
@@ -245,6 +291,105 @@ class HideCommerceFixtureTest {
     }
 
     @Test
+    fun `a changed attach menu Wallet button refuses before any hook or build fact changes`() {
+        for (build in Fixtures.declaredBuilds()) for (change in listOf("availability read", "reset", "second reader", "way in", "label")) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val plan = context.resolveCommerceHooks()
+            val gate = plan.hooks.getValue(CommerceTarget.ATTACH_WALLET).single()
+            val method = gate.method
+            val body = method.instructions()
+            val binder = binder(context, method.definingClass)
+            val bound = binder.instructions()
+            val label = bound.indexOfFirst { it.reference() == WALLET_LABEL }
+            val number = bound[label - 2].reference()!!
+            when (change) {
+                "availability read" -> method.replaceInstruction(gate.index - 2, "nop")
+                "reset" -> method.replaceInstruction(body.indexOfFirst { it.opcode == Opcode.IPUT && it.reference() == number }, "nop")
+                // Something else reading Wallet's number could use it for more than the label.
+                "second reader" -> method.addInstructions(0, "iget v0, p0, $number")
+                "way in" -> {
+                    method.insertAtControlFlowLabel(gate.index - 3, "goto/32 :hush_number", ExternalLabel("hush_number", body[gate.index + 1]))
+                    assertTrue("the jump really enters the block", gate.index + 2 in ControlFlow.of(method).normal[gate.index - 3])
+                }
+                // The binder compares the button with something other than Wallet's number.
+                "label" -> binder.replaceInstruction(label - 2, "iget v${bound[label - 2].namedRegisters().first()}, " +
+                    "v${bound[label - 2].namedRegisters()[1]}, ${body.first { it.opcode == Opcode.IPUT && it.reference() != number }.reference()}")
+            }
+            val before = plan.hooks.mapValues { it.value.first().method.instructions().map(::operation) }
+            assertRefuses { hideCommercePatch.execute(context) }
+            for ((target, edits) in plan.hooks) {
+                assertEquals("${build.name}: $change preserves $target", before.getValue(target),
+                    edits.first().method.instructions().map(::operation))
+            }
+            assertFact(context, "hideCommerce", 0)
+            CommerceTarget.entries.forEach { assertFact(context, it.capability, 0) }
+            assertUnwrittenIdentities(context)
+        }
+    }
+
+    @Test
+    fun `a changed chat list menu Wallet entry refuses before any hook or build fact changes`() {
+        for (build in Fixtures.declaredBuilds()) for (change in listOf("availability read", "add", "way in", "title")) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val plan = context.resolveCommerceHooks()
+            val entry = plan.hooks.getValue(CommerceTarget.MENU_WALLET).single()
+            val method = entry.method
+            val body = method.instructions()
+            val exit = labelTarget(entry)
+            when (change) {
+                "availability read" -> method.replaceInstruction(entry.index - 3, "nop")
+                "add" -> method.replaceInstruction(exit - 1, "nop")
+                "way in" -> {
+                    method.insertAtControlFlowLabel(entry.index - 4, "goto/32 :hush_entry", ExternalLabel("hush_entry", body[exit - 1]))
+                    assertTrue("the jump really enters the entry", exit in ControlFlow.of(method).normal[entry.index - 4])
+                }
+                // Something other than Wallet's own title goes into the entry.
+                "title" -> {
+                    val title = body.indexOfFirst { it.reference() == WALLET_LABEL } + 2
+                    method.addInstructionsAtControlFlowLabel(exit - 1,
+                        "const-string v${body[title].namedRegisters().single()}, \"\"")
+                }
+            }
+            val before = plan.hooks.mapValues { it.value.first().method.instructions().map(::operation) }
+            assertRefuses { hideCommercePatch.execute(context) }
+            for ((target, edits) in plan.hooks) {
+                assertEquals("${build.name}: $change preserves $target", before.getValue(target),
+                    edits.first().method.instructions().map(::operation))
+            }
+            assertFact(context, "hideCommerce", 0)
+            CommerceTarget.entries.forEach { assertFact(context, it.capability, 0) }
+            assertUnwrittenIdentities(context)
+        }
+    }
+
+    @Test
+    fun `Disable archive pull and the Wallet entry share the chat list menu in either order`() {
+        for (build in Fixtures.declaredBuilds()) for (commerceFirst in listOf(true, false)) {
+            val kept = FixtureDex.classes(build, setOf(MESSAGES_CONTROLLER, ARCHIVE_HIDDEN, SELECTED_ACCOUNT, ARCHIVED_CHATS, ARCHIVE_ICON)
+                .map { it.substringBefore("->") }.toSet()).values
+            val context = PatchContexts.of(ExtensionDex.classes() + (kept + hosts(build)).distinctBy { it.type })
+            val menu = context.resolveCommerceHooks().hooks.getValue(CommerceTarget.MENU_WALLET).single().method
+            val stock = ImmutableMethod.of(menu).instructions()
+            val first = if (commerceFirst) hideCommercePatch else disableArchivePullPatch
+            val second = if (commerceFirst) disableArchivePullPatch else hideCommercePatch
+            for (patch in listOf(first, second)) {
+                assertEquals("${build.name}: ${patch.name}", emptyList<String>(), PatchLogCapture.warnings { patch.execute(context) })
+            }
+            val after = menu.instructions()
+            assertEquals("${build.name}: both hooks and nothing else", stock.size + 6, after.size)
+            assertEquals(1, after.count { it.reference() == ARCHIVE_MENU })
+            val ask = after.indexOfFirst { it.reference() == "$COMMERCE->showMenuWallet(Z)Z" }
+            val jump = ControlFlow.of(menu).normal[ask + 2].single { it != ask + 3 }
+            val saved = after.indexOfFirst { it.reference() == "Lorg/telegram/messenger/R\$string;->SavedMessages:I" }
+            val add = after.drop(saved).first { it.opcode == Opcode.INVOKE_VIRTUAL && it.reference().orEmpty().endsWith(MENU_ADD) }.reference()
+            assertEquals("${build.name}: the jump still lands right after the Wallet add", add, after[jump - 1].reference())
+            assertEquals(1, (ask until jump).count { after[it].reference() == WALLET_LABEL })
+            assertFact(context, "commerceMenuWallet", 1)
+            assertFact(context, "disableArchivePull", 1)
+        }
+    }
+
+    @Test
     fun `ambiguous Settings builder refuses rather than hiding arbitrary appends`() {
         for (build in Fixtures.declaredBuilds()) {
             val hosts = hosts(build)
@@ -281,6 +426,8 @@ class HideCommerceFixtureTest {
             assertFact(context, "commerceSettingsRows", 1)
             assertFact(context, "commerceProfileGifts", 1)
             assertFact(context, "commerceChannelGift", 0)
+            assertFact(context, "commerceAttachWallet", 1)
+            assertFact(context, "commerceMenuWallet", 1)
             val stub = context.mutableClassDefBy(COMMERCE).methods.single { it.name == "giftButtonIndex" }.instructions()
             assertEquals("${build.name}: no invented footer identity", -1, (stub[0] as NarrowLiteralInstruction).narrowLiteral)
         }
@@ -332,10 +479,67 @@ class HideCommerceFixtureTest {
             })
     }
 
+    /**
+     * The chat list menu's one decision: three instructions at the start of the Wallet entry, the
+     * last a jump to the entry's stock exit [exit]. Every stock instruction and edge stays.
+     */
+    private fun assertMenuEdit(where: String, original: Method, edit: CommerceEdit, exit: Int) {
+        val before = original.instructions()
+        val after = edit.method.instructions()
+        val at = edit.index
+        assertEquals("$where: three instructions", before.size + 3, after.size)
+        assertEquals("$where: register allocation stays stock", original.implementation!!.registerCount, edit.method.implementation!!.registerCount)
+        fun stock(index: Int) = if (index < at) index else index + 3
+        for (index in before.indices) {
+            assertEquals("$where: retains stock instruction $index", operation(before[index]), operation(after[stock(index)]))
+        }
+        val available = before[at - 1].namedRegisters().single()
+        assertEquals(listOf(Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.IF_EQZ), (at..at + 2).map { after[it].opcode })
+        assertEquals("$COMMERCE->showMenuWallet(Z)Z", after[at].reference())
+        assertTrue("$where: the question and its answer use the gate's register",
+            (at..at + 2).all { after[it].namedRegisters() == listOf(available) })
+        val oldFlow = ControlFlow.of(original)
+        val newFlow = ControlFlow.of(edit.method)
+        assertEquals("$where: a hidden entry jumps to its stock exit", setOf(at + 3, stock(exit)), newFlow.normal[at + 2].toSet())
+        assertEquals(listOf(at + 1), newFlow.normal[at])
+        assertEquals(listOf(at + 2), newFlow.normal[at + 1])
+        fun destination(index: Int) = if (index == at) at else stock(index)
+        for (index in before.indices) {
+            assertEquals("$where: retains normal flow from $index", oldFlow.normal[index].map(::destination), newFlow.normal[stock(index)])
+            assertEquals("$where: retains exception flow from $index", oldFlow.exceptional[index].map(::destination), newFlow.exceptional[stock(index)])
+        }
+        for (step in at + 1..at + 3) {
+            assertEquals("$where: only the hook reaches $step", listOf(step - 1), newFlow.normal.indices.filter { step in newFlow.normal[it] })
+        }
+    }
+
+    /** The binder that labels an attach menu button Wallet, from the context so a test can change it. */
+    private fun binder(context: BytecodePatchContext, type: String) = context.mutableClassDefBy(type).methods.single { method ->
+        method.parameterTypes.size == 2 && method.instructions().any { it.reference() == WALLET_LABEL }
+    }
+
+    /** Where a decision's jump lands, as an index into its unchanged method. */
+    private fun labelTarget(edit: CommerceEdit): Int {
+        val label = edit.labels.single()
+        val body = edit.method.instructions()
+        return body.indices.single { label.copy(instruction = body[it]) == label }
+    }
+
+    /** Every instruction reachable from [from], handlers included. */
+    private fun reach(flow: ControlFlow, from: Int): Set<Int> {
+        val seen = mutableSetOf(from)
+        val pending = ArrayDeque(listOf(from))
+        while (pending.isNotEmpty()) {
+            val at = pending.removeFirst()
+            for (next in flow.normal[at] + flow.exceptional[at]) if (seen.add(next)) pending += next
+        }
+        return seen
+    }
+
     private fun hosts(build: File): List<ClassDef> {
         val anchors = FixtureDex.classesWhere(build, { true }) { method ->
             val refs = method.instructions().mapNotNull { it.reference() }.toSet()
-            refs.contains(PROFILE_GIFTS) || (refs.contains(GIFT_BUTTON) &&
+            refs.contains(WALLET_LABEL) || refs.contains(PROFILE_GIFTS) || (refs.contains(GIFT_BUTTON) &&
                 method.parameterTypes.map { it.toString() } == listOf("I", "Z", "Z")) ||
                 (refs.containsAll(SETTINGS_SALES) && AccessFlags.STATIC.isSet(method.accessFlags) &&
                     method.parameterTypes.map { it.toString() } == listOf(method.definingClass, "Ljava/util/ArrayList;")) ||
@@ -379,5 +583,7 @@ class HideCommerceFixtureTest {
         const val USER_CONFIG = "Lorg/telegram/messenger/UserConfig;"
         const val JOIN = "Lorg/telegram/messenger/R\$string;->ChannelJoinNoCaps:I"
         const val UNMUTE = "Lorg/telegram/messenger/R\$string;->ChannelUnmuteNoCaps:I"
+        const val SIDE_MENU = "Lorg/telegram/tgnet/TLRPC\$TL_attachMenuBot;->show_in_side_menu:Z"
+        const val MENU_ADD = "(ILjava/lang/CharSequence;Ljava/lang/Runnable;Z)V"
     }
 }

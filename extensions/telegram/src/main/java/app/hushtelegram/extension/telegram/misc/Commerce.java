@@ -36,6 +36,26 @@ public final class Commerce {
         return false;
     }
 
+    /**
+     * The same answer for the attach menu, just before it gives the Wallet button a place. False
+     * numbers the other buttons the way an account without Wallet gets them.
+     */
+    public static boolean showAttachWallet(boolean available) {
+        if (!available || !enabled()) return available;
+        HookStatus.counted(FamilyNames.HIDE_COMMERCE, "attach menu Wallet button hidden");
+        return false;
+    }
+
+    /**
+     * Asked at the start of the chat list menu's Wallet entry. False skips straight past it, and
+     * the menu carries on the way it does after adding Wallet.
+     */
+    public static boolean showMenuWallet(boolean available) {
+        if (!available || !enabled()) return available;
+        HookStatus.counted(FamilyNames.HIDE_COMMERCE, "chat list menu Wallet item hidden");
+        return false;
+    }
+
     /** Filters the stock presence decision before the cached tab strip is compared and rebuilt. */
     public static boolean showGiftsTab(boolean visible) {
         if (!visible || !enabled()) return visible;

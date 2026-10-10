@@ -4,17 +4,20 @@
  */
 package app.morphe.patches.telegram.misc.commerce
 
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.handleTargets
 import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
+import app.morphe.patches.telegram.misc.extension.requireParameterIntact
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
@@ -47,6 +50,10 @@ internal const val WALLET_LABEL = "Lorg/telegram/messenger/R\$string;->WalletAtt
 internal const val WALLET_AVAILABLE = "Lorg/telegram/messenger/AppGlobalConfig;->walletAvailable:Lorg/telegram/messenger/AppGlobalConfig\$ConfigBoolean;"
 private const val CONFIG_GET = "Lorg/telegram/messenger/AppGlobalConfig\$ConfigBoolean;->get()Z"
 private const val WALLET_ROW = 25
+// The chat list's menu, found by the entries Telegram adds before Wallet with the same add.
+internal val MENU_NEIGHBORS = listOf("NewGroup", "SavedMessages").map { "Lorg/telegram/messenger/R\$string;->$it:I" }
+private val MENU_ADD = listOf("I", "Ljava/lang/CharSequence;", "Ljava/lang/Runnable;", "Z")
+internal const val MENU_WALLET_LABEL = "hush_menu_wallet"
 private const val TABS = "Lorg/telegram/ui/Components/ScrollSlidingTextTabStrip;"
 private const val ARRAY_LIST = "Ljava/util/ArrayList;"
 private const val APPEND = "$ARRAY_LIST->add(Ljava/lang/Object;)Z"
@@ -62,9 +69,9 @@ private val CONSTANTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST, Opc
 @Suppress("unused")
 val hideCommercePatch = bytecodePatch(
     name = PATCH,
-    description = "Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Gifts tabs on profiles, " +
-        "and the Gift button in channels, for a less cluttered app. On by default. Turn it off in " +
-        "HushTelegram settings > Chats.",
+    description = "Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, the Wallet button " +
+        "from the chat list and attach menus, Gifts tabs on profiles, and the Gift button in channels, for a less " +
+        "cluttered app. On by default. Turn it off in HushTelegram settings > Chats.",
     default = true,
 ) {
     category("Ads")
@@ -87,12 +94,14 @@ val hideCommercePatch = bytecodePatch(
             else {
                 edits.sortedByDescending { it.index }.forEach { edit ->
                     if (edit.replace) edit.method.replaceInstruction(edit.index, edit.code)
-                    else edit.method.addInstructionsAtControlFlowLabel(edit.index, edit.code)
+                    else edit.method.addInstructionsAtControlFlowLabel(edit.index, edit.code, *edit.labels.toTypedArray())
                 }
                 when (target) {
                     CommerceTarget.SETTINGS -> enableCapability("commerceSettingsRows")
                     CommerceTarget.PROFILE_GIFTS -> enableCapability("commerceProfileGifts")
                     CommerceTarget.CHANNEL_GIFT -> enableCapability("commerceChannelGift")
+                    CommerceTarget.ATTACH_WALLET -> enableCapability("commerceAttachWallet")
+                    CommerceTarget.MENU_WALLET -> enableCapability("commerceMenuWallet")
                 }
                 null
             }
@@ -103,9 +112,16 @@ val hideCommercePatch = bytecodePatch(
 
 internal enum class CommerceTarget(val capability: String) {
     SETTINGS("commerceSettingsRows"), PROFILE_GIFTS("commerceProfileGifts"), CHANNEL_GIFT("commerceChannelGift"),
+    ATTACH_WALLET("commerceAttachWallet"), MENU_WALLET("commerceMenuWallet"),
 }
 
-internal data class CommerceEdit(val method: MutableMethod, val index: Int, val code: String, val replace: Boolean = false)
+internal data class CommerceEdit(
+    val method: MutableMethod,
+    val index: Int,
+    val code: String,
+    val replace: Boolean = false,
+    val labels: List<ExternalLabel> = emptyList(),
+)
 internal data class CommercePlan(
     val hooks: Map<CommerceTarget, List<CommerceEdit>>,
     val giftTabId: Int?,
@@ -182,7 +198,132 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
         hooks[CommerceTarget.CHANNEL_GIFT] = listOf(CommerceEdit(method, 0,
             "invoke-static/range {v$index .. v$visible}, $COMMERCE->showChannelGiftButton(IZ)Z\nmove-result v$visible"))
     }
+
+    // Telegram 13.0's attach menu: the button binder is the one bound by position that labels a
+    // button Wallet.
+    val binder = methods.filter { method -> method.returnType == "V" && !AccessFlags.STATIC.isSet(method.accessFlags) &&
+        method.parameterTypes.size == 2 && method.parameterTypes[1].toString() == "I" &&
+        method.instructions().any { it.reference() == WALLET_LABEL }
+    }.unique("attach menu button binder")
+    if (binder != null) hooks[CommerceTarget.ATTACH_WALLET] = attachWalletEdits(mutable(binder), methods, ::mutable)
+
+    // The chat list's menu adds Wallet after New Group and Saved Messages.
+    val menu = methods.filter { method -> method.hasShape(emptyList(), "V") && !AccessFlags.STATIC.isSet(method.accessFlags) &&
+        method.instructions().let { body -> body.any { it.reference() == WALLET_LABEL } &&
+            MENU_NEIGHBORS.all { label -> body.any { it.reference() == label } } }
+    }.unique("chat list menu with Wallet")
+    if (menu != null) hooks[CommerceTarget.MENU_WALLET] = listOf(menuWalletEdit(mutable(menu)))
     return CommercePlan(hooks, giftTabId, giftButtonIndex)
+}
+
+/**
+ * Telegram 13.0's attach menu numbers its buttons each time the menu is built, and gives Wallet a
+ * number only while the server's walletAvailable flag reads true. The binder puts the Wallet label
+ * on whatever number that is. The hook takes the flag's answer just before its branch, so a hidden
+ * button leaves the numbering exactly as an account without Wallet gets it, every other button
+ * (Gallery and File included) still bound to its own number.
+ */
+private fun attachWalletEdits(binder: MutableMethod, methods: List<Method>, mutable: (Method) -> MutableMethod): List<CommerceEdit> {
+    val bound = binder.instructions()
+    val label = bound.indices.filter { bound[it].reference() == WALLET_LABEL }.singleOrNull()
+        ?: throw PatchException("$PATCH: attach menu labels more than one button Wallet (before editing)")
+    val read = bound.getOrNull(label - 2)
+    val position = binder.parameterRegisterNumber(1)
+    val field = read?.reference()
+    val number = read?.namedRegisters()?.firstOrNull()
+    shape(read?.opcode == Opcode.IGET && field != null && field.startsWith("${binder.definingClass}->") && field.endsWith(":I") &&
+        bound[label - 1].opcode == Opcode.IF_NE && number != null && number != position &&
+        bound[label - 1].namedRegisters().sorted() == listOf(position, number).sorted(),
+        "attach menu no longer labels Wallet by its own button number")
+    try {
+        binder.requireParameterIntact(PATCH, 1, listOf(label - 1))
+    } catch (overwritten: PatchException) {
+        shape(false, "attach menu button position is overwritten before Wallet's label")
+    }
+    shape(methods.sumOf { method -> method.instructions().count { it.opcode == Opcode.IGET && it.reference() == field } } == 1,
+        "attach menu Wallet number is read outside its binder")
+    val writers = methods.filter { method -> method.instructions().any { it.opcode == Opcode.IPUT && it.reference() == field } }
+    shape(writers.size == 1 && writers.single().definingClass == binder.definingClass &&
+        writers.single().hasShape(emptyList(), "V"), "attach menu Wallet number has no single numbering pass")
+    val rows = mutable(writers.single())
+    val body = rows.instructions()
+    val flow = ControlFlow.of(rows)
+    val reads = body.indices.filter { body[it].reference() == WALLET_AVAILABLE }
+    shape(reads.size == 1, "attach menu numbering no longer reads walletAvailable once")
+    val gate = gateAfter(body, reads.single(), "attach menu")
+    val skip = flow.normal[gate].singleOrNull { it != gate + 1 }
+    shape(skip != null && skip > gate + 1 && flow.normal[gate].size == 2, "attach menu Wallet availability no longer skips forward")
+    val block = gate + 1 until skip!!
+    shape(block.all { at -> flow.normal[at].all { it in block || it == skip } } &&
+        body.indices.none { it !in block && it != gate && flow.normal[it].any { target -> target in block } },
+        "attach menu Wallet number has another way in or out")
+    val writes = body.indices.filter { body[it].opcode == Opcode.IPUT && body[it].reference() == field }
+    val reset = writes.firstOrNull()
+    // The reset runs before anything branches, so every pass starts with Wallet unnumbered.
+    shape(writes.size == 2 && writes.last() in block && reset != null && reset < gate &&
+        constantBefore(body, reset, body[reset].namedRegisters().first()) == -1 &&
+        (0 until reset).all { flow.normal[it] == listOf(it + 1) } &&
+        body.indices.none { at -> flow.normal[at].any { it in 1..reset && it != at + 1 } },
+        "attach menu no longer numbers Wallet only behind walletAvailable")
+    val available = body[gate].namedRegisters().single()
+    return listOf(CommerceEdit(rows, gate,
+        "invoke-static/range {v$available .. v$available}, $COMMERCE->showAttachWallet(Z)Z\nmove-result v$available"))
+}
+
+/**
+ * The chat list's menu adds Wallet while walletAvailable reads true and then skips the side menu
+ * mini apps, which it only lists for accounts without Wallet. Answering "unavailable" there would
+ * bring those back, so the hook instead jumps from the start of the Wallet entry to the point both
+ * stock paths meet once their entries are in, leaving the menu as a Wallet account has it, minus
+ * Wallet.
+ */
+private fun menuWalletEdit(method: MutableMethod): CommerceEdit {
+    val body = method.instructions()
+    val flow = ControlFlow.of(method)
+    val reads = body.indices.filter { body[it].reference() == WALLET_AVAILABLE }
+    val labels = body.indices.filter { body[it].reference() == WALLET_LABEL }
+    shape(reads.size == 1 && labels.size == 1, "chat list menu no longer reads walletAvailable and Wallet once")
+    val gate = gateAfter(body, reads.single(), "chat list menu")
+    val available = body[gate].namedRegisters().single()
+    val skip = flow.normal[gate].singleOrNull { it != gate + 1 }
+    shape(skip != null && skip > gate + 1 && flow.normal[gate].size == 2, "chat list menu Wallet availability no longer skips forward")
+    val label = labels.single()
+    shape(label in gate + 1 until skip!! && body.getOrNull(label + 1)?.reference() == STRING &&
+        body.getOrNull(label + 2)?.opcode == Opcode.MOVE_RESULT_OBJECT, "chat list menu Wallet entry has no title")
+    val title = body[label + 2].namedRegisters().single()
+    val add = (label + 3 until skip).firstOrNull { body[it].opcode in setOf(Opcode.INVOKE_VIRTUAL, Opcode.INVOKE_VIRTUAL_RANGE) }
+        ?: throw PatchException("$PATCH: chat list menu no longer adds Wallet as an entry (before editing)")
+    val call = body[add].call()
+    shape(call != null && call.returnType == "V" && call.parameterTypes.map { it.toString() } == MENU_ADD &&
+        body[add].namedRegisters().getOrNull(2) == title && (label + 3 until add).none { body[it].writes(title) },
+        "chat list menu no longer adds Wallet as an entry")
+    val saved = body.indexOfFirst { it.reference() == MENU_NEIGHBORS.last() }
+    shape(saved in 0 until reads.single() && (saved until reads.single()).any { body[it].reference() == body[add].reference() },
+        "chat list menu no longer adds Wallet with Saved Messages' add")
+    val entry = gate + 1..add
+    val exit = add + 1
+    // One straight run from the branch to the add, and the instruction after it is where the menu
+    // also arrives without Wallet, so the jump takes a path Telegram already takes.
+    shape(entry.all { flow.normal[it] == listOf(it + 1) && flow.exceptional[it].isEmpty() } &&
+        body.indices.none { at -> at != gate && at !in entry && flow.normal[at].any { it in entry } } &&
+        exit < skip && body.indices.any { at -> at !in gate..add && exit in flow.normal[at] },
+        "chat list menu Wallet entry has another way in or out")
+    shape(available <= 255, "chat list menu Wallet answer is out of a branch's reach")
+    return CommerceEdit(method, gate + 1,
+        "invoke-static/range {v$available .. v$available}, $COMMERCE->showMenuWallet(Z)Z\n" +
+            "move-result v$available\nif-eqz v$available, :$MENU_WALLET_LABEL",
+        labels = listOf(ExternalLabel(MENU_WALLET_LABEL, method.getInstruction(exit))))
+}
+
+/** The if-eqz right after walletAvailable's read, which decides on its answer alone. */
+private fun gateAfter(body: List<Instruction>, read: Int, where: String): Int {
+    val flag = body[read].namedRegisters().firstOrNull()
+    val gate = read + 3
+    shape(body[read].opcode == Opcode.IGET_OBJECT && body.getOrNull(read + 1)?.reference() == CONFIG_GET &&
+        body[read + 1].namedRegisters() == listOf(flag) && body.getOrNull(read + 2)?.opcode == Opcode.MOVE_RESULT &&
+        body.getOrNull(gate)?.opcode == Opcode.IF_EQZ && body[gate].namedRegisters() == body[read + 2].namedRegisters(),
+        "$where Wallet availability no longer decides its branch at once")
+    return gate
 }
 
 private fun settingsEdits(method: MutableMethod): List<CommerceEdit> {

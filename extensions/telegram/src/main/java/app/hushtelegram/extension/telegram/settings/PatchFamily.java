@@ -196,6 +196,8 @@ public enum PatchFamily {
         COMMERCE_SETTINGS_ROWS(HIDE_COMMERCE, "commerceSettingsRows", "Settings sales rows"),
         COMMERCE_PROFILE_GIFTS(HIDE_COMMERCE, "commerceProfileGifts", "profile Gifts tabs"),
         COMMERCE_CHANNEL_GIFT(HIDE_COMMERCE, "commerceChannelGift", "channel Gift button"),
+        COMMERCE_ATTACH_WALLET(HIDE_COMMERCE, "commerceAttachWallet", "attach menu Wallet button"),
+        COMMERCE_MENU_WALLET(HIDE_COMMERCE, "commerceMenuWallet", "chat list menu Wallet item"),
         PROMOTIONAL_SUGGESTIONS(HIDE_PROMOTIONAL_BANNERS, "promotionalSuggestions", "promotional suggestions"),
         BIRTHDAY_GIFT_BANNER(HIDE_PROMOTIONAL_BANNERS, "birthdayGiftBanner", "birthday gift banner"),
         CACHED_PROXY_DIALOG(HIDE_SPONSORED_PROXY, "cachedProxyDialog", "cached proxy channel"),

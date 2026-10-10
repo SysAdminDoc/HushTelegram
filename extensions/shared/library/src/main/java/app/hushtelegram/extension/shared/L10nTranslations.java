@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(774);
+        Map<String, String> table = new HashMap<>(778);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -516,8 +516,8 @@ public final class L10nTranslations {
                 "%1$d behaltene Nachricht entfernt.");
         table.put("Removed %1$d kept messages.",
                 "%1$d behaltene Nachrichten entfernt.");
-        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.",
-                "Entfernt Premium, Stars, My Grams, Wallet, Business und Geschenk senden aus den Einstellungen, die Geschenke-Tabs in Profilen und die Geschenk-Schaltfl\u00e4che in Kan\u00e4len.");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, the Wallet button from the chat list and attach menus, Gifts tabs on profiles, and the Gift button in channels.",
+                "Entfernt Premium, Stars, My Grams, Wallet, Business und Geschenk senden aus den Einstellungen, die Wallet-Schaltfl\u00e4che aus dem Chatlisten- und dem Anh\u00e4ngemen\u00fc, die Geschenke-Tabs in Profilen und die Geschenk-Schaltfl\u00e4che in Kan\u00e4len.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
                 "Entfernt gesponserte Nachrichten in Kan\u00e4len, gesponserte Konten in der Suche und Werbung in Videos. Sie werden nie geladen, daher z\u00e4hlt keine als gesehen.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
@@ -778,6 +778,8 @@ public final class L10nTranslations {
                 "Deine Schalter entsprechen bereits dieser Datei, es \u00e4ndert sich also nichts.");
         table.put("Your switches are working.",
                 "Deine Schalter sind aktiv.");
+        table.put("attach menu Wallet button",
+                "Wallet-Schaltfl\u00e4che im Anh\u00e4ngemen\u00fc");
         table.put("avatar story rings",
                 "Story-Ringe an Avataren");
         table.put("avatar story taps",
@@ -792,11 +794,11 @@ public final class L10nTranslations {
                 "gespeicherte Proxy-Eintr\u00e4ge in Ordnern");
         table.put("cached recommendations",
                 "gespeicherte Empfehlungen");
-        table.put("call debug reports",
-                "Anrufdiagnoseberichte");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("call debug reports",
+                "Anrufdiagnoseberichte");
         table.put("call log file uploads",
                 "Uploads von Anrufprotokolldateien");
         table.put("call log reports",
@@ -813,6 +815,8 @@ public final class L10nTranslations {
                 "Chat-Reaktionen durch Doppeltippen");
         table.put("chat drafts",
                 "Chat-Entw\u00fcrfe");
+        table.put("chat list menu Wallet item",
+                "Wallet-Eintrag im Chatlisten-Men\u00fc");
         table.put("chat-list story bar",
                 "Story-Leiste der Chatliste");
         table.put("compose text paste",
@@ -854,7 +858,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(774);
+        Map<String, String> table = new HashMap<>(778);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1323,8 +1327,8 @@ public final class L10nTranslations {
                 "Se elimin\u00f3 %1$d mensaje conservado.");
         table.put("Removed %1$d kept messages.",
                 "Se eliminaron %1$d mensajes conservados.");
-        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.",
-                "Quita Premium, Stars, My Grams, Billetera, Business y Enviar un regalo de los ajustes, las pesta\u00f1as de regalos en los perfiles y el bot\u00f3n de regalo en los canales.");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, the Wallet button from the chat list and attach menus, Gifts tabs on profiles, and the Gift button in channels.",
+                "Quita Premium, Stars, My Grams, Billetera, Business y Enviar un regalo de los ajustes, el bot\u00f3n de Billetera de los men\u00fas de la lista de chats y de adjuntos, las pesta\u00f1as de regalos en los perfiles y el bot\u00f3n de regalo en los canales.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
                 "Quita los mensajes patrocinados en canales, las cuentas patrocinadas en la b\u00fasqueda y los anuncios en videos. Nunca se cargan, as\u00ed que ninguno cuenta como visto.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
@@ -1585,6 +1589,8 @@ public final class L10nTranslations {
                 "Tus interruptores ya coinciden con ese archivo, as\u00ed que no cambiar\u00e1 nada.");
         table.put("Your switches are working.",
                 "Tus interruptores est\u00e1n funcionando.");
+        table.put("attach menu Wallet button",
+                "bot\u00f3n de Billetera del men\u00fa de adjuntos");
         table.put("avatar story rings",
                 "anillos de historias en los avatares");
         table.put("avatar story taps",
@@ -1599,11 +1605,11 @@ public final class L10nTranslations {
                 "entradas del proxy almacenadas en carpetas");
         table.put("cached recommendations",
                 "recomendaciones guardadas");
-        table.put("call debug reports",
-                "informes de depuraci\u00f3n de llamadas");
     }
 
     private static void fillEs6(Map<String, String> table) {
+        table.put("call debug reports",
+                "informes de depuraci\u00f3n de llamadas");
         table.put("call log file uploads",
                 "subidas de archivos de registro de llamadas");
         table.put("call log reports",
@@ -1620,6 +1626,8 @@ public final class L10nTranslations {
                 "reacciones al tocar dos veces en chats");
         table.put("chat drafts",
                 "borradores de chat");
+        table.put("chat list menu Wallet item",
+                "opci\u00f3n de Billetera del men\u00fa de la lista de chats");
         table.put("chat-list story bar",
                 "barra de historias de la lista de chats");
         table.put("compose text paste",
@@ -1661,7 +1669,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(774);
+        Map<String, String> table = new HashMap<>(778);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2130,8 +2138,8 @@ public final class L10nTranslations {
                 "%1$d pesan yang disimpan telah dihapus.");
         table.put("Removed %1$d kept messages.",
                 "%1$d pesan yang disimpan telah dihapus.");
-        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.",
-                "Menghapus Premium, Stars, My Grams, Dompet, Business, dan Kirim Hadiah dari Pengaturan, tab Hadiah di profil, dan tombol Hadiah di kanal.");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, the Wallet button from the chat list and attach menus, Gifts tabs on profiles, and the Gift button in channels.",
+                "Menghapus Premium, Stars, My Grams, Dompet, Business, dan Kirim Hadiah dari Pengaturan, tombol Dompet dari menu daftar chat dan menu lampiran, tab Hadiah di profil, dan tombol Hadiah di kanal.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
                 "Menghapus pesan bersponsor di kanal, akun bersponsor di pencarian, dan iklan di video. Semuanya tidak pernah dimuat, jadi tidak ada yang dihitung sebagai dilihat.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
@@ -2392,6 +2400,8 @@ public final class L10nTranslations {
                 "Sakelar Anda sudah sesuai dengan file itu, jadi tidak ada yang akan berubah.");
         table.put("Your switches are working.",
                 "Sakelar Anda aktif.");
+        table.put("attach menu Wallet button",
+                "tombol Dompet di menu lampiran");
         table.put("avatar story rings",
                 "lingkaran cerita pada avatar");
         table.put("avatar story taps",
@@ -2406,11 +2416,11 @@ public final class L10nTranslations {
                 "entri proxy tersimpan di folder");
         table.put("cached recommendations",
                 "rekomendasi tersimpan");
-        table.put("call debug reports",
-                "laporan debug panggilan");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("call debug reports",
+                "laporan debug panggilan");
         table.put("call log file uploads",
                 "unggahan berkas log panggilan");
         table.put("call log reports",
@@ -2427,6 +2437,8 @@ public final class L10nTranslations {
                 "reaksi ketuk dua kali di chat");
         table.put("chat drafts",
                 "draf chat");
+        table.put("chat list menu Wallet item",
+                "item Dompet di menu daftar chat");
         table.put("chat-list story bar",
                 "bilah cerita di daftar chat");
         table.put("compose text paste",
@@ -2468,7 +2480,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(774);
+        Map<String, String> table = new HashMap<>(778);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2937,8 +2949,8 @@ public final class L10nTranslations {
                 "%1$d mensagem mantida removida.");
         table.put("Removed %1$d kept messages.",
                 "%1$d mensagens mantidas removidas.");
-        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.",
-                "Remove Premium, Stars, My Grams, Carteira, Business e Enviar presente das configura\u00e7\u00f5es, as abas de presentes nos perfis e o bot\u00e3o de presente nos canais.");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, the Wallet button from the chat list and attach menus, Gifts tabs on profiles, and the Gift button in channels.",
+                "Remove Premium, Stars, My Grams, Carteira, Business e Enviar presente das configura\u00e7\u00f5es, o bot\u00e3o Carteira dos menus da lista de conversas e de anexos, as abas de presentes nos perfis e o bot\u00e3o de presente nos canais.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
                 "Remove mensagens patrocinadas em canais, contas patrocinadas na busca e an\u00fancios em v\u00eddeos. Eles nunca s\u00e3o carregados, ent\u00e3o nenhum conta como visto.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
@@ -3199,6 +3211,8 @@ public final class L10nTranslations {
                 "Suas op\u00e7\u00f5es j\u00e1 correspondem \u00e0s desse arquivo, ent\u00e3o nada ser\u00e1 alterado.");
         table.put("Your switches are working.",
                 "Suas op\u00e7\u00f5es est\u00e3o funcionando.");
+        table.put("attach menu Wallet button",
+                "bot\u00e3o Carteira do menu de anexos");
         table.put("avatar story rings",
                 "an\u00e9is de stories nos avatares");
         table.put("avatar story taps",
@@ -3213,11 +3227,11 @@ public final class L10nTranslations {
                 "entradas do proxy armazenadas nas pastas");
         table.put("cached recommendations",
                 "recomenda\u00e7\u00f5es armazenadas");
-        table.put("call debug reports",
-                "relat\u00f3rios de depura\u00e7\u00e3o de chamadas");
     }
 
     private static void fillPt_rBR6(Map<String, String> table) {
+        table.put("call debug reports",
+                "relat\u00f3rios de depura\u00e7\u00e3o de chamadas");
         table.put("call log file uploads",
                 "envios de arquivos de registro de chamadas");
         table.put("call log reports",
@@ -3234,6 +3248,8 @@ public final class L10nTranslations {
                 "rea\u00e7\u00f5es por toque duplo nos chats");
         table.put("chat drafts",
                 "rascunhos de chat");
+        table.put("chat list menu Wallet item",
+                "item Carteira do menu da lista de conversas");
         table.put("chat-list story bar",
                 "barra de stories da lista de conversas");
         table.put("compose text paste",
@@ -3275,7 +3291,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(774);
+        Map<String, String> table = new HashMap<>(778);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -3744,8 +3760,8 @@ public final class L10nTranslations {
                 "%1$d saklanan mesaj kald\u0131r\u0131ld\u0131.");
         table.put("Removed %1$d kept messages.",
                 "%1$d saklanan mesaj kald\u0131r\u0131ld\u0131.");
-        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.",
-                "Premium, Stars, My Grams, C\u00fczdan, Business ve Hediye G\u00f6nder'i Ayarlar'dan, profillerdeki Hediyeler sekmelerini ve kanallardaki Hediye d\u00fc\u011fmesini kald\u0131r\u0131r.");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, the Wallet button from the chat list and attach menus, Gifts tabs on profiles, and the Gift button in channels.",
+                "Premium, Stars, My Grams, C\u00fczdan, Business ve Hediye G\u00f6nder'i Ayarlar'dan, C\u00fczdan d\u00fc\u011fmesini sohbet listesi ve ek men\u00fclerinden, profillerdeki Hediyeler sekmelerini ve kanallardaki Hediye d\u00fc\u011fmesini kald\u0131r\u0131r.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
                 "Kanallardaki sponsorlu mesajlar\u0131, aramadaki sponsorlu hesaplar\u0131 ve videolardaki reklamlar\u0131 kald\u0131r\u0131r. Hi\u00e7biri y\u00fcklenmez, bu y\u00fczden hi\u00e7biri g\u00f6r\u00fclm\u00fc\u015f say\u0131lmaz.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
@@ -4006,6 +4022,8 @@ public final class L10nTranslations {
                 "Anahtarlar\u0131n zaten o dosyayla ayn\u0131, bu y\u00fczden hi\u00e7bir \u015fey de\u011fi\u015fmeyecek.");
         table.put("Your switches are working.",
                 "Anahtarlar\u0131n\u0131z \u00e7al\u0131\u015f\u0131yor.");
+        table.put("attach menu Wallet button",
+                "ek men\u00fcs\u00fcndeki C\u00fczdan d\u00fc\u011fmesi");
         table.put("avatar story rings",
                 "avatar hik\u00e2ye halkalar\u0131");
         table.put("avatar story taps",
@@ -4020,11 +4038,11 @@ public final class L10nTranslations {
                 "klas\u00f6rlerdeki kay\u0131tl\u0131 proxy girdileri");
         table.put("cached recommendations",
                 "kay\u0131tl\u0131 \u00f6neriler");
-        table.put("call debug reports",
-                "arama hata ay\u0131klama raporlar\u0131");
     }
 
     private static void fillTr6(Map<String, String> table) {
+        table.put("call debug reports",
+                "arama hata ay\u0131klama raporlar\u0131");
         table.put("call log file uploads",
                 "arama g\u00fcnl\u00fck dosyas\u0131 y\u00fcklemeleri");
         table.put("call log reports",
@@ -4041,6 +4059,8 @@ public final class L10nTranslations {
                 "sohbette \u00e7ift dokunma tepkileri");
         table.put("chat drafts",
                 "sohbet taslaklar\u0131");
+        table.put("chat list menu Wallet item",
+                "sohbet listesi men\u00fcs\u00fcndeki C\u00fczdan \u00f6\u011fesi");
         table.put("chat-list story bar",
                 "sohbet listesindeki hik\u00e2ye \u00e7ubu\u011fu");
         table.put("compose text paste",

@@ -184,10 +184,12 @@ call debug reports	arama hata ayıklama raporları
 call log file uploads	arama günlük dosyası yüklemeleri
 call log reports	arama günlük raporları
 Hide Premium, gifts and Stars	Premium, hediyeler ve Stars'ı gizle
-Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.	Premium, Stars, My Grams, Cüzdan, Business ve Hediye Gönder'i Ayarlar'dan, profillerdeki Hediyeler sekmelerini ve kanallardaki Hediye düğmesini kaldırır.
+Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, the Wallet button from the chat list and attach menus, Gifts tabs on profiles, and the Gift button in channels.	Premium, Stars, My Grams, Cüzdan, Business ve Hediye Gönder'i Ayarlar'dan, Cüzdan düğmesini sohbet listesi ve ek menülerinden, profillerdeki Hediyeler sekmelerini ve kanallardaki Hediye düğmesini kaldırır.
 Settings sales rows	Ayarlar'daki satış seçenekleri
 profile Gifts tabs	profil Hediyeler sekmeleri
 channel Gift button	kanal Hediye düğmesi
+attach menu Wallet button	ek menüsündeki Cüzdan düğmesi
+chat list menu Wallet item	sohbet listesi menüsündeki Cüzdan öğesi
 Hide promotional banners	Tanıtım afişlerini gizle
 Hides the Premium, birthday and low Stars balance banners above your chat list. Account security notices and other suggestions still show.	Sohbet listenizin üstündeki Premium, doğum günü ve düşük Stars bakiyesi afişlerini gizler. Hesap güvenliği bildirimleri ve diğer öneriler görünmeye devam eder.
 promotional suggestions	tanıtım önerileri

@@ -131,7 +131,9 @@ class NativeSettingsFixtureTest {
             val method = plan.hooks.getValue(CommerceTarget.SETTINGS).first().method
             val before = operations(method)
             val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
-            assertEquals(2, warnings.size)
+            // Only Settings is loaded here: the profile, channel, attach menu and chat list menu
+            // targets each report themselves missing.
+            assertEquals(CommerceTarget.entries.size - 1, warnings.size)
             assertEquals(1, method.body().count { it.ref()?.contains("->$NATIVE_ROW_BRIDGE(") == true })
             assertEquals(5, method.body().count { it.ref()?.contains("->addSettingsRow(") == true })
             val body = method.body()
@@ -142,7 +144,7 @@ class NativeSettingsFixtureTest {
             assertEquals(before.filterNot { it[1] == APPEND }, operations(method, skip = { instruction -> added.any { it === instruction } }).filterNot {
                 it[1] == APPEND || it[1]?.toString()?.contains("->addSettingsRow(") == true })
             for ((name, expected) in mapOf("hideCommerce" to 1, "commerceSettingsRows" to 1,
-                "commerceProfileGifts" to 0, "commerceChannelGift" to 0)) {
+                "commerceProfileGifts" to 0, "commerceChannelGift" to 0, "commerceAttachWallet" to 0, "commerceMenuWallet" to 0)) {
                 val flag = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }
                 assertEquals(expected, (flag.body().first() as NarrowLiteralInstruction).narrowLiteral)
             }
