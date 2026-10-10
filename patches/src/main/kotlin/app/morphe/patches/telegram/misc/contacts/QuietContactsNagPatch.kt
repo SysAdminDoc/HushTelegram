@@ -38,6 +38,8 @@ internal const val READ_CONTACTS = "android.permission.READ_CONTACTS"
 internal const val ASKED_ANYWHERE = "askAboutContacts"
 internal const val ASKED_IN_CONTACTS = "askAboutContacts2"
 private const val ACTIVITY = "Landroid/app/Activity;"
+/** Since Telegram 13.0 the permission check goes through Context, which declares it. */
+private const val CONTEXT = "Landroid/content/Context;"
 
 @Suppress("unused")
 val quietContactsNagPatch = bytecodePatch(
@@ -128,7 +130,7 @@ internal fun BytecodePatchContext.resolveContactsNagSites(): ContactsNagSites {
     val visible = visibles.one("Contacts tab check")
     val ask = mutableClassDefBy(visible.definingClass).methods.single { it.sameAs(visible) }
     val askBody = ask.instructions()
-    val check = askBody.indices.filter { askBody[it].call()?.let { call -> call.name == "checkSelfPermission" && call.definingClass == ACTIVITY } == true }
+    val check = askBody.indices.filter { askBody[it].call()?.let { call -> call.name == "checkSelfPermission" && call.definingClass in setOf(ACTIVITY, CONTEXT) } == true }
         .one("permission check in the Contacts tab")
     shape(askBody[check].namedRegisters()[1].writtenLastBy(askBody, check)?.string() == READ_CONTACTS,
         "the Contacts tab no longer checks contacts permission")
