@@ -228,3 +228,6 @@ try {
     Remove-Item -LiteralPath $scratch -Recurse -Force -ErrorAction SilentlyContinue
 }
 Write-Host "[release] release text and stage order contracts passed ($cases cases)"
+# The stage order cases end on release.ps1 runs that refuse, and a caller reads their exit code
+# as this script's own unless it says otherwise.
+exit 0
