@@ -63,7 +63,8 @@ public class SystemFontTest {
 
     @Test public void digitsInstantViewAndUnknownFilesKeepTelegramsOwn() {
         Settings.USE_SYSTEM_FONT.save(true);
-        for (String asset : new String[]{"fonts/num.otf", "fonts/mw_bold.ttf", "fonts/mw_bolditalic.ttf", "fonts/custom.ttf", ""}) {
+        for (String asset : new String[]{"fonts/num.otf", "fonts/mw_bold.ttf", "fonts/mw_bolditalic.ttf", "fonts/gram.ttf",
+                "fonts/rmono_var.ttf", "fonts/custom.ttf", ""}) {
             assertNull(asset, SystemFont.typeface(asset));
         }
         assertNull(SystemFont.typeface(null));

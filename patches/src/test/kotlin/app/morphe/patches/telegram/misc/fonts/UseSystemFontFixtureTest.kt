@@ -89,8 +89,10 @@ class UseSystemFontFixtureTest {
             val named = hosts(build).flatMap { it.methods }.flatMap { m -> m.controlBody().mapNotNull { it.controlString() } }
                 .filter { it.startsWith("fonts/") && (it.endsWith(".ttf") || it.endsWith(".otf")) }.toSet()
             assertEquals("${build.name}: the switch's files", ROBOTO_ASSETS, named.intersect(ROBOTO_ASSETS))
-            assertEquals("${build.name}: digits and Instant View keep Telegram's files", setOf("fonts/num.otf", "fonts/mw_bold.ttf", "fonts/mw_bolditalic.ttf"),
-                named - ROBOTO_ASSETS)
+            // Telegram 13.0's wallet adds the Gram currency glyph face and a variable Roboto Mono it
+            // builds straight from assets for card numbers; both stay as bundled, like the digits face.
+            assertEquals("${build.name}: digits, Instant View and wallet keep Telegram's files", setOf("fonts/num.otf", "fonts/mw_bold.ttf",
+                "fonts/mw_bolditalic.ttf", "fonts/gram.ttf", "fonts/rmono_var.ttf"), named - ROBOTO_ASSETS)
             // bold() is the medium face most of Telegram draws with.
             val bold = hosts(build).single { it.type == ANDROID_UTILITIES }.methods.single { it.name == "bold" && it.parameterTypes.isEmpty() }.controlBody()
             assertTrue("${build.name}: bold() loads the medium file through the loader", bold.any { it.controlString() == "fonts/rmedium.ttf" } &&
