@@ -153,7 +153,8 @@ public class PausedHooksTest {
                 Recommendations::skipRecommendations, Recommendations::skipCachedRecommendations));
         probes.put(PatchFamily.HIDE_COMMERCE, Arrays.asList(
                 () -> !app.hushtelegram.extension.telegram.misc.Commerce.addSettingsRow(new ArrayList<>(), new Object()),
-                () -> !app.hushtelegram.extension.telegram.misc.Commerce.showGiftsTab(true)));
+                () -> !app.hushtelegram.extension.telegram.misc.Commerce.showGiftsTab(true),
+                () -> !app.hushtelegram.extension.telegram.misc.Commerce.showWalletRow(true)));
         probes.put(PatchFamily.HIDE_PROMOTIONAL_BANNERS, Arrays.asList(
                 () -> !Suggestions.filterChatList(Collections.singleton("PREMIUM_UPGRADE")).contains("PREMIUM_UPGRADE"),
                 () -> Suggestions.birthdayGiftBannerDismissed(false)));

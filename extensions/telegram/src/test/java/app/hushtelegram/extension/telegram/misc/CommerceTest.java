@@ -63,9 +63,10 @@ public class CommerceTest {
         assertFalse(Commerce.showGiftsTab(true));
         assertFalse(Commerce.addProfileTab(rows, Pair.create(14, "Gifts")));
         assertFalse(Commerce.showChannelGiftButton(1, true));
+        assertFalse(Commerce.showWalletRow(true));
         String report = HookStatus.report().get(0);
         for (String count : new String[]{"Settings sales row hidden 5", "Gifts tab hidden 1",
-                "Gifts tab candidate hidden 1", "channel Gift button hidden 1"}) {
+                "Gifts tab candidate hidden 1", "channel Gift button hidden 1", "Settings Wallet row hidden 1"}) {
             assertTrue(report, report.contains(count));
         }
     }
@@ -83,6 +84,17 @@ public class CommerceTest {
         }
         assertFalse(Commerce.showGiftsTab(false));
         assertFalse(Commerce.showChannelGiftButton(1, false));
+        assertNoSuppression();
+    }
+
+    @Test public void anAccountWithoutWalletStaysWithoutItAndTheSwitchOffKeepsTheRow() {
+        assertFalse("Telegram's own unavailable answer is never turned around", Commerce.showWalletRow(false));
+        assertNoSuppression();
+        assertFalse(Commerce.showWalletRow(true));
+        Settings.HIDE_COMMERCE.save(false);
+        HookStatus.clear();
+        assertTrue(Commerce.showWalletRow(true));
+        assertFalse(Commerce.showWalletRow(false));
         assertNoSuppression();
     }
 
@@ -179,6 +191,8 @@ public class CommerceTest {
         assertFalse(Commerce.showGiftsTab(false));
         assertTrue(Commerce.showChannelGiftButton(1, true));
         assertFalse(Commerce.showChannelGiftButton(1, false));
+        assertTrue(Commerce.showWalletRow(true));
+        assertFalse(Commerce.showWalletRow(false));
     }
 
     private void assertNoSuppression() {

@@ -41,6 +41,12 @@ internal const val GIFT_ICON = "Lorg/telegram/messenger/R\$drawable;->input_gift
 // Telegram 13.0 renamed My TON's label to GramEarnings; the row (ID 13, its colors and factory) is the same.
 internal val SETTINGS_SALES = listOf("TelegramPremium", "TelegramStars", "GramEarnings", "TelegramBusiness", "SendAGift")
     .map { "Lorg/telegram/messenger/R\$string;->$it:I" }
+// Telegram 13.0's Wallet row (click identity 25). The builder places it at the top while it's new
+// and after Language later, each placement behind the server's walletAvailable flag.
+internal const val WALLET_LABEL = "Lorg/telegram/messenger/R\$string;->WalletAttachMoney:I"
+internal const val WALLET_AVAILABLE = "Lorg/telegram/messenger/AppGlobalConfig;->walletAvailable:Lorg/telegram/messenger/AppGlobalConfig\$ConfigBoolean;"
+private const val CONFIG_GET = "Lorg/telegram/messenger/AppGlobalConfig\$ConfigBoolean;->get()Z"
+private const val WALLET_ROW = 25
 private const val TABS = "Lorg/telegram/ui/Components/ScrollSlidingTextTabStrip;"
 private const val ARRAY_LIST = "Ljava/util/ArrayList;"
 private const val APPEND = "$ARRAY_LIST->add(Ljava/lang/Object;)Z"
@@ -56,7 +62,7 @@ private val CONSTANTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST, Opc
 @Suppress("unused")
 val hideCommercePatch = bytecodePatch(
     name = PATCH,
-    description = "Removes Premium, Stars, My Grams, Business and Send a Gift from Settings, Gifts tabs on profiles, " +
+    description = "Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Gifts tabs on profiles, " +
         "and the Gift button in channels, for a less cluttered app. On by default. Turn it off in " +
         "HushTelegram settings > Chats.",
     default = true,
@@ -211,7 +217,48 @@ private fun settingsEdits(method: MutableMethod): List<CommerceEdit> {
     val alias = body.indices.filter { body[it].opcode in setOf(Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16) &&
         body[it].namedRegisters() == listOf(rows, method.parameterRegisterNumber(1)) }.unique("Settings destination parameter alias")
     shape(alias != null && body.indices.none { it != alias && body[it].writes(rows) }, "Settings destination is overwritten")
-    return edits
+    return edits + walletEdits(method, factories.single(), rows)
+}
+
+/**
+ * Telegram adds its Wallet row and the divider after it only while the server's walletAvailable
+ * flag reads true. The hook takes that answer just before its branch, so a hidden row leaves the
+ * list exactly as it is for accounts without Wallet. A build without the row gets no edit.
+ */
+private fun walletEdits(method: MutableMethod, factory: String, rows: Int): List<CommerceEdit> {
+    val body = method.instructions()
+    val flow = ControlFlow.of(method)
+    val labels = body.indices.filter { body[it].reference() == WALLET_LABEL }
+    val reads = body.indices.filter { body[it].reference() == WALLET_AVAILABLE }
+    shape(labels.size == reads.size, "Wallet labels and availability reads no longer pair up")
+    return reads.map { read ->
+        val flag = body[read].namedRegisters().firstOrNull()
+        val gate = read + 3
+        shape(body[read].opcode == Opcode.IGET_OBJECT && body.getOrNull(read + 1)?.reference() == CONFIG_GET &&
+            body[read + 1].namedRegisters() == listOf(flag) && body.getOrNull(read + 2)?.opcode == Opcode.MOVE_RESULT &&
+            body.getOrNull(gate)?.opcode == Opcode.IF_EQZ && body[gate].namedRegisters() == body[read + 2].namedRegisters(),
+            "Wallet availability no longer decides its branch at once")
+        val available = body[gate].namedRegisters().single()
+        val skip = flow.normal[gate].singleOrNull { it != gate + 1 }
+        shape(skip != null && skip > gate + 1 && flow.normal[gate].size == 2, "Wallet availability no longer skips forward")
+        val block = gate + 1 until skip!!
+        shape(block.all { at -> flow.normal[at].all { it in block || it == skip } } &&
+            body.indices.none { it !in block && it != gate && flow.normal[it].any { target -> target in block } },
+            "Wallet row has another way in or out")
+        val label = labels.filter { it in block }.singleOrNull()
+        val made = block.filter { body[it].reference() == factory }
+        val appends = block.filter { body[it].reference() == APPEND }
+        shape(label != null && made.size == 1 && made.single() > label, "Wallet branch no longer builds one Wallet row")
+        val row = made.single()
+        shape(constantBefore(body, row, body[row].namedRegisters().first()) == WALLET_ROW &&
+            body.getOrNull(row + 1)?.opcode == Opcode.MOVE_RESULT_OBJECT && appends.firstOrNull() == row + 2 &&
+            body[row + 2].namedRegisters() == listOf(rows, body[row + 1].namedRegisters().single()),
+            "Wallet branch no longer adds row $WALLET_ROW to the Settings list")
+        shape(appends.size == 2 && appends.last() == skip - 1 && body[skip - 1].namedRegisters().first() == rows,
+            "Wallet branch no longer ends with the row's divider")
+        CommerceEdit(method, gate,
+            "invoke-static/range {v$available .. v$available}, $COMMERCE->showWalletRow(Z)Z\nmove-result v$available")
+    }
 }
 
 private fun profileEdits(method: MutableMethod, gifts: Int, hasTab: String, clear: String): List<CommerceEdit> {

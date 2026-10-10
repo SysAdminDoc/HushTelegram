@@ -516,8 +516,8 @@ public final class L10nTranslations {
                 "%1$d behaltene Nachricht entfernt.");
         table.put("Removed %1$d kept messages.",
                 "%1$d behaltene Nachrichten entfernt.");
-        table.put("Removes Premium, Stars, My Grams, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.",
-                "Entfernt Premium, Stars, My Grams, Business und Geschenk senden aus den Einstellungen, die Geschenke-Tabs in Profilen und die Geschenk-Schaltfl\u00e4che in Kan\u00e4len.");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.",
+                "Entfernt Premium, Stars, My Grams, Wallet, Business und Geschenk senden aus den Einstellungen, die Geschenke-Tabs in Profilen und die Geschenk-Schaltfl\u00e4che in Kan\u00e4len.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
                 "Entfernt gesponserte Nachrichten in Kan\u00e4len, gesponserte Konten in der Suche und Werbung in Videos. Sie werden nie geladen, daher z\u00e4hlt keine als gesehen.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
@@ -1321,8 +1321,8 @@ public final class L10nTranslations {
                 "Se elimin\u00f3 %1$d mensaje conservado.");
         table.put("Removed %1$d kept messages.",
                 "Se eliminaron %1$d mensajes conservados.");
-        table.put("Removes Premium, Stars, My Grams, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.",
-                "Quita Premium, Stars, My Grams, Business y Enviar un regalo de los ajustes, las pesta\u00f1as de regalos en los perfiles y el bot\u00f3n de regalo en los canales.");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.",
+                "Quita Premium, Stars, My Grams, Billetera, Business y Enviar un regalo de los ajustes, las pesta\u00f1as de regalos en los perfiles y el bot\u00f3n de regalo en los canales.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
                 "Quita los mensajes patrocinados en canales, las cuentas patrocinadas en la b\u00fasqueda y los anuncios en videos. Nunca se cargan, as\u00ed que ninguno cuenta como visto.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
@@ -2126,8 +2126,8 @@ public final class L10nTranslations {
                 "%1$d pesan yang disimpan telah dihapus.");
         table.put("Removed %1$d kept messages.",
                 "%1$d pesan yang disimpan telah dihapus.");
-        table.put("Removes Premium, Stars, My Grams, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.",
-                "Menghapus Premium, Stars, My Grams, Business, dan Kirim Hadiah dari Pengaturan, tab Hadiah di profil, dan tombol Hadiah di kanal.");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.",
+                "Menghapus Premium, Stars, My Grams, Dompet, Business, dan Kirim Hadiah dari Pengaturan, tab Hadiah di profil, dan tombol Hadiah di kanal.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
                 "Menghapus pesan bersponsor di kanal, akun bersponsor di pencarian, dan iklan di video. Semuanya tidak pernah dimuat, jadi tidak ada yang dihitung sebagai dilihat.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
@@ -2931,8 +2931,8 @@ public final class L10nTranslations {
                 "%1$d mensagem mantida removida.");
         table.put("Removed %1$d kept messages.",
                 "%1$d mensagens mantidas removidas.");
-        table.put("Removes Premium, Stars, My Grams, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.",
-                "Remove Premium, Stars, My Grams, Business e Enviar presente das configura\u00e7\u00f5es, as abas de presentes nos perfis e o bot\u00e3o de presente nos canais.");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.",
+                "Remove Premium, Stars, My Grams, Carteira, Business e Enviar presente das configura\u00e7\u00f5es, as abas de presentes nos perfis e o bot\u00e3o de presente nos canais.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
                 "Remove mensagens patrocinadas em canais, contas patrocinadas na busca e an\u00fancios em v\u00eddeos. Eles nunca s\u00e3o carregados, ent\u00e3o nenhum conta como visto.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
@@ -3736,8 +3736,8 @@ public final class L10nTranslations {
                 "%1$d saklanan mesaj kald\u0131r\u0131ld\u0131.");
         table.put("Removed %1$d kept messages.",
                 "%1$d saklanan mesaj kald\u0131r\u0131ld\u0131.");
-        table.put("Removes Premium, Stars, My Grams, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.",
-                "Premium, Stars, My Grams, Business ve Hediye G\u00f6nder'i Ayarlar'dan, profillerdeki Hediyeler sekmelerini ve kanallardaki Hediye d\u00fc\u011fmesini kald\u0131r\u0131r.");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels.",
+                "Premium, Stars, My Grams, C\u00fczdan, Business ve Hediye G\u00f6nder'i Ayarlar'dan, profillerdeki Hediyeler sekmelerini ve kanallardaki Hediye d\u00fc\u011fmesini kald\u0131r\u0131r.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
                 "Kanallardaki sponsorlu mesajlar\u0131, aramadaki sponsorlu hesaplar\u0131 ve videolardaki reklamlar\u0131 kald\u0131r\u0131r. Hi\u00e7biri y\u00fcklenmez, bu y\u00fczden hi\u00e7biri g\u00f6r\u00fclm\u00fc\u015f say\u0131lmaz.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",

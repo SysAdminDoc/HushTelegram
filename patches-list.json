@@ -805,7 +805,7 @@
     },
     {
       "name": "Hide Premium, gifts and Stars",
-      "description": "Removes Premium, Stars, My Grams, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels, for a less cluttered app. On by default. Turn it off in HushTelegram settings > Chats.",
+      "description": "Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Gifts tabs on profiles, and the Gift button in channels, for a less cluttered app. On by default. Turn it off in HushTelegram settings > Chats.",
       "category": "Ads",
       "use": true,
       "dependencies": [

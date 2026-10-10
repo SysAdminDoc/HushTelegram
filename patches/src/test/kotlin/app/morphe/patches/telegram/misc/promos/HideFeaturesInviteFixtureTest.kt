@@ -29,6 +29,7 @@ import org.junit.Test
 /** Settings' Features append, the sectioned list's count and row lookups, the stub and the runtime. */
 class HideFeaturesInviteFixtureTest {
     private val commerceRow = "$COMMERCE->addSettingsRow(Ljava/util/ArrayList;Ljava/lang/Object;)Z"
+    private val walletGate = "$COMMERCE->showWalletRow(Z)Z"
 
     @Test fun `the Features row and the Contacts invite rows go through the extension, beside the commerce rows`() {
         for (build in Fixtures.declaredBuilds()) {
@@ -50,16 +51,22 @@ class HideFeaturesInviteFixtureTest {
                 assertEquals(emptyList<String>(), PatchLogCapture.warnings { hideFeaturesInvitePatch.execute(context) })
                 if (!commerceFirst) PatchLogCapture.warnings { hideCommercePatch.execute(context) }
 
-                val settingsBefore = old[0].controlBody()
-                val settingsAfter = site.settings.controlBody()
+                // Hide commerce asks before the Wallet row's availability check (two instructions per
+                // gate); everything else either patch does is a replacement in place.
+                fun gates(body: List<Instruction>) = body.indices.filter { body[it].controlRef() == walletGate }.flatMap { listOf(it, it + 1) }
+                fun withoutGates(body: List<Instruction>) = gates(body).toSet().let { drop -> body.filterIndexed { i, _ -> i !in drop } }
+                assertEquals("$name: both Wallet gates", 4, gates(site.settings.controlBody()).size)
+                val append = site.append - gates(old[0].controlBody()).count { it < site.append }
+                val settingsBefore = withoutGates(old[0].controlBody())
+                val settingsAfter = withoutGates(site.settings.controlBody())
                 assertEquals("$name: replaced in place", settingsBefore.size, settingsAfter.size)
-                assertEquals(APPEND, settingsBefore[site.append].controlRef())
-                assertEquals(Opcode.INVOKE_STATIC, settingsAfter[site.append].opcode)
-                assertEquals(ADD_FEATURES, settingsAfter[site.append].controlRef())
-                assertEquals("$name: the list and the row", settingsBefore[site.append].namedRegisters(), settingsAfter[site.append].namedRegisters())
+                assertEquals(APPEND, settingsBefore[append].controlRef())
+                assertEquals(Opcode.INVOKE_STATIC, settingsAfter[append].opcode)
+                assertEquals(ADD_FEATURES, settingsAfter[append].controlRef())
+                assertEquals("$name: the list and the row", settingsBefore[append].namedRegisters(), settingsAfter[append].namedRegisters())
                 assertEquals("$name: the five commerce rows stay commerce's", 5, settingsAfter.count { it.controlRef() == commerceRow })
                 for (i in settingsBefore.indices) {
-                    if (i == site.append || settingsAfter[i].controlRef() == commerceRow) continue
+                    if (i == append || settingsAfter[i].controlRef() == commerceRow) continue
                     assertEquals("$name: Settings stock $i", facts(settingsBefore[i]), facts(settingsAfter[i]))
                 }
 

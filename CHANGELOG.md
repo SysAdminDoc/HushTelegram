@@ -12,6 +12,8 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** Telegram 13.0 no longer sends the storage report that Disable analytics used to stop, so the patch doesn't look for it anymore. Channel read times and Premium screen reports still stay on your phone.
 
+* **Telegram:** Hide Premium, gifts and Stars now also hides the Wallet row that Telegram 13.0 added to Settings. Settings then looks the way it does for an account that has no Wallet.
+
 ## 0.0.12 (2026-10-09)
 
 The sixth release, with 56 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.

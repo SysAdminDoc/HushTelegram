@@ -26,6 +26,16 @@ public final class Commerce {
         return rows.add(row);
     }
 
+    /**
+     * Gets Telegram's own answer to whether Wallet is available, just before Settings adds the
+     * Wallet row and its divider. False skips both, the same list an account without Wallet gets.
+     */
+    public static boolean showWalletRow(boolean available) {
+        if (!available || !enabled()) return available;
+        HookStatus.counted(FamilyNames.HIDE_COMMERCE, "Settings Wallet row hidden");
+        return false;
+    }
+
     /** Filters the stock presence decision before the cached tab strip is compared and rebuilt. */
     public static boolean showGiftsTab(boolean visible) {
         if (!visible || !enabled()) return visible;

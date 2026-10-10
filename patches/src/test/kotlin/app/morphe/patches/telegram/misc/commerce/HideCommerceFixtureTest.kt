@@ -16,6 +16,7 @@ import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.insertAtControlFlowLabel
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -43,8 +44,19 @@ class HideCommerceFixtureTest {
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
             val plan = context.resolveCommerceHooks()
             assertEquals("${build.name}: full surface coverage", CommerceTarget.entries.toSet(), plan.hooks.keys)
-            assertEquals("${build.name}: exactly five Settings sales appends", 5,
-                plan.hooks.getValue(CommerceTarget.SETTINGS).size)
+            val settings = plan.hooks.getValue(CommerceTarget.SETTINGS)
+            assertEquals("${build.name}: exactly five Settings sales appends", 5, settings.count { it.replace })
+            // 13.0's Wallet row sits at the top while it's new and after Language later.
+            val wallet = settings.filter { !it.replace }
+            assertEquals("${build.name}: both Wallet placements", 2, wallet.size)
+            val builder = settings.first().method.instructions()
+            for (gate in wallet) {
+                assertEquals("${build.name}: Wallet gate reads walletAvailable", WALLET_AVAILABLE, builder[gate.index - 3].reference())
+                assertEquals(Opcode.IF_EQZ, builder[gate.index].opcode)
+                val skip = ControlFlow.of(settings.first().method).normal[gate.index].single { it != gate.index + 1 }
+                assertEquals("${build.name}: the skipped block holds one Wallet label", 1,
+                    (gate.index + 1 until skip).count { builder[it].reference() == WALLET_LABEL })
+            }
             val profile = plan.hooks.getValue(CommerceTarget.PROFILE_GIFTS)
             assertEquals("${build.name}: fresh and cached edit candidates", 2, profile.count { it.replace })
             assertEquals("${build.name}: cached presence comparison", 1, profile.count { !it.replace })
@@ -166,7 +178,7 @@ class HideCommerceFixtureTest {
 
     @Test
     fun `partial anchor changes are not misreported as missing sales modules`() {
-        for (build in Fixtures.declaredBuilds()) for (anchor in SETTINGS_SALES + listOf(PROFILE_GIFTS, GIFT_BUTTON, GIFT_ICON)) {
+        for (build in Fixtures.declaredBuilds()) for (anchor in SETTINGS_SALES + listOf(WALLET_LABEL, PROFILE_GIFTS, GIFT_BUTTON, GIFT_ICON)) {
             val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
             val plan = context.resolveCommerceHooks()
             val target = when (anchor) {
@@ -185,6 +197,45 @@ class HideCommerceFixtureTest {
             assertRefuses { hideCommercePatch.execute(context) }
             for ((surface, edits) in plan.hooks) {
                 assertEquals("${build.name}: changed $anchor preserves $surface", before.getValue(surface),
+                    edits.first().method.instructions().map(::operation))
+            }
+            assertFact(context, "hideCommerce", 0)
+            CommerceTarget.entries.forEach { assertFact(context, it.capability, 0) }
+            assertUnwrittenIdentities(context)
+        }
+    }
+
+    @Test
+    fun `a changed Wallet row refuses before any hook or build fact changes`() {
+        for (build in Fixtures.declaredBuilds()) for (change in listOf("row identity", "divider", "availability read", "way in")) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val plan = context.resolveCommerceHooks()
+            val settings = plan.hooks.getValue(CommerceTarget.SETTINGS)
+            val method = settings.first().method
+            val body = method.instructions()
+            val gate = settings.filter { !it.replace }.minOf { it.index }
+            val skip = ControlFlow.of(method).normal[gate].single { it != gate + 1 }
+            val row = (gate + 1 until skip).single { body[it].opcode == Opcode.INVOKE_STATIC_RANGE &&
+                body.getOrNull(it + 2)?.reference() == "Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z" }
+            when (change) {
+                "row identity" -> {
+                    val id = (gate + 1 until row).single { (body[it] as? NarrowLiteralInstruction)?.narrowLiteral == 25 }
+                    method.replaceInstruction(id, "const/16 v${body[id].namedRegisters().single()}, 0x18")
+                }
+                "divider" -> method.replaceInstruction(skip - 1, "nop")
+                "availability read" -> method.replaceInstruction(gate - 2, "nop")
+                // A jump from before the gate straight to the row skips Telegram's own answer. The
+                // jumped-over registers would fail ART's verifier, and the patch must still turn it
+                // down, so it's built unchecked.
+                "way in" -> {
+                    method.insertAtControlFlowLabel(gate - 3, "goto/32 :hush_row", ExternalLabel("hush_row", body[row - 1]))
+                    assertTrue("the jump really enters the row", row in ControlFlow.of(method).normal[gate - 3])
+                }
+            }
+            val before = plan.hooks.mapValues { it.value.first().method.instructions().map(::operation) }
+            assertRefuses { hideCommercePatch.execute(context) }
+            for ((target, edits) in plan.hooks) {
+                assertEquals("${build.name}: $change preserves $target", before.getValue(target),
                     edits.first().method.instructions().map(::operation))
             }
             assertFact(context, "hideCommerce", 0)

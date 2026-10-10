@@ -264,7 +264,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             }
             if (build.contains(PatchFamily.HIDE_COMMERCE)) {
                 chats.addPreference(mark(toggle(context, Settings.HIDE_COMMERCE, L10n.t("Hide Premium, gifts and Stars"),
-                        PatchFamily.HIDE_COMMERCE.coverageSummary(L10n.t("Removes Premium, Stars, My Grams, Business and Send a Gift from Settings, Gifts "
+                        PatchFamily.HIDE_COMMERCE.coverageSummary(L10n.t("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Gifts "
                                 + "tabs on profiles, and the Gift button in channels."))), SettingsIcons.BLOCK));
             }
             if (build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS)) {

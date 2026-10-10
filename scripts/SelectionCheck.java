@@ -231,7 +231,7 @@ public final class SelectionCheck {
         hook(calls, flags, "pollLinkPreviews", "misc/DraftPreviews", "skipPollPreview");
         hook(calls, flags, "storyLinkPreviews", "misc/DraftPreviews", "skipStoryLinkPreview");
         hook(calls, flags, "botSharePreviews", "misc/DraftPreviews", "skipBotSharePreview");
-        hook(calls, flags, "commerceSettingsRows", "misc/Commerce", "addSettingsRow");
+        hook(calls, flags, "commerceSettingsRows", "misc/Commerce", "addSettingsRow", "showWalletRow");
         hook(calls, flags, "commerceProfileGifts", "misc/Commerce", "addProfileTab", "showGiftsTab");
         hook(calls, flags, "commerceChannelGift", "misc/Commerce", "showChannelGiftButton");
         hook(calls, flags, "promotionalSuggestions", "misc/Suggestions", "filterChatList");

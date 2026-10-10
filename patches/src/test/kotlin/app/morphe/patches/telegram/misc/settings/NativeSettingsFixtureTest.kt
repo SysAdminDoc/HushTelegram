@@ -127,14 +127,19 @@ class NativeSettingsFixtureTest {
             settingsPatch.execute(context)
             val plan = context.resolveCommerceHooks()
             assertEquals(setOf(CommerceTarget.SETTINGS), plan.hooks.keys)
-            assertEquals(5, plan.hooks.getValue(CommerceTarget.SETTINGS).size)
+            assertEquals("five replaced rows and two Wallet gates", 7, plan.hooks.getValue(CommerceTarget.SETTINGS).size)
             val method = plan.hooks.getValue(CommerceTarget.SETTINGS).first().method
             val before = operations(method)
             val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
             assertEquals(2, warnings.size)
             assertEquals(1, method.body().count { it.ref()?.contains("->$NATIVE_ROW_BRIDGE(") == true })
             assertEquals(5, method.body().count { it.ref()?.contains("->addSettingsRow(") == true })
-            assertEquals(before.filterNot { it[1] == APPEND }, operations(method).filterNot {
+            val body = method.body()
+            val gates = body.indices.filter { body[it].ref()?.contains("->showWalletRow(") == true }
+            assertEquals(2, gates.size)
+            assertTrue(gates.all { body[it + 1].opcode == Opcode.MOVE_RESULT })
+            val added = gates.flatMap { listOf(body[it], body[it + 1]) }
+            assertEquals(before.filterNot { it[1] == APPEND }, operations(method, skip = { instruction -> added.any { it === instruction } }).filterNot {
                 it[1] == APPEND || it[1]?.toString()?.contains("->addSettingsRow(") == true })
             for ((name, expected) in mapOf("hideCommerce" to 1, "commerceSettingsRows" to 1,
                 "commerceProfileGifts" to 0, "commerceChannelGift" to 0)) {
