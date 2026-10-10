@@ -40,6 +40,8 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** Disable analytics now stops the camera's dual camera report, which tells Telegram your phone's maker and model when its servers ask for device stats. The camera itself works as before.
 
+* **Tooling:** The selection matrix expects the Firebase crash and session report switches only on a build that ships those SDKs, which is Telegram Beta. It also rebuilds the one call Turn off beta debug logs adds to Telegram's startup settings the way the patcher adds it, so a default build no longer fails there, while a call in the wrong place, on the wrong register or added twice still does.
+
 ## 0.0.12 (2026-10-09)
 
 The sixth release, with 56 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.

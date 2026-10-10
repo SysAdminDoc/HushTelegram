@@ -11,6 +11,8 @@ function Assert-Selection([bool]$Condition, [string]$Message) {
 
 $catalog = Get-Content (Join-Path $Root 'patches-list.json') -Raw | ConvertFrom-Json
 $model = Get-SelectionStatusModel -Root $Root
+$optional = @($model.Capabilities | Where-Object Optional | ForEach-Object Status | Sort-Object)
+Assert-Selection (($optional -join ',') -ceq 'crashReports,sessionReports') 'The targets only some builds carry changed without the checker''s markers.'
 $plans = @(Get-PatchSelectionCases -Catalog $catalog -StatusModel $model)
 Assert-Selection ($plans.Count -eq 80 -and @($plans.Id | Sort-Object -Unique).Count -eq 80) 'The matrix changed its bounded case inventory.'
 Assert-Selection (@($plans | Where-Object Failure).Count -eq 10) 'A malformed, incomplete or typed-input refusal is missing.'
@@ -36,6 +38,7 @@ foreach ($plan in $plans) {
         $family = $model.Families | Where-Object Enum -CEQ $capability.Family
         Assert-Selection ($expectation.flags[$capability.Status] -eq ($plan.Names -ccontains $family.Name)) 'A capability was credited to an omitted family.'
     }
+    Assert-Selection ((@($expectation.optional | Sort-Object) -join ',') -ceq ($optional -join ',')) 'The checker lost which targets only some builds carry.'
     Assert-Selection ($plan.ApiId -cmatch '^[1-9][0-9]*$' -and [int]$plan.ApiId -gt 0 -and
         $plan.ApiHash -cmatch '^[0-9a-f]{32}$' -and $plan.MapsKey -cmatch '^AIza[0-9A-Za-z_-]{35}$') 'Synthetic configured values no longer fit the real validators.'
     $document = @(New-SelectionOptionsDocument -Catalog $catalog -Selection $plan -BundleName 'fixture.mpp' -BundleHash ('a' * 64) | ConvertFrom-Json)
@@ -122,13 +125,19 @@ try {
     $classes = Join-Path $scratch 'classes'
     $compile = Invoke-SelectionTool -Program $compiler -Arguments @('-encoding', 'UTF-8', '-cp', $desktop, '-d', $classes,
         (Join-Path $Root 'scripts/DexDiff.java'), (Join-Path $Root 'scripts/SelectionCheck.java'),
-        (Join-Path $Root 'scripts/SelectionCheckNativeVersionTest.java')) -PrivateOutput (Join-Path $scratch 'compile-private.txt')
+        (Join-Path $Root 'scripts/SelectionCheckNativeVersionTest.java'), (Join-Path $Root 'scripts/SelectionCheckBuildVarsTest.java')) `
+        -PrivateOutput (Join-Path $scratch 'compile-private.txt')
     Assert-Selection ($compile -eq 0) 'The compiled selection checker tests did not compile.'
     $nativeOutput = Join-Path $scratch 'native-private.txt'
     $native = Invoke-SelectionTool -Program $java -Arguments (@('-Xmx512m', '-XX:ActiveProcessorCount=2', '-cp',
         ($classes + [IO.Path]::PathSeparator + $desktop), 'SelectionCheckNativeVersionTest') + $fixtures) -PrivateOutput $nativeOutput
     Assert-Selection ($native -eq 0 -and (Get-Content $nativeOutput -Raw).Contains('NATIVE_VERSION_CHECKS_PASSED checks=84')) `
         'The native-version checker lost its exact insertion or refusal controls.'
+    $buildVarsOutput = Join-Path $scratch 'build-vars-private.txt'
+    $buildVars = Invoke-SelectionTool -Program $java -Arguments (@('-Xmx512m', '-XX:ActiveProcessorCount=2', '-cp',
+        ($classes + [IO.Path]::PathSeparator + $desktop), 'SelectionCheckBuildVarsTest') + $fixtures) -PrivateOutput $buildVarsOutput
+    Assert-Selection ($buildVars -eq 0 -and (Get-Content $buildVarsOutput -Raw).Contains('BUILD_VARS_CHECKS_PASSED checks=37')) `
+        'The BuildVars checker lost its beta-logs gate, its refusal controls or its Firebase markers.'
     # A matrix run keeps one checker, which decodes the clean fixture once and answers each case.
     $checker = Start-SelectionChecker -Java $java -ClassPath ($classes + [IO.Path]::PathSeparator + $desktop) -Apk $fixtures[0] `
         -PrivateOutput (Join-Path $scratch 'checker-private.txt')

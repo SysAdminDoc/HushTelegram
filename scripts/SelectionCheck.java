@@ -2,9 +2,13 @@ import com.android.tools.smali.dexlib2.AccessFlags;
 import com.android.tools.smali.dexlib2.DexFileFactory;
 import com.android.tools.smali.dexlib2.Opcode;
 import com.android.tools.smali.dexlib2.Opcodes;
+import com.android.tools.smali.dexlib2.builder.BuilderInstruction;
+import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction;
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation;
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction11x;
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction22b;
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21t;
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction3rc;
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction22s;
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction23x;
 import com.android.tools.smali.dexlib2.iface.ClassDef;
@@ -21,6 +25,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstructio
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference;
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference;
 import com.android.tools.smali.dexlib2.iface.reference.StringReference;
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference;
 import com.reandroid.arsc.chunk.xml.AndroidManifestBlock;
 import com.reandroid.arsc.chunk.xml.ResXmlAttribute;
 import com.reandroid.arsc.chunk.xml.ResXmlElement;
@@ -35,6 +40,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.zip.ZipFile;
@@ -47,12 +53,22 @@ public final class SelectionCheck {
     private static final String CONNECTIONS = "Lorg/telegram/tgnet/ConnectionsManager;";
     private static final String ANDROID = "{http://schemas.android.com/apk/res/android}";
     private static final String ALIAS = "app.hushtelegram.extension.telegram.settings.OpenSettings";
+    private static final String DEBUG_VERSION = "Lorg/telegram/messenger/BuildVars;->DEBUG_VERSION:Z";
+    private static final String BETA_LOGS = OWN + "telegram/misc/BetaLogs;";
+    /**
+     * Flags of targets only some builds carry, and the string that shows the host carries one: the
+     * patch hooks it when anything outside the extension names that string, and says nothing otherwise.
+     */
+    static final Map<String, String> OPTIONAL_MARKERS = Map.of(
+            "crashReports", "firebase_crashlytics_collection_enabled",
+            "sessionReports", "firebase_sessions_enabled");
 
     static final class Expected {
         boolean settings, links, api, maps;
         int apiId;
         String apiHash, mapsKey;
         Map<String, Boolean> flags;
+        Set<String> optional;
 
         Expected(JSONObject input) {
             settings = input.getBoolean("settings");
@@ -65,7 +81,15 @@ public final class SelectionCheck {
             flags = new TreeMap<>();
             JSONObject values = input.getJSONObject("flags");
             for (String key : values.keySet()) flags.put(key, values.getBoolean(key));
+            optional = new TreeSet<>();
+            JSONArray names = input.optJSONArray("optional");
+            for (int i = 0; names != null && i < names.length(); i++) {
+                String name = names.getString(i);
+                require(OPTIONAL_MARKERS.containsKey(name) && flags.containsKey(name) && optional.add(name));
+            }
         }
+
+        boolean betaLogsOff() { return Boolean.TRUE.equals(flags.get("betaLogsOff")); }
     }
 
     static final class Evidence {
@@ -99,6 +123,7 @@ public final class SelectionCheck {
         final TreeSet<String> dexEntries;
         final Map<String, String> bodies;
         final Map<String, ClassDef> classes;
+        private final Map<String, Boolean> carried = new HashMap<>();
 
         Side(File apk) throws Exception {
             this.apk = apk;
@@ -108,9 +133,27 @@ public final class SelectionCheck {
             classes = classes(dex);
             decodes++;
         }
+
+        boolean carries(String marker) { return carried.computeIfAbsent(marker, m -> SelectionCheck.carries(classes, m)); }
     }
 
-    private static Map<String, ClassDef> classes(MultiDexContainer<? extends DexFile> dex) throws Exception {
+    /** Whether code outside the extension names this string, the way the patch decides a build carries a target. */
+    static boolean carries(Map<String, ClassDef> classes, String marker) {
+        for (ClassDef type : classes.values()) {
+            if (type.getType().startsWith(OWN)) continue;
+            for (Method method : type.getMethods()) {
+                if (method.getImplementation() == null) continue;
+                for (Instruction instruction : method.getImplementation().getInstructions()) {
+                    if (instruction instanceof ReferenceInstruction reference
+                            && reference.getReference() instanceof StringReference string
+                            && string.getString().equals(marker)) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    static Map<String, ClassDef> classes(MultiDexContainer<? extends DexFile> dex) throws Exception {
         Map<String, ClassDef> result = new HashMap<>();
         for (String entry : dex.getDexEntryNames()) {
             for (ClassDef type : dex.getEntry(entry).getDexFile().getClasses()) {
@@ -333,20 +376,60 @@ public final class SelectionCheck {
         }
     }
 
+    /**
+     * BuildVars' initializer as Turn off beta debug logs leaves it: the one DEBUG_VERSION read goes
+     * through BetaLogs.forceLogs into the same register ahead of the if-nez that reads it, and the
+     * if-nez's labels move to the call. Built the way the patch builds it, so a jump or exception
+     * range across the call has to match too.
+     */
+    static MutableMethodImplementation withBetaLogsGate(MethodImplementation clean) {
+        MutableMethodImplementation body = new MutableMethodImplementation(clean);
+        List<BuilderInstruction> code = body.getInstructions();
+        int read = -1;
+        for (int i = 0; i < code.size(); i++) {
+            if (code.get(i).getOpcode() == Opcode.SGET_BOOLEAN
+                    && ((ReferenceInstruction) code.get(i)).getReference() instanceof FieldReference field
+                    && (field.getDefiningClass() + "->" + field.getName() + ":" + field.getType()).equals(DEBUG_VERSION)) {
+                require(read == -1);
+                read = i;
+            }
+        }
+        require(read >= 0 && read + 1 < code.size() && code.get(read + 1).getOpcode() == Opcode.IF_NEZ);
+        int register = ((OneRegisterInstruction) code.get(read)).getRegisterA();
+        require(((OneRegisterInstruction) code.get(read + 1)).getRegisterA() == register);
+        var target = ((BuilderOffsetInstruction) code.get(read + 1)).getTarget();
+        // The patch's order: copy the if-nez after itself, put the call between, then drop the
+        // original, which hands its labels to the call.
+        body.addInstruction(read + 2, new BuilderInstruction21t(Opcode.IF_NEZ, register, target));
+        body.addInstruction(read + 2, new BuilderInstruction11x(Opcode.MOVE_RESULT, register));
+        body.addInstruction(read + 2, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, register, 1,
+                new ImmutableMethodReference(BETA_LOGS, "forceLogs", List.of("Z"), "Z")));
+        body.removeInstruction(read + 1);
+        return body;
+    }
+
+    /** The baseline already carries the beta-logs gate when it is the same selection built without credentials. */
     private static int apiChanges(Map<String, ClassDef> before, Map<String, ClassDef> after,
-                                  Expected expected) {
-        Method original = method(before, API), patched = method(after, API);
+                                  Expected expected, boolean gatedBaseline) {
+        return buildVarsChanges(method(before, API), method(after, API), expected.api, expected.apiId,
+                expected.apiHash, expected.betaLogsOff() && !gatedBaseline);
+    }
+
+    /** BuildVars' initializer differs only by the API pair written in place, once the beta-logs gate is added where expected. */
+    static int buildVarsChanges(Method original, Method patched, boolean api, int apiId, String apiHash, boolean betaLogsGate) {
+        MethodImplementation reference = betaLogsGate ? withBetaLogsGate(original.getImplementation())
+                : original.getImplementation();
         require(original.getAccessFlags() == patched.getAccessFlags()
-                && original.getImplementation().getRegisterCount()
-                == patched.getImplementation().getRegisterCount()
-                && tryRanges(original.getImplementation()).equals(tryRanges(patched.getImplementation())));
-        List<Instruction> oldCode = instructions(original), newCode = instructions(patched);
+                && reference.getRegisterCount() == patched.getImplementation().getRegisterCount()
+                && tryRanges(reference).equals(tryRanges(patched.getImplementation())));
+        List<Instruction> oldCode = new ArrayList<>(), newCode = instructions(patched);
+        reference.getInstructions().forEach(oldCode::add);
         require(oldCode.size() == newCode.size());
         int changed = 0, id = 0, hash = 0;
         for (int i = 0; i < oldCode.size(); i++) {
             Instruction old = oldCode.get(i), next = newCode.get(i);
             if (DexDiff.render(old).equals(DexDiff.render(next))) continue;
-            require(expected.api && i + 1 < oldCode.size()
+            require(api && i + 1 < oldCode.size()
                     && old instanceof OneRegisterInstruction && next instanceof OneRegisterInstruction
                     && ((OneRegisterInstruction) old).getRegisterA()
                     == ((OneRegisterInstruction) next).getRegisterA()
@@ -361,7 +444,7 @@ public final class SelectionCheck {
             if (field.getName().equals("APP_ID") && field.getType().equals("I")) {
                 require(writer.getOpcode() == Opcode.SPUT && next.getOpcode() == Opcode.CONST
                         && next instanceof NarrowLiteralInstruction
-                        && ((NarrowLiteralInstruction) next).getNarrowLiteral() == expected.apiId);
+                        && ((NarrowLiteralInstruction) next).getNarrowLiteral() == apiId);
                 id++;
             } else {
                 require(field.getName().equals("APP_HASH") && field.getType().equals("Ljava/lang/String;")
@@ -369,13 +452,12 @@ public final class SelectionCheck {
                         && (next.getOpcode() == Opcode.CONST_STRING
                         || next.getOpcode() == Opcode.CONST_STRING_JUMBO)
                         && ((StringReference) ((ReferenceInstruction) next).getReference())
-                        .getString().equals(expected.apiHash));
+                        .getString().equals(apiHash));
                 hash++;
             }
             changed++;
         }
-        require(changed == (expected.api ? 2 : 0) && id == (expected.api ? 1 : 0)
-                && hash == (expected.api ? 1 : 0));
+        require(changed == (api ? 2 : 0) && id == (api ? 1 : 0) && hash == (api ? 1 : 0));
         return changed;
     }
 
@@ -575,13 +657,18 @@ public final class SelectionCheck {
                 if (!method.getReturnType().equals("Z") || !method.getParameterTypes().isEmpty()) continue;
                 require(expected.flags.containsKey(method.getName()));
                 boolean value = flag(method);
-                require(value == expected.flags.get(method.getName()));
+                boolean wanted = expected.flags.get(method.getName());
+                // A target the host doesn't carry leaves its flag off however the family was picked.
+                if (expected.optional.contains(method.getName())) {
+                    wanted &= clean.carries(OPTIONAL_MARKERS.get(method.getName()));
+                }
+                require(value == wanted);
                 result.flags.put(method.getName(), value);
             }
             require(result.flags.keySet().equals(expected.flags.keySet()));
             compiledHooks(after, result.flags);
         }
-        result.apiLiteralChanges = apiChanges(before, after, expected);
+        result.apiLiteralChanges = apiChanges(before, after, expected, credentialsOnlyDelta);
         result.mapsValueChanges = manifestChanges(clean.apk, patched.apk, expected, credentialsOnlyDelta);
         result.changedMethods = changed.size();
         result.addedMethods = added.size();
