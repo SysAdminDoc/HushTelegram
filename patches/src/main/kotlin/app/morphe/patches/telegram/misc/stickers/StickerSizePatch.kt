@@ -114,10 +114,13 @@ internal fun BytecodePatchContext.resolveStickerSize(): StickerSizePlan {
     val message = emojiTests(body, multiply)!!
     controlShape(size != share && size <= 15 && message <= 15 && message != size,
         "a sticker's size can't be passed to the extension as it is")
-    // The message is the same one the bubble asks about before the size and after it.
+    // The message is the same one the bubble asks about before the size and after it, on the phone's
+    // path and the tablet's: both reach the multiply from inside the stretch checked for writes (the
+    // tablet's block sits just after the size and jumps back to it).
     val before = body.subList(maxOf(0, multiply - BEFORE), multiply)
     controlShape(before.any { it.controlRef() == "$MESSAGE_OBJECT->isAnimatedAnimatedEmoji()Z" && it.namedRegisters() == listOf(message) } &&
-        (multiply - BEFORE until multiply + AFTER).none { it in body.indices && it != multiply && writes(body[it], message) },
+        (multiply - BEFORE until multiply + AFTER).none { it in body.indices && it != multiply && writes(body[it], message) } &&
+        flow.normal.indices.filter { multiply in flow.normal[it] }.all { it in multiply - BEFORE until multiply + AFTER },
         "the sticker's message isn't the one the bubble sizes")
     controlShape(flow.normal.indices.filter { multiply + 1 in flow.normal[it] } == listOf(multiply),
         "something jumps into a sticker's size")
