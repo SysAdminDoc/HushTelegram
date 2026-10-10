@@ -27,7 +27,7 @@ private const val HTML = "Landroid/content/ClipData\$Item;->getHtmlText()Ljava/l
 val useNormalPastePatch = bytecodePatch(
     name = "Use normal paste",
     description = "Pastes text exactly as you copied it, without Telegram adding formatting, tables or code styling. " +
-        "Starts off. Turn it on in HushTelegram settings > Chats.",
+        "Starts off. Turn it on in HushTelegram settings > Conversations.",
     default = true,
 ) {
     category("Conversations")

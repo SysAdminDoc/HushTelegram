@@ -44,7 +44,7 @@ private const val ARRAY_LIST = "Ljava/util/ArrayList;"
 val hideSponsoredProxyPatch = bytecodePatch(
     name = PATCH,
     description = "Hides the sponsored channel a proxy adds to your chat list and folders. Your proxy settings aren't " +
-        "touched. On by default. Turn it off in HushTelegram settings > Chats.",
+        "touched. On by default. Turn it off in HushTelegram settings > Ads.",
     default = true,
 ) {
     category("Ads")

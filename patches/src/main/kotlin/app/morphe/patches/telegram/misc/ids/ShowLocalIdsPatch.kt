@@ -33,7 +33,7 @@ internal const val LOCAL_ID_ROW = 0x48544944
 val showLocalIdsPatch = bytecodePatch(
     name = "Show user and chat IDs",
     description = "Adds a copyable ID number for a user or chat to the profile menu. A second switch also shows where " +
-        "the profile photo is stored. Both start off. Turn them on in HushTelegram settings > Chats.",
+        "the profile photo is stored. Both start off. Turn them on in HushTelegram settings > Look and feel.",
     default = true,
 ) {
     category("Interface")

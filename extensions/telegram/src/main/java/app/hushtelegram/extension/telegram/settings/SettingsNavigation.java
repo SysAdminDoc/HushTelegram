@@ -96,9 +96,11 @@ final class SettingsNavigation extends BaseAdapter {
         Context context = screen.getContext();
         // Stable English route IDs survive a locale change; the displayed names are localized.
         Set<PatchFamily> build = PatchFamily.inThisBuild();
-        section("Chats", L10n.t("Chats"), chatsSummary(build), SettingsIcons.CHAT, true);
-        section("Privacy", L10n.t("Privacy"), privacySummary(build), SettingsIcons.BLOCK, true);
-        section("Notifications", L10n.t("Notifications"), null, SettingsIcons.BELL, false);
+        // The switch pages are on the home page, in the order they're drawn; a page this build
+        // put nothing on has no category, so section() leaves it out.
+        for (PatchFamily.Page switches : PatchFamily.Page.values()) {
+            section(switches.title, switches.label(), summary(switches, build), icon(switches), true);
+        }
         section("Links", L10n.t("Links"), null, SettingsIcons.LINKS, false);
         section("Updates", L10n.t("Updates"), null, SettingsIcons.UPDATES, false);
         section("Set when you patched", L10n.t("Set when you patched"), null, SettingsIcons.PATCHED, false);
@@ -158,13 +160,35 @@ final class SettingsNavigation extends BaseAdapter {
         }
     }
 
+    /** A switch page's line on the home page. Only Ads and Privacy have one. */
+    @Nullable
+    static String summary(PatchFamily.Page page, Set<PatchFamily> build) {
+        switch (page) {
+            case ADS: return adsSummary(build);
+            case PRIVACY: return privacySummary(build);
+            default: return null;
+        }
+    }
+
+    private static String icon(PatchFamily.Page page) {
+        switch (page) {
+            case ADS: return SettingsIcons.BLOCK;
+            case CHAT_LIST: return SettingsIcons.LIST;
+            case CONVERSATIONS: return SettingsIcons.FORUM;
+            case PLAYBACK: return SettingsIcons.PLAY;
+            case NOTIFICATIONS: return SettingsIcons.BELL;
+            case LOOK: return SettingsIcons.PALETTE;
+            default: return SettingsIcons.PRIVACY;
+        }
+    }
+
     /**
-     * The Chats row's line, from what this build hides: the ads its hooks cover, and "and more"
-     * only when another Chats switch is there too. Null when Hide ads covers nothing, since the
+     * The Ads row's line, from what this build hides: the ads its hooks cover, and "and more"
+     * only when another Ads switch is there too. Null when Hide ads covers nothing, since the
      * page then holds only switches the line would leave unnamed.
      */
     @Nullable
-    static String chatsSummary(Set<PatchFamily> build) {
+    static String adsSummary(Set<PatchFamily> build) {
         if (!build.contains(PatchFamily.HIDE_ADS)) return null;
         Set<PatchFamily.Capability> installed = PatchFamily.HIDE_ADS.installedCapabilities();
         boolean channels = installed.contains(PatchFamily.Capability.CHANNEL_ADS)
@@ -173,7 +197,7 @@ final class SettingsNavigation extends BaseAdapter {
         if (!channels && !search) return null;
         String ads = channels && search ? L10n.t("Ads in channels and search")
                 : channels ? L10n.t("Ads in channels") : L10n.t("Ads in search");
-        for (PatchFamily family : PatchFamily.CHATS_PAGE) {
+        for (PatchFamily family : PatchFamily.Page.ADS.families) {
             if (family != PatchFamily.HIDE_ADS && build.contains(family)) return L10n.f("%1$s, and more", ads);
         }
         return ads;
@@ -181,8 +205,9 @@ final class SettingsNavigation extends BaseAdapter {
 
     /**
      * The Privacy row's line, naming only the switches this build put on that page. The draft
-     * preview and gallery camera switches are off as shipped, so they add "and more" rather than
-     * names of their own, unless one of them is all the page holds.
+     * preview, gallery camera, phone number and beta log switches are off as shipped, so they add
+     * "and more" rather than names of their own. A page holding only the draft or camera switch
+     * still names it; one holding only the last two has no line.
      */
     @Nullable
     static String privacySummary(Set<PatchFamily> build) {
@@ -190,13 +215,15 @@ final class SettingsNavigation extends BaseAdapter {
         boolean calls = build.contains(PatchFamily.DISABLE_CALL_DEBUG);
         boolean drafts = build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS);
         boolean camera = build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP);
+        boolean others = build.contains(PatchFamily.HIDE_PHONE_NUMBER) || build.contains(PatchFamily.BETA_LOGS_OFF);
         String named = reports && calls ? L10n.t("Usage reports and call diagnostics")
                 : reports ? L10n.t("Usage reports") : calls ? L10n.t("Call diagnostics") : null;
         if (named == null) {
-            if (drafts && camera) return L10n.f("%1$s, and more", L10n.t("Draft link previews"));
-            return drafts ? L10n.t("Draft link previews") : camera ? L10n.t("Gallery camera") : null;
+            if (drafts) return camera || others ? L10n.f("%1$s, and more", L10n.t("Draft link previews")) : L10n.t("Draft link previews");
+            if (camera) return others ? L10n.f("%1$s, and more", L10n.t("Gallery camera")) : L10n.t("Gallery camera");
+            return null;
         }
-        return drafts || camera ? L10n.f("%1$s, and more", named) : named;
+        return drafts || camera || others ? L10n.f("%1$s, and more", named) : named;
     }
 
     private static Preference link(Context context, String title, String summary, String icon) {

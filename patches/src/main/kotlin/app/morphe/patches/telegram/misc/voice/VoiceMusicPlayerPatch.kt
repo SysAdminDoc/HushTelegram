@@ -46,7 +46,7 @@ private val VIRTUAL = setOf(Opcode.INVOKE_VIRTUAL, Opcode.INVOKE_VIRTUAL_RANGE)
 val voiceMusicPlayerPatch = bytecodePatch(
     name = "Voice messages in the music player",
     description = "Makes tapping the bar above a chat, while a voice message plays, open Telegram's full music player " +
-        "with a seek bar. Starts off. Turn it on in HushTelegram settings > Chats.",
+        "with a seek bar. Starts off. Turn it on in HushTelegram settings > Playback.",
     default = true,
 ) {
     category("Playback")

@@ -46,7 +46,7 @@ val disableChannelPullPatch = bytecodePatch(
     name = PATCH,
     description = "Stops pulling up at the bottom of a channel from jumping to the next channel. A second switch does " +
         "the same for forum topics. The channel switch starts on and the topic switch starts off. Find them " +
-        "in HushTelegram settings > Chats.",
+        "in HushTelegram settings > Conversations.",
     default = true,
 ) {
     category("Conversations")

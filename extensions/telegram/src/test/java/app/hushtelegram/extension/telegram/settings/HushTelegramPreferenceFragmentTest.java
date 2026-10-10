@@ -217,7 +217,7 @@ public class HushTelegramPreferenceFragmentTest {
      * sections every build needs always are.
      */
     @Test
-    public void theFeatureRowsAreThePatchesInThisBuild() {
+    public void theFeatureRowsAreThePatchesInThisBuild() throws Exception {
         List<Set<PatchFamily>> builds = new ArrayList<>();
         builds.add(EnumSet.noneOf(PatchFamily.class));
         for (PatchFamily family : PatchFamily.values()) builds.add(EnumSet.of(family));
@@ -246,49 +246,11 @@ public class HushTelegramPreferenceFragmentTest {
                 }
 
                 List<String> sections = sections(page);
+                // A page for each Manager category group this build has a switch in, then the pages every build has.
+                Set<String> holding = new HashSet<>();
+                for (PatchFamily family : build) holding.add(pageOf(family));
                 List<String> expected = new ArrayList<>();
-                if (build.contains(PatchFamily.HIDE_ADS) || build.contains(PatchFamily.HIDE_STORIES)
-                        || build.contains(PatchFamily.HIDE_RECOMMENDATIONS) || build.contains(PatchFamily.HIDE_COMMERCE)
-                        || build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS) || build.contains(PatchFamily.HIDE_SPONSORED_PROXY)
-                        || build.contains(PatchFamily.HIDE_POPULAR_APPS) || build.contains(PatchFamily.HIDE_CONTACTS_BLOCK)
-                        || build.contains(PatchFamily.HIDE_GREETING_STICKERS)
-                        || build.contains(PatchFamily.DISABLE_CHAT_SWIPE)
-                        || build.contains(PatchFamily.DISABLE_CHANNEL_PULL)
-                        || build.contains(PatchFamily.NORMAL_PASTE) || build.contains(PatchFamily.SHOW_LOCAL_IDS)
-                        || build.contains(PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS)
-                        || build.contains(PatchFamily.QUIET_CONTACTS_NAG) || build.contains(PatchFamily.HOLIDAY_LOOK)
-                        || build.contains(PatchFamily.USE_SYSTEM_FONT) || build.contains(PatchFamily.AMOLED_BLACK)
-                        || build.contains(PatchFamily.HIDE_TRANSLATE_BAR)
-                        || build.contains(PatchFamily.EXACT_NUMBERS)
-                        || build.contains(PatchFamily.REVEAL_SPOILERS)
-                        || build.contains(PatchFamily.HIDE_KEYBOARD_ON_SCROLL)
-                        || build.contains(PatchFamily.KEEP_VIDEOS_MUTED)
-                        || build.contains(PatchFamily.SWIPE_BACK_ON_PROFILES)
-                        || build.contains(PatchFamily.HIDE_PHONE_NUMBER)
-                        || build.contains(PatchFamily.MESSAGE_SECONDS)
-                        || build.contains(PatchFamily.ALLOW_CHAT_BLUR)
-                        || build.contains(PatchFamily.VOICE_ONE_AT_A_TIME)
-                        || build.contains(PatchFamily.NO_HAPTICS)
-                        || build.contains(PatchFamily.REACTION_EFFECTS_OFF)
-                        || build.contains(PatchFamily.HIDE_FOLDER_COUNTERS)
-                        || build.contains(PatchFamily.FORWARD_HIDE_SENDER)
-                        || build.contains(PatchFamily.VOICE_MUSIC_PLAYER)
-                        || build.contains(PatchFamily.SILENCE_NON_CONTACTS)
-                        || build.contains(PatchFamily.DISABLE_ARCHIVE_PULL)
-                        || build.contains(PatchFamily.REAR_CAMERA_FIRST)
-                        || build.contains(PatchFamily.HIDE_GALLERY_CAMERA_TILE)
-                        || build.contains(PatchFamily.HIDE_STICKER_TIME)
-                        || build.contains(PatchFamily.IGNORE_MUTED_MENTIONS)
-                        || build.contains(PatchFamily.HIDE_BLOCKED_IN_GROUPS)
-                        || build.contains(PatchFamily.HIDE_FEATURES_AND_INVITE)
-                        || build.contains(PatchFamily.MESSAGE_MENU_REPEAT)
-                        || build.contains(PatchFamily.KEEP_DELETED_MESSAGES)
-                        || build.contains(PatchFamily.ASK_BEFORE_STICKER)
-                        || build.contains(PatchFamily.BETA_LOGS_OFF)
-                        || build.contains(PatchFamily.OUTSIDE_TRANSLATE)) expected.add("Chats");
-                if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
-                        || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
-                if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
+                for (String title : ManagerCategories.PAGE_ORDER) if (holding.contains(title)) expected.add(title);
                 expected.addAll(EVERY_BUILD);
                 if (!expected.equals(sections)) wrong.add(build + ": sections " + sections);
             }
@@ -694,7 +656,7 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Clear kept messages", String.valueOf(clear.getTitle()));
             assertEquals("Deletes the messages this phone kept after others deleted them, in every account, the way "
                     + "Telegram would have.", String.valueOf(clear.getSummary()));
-            assertEquals("Chats", String.valueOf(clear.getParent().getTitle()));
+            assertEquals("Conversations", String.valueOf(clear.getParent().getTitle()));
             assertTrue("a tap acts, so no chevron", ((ImmediateAction) clear).actsOnTap());
             assertFalse("it stores nothing", clear.isPersistent());
 
@@ -726,6 +688,7 @@ public class HushTelegramPreferenceFragmentTest {
             Settings.OUTSIDE_TRANSLATE.resetToDefault();
             OutsideTranslateForTests.reset();
         }
+    }
 
     @Test
     public void localNotificationFactsStayReadableWhenTheRepairIsOffOrPaused() {
@@ -931,6 +894,14 @@ public class HushTelegramPreferenceFragmentTest {
             if (key.equals(rows.get(i).getKey())) return i;
         }
         return -1;
+    }
+
+    private static String pageOf(PatchFamily family) {
+        try {
+            return ManagerCategories.pageOf(family);
+        } catch (Exception unreadable) {
+            throw new AssertionError(unreadable);
+        }
     }
 
     private static HushTelegramPreferenceFragment pageOf(ActivityController<Activity> controller) {

@@ -160,10 +160,63 @@ public enum PatchFamily {
     @Nullable
     static volatile Set<Capability> capabilitiesForTests;
 
-    /** The families whose switches the Chats page holds. The page and its home row both read this. */
-    static final Set<PatchFamily> CHATS_PAGE = Collections.unmodifiableSet(EnumSet.of(HIDE_ADS, HIDE_STORIES,
-            HIDE_RECOMMENDATIONS, HIDE_COMMERCE, HIDE_PROMOTIONAL_BANNERS, HIDE_SPONSORED_PROXY, HIDE_POPULAR_APPS, HIDE_CONTACTS_BLOCK, HIDE_GREETING_STICKERS, DISABLE_CHAT_SWIPE, DISABLE_CHANNEL_PULL, NORMAL_PASTE, SHOW_LOCAL_IDS, DISABLE_DOUBLE_TAP_REACTIONS,
-            QUIET_CONTACTS_NAG, HOLIDAY_LOOK, USE_SYSTEM_FONT, AMOLED_BLACK, HIDE_TRANSLATE_BAR, EXACT_NUMBERS, REVEAL_SPOILERS, HIDE_KEYBOARD_ON_SCROLL, KEEP_VIDEOS_MUTED, SWIPE_BACK_ON_PROFILES, HIDE_PHONE_NUMBER, MESSAGE_SECONDS, ALLOW_CHAT_BLUR, VOICE_ONE_AT_A_TIME, NO_HAPTICS, REACTION_EFFECTS_OFF, HIDE_FOLDER_COUNTERS, FORWARD_HIDE_SENDER, VOICE_MUSIC_PLAYER, SILENCE_NON_CONTACTS, DISABLE_ARCHIVE_PULL, REAR_CAMERA_FIRST, HIDE_GALLERY_CAMERA_TILE, HIDE_STICKER_TIME, IGNORE_MUTED_MENTIONS, HIDE_BLOCKED_IN_GROUPS, HIDE_FEATURES_AND_INVITE, MESSAGE_MENU_REPEAT, KEEP_DELETED_MESSAGES, ASK_BEFORE_STICKER, BETA_LOGS_OFF, OUTSIDE_TRANSLATE));
+    /**
+     * The settings pages that hold switches, in the order they're drawn, each with the families
+     * whose switches it holds. They follow Morphe Manager's categories so a patch is found under
+     * the same name in both: Ads takes Search's one patch, Chat list takes Stories', Look and feel
+     * holds Interface and Theme, and Notifications keeps the push repair. The link switches have
+     * their own Links page and the update switch its Updates page, as before.
+     */
+    enum Page {
+        ADS("Ads", HIDE_ADS, HIDE_COMMERCE, HIDE_PROMOTIONAL_BANNERS, HIDE_SPONSORED_PROXY, HIDE_POPULAR_APPS),
+        CHAT_LIST("Chat list", HIDE_STORIES, HIDE_CONTACTS_BLOCK, DISABLE_CHAT_SWIPE, DISABLE_ARCHIVE_PULL,
+                HIDE_FOLDER_COUNTERS),
+        CONVERSATIONS("Conversations", HIDE_GREETING_STICKERS, DISABLE_CHANNEL_PULL, NORMAL_PASTE,
+                DISABLE_DOUBLE_TAP_REACTIONS, HIDE_TRANSLATE_BAR, OUTSIDE_TRANSLATE, REVEAL_SPOILERS, FORWARD_HIDE_SENDER,
+                REAR_CAMERA_FIRST, HIDE_GALLERY_CAMERA_TILE, HIDE_BLOCKED_IN_GROUPS, MESSAGE_MENU_REPEAT,
+                KEEP_DELETED_MESSAGES, ASK_BEFORE_STICKER),
+        PLAYBACK("Playback", KEEP_VIDEOS_MUTED, VOICE_ONE_AT_A_TIME, VOICE_MUSIC_PLAYER),
+        NOTIFICATIONS("Notifications", REPAIR_FIREBASE_PUSH, SILENCE_NON_CONTACTS, IGNORE_MUTED_MENTIONS),
+        LOOK("Look and feel", HIDE_RECOMMENDATIONS, QUIET_CONTACTS_NAG, SHOW_LOCAL_IDS, HOLIDAY_LOOK, USE_SYSTEM_FONT,
+                AMOLED_BLACK, EXACT_NUMBERS, HIDE_KEYBOARD_ON_SCROLL, SWIPE_BACK_ON_PROFILES, MESSAGE_SECONDS,
+                ALLOW_CHAT_BLUR, NO_HAPTICS, REACTION_EFFECTS_OFF, HIDE_STICKER_TIME, HIDE_FEATURES_AND_INVITE),
+        PRIVACY("Privacy", DISABLE_ANALYTICS, DISABLE_CALL_DEBUG, DISABLE_DRAFT_PREVIEWS, GALLERY_CAMERA_ON_TAP,
+                HIDE_PHONE_NUMBER, BETA_LOGS_OFF);
+
+        /** The English title, which is also the page's route and its translation key. */
+        final String title;
+        final Set<PatchFamily> families;
+
+        Page(String title, PatchFamily first, PatchFamily... rest) {
+            this.title = title;
+            this.families = Collections.unmodifiableSet(EnumSet.of(first, rest));
+        }
+
+        /** The page a family's switches sit on, or null for Links, Updates and families without a switch. */
+        @Nullable
+        static Page of(PatchFamily family) {
+            for (Page page : values()) if (page.families.contains(family)) return page;
+            return null;
+        }
+
+        /** Whether this build put anything on the page. */
+        boolean inBuild(Set<PatchFamily> build) {
+            return !Collections.disjoint(build, families);
+        }
+
+        /** The title as shown, written out so the translation check sees each one. */
+        String label() {
+            switch (this) {
+                case ADS: return L10n.t("Ads");
+                case CHAT_LIST: return L10n.t("Chat list");
+                case CONVERSATIONS: return L10n.t("Conversations");
+                case PLAYBACK: return L10n.t("Playback");
+                case NOTIFICATIONS: return L10n.t("Notifications");
+                case LOOK: return L10n.t("Look and feel");
+                default: return L10n.t("Privacy");
+            }
+        }
+    }
 
     /** Each independent hook, its owning family and the flag set only after it was inserted. */
     public enum Capability {

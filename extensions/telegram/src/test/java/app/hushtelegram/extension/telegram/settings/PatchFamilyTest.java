@@ -125,7 +125,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.OUTSIDE_TRANSLATE.defaultValue);
         assertFalse(Settings.OUTSIDE_TRANSLATE.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -136,7 +136,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.BETA_LOGS_OFF.defaultValue);
         assertTrue(Settings.BETA_LOGS_OFF.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -149,7 +149,7 @@ public class PatchFamilyTest {
             assertFalse(setting.key, setting.rebootApp);
         }
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -160,7 +160,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.KEEP_DELETED_MESSAGES.defaultValue);
         assertFalse(Settings.KEEP_DELETED_MESSAGES.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -174,7 +174,7 @@ public class PatchFamilyTest {
             assertFalse(setting.key, setting.rebootApp);
         }
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -185,7 +185,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.HIDE_FEATURES_AND_INVITE.defaultValue);
         assertFalse(Settings.HIDE_FEATURES_AND_INVITE.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -196,7 +196,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.HIDE_BLOCKED_IN_GROUPS.defaultValue);
         assertFalse(Settings.HIDE_BLOCKED_IN_GROUPS.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -207,7 +207,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.IGNORE_MUTED_MENTIONS.defaultValue);
         assertFalse(Settings.IGNORE_MUTED_MENTIONS.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -218,7 +218,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.HIDE_STICKER_TIME.defaultValue);
         assertFalse(Settings.HIDE_STICKER_TIME.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -229,7 +229,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.HIDE_GALLERY_CAMERA_TILE.defaultValue);
         assertFalse(Settings.HIDE_GALLERY_CAMERA_TILE.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -240,7 +240,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.REAR_CAMERA_FIRST.defaultValue);
         assertFalse(Settings.REAR_CAMERA_FIRST.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -251,7 +251,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.DISABLE_ARCHIVE_PULL.defaultValue);
         assertTrue(Settings.DISABLE_ARCHIVE_PULL.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -262,7 +262,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.SILENCE_NON_CONTACTS.defaultValue);
         assertFalse(Settings.SILENCE_NON_CONTACTS.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -273,7 +273,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.VOICE_MUSIC_PLAYER.defaultValue);
         assertFalse(Settings.VOICE_MUSIC_PLAYER.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -284,7 +284,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.FORWARD_HIDE_SENDER.defaultValue);
         assertFalse(Settings.FORWARD_HIDE_SENDER.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -295,7 +295,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.HIDE_FOLDER_COUNTERS.defaultValue);
         assertFalse(Settings.HIDE_FOLDER_COUNTERS.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -306,7 +306,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.REACTION_EFFECTS_OFF.defaultValue);
         assertFalse(Settings.REACTION_EFFECTS_OFF.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -317,7 +317,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.NO_HAPTICS.defaultValue);
         assertFalse(Settings.NO_HAPTICS.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -328,7 +328,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.VOICE_ONE_AT_A_TIME.defaultValue);
         assertFalse(Settings.VOICE_ONE_AT_A_TIME.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -339,7 +339,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.ALLOW_CHAT_BLUR.defaultValue);
         assertFalse(Settings.ALLOW_CHAT_BLUR.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -350,7 +350,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.MESSAGE_SECONDS.defaultValue);
         assertFalse(Settings.MESSAGE_SECONDS.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -361,7 +361,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.HIDE_PHONE_NUMBER.defaultValue);
         assertFalse(Settings.HIDE_PHONE_NUMBER.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -372,7 +372,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.SWIPE_BACK_ON_PROFILES.defaultValue);
         assertFalse(Settings.SWIPE_BACK_ON_PROFILES.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -383,7 +383,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.KEEP_VIDEOS_MUTED.defaultValue);
         assertFalse(Settings.KEEP_VIDEOS_MUTED.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -394,7 +394,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.HIDE_KEYBOARD_ON_SCROLL.defaultValue);
         assertFalse(Settings.HIDE_KEYBOARD_ON_SCROLL.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -405,7 +405,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.REVEAL_SPOILERS.defaultValue);
         assertFalse(Settings.REVEAL_SPOILERS.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -416,7 +416,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.EXACT_NUMBERS.defaultValue);
         assertFalse(Settings.EXACT_NUMBERS.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -499,7 +499,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.HIDE_CONTACTS_BLOCK.defaultValue);
         assertTrue(family.expectedCapabilities().isEmpty());
         assertFalse(PatchFamily.QUIET_CONTACTS_NAG.switches.contains(Settings.HIDE_CONTACTS_BLOCK));
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -510,7 +510,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.HIDE_TRANSLATE_BAR.defaultValue);
         assertFalse(Settings.HIDE_TRANSLATE_BAR.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -521,7 +521,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.AMOLED_BLACK.defaultValue);
         assertTrue(Settings.AMOLED_BLACK.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -532,7 +532,7 @@ public class PatchFamilyTest {
         assertFalse(Settings.USE_SYSTEM_FONT.defaultValue);
         assertTrue(Settings.USE_SYSTEM_FONT.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -542,7 +542,7 @@ public class PatchFamilyTest {
         assertEquals(Collections.singletonList(Settings.HIDE_GREETING_STICKERS), family.switches);
         assertFalse(Settings.HIDE_GREETING_STICKERS.defaultValue);
         assertTrue(family.expectedCapabilities().isEmpty());
-        assertTrue(PatchFamily.CHATS_PAGE.contains(family));
+        assertOnItsPage(family);
     }
 
     @Test
@@ -786,12 +786,49 @@ public class PatchFamilyTest {
         }
     }
 
+    /**
+     * Every switch sits on the page named for its Morphe Manager category, so a patch is found
+     * under the same name in both, and the description Manager shows sends the reader there.
+     */
+    @Test
+    public void everySwitchIsOnThePageItsManagerCategoryNamesAndTheDescriptionSaysSo() throws Exception {
+        Map<String, String> descriptions = ManagerCategories.descriptions();
+        List<String> wrong = new java.util.ArrayList<>();
+        for (PatchFamily family : PatchFamily.values()) {
+            String expected = ManagerCategories.pageOf(family);
+            PatchFamily.Page page = PatchFamily.Page.of(family);
+            String actual = page != null ? page.title : family == PatchFamily.OPEN_EXTERNAL_LINKS
+                    || family == PatchFamily.STRIP_LINK_TRACKING ? "Links" : family == PatchFamily.DISABLE_UPDATE_CHECKS
+                    ? "Updates" : null;
+            if (!expected.equals(actual)) wrong.add(family + " is on " + actual + ", not " + expected);
+            // Links and Updates are under More settings; the switch pages are on the home page.
+            String path = "HushTelegram settings > " + (page == null ? "More settings > " : "") + expected;
+            String description = descriptions.get(family.patchName);
+            if (description.contains("HushTelegram settings >") && !description.contains(path + ".")
+                    && !description.contains(path + ",")) {
+                wrong.add(family.patchName + "'s description doesn't send the reader to " + path);
+            }
+        }
+        assertEquals(Collections.emptyList(), wrong);
+        // Each page in the order the screen draws them, and every page holds something.
+        List<String> order = new java.util.ArrayList<>();
+        for (PatchFamily.Page page : PatchFamily.Page.values()) {
+            order.add(page.title);
+            assertFalse(page.title, page.families.isEmpty());
+        }
+        assertEquals(ManagerCategories.PAGE_ORDER, order);
+    }
+
+    private static void assertOnItsPage(PatchFamily family) {
+        try {
+            assertEquals(ManagerCategories.pageOf(family), PatchFamily.Page.of(family).title);
+        } catch (Exception unreadable) {
+            throw new AssertionError(unreadable);
+        }
+    }
+
     /** patches-list.json at the repository root, found from wherever Gradle runs the test. */
     private static File patchesList() {
-        for (File dir = new File("").getAbsoluteFile(); dir != null; dir = dir.getParentFile()) {
-            File candidate = new File(dir, "patches-list.json");
-            if (candidate.isFile()) return candidate;
-        }
-        throw new AssertionError("no patches-list.json above " + new File("").getAbsolutePath());
+        return ManagerCategories.patchesList();
     }
 }

@@ -55,7 +55,7 @@ internal object ChatListSuggestionsFingerprint : Fingerprint(
 val hideSuggestionsPatch = bytecodePatch(
     name = PATCH,
     description = "Hides Premium, birthday and low Stars balance banners above your chat list. Account security notices" +
-        " still show. On by default. Turn it off in HushTelegram settings > Chats.",
+        " still show. On by default. Turn it off in HushTelegram settings > Ads.",
     default = true,
 ) {
     category("Ads")

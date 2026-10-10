@@ -39,7 +39,7 @@ private const val LIST_SORT = "Ljava/util/Collections;->sort(Ljava/util/List;Lja
 val hideContactsBlockPatch = bytecodePatch(
     name = "Hide contacts on Telegram",
     description = "Hides the Your contacts on Telegram list that shows under a short chat list. Chats, folders and " +
-        "search stay. Starts off. Turn it on in HushTelegram settings > Chats.",
+        "search stay. Starts off. Turn it on in HushTelegram settings > Chat list.",
     default = true,
 ) {
     category("Chats")

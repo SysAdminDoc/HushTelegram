@@ -68,7 +68,7 @@ val revealSpoilersPatch = bytecodePatch(
     name = "Reveal spoilers",
     description = "Shows spoiler text, photos and videos without the cover, so you don't have to tap. View-once media, " +
         "sensitive content and login codes stay covered. Starts off. Turn it on in HushTelegram settings > " +
-        "Chats.",
+        "Conversations.",
     default = true,
 ) {
     category("Conversations")

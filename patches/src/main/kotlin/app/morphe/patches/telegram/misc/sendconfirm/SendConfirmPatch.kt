@@ -73,7 +73,7 @@ internal enum class VideoShape(val target: List<String>, val hook: String, val r
 val sendConfirmPatch = bytecodePatch(
     name = NAME,
     description = "Asks you to confirm before a sticker, GIF, voice or video message, or call goes out, so a stray tap " +
-        "doesn't send it. All four start off. Turn them on in HushTelegram settings > Chats.",
+        "doesn't send it. All four start off. Turn them on in HushTelegram settings > Conversations.",
     default = true,
 ) {
     category("Conversations")

@@ -68,7 +68,7 @@ private val MOVE_OBJECTS = setOf(Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, 
 val keepDeletedPatch = bytecodePatch(
     name = "Keep deleted messages",
     description = "Keeps a message on your phone when someone else deletes it, and marks it deleted next to the time. " +
-        "Your own deletes still work normally. Starts off. Turn it on in HushTelegram settings > Chats.",
+        "Your own deletes still work normally. Starts off. Turn it on in HushTelegram settings > Conversations.",
     default = true,
 ) {
     category("Conversations")

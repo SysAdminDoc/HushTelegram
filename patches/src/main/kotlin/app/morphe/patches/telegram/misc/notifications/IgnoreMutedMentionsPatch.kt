@@ -44,7 +44,7 @@ private const val SWAP_REACH = 12
 val ignoreMutedMentionsPatch = bytecodePatch(
     name = "Ignore mentions in muted chats",
     description = "Stops mentions and replies in groups or channels you've muted from notifying you. Chats you haven't " +
-        "muted notify as before. Starts off. Turn it on in HushTelegram settings > Chats.",
+        "muted notify as before. Starts off. Turn it on in HushTelegram settings > Notifications.",
     default = true,
 ) {
     category("Notifications")

@@ -84,7 +84,7 @@ val hideCommercePatch = bytecodePatch(
     name = PATCH,
     description = "Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram " +
         "from the chat, profile and link menus, Gifts tabs on profiles, and the Gift button in channels, for a less " +
-        "cluttered app. On by default. Turn it off in HushTelegram settings > Chats.",
+        "cluttered app. On by default. Turn it off in HushTelegram settings > Ads.",
     default = true,
 ) {
     category("Ads")

@@ -47,7 +47,7 @@ private const val NEXT_CHECK = 4
 val hideBlockedInGroupsPatch = bytecodePatch(
     name = "Hide blocked users in groups",
     description = "Leaves messages from people you've blocked out of groups and supergroups you open. Nothing is " +
-        "deleted. Starts off. Turn it on in HushTelegram settings > Chats.",
+        "deleted. Starts off. Turn it on in HushTelegram settings > Conversations.",
     default = true,
 ) {
     category("Conversations")

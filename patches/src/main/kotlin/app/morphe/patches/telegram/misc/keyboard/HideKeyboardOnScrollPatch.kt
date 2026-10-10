@@ -33,7 +33,7 @@ private const val HIDE_KEYBOARD = "Lorg/telegram/messenger/AndroidUtilities;->hi
 val hideKeyboardOnScrollPatch = bytecodePatch(
     name = "Hide keyboard on scroll",
     description = "Closes the on-screen keyboard when you start scrolling a chat, so you can read more. Starts off. " +
-        "Turn it on in HushTelegram settings > Chats.",
+        "Turn it on in HushTelegram settings > Look and feel.",
     default = true,
 ) {
     category("Interface")

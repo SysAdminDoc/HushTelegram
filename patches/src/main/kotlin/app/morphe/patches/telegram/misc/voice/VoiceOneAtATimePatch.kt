@@ -35,7 +35,7 @@ private const val PLAY = "$MEDIA_CONTROLLER->playMessage(Lorg/telegram/messenger
 val voiceOneAtATimePatch = bytecodePatch(
     name = "Play voice messages one at a time",
     description = "Stops the next voice or video message from playing by itself when one ends. Starts off. Turn it on " +
-        "in HushTelegram settings > Chats.",
+        "in HushTelegram settings > Playback.",
     default = true,
 ) {
     category("Playback")

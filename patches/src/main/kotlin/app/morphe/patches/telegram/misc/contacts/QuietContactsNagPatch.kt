@@ -45,7 +45,7 @@ private const val CONTEXT = "Landroid/content/Context;"
 val quietContactsNagPatch = bytecodePatch(
     name = PATCH,
     description = "Once you've said no, stops the Contacts tab from asking for contacts access again and clears its " +
-        "warning badge. On by default. Turn it off in HushTelegram settings > Chats.",
+        "warning badge. On by default. Turn it off in HushTelegram settings > Look and feel.",
     default = true,
 ) {
     category("Interface")

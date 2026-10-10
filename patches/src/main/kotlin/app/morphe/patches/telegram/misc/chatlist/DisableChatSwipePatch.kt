@@ -39,7 +39,7 @@ val disableChatSwipePatch = bytecodePatch(
     name = PATCH,
     description = "Stops a sideways swipe on a chat from archiving, muting, pinning, deleting or marking it read, so a " +
         "slip can't change a chat. Press and hold still has every action. Starts off. Turn it on in " +
-        "HushTelegram settings > Chats.",
+        "HushTelegram settings > Chat list.",
     default = true,
 ) {
     category("Chats")

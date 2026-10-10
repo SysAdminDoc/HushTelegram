@@ -41,7 +41,7 @@ private const val SWIPE_BACK = "isSwipeBackEnabled(Landroid/view/MotionEvent;)Z"
 val keepVideosMutedPatch = bytecodePatch(
     name = "Keep videos muted on volume keys",
     description = "Makes the volume keys only change the volume in a chat, instead of playing the video on screen with " +
-        "sound. Starts off. Turn it on in HushTelegram settings > Chats.",
+        "sound. Starts off. Turn it on in HushTelegram settings > Playback.",
     default = true,
 ) {
     category("Playback")

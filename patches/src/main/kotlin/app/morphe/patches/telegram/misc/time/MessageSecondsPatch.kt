@@ -37,7 +37,7 @@ internal const val EDITED_MESSAGE = "Lorg/telegram/messenger/R\$string;->EditedM
 val messageSecondsPatch = bytecodePatch(
     name = "Message times with seconds",
     description = "Shows seconds in each message's time, like 9:41:27 PM, so messages sent close together are easy to " +
-        "tell apart. Starts off. Turn it on in HushTelegram settings > Chats.",
+        "tell apart. Starts off. Turn it on in HushTelegram settings > Look and feel.",
     default = true,
 ) {
     category("Interface")

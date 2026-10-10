@@ -63,7 +63,7 @@ private val CONSTANTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST, Opc
 val useSystemFontPatch = bytecodePatch(
     name = "Use system font",
     description = "Draws Telegram's bold, italic and code text in your phone's font instead of the one built into the " +
-        "app. Starts off. Turn it on in HushTelegram settings > Chats, then restart Telegram.",
+        "app. Starts off. Turn it on in HushTelegram settings > Look and feel, then restart Telegram.",
     default = true,
 ) {
     category("Theme")

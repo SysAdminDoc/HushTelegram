@@ -42,7 +42,7 @@ internal val KEPT = setOf("Lorg/telegram/messenger/AndroidUtilities\$VcardItem;"
 val hidePhoneNumberPatch = bytecodePatch(
     name = "Hide phone number",
     description = "Covers your own phone number with dots in the side menu, Settings and your profile, which helps when" +
-        " you share your screen. Starts off. Turn it on in HushTelegram settings > Chats.",
+        " you share your screen. Starts off. Turn it on in HushTelegram settings > Privacy.",
     default = true,
 ) {
     category("Privacy")

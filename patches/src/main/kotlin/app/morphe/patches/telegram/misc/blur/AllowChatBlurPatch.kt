@@ -34,7 +34,7 @@ private const val BLUR_ENABLED = "$SHARED_CONFIG->chatBlurEnabled()Z"
 val allowChatBlurPatch = bytecodePatch(
     name = "Allow chat blur on slower phones",
     description = "Lets slower phones show the blurred chat header and panels that Telegram keeps for fast phones. " +
-        "Starts off. Turn it on in HushTelegram settings > Chats.",
+        "Starts off. Turn it on in HushTelegram settings > Look and feel.",
     default = true,
 ) {
     category("Theme")

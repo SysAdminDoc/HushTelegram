@@ -143,7 +143,6 @@ Android opens t.me links in this app only if you select their addresses on its O
 Android verified this app for Telegram's web addresses, so their links open here.	Android bu uygulamayı Telegram'ın web adresleri için doğruladı, bu yüzden bağlantıları burada açılır.
 Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.	Bu uygulamanın Android ayarları açılamadı. Telegram simgesinden Uygulama bilgileri'ni, ardından Varsayılan olarak aç'ı açın.
 Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.	Kanallardaki sponsorlu mesajları, aramadaki sponsorlu hesapları ve videolardaki reklamları kaldırır. Hiçbiri yüklenmez, bu yüzden hiçbiri görülmüş sayılmaz.
-Chats	Sohbetler
 HushTelegram %1$s on Telegram %2$s	Telegram %2$s üzerinde HushTelegram %1$s
 HushTelegram %1$s is made for Telegram %2$s.	HushTelegram %1$s, Telegram %2$s için hazırlandı.
 HushTelegram pauses when Telegram restarts.	HushTelegram, Telegram yeniden başladığında duraklatılır.
@@ -416,3 +415,9 @@ ID copied	Kimlik kopyalandı
 Data center %1$s	Veri merkezi %1$s
 Copy data center %1$s	Veri merkezini kopyala %1$s
 Data center copied	Veri merkezi kopyalandı
+# context: titles of the settings pages that replaced the Chats page, after Morphe Manager's categories.
+Ads	Reklamlar
+Chat list	Sohbet listesi
+Conversations	Konuşmalar
+Playback	Oynatma
+Look and feel	Görünüm ve kullanım

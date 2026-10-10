@@ -49,7 +49,7 @@ private val TWO_TEXTS = listOf("Ljava/lang/CharSequence;", "Ljava/lang/CharSeque
 val hideGreetingStickersPatch = bytecodePatch(
     name = "Hide greeting stickers",
     description = "Hides the sticker that an empty private chat offers to send as a greeting. Starts off. Turn it on in" +
-        " HushTelegram settings > Chats.",
+        " HushTelegram settings > Conversations.",
     default = true,
 ) {
     category("Conversations")

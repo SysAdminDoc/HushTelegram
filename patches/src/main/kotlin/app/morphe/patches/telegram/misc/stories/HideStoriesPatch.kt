@@ -52,7 +52,7 @@ private val LITERALS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST)
 val hideStoriesPatch = bytecodePatch(
     name = PATCH,
     description = "Removes the story bar above your chats, the rings around profile pictures and the Post Story button." +
-        " Profile stories and archives stay. On by default. Turn it off in HushTelegram settings > Chats.",
+        " Profile stories and archives stay. On by default. Turn it off in HushTelegram settings > Chat list.",
     default = true,
 ) {
     category("Stories")

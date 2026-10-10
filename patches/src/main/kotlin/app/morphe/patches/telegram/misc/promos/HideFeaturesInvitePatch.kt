@@ -57,7 +57,7 @@ private const val HEADING_REACH = 4
 val hideFeaturesInvitePatch = bytecodePatch(
     name = "Hide Telegram Features and Invite Friends",
     description = "Removes the Telegram Features row from Settings and the Invite Friends rows from Contacts. Starts " +
-        "off. Turn it on in HushTelegram settings > Chats.",
+        "off. Turn it on in HushTelegram settings > Look and feel.",
     default = true,
 ) {
     category("Interface")

@@ -37,7 +37,7 @@ internal val ATTACH_CAMERA_PARAMETERS = listOf(PHOTO_LAYOUT, "Landroid/content/C
 val rearCameraFirstPatch = bytecodePatch(
     name = "Start the camera on the rear lens",
     description = "Opens the attachment menu's camera on the rear lens every time, not the lens you used last. Starts " +
-        "off. Turn it on in HushTelegram settings > Chats.",
+        "off. Turn it on in HushTelegram settings > Conversations.",
     default = true,
 ) {
     category("Conversations")

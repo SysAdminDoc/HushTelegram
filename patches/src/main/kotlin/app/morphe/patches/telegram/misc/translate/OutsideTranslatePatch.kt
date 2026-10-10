@@ -73,7 +73,7 @@ val outsideTranslatePatch = bytecodePatch(
     description = "Adds Translate here to a message's menu and Translate this chat to a chat's menu. Text you turn on goes " +
         "to Google's web translate, one message at a time, and nothing is sent before that. Telegram's own " +
         "translation and its Premium checks stay as they are. Starts off. Turn it on in HushTelegram settings > " +
-        "Chats.",
+        "Conversations.",
     default = true,
 ) {
     category("Conversations")

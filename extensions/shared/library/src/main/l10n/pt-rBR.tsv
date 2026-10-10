@@ -140,7 +140,6 @@ Android opens t.me links in this app only if you select their addresses on its O
 Android verified this app for Telegram's web addresses, so their links open here.	O Android verificou este app para os endereços web do Telegram, então os links deles abrem aqui.
 Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.	As configurações do Android para este app não abriram. Abra Informações do app pelo ícone do Telegram e depois Abrir por padrão.
 Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.	Remove mensagens patrocinadas em canais, contas patrocinadas na busca e anúncios em vídeos. Eles nunca são carregados, então nenhum conta como visto.
-Chats	Conversas
 HushTelegram %1$s on Telegram %2$s	HushTelegram %1$s no Telegram %2$s
 HushTelegram %1$s is made for Telegram %2$s.	O HushTelegram %1$s foi feito para o Telegram %2$s.
 HushTelegram pauses when Telegram restarts.	O HushTelegram será pausado quando o Telegram for reiniciado.
@@ -413,3 +412,9 @@ ID copied	ID copiado
 Data center %1$s	Data center %1$s
 Copy data center %1$s	Copiar data center %1$s
 Data center copied	Data center copiado
+# context: titles of the settings pages that replaced the Chats page, after Morphe Manager's categories.
+Ads	Anúncios
+Chat list	Lista de conversas
+Conversations	Mensagens
+Playback	Reprodução
+Look and feel	Aparência e uso

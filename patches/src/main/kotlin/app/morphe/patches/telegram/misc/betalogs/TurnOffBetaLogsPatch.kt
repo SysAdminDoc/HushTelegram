@@ -40,7 +40,7 @@ val turnOffBetaLogsPatch = bytecodePatch(
     description = "Telegram Beta always writes debug logs to your phone, its connection log included, and its own debug " +
         "menu can't stop that. This stops them, so the beta only logs when you turn logs on in its debug menu. The " +
         "regular telegram.org build doesn't force them, so nothing changes there. Starts off. Turn it on in " +
-        "HushTelegram settings > Chats, then restart Telegram.",
+        "HushTelegram settings > Privacy, then restart Telegram.",
     default = true,
 ) {
     category("Privacy")

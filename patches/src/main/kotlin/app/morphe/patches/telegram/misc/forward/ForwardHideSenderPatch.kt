@@ -46,7 +46,7 @@ val forwardHideSenderPatch = bytecodePatch(
     name = "Hide sender names when forwarding",
     description = "Turns on Telegram's Hide sender's name option each time you forward, so copies arrive without the " +
         "original author. You can turn it off before sending. Starts off. Turn it on in HushTelegram settings" +
-        " > Chats.",
+        " > Conversations.",
     default = true,
 ) {
     category("Conversations")

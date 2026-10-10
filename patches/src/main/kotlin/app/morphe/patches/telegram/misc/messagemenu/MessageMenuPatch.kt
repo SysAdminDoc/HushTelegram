@@ -94,7 +94,7 @@ val messageMenuPatch = bytecodePatch(
     name = NAME,
     description = "Adds Repeat, Copy photo, Message details and Quick forward to a message's press-and-hold menu, for " +
         "resending, copying and forwarding faster. All four start off. Turn them on in HushTelegram settings " +
-        "> Chats.",
+        "> Conversations.",
     default = true,
 ) {
     category("Conversations")
