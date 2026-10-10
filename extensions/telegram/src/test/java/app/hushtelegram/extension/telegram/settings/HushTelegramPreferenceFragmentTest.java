@@ -855,6 +855,8 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("", key.getText().toString());
             assertTrue("the key field is masked",
                     (key.getInputType() & android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD) != 0);
+            assertEquals("no autofill service is offered the key", android.view.View.IMPORTANT_FOR_AUTOFILL_NO,
+                    key.getImportantForAutofill());
 
             editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             ShadowLooper.idleMainLooper();

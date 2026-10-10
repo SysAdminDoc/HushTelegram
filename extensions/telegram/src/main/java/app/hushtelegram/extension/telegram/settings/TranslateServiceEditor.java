@@ -9,6 +9,7 @@ import android.app.AlertDialog;
 import android.preference.Preference;
 import android.text.InputType;
 import android.util.TypedValue;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
@@ -43,6 +44,8 @@ final class TranslateServiceEditor {
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         EditText key = field(activity, android.R.id.edit, L10n.t("API key"), saved.key,
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        // A password field invites an autofill service to save it to the cloud; the key stays on this phone.
+        key.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO);
         LinearLayout fields = new LinearLayout(address.getContext());
         fields.setOrientation(LinearLayout.VERTICAL);
         int side = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20,
