@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Logger;
 import app.hushtelegram.extension.shared.Utils;
+import app.hushtelegram.extension.telegram.misc.BlackTheme;
 
 /**
  * How the HushTelegram screen is reached.
@@ -285,6 +286,7 @@ public final class SettingsEntry {
         } catch (Exception ex) {
             Logger.printException(() -> "Settings entry: onActivityCreate failure", ex);
         }
+        BlackTheme.launchScreen(activity);
     }
 
     /** Injected at the start of every Telegram activity's {@code onNewIntent}. */
@@ -314,7 +316,8 @@ public final class SettingsEntry {
 
         @Override public void onActivityCreated(Activity activity, Bundle state) { }
         @Override public void onActivityStarted(Activity activity) { }
-        @Override public void onActivityStopped(Activity activity) { }
+        /** A switch or dark mode changed while Telegram was open reaches the next launch screen. */
+        @Override public void onActivityStopped(Activity activity) { BlackTheme.launchScreen(activity); }
         @Override public void onActivitySaveInstanceState(Activity activity, Bundle state) { }
         @Override
         public void onActivityDestroyed(Activity activity) {

@@ -63,8 +63,8 @@ internal const val WALLPAPER_INTENSITY = 6
 val amoledBlackPatch = bytecodePatch(
     name = "AMOLED black",
     description = "Gives Telegram's Night and Dark themes pure black screens for a darker look. Message bubbles and " +
-        "menus keep their colors. Starts off. Turn it on in HushTelegram settings > Look and feel, then restart " +
-        "Telegram.",
+        "menus keep their colors. On Android 13 and up the launch screen turns black too while your phone is in " +
+        "dark mode. Starts off. Turn it on in HushTelegram settings > Look and feel, then restart Telegram.",
     default = true,
 ) {
     category("Theme")
