@@ -8,6 +8,8 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patches.telegram.misc.commerce.COMMERCE
+import app.morphe.patches.telegram.misc.commerce.hideCommercePatch
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.forward.FORWARDS
@@ -19,6 +21,7 @@ import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
@@ -29,6 +32,7 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
 
 /** The menu builder's return, the choice handler's entry, the forward the stubs send with, and the runtime. */
 class MessageMenuFixtureTest {
@@ -48,18 +52,21 @@ class MessageMenuFixtureTest {
     private fun Instruction.shape() = listOf(opcode, namedRegisters(), (this as? ReferenceInstruction)?.reference?.toString())
     private fun signature(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
 
+    private fun hosts(build: File): List<ClassDef> {
+        val found = FixtureDex.classesWhere(build, { true }) { m ->
+            val params = m.parameterTypes.map(CharSequence::toString)
+            params == listOf("Lorg/telegram/messenger/MessageObject;", list, list, list) && m.controlBody().any { it.controlRef() == FORWARD_LABEL } ||
+                AccessFlags.STATIC.isSet(m.accessFlags) && params == listOf("I", "I", list, list) && m.returnType == "V" ||
+                m.name == "getParentActivity" && params.isEmpty() ||
+                m.controlBody().map { it.controlRef() }.let { IS_PREMIUM in it && FORWARDS in it && NAME_HIDE in it }
+        }
+        return (FixtureDex.classes(build, fixed).values + found).distinctBy { it.type }.map(ImmutableClassDef::of)
+    }
+
     @Test fun `the menu gains its items as it returns and the extension answers its own numbers first`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
-            val found = FixtureDex.classesWhere(build, { true }) { m ->
-                val params = m.parameterTypes.map(CharSequence::toString)
-                params == listOf("Lorg/telegram/messenger/MessageObject;", list, list, list) && m.controlBody().any { it.controlRef() == FORWARD_LABEL } ||
-                    AccessFlags.STATIC.isSet(m.accessFlags) && params == listOf("I", "I", list, list) && m.returnType == "V" ||
-                    m.name == "getParentActivity" && params.isEmpty() ||
-                    m.controlBody().map { it.controlRef() }.let { IS_PREMIUM in it && FORWARDS in it && NAME_HIDE in it }
-            }
-            val hosts = (FixtureDex.classes(build, fixed).values + found).distinctBy { it.type }.map(ImmutableClassDef::of)
-            val context = PatchContexts.of(ExtensionDex.classes() + hosts)
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
             val site = context.resolveMessageMenu()
             assertEquals("$name: Forward is option 2", 2, site.forwardOption)
             assertEquals("$name: articles are type 36", 36, site.article)
@@ -135,6 +142,30 @@ class MessageMenuFixtureTest {
             assertTrue("$name: paid media refused", stub("blocked").any { it.controlRef() == "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaPaidMedia;" })
             val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "messageMenuRepeat" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
+        }
+    }
+
+    /** Hide Premium, gifts and Stars asks before the Gram transfer's Send Gram, in the same builder. */
+    @Test fun `the message menu and the Gram transfer Send Gram hook share the builder in either order`() {
+        for (build in Fixtures.declaredBuilds()) for (commerceFirst in listOf(true, false)) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val fill = context.resolveMessageMenu().fill
+            val stock = ImmutableMethod.of(fill).controlBody()
+            for (patch in if (commerceFirst) listOf(hideCommercePatch, messageMenuPatch) else listOf(messageMenuPatch, hideCommercePatch)) {
+                val warnings = PatchLogCapture.warnings { patch.execute(context) }
+                // Only the chat's classes are loaded, so Hide commerce reports its other places missing.
+                if (patch == messageMenuPatch) assertEquals(emptyList<String>(), warnings)
+                else assertTrue("${build.name}: $warnings", warnings.none { "commerceTransferSendGram" in it })
+            }
+            val after = fill.controlBody()
+            assertEquals("${build.name}: both hooks and nothing else", stock.size + 3, after.size)
+            assertEquals(1, after.count { it.controlRef() == "$COMMERCE->showTransferSendGram(Z)Z" })
+            assertEquals("${build.name}: the menu's call still comes last", FILL, after[after.size - 2].controlRef())
+            assertEquals(Opcode.RETURN_VOID, after.last().opcode)
+            for (flag in listOf("messageMenuRepeat", "commerceTransferSendGram")) {
+                val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.controlBody()
+                assertEquals("${build.name}: $flag", 1L, (status.first() as WideLiteralInstruction).wideLiteral)
+            }
         }
     }
 }

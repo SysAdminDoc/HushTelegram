@@ -56,6 +56,30 @@ public final class Commerce {
         return false;
     }
 
+    /**
+     * Telegram's Wallet answer just before a profile's menu offers Send Gram. False builds the menu
+     * the way an account without Wallet gets it.
+     */
+    public static boolean showProfileSendGram(boolean available) {
+        if (!available || !enabled()) return available;
+        HookStatus.counted(FamilyNames.HIDE_COMMERCE, "profile menu Send Gram item hidden");
+        return false;
+    }
+
+    /** The same answer for the popup a tapped TON address opens. Copy address and the rest stay. */
+    public static boolean showAddressSendGram(boolean available) {
+        if (!available || !enabled()) return available;
+        HookStatus.counted(FamilyNames.HIDE_COMMERCE, "TON link Send Gram item hidden");
+        return false;
+    }
+
+    /** The same answer for a Gram transfer's message menu. The transfer itself is untouched. */
+    public static boolean showTransferSendGram(boolean available) {
+        if (!available || !enabled()) return available;
+        HookStatus.counted(FamilyNames.HIDE_COMMERCE, "Gram transfer Send Gram item hidden");
+        return false;
+    }
+
     /** Filters the stock presence decision before the cached tab strip is compared and rebuilt. */
     public static boolean showGiftsTab(boolean visible) {
         if (!visible || !enabled()) return visible;

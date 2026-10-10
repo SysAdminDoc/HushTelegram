@@ -156,7 +156,10 @@ public class PausedHooksTest {
                 () -> !app.hushtelegram.extension.telegram.misc.Commerce.showGiftsTab(true),
                 () -> !app.hushtelegram.extension.telegram.misc.Commerce.showWalletRow(true),
                 () -> !app.hushtelegram.extension.telegram.misc.Commerce.showAttachWallet(true),
-                () -> !app.hushtelegram.extension.telegram.misc.Commerce.showMenuWallet(true)));
+                () -> !app.hushtelegram.extension.telegram.misc.Commerce.showMenuWallet(true),
+                () -> !app.hushtelegram.extension.telegram.misc.Commerce.showProfileSendGram(true),
+                () -> !app.hushtelegram.extension.telegram.misc.Commerce.showAddressSendGram(true),
+                () -> !app.hushtelegram.extension.telegram.misc.Commerce.showTransferSendGram(true)));
         probes.put(PatchFamily.HIDE_PROMOTIONAL_BANNERS, Arrays.asList(
                 () -> !Suggestions.filterChatList(Collections.singleton("PREMIUM_UPGRADE")).contains("PREMIUM_UPGRADE"),
                 () -> Suggestions.birthdayGiftBannerDismissed(false)));

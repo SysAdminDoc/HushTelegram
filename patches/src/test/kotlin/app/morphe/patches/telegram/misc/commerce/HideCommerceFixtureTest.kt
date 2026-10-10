@@ -34,6 +34,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.junit.Assert.assertEquals
@@ -110,6 +111,34 @@ class HideCommerceFixtureTest {
             val miniApps = reach(menuFlow, menuFlow.normal[menu.index - 1].single { it != menu.index })
             assertTrue("${build.name}: the side menu mini apps sit behind the gate", miniApps.any { entries[it].reference() == SIDE_MENU })
             assertTrue("${build.name}: the jump never reaches them", reach(menuFlow, menuExit).none { entries[it].reference() == SIDE_MENU })
+
+            // Send Gram: each place adds it past its own walletAvailable gate and nothing else sits
+            // there, so the gate's skip is the place as an account without Wallet has it.
+            for ((target, kept) in mapOf(
+                CommerceTarget.PROFILE_SEND_GRAM to listOf("StartEncryptedChat"),
+                CommerceTarget.ADDRESS_SEND_GRAM to listOf("WalletCopyAddress", "WalletViewInExplorer", "WalletAddressNoLinkedAccount"),
+                CommerceTarget.TRANSFER_SEND_GRAM to listOf("WelcomeMessageRevert"),
+            )) {
+                val gate = plan.hooks.getValue(target).single()
+                assertFalse(gate.replace)
+                val body = gate.method.instructions()
+                val flow = ControlFlow.of(gate.method)
+                assertEquals("${build.name}: $target gate reads walletAvailable", WALLET_AVAILABLE, body[gate.index - 3].reference())
+                assertEquals(Opcode.IF_EQZ, body[gate.index].opcode)
+                val skip = flow.normal[gate.index].single { it != gate.index + 1 }
+                val branch = gate.index + 1 until skip
+                assertEquals("${build.name}: $target branch labels Send Gram and nothing else", listOf(SEND_GRAM),
+                    branch.mapNotNull { body[it].reference() }.filter { it.startsWith("Lorg/telegram/messenger/R\$string;->") })
+                val after = reach(flow, skip)
+                for (label in kept.map { "Lorg/telegram/messenger/R\$string;->$it:I" }) {
+                    assertTrue("${build.name}: $target keeps $label past the gate", after.any { body[it].reference() == label })
+                }
+            }
+            val transfer = plan.hooks.getValue(CommerceTarget.TRANSFER_SEND_GRAM).single()
+            val transferBody = transfer.method.instructions()
+            val transferSkip = ControlFlow.of(transfer.method).normal[transfer.index].single { it != transfer.index + 1 }
+            assertTrue("${build.name}: the message menu offers Send Gram only on a Gram transfer", (transfer.index + 1 until transferSkip).any {
+                transferBody[it].opcode == Opcode.INSTANCE_OF && transferBody[it].reference() == GRAM_TRANSFER })
 
             val originals = plan.hooks.mapValues { (_, edits) -> ImmutableMethod.of(edits.first().method) }
             val changed = originals.values.map { it.definingClass to it.name }.toSet()
@@ -363,6 +392,52 @@ class HideCommerceFixtureTest {
     }
 
     @Test
+    fun `a changed Send Gram item refuses before any hook or build fact changes`() {
+        val places = mapOf(
+            CommerceTarget.PROFILE_SEND_GRAM to listOf("availability read", "way in", "other item", "add"),
+            CommerceTarget.ADDRESS_SEND_GRAM to listOf("availability read", "way in", "other item", "add", "copy address"),
+            CommerceTarget.TRANSFER_SEND_GRAM to listOf("availability read", "way in", "other item", "add", "transfer check"),
+        )
+        for (build in Fixtures.declaredBuilds()) for ((target, changes) in places) for (change in changes) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val plan = context.resolveCommerceHooks()
+            val gate = plan.hooks.getValue(target).single()
+            val method = gate.method
+            val body = method.instructions()
+            val skip = ControlFlow.of(method).normal[gate.index].single { it != gate.index + 1 }
+            val label = body.indexOfFirst { it.reference() == SEND_GRAM }
+            val title = body[label + 2].namedRegisters().single()
+            when (change) {
+                "availability read" -> method.replaceInstruction(gate.index - 2, "nop")
+                "way in" -> {
+                    method.insertAtControlFlowLabel(gate.index - 3, "goto/32 :hush_gram", ExternalLabel("hush_gram", body[label]))
+                    assertTrue("the jump really enters the branch", label + 1 in ControlFlow.of(method).normal[gate.index - 3])
+                }
+                // A second label behind the gate would hide more than Send Gram.
+                "other item" -> method.addInstructionsAtControlFlowLabel(label,
+                    "sget v${body[label].namedRegisters().single()}, Lorg/telegram/messenger/R\$string;->Copy:I")
+                "add" -> method.replaceInstruction((label + 3 until skip).first { at ->
+                    (body[at] as? ReferenceInstruction)?.reference is MethodReference && title in body[at].namedRegisters() }, "nop")
+                // The popup's own items: Copy address is the one every TON address gets.
+                "copy address" -> {
+                    val copy = body.indexOfFirst { it.reference() == COPY_ADDRESS }
+                    method.replaceInstruction(copy, "const/16 v${body[copy].namedRegisters().single()}, 0x1")
+                }
+                "transfer check" -> method.replaceInstruction((gate.index + 1 until skip).single { body[it].opcode == Opcode.INSTANCE_OF }, "nop")
+            }
+            val before = plan.hooks.mapValues { it.value.first().method.instructions().map(::operation) }
+            assertRefuses { hideCommercePatch.execute(context) }
+            for ((surface, edits) in plan.hooks) {
+                assertEquals("${build.name}: $target $change preserves $surface", before.getValue(surface),
+                    edits.first().method.instructions().map(::operation))
+            }
+            assertFact(context, "hideCommerce", 0)
+            CommerceTarget.entries.forEach { assertFact(context, it.capability, 0) }
+            assertUnwrittenIdentities(context)
+        }
+    }
+
+    @Test
     fun `Disable archive pull and the Wallet entry share the chat list menu in either order`() {
         for (build in Fixtures.declaredBuilds()) for (commerceFirst in listOf(true, false)) {
             val kept = FixtureDex.classes(build, setOf(MESSAGES_CONTROLLER, ARCHIVE_HIDDEN, SELECTED_ACCOUNT, ARCHIVED_CHATS, ARCHIVE_ICON)
@@ -428,6 +503,9 @@ class HideCommerceFixtureTest {
             assertFact(context, "commerceChannelGift", 0)
             assertFact(context, "commerceAttachWallet", 1)
             assertFact(context, "commerceMenuWallet", 1)
+            assertFact(context, "commerceProfileSendGram", 1)
+            assertFact(context, "commerceAddressSendGram", 1)
+            assertFact(context, "commerceTransferSendGram", 1)
             val stub = context.mutableClassDefBy(COMMERCE).methods.single { it.name == "giftButtonIndex" }.instructions()
             assertEquals("${build.name}: no invented footer identity", -1, (stub[0] as NarrowLiteralInstruction).narrowLiteral)
         }
@@ -539,7 +617,7 @@ class HideCommerceFixtureTest {
     private fun hosts(build: File): List<ClassDef> {
         val anchors = FixtureDex.classesWhere(build, { true }) { method ->
             val refs = method.instructions().mapNotNull { it.reference() }.toSet()
-            refs.contains(WALLET_LABEL) || refs.contains(PROFILE_GIFTS) || (refs.contains(GIFT_BUTTON) &&
+            refs.contains(WALLET_LABEL) || refs.contains(SEND_GRAM) || refs.contains(PROFILE_GIFTS) || (refs.contains(GIFT_BUTTON) &&
                 method.parameterTypes.map { it.toString() } == listOf("I", "Z", "Z")) ||
                 (refs.containsAll(SETTINGS_SALES) && AccessFlags.STATIC.isSet(method.accessFlags) &&
                     method.parameterTypes.map { it.toString() } == listOf(method.definingClass, "Ljava/util/ArrayList;")) ||

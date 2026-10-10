@@ -40,6 +40,9 @@ public final class SettingsStatus {
     public static boolean commerceChannelGift() { return false; }
     public static boolean commerceAttachWallet() { return false; }
     public static boolean commerceMenuWallet() { return false; }
+    public static boolean commerceProfileSendGram() { return false; }
+    public static boolean commerceAddressSendGram() { return false; }
+    public static boolean commerceTransferSendGram() { return false; }
     public static boolean hidePromotionalBanners() { return false; }
     public static boolean promotionalSuggestions() { return false; }
     public static boolean birthdayGiftBanner() { return false; }

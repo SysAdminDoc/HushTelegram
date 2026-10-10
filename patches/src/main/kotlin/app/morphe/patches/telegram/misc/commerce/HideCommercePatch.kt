@@ -54,9 +54,19 @@ private const val WALLET_ROW = 25
 internal val MENU_NEIGHBORS = listOf("NewGroup", "SavedMessages").map { "Lorg/telegram/messenger/R\$string;->$it:I" }
 private val MENU_ADD = listOf("I", "Ljava/lang/CharSequence;", "Ljava/lang/Runnable;", "Z")
 internal const val MENU_WALLET_LABEL = "hush_menu_wallet"
+// Telegram 13.0's Send Gram item. A profile's menu, the popup for a tapped TON address and a Gram
+// transfer's message menu each offer it behind their own walletAvailable read.
+internal const val SEND_GRAM = "Lorg/telegram/messenger/R\$string;->WalletSendMoney:I"
+internal const val COPY_ADDRESS = "Lorg/telegram/messenger/R\$string;->WalletCopyAddress:I"
+internal const val GRAM_TRANSFER = "Lorg/telegram/tgnet/TLRPC\$TL_messageActionGramTransfer;"
+private const val PROFILE_ACTIVITY = "Lorg/telegram/ui/ProfileActivity;"
+private const val MESSAGE_OBJECT = "Lorg/telegram/messenger/MessageObject;"
+private const val LINK_STYLE = "Landroid/text/style/CharacterStyle;"
+private const val STRINGS = "Lorg/telegram/messenger/R\$string;->"
 private const val TABS = "Lorg/telegram/ui/Components/ScrollSlidingTextTabStrip;"
 private const val ARRAY_LIST = "Ljava/util/ArrayList;"
 private const val APPEND = "$ARRAY_LIST->add(Ljava/lang/Object;)Z"
+private const val INSERT = "$ARRAY_LIST->add(ILjava/lang/Object;)V"
 private const val PAIR = "Landroid/util/Pair;-><init>(Ljava/lang/Object;Ljava/lang/Object;)V"
 private const val STRING = "Lorg/telegram/messenger/LocaleController;->getString(I)Ljava/lang/String;"
 private const val BOX_INT = "Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;"
@@ -65,12 +75,15 @@ private val FOOTER_LABELS = listOf("ProfileActionsGift", "ChannelOpenDirect", "S
     .map { "Lorg/telegram/messenger/R\$string;->$it:I" }
 private val MOVES = setOf(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_16)
 private val CONSTANTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST, Opcode.CONST_HIGH16)
+private val STORES = listOf("IPUT", "SPUT", "APUT").flatMap { kind ->
+    listOf("", "_WIDE", "_OBJECT", "_BOOLEAN", "_BYTE", "_CHAR", "_SHORT").map { Opcode.valueOf(kind + it) }
+}.toSet()
 
 @Suppress("unused")
 val hideCommercePatch = bytecodePatch(
     name = PATCH,
-    description = "Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, the Wallet button " +
-        "from the chat list and attach menus, Gifts tabs on profiles, and the Gift button in channels, for a less " +
+    description = "Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram " +
+        "from the chat, profile and link menus, Gifts tabs on profiles, and the Gift button in channels, for a less " +
         "cluttered app. On by default. Turn it off in HushTelegram settings > Chats.",
     default = true,
 ) {
@@ -102,6 +115,9 @@ val hideCommercePatch = bytecodePatch(
                     CommerceTarget.CHANNEL_GIFT -> enableCapability("commerceChannelGift")
                     CommerceTarget.ATTACH_WALLET -> enableCapability("commerceAttachWallet")
                     CommerceTarget.MENU_WALLET -> enableCapability("commerceMenuWallet")
+                    CommerceTarget.PROFILE_SEND_GRAM -> enableCapability("commerceProfileSendGram")
+                    CommerceTarget.ADDRESS_SEND_GRAM -> enableCapability("commerceAddressSendGram")
+                    CommerceTarget.TRANSFER_SEND_GRAM -> enableCapability("commerceTransferSendGram")
                 }
                 null
             }
@@ -113,7 +129,23 @@ val hideCommercePatch = bytecodePatch(
 internal enum class CommerceTarget(val capability: String) {
     SETTINGS("commerceSettingsRows"), PROFILE_GIFTS("commerceProfileGifts"), CHANNEL_GIFT("commerceChannelGift"),
     ATTACH_WALLET("commerceAttachWallet"), MENU_WALLET("commerceMenuWallet"),
+    PROFILE_SEND_GRAM("commerceProfileSendGram"), ADDRESS_SEND_GRAM("commerceAddressSendGram"),
+    TRANSFER_SEND_GRAM("commerceTransferSendGram"),
 }
+
+/**
+ * One place that offers Send Gram: [add] is how it adds an item, taking the title as operand
+ * [title], and [hook] is the Commerce question asked at its gate.
+ */
+private class SendGramSite(val where: String, val hook: String, val title: Int, val add: (MethodReference) -> Boolean)
+
+private val PROFILE_GRAM = SendGramSite("profile menu", "showProfileSendGram", 3) { call ->
+    call.parameterTypes.map { it.toString() } == listOf("I", "I", "Ljava/lang/String;")
+}
+private val ADDRESS_GRAM = SendGramSite("TON address popup", "showAddressSendGram", 2) { call ->
+    call.returnType == "V" && call.parameterTypes.map { it.toString() } == MENU_ADD
+}
+private val TRANSFER_GRAM = SendGramSite("Gram transfer menu", "showTransferSendGram", 2) { call -> call.toString() == INSERT }
 
 internal data class CommerceEdit(
     val method: MutableMethod,
@@ -213,7 +245,70 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
             MENU_NEIGHBORS.all { label -> body.any { it.reference() == label } } }
     }.unique("chat list menu with Wallet")
     if (menu != null) hooks[CommerceTarget.MENU_WALLET] = listOf(menuWalletEdit(mutable(menu)))
+
+    // Send Gram, found by the kept types around it: the profile's menu builder, the static popup a
+    // TON address link's style opens, and the message menu builder that fills three lists.
+    val sendGram = methods.filter { method -> method.instructions().any { it.reference() == SEND_GRAM } }
+    val profileGram = sendGram.filter { it.definingClass == PROFILE_ACTIVITY && it.hasShape(listOf("Z"), "V") }
+        .unique("profile menu with Send Gram")
+    if (profileGram != null) hooks[CommerceTarget.PROFILE_SEND_GRAM] = listOf(sendGramEdit(mutable(profileGram), PROFILE_GRAM))
+    val addressGram = sendGram.filter { AccessFlags.STATIC.isSet(it.accessFlags) && it.parameterTypes.lastOrNull()?.toString() == LINK_STYLE }
+        .unique("TON address popup with Send Gram")
+    if (addressGram != null) {
+        // The popup's own items stay: Copy address is the one every TON address gets.
+        shape(addressGram.instructions().any { it.reference() == COPY_ADDRESS }, "TON address popup no longer offers Copy address")
+        hooks[CommerceTarget.ADDRESS_SEND_GRAM] = listOf(sendGramEdit(mutable(addressGram), ADDRESS_GRAM))
+    }
+    val transferGram = sendGram.filter { !AccessFlags.STATIC.isSet(it.accessFlags) &&
+        it.hasShape(listOf(MESSAGE_OBJECT, ARRAY_LIST, ARRAY_LIST, ARRAY_LIST), "V") }.unique("message menu with Send Gram")
+    if (transferGram != null) {
+        val edit = sendGramEdit(mutable(transferGram), TRANSFER_GRAM)
+        val body = edit.method.instructions()
+        val skip = ControlFlow.of(edit.method).normal[edit.index].single { it != edit.index + 1 }
+        shape((edit.index + 1 until skip).any { body[it].opcode == Opcode.INSTANCE_OF && body[it].reference() == GRAM_TRANSFER },
+            "Gram transfer menu no longer offers Send Gram only on Gram transfers")
+        hooks[CommerceTarget.TRANSFER_SEND_GRAM] = listOf(edit)
+    }
     return CommercePlan(hooks, giftTabId, giftButtonIndex)
+}
+
+/**
+ * Telegram 13.0 offers Send Gram from a profile's menu, the popup for a tapped TON address and a
+ * Gram transfer's message menu, each only while the server's walletAvailable flag reads true. In
+ * each of them the flag's branch adds Send Gram and nothing else, and its skip is where the menu
+ * goes on for an account without Wallet. The hook takes the flag's answer just before the branch,
+ * so a hidden item leaves the menu exactly as that account gets it. Receiving, viewing and
+ * claiming Gram never pass through these branches.
+ */
+private fun sendGramEdit(method: MutableMethod, site: SendGramSite): CommerceEdit {
+    val where = site.where
+    val body = method.instructions()
+    val flow = ControlFlow.of(method)
+    val reads = body.indices.filter { body[it].reference() == WALLET_AVAILABLE }
+    val labels = body.indices.filter { body[it].reference() == SEND_GRAM }
+    shape(reads.size == 1 && labels.size == 1, "$where no longer reads walletAvailable and Send Gram once")
+    val gate = gateAfter(body, reads.single(), where)
+    val skip = flow.normal[gate].singleOrNull { it != gate + 1 }
+    shape(skip != null && skip > gate + 1 && flow.normal[gate].size == 2, "$where Wallet availability no longer skips forward")
+    val branch = gate + 1 until skip!!
+    shape(branch.all { at -> flow.normal[at].all { it in branch || it == skip } } &&
+        body.indices.none { at -> at !in branch && at != gate && (flow.normal[at] + flow.exceptional[at]).any { it in branch } },
+        "$where Send Gram has another way in or out")
+    val label = labels.single()
+    shape(label in branch && body.getOrNull(label + 1)?.reference() == STRING &&
+        body.getOrNull(label + 2)?.opcode == Opcode.MOVE_RESULT_OBJECT, "$where Send Gram has no title")
+    val title = body[label + 2].namedRegisters().single()
+    val add = (label + 3 until skip).firstOrNull { body[it].call() != null && title in body[it].namedRegisters() }
+    shape(add != null && site.add(body[add].call()!!) && body[add].namedRegisters().getOrNull(site.title) == title &&
+        (label + 3 until add).none { body[it].writes(title) }, "$where no longer adds Send Gram as an item")
+    // Nothing else waits behind the flag: no other label, and nothing stored beyond the item.
+    shape(branch.none { at -> at != label && body[at].reference()?.startsWith(STRINGS) == true } &&
+        branch.none { body[it].opcode in STORES },
+        "$where Wallet branch holds more than Send Gram")
+    val available = body[gate].namedRegisters().single()
+    shape(available <= 255, "$where Wallet answer is out of a result's reach")
+    return CommerceEdit(method, gate,
+        "invoke-static/range {v$available .. v$available}, $COMMERCE->${site.hook}(Z)Z\nmove-result v$available")
 }
 
 /**

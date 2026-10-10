@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(778);
+        Map<String, String> table = new HashMap<>(784);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -309,6 +309,8 @@ public final class L10nTranslations {
                 "GitHub hat eine Antwort gesendet, die HushTelegram nicht lesen konnte. Versuche es sp\u00e4ter erneut.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Direkt zu einer Gruppe von Einstellungen. Zur\u00fcck bringt dich dorthin, wo du warst.");
+        table.put("Gram transfer Send Gram item",
+                "Gram-senden-Eintrag bei Gram-\u00dcberweisungen");
         table.put("Hide Premium, gifts and Stars",
                 "Premium, Geschenke und Stars ausblenden");
         table.put("Hide Stories",
@@ -423,11 +425,11 @@ public final class L10nTranslations {
                 "Die Designs Nacht und Dunkel verwenden reinschwarze Bildschirme. Nachrichtenblasen und Men\u00fcs behalten ihre Farben. Starte Telegram neu, um die \u00c4nderung zu sehen.");
         table.put("No",
                 "Nein");
-        table.put("No HushTelegram release is out yet.",
-                "Es gibt noch keine Version von HushTelegram.");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("No HushTelegram release is out yet.",
+                "Es gibt noch keine Version von HushTelegram.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Keine App auf diesem Handy kann den Link \u00f6ffnen. Die Adresse ist %1$s.");
         table.put("No chat to forward to",
@@ -516,8 +518,8 @@ public final class L10nTranslations {
                 "%1$d behaltene Nachricht entfernt.");
         table.put("Removed %1$d kept messages.",
                 "%1$d behaltene Nachrichten entfernt.");
-        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, the Wallet button from the chat list and attach menus, Gifts tabs on profiles, and the Gift button in channels.",
-                "Entfernt Premium, Stars, My Grams, Wallet, Business und Geschenk senden aus den Einstellungen, die Wallet-Schaltfl\u00e4che aus dem Chatlisten- und dem Anh\u00e4ngemen\u00fc, die Geschenke-Tabs in Profilen und die Geschenk-Schaltfl\u00e4che in Kan\u00e4len.");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, and the Gift button in channels.",
+                "Entfernt Premium, Stars, My Grams, Wallet, Business und Geschenk senden aus den Einstellungen, Wallet und Gram senden aus den Chat-, Profil- und Linkmen\u00fcs, die Geschenke-Tabs in Profilen und die Geschenk-Schaltfl\u00e4che in Kan\u00e4len.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
                 "Entfernt gesponserte Nachrichten in Kan\u00e4len, gesponserte Konten in der Suche und Werbung in Videos. Sie werden nie geladen, daher z\u00e4hlt keine als gesehen.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
@@ -546,11 +548,11 @@ public final class L10nTranslations {
                 "Speichert deine Schalter-Auswahl in einer Datei, f\u00fcr alle Konten in dieser Telegram-App. Pause, Debug-Protokollierung und die Update-Pr\u00fcfung sind nicht enthalten.");
         table.put("Saving the settings file",
                 "Einstellungsdatei wird gespeichert");
-        table.put("Search settings",
-                "Einstellungen suchen");
     }
 
     private static void fillDe4(Map<String, String> table) {
+        table.put("Search settings",
+                "Einstellungen suchen");
         table.put("Selecting links by hand",
                 "Links von Hand ausw\u00e4hlen");
         table.put("Send",
@@ -643,6 +645,8 @@ public final class L10nTranslations {
                 "Wischen \u00fcber einen Chat in deiner Liste archiviert, stummschaltet, fixiert, l\u00f6scht oder markiert ihn nicht mehr als gelesen. Gedr\u00fcckt halten bietet weiterhin alle Aktionen.");
         table.put("Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.",
                 "Wischen nach rechts auf den Fotos oder Medien-Tabs eines Profils geht zur\u00fcck, wie im Rest des Profils, statt das vorherige Foto oder den vorherigen Tab zu zeigen.");
+        table.put("TON link Send Gram item",
+                "Gram-senden-Eintrag bei TON-Links");
         table.put("Tap to turn it back on.",
                 "Zum Wiedereinschalten tippen.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
@@ -667,13 +671,13 @@ public final class L10nTranslations {
                 "Diese Datei ist kein lesbarer Text, sie wurde also wom\u00f6glich bei der \u00dcbertragung besch\u00e4digt. Es wurde nichts ge\u00e4ndert.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Diese Datei f\u00fchrt eine Einstellung zweimal auf, daher ist unklar, welcher Wert gilt. Es wurde nichts ge\u00e4ndert.");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Das ist keine HushTelegram-Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
         table.put("That setting couldn't be updated. The switch shows the value that is saved.",
                 "Diese Einstellung lie\u00df sich nicht aktualisieren. Der Schalter zeigt den gespeicherten Wert.");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Diese Einstellungsdatei enth\u00e4lt einen Wert, den HushTelegram nicht lesen kann. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -790,13 +794,13 @@ public final class L10nTranslations {
                 "von Bots geteilte Nachrichten");
         table.put("cached proxy channel",
                 "gespeicherter Proxy-Kanal");
+    }
+
+    private static void fillDe6(Map<String, String> table) {
         table.put("cached proxy folder entries",
                 "gespeicherte Proxy-Eintr\u00e4ge in Ordnern");
         table.put("cached recommendations",
                 "gespeicherte Empfehlungen");
-    }
-
-    private static void fillDe6(Map<String, String> table) {
         table.put("call debug reports",
                 "Anrufdiagnoseberichte");
         table.put("call log file uploads",
@@ -839,6 +843,8 @@ public final class L10nTranslations {
                 "Geschenke-Tabs in Profilen");
         table.put("profile local IDs",
                 "lokale Profil-IDs");
+        table.put("profile menu Send Gram item",
+                "Gram-senden-Eintrag im Profilmen\u00fc");
         table.put("promotional suggestions",
                 "Werbeempfehlungen");
         table.put("search ads",
@@ -858,7 +864,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(778);
+        Map<String, String> table = new HashMap<>(784);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1120,6 +1126,8 @@ public final class L10nTranslations {
                 "GitHub envi\u00f3 una respuesta que HushTelegram no pudo leer. Int\u00e9ntalo m\u00e1s tarde.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Ve directo a un grupo de ajustes. Atr\u00e1s te devuelve a donde estabas.");
+        table.put("Gram transfer Send Gram item",
+                "opci\u00f3n Enviar Gram de las transferencias de Gram");
         table.put("Hide Premium, gifts and Stars",
                 "Ocultar Premium, regalos y Stars");
         table.put("Hide Stories",
@@ -1234,11 +1242,11 @@ public final class L10nTranslations {
                 "Los temas Noche y Oscuro usan pantallas de negro puro. Los globos de mensajes y los men\u00fas conservan sus colores. Reinicia Telegram para ver el cambio.");
         table.put("No",
                 "No");
-        table.put("No HushTelegram release is out yet.",
-                "Todav\u00eda no hay ninguna versi\u00f3n de HushTelegram.");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("No HushTelegram release is out yet.",
+                "Todav\u00eda no hay ninguna versi\u00f3n de HushTelegram.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Ninguna app de este tel\u00e9fono puede abrir el enlace. La direcci\u00f3n es %1$s.");
         table.put("No chat to forward to",
@@ -1327,8 +1335,8 @@ public final class L10nTranslations {
                 "Se elimin\u00f3 %1$d mensaje conservado.");
         table.put("Removed %1$d kept messages.",
                 "Se eliminaron %1$d mensajes conservados.");
-        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, the Wallet button from the chat list and attach menus, Gifts tabs on profiles, and the Gift button in channels.",
-                "Quita Premium, Stars, My Grams, Billetera, Business y Enviar un regalo de los ajustes, el bot\u00f3n de Billetera de los men\u00fas de la lista de chats y de adjuntos, las pesta\u00f1as de regalos en los perfiles y el bot\u00f3n de regalo en los canales.");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, and the Gift button in channels.",
+                "Quita Premium, Stars, My Grams, Billetera, Business y Enviar un regalo de los ajustes, Billetera y Enviar Gram de los men\u00fas de chats, perfiles y enlaces, las pesta\u00f1as de regalos en los perfiles y el bot\u00f3n de regalo en los canales.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
                 "Quita los mensajes patrocinados en canales, las cuentas patrocinadas en la b\u00fasqueda y los anuncios en videos. Nunca se cargan, as\u00ed que ninguno cuenta como visto.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
@@ -1357,11 +1365,11 @@ public final class L10nTranslations {
                 "Guarda en un archivo tus opciones de interruptores, para todas las cuentas de esta app de Telegram. No incluye Pausar, Registro de depuraci\u00f3n ni la comprobaci\u00f3n de actualizaciones.");
         table.put("Saving the settings file",
                 "Guardando el archivo de configuraci\u00f3n");
-        table.put("Search settings",
-                "Buscar ajustes");
     }
 
     private static void fillEs4(Map<String, String> table) {
+        table.put("Search settings",
+                "Buscar ajustes");
         table.put("Selecting links by hand",
                 "Seleccionar enlaces a mano");
         table.put("Send",
@@ -1454,6 +1462,8 @@ public final class L10nTranslations {
                 "Deslizar un chat de tu lista ya no lo archiva, silencia, fija, elimina ni marca como le\u00eddo. Al mantenerlo pulsado siguen estando todas las acciones.");
         table.put("Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.",
                 "Deslizar a la derecha en las fotos o en las pesta\u00f1as de contenido de un perfil vuelve atr\u00e1s, como en el resto del perfil, en vez de mostrar la foto o pesta\u00f1a anterior.");
+        table.put("TON link Send Gram item",
+                "opci\u00f3n Enviar Gram de los enlaces TON");
         table.put("Tap to turn it back on.",
                 "Toca para volver a activarlo.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
@@ -1478,13 +1488,13 @@ public final class L10nTranslations {
                 "Ese archivo no es texto legible, as\u00ed que puede haberse da\u00f1ado por el camino. No se cambi\u00f3 nada.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Ese archivo incluye un ajuste dos veces, as\u00ed que no se sabe qu\u00e9 valor usar. No se cambi\u00f3 nada.");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Eso no es un archivo de configuraci\u00f3n de HushTelegram. No se cambi\u00f3 nada.");
         table.put("That setting couldn't be updated. The switch shows the value that is saved.",
                 "No se pudo actualizar ese ajuste. El interruptor muestra el valor guardado.");
-    }
-
-    private static void fillEs5(Map<String, String> table) {
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Ese archivo de configuraci\u00f3n contiene un valor que HushTelegram no puede leer. No se cambi\u00f3 nada.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -1601,13 +1611,13 @@ public final class L10nTranslations {
                 "mensajes que comparten los bots");
         table.put("cached proxy channel",
                 "canal del proxy almacenado");
+    }
+
+    private static void fillEs6(Map<String, String> table) {
         table.put("cached proxy folder entries",
                 "entradas del proxy almacenadas en carpetas");
         table.put("cached recommendations",
                 "recomendaciones guardadas");
-    }
-
-    private static void fillEs6(Map<String, String> table) {
         table.put("call debug reports",
                 "informes de depuraci\u00f3n de llamadas");
         table.put("call log file uploads",
@@ -1650,6 +1660,8 @@ public final class L10nTranslations {
                 "pesta\u00f1as de regalos de los perfiles");
         table.put("profile local IDs",
                 "IDs locales del perfil");
+        table.put("profile menu Send Gram item",
+                "opci\u00f3n Enviar Gram del men\u00fa del perfil");
         table.put("promotional suggestions",
                 "sugerencias promocionales");
         table.put("search ads",
@@ -1669,7 +1681,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(778);
+        Map<String, String> table = new HashMap<>(784);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1931,6 +1943,8 @@ public final class L10nTranslations {
                 "GitHub mengirim balasan yang tidak bisa dibaca HushTelegram. Coba lagi nanti.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Langsung ke satu kelompok setelan. Kembali membawamu ke tempat semula.");
+        table.put("Gram transfer Send Gram item",
+                "item Kirim Gram di transfer Gram");
         table.put("Hide Premium, gifts and Stars",
                 "Sembunyikan Premium, hadiah dan Stars");
         table.put("Hide Stories",
@@ -2045,11 +2059,11 @@ public final class L10nTranslations {
                 "Tema Malam dan Gelap memakai layar hitam pekat. Gelembung pesan dan menu tetap berwarna. Mulai ulang Telegram untuk melihat perubahannya.");
         table.put("No",
                 "Tidak");
-        table.put("No HushTelegram release is out yet.",
-                "Belum ada rilis HushTelegram.");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("No HushTelegram release is out yet.",
+                "Belum ada rilis HushTelegram.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Tidak ada aplikasi di ponsel ini yang dapat membuka tautan ini. Alamatnya %1$s.");
         table.put("No chat to forward to",
@@ -2138,8 +2152,8 @@ public final class L10nTranslations {
                 "%1$d pesan yang disimpan telah dihapus.");
         table.put("Removed %1$d kept messages.",
                 "%1$d pesan yang disimpan telah dihapus.");
-        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, the Wallet button from the chat list and attach menus, Gifts tabs on profiles, and the Gift button in channels.",
-                "Menghapus Premium, Stars, My Grams, Dompet, Business, dan Kirim Hadiah dari Pengaturan, tombol Dompet dari menu daftar chat dan menu lampiran, tab Hadiah di profil, dan tombol Hadiah di kanal.");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, and the Gift button in channels.",
+                "Menghapus Premium, Stars, My Grams, Dompet, Business, dan Kirim Hadiah dari Pengaturan, Dompet dan Kirim Gram dari menu chat, profil, dan tautan, tab Hadiah di profil, dan tombol Hadiah di kanal.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
                 "Menghapus pesan bersponsor di kanal, akun bersponsor di pencarian, dan iklan di video. Semuanya tidak pernah dimuat, jadi tidak ada yang dihitung sebagai dilihat.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
@@ -2168,11 +2182,11 @@ public final class L10nTranslations {
                 "Menyimpan pilihan sakelar Anda ke berkas, untuk semua akun di aplikasi Telegram ini. Jeda, Pencatatan debug, dan pemeriksaan pembaruan tidak disertakan.");
         table.put("Saving the settings file",
                 "Menyimpan file pengaturan");
-        table.put("Search settings",
-                "Cari pengaturan");
     }
 
     private static void fillIn4(Map<String, String> table) {
+        table.put("Search settings",
+                "Cari pengaturan");
         table.put("Selecting links by hand",
                 "Memilih tautan secara manual");
         table.put("Send",
@@ -2265,6 +2279,8 @@ public final class L10nTranslations {
                 "Menggeser obrolan di daftar Anda tidak lagi mengarsipkan, membisukan, menyematkan, menghapus, atau menandainya sudah dibaca. Tekan lama tetap menyediakan semua aksi.");
         table.put("Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.",
                 "Menggeser ke kanan pada foto atau tab media profil akan kembali, seperti di bagian profil lainnya, bukan menampilkan foto atau tab sebelumnya.");
+        table.put("TON link Send Gram item",
+                "item Kirim Gram di tautan TON");
         table.put("Tap to turn it back on.",
                 "Ketuk untuk mengaktifkan HushTelegram lagi.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
@@ -2289,13 +2305,13 @@ public final class L10nTranslations {
                 "File itu bukan teks yang dapat dibaca, jadi mungkin rusak saat ditransfer. Tidak ada yang diubah.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "File itu mencantumkan satu pengaturan dua kali, jadi tidak jelas nilai mana yang harus dipakai. Tidak ada yang diubah.");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Itu bukan file pengaturan HushTelegram. Tidak ada yang diubah.");
         table.put("That setting couldn't be updated. The switch shows the value that is saved.",
                 "Pengaturan itu tidak bisa diperbarui. Sakelar menampilkan nilai yang tersimpan.");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "File pengaturan itu memuat nilai yang tidak dapat dibaca HushTelegram. Tidak ada yang diubah.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -2412,13 +2428,13 @@ public final class L10nTranslations {
                 "pesan yang dibagikan bot");
         table.put("cached proxy channel",
                 "kanal proxy tersimpan");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
         table.put("cached proxy folder entries",
                 "entri proxy tersimpan di folder");
         table.put("cached recommendations",
                 "rekomendasi tersimpan");
-    }
-
-    private static void fillIn6(Map<String, String> table) {
         table.put("call debug reports",
                 "laporan debug panggilan");
         table.put("call log file uploads",
@@ -2461,6 +2477,8 @@ public final class L10nTranslations {
                 "tab Hadiah pada profil");
         table.put("profile local IDs",
                 "ID profil lokal");
+        table.put("profile menu Send Gram item",
+                "item Kirim Gram di menu profil");
         table.put("promotional suggestions",
                 "saran promosi");
         table.put("search ads",
@@ -2480,7 +2498,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(778);
+        Map<String, String> table = new HashMap<>(784);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2742,6 +2760,8 @@ public final class L10nTranslations {
                 "O GitHub enviou uma resposta que o HushTelegram n\u00e3o conseguiu ler. Tente de novo mais tarde.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "V\u00e1 diretamente para um grupo de configura\u00e7\u00f5es. Voltar leva voc\u00ea de volta ao ponto em que estava.");
+        table.put("Gram transfer Send Gram item",
+                "item Enviar Gram das transfer\u00eancias de Gram");
         table.put("Hide Premium, gifts and Stars",
                 "Ocultar Premium, presentes e Stars");
         table.put("Hide Stories",
@@ -2856,11 +2876,11 @@ public final class L10nTranslations {
                 "Os temas Noite e Escuro usam telas em preto puro. Os bal\u00f5es de mensagem e os menus mant\u00eam suas cores. Reinicie o Telegram para ver a mudan\u00e7a.");
         table.put("No",
                 "N\u00e3o");
-        table.put("No HushTelegram release is out yet.",
-                "Ainda n\u00e3o h\u00e1 nenhuma vers\u00e3o do HushTelegram.");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("No HushTelegram release is out yet.",
+                "Ainda n\u00e3o h\u00e1 nenhuma vers\u00e3o do HushTelegram.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Nenhum aplicativo neste dispositivo consegue abrir o link. O endere\u00e7o \u00e9 %1$s.");
         table.put("No chat to forward to",
@@ -2949,8 +2969,8 @@ public final class L10nTranslations {
                 "%1$d mensagem mantida removida.");
         table.put("Removed %1$d kept messages.",
                 "%1$d mensagens mantidas removidas.");
-        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, the Wallet button from the chat list and attach menus, Gifts tabs on profiles, and the Gift button in channels.",
-                "Remove Premium, Stars, My Grams, Carteira, Business e Enviar presente das configura\u00e7\u00f5es, o bot\u00e3o Carteira dos menus da lista de conversas e de anexos, as abas de presentes nos perfis e o bot\u00e3o de presente nos canais.");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, and the Gift button in channels.",
+                "Remove Premium, Stars, My Grams, Carteira, Business e Enviar presente das configura\u00e7\u00f5es, Carteira e Enviar Gram dos menus de conversas, perfis e links, as abas de presentes nos perfis e o bot\u00e3o de presente nos canais.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
                 "Remove mensagens patrocinadas em canais, contas patrocinadas na busca e an\u00fancios em v\u00eddeos. Eles nunca s\u00e3o carregados, ent\u00e3o nenhum conta como visto.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
@@ -2979,11 +2999,11 @@ public final class L10nTranslations {
                 "Salva suas escolhas de op\u00e7\u00f5es em um arquivo, para todas as contas deste app do Telegram. Pausa, Registro de depura\u00e7\u00e3o e a verifica\u00e7\u00e3o de atualiza\u00e7\u00e3o n\u00e3o est\u00e3o inclu\u00eddos.");
         table.put("Saving the settings file",
                 "Salvando o arquivo de configura\u00e7\u00f5es");
-        table.put("Search settings",
-                "Buscar configura\u00e7\u00f5es");
     }
 
     private static void fillPt_rBR4(Map<String, String> table) {
+        table.put("Search settings",
+                "Buscar configura\u00e7\u00f5es");
         table.put("Selecting links by hand",
                 "Selecionar links manualmente");
         table.put("Send",
@@ -3076,6 +3096,8 @@ public final class L10nTranslations {
                 "Deslizar uma conversa da sua lista n\u00e3o a arquiva, silencia, fixa, apaga nem marca como lida. Pressionar e segurar continua oferecendo todas as a\u00e7\u00f5es.");
         table.put("Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.",
                 "Deslizar para a direita nas fotos ou nas abas de m\u00eddia de um perfil volta, como no resto do perfil, em vez de mostrar a foto ou aba anterior.");
+        table.put("TON link Send Gram item",
+                "item Enviar Gram dos links TON");
         table.put("Tap to turn it back on.",
                 "Toque para reativar.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
@@ -3100,13 +3122,13 @@ public final class L10nTranslations {
                 "Esse arquivo n\u00e3o cont\u00e9m texto leg\u00edvel, ent\u00e3o pode ter sido corrompido durante o processo. Nada foi alterado.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Esse arquivo cont\u00e9m uma configura\u00e7\u00e3o duplicada, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel saber qual valor usar. Nada foi alterado.");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Isso n\u00e3o \u00e9 um arquivo de configura\u00e7\u00f5es do HushTelegram. Nada foi alterado.");
         table.put("That setting couldn't be updated. The switch shows the value that is saved.",
                 "N\u00e3o foi poss\u00edvel atualizar essa configura\u00e7\u00e3o. A op\u00e7\u00e3o mostra o valor salvo.");
-    }
-
-    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Esse arquivo de configura\u00e7\u00f5es tem um valor que o HushTelegram n\u00e3o consegue ler. Nada foi alterado.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -3223,13 +3245,13 @@ public final class L10nTranslations {
                 "mensagens compartilhadas por bots");
         table.put("cached proxy channel",
                 "canal do proxy armazenado");
+    }
+
+    private static void fillPt_rBR6(Map<String, String> table) {
         table.put("cached proxy folder entries",
                 "entradas do proxy armazenadas nas pastas");
         table.put("cached recommendations",
                 "recomenda\u00e7\u00f5es armazenadas");
-    }
-
-    private static void fillPt_rBR6(Map<String, String> table) {
         table.put("call debug reports",
                 "relat\u00f3rios de depura\u00e7\u00e3o de chamadas");
         table.put("call log file uploads",
@@ -3272,6 +3294,8 @@ public final class L10nTranslations {
                 "abas de presentes dos perfis");
         table.put("profile local IDs",
                 "IDs locais do perfil");
+        table.put("profile menu Send Gram item",
+                "item Enviar Gram do menu do perfil");
         table.put("promotional suggestions",
                 "sugest\u00f5es promocionais");
         table.put("search ads",
@@ -3291,7 +3315,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(778);
+        Map<String, String> table = new HashMap<>(784);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -3553,6 +3577,8 @@ public final class L10nTranslations {
                 "GitHub, HushTelegram'\u0131n okuyamad\u0131\u011f\u0131 bir yan\u0131t g\u00f6nderdi. Daha sonra tekrar deneyin.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Do\u011frudan bir ayar grubuna git. Geri, bulundu\u011fun yere d\u00f6nd\u00fcr\u00fcr.");
+        table.put("Gram transfer Send Gram item",
+                "Gram transferindeki Gram G\u00f6nder \u00f6\u011fesi");
         table.put("Hide Premium, gifts and Stars",
                 "Premium, hediyeler ve Stars'\u0131 gizle");
         table.put("Hide Stories",
@@ -3667,11 +3693,11 @@ public final class L10nTranslations {
                 "Gece ve Koyu temalar saf siyah ekranlar kullan\u0131r. Mesaj balonlar\u0131 ve men\u00fcler renklerini korur. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Telegram'\u0131 yeniden ba\u015flat\u0131n.");
         table.put("No",
                 "Hay\u0131r");
-        table.put("No HushTelegram release is out yet.",
-                "Hen\u00fcz bir HushTelegram s\u00fcr\u00fcm\u00fc yay\u0131nlanmad\u0131.");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("No HushTelegram release is out yet.",
+                "Hen\u00fcz bir HushTelegram s\u00fcr\u00fcm\u00fc yay\u0131nlanmad\u0131.");
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Bu telefondaki hi\u00e7bir uygulama ba\u011flant\u0131y\u0131 a\u00e7am\u0131yor. Adres: %1$s.");
         table.put("No chat to forward to",
@@ -3760,8 +3786,8 @@ public final class L10nTranslations {
                 "%1$d saklanan mesaj kald\u0131r\u0131ld\u0131.");
         table.put("Removed %1$d kept messages.",
                 "%1$d saklanan mesaj kald\u0131r\u0131ld\u0131.");
-        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, the Wallet button from the chat list and attach menus, Gifts tabs on profiles, and the Gift button in channels.",
-                "Premium, Stars, My Grams, C\u00fczdan, Business ve Hediye G\u00f6nder'i Ayarlar'dan, C\u00fczdan d\u00fc\u011fmesini sohbet listesi ve ek men\u00fclerinden, profillerdeki Hediyeler sekmelerini ve kanallardaki Hediye d\u00fc\u011fmesini kald\u0131r\u0131r.");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, and the Gift button in channels.",
+                "Premium, Stars, My Grams, C\u00fczdan, Business ve Hediye G\u00f6nder'i Ayarlar'dan, C\u00fczdan ve Gram G\u00f6nder'i sohbet, profil ve ba\u011flant\u0131 men\u00fclerinden, profillerdeki Hediyeler sekmelerini ve kanallardaki Hediye d\u00fc\u011fmesini kald\u0131r\u0131r.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
                 "Kanallardaki sponsorlu mesajlar\u0131, aramadaki sponsorlu hesaplar\u0131 ve videolardaki reklamlar\u0131 kald\u0131r\u0131r. Hi\u00e7biri y\u00fcklenmez, bu y\u00fczden hi\u00e7biri g\u00f6r\u00fclm\u00fc\u015f say\u0131lmaz.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
@@ -3790,11 +3816,11 @@ public final class L10nTranslations {
                 "Anahtar se\u00e7imlerinizi bir dosyaya kaydeder; bu Telegram uygulamas\u0131ndaki t\u00fcm hesaplar i\u00e7in ge\u00e7erlidir. Duraklat, Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc ve g\u00fcncelleme denetimi dahil de\u011fildir.");
         table.put("Saving the settings file",
                 "Ayar dosyas\u0131 kaydediliyor");
-        table.put("Search settings",
-                "Ayarlarda ara");
     }
 
     private static void fillTr4(Map<String, String> table) {
+        table.put("Search settings",
+                "Ayarlarda ara");
         table.put("Selecting links by hand",
                 "Ba\u011flant\u0131lar\u0131 elle se\u00e7me");
         table.put("Send",
@@ -3887,6 +3913,8 @@ public final class L10nTranslations {
                 "Listenizdeki bir sohbeti kayd\u0131rmak onu art\u0131k ar\u015fivlemez, sessize almaz, sabitlemez, silmez veya okundu yapmaz. Bas\u0131l\u0131 tutmak t\u00fcm eylemleri sunmaya devam eder.");
         table.put("Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.",
                 "Bir profilin foto\u011fraflar\u0131nda veya medya sekmelerinde sa\u011fa kayd\u0131rmak, \u00f6nceki foto\u011fraf ya da sekme yerine, profilin geri kalan\u0131nda oldu\u011fu gibi geri gider.");
+        table.put("TON link Send Gram item",
+                "TON ba\u011flant\u0131s\u0131ndaki Gram G\u00f6nder \u00f6\u011fesi");
         table.put("Tap to turn it back on.",
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
@@ -3911,13 +3939,13 @@ public final class L10nTranslations {
                 "Bu dosya okunabilir bir metin de\u011fil, aktar\u0131m s\u0131ras\u0131nda hasar g\u00f6rm\u00fc\u015f olabilir. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
                 "Bu dosyada bir ayar iki kez ge\u00e7iyor, bu y\u00fczden hangi de\u011ferin kullan\u0131laca\u011f\u0131 belli de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Bu bir HushTelegram ayar dosyas\u0131 de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That setting couldn't be updated. The switch shows the value that is saved.",
                 "Bu ayar g\u00fcncellenemedi. Anahtar kay\u0131tl\u0131 de\u011feri g\u00f6sterir.");
-    }
-
-    private static void fillTr5(Map<String, String> table) {
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Bu ayar dosyas\u0131nda HushTelegram'un okuyamad\u0131\u011f\u0131 bir de\u011fer var. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
@@ -4034,13 +4062,13 @@ public final class L10nTranslations {
                 "botlar\u0131n payla\u015ft\u0131\u011f\u0131 mesajlar");
         table.put("cached proxy channel",
                 "kay\u0131tl\u0131 proxy kanal\u0131");
+    }
+
+    private static void fillTr6(Map<String, String> table) {
         table.put("cached proxy folder entries",
                 "klas\u00f6rlerdeki kay\u0131tl\u0131 proxy girdileri");
         table.put("cached recommendations",
                 "kay\u0131tl\u0131 \u00f6neriler");
-    }
-
-    private static void fillTr6(Map<String, String> table) {
         table.put("call debug reports",
                 "arama hata ay\u0131klama raporlar\u0131");
         table.put("call log file uploads",
@@ -4083,6 +4111,8 @@ public final class L10nTranslations {
                 "profil Hediyeler sekmeleri");
         table.put("profile local IDs",
                 "yerel profil kimlikleri");
+        table.put("profile menu Send Gram item",
+                "profil men\u00fcs\u00fcndeki Gram G\u00f6nder \u00f6\u011fesi");
         table.put("promotional suggestions",
                 "tan\u0131t\u0131m \u00f6nerileri");
         table.put("search ads",

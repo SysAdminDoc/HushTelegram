@@ -13,6 +13,8 @@ import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
+import app.morphe.patches.telegram.misc.commerce.COMMERCE
+import app.morphe.patches.telegram.misc.commerce.hideCommercePatch
 import app.morphe.patches.telegram.misc.doubletap.*
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
@@ -114,6 +116,28 @@ class LocalControlsFixtureTest {
                 hostState(build, context, setOf(plan.method)))
             flags(context, ID_FLAGS, true)
             flags(context, PASTE_FLAGS + REACTION_FLAGS, false)
+        }
+    }
+
+    /** Hide Premium, gifts and Stars asks before the profile's Send Gram, in the same menu builder. */
+    @Test fun `profile IDs and the profile Send Gram hook share the menu builder in either order`() {
+        for (build in Fixtures.declaredBuilds()) for (commerceFirst in listOf(true, false)) {
+            val context = context(build)
+            val builder = context.resolveLocalIds().method
+            val stock = ImmutableMethod.of(builder).controlBody()
+            for (patch in if (commerceFirst) listOf(hideCommercePatch, showLocalIdsPatch) else listOf(showLocalIdsPatch, hideCommercePatch)) {
+                val warnings = PatchLogCapture.warnings { patch.execute(context) }
+                // Only the profile's classes are loaded, so Hide commerce reports its other places missing.
+                if (patch == showLocalIdsPatch) assertEquals(emptyList<String>(), warnings)
+                else assertTrue("${build.name}: $warnings", warnings.none { "commerceProfileSendGram" in it })
+            }
+            val after = builder.controlBody()
+            assertEquals("${build.name}: both hooks and nothing else", stock.size + 7, after.size)
+            assertEquals(1, after.count { it.controlRef() == "$COMMERCE->showProfileSendGram(Z)Z" })
+            assertEquals(1, after.count { it.controlRef() == "$LOCAL_IDS->addToProfile(Landroid/view/View;JJ)V" })
+            assertEquals("${build.name}: the stock visibility refresh still ends the builder", stock.takeLast(3).map { it.opcode },
+                after.takeLast(3).map { it.opcode })
+            flags(context, ID_FLAGS + "commerceProfileSendGram", true)
         }
     }
 

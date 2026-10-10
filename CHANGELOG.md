@@ -16,6 +16,8 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** Hide Premium, gifts and Stars now also takes the Wallet button out of the chat list menu and the attach menu. The other attach buttons, Gallery and File included, stay just as Telegram lays them out without Wallet, and the chat list menu keeps everything else it shows, mini apps too.
 
+* **Telegram:** Hide Premium, gifts and Stars now also hides Send Gram in the three other places Telegram 13.0 offers it: a profile's menu, the menu that opens when you tap a TON address, and the menu on a Gram transfer message. Each one then looks the way it does for an account without Wallet. Copy address and View in explorer stay on TON addresses, and Gram transfers people send you aren't touched.
+
 * **Telegram:** Use system font now covers Wallet too. Card numbers and amounts switch to your phone's monospace font at the weight Wallet asks for, so the columns still line up. The small font that draws the Gram currency sign stays as it is, since phone fonts don't have that sign.
 
 * **Telegram:** Disable analytics now stops the camera's dual camera report, which tells Telegram your phone's maker and model when its servers ask for device stats. The camera itself works as before.

@@ -237,6 +237,9 @@ public final class SelectionCheck {
         hook(calls, flags, "commerceChannelGift", "misc/Commerce", "showChannelGiftButton");
         hook(calls, flags, "commerceAttachWallet", "misc/Commerce", "showAttachWallet");
         hook(calls, flags, "commerceMenuWallet", "misc/Commerce", "showMenuWallet");
+        hook(calls, flags, "commerceProfileSendGram", "misc/Commerce", "showProfileSendGram");
+        hook(calls, flags, "commerceAddressSendGram", "misc/Commerce", "showAddressSendGram");
+        hook(calls, flags, "commerceTransferSendGram", "misc/Commerce", "showTransferSendGram");
         hook(calls, flags, "promotionalSuggestions", "misc/Suggestions", "filterChatList");
         hook(calls, flags, "birthdayGiftBanner", "misc/Suggestions", "birthdayGiftBannerDismissed");
         hook(calls, flags, "cachedProxyDialog", "ads/ProxyPromotions", "hideCachedProxyDialog");

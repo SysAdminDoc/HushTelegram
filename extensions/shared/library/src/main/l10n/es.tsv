@@ -184,12 +184,15 @@ call debug reports	informes de depuración de llamadas
 call log file uploads	subidas de archivos de registro de llamadas
 call log reports	informes de registro de llamadas
 Hide Premium, gifts and Stars	Ocultar Premium, regalos y Stars
-Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, the Wallet button from the chat list and attach menus, Gifts tabs on profiles, and the Gift button in channels.	Quita Premium, Stars, My Grams, Billetera, Business y Enviar un regalo de los ajustes, el botón de Billetera de los menús de la lista de chats y de adjuntos, las pestañas de regalos en los perfiles y el botón de regalo en los canales.
+Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, and the Gift button in channels.	Quita Premium, Stars, My Grams, Billetera, Business y Enviar un regalo de los ajustes, Billetera y Enviar Gram de los menús de chats, perfiles y enlaces, las pestañas de regalos en los perfiles y el botón de regalo en los canales.
 Settings sales rows	Ofertas en Ajustes
 profile Gifts tabs	pestañas de regalos de los perfiles
 channel Gift button	botón de regalo de los canales
 attach menu Wallet button	botón de Billetera del menú de adjuntos
 chat list menu Wallet item	opción de Billetera del menú de la lista de chats
+profile menu Send Gram item	opción Enviar Gram del menú del perfil
+TON link Send Gram item	opción Enviar Gram de los enlaces TON
+Gram transfer Send Gram item	opción Enviar Gram de las transferencias de Gram
 Hide promotional banners	Ocultar banners promocionales
 Hides the Premium, birthday and low Stars balance banners above your chat list. Account security notices and other suggestions still show.	Oculta los banners de Premium, cumpleaños y saldo bajo de Stars sobre tu lista de chats. Los avisos de seguridad de la cuenta y otras sugerencias se siguen mostrando.
 promotional suggestions	sugerencias promocionales
