@@ -98,7 +98,7 @@ class NativeSettingsFixtureTest {
             assertEquals(setOf(start + 2, start + 6), flow.normal[start + 1].toSet())
             assertEquals(Opcode.IF_NE, body[start + 1].opcode)
             assertEquals(Opcode.RETURN_VOID, body[start + 5].opcode)
-            for (id in (1..24).toList() + listOf(-1, 0, NATIVE_ROW_ID)) {
+            for (id in (1..25).toList() + listOf(-1, 0, NATIVE_ROW_ID)) {
                 val next = if (id == NATIVE_ROW_ID) start + 2 else start + 6
                 assertTrue(next in flow.normal[start + 1])
                 assertEquals(if (id == NATIVE_ROW_ID) Opcode.INVOKE_VIRTUAL else Opcode.CONST_STRING, body[next].opcode)
@@ -165,6 +165,18 @@ class NativeSettingsFixtureTest {
         }
     }
 
+    // The account row's empty value is const/4 on the web build and const/16 on the beta; any other value refuses.
+    @Test fun changedAccountRowValueRefusesAtomically() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = context(build)
+            val plan = context.resolveNativeSettings()!!
+            val value = plan.builder.body().indexOfFirst { it.ref() == label("Account") } + 6
+            val register = plan.builder.body()[value].namedRegisters().single()
+            plan.builder.replaceInstruction(value, "const/16 v$register, 0x1")
+            refusesUnchanged("$build account value", context)
+        }
+    }
+
     @Test fun changedOrAmbiguousBindingsClicksAndEntriesRefuseAtomically() {
         for (build in Fixtures.declaredBuilds()) for (change in listOf(
             "missing builder", "ambiguous builder", "missing click", "ambiguous click", "row bridge collision",
@@ -220,7 +232,7 @@ class NativeSettingsFixtureTest {
                     factory.replaceInstruction(6, "iput-object v6, v0, $text")
                 }
                 "renderer title" -> context.mutableClassDefBy(rowFactory.definingClass).methods.single { it.name == "bindView" }
-                    .replaceInstruction(38, "nop")
+                    .replaceInstruction(45, "nop")
                 else -> {
                     val entry = context.mutableClassDefBy(ENTRY)
                     val name = change.substringAfter(' ')
@@ -284,8 +296,8 @@ class NativeSettingsFixtureTest {
                     renderer.replaceInstruction(10, "iget-object v$title, v$view, ${code[11].ref()}")
                     renderer.replaceInstruction(11, "iget-object v$subtitle, v$view, ${code[10].ref()}")
                 }
-                "title clobber" -> renderer.replaceInstruction(37, "const/16 v$title, 0x0")
-                else -> renderer.replaceInstruction(45, "const/16 v$subtitle, 0x0")
+                "title clobber" -> renderer.replaceInstruction(44, "const/16 v$title, 0x0")
+                else -> renderer.replaceInstruction(53, "const/16 v$subtitle, 0x0")
             }
             refusesUnchanged("$build $change", context)
         }
@@ -317,7 +329,7 @@ class NativeSettingsFixtureTest {
 
     @Test fun cellTextRolesAndConstructionHelpersRefuseDriftAtomically() {
         for (build in Fixtures.declaredBuilds()) for (change in listOf("title store", "subtitle store",
-            "column orientation", "append argument", "append return", "column return", "private title")) {
+            "column orientation", "column clobber", "append argument", "append return", "column return", "private title")) {
             val context = context(build)
             val plan = context.resolveNativeSettings()!!
             val factory = plan.builder.body().mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
@@ -327,14 +339,15 @@ class NativeSettingsFixtureTest {
             val constructor = cell.methods.single { it.name == "<init>" }
             val body = constructor.body()
             when (change) {
-                "title store" -> constructor.replaceInstruction(27, "iput-object v2, v11, ${body[40].ref()}")
-                "subtitle store" -> constructor.replaceInstruction(40, "iput-object v2, v11, ${body[51].ref()}")
-                "column orientation" -> constructor.replaceInstruction(22, "const/4 v0, 0x0")
-                "append argument" -> constructor.replaceInstruction(38, "invoke-static {v1, v0, v4, v12}, ${body[38].ref()}")
-                "private title" -> cell.fields.single { it.toString() == body[27].ref() }.accessFlags =
+                "title store" -> constructor.replaceInstruction(28, "iput-object v2, v11, ${body[41].ref()}")
+                "subtitle store" -> constructor.replaceInstruction(41, "iput-object v2, v11, ${body[52].ref()}")
+                "column orientation" -> constructor.replaceInstruction(1, "const/4 v0, 0x0")
+                "column clobber" -> constructor.replaceInstruction(4, "const/4 v0, 0x0")
+                "append argument" -> constructor.replaceInstruction(39, "invoke-static {v1, v0, v4, v12}, ${body[39].ref()}")
+                "private title" -> cell.fields.single { it.toString() == body[28].ref() }.accessFlags =
                     AccessFlags.PRIVATE.value or AccessFlags.FINAL.value
                 else -> {
-                    val ref = (body[if (change == "append return") 38 else 23] as ReferenceInstruction).reference as MethodReference
+                    val ref = (body[if (change == "append return") 39 else 24] as ReferenceInstruction).reference as MethodReference
                     val helper = context.mutableClassDefBy(ref.definingClass).methods.single { it.toString() == ref.toString() }
                     helper.replaceInstruction(3, "return-object v1")
                 }

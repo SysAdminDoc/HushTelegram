@@ -277,7 +277,8 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
             rows = body[end].namedRegisters().first()
             top = body[idAt + 1].nativeInt()!!
             bottom = body[idAt + 2].nativeInt()!!
-            nativeShape(body[at + 6].opcode == Opcode.CONST_4 && body[at + 6].nativeInt() == 0 &&
+            // The 13.0.1 beta keeps the empty value in v17, so it loads it with const/16.
+            nativeShape(body[at + 6].opcode in listOf(Opcode.CONST_4, Opcode.CONST_16) && body[at + 6].nativeInt() == 0 &&
                 body[at + 6].namedRegisters() == listOf(args[6]), "account row value changed")
         } else nativeShape(body[callAt].nativeCall().toString() == factory.toString() &&
             body[end].namedRegisters().first() == rows && args[6] == body[first + 11].namedRegisters().last(),
@@ -323,7 +324,7 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
     val render = factoryOwner.methods.filter { it.name == "bindView" }.nativeSingle("cell renderer")
     val painted = render.nativeBody()
     nativeShape(render.nativeCallable(false) && render.parameterTypes.take(3).map { it.toString() } ==
-        listOf("Landroid/view/View;", itemType, "Z") && painted.size == 49 &&
+        listOf("Landroid/view/View;", itemType, "Z") && painted.size == 58 &&
         painted.take(10).map { it.opcode } == listOf(Opcode.IGET_WIDE, Opcode.LONG_TO_INT, Opcode.CONST_16,
             Opcode.USHR_LONG_2ADDR, Opcode.LONG_TO_INT, Opcode.CHECK_CAST, Opcode.IGET,
             Opcode.IGET_OBJECT, Opcode.IGET_OBJECT, Opcode.IGET_OBJECT) &&
@@ -335,11 +336,15 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
         ?: throw PatchException("HushTelegram settings: native self-settings cell is missing (before editing)")
     val constructor = cell.methods.filter { it.name == "<init>" }.nativeSingle("cell constructor")
     val built = constructor.nativeBody()
+    // Telegram 13.0 loads the column orientation (1) once at the top, where it also marks the cell
+    // as having an icon background, and reuses it for the text column.
     nativeShape(cell.superclass == "Landroid/widget/LinearLayout;" && constructor.nativeCallable(false) &&
         constructor.parameterTypes.firstOrNull()?.toString() == "Landroid/content/Context;" &&
-        constructor.implementation!!.registerCount == 14 && built.size > 52 &&
-        built.subList(22, 53).map { it.opcode } == listOf(
-            Opcode.CONST_4, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT, Opcode.NEW_INSTANCE,
+        constructor.implementation!!.registerCount == 14 && built.size > 53 &&
+        built[1].opcode == Opcode.CONST_4 && built[1].namedRegisters() == listOf(0) && built[1].nativeInt() == 1 &&
+        (2 until 24).none { built[it].opcode.setsRegister() && built[it].namedRegisters().firstOrNull() == 0 } &&
+        built.subList(24, 54).map { it.opcode } == listOf(
+            Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT, Opcode.NEW_INSTANCE,
             Opcode.INVOKE_DIRECT, Opcode.IPUT_OBJECT, Opcode.CONST_HIGH16, Opcode.INVOKE_VIRTUAL,
             Opcode.CONST_4, Opcode.CONST_4, Opcode.CONST_4, Opcode.CONST_4, Opcode.CONST_4, Opcode.CONST_4,
             Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT_OBJECT, Opcode.INVOKE_STATIC,
@@ -347,30 +352,30 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
             Opcode.CONST_4, Opcode.CONST_HIGH16, Opcode.CONST_4, Opcode.CONST_4, Opcode.INVOKE_STATIC_RANGE,
             Opcode.MOVE_RESULT_OBJECT, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT, Opcode.IPUT_OBJECT,
             Opcode.INVOKE_VIRTUAL,
-        ) && built.subList(22, 53).map { it.namedRegisters() } == listOf(
-            listOf(0), listOf(12, 0), listOf(1), listOf(2), listOf(2, 12), listOf(2, 11), listOf(3), listOf(2, 0, 3),
+        ) && built.subList(24, 54).map { it.namedRegisters() } == listOf(
+            listOf(12, 0), listOf(1), listOf(2), listOf(2, 12), listOf(2, 11), listOf(3), listOf(2, 0, 3),
             listOf(6), listOf(7), listOf(4), listOf(5), listOf(8), listOf(9), listOf(4, 5, 6, 7, 8, 9), listOf(4),
             listOf(1, 2, 4, 12), listOf(2), listOf(2, 11), listOf(4), listOf(2, 0, 4), listOf(8), listOf(6),
             listOf(9), listOf(10), listOf(5, 6, 7, 8, 9, 10), listOf(4), listOf(1, 2, 4, 12), listOf(12),
             listOf(12, 11), listOf(12, 0, 3),
-        ) && built[22].nativeInt() == 1 && built[25].nativeRef() == "Landroid/widget/TextView;" &&
-        built[26].nativeRef() == "Landroid/widget/TextView;-><init>(Landroid/content/Context;)V" &&
-        listOf(29, 42, 52).all { built[it].nativeRef() == "Landroid/widget/TextView;->setTextSize(IF)V" } &&
-        built[28].nativeInt() == java.lang.Float.floatToIntBits(16f) &&
-        built[41].nativeInt() == java.lang.Float.floatToIntBits(13f) && built[38].nativeRef() == built[49].nativeRef(),
+        ) && built[26].nativeRef() == "Landroid/widget/TextView;" &&
+        built[27].nativeRef() == "Landroid/widget/TextView;-><init>(Landroid/content/Context;)V" &&
+        listOf(30, 43, 53).all { built[it].nativeRef() == "Landroid/widget/TextView;->setTextSize(IF)V" } &&
+        built[29].nativeInt() == java.lang.Float.floatToIntBits(16f) &&
+        built[42].nativeInt() == java.lang.Float.floatToIntBits(13f) && built[39].nativeRef() == built[50].nativeRef(),
         "cell title and subtitle construction changed")
     val constructionFlow = constructor.nativeFlow()
-    nativeShape((22..52).all { constructionFlow.normal[it] == listOf(it + 1) && constructionFlow.exceptional[it].isEmpty() } &&
-        built.indices.none { from -> constructionFlow.normal[from].any { it in 23..52 && from != it - 1 } },
+    nativeShape((1..53).all { constructionFlow.normal[it] == listOf(it + 1) && constructionFlow.exceptional[it].isEmpty() } &&
+        built.indices.none { from -> constructionFlow.normal[from].any { it in 2..53 && from != it - 1 } },
         "cell text construction can be bypassed")
     // R8 may move these helpers to unrelated packages. Prove their bodies, not their names.
-    for (at in listOf(23, 38)) {
+    for (at in listOf(24, 39)) {
         val reference = built[at].nativeCall()!!
         val helper = classes[reference.definingClass]?.methods?.filter { it.toString() == reference.toString() }
             ?.nativeSingle("cell construction helper")
             ?: throw PatchException("HushTelegram settings: native self-settings cell helper is missing (before editing)")
         val code = helper.nativeBody()
-        val column = at == 23
+        val column = at == 24
         nativeShape(helper.nativeCallable(true) && helper.nativeShape(
             if (column) listOf("Landroid/content/Context;", "I") else listOf("Landroid/widget/LinearLayout;",
                 "Landroid/widget/TextView;", "Landroid/widget/LinearLayout\$LayoutParams;", "Landroid/content/Context;"),
@@ -391,7 +396,7 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
                 code[2].nativeRef() == "Landroid/widget/TextView;-><init>(Landroid/content/Context;)V",
             "cell helper role changed")
     }
-    val textFields = listOf(27, 40, 51).map { built[it].nativeField() }
+    val textFields = listOf(28, 41, 52).map { built[it].nativeField() }
     nativeShape(textFields.toSet().size == 3 && textFields.all { reference -> reference != null &&
         reference.definingClass == cell.type && reference.type == "Landroid/widget/TextView;" &&
         cell.fields.count { it.toString() == reference.toString() && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
@@ -403,18 +408,21 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
             painted[index].namedRegisters().getOrNull(1) == viewParameter
     }, "cell title or subtitle receiver changed")
     val renderFlow = render.nativeFlow()
-    val branches = mapOf(15 to listOf(16, 18), 17 to listOf(19), 22 to listOf(23, 27),
-        26 to listOf(28), 29 to listOf(30, 33), 43 to listOf(44, 45), 48 to emptyList())
+    // Telegram 13.0 also records whether the row has an icon background (13-19) and refreshes
+    // the cell's colors (56); neither touches the text values.
+    val branches = mapOf(13 to listOf(14, 18), 14 to listOf(15, 16), 15 to listOf(18), 17 to listOf(19),
+        22 to listOf(23, 25), 24 to listOf(26), 29 to listOf(30, 34), 33 to listOf(35), 36 to listOf(37, 40),
+        50 to listOf(51, 52), 51 to listOf(53), 57 to emptyList())
     nativeShape(painted.indices.all { renderFlow.normal[it].toSet() == (branches[it] ?: listOf(it + 1)).toSet() &&
         renderFlow.exceptional[it].isEmpty() }, "cell rendering can bypass its text bindings")
-    for ((source, receiver, consumer) in listOf(Triple(7, 10, 38), Triple(8, 11, 46), Triple(9, 5, 47))) {
+    for ((source, receiver, consumer) in listOf(Triple(7, 10, 45), Triple(8, 11, 54), Triple(9, 5, 55))) {
         val value = painted[source].namedRegisters().first()
         val viewRegister = painted[receiver].namedRegisters().first()
         nativeShape(painted[consumer].opcode == Opcode.INVOKE_VIRTUAL &&
             painted[consumer].namedRegisters() == listOf(viewRegister, value) &&
             painted[consumer].nativeCall()?.let { call ->
                 call.nativeShape(listOf("Ljava/lang/CharSequence;"), "V") &&
-                    if (consumer == 47) call.name == "setValue" && call.definingClass == painted[5].nativeRef()
+                    if (consumer == 55) call.name == "setValue" && call.definingClass == painted[5].nativeRef()
                     else call.toString() == "Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V"
             } == true && (source + 1 until consumer).none { index ->
                 painted[index].opcode.setsRegister() && painted[index].namedRegisters().firstOrNull()?.let {
@@ -464,7 +472,8 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
         clickBody.indices.none { it != idRead && clickAt in clickFlow.normal[it] || clickAt in clickFlow.exceptional[it] },
         "click identity or scratch register changed")
     val payload = clickBody.filterIsInstance<SwitchPayload>().nativeSingle("click switch")
-    nativeShape(payload.switchElements.map { it.key } == (1..24).toList(), "ordinary click identities changed")
+    // Telegram 13.0 added identity 25, the Wallet row.
+    nativeShape(payload.switchElements.map { it.key } == (1..25).toList(), "ordinary click identities changed")
     val addresses = IntArray(clickBody.size + 1)
     clickBody.indices.forEach { addresses[it + 1] = addresses[it] + clickBody[it].codeUnits }
     var present: String? = null
