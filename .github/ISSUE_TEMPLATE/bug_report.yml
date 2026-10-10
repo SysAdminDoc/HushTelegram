@@ -122,6 +122,7 @@ body:
         - Add Repeat to the message menu
         - Keep deleted messages
         - Ask before sending a sticker
+        - Turn off beta debug logs
         - Strip link tracking
         - HushTelegram settings
     validations:

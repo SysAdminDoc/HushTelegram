@@ -299,6 +299,8 @@ Removed %1$d kept message.	Se eliminó %1$d mensaje conservado.
 Removed %1$d kept messages.	Se eliminaron %1$d mensajes conservados.
 Ask before sending a sticker	Preguntar antes de enviar un sticker
 Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.	Pregunta Enviar o Cancelar antes de que un sticker que tocas entre en un chat. Cancelar lo descarta. Los stickers programados salen sin preguntar.
+Turn off beta debug logs	Desactivar los registros de depuración de la beta
+Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.	Telegram Beta guarda registros de depuración en tu teléfono todo el tiempo, incluido el registro de conexión, y su propio menú de depuración no puede detenerlo. Esto los detiene. Los registros ya guardados se quedan hasta que los borres, y la versión normal no los guarda, así que ahí no cambia nada. Reinicia Telegram para ver el cambio.
 Ask before sending a GIF	Preguntar antes de enviar un GIF
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Pregunta Enviar o Cancelar antes de que un GIF que tocas entre en un chat. Cancelar lo descarta. Los GIF programados salen sin preguntar.
 Ask before sending a voice or video message	Preguntar antes de enviar un mensaje de voz o de video

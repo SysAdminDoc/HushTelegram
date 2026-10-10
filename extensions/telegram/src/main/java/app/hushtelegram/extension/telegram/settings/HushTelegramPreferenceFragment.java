@@ -532,6 +532,14 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "call."))),
                         SettingsIcons.CHAT));
             }
+            if (build.contains(PatchFamily.BETA_LOGS_OFF)) {
+                chats.addPreference(mark(toggle(context, Settings.BETA_LOGS_OFF, L10n.t("Turn off beta debug logs"),
+                        PatchFamily.BETA_LOGS_OFF.coverageSummary(L10n.t("Telegram Beta keeps debug logs on your phone all the time, its connection log "
+                                + "included, and its own debug menu can't stop that. This stops them. Logs already saved "
+                                + "stay until you clear them, and the regular build doesn't keep them, so nothing changes "
+                                + "there. Restart Telegram to see the change."))),
+                        SettingsIcons.BUG));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

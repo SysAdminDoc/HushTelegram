@@ -299,6 +299,8 @@ Removed %1$d kept message.	%1$d saklanan mesaj kaldırıldı.
 Removed %1$d kept messages.	%1$d saklanan mesaj kaldırıldı.
 Ask before sending a sticker	Çıkartma göndermeden önce sor
 Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.	Dokunduğunuz bir çıkartma sohbete girmeden önce Gönder veya İptal sorar. İptal onu atar. Zamanlanmış çıkartmalar sormadan gider.
+Turn off beta debug logs	Beta hata ayıklama günlüklerini kapat
+Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.	Telegram Beta, bağlantı günlüğü dahil, telefonunuza sürekli hata ayıklama günlükleri yazar ve kendi hata ayıklama menüsü bunu durduramaz. Bu ayar onları durdurur. Önceden kaydedilmiş günlükler siz silene kadar kalır, normal sürüm ise bu günlükleri tutmaz, yani orada hiçbir şey değişmez. Değişikliği görmek için Telegram'ı yeniden başlatın.
 Ask before sending a GIF	GIF göndermeden önce sor
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Dokunduğunuz bir GIF sohbete girmeden önce Gönder veya İptal sorar. İptal onu atar. Zamanlanmış GIF'ler sormadan gider.
 Ask before sending a voice or video message	Sesli veya görüntülü mesaj göndermeden önce sor

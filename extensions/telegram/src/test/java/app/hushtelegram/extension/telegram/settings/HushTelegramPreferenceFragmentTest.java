@@ -130,6 +130,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.MESSAGE_MENU_REPEAT, "Add Repeat to the message menu");
         ROW_TITLES.put(PatchFamily.KEEP_DELETED_MESSAGES, "Keep deleted messages");
         ROW_TITLES.put(PatchFamily.ASK_BEFORE_STICKER, "Ask before sending a sticker");
+        ROW_TITLES.put(PatchFamily.BETA_LOGS_OFF, "Turn off beta debug logs");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -280,7 +281,8 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.HIDE_FEATURES_AND_INVITE)
                         || build.contains(PatchFamily.MESSAGE_MENU_REPEAT)
                         || build.contains(PatchFamily.KEEP_DELETED_MESSAGES)
-                        || build.contains(PatchFamily.ASK_BEFORE_STICKER)) expected.add("Chats");
+                        || build.contains(PatchFamily.ASK_BEFORE_STICKER)
+                        || build.contains(PatchFamily.BETA_LOGS_OFF)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
@@ -602,6 +604,15 @@ public class HushTelegramPreferenceFragmentTest {
             // Stickers, GIFs, recordings and calls go out without a question until the switch is turned on.
             assertFalse(Settings.ASK_BEFORE_STICKER.key,
                     ((SwitchPreference) page.findPreference(Settings.ASK_BEFORE_STICKER.key)).isChecked());
+            assertEquals("Turn off beta debug logs", String.valueOf(page.findPreference(Settings.BETA_LOGS_OFF.key).getTitle()));
+            assertEquals("Telegram Beta keeps debug logs on your phone all the time, its connection log included, "
+                            + "and its own debug menu can't stop that. This stops them. Logs already saved stay until you "
+                            + "clear them, and the regular build doesn't keep them, so nothing changes there. Restart "
+                            + "Telegram to see the change.",
+                    String.valueOf(page.findPreference(Settings.BETA_LOGS_OFF.key).getSummary()));
+            // The beta keeps writing its logs until the switch is turned on.
+            assertFalse(Settings.BETA_LOGS_OFF.key,
+                    ((SwitchPreference) page.findPreference(Settings.BETA_LOGS_OFF.key)).isChecked());
             assertEquals("Ask before sending a GIF", String.valueOf(page.findPreference(Settings.ASK_BEFORE_GIF.key).getTitle()));
             assertEquals("Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs "
                     + "go out without asking.",
