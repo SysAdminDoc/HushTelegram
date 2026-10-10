@@ -141,7 +141,11 @@ class HideCommerceFixtureTest {
                 transferBody[it].opcode == Opcode.INSTANCE_OF && transferBody[it].reference() == GRAM_TRANSFER })
 
             val originals = plan.hooks.mapValues { (_, edits) -> ImmutableMethod.of(edits.first().method) }
-            val changed = originals.values.map { it.definingClass to it.name }.toSet()
+            // The Premium sticker places are checked edit by edit in PremiumStickerFixtureTest.
+            val stickers = context.resolvePremiumStickerHooks()
+            assertEquals("${build.name}: both Premium sticker targets", PremiumStickerTarget.entries.toSet(), stickers.keys)
+            val changed = originals.values.map { it.definingClass to it.name }.toSet() +
+                stickers.values.flatten().map { it.method.definingClass to it.method.name }
             val untouched = hosts.flatMap { it.methods.toList() }.filter { (it.definingClass to it.name) !in changed }
             assertTrue("${build.name}: includes the ordinary channel footer controls", untouched.any { method ->
                 method.instructions().any { it.reference() == JOIN } && method.instructions().any { it.reference() == UNMUTE }
@@ -165,6 +169,7 @@ class HideCommerceFixtureTest {
             }
             assertFact(context, "hideCommerce", 1)
             CommerceTarget.entries.forEach { assertFact(context, it.capability, 1) }
+            PremiumStickerTarget.entries.forEach { assertFact(context, it.capability, 1) }
             for ((stub, identity) in mapOf("giftTabId" to plan.giftTabId, "giftButtonIndex" to plan.giftButtonIndex)) {
                 assertTrue("${build.name}: discovered $stub", identity != null && identity >= 0)
                 val body = context.mutableClassDefBy(COMMERCE).methods.single { it.name == stub }.instructions()
@@ -621,7 +626,8 @@ class HideCommerceFixtureTest {
                 method.parameterTypes.map { it.toString() } == listOf("I", "Z", "Z")) ||
                 (refs.containsAll(SETTINGS_SALES) && AccessFlags.STATIC.isSet(method.accessFlags) &&
                     method.parameterTypes.map { it.toString() } == listOf(method.definingClass, "Ljava/util/ArrayList;")) ||
-                (refs.contains(JOIN) && refs.contains(UNMUTE))
+                (refs.contains(JOIN) && refs.contains(UNMUTE)) ||
+                refs.contains(STICKER_TOOLTIP) || (refs.contains(PREMIUM_BLOCKED) && refs.contains(PREMIUM_DOCUMENT))
         }
         return (anchors + FixtureDex.classes(build, setOf(TABS, CONTROLLER, USER_CONFIG)).values).distinctBy { it.type }
     }

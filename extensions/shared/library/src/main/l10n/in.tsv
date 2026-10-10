@@ -183,7 +183,7 @@ call debug reports	laporan debug panggilan
 call log file uploads	unggahan berkas log panggilan
 call log reports	laporan log panggilan
 Hide Premium, gifts and Stars	Sembunyikan Premium, hadiah dan Stars
-Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, and the Gift button in channels.	Menghapus Premium, Stars, My Grams, Dompet, Business, dan Kirim Hadiah dari Pengaturan, Dompet dan Kirim Gram dari menu chat, profil, dan tautan, tab Hadiah di profil, dan tombol Hadiah di kanal.
+Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, the Gift button in channels, and Premium stickers and their effects if you don't have Premium.	Menghapus Premium, Stars, My Grams, Dompet, Business, dan Kirim Hadiah dari Pengaturan, Dompet dan Kirim Gram dari menu chat, profil, dan tautan, tab Hadiah di profil, tombol Hadiah di kanal, serta stiker Premium dan efeknya jika kamu tidak punya Premium.
 Settings sales rows	Penawaran di Pengaturan
 profile Gifts tabs	tab Hadiah pada profil
 channel Gift button	tombol Hadiah pada kanal
@@ -192,6 +192,8 @@ chat list menu Wallet item	item Dompet di menu daftar chat
 profile menu Send Gram item	item Kirim Gram di menu profil
 TON link Send Gram item	item Kirim Gram di tautan TON
 Gram transfer Send Gram item	item Kirim Gram di transfer Gram
+Premium stickers in the keyboard and packs	stiker Premium di keyboard dan paket
+Premium sticker effects	efek stiker Premium
 Hide promotional banners	Sembunyikan banner promosi
 Hides the Premium, birthday and low Stars balance banners above your chat list. Account security notices and other suggestions still show.	Menyembunyikan banner Premium, ulang tahun, dan saldo Stars yang menipis di atas daftar obrolan Anda. Pemberitahuan keamanan akun dan saran lainnya tetap tampil.
 promotional suggestions	saran promosi

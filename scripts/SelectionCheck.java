@@ -259,6 +259,12 @@ public final class SelectionCheck {
         hook(calls, flags, "commerceProfileSendGram", "misc/Commerce", "showProfileSendGram");
         hook(calls, flags, "commerceAddressSendGram", "misc/Commerce", "showAddressSendGram");
         hook(calls, flags, "commerceTransferSendGram", "misc/Commerce", "showTransferSendGram");
+        hook(calls, flags, "commercePremiumEffects", "misc/Commerce", "skipPremiumEffect");
+        // Both sticker targets ask premiumStickersBlocked: the two filters and the keyboard pass,
+        // and the effect player's tooltip.
+        int blocked = (Boolean.TRUE.equals(flags.get("commercePremiumStickers")) ? 3 : 0)
+                + (Boolean.TRUE.equals(flags.get("commercePremiumEffects")) ? 1 : 0);
+        require(calls.getOrDefault(OWN + "telegram/misc/Commerce;->premiumStickersBlocked", 0) == blocked);
         hook(calls, flags, "promotionalSuggestions", "misc/Suggestions", "filterChatList");
         hook(calls, flags, "birthdayGiftBanner", "misc/Suggestions", "birthdayGiftBannerDismissed");
         hook(calls, flags, "cachedProxyDialog", "ads/ProxyPromotions", "hideCachedProxyDialog");

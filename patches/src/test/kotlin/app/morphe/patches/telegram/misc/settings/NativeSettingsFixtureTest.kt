@@ -16,6 +16,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.morphe.patches.telegram.misc.commerce.CommerceTarget
+import app.morphe.patches.telegram.misc.commerce.PremiumStickerTarget
 import app.morphe.patches.telegram.misc.commerce.hideCommercePatch
 import app.morphe.patches.telegram.misc.commerce.resolveCommerceHooks
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
@@ -131,9 +132,9 @@ class NativeSettingsFixtureTest {
             val method = plan.hooks.getValue(CommerceTarget.SETTINGS).first().method
             val before = operations(method)
             val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
-            // Only Settings is loaded here: the profile, channel, Wallet menu and Send Gram targets
-            // each report themselves missing.
-            assertEquals(CommerceTarget.entries.size - 1, warnings.size)
+            // Only Settings is loaded here: the profile, channel, Wallet menu, Send Gram and Premium
+            // sticker targets each report themselves missing.
+            assertEquals(CommerceTarget.entries.size - 1 + PremiumStickerTarget.entries.size, warnings.size)
             assertEquals(1, method.body().count { it.ref()?.contains("->$NATIVE_ROW_BRIDGE(") == true })
             assertEquals(5, method.body().count { it.ref()?.contains("->addSettingsRow(") == true })
             val body = method.body()
@@ -145,7 +146,8 @@ class NativeSettingsFixtureTest {
                 it[1] == APPEND || it[1]?.toString()?.contains("->addSettingsRow(") == true })
             for ((name, expected) in mapOf("hideCommerce" to 1, "commerceSettingsRows" to 1,
                 "commerceProfileGifts" to 0, "commerceChannelGift" to 0, "commerceAttachWallet" to 0, "commerceMenuWallet" to 0,
-                "commerceProfileSendGram" to 0, "commerceAddressSendGram" to 0, "commerceTransferSendGram" to 0)) {
+                "commerceProfileSendGram" to 0, "commerceAddressSendGram" to 0, "commerceTransferSendGram" to 0,
+                "commercePremiumStickers" to 0, "commercePremiumEffects" to 0)) {
                 val flag = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }
                 assertEquals(expected, (flag.body().first() as NarrowLiteralInstruction).narrowLiteral)
             }

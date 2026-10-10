@@ -83,8 +83,9 @@ private val STORES = listOf("IPUT", "SPUT", "APUT").flatMap { kind ->
 val hideCommercePatch = bytecodePatch(
     name = PATCH,
     description = "Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram " +
-        "from the chat, profile and link menus, Gifts tabs on profiles, and the Gift button in channels, for a less " +
-        "cluttered app. On by default. Turn it off in HushTelegram settings > Ads.",
+        "from the chat, profile and link menus, Gifts tabs on profiles, the Gift button in channels, and Premium stickers " +
+        "and their effects for an account without Premium, for a less cluttered app. On by default. Turn it off in " +
+        "HushTelegram settings > Ads.",
     default = true,
 ) {
     category("Ads")
@@ -94,16 +95,25 @@ val hideCommercePatch = bytecodePatch(
     execute {
         requireStatusMethod("hideCommerce")
         CommerceTarget.entries.forEach { requireStatusMethod(it.capability) }
+        PremiumStickerTarget.entries.forEach { requireStatusMethod(it.capability) }
         // Every operand, identity and cached path is proved before the first instruction changes.
         val plan = resolveCommerceHooks()
-        shape(plan.hooks.isNotEmpty(), "no sales presentation target")
+        val stickers = resolvePremiumStickerHooks()
+        shape(plan.hooks.isNotEmpty() || stickers.isNotEmpty(), "no sales presentation target")
         if (plan.giftTabId != null) writeStub(COMMERCE, "giftTabId", 1,
             "const/16 v0, ${plan.giftTabId}\nreturn v0")
         if (plan.giftButtonIndex != null) writeStub(COMMERCE, "giftButtonIndex", 1,
             "const/16 v0, ${plan.giftButtonIndex}\nreturn v0")
-        handleTargets(PATCH, "sales presentation targets", CommerceTarget.entries) { target ->
-            val edits = plan.hooks[target]
-            if (edits == null) "no structurally matching ${target.capability} target"
+        // Both sticker targets ask premiumStickersBlocked; only the effect player reads a message.
+        val stubs = PREMIUM_STUBS.keys.filter { stub ->
+            stickers.isNotEmpty() && (stub in setOf("premiumBlocked", "premiumAccount") || PremiumStickerTarget.EFFECTS in stickers)
+        }
+        stubs.forEach { writeStub(COMMERCE, it, 2, PREMIUM_STUBS.getValue(it)) }
+        // One list, so the patch refuses only when the build has none of them at all.
+        handleTargets(PATCH, "sales presentation targets", CommerceTarget.entries + PremiumStickerTarget.entries) { target ->
+            val edits = if (target is CommerceTarget) plan.hooks[target] else stickers[target as PremiumStickerTarget]
+            val capability = if (target is CommerceTarget) target.capability else (target as PremiumStickerTarget).capability
+            if (edits == null) "no structurally matching $capability target"
             else {
                 edits.sortedByDescending { it.index }.forEach { edit ->
                     if (edit.replace) edit.method.replaceInstruction(edit.index, edit.code)
@@ -118,6 +128,8 @@ val hideCommercePatch = bytecodePatch(
                     CommerceTarget.PROFILE_SEND_GRAM -> enableCapability("commerceProfileSendGram")
                     CommerceTarget.ADDRESS_SEND_GRAM -> enableCapability("commerceAddressSendGram")
                     CommerceTarget.TRANSFER_SEND_GRAM -> enableCapability("commerceTransferSendGram")
+                    PremiumStickerTarget.STICKERS -> enableCapability("commercePremiumStickers")
+                    PremiumStickerTarget.EFFECTS -> enableCapability("commercePremiumEffects")
                 }
                 null
             }

@@ -260,6 +260,8 @@ public enum PatchFamily {
         COMMERCE_PROFILE_SEND_GRAM(HIDE_COMMERCE, "commerceProfileSendGram", "profile menu Send Gram item"),
         COMMERCE_ADDRESS_SEND_GRAM(HIDE_COMMERCE, "commerceAddressSendGram", "TON link Send Gram item"),
         COMMERCE_TRANSFER_SEND_GRAM(HIDE_COMMERCE, "commerceTransferSendGram", "Gram transfer Send Gram item"),
+        COMMERCE_PREMIUM_STICKERS(HIDE_COMMERCE, "commercePremiumStickers", "Premium stickers in the keyboard and packs"),
+        COMMERCE_PREMIUM_EFFECTS(HIDE_COMMERCE, "commercePremiumEffects", "Premium sticker effects"),
         PROMOTIONAL_SUGGESTIONS(HIDE_PROMOTIONAL_BANNERS, "promotionalSuggestions", "promotional suggestions"),
         BIRTHDAY_GIFT_BANNER(HIDE_PROMOTIONAL_BANNERS, "birthdayGiftBanner", "birthday gift banner"),
         CACHED_PROXY_DIALOG(HIDE_SPONSORED_PROXY, "cachedProxyDialog", "cached proxy channel"),

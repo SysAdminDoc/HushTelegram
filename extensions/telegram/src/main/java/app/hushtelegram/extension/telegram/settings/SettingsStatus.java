@@ -43,6 +43,8 @@ public final class SettingsStatus {
     public static boolean commerceProfileSendGram() { return false; }
     public static boolean commerceAddressSendGram() { return false; }
     public static boolean commerceTransferSendGram() { return false; }
+    public static boolean commercePremiumStickers() { return false; }
+    public static boolean commercePremiumEffects() { return false; }
     public static boolean hidePromotionalBanners() { return false; }
     public static boolean promotionalSuggestions() { return false; }
     public static boolean birthdayGiftBanner() { return false; }

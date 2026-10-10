@@ -127,6 +127,42 @@ public final class Commerce {
         return visible;
     }
 
+    /**
+     * Asked in place of Telegram's own question whether Premium is blocked for an account, but only
+     * where stickers are listed (the filters for packs and the keyboard's favorites and recents)
+     * and before the Premium sticker tooltip. Telegram's yes stands. For an account without
+     * Premium the answer becomes yes too, so Premium stickers are left out the way Telegram leaves
+     * them out where Premium can't be bought. An account with Premium keeps every sticker.
+     */
+    public static boolean premiumStickersBlocked(Object controller) {
+        boolean blocked = premiumBlocked(controller);
+        if (blocked || controller == null || !enabled()) return blocked;
+        try {
+            if (premiumAccount(controller)) return false;
+        } catch (Throwable t) {
+            HookStatus.threw(FamilyNames.HIDE_COMMERCE, "Premium account read", t);
+            return false;
+        }
+        HookStatus.counted(FamilyNames.HIDE_COMMERCE, "Premium stickers left out");
+        return true;
+    }
+
+    /**
+     * Asked before a chat plays a sticker's effect, whether it plays by itself or on a tap. True
+     * skips it for a Premium sticker on an account without Premium; the sticker itself still shows.
+     */
+    public static boolean skipPremiumEffect(Object message) {
+        if (message == null || !enabled()) return false;
+        try {
+            if (!premiumSticker(message) || messageAccountPremium(message)) return false;
+        } catch (Throwable t) {
+            HookStatus.threw(FamilyNames.HIDE_COMMERCE, "Premium sticker read", t);
+            return false;
+        }
+        HookStatus.counted(FamilyNames.HIDE_COMMERCE, "Premium sticker effect skipped");
+        return true;
+    }
+
     private static boolean enabled() {
         HookStatus.invoked(FamilyNames.HIDE_COMMERCE);
         try {
@@ -145,5 +181,25 @@ public final class Commerce {
     /** Rewritten from the footer's Gift accessibility branch and matching icon-array slot. */
     static int giftButtonIndex() {
         return -1;
+    }
+
+    /** Rewritten to ask the MessagesController its own premiumFeaturesBlocked(). */
+    static boolean premiumBlocked(Object controller) {
+        return false;
+    }
+
+    /** Rewritten to read whether the MessagesController's account has Premium. */
+    static boolean premiumAccount(Object controller) {
+        return true;
+    }
+
+    /** Rewritten to ask the MessageObject whether it's a Premium sticker. */
+    static boolean premiumSticker(Object message) {
+        return false;
+    }
+
+    /** Rewritten to read whether the MessageObject's account has Premium. */
+    static boolean messageAccountPremium(Object message) {
+        return true;
     }
 }
