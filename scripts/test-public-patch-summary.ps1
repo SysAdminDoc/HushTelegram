@@ -19,6 +19,7 @@ $bundleVersion = $catalog.version -creplace '^v', ''
 $declaredTargets = @(Get-PatchTargets -PatchList $catalog)
 $webVersion = @($declaredTargets | Where-Object { $_.PackageName -ceq 'org.telegram.messenger.web' })[0].PackageVersion
 $betaVersion = @($declaredTargets | Where-Object { $_.PackageName -ceq 'org.telegram.messenger.beta' })[0].PackageVersion
+if (-not $webVersion -or -not $betaVersion) { throw 'The catalog declares no telegram.org build or no beta, so the summary cases would test nothing.' }
 $requestedNames = @('Use registered Telegram API credentials', 'Use registered Maps API key')
 $canaries = @('987654321', '00112233445566778899aabbccddeeff',
     'AIza_SYNTHETIC_PRIVATE_MAPS_CANARY', 'synthetic-private-keystore-password',
