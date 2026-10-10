@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.json.JSONArray;
@@ -33,8 +34,9 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * <p>Android's regular expressions run in ICU, which copies the text and can't be stopped part
  * way, so a time limit can't be put on one. The shapes that can backtrack for seconds or more on a
  * long message are refused instead: a repeat inside a repeated group, a repeated choice like
- * {@code (a|aa)+}, more than one open-ended repeat (or one with many optional parts beside it),
- * and a reference back to a group. What's left takes time at worst in proportion to the square of
+ * {@code (a|aa)+}, more than one open-ended repeat (or one with many optional parts beside it), a
+ * reference back to a group, and a comment or the comments flag, which hide the rest from that
+ * check. What's left takes time at worst in proportion to the square of
  * the text, and an expression reads no more than {@link #MAX_EXPRESSION_TEXT} of a message. Plain
  * text reads up to Telegram's longest message.
  */
@@ -49,7 +51,10 @@ public final class MessageFilters {
     public static final int MAX_FILTER_CHARS = 200;
     /** How much of a message plain text reads: Telegram's longest message. */
     static final int MAX_TEXT = 4096;
-    /** How much of a message an expression reads, which keeps its worst case to a few million steps. */
+    /**
+     * How much of a message an expression reads. With {@link #MAX_TRIES} that holds its worst case
+     * under about seventy million steps, on a message written against that one filter.
+     */
     static final int MAX_EXPRESSION_TEXT = 2048;
     /**
      * How many ways an expression may try to match at one place in a message: one open-ended
@@ -127,11 +132,23 @@ public final class MessageFilters {
         if (text == null || text.isEmpty()) return false;
         String read = text.length() > MAX_TEXT ? text.substring(0, MAX_TEXT) : text;
         String lower = read.toLowerCase(Locale.ROOT);
-        String shorter = read.length() > MAX_EXPRESSION_TEXT ? read.substring(0, MAX_EXPRESSION_TEXT) : read;
         for (Filter filter : filters) {
-            if (filter.pattern != null ? filter.pattern.matcher(shorter).find() : lower.contains(filter.words)) return true;
+            if (filter.pattern != null ? found(filter.pattern, read) : lower.contains(filter.words)) return true;
         }
         return false;
+    }
+
+    /**
+     * Whether an expression matches in the first {@link #MAX_EXPRESSION_TEXT} characters. The text
+     * past that point still counts as being there, so {@code $} doesn't match at the cut and
+     * {@code \b} doesn't see a word end in the middle of one.
+     */
+    private static boolean found(Pattern pattern, String text) {
+        if (text.length() <= MAX_EXPRESSION_TEXT) return pattern.matcher(text).find();
+        // Three characters past the cut are more than the longest line break, so $ can't match at
+        // it, and they're as far as a look ahead reads.
+        Matcher matcher = pattern.matcher(text.substring(0, Math.min(text.length(), MAX_EXPRESSION_TEXT + 3)));
+        return matcher.region(0, MAX_EXPRESSION_TEXT).useTransparentBounds(true).useAnchoringBounds(false).find();
     }
 
     /** One line of a list, ready to match. */
@@ -191,7 +208,12 @@ public final class MessageFilters {
             // PatternSyntaxException, or the odd flag or length refusal, which is one too.
             return Problem.BROKEN;
         }
-        return slow(expression) ? Problem.SLOW : null;
+        try {
+            return slow(expression) ? Problem.SLOW : null;
+        } catch (RuntimeException unread) {
+            // An expression the check can't read through isn't one it can vouch for.
+            return Problem.SLOW;
+        }
     }
 
     /** The expression inside a line in slashes, or null for a line of plain text. */
@@ -205,17 +227,23 @@ public final class MessageFilters {
      * {@code (a+)+}, {@code (a?a)+}, {@code (a|aa)+} or {@code (.|\s)*}; refers back to a group, like
      * {@code (a)\1}; or has repeats that together leave more than {@link #MAX_TRIES} ways to match
      * at one place, which two open-ended repeats like {@code .*.*x} always do. Those are what can
-     * backtrack for seconds or minutes on a long message. Escapes and character classes are read
-     * past, so {@code [+*]} and {@code \+} are ordinary characters, and a {@code ?} or {@code +}
-     * right after a repeat makes it lazy or possessive rather than repeating again.
+     * backtrack for seconds or minutes on a long message. The ways of a choice's sides add up, since
+     * they're tried one after the other, so {@code spam.*|scam.*} is fine. Escapes, quoted text and
+     * character classes are read past, so {@code [+*]}, {@code \+} and {@code \x{61}} hold no repeat,
+     * and a {@code ?} or {@code +} right after a repeat makes it lazy or possessive rather than
+     * repeating again. A comment, or the x flag that turns on comments and drops spaces, hides what
+     * follows from this reading, so either one is refused too.
      */
     static boolean slow(String expression) {
         // For each open group: whether something inside it repeats or is optional, and whether it holds a choice.
         List<boolean[]> open = new ArrayList<>();
+        // For the whole expression and each open group: the tries of its choices read so far, added
+        // up, and of the choice being read, multiplied.
+        List<long[]> cost = new ArrayList<>();
+        cost.add(new long[]{0, 1});
         boolean[] closedJustBefore = null;
         boolean openedJustBefore = false;
         boolean afterRepeat = false;
-        long tries = 1;
         int i = 0;
         int n = expression.length();
         while (i < n) {
@@ -223,21 +251,21 @@ public final class MessageFilters {
             boolean[] closed = null;
             boolean opened = false;
             boolean repeat = false;
+            long[] current = cost.get(cost.size() - 1);
             if (c == '\\') {
                 if (i + 1 < n) {
                     char next = expression.charAt(i + 1);
                     if (next >= '1' && next <= '9' || next == 'k') return true;
-                    if (next == 'Q') {
-                        int end = expression.indexOf("\\E", i + 2);
-                        i = end < 0 ? n : end + 2;
-                        continue;
-                    }
                 }
-                i += 2;
+                i = escapeEnd(expression, i);
             } else if (c == '[') {
                 i = classEnd(expression, i);
             } else if (c == '(') {
+                // A comment, or a flag that turns spaces and # into something else, reads text this
+                // scan can't follow.
+                if (expression.startsWith("(?#", i) || commentsFlag(expression, i)) return true;
                 open.add(new boolean[2]);
+                cost.add(new long[]{0, 1});
                 opened = true;
                 i++;
             } else if (c == ')') {
@@ -249,9 +277,19 @@ public final class MessageFilters {
                         outer[1] |= closed[1];
                     }
                 }
+                if (cost.size() > 1) {
+                    long[] group = cost.remove(cost.size() - 1);
+                    long[] outer = cost.get(cost.size() - 1);
+                    outer[1] = capped(outer[1] * capped(group[0] + group[1]));
+                    if (outer[1] > MAX_TRIES) return true;
+                }
                 i++;
             } else if (c == '|') {
                 if (!open.isEmpty()) open.get(open.size() - 1)[1] = true;
+                // Choices are tried one after another, so their tries add up.
+                current[0] = capped(current[0] + current[1]);
+                current[1] = 1;
+                if (current[0] > MAX_TRIES) return true;
                 i++;
             } else if (c == '?' && openedJustBefore) {
                 // (?: (?= (?<name> and the like say how a group works; they don't repeat anything.
@@ -262,8 +300,8 @@ public final class MessageFilters {
             } else if (c == '*' || c == '+' || c == '?' || c == '{' && repeats(expression, i)) {
                 // An optional group is tried once or not at all, so only a repeated one is refused here.
                 if (c != '?' && closedJustBefore != null && (closedJustBefore[0] || closedJustBefore[1])) return true;
-                tries *= c == '?' ? 2 : c == '{' ? spread(expression, i) : MAX_EXPRESSION_TEXT;
-                if (tries > MAX_TRIES) return true;
+                current[1] = capped(current[1] * (c == '?' ? 2 : c == '{' ? spread(expression, i) : MAX_EXPRESSION_TEXT));
+                if (current[0] + current[1] > MAX_TRIES) return true;
                 if (!open.isEmpty()) open.get(open.size() - 1)[0] = true;
                 repeat = true;
                 i = c == '{' ? expression.indexOf('}', i) + 1 : i + 1;
@@ -273,6 +311,50 @@ public final class MessageFilters {
             closedJustBefore = closed;
             openedJustBefore = opened;
             afterRepeat = repeat;
+        }
+        long[] whole = cost.get(0);
+        return whole[0] + whole[1] > MAX_TRIES;
+    }
+
+    /** Tries held just past {@link #MAX_TRIES}, so multiplying two never overflows. */
+    private static long capped(long tries) {
+        return Math.min(tries, MAX_TRIES + 1);
+    }
+
+    /**
+     * Where an escape at {@code at} ends. {@code \x{..}}, {@code \p{..}}, {@code \P{..}} and
+     * {@code \N{..}} end past their brace, so a count-like {@code {61}} inside one isn't read as a
+     * count; {@code \c} names the character after it, which may be a bracket; {@code \Q} quotes
+     * everything up to {@code \E}.
+     */
+    private static int escapeEnd(String expression, int at) {
+        int n = expression.length();
+        if (at + 1 >= n) return n;
+        char next = expression.charAt(at + 1);
+        if (next == 'Q') {
+            int end = expression.indexOf("\\E", at + 2);
+            return end < 0 ? n : end + 2;
+        }
+        if (next == 'c') return Math.min(n, at + 3);
+        if ((next == 'x' || next == 'p' || next == 'P' || next == 'N') && at + 2 < n && expression.charAt(at + 2) == '{') {
+            int close = expression.indexOf('}', at + 3);
+            return close < 0 ? n : close + 1;
+        }
+        return at + 2;
+    }
+
+    /**
+     * Whether a group at {@code at} sets flags, like {@code (?i)} or {@code (?x-s:...)}, and one of
+     * them is x, which makes spaces and # mean something else.
+     */
+    private static boolean commentsFlag(String expression, int at) {
+        if (!expression.startsWith("(?", at)) return false;
+        boolean comments = false;
+        for (int i = at + 2; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+            if (c == ':' || c == ')') return comments;
+            if (!Character.isLetter(c) && c != '-') return false;
+            if (c == 'x') comments = true;
         }
         return false;
     }
@@ -286,7 +368,7 @@ public final class MessageFilters {
         int comma = count.indexOf(',');
         if (comma < 0) return 1;
         if (comma == count.length() - 1) return MAX_EXPRESSION_TEXT;
-        long ways = Long.parseLong(count.substring(comma + 1)) - Long.parseLong(count.substring(0, comma)) + 1;
+        long ways = number(count.substring(comma + 1)) - number(count.substring(0, comma)) + 1;
         return Math.max(1, Math.min(ways, MAX_EXPRESSION_TEXT));
     }
 
@@ -297,8 +379,15 @@ public final class MessageFilters {
         String count = expression.substring(at + 1, close);
         if (!count.matches("\\d+(,\\d*)?")) return false;
         int comma = count.indexOf(',');
-        if (comma < 0) return Integer.parseInt(count) > 1;
-        return comma == count.length() - 1 || Integer.parseInt(count.substring(comma + 1)) > 1;
+        if (comma < 0) return number(count) > 1;
+        return comma == count.length() - 1 || number(count.substring(comma + 1)) > 1;
+    }
+
+    /** A count's digits as a number, held to a billion so a long run of digits can't overflow. */
+    private static long number(String digits) {
+        long value = 0;
+        for (int k = 0; k < digits.length(); k++) value = Math.min(value * 10 + digits.charAt(k) - '0', 1_000_000_000L);
+        return value;
     }
 
     /** Where a character class that opens at {@code at} ends, past its closing bracket. */
@@ -311,7 +400,7 @@ public final class MessageFilters {
         while (i < expression.length()) {
             char c = expression.charAt(i);
             if (c == '\\') {
-                i += 2;
+                i = escapeEnd(expression, i);
                 continue;
             }
             if (c == '[') depth++;

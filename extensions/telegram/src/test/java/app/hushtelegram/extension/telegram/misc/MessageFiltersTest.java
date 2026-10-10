@@ -98,6 +98,11 @@ public class MessageFiltersTest {
         assertFalse(MessageFilters.matches(parsed("/spam/"), padding + " spam"));
         assertTrue("plain text reads on", MessageFilters.matches(parsed("spam"), padding + " spam"));
         assertTrue("the expression still finds what's early", MessageFilters.matches(parsed("/^x.*/"), "x" + padding + "  spam"));
+        assertTrue("the end of a message", MessageFilters.matches(parsed("/spam$/"), padding + "spam"));
+        assertFalse("the cut isn't the end", MessageFilters.matches(parsed("/spam$/"), padding + "spam tail"));
+        assertFalse("nor a line break with more after it", MessageFilters.matches(parsed("/spam$/"), padding + "spam\r\ntail"));
+        assertTrue(MessageFilters.matches(parsed("/\\bspam\\b/"), padding + "spam tail"));
+        assertFalse("a word that goes on past the cut", MessageFilters.matches(parsed("/\\bspam\\b/"), padding + "spammy"));
     }
 
     @Test public void aLineThatCantBeUsedIsSaidAndLeftOutOfTheChat() {
@@ -114,13 +119,24 @@ public class MessageFiltersTest {
                 "/(.|\\s)*x/", "/(a|aa)+b/", "/(?:foo|bar)+/", "/(a?a)+/", "/((a|b)c)*/",
                 // Two open-ended repeats, lazy or not, or one with too many optional parts beside it.
                 "/.*.*x/", "/\\w+\\s*\\w+!/", "/.*?x.*?y/", "/a+b{1,}/", "/x+y{1,99}/", "/.{0,99}.{0,99}.{0,99}/",
-                "/a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?/"}) {
+                "/a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?/",
+                // What's quoted in a class, a control character and a code point hide no bracket or count.
+                "/[\\Q[\\E](a|aa)+b/", "/\\c[(a|aa)+b/", "/\\x{61}+\\x{61}+\\x{61}+b/",
+                // The comments flag changes what spaces and # mean.
+                "/(?x)(a|aa) +b/", "/(?x)a#{99999999999}/", "/(?ix-s:(a|aa) +)b/"}) {
             assertEquals(slow, MessageFilters.Problem.SLOW, MessageFilters.problem(slow));
         }
+        assertTrue("ICU reads a comment", MessageFilters.slow("(?#[)(a|aa)+b"));
+        assertNotNull(MessageFilters.problem("/(?#[)(a|aa)+b/"));
+        assertFalse("a count past any number", MessageFilters.slow("a{0,99999999999999999999}"));
+        assertFalse(MessageFilters.slow("a{99999999999}b+"));
         for (String fine : new String[]{"/[+*]+/", "/\\(a?\\)+/", "/(a+)?/", "/(a{1})+/", "/(?:foo|bar) now/", "/\\Q(a+)+\\E/",
                 "/a{2}b+/", "/[(]a?[)]+/", "/(ab)+c/", "/https?:\\/\\/\\S+/", "/a+?b/", "/a*+b/", "/(?i)x+/",
                 "/\\d{3}[-.]?\\d{4}/", "/\\bfree\\s{1,9}crypto\\s{1,9}now\\b/", "/\\(?\\d{3}\\)? ?\\d+/",
-                "/\\b(?:buy|sell)\\s+crypto\\b/"}) {
+                "/\\b(?:buy|sell)\\s+crypto\\b/",
+                // A choice's sides are tried one after the other.
+                "/spam.*|scam.*/", "/(?:foo|bar).*/", "/(?:buy.*|sell.*) now/",
+                "/[\\Q]\\E]+x/", "/\\x{61}+b/", "/\\p{L}+ crypto/"}) {
             assertNull(fine, MessageFilters.problem(fine));
         }
         List<MessageFilters.Filter> kept = parsed("/(unclosed/\n/(a+)+/\nspam");
