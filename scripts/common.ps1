@@ -468,6 +468,10 @@ function Invoke-InHushTelegramQueue {
         is set for the job's length either way, so a script that queues itself by running itself
         again inside the slot knows it's already there. The queue script is dot-sourced here, in
         this function's scope, so its parameters can't land in the caller's variables.
+
+        The block runs inside the queue's functions and finds the caller's variables by dynamic
+        scope, so it mustn't read one named like theirs: Label, Priority, Run, Status, ScriptBlock,
+        Job, held or process. Those resolve to the queue's own values first.
     #>
     param(
         [Parameter(Mandatory = $true)][string]$Job,
