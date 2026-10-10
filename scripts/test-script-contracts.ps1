@@ -3483,6 +3483,49 @@ try {
                 Remove-Item -LiteralPath $gateHook -Force -ErrorAction SilentlyContinue
                 & git -C $gateRepo checkout --quiet -- scripts
             }
+
+            # A commit whose Gradle file has :patches:fixtureTest gets a quick pass: every task but
+            # the fixture tests, then the same tasks again to add them. A quick pass that fails stops
+            # the push before the fixture tests start. A commit from before the task gets one run,
+            # since its Gradle would refuse -x for a task it doesn't know.
+            $passLog = Join-Path $hookRoot 'gate-passes.txt'
+            $passStub = Join-Path $hookRoot 'gate-wrapper-passes.ps1'
+            Set-Content -LiteralPath $passStub -Encoding UTF8 -Value @(
+                'param([string]$ProjectDir, [string[]]$Tasks)',
+                "Add-Content -LiteralPath '$passLog' -Value (`$Tasks -join ' ')",
+                'if ($env:HUSHTELEGRAM_QUICK_PASS_FAILS -eq ''1'' -and $Tasks -contains ''-x'') { exit 1 }',
+                'exit 0')
+            $quickBase = (& git -C $gateRepo rev-parse HEAD).Trim()
+            New-Item -ItemType Directory -Path (Join-Path $gateRepo 'patches') -Force | Out-Null
+            Set-Content -LiteralPath (Join-Path $gateRepo 'patches/build.gradle.kts') -Encoding ASCII `
+                -Value 'val fixtureTest = tasks.register<Test>("fixtureTest") { }'
+            & git -C $gateRepo add patches/build.gradle.kts
+            & git -C $gateRepo commit --quiet -m 'fixture task'
+            $quickSplit = (& git -C $gateRepo rev-parse HEAD).Trim()
+            $env:HUSHTELEGRAM_BUILD_WRAPPER = $passStub
+            try {
+                Remove-Item -LiteralPath $passLog -Force -ErrorAction SilentlyContinue
+                & $prePushScript -Root $gateRepo -PushedRefs "refs/heads/main $quickSplit refs/heads/main $quickBase" 6> $null
+                $passes = @(Get-Content -LiteralPath $passLog)
+                Assert-True ($LASTEXITCODE -eq 0 -and $passes.Count -eq 2 -and $passes[1] -like '*:patches:test*' -and
+                    $passes[0] -ceq "$($passes[1]) -x :patches:fixtureTest") `
+                    "The gate did not run everything but the fixture tests first and then add them: $($passes -join ' | ')"
+                Remove-Item -LiteralPath $passLog -Force
+                $env:HUSHTELEGRAM_QUICK_PASS_FAILS = '1'
+                Assert-Throws { & $prePushScript -Root $gateRepo -PushedRefs "refs/heads/main $quickSplit refs/heads/main $quickBase" 6> $null } `
+                    '*runtime test build did not pass*' 'A quick pass that failed did not stop the push.'
+                Assert-True (@(Get-Content -LiteralPath $passLog).Count -eq 1) 'The fixture tests ran after the quick pass failed.'
+                Remove-Item -LiteralPath $passLog -Force
+                $env:HUSHTELEGRAM_QUICK_PASS_FAILS = $null
+                & $prePushScript -Root $gateRepo -PushedRefs "refs/heads/main $fixed refs/heads/main $broken" 6> $null
+                $passes = @(Get-Content -LiteralPath $passLog)
+                Assert-True ($LASTEXITCODE -eq 0 -and $passes.Count -eq 1 -and $passes[0] -notlike '*-x*') `
+                    "A commit without :patches:fixtureTest was not built in one run without -x: $($passes -join ' | ')"
+            } finally {
+                $env:HUSHTELEGRAM_BUILD_WRAPPER = $gateStub
+                Remove-Item -LiteralPath Env:\HUSHTELEGRAM_QUICK_PASS_FAILS -ErrorAction SilentlyContinue
+                Remove-Item -LiteralPath $passLog -Force -ErrorAction SilentlyContinue
+            }
         } finally {
             foreach ($line in @(& git -C $gateRepo worktree list --porcelain)) {
                 if ($line -like 'worktree *') {
@@ -5573,7 +5616,7 @@ Assert-True ($gradleFile -match 'commandLine\("git", "--no-optional-locks", "sta
     'patches/build.gradle.kts stamps the bundle with the commit time without asking git whether the tree has uncommitted changes.'
 # The fixture tests run in :patches:fixtureTest, which :patches:test depends on and leaves out, so
 # a quick run can skip them with -x. A test that opens the vendor APKs and isn't in that task's
-# list would run in every quick pass.
+# list would run in every quick pass. The pre-push gate finds the task by this same registration.
 Assert-True ($gradleFile -match 'tasks\.register<Test>\("fixtureTest"\)' -and
     $gradleFile -match '(?s)tasks\.test \{\s*dependsOn\(fixtureTest\)\s*exclude\(fixtureTestClasses\)' -and
     $gradleFile -match 'withType<Test>\(\)\.matching \{ it\.name == "test" \|\| it\.name == "fixtureTest" \}') `
