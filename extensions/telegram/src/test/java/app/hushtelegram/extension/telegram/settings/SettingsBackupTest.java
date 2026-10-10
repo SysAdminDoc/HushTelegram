@@ -490,16 +490,30 @@ public class SettingsBackupTest {
     public void aFilterListThatIsNotAShortListOfShortLinesIsRefused() throws Exception {
         List<String> tooMany = new ArrayList<>();
         for (int i = 0; i <= app.hushtelegram.extension.telegram.misc.MessageFilters.MAX_FILTERS; i++) tooMany.add("word" + i);
+        // As many lines as a list holds, each as long as a line may be, but three bytes a character.
+        List<String> tooBig = new ArrayList<>();
+        for (int i = 0; i < app.hushtelegram.extension.telegram.misc.MessageFilters.MAX_FILTERS; i++) {
+            tooBig.add(repeat('字', app.hushtelegram.extension.telegram.misc.MessageFilters.MAX_FILTER_CHARS));
+        }
         for (Object bad : new Object[]{"spam", true, 1, JSONObject.NULL, new JSONObject(),
                 new org.json.JSONArray(Arrays.asList("spam", 1)),
                 new org.json.JSONArray(Collections.singletonList("two\nlines")),
                 new org.json.JSONArray(Collections.singletonList("carriage\rreturn")),
                 new org.json.JSONArray(Collections.singletonList(repeat('x', app.hushtelegram.extension.telegram.misc.MessageFilters.MAX_FILTER_CHARS + 1))),
-                new org.json.JSONArray(tooMany)}) {
+                new org.json.JSONArray(tooMany), new org.json.JSONArray(tooBig)}) {
             JSONObject file = new JSONObject(SettingsBackup.create());
             file.getJSONObject("settings").put(Settings.MESSAGE_FILTERS_GROUPS.key, bad);
             assertEquals(printable(String.valueOf(bad)), SettingsBackup.Reason.VALUE, reasonFor(file.toString()));
         }
+
+        // A list stored too big to carry is left out of a file rather than making one the import refuses.
+        Settings.MESSAGE_FILTERS_GROUPS.save(String.join("\n", tooBig));
+        Settings.MESSAGE_FILTERS_CHANNELS.save(String.join("\n", tooBig.subList(0, 30)));
+        SettingsBackup.Snapshot carried = SettingsBackup.parse(SettingsBackup.create());
+        assertFalse(carried.lists.containsKey(Settings.MESSAGE_FILTERS_GROUPS));
+        assertTrue(carried.lists.containsKey(Settings.MESSAGE_FILTERS_CHANNELS));
+        Settings.MESSAGE_FILTERS_GROUPS.resetToDefault();
+        Settings.MESSAGE_FILTERS_CHANNELS.resetToDefault();
         // A line that isn't a working filter, such as an expression edited by hand, still comes in:
         // the editor shows it and a chat leaves it out.
         JSONObject file = new JSONObject(SettingsBackup.create());
@@ -880,7 +894,7 @@ public class SettingsBackupTest {
             settle();
             assertEquals("Settings imported.", ShadowToast.getTextOfLatestToast());
             assertEquals(125, (int) Settings.STICKER_SIZE.savedValue());
-            assertEquals("the row still shows the old size", "125% of Telegram's size",
+            assertEquals("the row shows the imported size", "125% of Telegram's size",
                     String.valueOf(page.findPreference(HushTelegramPreferenceFragment.STICKER_SIZE_ROW).getSummary()));
         }
     }

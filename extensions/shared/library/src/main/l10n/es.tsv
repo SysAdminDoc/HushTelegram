@@ -437,7 +437,8 @@ No filters yet.	Aún no hay filtros.
 A list holds up to %1$d filters.	Una lista admite hasta %1$d filtros.
 Line %1$d is longer than %2$d characters.	La línea %1$d tiene más de %2$d caracteres.
 Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.	La línea %1$d no es una expresión regular que funcione. Corrígela, o quita las barras para buscar el texto tal como está escrito.
-Line %1$d could take too long on a long message. Leave out a repeat inside a repeated group and references back to a group.	La línea %1$d podría tardar demasiado en un mensaje largo. Evita una repetición dentro de un grupo repetido y las referencias a un grupo anterior.
+Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.	La línea %1$d podría tardar demasiado en un mensaje largo. Usa como mucho una repetición abierta como + o *, un número como {1,9} para el resto, y evita los grupos repetidos que contienen una repetición o una alternativa, como (a+)+ o (a|b)*, y las referencias a un grupo anterior.
+This list is too long to fit in a settings file. Take out a few lines.	Esta lista es demasiado larga para caber en un archivo de configuración. Quita algunas líneas.
 One filter a line	Un filtro por línea
 Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.	El texto de una línea coincide dondequiera que aparezca en un mensaje. Una línea entre barras, como /crypto|airdrop/, es una expresión regular. No importan las mayúsculas.
 Save	Guardar

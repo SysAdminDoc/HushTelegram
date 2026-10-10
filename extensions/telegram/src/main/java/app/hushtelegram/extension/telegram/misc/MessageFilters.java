@@ -6,11 +6,14 @@ package app.hushtelegram.extension.telegram.misc;
 
 import androidx.annotation.Nullable;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
+
+import org.json.JSONArray;
 
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
@@ -28,9 +31,12 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * expression, and any other line matches wherever its text appears. Both ignore case.
  *
  * <p>Android's regular expressions run in ICU, which copies the text and can't be stopped part
- * way, so a time limit can't be put on one. An expression that can take exponential time on a
- * long message (a repeat inside a repeat, or a reference back to a group) is refused instead, and
- * a filter reads no more than Telegram's longest message.
+ * way, so a time limit can't be put on one. The shapes that can backtrack for seconds or more on a
+ * long message are refused instead: a repeat inside a repeated group, a repeated choice like
+ * {@code (a|aa)+}, more than one open-ended repeat (or one with many optional parts beside it),
+ * and a reference back to a group. What's left takes time at worst in proportion to the square of
+ * the text, and an expression reads no more than {@link #MAX_EXPRESSION_TEXT} of a message. Plain
+ * text reads up to Telegram's longest message.
  */
 public final class MessageFilters {
     private MessageFilters() {}
@@ -41,8 +47,21 @@ public final class MessageFilters {
     public static final int MAX_FILTERS = 100;
     /** How long one filter can be. */
     public static final int MAX_FILTER_CHARS = 200;
-    /** How much of a message a filter reads: Telegram's longest message. */
+    /** How much of a message plain text reads: Telegram's longest message. */
     static final int MAX_TEXT = 4096;
+    /** How much of a message an expression reads, which keeps its worst case to a few million steps. */
+    static final int MAX_EXPRESSION_TEXT = 2048;
+    /**
+     * How many ways an expression may try to match at one place in a message: one open-ended
+     * repeat with a few optional parts or short counts beside it. Two open-ended repeats are past it.
+     */
+    static final long MAX_TRIES = MAX_EXPRESSION_TEXT * 16L;
+    /**
+     * How large one list may be once it's written into a settings file, so a saved list always
+     * exports to a file the import takes: two lists of this, the switches and the size stay well
+     * under {@code SettingsBackup.MAX_BYTES}.
+     */
+    public static final int MAX_LIST_BYTES = 24 * 1024;
 
     private static volatile Parsed groups = Parsed.NONE;
     private static volatile Parsed channels = Parsed.NONE;
@@ -100,13 +119,17 @@ public final class MessageFilters {
         return cached.filters;
     }
 
-    /** Whether any filter matches the text, read no further than {@link #MAX_TEXT}. */
+    /**
+     * Whether any filter matches the text: plain text in the first {@link #MAX_TEXT} characters,
+     * an expression in the first {@link #MAX_EXPRESSION_TEXT}.
+     */
     static boolean matches(List<Filter> filters, @Nullable String text) {
         if (text == null || text.isEmpty()) return false;
         String read = text.length() > MAX_TEXT ? text.substring(0, MAX_TEXT) : text;
         String lower = read.toLowerCase(Locale.ROOT);
+        String shorter = read.length() > MAX_EXPRESSION_TEXT ? read.substring(0, MAX_EXPRESSION_TEXT) : read;
         for (Filter filter : filters) {
-            if (filter.pattern != null ? filter.pattern.matcher(read).find() : lower.contains(filter.words)) return true;
+            if (filter.pattern != null ? filter.pattern.matcher(shorter).find() : lower.contains(filter.words)) return true;
         }
         return false;
     }
@@ -128,15 +151,18 @@ public final class MessageFilters {
         TOO_LONG,
         /** An expression that doesn't compile. */
         BROKEN,
-        /** An expression that can take exponential time on a long message. */
+        /** An expression that can take too long on a long message, by the shapes {@link #slow} refuses. */
         SLOW
     }
 
-    /** The lines of a list that hold a filter: trimmed, without blanks, in order. */
+    /**
+     * The lines of a list that hold a filter: trimmed, without blanks, in order. Any line break
+     * ends a line, so a pasted carriage return never stays inside one.
+     */
     public static List<String> lines(@Nullable String list) {
         if (list == null || list.isEmpty()) return Collections.emptyList();
         List<String> lines = new ArrayList<>();
-        for (String line : list.split("\n", -1)) {
+        for (String line : list.split("\r\n|\r|\n", -1)) {
             String trimmed = line.trim();
             if (!trimmed.isEmpty()) lines.add(trimmed);
         }
@@ -146,6 +172,11 @@ public final class MessageFilters {
     /** A list the way it's saved: one filter a line, no blanks. */
     public static String join(List<String> lines) {
         return String.join("\n", lines);
+    }
+
+    /** Whether a list fits in a settings file: no more than {@link #MAX_LIST_BYTES} written out. */
+    public static boolean fits(List<String> lines) {
+        return new JSONArray(lines).toString().getBytes(StandardCharsets.UTF_8).length <= MAX_LIST_BYTES;
     }
 
     /** What's wrong with one line, or null when it can be used. */
@@ -170,20 +201,28 @@ public final class MessageFilters {
     }
 
     /**
-     * Whether an expression repeats a group that holds a repeat of its own, like {@code (a+)+}, or
-     * refers back to a group, like {@code (a)\1}. Those are what can backtrack for minutes on a long
-     * message. Escapes and character classes are read past, so {@code [+*]} and {@code \+} are
-     * ordinary characters.
+     * Whether an expression repeats a group that holds a repeat or a choice of its own, like
+     * {@code (a+)+}, {@code (a?a)+}, {@code (a|aa)+} or {@code (.|\s)*}; refers back to a group, like
+     * {@code (a)\1}; or has repeats that together leave more than {@link #MAX_TRIES} ways to match
+     * at one place, which two open-ended repeats like {@code .*.*x} always do. Those are what can
+     * backtrack for seconds or minutes on a long message. Escapes and character classes are read
+     * past, so {@code [+*]} and {@code \+} are ordinary characters, and a {@code ?} or {@code +}
+     * right after a repeat makes it lazy or possessive rather than repeating again.
      */
     static boolean slow(String expression) {
-        // For each open group: whether something inside it repeats.
-        List<Boolean> open = new ArrayList<>();
-        boolean lastWasRepeatingGroup = false;
+        // For each open group: whether something inside it repeats or is optional, and whether it holds a choice.
+        List<boolean[]> open = new ArrayList<>();
+        boolean[] closedJustBefore = null;
+        boolean openedJustBefore = false;
+        boolean afterRepeat = false;
+        long tries = 1;
         int i = 0;
         int n = expression.length();
         while (i < n) {
             char c = expression.charAt(i);
-            boolean repeatingGroup = false;
+            boolean[] closed = null;
+            boolean opened = false;
+            boolean repeat = false;
             if (c == '\\') {
                 if (i + 1 < n) {
                     char next = expression.charAt(i + 1);
@@ -198,24 +237,57 @@ public final class MessageFilters {
             } else if (c == '[') {
                 i = classEnd(expression, i);
             } else if (c == '(') {
-                open.add(false);
+                open.add(new boolean[2]);
+                opened = true;
                 i++;
             } else if (c == ')') {
                 if (!open.isEmpty()) {
-                    repeatingGroup = open.remove(open.size() - 1);
-                    if (repeatingGroup && !open.isEmpty()) open.set(open.size() - 1, true);
+                    closed = open.remove(open.size() - 1);
+                    if (!open.isEmpty()) {
+                        boolean[] outer = open.get(open.size() - 1);
+                        outer[0] |= closed[0];
+                        outer[1] |= closed[1];
+                    }
                 }
                 i++;
-            } else if (c == '*' || c == '+' || c == '{' && repeats(expression, i)) {
-                if (lastWasRepeatingGroup) return true;
-                if (!open.isEmpty()) open.set(open.size() - 1, true);
+            } else if (c == '|') {
+                if (!open.isEmpty()) open.get(open.size() - 1)[1] = true;
                 i++;
+            } else if (c == '?' && openedJustBefore) {
+                // (?: (?= (?<name> and the like say how a group works; they don't repeat anything.
+                i++;
+            } else if ((c == '?' || c == '+') && afterRepeat) {
+                // Lazy or possessive: the same repeat, not another one.
+                i++;
+            } else if (c == '*' || c == '+' || c == '?' || c == '{' && repeats(expression, i)) {
+                // An optional group is tried once or not at all, so only a repeated one is refused here.
+                if (c != '?' && closedJustBefore != null && (closedJustBefore[0] || closedJustBefore[1])) return true;
+                tries *= c == '?' ? 2 : c == '{' ? spread(expression, i) : MAX_EXPRESSION_TEXT;
+                if (tries > MAX_TRIES) return true;
+                if (!open.isEmpty()) open.get(open.size() - 1)[0] = true;
+                repeat = true;
+                i = c == '{' ? expression.indexOf('}', i) + 1 : i + 1;
             } else {
                 i++;
             }
-            lastWasRepeatingGroup = repeatingGroup;
+            closedJustBefore = closed;
+            openedJustBefore = opened;
+            afterRepeat = repeat;
         }
         return false;
+    }
+
+    /**
+     * How many ways a count at {@code at}, already known to repeat, gives: {2,5} gives four, {3}
+     * gives one, and one with no end gives as many as {@code *}.
+     */
+    private static long spread(String expression, int at) {
+        String count = expression.substring(at + 1, expression.indexOf('}', at));
+        int comma = count.indexOf(',');
+        if (comma < 0) return 1;
+        if (comma == count.length() - 1) return MAX_EXPRESSION_TEXT;
+        long ways = Long.parseLong(count.substring(comma + 1)) - Long.parseLong(count.substring(0, comma)) + 1;
+        return Math.max(1, Math.min(ways, MAX_EXPRESSION_TEXT));
     }
 
     /** Whether a brace at {@code at} is a count that allows more than one, like {2,} or {1,5}. */

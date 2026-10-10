@@ -437,7 +437,8 @@ No filters yet.	Henüz filtre yok.
 A list holds up to %1$d filters.	Bir liste en fazla %1$d filtre alır.
 Line %1$d is longer than %2$d characters.	%1$d. satır %2$d karakterden uzun.
 Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.	%1$d. satır çalışan bir düzenli ifade değil. Düzeltin veya metni yazıldığı gibi bulmak için eğik çizgileri kaldırın.
-Line %1$d could take too long on a long message. Leave out a repeat inside a repeated group and references back to a group.	%1$d. satır uzun bir mesajda çok uzun sürebilir. Tekrarlanan bir grubun içindeki tekrarı ve bir gruba geri başvuruları çıkarın.
+Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.	%1$d. satır uzun bir mesajda çok uzun sürebilir. En fazla bir açık uçlu tekrar (+ veya * gibi) kullanın, geri kalanı için {1,9} gibi bir sayı yazın, içinde tekrar ya da seçenek olan tekrarlanan grupları, örneğin (a+)+ veya (a|b)*, ve bir gruba geri başvuruları çıkarın.
+This list is too long to fit in a settings file. Take out a few lines.	Bu liste bir ayar dosyasına sığmayacak kadar uzun. Birkaç satırı çıkarın.
 One filter a line	Her satıra bir filtre
 Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.	Bir satırdaki metin, mesajın neresinde geçerse geçsin eşleşir. Eğik çizgiler arasındaki bir satır, örneğin /crypto|airdrop/, bir düzenli ifadedir. Büyük ve küçük harf fark etmez.
 Save	Kaydet

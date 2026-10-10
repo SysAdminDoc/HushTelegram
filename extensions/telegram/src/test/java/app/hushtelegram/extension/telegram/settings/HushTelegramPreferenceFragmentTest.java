@@ -37,9 +37,11 @@ import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
+import app.hushtelegram.extension.shared.settings.FailingStore;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.PauseForTests;
 import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
+import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests;
 
 import org.junit.After;
@@ -744,8 +746,9 @@ public class HushTelegramPreferenceFragmentTest {
             editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             ShadowLooper.idleMainLooper();
             assertTrue("a line that can't be used keeps the dialog", editor.isShowing());
-            assertEquals("Line 3 could take too long on a long message. Leave out a repeat inside a repeated group "
-                    + "and references back to a group.", ShadowToast.getTextOfLatestToast());
+            assertEquals("Line 3 could take too long on a long message. Use one open-ended repeat like + or * at most, "
+                    + "a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, "
+                    + "like (a+)+ or (a|b)*, and references back to a group.", ShadowToast.getTextOfLatestToast());
             assertEquals("", Settings.MESSAGE_FILTERS_GROUPS.savedValue());
 
             field.setText("/(unclosed/");
@@ -753,6 +756,26 @@ public class HushTelegramPreferenceFragmentTest {
             ShadowLooper.idleMainLooper();
             assertEquals("Line 1 isn't a regular expression that works. Fix it, or take the slashes off to match the "
                     + "text as written.", ShadowToast.getTextOfLatestToast());
+
+            StringBuilder wide = new StringBuilder();
+            String line = new String(new char[MessageFilters.MAX_FILTER_CHARS]).replace('\0', '字');
+            for (int i = 0; i < MessageFilters.MAX_FILTERS; i++) wide.append(line).append('\n');
+            field.setText(wide);
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertTrue("a list too big for a settings file keeps the dialog", editor.isShowing());
+            assertEquals("This list is too long to fit in a settings file. Take out a few lines.",
+                    ShadowToast.getTextOfLatestToast());
+            assertEquals("", Settings.MESSAGE_FILTERS_GROUPS.savedValue());
+
+            field.setText("spam");
+            try (FailingStore ignored = FailingStore.install(FailingStore.Fault.COMMIT_FALSE)) {
+                editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+                ShadowLooper.idleMainLooper();
+            }
+            assertTrue("a save that fails keeps the dialog", editor.isShowing());
+            assertEquals("Couldn't save the filters. Try again in a moment.", ShadowToast.getTextOfLatestToast());
+            assertEquals("No filters yet.", String.valueOf(groups.getSummary()));
 
             field.setText("  spam \n\n/\\bgiveaway\\b/\n");
             editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();

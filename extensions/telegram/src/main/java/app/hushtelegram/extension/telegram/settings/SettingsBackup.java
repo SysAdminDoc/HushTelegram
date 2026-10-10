@@ -352,7 +352,8 @@ public final class SettingsBackup {
 
     /**
      * The file for the switches as they're saved now. Saved rather than what a paused Telegram is
-     * answered, so exporting while paused keeps what the person chose.
+     * answered, so exporting while paused keeps what the person chose. A filter list the import
+     * would refuse is left out, so the file is always one this build can read back.
      */
     public static String create() throws JSONException {
         JSONObject switches = new JSONObject();
@@ -363,7 +364,8 @@ public final class SettingsBackup {
             switches.put(setting.key, setting.savedValue().intValue());
         }
         for (StringSetting setting : FILTER_LISTS) {
-            switches.put(setting.key, new JSONArray(MessageFilters.lines(setting.savedValue())));
+            List<String> lines = MessageFilters.lines(setting.savedValue());
+            if (usable(lines)) switches.put(setting.key, new JSONArray(lines));
         }
         return new JSONObject()
                 .put(FORMAT_NAME, FORMAT)
@@ -511,9 +513,9 @@ public final class SettingsBackup {
     /**
      * A filter list as it's saved, from its array of lines. Anything but an array of at most
      * {@link MessageFilters#MAX_FILTERS} strings, each one line of at most
-     * {@link MessageFilters#MAX_FILTER_CHARS} characters, is refused. A line that isn't a filter
-     * that works, such as an expression edited by hand, is kept: the editor shows it and the chat
-     * leaves it out.
+     * {@link MessageFilters#MAX_FILTER_CHARS} characters, and no larger written out than
+     * {@link MessageFilters#MAX_LIST_BYTES}, is refused. A line that isn't a filter that works,
+     * such as an expression edited by hand, is kept: the editor shows it and the chat leaves it out.
      */
     private static String filterList(String name, Object value) throws Rejected {
         if (!(value instanceof JSONArray) || ((JSONArray) value).length() > MessageFilters.MAX_FILTERS) {
@@ -523,7 +525,7 @@ public final class SettingsBackup {
         List<String> lines = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
             Object line = array.opt(i);
-            if (!(line instanceof String) || ((String) line).indexOf('\n') >= 0) {
+            if (!(line instanceof String) || ((String) line).indexOf('\n') >= 0 || ((String) line).indexOf('\r') >= 0) {
                 throw new Rejected(Reason.VALUE, "Not a list of filters: " + name);
             }
             lines.add((String) line);
@@ -533,13 +535,16 @@ public final class SettingsBackup {
         return MessageFilters.join(saved);
     }
 
-    /** Lines a list can hold: not too many, and none too long or holding a line break. */
+    /**
+     * Lines a list can hold: not too many, none too long or holding a line break, and small enough
+     * written out that a file carrying it is one the import takes.
+     */
     static boolean usable(List<String> lines) {
         if (lines.size() > MessageFilters.MAX_FILTERS) return false;
         for (String line : lines) {
             if (line.length() > MessageFilters.MAX_FILTER_CHARS || line.indexOf('\r') >= 0) return false;
         }
-        return true;
+        return MessageFilters.fits(lines);
     }
 
     /**

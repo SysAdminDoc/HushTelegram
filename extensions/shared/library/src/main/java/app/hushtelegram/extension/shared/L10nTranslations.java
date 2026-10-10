@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(866);
+        Map<String, String> table = new HashMap<>(868);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -437,8 +437,8 @@ public final class L10nTranslations {
                 "Videos bei Lautst\u00e4rketasten stumm lassen");
         table.put("Licenses",
                 "Lizenzen");
-        table.put("Line %1$d could take too long on a long message. Leave out a repeat inside a repeated group and references back to a group.",
-                "Zeile %1$d k\u00f6nnte bei einer langen Nachricht zu lange brauchen. Lass Wiederholungen innerhalb einer wiederholten Gruppe und R\u00fcckverweise auf eine Gruppe weg.");
+        table.put("Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.",
+                "Zeile %1$d k\u00f6nnte bei einer langen Nachricht zu lange brauchen. Nimm h\u00f6chstens eine offene Wiederholung wie + oder *, f\u00fcr den Rest eine Anzahl wie {1,9}, und lass wiederholte Gruppen weg, die selbst eine Wiederholung oder eine Auswahl enthalten, etwa (a+)+ oder (a|b)*, ebenso R\u00fcckverweise auf eine Gruppe.");
         table.put("Line %1$d is longer than %2$d characters.",
                 "Zeile %1$d ist l\u00e4nger als %2$d Zeichen.");
         table.put("Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.",
@@ -789,15 +789,17 @@ public final class L10nTranslations {
                 "Dieser Chat zeigt die Originalnachrichten");
         table.put("This chat will be translated",
                 "Dieser Chat wird \u00fcbersetzt");
+        table.put("This list is too long to fit in a settings file. Take out a few lines.",
+                "Diese Liste ist zu lang f\u00fcr eine Einstellungsdatei. Nimm ein paar Zeilen heraus.");
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "Das zeigt nur, was auf diesem Handy gespeichert ist. Es beweist nicht, dass Benachrichtigungen ankommen.");
         table.put("This patched app changes %1$s but not %2$s.",
                 "Diese gepatchte App \u00e4ndert %1$s, aber nicht %2$s.");
-        table.put("This patched app doesn't change %1$s.",
-                "Diese gepatchte App \u00e4ndert %1$s nicht.");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("This patched app doesn't change %1$s.",
+                "Diese gepatchte App \u00e4ndert %1$s nicht.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Dieses Handy hat keine Dateiauswahl, hier l\u00e4sst sich also keine Datei w\u00e4hlen.");
         table.put("Translate here",
@@ -916,11 +918,11 @@ public final class L10nTranslations {
                 "externe Browser-Aufrufe");
         table.put("local notification status",
                 "lokaler Benachrichtigungsstatus");
-        table.put("opened link tracking",
-                "Tracking beim \u00d6ffnen von Links");
     }
 
     private static void fillDe7(Map<String, String> table) {
+        table.put("opened link tracking",
+                "Tracking beim \u00d6ffnen von Links");
         table.put("poll links",
                 "Umfrage-Links");
         table.put("preview double-tap reactions",
@@ -950,7 +952,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(866);
+        Map<String, String> table = new HashMap<>(868);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1340,8 +1342,8 @@ public final class L10nTranslations {
                 "Mantener videos sin sonido con las teclas de volumen");
         table.put("Licenses",
                 "Licencias");
-        table.put("Line %1$d could take too long on a long message. Leave out a repeat inside a repeated group and references back to a group.",
-                "La l\u00ednea %1$d podr\u00eda tardar demasiado en un mensaje largo. Evita una repetici\u00f3n dentro de un grupo repetido y las referencias a un grupo anterior.");
+        table.put("Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.",
+                "La l\u00ednea %1$d podr\u00eda tardar demasiado en un mensaje largo. Usa como mucho una repetici\u00f3n abierta como + o *, un n\u00famero como {1,9} para el resto, y evita los grupos repetidos que contienen una repetici\u00f3n o una alternativa, como (a+)+ o (a|b)*, y las referencias a un grupo anterior.");
         table.put("Line %1$d is longer than %2$d characters.",
                 "La l\u00ednea %1$d tiene m\u00e1s de %2$d caracteres.");
         table.put("Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.",
@@ -1692,15 +1694,17 @@ public final class L10nTranslations {
                 "Este chat muestra los mensajes originales");
         table.put("This chat will be translated",
                 "Este chat se traducir\u00e1");
+        table.put("This list is too long to fit in a settings file. Take out a few lines.",
+                "Esta lista es demasiado larga para caber en un archivo de configuraci\u00f3n. Quita algunas l\u00edneas.");
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "Esto solo muestra lo que est\u00e1 guardado en este tel\u00e9fono. No demuestra que las notificaciones vayan a llegar.");
         table.put("This patched app changes %1$s but not %2$s.",
                 "Esta app parcheada modifica %1$s, pero no %2$s.");
-        table.put("This patched app doesn't change %1$s.",
-                "Esta app parcheada no modifica %1$s.");
     }
 
     private static void fillEs6(Map<String, String> table) {
+        table.put("This patched app doesn't change %1$s.",
+                "Esta app parcheada no modifica %1$s.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Este tel\u00e9fono no tiene selector de archivos, as\u00ed que aqu\u00ed no hay forma de elegir un archivo.");
         table.put("Translate here",
@@ -1819,11 +1823,11 @@ public final class L10nTranslations {
                 "apertura en navegador externo");
         table.put("local notification status",
                 "estado local de notificaciones");
-        table.put("opened link tracking",
-                "seguimiento de enlaces abiertos");
     }
 
     private static void fillEs7(Map<String, String> table) {
+        table.put("opened link tracking",
+                "seguimiento de enlaces abiertos");
         table.put("poll links",
                 "enlaces de encuestas");
         table.put("preview double-tap reactions",
@@ -1853,7 +1857,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(866);
+        Map<String, String> table = new HashMap<>(868);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2243,8 +2247,8 @@ public final class L10nTranslations {
                 "Biarkan video tanpa suara saat tombol volume ditekan");
         table.put("Licenses",
                 "Lisensi");
-        table.put("Line %1$d could take too long on a long message. Leave out a repeat inside a repeated group and references back to a group.",
-                "Baris %1$d bisa terlalu lama pada pesan yang panjang. Hindari pengulangan di dalam grup yang diulang dan rujukan balik ke sebuah grup.");
+        table.put("Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.",
+                "Baris %1$d bisa terlalu lama pada pesan yang panjang. Pakai paling banyak satu pengulangan terbuka seperti + atau *, jumlah seperti {1,9} untuk sisanya, dan hindari grup berulang yang berisi pengulangan atau pilihan, seperti (a+)+ atau (a|b)*, serta rujukan balik ke sebuah grup.");
         table.put("Line %1$d is longer than %2$d characters.",
                 "Baris %1$d lebih panjang dari %2$d karakter.");
         table.put("Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.",
@@ -2595,15 +2599,17 @@ public final class L10nTranslations {
                 "Obrolan ini menampilkan pesan asli");
         table.put("This chat will be translated",
                 "Obrolan ini akan diterjemahkan");
+        table.put("This list is too long to fit in a settings file. Take out a few lines.",
+                "Daftar ini terlalu panjang untuk muat di file pengaturan. Hapus beberapa baris.");
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "Ini hanya menunjukkan apa yang tersimpan di ponsel ini. Ini tidak membuktikan bahwa notifikasi akan sampai.");
         table.put("This patched app changes %1$s but not %2$s.",
                 "Aplikasi yang ditambal ini mengubah %1$s, tetapi tidak %2$s.");
-        table.put("This patched app doesn't change %1$s.",
-                "Aplikasi yang ditambal ini tidak mengubah %1$s.");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("This patched app doesn't change %1$s.",
+                "Aplikasi yang ditambal ini tidak mengubah %1$s.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Ponsel ini tidak memiliki pemilih file, jadi file tidak dapat dipilih di sini.");
         table.put("Translate here",
@@ -2722,11 +2728,11 @@ public final class L10nTranslations {
                 "pengarahan ke browser eksternal");
         table.put("local notification status",
                 "status notifikasi lokal");
-        table.put("opened link tracking",
-                "pelacakan tautan yang dibuka");
     }
 
     private static void fillIn7(Map<String, String> table) {
+        table.put("opened link tracking",
+                "pelacakan tautan yang dibuka");
         table.put("poll links",
                 "tautan polling");
         table.put("preview double-tap reactions",
@@ -2756,7 +2762,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(866);
+        Map<String, String> table = new HashMap<>(868);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -3146,8 +3152,8 @@ public final class L10nTranslations {
                 "Manter v\u00eddeos mudos nas teclas de volume");
         table.put("Licenses",
                 "Licen\u00e7as");
-        table.put("Line %1$d could take too long on a long message. Leave out a repeat inside a repeated group and references back to a group.",
-                "A linha %1$d pode demorar demais em uma mensagem longa. Evite uma repeti\u00e7\u00e3o dentro de um grupo repetido e refer\u00eancias de volta a um grupo.");
+        table.put("Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.",
+                "A linha %1$d pode demorar demais em uma mensagem longa. Use no m\u00e1ximo uma repeti\u00e7\u00e3o aberta como + ou *, uma contagem como {1,9} para o resto, e evite grupos repetidos que contenham uma repeti\u00e7\u00e3o ou uma escolha, como (a+)+ ou (a|b)*, e refer\u00eancias de volta a um grupo.");
         table.put("Line %1$d is longer than %2$d characters.",
                 "A linha %1$d tem mais de %2$d caracteres.");
         table.put("Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.",
@@ -3498,15 +3504,17 @@ public final class L10nTranslations {
                 "Esta conversa mostra as mensagens originais");
         table.put("This chat will be translated",
                 "Esta conversa ser\u00e1 traduzida");
+        table.put("This list is too long to fit in a settings file. Take out a few lines.",
+                "Esta lista \u00e9 longa demais para caber em um arquivo de configura\u00e7\u00f5es. Tire algumas linhas.");
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "Isto s\u00f3 mostra o que est\u00e1 salvo neste celular. N\u00e3o prova que as notifica\u00e7\u00f5es v\u00e3o chegar.");
         table.put("This patched app changes %1$s but not %2$s.",
                 "Este app modificado altera %1$s, mas n\u00e3o %2$s.");
-        table.put("This patched app doesn't change %1$s.",
-                "Este app modificado n\u00e3o altera %1$s.");
     }
 
     private static void fillPt_rBR6(Map<String, String> table) {
+        table.put("This patched app doesn't change %1$s.",
+                "Este app modificado n\u00e3o altera %1$s.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Este dispositivo n\u00e3o tem seletor de arquivos, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel escolher um arquivo aqui.");
         table.put("Translate here",
@@ -3625,11 +3633,11 @@ public final class L10nTranslations {
                 "abertura em navegador externo");
         table.put("local notification status",
                 "estado local das notifica\u00e7\u00f5es");
-        table.put("opened link tracking",
-                "rastreamento de links abertos");
     }
 
     private static void fillPt_rBR7(Map<String, String> table) {
+        table.put("opened link tracking",
+                "rastreamento de links abertos");
         table.put("poll links",
                 "links de enquetes");
         table.put("preview double-tap reactions",
@@ -3659,7 +3667,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(866);
+        Map<String, String> table = new HashMap<>(868);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -4049,8 +4057,8 @@ public final class L10nTranslations {
                 "Ses tu\u015flar\u0131nda videolar\u0131 sessiz tut");
         table.put("Licenses",
                 "Lisanslar");
-        table.put("Line %1$d could take too long on a long message. Leave out a repeat inside a repeated group and references back to a group.",
-                "%1$d. sat\u0131r uzun bir mesajda \u00e7ok uzun s\u00fcrebilir. Tekrarlanan bir grubun i\u00e7indeki tekrar\u0131 ve bir gruba geri ba\u015fvurular\u0131 \u00e7\u0131kar\u0131n.");
+        table.put("Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.",
+                "%1$d. sat\u0131r uzun bir mesajda \u00e7ok uzun s\u00fcrebilir. En fazla bir a\u00e7\u0131k u\u00e7lu tekrar (+ veya * gibi) kullan\u0131n, geri kalan\u0131 i\u00e7in {1,9} gibi bir say\u0131 yaz\u0131n, i\u00e7inde tekrar ya da se\u00e7enek olan tekrarlanan gruplar\u0131, \u00f6rne\u011fin (a+)+ veya (a|b)*, ve bir gruba geri ba\u015fvurular\u0131 \u00e7\u0131kar\u0131n.");
         table.put("Line %1$d is longer than %2$d characters.",
                 "%1$d. sat\u0131r %2$d karakterden uzun.");
         table.put("Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.",
@@ -4401,15 +4409,17 @@ public final class L10nTranslations {
                 "Bu sohbet orijinal mesajlar\u0131 g\u00f6steriyor");
         table.put("This chat will be translated",
                 "Bu sohbet \u00e7evrilecek");
+        table.put("This list is too long to fit in a settings file. Take out a few lines.",
+                "Bu liste bir ayar dosyas\u0131na s\u0131\u011fmayacak kadar uzun. Birka\u00e7 sat\u0131r\u0131 \u00e7\u0131kar\u0131n.");
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "Bu yaln\u0131zca bu telefonda nelerin kay\u0131tl\u0131 oldu\u011funu g\u00f6sterir. Bildirimlerin ula\u015faca\u011f\u0131n\u0131 kan\u0131tlamaz.");
         table.put("This patched app changes %1$s but not %2$s.",
                 "Yamalanm\u0131\u015f bu uygulamada %1$s de\u011fi\u015fti, %2$s de\u011fi\u015fmedi.");
-        table.put("This patched app doesn't change %1$s.",
-                "Yamalanm\u0131\u015f bu uygulamada %1$s de\u011fi\u015fmedi.");
     }
 
     private static void fillTr6(Map<String, String> table) {
+        table.put("This patched app doesn't change %1$s.",
+                "Yamalanm\u0131\u015f bu uygulamada %1$s de\u011fi\u015fmedi.");
         table.put("This phone has no file picker, so there's no way to choose a file here.",
                 "Bu telefonda dosya se\u00e7ici yok, bu y\u00fczden burada dosya se\u00e7menin bir yolu yok.");
         table.put("Translate here",
@@ -4528,11 +4538,11 @@ public final class L10nTranslations {
                 "harici taray\u0131c\u0131ya y\u00f6nlendirme");
         table.put("local notification status",
                 "yerel bildirim durumu");
-        table.put("opened link tracking",
-                "a\u00e7\u0131lan ba\u011flant\u0131lar\u0131n takibi");
     }
 
     private static void fillTr7(Map<String, String> table) {
+        table.put("opened link tracking",
+                "a\u00e7\u0131lan ba\u011flant\u0131lar\u0131n takibi");
         table.put("poll links",
                 "anket ba\u011flant\u0131lar\u0131");
         table.put("preview double-tap reactions",

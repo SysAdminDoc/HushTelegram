@@ -437,7 +437,8 @@ No filters yet.	Belum ada filter.
 A list holds up to %1$d filters.	Satu daftar memuat hingga %1$d filter.
 Line %1$d is longer than %2$d characters.	Baris %1$d lebih panjang dari %2$d karakter.
 Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.	Baris %1$d bukan ekspresi reguler yang berfungsi. Perbaiki, atau hapus garis miringnya agar cocok dengan teks apa adanya.
-Line %1$d could take too long on a long message. Leave out a repeat inside a repeated group and references back to a group.	Baris %1$d bisa terlalu lama pada pesan yang panjang. Hindari pengulangan di dalam grup yang diulang dan rujukan balik ke sebuah grup.
+Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.	Baris %1$d bisa terlalu lama pada pesan yang panjang. Pakai paling banyak satu pengulangan terbuka seperti + atau *, jumlah seperti {1,9} untuk sisanya, dan hindari grup berulang yang berisi pengulangan atau pilihan, seperti (a+)+ atau (a|b)*, serta rujukan balik ke sebuah grup.
+This list is too long to fit in a settings file. Take out a few lines.	Daftar ini terlalu panjang untuk muat di file pengaturan. Hapus beberapa baris.
 One filter a line	Satu filter per baris
 Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.	Teks pada satu baris cocok di mana pun teks itu muncul dalam pesan. Baris di antara garis miring, seperti /crypto|airdrop/, adalah ekspresi reguler. Huruf besar dan kecil tidak berpengaruh.
 Save	Simpan

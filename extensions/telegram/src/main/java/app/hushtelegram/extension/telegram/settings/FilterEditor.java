@@ -47,7 +47,7 @@ final class FilterEditor {
      */
     @Nullable
     static String refusal(String typed) {
-        String[] lines = typed.split("\n", -1);
+        String[] lines = typed.split("\r\n|\r|\n", -1);
         int filters = 0;
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i].trim();
@@ -64,9 +64,14 @@ final class FilterEditor {
                     return L10n.f("Line %1$d isn't a regular expression that works. Fix it, or take the slashes off "
                             + "to match the text as written.", i + 1);
                 default:
-                    return L10n.f("Line %1$d could take too long on a long message. Leave out a repeat inside a "
-                            + "repeated group and references back to a group.", i + 1);
+                    return L10n.f("Line %1$d could take too long on a long message. Use one open-ended repeat "
+                            + "like + or * at most, a count like {1,9} for the rest, and leave out repeated groups "
+                            + "that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.",
+                            i + 1);
             }
+        }
+        if (!MessageFilters.fits(MessageFilters.lines(typed))) {
+            return L10n.t("This list is too long to fit in a settings file. Take out a few lines.");
         }
         return null;
     }
@@ -108,10 +113,8 @@ final class FilterEditor {
                 return;
             }
             List<String> lines = MessageFilters.lines(typed);
-            try {
-                list.save(MessageFilters.join(lines));
-            } catch (RuntimeException failure) {
-                Logger.printInfo(() -> "Message filters not saved: " + failure.getClass().getSimpleName());
+            if (!list.save(MessageFilters.join(lines))) {
+                Logger.printInfo(() -> "Message filters not saved: " + list.key);
                 Utils.showToastLong(L10n.t("Couldn't save the filters. Try again in a moment."));
                 return;
             }

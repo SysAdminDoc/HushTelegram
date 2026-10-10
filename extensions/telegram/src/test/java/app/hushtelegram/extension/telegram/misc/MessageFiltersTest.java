@@ -92,6 +92,14 @@ public class MessageFiltersTest {
         assertFalse(MessageFilters.matches(parsed("/spam$/"), padding + " spam"));
     }
 
+    @Test public void anExpressionReadsLessOfAMessageThanPlainText() {
+        String padding = new String(new char[MessageFilters.MAX_EXPRESSION_TEXT - 4]).replace('\0', ' ');
+        assertTrue(MessageFilters.matches(parsed("/spam/"), padding + "spam"));
+        assertFalse(MessageFilters.matches(parsed("/spam/"), padding + " spam"));
+        assertTrue("plain text reads on", MessageFilters.matches(parsed("spam"), padding + " spam"));
+        assertTrue("the expression still finds what's early", MessageFilters.matches(parsed("/^x.*/"), "x" + padding + "  spam"));
+    }
+
     @Test public void aLineThatCantBeUsedIsSaidAndLeftOutOfTheChat() {
         assertNull(MessageFilters.problem("plain words"));
         assertNull(MessageFilters.problem("/(ab)+c/"));
@@ -101,11 +109,18 @@ public class MessageFiltersTest {
         assertEquals(MessageFilters.Problem.TOO_LONG, MessageFilters.problem(repeat('x', MessageFilters.MAX_FILTER_CHARS + 1)));
         assertNull(MessageFilters.problem(repeat('x', MessageFilters.MAX_FILTER_CHARS)));
         for (String slow : new String[]{"/(a+)+/", "/(a*)*b/", "/(\\w+\\s?)+$/", "/((ab)*)+/", "/(a{2,})+/", "/(?:x+y?)*/",
-                "/(a)\\1/", "/(?<w>a)\\k<w>/", "/(a+){2,5}/"}) {
+                "/(a)\\1/", "/(?<w>a)\\k<w>/", "/(a+){2,5}/",
+                // A repeated choice, or a repeated group with an optional part, splits a run of text many ways.
+                "/(.|\\s)*x/", "/(a|aa)+b/", "/(?:foo|bar)+/", "/(a?a)+/", "/((a|b)c)*/",
+                // Two open-ended repeats, lazy or not, or one with too many optional parts beside it.
+                "/.*.*x/", "/\\w+\\s*\\w+!/", "/.*?x.*?y/", "/a+b{1,}/", "/x+y{1,99}/", "/.{0,99}.{0,99}.{0,99}/",
+                "/a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?/"}) {
             assertEquals(slow, MessageFilters.Problem.SLOW, MessageFilters.problem(slow));
         }
-        for (String fine : new String[]{"/[+*]+/", "/\\(a+\\)+/", "/(a+)?/", "/(a{1})+/", "/(?:foo|bar)+/", "/\\Q(a+)+\\E/",
-                "/a{2}b+/", "/[(]a+[)]+/"}) {
+        for (String fine : new String[]{"/[+*]+/", "/\\(a?\\)+/", "/(a+)?/", "/(a{1})+/", "/(?:foo|bar) now/", "/\\Q(a+)+\\E/",
+                "/a{2}b+/", "/[(]a?[)]+/", "/(ab)+c/", "/https?:\\/\\/\\S+/", "/a+?b/", "/a*+b/", "/(?i)x+/",
+                "/\\d{3}[-.]?\\d{4}/", "/\\bfree\\s{1,9}crypto\\s{1,9}now\\b/", "/\\(?\\d{3}\\)? ?\\d+/",
+                "/\\b(?:buy|sell)\\s+crypto\\b/"}) {
             assertNull(fine, MessageFilters.problem(fine));
         }
         List<MessageFilters.Filter> kept = parsed("/(unclosed/\n/(a+)+/\nspam");
@@ -118,9 +133,27 @@ public class MessageFiltersTest {
         assertEquals(Collections.emptyList(), MessageFilters.lines(" \n\n "));
         assertEquals(Arrays.asList("a", "b c"), MessageFilters.lines(" a \r\n\n b c "));
         assertEquals("a\nb c", MessageFilters.join(MessageFilters.lines(" a \r\n\n b c ")));
+        assertEquals("a carriage return alone ends a line too", Arrays.asList("a", "b", "c"),
+                MessageFilters.lines("a\rb\r\rc"));
         List<String> many = new ArrayList<>();
         for (int i = 0; i < MessageFilters.MAX_FILTERS + 5; i++) many.add("word" + i);
         assertEquals(MessageFilters.MAX_FILTERS, parsed(MessageFilters.join(many)).size());
+    }
+
+    @Test public void aListFitsASettingsFileByItsWrittenSizeNotItsLength() {
+        assertTrue(MessageFilters.fits(Collections.emptyList()));
+        assertTrue("full of short Latin lines", MessageFilters.fits(lines(MessageFilters.MAX_FILTERS, 'x', MessageFilters.MAX_FILTER_CHARS)));
+        assertFalse("each character takes three bytes",
+                MessageFilters.fits(lines(MessageFilters.MAX_FILTERS, '字', MessageFilters.MAX_FILTER_CHARS)));
+        assertTrue(MessageFilters.fits(lines(MessageFilters.MAX_FILTERS, '字', 60)));
+        assertFalse("a slash is written as two characters",
+                MessageFilters.fits(lines(MessageFilters.MAX_FILTERS, '/', MessageFilters.MAX_FILTER_CHARS)));
+    }
+
+    private static List<String> lines(int count, char c, int length) {
+        List<String> lines = new ArrayList<>();
+        for (int i = 0; i < count; i++) lines.add(repeat(c, length));
+        return lines;
     }
 
     @Test public void aChangedListIsReadAgain() {
