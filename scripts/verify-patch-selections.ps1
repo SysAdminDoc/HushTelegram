@@ -221,6 +221,13 @@ function Invoke-PatchSelectionMatrix {
     if (-not (Test-DeclaredBuild -Target $target -VersionName $stock.versionName -VersionCode $stock.versionCode)) {
         throw 'TARGET_UNSUPPORTED'
     }
+    # From here the fixture is patched case after case, as heavy as a build, so the matrix waits for
+    # a slot in the machine-wide build queue and runs again inside it. Already in one, it goes on.
+    if (-not $env:HUSHTELEGRAM_QUEUED_JOB) {
+        $matrixArguments = $PSBoundParameters
+        $null = Invoke-InHushTelegramQueue -Job 'selections' -ScriptBlock { Invoke-PatchSelectionMatrix @matrixArguments }
+        return
+    }
     New-Item -ItemType Directory -Force -Path $WorkDir | Out-Null
     $workRoot = (Resolve-Path -LiteralPath $WorkDir).Path
     $run = Resolve-WithinRoot -Path (Join-Path $workRoot ('selections-' + [guid]::NewGuid().ToString('N'))) -Root $workRoot

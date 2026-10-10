@@ -449,3 +449,49 @@ function Find-MachineNames {
     $global:LASTEXITCODE = 0
     return $hits.ToArray()
 }
+
+function Invoke-InHushTelegramQueue {
+    <#
+    .SYNOPSIS
+        Runs a heavy job in a slot of the machine-wide build queue, labelled "hushtelegram <Job>",
+        and returns its exit code.
+    .DESCRIPTION
+        Several projects' builds share this machine's cores. BUILD_QUEUE_SCRIPT names the queue's
+        script, which defines Invoke-InBuildQueue: the job waits for a free slot, runs at low
+        priority on that slot's cores and shows in the script's -Status while it runs. A desktop
+        CLI run patches the whole Telegram APK, as heavy as a Gradle build, and used to start
+        whenever it was asked. A hook, or a shell started before the variable was set, may lack
+        it, so the user's environment is read too. BUILD_QUEUE_PRIORITY=release, which the release
+        stages set, puts the job ahead of everyday builds.
+
+        Unset, or naming no file, the job runs straight away with a warning. HUSHTELEGRAM_QUEUED_JOB
+        is set for the job's length either way, so a script that queues itself by running itself
+        again inside the slot knows it's already there. The queue script is dot-sourced here, in
+        this function's scope, so its parameters can't land in the caller's variables.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Job,
+        [Parameter(Mandatory = $true)][scriptblock]$ScriptBlock
+    )
+    $queueScript = $env:BUILD_QUEUE_SCRIPT
+    if ([string]::IsNullOrWhiteSpace($queueScript)) {
+        $queueScript = [Environment]::GetEnvironmentVariable('BUILD_QUEUE_SCRIPT', [EnvironmentVariableTarget]::User)
+    }
+    $queueLabel = "hushtelegram $Job"
+    $queuePriority = if ($env:BUILD_QUEUE_PRIORITY -eq 'release') { 'release' } else { 'normal' }
+    $savedQueuedJob = $env:HUSHTELEGRAM_QUEUED_JOB
+    $env:HUSHTELEGRAM_QUEUED_JOB = $Job
+    try {
+        if ([string]::IsNullOrWhiteSpace($queueScript) -or -not (Test-Path -LiteralPath $queueScript -PathType Leaf)) {
+            Write-Warning ("BUILD_QUEUE_SCRIPT is unset or names no file, so $queueLabel runs now, outside the " +
+                'machine-wide build queue. Point it at the queue script to share the cores with other builds.')
+            $global:LASTEXITCODE = 0
+            & $ScriptBlock | Out-Host
+            return $LASTEXITCODE
+        }
+        . $queueScript
+        return (Invoke-InBuildQueue -Label $queueLabel -Priority $queuePriority -ScriptBlock $ScriptBlock)
+    } finally {
+        $env:HUSHTELEGRAM_QUEUED_JOB = $savedQueuedJob
+    }
+}

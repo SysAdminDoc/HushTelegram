@@ -52,12 +52,25 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+. (Join-Path $PSScriptRoot 'common.ps1')
+# The CLI run and the checkers after it are as heavy as a build, so the whole run waits for a slot
+# in the machine-wide build queue and runs there, by running this script again inside the slot.
+# Already in one, it goes straight on.
+if (-not $env:HUSHTELEGRAM_QUEUED_JOB) {
+    $selfScript = $PSCommandPath
+    $selfArguments = $PSBoundParameters
+    $queuedRun = @{ Output = @() }
+    $queuedExit = Invoke-InHushTelegramQueue -Job 'verify-all-patches' -ScriptBlock {
+        $queuedRun.Output = @(& $selfScript @selfArguments)
+    }
+    $queuedRun.Output
+    exit $queuedExit
+}
 . (Join-Path $PSScriptRoot 'Resolve-Java.ps1')
 $Java = Resolve-Java -Explicit $Java
 $root = Split-Path -Parent $PSScriptRoot
 . (Join-Path $PSScriptRoot 'patch-report.ps1')
 . (Join-Path $PSScriptRoot 'patch-target.ps1')
-. (Join-Path $PSScriptRoot 'common.ps1')
 
 if (-not $Bundle) {
     $version = Get-BundleVersion -Root $root

@@ -72,6 +72,20 @@ if (-not $Root) { $Root = Split-Path -Parent $PSScriptRoot }
 . (Join-Path $PSScriptRoot 'release-advisories.ps1')
 . (Join-Path $PSScriptRoot 'common.ps1')
 
+# Patching every fixture is as heavy as a build, so the whole run waits for a slot in the
+# machine-wide build queue and runs there, by running this script again inside the slot. Already in
+# one, it goes straight on.
+if (-not $env:HUSHTELEGRAM_QUEUED_JOB) {
+    $selfScript = $PSCommandPath
+    $selfArguments = $PSBoundParameters
+    $queuedRun = @{ Output = @() }
+    $queuedExit = Invoke-InHushTelegramQueue -Job 'receipt' -ScriptBlock {
+        $queuedRun.Output = @(& $selfScript @selfArguments)
+    }
+    $queuedRun.Output
+    exit $queuedExit
+}
+
 $Java = Resolve-Java -Explicit $Java
 $Aapt2 = Resolve-Aapt2 -Explicit $Aapt2 -Root $Root
 

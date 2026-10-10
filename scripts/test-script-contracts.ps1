@@ -45,6 +45,96 @@ function New-NotFoundAnswer {
     return $answer
 }
 
+# --- the machine-wide build queue ------------------------------------------------------------
+#
+# The scripts that run the Morphe CLI wait for a slot in the machine-wide build queue, found through
+# BUILD_QUEUE_SCRIPT. A stand-in with the real script's parameters takes its place for the whole
+# suite: it runs each job at once and writes down its label, its priority and the job the helper
+# marked, so no case here waits behind a real build and the cases below can tell who asked.
+$queueStandInRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('hushtelegram-queue-' + [guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Path $queueStandInRoot | Out-Null
+$queueStandIn = Join-Path $queueStandInRoot 'build-queue.ps1'
+$queueLog = Join-Path $queueStandInRoot 'queue.log'
+Set-Content -LiteralPath $queueStandIn -Encoding ASCII -Value @'
+[CmdletBinding()]
+param([switch]$Status, [string]$Label, [ValidateSet('release', 'normal')][string]$Priority, [string]$Run)
+function Invoke-InBuildQueue {
+    param([string]$Label = 'build', [string]$Priority, [Parameter(Mandatory)][scriptblock]$ScriptBlock)
+    Add-Content -LiteralPath (Join-Path $PSScriptRoot 'queue.log') -Encoding ASCII -Value "$Label|$Priority|$env:HUSHTELEGRAM_QUEUED_JOB"
+    $global:LASTEXITCODE = 0
+    & $ScriptBlock | Out-Host
+    return $LASTEXITCODE
+}
+'@
+$savedQueueScript = $env:BUILD_QUEUE_SCRIPT
+$savedQueuePriority = $env:BUILD_QUEUE_PRIORITY
+$savedQueuedJob = $env:HUSHTELEGRAM_QUEUED_JOB
+$env:BUILD_QUEUE_SCRIPT = $queueStandIn
+$env:BUILD_QUEUE_PRIORITY = $null
+$env:HUSHTELEGRAM_QUEUED_JOB = $null
+function Get-LastQueuedJob {
+    if (-not (Test-Path -LiteralPath $queueLog)) { return '' }
+    return [string](@(Get-Content -LiteralPath $queueLog) | Select-Object -Last 1)
+}
+
+# A job runs in a slot under its label, the block's exit code comes back, and the job is marked for
+# its length only.
+$queueRan = @{ Job = '' }
+$queueCode = Invoke-InHushTelegramQueue -Job 'probe' -ScriptBlock {
+    $queueRan.Job = $env:HUSHTELEGRAM_QUEUED_JOB
+    $global:LASTEXITCODE = 7
+}
+Assert-True ($queueCode -eq 7) "The queued job's exit code did not come back: $queueCode"
+Assert-True ((Get-LastQueuedJob) -ceq 'hushtelegram probe|normal|probe' -and $queueRan.Job -ceq 'probe') `
+    "The job did not run in a slot under its label: $(Get-LastQueuedJob)"
+Assert-True (-not $env:HUSHTELEGRAM_QUEUED_JOB) 'The queued job stayed marked after it ended.'
+# A release run goes ahead of everyday builds.
+$env:BUILD_QUEUE_PRIORITY = 'release'
+try {
+    $null = Invoke-InHushTelegramQueue -Job 'probe' -ScriptBlock { }
+} finally {
+    $env:BUILD_QUEUE_PRIORITY = $null
+}
+Assert-True ((Get-LastQueuedJob) -ceq 'hushtelegram probe|release|probe') `
+    "A release run did not ask for a release slot: $(Get-LastQueuedJob)"
+# The queue script's own parameters are dot-sourced inside the helper and don't reach the caller.
+$Label = 'caller label'
+$Priority = 'caller priority'
+$null = Invoke-InHushTelegramQueue -Job 'probe' -ScriptBlock { }
+Assert-True ($Label -ceq 'caller label' -and $Priority -ceq 'caller priority') `
+    "The queue script's parameters landed in the caller's variables: '$Label', '$Priority'"
+Remove-Variable -Name Label, Priority
+# A job that fails leaves no mark behind, and its error comes out as it was.
+Assert-Throws { Invoke-InHushTelegramQueue -Job 'probe' -ScriptBlock { throw 'queued job failed' } } `
+    'queued job failed' 'A failing queued job lost its error.'
+Assert-True (-not $env:HUSHTELEGRAM_QUEUED_JOB) 'A failing queued job stayed marked.'
+# With no queue script the job still runs, now, and says it's outside the queue.
+$queuedBefore = @(Get-Content -LiteralPath $queueLog).Count
+$env:BUILD_QUEUE_SCRIPT = Join-Path $queueStandInRoot 'no-such-queue.ps1'
+try {
+    $queueRan.Job = ''
+    $queueSaid = @(Invoke-InHushTelegramQueue -Job 'probe' -ScriptBlock { $queueRan.Job = $env:HUSHTELEGRAM_QUEUED_JOB } 3>&1 |
+        ForEach-Object { "$_" }) -join "`n"
+} finally {
+    $env:BUILD_QUEUE_SCRIPT = $queueStandIn
+}
+Assert-True ($queueRan.Job -ceq 'probe' -and $queueSaid -like '*hushtelegram probe runs now, outside the machine-wide build queue*') `
+    "A run with no queue script did not run at once with a warning: $queueSaid"
+Assert-True (@(Get-Content -LiteralPath $queueLog).Count -eq $queuedBefore) 'A run with no queue script reached the queue.'
+# The matrix asks for its slot before it compiles or patches anything.
+$selectionsAst = [System.Management.Automation.Language.Parser]::ParseFile(
+    (Join-Path $PSScriptRoot 'verify-patch-selections.ps1'), [ref]$null, [ref]$null)
+$matrixAst = $selectionsAst.Find({ param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+    $node.Name -eq 'Invoke-PatchSelectionMatrix' }, $true)
+$matrixCalls = @($matrixAst.Body.FindAll({ param($node) $node -is [System.Management.Automation.Language.CommandAst] }, $true))
+$matrixQueue = @($matrixCalls | Where-Object { $_.GetCommandName() -eq 'Invoke-InHushTelegramQueue' -and
+    $_.Extent.Text -match "-Job 'selections'" })
+$matrixTool = @($matrixCalls | Where-Object { $_.GetCommandName() -eq 'Invoke-SelectionTool' })
+Assert-True ($matrixQueue.Count -eq 1 -and $matrixTool.Count -gt 0 -and
+    $matrixQueue[0].Extent.StartOffset -lt $matrixTool[0].Extent.StartOffset) `
+    'The selection matrix does not ask for a build queue slot before it compiles or patches.'
+Write-Host '[scripts] build queue contracts passed'
+
 # --- patch-target.ps1 ------------------------------------------------------------------------
 #
 # Telegram ships a build a week, so the catalog declares the build the bundle was last proved on
@@ -4412,6 +4502,8 @@ class AlignmentFixture {
     } catch {
         throw "build-release-receipt.ps1 refused a run of every declared build: $($_.Exception.Message)"
     }
+    Assert-True ((Get-LastQueuedJob) -ceq 'hushtelegram receipt|normal|receipt') `
+        "build-release-receipt.ps1 did not patch inside a build queue slot: $(Get-LastQueuedJob)"
     $built = Get-Content -LiteralPath $releaseReceipt -Raw | ConvertFrom-Json
     $builtTargets = @($built.targets)
     $builtVersions = @($builtTargets | ForEach-Object { [string]$_.source.versionName })
@@ -4529,6 +4621,8 @@ class AlignmentFixture {
     $said = Invoke-VerifyAll -Apk $newestFixture
     Assert-True ($said -like "*merged $(Split-Path -Leaf $newestFixture) into one APK for the CLI*" -and
         $said -like '*success: every requested patch applied*') "verify-all-patches.ps1 did not merge the bundle and pass: $said"
+    Assert-True ((Get-LastQueuedJob) -ceq 'hushtelegram verify-all-patches|normal|verify-all-patches') `
+        "verify-all-patches.ps1 did not patch inside a build queue slot: $(Get-LastQueuedJob)"
     Assert-True ((@(Get-Content -LiteralPath $mergeLog) -join "`n") -eq "merge $newestFixture" -and
         (@(Get-Content -LiteralPath $javaLog) -join "`n") -eq "patch $newestFixture merged forced=0") `
         ("verify-all-patches.ps1 did not merge the bundle once and hand the CLI that merge: " +
@@ -5449,6 +5543,12 @@ Assert-Throws { Find-MachineNames -Root (Join-Path ([System.IO.Path]::GetTempPat
     '*could not search*' 'A machine-name scan that could not run read as a clean tree.'
 
 Write-Host '[scripts] tracked-file machine name contracts passed'
+
+# The suites below run the real tools, so a job of theirs waits for a real slot.
+$env:BUILD_QUEUE_SCRIPT = $savedQueueScript
+$env:BUILD_QUEUE_PRIORITY = $savedQueuePriority
+$env:HUSHTELEGRAM_QUEUED_JOB = $savedQueuedJob
+Remove-Item -LiteralPath $queueStandInRoot -Recurse -Force
 
 # Raw CLI results can carry configured credentials. Exercise the separate allowlisted export,
 # including hostile report fields and all failure streams, before accepting any script change.
