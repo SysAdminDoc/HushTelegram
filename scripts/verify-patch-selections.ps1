@@ -123,7 +123,7 @@ function Get-SelectionExpectation {
         $flags[$capability.Status] = $closure -ccontains $family.Name
     }
     [pscustomobject]@{ settings = $closure -ccontains 'HushTelegram settings'; links = $closure -ccontains 'Open links externally'
-        api = $Selection.ApiConfigured; maps = $Selection.MapsConfigured
+        api = $Selection.ApiConfigured; maps = $Selection.MapsConfigured; icon = $closure -ccontains 'HushTelegram icon and name'
         apiId = [int]$Selection.ApiId; apiHash = $Selection.ApiHash; mapsKey = $Selection.MapsKey
         flags = $flags; optional = @($StatusModel.Capabilities | Where-Object Optional | ForEach-Object Status)
         closure = $closure; dependencies = $dependencies }

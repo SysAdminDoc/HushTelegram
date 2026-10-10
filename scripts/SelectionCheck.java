@@ -26,7 +26,11 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference;
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference;
 import com.android.tools.smali.dexlib2.iface.reference.StringReference;
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference;
+import com.reandroid.arsc.chunk.PackageBlock;
+import com.reandroid.arsc.chunk.TableBlock;
 import com.reandroid.arsc.chunk.xml.AndroidManifestBlock;
+import com.reandroid.arsc.container.SpecTypePair;
+import com.reandroid.arsc.model.ResourceEntry;
 import com.reandroid.arsc.chunk.xml.ResXmlAttribute;
 import com.reandroid.arsc.chunk.xml.ResXmlElement;
 import com.reandroid.json.JSONArray;
@@ -38,6 +42,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,7 +69,7 @@ public final class SelectionCheck {
             "sessionReports", "firebase_sessions_enabled");
 
     static final class Expected {
-        boolean settings, links, api, maps;
+        boolean settings, links, api, maps, icon;
         int apiId;
         String apiHash, mapsKey;
         Map<String, Boolean> flags;
@@ -75,6 +80,7 @@ public final class SelectionCheck {
             links = input.getBoolean("links");
             api = input.getBoolean("api");
             maps = input.getBoolean("maps");
+            icon = input.optBoolean("icon", false);
             apiId = input.optInt("apiId");
             apiHash = input.optString("apiHash");
             mapsKey = input.optString("mapsKey");
@@ -570,7 +576,32 @@ public final class SelectionCheck {
 
     private static Node only(List<Node> elements) { require(elements.size() == 1); return elements.get(0); }
 
-    private static int manifestChanges(File clean, File patched, Expected expected, boolean credentialsOnlyDelta) throws Exception {
+    /** The id the patched table gave the icon patch's launcher picture, mipmap/hush_launcher. */
+    private static int launcherIcon(File apk) throws Exception {
+        TableBlock table;
+        try (ZipFile zip = new ZipFile(apk)) {
+            var entry = zip.getEntry(TableBlock.FILE_NAME);
+            require(entry != null);
+            try (var input = new java.io.BufferedInputStream(zip.getInputStream(entry))) { table = TableBlock.load(input); }
+        }
+        int found = 0;
+        for (PackageBlock block : table.listPackages()) {
+            for (SpecTypePair pair : block.listSpecTypePairs()) {
+                Iterator<ResourceEntry> resources = pair.getResources();
+                while (resources.hasNext()) {
+                    ResourceEntry resource = resources.next();
+                    if (resource == null || resource.isEmpty() || !"mipmap".equals(resource.getType())
+                            || !"hush_launcher".equals(resource.getName())) continue;
+                    require(found == 0);
+                    found = resource.getResourceId();
+                }
+            }
+        }
+        require(found != 0);
+        return found;
+    }
+
+    static int manifestChanges(File clean, File patched, Expected expected, boolean credentialsOnlyDelta) throws Exception {
         Node before = manifest(clean), after = manifest(patched);
         Node application = only(before.children("application"));
         if (expected.settings && !credentialsOnlyDelta) {
@@ -601,6 +632,19 @@ public final class SelectionCheck {
                         .child(new Node("action").attribute("name", "STRING:android.intent.action.VIEW"))
                         .child(new Node("category").attribute("name", "STRING:android.intent.category.BROWSABLE"))
                         .child(new Node("data").attribute("scheme", "STRING:" + scheme)));
+            }
+        }
+        if (expected.icon && !credentialsOnlyDelta) {
+            // HushTelegram icon and name points the application, and Telegram's default launcher
+            // entry where it names its own, at the picture it added. No case sets a name.
+            String icon = "REFERENCE:" + launcherIcon(patched);
+            String original = application.attributes.get(ANDROID + "icon");
+            require(original != null && original.startsWith("REFERENCE:") && !original.equals(icon));
+            application.attribute("icon", icon).attribute("roundIcon", icon);
+            Node launcher = only(application.children("activity-alias").stream().filter(n ->
+                    "STRING:org.telegram.messenger.DefaultIcon".equals(n.attributes.get(ANDROID + "name"))).toList());
+            for (String name : List.of("icon", "roundIcon")) {
+                if (launcher.attributes.containsKey(ANDROID + name)) launcher.attribute(name, icon);
             }
         }
         int changed = 0;

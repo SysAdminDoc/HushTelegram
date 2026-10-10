@@ -33,6 +33,7 @@ foreach ($plan in $plans) {
     $settings = $plan.Names -ccontains 'HushTelegram settings' -or
         @($plan.Names | Where-Object { $model.Families.Name -ccontains $_ }).Count -gt 0
     Assert-Selection ($expectation.settings -eq $settings) 'A selection inherited the wrong extension or minSdk premise.'
+    Assert-Selection ($expectation.icon -eq ($plan.Names -ccontains 'HushTelegram icon and name')) 'The checker expects the launcher icon on the wrong cases.'
     Assert-Selection ($expectation.flags.Count -eq $model.StatusNames.Count) 'The compiled checker omitted a status flag.'
     foreach ($capability in $model.Capabilities) {
         $family = $model.Families | Where-Object Enum -CEQ $capability.Family
@@ -125,7 +126,7 @@ try {
     $classes = Join-Path $scratch 'classes'
     $compile = Invoke-SelectionTool -Program $compiler -Arguments @('-encoding', 'UTF-8', '-cp', $desktop, '-d', $classes,
         (Join-Path $Root 'scripts/DexDiff.java'), (Join-Path $Root 'scripts/SelectionCheck.java'),
-        (Join-Path $Root 'scripts/SelectionCheckNativeVersionTest.java'), (Join-Path $Root 'scripts/SelectionCheckBuildVarsTest.java')) `
+        (Join-Path $Root 'scripts/SelectionCheckNativeVersionTest.java'), (Join-Path $Root 'scripts/SelectionCheckFixtureTest.java')) `
         -PrivateOutput (Join-Path $scratch 'compile-private.txt')
     Assert-Selection ($compile -eq 0) 'The compiled selection checker tests did not compile.'
     $nativeOutput = Join-Path $scratch 'native-private.txt'
@@ -133,11 +134,11 @@ try {
         ($classes + [IO.Path]::PathSeparator + $desktop), 'SelectionCheckNativeVersionTest') + $fixtures) -PrivateOutput $nativeOutput
     Assert-Selection ($native -eq 0 -and (Get-Content $nativeOutput -Raw).Contains('NATIVE_VERSION_CHECKS_PASSED checks=84')) `
         'The native-version checker lost its exact insertion or refusal controls.'
-    $buildVarsOutput = Join-Path $scratch 'build-vars-private.txt'
-    $buildVars = Invoke-SelectionTool -Program $java -Arguments (@('-Xmx512m', '-XX:ActiveProcessorCount=2', '-cp',
-        ($classes + [IO.Path]::PathSeparator + $desktop), 'SelectionCheckBuildVarsTest') + $fixtures) -PrivateOutput $buildVarsOutput
-    Assert-Selection ($buildVars -eq 0 -and (Get-Content $buildVarsOutput -Raw).Contains('BUILD_VARS_CHECKS_PASSED checks=37')) `
-        'The BuildVars checker lost its beta-logs gate, its refusal controls or its Firebase markers.'
+    $fixtureOutput = Join-Path $scratch 'fixture-private.txt'
+    $fixtureCode = Invoke-SelectionTool -Program $java -Arguments (@('-Xmx512m', '-XX:ActiveProcessorCount=2', '-cp',
+        ($classes + [IO.Path]::PathSeparator + $desktop), 'SelectionCheckFixtureTest') + $fixtures) -PrivateOutput $fixtureOutput
+    Assert-Selection ($fixtureCode -eq 0 -and (Get-Content $fixtureOutput -Raw).Contains('FIXTURE_CHECKS_PASSED checks=41')) `
+        'The checker lost its beta-logs gate, its refusal controls, its Firebase markers or its launcher icon control.'
     # A matrix run keeps one checker, which decodes the clean fixture once and answers each case.
     $checker = Start-SelectionChecker -Java $java -ClassPath ($classes + [IO.Path]::PathSeparator + $desktop) -Apk $fixtures[0] `
         -PrivateOutput (Join-Path $scratch 'checker-private.txt')

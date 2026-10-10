@@ -22,8 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Puts the beta-logs gate into each fixture's real BuildVars initializer, and reads which Firebase reporters each carries. */
-public final class SelectionCheckBuildVarsTest {
+/**
+ * Runs the checker's parts on the real fixtures: the beta-logs gate put into each BuildVars
+ * initializer, which Firebase reporters each build carries, and a launcher icon expected where
+ * the table has none.
+ */
+public final class SelectionCheckFixtureTest {
     private static final String BETA_LOGS = "Lapp/hushtelegram/extension/telegram/misc/BetaLogs;";
     private static int checks;
 
@@ -105,6 +109,22 @@ public final class SelectionCheckBuildVarsTest {
                 .put("api", false).put("maps", false).put("flags", flags).put("optional", new JSONArray(optional)));
     }
 
+    /** A fixture against itself: nothing to expect passes, and an icon its table doesn't hold is refused. */
+    private static void launcherIcon(File fixture) throws Exception {
+        for (boolean icon : new boolean[]{false, true}) {
+            var expected = new SelectionCheck.Expected(new JSONObject().put("settings", false).put("links", false)
+                    .put("api", false).put("maps", false).put("icon", icon).put("flags", new JSONObject()));
+            try {
+                if (SelectionCheck.manifestChanges(fixture, fixture, expected, false) != 0 || icon) {
+                    throw new AssertionError("MANIFEST_FALSE_ACCEPT: icon=" + icon);
+                }
+            } catch (IllegalStateException refusal) {
+                if (!icon) throw new AssertionError("MANIFEST_FALSE_REFUSAL", refusal);
+            }
+            checks++;
+        }
+    }
+
     private static void optionalNames() {
         JSONObject flags = new JSONObject().put("crashReports", true).put("sessionReports", false).put("channelAds", true);
         if (!expected(flags, List.of("crashReports", "sessionReports")).optional.equals(Set.of("crashReports", "sessionReports"))) {
@@ -140,7 +160,8 @@ public final class SelectionCheckBuildVarsTest {
                 if (SelectionCheck.carries(classes, marker) != beta) throw new AssertionError("MARKER_MISREAD: " + marker);
                 checks++;
             }
+            launcherIcon(new File(path));
         }
-        System.out.println("BUILD_VARS_CHECKS_PASSED checks=" + checks);
+        System.out.println("FIXTURE_CHECKS_PASSED checks=" + checks);
     }
 }
