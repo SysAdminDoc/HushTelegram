@@ -523,6 +523,21 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             + " corner. Other messages keep their time."))),
                     SettingsIcons.CHAT));
         }
+        if (build.contains(PatchFamily.HIDE_CHANNEL_BUTTONS)) {
+            on(pages, PatchFamily.HIDE_CHANNEL_BUTTONS).addPreference(mark(toggle(context, Settings.HIDE_CHANNEL_BUTTONS, L10n.t("Hide channel bar buttons"),
+                    PatchFamily.HIDE_CHANNEL_BUTTONS.coverageSummary(L10n.t("Search, Direct messages and Info leave the bar at the bottom of a channel. "
+                            + "Mute and Join stay, and tapping the channel's name at the top still opens its info. A channel picks "
+                            + "this up the next time you open it."))),
+                    SettingsIcons.CHAT));
+        }
+        if (build.contains(PatchFamily.HIDE_SEND_AS)) {
+            on(pages, PatchFamily.HIDE_SEND_AS).addPreference(mark(toggle(context, Settings.HIDE_SEND_AS, L10n.t("Hide Send as button"),
+                    PatchFamily.HIDE_SEND_AS.coverageSummary(L10n.t("Your picture next to the message box goes away in groups and channels where you "
+                            + "could post as a channel, while you're posting as yourself. Once you pick a channel it shows again, so you "
+                            + "can always see who you're posting as. To pick one, turn this off first. A chat picks this up the next "
+                            + "time you open it."))),
+                    SettingsIcons.CHAT));
+        }
         if (build.contains(PatchFamily.IGNORE_MUTED_MENTIONS)) {
             on(pages, PatchFamily.IGNORE_MUTED_MENTIONS).addPreference(mark(toggle(context, Settings.IGNORE_MUTED_MENTIONS, L10n.t("Ignore mentions in muted chats"),
                     PatchFamily.IGNORE_MUTED_MENTIONS.coverageSummary(L10n.t("Mentions and replies in groups or channels you've muted no longer notify you. "

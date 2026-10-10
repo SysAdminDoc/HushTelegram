@@ -133,6 +133,8 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.ASK_BEFORE_STICKER, "Ask before sending a sticker");
         ROW_TITLES.put(PatchFamily.BETA_LOGS_OFF, "Turn off beta debug logs");
         ROW_TITLES.put(PatchFamily.OUTSIDE_TRANSLATE, "Translate with an outside service");
+        ROW_TITLES.put(PatchFamily.HIDE_CHANNEL_BUTTONS, "Hide channel bar buttons");
+        ROW_TITLES.put(PatchFamily.HIDE_SEND_AS, "Hide Send as button");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -588,6 +590,18 @@ public class HushTelegramPreferenceFragmentTest {
             // Messages stay as sent until a chat or message is turned on.
             assertFalse(Settings.OUTSIDE_TRANSLATE.key,
                     ((SwitchPreference) page.findPreference(Settings.OUTSIDE_TRANSLATE.key)).isChecked());
+            assertEquals("Search, Direct messages and Info leave the bar at the bottom of a channel. Mute and Join stay, "
+                            + "and tapping the channel's name at the top still opens its info. A channel picks this up the "
+                            + "next time you open it.",
+                    String.valueOf(page.findPreference(Settings.HIDE_CHANNEL_BUTTONS.key).getSummary()));
+            assertEquals("Your picture next to the message box goes away in groups and channels where you could post as "
+                            + "a channel, while you're posting as yourself. Once you pick a channel it shows again, so you "
+                            + "can always see who you're posting as. To pick one, turn this off first. A chat picks this up "
+                            + "the next time you open it.",
+                    String.valueOf(page.findPreference(Settings.HIDE_SEND_AS.key).getSummary()));
+            // A channel's bar and the message box stay stock until their switches are turned on.
+            assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_CHANNEL_BUTTONS.key)).isChecked());
+            assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_SEND_AS.key)).isChecked());
             assertEquals("Ask before sending a GIF", String.valueOf(page.findPreference(Settings.ASK_BEFORE_GIF.key).getTitle()));
             assertEquals("Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs "
                     + "go out without asking.",

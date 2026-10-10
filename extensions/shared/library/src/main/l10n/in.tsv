@@ -421,3 +421,8 @@ Chat list	Daftar chat
 Conversations	Percakapan
 Playback	Pemutaran
 Look and feel	Tampilan dan penggunaan
+# context: Hide channel bar buttons and Hide Send as button. Search, Direct messages, Info, Mute and Join are Telegram's own button names in a channel; Send as is Telegram's name for the picture that picks who you post as.
+Hide channel bar buttons	Sembunyikan tombol bilah kanal
+Search, Direct messages and Info leave the bar at the bottom of a channel. Mute and Join stay, and tapping the channel's name at the top still opens its info. A channel picks this up the next time you open it.	Cari, Pesan langsung, dan Info hilang dari bilah di bagian bawah kanal. Bisukan dan Gabung tetap ada, dan mengetuk nama kanal di atas tetap membuka infonya. Kanal akan menerapkannya saat Anda membukanya lagi.
+Hide Send as button	Sembunyikan tombol Kirim sebagai
+Your picture next to the message box goes away in groups and channels where you could post as a channel, while you're posting as yourself. Once you pick a channel it shows again, so you can always see who you're posting as. To pick one, turn this off first. A chat picks this up the next time you open it.	Foto Anda di samping kotak pesan hilang di grup dan kanal tempat Anda bisa memposting sebagai kanal, selama Anda memposting sebagai diri sendiri. Setelah Anda memilih kanal, foto itu muncul lagi, jadi Anda selalu tahu sebagai siapa Anda memposting. Untuk memilih kanal, matikan ini dulu. Obrolan akan menerapkannya saat Anda membukanya lagi.

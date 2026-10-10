@@ -302,6 +302,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting OUTSIDE_TRANSLATE =
             new BooleanSetting("hushtelegram_external_translate", FALSE);
 
+    /** Search, Direct messages and Info leave the bar at the bottom of a channel. Mute and Join stay. */
+    public static final BooleanSetting HIDE_CHANNEL_BUTTONS =
+            new BooleanSetting("hushtelegram_hide_channel_buttons", FALSE);
+
+    /** The Send as picture next to the message box is left out while you'd post as yourself. */
+    public static final BooleanSetting HIDE_SEND_AS =
+            new BooleanSetting("hushtelegram_hide_send_as", FALSE);
+
     /** A GIF you tap asks Send or Cancel before it goes into the chat. */
     public static final BooleanSetting ASK_BEFORE_GIF =
             new BooleanSetting("hushtelegram_ask_before_gif", FALSE);

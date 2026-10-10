@@ -124,6 +124,8 @@ body:
         - Ask before sending a sticker
         - Turn off beta debug logs
         - Translate with an outside service
+        - Hide channel bar buttons
+        - Hide Send as button
         - Strip link tracking
         - HushTelegram settings
     validations:

@@ -418,3 +418,8 @@ Chat list	Lista de conversas
 Conversations	Mensagens
 Playback	Reprodução
 Look and feel	Aparência e uso
+# context: Hide channel bar buttons and Hide Send as button. Search, Direct messages, Info, Mute and Join are Telegram's own button names in a channel; Send as is Telegram's name for the picture that picks who you post as.
+Hide channel bar buttons	Ocultar botões da barra do canal
+Search, Direct messages and Info leave the bar at the bottom of a channel. Mute and Join stay, and tapping the channel's name at the top still opens its info. A channel picks this up the next time you open it.	Pesquisar, Mensagens diretas e Informações saem da barra na parte de baixo de um canal. Silenciar e Entrar continuam, e tocar no nome do canal no topo ainda abre as informações dele. Um canal aplica isso na próxima vez que você abri-lo.
+Hide Send as button	Ocultar o botão Enviar como
+Your picture next to the message box goes away in groups and channels where you could post as a channel, while you're posting as yourself. Once you pick a channel it shows again, so you can always see who you're posting as. To pick one, turn this off first. A chat picks this up the next time you open it.	Sua foto ao lado da caixa de mensagem some em grupos e canais onde você poderia publicar como um canal, enquanto você publica como você mesmo. Quando você escolhe um canal ela volta, para você sempre ver como quem está publicando. Para escolher um, desative isto antes. Uma conversa aplica isso na próxima vez que você abri-la.

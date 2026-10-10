@@ -421,3 +421,8 @@ Chat list	Chatliste
 Conversations	Unterhaltungen
 Playback	Wiedergabe
 Look and feel	Aussehen und Bedienung
+# context: Hide channel bar buttons and Hide Send as button. Search, Direct messages, Info, Mute and Join are Telegram's own button names in a channel; Send as is Telegram's name for the picture that picks who you post as.
+Hide channel bar buttons	Tasten der Kanalleiste ausblenden
+Search, Direct messages and Info leave the bar at the bottom of a channel. Mute and Join stay, and tapping the channel's name at the top still opens its info. A channel picks this up the next time you open it.	Suche, Direktnachrichten und Info verschwinden aus der Leiste unten in einem Kanal. Stummschalten und Beitreten bleiben, und ein Tippen auf den Kanalnamen oben öffnet weiterhin seine Infos. Ein Kanal übernimmt das beim nächsten Öffnen.
+Hide Send as button	Senden-als-Taste ausblenden
+Your picture next to the message box goes away in groups and channels where you could post as a channel, while you're posting as yourself. Once you pick a channel it shows again, so you can always see who you're posting as. To pick one, turn this off first. A chat picks this up the next time you open it.	Dein Bild neben dem Eingabefeld verschwindet in Gruppen und Kanälen, in denen du als Kanal posten könntest, solange du als du selbst postest. Sobald du einen Kanal wählst, erscheint es wieder, damit du immer siehst, als wer du postest. Um einen zu wählen, schalte das zuerst aus. Ein Chat übernimmt das beim nächsten Öffnen.

@@ -306,6 +306,8 @@ public final class SelectionCheck {
         hook(calls, flags, "askBeforeSending", "misc/SendConfirm", "sticker", "gif", "voice", "call");
         hook(calls, flags, "betaLogsOff", "misc/BetaLogs", "forceLogs");
         hook(calls, flags, "outsideTranslate", "misc/OutsideTranslate", "show", "fill", "chosen", "headerMenu", "headerClick");
+        hook(calls, flags, "hideChannelButtons", "misc/ChannelButtons", "set");
+        hook(calls, flags, "hideSendAs", "misc/SendAs", "show");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");
         hook(calls, flags, "disableUpdateChecks", "misc/UpdateChecks", "skipUpdateCheck");
         for (String[] bridge : List.of(

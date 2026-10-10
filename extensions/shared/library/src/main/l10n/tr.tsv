@@ -421,3 +421,8 @@ Chat list	Sohbet listesi
 Conversations	Konuşmalar
 Playback	Oynatma
 Look and feel	Görünüm ve kullanım
+# context: Hide channel bar buttons and Hide Send as button. Search, Direct messages, Info, Mute and Join are Telegram's own button names in a channel; Send as is Telegram's name for the picture that picks who you post as.
+Hide channel bar buttons	Kanal çubuğu düğmelerini gizle
+Search, Direct messages and Info leave the bar at the bottom of a channel. Mute and Join stay, and tapping the channel's name at the top still opens its info. A channel picks this up the next time you open it.	Ara, Doğrudan mesajlar ve Bilgi, bir kanalın altındaki çubuktan kalkar. Sessize al ve Katıl kalır, üstteki kanal adına dokunmak da bilgilerini açmaya devam eder. Bir kanal bunu bir sonraki açışınızda uygular.
+Hide Send as button	Farklı gönder düğmesini gizle
+Your picture next to the message box goes away in groups and channels where you could post as a channel, while you're posting as yourself. Once you pick a channel it shows again, so you can always see who you're posting as. To pick one, turn this off first. A chat picks this up the next time you open it.	Kanal olarak paylaşım yapabileceğiniz grup ve kanallarda, kendi adınıza paylaşırken mesaj kutusunun yanındaki resminiz kaybolur. Bir kanal seçtiğinizde yeniden görünür, böylece kimin adına paylaştığınızı her zaman görürsünüz. Bir kanal seçmek için önce bunu kapatın. Bir sohbet bunu bir sonraki açışınızda uygular.
