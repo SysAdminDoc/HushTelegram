@@ -399,7 +399,7 @@ function Copy-IndexEvidence {
         if ($before -ne $copied -or $before -ne $after) { throw "Index build evidence changed while it was copied: $($receipt.Name)" }
     }
     foreach ($directory in @('patches/build/release', 'patches/build/test-results/test',
-            'extensions/telegram/build/test-results/testDebugUnitTest')) {
+            'patches/build/test-results/fixtureTest', 'extensions/telegram/build/test-results/testDebugUnitTest')) {
         $path = Join-Path $Root $directory
         if (-not (Test-Path -LiteralPath $path -PathType Container)) { continue }
         $pattern = if ($directory -eq 'patches/build/release') { '*.mpp' } else { '*.xml' }

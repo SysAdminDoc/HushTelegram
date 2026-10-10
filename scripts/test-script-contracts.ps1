@@ -2363,6 +2363,25 @@ try {
         Invoke-StrictFacts
         Assert-True ($LASTEXITCODE -eq 0 -or $null -eq $LASTEXITCODE) `
             'The strict release check refused results that match their sources and the description.'
+        # :patches:test runs the fixture tests in :patches:fixtureTest, whose results have their own
+        # folder: counted together, every class once, and a class in both is an older run's copy.
+        $fixtureResults = 'patches/build/test-results/fixtureTest'
+        $fixtureSource = Join-Path $factsRoot 'patches/src/test/kotlin/fixture/PatchFixtureTest.kt'
+        Set-Content -LiteralPath $fixtureSource -Value '' -Encoding ASCII
+        Write-FactsResults $patchResults 'PatchTest' ($patchQuoted - 2)
+        Write-FactsResults $fixtureResults 'PatchFixtureTest' 2
+        Invoke-StrictFacts
+        Assert-True ($LASTEXITCODE -eq 0 -or $null -eq $LASTEXITCODE) `
+            'The strict release check did not count the fixture tests in their own folder.'
+        Remove-Item -LiteralPath (Join-Path $factsRoot $fixtureResults) -Recurse -Force
+        Assert-Throws { Invoke-StrictFacts } '*missing 1 of 2 test classes*PatchFixtureTest*' `
+            'A run with no fixture test results was counted as a whole run.'
+        Write-FactsResults $fixtureResults 'PatchFixtureTest' 2
+        Write-FactsResults $patchResults 'PatchTest' ($patchQuoted - 2)
+        Add-OrphanResult $patchResults 'PatchFixtureTest'
+        Assert-Throws { Invoke-StrictFacts } '*TEST-fixture.PatchFixtureTest.xml under both*' `
+            'Fixture test results left in the :patches:test folder were counted twice.'
+        Remove-Item -LiteralPath $fixtureSource, (Join-Path $factsRoot $fixtureResults) -Recurse -Force
         foreach ($folder in @('extensions/telegram/src', 'patches/src')) {
             Remove-Item -LiteralPath (Join-Path $factsRoot $folder) -Recurse -Force
         }
@@ -5552,6 +5571,21 @@ Assert-True ($gradleFile -match 'val releaseBundleName = "patches-\$\{project\.v
 Assert-True ($gradleFile -match 'commandLine\("git", "--no-optional-locks", "status", "--porcelain"\)' -and
     $gradleFile -match '(?s)val sourceDateEpoch: Long = run \{.*?if \(uncommittedChanges\?\.isEmpty\(\) != true\) return@run 0L.*?"log", "-1", "--format=%ct"') `
     'patches/build.gradle.kts stamps the bundle with the commit time without asking git whether the tree has uncommitted changes.'
+# The fixture tests run in :patches:fixtureTest, which :patches:test depends on and leaves out, so
+# a quick run can skip them with -x. A test that opens the vendor APKs and isn't in that task's
+# list would run in every quick pass.
+Assert-True ($gradleFile -match 'tasks\.register<Test>\("fixtureTest"\)' -and
+    $gradleFile -match '(?s)tasks\.test \{\s*dependsOn\(fixtureTest\)\s*exclude\(fixtureTestClasses\)' -and
+    $gradleFile -match 'withType<Test>\(\)\.matching \{ it\.name == "test" \|\| it\.name == "fixtureTest" \}') `
+    'patches/build.gradle.kts no longer splits the fixture tests into :patches:fixtureTest under :patches:test.'
+$fixtureGlobs = @([regex]::Matches([regex]::Match($gradleFile, '(?s)val fixtureTestClasses = listOf\((.*?)\n\)').Groups[1].Value,
+    '"\*\*/([^"$]+)\.class"') | ForEach-Object { $_.Groups[1].Value })
+$unsplitFixtureTests = @(Get-ChildItem -LiteralPath (Join-Path $Root 'patches/src/test') -Recurse -File -Filter '*Test.kt' |
+    Where-Object { (Get-Content -LiteralPath $_.FullName -Raw) -match '\bFixtures\.' } |
+    Where-Object { $name = $_.BaseName; -not @($fixtureGlobs | Where-Object { $name -like $_ }).Count } |
+    ForEach-Object { $_.BaseName })
+Assert-True ($fixtureGlobs.Count -gt 0 -and $unsplitFixtureTests.Count -eq 0) `
+    "These patch tests read the vendor APKs but aren't in fixtureTestClasses: $($unsplitFixtureTests -join ', ')"
 
 # Code only: a comment may say where the bundle used to be read from.
 $libsReaders = New-Object System.Collections.Generic.List[string]

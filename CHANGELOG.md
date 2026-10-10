@@ -40,6 +40,8 @@ Every HushTelegram release, newest first.
 
 * **Tooling:** The selection matrix reads the whole fixture APK for its hash twice a run, before the first case and after the last, instead of up to three times in each of its 74 cases. Each case still checks the APK's size and write time, and a changed APK still fails the run.
 
+* **Tooling:** The patch tests that open the vendor Telegram APKs now run in their own Gradle task, `:patches:fixtureTest`. `:patches:test` still runs every patch test and passes `--tests` on to it, while `:patches:test -x :patches:fixtureTest` runs the rest without opening an APK. The release check counts the results from both folders.
+
 ## 0.0.11 (2026-10-08)
 
 The fifth release, with 55 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.
