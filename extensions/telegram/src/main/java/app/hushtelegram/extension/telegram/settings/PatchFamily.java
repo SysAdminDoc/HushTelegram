@@ -182,6 +182,9 @@ public enum PatchFamily {
         PREMIUM_PROMO_TAP(DISABLE_ANALYTICS, "premiumPromoTap", "Premium promo taps"),
         PREMIUM_PROMO_ACCEPT(DISABLE_ANALYTICS, "premiumPromoAccept", "Premium promo accepts"),
         PREMIUM_PROMO_FAIL(DISABLE_ANALYTICS, "premiumPromoFail", "Premium promo failures"),
+        // Telegram Beta carries these SDKs and the regular build doesn't, so a build without them isn't missing anything.
+        CRASH_REPORTS(DISABLE_ANALYTICS, "crashReports", "Firebase crash reports", true),
+        SESSION_REPORTS(DISABLE_ANALYTICS, "sessionReports", "Firebase session reports", true),
         CALL_DEBUG_UPLOAD(DISABLE_CALL_DEBUG, "callDebugUpload", "call debug reports"),
         CALL_LOG_FILE_UPLOAD(DISABLE_CALL_DEBUG, "callLogFileUpload", "call log file uploads"),
         CALL_LOG_UPLOAD(DISABLE_CALL_DEBUG, "callLogUpload", "call log reports"),
@@ -211,11 +214,22 @@ public enum PatchFamily {
         public final PatchFamily family;
         final String statusMethod;
         public final String label;
+        /**
+         * Only some declared builds carry this target. Where its flag is off, the patch found nothing
+         * to change or said in its log why it couldn't, so coverage leaves it out rather than
+         * calling it missing.
+         */
+        public final boolean onlyWhereCarried;
 
         Capability(PatchFamily family, String statusMethod, String label) {
+            this(family, statusMethod, label, false);
+        }
+
+        Capability(PatchFamily family, String statusMethod, String label, boolean onlyWhereCarried) {
             this.family = family;
             this.statusMethod = statusMethod;
             this.label = label;
+            this.onlyWhereCarried = onlyWhereCarried;
         }
 
         /** A patch-time fact, independent of whether its switch is on or the app is paused. */
@@ -252,9 +266,21 @@ public enum PatchFamily {
         return Collections.unmodifiableSet(installed);
     }
 
+    /**
+     * The targets coverage speaks of in this build: every expected one, less those only some builds
+     * carry and this one didn't get.
+     */
+    Set<Capability> shownCapabilities() {
+        Set<Capability> shown = EnumSet.noneOf(Capability.class);
+        for (Capability capability : expectedCapabilities()) {
+            if (!capability.onlyWhereCarried || capability.installed()) shown.add(capability);
+        }
+        return Collections.unmodifiableSet(shown);
+    }
+
     /** Keeps the usual description for complete builds and names precise coverage for partial ones. */
     String coverageSummary(String completeSummary) {
-        Set<Capability> expected = expectedCapabilities();
+        Set<Capability> expected = shownCapabilities();
         Set<Capability> installed = installedCapabilities();
         if (installed.size() == expected.size()) return completeSummary;
         List<String> covered = new ArrayList<>();
@@ -269,7 +295,7 @@ public enum PatchFamily {
     private String coverageReportLine() {
         List<String> covered = new ArrayList<>();
         List<String> missing = new ArrayList<>();
-        for (Capability capability : expectedCapabilities()) {
+        for (Capability capability : shownCapabilities()) {
             (capability.installed() ? covered : missing).add(capability.label);
         }
         String line = patchName + " coverage: " + (covered.isEmpty() ? "none" : String.join(", ", covered));

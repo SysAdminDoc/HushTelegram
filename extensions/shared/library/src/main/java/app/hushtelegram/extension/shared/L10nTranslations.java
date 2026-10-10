@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(768);
+        Map<String, String> table = new HashMap<>(774);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -282,6 +282,12 @@ public final class L10nTranslations {
                 "Dateigr\u00f6\u00dfe: %1$s");
         table.put("Firebase certificate header",
                 "Firebase-Zertifikat-Header");
+        table.put("Firebase crash and session reports stop too, from the next time Telegram starts.",
+                "Auch die Absturz- und Sitzungsberichte an Firebase h\u00f6ren auf, ab dem n\u00e4chsten Start von Telegram.");
+        table.put("Firebase crash reports",
+                "Firebase-Absturzberichte");
+        table.put("Firebase session reports",
+                "Firebase-Sitzungsberichte");
         table.put("Folder tabs above the chat list show just their names, without unread counts. Chats stay unread and the app icon badge doesn't change.",
                 "Die Ordner-Tabs \u00fcber der Chatliste zeigen nur ihre Namen, ohne Z\u00e4hler f\u00fcr Ungelesenes. Chats bleiben ungelesen, und das Symbol-Abzeichen der App \u00e4ndert sich nicht.");
         table.put("Forward to",
@@ -296,15 +302,15 @@ public final class L10nTranslations {
                 "Galeriekamera");
         table.put("GitHub is blocking checks from this network for now. Try again later.",
                 "GitHub blockiert Pr\u00fcfungen aus diesem Netzwerk im Moment. Versuche es sp\u00e4ter erneut.");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("GitHub sent a reply HushTelegram couldn't read. Try again later.",
                 "GitHub hat eine Antwort gesendet, die HushTelegram nicht lesen konnte. Versuche es sp\u00e4ter erneut.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Direkt zu einer Gruppe von Einstellungen. Zur\u00fcck bringt dich dorthin, wo du warst.");
         table.put("Hide Premium, gifts and Stars",
                 "Premium, Geschenke und Stars ausblenden");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("Hide Stories",
                 "Stories ausblenden");
         table.put("Hide Telegram Features and Invite Friends",
@@ -419,15 +425,15 @@ public final class L10nTranslations {
                 "Nein");
         table.put("No HushTelegram release is out yet.",
                 "Es gibt noch keine Version von HushTelegram.");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Keine App auf diesem Handy kann den Link \u00f6ffnen. Die Adresse ist %1$s.");
         table.put("No chat to forward to",
                 "Kein Chat zum Weiterleiten");
         table.put("No matching settings",
                 "Keine passenden Einstellungen");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("No previews before sending",
                 "Keine Vorschau vor dem Senden");
         table.put("No reply since Telegram started",
@@ -542,15 +548,15 @@ public final class L10nTranslations {
                 "Einstellungsdatei wird gespeichert");
         table.put("Search settings",
                 "Einstellungen suchen");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Selecting links by hand",
                 "Links von Hand ausw\u00e4hlen");
         table.put("Send",
                 "Senden");
         table.put("Send GIF",
                 "GIF senden");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Send sticker",
                 "Sticker senden");
         table.put("Send this GIF to this chat?",
@@ -665,15 +671,15 @@ public final class L10nTranslations {
                 "Das ist keine HushTelegram-Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
         table.put("That setting couldn't be updated. The switch shows the value that is saved.",
                 "Diese Einstellung lie\u00df sich nicht aktualisieren. Der Schalter zeigt den gespeicherten Wert.");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Diese Einstellungsdatei enth\u00e4lt einen Wert, den HushTelegram nicht lesen kann. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Diese Einstellungsdatei ist besch\u00e4digt oder nur teilweise heruntergeladen. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
                 "Diese Einstellungsdatei stammt aus einer neueren HushTelegram-Version als dieser. Es wurde nichts ge\u00e4ndert.");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
                 "Die Lizenz GPL-3.0 und die Hinweise zu den Projekten, auf denen HushTelegram aufbaut");
         table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
@@ -788,15 +794,15 @@ public final class L10nTranslations {
                 "gespeicherte Empfehlungen");
         table.put("call debug reports",
                 "Anrufdiagnoseberichte");
+    }
+
+    private static void fillDe6(Map<String, String> table) {
         table.put("call log file uploads",
                 "Uploads von Anrufprotokolldateien");
         table.put("call log reports",
                 "Anrufprotokollberichte");
         table.put("caption text paste",
                 "Texteinf\u00fcgen in Beschriftungen");
-    }
-
-    private static void fillDe6(Map<String, String> table) {
         table.put("channel Gift button",
                 "Geschenk-Schaltfl\u00e4che von Kan\u00e4len");
         table.put("channel ads",
@@ -848,7 +854,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(768);
+        Map<String, String> table = new HashMap<>(774);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1083,6 +1089,12 @@ public final class L10nTranslations {
                 "Tama\u00f1o del archivo: %1$s");
         table.put("Firebase certificate header",
                 "Encabezado del certificado de Firebase");
+        table.put("Firebase crash and session reports stop too, from the next time Telegram starts.",
+                "Los informes de fallos y de sesi\u00f3n de Firebase tambi\u00e9n se detienen, a partir del pr\u00f3ximo inicio de Telegram.");
+        table.put("Firebase crash reports",
+                "informes de fallos de Firebase");
+        table.put("Firebase session reports",
+                "informes de sesi\u00f3n de Firebase");
         table.put("Folder tabs above the chat list show just their names, without unread counts. Chats stay unread and the app icon badge doesn't change.",
                 "Las pesta\u00f1as de carpetas sobre la lista de chats muestran solo su nombre, sin contador de no le\u00eddos. Los chats siguen sin leer y la insignia del icono de la app no cambia.");
         table.put("Forward to",
@@ -1097,15 +1109,15 @@ public final class L10nTranslations {
                 "C\u00e1mara de la galer\u00eda");
         table.put("GitHub is blocking checks from this network for now. Try again later.",
                 "GitHub est\u00e1 bloqueando las comprobaciones desde esta red por ahora. Int\u00e9ntalo m\u00e1s tarde.");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("GitHub sent a reply HushTelegram couldn't read. Try again later.",
                 "GitHub envi\u00f3 una respuesta que HushTelegram no pudo leer. Int\u00e9ntalo m\u00e1s tarde.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Ve directo a un grupo de ajustes. Atr\u00e1s te devuelve a donde estabas.");
         table.put("Hide Premium, gifts and Stars",
                 "Ocultar Premium, regalos y Stars");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("Hide Stories",
                 "Ocultar historias");
         table.put("Hide Telegram Features and Invite Friends",
@@ -1220,15 +1232,15 @@ public final class L10nTranslations {
                 "No");
         table.put("No HushTelegram release is out yet.",
                 "Todav\u00eda no hay ninguna versi\u00f3n de HushTelegram.");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Ninguna app de este tel\u00e9fono puede abrir el enlace. La direcci\u00f3n es %1$s.");
         table.put("No chat to forward to",
                 "No hay ning\u00fan chat al que reenviar");
         table.put("No matching settings",
                 "No hay ajustes coincidentes");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("No previews before sending",
                 "Sin vistas previas antes de enviar");
         table.put("No reply since Telegram started",
@@ -1343,15 +1355,15 @@ public final class L10nTranslations {
                 "Guardando el archivo de configuraci\u00f3n");
         table.put("Search settings",
                 "Buscar ajustes");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Selecting links by hand",
                 "Seleccionar enlaces a mano");
         table.put("Send",
                 "Enviar");
         table.put("Send GIF",
                 "Enviar GIF");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("Send sticker",
                 "Enviar sticker");
         table.put("Send this GIF to this chat?",
@@ -1466,15 +1478,15 @@ public final class L10nTranslations {
                 "Eso no es un archivo de configuraci\u00f3n de HushTelegram. No se cambi\u00f3 nada.");
         table.put("That setting couldn't be updated. The switch shows the value that is saved.",
                 "No se pudo actualizar ese ajuste. El interruptor muestra el valor guardado.");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Ese archivo de configuraci\u00f3n contiene un valor que HushTelegram no puede leer. No se cambi\u00f3 nada.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Ese archivo de configuraci\u00f3n est\u00e1 da\u00f1ado o solo se descarg\u00f3 en parte. No se cambi\u00f3 nada.");
         table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
                 "Ese archivo de configuraci\u00f3n lo escribi\u00f3 una versi\u00f3n de HushTelegram m\u00e1s reciente que esta. No se cambi\u00f3 nada.");
-    }
-
-    private static void fillEs5(Map<String, String> table) {
         table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
                 "La licencia GPL-3.0 y los cr\u00e9ditos de los proyectos en los que se basa HushTelegram");
         table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
@@ -1589,15 +1601,15 @@ public final class L10nTranslations {
                 "recomendaciones guardadas");
         table.put("call debug reports",
                 "informes de depuraci\u00f3n de llamadas");
+    }
+
+    private static void fillEs6(Map<String, String> table) {
         table.put("call log file uploads",
                 "subidas de archivos de registro de llamadas");
         table.put("call log reports",
                 "informes de registro de llamadas");
         table.put("caption text paste",
                 "pegado de texto en leyendas");
-    }
-
-    private static void fillEs6(Map<String, String> table) {
         table.put("channel Gift button",
                 "bot\u00f3n de regalo de los canales");
         table.put("channel ads",
@@ -1649,7 +1661,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(768);
+        Map<String, String> table = new HashMap<>(774);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1884,6 +1896,12 @@ public final class L10nTranslations {
                 "Ukuran file: %1$s");
         table.put("Firebase certificate header",
                 "Header sertifikat Firebase");
+        table.put("Firebase crash and session reports stop too, from the next time Telegram starts.",
+                "Laporan crash dan sesi Firebase juga berhenti, mulai saat Telegram dibuka berikutnya.");
+        table.put("Firebase crash reports",
+                "laporan crash Firebase");
+        table.put("Firebase session reports",
+                "laporan sesi Firebase");
         table.put("Folder tabs above the chat list show just their names, without unread counts. Chats stay unread and the app icon badge doesn't change.",
                 "Tab folder di atas daftar obrolan hanya menampilkan namanya, tanpa jumlah belum dibaca. Obrolan tetap belum dibaca dan lencana ikon aplikasi tidak berubah.");
         table.put("Forward to",
@@ -1898,15 +1916,15 @@ public final class L10nTranslations {
                 "Kamera galeri");
         table.put("GitHub is blocking checks from this network for now. Try again later.",
                 "GitHub sedang memblokir pemeriksaan dari jaringan ini untuk sementara. Coba lagi nanti.");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("GitHub sent a reply HushTelegram couldn't read. Try again later.",
                 "GitHub mengirim balasan yang tidak bisa dibaca HushTelegram. Coba lagi nanti.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Langsung ke satu kelompok setelan. Kembali membawamu ke tempat semula.");
         table.put("Hide Premium, gifts and Stars",
                 "Sembunyikan Premium, hadiah dan Stars");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("Hide Stories",
                 "Sembunyikan Cerita");
         table.put("Hide Telegram Features and Invite Friends",
@@ -2021,15 +2039,15 @@ public final class L10nTranslations {
                 "Tidak");
         table.put("No HushTelegram release is out yet.",
                 "Belum ada rilis HushTelegram.");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Tidak ada aplikasi di ponsel ini yang dapat membuka tautan ini. Alamatnya %1$s.");
         table.put("No chat to forward to",
                 "Tidak ada obrolan tujuan");
         table.put("No matching settings",
                 "Tidak ada pengaturan yang cocok");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("No previews before sending",
                 "Tanpa pratinjau sebelum mengirim");
         table.put("No reply since Telegram started",
@@ -2144,15 +2162,15 @@ public final class L10nTranslations {
                 "Menyimpan file pengaturan");
         table.put("Search settings",
                 "Cari pengaturan");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Selecting links by hand",
                 "Memilih tautan secara manual");
         table.put("Send",
                 "Kirim");
         table.put("Send GIF",
                 "Kirim GIF");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Send sticker",
                 "Kirim stiker");
         table.put("Send this GIF to this chat?",
@@ -2267,15 +2285,15 @@ public final class L10nTranslations {
                 "Itu bukan file pengaturan HushTelegram. Tidak ada yang diubah.");
         table.put("That setting couldn't be updated. The switch shows the value that is saved.",
                 "Pengaturan itu tidak bisa diperbarui. Sakelar menampilkan nilai yang tersimpan.");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "File pengaturan itu memuat nilai yang tidak dapat dibaca HushTelegram. Tidak ada yang diubah.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "File pengaturan itu rusak atau hanya terunduh sebagian. Tidak ada yang diubah.");
         table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
                 "File pengaturan itu dibuat oleh versi HushTelegram yang lebih baru daripada versi ini. Tidak ada yang diubah.");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
                 "Lisensi GPL-3.0 dan kredit untuk proyek-proyek yang menjadi dasar HushTelegram");
         table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
@@ -2390,15 +2408,15 @@ public final class L10nTranslations {
                 "rekomendasi tersimpan");
         table.put("call debug reports",
                 "laporan debug panggilan");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
         table.put("call log file uploads",
                 "unggahan berkas log panggilan");
         table.put("call log reports",
                 "laporan log panggilan");
         table.put("caption text paste",
                 "tempel teks keterangan");
-    }
-
-    private static void fillIn6(Map<String, String> table) {
         table.put("channel Gift button",
                 "tombol Hadiah pada kanal");
         table.put("channel ads",
@@ -2450,7 +2468,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(768);
+        Map<String, String> table = new HashMap<>(774);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -2685,6 +2703,12 @@ public final class L10nTranslations {
                 "Tamanho do arquivo: %1$s");
         table.put("Firebase certificate header",
                 "Cabe\u00e7alho do certificado do Firebase");
+        table.put("Firebase crash and session reports stop too, from the next time Telegram starts.",
+                "Os relat\u00f3rios de falhas e de sess\u00e3o do Firebase tamb\u00e9m param, a partir da pr\u00f3xima vez que o Telegram abrir.");
+        table.put("Firebase crash reports",
+                "relat\u00f3rios de falhas do Firebase");
+        table.put("Firebase session reports",
+                "relat\u00f3rios de sess\u00e3o do Firebase");
         table.put("Folder tabs above the chat list show just their names, without unread counts. Chats stay unread and the app icon badge doesn't change.",
                 "As abas de pastas acima da lista de conversas mostram s\u00f3 o nome, sem a contagem de n\u00e3o lidas. As conversas continuam n\u00e3o lidas e o selo do \u00edcone do app n\u00e3o muda.");
         table.put("Forward to",
@@ -2699,15 +2723,15 @@ public final class L10nTranslations {
                 "C\u00e2mera da galeria");
         table.put("GitHub is blocking checks from this network for now. Try again later.",
                 "O GitHub est\u00e1 bloqueando verifica\u00e7\u00f5es desta rede por enquanto. Tente de novo mais tarde.");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("GitHub sent a reply HushTelegram couldn't read. Try again later.",
                 "O GitHub enviou uma resposta que o HushTelegram n\u00e3o conseguiu ler. Tente de novo mais tarde.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "V\u00e1 diretamente para um grupo de configura\u00e7\u00f5es. Voltar leva voc\u00ea de volta ao ponto em que estava.");
         table.put("Hide Premium, gifts and Stars",
                 "Ocultar Premium, presentes e Stars");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Hide Stories",
                 "Ocultar Stories");
         table.put("Hide Telegram Features and Invite Friends",
@@ -2822,15 +2846,15 @@ public final class L10nTranslations {
                 "N\u00e3o");
         table.put("No HushTelegram release is out yet.",
                 "Ainda n\u00e3o h\u00e1 nenhuma vers\u00e3o do HushTelegram.");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Nenhum aplicativo neste dispositivo consegue abrir o link. O endere\u00e7o \u00e9 %1$s.");
         table.put("No chat to forward to",
                 "Nenhum chat para encaminhar");
         table.put("No matching settings",
                 "Nenhuma configura\u00e7\u00e3o encontrada");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("No previews before sending",
                 "Sem pr\u00e9vias antes de enviar");
         table.put("No reply since Telegram started",
@@ -2945,15 +2969,15 @@ public final class L10nTranslations {
                 "Salvando o arquivo de configura\u00e7\u00f5es");
         table.put("Search settings",
                 "Buscar configura\u00e7\u00f5es");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Selecting links by hand",
                 "Selecionar links manualmente");
         table.put("Send",
                 "Enviar");
         table.put("Send GIF",
                 "Enviar GIF");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Send sticker",
                 "Enviar sticker");
         table.put("Send this GIF to this chat?",
@@ -3068,15 +3092,15 @@ public final class L10nTranslations {
                 "Isso n\u00e3o \u00e9 um arquivo de configura\u00e7\u00f5es do HushTelegram. Nada foi alterado.");
         table.put("That setting couldn't be updated. The switch shows the value that is saved.",
                 "N\u00e3o foi poss\u00edvel atualizar essa configura\u00e7\u00e3o. A op\u00e7\u00e3o mostra o valor salvo.");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Esse arquivo de configura\u00e7\u00f5es tem um valor que o HushTelegram n\u00e3o consegue ler. Nada foi alterado.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Esse arquivo de configura\u00e7\u00f5es est\u00e1 corrompido ou foi baixado apenas parcialmente. Nada foi alterado.");
         table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
                 "Esse arquivo de configura\u00e7\u00f5es foi criado por uma vers\u00e3o do HushTelegram mais nova que esta. Nada foi alterado.");
-    }
-
-    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
                 "A licen\u00e7a GPL-3.0 e os cr\u00e9ditos dos projetos em que o HushTelegram se baseia");
         table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
@@ -3191,15 +3215,15 @@ public final class L10nTranslations {
                 "recomenda\u00e7\u00f5es armazenadas");
         table.put("call debug reports",
                 "relat\u00f3rios de depura\u00e7\u00e3o de chamadas");
+    }
+
+    private static void fillPt_rBR6(Map<String, String> table) {
         table.put("call log file uploads",
                 "envios de arquivos de registro de chamadas");
         table.put("call log reports",
                 "relat\u00f3rios de registro de chamadas");
         table.put("caption text paste",
                 "colagem de texto em legendas");
-    }
-
-    private static void fillPt_rBR6(Map<String, String> table) {
         table.put("channel Gift button",
                 "bot\u00e3o de presente dos canais");
         table.put("channel ads",
@@ -3251,7 +3275,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(768);
+        Map<String, String> table = new HashMap<>(774);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -3486,6 +3510,12 @@ public final class L10nTranslations {
                 "Dosya boyutu: %1$s");
         table.put("Firebase certificate header",
                 "Firebase sertifika ba\u015fl\u0131\u011f\u0131");
+        table.put("Firebase crash and session reports stop too, from the next time Telegram starts.",
+                "Firebase \u00e7\u00f6kme ve oturum raporlar\u0131 da Telegram'\u0131n bir sonraki a\u00e7\u0131l\u0131\u015f\u0131ndan itibaren durur.");
+        table.put("Firebase crash reports",
+                "Firebase \u00e7\u00f6kme raporlar\u0131");
+        table.put("Firebase session reports",
+                "Firebase oturum raporlar\u0131");
         table.put("Folder tabs above the chat list show just their names, without unread counts. Chats stay unread and the app icon badge doesn't change.",
                 "Sohbet listesinin \u00fcst\u00fcndeki klas\u00f6r sekmeleri okunmam\u0131\u015f say\u0131s\u0131 olmadan yaln\u0131zca adlar\u0131n\u0131 g\u00f6sterir. Sohbetler okunmam\u0131\u015f kal\u0131r ve uygulama simgesindeki rozet de\u011fi\u015fmez.");
         table.put("Forward to",
@@ -3500,15 +3530,15 @@ public final class L10nTranslations {
                 "Galeri kameras\u0131");
         table.put("GitHub is blocking checks from this network for now. Try again later.",
                 "GitHub \u015fu an bu a\u011fdan gelen denetimleri engelliyor. Daha sonra tekrar deneyin.");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("GitHub sent a reply HushTelegram couldn't read. Try again later.",
                 "GitHub, HushTelegram'\u0131n okuyamad\u0131\u011f\u0131 bir yan\u0131t g\u00f6nderdi. Daha sonra tekrar deneyin.");
         table.put("Go straight to one group of settings. Back returns to where you were.",
                 "Do\u011frudan bir ayar grubuna git. Geri, bulundu\u011fun yere d\u00f6nd\u00fcr\u00fcr.");
         table.put("Hide Premium, gifts and Stars",
                 "Premium, hediyeler ve Stars'\u0131 gizle");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("Hide Stories",
                 "Hik\u00e2yeleri gizle");
         table.put("Hide Telegram Features and Invite Friends",
@@ -3623,15 +3653,15 @@ public final class L10nTranslations {
                 "Hay\u0131r");
         table.put("No HushTelegram release is out yet.",
                 "Hen\u00fcz bir HushTelegram s\u00fcr\u00fcm\u00fc yay\u0131nlanmad\u0131.");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("No app on this phone can open the link. The address is %1$s.",
                 "Bu telefondaki hi\u00e7bir uygulama ba\u011flant\u0131y\u0131 a\u00e7am\u0131yor. Adres: %1$s.");
         table.put("No chat to forward to",
                 "\u0130letilecek sohbet yok");
         table.put("No matching settings",
                 "E\u015fle\u015fen ayar yok");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("No previews before sending",
                 "G\u00f6ndermeden \u00f6nce \u00f6nizleme yok");
         table.put("No reply since Telegram started",
@@ -3746,15 +3776,15 @@ public final class L10nTranslations {
                 "Ayar dosyas\u0131 kaydediliyor");
         table.put("Search settings",
                 "Ayarlarda ara");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Selecting links by hand",
                 "Ba\u011flant\u0131lar\u0131 elle se\u00e7me");
         table.put("Send",
                 "G\u00f6nder");
         table.put("Send GIF",
                 "GIF g\u00f6nder");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("Send sticker",
                 "\u00c7\u0131kartma g\u00f6nder");
         table.put("Send this GIF to this chat?",
@@ -3869,15 +3899,15 @@ public final class L10nTranslations {
                 "Bu bir HushTelegram ayar dosyas\u0131 de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That setting couldn't be updated. The switch shows the value that is saved.",
                 "Bu ayar g\u00fcncellenemedi. Anahtar kay\u0131tl\u0131 de\u011feri g\u00f6sterir.");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
                 "Bu ayar dosyas\u0131nda HushTelegram'un okuyamad\u0131\u011f\u0131 bir de\u011fer var. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
                 "Bu ayar dosyas\u0131 hasarl\u0131 ya da yaln\u0131zca bir k\u0131sm\u0131 indirilmi\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
                 "Bu ayar dosyas\u0131, HushTelegram'un bu s\u00fcr\u00fcm\u00fcnden daha yeni bir s\u00fcr\u00fcm\u00fcyle olu\u015fturulmu\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-    }
-
-    private static void fillTr5(Map<String, String> table) {
         table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
                 "GPL-3.0 lisans\u0131 ve HushTelegram'\u0131n dayand\u0131\u011f\u0131 projelerin te\u015fekk\u00fcr notlar\u0131");
         table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
@@ -3992,15 +4022,15 @@ public final class L10nTranslations {
                 "kay\u0131tl\u0131 \u00f6neriler");
         table.put("call debug reports",
                 "arama hata ay\u0131klama raporlar\u0131");
+    }
+
+    private static void fillTr6(Map<String, String> table) {
         table.put("call log file uploads",
                 "arama g\u00fcnl\u00fck dosyas\u0131 y\u00fcklemeleri");
         table.put("call log reports",
                 "arama g\u00fcnl\u00fck raporlar\u0131");
         table.put("caption text paste",
                 "a\u00e7\u0131klama metni yap\u0131\u015ft\u0131rma");
-    }
-
-    private static void fillTr6(Map<String, String> table) {
         table.put("channel Gift button",
                 "kanal Hediye d\u00fc\u011fmesi");
         table.put("channel ads",

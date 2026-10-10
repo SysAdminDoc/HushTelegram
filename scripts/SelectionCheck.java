@@ -216,6 +216,8 @@ public final class SelectionCheck {
         hook(calls, flags, "cachedRecommendations", "misc/Recommendations", "skipCachedRecommendations");
         hook(calls, flags, "deviceStats", "misc/Analytics", "skipDeviceStats");
         hook(calls, flags, "readMetrics", "misc/Analytics", "skipReadMetrics");
+        hook(calls, flags, "crashReports", "misc/Analytics", "skipCrashReporterStart", "skipErrorReport");
+        hook(calls, flags, "sessionReports", "misc/Analytics", "sessionsEnabled");
         int promo = calls.getOrDefault(OWN + "telegram/misc/Analytics;->skipPremiumAppLog", 0);
         int promoFlags = 0;
         for (String status : List.of("premiumPromoShow", "premiumPromoTap", "premiumPromoAccept", "premiumPromoFail")) {

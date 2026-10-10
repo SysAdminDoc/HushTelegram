@@ -32,7 +32,7 @@ v0.0.11 follows telegram.org's beta build 71239. Hide contacts on Telegram, Hide
 ## Why use it
 
 - **Channels and search without sponsored posts.** Telegram never asks for them, so none are drawn, counted as seen or reported as clicked. That covers the sponsored accounts pinned above search results and the ads in its video player too.
-- **Usage reports stay on your phone.** When Telegram's server requests its storage-type statistic, the patch stops that report. It also stops channel read-time reports and Premium interaction telemetry. Billing callbacks and operational reports keep their usual behavior.
+- **Usage reports stay on your phone.** When Telegram's server requests its storage-type statistic, the patch stops that report. It also stops channel read-time reports and Premium interaction telemetry. On Telegram Beta, Firebase's crash and session reports stop as well, from the next start, while push notifications keep working. Billing callbacks and operational reports keep their usual behavior.
 - **No update offers that can't work.** telegram.org's build offers its own updates, and those can't install over a patched app. That offer is switched off, so you update through Morphe Manager instead.
 - **Controls that recover.** Every feature has a switch, and there's a pause, settings backups and privacy-filtered diagnostics for when Telegram changes.
 
@@ -79,7 +79,7 @@ The source catalog has 56 patches, with 54 selected by default. New since v0.0.1
 
 | Patch | What it does |
 |---|---|
-| `Disable analytics` | Stops Telegram from reporting how you use the app, like how long you read channel posts and what you tap on Premium screens. Messages and calls work as before. On by default. Turn it off in HushTelegram settings > Privacy. |
+| `Disable analytics` | Stops Telegram from reporting how you use the app, like how long you read channel posts and what you tap on Premium screens. On Telegram Beta it also turns off Firebase's crash and session reports from the next start. Messages, calls and notifications work as before. On by default. Turn it off in HushTelegram settings > Privacy. |
 | `Disable update checks` | Stops Telegram from offering its own updates from telegram.org, which can't install over a patched app. Patch each new version in Morphe Manager instead. On by default. Turn it off in HushTelegram settings > More settings > Updates. |
 | `Disable call debug upload` | Stops your phone from sending call problem reports and log files to Telegram when its server asks for them. On by default. Turn it off in HushTelegram settings > Privacy. |
 | `Disable draft link previews` | Keeps Telegram from looking up a link's preview before you send the message. Sent messages still get a preview. Starts off. Turn it on in HushTelegram settings > Privacy. |

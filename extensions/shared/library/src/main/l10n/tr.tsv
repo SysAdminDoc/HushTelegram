@@ -205,10 +205,13 @@ external browser routing	harici tarayıcıya yönlendirme
 opened link tracking	açılan bağlantıların takibi
 shared link tracking	paylaşılan bağlantıların takibi
 Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.	Telegram'a gönderilen kullanım raporlarını, örneğin her kanal gönderisini ne kadar okuduğunuzu ve Premium ekranlarında nelere dokunduğunuzu durdurur. Mesajlar ve aramalar eskisi gibi çalışır.
+Firebase crash and session reports stop too, from the next time Telegram starts.	Firebase çökme ve oturum raporları da Telegram'ın bir sonraki açılışından itibaren durur.
 Premium promo views	Premium tanıtım görüntülemeleri
 Premium promo taps	Premium tanıtım dokunuşları
 Premium promo accepts	Premium tanıtım onayları
 Premium promo failures	Premium tanıtım hataları
+Firebase crash reports	Firebase çökme raporları
+Firebase session reports	Firebase oturum raporları
 Accounts	Hesaplar
 Every switch here applies to all the accounts in this Telegram app, not only the one you have open.	Buradaki her anahtar yalnızca açık olan hesap için değil, bu Telegram uygulamasındaki tüm hesaplar için geçerlidir.
 No previews before sending	Göndermeden önce önizleme yok

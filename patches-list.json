@@ -235,7 +235,7 @@
     },
     {
       "name": "Disable analytics",
-      "description": "Stops Telegram from reporting how you use the app, like how long you read channel posts and what you tap on Premium screens. Messages and calls work as before. On by default. Turn it off in HushTelegram settings > Privacy.",
+      "description": "Stops Telegram from reporting how you use the app, like how long you read channel posts and what you tap on Premium screens. On Telegram Beta it also turns off Firebase's crash and session reports from the next start. Messages, calls and notifications work as before. On by default. Turn it off in HushTelegram settings > Privacy.",
       "category": "Privacy",
       "use": true,
       "dependencies": [

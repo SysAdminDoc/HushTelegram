@@ -202,10 +202,13 @@ external browser routing	abertura em navegador externo
 opened link tracking	rastreamento de links abertos
 shared link tracking	rastreamento de links compartilhados
 Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.	Interrompe os relatórios de uso enviados ao Telegram, como quanto tempo você lê cada publicação de canal e o que você toca nas telas do Premium. Mensagens e chamadas funcionam como antes.
+Firebase crash and session reports stop too, from the next time Telegram starts.	Os relatórios de falhas e de sessão do Firebase também param, a partir da próxima vez que o Telegram abrir.
 Premium promo views	visualizações de promoções do Premium
 Premium promo taps	toques em promoções do Premium
 Premium promo accepts	aceitações de promoções do Premium
 Premium promo failures	falhas de promoções do Premium
+Firebase crash reports	relatórios de falhas do Firebase
+Firebase session reports	relatórios de sessão do Firebase
 Accounts	Contas
 Every switch here applies to all the accounts in this Telegram app, not only the one you have open.	Cada opção aqui vale para todas as contas deste app do Telegram, não só para a que está aberta.
 No previews before sending	Sem prévias antes de enviar

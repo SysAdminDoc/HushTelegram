@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** On Telegram Beta, Disable analytics now also turns off Firebase's crash and session reports. Telegram's own crash reporter setup, which handed Crashlytics your user ID and username and switched collection back on at every launch, no longer runs, and Crashlytics' own setting is saved off, so it stops collecting and sending from the next start. Session reports stop right away. Push notifications don't change, and the regular build has neither reporter. Turning the switch off brings both back at the next launch.
+
 * **Telegram:** A new Turn off beta debug logs switch, off by default, stops Telegram Beta from writing debug logs all the time. The beta turned them on at every start, its connection log included, and its own debug menu couldn't stop that. Logs already saved stay until you clear them, and the regular build doesn't change. Restart Telegram after you turn it on.
 
 * **Telegram:** Keep deleted messages has a new Clear kept messages row in HushTelegram settings, right under its switch. One tap gives every message it kept, in every signed-in account, to Telegram's own deletion, so they go the way they would have without the patch. A notice tells you how many went. It's translated into all five languages.

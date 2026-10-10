@@ -546,9 +546,14 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) {
             PreferenceCategory privacy = category(screen, L10n.t("Privacy"));
             if (build.contains(PatchFamily.DISABLE_ANALYTICS)) {
+                String usage = L10n.t("Stops usage reports to Telegram, like how long you read each channel post and what "
+                        + "you tap on Premium screens. Messages and calls work as before.");
+                // Only Telegram Beta carries Firebase's reporters, so only a build that stops them says so.
+                if (PatchFamily.Capability.CRASH_REPORTS.installed() || PatchFamily.Capability.SESSION_REPORTS.installed()) {
+                    usage = usage + " " + L10n.t("Firebase crash and session reports stop too, from the next time Telegram starts.");
+                }
                 privacy.addPreference(mark(toggle(context, Settings.DISABLE_ANALYTICS, L10n.t("Stop usage reports"),
-                    PatchFamily.DISABLE_ANALYTICS.coverageSummary(L10n.t("Stops usage reports to Telegram, like how long you read each channel post and what "
-                            + "you tap on Premium screens. Messages and calls work as before."))), SettingsIcons.BLOCK));
+                    PatchFamily.DISABLE_ANALYTICS.coverageSummary(usage)), SettingsIcons.BLOCK));
             }
             if (build.contains(PatchFamily.DISABLE_CALL_DEBUG)) {
                 privacy.addPreference(mark(toggle(context, Settings.DISABLE_CALL_DEBUG, L10n.t("Stop call diagnostics"),

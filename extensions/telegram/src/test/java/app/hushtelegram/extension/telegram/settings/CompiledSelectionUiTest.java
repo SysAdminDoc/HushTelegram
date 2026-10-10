@@ -172,7 +172,11 @@ public class CompiledSelectionUiTest {
                 String prefix = family.patchName + " coverage: ";
                 String coverage = report.stream().filter(line -> line.startsWith(prefix)).findFirst().orElseThrow(AssertionError::new);
                 for (PatchFamily.Capability capability : installed) assertTrue(coverage.contains(capability.label));
-                assertEquals(installed.size() < family.expectedCapabilities().size(), coverage.contains("; missing: "));
+                // A target only some builds carry is never missing where this build didn't get it.
+                assertEquals(installed.size() < family.shownCapabilities().size(), coverage.contains("; missing: "));
+                for (PatchFamily.Capability capability : family.expectedCapabilities()) {
+                    if (capability.onlyWhereCarried && !installed.contains(capability)) assertFalse(coverage.contains(capability.label));
+                }
             }
         }
     }
