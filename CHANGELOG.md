@@ -2,6 +2,16 @@
 
 Every HushTelegram release, newest first.
 
+## Unreleased
+
+* **Telegram:** Telegram 13.0.0 and beta 13.0.1 are now the supported versions. Every patch is checked against those two builds, and 12.10.6 and 12.10.7 are no longer supported.
+
+* **Telegram:** Several patches were updated for the way Telegram 13.0 builds its screens, so they keep working there: Hide Stories, Hide Premium, gifts and Stars, Hide Telegram Features and Invite Friends, Gallery camera on tap, Quiet contacts nag, Holiday look all year, and the HushTelegram row in Telegram's own settings.
+
+* **Telegram:** Telegram 13.0 renamed My TON in Settings to Gram Earnings. Hide Premium, gifts and Stars still hides that row under its new name.
+
+* **Telegram:** Telegram 13.0 no longer sends the storage report that Disable analytics used to stop, so the patch doesn't look for it anymore. Channel read times and Premium screen reports still stay on your phone.
+
 ## 0.0.12 (2026-10-09)
 
 The sixth release, with 56 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.
