@@ -45,12 +45,12 @@ class ExtensionHostsTest {
     }
 
     @Test
-    fun `only the release check opens a connection itself`() {
+    fun `only the release check and the outside translator open a connection themselves`() {
         val openers = sources().filter { (_, source) -> NETWORK.containsMatchIn(split(source).second) }
             .map { it.first }.filter { it != FIREBASE_HEADER }.toSortedSet()
         assertEquals(
-            "The README says the extension goes online by itself only to ask GitHub for the newest " +
-                "release once that check is turned on. These files open connections",
+            "The README says the extension goes online itself only to ask GitHub for the newest " +
+                "release and to send text the person turned on to Google's translate. These files open connections",
             TRANSPORTS.toSortedSet(),
             openers,
         )
@@ -70,6 +70,13 @@ class ExtensionHostsTest {
         val check = sources().single { it.first == RELEASE_CHECK }.second
         val hosts = split(check).first.flatMap { literal -> URL.findAll(literal).map { it.groupValues[1] }.toList() }
         assertEquals(listOf("api.github.com"), hosts)
+    }
+
+    @Test
+    fun `the outside translator talks to Google's translate and nothing else`() {
+        val translator = sources().single { it.first == TRANSLATOR }.second
+        val hosts = split(translator).first.flatMap { literal -> URL.findAll(literal).map { it.groupValues[1] }.toList() }
+        assertEquals(listOf("translate.googleapis.com"), hosts)
     }
 
     @Test
@@ -126,15 +133,20 @@ class ExtensionHostsTest {
         /**
          * The hosts the README's Privacy section names. 127.0.0.1 is where Disable analytics sends
          * Telegram's event logs: the phone itself, on a port nothing listens on.
+         * translate.googleapis.com is Translate with an outside service.
          */
-        val ALLOWED_HOSTS = setOf("github.com", "api.github.com", "gitlab.com", "www.gnu.org", "127.0.0.1")
+        val ALLOWED_HOSTS = setOf("github.com", "api.github.com", "gitlab.com", "www.gnu.org", "127.0.0.1",
+            "translate.googleapis.com")
         const val RELEASE_CHECK =
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/ReleaseCheck.java"
         const val FIREBASE_HEADER =
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FirebasePush.java"
         val TRANSPORTS = listOf(
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/ReleaseTransport.java",
+            TRANSLATOR,
         )
+        const val TRANSLATOR =
+            "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GoogleTranslate.java"
         val URL = Regex("""(?:https?|wss?)://([A-Za-z0-9.-]+)""")
         val NETWORK = Regex(
             """\b(?:HttpURLConnection|HttpsURLConnection|URLConnection|openConnection|Socket|SSLSocket|""" +

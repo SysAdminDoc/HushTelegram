@@ -206,7 +206,9 @@ Some other Telegram patches enable paid Premium features without a subscription,
 
 ## Privacy
 
-HushTelegram doesn't collect anything and has no server. The patched app goes online on HushTelegram's behalf for one thing only: the release check, and it's off until you turn it on. Once it's on, HushTelegram asks `api.github.com` for its latest release at most once a day, when Telegram starts, and again whenever you tap Check now. That's a plain HTTPS request with `HushTelegram/<version>` as its User-Agent, and it carries no cookies and nothing about you or your phone. GitHub sees your IP address, as any site you visit does.
+HushTelegram doesn't collect anything and has no server. The patched app goes online on HushTelegram's behalf for two things, and both are off until you turn them on. The first is the release check. Once it's on, HushTelegram asks `api.github.com` for its latest release at most once a day, when Telegram starts, and again whenever you tap Check now. That's a plain HTTPS request with `HushTelegram/<version>` as its User-Agent, and it carries no cookies and nothing about you or your phone. GitHub sees your IP address, as any site you visit does.
+
+The second is Translate with an outside service. With its switch on, a message you translate with Translate here, and the messages you open in a chat you turned on with Translate this chat, go to Google's web translate at `translate.googleapis.com`, one message at a time. Each request carries that message's text and the language you're translating into, with `HushTelegram` as its User-Agent. Google sees the text and your IP address. Your own messages and service messages aren't sent, and nothing goes out for a chat or message you haven't turned on. Which chats are on stays on the phone, and translations are kept in memory only.
 
 The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.org`. Those open in your browser, and only when you tap one.
 
