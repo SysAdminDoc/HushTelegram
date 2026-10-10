@@ -41,13 +41,13 @@ internal object AppCompatibilities {
     const val TELEGRAM_SIGNER_SHA256 = "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
 
     /** The default web build every patch here was applied to and read against. */
-    const val TELEGRAM_TARGET_VERSION = "13.0.0"
+    const val TELEGRAM_TARGET_VERSION = "13.0.1"
 
     /**
      * The version code of telegram.org's [TELEGRAM_TARGET_VERSION] APK. It carries every ABI, so
      * the one code stands for arm64-v8a too.
      */
-    const val TELEGRAM_TARGET_VERSION_CODE = 71589
+    const val TELEGRAM_TARGET_VERSION_CODE = 71679
 
     const val TELEGRAM_BETA_TARGET_VERSION = "13.0.1"
     const val TELEGRAM_BETA_TARGET_VERSION_CODE = 71669
