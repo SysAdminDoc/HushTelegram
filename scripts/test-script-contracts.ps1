@@ -53,6 +53,14 @@ function New-NotFoundAnswer {
 # marked, so no case here waits behind a real build and the cases below can tell who asked.
 $queueStandInRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('hushtelegram-queue-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $queueStandInRoot | Out-Null
+# A failing case stops the suite before the stand-in is removed near the end, so remove it here
+# too and let the failure carry on.
+trap {
+    if ($queueStandInRoot -and (Test-Path -LiteralPath $queueStandInRoot)) {
+        Remove-Item -LiteralPath $queueStandInRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    break
+}
 $queueStandIn = Join-Path $queueStandInRoot 'build-queue.ps1'
 $queueLog = Join-Path $queueStandInRoot 'queue.log'
 Set-Content -LiteralPath $queueStandIn -Encoding ASCII -Value @'
