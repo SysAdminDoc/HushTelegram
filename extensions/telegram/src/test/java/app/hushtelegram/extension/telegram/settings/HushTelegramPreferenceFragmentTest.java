@@ -151,6 +151,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.STRIP_LINK_TRACKING, "Remove link tracking tags");
         ROW_TITLES.put(PatchFamily.DISABLE_UPDATE_CHECKS, "Turn off Telegram's update checks");
         ROW_TITLES.put(PatchFamily.REPAIR_FIREBASE_PUSH, "Repair Firebase push registration");
+        ROW_TITLES.put(PatchFamily.UNIFIED_PUSH, "UnifiedPush notifications");
     }
 
     /** The sections every build has, in the order they're drawn. */
@@ -321,6 +322,19 @@ public class HushTelegramPreferenceFragmentTest {
                     + "notification service, using Telegram's original certificate. Notification permission and "
                     + "battery settings still apply.",
                     String.valueOf(page.findPreference(Settings.REPAIR_FIREBASE_PUSH.key).getSummary()));
+            assertEquals("UnifiedPush notifications", String.valueOf(page.findPreference(Settings.UNIFIED_PUSH.key).getTitle()));
+            assertEquals("For phones where Firebase notifications don't arrive. Telegram signs up an address from a "
+                    + "UnifiedPush app like ntfy, and Telegram's servers call it to wake Telegram when something "
+                    + "arrives. The messages still come from Telegram itself. Turned off, Telegram goes back to "
+                    + "Firebase the next time it starts.",
+                    String.valueOf(page.findPreference(Settings.UNIFIED_PUSH.key).getSummary()));
+            // Telegram keeps signing up with Firebase until the switch is turned on.
+            assertFalse(Settings.UNIFIED_PUSH.key,
+                    ((SwitchPreference) page.findPreference(Settings.UNIFIED_PUSH.key)).isChecked());
+            // With no UnifiedPush app installed, the row under it says what to install.
+            assertEquals("Push app", String.valueOf(page.findPreference(UnifiedPushPicker.KEY).getTitle()));
+            assertEquals("Install a UnifiedPush app like ntfy, then come back here.",
+                    String.valueOf(page.findPreference(UnifiedPushPicker.KEY).getSummary()));
             assertEquals("Open links externally", String.valueOf(page.findPreference(Settings.OPEN_EXTERNAL_LINKS.key).getTitle()));
             assertEquals("Opens normal web links in your browser. Telegram links, sign-in and payment pages keep "
                     + "working the way they did.",

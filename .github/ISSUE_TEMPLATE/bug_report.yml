@@ -92,6 +92,7 @@ body:
         - Open links externally
         - Quiet contacts nag
         - Repair Firebase push registration
+        - UnifiedPush notifications
         - Use registered Telegram API credentials
         - Use registered Maps API key
         - HushTelegram icon and name

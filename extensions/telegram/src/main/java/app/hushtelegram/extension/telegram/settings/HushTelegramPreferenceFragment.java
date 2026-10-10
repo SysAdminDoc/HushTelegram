@@ -75,6 +75,7 @@ import app.hushtelegram.extension.telegram.misc.FirebasePush;
 import app.hushtelegram.extension.telegram.misc.KeepDeleted;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
+import app.hushtelegram.extension.telegram.misc.UnifiedPush;
 
 /**
  * The preference list, built in code rather than from an XML resource so the bundle adds no
@@ -283,6 +284,24 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.REPAIR_FIREBASE_PUSH.coverageSummary(L10n.t("Tries to help this patched Telegram sign up for push notifications with Firebase, "
                             + "Google's notification service, using Telegram's original certificate. Notification "
                             + "permission and battery settings still apply."))));
+        }
+        if (build.contains(PatchFamily.UNIFIED_PUSH)) {
+            SwitchPreference push = toggle(context, Settings.UNIFIED_PUSH, L10n.t("UnifiedPush notifications"),
+                    PatchFamily.UNIFIED_PUSH.coverageSummary(L10n.t("For phones where Firebase notifications don't arrive. Telegram signs up an "
+                            + "address from a UnifiedPush app like ntfy, and Telegram's servers call it to wake Telegram when "
+                            + "something arrives. The messages still come from Telegram itself. Turned off, Telegram goes back "
+                            + "to Firebase the next time it starts.")));
+            Preference app = pushAppRow(context);
+            push.setOnPreferenceChangeListener((row, value) -> {
+                boolean on = Boolean.TRUE.equals(value);
+                UnifiedPush.switched(context, on);
+                // The app answers in a moment, so the row reads its state again after.
+                app.setSummary(UnifiedPush.status(context, on));
+                Utils.runOnMainThreadDelayed(() -> app.setSummary(UnifiedPush.status(context, Settings.UNIFIED_PUSH.savedValue())), 2000);
+                return true;
+            });
+            on(pages, PatchFamily.UNIFIED_PUSH).addPreference(push);
+            on(pages, PatchFamily.UNIFIED_PUSH).addPreference(app);
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
@@ -1003,6 +1022,21 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         row.setOnPreferenceClickListener(p -> {
             Activity activity = getActivity();
             if (activity != null) TranslateServiceEditor.open(activity, p);
+            return true;
+        });
+        return row;
+    }
+
+    /** Which UnifiedPush app the sign-up goes to, and how it's going. Tapping it picks another app. */
+    private Preference pushAppRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(UnifiedPushPicker.KEY);
+        row.setTitle(L10n.t("Push app"));
+        row.setPersistent(false);
+        row.setSummary(UnifiedPush.status(context, Settings.UNIFIED_PUSH.savedValue()));
+        row.setOnPreferenceClickListener(p -> {
+            Activity activity = getActivity();
+            if (activity != null) UnifiedPushPicker.open(activity, p);
             return true;
         });
         return row;

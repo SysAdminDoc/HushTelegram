@@ -81,6 +81,7 @@ public final class FamilyNames {
     public static final String STRIP_LINK_TRACKING = "Strip link tracking";
     public static final String DISABLE_UPDATE_CHECKS = "Disable update checks";
     public static final String REPAIR_FIREBASE_PUSH = "Repair Firebase push registration";
+    public static final String UNIFIED_PUSH = "UnifiedPush notifications";
 
     private FamilyNames() {
     }

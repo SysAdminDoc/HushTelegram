@@ -3321,6 +3321,64 @@
       "options": []
     },
     {
+      "name": "UnifiedPush notifications",
+      "description": "Lets Telegram get its notifications through a UnifiedPush app like ntfy, for phones where Firebase notifications don't arrive. Telegram's servers wake it through the app, and the messages still come from Telegram. Starts off. Turn it on in HushTelegram settings > Notifications.",
+      "category": "Notifications",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings",
+        "ResourcePatch"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger.web": [
+          "13.0.1"
+        ],
+        "org.telegram.messenger.beta": [
+          "13.0.1"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.0.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71679
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram Beta",
+          "packageName": "org.telegram.messenger.beta",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.0.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71669
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Use normal paste",
       "description": "Pastes text exactly as you copied it, without Telegram adding formatting, tables or code styling. Starts off. Turn it on in HushTelegram settings > Conversations.",
       "category": "Conversations",

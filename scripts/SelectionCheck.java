@@ -58,6 +58,9 @@ public final class SelectionCheck {
     private static final String CONNECTIONS = "Lorg/telegram/tgnet/ConnectionsManager;";
     private static final String ANDROID = "{http://schemas.android.com/apk/res/android}";
     private static final String ALIAS = "app.hushtelegram.extension.telegram.settings.OpenSettings";
+    private static final String PUSH_RECEIVER = "app.hushtelegram.extension.telegram.misc.UnifiedPushReceiver";
+    private static final String PUSH_RAISE = "app.hushtelegram.extension.telegram.misc.UnifiedPushRaise";
+    private static final String PUSH_SIGN_UP = "Lorg/telegram/messenger/PushListenerController;->sendRegistrationToServer(ILjava/lang/String;)V";
     private static final String DEBUG_VERSION = "Lorg/telegram/messenger/BuildVars;->DEBUG_VERSION:Z";
     private static final String BETA_LOGS = OWN + "telegram/misc/BetaLogs;";
     /**
@@ -69,7 +72,7 @@ public final class SelectionCheck {
             "sessionReports", "firebase_sessions_enabled");
 
     static final class Expected {
-        boolean settings, links, api, maps, icon;
+        boolean settings, links, api, maps, icon, push;
         int apiId;
         String apiHash, mapsKey;
         Map<String, Boolean> flags;
@@ -81,6 +84,7 @@ public final class SelectionCheck {
             api = input.getBoolean("api");
             maps = input.getBoolean("maps");
             icon = input.optBoolean("icon", false);
+            push = input.optBoolean("push", false);
             apiId = input.optInt("apiId");
             apiHash = input.optString("apiHash");
             mapsKey = input.optString("mapsKey");
@@ -366,6 +370,7 @@ public final class SelectionCheck {
         hook(calls, flags, "hideChannelButtons", "misc/ChannelButtons", "set");
         hook(calls, flags, "hideSendAs", "misc/SendAs", "show");
         hook(calls, flags, "fasterDownloads", "misc/DownloadSpeed", "fast");
+        hook(calls, flags, "unifiedPush", "misc/UnifiedPush", "token", "type");
         hook(calls, flags, "hideByKeyword", "misc/MessageFilters", "type");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");
         hook(calls, flags, "disableUpdateChecks", "misc/UpdateChecks", "skipUpdateCheck");
@@ -381,6 +386,14 @@ public final class SelectionCheck {
             require(linked == Boolean.TRUE.equals(flags.get("firebaseLocalStatus")));
             if (linked) method(types, bridge[1]);
         }
+        // UnifiedPush hands its address to Telegram's own sign-up through a stub the patch writes.
+        List<Instruction> signUp = instructions(method(types, OWN + "telegram/misc/UnifiedPush;->sendToTelegram(ILjava/lang/String;)V"));
+        boolean signUpLinked = signUp.size() == 2 && signUp.get(0).getOpcode() == Opcode.INVOKE_STATIC
+                && signUp.get(0) instanceof ReferenceInstruction reference
+                && reference.getReference().toString().equals(PUSH_SIGN_UP)
+                && signUp.get(1).getOpcode() == Opcode.RETURN_VOID;
+        require(signUpLinked == Boolean.TRUE.equals(flags.get("unifiedPush")));
+        if (signUpLinked) method(types, PUSH_SIGN_UP);
     }
 
     /**
@@ -634,6 +647,25 @@ public final class SelectionCheck {
                         .child(new Node("category").attribute("name", "STRING:android.intent.category.BROWSABLE"))
                         .child(new Node("data").attribute("scheme", "STRING:" + scheme)));
             }
+        }
+        if (expected.push && !credentialsOnlyDelta) {
+            // UnifiedPush notifications asks to see the UnifiedPush apps and declares the two
+            // components they talk to.
+            List<Node> queries = before.children("queries");
+            require(queries.size() <= 1);
+            Node query = queries.isEmpty() ? new Node("queries") : queries.get(0);
+            if (queries.isEmpty()) before.child(query);
+            query.child(new Node("intent").child(new Node("action").attribute("name", "STRING:org.unifiedpush.android.distributor.REGISTER")));
+            Node actions = new Node("intent-filter");
+            for (String action : List.of("NEW_ENDPOINT", "MESSAGE", "UNREGISTERED", "REGISTRATION_FAILED")) {
+                actions.child(new Node("action").attribute("name", "STRING:org.unifiedpush.android.connector." + action));
+            }
+            application.child(new Node("receiver").attribute("name", "STRING:" + PUSH_RECEIVER)
+                    .attribute("exported", "BOOL:true").child(actions));
+            application.child(new Node("service").attribute("name", "STRING:" + PUSH_RAISE)
+                    .attribute("exported", "BOOL:true")
+                    .child(new Node("intent-filter").child(new Node("action")
+                            .attribute("name", "STRING:org.unifiedpush.android.connector.RAISE_TO_FOREGROUND"))));
         }
         if (expected.icon && !credentialsOnlyDelta) {
             // HushTelegram icon and name points the application, and Telegram's default launcher

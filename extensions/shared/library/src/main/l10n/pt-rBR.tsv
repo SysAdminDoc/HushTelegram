@@ -497,3 +497,19 @@ Take the spaces out of the address, model and key.	Tire os espaços do endereço
 The address has to start with https://.	O endereço precisa começar com https://.
 # context: a short toast when the AI service turns the key down (HTTP 401 or 403).
 Your AI service didn't accept the key	Seu serviço de IA não aceitou a chave
+# context: a switch on the Notifications page. UnifiedPush is the name of an open notification standard and stays as it is.
+UnifiedPush notifications	Notificações pelo UnifiedPush
+# context: that switch's summary. Firebase is Google's notification service and ntfy is an app; both names stay as they are.
+For phones where Firebase notifications don't arrive. Telegram signs up an address from a UnifiedPush app like ntfy, and Telegram's servers call it to wake Telegram when something arrives. The messages still come from Telegram itself. Turned off, Telegram goes back to Firebase the next time it starts.	Para celulares onde as notificações do Firebase não chegam. O Telegram cadastra um endereço de um app de UnifiedPush como o ntfy, e os servidores do Telegram chamam esse endereço para acordar o Telegram quando algo chega. As mensagens continuam vindo do próprio Telegram. Desligado, o Telegram volta ao Firebase na próxima vez que abrir.
+# context: a row under that switch, and the title of the list it opens: which installed UnifiedPush app, like ntfy, delivers the notifications.
+Push app	App de push
+Install a UnifiedPush app like ntfy, then come back here.	Instale um app de UnifiedPush como o ntfy e depois volte aqui.
+# context: that row's summary. %1$s is the app's name, like ntfy. "The switch" is the UnifiedPush notifications switch above the row.
+%1$s. Turn the switch on to sign up with it.	%1$s. Ligue a chave para se cadastrar com ele.
+%1$s ended the sign-up. Turn the switch off and on to sign up again.	%1$s encerrou o cadastro. Desligue e ligue a chave para se cadastrar de novo.
+%1$s turned the sign-up down. Check that it allows UnifiedPush.	%1$s recusou o cadastro. Verifique se ele permite UnifiedPush.
+# context: the row's summary once signed up: Telegram's servers wake Telegram up through that app.
+Telegram's wake-ups come through %1$s.	O Telegram é acordado pelo %1$s.
+Signing up with %1$s…	Cadastrando no %1$s…
+# context: a toast when the row is tapped and no UnifiedPush app is installed.
+Install a UnifiedPush app like ntfy first.	Instale primeiro um app de UnifiedPush como o ntfy.

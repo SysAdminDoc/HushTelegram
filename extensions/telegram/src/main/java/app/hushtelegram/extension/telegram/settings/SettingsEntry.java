@@ -41,6 +41,7 @@ import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Logger;
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.telegram.misc.BlackTheme;
+import app.hushtelegram.extension.telegram.misc.UnifiedPush;
 
 /**
  * How the HushTelegram screen is reached.
@@ -89,7 +90,8 @@ public final class SettingsEntry {
      * Injected before each return of the application's {@code onCreate}, after Telegram's own
      * startup. Watches every Telegram activity, so a pending open lands on whichever one resumes
      * next: signed out, the launcher hands straight over to the login screen. Also where the
-     * release check, when it's on, asks at most once a day, on a worker.
+     * release check, when it's on, asks at most once a day, on a worker, and where a UnifiedPush
+     * sign-up is renewed.
      */
     public static void onApplicationCreate(Context context) {
         try {
@@ -102,6 +104,7 @@ public final class SettingsEntry {
             Logger.printException(() -> "Settings entry: could not watch activities", ex);
         }
         ReleaseCheck.onTelegramStart();
+        UnifiedPush.onTelegramStart(context);
         publishShortcut(context);
     }
 

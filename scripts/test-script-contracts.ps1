@@ -607,16 +607,19 @@ $unchanged = Get-ManifestDelta -Stock $facts -Patched $facts
 Assert-True (@(ConvertTo-ManifestDeltaEntries -Delta $unchanged).Count -eq 0) `
     'An unchanged manifest produced a delta.'
 
-# The checked-in allowlist approves one change and nothing else: HushTelegram settings exports an
-# alias of Telegram's launcher activity for Android's App info page.
+# The checked-in allowlist approves three changes and nothing else: HushTelegram settings exports an
+# alias of Telegram's launcher activity for Android's App info page, and UnifiedPush notifications
+# exports the receiver and service a UnifiedPush app talks to.
 $checkedInAllowlist = @(Read-ManifestDeltaAllowlist -Path (Join-Path $PSScriptRoot 'manifest-delta-allowlist.txt') |
     Where-Object { $_ })
 $settingsAlias = 'activity-alias:app.hushtelegram.extension.telegram.settings.OpenSettings'
-$approvedEntries = @("exported-added $settingsAlias")
+$approvedEntries = @("exported-added $settingsAlias",
+    'exported-added receiver:app.hushtelegram.extension.telegram.misc.UnifiedPushReceiver',
+    'exported-added service:app.hushtelegram.extension.telegram.misc.UnifiedPushRaise')
 Assert-True ((@($checkedInAllowlist | Sort-Object -CaseSensitive) -join "`n") -ceq
         (@($approvedEntries | Sort-Object -CaseSensitive) -join "`n")) `
-    ('The checked-in manifest delta allowlist approves something besides the settings alias, or leaves it ' +
-     "out: $($checkedInAllowlist -join ', ')")
+    ('The checked-in manifest delta allowlist approves something besides the settings alias and the UnifiedPush ' +
+     "receiver and service, or leaves one out: $($checkedInAllowlist -join ', ')")
 
 $allowlistRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("receipt-" + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $allowlistRoot | Out-Null
@@ -1032,7 +1035,9 @@ try {
     $withApproved = {
         param($r)
         foreach ($target in $r.targets) {
-            $target.manifestDelta.exportedComponentsAdded = @($settingsAlias)
+            $target.manifestDelta.exportedComponentsAdded = @($settingsAlias,
+                'receiver:app.hushtelegram.extension.telegram.misc.UnifiedPushReceiver',
+                'service:app.hushtelegram.extension.telegram.misc.UnifiedPushRaise')
         }
     }
     $approvedReceipt = Test-TestReceipt -Receipt (New-TestReceipt -Mutate $withApproved) -Approved $checkedInAllowlist
@@ -4506,8 +4511,8 @@ class AlignmentFixture {
     $androidName = 'http://schemas.android.com/apk/res/android:name(0x01010003)='
     $androidExported = '          A: http://schemas.android.com/apk/res/android:exported(0x01010010)=true'
     # Telegram asks for internet access and exports its launcher activity, on every build. The patched
-    # build exports the settings alias beside the launcher: the change the checked-in allowlist
-    # approves, and the only one the patches make here.
+    # build exports the settings alias beside the launcher, and the UnifiedPush receiver and service:
+    # the changes the checked-in allowlist approves, and the only ones the patches make here.
     function Get-FixtureManifest([string]$Build, [string]$Code, [switch]$WithSplit, [switch]$Patched,
             [string]$Package = $releaseTarget.PackageName, [int]$MinSdk = 21) {
         $binaryMinSdk = if ($Patched) { [Math]::Max($MinSdk, 28) } else { $MinSdk }
@@ -4533,11 +4538,25 @@ class AlignmentFixture {
         if ($Patched) {
             $lines += @('        E: activity-alias (line=60)',
                 "          A: $androidName`"app.hushtelegram.extension.telegram.settings.OpenSettings`" (Raw: `"app.hushtelegram.extension.telegram.settings.OpenSettings`")",
+                $androidExported,
+                '        E: receiver (line=70)',
+                "          A: $androidName`"app.hushtelegram.extension.telegram.misc.UnifiedPushReceiver`" (Raw: `"app.hushtelegram.extension.telegram.misc.UnifiedPushReceiver`")",
+                $androidExported,
+                '        E: service (line=80)',
+                "          A: $androidName`"app.hushtelegram.extension.telegram.misc.UnifiedPushRaise`" (Raw: `"app.hushtelegram.extension.telegram.misc.UnifiedPushRaise`")",
                 $androidExported)
         }
         return ($lines -join "`n") + "`n"
     }
     $dependencyNamesHere = @(Get-PatchDependencyNames -PatchList $releaseCatalog -RequestedNames $releaseNames)
+    # A fixture is found by its package and version, as telegram.org's build and the beta can declare
+    # the same version (13.0.1 both): keyed by the version alone, the beta's took the web build's
+    # place and the web build had no fixture. The release target's keep the bare version, which
+    # every lookup below by $releaseTarget.PackageVersion or $newerBuild reads.
+    function Get-FixtureKey([string]$Package, [string]$Version) {
+        if ($Package -ceq $releaseTarget.PackageName) { return $Version }
+        return "$Package $Version"
+    }
     $fixturePaths = @{}
     # Beside the declared builds, a newer one the catalog doesn't declare, the kind a release run
     # patches under -f to see what still applies on it. Each declared build carries the version code
@@ -4549,14 +4568,6 @@ class AlignmentFixture {
             foreach ($version in $packageTarget.PackageVersions) { [pscustomobject]@{ Target = $packageTarget; Version = $version } }
         })
     foreach ($fixtureRecord in $fixtureRecords) {
-    # A fixture is found by its package and version, as telegram.org's build and the beta can declare
-    # the same version (13.0.1 both): keyed by the version alone, the beta's took the web build's
-    # place and the web build had no fixture. The release target's keep the bare version, which
-    # every lookup below by $releaseTarget.PackageVersion or $newerBuild reads.
-    function Get-FixtureKey([string]$Package, [string]$Version) {
-        if ($Package -ceq $releaseTarget.PackageName) { return $Version }
-        return "$Package $Version"
-    }
         $build = $fixtureRecord.Version
         $packageTarget = $fixtureRecord.Target
         $package = $packageTarget.PackageName

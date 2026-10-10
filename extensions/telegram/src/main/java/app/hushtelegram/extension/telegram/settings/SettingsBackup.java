@@ -149,7 +149,8 @@ public final class SettingsBackup {
             Settings.OPEN_EXTERNAL_LINKS,
             Settings.STRIP_LINK_TRACKING,
             Settings.DISABLE_UPDATE_CHECKS,
-            Settings.REPAIR_FIREBASE_PUSH));
+            Settings.REPAIR_FIREBASE_PUSH,
+            Settings.UNIFIED_PUSH));
 
     /**
      * The text a file carries besides the switches: the message filters, each list as a JSON array

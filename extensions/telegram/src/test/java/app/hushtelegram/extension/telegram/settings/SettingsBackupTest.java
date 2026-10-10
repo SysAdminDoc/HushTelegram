@@ -200,7 +200,7 @@ public class SettingsBackupTest {
                         Settings.DISABLE_ANALYTICS, Settings.DISABLE_CALL_DEBUG, Settings.DISABLE_DRAFT_PREVIEWS,
                         Settings.GALLERY_CAMERA_ON_TAP,
                         Settings.OPEN_EXTERNAL_LINKS, Settings.STRIP_LINK_TRACKING, Settings.DISABLE_UPDATE_CHECKS,
-                        Settings.REPAIR_FIREBASE_PUSH),
+                        Settings.REPAIR_FIREBASE_PUSH, Settings.UNIFIED_PUSH),
                 SettingsBackup.ALLOWLIST);
     }
 

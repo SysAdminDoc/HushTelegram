@@ -368,6 +368,9 @@ public class PausedHooksTest {
         // telegram.org's build never asks the server whether a newer one is out.
         probes.put(PatchFamily.DISABLE_UPDATE_CHECKS, Collections.singletonList(UpdateChecks::skipUpdateCheck));
         probes.put(PatchFamily.REPAIR_FIREBASE_PUSH, Collections.singletonList(PausedHooksTest::firebaseHeaderChanged));
+        // A Firebase sign-up signs up the UnifiedPush address instead.
+        probes.put(PatchFamily.UNIFIED_PUSH, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.UnifiedPushForTests.swapsFirebase()));
         return probes;
     }
 

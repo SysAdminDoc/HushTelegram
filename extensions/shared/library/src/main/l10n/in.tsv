@@ -500,3 +500,19 @@ Take the spaces out of the address, model and key.	Hapus spasi dari alamat, mode
 The address has to start with https://.	Alamat harus diawali dengan https://.
 # context: a short toast when the AI service turns the key down (HTTP 401 or 403).
 Your AI service didn't accept the key	Layanan AI-mu tidak menerima kunci itu
+# context: a switch on the Notifications page. UnifiedPush is the name of an open notification standard and stays as it is.
+UnifiedPush notifications	Notifikasi UnifiedPush
+# context: that switch's summary. Firebase is Google's notification service and ntfy is an app; both names stay as they are.
+For phones where Firebase notifications don't arrive. Telegram signs up an address from a UnifiedPush app like ntfy, and Telegram's servers call it to wake Telegram when something arrives. The messages still come from Telegram itself. Turned off, Telegram goes back to Firebase the next time it starts.	Untuk ponsel yang tidak menerima notifikasi Firebase. Telegram mendaftarkan alamat dari aplikasi UnifiedPush seperti ntfy, dan server Telegram memanggilnya untuk membangunkan Telegram saat ada yang masuk. Pesannya tetap datang dari Telegram sendiri. Jika dimatikan, Telegram kembali ke Firebase saat dimulai berikutnya.
+# context: a row under that switch, and the title of the list it opens: which installed UnifiedPush app, like ntfy, delivers the notifications.
+Push app	Aplikasi push
+Install a UnifiedPush app like ntfy, then come back here.	Pasang aplikasi UnifiedPush seperti ntfy, lalu kembali ke sini.
+# context: that row's summary. %1$s is the app's name, like ntfy. "The switch" is the UnifiedPush notifications switch above the row.
+%1$s. Turn the switch on to sign up with it.	%1$s. Nyalakan sakelar untuk mendaftar dengannya.
+%1$s ended the sign-up. Turn the switch off and on to sign up again.	%1$s mengakhiri pendaftaran. Matikan lalu nyalakan sakelar untuk mendaftar lagi.
+%1$s turned the sign-up down. Check that it allows UnifiedPush.	%1$s menolak pendaftaran. Periksa apakah aplikasi itu mengizinkan UnifiedPush.
+# context: the row's summary once signed up: Telegram's servers wake Telegram up through that app.
+Telegram's wake-ups come through %1$s.	Telegram dibangunkan lewat %1$s.
+Signing up with %1$s…	Mendaftar dengan %1$s…
+# context: a toast when the row is tapped and no UnifiedPush app is installed.
+Install a UnifiedPush app like ntfy first.	Pasang dulu aplikasi UnifiedPush seperti ntfy.

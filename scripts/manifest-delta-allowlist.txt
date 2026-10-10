@@ -12,7 +12,7 @@
 # a way it doesn't list. A line nothing produces any more fails the receipt as well, so this
 # cannot quietly outlive the change it approved.
 #
-# One change is approved.
+# Three changes are approved.
 #
 # HushTelegram settings adds an alias of Telegram's launcher activity that answers
 # android.intent.action.APPLICATION_PREFERENCES, so Android's App info page for Telegram shows
@@ -21,7 +21,15 @@
 # several icon aliases besides), so nothing new is reachable: the alias only gives other apps a
 # second name for a screen they could already open.
 #
+# UnifiedPush notifications adds a receiver and a service that a UnifiedPush app such as ntfy talks
+# to. That app is another package, so both have to be exported. The receiver drops every broadcast
+# that doesn't carry the random token of the person's own sign-up, and while nobody has signed up
+# there is no token to match. The service is the spec's RAISE_TO_FOREGROUND binding: it hands out
+# an empty binder while signed up and nothing otherwise, and reaches no data either way.
+#
 # Nothing else is approved. A patch that asks for any permission, drops one, or changes what other
 # apps can reach still stops the release until somebody says why.
 
 exported-added activity-alias:app.hushtelegram.extension.telegram.settings.OpenSettings
+exported-added receiver:app.hushtelegram.extension.telegram.misc.UnifiedPushReceiver
+exported-added service:app.hushtelegram.extension.telegram.misc.UnifiedPushRaise

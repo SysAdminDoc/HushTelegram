@@ -404,6 +404,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting REPAIR_FIREBASE_PUSH =
             new BooleanSetting("hushtelegram_repair_firebase_push", TRUE);
 
+    /** Telegram signs up a UnifiedPush app's address for its wake-ups instead of Firebase's token. */
+    public static final BooleanSetting UNIFIED_PUSH =
+            new BooleanSetting("hushtelegram_unified_push", FALSE);
+
     /**
      * Once a day, when Telegram starts, ask api.github.com whether a newer HushTelegram release is
      * out, and say so on the settings screen ({@link ReleaseCheck}). It's the settings entry's own
