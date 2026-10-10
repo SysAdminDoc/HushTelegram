@@ -109,11 +109,17 @@ val hideCommercePatch = bytecodePatch(
         handleTargets(PATCH, "sales presentation targets", CommerceTarget.entries + PremiumStickerTarget.entries) { target ->
             val edits = if (target is CommerceTarget) plan.hooks[target] else stickers[target as PremiumStickerTarget]
             val capability = if (target is CommerceTarget) target.capability else (target as PremiumStickerTarget).capability
-            if (edits == null) "no structurally matching $capability target"
+            val changed = (target as? PremiumStickerTarget)?.let { stickers.leftOut[it] }
+            if (changed != null) "$capability left out, $changed"
+            else if (edits == null) "no structurally matching $capability target"
             else {
-                edits.sortedByDescending { it.index }.forEach { edit ->
-                    if (edit.replace) edit.method.replaceInstruction(edit.index, edit.code)
-                    else edit.method.addInstructionsAtControlFlowLabel(edit.index, edit.code, *edit.labels.toTypedArray())
+                // Inserted code is what can fail to assemble, so its methods go first and a failure
+                // leaves the replace-only ones as they were. Later places first keep earlier indexes.
+                edits.groupBy { it.method }.values.sortedBy { inMethod -> inMethod.all { it.replace } }.forEach { inMethod ->
+                    inMethod.sortedByDescending { it.index }.forEach { edit ->
+                        if (edit.replace) edit.method.replaceInstruction(edit.index, edit.code)
+                        else edit.method.addInstructionsAtControlFlowLabel(edit.index, edit.code, *edit.labels.toTypedArray())
+                    }
                 }
                 when (target) {
                     CommerceTarget.SETTINGS -> enableCapability("commerceSettingsRows")

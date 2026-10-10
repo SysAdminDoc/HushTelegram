@@ -49,11 +49,18 @@ internal enum class PremiumStickerTarget(val capability: String) {
     STICKERS("commercePremiumStickers"), EFFECTS("commercePremiumEffects"), EMOJI_PACKS("commercePremiumEmojiPacks"),
 }
 
-/** The edits for each target that applies, read as a map, and the Commerce stubs those targets read. */
+/**
+ * The edits for each target that applies, read as a map, the Commerce stubs those targets read, and
+ * why a target whose places were found but no longer have their shape is left out.
+ */
 internal class PremiumStickerPlan(
     edits: Map<PremiumStickerTarget, List<CommerceEdit>>,
     val stubs: Map<String, String>,
+    val leftOut: Map<PremiumStickerTarget, String>,
 ) : Map<PremiumStickerTarget, List<CommerceEdit>> by edits
+
+/** A place whose shape changed in this build: its target is left out, and the others still apply. */
+private class Drift(reason: String) : Exception(reason)
 
 /** The stubs Commerce's two sticker questions read, written only for the targets that apply. */
 internal val PREMIUM_STUBS = mapOf(
@@ -96,8 +103,8 @@ internal val PREMIUM_STUBS = mapOf(
  * effect, which a chat calls when the sticker scrolls into view and when it's tapped.
  * [PremiumStickerTarget.EMOJI_PACKS]: the emoji keyboard's pass that sorts installed and featured
  * emoji packs, splitting a Premium pack's free emoji from the rest, and hands them to the tab
- * strip. A target is left out whole when any of its places is missing; two candidates for one
- * place refuse.
+ * strip. A target is left out whole when any of its places is missing or has changed shape; two
+ * candidates for one place refuse.
  */
 internal fun BytecodePatchContext.resolvePremiumStickerHooks(): PremiumStickerPlan {
     val methods = mutableListOf<Method>()
@@ -105,6 +112,15 @@ internal fun BytecodePatchContext.resolvePremiumStickerHooks(): PremiumStickerPl
     fun mutable(method: Method) = mutableClassDefBy(method.definingClass).methods.single { it.sameSignature(method) }
     val hooks = mutableMapOf<PremiumStickerTarget, List<CommerceEdit>>()
     val stubs = mutableMapOf<String, String>()
+    val leftOut = mutableMapOf<PremiumStickerTarget, String>()
+    // Every edit of a target is planned before any is kept, so a changed place leaves none behind.
+    fun plan(target: PremiumStickerTarget, edits: () -> List<CommerceEdit>) {
+        try {
+            hooks[target] = edits()
+        } catch (drift: Drift) {
+            leftOut[target] = drift.message!!
+        }
+    }
 
     val sorter = methods.filter { method ->
         !AccessFlags.STATIC.isSet(method.accessFlags) && method.hasShape(listOf("Z"), "V") &&
@@ -113,27 +129,28 @@ internal fun BytecodePatchContext.resolvePremiumStickerHooks(): PremiumStickerPl
                     body.any { it.reference()?.endsWith(EMOJI_PACKS) == true }
             }
     }.unique("emoji keyboard's pack pass")
-    if (sorter != null) {
+    if (sorter != null) plan(PremiumStickerTarget.EMOJI_PACKS) {
         val (edit, reads) = emojiEdit(mutable(sorter))
-        hooks[PremiumStickerTarget.EMOJI_PACKS] = listOf(edit)
         stubs += reads
+        listOf(edit)
     }
 
     val blocked = methods.singleOrNull { it.definingClass == STICKER_CONTROLLER && it.name == "premiumFeaturesBlocked" }
     // The stubs read the account the same way Telegram's own answer does.
     val answer = blocked?.instructions()?.mapNotNull { it.reference() }.orEmpty()
-    if (blocked == null || ACCOUNT_CONFIG !in answer || IS_PREMIUM !in answer) return PremiumStickerPlan(hooks, stubs)
+    if (blocked == null || ACCOUNT_CONFIG !in answer || IS_PREMIUM !in answer) return PremiumStickerPlan(hooks, stubs, leftOut)
 
     val filters = methods.filter { it.definingClass == STICKER_CONTROLLER && it.name == FILTER }
-    shape(filters.size <= 2, "more than two Premium sticker filters (${filters.size})")
     val keyboard = methods.filter { method ->
         !AccessFlags.STATIC.isSet(method.accessFlags) && method.hasShape(listOf("Z"), "V") &&
             method.instructions().let { body ->
                 body.count { it.reference() == PREMIUM_BLOCKED } == 1 && body.count { it.reference() == PREMIUM_DOCUMENT } >= 2
             }
     }.unique("keyboard's Premium sticker pass")
-    if (filters.size == 2 && keyboard != null) {
-        hooks[PremiumStickerTarget.STICKERS] = (filters + keyboard).map { blockedEdit(mutable(it)) }
+    if (filters.isNotEmpty() && keyboard != null) plan(PremiumStickerTarget.STICKERS) {
+        // A third filter would keep showing what the other two leave out.
+        drift(filters.size == 2, "MessagesController has ${filters.size} Premium sticker filters, not two")
+        (filters + keyboard).map { blockedEdit(mutable(it)) }
     }
 
     val tooltip = methods.filter { method ->
@@ -145,14 +162,14 @@ internal fun BytecodePatchContext.resolvePremiumStickerHooks(): PremiumStickerPl
                 method.parameterTypes.size == 3 && method.parameterTypes[2].toString() == "Z" &&
                 method.instructions().let { body -> body.any { it.reference() == PREMIUM_MESSAGE } && body.any { it.reference() == TAP_HINT } }
         }.unique("sticker effect player")
-        if (player != null) hooks[PremiumStickerTarget.EFFECTS] = listOf(blockedEdit(mutable(tooltip)), effectEdit(mutable(player)))
+        if (player != null) plan(PremiumStickerTarget.EFFECTS) { listOf(blockedEdit(mutable(tooltip)), effectEdit(mutable(player))) }
     }
     // Both sticker targets ask premiumStickersBlocked; only the effect player reads a message.
     val sticker = setOf("premiumBlocked", "premiumAccount")
     PREMIUM_STUBS.filterKeys { stub ->
         (PremiumStickerTarget.STICKERS in hooks && stub in sticker) || PremiumStickerTarget.EFFECTS in hooks
     }.forEach { (stub, smali) -> stubs[stub] = smali }
-    return PremiumStickerPlan(hooks, stubs)
+    return PremiumStickerPlan(hooks, stubs, leftOut)
 }
 
 /**
@@ -162,8 +179,8 @@ internal fun BytecodePatchContext.resolvePremiumStickerHooks(): PremiumStickerPl
 private fun blockedEdit(method: MutableMethod): CommerceEdit {
     val body = method.instructions()
     val at = body.indices.filter { body[it].reference() == PREMIUM_BLOCKED }.singleOrNull()
-        ?: throw PatchException("$PATCH: ${method.definingClass}->${method.name} no longer asks premiumFeaturesBlocked once (before editing)")
-    shape(body[at].opcode == Opcode.INVOKE_VIRTUAL && body.getOrNull(at + 1)?.opcode == Opcode.MOVE_RESULT,
+        ?: throw Drift("${method.definingClass}->${method.name} no longer asks premiumFeaturesBlocked once")
+    drift(body[at].opcode == Opcode.INVOKE_VIRTUAL && body.getOrNull(at + 1)?.opcode == Opcode.MOVE_RESULT,
         "${method.name}'s premiumFeaturesBlocked answer isn't read right after")
     val controller = body[at].namedRegisters().single()
     return CommerceEdit(method, at, "invoke-static {v$controller}, $ASK_BLOCKED", replace = true)
@@ -172,15 +189,19 @@ private fun blockedEdit(method: MutableMethod): CommerceEdit {
 /**
  * Before the effect player does anything: a Premium sticker on an account without Premium returns
  * straight away, the way the player returns for a message it doesn't animate. The cell's message
- * is read with the same call the player makes, into a local, which holds nothing yet at entry.
+ * is read with the same call the player makes, into a local, which holds nothing yet at entry. A
+ * jump back to the start would run the guard again over a local the player is using, so a player
+ * with one is left out.
  */
 private fun effectEdit(method: MutableMethod): CommerceEdit {
     val body = method.instructions()
     val cell = method.parameterRegisterNumber(0)
     val read = body.firstOrNull {
         it.opcode == Opcode.INVOKE_VIRTUAL && it.reference() == "${method.parameterTypes[0]}$GET_MESSAGE" && it.namedRegisters() == listOf(cell)
-    }?.reference() ?: throw PatchException("$PATCH: the sticker effect player no longer reads its cell's message (before editing)")
-    shape(cell - 1 >= 1 && cell <= 15, "the sticker effect player has no room to ask about its cell")
+    }?.reference() ?: throw Drift("the sticker effect player no longer reads its cell's message")
+    drift(cell - 1 >= 1 && cell <= 15, "the sticker effect player has no room to ask about its cell")
+    val flow = ControlFlow.of(method)
+    drift((flow.normal + flow.exceptional).none { 0 in it }, "something in the sticker effect player jumps back to its start")
     // The keep label is held by the inserted code: a label on the stock first instruction would move
     // onto the guard along with the method start, and the guard would jump to itself.
     return CommerceEdit(method, 0, """
@@ -206,33 +227,33 @@ private fun effectEdit(method: MutableMethod): CommerceEdit {
 private fun emojiEdit(method: MutableMethod): Pair<CommerceEdit, Map<String, String>> {
     val body = method.instructions()
     val tabs = body.indices.filter { body[it].reference()?.endsWith(EMOJI_PACKS) == true }.singleOrNull()
-        ?: throw PatchException("$PATCH: the emoji pack pass no longer hands its packs to the tab strip once (before editing)")
+        ?: throw Drift("the emoji pack pass no longer hands its packs to the tab strip once")
     val view = body[tabs].owner()
     val viewRegister = body[tabs].namedRegisters().single()
     val at = tabs - 2
     val strip = body.getOrNull(at) as? TwoRegisterInstruction
-    shape(strip != null && body[at].opcode == Opcode.IGET_OBJECT && body[at].owner() == view && strip.registerB == viewRegister &&
+    drift(strip != null && body[at].opcode == Opcode.IGET_OBJECT && body[at].owner() == view && strip.registerB == viewRegister &&
         body[at + 1].opcode == Opcode.IF_EQZ && body[at + 1].namedRegisters() == listOf(strip.registerA),
         "the emoji tab strip isn't read right before it takes the packs")
     val flow = ControlFlow.of(method).normal
-    shape(flow.indices.none { it != at && at + 1 in flow[it] } && flow.indices.none { it != at + 1 && tabs in flow[it] },
+    drift(flow.indices.none { it != at && at + 1 in flow[it] } && flow.indices.none { it != at + 1 && tabs in flow[it] },
         "something jumps past the emoji tab strip's read")
 
     val clear = body.indexOfFirst { it.reference() == CLEAR }
     val list = body.getOrNull(clear - 1) as? TwoRegisterInstruction
-    shape(list != null && body[clear - 1].opcode == Opcode.IGET_OBJECT && body[clear - 1].owner() == view &&
+    drift(list != null && body[clear - 1].opcode == Opcode.IGET_OBJECT && body[clear - 1].owner() == view &&
         body[clear].namedRegisters() == listOf(list.registerA),
         "the emoji pack pass no longer starts by clearing the view's pack list")
 
     val premium = body.indices.filter { body[it].reference() == IS_PREMIUM }.singleOrNull() ?: -1
-    shape(premium >= 2 && body[premium - 2].reference() == ACCOUNT_INSTANCE && body.getOrNull(premium + 1)?.opcode == Opcode.MOVE_RESULT,
+    drift(premium >= 2 && body[premium - 2].reference() == ACCOUNT_INSTANCE && body.getOrNull(premium + 1)?.opcode == Opcode.MOVE_RESULT,
         "the emoji pack pass no longer asks once whether the account has Premium")
     val account = body.filter { it.opcode == Opcode.IGET && it.owner() == view }.singleOrNull()
-    shape(account != null && (account as TwoRegisterInstruction).registerA == body[premium - 2].namedRegisters().single(),
+    drift(account != null && (account as TwoRegisterInstruction).registerA == body[premium - 2].namedRegisters().single(),
         "the emoji pack pass no longer reads its view's account once")
     val answer = (body[premium + 1] as OneRegisterInstruction).registerA
     val allow = (premium + 2 until minOf(premium + 8, body.size)).firstOrNull { body[it].opcode == Opcode.IGET_BOOLEAN }
-    shape(allow != null && body[allow].owner() == view && (body[allow] as TwoRegisterInstruction).registerA == answer &&
+    drift(allow != null && body[allow].owner() == view && (body[allow] as TwoRegisterInstruction).registerA == answer &&
         (premium + 2 until allow).any { body[it].opcode == Opcode.IF_NEZ && body[it].namedRegisters() == listOf(answer) },
         "the emoji pack pass no longer lets its view show every emoji without Premium")
 
@@ -241,7 +262,7 @@ private fun emojiEdit(method: MutableMethod): Pair<CommerceEdit, Map<String, Str
     val xor = body.indices.filter { body[it].opcode == Opcode.XOR_INT_2ADDR }.singleOrNull()
     val free = xor?.let { body.getOrNull(it + 1) }
     val ask = body.indexOfFirst { it.reference() == PREMIUM_EMOJI_PACK }
-    shape(free?.opcode == Opcode.IPUT_BOOLEAN &&
+    drift(free?.opcode == Opcode.IPUT_BOOLEAN &&
         body.drop(ask).firstOrNull { it.opcode == Opcode.IPUT_BOOLEAN }?.reference() == free?.reference(),
         "the emoji pack pass no longer marks a pack free the same way for installed and featured packs")
     val freeField = free!!.reference()!!
@@ -285,4 +306,7 @@ private fun <T> List<T>.unique(what: String): T? {
 }
 private fun shape(ok: Boolean, what: String) {
     if (!ok) throw PatchException("$PATCH: $what (before editing)")
+}
+private fun drift(ok: Boolean, what: String) {
+    if (!ok) throw Drift(what)
 }

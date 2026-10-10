@@ -136,8 +136,9 @@ public final class Commerce {
      * them out where Premium can't be bought. An account with Premium keeps every sticker.
      */
     public static boolean premiumStickersBlocked(Object controller) {
+        if (controller == null) return false;
         boolean blocked = premiumBlocked(controller);
-        if (blocked || controller == null || !enabled()) return blocked;
+        if (blocked || !enabled()) return blocked;
         try {
             if (premiumAccount(controller)) return false;
         } catch (Throwable t) {

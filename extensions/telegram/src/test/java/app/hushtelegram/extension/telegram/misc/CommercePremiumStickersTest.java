@@ -106,6 +106,9 @@ public class CommercePremiumStickersTest {
 
     @Test public void nothingToAskAboutOrAFailedReadKeepsTheStickers() {
         assertFalse(Commerce.premiumStickersBlocked(null));
+        Reads.blocked = true;
+        assertFalse("no controller is never handed on", Commerce.premiumStickersBlocked(null));
+        Reads.blocked = false;
         assertFalse(Commerce.skipPremiumEffect(null));
         Reads.broken = true;
         assertFalse(Commerce.premiumStickersBlocked(CONTROLLER));
@@ -189,6 +192,8 @@ public class CommercePremiumStickersTest {
         static boolean broken;
 
         @Implementation protected static boolean premiumBlocked(Object controller) {
+            // The patch's stub calls into the controller, which a null can't answer.
+            if (controller == null) throw new NullPointerException("controller");
             return blocked;
         }
 

@@ -8,9 +8,12 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.util.ControlFlow
@@ -178,6 +181,51 @@ class PremiumStickerFixtureTest {
             assertFact(context, "commercePremiumEmojiPacks", 1)
             for ((method, before) in filters) {
                 assertEquals("${build.name}: ${method.name} is left as it was", before, method.instructions().map(::operation))
+            }
+        }
+    }
+
+    @Test
+    fun `a filter that no longer asks premiumFeaturesBlocked leaves the stickers out and the rest still apply`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val stickers = context.resolvePremiumStickerHooks().getValue(PremiumStickerTarget.STICKERS)
+            val changed = stickers.first { it.method.definingClass == CONTROLLER }
+            val register = changed.method.instructions()[changed.index].namedRegisters().single()
+            changed.method.replaceInstruction(changed.index, "invoke-virtual {v$register}, $CONTROLLER->isClientActivated()Z")
+            val before = stickers.map { it.method to it.method.instructions().map(::operation) }
+            val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
+            assertTrue("${build.name}: $warnings", warnings.any {
+                "commercePremiumStickers left out" in it && "no longer asks premiumFeaturesBlocked once" in it })
+            assertFact(context, "hideCommerce", 1)
+            assertFact(context, "commercePremiumStickers", 0)
+            assertFact(context, "commercePremiumEffects", 1)
+            assertFact(context, "commercePremiumEmojiPacks", 1)
+            for ((method, operations) in before) {
+                assertEquals("${build.name}: ${method.name} is left as it was", operations, method.instructions().map(::operation))
+            }
+        }
+    }
+
+    @Test
+    fun `an effect player that jumps back to its start is left out and the rest still apply`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val effects = context.resolvePremiumStickerHooks().getValue(PremiumStickerTarget.EFFECTS)
+            val player = effects.single { !it.replace }.method
+            val tooltip = effects.single { it.replace }.method
+            // A guard put in front of the start would run again here, over whatever the loop holds.
+            val cell = player.implementation!!.registerCount - 3
+            player.addInstructionsWithLabels(1, "if-eqz v$cell, :start", ExternalLabel("start", player.getInstruction(0)))
+            val before = listOf(player, tooltip).map { it to it.instructions().map(::operation) }
+            val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
+            assertTrue("${build.name}: $warnings", warnings.any {
+                "commercePremiumEffects left out" in it && "jumps back to its start" in it })
+            assertFact(context, "commercePremiumEffects", 0)
+            assertFact(context, "commercePremiumStickers", 1)
+            assertFact(context, "commercePremiumEmojiPacks", 1)
+            for ((method, operations) in before) {
+                assertEquals("${build.name}: ${method.name} is left as it was", operations, method.instructions().map(::operation))
             }
         }
     }
