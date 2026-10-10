@@ -4,6 +4,9 @@
  */
 package app.hushtelegram.extension.telegram.misc;
 
+import app.hushtelegram.extension.shared.Utils;
+import app.hushtelegram.extension.shared.diagnostics.HookStatus;
+import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -116,6 +119,28 @@ final class KeepDeletedBridge implements KeepDeleted.Source {
         // Telegram's own key: 0 outside channels, the channel's dialog ID inside one.
         cleanup[1].invoke(deleted, ids, -channelId);
         cleanup[0].invoke(notifications, deleted, false);
+    }
+
+    /**
+     * The way Telegram redraws an edited message: each message is marked for a fresh layout, and
+     * the account's NotificationCenter says the chat's messages were replaced, by themselves. The
+     * open chat puts each one back in its place and its bubble measures again, label and all.
+     */
+    @Override public void redraw(long dialogId, ArrayList<Object> messages) throws Exception {
+        Object center = call(controller, "getNotificationCenter");
+        int replaced = center.getClass().getField("replaceMessagesObjects").getInt(null);
+        Method post = method(center.getClass(), "postNotificationName", int.class, Object[].class);
+        ArrayList<Field> marks = new ArrayList<>(messages.size());
+        for (Object message : messages) marks.add(message.getClass().getField("forceUpdate"));
+        // Telegram's chat screens read the event and their messages on the main thread only.
+        Utils.runOnMainThread(() -> {
+            try {
+                for (int i = 0; i < messages.size(); i++) marks.get(i).setBoolean(messages.get(i), true);
+                post.invoke(center, replaced, new Object[] {Long.valueOf(dialogId), messages});
+            } catch (Throwable failure) {
+                HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "redraw", failure);
+            }
+        });
     }
 
     /**

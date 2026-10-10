@@ -11,9 +11,11 @@ import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,9 @@ public final class KeepDeleted {
 
     /** Newest messages remembered per account. Older ones lose the label first. */
     static final int LIMIT = 5000;
+
+    /** Bubbles measured lately, which a chat on screen can be asked to draw again. */
+    static final int SHOWN_LIMIT = 300;
 
     /** One stored message, with what the decision needs to know about it. */
     static final class Row {
@@ -68,6 +73,9 @@ public final class KeepDeleted {
 
         /** Telegram's notification cleanup for deleted [ids], which its update path runs and its push deletion doesn't. */
         void clearNotifications(ArrayList<Integer> ids, long channelId) throws Exception;
+
+        /** Asks a chat showing [messages] of [dialogId] to draw their bubbles again, on the main thread. */
+        void redraw(long dialogId, ArrayList<Object> messages) throws Exception;
     }
 
     /** Where the remembered messages live between runs. */
@@ -87,6 +95,13 @@ public final class KeepDeleted {
 
     private static final ThreadLocal<Object> MEASURING = new ThreadLocal<>();
     private static final Map<Long, LinkedHashSet<String>> KEPT = new HashMap<>();
+    /** "account:chat:id" of each bubble measured lately, newest last. Weak, so a closed chat's messages can go. */
+    private static final LinkedHashMap<String, WeakReference<Object>> SHOWN =
+            new LinkedHashMap<String, WeakReference<Object>>(64, 0.75f, true) {
+                @Override protected boolean removeEldestEntry(Map.Entry<String, WeakReference<Object>> eldest) {
+                    return size() > SHOWN_LIMIT;
+                }
+            };
 
     static Persist persist = new Prefs();
     static Keys keys = KeepDeletedBridge::keyOf;
@@ -139,7 +154,10 @@ public final class KeepDeleted {
         if (message == null || time == null) return time;
         try {
             long[] key = keys.of(message);
-            if (!isKept(key[0], key[1], (int) key[2])) return time;
+            if (!isKept(key[0], key[1], (int) key[2])) {
+                shown(key[0], key[1], key[2], message);
+                return time;
+            }
             HookStatus.counted(FamilyNames.KEEP_DELETED_MESSAGES, "label shown");
             return L10n.t("deleted") + " " + time;
         } catch (Throwable failure) {
@@ -186,9 +204,10 @@ public final class KeepDeleted {
     /** Keeps what may be kept and gives the rest to Telegram's own deletion. */
     static void decide(Source source, long dialogId, ArrayList<Integer> ids, long channelId) {
         ArrayList<Integer> release = new ArrayList<>(ids);
+        ArrayList<long[]> kept = new ArrayList<>();
+        long self = 0;
         try {
-            long self = source.self();
-            ArrayList<long[]> kept = new ArrayList<>();
+            self = source.self();
             for (Row row : source.rows(dialogId, ids)) {
                 if (!keeps(row, self) || !release.remove(Integer.valueOf(row.id))) continue;
                 kept.add(new long[] {row.dialog, row.id});
@@ -198,7 +217,9 @@ public final class KeepDeleted {
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "decision", failure);
             release = new ArrayList<>(ids);
+            kept.clear();
         }
+        redraw(source, self, kept);
         if (release.isEmpty()) return;
         try {
             source.stock(dialogId, release, channelId);
@@ -220,6 +241,40 @@ public final class KeepDeleted {
     /** Someone else's plain message in a chat that allows saving. Anything else goes the stock way. */
     static boolean keeps(Row row, long self) {
         return !row.mine && !row.timed && !row.guarded && row.dialog != self;
+    }
+
+    /**
+     * A bubble on screen measured its time before its message was kept, so it shows no label yet.
+     * Each one measured lately is asked to draw again, the way Telegram redraws an edited message,
+     * and the label comes with its new measuring. A chat that isn't open has nothing to draw.
+     */
+    static void redraw(Source source, long self, List<long[]> kept) {
+        if (kept.isEmpty()) return;
+        Map<Long, ArrayList<Object>> byChat = new LinkedHashMap<>();
+        synchronized (SHOWN) {
+            for (long[] message : kept) {
+                WeakReference<Object> bubble = SHOWN.remove(shownKey(self, message[0], message[1]));
+                Object shown = bubble == null ? null : bubble.get();
+                if (shown == null) continue;
+                ArrayList<Object> chat = byChat.get(message[0]);
+                if (chat == null) byChat.put(message[0], chat = new ArrayList<>());
+                chat.add(shown);
+            }
+        }
+        for (Map.Entry<Long, ArrayList<Object>> chat : byChat.entrySet()) {
+            try {
+                source.redraw(chat.getKey(), chat.getValue());
+                HookStatus.counted(FamilyNames.KEEP_DELETED_MESSAGES, "kept message drawn again");
+            } catch (Throwable failure) {
+                HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "redraw", failure);
+            }
+        }
+    }
+
+    private static void shown(long owner, long dialog, long id, Object message) {
+        synchronized (SHOWN) {
+            SHOWN.put(shownKey(owner, dialog, id), new WeakReference<>(message));
+        }
     }
 
     static synchronized void remember(long owner, List<long[]> messages) {
@@ -247,6 +302,9 @@ public final class KeepDeleted {
 
     static synchronized void forgetAllForTests() {
         KEPT.clear();
+        synchronized (SHOWN) {
+            SHOWN.clear();
+        }
     }
 
     private static LinkedHashSet<String> load(long owner) {
@@ -266,6 +324,8 @@ public final class KeepDeleted {
     }
 
     private static String key(long dialog, long id) { return dialog + ":" + id; }
+
+    private static String shownKey(long owner, long dialog, long id) { return owner + ":" + key(dialog, id); }
 
     private static String prefsKey(long owner) { return "kept_" + owner; }
 

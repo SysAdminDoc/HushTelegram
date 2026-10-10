@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 30)
@@ -32,6 +33,7 @@ public class KeepDeletedTest {
     private static final KeepDeleted.Persist REAL_PERSIST = KeepDeleted.persist;
     private static final KeepDeleted.Keys REAL_KEYS = KeepDeleted.keys;
     private static final long SELF = 99;
+    private static final long CHANNEL = -1000000000042L;
 
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
@@ -178,15 +180,94 @@ public class KeepDeletedTest {
         assertEquals(Arrays.asList("-42=[5, 6] reactions=false", "0=[7] reactions=false"), controller.notifications.calls);
     }
 
+    @Test public void aKeptMessageOnScreenIsDrawnAgainSoTheOpenChatShowsItsLabel() {
+        Settings.KEEP_DELETED_MESSAGES.save(true);
+        Object first = new Object();
+        Object second = new Object();
+        Object mine = new Object();
+        Object elsewhere = new Object();
+        Map<Object, long[]> shown = new HashMap<>();
+        shown.put(first, new long[] {SELF, 10, 1});
+        shown.put(mine, new long[] {SELF, 10, 2});
+        shown.put(elsewhere, new long[] {SELF, 11, 3});
+        shown.put(second, new long[] {SELF, 10, 5});
+        KeepDeleted.keys = shown::get;
+        for (Object bubble : shown.keySet()) {
+            KeepDeleted.measuring(bubble);
+            assertEquals("measured before it was kept", "9:41 PM", KeepDeleted.labelled("9:41 PM"));
+        }
+
+        Fake telegram = new Fake(new KeepDeleted.Row(10, 1, false, false, false), new KeepDeleted.Row(10, 2, true, false, false),
+                new KeepDeleted.Row(11, 3, false, false, false), new KeepDeleted.Row(12, 4, false, false, false),
+                new KeepDeleted.Row(10, 5, false, false, false));
+        KeepDeleted.decide(telegram, 0, ids(1, 2, 3, 4, 5), 0);
+        assertEquals("each chat's kept bubbles, once; mine went and 4 was never on screen",
+                Arrays.asList("10:" + Arrays.asList(first, second), "11:" + Arrays.asList(elsewhere)), telegram.redrawn);
+        assertEquals(Arrays.asList("0:[2]:0"), telegram.stock);
+
+        // Drawn again, the bubble measures its time and the label is there.
+        KeepDeleted.measuring(first);
+        assertEquals("deleted 9:41 PM", KeepDeleted.labelled("9:41 PM"));
+        // A kept bubble isn't asked twice.
+        KeepDeleted.redraw(telegram, SELF, Arrays.asList(new long[] {10, 1}));
+        assertEquals(2, telegram.redrawn.size());
+    }
+
+    @Test public void aRedrawThatFailsStillKeepsTheMessageAndShowsInTheReport() {
+        Settings.KEEP_DELETED_MESSAGES.save(true);
+        KeepDeleted.keys = message -> new long[] {SELF, 10, 1};
+        KeepDeleted.measuring(new Object());
+        KeepDeleted.labelled("9:41 PM");
+        Fake telegram = new Fake(new KeepDeleted.Row(10, 1, false, false, false));
+        telegram.failRedraw = true;
+        KeepDeleted.decide(telegram, 0, ids(1), 0);
+        assertTrue(KeepDeleted.isKept(SELF, 10, 1));
+        assertTrue(telegram.stock.isEmpty());
+        assertTrue(HookStatus.missing(FamilyNames.KEEP_DELETED_MESSAGES).toString(),
+                HookStatus.missing(FamilyNames.KEEP_DELETED_MESSAGES).toString().contains("redraw"));
+    }
+
+    @Test public void theBridgeMarksEachMessageAndPostsTheReplacementOnTheMainThread() throws Exception {
+        TelegramController controller = new TelegramController();
+        Bubble first = new Bubble();
+        Bubble second = new Bubble();
+        ArrayList<Object> messages = new ArrayList<>(Arrays.asList(first, second));
+        KeepDeletedBridge.of(controller).redraw(CHANNEL, messages);
+        assertTrue("nothing reaches the chat off the main thread", controller.center.posts.isEmpty());
+        assertFalse(first.forceUpdate);
+
+        ShadowLooper.idleMainLooper();
+        assertTrue(first.forceUpdate);
+        assertTrue(second.forceUpdate);
+        assertEquals("the event Telegram's own storage posts, with the chat and the same messages",
+                Arrays.asList(Center.replaceMessagesObjects + ":" + Arrays.asList(CHANNEL, messages)), controller.center.posts);
+    }
+
     private static ArrayList<Integer> ids(Integer... ids) { return new ArrayList<>(Arrays.asList(ids)); }
 
     /** Public, like Telegram's own classes, so the bridge reaches them the same way. */
     public static final class TelegramController {
         final Notifications notifications = new Notifications();
+        final Center center = new Center();
 
         public Object getMessagesStorage() { return new Object(); }
 
         public Notifications getNotificationsController() { return notifications; }
+
+        public Center getNotificationCenter() { return center; }
+    }
+
+    /** Telegram's NotificationCenter: an event number in a static field and a varargs post. */
+    public static final class Center {
+        public static int replaceMessagesObjects = 7;
+        final List<String> posts = new ArrayList<>();
+
+        public void postNotificationName(int id, Object... args) { posts.add(id + ":" + Arrays.asList(args)); }
+    }
+
+    /** A message with the mark Telegram's bubble reads. */
+    public static final class Bubble {
+        public boolean forceUpdate;
     }
 
     public static final class Notifications {
@@ -239,10 +320,12 @@ public class KeepDeletedTest {
         final List<Runnable> posted = new ArrayList<>();
         final List<String> stock = new ArrayList<>();
         final List<String> cleared = new ArrayList<>();
+        final List<String> redrawn = new ArrayList<>();
         boolean failRows;
         boolean refusePost;
         boolean failStock;
         boolean failClear;
+        boolean failRedraw;
 
         Fake(KeepDeleted.Row... rows) { this.rows = Arrays.asList(rows); }
 
@@ -266,6 +349,11 @@ public class KeepDeletedTest {
         @Override public void clearNotifications(ArrayList<Integer> ids, long channelId) {
             if (failClear) throw new IllegalStateException("no notifications");
             cleared.add(ids + ":" + channelId);
+        }
+
+        @Override public void redraw(long dialogId, ArrayList<Object> messages) {
+            if (failRedraw) throw new IllegalStateException("no chat screen");
+            redrawn.add(dialogId + ":" + messages);
         }
     }
 }

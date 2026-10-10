@@ -33,6 +33,7 @@ import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -49,7 +50,15 @@ internal const val ADD_ALL = "Ljava/util/ArrayList;->addAll(Ljava/util/Collectio
 internal const val DELETE_BY_PUSH = "$MESSAGES_CONTROLLER->deleteMessagesByPush(JLjava/util/ArrayList;J)V"
 private const val OBJECT = "Ljava/lang/Object;"
 private const val LIST = "Ljava/util/ArrayList;"
-private const val MESSAGE_OBJECT = "Lorg/telegram/messenger/MessageObject;"
+internal const val MESSAGE_OBJECT = "Lorg/telegram/messenger/MessageObject;"
+internal const val GROUPED_MESSAGES = "Lorg/telegram/messenger/MessageObject\$GroupedMessages;"
+internal const val NOTIFICATION_CENTER = "Lorg/telegram/messenger/NotificationCenter;"
+/** The event Telegram posts when a chat's messages were replaced, with the chat and the new messages. */
+internal const val REPLACE_MESSAGES = "$NOTIFICATION_CENTER->replaceMessagesObjects:I"
+internal const val POST_NOTIFICATION = "$NOTIFICATION_CENTER->postNotificationName(I[Ljava/lang/Object;)V"
+/** Set on a message whose bubble has to lay itself out again although it shows the same message. */
+internal const val FORCE_UPDATE = "$MESSAGE_OBJECT->forceUpdate:Z"
+internal const val REPLACE_IF_EXISTS = "lambda\$replaceMessageIfExists\$"
 private const val PATCH = "Keep deleted messages"
 
 private val GOTOS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)
@@ -97,6 +106,8 @@ internal class KeepDeletedPlan(
     val pushResult: Int,
     val measure: MutableMethod,
     val measuredMessage: Int,
+    /** The bubble's own layout, which measures the time again when a message is marked. Not edited. */
+    val layout: Method,
 ) {
     /** Each hook goes in the method it was found for, the later one in the update loop first. */
     fun applyTo(updates: MutableMethod, push: MutableMethod, measure: MutableMethod) {
@@ -156,6 +167,8 @@ private val API = listOf(
     Api(BASE_CONTROLLER, "getMessagesStorage", "", STORAGE),
     Api(BASE_CONTROLLER, "getNotificationsController", "", NOTIFICATIONS),
     Api(BASE_CONTROLLER, "getUserConfig", "", USER_CONFIG),
+    Api(BASE_CONTROLLER, "getNotificationCenter", "", NOTIFICATION_CENTER),
+    Api(NOTIFICATION_CENTER, "postNotificationName", "I[$OBJECT", "V"),
     Api(MESSAGES_CONTROLLER, "deleteMessagesByPush", "J${LIST}J", "V"),
     Api(MESSAGES_CONTROLLER, "getChat", "Ljava/lang/Long;", TL_CHAT),
     Api(STORAGE, "getStorageQueue", "", QUEUE),
@@ -187,11 +200,17 @@ private val FIELDS = listOf(
     Triple(CHANNEL_DELETE, "messages", LIST),
     Triple(CHANNEL_DELETE, "channel_id", "J"),
     Triple(MESSAGE_OBJECT, "currentAccount", "I"),
+    Triple(MESSAGE_OBJECT, "forceUpdate", "Z"),
+)
+
+/** Telegram's numbers the extension reads by name: the replaced messages event. */
+private val STATIC_FIELDS = listOf(
+    Triple(NOTIFICATION_CENTER, "replaceMessagesObjects", "I"),
 )
 
 /** Every type the extension reaches by name, for a test to load. */
-internal val KEEP_DELETED_TYPES: Set<String> =
-    (API.map { it.owner } + FIELDS.map { it.first } + listOf(MESSAGES_CONTROLLER, STORAGE, NOTIFICATIONS)).toSet()
+internal val KEEP_DELETED_TYPES: Set<String> = (API.map { it.owner } + FIELDS.map { it.first } + STATIC_FIELDS.map { it.first } +
+    listOf(MESSAGES_CONTROLLER, STORAGE, NOTIFICATIONS)).toSet()
 
 /**
  * The extension reads Telegram's storage and message objects by name, and the patch refuses a build
@@ -211,6 +230,12 @@ private fun BytecodePatchContext.requireTelegramNames() {
         controlShape(cls != null && AccessFlags.PUBLIC.isSet(cls.accessFlags) && cls.fields.any {
             it.name == name && it.type == type && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
         }, "$owner->$name is no longer a public field Keep deleted messages can read")
+    }
+    for ((owner, name, type) in STATIC_FIELDS) {
+        val cls = classDefByOrNull(owner)
+        controlShape(cls != null && AccessFlags.PUBLIC.isSet(cls.accessFlags) && cls.fields.any {
+            it.name == name && it.type == type && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags)
+        }, "$owner->$name is no longer a public static field Keep deleted messages can read")
     }
     val storage = classDefByOrNull(STORAGE)
     val strings = (storage?.methods ?: emptyList()).flatMap { m -> m.controlBody().mapNotNull { it.controlString() } }
@@ -278,10 +303,39 @@ internal fun BytecodePatchContext.resolveKeepDeleted(): KeepDeletedPlan {
         }
     }
     val (type, name) = measures.controlSingle("message time measuring")
-    val measure = mutableClassDefBy(type).methods.single { it.name == name && it.parameterTypes.size == 1 &&
+    val bubble = mutableClassDefBy(type)
+    val measure = bubble.methods.single { it.name == name && it.parameterTypes.size == 1 &&
         it.parameterTypes[0].toString() == MESSAGE_OBJECT && it.returnType == "V" }
     controlShape(ControlFlow.of(measure).normal.none { 0 in it }, "something jumps back to the start of the message time measuring")
-    return KeepDeletedPlan(updates, branches, push, pushResult, measure, measure.parameterRegisterNumber(0))
+    val layout = requireRedraw(bubble, measure)
+    return KeepDeletedPlan(updates, branches, push, pushResult, measure, measure.parameterRegisterNumber(0), layout)
+}
+
+/**
+ * A bubble already on screen measured its time before its message was kept. The extension draws
+ * it again the way Telegram redraws an edited message: it marks the message for a fresh layout and
+ * posts the replaced messages event with the chat and the messages, the event Telegram's own
+ * storage posts after replacing a stored message. The chat screen puts each message back in its
+ * row, and the bubble's layout, which reads the mark and clears it, measures the time again.
+ *
+ * @return the bubble's layout
+ */
+internal fun BytecodePatchContext.requireRedraw(bubble: ClassDef, measure: Method): Method {
+    controlShape(classDefByOrNull(STORAGE)?.methods?.any { m ->
+        m.name.startsWith(REPLACE_IF_EXISTS) && !AccessFlags.STATIC.isSet(m.accessFlags) &&
+            m.controlBody().mapNotNull { it.controlRef() }.let { refs ->
+                REPLACE_MESSAGES in refs && "$MESSAGE_OBJECT->getDialogId()J" in refs && POST_NOTIFICATION in refs
+            }
+    } == true, "Telegram's storage no longer tells the open chat that a message was replaced")
+    val measured = "${measure.definingClass}->${measure.name}($MESSAGE_OBJECT)V"
+    return bubble.methods.filter { m ->
+        m.parameterTypes.map(CharSequence::toString).take(2) == listOf(MESSAGE_OBJECT, GROUPED_MESSAGES) && m.returnType == "V" &&
+            !AccessFlags.STATIC.isSet(m.accessFlags) && m.controlBody().let { body ->
+                body.any { it.opcode == Opcode.IGET_BOOLEAN && it.controlRef() == FORCE_UPDATE } &&
+                    body.any { it.opcode == Opcode.IPUT_BOOLEAN && it.controlRef() == FORCE_UPDATE } &&
+                    body.any { it.controlRef() == measured }
+            }
+    }.controlSingle("the bubble's fresh layout for a marked message")
 }
 
 /**
