@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(764);
+        Map<String, String> table = new HashMap<>(768);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -641,6 +641,8 @@ public final class L10nTranslations {
                 "Zum Wiedereinschalten tippen.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
                 "Tippen, langes Dr\u00fccken, Wischen und falsche Eingaben lassen das Handy nicht mehr vibrieren. Eingehende Anrufe vibrieren weiterhin, und Benachrichtigungen folgen deinen eigenen Einstellungen.");
+        table.put("Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.",
+                "Telegram Beta speichert st\u00e4ndig Debug-Protokolle auf deinem Handy, auch das Verbindungsprotokoll, und sein eigenes Debug-Men\u00fc kann das nicht abstellen. Das hier stellt sie ab. Bereits gespeicherte Protokolle bleiben, bis du sie l\u00f6schst, und die normale Version speichert keine, dort \u00e4ndert sich also nichts. Starte Telegram neu, um die \u00c4nderung zu sehen.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Telegram ist dreimal hintereinander innerhalb einer Minute nach dem Start abgest\u00fcrzt oder h\u00e4ngen geblieben, deshalb hat sich HushTelegram selbst pausiert.");
         table.put("Telegram doesn't look up link previews for messages you haven't sent yet, including shares, polls, story links and bots. Sent messages still get one.",
@@ -669,11 +671,11 @@ public final class L10nTranslations {
                 "Diese Einstellungsdatei ist besch\u00e4digt oder nur teilweise heruntergeladen. Es wurde nichts ge\u00e4ndert.");
         table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
                 "Diese Einstellungsdatei stammt aus einer neueren HushTelegram-Version als dieser. Es wurde nichts ge\u00e4ndert.");
-        table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
-                "Die Lizenz GPL-3.0 und die Hinweise zu den Projekten, auf denen HushTelegram aufbaut");
     }
 
     private static void fillDe5(Map<String, String> table) {
+        table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
+                "Die Lizenz GPL-3.0 und die Hinweise zu den Projekten, auf denen HushTelegram aufbaut");
         table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
                 "Die App, in der die Datei liegt, braucht zu lange, deshalb wartet HushTelegram nicht mehr. Es wurde nichts ge\u00e4ndert.");
         table.put("The app holding the last settings file still hasn't answered. Try again later.",
@@ -720,6 +722,8 @@ public final class L10nTranslations {
                 "Versuche es noch einmal oder kehre zu Telegram zur\u00fcck.");
         table.put("Turn off Telegram's update checks",
                 "Telegrams Update-Pr\u00fcfungen abschalten");
+        table.put("Turn off beta debug logs",
+                "Beta-Debug-Protokolle ausschalten");
         table.put("Turn off reaction effects",
                 "Reaktionseffekte ausschalten");
         table.put("Undo",
@@ -790,13 +794,13 @@ public final class L10nTranslations {
                 "Anrufprotokollberichte");
         table.put("caption text paste",
                 "Texteinf\u00fcgen in Beschriftungen");
+    }
+
+    private static void fillDe6(Map<String, String> table) {
         table.put("channel Gift button",
                 "Geschenk-Schaltfl\u00e4che von Kan\u00e4len");
         table.put("channel ads",
                 "Kanalwerbung");
-    }
-
-    private static void fillDe6(Map<String, String> table) {
         table.put("channel read metrics",
                 "Kanal-Lesemetriken");
         table.put("chat double-tap reactions",
@@ -844,7 +848,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(764);
+        Map<String, String> table = new HashMap<>(768);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1438,6 +1442,8 @@ public final class L10nTranslations {
                 "Toca para volver a activarlo.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
                 "Los toques, las pulsaciones largas, los deslizamientos y las entradas incorrectas ya no hacen vibrar el tel\u00e9fono. Las llamadas entrantes siguen vibrando y las notificaciones siguen tus propios ajustes.");
+        table.put("Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.",
+                "Telegram Beta guarda registros de depuraci\u00f3n en tu tel\u00e9fono todo el tiempo, incluido el registro de conexi\u00f3n, y su propio men\u00fa de depuraci\u00f3n no puede detenerlo. Esto los detiene. Los registros ya guardados se quedan hasta que los borres, y la versi\u00f3n normal no los guarda, as\u00ed que ah\u00ed no cambia nada. Reinicia Telegram para ver el cambio.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Tres veces seguidas, Telegram fall\u00f3 o se congel\u00f3 durante el primer minuto tras iniciarse, as\u00ed que HushTelegram se paus\u00f3 solo.");
         table.put("Telegram doesn't look up link previews for messages you haven't sent yet, including shares, polls, story links and bots. Sent messages still get one.",
@@ -1466,11 +1472,11 @@ public final class L10nTranslations {
                 "Ese archivo de configuraci\u00f3n est\u00e1 da\u00f1ado o solo se descarg\u00f3 en parte. No se cambi\u00f3 nada.");
         table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
                 "Ese archivo de configuraci\u00f3n lo escribi\u00f3 una versi\u00f3n de HushTelegram m\u00e1s reciente que esta. No se cambi\u00f3 nada.");
-        table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
-                "La licencia GPL-3.0 y los cr\u00e9ditos de los proyectos en los que se basa HushTelegram");
     }
 
     private static void fillEs5(Map<String, String> table) {
+        table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
+                "La licencia GPL-3.0 y los cr\u00e9ditos de los proyectos en los que se basa HushTelegram");
         table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
                 "La app que guarda ese archivo tarda demasiado, as\u00ed que HushTelegram dej\u00f3 de esperar. No se cambi\u00f3 nada.");
         table.put("The app holding the last settings file still hasn't answered. Try again later.",
@@ -1517,6 +1523,8 @@ public final class L10nTranslations {
                 "Int\u00e9ntalo de nuevo o vuelve a Telegram.");
         table.put("Turn off Telegram's update checks",
                 "Desactivar las comprobaciones de actualizaci\u00f3n de Telegram");
+        table.put("Turn off beta debug logs",
+                "Desactivar los registros de depuraci\u00f3n de la beta");
         table.put("Turn off reaction effects",
                 "Desactivar los efectos de las reacciones");
         table.put("Undo",
@@ -1587,13 +1595,13 @@ public final class L10nTranslations {
                 "informes de registro de llamadas");
         table.put("caption text paste",
                 "pegado de texto en leyendas");
+    }
+
+    private static void fillEs6(Map<String, String> table) {
         table.put("channel Gift button",
                 "bot\u00f3n de regalo de los canales");
         table.put("channel ads",
                 "anuncios en canales");
-    }
-
-    private static void fillEs6(Map<String, String> table) {
         table.put("channel read metrics",
                 "m\u00e9tricas de lectura de canales");
         table.put("chat double-tap reactions",
@@ -1641,7 +1649,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(764);
+        Map<String, String> table = new HashMap<>(768);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2235,6 +2243,8 @@ public final class L10nTranslations {
                 "Ketuk untuk mengaktifkan HushTelegram lagi.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
                 "Ketukan, tekan lama, geseran, dan input yang salah tidak lagi membuat ponsel bergetar. Panggilan masuk tetap bergetar, dan notifikasi mengikuti pengaturan Anda sendiri.");
+        table.put("Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.",
+                "Telegram Beta selalu menyimpan log debug di ponsel Anda, termasuk log koneksinya, dan menu debug miliknya sendiri tidak bisa menghentikannya. Ini menghentikannya. Log yang sudah tersimpan tetap ada sampai Anda menghapusnya, dan versi biasa tidak menyimpannya, jadi di sana tidak ada yang berubah. Mulai ulang Telegram untuk melihat perubahannya.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Telegram berhenti mendadak atau macet dalam satu menit setelah dibuka, tiga kali berturut-turut, jadi HushTelegram menjeda dirinya sendiri.");
         table.put("Telegram doesn't look up link previews for messages you haven't sent yet, including shares, polls, story links and bots. Sent messages still get one.",
@@ -2263,11 +2273,11 @@ public final class L10nTranslations {
                 "File pengaturan itu rusak atau hanya terunduh sebagian. Tidak ada yang diubah.");
         table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
                 "File pengaturan itu dibuat oleh versi HushTelegram yang lebih baru daripada versi ini. Tidak ada yang diubah.");
-        table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
-                "Lisensi GPL-3.0 dan kredit untuk proyek-proyek yang menjadi dasar HushTelegram");
     }
 
     private static void fillIn5(Map<String, String> table) {
+        table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
+                "Lisensi GPL-3.0 dan kredit untuk proyek-proyek yang menjadi dasar HushTelegram");
         table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
                 "Aplikasi yang menyimpan file itu terlalu lama, jadi HushTelegram berhenti menunggu. Tidak ada yang diubah.");
         table.put("The app holding the last settings file still hasn't answered. Try again later.",
@@ -2314,6 +2324,8 @@ public final class L10nTranslations {
                 "Coba lagi, atau kembali ke Telegram.");
         table.put("Turn off Telegram's update checks",
                 "Matikan pemeriksaan pembaruan Telegram");
+        table.put("Turn off beta debug logs",
+                "Matikan log debug beta");
         table.put("Turn off reaction effects",
                 "Matikan efek reaksi");
         table.put("Undo",
@@ -2384,13 +2396,13 @@ public final class L10nTranslations {
                 "laporan log panggilan");
         table.put("caption text paste",
                 "tempel teks keterangan");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
         table.put("channel Gift button",
                 "tombol Hadiah pada kanal");
         table.put("channel ads",
                 "iklan saluran");
-    }
-
-    private static void fillIn6(Map<String, String> table) {
         table.put("channel read metrics",
                 "metrik pembacaan saluran");
         table.put("chat double-tap reactions",
@@ -2438,7 +2450,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(764);
+        Map<String, String> table = new HashMap<>(768);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -3032,6 +3044,8 @@ public final class L10nTranslations {
                 "Toque para reativar.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
                 "Toques, press\u00f5es longas, deslizes e entradas erradas n\u00e3o fazem mais o celular vibrar. Chamadas recebidas continuam vibrando e as notifica\u00e7\u00f5es seguem as suas configura\u00e7\u00f5es.");
+        table.put("Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.",
+                "O Telegram Beta grava registros de depura\u00e7\u00e3o no seu celular o tempo todo, incluindo o registro de conex\u00e3o, e o pr\u00f3prio menu de depura\u00e7\u00e3o dele n\u00e3o consegue impedir isso. Isto os desliga. Os registros j\u00e1 salvos ficam at\u00e9 voc\u00ea apag\u00e1-los, e a vers\u00e3o normal n\u00e3o os grava, ent\u00e3o nada muda nela. Reinicie o Telegram para ver a mudan\u00e7a.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "O Telegram fechou com erro ou travou no primeiro minuto ap\u00f3s iniciar, tr\u00eas vezes seguidas, ent\u00e3o o HushTelegram foi pausado automaticamente.");
         table.put("Telegram doesn't look up link previews for messages you haven't sent yet, including shares, polls, story links and bots. Sent messages still get one.",
@@ -3060,11 +3074,11 @@ public final class L10nTranslations {
                 "Esse arquivo de configura\u00e7\u00f5es est\u00e1 corrompido ou foi baixado apenas parcialmente. Nada foi alterado.");
         table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
                 "Esse arquivo de configura\u00e7\u00f5es foi criado por uma vers\u00e3o do HushTelegram mais nova que esta. Nada foi alterado.");
-        table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
-                "A licen\u00e7a GPL-3.0 e os cr\u00e9ditos dos projetos em que o HushTelegram se baseia");
     }
 
     private static void fillPt_rBR5(Map<String, String> table) {
+        table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
+                "A licen\u00e7a GPL-3.0 e os cr\u00e9ditos dos projetos em que o HushTelegram se baseia");
         table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
                 "O app que guarda esse arquivo est\u00e1 demorando demais, ent\u00e3o o HushTelegram parou de esperar. Nada foi alterado.");
         table.put("The app holding the last settings file still hasn't answered. Try again later.",
@@ -3111,6 +3125,8 @@ public final class L10nTranslations {
                 "Tente novamente ou volte para o Telegram.");
         table.put("Turn off Telegram's update checks",
                 "Desativar as verifica\u00e7\u00f5es de atualiza\u00e7\u00e3o do Telegram");
+        table.put("Turn off beta debug logs",
+                "Desligar os registros de depura\u00e7\u00e3o da beta");
         table.put("Turn off reaction effects",
                 "Desativar os efeitos das rea\u00e7\u00f5es");
         table.put("Undo",
@@ -3181,13 +3197,13 @@ public final class L10nTranslations {
                 "relat\u00f3rios de registro de chamadas");
         table.put("caption text paste",
                 "colagem de texto em legendas");
+    }
+
+    private static void fillPt_rBR6(Map<String, String> table) {
         table.put("channel Gift button",
                 "bot\u00e3o de presente dos canais");
         table.put("channel ads",
                 "an\u00fancios em canais");
-    }
-
-    private static void fillPt_rBR6(Map<String, String> table) {
         table.put("channel read metrics",
                 "m\u00e9tricas de leitura de canais");
         table.put("chat double-tap reactions",
@@ -3235,7 +3251,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(764);
+        Map<String, String> table = new HashMap<>(768);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -3829,6 +3845,8 @@ public final class L10nTranslations {
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
                 "Dokunmalar, uzun basmalar, kayd\u0131rmalar ve hatal\u0131 giri\u015fler art\u0131k telefonu titre\u015ftirmez. Gelen aramalar titre\u015fmeye devam eder ve bildirimler kendi ayarlar\u0131n\u0131z\u0131 izler.");
+        table.put("Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.",
+                "Telegram Beta, ba\u011flant\u0131 g\u00fcnl\u00fc\u011f\u00fc dahil, telefonunuza s\u00fcrekli hata ay\u0131klama g\u00fcnl\u00fckleri yazar ve kendi hata ay\u0131klama men\u00fcs\u00fc bunu durduramaz. Bu ayar onlar\u0131 durdurur. \u00d6nceden kaydedilmi\u015f g\u00fcnl\u00fckler siz silene kadar kal\u0131r, normal s\u00fcr\u00fcm ise bu g\u00fcnl\u00fckleri tutmaz, yani orada hi\u00e7bir \u015fey de\u011fi\u015fmez. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Telegram'\u0131 yeniden ba\u015flat\u0131n.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Telegram a\u00e7\u0131ld\u0131ktan sonraki bir dakika i\u00e7inde \u00fcst \u00fcste \u00fc\u00e7 kez \u00e7\u00f6kt\u00fc veya dondu, bu y\u00fczden HushTelegram kendini duraklatt\u0131.");
         table.put("Telegram doesn't look up link previews for messages you haven't sent yet, including shares, polls, story links and bots. Sent messages still get one.",
@@ -3857,11 +3875,11 @@ public final class L10nTranslations {
                 "Bu ayar dosyas\u0131 hasarl\u0131 ya da yaln\u0131zca bir k\u0131sm\u0131 indirilmi\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
                 "Bu ayar dosyas\u0131, HushTelegram'un bu s\u00fcr\u00fcm\u00fcnden daha yeni bir s\u00fcr\u00fcm\u00fcyle olu\u015fturulmu\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-        table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
-                "GPL-3.0 lisans\u0131 ve HushTelegram'\u0131n dayand\u0131\u011f\u0131 projelerin te\u015fekk\u00fcr notlar\u0131");
     }
 
     private static void fillTr5(Map<String, String> table) {
+        table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
+                "GPL-3.0 lisans\u0131 ve HushTelegram'\u0131n dayand\u0131\u011f\u0131 projelerin te\u015fekk\u00fcr notlar\u0131");
         table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
                 "O dosyay\u0131 tutan uygulama \u00e7ok uzun s\u00fcr\u00fcyor, bu y\u00fczden HushTelegram beklemeyi b\u0131rakt\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("The app holding the last settings file still hasn't answered. Try again later.",
@@ -3908,6 +3926,8 @@ public final class L10nTranslations {
                 "Tekrar dene veya Telegram'a geri d\u00f6n.");
         table.put("Turn off Telegram's update checks",
                 "Telegram'\u0131n g\u00fcncelleme kontrollerini kapat");
+        table.put("Turn off beta debug logs",
+                "Beta hata ay\u0131klama g\u00fcnl\u00fcklerini kapat");
         table.put("Turn off reaction effects",
                 "Tepki efektlerini kapat");
         table.put("Undo",
@@ -3978,13 +3998,13 @@ public final class L10nTranslations {
                 "arama g\u00fcnl\u00fck raporlar\u0131");
         table.put("caption text paste",
                 "a\u00e7\u0131klama metni yap\u0131\u015ft\u0131rma");
+    }
+
+    private static void fillTr6(Map<String, String> table) {
         table.put("channel Gift button",
                 "kanal Hediye d\u00fc\u011fmesi");
         table.put("channel ads",
                 "kanal reklamlar\u0131");
-    }
-
-    private static void fillTr6(Map<String, String> table) {
         table.put("channel read metrics",
                 "kanal okuma \u00f6l\u00e7\u00fcmleri");
         table.put("chat double-tap reactions",

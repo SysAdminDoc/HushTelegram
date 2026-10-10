@@ -2744,6 +2744,63 @@
       "options": []
     },
     {
+      "name": "Turn off beta debug logs",
+      "description": "Telegram Beta always writes debug logs to your phone, its connection log included, and its own debug menu can't stop that. This stops them, so the beta only logs when you turn logs on in its debug menu. The regular telegram.org build doesn't force them, so nothing changes there. Starts off. Turn it on in HushTelegram settings > Chats, then restart Telegram.",
+      "category": "Privacy",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger.web": [
+          "12.10.6"
+        ],
+        "org.telegram.messenger.beta": [
+          "12.10.7"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "12.10.6",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71129
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram Beta",
+          "packageName": "org.telegram.messenger.beta",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "12.10.7",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71239
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Turn off haptic feedback",
       "description": "Stops Telegram from vibrating for taps, long presses, swipes and wrong entries. Calls and notifications still vibrate. Starts off. Turn it on in HushTelegram settings > Chats.",
       "category": "Interface",
