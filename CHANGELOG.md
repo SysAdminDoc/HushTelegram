@@ -20,6 +20,8 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** HushTelegram settings no longer puts about 55 switches on one Chats page. They're now on Ads, Chat list, Conversations, Playback, Notifications, Look and feel and Privacy, the same groups Morphe Manager sorts the patches into, and each patch's description names its page. Hide phone number and Turn off beta debug logs moved to Privacy. Your saved choices don't change, and search still finds every switch.
 
+* **Telegram:** The two longest settings pages, Conversations and Look and feel, are now split under short headings like Translation or Theme, each group in a card of its own, so a switch is easier to find than in one long list of thirty. Switch rows also dropped the icon they all repeated, which gives their text the full width. Asked for in #6.
+
 * **Telegram:** Telegram 13.0.1 is now the supported version, both telegram.org's build (version code 71679) and the official beta (71669). Every patch is checked against those two builds, and 12.10.6 and 12.10.7 are no longer supported.
 
 * **Telegram:** Several patches were updated for the way Telegram 13.0 builds its screens, so they keep working there: Hide Stories, Hide Premium, gifts and Stars, Hide Telegram Features and Invite Friends, Gallery camera on tap, Quiet contacts nag, Holiday look all year, and the HushTelegram row in Telegram's own settings.

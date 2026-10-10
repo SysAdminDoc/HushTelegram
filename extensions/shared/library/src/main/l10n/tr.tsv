@@ -456,3 +456,16 @@ Sticker size	Çıkartma boyutu
 %1$s of Telegram's size	Telegram boyutunun %1$s kadarı
 Couldn't save the size. Try again in a moment.	Boyut kaydedilemedi. Birazdan tekrar deneyin.
 The sticker size will change.	Çıkartma boyutu değişecek.
+# context: short headings that split the Conversations and Look and feel settings pages into groups of switches. Each names what the switches under it change: things inside an open chat, the menu a message opens on a long press, sending, the attachment menu's camera and gallery, translation, messages hidden from a chat, messages others deleted, the theme, how messages and stickers look, profiles, touch feedback and the keyboard, and rows or buttons hidden to reduce clutter.
+In a chat	Sohbette
+Message menu	Mesaj menüsü
+Sending	Gönderme
+Attachment menu	Ek menüsü
+Translation	Çeviri
+Hidden messages	Gizlenen mesajlar
+Deleted messages	Silinen mesajlar
+Theme	Tema
+Messages and stickers	Mesajlar ve çıkartmalar
+Profiles	Profiller
+Touch and keyboard	Dokunma ve klavye
+Less clutter	Daha sade

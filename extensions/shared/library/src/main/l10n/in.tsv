@@ -456,3 +456,16 @@ Sticker size	Ukuran stiker
 %1$s of Telegram's size	%1$s dari ukuran Telegram
 Couldn't save the size. Try again in a moment.	Ukuran tidak dapat disimpan. Coba lagi sebentar lagi.
 The sticker size will change.	Ukuran stiker akan berubah.
+# context: short headings that split the Conversations and Look and feel settings pages into groups of switches. Each names what the switches under it change: things inside an open chat, the menu a message opens on a long press, sending, the attachment menu's camera and gallery, translation, messages hidden from a chat, messages others deleted, the theme, how messages and stickers look, profiles, touch feedback and the keyboard, and rows or buttons hidden to reduce clutter.
+In a chat	Di obrolan
+Message menu	Menu pesan
+Sending	Mengirim
+Attachment menu	Menu lampiran
+Translation	Terjemahan
+Hidden messages	Pesan tersembunyi
+Deleted messages	Pesan yang dihapus
+Theme	Tema
+Messages and stickers	Pesan dan stiker
+Profiles	Profil
+Touch and keyboard	Sentuhan dan keyboard
+Less clutter	Lebih ringkas

@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -873,6 +874,37 @@ public class PatchFamilyTest {
             assertFalse(page.title, page.families.isEmpty());
         }
         assertEquals(ManagerCategories.PAGE_ORDER, order);
+    }
+
+    /**
+     * The two long pages are split into groups, and every family on them is in exactly one group of
+     * its own page, so no switch drops out of a page or shows twice. The short pages aren't split.
+     */
+    @Test
+    public void everyFamilyOnTheLongPagesSitsInExactlyOneGroupOfItsPage() {
+        Map<PatchFamily, PatchFamily.Group> placed = new java.util.EnumMap<>(PatchFamily.class);
+        for (PatchFamily.Group group : PatchFamily.Group.values()) {
+            assertFalse(group.title, group.families.isEmpty());
+            assertTrue(group + " is on " + group.page, group.page == PatchFamily.Page.CONVERSATIONS
+                    || group.page == PatchFamily.Page.LOOK);
+            for (PatchFamily family : group.families) {
+                assertEquals(family + " is in " + group + " on another page", group.page, PatchFamily.Page.of(family));
+                assertNull(family + " is in two groups", placed.put(family, group));
+                assertSame(group, PatchFamily.Group.of(family));
+                for (BooleanSetting setting : family.switches) assertSame(family, PatchFamily.Group.owner(setting.key));
+            }
+        }
+        for (PatchFamily.Page page : new PatchFamily.Page[]{PatchFamily.Page.CONVERSATIONS, PatchFamily.Page.LOOK}) {
+            for (PatchFamily family : page.families) assertNotNull(family + " is in no group", placed.get(family));
+        }
+        assertNull(PatchFamily.Group.of(PatchFamily.HIDE_ADS));
+        assertNull(PatchFamily.Group.owner(Settings.MESSAGE_FILTERS_GROUPS.key));
+        // Each heading is looked up by its English text, and no two headings read alike.
+        Set<String> titles = new HashSet<>();
+        for (PatchFamily.Group group : PatchFamily.Group.values()) {
+            assertEquals(group.title, group.label());
+            assertTrue(group.title + " twice", titles.add(group.title));
+        }
     }
 
     private static void assertOnItsPage(PatchFamily family) {

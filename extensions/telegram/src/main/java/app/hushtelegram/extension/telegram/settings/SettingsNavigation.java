@@ -31,8 +31,11 @@ import androidx.annotation.Nullable;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import app.hushtelegram.extension.shared.L10n;
@@ -80,6 +83,10 @@ final class SettingsNavigation extends BaseAdapter {
     private int homeOffset;
     private int morePosition;
     private int moreOffset;
+    /** The headings inside a long page, made once so each keeps its place and id between rebuilds. */
+    private final Map<PatchFamily.Group, Preference> groupHeadings = new EnumMap<>(PatchFamily.Group.class);
+    /** The card each row of a split page is drawn in, and each of its headings. Empty elsewhere. */
+    private final Map<Preference, Object> cards = new IdentityHashMap<>();
 
     private final DataSetObserver changes = new DataSetObserver() {
         @Override public void onChanged() { rebuild(); }
@@ -263,8 +270,10 @@ final class SettingsNavigation extends BaseAdapter {
         for (Section section : sections) {
             if (preference != section.category && preference.getParent() != section.category) continue;
             navigate(section.id);
-            // A link to one setting lands on its row rather than the top of a long page.
+            // A link to one setting lands on its row rather than the top of a long page, with the
+            // row's heading above it on a split page.
             int row = visible.indexOf(preference);
+            if (row > 0 && groupHeadings.containsValue(visible.get(row - 1))) row--;
             if (row > 0) showAt(row, 0);
             return true;
         }
@@ -355,6 +364,7 @@ final class SettingsNavigation extends BaseAdapter {
 
     private void rebuild() {
         visible.clear();
+        cards.clear();
         String terms = normalized(query).trim();
         Section selected = selected();
         if (!terms.isEmpty()) {
@@ -375,7 +385,7 @@ final class SettingsNavigation extends BaseAdapter {
             if (visible.isEmpty()) visible.add(empty);
             else addPageStatus();
         } else if (selected != null) {
-            for (int i = 0; i < selected.category.getPreferenceCount(); i++) visible.add(selected.category.getPreference(i));
+            addPageRows(selected.category);
             addPageStatus();
         } else if (MORE.equals(route)) {
             for (Section section : sections) if (!section.primary) visible.add(section.link);
@@ -393,6 +403,60 @@ final class SettingsNavigation extends BaseAdapter {
             list.setPadding(list.getPaddingLeft(), list.getPaddingTop(), list.getPaddingRight(), bottom);
         }
         notifyDataSetChanged();
+    }
+
+    /**
+     * A page's rows. A long page is split into its groups, each under its heading in a card of its
+     * own, and a row with no switch of its own, like Sticker size or Filters for groups, stays
+     * with the switch above it. A row whose family no group lists leads the page rather than
+     * going missing.
+     */
+    private void addPageRows(PreferenceCategory category) {
+        int count = category.getPreferenceCount();
+        Preference[] rows = new Preference[count];
+        PatchFamily[] owners = new PatchFamily[count];
+        PatchFamily owner = null;
+        boolean split = false;
+        for (int i = 0; i < count; i++) {
+            rows[i] = category.getPreference(i);
+            PatchFamily family = rows[i].hasKey() ? PatchFamily.Group.owner(rows[i].getKey()) : null;
+            if (family != null) owner = family;
+            owners[i] = owner;
+            split |= owner != null && PatchFamily.Group.of(owner) != null;
+        }
+        if (!split) {
+            for (Preference row : rows) visible.add(row);
+            return;
+        }
+        for (int i = 0; i < count; i++) {
+            if (owners[i] == null || PatchFamily.Group.of(owners[i]) == null) visible.add(rows[i]);
+        }
+        for (PatchFamily.Group group : PatchFamily.Group.values()) {
+            boolean headed = false;
+            for (PatchFamily family : group.families) {
+                for (int i = 0; i < count; i++) {
+                    if (owners[i] != family) continue;
+                    if (!headed) {
+                        Preference heading = heading(group);
+                        visible.add(heading);
+                        cards.put(heading, heading);
+                        headed = true;
+                    }
+                    visible.add(rows[i]);
+                    cards.put(rows[i], group);
+                }
+            }
+        }
+    }
+
+    private Preference heading(PatchFamily.Group group) {
+        Preference heading = groupHeadings.get(group);
+        if (heading == null) {
+            heading = new HushTelegramPreferenceFragment.Heading(screen.getContext());
+            heading.setTitle(group.label());
+            groupHeadings.put(group, heading);
+        }
+        return heading;
     }
 
     private int headings() {
@@ -567,6 +631,8 @@ final class SettingsNavigation extends BaseAdapter {
     private int dp(int value) { return Math.round(value * screen.getContext().getResources().getDisplayMetrics().density); }
 
     private Object group(Preference item) {
+        Object card = cards.get(item);
+        if (card != null) return card;
         if (item == more || item == browse || item == screen.getPreference(0)) return item;
         if (item.getParent() != null) return item.getParent();
         return sections;

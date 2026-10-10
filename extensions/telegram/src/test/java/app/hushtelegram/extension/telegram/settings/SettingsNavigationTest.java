@@ -96,7 +96,16 @@ public class SettingsNavigationTest {
         int total = page.getPreferenceScreen().getRootAdapter().getCount();
         for (Preference section : page.sections()) {
             assertTrue(page.navigation.open(section));
-            assertEquals(((PreferenceCategory) section).getPreferenceCount(), list().getCount());
+            PreferenceCategory category = (PreferenceCategory) section;
+            // Every row once, plus a heading per group on the two split pages.
+            int groups = 0;
+            for (PatchFamily.Group group : PatchFamily.Group.values()) {
+                if (group.page.title.contentEquals(section.getTitle())) groups++;
+            }
+            assertEquals(category.getPreferenceCount() + groups, list().getCount());
+            for (int i = 0; i < category.getPreferenceCount(); i++) {
+                assertEquals(1, occurrences(category.getPreference(i)));
+            }
             assertEquals(total, page.getPreferenceScreen().getRootAdapter().getCount());
             assertNotNull(page.findPreference(Settings.HIDE_ADS.key));
             assertTrue(page.navigation.back());
@@ -208,6 +217,71 @@ public class SettingsNavigationTest {
         int found = 0;
         for (int i = 0; i < list().getCount(); i++) if (key.equals(((Preference) list().getItemAtPosition(i)).getKey())) found++;
         return found;
+    }
+
+    private int occurrences(Preference row) {
+        int found = 0;
+        for (int i = 0; i < list().getCount(); i++) if (list().getItemAtPosition(i) == row) found++;
+        return found;
+    }
+
+    /**
+     * Conversations and Look and feel open split under their headings, in the order the groups are
+     * listed, each heading spoken as one and never tappable. A row with no switch of its own stays
+     * under the switch it belongs to, and a link to a row brings its heading into view with it.
+     */
+    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    public void theLongPagesAreSplitUnderHeadingsInGroupOrder() {
+        for (PatchFamily.Page split : new PatchFamily.Page[]{PatchFamily.Page.CONVERSATIONS, PatchFamily.Page.LOOK}) {
+            page.navigation.navigate(split.title);
+            layout(dialog.getView());
+            List<String> headings = new ArrayList<>();
+            List<String> expected = new ArrayList<>();
+            for (PatchFamily.Group group : PatchFamily.Group.values()) if (group.page == split) expected.add(group.title);
+            PatchFamily.Group current = null;
+            for (int i = 0; i < list().getCount(); i++) {
+                Preference item = (Preference) list().getItemAtPosition(i);
+                if (item instanceof PreferenceCategory) {
+                    headings.add(String.valueOf(item.getTitle()));
+                    assertFalse(item.getTitle() + " is tappable", list().getAdapter().isEnabled(i));
+                    list().setSelection(i);
+                    layout(dialog.getView());
+                    View row = list().getChildAt(i - list().getFirstVisiblePosition());
+                    assertTrue(item.getTitle() + " isn't a heading", row.createAccessibilityNodeInfo().isHeading());
+                    for (PatchFamily.Group group : PatchFamily.Group.values()) {
+                        if (group.title.contentEquals(item.getTitle())) current = group;
+                    }
+                    continue;
+                }
+                assertNotNull(item.getTitle() + " comes before any heading", current);
+                PatchFamily owner = item.hasKey() ? PatchFamily.Group.owner(item.getKey()) : null;
+                if (owner != null) assertSame(item.getTitle() + " is under " + current, current, PatchFamily.Group.of(owner));
+            }
+            assertEquals(expected, headings);
+            while (page.navigation.back()) { }
+        }
+        page.navigation.navigate(PatchFamily.Page.CONVERSATIONS.title);
+        assertEquals(position(Settings.HIDE_TRANSLATE_BAR.key) + 1, position(Settings.OUTSIDE_TRANSLATE.key));
+        assertEquals(position(Settings.HIDE_BY_KEYWORD.key) + 1, position(FilterEditor.GROUPS));
+        assertEquals(position(FilterEditor.GROUPS) + 1, position(FilterEditor.CHANNELS));
+        assertEquals(position(Settings.KEEP_DELETED_MESSAGES.key) + 1, position(HushTelegramPreferenceFragment.CLEAR_KEPT));
+        page.navigation.back();
+        page.navigation.navigate(PatchFamily.Page.LOOK.title);
+        assertEquals(position(Settings.CHANGE_STICKER_SIZE.key) + 1, position(HushTelegramPreferenceFragment.STICKER_SIZE_ROW));
+        assertEquals(position(Settings.AMOLED_BLACK.key) - 1, titles().indexOf("Theme"));
+        page.navigation.back();
+        assertTrue(page.navigation.open(page.findPreference(Settings.HIDE_TRANSLATE_BAR.key)));
+        layout(dialog.getView());
+        assertEquals("Translation", String.valueOf(((Preference) list().getItemAtPosition(list().getFirstVisiblePosition())).getTitle()));
+        while (page.navigation.back()) { }
+        // Further down a group, the row itself is what comes to the top.
+        assertTrue(page.navigation.open(page.findPreference(Settings.OUTSIDE_TRANSLATE.key)));
+        layout(dialog.getView());
+        assertEquals(position(Settings.OUTSIDE_TRANSLATE.key), list().getFirstVisiblePosition());
+        // Search isn't split: a match on these pages sits under its page's name as before.
+        page.navigation.search("sticker size");
+        assertFalse(titles().contains("Messages and stickers"));
+        assertTrue(contains(Settings.CHANGE_STICKER_SIZE.key));
     }
 
     private static void assertCompleteText(TextView view) {

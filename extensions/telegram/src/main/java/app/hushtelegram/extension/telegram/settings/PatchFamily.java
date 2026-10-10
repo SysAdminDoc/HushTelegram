@@ -223,6 +223,75 @@ public enum PatchFamily {
         }
     }
 
+    /**
+     * Short headings that split the two long pages, so a switch is found by what it changes rather
+     * than by scrolling thirty rows. Every family on Conversations and Look and feel sits in exactly
+     * one group of its page, and the other pages are short enough to read as one card. Groups are
+     * drawn in the order listed here, and a group's rows in the order of its families.
+     */
+    enum Group {
+        IN_A_CHAT(Page.CONVERSATIONS, "In a chat", HIDE_GREETING_STICKERS, DISABLE_CHANNEL_PULL, NORMAL_PASTE,
+                DISABLE_DOUBLE_TAP_REACTIONS, REVEAL_SPOILERS),
+        MESSAGE_MENU(Page.CONVERSATIONS, "Message menu", MESSAGE_MENU_REPEAT),
+        SENDING(Page.CONVERSATIONS, "Sending", FORWARD_HIDE_SENDER, ASK_BEFORE_STICKER),
+        ATTACHMENT_MENU(Page.CONVERSATIONS, "Attachment menu", REAR_CAMERA_FIRST, HIDE_GALLERY_CAMERA_TILE),
+        TRANSLATION(Page.CONVERSATIONS, "Translation", HIDE_TRANSLATE_BAR, OUTSIDE_TRANSLATE),
+        HIDDEN_MESSAGES(Page.CONVERSATIONS, "Hidden messages", HIDE_BLOCKED_IN_GROUPS, HIDE_BY_KEYWORD),
+        DELETED_MESSAGES(Page.CONVERSATIONS, "Deleted messages", KEEP_DELETED_MESSAGES),
+        THEME(Page.LOOK, "Theme", AMOLED_BLACK, USE_SYSTEM_FONT, HOLIDAY_LOOK, ALLOW_CHAT_BLUR),
+        MESSAGES(Page.LOOK, "Messages and stickers", MESSAGE_SECONDS, EXACT_NUMBERS, REACTION_EFFECTS_OFF, HIDE_STICKER_TIME,
+                CHANGE_STICKER_SIZE),
+        PROFILES(Page.LOOK, "Profiles", SHOW_LOCAL_IDS, SWIPE_BACK_ON_PROFILES),
+        TOUCH_AND_KEYBOARD(Page.LOOK, "Touch and keyboard", NO_HAPTICS, HIDE_KEYBOARD_ON_SCROLL),
+        LESS_CLUTTER(Page.LOOK, "Less clutter", HIDE_RECOMMENDATIONS, QUIET_CONTACTS_NAG, HIDE_FEATURES_AND_INVITE,
+                HIDE_CHANNEL_BUTTONS, HIDE_SEND_AS);
+
+        final Page page;
+        /** The English heading, which is also its translation key. */
+        final String title;
+        final List<PatchFamily> families;
+
+        Group(Page page, String title, PatchFamily... families) {
+            this.page = page;
+            this.title = title;
+            this.families = Collections.unmodifiableList(Arrays.asList(families));
+        }
+
+        /** The group a family's rows sit in, or null for a family on a page that isn't split. */
+        @Nullable
+        static Group of(PatchFamily family) {
+            for (Group group : values()) if (group.families.contains(family)) return group;
+            return null;
+        }
+
+        /** The family whose switch carries this key, or null for a row that isn't a family's switch. */
+        @Nullable
+        static PatchFamily owner(String key) {
+            for (PatchFamily family : PatchFamily.values()) {
+                for (BooleanSetting setting : family.switches) if (setting.key.equals(key)) return family;
+            }
+            return null;
+        }
+
+        /** The heading as shown, written out so the translation check sees each one. */
+        String label() {
+            switch (this) {
+                case IN_A_CHAT: return L10n.t("In a chat");
+                case MESSAGE_MENU: return L10n.t("Message menu");
+                case SENDING: return L10n.t("Sending");
+                case ATTACHMENT_MENU: return L10n.t("Attachment menu");
+                case TRANSLATION: return L10n.t("Translation");
+                case HIDDEN_MESSAGES: return L10n.t("Hidden messages");
+                case DELETED_MESSAGES: return L10n.t("Deleted messages");
+                case THEME: return L10n.t("Theme");
+                case MESSAGES: return L10n.t("Messages and stickers");
+                case PROFILES: return L10n.t("Profiles");
+                case TOUCH_AND_KEYBOARD: return L10n.t("Touch and keyboard");
+                default: return L10n.t("Less clutter");
+            }
+        }
+    }
+
     /** Each independent hook, its owning family and the flag set only after it was inserted. */
     public enum Capability {
         CHANNEL_ADS(HIDE_ADS, "channelAds", "channel ads"),

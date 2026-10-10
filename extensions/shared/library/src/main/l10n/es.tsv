@@ -456,3 +456,16 @@ Sticker size	Tamaño de los stickers
 %1$s of Telegram's size	%1$s del tamaño de Telegram
 Couldn't save the size. Try again in a moment.	No se pudo guardar el tamaño. Inténtalo de nuevo en un momento.
 The sticker size will change.	Cambiará el tamaño de los stickers.
+# context: short headings that split the Conversations and Look and feel settings pages into groups of switches. Each names what the switches under it change: things inside an open chat, the menu a message opens on a long press, sending, the attachment menu's camera and gallery, translation, messages hidden from a chat, messages others deleted, the theme, how messages and stickers look, profiles, touch feedback and the keyboard, and rows or buttons hidden to reduce clutter.
+In a chat	En un chat
+Message menu	Menú de mensajes
+Sending	Envío
+Attachment menu	Menú de adjuntos
+Translation	Traducción
+Hidden messages	Mensajes ocultos
+Deleted messages	Mensajes eliminados
+Theme	Tema
+Messages and stickers	Mensajes y stickers
+Profiles	Perfiles
+Touch and keyboard	Toque y teclado
+Less clutter	Menos distracciones

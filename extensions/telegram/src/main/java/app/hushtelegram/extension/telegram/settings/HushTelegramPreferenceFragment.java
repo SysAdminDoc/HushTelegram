@@ -260,8 +260,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
         // One page per group of Morphe Manager categories, drawn in PatchFamily.Page order; a page
         // this build put nothing on isn't drawn. Notifications and Privacy lead with their own rows.
-        // Rows on these pages carry no icon. The home page's icon already names the page, and the
-        // same stop sign or chat bubble on every row said nothing and narrowed the text beside it.
+        // Rows on these pages carry no icon. The home page's icon already names the page, the same
+        // stop sign or chat bubble on every row said nothing and narrowed the text beside it, and a
+        // lone icon pushed its row's text out of line with the rows around it. Conversations and
+        // Look and feel are split under headings in SettingsNavigation, from PatchFamily.Group.
         Map<PatchFamily.Page, PreferenceCategory> pages = new EnumMap<>(PatchFamily.Page.class);
         for (PatchFamily.Page page : PatchFamily.Page.values()) {
             if (page.inBuild(build)) pages.put(page, category(screen, page.label()));
@@ -567,7 +569,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(toggle(context, Settings.KEEP_DELETED_MESSAGES, L10n.t("Keep deleted messages"),
                     PatchFamily.KEEP_DELETED_MESSAGES.coverageSummary(L10n.t("Messages others delete stay in your chat on this phone, marked deleted next to "
                             + "the time. Your own deletes and disappearing messages work as usual."))));
-            on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(mark(clearKeptRow(context), SettingsIcons.DELETE));
+            on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(clearKeptRow(context));
         }
         if (build.contains(PatchFamily.ASK_BEFORE_STICKER)) {
             on(pages, PatchFamily.ASK_BEFORE_STICKER).addPreference(toggle(context, Settings.ASK_BEFORE_STICKER, L10n.t("Ask before sending a sticker"),
@@ -584,12 +586,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             + "call."))));
         }
         if (build.contains(PatchFamily.BETA_LOGS_OFF)) {
-            on(pages, PatchFamily.BETA_LOGS_OFF).addPreference(mark(toggle(context, Settings.BETA_LOGS_OFF, L10n.t("Turn off beta debug logs"),
+            on(pages, PatchFamily.BETA_LOGS_OFF).addPreference(toggle(context, Settings.BETA_LOGS_OFF, L10n.t("Turn off beta debug logs"),
                     PatchFamily.BETA_LOGS_OFF.coverageSummary(L10n.t("Telegram Beta keeps debug logs on your phone all the time, its connection log "
                             + "included, and its own debug menu can't stop that. This stops them. Logs already saved "
                             + "stay until you clear them, and the regular build doesn't keep them, so nothing changes "
-                            + "there. Restart Telegram to see the change."))),
-                    SettingsIcons.BUG));
+                            + "there. Restart Telegram to see the change."))));
         }
         if (build.contains(PatchFamily.OUTSIDE_TRANSLATE)) {
             SwitchPreference outside = toggle(context, Settings.OUTSIDE_TRANSLATE, L10n.t("Translate with an outside service"),
