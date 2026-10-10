@@ -160,6 +160,7 @@ private const val TL_MESSAGE = "Lorg/telegram/tgnet/TLRPC\$Message;"
 private const val TL_MEDIA = "Lorg/telegram/tgnet/TLRPC\$MessageMedia;"
 private const val TL_CHAT = "Lorg/telegram/tgnet/TLRPC\$Chat;"
 private const val USER_CONFIG = "Lorg/telegram/messenger/UserConfig;"
+private const val CHAT_OBJECT = "Lorg/telegram/messenger/ChatObject;"
 internal const val NOTIFICATIONS = "Lorg/telegram/messenger/NotificationsController;"
 internal const val NOTIFICATION_CLEANUP = "removeDeletedMessagesFromNotifications"
 
@@ -171,6 +172,9 @@ private val API = listOf(
     Api(NOTIFICATION_CENTER, "postNotificationName", "I[$OBJECT", "V"),
     Api(MESSAGES_CONTROLLER, "deleteMessagesByPush", "J${LIST}J", "V"),
     Api(MESSAGES_CONTROLLER, "getChat", "Ljava/lang/Long;", TL_CHAT),
+    Api(MESSAGES_CONTROLLER, "getInstance", "I", MESSAGES_CONTROLLER, static = true),
+    Api(STORAGE, "getChat", "J", TL_CHAT),
+    Api(CHAT_OBJECT, "isChannel", TL_CHAT, "Z", static = true),
     Api(STORAGE, "getStorageQueue", "", QUEUE),
     Api(STORAGE, "getDatabase", "", DATABASE),
     Api(QUEUE, "postRunnable", "Ljava/lang/Runnable;", "Z"),
@@ -185,6 +189,7 @@ private val API = listOf(
     Api(TL_MESSAGE, "TLdeserialize", "Lorg/telegram/tgnet/InputSerializedData;IZ", TL_MESSAGE, static = true),
     Api(USER_CONFIG, "getInstance", "I", USER_CONFIG, static = true),
     Api(USER_CONFIG, "getClientUserId", "", "J"),
+    Api(USER_CONFIG, "isClientActivated", "", "Z"),
     Api(MESSAGE_OBJECT, "getDialogId", "", "J"),
     Api(MESSAGE_OBJECT, "getId", "", "I"),
 )
@@ -203,8 +208,9 @@ private val FIELDS = listOf(
     Triple(MESSAGE_OBJECT, "forceUpdate", "Z"),
 )
 
-/** Telegram's numbers the extension reads by name: the replaced messages event. */
+/** Telegram's numbers the extension reads by name: the account slots and the replaced messages event. */
 private val STATIC_FIELDS = listOf(
+    Triple(USER_CONFIG, "MAX_ACCOUNT_COUNT", "I"),
     Triple(NOTIFICATION_CENTER, "replaceMessagesObjects", "I"),
 )
 

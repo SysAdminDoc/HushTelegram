@@ -13,6 +13,7 @@ package app.hushtelegram.extension.telegram.settings;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
@@ -30,10 +31,12 @@ import android.text.style.StyleSpan;
 
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.SettingsContextRule;
+import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.PauseForTests;
+import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 
 import org.junit.After;
 import org.junit.Before;
@@ -48,6 +51,7 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAlertDialog;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowToast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -642,6 +646,41 @@ public class HushTelegramPreferenceFragmentTest {
                 assertFalse("\"" + text + "\" names Facebook, Meta, Instagram or Threads",
                         text.contains("Facebook") || text.contains("Meta") || text.contains("Instagram") || text.contains("Threads"));
             }
+        }
+    }
+
+    /**
+     * Keep deleted messages brings its way out: a row right under the switch that acts on the tap,
+     * with no chevron and no question, and says what happened in a notice.
+     */
+    @Test
+    public void clearKeptMessagesComesWithKeepDeletedAndActsAtOnce() {
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
+        PatchFamily.inBuildForTests.remove(PatchFamily.KEEP_DELETED_MESSAGES);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            assertNull(pageOf(controller).findPreference(HushTelegramPreferenceFragment.CLEAR_KEPT));
+        }
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.KEEP_DELETED_MESSAGES);
+        ShadowToast.reset();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            Preference clear = rows.get(indexOfKey(rows, Settings.KEEP_DELETED_MESSAGES.key) + 1);
+            assertEquals(HushTelegramPreferenceFragment.CLEAR_KEPT, clear.getKey());
+            assertEquals("Clear kept messages", String.valueOf(clear.getTitle()));
+            assertEquals("Deletes the messages this phone kept after others deleted them, in every account, the way "
+                    + "Telegram would have.", String.valueOf(clear.getSummary()));
+            assertEquals("Chats", String.valueOf(clear.getParent().getTitle()));
+            assertTrue("a tap acts, so no chevron", ((ImmediateAction) clear).actsOnTap());
+            assertFalse("it stores nothing", clear.isPersistent());
+
+            // A test JVM has no Telegram, so no account can be read: nothing is cleared, the notice
+            // says so, and the failure is in the report rather than in a crash.
+            assertTrue(clear.getOnPreferenceClickListener().onPreferenceClick(clear));
+            assertEquals("There are no kept messages to clear.", ShadowToast.getTextOfLatestToast());
+            assertTrue(HookStatus.missing(FamilyNames.KEEP_DELETED_MESSAGES).toString().contains("accounts"));
+        } finally {
+            HookStatus.clear();
         }
     }
 

@@ -289,6 +289,14 @@ Add Repeat to the message menu	Mesaj menüsüne Tekrarla ekle
 Adds Repeat under Forward in a message's press-and-hold menu. It sends the same message again to the chat. Not shown in protected or secret chats.	Bir mesajın basılı tutunca açılan menüsünde İlet'in altına Tekrarla ekler. Aynı mesajı sohbete yeniden gönderir. Korumalı veya gizli sohbetlerde görünmez.
 Keep deleted messages	Silinen mesajları sakla
 Messages others delete stay in your chat on this phone, marked deleted next to the time. Your own deletes and disappearing messages work as usual.	Başkalarının sildiği mesajlar bu telefonda sohbetinizde kalır ve saatin yanında silindi olarak işaretlenir. Kendi sildikleriniz ve kaybolan mesajlar her zamanki gibi çalışır.
+# context: an action row under Keep deleted messages; a tap deletes every message that switch kept
+Clear kept messages	Saklanan mesajları temizle
+Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.	Başkaları sildikten sonra bu telefonun sakladığı mesajları her hesapta, Telegram'ın yapacağı şekilde siler.
+# context: the notice after that tap when nothing was kept
+There are no kept messages to clear.	Temizlenecek saklanan mesaj yok.
+# context: the notice after that tap, with how many kept messages went
+Removed %1$d kept message.	%1$d saklanan mesaj kaldırıldı.
+Removed %1$d kept messages.	%1$d saklanan mesaj kaldırıldı.
 Ask before sending a sticker	Çıkartma göndermeden önce sor
 Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.	Dokunduğunuz bir çıkartma sohbete girmeden önce Gönder veya İptal sorar. İptal onu atar. Zamanlanmış çıkartmalar sormadan gider.
 Ask before sending a GIF	GIF göndermeden önce sor

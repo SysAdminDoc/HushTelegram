@@ -69,6 +69,7 @@ import app.hushtelegram.extension.shared.settings.preference.ExportDiagnosticRep
 import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
+import app.hushtelegram.extension.telegram.misc.KeepDeleted;
 
 /**
  * The preference list, built in code rather than from an XML resource so the bundle adds no
@@ -91,6 +92,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String CHECK_NOW = "action_check_for_release";
     /** The Supported links row's key. It stores nothing either. */
     static final String SUPPORTED_LINKS = "action_supported_links";
+    /** The Clear kept messages row's key, which stores nothing. */
+    static final String CLEAR_KEPT = "action_clear_kept_messages";
 
     /** Thrown by the next initialize() and then cleared: how a test reaches the recovery page. */
     static volatile RuntimeException failNextInitialization;
@@ -509,6 +512,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         PatchFamily.KEEP_DELETED_MESSAGES.coverageSummary(L10n.t("Messages others delete stay in your chat on this phone, marked deleted next to "
                                 + "the time. Your own deletes and disappearing messages work as usual."))),
                         SettingsIcons.CHAT));
+                chats.addPreference(mark(clearKeptRow(context), SettingsIcons.DELETE));
             }
             if (build.contains(PatchFamily.ASK_BEFORE_STICKER)) {
                 chats.addPreference(mark(toggle(context, Settings.ASK_BEFORE_STICKER, L10n.t("Ask before sending a sticker"),
@@ -862,6 +866,26 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             return true;
         });
         checkNowRow = row;
+        return row;
+    }
+
+    /**
+     * The way out of Keep deleted messages: a tap hands every message it kept, in every signed-in
+     * account, to Telegram's own deletion and says how many went. The tap is the whole request, so
+     * nothing asks first and nothing opens.
+     */
+    private static Preference clearKeptRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(CLEAR_KEPT);
+        row.setPersistent(false);
+        row.setTitle(L10n.t("Clear kept messages"));
+        row.setSummary(L10n.t("Deletes the messages this phone kept after others deleted them, in every account, the way "
+                + "Telegram would have."));
+        row.actsAtOnce = true;
+        row.setOnPreferenceClickListener(p -> {
+            Utils.showToastLong(KeepDeleted.clearedMessage(KeepDeleted.clear()));
+            return true;
+        });
         return row;
     }
 

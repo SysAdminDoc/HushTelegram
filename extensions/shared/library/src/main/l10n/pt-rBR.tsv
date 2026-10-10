@@ -286,6 +286,14 @@ Add Repeat to the message menu	Adicionar Repetir ao menu de mensagens
 Adds Repeat under Forward in a message's press-and-hold menu. It sends the same message again to the chat. Not shown in protected or secret chats.	Adiciona Repetir abaixo de Encaminhar no menu de uma mensagem, que abre ao pressionar e segurar. Envia a mesma mensagem de novo para a conversa. Não aparece em conversas protegidas nem secretas.
 Keep deleted messages	Manter mensagens apagadas
 Messages others delete stay in your chat on this phone, marked deleted next to the time. Your own deletes and disappearing messages work as usual.	Mensagens que outras pessoas apagam ficam na sua conversa neste celular, marcadas como apagadas ao lado da hora. Suas próprias exclusões e as mensagens temporárias funcionam como sempre.
+# context: an action row under Keep deleted messages; a tap deletes every message that switch kept
+Clear kept messages	Limpar mensagens mantidas
+Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.	Apaga as mensagens que este celular manteve depois que outras pessoas as apagaram, em todas as contas, como o Telegram teria feito.
+# context: the notice after that tap when nothing was kept
+There are no kept messages to clear.	Não há mensagens mantidas para limpar.
+# context: the notice after that tap, with how many kept messages went
+Removed %1$d kept message.	%1$d mensagem mantida removida.
+Removed %1$d kept messages.	%1$d mensagens mantidas removidas.
 Ask before sending a sticker	Perguntar antes de enviar um sticker
 Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.	Pergunta Enviar ou Cancelar antes de uma figurinha em que você tocou entrar na conversa. Cancelar a descarta. Figurinhas agendadas saem sem perguntar.
 Ask before sending a GIF	Perguntar antes de enviar um GIF

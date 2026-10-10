@@ -289,6 +289,14 @@ Add Repeat to the message menu	Tambahkan Ulangi ke menu pesan
 Adds Repeat under Forward in a message's press-and-hold menu. It sends the same message again to the chat. Not shown in protected or secret chats.	Menambahkan Ulangi di bawah Teruskan pada menu pesan yang muncul saat ditekan lama. Ini mengirim pesan yang sama lagi ke obrolan. Tidak tampil di obrolan yang dilindungi atau rahasia.
 Keep deleted messages	Simpan pesan yang dihapus
 Messages others delete stay in your chat on this phone, marked deleted next to the time. Your own deletes and disappearing messages work as usual.	Pesan yang dihapus orang lain tetap ada di obrolan Anda di ponsel ini, ditandai terhapus di samping waktu. Penghapusan oleh Anda dan pesan yang menghilang berfungsi seperti biasa.
+# context: an action row under Keep deleted messages; a tap deletes every message that switch kept
+Clear kept messages	Hapus pesan yang disimpan
+Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.	Menghapus pesan yang disimpan ponsel ini setelah orang lain menghapusnya, di setiap akun, seperti yang akan dilakukan Telegram.
+# context: the notice after that tap when nothing was kept
+There are no kept messages to clear.	Tidak ada pesan yang disimpan untuk dihapus.
+# context: the notice after that tap, with how many kept messages went
+Removed %1$d kept message.	%1$d pesan yang disimpan telah dihapus.
+Removed %1$d kept messages.	%1$d pesan yang disimpan telah dihapus.
 Ask before sending a sticker	Tanya dulu sebelum mengirim stiker
 Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.	Menanyakan Kirim atau Batal sebelum stiker yang Anda ketuk masuk ke obrolan. Batal membuangnya. Stiker terjadwal terkirim tanpa bertanya.
 Ask before sending a GIF	Tanya dulu sebelum mengirim GIF

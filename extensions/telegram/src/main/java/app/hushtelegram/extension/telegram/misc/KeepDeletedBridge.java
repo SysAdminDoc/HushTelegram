@@ -37,6 +37,22 @@ final class KeepDeletedBridge implements KeepDeleted.Source {
         return new KeepDeletedBridge(controller, storage);
     }
 
+    /** Each account slot Telegram has whose user is signed in, the way Telegram walks them itself. */
+    static List<KeepDeleted.Source> signedIn() throws Exception {
+        ClassLoader loader = KeepDeletedBridge.class.getClassLoader();
+        Class<?> configs = Class.forName("org.telegram.messenger.UserConfig", true, loader);
+        Class<?> controllers = Class.forName("org.telegram.messenger.MessagesController", true, loader);
+        int slots = configs.getField("MAX_ACCOUNT_COUNT").getInt(null);
+        Method config = method(configs, "getInstance", int.class);
+        Method controller = method(controllers, "getInstance", int.class);
+        ArrayList<KeepDeleted.Source> accounts = new ArrayList<>();
+        for (int account = 0; account < slots; account++) {
+            if (!Boolean.TRUE.equals(call(config.invoke(null, account), "isClientActivated"))) continue;
+            accounts.add(of(controller.invoke(null, account)));
+        }
+        return accounts;
+    }
+
     /** The message IDs a deletion update carries. */
     static ArrayList<?> messages(Object update) throws Exception {
         return (ArrayList<?>) update.getClass().getField("messages").get(update);
@@ -119,6 +135,22 @@ final class KeepDeletedBridge implements KeepDeleted.Source {
         // Telegram's own key: 0 outside channels, the channel's dialog ID inside one.
         cleanup[1].invoke(deleted, ids, -channelId);
         cleanup[0].invoke(notifications, deleted, false);
+    }
+
+    /**
+     * Telegram's own test: a channel or supergroup is a channel, a basic group isn't. The chat is
+     * looked for in memory first, then in the stored chats, which this runs next to on the storage
+     * queue. A chat found in neither has no stored messages left to show, so it goes as a plain chat.
+     */
+    @Override public long channel(long dialogId) throws Exception {
+        if (dialogId >= 0) return 0;
+        Object chat = method(controller.getClass(), "getChat", Long.class).invoke(controller, Long.valueOf(-dialogId));
+        if (chat == null) chat = method(storage.getClass(), "getChat", long.class).invoke(storage, -dialogId);
+        if (chat == null) return 0;
+        ClassLoader loader = chat.getClass().getClassLoader();
+        Class<?> chats = Class.forName("org.telegram.messenger.ChatObject", true, loader);
+        Class<?> type = Class.forName("org.telegram.tgnet.TLRPC$Chat", true, loader);
+        return Boolean.TRUE.equals(method(chats, "isChannel", type).invoke(null, chat)) ? -dialogId : 0;
     }
 
     /**

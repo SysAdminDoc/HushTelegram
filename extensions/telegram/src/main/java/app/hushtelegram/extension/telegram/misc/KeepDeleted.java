@@ -13,6 +13,7 @@ import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -29,7 +30,7 @@ import java.util.Map;
  * history, scheduled and quick-reply messages never do, so they stay exactly as Telegram does them.
  * Whatever isn't kept, and whatever goes wrong while deciding, is handed to Telegram's own deletion
  * unchanged. Kept messages are remembered per account and survive a restart. Turning the switch off
- * doesn't purge them.
+ * doesn't purge them; Clear kept messages in settings hands them all to Telegram's own deletion.
  */
 public final class KeepDeleted {
     private KeepDeleted() {}
@@ -74,8 +75,16 @@ public final class KeepDeleted {
         /** Telegram's notification cleanup for deleted [ids], which its update path runs and its push deletion doesn't. */
         void clearNotifications(ArrayList<Integer> ids, long channelId) throws Exception;
 
+        /** The channel ID of [dialogId] when it's a channel or a supergroup, and 0 for anything else. */
+        long channel(long dialogId) throws Exception;
+
         /** Asks a chat showing [messages] of [dialogId] to draw their bubbles again, on the main thread. */
         void redraw(long dialogId, ArrayList<Object> messages) throws Exception;
+    }
+
+    /** The accounts signed in to this Telegram, each as its own [Source]. */
+    interface Accounts {
+        List<Source> signedIn() throws Exception;
     }
 
     /** Where the remembered messages live between runs. */
@@ -105,6 +114,7 @@ public final class KeepDeleted {
 
     static Persist persist = new Prefs();
     static Keys keys = KeepDeletedBridge::keyOf;
+    static Accounts accounts = KeepDeletedBridge::signedIn;
 
     /**
      * Asked in place of a "messages deleted" update for chats that aren't channels.
@@ -277,6 +287,96 @@ public final class KeepDeleted {
         }
     }
 
+    /**
+     * The Clear kept messages row: every message each signed-in account remembers goes to
+     * Telegram's own deletion, chat by chat, and the account forgets it. Works with the switch off
+     * or paused too, since the tap is the request. What can't be handed over stays remembered,
+     * label and all, so a later tap can try again.
+     *
+     * @return how many messages were handed over
+     */
+    public static int clear() {
+        HookStatus.invoked(FamilyNames.KEEP_DELETED_MESSAGES);
+        List<Source> signedIn;
+        try {
+            signedIn = accounts.signedIn();
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "accounts", failure);
+            return 0;
+        }
+        int cleared = 0;
+        for (Source source : signedIn) {
+            try {
+                cleared += clearAccount(source);
+            } catch (Throwable failure) {
+                HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "clearing kept messages", failure);
+            }
+        }
+        if (cleared > 0) HookStatus.counted(FamilyNames.KEEP_DELETED_MESSAGES, "kept messages cleared");
+        return cleared;
+    }
+
+    /** One account's part of [clear]. Forgets first, so a deletion that fails on the queue can put its messages back. */
+    private static int clearAccount(Source source) throws Exception {
+        long owner = source.self();
+        List<String> messages = keptBy(owner);
+        if (messages.isEmpty()) return 0;
+        forget(owner, messages);
+        try {
+            source.post(() -> handBack(source, owner, messages));
+        } catch (Throwable refused) {
+            restore(owner, messages);
+            throw refused;
+        }
+        return messages.size();
+    }
+
+    /** What the row says after a clear of [count] messages. */
+    public static String clearedMessage(int count) {
+        if (count <= 0) return L10n.t("There are no kept messages to clear.");
+        return L10n.quantity(count, "Removed %1$d kept message.", "Removed %1$d kept messages.", count);
+    }
+
+    /**
+     * Runs on the account's storage queue. Each chat's messages go together, the way a push
+     * deletes them: a channel or supergroup by its own ID, and anything else with 0. A chat whose
+     * deletion can't start is remembered again.
+     */
+    static void handBack(Source source, long owner, List<String> messages) {
+        Map<Long, ArrayList<Integer>> byChat = new LinkedHashMap<>();
+        for (String message : messages) {
+            try {
+                int colon = message.lastIndexOf(':');
+                long dialog = Long.parseLong(message.substring(0, colon));
+                ArrayList<Integer> ids = byChat.get(dialog);
+                if (ids == null) byChat.put(dialog, ids = new ArrayList<>());
+                ids.add(Integer.valueOf(message.substring(colon + 1)));
+            } catch (RuntimeException unreadable) {
+                HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "reading kept messages", unreadable);
+            }
+        }
+        for (Map.Entry<Long, ArrayList<Integer>> chat : byChat.entrySet()) {
+            long dialog = chat.getKey();
+            long channel;
+            try {
+                channel = dialog < 0 ? source.channel(dialog) : 0;
+                source.stock(dialog, new ArrayList<>(chat.getValue()), channel);
+            } catch (Throwable failure) {
+                HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "clearing kept messages", failure);
+                List<String> back = new ArrayList<>();
+                for (Integer id : chat.getValue()) back.add(key(dialog, id));
+                restore(owner, back);
+                continue;
+            }
+            // A kept message's notification was left in place when its deletion was taken over.
+            try {
+                source.clearNotifications(new ArrayList<>(chat.getValue()), channel);
+            } catch (Throwable failure) {
+                HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "notification cleanup", failure);
+            }
+        }
+    }
+
     static synchronized void remember(long owner, List<long[]> messages) {
         if (messages.isEmpty()) return;
         LinkedHashSet<String> set = load(owner);
@@ -298,6 +398,33 @@ public final class KeepDeleted {
 
     static synchronized boolean isKept(long owner, long dialog, long id) {
         return load(owner).contains(key(dialog, id));
+    }
+
+    /** A copy of what [owner] remembers, oldest first. */
+    static synchronized List<String> keptBy(long owner) {
+        return Collections.unmodifiableList(new ArrayList<>(load(owner)));
+    }
+
+    /** Drops [messages] from what [owner] remembers, and saves the rest. */
+    static synchronized void forget(long owner, List<String> messages) {
+        LinkedHashSet<String> set = load(owner);
+        set.removeAll(messages);
+        save(owner, set);
+    }
+
+    /** Puts [messages] back in what [owner] remembers, after a clear that couldn't hand them over. */
+    static synchronized void restore(long owner, List<String> messages) {
+        LinkedHashSet<String> set = load(owner);
+        set.addAll(messages);
+        save(owner, set);
+    }
+
+    private static void save(long owner, LinkedHashSet<String> set) {
+        try {
+            persist.write(prefsKey(owner), String.join(",", set));
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "saving kept messages", failure);
+        }
     }
 
     static synchronized void forgetAllForTests() {

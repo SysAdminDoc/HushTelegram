@@ -289,6 +289,14 @@ Add Repeat to the message menu	Añadir Repetir al menú de mensajes
 Adds Repeat under Forward in a message's press-and-hold menu. It sends the same message again to the chat. Not shown in protected or secret chats.	Añade Repetir debajo de Reenviar en el menú de un mensaje que se abre al mantenerlo pulsado. Envía el mismo mensaje otra vez al chat. No aparece en chats protegidos ni secretos.
 Keep deleted messages	Conservar los mensajes eliminados
 Messages others delete stay in your chat on this phone, marked deleted next to the time. Your own deletes and disappearing messages work as usual.	Los mensajes que otros eliminan se quedan en tu chat en este teléfono, marcados como eliminados junto a la hora. Tus propias eliminaciones y los mensajes que desaparecen funcionan como siempre.
+# context: an action row under Keep deleted messages; a tap deletes every message that switch kept
+Clear kept messages	Borrar los mensajes conservados
+Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.	Elimina los mensajes que este teléfono conservó después de que otros los eliminaran, en todas las cuentas, como lo habría hecho Telegram.
+# context: the notice after that tap when nothing was kept
+There are no kept messages to clear.	No hay mensajes conservados para borrar.
+# context: the notice after that tap, with how many kept messages went
+Removed %1$d kept message.	Se eliminó %1$d mensaje conservado.
+Removed %1$d kept messages.	Se eliminaron %1$d mensajes conservados.
 Ask before sending a sticker	Preguntar antes de enviar un sticker
 Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.	Pregunta Enviar o Cancelar antes de que un sticker que tocas entre en un chat. Cancelar lo descarta. Los stickers programados salen sin preguntar.
 Ask before sending a GIF	Preguntar antes de enviar un GIF
