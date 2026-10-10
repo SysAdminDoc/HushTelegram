@@ -8,9 +8,11 @@ import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21t
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction22s;
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction23x;
 import com.android.tools.smali.dexlib2.iface.ClassDef;
+import com.android.tools.smali.dexlib2.iface.DexFile;
 import com.android.tools.smali.dexlib2.iface.Field;
 import com.android.tools.smali.dexlib2.iface.Method;
 import com.android.tools.smali.dexlib2.iface.MethodImplementation;
+import com.android.tools.smali.dexlib2.iface.MultiDexContainer;
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction;
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction;
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction;
@@ -90,9 +92,26 @@ public final class SelectionCheck {
                 + String.join("", method.getParameterTypes()) + ")" + method.getReturnType();
     }
 
-    private static Map<String, ClassDef> classes(File apk) throws Exception {
+    /** One APK decoded once: its dex entry names, method prints and classes. */
+    static final class Side {
+        static int decodes;
+        final File apk;
+        final TreeSet<String> dexEntries;
+        final Map<String, String> bodies;
+        final Map<String, ClassDef> classes;
+
+        Side(File apk) throws Exception {
+            this.apk = apk;
+            dexEntries = dexEntries(apk);
+            var dex = DexFileFactory.loadDexContainer(apk, Opcodes.getDefault());
+            bodies = DexDiff.fingerprintAll(dex);
+            classes = classes(dex);
+            decodes++;
+        }
+    }
+
+    private static Map<String, ClassDef> classes(MultiDexContainer<? extends DexFile> dex) throws Exception {
         Map<String, ClassDef> result = new HashMap<>();
-        var dex = DexFileFactory.loadDexContainer(apk, Opcodes.getDefault());
         for (String entry : dex.getDexEntryNames()) {
             for (ClassDef type : dex.getEntry(entry).getDexFile().getClasses()) {
                 require(result.put(type.getType(), type) == null);
@@ -505,18 +524,17 @@ public final class SelectionCheck {
         return changed;
     }
 
-    private static Evidence check(File clean, File patched, Expected expected, boolean credentialsOnlyDelta) throws Exception {
+    private static Evidence check(Side clean, Side patched, Expected expected, boolean credentialsOnlyDelta) throws Exception {
         Evidence result = new Evidence();
         result.settings = expected.settings;
-        TreeSet<String> oldDex = dexEntries(clean), newDex = dexEntries(patched);
-        require(newDex.containsAll(oldDex));
-        Map<String, String> oldBodies = DexDiff.fingerprintAll(clean), newBodies = DexDiff.fingerprintAll(patched);
+        require(patched.dexEntries.containsAll(clean.dexEntries));
+        Map<String, String> oldBodies = clean.bodies, newBodies = patched.bodies;
         require(newBodies.keySet().containsAll(oldBodies.keySet()));
         TreeSet<String> changed = new TreeSet<>(), added = new TreeSet<>(newBodies.keySet());
         added.removeAll(oldBodies.keySet());
         for (String key : oldBodies.keySet()) if (!oldBodies.get(key).equals(newBodies.get(key))) changed.add(key);
         require(expected.settings && !credentialsOnlyDelta || added.isEmpty());
-        Map<String, ClassDef> before = classes(clean), after = classes(patched);
+        Map<String, ClassDef> before = clean.classes, after = patched.classes;
         Method originalInit = nativeInitializer(before.get(CONNECTIONS));
         Method patchedInit = nativeInitializer(after.get(CONNECTIONS));
         result.nativeVersionChanges = nativeVersionChanges(originalInit, patchedInit, expected.api, expected.apiId);
@@ -552,28 +570,72 @@ public final class SelectionCheck {
             compiledHooks(after, result.flags);
         }
         result.apiLiteralChanges = apiChanges(before, after, expected);
-        result.mapsValueChanges = manifestChanges(clean, patched, expected, credentialsOnlyDelta);
+        result.mapsValueChanges = manifestChanges(clean.apk, patched.apk, expected, credentialsOnlyDelta);
         result.changedMethods = changed.size();
         result.addedMethods = added.size();
         return result;
     }
 
+    /** One case: {patched, expectation, evidence} and, for full-configured, the full56 baseline. */
+    private static void answer(Side clean, String[] request) throws Exception {
+        require(request.length == 3 || request.length == 4);
+        Expected expected = new Expected(new JSONObject(new File(request[1])));
+        Side patched = new Side(new File(request[0]));
+        Evidence evidence = check(clean, patched, expected, false);
+        if (request.length == 4) check(new Side(new File(request[3])), patched, expected, true);
+        Files.writeString(new File(request[2]).toPath(), evidence.json().toString() + "\n", StandardCharsets.UTF_8);
+    }
+
+    private static void reportPrivately(String evidencePath, Exception failure) {
+        try (var privateReport = new java.io.PrintWriter(evidencePath + ".failure-private.txt", StandardCharsets.UTF_8)) {
+            failure.printStackTrace(privateReport);
+        } catch (Exception unavailable) {
+            System.err.println("SELECTION_EVIDENCE_WRITE_FAILED");
+        }
+    }
+
+    /**
+     * --serve CLEAN: the matrix keeps one checker for a whole run, so the clean fixture is decoded
+     * once, not once a case. Each stdin line is one case, the one-shot arguments after CLEAN joined
+     * by tabs, and gets one SELECTION_CHECK_PASSED or SELECTION_CHECK_FAILED line back. At the end of
+     * input the decode count goes out, so a run can show it decoded the clean fixture once.
+     */
+    private static void serve(File clean) throws Exception {
+        Side stock = new Side(clean);
+        var input = new java.io.BufferedReader(new java.io.InputStreamReader(System.in, StandardCharsets.UTF_8));
+        int cases = 0;
+        for (String line; (line = input.readLine()) != null; ) {
+            if (line.isEmpty()) continue;
+            String[] request = line.split("\t", -1);
+            cases++;
+            try {
+                answer(stock, request);
+                System.out.println("SELECTION_CHECK_PASSED");
+            } catch (Exception failure) {
+                if (request.length >= 3) reportPrivately(request[2], failure);
+                System.out.println("SELECTION_CHECK_FAILED");
+            }
+            System.out.flush();
+        }
+        System.out.println("SELECTION_CHECK_DECODES cases=" + cases + " decodes=" + Side.decodes);
+    }
+
     public static void main(String[] args) {
+        if (args.length == 2 && args[0].equals("--serve")) {
+            try {
+                serve(new File(args[1]));
+            } catch (Exception failure) {
+                System.err.println("SELECTION_CHECK_FAILED");
+                System.exit(1);
+            }
+            return;
+        }
         try {
             require(args.length == 4 || args.length == 5);
-            Expected expected = new Expected(new JSONObject(new File(args[2])));
-            Evidence evidence = check(new File(args[0]), new File(args[1]), expected, false);
-            if (args.length == 5) check(new File(args[4]), new File(args[1]), expected, true);
-            Files.writeString(new File(args[3]).toPath(), evidence.json().toString() + "\n", StandardCharsets.UTF_8);
+            answer(new Side(new File(args[0])), java.util.Arrays.copyOfRange(args, 1, args.length));
             System.out.println("SELECTION_CHECK_PASSED");
         } catch (Exception failure) {
-            if (args.length >= 4) {
-                try (var privateReport = new java.io.PrintWriter(args[3] + ".failure-private.txt", StandardCharsets.UTF_8)) {
-                    failure.printStackTrace(privateReport);
-                } catch (Exception unavailable) {
-                    System.err.println("SELECTION_EVIDENCE_WRITE_FAILED");
-                }
-            }
+            if (args.length >= 4) reportPrivately(args[3], failure);
             System.err.println("SELECTION_CHECK_FAILED");
             System.exit(1);
         }

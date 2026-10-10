@@ -129,6 +129,17 @@ try {
         ($classes + [IO.Path]::PathSeparator + $desktop), 'SelectionCheckNativeVersionTest') + $fixtures) -PrivateOutput $nativeOutput
     Assert-Selection ($native -eq 0 -and (Get-Content $nativeOutput -Raw).Contains('NATIVE_VERSION_CHECKS_PASSED checks=84')) `
         'The native-version checker lost its exact insertion or refusal controls.'
+    # A matrix run keeps one checker, which decodes the clean fixture once and answers each case.
+    $checker = Start-SelectionChecker -Java $java -ClassPath ($classes + [IO.Path]::PathSeparator + $desktop) -Apk $fixtures[0] `
+        -PrivateOutput (Join-Path $scratch 'checker-private.txt')
+    $answers = @(foreach ($n in 1..2) {
+        Invoke-SelectionChecker -Checker $checker -Request @((Join-Path $scratch "missing-$n.apk"), (Join-Path $scratch 'missing.json'),
+            (Join-Path $scratch "evidence-$n.json"))
+    })
+    $decoded = Stop-SelectionChecker -Checker $checker
+    Assert-Selection ($answers.Count -eq 2 -and $answers -notcontains $true -and $null -ne $decoded -and $decoded.Cases -eq 2 -and
+        $decoded.Decodes -eq 1 -and (Test-Path -LiteralPath (Join-Path $scratch 'evidence-2.json.failure-private.txt'))) `
+        'The selection checker did not answer each case from one decode of the clean fixture.'
     $canary = 'private_selection_error_canary_529771'
     Assert-Selection (-not (Test-SelectionPublicText -Text ('before ' + $canary + ' after') -Canaries @($canary))) 'The output guard accepted a credential sentinel.'
     Assert-Selection (Test-SelectionPublicText -Text 'REFUSAL_PASSED' -Canaries @($canary)) 'The output guard rejected a fixed status code.'

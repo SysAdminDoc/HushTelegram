@@ -1708,9 +1708,11 @@ public class DexDiff {
      * when the multiset of its definitions' prints is.
      */
     static Map<String, String> fingerprintAll(File apk) throws Exception {
+        return fingerprintAll(DexFileFactory.loadDexContainer(apk, Opcodes.getDefault()));
+    }
+
+    static Map<String, String> fingerprintAll(MultiDexContainer<? extends DexFile> container) throws Exception {
         Map<String, String> out = new HashMap<>(1 << 20);
-        MultiDexContainer<? extends DexFile> container =
-                DexFileFactory.loadDexContainer(apk, Opcodes.getDefault());
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         for (String entry : container.getDexEntryNames()) {
             for (ClassDef cd : container.getEntry(entry).getDexFile().getClasses()) {

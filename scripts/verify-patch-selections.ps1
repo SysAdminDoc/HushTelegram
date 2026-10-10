@@ -194,6 +194,54 @@ function Invoke-SelectionTool {
     return $code
 }
 
+function ConvertTo-NativeArgument([string]$Value) {
+    if ($Value -and $Value -notmatch '[\s"]') { return $Value }
+    return '"' + ($Value -replace '(\\*)"', '$1$1\"' -replace '(\\+)$', '$1$1') + '"'
+}
+
+# One SelectionCheck answers every case of a run (its --serve mode), so the clean fixture is
+# decoded once a run instead of once a case. Each case is one tab-separated line on its stdin and
+# one fixed status line back; everything else the JVM says stays in the private output.
+function Start-SelectionChecker {
+    param([string]$Java, [string]$ClassPath, [string]$Apk, [string]$PrivateOutput)
+    $info = New-Object System.Diagnostics.ProcessStartInfo
+    $info.FileName = $Java
+    $info.Arguments = (@('-Xmx3g', '-XX:ActiveProcessorCount=2', '-cp', $ClassPath, 'SelectionCheck', '--serve', $Apk) |
+        ForEach-Object { ConvertTo-NativeArgument $_ }) -join ' '
+    $info.UseShellExecute = $false
+    $info.CreateNoWindow = $true
+    $info.RedirectStandardInput = $true
+    $info.RedirectStandardOutput = $true
+    $info.RedirectStandardError = $true
+    $process = [Diagnostics.Process]::Start($info)
+    $writer = New-Object System.IO.StreamWriter($process.StandardInput.BaseStream, (New-Object System.Text.UTF8Encoding($false)))
+    $writer.NewLine = "`n"
+    $writer.AutoFlush = $true
+    [pscustomobject]@{ Process = $process; Input = $writer; Errors = $process.StandardError.ReadToEndAsync()
+        PrivateOutput = $PrivateOutput; Lines = New-Object System.Collections.Generic.List[string] }
+}
+
+function Invoke-SelectionChecker {
+    param([object]$Checker, [string[]]$Request)
+    if (@($Request | Where-Object { $_ -match "[`t`r`n]" }).Count) { throw 'CHECKER_REQUEST_INVALID' }
+    $Checker.Input.WriteLine($Request -join "`t")
+    $answer = $Checker.Process.StandardOutput.ReadLine()
+    if ($null -ne $answer) { $Checker.Lines.Add($answer) }
+    return $answer -ceq 'SELECTION_CHECK_PASSED'
+}
+
+function Stop-SelectionChecker {
+    param([object]$Checker)
+    try { $Checker.Input.Close() } catch { }
+    $rest = $Checker.Process.StandardOutput.ReadToEnd()
+    $Checker.Process.WaitForExit()
+    $text = (@($Checker.Lines) + @($rest, $Checker.Errors.Result)) -join "`n"
+    [IO.File]::WriteAllText($Checker.PrivateOutput, $text + "`n", (New-Object System.Text.UTF8Encoding($false)))
+    $count = [regex]::Match($rest, '(?m)^SELECTION_CHECK_DECODES cases=(\d+) decodes=(\d+)\r?$')
+    if ($Checker.Process.ExitCode -ne 0 -or -not $count.Success) { return $null }
+    [pscustomobject]@{ Cases = [int]$count.Groups[1].Value; Decodes = [int]$count.Groups[2].Value }
+}
+
 function Invoke-PatchSelectionMatrix {
     param([string]$Apk, [string]$DesktopJar, [string]$WorkDir, [string]$Bundle,
         [string]$PatchList, [string]$Java, [string]$Aapt2, [string[]]$Case)
@@ -248,113 +296,122 @@ function Invoke-PatchSelectionMatrix {
     $bundleHash = (Get-Sha256Hex -Path $Bundle).ToLowerInvariant()
     $evidence = [Collections.Generic.List[object]]::new()
     $elapsed = [Diagnostics.Stopwatch]::StartNew()
-    foreach ($selection in $plans) {
-        $caseDir = Join-Path $run $selection.Id
-        New-Item -ItemType Directory -Path $caseDir | Out-Null
-        $output = Join-Path $caseDir 'configured-private.apk'
-        $reportPath = Join-Path $caseDir 'cli-private.json'
-        $summaryPath = Join-Path $caseDir 'public-summary.json'
-        $temporary = Join-Path $caseDir 'temporary-private'
-        $optionPath = Join-Path $caseDir 'options-private.json'
-        $expected = Get-SelectionExpectation -Catalog $catalog -StatusModel $model -Selection $selection
-        $expectationPath = Join-Path $caseDir 'expectation-private.json'
-        [IO.File]::WriteAllText($expectationPath, ($expected | ConvertTo-Json -Depth 8), [Text.UTF8Encoding]::new($false))
-        $arguments = @('-Xmx2g', '-XX:ActiveProcessorCount=2', '-jar', $DesktopJar, 'patch', '--unsigned', '-p', $Bundle,
-            '-o', $output, '-t', $temporary, '-r', $reportPath)
-        if (-not $selection.Default) {
-            $arguments += '--exclusive'
-            foreach ($name in $selection.Names) { $arguments += @('-e', $name) }
-        }
-        if ($selection.Options.Count -or $selection.Malformed) {
-            $document = if ($selection.Malformed) { '[{"private":"' + $selection.Canaries[-1] + '"' }
-                else { New-SelectionOptionsDocument -Catalog $catalog -Selection $selection -BundleName (Split-Path -Leaf $Bundle) -BundleHash $bundleHash }
-            [IO.File]::WriteAllText($optionPath, $document, [Text.UTF8Encoding]::new($false))
-            $optionHash = Get-Sha256Hex -Path $optionPath
-            $arguments += @('--options-file', $optionPath)
-        }
-        $arguments += $Apk
-        $casePassed = $false
-        try {
-            $cliCode = Invoke-SelectionTool -Program $Java -Arguments $arguments -PrivateOutput (Join-Path $caseDir 'cli-private.txt')
-            $public = Export-PublicPatchSummary -ReportPath $reportPath -SummaryPath $summaryPath -PatchList $catalog `
-                -RequestedNames $selection.Names -BundleVersion $version -OutputPath $output -CliExitCode $cliCode `
-                -ExpectedPackageName $stock.package -ExpectedPackageVersion $stock.versionName
-            if (-not $public.Written -or -not (Test-SelectionPublicText -Text (Get-Content $summaryPath -Raw) -Canaries $selection.Canaries)) {
-                throw 'PUBLIC_SUMMARY_FAILED'
+    $checker = Start-SelectionChecker -Java $Java -ClassPath $classPath -Apk $Apk -PrivateOutput (Join-Path $run 'checker-private.txt')
+    $checkerStopped = $false
+    try {
+        foreach ($selection in $plans) {
+            $caseDir = Join-Path $run $selection.Id
+            New-Item -ItemType Directory -Path $caseDir | Out-Null
+            $output = Join-Path $caseDir 'configured-private.apk'
+            $reportPath = Join-Path $caseDir 'cli-private.json'
+            $summaryPath = Join-Path $caseDir 'public-summary.json'
+            $temporary = Join-Path $caseDir 'temporary-private'
+            $optionPath = Join-Path $caseDir 'options-private.json'
+            $expected = Get-SelectionExpectation -Catalog $catalog -StatusModel $model -Selection $selection
+            $expectationPath = Join-Path $caseDir 'expectation-private.json'
+            [IO.File]::WriteAllText($expectationPath, ($expected | ConvertTo-Json -Depth 8), [Text.UTF8Encoding]::new($false))
+            $arguments = @('-Xmx2g', '-XX:ActiveProcessorCount=2', '-jar', $DesktopJar, 'patch', '--unsigned', '-p', $Bundle,
+                '-o', $output, '-t', $temporary, '-r', $reportPath)
+            if (-not $selection.Default) {
+                $arguments += '--exclusive'
+                foreach ($name in $selection.Names) { $arguments += @('-e', $name) }
             }
-            $sourceNow = Get-Item -LiteralPath $Apk
-            if ($sourceNow.Length -ne $sourceLength -or $sourceNow.LastWriteTimeUtc -ne $sourceWritten -or
-                ((Test-Path $optionPath) -and (Get-Sha256Hex -Path $optionPath) -cne $optionHash)) { throw 'INPUT_MUTATED' }
-            if ($selection.Failure) {
-                if ($cliCode -eq 0 -or (Test-Path -LiteralPath $output)) { throw 'REFUSAL_NOT_ATOMIC' }
-                $failedReport = if (Test-Path $reportPath) { Get-Content $reportPath -Raw | ConvertFrom-Json } else { $null }
-                if ($null -ne $failedReport -and @(Get-ReportPatchNames $failedReport.appliedPatches).Count) { throw 'REFUSAL_NOT_ATOMIC' }
-                if (-not (Test-SelectionRefusal -Selection $selection -Report $failedReport -Stock $stock `
-                    -PrivateLog (Get-Content -LiteralPath (Join-Path $caseDir 'cli-private.txt') -Raw))) { throw 'REFUSAL_REASON_FAILED' }
-                $evidence.Add([pscustomobject]@{ case = $selection.Id; packageName = $stock.package; refused = $true; passed = $true })
+            if ($selection.Options.Count -or $selection.Malformed) {
+                $document = if ($selection.Malformed) { '[{"private":"' + $selection.Canaries[-1] + '"' }
+                    else { New-SelectionOptionsDocument -Catalog $catalog -Selection $selection -BundleName (Split-Path -Leaf $Bundle) -BundleHash $bundleHash }
+                [IO.File]::WriteAllText($optionPath, $document, [Text.UTF8Encoding]::new($false))
+                $optionHash = Get-Sha256Hex -Path $optionPath
+                $arguments += @('--options-file', $optionPath)
+            }
+            $arguments += $Apk
+            $casePassed = $false
+            try {
+                $cliCode = Invoke-SelectionTool -Program $Java -Arguments $arguments -PrivateOutput (Join-Path $caseDir 'cli-private.txt')
+                $public = Export-PublicPatchSummary -ReportPath $reportPath -SummaryPath $summaryPath -PatchList $catalog `
+                    -RequestedNames $selection.Names -BundleVersion $version -OutputPath $output -CliExitCode $cliCode `
+                    -ExpectedPackageName $stock.package -ExpectedPackageVersion $stock.versionName
+                if (-not $public.Written -or -not (Test-SelectionPublicText -Text (Get-Content $summaryPath -Raw) -Canaries $selection.Canaries)) {
+                    throw 'PUBLIC_SUMMARY_FAILED'
+                }
+                $sourceNow = Get-Item -LiteralPath $Apk
+                if ($sourceNow.Length -ne $sourceLength -or $sourceNow.LastWriteTimeUtc -ne $sourceWritten -or
+                    ((Test-Path $optionPath) -and (Get-Sha256Hex -Path $optionPath) -cne $optionHash)) { throw 'INPUT_MUTATED' }
+                if ($selection.Failure) {
+                    if ($cliCode -eq 0 -or (Test-Path -LiteralPath $output)) { throw 'REFUSAL_NOT_ATOMIC' }
+                    $failedReport = if (Test-Path $reportPath) { Get-Content $reportPath -Raw | ConvertFrom-Json } else { $null }
+                    if ($null -ne $failedReport -and @(Get-ReportPatchNames $failedReport.appliedPatches).Count) { throw 'REFUSAL_NOT_ATOMIC' }
+                    if (-not (Test-SelectionRefusal -Selection $selection -Report $failedReport -Stock $stock `
+                        -PrivateLog (Get-Content -LiteralPath (Join-Path $caseDir 'cli-private.txt') -Raw))) { throw 'REFUSAL_REASON_FAILED' }
+                    $evidence.Add([pscustomobject]@{ case = $selection.Id; packageName = $stock.package; refused = $true; passed = $true })
+                    $casePassed = $true
+                    Write-Host "[selections] $($selection.Id) REFUSAL_PASSED"
+                    continue
+                }
+                $report = Get-Content $reportPath -Raw | ConvertFrom-Json
+                $valid = Test-PatchingReport -Report $report -ExpectedNames $selection.Names -AllowedDependencyNames $expected.dependencies `
+                    -OutputPath $output -ExpectedPackageName $stock.package -ExpectedPackageVersion $stock.versionName
+                if ($cliCode -ne 0 -or -not $valid.Valid) { throw 'PATCH_REPORT_FAILED' }
+                # The CLI report lists selected named patches, not implicitly executed dependencies.
+                # SelectionCheck proves the settings closure through its actual entry hooks and classes.
+                $patched = Get-ApkManifestFacts -Apk $output -Aapt2 $Aapt2
+                $floor = if ($expected.settings) { [Math]::Max(28, [int]$stock.minSdk) } else { [int]$stock.minSdk }
+                if ($patched.package -cne $stock.package -or $patched.versionName -cne $stock.versionName -or
+                    $patched.versionCode -cne $stock.versionCode -or [int]$patched.minSdk -ne $floor) { throw 'MANIFEST_FACTS_FAILED' }
+                $delta = @(ConvertTo-ManifestDeltaEntries -Delta (Get-ManifestDelta -Stock $stock -Patched $patched))
+                $allowed = if ($expected.settings) { @('exported-added activity-alias:app.hushtelegram.extension.telegram.settings.OpenSettings') } else { @() }
+                if (Compare-Object @($delta | Sort-Object) @($allowed | Sort-Object)) { throw 'MANIFEST_DELTA_FAILED' }
+                $compiledPath = Join-Path $caseDir 'compiled-private.json'
+                $request = @($output, $expectationPath, $compiledPath)
+                if ($selection.Id -ceq 'full-configured') {
+                    $baseline = Join-Path $run 'full56-private.apk'
+                    if (-not (Test-Path -LiteralPath $baseline -PathType Leaf)) { throw 'FULL_BASELINE_MISSING' }
+                    $request += $baseline
+                }
+                if (-not (Invoke-SelectionChecker -Checker $checker -Request $request)) { throw 'COMPILED_SELECTION_FAILED' }
+                $facts = Get-Content $compiledPath -Raw | ConvertFrom-Json
+                $resourcePath = Join-Path $caseDir 'resources-private.txt'
+                $resourceCode = Invoke-SelectionTool -Program $Java -Arguments @('-Xmx2g', '-XX:ActiveProcessorCount=2', '-cp', $classPath,
+                    'ResourceTableCheck', $Apk, $output, $resourcePath) -PrivateOutput (Join-Path $caseDir 'resources-console-private.txt')
+                $resourceText = Get-Content $resourcePath -Raw
+                if ($resourceCode -ne 0 -or $resourceText -cnotmatch '\[resources\] rewritten values: 0' -or
+                    $resourceText -cnotmatch '\[resources\] renamed by the rebuild[^\r\n]*: 0' -or
+                    $resourceText -cnotmatch '\[resources\] added resources: 0') { throw 'RESOURCE_PRESERVATION_FAILED' }
+                $native = Get-NativePackagingEvidence -StockApk $Apk -PatchedApk $output -Java $Java -Aapt2 $Aapt2 `
+                    -ReportPath (Join-Path $caseDir 'native-private.json') -StockSha256 $sourceHash -SourceSha256 $sourceHash
+                if ($expected.settings) {
+                    # Preserve the full validator's nonempty-extension premises and all mutation contracts.
+                    $dexCode = Invoke-SelectionTool -Program $Java -Arguments @('-Xmx2g', '-XX:ActiveProcessorCount=2', '-cp', $classPath, 'DexDiff',
+                        $Apk, $output, (Join-Path $caseDir 'registers-private.txt'),
+                        (Join-Path $PSScriptRoot 'injected-register-removal-allowlist.txt'),
+                        (Join-Path $PSScriptRoot 'injected-mutation-contracts.txt'), $Apk) -PrivateOutput (Join-Path $caseDir 'registers-console-private.txt')
+                    if ($dexCode -ne 0) { throw 'STRUCTURAL_CONTRACT_FAILED' }
+                }
+                $evidence.Add([pscustomobject]@{ case = $selection.Id; packageName = $stock.package; refused = $false; passed = $true
+                    settings = $facts.settings; flags = $facts.flags; minSdk = $floor; closure = $expected.closure
+                    apiLiteralChanges = $facts.apiLiteralChanges; nativeVersionChanges = $facts.nativeVersionChanges; mapsValueChanges = $facts.mapsValueChanges
+                    changedMethods = $facts.changedMethods; addedMethods = $facts.addedMethods; structuralFindings = $facts.structuralFindings
+                    nativeEntries = $native.NativeLibraries.stock.nativeEntryCount; zipalignPassed = $native.ZipAlignment.passed })
                 $casePassed = $true
-                Write-Host "[selections] $($selection.Id) REFUSAL_PASSED"
-                continue
+                if ($selection.Id -ceq 'full56') { Copy-Item -LiteralPath $output -Destination (Join-Path $run 'full56-private.apk') }
+                Write-Host "[selections] $($selection.Id) SELECTION_PASSED"
+            } catch {
+                # CLI and Java failures can contain option values. Only this fixed code reaches the console.
+                [IO.File]::WriteAllText((Join-Path $caseDir 'failure-private.txt'), $_.Exception.ToString(), [Text.UTF8Encoding]::new($false))
+                Write-Host "[selections] $($selection.Id) CASE_FAILED"
+                throw 'MATRIX_FAILED'
+            } finally {
+                Remove-GeneratedPath -Path $temporary -Root $workRoot
+                if ($casePassed -and (Test-Path -LiteralPath $output)) { Remove-GeneratedPath -Path $output -Root $workRoot }
+                [IO.File]::WriteAllText((Join-Path $run 'matrix-private.json'), (ConvertTo-Json -InputObject $evidence.ToArray() -Depth 8) + "`n", [Text.UTF8Encoding]::new($false))
             }
-            $report = Get-Content $reportPath -Raw | ConvertFrom-Json
-            $valid = Test-PatchingReport -Report $report -ExpectedNames $selection.Names -AllowedDependencyNames $expected.dependencies `
-                -OutputPath $output -ExpectedPackageName $stock.package -ExpectedPackageVersion $stock.versionName
-            if ($cliCode -ne 0 -or -not $valid.Valid) { throw 'PATCH_REPORT_FAILED' }
-            # The CLI report lists selected named patches, not implicitly executed dependencies.
-            # SelectionCheck proves the settings closure through its actual entry hooks and classes.
-            $patched = Get-ApkManifestFacts -Apk $output -Aapt2 $Aapt2
-            $floor = if ($expected.settings) { [Math]::Max(28, [int]$stock.minSdk) } else { [int]$stock.minSdk }
-            if ($patched.package -cne $stock.package -or $patched.versionName -cne $stock.versionName -or
-                $patched.versionCode -cne $stock.versionCode -or [int]$patched.minSdk -ne $floor) { throw 'MANIFEST_FACTS_FAILED' }
-            $delta = @(ConvertTo-ManifestDeltaEntries -Delta (Get-ManifestDelta -Stock $stock -Patched $patched))
-            $allowed = if ($expected.settings) { @('exported-added activity-alias:app.hushtelegram.extension.telegram.settings.OpenSettings') } else { @() }
-            if (Compare-Object @($delta | Sort-Object) @($allowed | Sort-Object)) { throw 'MANIFEST_DELTA_FAILED' }
-            $compiledPath = Join-Path $caseDir 'compiled-private.json'
-            $checkerArguments = @('-Xmx2g', '-XX:ActiveProcessorCount=2', '-cp', $classPath,
-                'SelectionCheck', $Apk, $output, $expectationPath, $compiledPath)
-            if ($selection.Id -ceq 'full-configured') {
-                $baseline = Join-Path $run 'full56-private.apk'
-                if (-not (Test-Path -LiteralPath $baseline -PathType Leaf)) { throw 'FULL_BASELINE_MISSING' }
-                $checkerArguments += $baseline
-            }
-            $checkCode = Invoke-SelectionTool -Program $Java -Arguments $checkerArguments -PrivateOutput (Join-Path $caseDir 'compiled-private.txt')
-            if ($checkCode -ne 0) { throw 'COMPILED_SELECTION_FAILED' }
-            $facts = Get-Content $compiledPath -Raw | ConvertFrom-Json
-            $resourcePath = Join-Path $caseDir 'resources-private.txt'
-            $resourceCode = Invoke-SelectionTool -Program $Java -Arguments @('-Xmx2g', '-XX:ActiveProcessorCount=2', '-cp', $classPath,
-                'ResourceTableCheck', $Apk, $output, $resourcePath) -PrivateOutput (Join-Path $caseDir 'resources-console-private.txt')
-            $resourceText = Get-Content $resourcePath -Raw
-            if ($resourceCode -ne 0 -or $resourceText -cnotmatch '\[resources\] rewritten values: 0' -or
-                $resourceText -cnotmatch '\[resources\] renamed by the rebuild[^\r\n]*: 0' -or
-                $resourceText -cnotmatch '\[resources\] added resources: 0') { throw 'RESOURCE_PRESERVATION_FAILED' }
-            $native = Get-NativePackagingEvidence -StockApk $Apk -PatchedApk $output -Java $Java -Aapt2 $Aapt2 `
-                -ReportPath (Join-Path $caseDir 'native-private.json') -StockSha256 $sourceHash -SourceSha256 $sourceHash
-            if ($expected.settings) {
-                # Preserve the full validator's nonempty-extension premises and all mutation contracts.
-                $dexCode = Invoke-SelectionTool -Program $Java -Arguments @('-Xmx2g', '-XX:ActiveProcessorCount=2', '-cp', $classPath, 'DexDiff',
-                    $Apk, $output, (Join-Path $caseDir 'registers-private.txt'),
-                    (Join-Path $PSScriptRoot 'injected-register-removal-allowlist.txt'),
-                    (Join-Path $PSScriptRoot 'injected-mutation-contracts.txt'), $Apk) -PrivateOutput (Join-Path $caseDir 'registers-console-private.txt')
-                if ($dexCode -ne 0) { throw 'STRUCTURAL_CONTRACT_FAILED' }
-            }
-            $evidence.Add([pscustomobject]@{ case = $selection.Id; packageName = $stock.package; refused = $false; passed = $true
-                settings = $facts.settings; flags = $facts.flags; minSdk = $floor; closure = $expected.closure
-                apiLiteralChanges = $facts.apiLiteralChanges; nativeVersionChanges = $facts.nativeVersionChanges; mapsValueChanges = $facts.mapsValueChanges
-                changedMethods = $facts.changedMethods; addedMethods = $facts.addedMethods; structuralFindings = $facts.structuralFindings
-                nativeEntries = $native.NativeLibraries.stock.nativeEntryCount; zipalignPassed = $native.ZipAlignment.passed })
-            $casePassed = $true
-            if ($selection.Id -ceq 'full56') { Copy-Item -LiteralPath $output -Destination (Join-Path $run 'full56-private.apk') }
-            Write-Host "[selections] $($selection.Id) SELECTION_PASSED"
-        } catch {
-            # CLI and Java failures can contain option values. Only this fixed code reaches the console.
-            [IO.File]::WriteAllText((Join-Path $caseDir 'failure-private.txt'), $_.Exception.ToString(), [Text.UTF8Encoding]::new($false))
-            Write-Host "[selections] $($selection.Id) CASE_FAILED"
-            throw 'MATRIX_FAILED'
-        } finally {
-            Remove-GeneratedPath -Path $temporary -Root $workRoot
-            if ($casePassed -and (Test-Path -LiteralPath $output)) { Remove-GeneratedPath -Path $output -Root $workRoot }
-            [IO.File]::WriteAllText((Join-Path $run 'matrix-private.json'), (ConvertTo-Json -InputObject $evidence.ToArray() -Depth 8) + "`n", [Text.UTF8Encoding]::new($false))
         }
+        $checkerStopped = $true
+        $decoded = Stop-SelectionChecker -Checker $checker
+        if ($null -eq $decoded) { throw 'COMPILED_SELECTION_FAILED' }
+        # Before --serve every checked case decoded the clean fixture and its output, two APKs a case.
+        Write-Host "[selections] SelectionCheck decoded $($decoded.Decodes) APKs for $($decoded.Cases) checked cases (the clean fixture once)"
+    } finally {
+        if (-not $checkerStopped) { $null = Stop-SelectionChecker -Checker $checker }
     }
     $elapsed.Stop()
     if ((Get-Sha256Hex -Path $Apk) -cne $sourceHash) { throw 'INPUT_MUTATED' }
