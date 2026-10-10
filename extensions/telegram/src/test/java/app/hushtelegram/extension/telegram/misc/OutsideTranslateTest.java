@@ -195,6 +195,63 @@ public class OutsideTranslateTest {
         assertFalse(OutsideTranslate.showMessage(message, message));
     }
 
+    /** The settings row promises nothing is sent until a chat or message is turned on, so switching off starts over. */
+    @Test public void turningTheSwitchOffForgetsTheChatsSoTurningItBackOnSendsNothing() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(10);
+        Settings.OUTSIDE_TRANSLATE.save(false);
+        assertFalse(OutsideTranslate.active());
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        assertFalse(OutsideTranslate.chatOn(10));
+        OutsideTranslate.resetForTests();
+        assertFalse("the saved list kept the chat", OutsideTranslate.chatOn(10));
+        Fake message = new Fake();
+        assertFalse(OutsideTranslate.showMessage(message, message));
+        assertEquals(0, fetches.get());
+    }
+
+    @Test public void theSwitchRowForgetsTheChatsAsItGoesOff() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.forgetChats();
+        OutsideTranslate.resetForTests();
+        assertFalse(OutsideTranslate.chatOn(10));
+    }
+
+    /** Pause is a break, not a choice, so the chats turned on come back with Resume. */
+    @Test public void pausingKeepsTheChatsTurnedOn() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(10);
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        assertFalse(OutsideTranslate.active());
+        PauseForTests.resume();
+        assertTrue(OutsideTranslate.chatOn(10));
+    }
+
+    @Test public void aFailureThatLandsAfterTheSwitchWentOffSaysNothing() {
+        List<Runnable> queued = new ArrayList<>();
+        OutsideTranslate.executor = queued::add;
+        OutsideTranslate.fetcher = (target, text) -> { throw new java.io.IOException("offline"); };
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(10);
+        Fake message = new Fake();
+        assertFalse(OutsideTranslate.showMessage(message, message));
+        assertEquals(1, queued.size());
+        Settings.OUTSIDE_TRANSLATE.save(false);
+        queued.get(0).run();
+        ShadowLooper.idleMainLooper();
+        assertNull(org.robolectric.shadows.ShadowToast.getLatestToast());
+        assertEquals(0, message.refreshed);
+    }
+
+    /** Telegram doesn't know the chat item's number, so a tap on one left in an open menu stays ours. */
+    @Test public void theChatItemIsOursEvenAfterTheSwitchWentOff() {
+        assertFalse(Settings.OUTSIDE_TRANSLATE.get());
+        assertTrue(OutsideTranslate.headerClick(new Object(), OutsideTranslate.HEADER_ITEM));
+        assertFalse(OutsideTranslate.chatOn(0));
+        assertFalse(OutsideTranslate.headerClick(new Object(), OutsideTranslate.HEADER_ITEM + 1));
+    }
+
     @Test public void theChatsThatAreOnAreRememberedOnThePhone() {
         assertTrue(OutsideTranslate.toggleChat(42));
         OutsideTranslate.resetForTests();

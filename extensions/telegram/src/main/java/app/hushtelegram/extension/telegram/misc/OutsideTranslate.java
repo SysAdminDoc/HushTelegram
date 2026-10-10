@@ -192,7 +192,11 @@ public final class OutsideTranslate {
     static boolean active() {
         HookStatus.invoked(FamilyNames.OUTSIDE_TRANSLATE);
         try {
-            return Utils.settingsReady() && Settings.OUTSIDE_TRANSLATE.get();
+            if (!Utils.settingsReady()) return false;
+            if (Settings.OUTSIDE_TRANSLATE.get()) return true;
+            // Switched off, not just paused: a later switch-on starts with nothing chosen.
+            if (!Settings.OUTSIDE_TRANSLATE.savedValue()) forgetChats();
+            return false;
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "switch", failure);
             return false;
@@ -291,13 +295,15 @@ public final class OutsideTranslate {
         if (failed) HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "translate request", failure);
         Utils.runOnMainThread(() -> {
             try {
+                // Switched off or paused while the request was out: nothing to show or say.
+                if (!active()) return;
                 for (Waiter waiter : done) {
                     long dialog = waiter.message.dialog();
                     if (failed) {
                         toastOnce(dialog);
                         continue;
                     }
-                    if (!active() || !wanted(dialog, waiter.message.id())) continue;
+                    if (!wanted(dialog, waiter.message.id())) continue;
                     synchronized (LOCK) {
                         TOASTED.remove(dialog);
                     }
@@ -383,6 +389,27 @@ public final class OutsideTranslate {
             }
         }
         return on;
+    }
+
+    /**
+     * Forgets every chat and message turned on, saved list included, so nothing is sent again
+     * until the person chooses again. Run when the switch goes off.
+     */
+    public static void forgetChats() {
+        synchronized (LOCK) {
+            boolean saved = chats == null || !chats.isEmpty();
+            if (!saved && MESSAGES_ON.isEmpty() && MESSAGES_OFF.isEmpty() && TOASTED.isEmpty()) return;
+            chats = new HashSet<>();
+            MESSAGES_ON.clear();
+            MESSAGES_OFF.clear();
+            TOASTED.clear();
+            if (!saved) return;
+            try {
+                prefs().edit().remove(CHATS).apply();
+            } catch (Throwable unsaved) {
+                HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "chat list", unsaved);
+            }
+        }
     }
 
     static boolean chatOn(long dialog) {
@@ -478,7 +505,8 @@ public final class OutsideTranslate {
     public static boolean headerClick(Object delegate, int id) {
         if (id != HEADER_ITEM) return false;
         try {
-            if (!active()) return false;
+            // An item left in an open menu after the switch went off is still ours, and does nothing.
+            if (!active()) return true;
             Object chat = chatOf(delegate);
             if (chat == null) return false;
             long dialog = chatDialog(chat);

@@ -12,4 +12,17 @@ public final class OutsideTranslateForTests {
     public static boolean active() {
         return OutsideTranslate.active();
     }
+
+    /** Turns a chat on or off, the way its header item does. */
+    public static boolean toggleChat(long dialog) {
+        return OutsideTranslate.toggleChat(dialog);
+    }
+
+    public static boolean chatOn(long dialog) {
+        return OutsideTranslate.chatOn(dialog);
+    }
+
+    public static void reset() {
+        OutsideTranslate.resetForTests();
+    }
 }

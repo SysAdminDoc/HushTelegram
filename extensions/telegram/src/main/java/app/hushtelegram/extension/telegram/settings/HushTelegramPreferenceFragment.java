@@ -70,6 +70,7 @@ import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
 import app.hushtelegram.extension.telegram.misc.KeepDeleted;
+import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 
 /**
  * The preference list, built in code rather than from an XML resource so the bundle adds no
@@ -542,12 +543,17 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         SettingsIcons.BUG));
             }
             if (build.contains(PatchFamily.OUTSIDE_TRANSLATE)) {
-                chats.addPreference(mark(toggle(context, Settings.OUTSIDE_TRANSLATE, L10n.t("Translate with an outside service"),
+                SwitchPreference outside = toggle(context, Settings.OUTSIDE_TRANSLATE, L10n.t("Translate with an outside service"),
                         PatchFamily.OUTSIDE_TRANSLATE.coverageSummary(L10n.t("Adds Translate here to a message's menu and Translate this chat to a chat's menu, "
                                 + "using Google's web translate in place of Telegram's Premium translation. The text you "
                                 + "ask to translate is sent to Google, one message at a time, and nothing leaves your "
-                                + "phone until you turn a chat or message on."))),
-                        SettingsIcons.CHAT));
+                                + "phone until you turn a chat or message on.")));
+                // Off means off: switching back on later starts with no chat or message turned on.
+                outside.setOnPreferenceChangeListener((row, value) -> {
+                    if (Boolean.FALSE.equals(value)) OutsideTranslate.forgetChats();
+                    return true;
+                });
+                chats.addPreference(mark(outside, SettingsIcons.CHAT));
             }
         }
 

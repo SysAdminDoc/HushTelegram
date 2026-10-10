@@ -37,6 +37,7 @@ import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.PauseForTests;
 import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
+import app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests;
 
 import org.junit.After;
 import org.junit.Before;
@@ -706,6 +707,25 @@ public class HushTelegramPreferenceFragmentTest {
             HookStatus.clear();
         }
     }
+
+    /** Its row says nothing leaves the phone until a chat or message is turned on, so off forgets them. */
+    @Test
+    public void switchingOutsideTranslateOffForgetsTheChatsTurnedOn() {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.OUTSIDE_TRANSLATE);
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslateForTests.reset();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            assertTrue(OutsideTranslateForTests.toggleChat(42));
+            SwitchPreference row = (SwitchPreference) pageOf(controller).findPreference(Settings.OUTSIDE_TRANSLATE.key);
+            assertTrue(row.getOnPreferenceChangeListener().onPreferenceChange(row, Boolean.TRUE));
+            assertTrue("switching on forgot the chat", OutsideTranslateForTests.chatOn(42));
+            assertTrue(row.getOnPreferenceChangeListener().onPreferenceChange(row, Boolean.FALSE));
+            OutsideTranslateForTests.reset();
+            assertFalse(OutsideTranslateForTests.chatOn(42));
+        } finally {
+            Settings.OUTSIDE_TRANSLATE.resetToDefault();
+            OutsideTranslateForTests.reset();
+        }
 
     @Test
     public void localNotificationFactsStayReadableWhenTheRepairIsOffOrPaused() {
