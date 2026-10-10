@@ -4586,7 +4586,8 @@ class AlignmentFixture {
     # above, and what the builder says is kept in $builderSaid, warnings included.
     $builderSaid = ''
     function Invoke-ReceiptBuilder([string[]]$Fixtures, [string]$Bundle,
-            [string]$WorkDir = (Join-Path $releaseRoot 'work'), [string]$DesktopJar = $stubJar, [switch]$SkipAdvisoryCheck) {
+            [string]$WorkDir = (Join-Path $releaseRoot 'work'), [string]$DesktopJar = $stubJar, [switch]$SkipAdvisoryCheck,
+            [string]$AppliedDir) {
         Remove-Item -LiteralPath $javaLog, $mergeLog -Force -ErrorAction SilentlyContinue
         $saved = @{}
         foreach ($variable in @(Get-ChildItem Env: | Where-Object { $_.Name -like 'GIT_*' })) {
@@ -4600,6 +4601,7 @@ class AlignmentFixture {
                 Java = $stubJava; Aapt2 = $stubAapt2 }
             if ($Bundle) { $arguments['Bundle'] = $Bundle }
             if ($SkipAdvisoryCheck) { $arguments['SkipAdvisoryCheck'] = $true }
+            if ($AppliedDir) { $arguments['AppliedDir'] = $AppliedDir }
             $script:builderSaid = @(& (Join-Path $PSScriptRoot 'build-release-receipt.ps1') @arguments 3>&1 6>&1 |
                 ForEach-Object { "$_" }) -join "`n"
             if ($LASTEXITCODE -ne 0) { throw "build-release-receipt.ps1 exited $LASTEXITCODE." }
@@ -4725,12 +4727,14 @@ class AlignmentFixture {
     Set-Content -LiteralPath (Join-Path $tools 'apksigner.bat') -Encoding ASCII -Value @(
         '@echo off', "echo Signer #1 certificate SHA-256 digest: $($releaseSigner[0])", 'exit /b 0')
     $verifyAllScript = Join-Path $PSScriptRoot 'verify-all-patches.ps1'
-    function Invoke-VerifyAll([string]$Apk, [switch]$Force) {
+    function Invoke-VerifyAll([string]$Apk, [switch]$Force, [string]$KeepIn) {
         Remove-Item -LiteralPath $javaLog, $mergeLog, $resourceStock -Force -ErrorAction SilentlyContinue
         $global:LASTEXITCODE = 0
+        $keep = @{}
+        if ($KeepIn) { $keep = @{ KeepIn = $KeepIn; Root = $releaseRepo } }
         $said = @(& $verifyAllScript -Apk $Apk -DesktopJar $stubJar -WorkDir (Join-Path $releaseRoot 'verify-work') `
             -Bundle $releaseBundle -PatchList (Join-Path $releaseRepo 'patches-list.json') -Java $stubJava `
-            -Aapt2 $stubAapt2 -Force:$Force 3>&1 6>&1 | ForEach-Object { "$_" }) -join "`n"
+            -Aapt2 $stubAapt2 -Force:$Force @keep 3>&1 6>&1 | ForEach-Object { "$_" }) -join "`n"
         if ($LASTEXITCODE -ne 0) { throw "verify-all-patches.ps1 exited $LASTEXITCODE`: $said" }
         return $said
     }
@@ -4830,6 +4834,62 @@ class AlignmentFixture {
     Assert-Throws { Invoke-VerifyAll -Apk $variantApkm } "*$variantBuild, which the bundle does not declare, at version code $variantCode*-Force*" `
         'verify-all-patches.ps1 patched another build of a declared version as the declared one.'
     Assert-True (-not (Test-Path -LiteralPath $javaLog)) 'verify-all-patches.ps1 started the CLI on another build of a declared version.'
+
+    # verify-all-patches.ps1 -KeepIn keeps each clean run with a stamp of the commit, fixture,
+    # bundle, patch list, CLI and -f, and build-release-receipt.ps1 -AppliedDir reads a kept run
+    # whose stamp matches its own instead of patching that fixture again. Every check after the CLI
+    # still runs, so the receipt comes out the same. A stamp that differs, a kept APK that changed or
+    # nothing kept at all, and that fixture is patched as before.
+    $appliedDir = Join-Path $releaseRoot 'applied'
+    $receiptBeforeReuse = [System.IO.File]::ReadAllBytes($releaseReceipt)
+    try {
+        foreach ($build in $builtBuilds) {
+            $said = Invoke-VerifyAll -Apk $fixturePaths[$build] -Force:($build -eq $newerBuild) -KeepIn $appliedDir
+            Assert-True ($said -like '*kept this run for the release receipt in*') `
+                "verify-all-patches.ps1 -KeepIn did not keep its run of ${build}: $said"
+        }
+        foreach ($build in $builtBuilds) {
+            $keptRun = Join-Path $appliedDir (Get-Sha256Hex -Path $fixturePaths[$build]).ToLowerInvariant()
+            $stamp = Get-Content -LiteralPath (Join-Path $keptRun 'stamp.json') -Raw | ConvertFrom-Json
+            Assert-True ($stamp.commit -ceq $releaseCommit -and $stamp.forced -eq ($build -eq $newerBuild) -and
+                $stamp.bundleSha256 -ceq (Get-Sha256Hex -Path $releaseBundle).ToLowerInvariant()) `
+                "The run kept for $build is not stamped with the release repo's commit, its -f and the bundle: $($stamp | ConvertTo-Json -Compress)"
+            # The stand-in aapt2 reads a patched APK's manifest from the .xmltree the stand-in CLI
+            # writes beside it, where a real APK carries its own. A kept copy gets its one here.
+            Copy-Item -LiteralPath "$($fixturePaths[$build]).patched.txt" -Destination (Join-Path $keptRun 'patched.apk.xmltree')
+        }
+        Invoke-ReceiptBuilder -Fixtures $allFixtures -AppliedDir $appliedDir
+        Assert-True (-not (Test-Path -LiteralPath $javaLog)) `
+            "build-release-receipt.ps1 patched a fixture with a kept run: $(@(Get-Content -LiteralPath $javaLog -ErrorAction SilentlyContinue) -join '; ')"
+        Assert-True (@($builderSaid -split "`n" | Where-Object { $_ -like '*has a verified run of this commit and bundle*' }).Count -eq
+            $builtBuilds.Count) "build-release-receipt.ps1 did not say it read every kept run: $builderSaid"
+        $reusedTargets = @((Get-Content -LiteralPath $releaseReceipt -Raw | ConvertFrom-Json).targets)
+        Assert-True (($reusedTargets | ConvertTo-Json -Depth 20 -Compress) -ceq ($builtTargets | ConvertTo-Json -Depth 20 -Compress)) `
+            'The receipt read from kept runs does not record what patching every fixture again recorded.'
+
+        # Another bundle in one stamp and a patched APK changed after it was kept: those two fixtures
+        # are patched again, in fixture order, and the rest are still read.
+        $staleBuild = $releaseTarget.PackageVersion
+        $staleStampPath = Join-Path (Join-Path $appliedDir (Get-Sha256Hex -Path $fixturePaths[$staleBuild]).ToLowerInvariant()) 'stamp.json'
+        $staleStamp = Get-Content -LiteralPath $staleStampPath -Raw | ConvertFrom-Json
+        $staleStamp.bundleSha256 = '0' * 64
+        [System.IO.File]::WriteAllText($staleStampPath, ($staleStamp | ConvertTo-Json), [System.Text.UTF8Encoding]::new($false))
+        $changedApk = Join-Path (Join-Path $appliedDir (Get-Sha256Hex -Path $fixturePaths[$newerBuild]).ToLowerInvariant()) 'patched.apk'
+        [System.IO.File]::AppendAllText($changedApk, ' ')
+        Invoke-ReceiptBuilder -Fixtures $allFixtures -AppliedDir $appliedDir
+        $expectedRepatched = @($builtBuilds | Where-Object { $_ -eq $staleBuild -or $_ -eq $newerBuild } | ForEach-Object {
+            "patch $($fixturePaths[$_]) merged forced=$(if ($_ -eq $newerBuild) { 1 } else { 0 })" })
+        Assert-True ((@(Get-Content -LiteralPath $javaLog) -join "`n") -eq ($expectedRepatched -join "`n")) `
+            "build-release-receipt.ps1 did not patch exactly the fixtures whose kept run no longer matched: $(@(Get-Content -LiteralPath $javaLog) -join '; ')"
+
+        # Nothing kept where -AppliedDir points: every fixture is patched, as without it.
+        Invoke-ReceiptBuilder -Fixtures $allFixtures -AppliedDir (Join-Path $releaseRoot 'nothing-kept')
+        Assert-True ((@(Get-Content -LiteralPath $javaLog) -join "`n") -eq ($expectedRuns -join "`n")) `
+            "build-release-receipt.ps1 did not patch every fixture with nothing kept: $(@(Get-Content -LiteralPath $javaLog) -join '; ')"
+    } finally {
+        Remove-Item -LiteralPath $appliedDir -Recurse -Force -ErrorAction SilentlyContinue
+        [System.IO.File]::WriteAllBytes($releaseReceipt, $receiptBeforeReuse)
+    }
 
     # The SBOM and what OSV says about it come before anything is patched. The deliberately
     # vulnerable fixture is this bundle with an SBOM listing gson 2.8.8, and no receipt comes of it.

@@ -44,6 +44,8 @@ Every HushTelegram release, newest first.
 
 * **Tooling:** The pre-push gate runs its cheap checks before the long fixture suite. After the script suites it checks the release facts right away when no code changed, then runs every Gradle task except the fixture tests, the advisory scan and the facts that read the runtime results, and only then the fixture tests. A broken script, lint error or stale fact now stops a push before any vendor APK is patched.
 
+* **Tooling:** `verify-all-patches.ps1 -KeepIn <dir>` keeps a clean run's patched APK and CLI report, stamped with the commit and the hashes of the fixture, bundle, patch list and CLI. `build-release-receipt.ps1 -AppliedDir <dir>` reads a kept run whose stamp matches instead of patching that fixture a second time, and still runs every check on it. Anything that doesn't match gets patched as before.
+
 ## 0.0.11 (2026-10-08)
 
 The fifth release, with 55 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.
