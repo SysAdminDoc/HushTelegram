@@ -14,6 +14,11 @@ if (-not $Root) { $Root = Split-Path -Parent $PSScriptRoot }
 . (Join-Path $PSScriptRoot 'patch-report.ps1')
 $catalog = Get-Content -LiteralPath (Join-Path $Root 'patches-list.json') -Raw | ConvertFrom-Json
 $bundleVersion = $catalog.version -creplace '^v', ''
+# The declared builds come from the catalog, so a port to a new Telegram version can't leave this
+# test reporting one the catalog dropped (12.10.6 did, on the move to 13.0.1).
+$declaredTargets = @(Get-PatchTargets -PatchList $catalog)
+$webVersion = @($declaredTargets | Where-Object { $_.PackageName -ceq 'org.telegram.messenger.web' })[0].PackageVersion
+$betaVersion = @($declaredTargets | Where-Object { $_.PackageName -ceq 'org.telegram.messenger.beta' })[0].PackageVersion
 $requestedNames = @('Use registered Telegram API credentials', 'Use registered Maps API key')
 $canaries = @('987654321', '00112233445566778899aabbccddeeff',
     'AIza_SYNTHETIC_PRIVATE_MAPS_CANARY', 'synthetic-private-keystore-password',
@@ -80,7 +85,7 @@ function Invoke-Export {
 $cliJson = @'
 {
   "packageName": "org.telegram.messenger.web",
-  "packageVersion": "12.10.6",
+  "packageVersion": "DECLARED_WEB_VERSION",
   "patchingSteps": [
     {"step": "PATCHING", "success": true},
     {"step": "COMPILING", "success": true, "message": "synthetic-private-error"}
@@ -102,6 +107,7 @@ $cliJson = @'
   "keystore": "C:\\synthetic-private-path\\retained.jks"
 }
 '@
+$cliJson = $cliJson.Replace('DECLARED_WEB_VERSION', $webVersion)
 $baseReport = $cliJson | ConvertFrom-Json
 $tempBase = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())
 $caseRoot = [System.IO.Path]::GetFullPath((Join-Path $tempBase ('hushtelegram-public-summary-' + [guid]::NewGuid().ToString('N'))))
@@ -125,12 +131,12 @@ try {
     $apkHash = (Get-FileHash -LiteralPath $testApk).Hash
 
     $validation = Test-PatchingReport -Report $baseReport -ExpectedNames $requestedNames -OutputPath $testApk `
-        -ExpectedPackageName 'org.telegram.messenger.web' -ExpectedPackageVersion '12.10.6'
+        -ExpectedPackageName 'org.telegram.messenger.web' -ExpectedPackageVersion $webVersion
     Assert-True ($validation.Valid -and @($validation.FailureCodes).Count -eq 0) `
         'The unchanged CLI-shaped success no longer satisfies the existing parser.'
     $summary = Invoke-Summary $baseReport
     Assert-True (@($summary.failureCodes).Count -eq 0 -and $summary.packageName -ceq 'org.telegram.messenger.web' -and
-        $summary.packageVersion -ceq '12.10.6' -and $summary.bundleVersion -ceq $bundleVersion) `
+        $summary.packageVersion -ceq $webVersion -and $summary.bundleVersion -ceq $bundleVersion) `
         'The valid declared target or bundle version was lost.'
     Assert-True (($summary.requestedPatches -join '|') -ceq ($requestedNames -join '|') -and
         ($summary.appliedPatches -join '|') -ceq ($requestedNames -join '|')) 'The public patch names differ from the independent report.'
@@ -138,9 +144,9 @@ try {
     Add-Member -InputObject $explicitSuccess -NotePropertyName success -NotePropertyValue $true
     Assert-True (@((Invoke-Summary $explicitSuccess).failureCodes).Count -eq 0) 'An explicit true success was rejected.'
     $beta = Copy-Json $baseReport
-    $beta.packageName = 'org.telegram.messenger.beta'; $beta.packageVersion = '12.10.7'
+    $beta.packageName = 'org.telegram.messenger.beta'; $beta.packageVersion = $betaVersion
     Assert-True (@((Invoke-Summary $beta).failureCodes).Count -eq 0) 'The catalog-declared beta was rejected.'
-    $wrongNative = Invoke-Summary $beta -ExpectedPackage 'org.telegram.messenger.web' -ExpectedVersion '12.10.6'
+    $wrongNative = Invoke-Summary $beta -ExpectedPackage 'org.telegram.messenger.web' -ExpectedVersion $webVersion
     Assert-True ($wrongNative.failureCodes -ccontains 'TARGET_UNSUPPORTED' -and $null -eq $wrongNative.packageName) `
         'A report claiming the other supported target bypassed the native preflight.'
 

@@ -2161,7 +2161,9 @@ try {
                 Edit = { param($text) $text -replace '(latest release is \[v[^\]]+\]\([^)\s]*\), with )\d+( patches)',
                     ('${1}' + (@($catalog.patches).Count + 1) + '${2}') } },
             @{ Name = 'no sentence naming the latest release'; Pattern = '*does not say which release is the latest*'
-                Edit = { param($text) $text -replace 'The latest release is \[v[^\]]+\]\([^)\s]*\), with \d+ patches\.', 'Releases are on GitHub.' } })) {
+                # The sentence can go on past the count ("built for Telegram 12.10.6 and ..."), and its
+                # version numbers hold dots, so it ends at the first period followed by a space.
+                Edit = { param($text) $text -replace 'The latest release is \[v[^\]]+\]\([^)\s]*\), with \d+ patches.*?\.(?=\s|$)', 'Releases are on GitHub.' } })) {
         $unedited = Get-Content -LiteralPath (Join-Path $factsRoot 'README.md') -Raw
         Set-FactsFile 'README.md' $case.Edit
         try {
@@ -4547,6 +4549,14 @@ class AlignmentFixture {
             foreach ($version in $packageTarget.PackageVersions) { [pscustomobject]@{ Target = $packageTarget; Version = $version } }
         })
     foreach ($fixtureRecord in $fixtureRecords) {
+    # A fixture is found by its package and version, as telegram.org's build and the beta can declare
+    # the same version (13.0.1 both): keyed by the version alone, the beta's took the web build's
+    # place and the web build had no fixture. The release target's keep the bare version, which
+    # every lookup below by $releaseTarget.PackageVersion or $newerBuild reads.
+    function Get-FixtureKey([string]$Package, [string]$Version) {
+        if ($Package -ceq $releaseTarget.PackageName) { return $Version }
+        return "$Package $Version"
+    }
         $build = $fixtureRecord.Version
         $packageTarget = $fixtureRecord.Target
         $package = $packageTarget.PackageName
@@ -4571,7 +4581,7 @@ class AlignmentFixture {
             failedPatches = @()
             packageName = $package
             packageVersion = $build } | ConvertTo-Json -Depth 6)
-        $fixturePaths[$build] = $apkm
+        $fixturePaths[(Get-FixtureKey -Package $package -Version $build)] = $apkm
     }
     # And another build of the oldest declared version, as one Telegram release can come as several
     # arm64 builds: the declared name at a code the catalog doesn't pin, as an APKMirror .apkm. Only
@@ -4625,8 +4635,10 @@ class AlignmentFixture {
     # A fixture for every declared build and the newer one: one target each, only the newer build
     # forced, every patch applied, and no manifest change but the approved two, because the patched
     # manifest is held to the merge and not to the base.
-    $declaredBuildVersions = @($releaseTargets | ForEach-Object { $_.PackageVersions })
-    $builtBuilds = $declaredBuildVersions + @($newerBuild)
+    $declaredBuilds = @(foreach ($packageTarget in $releaseTargets) {
+        foreach ($version in $packageTarget.PackageVersions) { Get-FixtureKey -Package $packageTarget.PackageName -Version $version }
+    })
+    $builtBuilds = $declaredBuilds + @($newerBuild)
     $allFixtures = @($builtBuilds | ForEach-Object { $fixturePaths[$_] })
     try {
         Invoke-ReceiptBuilder -Fixtures $allFixtures
@@ -4637,12 +4649,13 @@ class AlignmentFixture {
         "build-release-receipt.ps1 did not patch inside a build queue slot: $(Get-LastQueuedJob)"
     $built = Get-Content -LiteralPath $releaseReceipt -Raw | ConvertFrom-Json
     $builtTargets = @($built.targets)
-    $builtVersions = @($builtTargets | ForEach-Object { [string]$_.source.versionName })
-    Assert-True (($builtVersions -join ',') -eq ($builtBuilds -join ',')) `
-        "The receipt does not hold one run of each fixture: $($builtVersions -join ', ')"
+    $builtKeys = @($builtTargets | ForEach-Object {
+        Get-FixtureKey -Package ([string]$_.source.package) -Version ([string]$_.source.versionName) })
+    Assert-True (($builtKeys -join ',') -eq ($builtBuilds -join ',')) `
+        "The receipt does not hold one run of each fixture: $($builtKeys -join ', ')"
     foreach ($builtTarget in $builtTargets) {
-        $label = [string]$builtTarget.source.versionName
-        $declared = $declaredBuildVersions -contains $label
+        $label = Get-FixtureKey -Package ([string]$builtTarget.source.package) -Version ([string]$builtTarget.source.versionName)
+        $declared = $declaredBuilds -contains $label
         Assert-True ($builtTarget.source.forced -eq (-not $declared)) `
             "The receipt says $label was $(if ($builtTarget.source.forced) { 'forced' } else { 'not forced' })."
         Assert-True ($builtTarget.source.sha256 -eq (Get-Sha256Hex -Path $fixturePaths[$label])) `
@@ -4666,7 +4679,7 @@ class AlignmentFixture {
         "Each fixture was not merged once, before it was patched: $($mergeRuns -join '; ')"
     $patchRuns = @(Get-Content -LiteralPath $javaLog)
     $expectedRuns = @($builtBuilds | ForEach-Object {
-        "patch $($fixturePaths[$_]) merged forced=$(if ($declaredBuildVersions -contains $_) { 0 } else { 1 })" })
+        "patch $($fixturePaths[$_]) merged forced=$(if ($declaredBuilds -contains $_) { 0 } else { 1 })" })
     Assert-True (($patchRuns -join "`n") -eq ($expectedRuns -join "`n")) `
         "The CLI was not run once per fixture, on its merge, with -f for the undeclared build only: $($patchRuns -join '; ')"
     # The SBOM beside the bundle, recorded by name, hash and count, once OSV had been asked about it.
@@ -5018,7 +5031,7 @@ class AlignmentFixture {
         & (Join-Path $PSScriptRoot 'patch-for-device.ps1') @arguments 6> $null
     }
     $deviceApk = Join-Path $deviceOut "hushtelegram-$releaseVersionHere-signed.apk"
-    foreach ($build in $declaredBuildVersions) {
+    foreach ($build in $declaredBuilds) {
         try {
             Invoke-DeviceBuild -Apk $fixturePaths[$build]
         } catch {
@@ -5042,7 +5055,8 @@ class AlignmentFixture {
                 -Value (Get-FixtureManifest -Build $version -Code $code -Package $packageTarget.PackageName)
             Set-Content -LiteralPath "$defaultFixture.patched.txt" -Encoding ASCII -NoNewline `
                 -Value (Get-FixtureManifest -Build $version -Code $code -Package $packageTarget.PackageName -Patched)
-            Copy-Item -LiteralPath "$($fixturePaths[$version]).result.json" -Destination "$defaultFixture.result.json"
+            Copy-Item -LiteralPath "$($fixturePaths[(Get-FixtureKey -Package $packageTarget.PackageName -Version $version)]).result.json" `
+                -Destination "$defaultFixture.result.json"
             $defaultFixtures[$packageTarget.PackageName] = $defaultFixture
         }
         $env:HUSHTELEGRAM_FIXTURE_DIR = $fixtures
