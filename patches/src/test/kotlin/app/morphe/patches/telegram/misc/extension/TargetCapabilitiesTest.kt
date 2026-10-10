@@ -17,14 +17,12 @@ import app.morphe.patches.telegram.ads.hideAdsPatch
 import app.morphe.patches.telegram.misc.analytics.REPORT_READ_METRICS
 import app.morphe.patches.telegram.misc.analytics.PremiumPromoEvent
 import app.morphe.patches.telegram.misc.analytics.disableAnalyticsPatch
-import app.morphe.util.ControlFlow
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
@@ -44,12 +42,11 @@ class TargetCapabilitiesTest {
         CHANNEL("channelAds", "$EXTENSION_PACKAGE/ads/Ads;->skipSponsoredMessages()Z"),
         VIDEO("videoAds", "$EXTENSION_PACKAGE/ads/Ads;->skipVideoAds()Z"),
         SEARCH("searchAds", "$EXTENSION_PACKAGE/ads/Ads;->skipSearchAds()Z"),
-        DEVICE_STATS("deviceStats", "$EXTENSION_PACKAGE/misc/Analytics;->skipDeviceStats(Ljava/lang/Object;)Z"),
         READ_METRICS("readMetrics", "$EXTENSION_PACKAGE/misc/Analytics;->skipReadMetrics(Ljava/util/List;)Z"),
     }
 
     private val adTargets = listOf(Target.CHANNEL, Target.VIDEO, Target.SEARCH)
-    private val reportTargets = listOf(Target.DEVICE_STATS, Target.READ_METRICS)
+    private val reportTargets = listOf(Target.READ_METRICS)
 
     @Test
     fun `every ad target subset records surviving hooks and rejects an empty build`() {
@@ -84,34 +81,11 @@ class TargetCapabilitiesTest {
             for ((target, original) in originals) {
                 val before = original.methods.single()
                 val patched = context.mutableClassDefBy(original.type).methods.single { it.name == before.name }
-                val opcode = if (target == Target.DEVICE_STATS) Opcode.INVOKE_STATIC_RANGE else Opcode.INVOKE_STATIC
                 assertTrue("$family subset $present lost ${target.hook}", patched.instructions().any {
-                    it.opcode == opcode && (it as ReferenceInstruction).reference.toString() == target.hook
+                    it.opcode == Opcode.INVOKE_STATIC && (it as ReferenceInstruction).reference.toString() == target.hook
                 })
             }
         }
-    }
-
-    /** A future sender with many locals must still pass this, even past invoke's v15 limit. */
-    @Test
-    fun `device stats passes exactly the host receiver past the short invoke register limit`() {
-        val original = host(Target.DEVICE_STATS, registersOverride = 40)
-        val context = PatchContexts.of(ExtensionDex.classes() + original)
-        PatchLogCapture.warnings { disableAnalyticsPatch.execute(context) }
-        val before = original.methods.single()
-        val patched = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == before.name }
-        val instructions = patched.instructions()
-        assertEquals(Opcode.INVOKE_STATIC_RANGE, instructions[0].opcode)
-        val call = instructions[0] as RegisterRangeInstruction
-        assertEquals(39, call.startRegister)
-        assertEquals(1, call.registerCount)
-        assertEquals(Target.DEVICE_STATS.hook, (instructions[0] as ReferenceInstruction).reference.toString())
-        assertEquals(40, patched.implementation!!.registerCount)
-        assertEquals(setOf(3, 4), ControlFlow.of(patched).normal[2].toSet())
-        assertEquals(before.instructions().map { it.opcode }, instructions.drop(4).map { it.opcode })
-        assertEquals(before.instructions().filterIsInstance<ReferenceInstruction>().map { it.reference.toString() },
-            instructions.drop(4).filterIsInstance<ReferenceInstruction>().map { it.reference.toString() })
-        assertFlag(context, "deviceStats", true)
     }
 
     @Test
@@ -129,21 +103,19 @@ class TargetCapabilitiesTest {
     }
 
     @Test
-    fun `an unsafe metrics request retains device stats without a read metrics capability`() {
-        val hosts = reportTargets.associateWith { host(it, supportedShape = it != Target.READ_METRICS) }
-        val context = PatchContexts.of(ExtensionDex.classes() + hosts.values)
-        val warnings = PatchLogCapture.warnings { disableAnalyticsPatch.execute(context) }
-        assertEquals(1 + PremiumPromoEvent.entries.size, warnings.size)
-        val metricsWarning = warnings.single { "doesn't check its batch" in it }
-        assertTrue(metricsWarning, metricsWarning.contains("doesn't check its batch"))
-        for (premium in PremiumPromoEvent.entries) {
-            assertTrue(warnings.toString(), warnings.any { premium.type in it })
-            assertFlag(context, premium.capability, false)
+    fun `an unsafe metrics request alone hooks nothing and claims no capability`() {
+        val host = host(Target.READ_METRICS, supportedShape = false)
+        val context = PatchContexts.of(ExtensionDex.classes() + host)
+        val warnings = PatchLogCapture.warnings {
+            val failure = assertThrows(PatchException::class.java) { disableAnalyticsPatch.execute(context) }
+            assertTrue(failure.message, failure.message.orEmpty().contains("none of the ${1 + PremiumPromoEvent.entries.size}"))
+            assertTrue(failure.message, failure.message.orEmpty().contains("doesn't check its batch"))
         }
-        assertFlag(context, "disableAnalytics", true)
-        assertFlag(context, "deviceStats", true)
+        assertEquals(0, warnings.size)
+        for (premium in PremiumPromoEvent.entries) assertFlag(context, premium.capability, false)
+        assertFlag(context, "disableAnalytics", false)
         assertFlag(context, "readMetrics", false)
-        assertUnchanged(context, hosts.getValue(Target.READ_METRICS))
+        assertUnchanged(context, host)
     }
 
     @Test
@@ -178,9 +150,9 @@ class TargetCapabilitiesTest {
             patched.instructions().filterIsInstance<ReferenceInstruction>().map { it.reference.toString() })
     }
 
-    private fun host(target: Target, supportedShape: Boolean = true, registersOverride: Int? = null): ClassDef {
+    private fun host(target: Target, supportedShape: Boolean = true): ClassDef {
         val type = when (target) {
-            Target.CHANNEL, Target.DEVICE_STATS -> MESSAGES_CONTROLLER
+            Target.CHANNEL -> MESSAGES_CONTROLLER
             Target.VIDEO -> "Lorg/telegram/messenger/video/VideoAds;"
             Target.SEARCH -> "Lfixture/Search;"
             Target.READ_METRICS -> "Lfixture/ReadMetrics;"
@@ -191,7 +163,7 @@ class TargetCapabilitiesTest {
             else -> emptyList()
         }
         val returns = if (target == Target.CHANNEL) MESSAGES_CONTROLLER.removeSuffix(";") + "\$SponsoredMessagesInfo;" else "V"
-        val registers = registersOverride ?: if (target == Target.SEARCH) 5 else if (target == Target.CHANNEL) 4 else 3
+        val registers = if (target == Target.SEARCH) 5 else if (target == Target.CHANNEL) 4 else 3
         val body = when (target) {
             Target.CHANNEL -> """
                 new-instance v0, $GET_SPONSORED_MESSAGES
@@ -212,12 +184,6 @@ class TargetCapabilitiesTest {
                 invoke-virtual {v1, v0, v2}, Lorg/telegram/tgnet/ConnectionsManager;->sendRequest(Lorg/telegram/tgnet/TLObject;Lorg/telegram/tgnet/RequestDelegate;)I
                 move-result v0
                 :done
-                return-void
-            """
-            Target.DEVICE_STATS -> """
-                ${if (registers > 16) "move-object/from16 v1, p0\niget-boolean v0, v1, $MESSAGES_CONTROLLER->collectDeviceStats:Z"
-                    else "iget-boolean v0, p0, $MESSAGES_CONTROLLER->collectDeviceStats:Z"}
-                new-instance v0, Lorg/telegram/tgnet/TLRPC${'$'}TL_help_saveAppLog;
                 return-void
             """
             Target.READ_METRICS -> """

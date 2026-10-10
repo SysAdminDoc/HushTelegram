@@ -138,10 +138,6 @@ public final class SettingsStatus {
         return false;
     }
 
-    public static boolean deviceStats() {
-        return false;
-    }
-
     public static boolean readMetrics() {
         return false;
     }

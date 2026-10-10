@@ -32,11 +32,12 @@ import org.robolectric.shadows.ShadowLooper;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.regex.Pattern;
 
 import app.hushtelegram.extension.telegram.misc.Analytics;
-import app.hushtelegram.extension.telegram.misc.AnalyticsTest.DeviceStatsController;
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
@@ -126,31 +127,18 @@ public class SupportReportTest {
     }
 
     /**
-     * A hook that ran says how often and what it did, with nothing logged: here Telegram asked three
-     * times for the device statistics report and each ask was skipped. The report says so without
-     * Debug logging.
+     * A hook that ran says how often and what it did, with nothing logged: here a channel tried three
+     * times to send its read metrics and each batch was skipped. The report says so without Debug
+     * logging.
      */
     @Test
     public void aHookThatRanSaysWhatItCounted() throws Exception {
-        DeviceStatsController controller = new DeviceStatsController(true, false);
-        for (int i = 0; i < 3; i++) Analytics.skipDeviceStats(controller);
+        for (int i = 0; i < 3; i++) Analytics.skipReadMetrics(new ArrayList<>(Arrays.asList("post")));
 
         for (String report : bothExports()) {
             assertBuildFacts(report);
             assertTrue(report, report.contains("\n[HOOK STATUS]\nDisable analytics: invoked 3, 0 found, 0 missing. "
-                    + "Counted: device stats report skipped 3\n"));
-        }
-    }
-
-    @Test
-    public void bothExportsDistinguishUnrequestedAndAlreadyHandledReportsFromSkips() throws Exception {
-        Analytics.skipDeviceStats(new DeviceStatsController(false, false));
-        Analytics.skipDeviceStats(new DeviceStatsController(true, true));
-        for (String report : bothExports()) {
-            assertBuildFacts(report);
-            assertTrue(report, report.contains("device stats report not requested 1, device stats report already handled 1"));
-            assertFalse(report, report.contains("device stats report skipped"));
-            assertFalse(report, report.contains("read metrics report skipped"));
+                    + "Counted: read metrics report skipped 3\n"));
         }
     }
 
@@ -166,13 +154,13 @@ public class SupportReportTest {
     @Test
     public void bothExportsPreservePrecisePartialCoverageWithoutDebugLogging() throws Exception {
         PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.CHANNEL_ADS,
-                PatchFamily.Capability.SEARCH_ADS, PatchFamily.Capability.DEVICE_STATS);
+                PatchFamily.Capability.SEARCH_ADS, PatchFamily.Capability.READ_METRICS);
         for (boolean paused : new boolean[]{false, true}) {
             if (paused) PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
             for (String report : bothExports()) {
                 assertTrue(report, report.contains("\nHide ads coverage: channel ads, search ads; missing: video ads\n"));
-                assertTrue(report, report.contains("\nDisable analytics coverage: device statistics reports; missing: "
-                        + "channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures\n"));
+                assertTrue(report, report.contains("\nDisable analytics coverage: channel read metrics; missing: "
+                        + "Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures\n"));
                 assertTrue(report, report.contains("\ndebug_logging: off\n"));
                 assertFalse(report, report.contains("[SELECTED EVENTS]"));
             }

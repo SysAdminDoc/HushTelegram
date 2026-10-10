@@ -5,9 +5,7 @@
 package app.morphe.patches.telegram.misc.analytics
 
 import app.morphe.patcher.Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.fieldAccess
 import app.morphe.patcher.newInstance
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -15,7 +13,6 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patches.telegram.ads.MESSAGES_CONTROLLER
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
@@ -23,9 +20,7 @@ import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.handleTargets
 import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
 import app.morphe.patches.telegram.misc.extension.patchLog
-import app.morphe.patches.telegram.misc.extension.requireLocals
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
-import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -49,21 +44,6 @@ private const val PATCH = "Disable analytics"
 
 private const val ANALYTICS = "$EXTENSION_PACKAGE/misc/Analytics;"
 
-/**
- * The messages controller's `logDeviceStats()`: when the server's config sets
- * `collectDeviceStats`, it classifies the selected root as emulated storage and reports that boolean as a
- * `help.saveAppLog` event. Found by that field and that request, both kept names.
- */
-internal object LogDeviceStatsFingerprint : Fingerprint(
-    definingClass = MESSAGES_CONTROLLER,
-    returnType = "V",
-    parameters = listOf(),
-    filters = listOf(
-        fieldAccess(definingClass = MESSAGES_CONTROLLER, name = "collectDeviceStats", type = "Z"),
-        newInstance("Lorg/telegram/tgnet/TLRPC\$TL_help_saveAppLog;"),
-    ),
-)
-
 /** A channel's batch of read metrics: how long each post stayed on screen as you scrolled. */
 internal const val REPORT_READ_METRICS = "Lorg/telegram/tgnet/TLRPC\$TL_messages_reportReadMetrics;"
 
@@ -81,12 +61,8 @@ internal object SendReadMetricsFingerprint : Fingerprint(
 /**
  * Keeps Telegram's usage reports on the phone.
  *
- * The storage event reports whether the selected root contains /storage/emulated/. That
- * method hands the extension its controller first and returns before classification while the
- * switch is on and a report is pending. The extension reads Telegram's two existing report flags
- * so a call that was never going to send anything isn't counted as a skipped report.
- *
- * Read metrics followed on 2026-10-01, when Telegram's own request log on a signed-in phone showed
+ * Telegram 13.0 dropped the old storage report (logDeviceStats), so there's nothing left to stop there.
+ * Read metrics were added on 2026-10-01, when Telegram's own request log on a signed-in phone showed
  * `messages.reportReadMetrics` going out as a channel was scrolled. One method builds it, and it
  * asks the extension just before, with the batch in hand. View counts are a separate request and
  * stay as they are. Premium screen views, item taps, accepts and canceled purchases carry four
@@ -118,15 +94,11 @@ val disableAnalyticsPatch = bytecodePatch(
 
     execute {
         requireStatusMethod("disableAnalytics")
-        requireStatusMethod("deviceStats")
         requireStatusMethod("readMetrics")
         PremiumPromoEvent.entries.forEach { requireStatusMethod(it.capability) }
         requireStatusMethod("crashReports")
         requireStatusMethod("sessionReports")
 
-        val device = LogDeviceStatsFingerprint.methodOrNull
-        device?.requireLocals(PATCH, 1)
-        device?.requireThisIntact(PATCH, listOf(0))
         val metrics = SendReadMetricsFingerprint.methodOrNull
         val metricsMissing = metrics?.skipReadMetricsWhen("$ANALYTICS->skipReadMetrics(Ljava/util/List;)Z", dryRun = true)
         val premium = resolvePremiumPromoHooks()
@@ -136,24 +108,6 @@ val disableAnalyticsPatch = bytecodePatch(
 
         handleTargets(PATCH, "usage reports", Report.entries) { report ->
             when (report) {
-                Report.DEVICE_STATS -> device.let { method ->
-                    if (method == null) "no method of the messages controller reads collectDeviceStats and sends a help.saveAppLog event"
-                    else {
-                        val first = method.getInstruction(0)
-                        method.addInstructionsWithLabels(
-                            0,
-                            """
-                                invoke-static/range {p0 .. p0}, $ANALYTICS->skipDeviceStats(Ljava/lang/Object;)Z
-                                move-result v0
-                                if-eqz v0, :hush_keep
-                                return-void
-                            """,
-                            ExternalLabel("hush_keep", first),
-                        )
-                        enableCapability("deviceStats")
-                        null
-                    }
-                }
                 Report.READ_METRICS -> metrics.let { method ->
                     if (method == null) "no method builds $REPORT_READ_METRICS"
                     else if (metricsMissing != null) metricsMissing
@@ -203,7 +157,7 @@ val disableAnalyticsPatch = bytecodePatch(
 
 /** The reports Telegram sends about how the app is used. */
 private enum class Report(val premium: PremiumPromoEvent? = null) {
-    DEVICE_STATS, READ_METRICS, PREMIUM_SHOW(PremiumPromoEvent.SHOW), PREMIUM_TAP(PremiumPromoEvent.TAP),
+    READ_METRICS, PREMIUM_SHOW(PremiumPromoEvent.SHOW), PREMIUM_TAP(PremiumPromoEvent.TAP),
     PREMIUM_ACCEPT(PremiumPromoEvent.ACCEPT), PREMIUM_FAIL(PremiumPromoEvent.FAIL),
 }
 

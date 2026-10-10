@@ -46,7 +46,6 @@ import java.util.Set;
 
 import app.hushtelegram.extension.telegram.ads.Ads;
 import app.hushtelegram.extension.telegram.misc.Analytics;
-import app.hushtelegram.extension.telegram.misc.AnalyticsTest.DeviceStatsController;
 import app.hushtelegram.extension.telegram.misc.UpdateChecks;
 import app.hushtelegram.extension.telegram.misc.Stories;
 import app.hushtelegram.extension.telegram.misc.Recommendations;
@@ -322,10 +321,9 @@ public class PausedHooksTest {
                     app.hushtelegram.extension.telegram.misc.GalleryCamera.wakeForPermission(gallery);
                     return app.hushtelegram.extension.telegram.misc.GalleryCamera.openWhenReady(gallery, new Object());
                 }));
-        // A device statistics report is never read or sent, and neither is a channel's read time.
+        // A channel's read time is never sent, and neither are Premium screen interactions.
         // On Telegram Beta, Crashlytics never starts and Sessions reads its override as off.
         probes.put(PatchFamily.DISABLE_ANALYTICS, Arrays.asList(
-                () -> Analytics.skipDeviceStats(new DeviceStatsController(true, false)),
                 () -> Analytics.skipReadMetrics(new ArrayList<>()),
                 () -> Analytics.skipPremiumAppLog("premium.promo_screen_show"),
                 () -> Analytics.skipPremiumAppLog("premium.promo_screen_tap"),

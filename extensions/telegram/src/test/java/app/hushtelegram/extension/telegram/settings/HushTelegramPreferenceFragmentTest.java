@@ -776,7 +776,7 @@ public class HushTelegramPreferenceFragmentTest {
                             + L10n.join(Arrays.asList("channel ads", "video ads", "search ads")) + ".",
                     String.valueOf(page.findPreference(Settings.HIDE_ADS.key).getSummary()));
             assertEquals("This patched app doesn't change " + L10n.join(Arrays.asList(
-                            "device statistics reports", "channel read metrics", "Premium promo views",
+                            "channel read metrics", "Premium promo views",
                             "Premium promo taps", "Premium promo accepts", "Premium promo failures")) + ".",
                     String.valueOf(page.findPreference(Settings.DISABLE_ANALYTICS.key).getSummary()));
         }

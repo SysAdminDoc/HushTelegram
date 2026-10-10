@@ -176,7 +176,6 @@ public enum PatchFamily {
         STORY_TOUCHES(HIDE_STORIES, "storyTouches", "avatar story taps"),
         CHANNEL_RECOMMENDATIONS(HIDE_RECOMMENDATIONS, "channelRecommendations", "similar channels and bots"),
         CACHED_RECOMMENDATIONS(HIDE_RECOMMENDATIONS, "cachedRecommendations", "cached recommendations"),
-        DEVICE_STATS(DISABLE_ANALYTICS, "deviceStats", "device statistics reports"),
         READ_METRICS(DISABLE_ANALYTICS, "readMetrics", "channel read metrics"),
         PREMIUM_PROMO_SHOW(DISABLE_ANALYTICS, "premiumPromoShow", "Premium promo views"),
         PREMIUM_PROMO_TAP(DISABLE_ANALYTICS, "premiumPromoTap", "Premium promo taps"),

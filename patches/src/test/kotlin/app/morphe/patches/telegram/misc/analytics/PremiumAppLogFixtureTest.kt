@@ -44,12 +44,12 @@ class PremiumAppLogFixtureTest {
     fun `every app-log constructor has a classified payload and operational callers remain explicit`() {
         for (build in Fixtures.declaredBuilds()) {
             val builders = hosts(build).flatMap { it.methods }.filter(::buildsAppLog)
-            assertEquals("${build.name}: complete constructor census", 7, builders.size)
-            assertEquals(7, builders.sumOf { method -> method.instructions().count { it.call()?.let { call ->
+            assertEquals("${build.name}: complete constructor census", 6, builders.size)
+            assertEquals(6, builders.sumOf { method -> method.instructions().count { it.call()?.let { call ->
                 call.definingClass == SAVE_APP_LOG && call.name == "<init>"
             } == true } })
             val classified = builders.filter { method -> method.strings().any { it in CLASSIFIED_TYPES } }
-            assertEquals("six literal types and one dynamic push-token batch", 6, classified.size)
+            assertEquals("five literal types and one dynamic push-token batch", 5, classified.size)
             assertEquals(CLASSIFIED_TYPES, classified.flatMap { it.strings().filter { type -> type in CLASSIFIED_TYPES } }.toSet())
             for (event in PremiumPromoEvent.entries) {
                 val method = builders.single { event.type in it.strings() }
@@ -79,10 +79,6 @@ class PremiumAppLogFixtureTest {
             })
             assertTrue("camera state logging stays after the request", camera.instructions().any {
                 it.call()?.toString() == "Lorg/telegram/messenger/ApplicationLoader;->logDualCamera(ZZ)V"
-            })
-            val storage = builders.single { "android_sdcard_exists" in it.strings() }
-            assertTrue("the existing storage hook reports a boolean, not folder paths", storage.instructions().any {
-                it.opcode == Opcode.NEW_INSTANCE && it.reference() == "Lorg/telegram/tgnet/TLRPC\$TL_jsonBool;"
             })
         }
     }
@@ -344,7 +340,7 @@ class PremiumAppLogFixtureTest {
         }
         val empty = PatchContexts.of(ExtensionDex.classes())
         try { disableAnalyticsPatch.execute(empty); fail("empty coverage accepted") }
-        catch (expected: PatchException) { assertTrue(expected.message.orEmpty().contains("none of the 6")) }
+        catch (expected: PatchException) { assertTrue(expected.message.orEmpty().contains("none of the 5")) }
         assertFlags(empty, emptySet(), oldTargets = false, family = false)
     }
 
@@ -373,7 +369,7 @@ class PremiumAppLogFixtureTest {
         owner.superclass, owner.interfaces, owner.sourceFile, owner.annotations, owner.fields, methods)
     private fun assertFlags(context: BytecodePatchContext, covered: Set<PremiumPromoEvent>, oldTargets: Boolean = true, family: Boolean = true) {
         val expected = PremiumPromoEvent.entries.associate { it.capability to (it in covered) } +
-            mapOf("deviceStats" to oldTargets, "readMetrics" to oldTargets, "disableAnalytics" to family)
+            mapOf("readMetrics" to oldTargets, "disableAnalytics" to family)
         for ((flag, enabled) in expected) {
             val body = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
             assertEquals(flag, if (enabled) 1 else 0, (body[0] as NarrowLiteralInstruction).narrowLiteral)
@@ -413,6 +409,6 @@ class PremiumAppLogFixtureTest {
         const val ANALYTICS = "Lapp/hushtelegram/extension/telegram/misc/Analytics;"
         const val APP_EVENT = "Lorg/telegram/tgnet/TLRPC\$TL_inputAppEvent;"
         const val JSON_NULL = "Lorg/telegram/tgnet/TLRPC\$TL_jsonNull;"
-        val CLASSIFIED_TYPES = PremiumPromoEvent.entries.map { it.type }.toSet() + setOf("android_sdcard_exists", "android_dual_camera")
+        val CLASSIFIED_TYPES = PremiumPromoEvent.entries.map { it.type }.toSet() + setOf("android_dual_camera")
     }
 }
