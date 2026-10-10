@@ -123,7 +123,13 @@ public class MessageFiltersTest {
                 // What's quoted in a class, a control character and a code point hide no bracket or count.
                 "/[\\Q[\\E](a|aa)+b/", "/\\c[(a|aa)+b/", "/\\x{61}+\\x{61}+\\x{61}+b/",
                 // The comments flag changes what spaces and # mean.
-                "/(?x)(a|aa) +b/", "/(?x)a#{99999999999}/", "/(?ix-s:(a|aa) +)b/"}) {
+                "/(?x)(a|aa) +b/", "/(?x)a#{99999999999}/", "/(?ix-s:(a|aa) +)b/",
+                // {0,1} is a ?, so these are (a?a)+ and twenty optional parts.
+                "/(a{0,1}a)+b/", "/" + times("a{0,1}", 20) + times("a", 20) + "b/",
+                // A look behind tries each place its text could start.
+                "/(?<=.{0,1000}c)x/", "/(?<!\\d{1,3})x/", "/(?<=a?b)x/",
+                // Choices that can match at the same place still multiply.
+                "/" + times("(?:a|a)", 16) + "b/", "/" + times("(?:a|ab)", 16) + "b/"}) {
             assertEquals(slow, MessageFilters.Problem.SLOW, MessageFilters.problem(slow));
         }
         assertTrue("ICU reads a comment", MessageFilters.slow("(?#[)(a|aa)+b"));
@@ -136,7 +142,10 @@ public class MessageFiltersTest {
                 "/\\b(?:buy|sell)\\s+crypto\\b/",
                 // A choice's sides are tried one after the other.
                 "/spam.*|scam.*/", "/(?:foo|bar).*/", "/(?:buy.*|sell.*) now/",
-                "/[\\Q]\\E]+x/", "/\\x{61}+b/", "/\\p{L}+ crypto/"}) {
+                "/[\\Q]\\E]+x/", "/\\x{61}+b/", "/\\p{L}+ crypto/",
+                // Only one plain word of a list can match at a place.
+                "/(?:buy|sell|earn|win|get) ?\\$? ?\\d+/", "/(?:free|cheap|bonus) (?:btc|eth|usdt|sol)\\s+now/",
+                "/(a+){0,1}b/", "/x{0,1}y+/", "/(?<=\\s)crypto/", "/(?<!\\d{3})x+/"}) {
             assertNull(fine, MessageFilters.problem(fine));
         }
         List<MessageFilters.Filter> kept = parsed("/(unclosed/\n/(a+)+/\nspam");
@@ -199,6 +208,10 @@ public class MessageFiltersTest {
     private static List<MessageFilters.Filter> parsed(String list) {
         Settings.MESSAGE_FILTERS_GROUPS.save(list);
         return MessageFilters.filters(false);
+    }
+
+    private static String times(String text, int count) {
+        return String.join("", Collections.nCopies(count, text));
     }
 
     private static String repeat(char c, int count) {

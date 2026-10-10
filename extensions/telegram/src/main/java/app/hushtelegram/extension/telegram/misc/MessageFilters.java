@@ -146,7 +146,7 @@ public final class MessageFilters {
     private static boolean found(Pattern pattern, String text) {
         if (text.length() <= MAX_EXPRESSION_TEXT) return pattern.matcher(text).find();
         // Three characters past the cut are more than the longest line break, so $ can't match at
-        // it, and they're as far as a look ahead reads.
+        // it. A look ahead at the cut can read them too, and nothing past them.
         Matcher matcher = pattern.matcher(text.substring(0, Math.min(text.length(), MAX_EXPRESSION_TEXT + 3)));
         return matcher.region(0, MAX_EXPRESSION_TEXT).useTransparentBounds(true).useAnchoringBounds(false).find();
     }
@@ -228,19 +228,24 @@ public final class MessageFilters {
      * {@code (a)\1}; or has repeats that together leave more than {@link #MAX_TRIES} ways to match
      * at one place, which two open-ended repeats like {@code .*.*x} always do. Those are what can
      * backtrack for seconds or minutes on a long message. The ways of a choice's sides add up, since
-     * they're tried one after the other, so {@code spam.*|scam.*} is fine. Escapes, quoted text and
+     * they're tried one after the other, so {@code spam.*|scam.*} is fine, and a list of plain words
+     * like {@code (?:buy|sell)} counts once, since only one of them can match at a place. A look
+     * behind is tried from each place its text could start, so a repeat of more than one length
+     * inside one is refused, and {@code {0,1}} is read as the {@code ?} it is. Escapes, quoted text and
      * character classes are read past, so {@code [+*]}, {@code \+} and {@code \x{61}} hold no repeat,
      * and a {@code ?} or {@code +} right after a repeat makes it lazy or possessive rather than
      * repeating again. A comment, or the x flag that turns on comments and drops spaces, hides what
      * follows from this reading, so either one is refused too.
      */
     static boolean slow(String expression) {
-        // For each open group: whether something inside it repeats or is optional, and whether it holds a choice.
+        // For each open group: whether something inside it repeats or is optional, whether it holds a
+        // choice, and whether it looks behind.
         List<boolean[]> open = new ArrayList<>();
         // For the whole expression and each open group: the tries of its choices read so far, added
-        // up, and of the choice being read, multiplied.
+        // up, of the choice being read, multiplied, and where a plain group's text starts (-1 for
+        // any other group).
         List<long[]> cost = new ArrayList<>();
-        cost.add(new long[]{0, 1});
+        cost.add(new long[]{0, 1, -1});
         boolean[] closedJustBefore = null;
         boolean openedJustBefore = false;
         boolean afterRepeat = false;
@@ -264,8 +269,10 @@ public final class MessageFilters {
                 // A comment, or a flag that turns spaces and # into something else, reads text this
                 // scan can't follow.
                 if (expression.startsWith("(?#", i) || commentsFlag(expression, i)) return true;
-                open.add(new boolean[2]);
-                cost.add(new long[]{0, 1});
+                boolean behind = expression.startsWith("(?<=", i) || expression.startsWith("(?<!", i);
+                open.add(new boolean[]{false, false, behind});
+                long start = expression.startsWith("(?:", i) ? i + 3 : expression.startsWith("(?", i) ? -1 : i + 1;
+                cost.add(new long[]{0, 1, start});
                 opened = true;
                 i++;
             } else if (c == ')') {
@@ -280,7 +287,10 @@ public final class MessageFilters {
                 if (cost.size() > 1) {
                     long[] group = cost.remove(cost.size() - 1);
                     long[] outer = cost.get(cost.size() - 1);
-                    outer[1] = capped(outer[1] * capped(group[0] + group[1]));
+                    // Plain words no one of which starts another can't both match at one place, so
+                    // a list of them is tried once.
+                    long tries = group[2] >= 0 && distinctWords(expression.substring((int) group[2], i)) ? 1 : group[0] + group[1];
+                    outer[1] = capped(outer[1] * capped(tries));
                     if (outer[1] > MAX_TRIES) return true;
                 }
                 i++;
@@ -298,8 +308,13 @@ public final class MessageFilters {
                 // Lazy or possessive: the same repeat, not another one.
                 i++;
             } else if (c == '*' || c == '+' || c == '?' || c == '{' && repeats(expression, i)) {
+                long[] count = c == '{' ? bounds(expression, i) : null;
                 // An optional group is tried once or not at all, so only a repeated one is refused here.
-                if (c != '?' && closedJustBefore != null && (closedJustBefore[0] || closedJustBefore[1])) return true;
+                boolean optional = c == '?' || count != null && count[1] == 1;
+                if (!optional && closedJustBefore != null && (closedJustBefore[0] || closedJustBefore[1])) return true;
+                // A look behind is tried from every place its text could start, which a repeat of
+                // more than one length multiplies.
+                if ((count == null || count[0] != count[1]) && behind(open)) return true;
                 current[1] = capped(current[1] * (c == '?' ? 2 : c == '{' ? spread(expression, i) : MAX_EXPRESSION_TEXT));
                 if (current[0] + current[1] > MAX_TRIES) return true;
                 if (!open.isEmpty()) open.get(open.size() - 1)[0] = true;
@@ -364,23 +379,52 @@ public final class MessageFilters {
      * gives one, and one with no end gives as many as {@code *}.
      */
     private static long spread(String expression, int at) {
-        String count = expression.substring(at + 1, expression.indexOf('}', at));
-        int comma = count.indexOf(',');
-        if (comma < 0) return 1;
-        if (comma == count.length() - 1) return MAX_EXPRESSION_TEXT;
-        long ways = number(count.substring(comma + 1)) - number(count.substring(0, comma)) + 1;
-        return Math.max(1, Math.min(ways, MAX_EXPRESSION_TEXT));
+        long[] count = bounds(expression, at);
+        if (count[1] < 0) return MAX_EXPRESSION_TEXT;
+        return Math.max(1, Math.min(count[1] - count[0] + 1, MAX_EXPRESSION_TEXT));
     }
 
-    /** Whether a brace at {@code at} is a count that allows more than one, like {2,} or {1,5}. */
+    /**
+     * Whether a brace at {@code at} is a count that allows more than one, like {2,} or {1,5}, or
+     * leaves a choice of how many, like {0,1}, which is the same as {@code ?}.
+     */
     private static boolean repeats(String expression, int at) {
+        long[] count = bounds(expression, at);
+        return count != null && (count[1] < 0 || count[1] > 1 || count[1] > count[0]);
+    }
+
+    /** The least and most a count at {@code at} allows, the most being -1 for one with no end, or null for a brace that isn't a count. */
+    @Nullable
+    private static long[] bounds(String expression, int at) {
         int close = expression.indexOf('}', at);
-        if (close < 0) return false;
+        if (close < 0) return null;
         String count = expression.substring(at + 1, close);
-        if (!count.matches("\\d+(,\\d*)?")) return false;
+        if (!count.matches("\\d+(,\\d*)?")) return null;
         int comma = count.indexOf(',');
-        if (comma < 0) return number(count) > 1;
-        return comma == count.length() - 1 || number(count.substring(comma + 1)) > 1;
+        if (comma < 0) return new long[]{number(count), number(count)};
+        long least = number(count.substring(0, comma));
+        return new long[]{least, comma == count.length() - 1 ? -1 : number(count.substring(comma + 1))};
+    }
+
+    /** Whether the place being read is inside a look behind. */
+    private static boolean behind(List<boolean[]> open) {
+        for (boolean[] group : open) if (group[2]) return true;
+        return false;
+    }
+
+    /**
+     * Whether a group's text is a choice of plain words, none of which starts another once case is
+     * set aside, like {@code buy|sell|earn}. At most one of them matches at any place.
+     */
+    private static boolean distinctWords(String text) {
+        if (text.indexOf('|') < 0) return false;
+        for (int k = 0; k < text.length(); k++) if ("\\[](){}.*+?^$".indexOf(text.charAt(k)) >= 0) return false;
+        String[] words = text.toLowerCase(Locale.ROOT).split("\\|", -1);
+        for (int k = 0; k < words.length; k++) {
+            if (words[k].isEmpty()) return false;
+            for (int m = 0; m < words.length; m++) if (m != k && words[m].startsWith(words[k])) return false;
+        }
+        return true;
     }
 
     /** A count's digits as a number, held to a billion so a long run of digits can't overflow. */
