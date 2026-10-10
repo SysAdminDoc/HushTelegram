@@ -305,6 +305,7 @@ public final class SelectionCheck {
         hook(calls, flags, "keepDeleted", "misc/KeepDeleted", "userUpdate", "channelUpdate", "push", "measuring");
         hook(calls, flags, "askBeforeSending", "misc/SendConfirm", "sticker", "gif", "voice", "call");
         hook(calls, flags, "betaLogsOff", "misc/BetaLogs", "forceLogs");
+        hook(calls, flags, "outsideTranslate", "misc/OutsideTranslate", "show", "fill", "chosen", "headerMenu", "headerClick");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");
         hook(calls, flags, "disableUpdateChecks", "misc/UpdateChecks", "skipUpdateCheck");
         for (String[] bridge : List.of(
@@ -576,7 +577,7 @@ public final class SelectionCheck {
         return result;
     }
 
-    /** One case: {patched, expectation, evidence} and, for full-configured, the full56 baseline. */
+    /** One case: {patched, expectation, evidence} and, for full-configured, the full catalog's build as baseline. */
     private static void answer(Side clean, String[] request) throws Exception {
         require(request.length == 3 || request.length == 4);
         Expected expected = new Expected(new JSONObject(new File(request[1])));

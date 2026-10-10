@@ -169,6 +169,8 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/KeepDeleted.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SendConfirm.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/BetaLogs.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/OutsideTranslate.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GoogleTranslate.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/KeepDeletedBridge.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/localcontrols/**",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/paste/**",

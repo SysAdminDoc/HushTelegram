@@ -321,6 +321,9 @@ public class PausedHooksTest {
         // Telegram Beta stops forcing its debug logs on.
         probes.put(PatchFamily.BETA_LOGS_OFF, Collections.singletonList(
                 () -> !app.hushtelegram.extension.telegram.misc.BetaLogs.forceLogs(true)));
+        // Translation only works while the switch is on.
+        probes.put(PatchFamily.OUTSIDE_TRANSLATE, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.active()));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),

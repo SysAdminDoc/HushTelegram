@@ -131,6 +131,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.KEEP_DELETED_MESSAGES, "Keep deleted messages");
         ROW_TITLES.put(PatchFamily.ASK_BEFORE_STICKER, "Ask before sending a sticker");
         ROW_TITLES.put(PatchFamily.BETA_LOGS_OFF, "Turn off beta debug logs");
+        ROW_TITLES.put(PatchFamily.OUTSIDE_TRANSLATE, "Translate with an outside service");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -282,7 +283,8 @@ public class HushTelegramPreferenceFragmentTest {
                         || build.contains(PatchFamily.MESSAGE_MENU_REPEAT)
                         || build.contains(PatchFamily.KEEP_DELETED_MESSAGES)
                         || build.contains(PatchFamily.ASK_BEFORE_STICKER)
-                        || build.contains(PatchFamily.BETA_LOGS_OFF)) expected.add("Chats");
+                        || build.contains(PatchFamily.BETA_LOGS_OFF)
+                        || build.contains(PatchFamily.OUTSIDE_TRANSLATE)) expected.add("Chats");
                 if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
                         || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) expected.add("Privacy");
                 if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) expected.add("Notifications");
@@ -614,6 +616,15 @@ public class HushTelegramPreferenceFragmentTest {
             // The beta keeps writing its logs until the switch is turned on.
             assertFalse(Settings.BETA_LOGS_OFF.key,
                     ((SwitchPreference) page.findPreference(Settings.BETA_LOGS_OFF.key)).isChecked());
+            assertEquals("Translate with an outside service", String.valueOf(page.findPreference(Settings.OUTSIDE_TRANSLATE.key).getTitle()));
+            assertEquals("Adds Translate here to a message's menu and Translate this chat to a chat's menu, using "
+                            + "Google's web translate in place of Telegram's Premium translation. The text you ask to "
+                            + "translate is sent to Google, one message at a time, and nothing leaves your phone until "
+                            + "you turn a chat or message on.",
+                    String.valueOf(page.findPreference(Settings.OUTSIDE_TRANSLATE.key).getSummary()));
+            // Messages stay as sent until a chat or message is turned on.
+            assertFalse(Settings.OUTSIDE_TRANSLATE.key,
+                    ((SwitchPreference) page.findPreference(Settings.OUTSIDE_TRANSLATE.key)).isChecked());
             assertEquals("Ask before sending a GIF", String.valueOf(page.findPreference(Settings.ASK_BEFORE_GIF.key).getTitle()));
             assertEquals("Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs "
                     + "go out without asking.",

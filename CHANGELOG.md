@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** A new Translate with an outside service switch, off by default, adds Translate here to a message's menu and Translate this chat to a chat's menu. The text you turn on goes to Google's web translate, one message at a time, and nothing is sent before that. Telegram's own translation and its Premium checks aren't touched.
+
 * **Telegram:** Telegram 13.0.1 is now the supported version, both telegram.org's build (version code 71679) and the official beta (71669). Every patch is checked against those two builds, and 12.10.6 and 12.10.7 are no longer supported.
 
 * **Telegram:** Several patches were updated for the way Telegram 13.0 builds its screens, so they keep working there: Hide Stories, Hide Premium, gifts and Stars, Hide Telegram Features and Invite Friends, Gallery camera on tap, Quiet contacts nag, Holiday look all year, and the HushTelegram row in Telegram's own settings.

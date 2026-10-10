@@ -541,6 +541,14 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "there. Restart Telegram to see the change."))),
                         SettingsIcons.BUG));
             }
+            if (build.contains(PatchFamily.OUTSIDE_TRANSLATE)) {
+                chats.addPreference(mark(toggle(context, Settings.OUTSIDE_TRANSLATE, L10n.t("Translate with an outside service"),
+                        PatchFamily.OUTSIDE_TRANSLATE.coverageSummary(L10n.t("Adds Translate here to a message's menu and Translate this chat to a chat's menu, "
+                                + "using Google's web translate in place of Telegram's Premium translation. The text you "
+                                + "ask to translate is sent to Google, one message at a time, and nothing leaves your "
+                                + "phone until you turn a chat or message on."))),
+                        SettingsIcons.CHAT));
+            }
         }
 
         if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)

@@ -306,6 +306,15 @@ Ask before sending a sticker	Perguntar antes de enviar um sticker
 Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.	Pergunta Enviar ou Cancelar antes de uma figurinha em que você tocou entrar na conversa. Cancelar a descarta. Figurinhas agendadas saem sem perguntar.
 Turn off beta debug logs	Desligar os registros de depuração da beta
 Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.	O Telegram Beta grava registros de depuração no seu celular o tempo todo, incluindo o registro de conexão, e o próprio menu de depuração dele não consegue impedir isso. Isto os desliga. Os registros já salvos ficam até você apagá-los, e a versão normal não os grava, então nada muda nela. Reinicie o Telegram para ver a mudança.
+Translate with an outside service	Traduzir com um serviço externo
+Adds Translate here to a message's menu and Translate this chat to a chat's menu, using Google's web translate in place of Telegram's Premium translation. The text you ask to translate is sent to Google, one message at a time, and nothing leaves your phone until you turn a chat or message on.	Adiciona Traduzir aqui ao menu de uma mensagem e Traduzir esta conversa ao menu de uma conversa, usando o tradutor web do Google no lugar da tradução Premium do Telegram. O texto que você pedir para traduzir é enviado ao Google, uma mensagem por vez, e nada sai do seu celular até você ativar uma conversa ou mensagem.
+Translate here	Traduzir aqui
+Show original	Mostrar original
+Translate this chat	Traduzir esta conversa
+This chat will be translated	Esta conversa será traduzida
+This chat shows the original messages	Esta conversa mostra as mensagens originais
+(Translated. Long-press for the original.)	(Traduzido. Pressione e segure para ver o original.)
+Translation isn't available right now	A tradução não está disponível agora
 Ask before sending a GIF	Perguntar antes de enviar um GIF
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Pergunta Enviar ou Cancelar antes de um GIF em que você tocou entrar na conversa. Cancelar o descarta. GIFs agendados saem sem perguntar.
 Ask before sending a voice or video message	Perguntar antes de enviar uma mensagem de voz ou de vídeo

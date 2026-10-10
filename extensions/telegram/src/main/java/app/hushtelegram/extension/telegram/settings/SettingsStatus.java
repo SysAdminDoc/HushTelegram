@@ -93,6 +93,7 @@ public final class SettingsStatus {
     public static boolean keepDeleted() { return false; }
     public static boolean askBeforeSending() { return false; }
     public static boolean betaLogsOff() { return false; }
+    public static boolean outsideTranslate() { return false; }
     public static boolean storyRequests() { return false; }
     public static boolean storyBar() { return false; }
     public static boolean storyCamera() { return false; }

@@ -123,6 +123,7 @@ body:
         - Keep deleted messages
         - Ask before sending a sticker
         - Turn off beta debug logs
+        - Translate with an outside service
         - Strip link tracking
         - HushTelegram settings
     validations:

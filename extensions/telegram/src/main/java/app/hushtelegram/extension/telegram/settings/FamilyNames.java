@@ -67,6 +67,7 @@ public final class FamilyNames {
     public static final String KEEP_DELETED_MESSAGES = "Keep deleted messages";
     public static final String ASK_BEFORE_STICKER = "Ask before sending a sticker";
     public static final String BETA_LOGS_OFF = "Turn off beta debug logs";
+    public static final String OUTSIDE_TRANSLATE = "Translate with an outside service";
     public static final String DISABLE_ANALYTICS = "Disable analytics";
     public static final String DISABLE_CALL_DEBUG = "Disable call debug upload";
     public static final String DISABLE_DRAFT_PREVIEWS = "Disable draft link previews";
