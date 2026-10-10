@@ -38,7 +38,8 @@ internal const val GIFT_TAB = "Lorg/telegram/tgnet/TLRPC\$TL_profileTabGifts;"
 internal const val PROFILE_TAB = "Lorg/telegram/tgnet/TLRPC\$ProfileTab;"
 internal const val GIFT_BUTTON = "Lorg/telegram/messenger/R\$string;->ProfileActionsGift:I"
 internal const val GIFT_ICON = "Lorg/telegram/messenger/R\$drawable;->input_gift_s:I"
-internal val SETTINGS_SALES = listOf("TelegramPremium", "TelegramStars", "MyTON", "TelegramBusiness", "SendAGift")
+// Telegram 13.0 renamed My TON's label to GramEarnings; the row (ID 13, its colors and factory) is the same.
+internal val SETTINGS_SALES = listOf("TelegramPremium", "TelegramStars", "GramEarnings", "TelegramBusiness", "SendAGift")
     .map { "Lorg/telegram/messenger/R\$string;->$it:I" }
 private const val TABS = "Lorg/telegram/ui/Components/ScrollSlidingTextTabStrip;"
 private const val ARRAY_LIST = "Ljava/util/ArrayList;"
@@ -231,15 +232,19 @@ private fun profileEdits(method: MutableMethod, gifts: Int, hasTab: String, clea
     }.unique("fresh Gifts candidate constructor")
         ?: throw PatchException("$PATCH: no fresh Gifts candidate constructor (before editing)")
     val label = resources.last()
+    // The title may go through a copy on its way to the jump (12.10) or straight from the string
+    // lookup (13.0).
+    val copied = body.getOrNull(label + 3)?.opcode in setOf(Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16)
+    val jump = if (copied) label + 4 else label + 3
     shape(body.getOrNull(label + 1)?.reference() == STRING &&
         body.getOrNull(label + 2)?.opcode == Opcode.MOVE_RESULT_OBJECT &&
-        body.getOrNull(label + 3)?.opcode in setOf(Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16) &&
-        body.getOrNull(label + 4)?.opcode in setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32),
+        body.getOrNull(jump)?.opcode in setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32),
         "cached Gifts label no longer jumps to its shared Pair constructor")
-    val cachedPair = flow.normal[label + 4].single()
+    val cachedPair = flow.normal[jump].single()
+    val title = body[label + 2].namedRegisters().single()
     shape(body[cachedPair].reference() == PAIR &&
-        body[label + 2].namedRegisters().single() == body[label + 3].namedRegisters()[1] &&
-        body[label + 3].namedRegisters()[0] == body[cachedPair].namedRegisters()[2],
+        (!copied || title == body[label + 3].namedRegisters()[1]) &&
+        (if (copied) body[label + 3].namedRegisters()[0] else title) == body[cachedPair].namedRegisters()[2],
         "cached Gifts label no longer supplies the Pair title")
     val appends = listOf(freshPair, cachedPair).map { pair ->
         val append = pair + 1
@@ -333,9 +338,17 @@ private fun appendEdit(method: MutableMethod, index: Int, hook: String): Commerc
         "invoke-static {v${registers[0]}, v${registers[1]}}, $COMMERCE->$hook(Ljava/util/ArrayList;Ljava/lang/Object;)Z", true)
 }
 
-private fun constantBefore(body: List<Instruction>, before: Int, register: Int): Int? {
+/**
+ * The constant [register] last got before [before], in code order, through plain copies: from 13.0
+ * Telegram keeps the Gifts tab ID in one register and copies it where it's compared.
+ */
+private fun constantBefore(body: List<Instruction>, before: Int, register: Int, copies: Int = 4): Int? {
     val write = (0 until before).lastOrNull { body[it].writes(register) } ?: return null
-    return if (body[write].opcode in CONSTANTS) (body[write] as? NarrowLiteralInstruction)?.narrowLiteral else null
+    return when (body[write].opcode) {
+        in CONSTANTS -> (body[write] as? NarrowLiteralInstruction)?.narrowLiteral
+        in MOVES -> if (copies == 0) null else constantBefore(body, write, body[write].namedRegisters()[1], copies - 1)
+        else -> null
+    }
 }
 
 /** Bound provenance by its source definition, including handlers and paths that jump backward. */

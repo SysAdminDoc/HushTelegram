@@ -117,7 +117,10 @@ class HideCommerceFixtureTest {
             val cachedPair = edits.filter { it.replace }.maxOf { it.index } - 1
             when (change) {
                 "allocation" -> method.replaceInstruction(labels.first() - 3, "nop")
-                "cached title" -> method.replaceInstruction(labels.last() + 3, "move-object/from16 v8, v15")
+                "cached title" -> {
+                    val title = body[labels.last() + 2].namedRegisters().single()
+                    method.replaceInstruction(labels.last() + 2, "move-result-object v${if (title == 8) 9 else 8}")
+                }
                 "cached ID" -> {
                     val branch = body.indices.single { body[it].opcode == Opcode.IF_EQ &&
                         labels.last() in ControlFlow.of(method).normal[it] }
