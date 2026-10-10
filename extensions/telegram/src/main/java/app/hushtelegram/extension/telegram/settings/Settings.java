@@ -17,6 +17,7 @@ import static java.lang.Boolean.TRUE;
 
 import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
+import app.hushtelegram.extension.shared.settings.StringSetting;
 
 /**
  * The switches behind the hooks that ask before they act.
@@ -262,6 +263,21 @@ public class Settings extends BaseSettings {
      */
     public static final BooleanSetting HIDE_BLOCKED_IN_GROUPS =
             new BooleanSetting("hushtelegram_hide_blocked_in_groups", FALSE);
+
+    /**
+     * Messages that match one of your filters are left out of the groups and channels you open
+     * ({@link app.hushtelegram.extension.telegram.misc.MessageFilters}).
+     */
+    public static final BooleanSetting HIDE_BY_KEYWORD =
+            new BooleanSetting("hushtelegram_hide_by_keyword", FALSE);
+
+    /** The filters for groups and supergroups, one a line. */
+    public static final StringSetting MESSAGE_FILTERS_GROUPS =
+            new StringSetting("hushtelegram_message_filters_groups", "");
+
+    /** The filters for channels' posts, one a line. */
+    public static final StringSetting MESSAGE_FILTERS_CHANNELS =
+            new StringSetting("hushtelegram_message_filters_channels", "");
 
     /**
      * Settings drops its Telegram Features row and Contacts drops its Invite Friends rows.

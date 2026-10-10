@@ -349,9 +349,14 @@ public class SettingsBackupPreference extends Preference {
             return;
         }
         int switches = snapshot.switchChanges();
-        String message = switches == 0
+        int lists = snapshot.listChanges();
+        String message = switches == 0 && lists == 0
                 ? L10n.t("Your switches already match that file, so nothing will change.")
-                : L10n.quantity(switches, "%1$d switch will change.", "%1$d switches will change.", switches);
+                : switches == 0 ? "" : L10n.quantity(switches, "%1$d switch will change.", "%1$d switches will change.", switches);
+        if (lists > 0) {
+            message += (message.isEmpty() ? "" : " ") + L10n.quantity(lists,
+                    "%1$d list of message filters will change.", "%1$d lists of message filters will change.", lists);
+        }
         if (snapshot.unknown > 0) {
             message += "\n\n" + L10n.quantity(snapshot.unknown,
                     "%1$d item in that file isn't a setting this version of HushTelegram knows, so it'll be left out.",
@@ -362,7 +367,7 @@ public class SettingsBackupPreference extends Preference {
                 .setTitle(L10n.t("Import settings"))
                 .setMessage(message)
                 .setOnCancelListener(dialog -> answered(page));
-        if (switches == 0) {
+        if (switches == 0 && lists == 0) {
             builder.setPositiveButton(L10n.t("OK"), (dialog, which) -> answered(page));
         } else {
             builder.setPositiveButton(L10n.t("Import"), (dialog, which) -> {

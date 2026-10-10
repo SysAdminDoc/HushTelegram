@@ -64,6 +64,7 @@ import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
+import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.shared.settings.preference.ClearLogBufferPreference;
 import app.hushtelegram.extension.shared.settings.preference.ExportDiagnosticReportPreference;
@@ -218,6 +219,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     /** Shows what the switches are saved as, after an import wrote them. */
     void refreshSwitches() {
         updateUIToSettingValues();
+        // An import can change the filter lists too, and their rows say how many each holds.
+        if (getPreferenceScreen() == null) return;
+        Preference groups = findPreference(FilterEditor.GROUPS);
+        if (groups != null) groups.setSummary(FilterEditor.summary(Settings.MESSAGE_FILTERS_GROUPS));
+        Preference channels = findPreference(FilterEditor.CHANNELS);
+        if (channels != null) channels.setSummary(FilterEditor.summary(Settings.MESSAGE_FILTERS_CHANNELS));
     }
 
     @Override
@@ -549,6 +556,18 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.HIDE_BLOCKED_IN_GROUPS.coverageSummary(L10n.t("Messages from people you've blocked are left out of groups and supergroups you "
                             + "open. Nothing is deleted. Private chats and channel posts stay as they are."))),
                     SettingsIcons.CHAT));
+        }
+        if (build.contains(PatchFamily.HIDE_BY_KEYWORD)) {
+            PreferenceCategory page = on(pages, PatchFamily.HIDE_BY_KEYWORD);
+            page.addPreference(mark(toggle(context, Settings.HIDE_BY_KEYWORD, L10n.t("Hide messages by keyword"),
+                    PatchFamily.HIDE_BY_KEYWORD.coverageSummary(L10n.t("Messages in groups and channels that match one of your "
+                            + "filters are left out when you open the chat. Private chats and your own messages stay as they "
+                            + "are. Nothing is deleted, and your filters stay on this phone."))),
+                    SettingsIcons.CHAT));
+            page.addPreference(mark(filtersRow(context, Settings.MESSAGE_FILTERS_GROUPS, FilterEditor.GROUPS,
+                    L10n.t("Filters for groups")), SettingsIcons.CHAT));
+            page.addPreference(mark(filtersRow(context, Settings.MESSAGE_FILTERS_CHANNELS, FilterEditor.CHANNELS,
+                    L10n.t("Filters for channels")), SettingsIcons.CHAT));
         }
         if (build.contains(PatchFamily.HIDE_FEATURES_AND_INVITE)) {
             on(pages, PatchFamily.HIDE_FEATURES_AND_INVITE).addPreference(mark(toggle(context, Settings.HIDE_FEATURES_AND_INVITE, L10n.t("Hide Telegram Features and Invite Friends"),
@@ -932,6 +951,21 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         row.actsAtOnce = true;
         row.setOnPreferenceClickListener(p -> {
             Utils.showToastLong(KeepDeleted.clearedMessage(KeepDeleted.clear()));
+            return true;
+        });
+        return row;
+    }
+
+    /** One list of message filters: the row says how many it holds, and a tap opens the list to edit. */
+    private Preference filtersRow(Context context, StringSetting list, String key, String title) {
+        Row row = new Row(context);
+        row.setKey(key);
+        row.setTitle(title);
+        row.setPersistent(false);
+        row.setSummary(FilterEditor.summary(list));
+        row.setOnPreferenceClickListener(p -> {
+            Activity activity = getActivity();
+            if (activity != null) FilterEditor.open(activity, p, list, title);
             return true;
         });
         return row;

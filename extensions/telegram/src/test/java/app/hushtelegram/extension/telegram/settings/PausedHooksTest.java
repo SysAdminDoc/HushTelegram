@@ -300,6 +300,9 @@ public class PausedHooksTest {
         // A blocked person's group messages are left out.
         probes.put(PatchFamily.HIDE_BLOCKED_IN_GROUPS, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.BlockedSendersForTests.on()));
+        // Messages that match a filter are left out.
+        probes.put(PatchFamily.HIDE_BY_KEYWORD, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.MessageFiltersForTests.on()));
         // Settings loses Telegram Features and Contacts loses Invite Friends.
         probes.put(PatchFamily.HIDE_FEATURES_AND_INVITE, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.FeaturesInviteForTests.on()));

@@ -126,6 +126,7 @@ body:
         - Translate with an outside service
         - Hide channel bar buttons
         - Hide Send as button
+        - Hide messages by keyword
         - Strip link tracking
         - HushTelegram settings
     validations:

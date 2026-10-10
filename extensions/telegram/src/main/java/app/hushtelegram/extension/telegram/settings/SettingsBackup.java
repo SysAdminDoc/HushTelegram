@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,12 +35,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.SettingsJson;
+import app.hushtelegram.extension.shared.settings.StringSetting;
+import app.hushtelegram.extension.telegram.misc.MessageFilters;
 
 /**
  * HushTelegram's switches as a file, and back.
@@ -51,7 +55,8 @@ import app.hushtelegram.extension.shared.settings.SettingsJson;
  * <p>Only the switches in {@link #ALLOWLIST} go out or come in. Pause, safe mode, the debug
  * settings, the app language and the counters HushTelegram keeps for itself stay out, and so do
  * the log, the diagnostic data and anything about the person or the phone: a file is a format
- * name, a version number and one true or false per switch. An import applies what it read in one
+ * name, a version number, one true or false per switch and the message filters the person wrote,
+ * one list of lines for groups and one for channels. An import applies what it read in one
  * preference commit. A file that is too large, isn't JSON, names something twice, holds a value of
  * the wrong type or comes from a newer version changes nothing.
  * <p>The release check stays out of the file: it puts the phone online, so it's switched on
@@ -118,6 +123,7 @@ public final class SettingsBackup {
             Settings.HIDE_STICKER_TIME,
             Settings.IGNORE_MUTED_MENTIONS,
             Settings.HIDE_BLOCKED_IN_GROUPS,
+            Settings.HIDE_BY_KEYWORD,
             Settings.HIDE_FEATURES_AND_INVITE,
             Settings.MESSAGE_MENU_REPEAT,
             Settings.KEEP_DELETED_MESSAGES,
@@ -140,6 +146,14 @@ public final class SettingsBackup {
             Settings.STRIP_LINK_TRACKING,
             Settings.DISABLE_UPDATE_CHECKS,
             Settings.REPAIR_FIREBASE_PUSH));
+
+    /**
+     * The text a file carries besides the switches: the message filters, each list as a JSON array
+     * of its lines. A build from before them counts these names as unknown and leaves them out.
+     */
+    static final List<StringSetting> FILTER_LISTS = Collections.unmodifiableList(Arrays.asList(
+            Settings.MESSAGE_FILTERS_GROUPS,
+            Settings.MESSAGE_FILTERS_CHANNELS));
 
     /**
      * Bounds for the parser, well past anything this class writes, so a file built to be
@@ -171,7 +185,7 @@ public final class SettingsBackup {
         FORMAT,
         /** A settings file from a newer HushTelegram, in a shape this build doesn't know. */
         SCHEMA,
-        /** A switch whose value isn't true or false. */
+        /** A switch whose value isn't true or false, or a filter list that isn't a short list of short lines. */
         VALUE,
         /** The file couldn't be opened or read to the end. */
         UNREADABLE
@@ -197,18 +211,22 @@ public final class SettingsBackup {
         }
     }
 
-    /** What a file says: a value for each switch it names, and how many other names it holds. */
+    /** What a file says: a value for each switch and list it names, and how many other names it holds. */
     public static final class Snapshot {
         private static final String SWITCHES = "switches";
+        private static final String LISTS = "lists";
         private static final String UNKNOWN = "unknown";
 
         /** In {@link #ALLOWLIST} order, and only the switches the file named. */
         final Map<BooleanSetting, Boolean> values;
+        /** In {@link #FILTER_LISTS} order, each one's lines as they're saved, and only the lists the file named. */
+        final Map<StringSetting, String> lists;
         /** Names the file holds that aren't settings this build knows. They're left out. */
         final int unknown;
 
-        Snapshot(Map<BooleanSetting, Boolean> values, int unknown) {
+        Snapshot(Map<BooleanSetting, Boolean> values, Map<StringSetting, String> lists, int unknown) {
             this.values = Collections.unmodifiableMap(values);
+            this.lists = Collections.unmodifiableMap(lists);
             this.unknown = unknown;
         }
 
@@ -223,12 +241,24 @@ public final class SettingsBackup {
                     changes.put(entry.getKey(), entry.getValue());
                 }
             }
+            for (Map.Entry<StringSetting, String> entry : lists.entrySet()) {
+                if (!entry.getValue().equals(entry.getKey().savedValue())) {
+                    changes.put(entry.getKey(), entry.getValue());
+                }
+            }
             return changes;
         }
 
         /** How many switches this file changes, the number the preview and the toast give. */
         int switchChanges() {
-            return changes().size();
+            int count = 0;
+            for (Setting<?> setting : changes().keySet()) if (setting instanceof BooleanSetting) count++;
+            return count;
+        }
+
+        /** How many filter lists this file changes. */
+        int listChanges() {
+            return changes().size() - switchChanges();
         }
 
         /** For the settings page's saved state, so a preview outlives the page being rebuilt. */
@@ -237,8 +267,13 @@ public final class SettingsBackup {
             for (Map.Entry<BooleanSetting, Boolean> entry : values.entrySet()) {
                 switches.putBoolean(entry.getKey().key, entry.getValue());
             }
+            Bundle texts = new Bundle();
+            for (Map.Entry<StringSetting, String> entry : lists.entrySet()) {
+                texts.putString(entry.getKey().key, entry.getValue());
+            }
             Bundle state = new Bundle();
             state.putBundle(SWITCHES, switches);
+            state.putBundle(LISTS, texts);
             state.putInt(UNKNOWN, unknown);
             return state;
         }
@@ -259,7 +294,17 @@ public final class SettingsBackup {
                 Object value = switches.get(setting.key);
                 if (value instanceof Boolean) values.put(setting, (Boolean) value);
             }
-            return new Snapshot(values, unknown);
+            Map<StringSetting, String> lists = new LinkedHashMap<>();
+            Bundle texts = state.getBundle(LISTS);
+            if (texts != null) {
+                for (StringSetting setting : FILTER_LISTS) {
+                    Object value = texts.get(setting.key);
+                    if (!(value instanceof String)) continue;
+                    List<String> lines = MessageFilters.lines((String) value);
+                    if (usable(lines)) lists.put(setting, MessageFilters.join(lines));
+                }
+            }
+            return new Snapshot(values, lists, unknown);
         }
     }
 
@@ -271,6 +316,9 @@ public final class SettingsBackup {
         JSONObject switches = new JSONObject();
         for (BooleanSetting setting : ALLOWLIST) {
             switches.put(setting.key, setting.savedValue().booleanValue());
+        }
+        for (StringSetting setting : FILTER_LISTS) {
+            switches.put(setting.key, new JSONArray(MessageFilters.lines(setting.savedValue())));
         }
         return new JSONObject()
                 .put(FORMAT_NAME, FORMAT)
@@ -355,10 +403,18 @@ public final class SettingsBackup {
         }
         Map<String, BooleanSetting> known = new HashMap<>();
         for (BooleanSetting setting : ALLOWLIST) known.put(setting.key, setting);
+        Map<String, StringSetting> knownLists = new HashMap<>();
+        for (StringSetting setting : FILTER_LISTS) knownLists.put(setting.key, setting);
         Map<BooleanSetting, Boolean> found = new HashMap<>();
+        Map<StringSetting, String> foundLists = new HashMap<>();
         JSONObject values = (JSONObject) settings;
         for (Iterator<String> names = values.keys(); names.hasNext(); ) {
             String name = names.next();
+            StringSetting list = knownLists.get(name);
+            if (list != null) {
+                foundLists.put(list, filterList(name, values.opt(name)));
+                continue;
+            }
             BooleanSetting setting = known.get(name);
             if (setting == null) {
                 // A name this build doesn't know, Pause and the debug settings included: left
@@ -377,7 +433,46 @@ public final class SettingsBackup {
             Boolean value = found.get(setting);
             if (value != null) ordered.put(setting, value);
         }
-        return new Snapshot(ordered, unknown);
+        Map<StringSetting, String> orderedLists = new LinkedHashMap<>();
+        for (StringSetting setting : FILTER_LISTS) {
+            String value = foundLists.get(setting);
+            if (value != null) orderedLists.put(setting, value);
+        }
+        return new Snapshot(ordered, orderedLists, unknown);
+    }
+
+    /**
+     * A filter list as it's saved, from its array of lines. Anything but an array of at most
+     * {@link MessageFilters#MAX_FILTERS} strings, each one line of at most
+     * {@link MessageFilters#MAX_FILTER_CHARS} characters, is refused. A line that isn't a filter
+     * that works, such as an expression edited by hand, is kept: the editor shows it and the chat
+     * leaves it out.
+     */
+    private static String filterList(String name, Object value) throws Rejected {
+        if (!(value instanceof JSONArray) || ((JSONArray) value).length() > MessageFilters.MAX_FILTERS) {
+            throw new Rejected(Reason.VALUE, "Not a list of filters: " + name);
+        }
+        JSONArray array = (JSONArray) value;
+        List<String> lines = new ArrayList<>();
+        for (int i = 0; i < array.length(); i++) {
+            Object line = array.opt(i);
+            if (!(line instanceof String) || ((String) line).indexOf('\n') >= 0) {
+                throw new Rejected(Reason.VALUE, "Not a list of filters: " + name);
+            }
+            lines.add((String) line);
+        }
+        List<String> saved = MessageFilters.lines(MessageFilters.join(lines));
+        if (!usable(saved)) throw new Rejected(Reason.VALUE, "Not a list of filters: " + name);
+        return MessageFilters.join(saved);
+    }
+
+    /** Lines a list can hold: not too many, and none too long or holding a line break. */
+    static boolean usable(List<String> lines) {
+        if (lines.size() > MessageFilters.MAX_FILTERS) return false;
+        for (String line : lines) {
+            if (line.length() > MessageFilters.MAX_FILTER_CHARS || line.indexOf('\r') >= 0) return false;
+        }
+        return true;
     }
 
     /**

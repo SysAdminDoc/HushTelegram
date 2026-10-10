@@ -426,3 +426,22 @@ Hide channel bar buttons	Kanal çubuğu düğmelerini gizle
 Search, Direct messages and Info leave the bar at the bottom of a channel. Mute and Join stay, and tapping the channel's name at the top still opens its info. A channel picks this up the next time you open it.	Ara, Doğrudan mesajlar ve Bilgi, bir kanalın altındaki çubuktan kalkar. Sessize al ve Katıl kalır, üstteki kanal adına dokunmak da bilgilerini açmaya devam eder. Bir kanal bunu bir sonraki açışınızda uygular.
 Hide Send as button	Farklı gönder düğmesini gizle
 Your picture next to the message box goes away in groups and channels where you could post as a channel, while you're posting as yourself. Once you pick a channel it shows again, so you can always see who you're posting as. To pick one, turn this off first. A chat picks this up the next time you open it.	Kanal olarak paylaşım yapabileceğiniz grup ve kanallarda, kendi adınıza paylaşırken mesaj kutusunun yanındaki resminiz kaybolur. Bir kanal seçtiğinizde yeniden görünür, böylece kimin adına paylaştığınızı her zaman görürsünüz. Bir kanal seçmek için önce bunu kapatın. Bir sohbet bunu bir sonraki açışınızda uygular.
+# context: Hide messages by keyword. A filter is one line of text the person writes; a line in slashes is a regular expression. The settings page has one list for groups and one for channels, each edited in a dialog with Save and Cancel. Keep /crypto|airdrop/ exactly as written.
+Hide messages by keyword	Mesajları anahtar kelimeye göre gizle
+Messages in groups and channels that match one of your filters are left out when you open the chat. Private chats and your own messages stay as they are. Nothing is deleted, and your filters stay on this phone.	Gruplarda ve kanallarda filtrelerinizden biriyle eşleşen mesajlar, sohbeti açtığınızda gösterilmez. Özel sohbetler ve kendi mesajlarınız olduğu gibi kalır. Hiçbir şey silinmez ve filtreleriniz bu telefonda kalır.
+Filters for groups	Gruplar için filtreler
+Filters for channels	Kanallar için filtreler
+No filters yet.	Henüz filtre yok.
+%1$d filter.	%1$d filtre.
+%1$d filters.	%1$d filtre.
+A list holds up to %1$d filters.	Bir liste en fazla %1$d filtre alır.
+Line %1$d is longer than %2$d characters.	%1$d. satır %2$d karakterden uzun.
+Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.	%1$d. satır çalışan bir düzenli ifade değil. Düzeltin veya metni yazıldığı gibi bulmak için eğik çizgileri kaldırın.
+Line %1$d could take too long on a long message. Leave out a repeat inside a repeated group and references back to a group.	%1$d. satır uzun bir mesajda çok uzun sürebilir. Tekrarlanan bir grubun içindeki tekrarı ve bir gruba geri başvuruları çıkarın.
+One filter a line	Her satıra bir filtre
+Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.	Bir satırdaki metin, mesajın neresinde geçerse geçsin eşleşir. Eğik çizgiler arasındaki bir satır, örneğin /crypto|airdrop/, bir düzenli ifadedir. Büyük ve küçük harf fark etmez.
+Save	Kaydet
+Couldn't save the filters. Try again in a moment.	Filtreler kaydedilemedi. Birazdan tekrar deneyin.
+Filters saved.	Filtreler kaydedildi.
+%1$d list of message filters will change.	%1$d mesaj filtresi listesi değişecek.
+%1$d lists of message filters will change.	%1$d mesaj filtresi listesi değişecek.

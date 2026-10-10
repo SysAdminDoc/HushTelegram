@@ -98,6 +98,7 @@ public class PatchFamilyTest {
         Settings.HIDE_STICKER_TIME.resetToDefault();
         Settings.IGNORE_MUTED_MENTIONS.resetToDefault();
         Settings.HIDE_BLOCKED_IN_GROUPS.resetToDefault();
+        Settings.HIDE_BY_KEYWORD.resetToDefault();
         Settings.HIDE_FEATURES_AND_INVITE.resetToDefault();
         Settings.MESSAGE_MENU_REPEAT.resetToDefault();
         Settings.KEEP_DELETED_MESSAGES.resetToDefault();
@@ -219,6 +220,22 @@ public class PatchFamilyTest {
         assertFalse(Settings.HIDE_BLOCKED_IN_GROUPS.rebootApp);
         assertTrue(family.expectedCapabilities().isEmpty());
         assertOnItsPage(family);
+    }
+
+    @Test
+    public void hideByKeywordHasItsOwnOffByDefaultSwitchAndTwoEmptyLists() {
+        PatchFamily family = PatchFamily.HIDE_BY_KEYWORD;
+        assertEquals("Hide messages by keyword", family.patchName);
+        assertEquals("hideByKeyword", family.statusMethod);
+        // The lists aren't switches: Pause turns the switch off and leaves what was written.
+        assertEquals(Collections.singletonList(Settings.HIDE_BY_KEYWORD), family.switches);
+        assertFalse(Settings.HIDE_BY_KEYWORD.defaultValue);
+        assertFalse(Settings.HIDE_BY_KEYWORD.rebootApp);
+        assertEquals("", Settings.MESSAGE_FILTERS_GROUPS.defaultValue);
+        assertEquals("", Settings.MESSAGE_FILTERS_CHANNELS.defaultValue);
+        assertTrue(family.expectedCapabilities().isEmpty());
+        assertOnItsPage(family);
+        assertEquals(PatchFamily.Page.CONVERSATIONS, PatchFamily.Page.of(family));
     }
 
     @Test
@@ -689,7 +706,7 @@ public class PatchFamilyTest {
         assertEquals(Arrays.asList(
                 "Hide ads: on (hushtelegram_hide_ads=on)",
                 "Disable analytics: disabled by its switch (hushtelegram_disable_analytics=off)",
-                "not in this build: Hide Stories, Hide recommendations, Hide Premium, gifts and Stars, Hide promotional banners, Hide sponsored proxy channel, Hide popular apps, Hide contacts on Telegram, Hide greeting stickers, Disable chat swipe actions, Disable pull to next channel, Use normal paste, Show user and chat IDs, Disable double-tap reactions, Quiet contacts nag, Holiday look all year, Use system font, AMOLED black, Hide translate bar, Exact numbers, Reveal spoilers, Hide keyboard on scroll, Keep videos muted on volume keys, Swipe back on profiles, Hide phone number, Message times with seconds, Allow chat blur on slower phones, Play voice messages one at a time, Turn off haptic feedback, Turn off reaction effects, Hide folder tab counters, Hide sender names when forwarding, Voice messages in the music player, Silence people outside your contacts, Disable pull to archive, Start the camera on the rear lens, Hide gallery camera tile, Hide time on stickers, Ignore mentions in muted chats, Hide blocked users in groups, Hide Telegram Features and Invite Friends, Add Repeat to the message menu, Keep deleted messages, Ask before sending a sticker, Turn off beta debug logs, Translate with an outside service, Hide channel bar buttons, Hide Send as button, Disable call debug upload, Disable draft link previews, Gallery camera on tap, Open links externally, Strip link tracking, Disable update checks, Repair Firebase push registration",
+                "not in this build: Hide Stories, Hide recommendations, Hide Premium, gifts and Stars, Hide promotional banners, Hide sponsored proxy channel, Hide popular apps, Hide contacts on Telegram, Hide greeting stickers, Disable chat swipe actions, Disable pull to next channel, Use normal paste, Show user and chat IDs, Disable double-tap reactions, Quiet contacts nag, Holiday look all year, Use system font, AMOLED black, Hide translate bar, Exact numbers, Reveal spoilers, Hide keyboard on scroll, Keep videos muted on volume keys, Swipe back on profiles, Hide phone number, Message times with seconds, Allow chat blur on slower phones, Play voice messages one at a time, Turn off haptic feedback, Turn off reaction effects, Hide folder tab counters, Hide sender names when forwarding, Voice messages in the music player, Silence people outside your contacts, Disable pull to archive, Start the camera on the rear lens, Hide gallery camera tile, Hide time on stickers, Ignore mentions in muted chats, Hide blocked users in groups, Hide messages by keyword, Hide Telegram Features and Invite Friends, Add Repeat to the message menu, Keep deleted messages, Ask before sending a sticker, Turn off beta debug logs, Translate with an outside service, Hide channel bar buttons, Hide Send as button, Disable call debug upload, Disable draft link previews, Gallery camera on tap, Open links externally, Strip link tracking, Disable update checks, Repair Firebase push registration",
                 "Hide ads coverage: channel ads, video ads, search ads",
                 "Disable analytics coverage: channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports, Firebase crash reports, Firebase session reports"),
                 running);

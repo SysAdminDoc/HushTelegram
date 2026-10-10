@@ -426,3 +426,22 @@ Hide channel bar buttons	Sembunyikan tombol bilah kanal
 Search, Direct messages and Info leave the bar at the bottom of a channel. Mute and Join stay, and tapping the channel's name at the top still opens its info. A channel picks this up the next time you open it.	Cari, Pesan langsung, dan Info hilang dari bilah di bagian bawah kanal. Bisukan dan Gabung tetap ada, dan mengetuk nama kanal di atas tetap membuka infonya. Kanal akan menerapkannya saat Anda membukanya lagi.
 Hide Send as button	Sembunyikan tombol Kirim sebagai
 Your picture next to the message box goes away in groups and channels where you could post as a channel, while you're posting as yourself. Once you pick a channel it shows again, so you can always see who you're posting as. To pick one, turn this off first. A chat picks this up the next time you open it.	Foto Anda di samping kotak pesan hilang di grup dan kanal tempat Anda bisa memposting sebagai kanal, selama Anda memposting sebagai diri sendiri. Setelah Anda memilih kanal, foto itu muncul lagi, jadi Anda selalu tahu sebagai siapa Anda memposting. Untuk memilih kanal, matikan ini dulu. Obrolan akan menerapkannya saat Anda membukanya lagi.
+# context: Hide messages by keyword. A filter is one line of text the person writes; a line in slashes is a regular expression. The settings page has one list for groups and one for channels, each edited in a dialog with Save and Cancel. Keep /crypto|airdrop/ exactly as written.
+Hide messages by keyword	Sembunyikan pesan berdasarkan kata kunci
+Messages in groups and channels that match one of your filters are left out when you open the chat. Private chats and your own messages stay as they are. Nothing is deleted, and your filters stay on this phone.	Pesan di grup dan kanal yang cocok dengan salah satu filter Anda tidak ditampilkan saat Anda membuka obrolan. Obrolan pribadi dan pesan Anda sendiri tetap seperti biasa. Tidak ada yang dihapus, dan filter Anda tetap di ponsel ini.
+Filters for groups	Filter untuk grup
+Filters for channels	Filter untuk kanal
+No filters yet.	Belum ada filter.
+%1$d filter.	%1$d filter.
+%1$d filters.	%1$d filter.
+A list holds up to %1$d filters.	Satu daftar memuat hingga %1$d filter.
+Line %1$d is longer than %2$d characters.	Baris %1$d lebih panjang dari %2$d karakter.
+Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.	Baris %1$d bukan ekspresi reguler yang berfungsi. Perbaiki, atau hapus garis miringnya agar cocok dengan teks apa adanya.
+Line %1$d could take too long on a long message. Leave out a repeat inside a repeated group and references back to a group.	Baris %1$d bisa terlalu lama pada pesan yang panjang. Hindari pengulangan di dalam grup yang diulang dan rujukan balik ke sebuah grup.
+One filter a line	Satu filter per baris
+Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.	Teks pada satu baris cocok di mana pun teks itu muncul dalam pesan. Baris di antara garis miring, seperti /crypto|airdrop/, adalah ekspresi reguler. Huruf besar dan kecil tidak berpengaruh.
+Save	Simpan
+Couldn't save the filters. Try again in a moment.	Filter tidak dapat disimpan. Coba lagi sebentar lagi.
+Filters saved.	Filter disimpan.
+%1$d list of message filters will change.	%1$d daftar filter pesan akan berubah.
+%1$d lists of message filters will change.	%1$d daftar filter pesan akan berubah.

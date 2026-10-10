@@ -1488,6 +1488,63 @@
       "options": []
     },
     {
+      "name": "Hide messages by keyword",
+      "description": "Leaves messages that match your own words or regular expressions out of the groups and channels you open, with one list for groups and one for channels. Private chats and your own messages stay. Nothing is deleted, and the filters stay on the phone. Starts off. Turn it on in HushTelegram settings > Conversations.",
+      "category": "Conversations",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger.web": [
+          "13.0.1"
+        ],
+        "org.telegram.messenger.beta": [
+          "13.0.1"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.0.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71679
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram Beta",
+          "packageName": "org.telegram.messenger.beta",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.0.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71669
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Hide phone number",
       "description": "Covers your own phone number with dots in the side menu, Settings and your profile, which helps when you share your screen. Starts off. Turn it on in HushTelegram settings > Privacy.",
       "category": "Privacy",

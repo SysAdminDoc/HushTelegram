@@ -426,3 +426,22 @@ Hide channel bar buttons	Ocultar botones de la barra del canal
 Search, Direct messages and Info leave the bar at the bottom of a channel. Mute and Join stay, and tapping the channel's name at the top still opens its info. A channel picks this up the next time you open it.	Buscar, Mensajes directos e Información salen de la barra inferior de un canal. Silenciar y Unirse se quedan, y tocar el nombre del canal arriba sigue abriendo su información. Un canal lo aplica la próxima vez que lo abras.
 Hide Send as button	Ocultar el botón Enviar como
 Your picture next to the message box goes away in groups and channels where you could post as a channel, while you're posting as yourself. Once you pick a channel it shows again, so you can always see who you're posting as. To pick one, turn this off first. A chat picks this up the next time you open it.	Tu foto junto al cuadro de mensaje desaparece en grupos y canales donde podrías publicar como un canal, mientras publicas como tú. Cuando eliges un canal vuelve a aparecer, así siempre ves como quién publicas. Para elegir uno, desactiva esto primero. Un chat lo aplica la próxima vez que lo abras.
+# context: Hide messages by keyword. A filter is one line of text the person writes; a line in slashes is a regular expression. The settings page has one list for groups and one for channels, each edited in a dialog with Save and Cancel. Keep /crypto|airdrop/ exactly as written.
+Hide messages by keyword	Ocultar mensajes por palabra clave
+Messages in groups and channels that match one of your filters are left out when you open the chat. Private chats and your own messages stay as they are. Nothing is deleted, and your filters stay on this phone.	Los mensajes de grupos y canales que coinciden con uno de tus filtros se omiten al abrir el chat. Los chats privados y tus propios mensajes se quedan como están. No se borra nada, y tus filtros se quedan en este teléfono.
+Filters for groups	Filtros para grupos
+Filters for channels	Filtros para canales
+No filters yet.	Aún no hay filtros.
+%1$d filter.	%1$d filtro.
+%1$d filters.	%1$d filtros.
+A list holds up to %1$d filters.	Una lista admite hasta %1$d filtros.
+Line %1$d is longer than %2$d characters.	La línea %1$d tiene más de %2$d caracteres.
+Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.	La línea %1$d no es una expresión regular que funcione. Corrígela, o quita las barras para buscar el texto tal como está escrito.
+Line %1$d could take too long on a long message. Leave out a repeat inside a repeated group and references back to a group.	La línea %1$d podría tardar demasiado en un mensaje largo. Evita una repetición dentro de un grupo repetido y las referencias a un grupo anterior.
+One filter a line	Un filtro por línea
+Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.	El texto de una línea coincide dondequiera que aparezca en un mensaje. Una línea entre barras, como /crypto|airdrop/, es una expresión regular. No importan las mayúsculas.
+Save	Guardar
+Couldn't save the filters. Try again in a moment.	No se pudieron guardar los filtros. Inténtalo de nuevo en un momento.
+Filters saved.	Filtros guardados.
+%1$d list of message filters will change.	Cambiará %1$d lista de filtros de mensajes.
+%1$d lists of message filters will change.	Cambiarán %1$d listas de filtros de mensajes.

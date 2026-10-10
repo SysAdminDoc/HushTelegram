@@ -84,6 +84,7 @@ import app.hushtelegram.extension.shared.settings.FailingStore;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.PauseForTests;
 import app.hushtelegram.extension.shared.settings.Setting;
+import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.shared.settings.preference.SharedPrefCategory;
@@ -128,6 +129,7 @@ public class SettingsBackupTest {
     @Before
     public void startClean() {
         for (BooleanSetting setting : SettingsBackup.ALLOWLIST) setting.resetToDefault();
+        for (StringSetting list : SettingsBackup.FILTER_LISTS) list.resetToDefault();
         PatchFamily.inBuildForTests = java.util.EnumSet.allOf(PatchFamily.class);
         ShadowToast.reset();
         ShadowAlertDialog.reset();
@@ -144,6 +146,7 @@ public class SettingsBackupTest {
         Utils.awaitBackgroundTasksForTests();
         ShadowLooper.idleMainLooper();
         for (BooleanSetting setting : SettingsBackup.ALLOWLIST) setting.resetToDefault();
+        for (StringSetting list : SettingsBackup.FILTER_LISTS) list.resetToDefault();
         // The release check stays out of every file, so the list above doesn't reach it.
         Settings.CHECK_FOR_RELEASES.resetToDefault();
         BaseSettings.PAUSED.resetToDefault();
@@ -173,20 +176,22 @@ public class SettingsBackupTest {
         assertTrue("STAYS_OUT names a switch Settings no longer has", switches.containsAll(STAYS_OUT.keySet()));
         assertEquals("the list names a switch twice", SettingsBackup.ALLOWLIST.size(),
                 new HashSet<>(SettingsBackup.ALLOWLIST).size());
-        // A file carries true or false and nothing else. A setting in Settings that isn't a switch
-        // needs a format that can carry it before it can be decided on.
+        // A file carries true or false, and the message filters as lists of lines. Any other
+        // setting in Settings that isn't a switch needs a format that can carry it before it can
+        // be decided on.
         List<String> notSwitches = new ArrayList<>();
         for (Setting<?> setting : declaredSettings(Settings.class)) {
-            if (!(setting instanceof BooleanSetting)) notSwitches.add(setting.key);
+            if (!(setting instanceof BooleanSetting) && !SettingsBackup.FILTER_LISTS.contains(setting)) notSwitches.add(setting.key);
         }
         assertEquals("a setting in Settings isn't a switch, and a settings file has no format for it",
                 Collections.emptyList(), notSwitches);
+        assertEquals(Arrays.asList(Settings.MESSAGE_FILTERS_GROUPS, Settings.MESSAGE_FILTERS_CHANNELS), SettingsBackup.FILTER_LISTS);
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES,
                         Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_COMMERCE,
                         Settings.HIDE_PROMOTIONAL_BANNERS,
                         Settings.HIDE_SPONSORED_PROXY, Settings.HIDE_POPULAR_APPS, Settings.HIDE_CONTACTS_BLOCK, Settings.HIDE_GREETING_STICKERS, Settings.DISABLE_CHAT_SWIPE, Settings.DISABLE_CHANNEL_PULL, Settings.DISABLE_TOPIC_PULL,
                         Settings.NORMAL_PASTE, Settings.SHOW_LOCAL_IDS, Settings.PROFILE_DATA_CENTER, Settings.DISABLE_DOUBLE_TAP_REACTIONS,
-                        Settings.QUIET_CONTACTS_NAG, Settings.HOLIDAY_LOOK, Settings.USE_SYSTEM_FONT, Settings.AMOLED_BLACK, Settings.HIDE_TRANSLATE_BAR, Settings.EXACT_NUMBERS, Settings.REVEAL_SPOILERS, Settings.HIDE_KEYBOARD_ON_SCROLL, Settings.KEEP_VIDEOS_MUTED, Settings.SWIPE_BACK_ON_PROFILES, Settings.HIDE_PHONE_NUMBER, Settings.MESSAGE_SECONDS, Settings.ALLOW_CHAT_BLUR, Settings.VOICE_ONE_AT_A_TIME, Settings.NO_HAPTICS, Settings.REACTION_EFFECTS_OFF, Settings.HIDE_FOLDER_COUNTERS, Settings.FORWARD_HIDE_SENDER, Settings.VOICE_MUSIC_PLAYER, Settings.SILENCE_NON_CONTACTS, Settings.DISABLE_ARCHIVE_PULL, Settings.REAR_CAMERA_FIRST, Settings.HIDE_GALLERY_CAMERA_TILE, Settings.HIDE_STICKER_TIME, Settings.IGNORE_MUTED_MENTIONS, Settings.HIDE_BLOCKED_IN_GROUPS, Settings.HIDE_FEATURES_AND_INVITE, Settings.MESSAGE_MENU_REPEAT, Settings.KEEP_DELETED_MESSAGES, Settings.ASK_BEFORE_STICKER, Settings.BETA_LOGS_OFF, Settings.OUTSIDE_TRANSLATE, Settings.HIDE_CHANNEL_BUTTONS, Settings.HIDE_SEND_AS, Settings.ASK_BEFORE_GIF, Settings.ASK_BEFORE_VOICE_VIDEO, Settings.ASK_BEFORE_CALL, Settings.MESSAGE_MENU_COPY_PHOTO, Settings.MESSAGE_MENU_DETAILS, Settings.MESSAGE_MENU_QUICK_FORWARD,
+                        Settings.QUIET_CONTACTS_NAG, Settings.HOLIDAY_LOOK, Settings.USE_SYSTEM_FONT, Settings.AMOLED_BLACK, Settings.HIDE_TRANSLATE_BAR, Settings.EXACT_NUMBERS, Settings.REVEAL_SPOILERS, Settings.HIDE_KEYBOARD_ON_SCROLL, Settings.KEEP_VIDEOS_MUTED, Settings.SWIPE_BACK_ON_PROFILES, Settings.HIDE_PHONE_NUMBER, Settings.MESSAGE_SECONDS, Settings.ALLOW_CHAT_BLUR, Settings.VOICE_ONE_AT_A_TIME, Settings.NO_HAPTICS, Settings.REACTION_EFFECTS_OFF, Settings.HIDE_FOLDER_COUNTERS, Settings.FORWARD_HIDE_SENDER, Settings.VOICE_MUSIC_PLAYER, Settings.SILENCE_NON_CONTACTS, Settings.DISABLE_ARCHIVE_PULL, Settings.REAR_CAMERA_FIRST, Settings.HIDE_GALLERY_CAMERA_TILE, Settings.HIDE_STICKER_TIME, Settings.IGNORE_MUTED_MENTIONS, Settings.HIDE_BLOCKED_IN_GROUPS, Settings.HIDE_BY_KEYWORD, Settings.HIDE_FEATURES_AND_INVITE, Settings.MESSAGE_MENU_REPEAT, Settings.KEEP_DELETED_MESSAGES, Settings.ASK_BEFORE_STICKER, Settings.BETA_LOGS_OFF, Settings.OUTSIDE_TRANSLATE, Settings.HIDE_CHANNEL_BUTTONS, Settings.HIDE_SEND_AS, Settings.ASK_BEFORE_GIF, Settings.ASK_BEFORE_VOICE_VIDEO, Settings.ASK_BEFORE_CALL, Settings.MESSAGE_MENU_COPY_PHOTO, Settings.MESSAGE_MENU_DETAILS, Settings.MESSAGE_MENU_QUICK_FORWARD,
                         Settings.DISABLE_ANALYTICS, Settings.DISABLE_CALL_DEBUG, Settings.DISABLE_DRAFT_PREVIEWS,
                         Settings.GALLERY_CAMERA_ON_TAP,
                         Settings.OPEN_EXTERNAL_LINKS, Settings.STRIP_LINK_TRACKING, Settings.DISABLE_UPDATE_CHECKS,
@@ -231,7 +236,12 @@ public class SettingsBackupTest {
         assertEquals("hushtelegram-settings", root.get("format"));
         assertEquals(1, root.get("schema"));
         JSONObject switches = root.getJSONObject("settings");
-        assertEquals(keys(SettingsBackup.ALLOWLIST), names(switches));
+        Set<String> carried = keys(SettingsBackup.ALLOWLIST);
+        carried.addAll(keys(SettingsBackup.FILTER_LISTS));
+        assertEquals(carried, names(switches));
+        for (StringSetting list : SettingsBackup.FILTER_LISTS) {
+            assertEquals(list.key, 0, switches.getJSONArray(list.key).length());
+        }
         for (BooleanSetting setting : SettingsBackup.ALLOWLIST) {
             // Saved, not what a paused Telegram is answered: paused, every switch answers false.
             assertFalse(setting.get());
@@ -240,7 +250,7 @@ public class SettingsBackupTest {
         assertEquals(false, switches.get(Settings.HIDE_ADS.key));
         assertEquals(true, switches.get(Settings.DISABLE_ANALYTICS.key));
         for (Setting<?> setting : Setting.allLoadedSettings()) {
-            if (SettingsBackup.ALLOWLIST.contains(setting)) continue;
+            if (SettingsBackup.ALLOWLIST.contains(setting) || SettingsBackup.FILTER_LISTS.contains(setting)) continue;
             assertFalse(setting.key + " is in the file", text.contains(setting.key));
         }
         for (String leak : new String[]{"sentinel", "sessionid", "ds_user_id", "100012345678901", "secret-session",
@@ -425,6 +435,68 @@ public class SettingsBackupTest {
             assertFalse(Settings.HIDE_ADS.savedValue());
             assertFalse("the screen shows a switch the store doesn't hold", row.isChecked());
         }
+    }
+
+    /**
+     * The message filters go out as an array of their lines and come back as the list they were,
+     * and a file from before them, or one that leaves a list out, leaves that list alone.
+     */
+    @Test
+    public void theMessageFiltersRoundTripAsLines() throws Exception {
+        Settings.MESSAGE_FILTERS_GROUPS.save("free crypto\n/\\bgiveaway\\b/\nÜberweisung");
+        Settings.MESSAGE_FILTERS_CHANNELS.save("sponsored");
+        String file = SettingsBackup.create();
+        JSONObject settings = new JSONObject(file).getJSONObject("settings");
+        org.json.JSONArray groups = settings.getJSONArray(Settings.MESSAGE_FILTERS_GROUPS.key);
+        assertEquals(3, groups.length());
+        assertEquals(Arrays.asList("free crypto", "/\\bgiveaway\\b/", "Überweisung"),
+                Arrays.asList(groups.getString(0), groups.getString(1), groups.getString(2)));
+        assertEquals(1, settings.getJSONArray(Settings.MESSAGE_FILTERS_CHANNELS.key).length());
+
+        Settings.MESSAGE_FILTERS_GROUPS.save("");
+        Settings.MESSAGE_FILTERS_CHANNELS.save("something else");
+        SettingsBackup.Snapshot snapshot = SettingsBackup.parse(file);
+        assertEquals(0, snapshot.unknown);
+        assertEquals(0, snapshot.switchChanges());
+        assertEquals(2, snapshot.listChanges());
+        SettingsBackup.Snapshot kept = SettingsBackup.Snapshot.fromBundle(snapshot.toBundle());
+        assertEquals(snapshot.lists, kept.lists);
+        assertEquals(2, SettingsBackup.apply(kept));
+        assertEquals("free crypto\n/\\bgiveaway\\b/\nÜberweisung", Settings.MESSAGE_FILTERS_GROUPS.savedValue());
+        assertEquals("sponsored", Settings.MESSAGE_FILTERS_CHANNELS.savedValue());
+        assertEquals("a file read back is the file", file, SettingsBackup.create());
+
+        // Blank and padded lines come in the way the editor saves them.
+        JSONObject padded = new JSONObject(file);
+        padded.getJSONObject("settings").put(Settings.MESSAGE_FILTERS_CHANNELS.key, new org.json.JSONArray(Arrays.asList("  spam ", "", "ads")));
+        SettingsBackup.apply(SettingsBackup.parse(padded.toString()));
+        assertEquals("spam\nads", Settings.MESSAGE_FILTERS_CHANNELS.savedValue());
+
+        SettingsBackup.Snapshot older = SettingsBackup.parse(fileWith(Settings.HIDE_ADS, false));
+        assertTrue(older.lists.isEmpty());
+        SettingsBackup.apply(older);
+        assertEquals("a file without the lists left them alone", "spam\nads", Settings.MESSAGE_FILTERS_CHANNELS.savedValue());
+    }
+
+    @Test
+    public void aFilterListThatIsNotAShortListOfShortLinesIsRefused() throws Exception {
+        List<String> tooMany = new ArrayList<>();
+        for (int i = 0; i <= app.hushtelegram.extension.telegram.misc.MessageFilters.MAX_FILTERS; i++) tooMany.add("word" + i);
+        for (Object bad : new Object[]{"spam", true, 1, JSONObject.NULL, new JSONObject(),
+                new org.json.JSONArray(Arrays.asList("spam", 1)),
+                new org.json.JSONArray(Collections.singletonList("two\nlines")),
+                new org.json.JSONArray(Collections.singletonList("carriage\rreturn")),
+                new org.json.JSONArray(Collections.singletonList(repeat('x', app.hushtelegram.extension.telegram.misc.MessageFilters.MAX_FILTER_CHARS + 1))),
+                new org.json.JSONArray(tooMany)}) {
+            JSONObject file = new JSONObject(SettingsBackup.create());
+            file.getJSONObject("settings").put(Settings.MESSAGE_FILTERS_GROUPS.key, bad);
+            assertEquals(printable(String.valueOf(bad)), SettingsBackup.Reason.VALUE, reasonFor(file.toString()));
+        }
+        // A line that isn't a working filter, such as an expression edited by hand, still comes in:
+        // the editor shows it and a chat leaves it out.
+        JSONObject file = new JSONObject(SettingsBackup.create());
+        file.getJSONObject("settings").put(Settings.MESSAGE_FILTERS_GROUPS.key, new org.json.JSONArray(Arrays.asList("/(unclosed/", "/(a+)+/")));
+        assertEquals("/(unclosed/\n/(a+)+/", SettingsBackup.parse(file.toString()).lists.get(Settings.MESSAGE_FILTERS_GROUPS));
     }
 
     // ---- Refusals ------------------------------------------------------------------------------

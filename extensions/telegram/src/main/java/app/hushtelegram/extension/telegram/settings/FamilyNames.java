@@ -62,6 +62,7 @@ public final class FamilyNames {
     public static final String HIDE_STICKER_TIME = "Hide time on stickers";
     public static final String IGNORE_MUTED_MENTIONS = "Ignore mentions in muted chats";
     public static final String HIDE_BLOCKED_IN_GROUPS = "Hide blocked users in groups";
+    public static final String HIDE_BY_KEYWORD = "Hide messages by keyword";
     public static final String HIDE_FEATURES_AND_INVITE = "Hide Telegram Features and Invite Friends";
     public static final String MESSAGE_MENU_REPEAT = "Add Repeat to the message menu";
     public static final String KEEP_DELETED_MESSAGES = "Keep deleted messages";

@@ -15,6 +15,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -28,6 +29,7 @@ import android.preference.PreferenceGroup;
 import android.preference.SwitchPreference;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
+import android.widget.EditText;
 
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.SettingsContextRule;
@@ -127,6 +129,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HIDE_STICKER_TIME, "Hide time on stickers");
         ROW_TITLES.put(PatchFamily.IGNORE_MUTED_MENTIONS, "Ignore mentions in muted chats");
         ROW_TITLES.put(PatchFamily.HIDE_BLOCKED_IN_GROUPS, "Hide blocked users in groups");
+        ROW_TITLES.put(PatchFamily.HIDE_BY_KEYWORD, "Hide messages by keyword");
         ROW_TITLES.put(PatchFamily.HIDE_FEATURES_AND_INVITE, "Hide Telegram Features and Invite Friends");
         ROW_TITLES.put(PatchFamily.MESSAGE_MENU_REPEAT, "Add Repeat to the message menu");
         ROW_TITLES.put(PatchFamily.KEEP_DELETED_MESSAGES, "Keep deleted messages");
@@ -544,6 +547,15 @@ public class HushTelegramPreferenceFragmentTest {
             // Blocked people's group messages show until the switch is turned on.
             assertFalse(Settings.HIDE_BLOCKED_IN_GROUPS.key,
                     ((SwitchPreference) page.findPreference(Settings.HIDE_BLOCKED_IN_GROUPS.key)).isChecked());
+            assertEquals("Messages in groups and channels that match one of your filters are left out when you open "
+                    + "the chat. Private chats and your own messages stay as they are. Nothing is deleted, and your "
+                    + "filters stay on this phone.",
+                    String.valueOf(page.findPreference(Settings.HIDE_BY_KEYWORD.key).getSummary()));
+            assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_BY_KEYWORD.key)).isChecked());
+            assertEquals("Filters for groups", String.valueOf(page.findPreference(FilterEditor.GROUPS).getTitle()));
+            assertEquals("No filters yet.", String.valueOf(page.findPreference(FilterEditor.GROUPS).getSummary()));
+            assertEquals("Filters for channels", String.valueOf(page.findPreference(FilterEditor.CHANNELS).getTitle()));
+            assertEquals("No filters yet.", String.valueOf(page.findPreference(FilterEditor.CHANNELS).getSummary()));
             assertEquals("Hide Telegram Features and Invite Friends", String.valueOf(page.findPreference(Settings.HIDE_FEATURES_AND_INVITE.key).getTitle()));
             assertEquals("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no "
                     + "contacts yet, the invite list goes too.",
@@ -682,6 +694,78 @@ public class HushTelegramPreferenceFragmentTest {
         } finally {
             HookStatus.clear();
         }
+    }
+
+    /**
+     * Hide messages by keyword brings a row for each list under its switch. A tap opens the list;
+     * Save keeps the dialog and what was typed when a line can't be used, and saves the list
+     * trimmed when every line can.
+     */
+    @Test
+    public void theFilterListsComeWithHideByKeywordAndSaveOnlyWhatWorks() {
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
+        PatchFamily.inBuildForTests.remove(PatchFamily.HIDE_BY_KEYWORD);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            assertNull(pageOf(controller).findPreference(FilterEditor.GROUPS));
+            assertNull(pageOf(controller).findPreference(FilterEditor.CHANNELS));
+        }
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_BY_KEYWORD);
+        ShadowToast.reset();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            int toggle = indexOfKey(rows, Settings.HIDE_BY_KEYWORD.key);
+            assertEquals(FilterEditor.GROUPS, rows.get(toggle + 1).getKey());
+            assertEquals(FilterEditor.CHANNELS, rows.get(toggle + 2).getKey());
+            Preference groups = rows.get(toggle + 1);
+            assertEquals("Conversations", String.valueOf(groups.getParent().getTitle()));
+            assertFalse("it stores nothing itself", groups.isPersistent());
+
+            assertTrue(groups.getOnPreferenceClickListener().onPreferenceClick(groups));
+            ShadowLooper.idleMainLooper();
+            AlertDialog editor = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertTrue(editor.isShowing());
+            assertEquals("Filters for groups", String.valueOf(shadowOf(editor).getTitle()));
+            EditText field = editor.findViewById(android.R.id.edit);
+            assertEquals("", field.getText().toString());
+
+            field.setText("spam\n\n/(a+)+/");
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertTrue("a line that can't be used keeps the dialog", editor.isShowing());
+            assertEquals("Line 3 could take too long on a long message. Leave out a repeat inside a repeated group "
+                    + "and references back to a group.", ShadowToast.getTextOfLatestToast());
+            assertEquals("", Settings.MESSAGE_FILTERS_GROUPS.savedValue());
+
+            field.setText("/(unclosed/");
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertEquals("Line 1 isn't a regular expression that works. Fix it, or take the slashes off to match the "
+                    + "text as written.", ShadowToast.getTextOfLatestToast());
+
+            field.setText("  spam \n\n/\\bgiveaway\\b/\n");
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertFalse(editor.isShowing());
+            assertEquals("Filters saved.", ShadowToast.getTextOfLatestToast());
+            assertEquals("spam\n/\\bgiveaway\\b/", Settings.MESSAGE_FILTERS_GROUPS.savedValue());
+            assertEquals("2 filters.", String.valueOf(groups.getSummary()));
+            assertEquals("the other list is its own", "", Settings.MESSAGE_FILTERS_CHANNELS.savedValue());
+        } finally {
+            Settings.MESSAGE_FILTERS_GROUPS.resetToDefault();
+            Settings.MESSAGE_FILTERS_CHANNELS.resetToDefault();
+        }
+    }
+
+    @Test
+    public void aListThatIsTooLongOrHasALongLineIsSaid() {
+        StringBuilder many = new StringBuilder();
+        for (int i = 0; i <= app.hushtelegram.extension.telegram.misc.MessageFilters.MAX_FILTERS; i++) many.append("word").append(i).append('\n');
+        assertEquals("A list holds up to 100 filters.", FilterEditor.refusal(many.toString()));
+        assertEquals("Line 2 is longer than 200 characters.",
+                FilterEditor.refusal("ok\n" + new String(new char[201]).replace('\0', 'x')));
+        assertNull(FilterEditor.refusal(""));
+        assertNull(FilterEditor.refusal("\n  \n"));
     }
 
     /** Its row says nothing leaves the phone until a chat or message is turned on, so off forgets them. */

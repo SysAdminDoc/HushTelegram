@@ -37,8 +37,14 @@ internal const val LISTED = "Landroid/util/SparseArray;->indexOfKey(I)I"
 internal const val PEERS = "Lorg/telegram/messenger/support/LongSparseIntArray;"
 internal const val BLOCKED_PEERS = "Lorg/telegram/messenger/MessagesController;->blockePeers:$PEERS"
 internal const val POST = "Lorg/telegram/tgnet/TLRPC\$Message;->post:Z"
+internal const val TL_MESSAGE = "Lorg/telegram/tgnet/TLRPC\$Message;"
 private const val CONTROLLER = "Lorg/telegram/messenger/MessagesController;"
-private const val TL_MESSAGE = "Lorg/telegram/tgnet/TLRPC\$Message;"
+
+/**
+ * The extension calls that answer a message's type where the open chat tests it. Each patch puts
+ * its own right after the read, so a test may already carry the other's when it's resolved.
+ */
+internal val TYPE_HOOKS = setOf(BLOCKED_TYPE, "$EXTENSION_PACKAGE/misc/MessageFilters;->type(Ljava/lang/Object;I)I")
 
 /** How soon after the type test the open chat's next check comes. */
 private const val NEXT_CHECK = 4
@@ -56,7 +62,7 @@ val hideBlockedInGroupsPatch = bytecodePatch(
     execute {
         val sites = resolveHideBlockedInGroups()
         // Assembled on copies first, so a refusal leaves the app untouched.
-        sites.forEach { (method, indices) -> insertTypeChecks(MutableMethod(ImmutableMethod.of(method)), indices) }
+        sites.forEach { (method, indices) -> insertTypeChecks(MutableMethod(ImmutableMethod.of(method)), indices, BLOCKED_TYPE) }
         writeStub(BLOCKED_SENDERS, "chat", 3, """
             check-cast p0, $MESSAGE_OBJECT
             invoke-virtual {p0}, $MESSAGE_OBJECT->getDialogId()J
@@ -90,18 +96,18 @@ val hideBlockedInGroupsPatch = bytecodePatch(
             const/4 v0, 0x0
             return v0
         """)
-        sites.forEach { (method, indices) -> insertTypeChecks(method, indices) }
+        sites.forEach { (method, indices) -> insertTypeChecks(method, indices, BLOCKED_TYPE) }
         enableStatus("hideBlockedInGroups")
     }
 }
 
 /** After each type read the extension may answer -1, which the chat's own test then skips. */
-internal fun insertTypeChecks(target: MutableMethod, reads: List<Int>) {
+internal fun insertTypeChecks(target: MutableMethod, reads: List<Int>, hook: String) {
     val body = target.controlBody()
     for (read in reads.sortedDescending()) {
         val (type, message) = body[read].namedRegisters()
         target.addInstructions(read + 1, """
-            invoke-static {v$message, v$type}, $BLOCKED_TYPE
+            invoke-static {v$message, v$type}, $hook
             move-result v$type
         """)
     }
@@ -120,15 +126,31 @@ internal fun BytecodePatchContext.resolveHideBlockedInGroups(): List<Pair<Mutabl
     for (stub in listOf("chat", "sender")) controlHook(BLOCKED_SENDERS, stub, listOf("Ljava/lang/Object;"), "J")
     controlHook(BLOCKED_SENDERS, "post", listOf("Ljava/lang/Object;"), "Z")
     controlHook(BLOCKED_SENDERS, "blocked", listOf("Ljava/lang/Object;", "J"), "Z")
+    val sites = resolveOpenChatTypeReads()
 
+    val controller = classDefByOrNull(CONTROLLER)
+    controlShape(controller != null && controller.methods.any { signature(it) == "getInstance(I)$CONTROLLER" && callable(it, true) } &&
+        controller.fields.any { "${it.definingClass}->${it.name}:${it.type}" == BLOCKED_PEERS && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) },
+        "MessagesController no longer keeps the blocked list")
+    controlShape(classDefByOrNull(PEERS)?.methods?.any { signature(it) == "indexOfKey(J)I" && callable(it, false) } == true,
+        "the blocked list can no longer be looked up")
+    return sites
+}
+
+/**
+ * The open chat's three type tests, each as the method and the index of its `iget type`, and
+ * what a message says of itself that both Hide blocked users and Hide messages by keyword ask:
+ * its chat, sender, account, text and whether it's a channel post.
+ */
+internal fun BytecodePatchContext.resolveOpenChatTypeReads(): List<Pair<MutableMethod, List<Int>>> {
     val loads = mutableListOf<Triple<String, String, Int>>()
     val adds = mutableListOf<Triple<String, String, Int>>()
     classDefForEach { cls ->
         if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
         cls.methods.forEach { method ->
             val body = method.controlBody()
-            for (read in typeTests(body)) {
-                val next = body.subList(read + 2, minOf(body.size, read + 2 + NEXT_CHECK))
+            for ((read, test) in typeTests(body)) {
+                val next = body.subList(test + 1, minOf(body.size, test + 1 + NEXT_CHECK))
                 if (next.any { it.opcode == Opcode.INSTANCE_OF && it.controlRef() == MIGRATE_TO }) loads += Triple(cls.type, signature(method), read)
                 if (next.any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == LISTED }) adds += Triple(cls.type, signature(method), read)
             }
@@ -153,25 +175,30 @@ internal fun BytecodePatchContext.resolveHideBlockedInGroups(): List<Pair<Mutabl
     }
 
     val message = classDefByOrNull(MESSAGE_OBJECT)
-    controlShape(message != null && listOf("getDialogId()J", "getFromChatId()J").all { wanted -> message.methods.any { signature(it) == wanted && callable(it, false) } } &&
+    controlShape(message != null && listOf("getDialogId()J", "getFromChatId()J", "isOut()Z").all { wanted -> message.methods.any { signature(it) == wanted && callable(it, false) } } &&
         message.fields.any { it.name == "currentAccount" && it.type == "I" && !AccessFlags.STATIC.isSet(it.accessFlags) } &&
         message.fields.any { it.name == "messageOwner" && it.type == TL_MESSAGE && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "a message no longer says its chat, sender and account")
-    controlShape(classDefByOrNull(TL_MESSAGE)?.fields?.any { it.name == "post" && it.type == "Z" && !AccessFlags.STATIC.isSet(it.accessFlags) } == true,
+    val owner = classDefByOrNull(TL_MESSAGE)?.fields
+    controlShape(owner?.any { it.name == "post" && it.type == "Z" && !AccessFlags.STATIC.isSet(it.accessFlags) } == true,
         "a message no longer says whether it's a channel post")
-    val controller = classDefByOrNull(CONTROLLER)
-    controlShape(controller != null && controller.methods.any { signature(it) == "getInstance(I)$CONTROLLER" && callable(it, true) } &&
-        controller.fields.any { "${it.definingClass}->${it.name}:${it.type}" == BLOCKED_PEERS && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) },
-        "MessagesController no longer keeps the blocked list")
-    controlShape(classDefByOrNull(PEERS)?.methods?.any { signature(it) == "indexOfKey(J)I" && callable(it, false) } == true,
-        "the blocked list can no longer be looked up")
+    controlShape(owner?.any { it.name == "message" && it.type == "Ljava/lang/String;" && !AccessFlags.STATIC.isSet(it.accessFlags) } == true,
+        "a message no longer keeps its text")
     return sites
 }
 
-/** Each `iget type` on a message whose next instruction skips it when negative. */
-private fun typeTests(body: List<Instruction>) = body.indices.filter { at ->
-    body[at].opcode == Opcode.IGET && body[at].controlRef() == MESSAGE_TYPE && body.getOrNull(at + 1)?.opcode == Opcode.IF_LTZ &&
-        body[at + 1].namedRegisters() == listOf(body[at].namedRegisters().first())
+/**
+ * Each `iget type` on a message whose test skips it when negative, with the index of that test:
+ * the next instruction, or the one after the type hooks a patch already put between them.
+ */
+private fun typeTests(body: List<Instruction>): List<Pair<Int, Int>> = body.indices.mapNotNull { at ->
+    if (body[at].opcode != Opcode.IGET || body[at].controlRef() != MESSAGE_TYPE) return@mapNotNull null
+    val (type, message) = body[at].namedRegisters()
+    var test = at + 1
+    while (body.getOrNull(test)?.opcode == Opcode.INVOKE_STATIC && body[test].controlRef() in TYPE_HOOKS &&
+        body[test].namedRegisters() == listOf(message, type) && body.getOrNull(test + 1)?.opcode == Opcode.MOVE_RESULT &&
+        body[test + 1].namedRegisters() == listOf(type)) test += 2
+    if (body.getOrNull(test)?.opcode == Opcode.IF_LTZ && body[test].namedRegisters() == listOf(type)) at to test else null
 }
 
 private fun signature(m: Method) = "${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
