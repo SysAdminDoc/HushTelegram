@@ -614,6 +614,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 return true;
             });
             on(pages, PatchFamily.OUTSIDE_TRANSLATE).addPreference(outside);
+            on(pages, PatchFamily.OUTSIDE_TRANSLATE).addPreference(translateServiceRow(context));
         }
 
         // In every build: Telegram's own links are never verified for an app, so Android opens them
@@ -987,6 +988,21 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         row.setOnPreferenceClickListener(p -> {
             Activity activity = getActivity();
             if (activity != null) FilterEditor.open(activity, p, list, title);
+            return true;
+        });
+        return row;
+    }
+
+    /** Where the outside translate sends text: the row names the service, and a tap opens its editor. */
+    private Preference translateServiceRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(TranslateServiceEditor.KEY);
+        row.setTitle(L10n.t("Translation service"));
+        row.setPersistent(false);
+        row.setSummary(TranslateServiceEditor.summary(OutsideTranslate.service()));
+        row.setOnPreferenceClickListener(p -> {
+            Activity activity = getActivity();
+            if (activity != null) TranslateServiceEditor.open(activity, p);
             return true;
         });
         return row;

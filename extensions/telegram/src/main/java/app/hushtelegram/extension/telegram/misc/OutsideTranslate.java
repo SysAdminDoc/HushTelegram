@@ -28,8 +28,9 @@ import app.hushtelegram.extension.telegram.settings.Settings;
 /**
  * A translator that sits beside Telegram's own, which is Premium for a whole chat and whose
  * Premium checks stay exactly as they are. Nothing here asks Telegram to translate: the text
- * goes to Google's web translate, and the answer is shown by giving the message the same
- * translated-text fields and layout Telegram's own translation fills in.
+ * goes to Google's web translate, or to an AI service with the person's own key once one is set
+ * ({@link AiTranslate}), and the answer is shown by giving the message the same translated-text
+ * fields and layout Telegram's own translation fills in.
  *
  * <p>A chat is translated from its header menu, and one message from its long-press menu. Text
  * leaves the phone for the service only for those, one message at a time, and only while the
@@ -39,7 +40,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * Telegram's own translation already changed or text already in the app's language is left
  * alone. Switch off, paused or any failure gives Telegram's own path back.
  *
- * <p>Which chats are on is kept on the phone and stays out of the settings file. Translations are
+ * <p>Which chats are on is kept on the phone and stays out of the settings file, and so does the AI
+ * service, its key included. Translations are
  * kept in memory only, never in Telegram's database.
  */
 public final class OutsideTranslate {
@@ -55,6 +57,9 @@ public final class OutsideTranslate {
     private static final long RETRY_MS = 60_000L;
     private static final String PREFS = "hushtelegram_outside_translate";
     private static final String CHATS = "chats";
+    private static final String AI_ADDRESS = "ai_address";
+    private static final String AI_MODEL = "ai_model";
+    private static final String AI_KEY = "ai_key";
     /** Plain text and the kinds of message that carry a caption. */
     private static final int[] TYPES = {0, 1, 3, 9, 14};
 
@@ -115,9 +120,12 @@ public final class OutsideTranslate {
     private static final Map<Object, String> APPLIED = Collections.synchronizedMap(new WeakHashMap<>());
     private static final Map<Object, Boolean> HEADERS = Collections.synchronizedMap(new WeakHashMap<>());
     private static Set<Long> chats;
+    private static AiTranslate.Service service;
+    /** Goes up when the service changes, so an answer from the old one isn't kept. */
+    private static int generation;
     private static ExecutorService pool;
 
-    static Fetcher fetcher = GoogleTranslate::fetch;
+    static Fetcher fetcher = OutsideTranslate::fetchWithService;
     static Executor executor = task -> {
         synchronized (LOCK) {
             if (pool == null) pool = Executors.newFixedThreadPool(3, runnable -> {
@@ -254,7 +262,9 @@ public final class OutsideTranslate {
     /** Asks the service for the text in the background, once however many messages want it. */
     static void request(Message message, String target, String text) {
         String key = cacheKey(target, text);
+        int asked;
         synchronized (LOCK) {
+            asked = generation;
             Long failed = FAILED.get(key);
             if (failed != null && System.currentTimeMillis() - failed < RETRY_MS) return;
             List<Waiter> waiters = PENDING.get(key);
@@ -274,13 +284,15 @@ public final class OutsideTranslate {
             } catch (Throwable thrown) {
                 failure = thrown;
             }
-            finish(key, result, failure);
+            finish(key, asked, result, failure);
         });
     }
 
-    private static void finish(String key, GoogleTranslate.Result result, Throwable failure) {
+    private static void finish(String key, int asked, GoogleTranslate.Result result, Throwable failure) {
         List<Waiter> waiters;
         synchronized (LOCK) {
+            // The service changed while this was out: its answer isn't the one the person chose.
+            if (asked != generation) return;
             waiters = PENDING.remove(key);
             if (result != null) {
                 CACHE.put(key, result);
@@ -292,6 +304,7 @@ public final class OutsideTranslate {
         if (waiters == null) return;
         final List<Waiter> done = waiters;
         final boolean failed = result == null;
+        final boolean keyRefused = failure instanceof AiTranslate.KeyRefused;
         if (failed) HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "translate request", failure);
         Utils.runOnMainThread(() -> {
             try {
@@ -300,7 +313,7 @@ public final class OutsideTranslate {
                 for (Waiter waiter : done) {
                     long dialog = waiter.message.dialog();
                     if (failed) {
-                        toastOnce(dialog);
+                        toastOnce(dialog, keyRefused);
                         continue;
                     }
                     if (!wanted(dialog, waiter.message.id())) continue;
@@ -315,11 +328,66 @@ public final class OutsideTranslate {
         });
     }
 
-    private static void toastOnce(long dialog) {
+    private static void toastOnce(long dialog, boolean keyRefused) {
         synchronized (LOCK) {
             if (!TOASTED.add(dialog)) return;
         }
-        Utils.showToastShort(L10n.t("Translation isn't available right now"));
+        Utils.showToastShort(keyRefused ? L10n.t("Your AI service didn't accept the key")
+                : L10n.t("Translation isn't available right now"));
+    }
+
+    // The service: Google's web translate, or an AI service with the person's own key.
+
+    /** The saved service. Read once, then kept until it's saved again. */
+    public static AiTranslate.Service service() {
+        synchronized (LOCK) {
+            if (service == null) {
+                try {
+                    SharedPreferences saved = prefs();
+                    service = new AiTranslate.Service(saved.getString(AI_ADDRESS, AiTranslate.DEFAULT_ADDRESS),
+                            saved.getString(AI_MODEL, AiTranslate.DEFAULT_MODEL), saved.getString(AI_KEY, ""));
+                } catch (Throwable unreadable) {
+                    return AiTranslate.Service.GOOGLE;
+                }
+            }
+            return service;
+        }
+    }
+
+    static GoogleTranslate.Result fetchWithService(String target, String text) throws Exception {
+        AiTranslate.Service current = service();
+        return current.enabled() ? AiTranslate.fetch(current, target, text) : GoogleTranslate.fetch(target, text);
+    }
+
+    /**
+     * Saves the service. An empty key goes back to Google's web translate and forgets the key.
+     * Translations already fetched are dropped, so what shows next comes from the service chosen.
+     *
+     * @return whether it was saved
+     */
+    public static boolean saveService(String address, String model, String key) {
+        AiTranslate.Service next = new AiTranslate.Service(address.trim(), model.trim(), key.trim());
+        synchronized (LOCK) {
+            try {
+                SharedPreferences.Editor edit = prefs().edit();
+                if (next.enabled()) {
+                    edit.putString(AI_ADDRESS, next.address).putString(AI_MODEL, next.model).putString(AI_KEY, next.key);
+                } else {
+                    edit.remove(AI_KEY);
+                }
+                if (!edit.commit()) return false;
+            } catch (Throwable unsaved) {
+                HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "translation service", unsaved);
+                return false;
+            }
+            service = next.enabled() ? next : null;
+            generation++;
+            CACHE.clear();
+            PENDING.clear();
+            FAILED.clear();
+            TOASTED.clear();
+        }
+        return true;
     }
 
     // The language the translation is written in.
@@ -582,6 +650,8 @@ public final class OutsideTranslate {
             MESSAGES_OFF.clear();
             TOASTED.clear();
             chats = null;
+            service = null;
+            generation++;
         }
         APPLIED.clear();
         HEADERS.clear();

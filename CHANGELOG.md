@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Translate with an outside service can now use an AI service with your own key instead of Google's web translate. Tap Translation service under the switch and fill in the address, model and key. Anything that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek, Groq or Gemini's OpenAI address. The key stays on your phone: it isn't in settings backups, the diagnostic report or the log, and it only goes over https (plain http is allowed just for a model server on the phone itself). A message already in your language stays as it is, and if the service turns your key down you'll get a toast that says so. Use Google in the same dialog goes back and forgets the key. Asked for in #2.
+
 * **Telegram:** A new Faster downloads switch on the Playback page, off by default, has files download in 512 KB pieces with 8 requests at a time instead of 128 KB pieces 4 at a time. That's the setting Telegram already uses for accounts its servers pick for it, so it isn't a Premium unlock, and the servers still decide how fast they send. If a big piece fails, Telegram drops back to small ones on its own like before. It applies from the next download, no restart needed. Asked for in #6.
 
 * **Telegram:** A new HushTelegram icon and name patch puts HushTelegram's own badge on your home screen, with a themed version that takes your wallpaper's color on Android 13 and up. Its one option changes the name under the icon. It isn't selected by default, since there's no switch to undo it after patching: turn on Expert mode in Morphe Manager and pick it. An alternate icon you chose in Telegram's own settings keeps its look. Asked for in #6.

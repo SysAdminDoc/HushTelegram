@@ -477,3 +477,26 @@ Buy me a coffee on Ko-fi	Ko-fi'de bana bir kahve ısmarla
 Faster downloads	Daha hızlı indirmeler
 # context: that switch's summary. KB is kilobytes. "Goes back to small ones" means Telegram drops to the small pieces on its own if a big one fails.
 Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces 4 at a time. If a big piece fails, Telegram goes back to small ones. The next download picks this up.	Dosyalar 128 KB'lık parçalar halinde 4'er 4'er değil, 512 KB'lık parçalar halinde 8'er 8'er indirilir. Büyük bir parça başarısız olursa Telegram küçük parçalara geri döner. Bir sonraki indirme bunu hemen kullanır.
+# context: Translate with an outside service, on the Conversations page. A row under that switch, and the title of the dialog it opens: where the text to translate is sent.
+Translation service	Çeviri hizmeti
+Google's web translate. Tap to use an AI service with your own key.	Google'ın web çevirisi. Kendi anahtarınla bir yapay zekâ hizmeti kullanmak için dokun.
+# context: that row's summary once an AI service is set. %1$s is the service's host name, like api.openai.com, and %2$s its model name, like gpt-4o-mini.
+Your AI service at %1$s, model %2$s.	%1$s adresindeki yapay zekâ hizmetin, model %2$s.
+# context: hints in the three fields of that dialog: the web address of the AI service, the model to ask, and the secret key the service gave the person.
+Service address	Hizmet adresi
+Model	Model
+API key	API anahtarı
+# context: the dialog's explanation. OpenAI, OpenRouter, DeepSeek and Groq are company names and stay as they are.
+With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.	Bir anahtarla, çevirdiğin metin Google yerine bu yapay zekâ hizmetine gider. OpenAI'ın sohbet biçimini kabul eden her hizmet çalışır, örneğin OpenAI, OpenRouter, DeepSeek veya Groq. Anahtar bu telefonda kalır ve hiçbir zaman bir ayar dosyasına girmez.
+# context: a dialog button that goes back to Google's free web translate and forgets the key. "Use Google" is also quoted in a message below.
+Use Google	Google'ı kullan
+Couldn't save the translation service. Try again in a moment.	Çeviri hizmeti kaydedilemedi. Birazdan tekrar dene.
+Translation service saved.	Çeviri hizmeti kaydedildi.
+Back to Google's web translate.	Yeniden Google'ın web çevirisi.
+# context: why the dialog can't save yet. https:// stays as it is.
+Type your API key, or tap Use Google.	API anahtarını yaz ya da Google'ı kullan seçeneğine dokun.
+Type a model name.	Bir model adı yaz.
+Take the spaces out of the address, model and key.	Adres, model ve anahtardaki boşlukları kaldır.
+The address has to start with https://.	Adres https:// ile başlamalı.
+# context: a short toast when the AI service turns the key down (HTTP 401 or 403).
+Your AI service didn't accept the key	Yapay zekâ hizmetin anahtarı kabul etmedi

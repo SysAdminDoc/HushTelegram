@@ -71,9 +71,9 @@ internal val TRANSLATE_NUMBERS = listOf(0x48545405, 0x48545406)
 val outsideTranslatePatch = bytecodePatch(
     name = NAME,
     description = "Adds Translate here to a message's menu and Translate this chat to a chat's menu. Text you turn on goes " +
-        "to Google's web translate, one message at a time, and nothing is sent before that. Telegram's own " +
-        "translation and its Premium checks stay as they are. Starts off. Turn it on in HushTelegram settings > " +
-        "Conversations.",
+        "to Google's web translate, or to an AI service with your own key if you set one, one message at a time, and " +
+        "nothing is sent before that. Telegram's own translation and its Premium checks stay as they are. Starts off. " +
+        "Turn it on in HushTelegram settings > Conversations.",
     default = true,
 ) {
     category("Conversations")

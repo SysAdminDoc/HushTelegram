@@ -477,3 +477,26 @@ Buy me a coffee on Ko-fi	Invítame a un café en Ko-fi
 Faster downloads	Descargas más rápidas
 # context: that switch's summary. KB is kilobytes. "Goes back to small ones" means Telegram drops to the small pieces on its own if a big one fails.
 Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces 4 at a time. If a big piece fails, Telegram goes back to small ones. The next download picks this up.	Los archivos se descargan en partes de 512 KB, 8 a la vez, en lugar de partes de 128 KB, 4 a la vez. Si una parte grande falla, Telegram vuelve a las pequeñas. La próxima descarga ya lo aplica.
+# context: Translate with an outside service, on the Conversations page. A row under that switch, and the title of the dialog it opens: where the text to translate is sent.
+Translation service	Servicio de traducción
+Google's web translate. Tap to use an AI service with your own key.	El traductor web de Google. Toca para usar un servicio de IA con tu propia clave.
+# context: that row's summary once an AI service is set. %1$s is the service's host name, like api.openai.com, and %2$s its model name, like gpt-4o-mini.
+Your AI service at %1$s, model %2$s.	Tu servicio de IA en %1$s, modelo %2$s.
+# context: hints in the three fields of that dialog: the web address of the AI service, the model to ask, and the secret key the service gave the person.
+Service address	Dirección del servicio
+Model	Modelo
+API key	Clave de API
+# context: the dialog's explanation. OpenAI, OpenRouter, DeepSeek and Groq are company names and stay as they are.
+With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.	Con una clave, el texto que traduces va a este servicio de IA en lugar de a Google. Funciona cualquier servicio que acepte el formato de chat de OpenAI, como OpenAI, OpenRouter, DeepSeek o Groq. La clave se queda en este teléfono y nunca va a un archivo de ajustes.
+# context: a dialog button that goes back to Google's free web translate and forgets the key. "Use Google" is also quoted in a message below.
+Use Google	Usar Google
+Couldn't save the translation service. Try again in a moment.	No se pudo guardar el servicio de traducción. Inténtalo de nuevo en un momento.
+Translation service saved.	Servicio de traducción guardado.
+Back to Google's web translate.	De vuelta al traductor web de Google.
+# context: why the dialog can't save yet. https:// stays as it is.
+Type your API key, or tap Use Google.	Escribe tu clave de API o toca Usar Google.
+Type a model name.	Escribe el nombre de un modelo.
+Take the spaces out of the address, model and key.	Quita los espacios de la dirección, el modelo y la clave.
+The address has to start with https://.	La dirección tiene que empezar por https://.
+# context: a short toast when the AI service turns the key down (HTTP 401 or 403).
+Your AI service didn't accept the key	Tu servicio de IA no aceptó la clave

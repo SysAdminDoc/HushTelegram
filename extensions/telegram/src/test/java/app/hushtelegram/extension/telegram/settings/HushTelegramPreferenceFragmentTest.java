@@ -800,6 +800,94 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
+     * Translate with an outside service brings a Translation service row under its switch. A tap
+     * opens the address, model and key; Save keeps the dialog when one can't be used, and Use
+     * Google forgets the key. The key is kept in the outside translate's own file, never in the
+     * settings the backup reads.
+     */
+    @Test
+    public void theTranslationServiceRowSavesAnAiServiceAndUseGoogleForgetsTheKey() {
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
+        PatchFamily.inBuildForTests.remove(PatchFamily.OUTSIDE_TRANSLATE);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            assertNull(pageOf(controller).findPreference(TranslateServiceEditor.KEY));
+        }
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.OUTSIDE_TRANSLATE);
+        android.content.SharedPreferences file = app.hushtelegram.extension.shared.Utils.getContext()
+                .getSharedPreferences("hushtelegram_outside_translate", 0);
+        file.edit().clear().commit();
+        app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.reset();
+        ShadowToast.reset();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            int toggle = indexOfKey(rows, Settings.OUTSIDE_TRANSLATE.key);
+            Preference row = rows.get(toggle + 1);
+            assertEquals(TranslateServiceEditor.KEY, row.getKey());
+            assertEquals("Translation service", String.valueOf(row.getTitle()));
+            assertEquals("Google's web translate. Tap to use an AI service with your own key.", String.valueOf(row.getSummary()));
+            assertFalse("it stores nothing itself", row.isPersistent());
+
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowLooper.idleMainLooper();
+            AlertDialog editor = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertTrue(editor.isShowing());
+            assertEquals("Translation service", String.valueOf(shadowOf(editor).getTitle()));
+            EditText address = editor.findViewById(android.R.id.text1);
+            EditText model = editor.findViewById(android.R.id.text2);
+            EditText key = editor.findViewById(android.R.id.edit);
+            assertEquals("https://api.openai.com/v1", address.getText().toString());
+            assertEquals("gpt-4o-mini", model.getText().toString());
+            assertEquals("", key.getText().toString());
+            assertTrue("the key field is masked",
+                    (key.getInputType() & android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD) != 0);
+
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertTrue("no key keeps the dialog", editor.isShowing());
+            assertEquals("Type your API key, or tap Use Google.", ShadowToast.getTextOfLatestToast());
+
+            address.setText("http://api.example.com/v1");
+            key.setText("sk-test-123");
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertTrue("a key never goes out over plain http", editor.isShowing());
+            assertEquals("The address has to start with https://.", ShadowToast.getTextOfLatestToast());
+            assertFalse(file.contains("ai_key"));
+
+            address.setText(" https://openrouter.ai/api/v1 ");
+            model.setText("deepseek/deepseek-chat");
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertFalse(editor.isShowing());
+            assertEquals("Translation service saved.", ShadowToast.getTextOfLatestToast());
+            assertEquals("Your AI service at openrouter.ai, model deepseek/deepseek-chat.", String.valueOf(row.getSummary()));
+            assertEquals("sk-test-123", file.getString("ai_key", null));
+            assertEquals("https://openrouter.ai/api/v1", file.getString("ai_address", null));
+            // Nothing of the service is in the settings a backup or the report reads.
+            for (String saved : app.hushtelegram.extension.shared.Utils.getContext()
+                    .getSharedPreferences(app.hushtelegram.extension.shared.settings.Setting.PREFERENCES_NAME, 0).getAll().keySet()) {
+                assertFalse(saved, saved.contains("ai_") || saved.contains("translate_service"));
+            }
+
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowLooper.idleMainLooper();
+            editor = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertEquals("the saved key comes back masked", "sk-test-123",
+                    ((EditText) editor.findViewById(android.R.id.edit)).getText().toString());
+            editor.getButton(AlertDialog.BUTTON_NEUTRAL).performClick();
+            ShadowLooper.idleMainLooper();
+            assertFalse(editor.isShowing());
+            assertEquals("Back to Google's web translate.", ShadowToast.getTextOfLatestToast());
+            assertEquals("Google's web translate. Tap to use an AI service with your own key.", String.valueOf(row.getSummary()));
+            assertFalse("Use Google forgets the key", file.contains("ai_key"));
+        } finally {
+            file.edit().clear().commit();
+            app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.reset();
+        }
+    }
+
+    /**
      * Change sticker size brings a row for the size under its switch. A tap lists the four sizes
      * with the saved one checked, and a pick saves it at once and closes the list.
      */
@@ -859,18 +947,18 @@ public class HushTelegramPreferenceFragmentTest {
     public void switchingOutsideTranslateOffForgetsTheChatsTurnedOn() {
         PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.OUTSIDE_TRANSLATE);
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslateForTests.reset();
+        app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.reset();
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             assertTrue(OutsideTranslateForTests.toggleChat(42));
             SwitchPreference row = (SwitchPreference) pageOf(controller).findPreference(Settings.OUTSIDE_TRANSLATE.key);
             assertTrue(row.getOnPreferenceChangeListener().onPreferenceChange(row, Boolean.TRUE));
             assertTrue("switching on forgot the chat", OutsideTranslateForTests.chatOn(42));
             assertTrue(row.getOnPreferenceChangeListener().onPreferenceChange(row, Boolean.FALSE));
-            OutsideTranslateForTests.reset();
+            app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.reset();
             assertFalse(OutsideTranslateForTests.chatOn(42));
         } finally {
             Settings.OUTSIDE_TRANSLATE.resetToDefault();
-            OutsideTranslateForTests.reset();
+            app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.reset();
         }
     }
 

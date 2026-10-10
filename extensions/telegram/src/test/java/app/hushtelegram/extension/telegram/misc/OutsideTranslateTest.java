@@ -244,6 +244,61 @@ public class OutsideTranslateTest {
         assertEquals(0, message.refreshed);
     }
 
+    @Test public void googleIsTheServiceUntilAKeyIsSavedAndUseGoogleForgetsTheKey() {
+        assertFalse(OutsideTranslate.service().enabled());
+        assertTrue(OutsideTranslate.saveService(" https://openrouter.ai/api/v1 ", "deepseek/deepseek-chat", " sk-1 "));
+        OutsideTranslate.resetForTests();
+        // Read back from the phone, trimmed.
+        AiTranslate.Service saved = OutsideTranslate.service();
+        assertTrue(saved.enabled());
+        assertEquals("https://openrouter.ai/api/v1", saved.address);
+        assertEquals("deepseek/deepseek-chat", saved.model);
+        assertEquals("sk-1", saved.key);
+        assertTrue(OutsideTranslate.saveService(saved.address, saved.model, ""));
+        OutsideTranslate.resetForTests();
+        assertFalse(OutsideTranslate.service().enabled());
+        assertEquals("the address is kept for next time", "https://openrouter.ai/api/v1", OutsideTranslate.service().address);
+        assertFalse(app.hushtelegram.extension.shared.Utils.getContext()
+                .getSharedPreferences("hushtelegram_outside_translate", 0).contains("ai_key"));
+    }
+
+    @Test public void aNewServiceDropsTheOldTranslationsAndAnAnswerStillOut() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(10);
+        Fake message = new Fake();
+        OutsideTranslate.showMessage(message, message);
+        ShadowLooper.idleMainLooper();
+        assertTrue(OutsideTranslate.showMessage(message, message));
+        assertEquals(1, fetches.get());
+
+        List<Runnable> queued = new ArrayList<>();
+        OutsideTranslate.executor = queued::add;
+        assertTrue(OutsideTranslate.saveService("https://api.openai.com/v1", "gpt-4o-mini", "sk-1"));
+        // The translation from Google is gone, so the next look asks the new service.
+        Fake again = new Fake();
+        assertFalse(OutsideTranslate.showMessage(again, again));
+        assertEquals(1, queued.size());
+        // The service changes again before that answer lands: the answer isn't kept or shown.
+        assertTrue(OutsideTranslate.saveService("https://api.openai.com/v1", "gpt-4o", "sk-1"));
+        queued.get(0).run();
+        ShadowLooper.idleMainLooper();
+        assertEquals(0, again.refreshed);
+        assertNull(OutsideTranslate.cached(OutsideTranslate.target(), again.original));
+    }
+
+    @Test public void aKeyTheServiceTurnsDownSaysSo() {
+        org.robolectric.shadows.ShadowToast.reset();
+        OutsideTranslate.fetcher = (target, text) -> { throw new AiTranslate.KeyRefused(401); };
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(10);
+        Fake message = new Fake();
+        OutsideTranslate.showMessage(message, message);
+        ShadowLooper.idleMainLooper();
+        assertEquals("Your AI service didn't accept the key", org.robolectric.shadows.ShadowToast.getTextOfLatestToast());
+        // What the diagnostic report keeps of the failure is its status, never the key.
+        assertFalse(String.join("\n", HookStatus.report()).contains("sk-"));
+    }
+
     /** Telegram doesn't know the chat item's number, so a tap on one left in an open menu stays ours. */
     @Test public void theChatItemIsOursEvenAfterTheSwitchWentOff() {
         assertFalse(Settings.OUTSIDE_TRANSLATE.get());
