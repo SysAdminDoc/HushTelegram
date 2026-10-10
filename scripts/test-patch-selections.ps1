@@ -155,4 +155,16 @@ try {
     Assert-Selection ($LASTEXITCODE -ne 0 -and $publicOutput.Contains('MATRIX_FAILED') -and
         (Test-SelectionPublicText -Text $publicOutput -Canaries @($canary))) 'An invalid input leaked its path through the public error stream.'
 } finally { Remove-GeneratedPath -Path $scratch -Root ([IO.Path]::GetTempPath()) }
+# The icon patch adds its three mipmaps, and only a case that selects it may.
+$none = "[resources] added resources: 0`r`n[resources] files named by the patched table: 7115, moved 0"
+$icons = "[resources] added resources: 3`r`n  0x7f0d0021 mipmap/hush_launcher`r`n  0x7f0d0022 mipmap/hush_launcher_foreground`r`n" +
+    "  0x7f0d0023 mipmap/hush_launcher_monochrome`r`n[resources] files named by the patched table: 7115, moved 0"
+$full = ($plans | Where-Object Id -CEQ 'full62').Names
+$default = $plans[0].Names
+Assert-Selection (Test-SelectionAddedResources -Report $none -Closure $default) 'A case without the icon was refused for adding nothing.'
+Assert-Selection (-not (Test-SelectionAddedResources -Report $icons -Closure $default)) 'A case without the icon patch was allowed its mipmaps.'
+Assert-Selection (Test-SelectionAddedResources -Report $icons -Closure $full) 'The full catalog was refused the icon patch''s mipmaps.'
+Assert-Selection (-not (Test-SelectionAddedResources -Report $none -Closure $full)) 'The full catalog passed without the icon patch''s mipmaps.'
+Assert-Selection (-not (Test-SelectionAddedResources -Report ($icons -replace 'hush_launcher_monochrome', 'hush_other') -Closure $full)) 'A stray added resource passed as the icon patch''s.'
+Assert-Selection (-not (Test-SelectionAddedResources -Report 'no table report' -Closure $default)) 'A report without its added resources line passed.'
 Write-Host "[selections] contracts passed ($assertions assertions)"

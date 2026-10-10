@@ -126,6 +126,23 @@ function Get-SelectionExpectation {
         flags = $flags; closure = $closure; dependencies = $dependencies }
 }
 
+function Test-SelectionAddedResources {
+    <#
+    .SYNOPSIS
+        Whether ResourceTableCheck's added resources are the ones the selection may add: the icon
+        patch's three mipmaps when it's in, and none otherwise.
+    #>
+    param([string]$Report, [string[]]$Closure)
+    $match = [regex]::Match($Report, '\[resources\] added resources: (\d+)((?:\r?\n  [^\r\n]+)*)')
+    if (-not $match.Success) { return $false }
+    $names = @([regex]::Matches($match.Groups[2].Value, '(?m)^  0x7f[0-9a-f]{6} (\S+)\r?$') | ForEach-Object { $_.Groups[1].Value })
+    $allowed = if ($Closure -ccontains 'HushTelegram icon and name') {
+        @('mipmap/hush_launcher', 'mipmap/hush_launcher_foreground', 'mipmap/hush_launcher_monochrome')
+    } else { @() }
+    return [int]$match.Groups[1].Value -eq $allowed.Count -and $names.Count -eq $allowed.Count -and
+        (@($names | Sort-Object -CaseSensitive) -join "`n") -ceq (@($allowed | Sort-Object -CaseSensitive) -join "`n")
+}
+
 function New-SelectionOptionsDocument {
     param([object]$Catalog, [object]$Selection, [string]$BundleName, [string]$BundleHash)
     $entries = [ordered]@{}
@@ -376,7 +393,7 @@ function Invoke-PatchSelectionMatrix {
                 $resourceText = Get-Content $resourcePath -Raw
                 if ($resourceCode -ne 0 -or $resourceText -cnotmatch '\[resources\] rewritten values: 0' -or
                     $resourceText -cnotmatch '\[resources\] renamed by the rebuild[^\r\n]*: 0' -or
-                    $resourceText -cnotmatch '\[resources\] added resources: 0') { throw 'RESOURCE_PRESERVATION_FAILED' }
+                    -not (Test-SelectionAddedResources -Report $resourceText -Closure $expected.closure)) { throw 'RESOURCE_PRESERVATION_FAILED' }
                 $native = Get-NativePackagingEvidence -StockApk $Apk -PatchedApk $output -Java $Java -Aapt2 $Aapt2 `
                     -ReportPath (Join-Path $caseDir 'native-private.json') -StockSha256 $sourceHash -SourceSha256 $sourceHash
                 if ($expected.settings) {
