@@ -48,6 +48,22 @@ internal fun BytecodePatchContext.controlHook(type: String, name: String, parame
     return method
 }
 
+/** Throws unless [reference], a method or a field, is public on a public class, and static or not as [static] says. */
+internal fun BytecodePatchContext.requireReachable(reference: String, static: Boolean) {
+    val owner = mutableClassDefByOrNull(reference.substringBefore("->"))
+    val member = reference.substringAfter("->")
+    val reachable = owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags) && if ('(' in member) {
+        owner.methods.any {
+            it.toString() == reference && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static
+        }
+    } else {
+        owner.fields.any {
+            "${it.name}:${it.type}" == member && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static
+        }
+    }
+    controlShape(reachable, "$reference isn't reachable from the extension")
+}
+
 /** Proves that a receiver copied at entry still names this instance on every path to its use. */
 internal fun Method.controlReceiverAlias(register: Int, use: Int) {
     val flow = ControlFlow.of(this)

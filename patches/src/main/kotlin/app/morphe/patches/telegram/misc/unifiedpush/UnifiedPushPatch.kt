@@ -23,6 +23,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
+import app.morphe.patches.telegram.misc.localcontrols.requireReachable
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -257,20 +258,4 @@ internal fun BytecodePatchContext.resolveUnifiedPush(): UnifiedPushPlan {
         requireReachable(reference, static)
     }
     return UnifiedPushPlan(signUp, accounts!!)
-}
-
-/** Throws unless [reference], a method or a field, is public on a public class, and static or not as [static] says. */
-private fun BytecodePatchContext.requireReachable(reference: String, static: Boolean) {
-    val owner = mutableClassDefByOrNull(reference.substringBefore("->"))
-    val member = reference.substringAfter("->")
-    val reachable = owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags) && if ('(' in member) {
-        owner.methods.any {
-            it.toString() == reference && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static
-        }
-    } else {
-        owner.fields.any {
-            "${it.name}:${it.type}" == member && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static
-        }
-    }
-    controlShape(reachable, "$reference isn't reachable from the extension")
 }
