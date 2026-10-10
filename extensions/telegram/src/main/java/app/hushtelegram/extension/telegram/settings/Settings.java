@@ -320,8 +320,8 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_message_menu_quick_forward", FALSE);
 
     /**
-     * A channel's read metrics (how long each post stayed on screen) and Premium screen interaction
-     * reports are never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).
+     * A channel's read metrics (how long each post stayed on screen), Premium screen interaction
+     * reports and the camera's dual-camera report are never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).
      */
     public static final BooleanSetting DISABLE_ANALYTICS =
             new BooleanSetting("hushtelegram_disable_analytics", TRUE);

@@ -117,6 +117,40 @@ public class AnalyticsAppLogTest {
         assertTrue("unverified types cannot trip a broken settings read", HookStatus.missing(FamilyNames.DISABLE_ANALYTICS).isEmpty());
     }
 
+    @Test
+    public void theDualCameraReportIsSkippedByDefaultAndNoOtherTypeIs() {
+        assertTrue(Analytics.skipDeviceAppLog("android_dual_camera"));
+        assertEquals(Collections.singletonList("Disable analytics: invoked 1, 0 found, 0 missing. Counted: dual camera report skipped 1"),
+                HookStatus.report());
+        HookStatus.clear();
+        SettingReadsForTests.breakReads(Settings.DISABLE_ANALYTICS);
+        for (String type : Arrays.asList(null, "", "android_sdcard_exists", "premium.promo_screen_show", "fcm_token_request",
+                "ANDROID_DUAL_CAMERA", "android_dual_camera_extra")) {
+            assertFalse(String.valueOf(type), Analytics.skipDeviceAppLog(type));
+        }
+        assertTrue("other types never invoke the guard", HookStatus.report().isEmpty());
+        assertTrue("other types cannot trip a broken settings read", HookStatus.missing(FamilyNames.DISABLE_ANALYTICS).isEmpty());
+    }
+
+    @Test
+    public void theDualCameraReportGoesOutWhenOffPausedEarlyOrUnreadable() {
+        Settings.DISABLE_ANALYTICS.save(false);
+        assertFalse(Analytics.skipDeviceAppLog("android_dual_camera"));
+        Settings.DISABLE_ANALYTICS.save(true);
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
+            PauseForTests.pause(reason);
+            assertFalse(reason.toString(), Analytics.skipDeviceAppLog("android_dual_camera"));
+            PauseForTests.resume();
+        }
+        SettingsContextRule.withoutContext(() -> assertFalse(Analytics.skipDeviceAppLog("android_dual_camera")));
+        SettingReadsForTests.breakReads(Settings.DISABLE_ANALYTICS);
+        assertFalse(Analytics.skipDeviceAppLog("android_dual_camera"));
+        assertFalse(HookStatus.report().get(0).contains("Counted:"));
+        assertEquals(Collections.singletonList("a working 'switch read' hook (it threw java.lang.NullPointerException)"),
+                HookStatus.missing(FamilyNames.DISABLE_ANALYTICS));
+    }
+
     private void assertAllStock() {
         for (String type : TYPES) assertFalse(type, Analytics.skipPremiumAppLog(type));
     }

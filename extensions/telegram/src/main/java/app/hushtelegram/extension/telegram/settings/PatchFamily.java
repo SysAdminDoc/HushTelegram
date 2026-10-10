@@ -181,6 +181,7 @@ public enum PatchFamily {
         PREMIUM_PROMO_TAP(DISABLE_ANALYTICS, "premiumPromoTap", "Premium promo taps"),
         PREMIUM_PROMO_ACCEPT(DISABLE_ANALYTICS, "premiumPromoAccept", "Premium promo accepts"),
         PREMIUM_PROMO_FAIL(DISABLE_ANALYTICS, "premiumPromoFail", "Premium promo failures"),
+        DUAL_CAMERA_REPORTS(DISABLE_ANALYTICS, "dualCameraReport", "dual camera reports"),
         // Telegram Beta carries these SDKs and the regular build doesn't, so a build without them isn't missing anything.
         CRASH_REPORTS(DISABLE_ANALYTICS, "crashReports", "Firebase crash reports", true),
         SESSION_REPORTS(DISABLE_ANALYTICS, "sessionReports", "Firebase session reports", true),

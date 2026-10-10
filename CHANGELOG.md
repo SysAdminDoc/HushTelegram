@@ -16,6 +16,8 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** Use system font now covers Wallet too. Card numbers and amounts switch to your phone's monospace font at the weight Wallet asks for, so the columns still line up. The small font that draws the Gram currency sign stays as it is, since phone fonts don't have that sign.
 
+* **Telegram:** Disable analytics now stops the camera's dual camera report, which tells Telegram your phone's maker and model when its servers ask for device stats. The camera itself works as before.
+
 ## 0.0.12 (2026-10-09)
 
 The sixth release, with 56 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.

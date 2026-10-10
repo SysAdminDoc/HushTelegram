@@ -15,7 +15,7 @@ import app.morphe.patches.telegram.ads.GET_SPONSORED_PEERS
 import app.morphe.patches.telegram.ads.MESSAGES_CONTROLLER
 import app.morphe.patches.telegram.ads.hideAdsPatch
 import app.morphe.patches.telegram.misc.analytics.REPORT_READ_METRICS
-import app.morphe.patches.telegram.misc.analytics.PremiumPromoEvent
+import app.morphe.patches.telegram.misc.analytics.AppLogEvent
 import app.morphe.patches.telegram.misc.analytics.disableAnalyticsPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -59,7 +59,7 @@ class TargetCapabilitiesTest {
     }
 
     private fun verifySubsets(family: String, targets: List<Target>, execute: (BytecodePatchContext) -> Unit) {
-        val premiumTargets = if (family == "disableAnalytics") PremiumPromoEvent.entries else emptyList()
+        val premiumTargets = if (family == "disableAnalytics") AppLogEvent.entries else emptyList()
         val targetCount = targets.size + premiumTargets.size
         for (mask in 0 until (1 shl targets.size)) {
             val present = targets.filterIndexed { index, _ -> mask and (1 shl index) != 0 }
@@ -108,11 +108,11 @@ class TargetCapabilitiesTest {
         val context = PatchContexts.of(ExtensionDex.classes() + host)
         val warnings = PatchLogCapture.warnings {
             val failure = assertThrows(PatchException::class.java) { disableAnalyticsPatch.execute(context) }
-            assertTrue(failure.message, failure.message.orEmpty().contains("none of the ${1 + PremiumPromoEvent.entries.size}"))
+            assertTrue(failure.message, failure.message.orEmpty().contains("none of the ${1 + AppLogEvent.entries.size}"))
             assertTrue(failure.message, failure.message.orEmpty().contains("doesn't check its batch"))
         }
         assertEquals(0, warnings.size)
-        for (premium in PremiumPromoEvent.entries) assertFlag(context, premium.capability, false)
+        for (premium in AppLogEvent.entries) assertFlag(context, premium.capability, false)
         assertFlag(context, "disableAnalytics", false)
         assertFlag(context, "readMetrics", false)
         assertUnchanged(context, host)

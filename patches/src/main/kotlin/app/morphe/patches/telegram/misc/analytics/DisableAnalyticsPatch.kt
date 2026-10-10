@@ -67,7 +67,10 @@ internal object SendReadMetricsFingerprint : Fingerprint(
  * asks the extension just before, with the batch in hand. View counts are a separate request and
  * stay as they are. Premium screen views, item taps, accepts and canceled purchases carry four
  * verified interaction types. Their guards skip only the telemetry send, keeping billing callbacks
- * and all other operations. Each place stands alone, and the patch log names any missing target.
+ * and all other operations. The camera's `android_dual_camera` report (13.0.1: whether dual camera
+ * works, with Build.MANUFACTURER + MODEL, sent when the server sets collectDeviceStats) is skipped
+ * the same way; the camera still saves its own dual-camera state after it. Each place stands
+ * alone, and the patch log names any missing target.
  * Each successful hook also sets its
  * own build flag, so settings and diagnostic reports show which targets remain covered.
  *
@@ -83,7 +86,8 @@ internal object SendReadMetricsFingerprint : Fingerprint(
 val disableAnalyticsPatch = bytecodePatch(
     name = PATCH,
     description = "Stops Telegram from reporting how you use the app, like how long you read channel posts and what you" +
-        " tap on Premium screens. On Telegram Beta it also turns off Firebase's crash and session reports from the " +
+        " tap on Premium screens, and keeps the camera from reporting your phone's maker and model. On Telegram Beta" +
+        " it also turns off Firebase's crash and session reports from the " +
         "next start. Messages, calls and notifications work as before. On by default. Turn it off in " +
         "HushTelegram settings > Privacy.",
     default = true,
@@ -95,13 +99,13 @@ val disableAnalyticsPatch = bytecodePatch(
     execute {
         requireStatusMethod("disableAnalytics")
         requireStatusMethod("readMetrics")
-        PremiumPromoEvent.entries.forEach { requireStatusMethod(it.capability) }
+        AppLogEvent.entries.forEach { requireStatusMethod(it.capability) }
         requireStatusMethod("crashReports")
         requireStatusMethod("sessionReports")
 
         val metrics = SendReadMetricsFingerprint.methodOrNull
         val metricsMissing = metrics?.skipReadMetricsWhen("$ANALYTICS->skipReadMetrics(Ljava/util/List;)Z", dryRun = true)
-        val premium = resolvePremiumPromoHooks()
+        val premium = resolveAppLogHooks()
         // Proven before anything changes. Telegram's regular build has neither SDK, so it skips both quietly.
         val crashReports = resolveCrashReporter()
         val sessionReports = resolveSessions()
@@ -118,15 +122,17 @@ val disableAnalyticsPatch = bytecodePatch(
                 else -> {
                     val event = report.premium!!
                     val hook = premium[event]
-                    if (hook == null) "no verified ${event.type} interaction builder"
+                    if (hook == null) "no verified ${event.type} report builder"
                     else {
                         hook.method.addInstructionsAtControlFlowLabel(hook.index, hook.code,
                             ExternalLabel("hush_continue", hook.method.getInstruction(hook.continuation)))
+                        // Spelled out per event: PatchStatusWiringTest reads each flag from the source.
                         when (event) {
-                            PremiumPromoEvent.SHOW -> enableCapability("premiumPromoShow")
-                            PremiumPromoEvent.TAP -> enableCapability("premiumPromoTap")
-                            PremiumPromoEvent.ACCEPT -> enableCapability("premiumPromoAccept")
-                            PremiumPromoEvent.FAIL -> enableCapability("premiumPromoFail")
+                            AppLogEvent.SHOW -> enableCapability("premiumPromoShow")
+                            AppLogEvent.TAP -> enableCapability("premiumPromoTap")
+                            AppLogEvent.ACCEPT -> enableCapability("premiumPromoAccept")
+                            AppLogEvent.FAIL -> enableCapability("premiumPromoFail")
+                            AppLogEvent.DUAL_CAMERA -> enableCapability("dualCameraReport")
                         }
                         null
                     }
@@ -156,9 +162,9 @@ val disableAnalyticsPatch = bytecodePatch(
 }
 
 /** The reports Telegram sends about how the app is used. */
-private enum class Report(val premium: PremiumPromoEvent? = null) {
-    READ_METRICS, PREMIUM_SHOW(PremiumPromoEvent.SHOW), PREMIUM_TAP(PremiumPromoEvent.TAP),
-    PREMIUM_ACCEPT(PremiumPromoEvent.ACCEPT), PREMIUM_FAIL(PremiumPromoEvent.FAIL),
+private enum class Report(val premium: AppLogEvent? = null) {
+    READ_METRICS, PREMIUM_SHOW(AppLogEvent.SHOW), PREMIUM_TAP(AppLogEvent.TAP),
+    PREMIUM_ACCEPT(AppLogEvent.ACCEPT), PREMIUM_FAIL(AppLogEvent.FAIL), DUAL_CAMERA(AppLogEvent.DUAL_CAMERA),
 }
 
 /**
@@ -201,26 +207,40 @@ private fun MutableMethod.skipReadMetricsWhen(hook: String, dryRun: Boolean = fa
 
 internal const val SAVE_APP_LOG = "Lorg/telegram/tgnet/TLRPC\$TL_help_saveAppLog;"
 private const val APP_EVENT = "Lorg/telegram/tgnet/TLRPC\$TL_inputAppEvent;"
-internal enum class PremiumPromoEvent(val type: String, val capability: String, val parameters: List<String>) {
-    SHOW("premium.promo_screen_show", "premiumPromoShow", listOf("Ljava/lang/String;")),
-    TAP("premium.promo_screen_tap", "premiumPromoTap", listOf("I", "I")),
-    ACCEPT("premium.promo_screen_accept", "premiumPromoAccept", emptyList()),
-    FAIL("premium.promo_screen_fail", "premiumPromoFail", emptyList()),
+internal const val LOG_DUAL_CAMERA = "Lorg/telegram/messenger/ApplicationLoader;->logDualCamera(ZZ)V"
+
+/**
+ * The `help.saveAppLog` events the switch stops, each with the payload its builder must carry: the
+ * JSON type of its data, a key that data must name, and the extension method asked before the send.
+ * [after] is a stock call the send continues into before the builder returns.
+ */
+internal enum class AppLogEvent(
+    val type: String, val capability: String, val parameters: List<String>, val data: String, val key: String? = null,
+    val hook: String = "skipPremiumAppLog", val after: String? = null,
+) {
+    SHOW("premium.promo_screen_show", "premiumPromoShow", listOf("Ljava/lang/String;"), "TL_jsonObject", "source"),
+    TAP("premium.promo_screen_tap", "premiumPromoTap", listOf("I", "I"), "TL_jsonObject", "item"),
+    ACCEPT("premium.promo_screen_accept", "premiumPromoAccept", emptyList(), "TL_jsonNull"),
+    FAIL("premium.promo_screen_fail", "premiumPromoFail", emptyList(), "TL_jsonNull"),
+    // The camera reports whether the phone handles dual camera, with its maker and model, when the
+    // server's collectDeviceStats flag asks for it. Saving that state on the phone stays.
+    DUAL_CAMERA("android_dual_camera", "dualCameraReport", listOf("Z"), "TL_jsonObject", "device",
+        hook = "skipDeviceAppLog", after = LOG_DUAL_CAMERA),
 }
-internal data class PremiumPromoHook(val method: MutableMethod, val index: Int, val continuation: Int, val code: String)
+internal data class AppLogHook(val method: MutableMethod, val index: Int, val continuation: Int, val code: String)
 
 /** Exact payload literals select these builders; operational and unknown app-log events aren't selected. */
-internal fun BytecodePatchContext.resolvePremiumPromoHooks(): Map<PremiumPromoEvent, PremiumPromoHook> {
-    val candidates = PremiumPromoEvent.entries.associateWith { mutableListOf<Method>() }
+internal fun BytecodePatchContext.resolveAppLogHooks(): Map<AppLogEvent, AppLogHook> {
+    val candidates = AppLogEvent.entries.associateWith { mutableListOf<Method>() }
     classDefForEach { classDef ->
         if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
         for (method in classDef.methods) {
             val instructions = method.appLogInstructions()
             if (instructions.none { it.opcode == Opcode.NEW_INSTANCE && it.appLogReference() == SAVE_APP_LOG }) continue
-            for (event in PremiumPromoEvent.entries) if (instructions.any { it.appLogString() == event.type }) candidates.getValue(event) += method
+            for (event in AppLogEvent.entries) if (instructions.any { it.appLogString() == event.type }) candidates.getValue(event) += method
         }
     }
-    val hooks = mutableMapOf<PremiumPromoEvent, PremiumPromoHook>()
+    val hooks = mutableMapOf<AppLogEvent, AppLogHook>()
     for ((event, matches) in candidates) {
         promoShape(matches.size <= 1, "ambiguous ${event.type} builder")
         val found = matches.singleOrNull() ?: continue
@@ -263,11 +283,9 @@ internal fun BytecodePatchContext.resolvePremiumPromoHooks(): Map<PremiumPromoEv
         val dataRegister = instructions[data.single()].namedRegisters()[0]
         val dataObject = (type + 1 until data.single()).lastOrNull { instructions[it].opcode.setsRegister() &&
             instructions[it].namedRegisters().firstOrNull() == dataRegister }
-        val expectedData = if (event == PremiumPromoEvent.SHOW || event == PremiumPromoEvent.TAP) "TL_jsonObject" else "TL_jsonNull"
         promoShape(dataObject != null && instructions[dataObject].opcode == Opcode.NEW_INSTANCE &&
-            instructions[dataObject].appLogReference() == "Lorg/telegram/tgnet/TLRPC\$$expectedData;" &&
-            (event != PremiumPromoEvent.SHOW || instructions.any { it.appLogString() == "source" }) &&
-            (event != PremiumPromoEvent.TAP || instructions.any { it.appLogString() == "item" }), "${event.type} verified payload changed")
+            instructions[dataObject].appLogReference() == "Lorg/telegram/tgnet/TLRPC\$${event.data};" &&
+            (event.key == null || instructions.any { it.appLogString() == event.key }), "${event.type} verified payload changed")
         val flow = ControlFlow.of(method)
         promoShape(flow.promoDefinitionReaches(type - 1, type, instructions[type].namedRegisters()[0]),
             "${event.type} payload type can bypass its verified literal")
@@ -284,10 +302,16 @@ internal fun BytecodePatchContext.resolvePremiumPromoHooks(): Map<PremiumPromoEv
             "${event.type} telemetry send can bypass its verified payload or batch append")
         promoShape(flow.normal[send].size == 1, "${event.type} send continuation changed")
         val continuation = flow.normal[send].single()
-        if (event != PremiumPromoEvent.FAIL) {
+        if (event != AppLogEvent.FAIL) {
+            // A report that continues into a stock call must reach it straight from the send and
+            // return right after, so skipping the send skips nothing else.
+            val end = if (event.after == null) continuation else continuation + 1
             promoShape(AccessFlags.STATIC.isSet(method.accessFlags) && method.returnType == "V" &&
-                method.parameterTypes.map { it.toString() } == event.parameters && instructions[continuation].opcode == Opcode.RETURN_VOID &&
-                instructions.count { it.appLogCall()?.name == "sendRequest" } == 1, "${event.type} is no longer a standalone interaction report")
+                method.parameterTypes.map { it.toString() } == event.parameters &&
+                (event.after == null || instructions[continuation].appLogCall()?.toString() == event.after &&
+                    flow.normal[continuation] == listOf(end)) &&
+                instructions.getOrNull(end)?.opcode == Opcode.RETURN_VOID &&
+                instructions.count { it.appLogCall()?.name == "sendRequest" } == 1, "${event.type} is no longer a standalone report")
         } else {
             val request = requests.single()
             val cancellation = request - 1
@@ -320,9 +344,9 @@ internal fun BytecodePatchContext.resolvePremiumPromoHooks(): Map<PremiumPromoEv
                 "Premium fail event is no longer the cancellation response")
         }
         val answer = method.freeLocalsAt(PATCH, send, 1, targets = listOf(continuation), highest = 255).single()
-        hooks[event] = PremiumPromoHook(method, send, continuation, """
+        hooks[event] = AppLogHook(method, send, continuation, """
             const-string v$answer, "${event.type}"
-            invoke-static/range {v$answer .. v$answer}, $ANALYTICS->skipPremiumAppLog(Ljava/lang/String;)Z
+            invoke-static/range {v$answer .. v$answer}, $ANALYTICS->${event.hook}(Ljava/lang/String;)Z
             move-result v$answer
             if-nez v$answer, :hush_continue
         """)

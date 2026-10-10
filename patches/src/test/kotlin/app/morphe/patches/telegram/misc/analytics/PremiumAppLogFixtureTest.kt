@@ -51,12 +51,13 @@ class PremiumAppLogFixtureTest {
             val classified = builders.filter { method -> method.strings().any { it in CLASSIFIED_TYPES } }
             assertEquals("five literal types and one dynamic push-token batch", 5, classified.size)
             assertEquals(CLASSIFIED_TYPES, classified.flatMap { it.strings().filter { type -> type in CLASSIFIED_TYPES } }.toSet())
-            for (event in PremiumPromoEvent.entries) {
+            for (event in AppLogEvent.entries) {
                 val method = builders.single { event.type in it.strings() }
                 val strings = method.strings()
                 when (event) {
-                    PremiumPromoEvent.SHOW -> assertTrue("view origin", "source" in strings)
-                    PremiumPromoEvent.TAP -> assertTrue("chosen feature", "item" in strings)
+                    AppLogEvent.SHOW -> assertTrue("view origin", "source" in strings)
+                    AppLogEvent.TAP -> assertTrue("chosen feature", "item" in strings)
+                    AppLogEvent.DUAL_CAMERA -> assertTrue("phone maker and model", "device" in strings)
                     else -> assertTrue("accept/cancellation carry JSON null", method.instructions().any {
                         it.opcode == Opcode.NEW_INSTANCE && it.reference() == JSON_NULL
                     })
@@ -88,13 +89,12 @@ class PremiumAppLogFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val classes = hosts(build)
             val context = PatchContexts.of(ExtensionDex.classes() + classes)
-            val hooks = context.resolvePremiumPromoHooks()
-            assertEquals(PremiumPromoEvent.entries.toSet(), hooks.keys)
+            val hooks = context.resolveAppLogHooks()
+            assertEquals(AppLogEvent.entries.toSet(), hooks.keys)
             val before = hooks.mapValues { ImmutableMethod.of(it.value.method) }
             val stock = classes.flatMap { it.methods }.filter { method -> buildsAppLog(method) &&
                 method.strings().none { it in CLASSIFIED_TYPES } }
             assertEquals("push-token reporting is retained", 1, stock.size)
-            val camera = classes.flatMap { it.methods }.single { buildsAppLog(it) && "android_dual_camera" in it.strings() }
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { disableAnalyticsPatch.execute(context) })
             for ((event, hook) in hooks) {
                 val original = before.getValue(event)
@@ -105,7 +105,7 @@ class PremiumAppLogFixtureTest {
                 assertEquals(event.type, after[hook.index].string())
                 assertEquals(listOf(Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.IF_NEZ),
                     after.subList(hook.index + 1, hook.index + 4).map { it.opcode })
-                assertEquals("$ANALYTICS->skipPremiumAppLog(Ljava/lang/String;)Z", after[hook.index + 1].reference())
+                assertEquals("$ANALYTICS->${event.hook}(Ljava/lang/String;)Z", after[hook.index + 1].reference())
                 assertEquals("$event retains every original operand and reference", old.map(::operation),
                     (after.take(hook.index) + after.drop(hook.index + 4)).map(::operation))
                 assertEquals(original.implementation!!.registerCount, hook.method.implementation!!.registerCount)
@@ -126,7 +126,7 @@ class PremiumAppLogFixtureTest {
                 val newPayloads = payloadTargets(hook.method)
                 for ((index, target) in oldPayloads) assertEquals("$event retains payload target $index", moved(target), newPayloads[moved(index)])
             }
-            val fail = hooks.getValue(PremiumPromoEvent.FAIL)
+            val fail = hooks.getValue(AppLogEvent.FAIL)
             val cleanup = fail.method.instructions().drop(fail.continuation + 4)
             assertEquals("billing cleanup stays the true destination", "Lorg/telegram/messenger/BillingController;->onCanceled:Ljava/lang/Runnable;",
                 cleanup[0].reference())
@@ -135,9 +135,16 @@ class PremiumAppLogFixtureTest {
             })
             assertTrue("both completion paths keep their callbacks", cleanup.count { it.call()?.toString() == "Ljava/lang/Runnable;->run()V" } >= 2)
             assertTrue("payment assignment is retained", cleanup.any { it.reference() == "Lorg/telegram/tgnet/TLRPC\$TL_payments_assignPlayMarketTransaction;" })
-            for (method in stock + camera) assertEquals("${build.name}: operational/support path stays stock", method.instructions().map(::operation),
+            val camera = hooks.getValue(AppLogEvent.DUAL_CAMERA)
+            val saved = camera.method.instructions().drop(camera.continuation + 4)
+            assertEquals("a skipped camera report still saves the camera's own state", LOG_DUAL_CAMERA, saved[0].call()?.toString())
+            assertEquals(listOf(Opcode.RETURN_VOID), saved.drop(1).map { it.opcode })
+            assertEquals("the camera report only runs when the server asks for device stats",
+                "Lorg/telegram/messenger/MessagesController;->collectDeviceStats:Z", camera.method.instructions().first {
+                    it.opcode == Opcode.IGET_BOOLEAN }.reference())
+            for (method in stock) assertEquals("${build.name}: operational path stays stock", method.instructions().map(::operation),
                 context.mutableClassDefBy(method.definingClass).methods.single { it.sameSignature(method) }.instructions().map(::operation))
-            assertFlags(context, PremiumPromoEvent.entries.toSet())
+            assertFlags(context, AppLogEvent.entries.toSet())
         }
     }
 
@@ -145,10 +152,10 @@ class PremiumAppLogFixtureTest {
     fun `changed known payload or billing continuation refuses before any analytics target is edited`() {
         for (build in Fixtures.declaredBuilds()) {
             val classes = hosts(build)
-            for (event in PremiumPromoEvent.entries) {
+            for (event in AppLogEvent.entries) {
                 val context = PatchContexts.of(ExtensionDex.classes() + classes)
-                val hook = context.resolvePremiumPromoHooks().getValue(event)
-                val at = if (event == PremiumPromoEvent.FAIL) hook.continuation else hook.method.instructions().indexOfFirst {
+                val hook = context.resolveAppLogHooks().getValue(event)
+                val at = if (event == AppLogEvent.FAIL) hook.continuation else hook.method.instructions().indexOfFirst {
                     it.opcode == Opcode.IPUT_OBJECT && it.reference() == "$APP_EVENT->data:Lorg/telegram/tgnet/TLRPC\$JSONValue;"
                 }
                 assertTrue(at >= 0)
@@ -167,11 +174,32 @@ class PremiumAppLogFixtureTest {
     }
 
     @Test
+    fun `a camera report that no longer ends in its state save refuses before editing`() {
+        for (build in Fixtures.declaredBuilds()) for (change in listOf("state save gone", "code after the state save", "state save skipped")) {
+            val classes = hosts(build)
+            val context = PatchContexts.of(ExtensionDex.classes() + classes)
+            val hook = context.resolveAppLogHooks().getValue(AppLogEvent.DUAL_CAMERA)
+            val method = hook.method
+            assertEquals(LOG_DUAL_CAMERA, method.instructions()[hook.continuation].call()?.toString())
+            when (change) {
+                "state save gone" -> method.replaceInstruction(hook.continuation, "nop")
+                "code after the state save" -> method.addInstructionsAtControlFlowLabel(hook.continuation + 1, "const/4 v0, 0x0")
+                "state save skipped" -> {
+                    method.addInstructionsAtControlFlowLabel(hook.continuation, "if-eqz v0, :past_state_save",
+                        ExternalLabel("past_state_save", method.implementation!!.instructions[hook.continuation + 1]))
+                    assertEquals(2, ControlFlow.of(method).normal[hook.continuation].size)
+                }
+            }
+            assertRefusesUnchanged(context, classes, "camera $change")
+        }
+    }
+
+    @Test
     fun `an alternate event type cannot branch around the verified literal`() {
         for (build in Fixtures.declaredBuilds()) {
             val classes = hosts(build)
             val context = PatchContexts.of(ExtensionDex.classes() + classes)
-            val method = context.resolvePremiumPromoHooks().getValue(PremiumPromoEvent.SHOW).method
+            val method = context.resolveAppLogHooks().getValue(AppLogEvent.SHOW).method
             val body = method.instructions()
             val type = body.indexOfFirst { it.reference() == "$APP_EVENT->type:Ljava/lang/String;" }
             val value = body[type].namedRegisters()[0]
@@ -189,10 +217,10 @@ class PremiumAppLogFixtureTest {
     fun `every event request payload and batch binding requires its verified definition`() {
         val changes = listOf("request bypass", "event bypass", "data bypass", "batch bypass", "type store bypass",
             "data store bypass", "batch add bypass", "event data overwrite", "event batch overwrite", "wide data overlap")
-        for (build in Fixtures.declaredBuilds()) for (event in PremiumPromoEvent.entries) for (change in changes) {
+        for (build in Fixtures.declaredBuilds()) for (event in AppLogEvent.entries) for (change in changes) {
             val classes = hosts(build)
             val context = PatchContexts.of(ExtensionDex.classes() + classes)
-            val method = context.resolvePremiumPromoHooks().getValue(event).method
+            val method = context.resolveAppLogHooks().getValue(event).method
             val body = method.instructions()
             val request = body.indexOfFirst { it.opcode == Opcode.NEW_INSTANCE && it.reference() == SAVE_APP_LOG }
             val allocation = body.indexOfFirst { it.opcode == Opcode.NEW_INSTANCE && it.reference() == APP_EVENT }
@@ -231,7 +259,7 @@ class PremiumAppLogFixtureTest {
         for (build in Fixtures.declaredBuilds()) for (change in listOf("literal exception", "request handler", "event backedge", "type backedge")) {
             val classes = hosts(build)
             val context = PatchContexts.of(ExtensionDex.classes() + classes)
-            val hook = context.resolvePremiumPromoHooks().getValue(PremiumPromoEvent.SHOW)
+            val hook = context.resolveAppLogHooks().getValue(AppLogEvent.SHOW)
             val method = hook.method
             val body = method.instructions()
             val type = body.indexOfFirst { it.reference() == "$APP_EVENT->type:Ljava/lang/String;" }
@@ -253,7 +281,7 @@ class PremiumAppLogFixtureTest {
                 if (change == "literal exception") method.addInstructionsAtControlFlowLabel(type - 1,
                     "const-string v$typeRegister, \"support.report\"")
                 val now = method.instructions()
-                val literal = now.indexOfFirst { it.string() == PremiumPromoEvent.SHOW.type }
+                val literal = now.indexOfFirst { it.string() == AppLogEvent.SHOW.type }
                 val send = now.indexOfFirst { it.call()?.name == "sendRequest" }
                 val protected = if (change == "literal exception") literal else send - 3
                 val target = if (change == "literal exception") literal + 1 else send
@@ -274,29 +302,29 @@ class PremiumAppLogFixtureTest {
     fun `an unrelated alternate entry still reaches the verified literal and keeps all positive controls`() {
         for (build in Fixtures.declaredBuilds()) {
             val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
-            val method = context.resolvePremiumPromoHooks().getValue(PremiumPromoEvent.SHOW).method
-            val literal = method.instructions().indexOfFirst { it.string() == PremiumPromoEvent.SHOW.type }
+            val method = context.resolveAppLogHooks().getValue(AppLogEvent.SHOW).method
+            val literal = method.instructions().indexOfFirst { it.string() == AppLogEvent.SHOW.type }
             val value = method.instructions()[literal].namedRegisters()[0]
             method.addInstructionsWithLabels(literal,
                 "const-string v$value, \"support.report\"\nif-eqz v0, :verified_type\nnop",
                 ExternalLabel("verified_type", method.implementation!!.instructions[literal]))
-            assertEquals(PremiumPromoEvent.entries.toSet(), context.resolvePremiumPromoHooks().keys)
+            assertEquals(AppLogEvent.entries.toSet(), context.resolveAppLogHooks().keys)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { disableAnalyticsPatch.execute(context) })
-            assertFlags(context, PremiumPromoEvent.entries.toSet())
+            assertFlags(context, AppLogEvent.entries.toSet())
         }
     }
 
     @Test
-    fun `an absent verified type keeps the other five capabilities and reports exactly what is absent`() {
+    fun `an absent verified type keeps the other capabilities and reports exactly what is absent`() {
         for (build in Fixtures.declaredBuilds()) {
             val classes = hosts(build)
-            for (event in PremiumPromoEvent.entries) {
+            for (event in AppLogEvent.entries) {
                 val reduced = classes.map { owner -> withMethods(owner, owner.methods.filter { event.type !in it.strings() }) }
                 val context = PatchContexts.of(ExtensionDex.classes() + reduced)
                 val warnings = PatchLogCapture.warnings { disableAnalyticsPatch.execute(context) }
                 assertEquals(1, warnings.size)
                 assertTrue(warnings.single(), warnings.single().contains(event.type))
-                assertFlags(context, PremiumPromoEvent.entries.toSet() - event)
+                assertFlags(context, AppLogEvent.entries.toSet() - event)
             }
         }
     }
@@ -306,8 +334,8 @@ class PremiumAppLogFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val classes = hosts(build)
             val setup = PatchContexts.of(ExtensionDex.classes() + classes)
-            val show = setup.resolvePremiumPromoHooks().getValue(PremiumPromoEvent.SHOW)
-            val at = show.method.instructions().indexOfFirst { it.string() == PremiumPromoEvent.SHOW.type }
+            val show = setup.resolveAppLogHooks().getValue(AppLogEvent.SHOW)
+            val at = show.method.instructions().indexOfFirst { it.string() == AppLogEvent.SHOW.type }
             val register = show.method.instructions()[at].namedRegisters().single()
             show.method.replaceInstruction(at, "const-string v$register, \"support.report\"")
             val replaced = classes.map { if (it.type == show.method.definingClass) ImmutableClassDef.of(setup.mutableClassDefBy(it.type)) else it }
@@ -316,9 +344,9 @@ class PremiumAppLogFixtureTest {
             val before = unknown.instructions().map(::operation)
             val warnings = PatchLogCapture.warnings { disableAnalyticsPatch.execute(context) }
             assertEquals(1, warnings.size)
-            assertTrue(warnings.single().contains(PremiumPromoEvent.SHOW.type))
+            assertTrue(warnings.single().contains(AppLogEvent.SHOW.type))
             assertEquals(before, unknown.instructions().map(::operation))
-            assertFlags(context, PremiumPromoEvent.entries.toSet() - PremiumPromoEvent.SHOW)
+            assertFlags(context, AppLogEvent.entries.toSet() - AppLogEvent.SHOW)
         }
     }
 
@@ -326,7 +354,7 @@ class PremiumAppLogFixtureTest {
     fun `ambiguous telemetry builders and no surviving target refuse without partial edits`() {
         for (build in Fixtures.declaredBuilds()) {
             val classes = hosts(build)
-            val owner = classes.single { it.methods.any { method -> PremiumPromoEvent.SHOW.type in method.strings() } }
+            val owner = classes.single { it.methods.any { method -> AppLogEvent.SHOW.type in method.strings() } }
             val type = "Lorg/telegram/ui/PremiumInteractionReplica;"
             val duplicate = ImmutableClassDef(type, owner.accessFlags, owner.superclass, owner.interfaces, owner.sourceFile, owner.annotations,
                 emptyList(), owner.methods.filter(::buildsAppLog).map { method -> ImmutableMethod(type, method.name, method.parameters,
@@ -340,7 +368,7 @@ class PremiumAppLogFixtureTest {
         }
         val empty = PatchContexts.of(ExtensionDex.classes())
         try { disableAnalyticsPatch.execute(empty); fail("empty coverage accepted") }
-        catch (expected: PatchException) { assertTrue(expected.message.orEmpty().contains("none of the 5")) }
+        catch (expected: PatchException) { assertTrue(expected.message.orEmpty().contains("none of the ${1 + AppLogEvent.entries.size}")) }
         assertFlags(empty, emptySet(), oldTargets = false, family = false)
     }
 
@@ -367,8 +395,8 @@ class PremiumAppLogFixtureTest {
     }
     private fun withMethods(owner: ClassDef, methods: Iterable<Method>) = ImmutableClassDef(owner.type, owner.accessFlags,
         owner.superclass, owner.interfaces, owner.sourceFile, owner.annotations, owner.fields, methods)
-    private fun assertFlags(context: BytecodePatchContext, covered: Set<PremiumPromoEvent>, oldTargets: Boolean = true, family: Boolean = true) {
-        val expected = PremiumPromoEvent.entries.associate { it.capability to (it in covered) } +
+    private fun assertFlags(context: BytecodePatchContext, covered: Set<AppLogEvent>, oldTargets: Boolean = true, family: Boolean = true) {
+        val expected = AppLogEvent.entries.associate { it.capability to (it in covered) } +
             mapOf("readMetrics" to oldTargets, "disableAnalytics" to family)
         for ((flag, enabled) in expected) {
             val body = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
@@ -409,6 +437,6 @@ class PremiumAppLogFixtureTest {
         const val ANALYTICS = "Lapp/hushtelegram/extension/telegram/misc/Analytics;"
         const val APP_EVENT = "Lorg/telegram/tgnet/TLRPC\$TL_inputAppEvent;"
         const val JSON_NULL = "Lorg/telegram/tgnet/TLRPC\$TL_jsonNull;"
-        val CLASSIFIED_TYPES = PremiumPromoEvent.entries.map { it.type }.toSet() + setOf("android_dual_camera")
+        val CLASSIFIED_TYPES = AppLogEvent.entries.map { it.type }.toSet() + setOf("android_dual_camera")
     }
 }

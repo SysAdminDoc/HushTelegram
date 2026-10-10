@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(772);
+        Map<String, String> table = new HashMap<>(774);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -819,6 +819,8 @@ public final class L10nTranslations {
                 "Texteinf\u00fcgen im Nachrichtenfeld");
         table.put("deleted",
                 "gel\u00f6scht");
+        table.put("dual camera reports",
+                "Dual-Kamera-Berichte");
         table.put("external browser routing",
                 "externe Browser-Aufrufe");
         table.put("local notification status",
@@ -852,7 +854,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(772);
+        Map<String, String> table = new HashMap<>(774);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1624,6 +1626,8 @@ public final class L10nTranslations {
                 "pegado de texto al escribir");
         table.put("deleted",
                 "eliminado");
+        table.put("dual camera reports",
+                "informes de c\u00e1mara dual");
         table.put("external browser routing",
                 "apertura en navegador externo");
         table.put("local notification status",
@@ -1657,7 +1661,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(772);
+        Map<String, String> table = new HashMap<>(774);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2429,6 +2433,8 @@ public final class L10nTranslations {
                 "tempel teks saat menulis");
         table.put("deleted",
                 "dihapus");
+        table.put("dual camera reports",
+                "laporan kamera ganda");
         table.put("external browser routing",
                 "pengarahan ke browser eksternal");
         table.put("local notification status",
@@ -2462,7 +2468,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(772);
+        Map<String, String> table = new HashMap<>(774);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -3234,6 +3240,8 @@ public final class L10nTranslations {
                 "colagem de texto ao escrever");
         table.put("deleted",
                 "apagada");
+        table.put("dual camera reports",
+                "relat\u00f3rios de c\u00e2mera dupla");
         table.put("external browser routing",
                 "abertura em navegador externo");
         table.put("local notification status",
@@ -3267,7 +3275,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(772);
+        Map<String, String> table = new HashMap<>(774);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -4039,6 +4047,8 @@ public final class L10nTranslations {
                 "mesaj yazarken metin yap\u0131\u015ft\u0131rma");
         table.put("deleted",
                 "silindi");
+        table.put("dual camera reports",
+                "\u00e7ift kamera raporlar\u0131");
         table.put("external browser routing",
                 "harici taray\u0131c\u0131ya y\u00f6nlendirme");
         table.put("local notification status",

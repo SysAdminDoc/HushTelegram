@@ -459,7 +459,7 @@ public class PatchFamilyTest {
         assertEquals(installedAds, PatchFamily.HIDE_ADS.installedCapabilities());
         assertEquals(EnumSet.of(PatchFamily.Capability.READ_METRICS,
                         PatchFamily.Capability.PREMIUM_PROMO_SHOW, PatchFamily.Capability.PREMIUM_PROMO_TAP,
-                        PatchFamily.Capability.PREMIUM_PROMO_ACCEPT, PatchFamily.Capability.PREMIUM_PROMO_FAIL,
+                        PatchFamily.Capability.PREMIUM_PROMO_ACCEPT, PatchFamily.Capability.PREMIUM_PROMO_FAIL, PatchFamily.Capability.DUAL_CAMERA_REPORTS,
                         PatchFamily.Capability.CRASH_REPORTS, PatchFamily.Capability.SESSION_REPORTS),
                 PatchFamily.DISABLE_ANALYTICS.expectedCapabilities());
         assertEquals(EnumSet.of(PatchFamily.Capability.READ_METRICS),
@@ -657,7 +657,7 @@ public class PatchFamilyTest {
                 "Disable analytics: disabled by its switch (hushtelegram_disable_analytics=off)",
                 "not in this build: Hide Stories, Hide recommendations, Hide Premium, gifts and Stars, Hide promotional banners, Hide sponsored proxy channel, Hide popular apps, Hide contacts on Telegram, Hide greeting stickers, Disable chat swipe actions, Disable pull to next channel, Use normal paste, Show user and chat IDs, Disable double-tap reactions, Quiet contacts nag, Holiday look all year, Use system font, AMOLED black, Hide translate bar, Exact numbers, Reveal spoilers, Hide keyboard on scroll, Keep videos muted on volume keys, Swipe back on profiles, Hide phone number, Message times with seconds, Allow chat blur on slower phones, Play voice messages one at a time, Turn off haptic feedback, Turn off reaction effects, Hide folder tab counters, Hide sender names when forwarding, Voice messages in the music player, Silence people outside your contacts, Disable pull to archive, Start the camera on the rear lens, Hide gallery camera tile, Hide time on stickers, Ignore mentions in muted chats, Hide blocked users in groups, Hide Telegram Features and Invite Friends, Add Repeat to the message menu, Keep deleted messages, Ask before sending a sticker, Turn off beta debug logs, Disable call debug upload, Disable draft link previews, Gallery camera on tap, Open links externally, Strip link tracking, Disable update checks, Repair Firebase push registration",
                 "Hide ads coverage: channel ads, video ads, search ads",
-                "Disable analytics coverage: channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, Firebase crash reports, Firebase session reports"),
+                "Disable analytics coverage: channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports, Firebase crash reports, Firebase session reports"),
                 running);
 
         // Every family in this build has a switch, but the line still has room, after the switch's
@@ -686,7 +686,7 @@ public class PatchFamilyTest {
                 PatchFamily.Capability.READ_METRICS);
         List<String> running = PatchFamily.reportLines(build, false);
         assertTrue(running.toString(), running.contains("Hide ads coverage: channel ads; missing: video ads, search ads"));
-        assertTrue(running.toString(), running.contains("Disable analytics coverage: channel read metrics; missing: Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures"));
+        assertTrue(running.toString(), running.contains("Disable analytics coverage: channel read metrics; missing: Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports"));
         Settings.HIDE_ADS.save(false);
         Settings.DISABLE_ANALYTICS.save(false);
         List<String> disabled = PatchFamily.reportLines(build, false);
@@ -696,7 +696,7 @@ public class PatchFamilyTest {
         PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
         List<String> none = PatchFamily.reportLines(build, false);
         assertTrue(none.toString(), none.contains("Hide ads coverage: none; missing: channel ads, video ads, search ads"));
-        assertTrue(none.toString(), none.contains("Disable analytics coverage: none; missing: channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures"));
+        assertTrue(none.toString(), none.contains("Disable analytics coverage: none; missing: channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports"));
     }
 
     /** Telegram's regular build has no Firebase reporters, so a build without them is complete, not partial. */
@@ -717,7 +717,7 @@ public class PatchFamilyTest {
         assertEquals("complete", PatchFamily.DISABLE_ANALYTICS.coverageSummary("complete"));
         assertEquals(regular, PatchFamily.DISABLE_ANALYTICS.shownCapabilities());
         assertTrue(PatchFamily.reportLines(build, false).contains("Disable analytics coverage: channel read metrics, "
-                + "Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures"));
+                + "Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports"));
 
         // One of the two hooked: the other is left out, never called missing.
         Set<PatchFamily.Capability> crashOnly = EnumSet.copyOf(regular);
@@ -725,7 +725,7 @@ public class PatchFamilyTest {
         PatchFamily.capabilitiesForTests = crashOnly;
         assertEquals("complete", PatchFamily.DISABLE_ANALYTICS.coverageSummary("complete"));
         assertTrue(PatchFamily.reportLines(build, true).contains("Disable analytics coverage: channel read metrics, "
-                + "Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, Firebase crash reports"));
+                + "Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports, Firebase crash reports"));
 
         // A carried target that's hooked still counts when a regular one is missing.
         Set<PatchFamily.Capability> partial = EnumSet.of(PatchFamily.Capability.READ_METRICS, PatchFamily.Capability.SESSION_REPORTS);
@@ -735,7 +735,7 @@ public class PatchFamilyTest {
         assertTrue(summary, summary.contains("Firebase session reports"));
         assertFalse(summary, summary.contains("Firebase crash reports"));
         assertTrue(PatchFamily.reportLines(build, false).contains("Disable analytics coverage: channel read metrics, Firebase session reports; "
-                + "missing: Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures"));
+                + "missing: Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports"));
     }
 
     /**

@@ -21,7 +21,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * batch as {@code messages.reportReadMetrics}. That send asks this class first, and while the switch
  * is on the batch isn't sent. Messages, calls, view counts and
  * everything else Telegram needs go on as before. Four verified Premium screen interactions also
- * ask before their telemetry send. Their payload construction and billing cleanup stay intact.
+ * ask before their telemetry send. Their payload construction and billing cleanup stay intact. So
+ * does the camera's dual-camera report, which names the phone's maker and model.
  *
  * <p>Telegram Beta also carries Firebase Crashlytics and Sessions. Those are stopped through the
  * switches the SDKs themselves read: Crashlytics' saved collection switch and Sessions' local
@@ -56,6 +57,16 @@ public final class Analytics {
             case "premium.promo_screen_fail": return skip("premium promo fail report skipped");
             default: return false;
         }
+    }
+
+    /**
+     * Asked just before the camera's dual-camera report goes out, with its event type. That report
+     * carries the phone's maker and model and goes out when the server asks for device statistics.
+     * Only that verified type is eligible; anything else stays stock without reading the switch.
+     */
+    public static boolean skipDeviceAppLog(String type) {
+        if (!"android_dual_camera".equals(type)) return false;
+        return skip("dual camera report skipped");
     }
 
     /** The preferences file Crashlytics keeps its collection switch in, and the switch. */

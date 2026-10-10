@@ -223,6 +223,7 @@ public final class SelectionCheck {
             if (Boolean.TRUE.equals(flags.get(status))) promoFlags++;
         }
         require(promo == promoFlags);
+        hook(calls, flags, "dualCameraReport", "misc/Analytics", "skipDeviceAppLog");
         hook(calls, flags, "callDebugUpload", "misc/CallDebug", "skipCallDebugUpload");
         hook(calls, flags, "callLogFileUpload", "misc/CallDebug", "skipCallLogFileUpload");
         hook(calls, flags, "callLogUpload", "misc/CallDebug", "skipCallLogUpload");

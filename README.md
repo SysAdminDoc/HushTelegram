@@ -79,7 +79,7 @@ v0.0.12 has 56 patches, with 54 selected by default. Turn off beta debug logs is
 
 | Patch | What it does |
 |---|---|
-| `Disable analytics` | Stops Telegram from reporting how you use the app, like how long you read channel posts and what you tap on Premium screens. On Telegram Beta it also turns off Firebase's crash and session reports from the next start. Messages, calls and notifications work as before. On by default. Turn it off in HushTelegram settings > Privacy. |
+| `Disable analytics` | Stops Telegram from reporting how you use the app, like how long you read channel posts and what you tap on Premium screens, and keeps the camera from reporting your phone's maker and model. On Telegram Beta it also turns off Firebase's crash and session reports from the next start. Messages, calls and notifications work as before. On by default. Turn it off in HushTelegram settings > Privacy. |
 | `Disable update checks` | Stops Telegram from offering its own updates from telegram.org, which can't install over a patched app. Patch each new version in Morphe Manager instead. On by default. Turn it off in HushTelegram settings > More settings > Updates. |
 | `Disable call debug upload` | Stops your phone from sending call problem reports and log files to Telegram when its server asks for them. On by default. Turn it off in HushTelegram settings > Privacy. |
 | `Disable draft link previews` | Keeps Telegram from looking up a link's preview before you send the message. Sent messages still get a preview. Starts off. Turn it on in HushTelegram settings > Privacy. |

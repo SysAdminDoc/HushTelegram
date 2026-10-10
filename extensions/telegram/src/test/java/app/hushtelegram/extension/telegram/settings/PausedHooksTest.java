@@ -333,6 +333,7 @@ public class PausedHooksTest {
                 () -> Analytics.skipPremiumAppLog("premium.promo_screen_tap"),
                 () -> Analytics.skipPremiumAppLog("premium.promo_screen_accept"),
                 () -> Analytics.skipPremiumAppLog("premium.promo_screen_fail"),
+                () -> Analytics.skipDeviceAppLog("android_dual_camera"),
                 () -> Analytics.skipCrashReporterStart(),
                 () -> Analytics.skipErrorReport(),
                 () -> Boolean.FALSE.equals(Analytics.sessionsEnabled(null))));
