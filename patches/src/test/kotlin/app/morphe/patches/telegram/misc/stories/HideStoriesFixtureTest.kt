@@ -200,7 +200,7 @@ class HideStoriesFixtureTest {
 
     @Test
     fun `overwritten or unguarded cached bar values refuse before any hook or build fact is written`() {
-        for (build in Fixtures.declaredBuilds()) for (mutation in listOf("self", "visible", "wide", "merge", "bypass")) {
+        for (build in Fixtures.declaredBuilds()) for (mutation in listOf("self", "visible", "wide", "merge", "constant", "community true", "bypass")) {
             val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
             val plan = context.resolveStoryHooks()
             val bar = plan.hooks.getValue(StoryTarget.BAR).method
@@ -214,6 +214,24 @@ class HideStoriesFixtureTest {
                 "visible" -> bar.addInstructionsAtControlFlowLabel(stores[2], "const/16 v$visible, 0x1")
                 "wide" -> bar.addInstructionsAtControlFlowLabel(stores[2], "const-wide/16 v${visible - 1}, 0x1")
                 "merge" -> bar.replaceInstruction(stores[0] + 5, "const/16 v$self, 0x1")
+                "constant" -> {
+                    // Telegram 13.0 copies the merge's 0 from a register loaded near the top of the method.
+                    val copy = instructions[stores[0] + 5]
+                    assertEquals("${build.name}: merge copies its 0", Opcode.MOVE, copy.opcode)
+                    val source = copy.namedRegisters()[1]
+                    val load = (0 until stores[0]).last { instructions[it].opcode == Opcode.CONST_4 && instructions[it].namedRegisters() == listOf(source) }
+                    bar.replaceInstruction(load, "const/4 v$source, 0x1")
+                }
+                "community true" -> {
+                    // The avatar touch's community branch copies its true the same way.
+                    val touch = plan.hooks.getValue(StoryTarget.TOUCHES)
+                    val code = touch.method.instructions()
+                    val copy = code[touch.index - 2]
+                    assertEquals("${build.name}: community branch copies its true", Opcode.MOVE, copy.opcode)
+                    val source = copy.namedRegisters()[1]
+                    val load = (0 until touch.index - 2).last { code[it].opcode == Opcode.CONST_4 && code[it].namedRegisters() == listOf(source) }
+                    touch.method.replaceInstruction(load, "const/4 v$source, 0x0")
+                }
                 "bypass" -> bar.addInstructionsWithLabels(0, "goto/32 :unguarded",
                     ExternalLabel("unguarded", bar.getInstruction(stores[2])))
             }

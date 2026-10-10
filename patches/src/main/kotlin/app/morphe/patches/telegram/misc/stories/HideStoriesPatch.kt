@@ -46,6 +46,7 @@ private val TOUCH_PARAMETERS = listOf("Landroid/view/MotionEvent;", "Landroid/vi
 private val COMMUNITY_PARAMETERS = listOf("Lorg/telegram/tgnet/TLRPC\$Chat;", "Lorg/telegram/tgnet/TLRPC\$User;")
 private val GOTOS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)
 private val MOVES = setOf(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_16)
+private val LITERALS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST)
 
 @Suppress("unused")
 val hideStoriesPatch = bytecodePatch(
@@ -245,10 +246,18 @@ private fun barHook(method: MutableMethod): StoryHook {
         instructions.subList(stores[0] + 1, stores[1]).any { it.opcode == Opcode.IGET_BOOLEAN && it.field() == instructions[stores[1]].field() },
         "cached story bar has changed visibility merge")
     val flow = ControlFlow.of(method)
+    val predecessors = predecessors(flow, instructions.size)
     val first = stores[0]
     // The first value is deliberately reused for the stock self-or-peer merge. Check that
-    // whole merge, rather than assuming its later writes are harmless.
+    // whole merge, rather than assuming its later writes are harmless. Telegram 13.0 copies
+    // the 0 and 1 from registers set earlier instead of loading them in place; those
+    // registers must not be the two the hook clears.
     val merge = instructions.subList(first + 1, stores[1])
+    fun setsSelfTo(at: Int, value: Int): Boolean {
+        val registers = instructions[at].namedRegisters()
+        return registers.firstOrNull() == self && (instructions[at].opcode !in MOVES || registers[1] !in listOf(self, visible)) &&
+            loadsLiteral(instructions, predecessors, at, value)
+    }
     shape(merge.size == 7 && stores[1] == first + 8 &&
         merge[0].opcode == Opcode.IGET_BOOLEAN && merge[0].field() == instructions[stores[1]].field() &&
         merge[0].namedRegisters()[0] !in listOf(self, visible) &&
@@ -257,11 +266,9 @@ private fun barHook(method: MutableMethod): StoryHook {
         merge[2].opcode == Opcode.IF_EQZ && merge[2].namedRegisters() == listOf(visible) &&
         flow.normal[first + 3].toSet() == setOf(first + 4, first + 5) &&
         merge[3].opcode in GOTOS && flow.normal[first + 4] == listOf(first + 7) &&
-        merge[4].opcode == Opcode.CONST_4 && merge[4].namedRegisters() == listOf(self) &&
-        (merge[4] as NarrowLiteralInstruction).narrowLiteral == 0 &&
+        setsSelfTo(first + 5, 0) &&
         merge[5].opcode in GOTOS && flow.normal[first + 6] == listOf(stores[1]) &&
-        merge[6].opcode == Opcode.CONST_4 && merge[6].namedRegisters() == listOf(self) &&
-        (merge[6] as NarrowLiteralInstruction).narrowLiteral == 1 &&
+        setsSelfTo(first + 7, 1) &&
         instructions[stores[1]].namedRegisters()[0] == self,
         "cached story bar no longer derives its combined visibility from the guarded values")
 
@@ -275,10 +282,6 @@ private fun barHook(method: MutableMethod): StoryHook {
     }
     shape(stores.drop(1).none { it in unguarded }, "cached story state stores can bypass their guard")
 
-    val predecessors = Array(instructions.size) { mutableListOf<Int>() }
-    instructions.indices.forEach { at ->
-        (flow.normal[at] + flow.exceptional[at]).forEach { predecessors[it] += at }
-    }
     val reachesPeerStore = mutableSetOf<Int>()
     pending.addAll(stores.drop(2))
     while (pending.isNotEmpty()) {
@@ -367,9 +370,10 @@ private fun touchHook(method: MutableMethod, communityName: String, paramsType: 
         .unique("community-first avatar touch branch") ?: throw PatchException("$PATCH: no community avatar touch branch")
     val result = call + 1
     val branch = result + 1
+    // Telegram 13.0 copies the true from a register set earlier instead of loading it in place.
     shape(instructions.getOrNull(result)?.opcode == Opcode.MOVE_RESULT && instructions.getOrNull(branch)?.opcode == Opcode.IF_EQZ &&
         instructions[result].namedRegisters() == instructions[branch].namedRegisters() &&
-        (instructions.getOrNull(branch + 1) as? NarrowLiteralInstruction)?.narrowLiteral == 1 &&
+        branch + 1 < instructions.size && loadsLiteral(instructions, predecessors(flow, instructions.size), branch + 1, 1) &&
         instructions.getOrNull(branch + 2)?.opcode in GOTOS, "community touch has no true branch before stories")
     val at = flow.normal[branch].single { it != branch + 1 }
     val merge = flow.normal[branch + 2].single()
@@ -405,3 +409,44 @@ private fun Instruction.call(): MethodReference? = (this as? ReferenceInstructio
 private fun MethodReference.hasShape(parameters: List<String>, returns: String) = returnType == returns && parameterTypes.map { it.toString() } == parameters
 private fun MethodReference.sameSignature(other: MethodReference) = name == other.name && returnType == other.returnType &&
     parameterTypes.map { it.toString() } == other.parameterTypes.map { it.toString() }
+
+private fun predecessors(flow: ControlFlow, size: Int): Array<MutableList<Int>> {
+    val predecessors = Array(size) { mutableListOf<Int>() }
+    for (at in 0 until size) (flow.normal[at] + flow.exceptional[at]).forEach { predecessors[it] += at }
+    return predecessors
+}
+
+/** Whether [at] loads [value] into its first register, as a literal or as a copy of a register every path set to it. */
+private fun loadsLiteral(instructions: List<Instruction>, predecessors: Array<MutableList<Int>>, at: Int, value: Int): Boolean {
+    val instruction = instructions[at]
+    return when (instruction.opcode) {
+        in LITERALS -> (instruction as NarrowLiteralInstruction).narrowLiteral == value
+        in MOVES -> literalAt(instructions, predecessors, instruction.namedRegisters()[1], at) == value
+        else -> false
+    }
+}
+
+/** The literal [register] holds as [at] runs, when every definition reaching it loads that same narrow constant. */
+private fun literalAt(instructions: List<Instruction>, predecessors: Array<MutableList<Int>>, register: Int, at: Int): Int? {
+    val pending = ArrayDeque(predecessors[at])
+    if (pending.isEmpty()) return null
+    val visited = mutableSetOf<Int>()
+    val values = mutableSetOf<Int>()
+    while (pending.isNotEmpty()) {
+        val index = pending.removeFirst()
+        if (!visited.add(index)) continue
+        val instruction = instructions[index]
+        val destination = instruction.namedRegisters().firstOrNull()
+        val writes = instruction.opcode.setsRegister() && destination != null &&
+            (destination == register || (instruction.opcode.setsWideRegister() && destination + 1 == register))
+        if (!writes) {
+            // Reaching the entry without a write means a parameter or an unset register.
+            if (index == 0 || predecessors[index].isEmpty()) return null
+            pending.addAll(predecessors[index])
+            continue
+        }
+        if (instruction.opcode !in LITERALS || destination != register) return null
+        values += (instruction as NarrowLiteralInstruction).narrowLiteral
+    }
+    return values.singleOrNull()
+}
