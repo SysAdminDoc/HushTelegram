@@ -282,6 +282,9 @@ public class PausedHooksTest {
         // A download the server didn't flag keeps Telegram's small pieces.
         probes.put(PatchFamily.FASTER_DOWNLOADS, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.DownloadSpeed.fast(false)));
+        // A finished file from a message is queued for a copy in Download/Telegram.
+        probes.put(PatchFamily.SAVE_DOWNLOADS, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.SaveDownloadsForTests.queuesACopy()));
         // A stranger's notification goes out silently.
         probes.put(PatchFamily.SILENCE_NON_CONTACTS, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.NonContactsForTests.on()));

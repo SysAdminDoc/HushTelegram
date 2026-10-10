@@ -61,6 +61,7 @@ public final class SelectionCheck {
     private static final String PUSH_RECEIVER = "app.hushtelegram.extension.telegram.misc.UnifiedPushReceiver";
     private static final String PUSH_RAISE = "app.hushtelegram.extension.telegram.misc.UnifiedPushRaise";
     private static final String PUSH_SIGN_UP = "Lorg/telegram/messenger/PushListenerController;->sendRegistrationToServer(ILjava/lang/String;)V";
+    private static final String ATTACH_NAME = "Lorg/telegram/messenger/FileLoader;->getAttachFileName(Lorg/telegram/tgnet/TLObject;)Ljava/lang/String;";
     private static final String DEBUG_VERSION = "Lorg/telegram/messenger/BuildVars;->DEBUG_VERSION:Z";
     private static final String BETA_LOGS = OWN + "telegram/misc/BetaLogs;";
     /**
@@ -370,6 +371,7 @@ public final class SelectionCheck {
         hook(calls, flags, "hideChannelButtons", "misc/ChannelButtons", "set");
         hook(calls, flags, "hideSendAs", "misc/SendAs", "show");
         hook(calls, flags, "fasterDownloads", "misc/DownloadSpeed", "fast");
+        hook(calls, flags, "saveDownloads", "misc/SaveDownloads", "fileLoaded");
         hook(calls, flags, "unifiedPush", "misc/UnifiedPush", "token", "type");
         hook(calls, flags, "hideByKeyword", "misc/MessageFilters", "type");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");
@@ -394,6 +396,14 @@ public final class SelectionCheck {
                 && signUp.get(1).getOpcode() == Opcode.RETURN_VOID;
         require(signUpLinked == Boolean.TRUE.equals(flags.get("unifiedPush")));
         if (signUpLinked) method(types, PUSH_SIGN_UP);
+        // Save downloaded files tells a document from its thumbnail by the downloader's own name for it.
+        List<Instruction> attach = instructions(method(types, OWN + "telegram/misc/SaveDownloads;->attachName(Ljava/lang/Object;)Ljava/lang/String;"));
+        boolean attachLinked = attach.size() == 4 && attach.get(1).getOpcode() == Opcode.INVOKE_STATIC
+                && attach.get(1) instanceof ReferenceInstruction call
+                && call.getReference().toString().equals(ATTACH_NAME)
+                && attach.get(3).getOpcode() == Opcode.RETURN_OBJECT;
+        require(attachLinked == Boolean.TRUE.equals(flags.get("saveDownloads")));
+        if (attachLinked) method(types, ATTACH_NAME);
     }
 
     /**

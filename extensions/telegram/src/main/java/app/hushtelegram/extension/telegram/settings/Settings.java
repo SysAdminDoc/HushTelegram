@@ -342,6 +342,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting FASTER_DOWNLOADS =
             new BooleanSetting("hushtelegram_faster_downloads", FALSE);
 
+    /** A file or song that finishes downloading gets a copy in Download/Telegram, unless saving it isn't allowed. */
+    public static final BooleanSetting SAVE_DOWNLOADS =
+            new BooleanSetting("hushtelegram_save_downloads", FALSE);
+
     /** A GIF you tap asks Send or Cancel before it goes into the chat. */
     public static final BooleanSetting ASK_BEFORE_GIF =
             new BooleanSetting("hushtelegram_ask_before_gif", FALSE);

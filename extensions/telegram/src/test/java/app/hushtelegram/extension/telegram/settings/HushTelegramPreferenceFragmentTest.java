@@ -143,6 +143,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.HIDE_CHANNEL_BUTTONS, "Hide channel bar buttons");
         ROW_TITLES.put(PatchFamily.HIDE_SEND_AS, "Hide Send as button");
         ROW_TITLES.put(PatchFamily.FASTER_DOWNLOADS, "Faster downloads");
+        ROW_TITLES.put(PatchFamily.SAVE_DOWNLOADS, "Save downloaded files");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -524,6 +525,14 @@ public class HushTelegramPreferenceFragmentTest {
             // Downloads keep Telegram's piece size until the switch is turned on.
             assertFalse(Settings.FASTER_DOWNLOADS.key,
                     ((SwitchPreference) page.findPreference(Settings.FASTER_DOWNLOADS.key)).isChecked());
+            assertEquals("Save downloaded files", String.valueOf(page.findPreference(Settings.SAVE_DOWNLOADS.key).getTitle()));
+            assertEquals("Each file or song you download also goes to Download/Telegram on your phone, where file "
+                    + "managers and other apps can open it. Files from secret chats and chats that don't allow saving "
+                    + "stay in Telegram.",
+                    String.valueOf(page.findPreference(Settings.SAVE_DOWNLOADS.key).getSummary()));
+            // Downloads stay in Telegram's own folder until the switch is turned on.
+            assertFalse(Settings.SAVE_DOWNLOADS.key,
+                    ((SwitchPreference) page.findPreference(Settings.SAVE_DOWNLOADS.key)).isChecked());
             assertEquals("Silence people outside your contacts", String.valueOf(page.findPreference(Settings.SILENCE_NON_CONTACTS.key).getTitle()));
             assertEquals("Private messages from people not in your contacts still show a notification, but without "
                     + "sound or vibration. Bots, reminders and login codes keep their sound.",

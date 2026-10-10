@@ -2808,6 +2808,63 @@
       "options": []
     },
     {
+      "name": "Save downloaded files",
+      "description": "Copies each file and song you download to Download/Telegram on your phone, where file managers and other apps can open it, the way Save to Downloads does one at a time. Files from secret chats and from chats that don't allow saving stay in Telegram. Starts off. Turn it on in HushTelegram settings > Playback.",
+      "category": "Playback",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger.web": [
+          "13.0.1"
+        ],
+        "org.telegram.messenger.beta": [
+          "13.0.1"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.0.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71679
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram Beta",
+          "packageName": "org.telegram.messenger.beta",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.0.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 71669
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Show user and chat IDs",
       "description": "Adds a copyable ID number for a user or chat to the profile menu. A second switch also shows where the profile photo is stored. Both start off. Turn them on in HushTelegram settings > Look and feel.",
       "category": "Interface",

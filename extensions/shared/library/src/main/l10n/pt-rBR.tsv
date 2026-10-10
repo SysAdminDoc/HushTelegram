@@ -515,3 +515,7 @@ Signing up with %1$s…	Cadastrando no %1$s…
 Install a UnifiedPush app like ntfy first.	Instale primeiro um app de UnifiedPush como o ntfy.
 # context: the Push app row's summary when several UnifiedPush apps are installed and none is picked yet. Tapping the row opens the list.
 Tap to pick which UnifiedPush app to use.	Toque para escolher qual app de UnifiedPush usar.
+# context: Save downloaded files, a switch on the Playback page. It copies each downloaded file or song to the phone's shared Download/Telegram folder.
+Save downloaded files	Salvar arquivos baixados
+# context: that switch's summary. "Download/Telegram" is a folder path and stays as it is. Chats that don't allow saving are ones whose owner turned on Telegram's content protection.
+Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.	Cada arquivo ou música que você baixar também vai para Download/Telegram no seu celular, onde gerenciadores de arquivos e outros apps podem abri-lo. Arquivos de chats secretos e de chats que não permitem salvar ficam no Telegram.
