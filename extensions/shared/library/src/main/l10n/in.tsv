@@ -516,3 +516,5 @@ Telegram's wake-ups come through %1$s.	Telegram dibangunkan lewat %1$s.
 Signing up with %1$s…	Mendaftar dengan %1$s…
 # context: a toast when the row is tapped and no UnifiedPush app is installed.
 Install a UnifiedPush app like ntfy first.	Pasang dulu aplikasi UnifiedPush seperti ntfy.
+# context: the Push app row's summary when several UnifiedPush apps are installed and none is picked yet. Tapping the row opens the list.
+Tap to pick which UnifiedPush app to use.	Ketuk untuk memilih aplikasi UnifiedPush yang dipakai.

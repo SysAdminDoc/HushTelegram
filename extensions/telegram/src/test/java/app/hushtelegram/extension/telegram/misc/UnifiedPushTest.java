@@ -44,16 +44,21 @@ public class UnifiedPushTest {
 
     private final List<String> registered = new ArrayList<>();
     private final List<Runnable> wakes = new ArrayList<>();
+    private final List<String> released = new ArrayList<>();
     private UnifiedPush.Telegram real;
+    private java.util.concurrent.Executor realWork;
     private Context context;
 
     @Before public void setUp() {
         context = Utils.getContext();
         real = UnifiedPush.telegram;
+        realWork = UnifiedPush.work;
         UnifiedPush.telegram = new UnifiedPush.Telegram() {
             @Override public void register(String endpoint) { registered.add(endpoint); }
             @Override public void wake(Runnable done) { wakes.add(done); }
+            @Override public void release(String endpoint) { released.add(endpoint); }
         };
+        UnifiedPush.work = Runnable::run;
         PatchFamilyForTests.inBuild(PatchFamily.UNIFIED_PUSH);
         UnifiedPush.prefs(context).edit().clear().commit();
         Settings.UNIFIED_PUSH.resetToDefault();
@@ -61,6 +66,7 @@ public class UnifiedPushTest {
 
     @After public void restore() {
         UnifiedPush.telegram = real;
+        UnifiedPush.work = realWork;
         PatchFamilyForTests.reset();
         PauseForTests.resume();
         UnifiedPush.prefs(context).edit().clear().commit();
@@ -211,13 +217,24 @@ public class UnifiedPushTest {
         assertEquals(3, done[0]);
     }
 
-    @Test public void anEndedSignUpStaysEndedUntilTheSwitchGoesOffAndOn() {
+    @Test public void aRefusalKeepsAWorkingAddressAndOnlyAFirstRefusalShows() {
         String token = signedUp();
         assertEquals("Telegram's wake-ups come through io.heckel.ntfy.", UnifiedPush.status(context, true));
-        UnifiedPush.receive(context, from(UnifiedPush.REGISTRATION_FAILED, token), () -> {});
+        // Asked again at a start, the app fails for a moment: the address it gave before still works.
+        UnifiedPush.receive(context, from(UnifiedPush.REGISTRATION_FAILED, token).putExtra("reason", "NETWORK"), () -> {});
+        assertEquals(ENDPOINT, UnifiedPush.activeEndpoint());
+        assertEquals("Telegram's wake-ups come through io.heckel.ntfy.", UnifiedPush.status(context, true));
+
+        // Turned down before there was ever an address, the row says so.
+        UnifiedPush.sync(context, false);
+        UnifiedPush.sync(context, true);
+        UnifiedPush.receive(context, from(UnifiedPush.REGISTRATION_FAILED, token()), () -> {});
         assertEquals("io.heckel.ntfy turned the sign-up down. Check that it allows UnifiedPush.", UnifiedPush.status(context, true));
         assertNull(UnifiedPush.activeEndpoint());
+    }
 
+    @Test public void anEndedSignUpStaysEndedUntilTheSwitchGoesOffAndOn() {
+        String token = signedUp();
         UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token), () -> {});
         assertEquals("io.heckel.ntfy ended the sign-up. Turn the switch off and on to sign up again.", UnifiedPush.status(context, true));
         int registers = count(UnifiedPush.REGISTER);
@@ -231,6 +248,17 @@ public class UnifiedPushTest {
         assertEquals("Signing up with io.heckel.ntfy…", UnifiedPush.status(context, true));
     }
 
+    @Test public void pickingAnAppAfterAnEndedSignUpSignsUpWithIt() {
+        install(OTHER);
+        String token = signedUp();
+        UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token), () -> {});
+        int registers = count(UnifiedPush.REGISTER);
+        UnifiedPush.choose(context, OTHER, true);
+        assertEquals(registers + 1, count(UnifiedPush.REGISTER));
+        assertEquals(OTHER, last(UnifiedPush.REGISTER).getPackage());
+        assertEquals("Signing up with org.example.push…", UnifiedPush.status(context, true));
+    }
+
     @Test public void turningItOffEndsTheSignUpAndForgetsTheAddress() {
         String token = signedUp();
         UnifiedPush.prefs(context).edit().putString(UnifiedPush.CHOSEN, UnifiedPush.NTFY).commit();
@@ -241,7 +269,11 @@ public class UnifiedPushTest {
         assertEquals(token, ended.getStringExtra("token"));
         assertNull(token());
         assertNull(UnifiedPush.prefs(context).getString(UnifiedPush.ENDPOINT, null));
+        assertEquals("Telegram is asked for Firebase again right away", java.util.Collections.singletonList(ENDPOINT), released);
         assertEquals("the choice of app stays", UnifiedPush.NTFY, UnifiedPush.prefs(context).getString(UnifiedPush.CHOSEN, null));
+        // Each later start with the switch off has nothing left to hand back.
+        UnifiedPush.sync(context, false);
+        assertEquals(1, released.size());
         // Its last address is gone, so a broadcast carrying the old token is somebody else's now.
         UnifiedPush.receive(context, from(UnifiedPush.MESSAGE, token), () -> {});
         assertTrue(wakes.isEmpty());
@@ -254,6 +286,36 @@ public class UnifiedPushTest {
         UnifiedPush.sync(context, true);
         assertNull(last(UnifiedPush.REGISTER));
         assertNull(token());
+    }
+
+    @Test public void anAppThatIsGoneTakesItsAddressWithItSoFirebaseCanComeBack() {
+        signedUp();
+        assertEquals(ENDPOINT, UnifiedPush.token(2, "fcm-token"));
+        UnifiedPush.type(2);
+        shadowOf(context.getPackageManager()).removeResolveInfosForIntent(new Intent(UnifiedPush.REGISTER), UnifiedPush.NTFY);
+        UnifiedPush.sync(context, true);
+        assertNull(token());
+        assertNull(UnifiedPush.activeEndpoint());
+        assertEquals("fcm-token", UnifiedPush.token(2, "fcm-token"));
+        assertEquals(2, UnifiedPush.type(2));
+        assertEquals("Install a UnifiedPush app like ntfy, then come back here.", UnifiedPush.status(context, true));
+    }
+
+    @Test public void withSeveralAppsAndNoneOfThemNtfyTheUserPicks() {
+        install("org.example.alpha", OTHER);
+        assertNull("the alphabet doesn't pick who learns when messages arrive", UnifiedPush.chosen(context));
+        assertEquals("Tap to pick which UnifiedPush app to use.", UnifiedPush.status(context, true));
+        UnifiedPush.sync(context, true);
+        assertNull(last(UnifiedPush.REGISTER));
+        UnifiedPush.choose(context, OTHER, true);
+        assertEquals(OTHER, last(UnifiedPush.REGISTER).getPackage());
+    }
+
+    @Test public void theOnlyAppThereIsIsPickedWithoutAsking() {
+        install(OTHER);
+        assertEquals(OTHER, UnifiedPush.chosen(context));
+        UnifiedPush.sync(context, true);
+        assertEquals(OTHER, last(UnifiedPush.REGISTER).getPackage());
     }
 
     @Test public void outsideThisBuildNothingAnswers() {

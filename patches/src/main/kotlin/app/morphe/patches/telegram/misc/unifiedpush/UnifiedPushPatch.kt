@@ -65,6 +65,10 @@ internal const val INTERNAL_PUSH = "$CONNECTIONS->onInternalPushReceived(I)V"
 internal const val CONNECTIONS_INSTANCE = "$CONNECTIONS->getInstance(I)$CONNECTIONS"
 internal const val RESUME_NETWORK = "$CONNECTIONS->resumeNetworkMaybe()V"
 internal const val POST_INIT = "Lorg/telegram/messenger/ApplicationLoader;->postInitApplication()V"
+private const val PUSH_PROVIDER = "Lorg/telegram/messenger/PushListenerController\$IPushListenerServiceProvider;"
+internal const val GET_PUSH_PROVIDER = "Lorg/telegram/messenger/ApplicationLoader;->getPushProvider()$PUSH_PROVIDER"
+internal const val HAS_SERVICES = "$PUSH_PROVIDER->hasServices()Z"
+internal const val REQUEST_PUSH_TOKEN = "$PUSH_PROVIDER->onRequestPushToken()V"
 
 /**
  * Declares the UnifiedPush receiver and RAISE_TO_FOREGROUND service, both exported since the
@@ -182,6 +186,17 @@ private fun BytecodePatchContext.writeUnifiedPushStubs(accounts: Int) {
         :hush_done
         return-void
     """)
+    // What Telegram's initPushServices does at a start: ask the provider only when it has its services.
+    writeStub(UNIFIED_PUSH, "requestPushToken", 2, """
+        invoke-static {}, $GET_PUSH_PROVIDER
+        move-result-object v0
+        invoke-interface {v0}, $HAS_SERVICES
+        move-result v1
+        if-eqz v1, :hush_no_services
+        invoke-interface {v0}, $REQUEST_PUSH_TOKEN
+        :hush_no_services
+        return-void
+    """)
 }
 
 /**
@@ -200,6 +215,7 @@ internal fun BytecodePatchContext.resolveUnifiedPush(): UnifiedPushPlan {
     controlHook(UNIFIED_PUSH, "startTelegram", emptyList(), "V")
     controlHook(UNIFIED_PUSH, "onStageQueue", listOf(RUNNABLE), "V")
     controlHook(UNIFIED_PUSH, "wakeAccounts", emptyList(), "V")
+    controlHook(UNIFIED_PUSH, "requestPushToken", emptyList(), "V")
 
     val controller = mutableClassDefByOrNull(PUSH_CONTROLLER)
     controlShape(controller != null && AccessFlags.PUBLIC.isSet(controller.accessFlags), "PushListenerController is missing")
@@ -236,7 +252,8 @@ internal fun BytecodePatchContext.resolveUnifiedPush(): UnifiedPushPlan {
 
     for ((reference, static) in listOf(SEND_REGISTRATION to true, POST_INIT to true, POST_RUNNABLE to false,
         USER_CONFIG_INSTANCE to true, CLIENT_ACTIVATED to false, INTERNAL_PUSH to true, CONNECTIONS_INSTANCE to true,
-        RESUME_NETWORK to false, STAGE_QUEUE to true, PUSH_STRING to true)) {
+        RESUME_NETWORK to false, STAGE_QUEUE to true, PUSH_STRING to true, GET_PUSH_PROVIDER to true,
+        HAS_SERVICES to false, REQUEST_PUSH_TOKEN to false)) {
         requireReachable(reference, static)
     }
     return UnifiedPushPlan(signUp, accounts!!)

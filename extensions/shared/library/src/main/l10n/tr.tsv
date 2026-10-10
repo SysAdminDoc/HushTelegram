@@ -516,3 +516,5 @@ Telegram's wake-ups come through %1$s.	Telegram %1$s üzerinden uyandırılıyor
 Signing up with %1$s…	%1$s ile kaydolunuyor…
 # context: a toast when the row is tapped and no UnifiedPush app is installed.
 Install a UnifiedPush app like ntfy first.	Önce ntfy gibi bir UnifiedPush uygulaması yükle.
+# context: the Push app row's summary when several UnifiedPush apps are installed and none is picked yet. Tapping the row opens the list.
+Tap to pick which UnifiedPush app to use.	Hangi UnifiedPush uygulamasının kullanılacağını seçmek için dokun.

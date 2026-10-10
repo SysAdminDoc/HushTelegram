@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import app.hushtelegram.extension.shared.L10n;
@@ -84,6 +86,9 @@ public final class UnifiedPush {
 
         /** Starts Telegram if it isn't yet and has each signed-in account fetch what's new. Runs done after. */
         void wake(Runnable done);
+
+        /** With the switch off: if Telegram still holds this address, asks its push provider for a new token now. */
+        void release(String endpoint);
     }
 
     static Telegram telegram = new Telegram() {
@@ -118,7 +123,33 @@ public final class UnifiedPush {
                 }
             });
         }
+
+        @Override
+        public void release(String endpoint) {
+            Utils.runOnMainThread(() -> {
+                try {
+                    startTelegram();
+                    if (!endpoint.equals(telegramToken())) return;
+                    // Firebase's next token goes out as it is now that no address is saved. On a
+                    // phone without it nothing comes, and the address dies with the app's sign-up.
+                    requestPushToken();
+                    HookStatus.counted(FamilyNames.UNIFIED_PUSH, "handed back to Firebase");
+                } catch (Throwable failure) {
+                    HookStatus.threw(FamilyNames.UNIFIED_PUSH, "switching off", failure);
+                }
+            });
+        }
     };
+
+    /**
+     * Sign-ups and switch changes run here one at a time and in order, so turning the switch on
+     * and straight off can't leave a live sign-up behind. Tests swap in a direct one.
+     */
+    static Executor work = Executors.newSingleThreadExecutor(task -> {
+        Thread thread = new Thread(task, "HushTelegram UnifiedPush");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     /** Whether the address replaced Telegram's token in this thread's sign-up, for {@link #type}. */
     private static final ThreadLocal<Boolean> SWAPPED = new ThreadLocal<>();
@@ -166,7 +197,7 @@ public final class UnifiedPush {
             if (!Utils.settingsReady()) return;
             boolean on = Settings.UNIFIED_PUSH.savedValue();
             Context app = context.getApplicationContext() != null ? context.getApplicationContext() : context;
-            Utils.runOnBackgroundThread(() -> sync(app, on));
+            work.execute(() -> sync(app, on));
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.UNIFIED_PUSH, "sign-up", failure);
         }
@@ -176,21 +207,25 @@ public final class UnifiedPush {
     public static void switched(Context context, boolean on) {
         if (context == null || !PatchFamily.UNIFIED_PUSH.inBuild()) return;
         Context app = context.getApplicationContext() != null ? context.getApplicationContext() : context;
-        Utils.runOnBackgroundThread(() -> sync(app, on));
+        work.execute(() -> sync(app, on));
     }
 
-    /** Picks the app the next sign-up goes to, and signs up with it now if the switch is on. */
+    /**
+     * Picks the app the next sign-up goes to, and signs up with it now if the switch is on. A
+     * pick is a fresh start, so a sign-up the last app ended or turned down doesn't hold it back.
+     */
     public static void choose(Context context, String distributor, boolean on) {
         if (context == null || !PatchFamily.UNIFIED_PUSH.inBuild()) return;
         Context app = context.getApplicationContext() != null ? context.getApplicationContext() : context;
-        prefs(app).edit().putString(CHOSEN, distributor).commit();
-        Utils.runOnBackgroundThread(() -> sync(app, on));
+        prefs(app).edit().putString(CHOSEN, distributor).remove(PROBLEM).commit();
+        work.execute(() -> sync(app, on));
     }
 
     /**
      * Signs up with the chosen app when on, and ends the sign-up when off. Pause doesn't come
      * through here: callers pass the switch as saved, so a paused Telegram keeps its address. A
-     * sign-up the app ended stays ended until the switch is turned off and on again.
+     * sign-up the app ended stays ended until the switch is turned off and on again, or another
+     * app is picked.
      */
     static synchronized void sync(Context context, boolean on) {
         try {
@@ -198,14 +233,25 @@ public final class UnifiedPush {
             String current = prefs.getString(DISTRIBUTOR, null);
             String token = prefs.getString(TOKEN, null);
             if (!on) {
+                String endpoint = prefs.getString(ENDPOINT, null);
                 if (token != null && current != null) send(context, new Intent(UNREGISTER), current, token);
                 // The choice of app stays; everything about the sign-up goes.
                 prefs.edit().remove(DISTRIBUTOR).remove(TOKEN).remove(ENDPOINT).remove(PROBLEM).commit();
+                if (endpoint != null) telegram.release(endpoint);
                 return;
             }
             if (ENDED.equals(prefs.getString(PROBLEM, null))) return;
-            String distributor = pick(distributors(context), prefs.getString(CHOSEN, current));
-            if (distributor == null) return;
+            List<String> installed = distributors(context);
+            String distributor = pick(installed, prefs.getString(CHOSEN, current));
+            if (distributor == null) {
+                // The app is gone, or there are several and none is picked yet. An address nothing
+                // answers any more would keep Firebase out for good, so the sign-up goes with it.
+                if (token != null && current != null && installed.contains(current)) {
+                    send(context, new Intent(UNREGISTER), current, token);
+                }
+                prefs.edit().remove(DISTRIBUTOR).remove(TOKEN).remove(ENDPOINT).commit();
+                return;
+            }
             if (token == null || !distributor.equals(current)) {
                 if (token != null && current != null) send(context, new Intent(UNREGISTER), current, token);
                 token = UUID.randomUUID().toString();
@@ -228,13 +274,16 @@ public final class UnifiedPush {
         context.sendBroadcast(intent);
     }
 
-    /** The saved choice while it's still installed, then ntfy, then the first by package name. */
+    /**
+     * The saved choice while it's still installed, then ntfy, then the only app there is. With
+     * several and none of them picked, none: whichever app gets the token learns when messages
+     * arrive, so that one is the user's call and not the alphabet's.
+     */
     @Nullable
     static String pick(List<String> installed, @Nullable String chosen) {
-        if (installed.isEmpty()) return null;
         if (chosen != null && installed.contains(chosen)) return chosen;
         if (installed.contains(NTFY)) return NTFY;
-        return installed.get(0);
+        return installed.size() == 1 ? installed.get(0) : null;
     }
 
     /** Package names of the installed apps that take a UnifiedPush sign-up, sorted, this one left out. */
@@ -282,8 +331,11 @@ public final class UnifiedPush {
                     }
                     break;
                 case REGISTRATION_FAILED:
-                    prefs.edit().remove(ENDPOINT).putString(PROBLEM, REFUSED).commit();
-                    Logger.printInfo(() -> "UnifiedPush: the app turned the sign-up down");
+                    // Asked again at a start, the app can fail for a moment (no network) while the
+                    // address it gave before still works, so a saved address stays.
+                    if (prefs.getString(ENDPOINT, null) == null) prefs.edit().putString(PROBLEM, REFUSED).commit();
+                    Logger.printInfo(() -> "UnifiedPush: the app turned the sign-up down ("
+                            + intent.getStringExtra("reason") + ")");
                     break;
                 case UNREGISTERED:
                     prefs.edit().remove(TOKEN).remove(ENDPOINT).putString(PROBLEM, ENDED).commit();
@@ -337,7 +389,7 @@ public final class UnifiedPush {
         }
     }
 
-    /** The app the next sign-up goes to, or null when none is installed. */
+    /** The app the next sign-up goes to, or null when none is installed or several are and none is picked. */
     @Nullable
     public static String chosen(Context context) {
         SharedPreferences prefs = prefs(context);
@@ -348,7 +400,10 @@ public final class UnifiedPush {
     public static String status(Context context, boolean on) {
         SharedPreferences prefs = prefs(context);
         String app = chosen(context);
-        if (app == null) return L10n.t("Install a UnifiedPush app like ntfy, then come back here.");
+        if (app == null) {
+            return distributors(context).isEmpty() ? L10n.t("Install a UnifiedPush app like ntfy, then come back here.")
+                    : L10n.t("Tap to pick which UnifiedPush app to use.");
+        }
         String name = label(context, app);
         if (!on) return L10n.f("%1$s. Turn the switch on to sign up with it.", name);
         String problem = prefs.getString(PROBLEM, null);
@@ -400,4 +455,7 @@ public final class UnifiedPush {
 
     /** Each signed-in account reconnects and fetches, as Telegram's {@code onDecryptError} does, without its latch. */
     public static void wakeAccounts() {}
+
+    /** {@code ApplicationLoader.getPushProvider()}: if it has its services, {@code onRequestPushToken()}. */
+    public static void requestPushToken() {}
 }

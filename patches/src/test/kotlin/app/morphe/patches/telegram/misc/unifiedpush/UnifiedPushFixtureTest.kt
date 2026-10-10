@@ -34,7 +34,8 @@ import org.junit.Test
 class UnifiedPushFixtureTest {
     private val hosts = setOf(PUSH_CONTROLLER, MESSAGES_CONTROLLER, "Lorg/telegram/messenger/UserConfig;",
         "Lorg/telegram/tgnet/ConnectionsManager;", "Lorg/telegram/messenger/ApplicationLoader;",
-        "Lorg/telegram/messenger/Utilities;", "Lorg/telegram/messenger/DispatchQueue;", "Lorg/telegram/messenger/SharedConfig;")
+        "Lorg/telegram/messenger/Utilities;", "Lorg/telegram/messenger/DispatchQueue;", "Lorg/telegram/messenger/SharedConfig;",
+        "Lorg/telegram/messenger/PushListenerController\$IPushListenerServiceProvider;")
 
     private fun context(build: File): BytecodePatchContext {
         val host = FixtureDex.classes(build, hosts).values.map(ImmutableClassDef::of)
@@ -84,7 +85,9 @@ class UnifiedPushFixtureTest {
             assertEquals(4, (wake.first { it.opcode == Opcode.CONST_16 } as NarrowLiteralInstruction).narrowLiteral)
             // Nothing in the stub counts down processRemoteMessage's latch, which a Firebase push may be waiting on.
             assertTrue(wake.none { it.controlRef()?.contains("countDown") == true })
-            for (stub in listOf("sendToTelegram", "telegramToken", "startTelegram", "onStageQueue", "wakeAccounts")) {
+            assertEquals(listOf(GET_PUSH_PROVIDER, HAS_SERVICES, REQUEST_PUSH_TOKEN),
+                context.stub("requestPushToken").refs().filterNotNull())
+            for (stub in listOf("sendToTelegram", "telegramToken", "startTelegram", "onStageQueue", "wakeAccounts", "requestPushToken")) {
                 val method = context.mutableClassDefBy(UNIFIED_PUSH).method(stub)
                 assertTrue("$name: $stub", AccessFlags.PUBLIC.isSet(method.accessFlags) && AccessFlags.STATIC.isSet(method.accessFlags))
             }

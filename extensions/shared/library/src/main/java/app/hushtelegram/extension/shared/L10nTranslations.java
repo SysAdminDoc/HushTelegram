@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(958);
+        Map<String, String> table = new HashMap<>(960);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -777,6 +777,8 @@ public final class L10nTranslations {
                 "Gram-senden-Eintrag bei TON-Links");
         table.put("Take the spaces out of the address, model and key.",
                 "Entferne die Leerzeichen aus Adresse, Modell und Schl\u00fcssel.");
+        table.put("Tap to pick which UnifiedPush app to use.",
+                "Tippe, um die UnifiedPush-App auszuw\u00e4hlen.");
         table.put("Tap to turn it back on.",
                 "Zum Wiedereinschalten tippen.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
@@ -793,11 +795,11 @@ public final class L10nTranslations {
                 "Telegram bietet keine Updates von telegram.org mehr an. Sie lie\u00dfen sich nicht \u00fcber diesen gepatchten Build installieren, also patche jede neue Version stattdessen im Morphe Manager.");
         table.put("Telegram's reply to notification sign-up: %1$s",
                 "Telegrams Antwort auf die Anmeldung f\u00fcr Benachrichtigungen: %1$s");
-        table.put("Telegram's wake-ups come through %1$s.",
-                "Telegram wird \u00fcber %1$s geweckt.");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("Telegram's wake-ups come through %1$s.",
+                "Telegram wird \u00fcber %1$s geweckt.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Die Webadressen von Telegram sind in den Android-Einstellungen f\u00fcr diese App ausgew\u00e4hlt, deshalb \u00f6ffnen sich ihre Links hier.");
         table.put("Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.",
@@ -916,11 +918,11 @@ public final class L10nTranslations {
                 "Nutzungsberichte");
         table.put("Usage reports and call diagnostics",
                 "Nutzungsberichte und Anrufdiagnosen");
-        table.put("Use Google",
-                "Google nutzen");
     }
 
     private static void fillDe7(Map<String, String> table) {
+        table.put("Use Google",
+                "Google nutzen");
         table.put("Use normal paste",
                 "Normal einf\u00fcgen");
         table.put("Use system font",
@@ -1042,7 +1044,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(958);
+        Map<String, String> table = new HashMap<>(960);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1772,6 +1774,8 @@ public final class L10nTranslations {
                 "opci\u00f3n Enviar Gram de los enlaces TON");
         table.put("Take the spaces out of the address, model and key.",
                 "Quita los espacios de la direcci\u00f3n, el modelo y la clave.");
+        table.put("Tap to pick which UnifiedPush app to use.",
+                "Toca para elegir qu\u00e9 app de UnifiedPush usar.");
         table.put("Tap to turn it back on.",
                 "Toca para volver a activarlo.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
@@ -1788,11 +1792,11 @@ public final class L10nTranslations {
                 "Telegram deja de ofrecer actualizaciones de telegram.org. No se pueden instalar sobre este build parcheado, as\u00ed que parchea cada versi\u00f3n nueva en Morphe Manager.");
         table.put("Telegram's reply to notification sign-up: %1$s",
                 "Respuesta de Telegram al registro de notificaciones: %1$s");
-        table.put("Telegram's wake-ups come through %1$s.",
-                "Telegram se despierta a trav\u00e9s de %1$s.");
     }
 
     private static void fillEs6(Map<String, String> table) {
+        table.put("Telegram's wake-ups come through %1$s.",
+                "Telegram se despierta a trav\u00e9s de %1$s.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Las direcciones web de Telegram est\u00e1n seleccionadas para esta app en los ajustes de Android, as\u00ed que sus enlaces se abren aqu\u00ed.");
         table.put("Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.",
@@ -1911,11 +1915,11 @@ public final class L10nTranslations {
                 "Informes de uso");
         table.put("Usage reports and call diagnostics",
                 "Informes de uso y diagn\u00f3sticos de llamadas");
-        table.put("Use Google",
-                "Usar Google");
     }
 
     private static void fillEs7(Map<String, String> table) {
+        table.put("Use Google",
+                "Usar Google");
         table.put("Use normal paste",
                 "Usar pegado normal");
         table.put("Use system font",
@@ -2037,7 +2041,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(958);
+        Map<String, String> table = new HashMap<>(960);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2767,6 +2771,8 @@ public final class L10nTranslations {
                 "item Kirim Gram di tautan TON");
         table.put("Take the spaces out of the address, model and key.",
                 "Hapus spasi dari alamat, model, dan kunci.");
+        table.put("Tap to pick which UnifiedPush app to use.",
+                "Ketuk untuk memilih aplikasi UnifiedPush yang dipakai.");
         table.put("Tap to turn it back on.",
                 "Ketuk untuk mengaktifkan HushTelegram lagi.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
@@ -2783,11 +2789,11 @@ public final class L10nTranslations {
                 "Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.");
         table.put("Telegram's reply to notification sign-up: %1$s",
                 "Balasan Telegram atas pendaftaran notifikasi: %1$s");
-        table.put("Telegram's wake-ups come through %1$s.",
-                "Telegram dibangunkan lewat %1$s.");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("Telegram's wake-ups come through %1$s.",
+                "Telegram dibangunkan lewat %1$s.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Alamat web Telegram dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.");
         table.put("Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.",
@@ -2906,11 +2912,11 @@ public final class L10nTranslations {
                 "Laporan penggunaan");
         table.put("Usage reports and call diagnostics",
                 "Laporan penggunaan dan diagnostik panggilan");
-        table.put("Use Google",
-                "Pakai Google");
     }
 
     private static void fillIn7(Map<String, String> table) {
+        table.put("Use Google",
+                "Pakai Google");
         table.put("Use normal paste",
                 "Gunakan tempel biasa");
         table.put("Use system font",
@@ -3032,7 +3038,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(958);
+        Map<String, String> table = new HashMap<>(960);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -3762,6 +3768,8 @@ public final class L10nTranslations {
                 "item Enviar Gram dos links TON");
         table.put("Take the spaces out of the address, model and key.",
                 "Tire os espa\u00e7os do endere\u00e7o, do modelo e da chave.");
+        table.put("Tap to pick which UnifiedPush app to use.",
+                "Toque para escolher qual app de UnifiedPush usar.");
         table.put("Tap to turn it back on.",
                 "Toque para reativar.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
@@ -3778,11 +3786,11 @@ public final class L10nTranslations {
                 "O Telegram deixa de oferecer atualiza\u00e7\u00f5es do telegram.org. Elas n\u00e3o podem ser instaladas sobre este build corrigido, ent\u00e3o aplique o patch de cada nova vers\u00e3o pelo Morphe Manager.");
         table.put("Telegram's reply to notification sign-up: %1$s",
                 "Resposta do Telegram ao cadastro de notifica\u00e7\u00f5es: %1$s");
-        table.put("Telegram's wake-ups come through %1$s.",
-                "O Telegram \u00e9 acordado pelo %1$s.");
     }
 
     private static void fillPt_rBR6(Map<String, String> table) {
+        table.put("Telegram's wake-ups come through %1$s.",
+                "O Telegram \u00e9 acordado pelo %1$s.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Os endere\u00e7os web do Telegram est\u00e3o selecionados para este app nas configura\u00e7\u00f5es do Android, ent\u00e3o os links deles abrem aqui.");
         table.put("Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.",
@@ -3901,11 +3909,11 @@ public final class L10nTranslations {
                 "Relat\u00f3rios de uso");
         table.put("Usage reports and call diagnostics",
                 "Relat\u00f3rios de uso e diagn\u00f3sticos de chamadas");
-        table.put("Use Google",
-                "Usar o Google");
     }
 
     private static void fillPt_rBR7(Map<String, String> table) {
+        table.put("Use Google",
+                "Usar o Google");
         table.put("Use normal paste",
                 "Usar colagem normal");
         table.put("Use system font",
@@ -4027,7 +4035,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(958);
+        Map<String, String> table = new HashMap<>(960);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -4757,6 +4765,8 @@ public final class L10nTranslations {
                 "TON ba\u011flant\u0131s\u0131ndaki Gram G\u00f6nder \u00f6\u011fesi");
         table.put("Take the spaces out of the address, model and key.",
                 "Adres, model ve anahtardaki bo\u015fluklar\u0131 kald\u0131r.");
+        table.put("Tap to pick which UnifiedPush app to use.",
+                "Hangi UnifiedPush uygulamas\u0131n\u0131n kullan\u0131laca\u011f\u0131n\u0131 se\u00e7mek i\u00e7in dokun.");
         table.put("Tap to turn it back on.",
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
@@ -4773,11 +4783,11 @@ public final class L10nTranslations {
                 "Telegram, telegram.org g\u00fcncellemelerini sunmay\u0131 b\u0131rak\u0131r. Bunlar bu yamal\u0131 s\u00fcr\u00fcm\u00fcn \u00fczerine kurulamaz, bu y\u00fczden her yeni s\u00fcr\u00fcm\u00fc Morphe Manager'da yamala.");
         table.put("Telegram's reply to notification sign-up: %1$s",
                 "Telegram'\u0131n bildirim kayd\u0131na yan\u0131t\u0131: %1$s");
-        table.put("Telegram's wake-ups come through %1$s.",
-                "Telegram %1$s \u00fczerinden uyand\u0131r\u0131l\u0131yor.");
     }
 
     private static void fillTr6(Map<String, String> table) {
+        table.put("Telegram's wake-ups come through %1$s.",
+                "Telegram %1$s \u00fczerinden uyand\u0131r\u0131l\u0131yor.");
         table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
                 "Telegram'\u0131n web adresleri Android ayarlar\u0131nda bu uygulama i\u00e7in se\u00e7ili, bu y\u00fczden ba\u011flant\u0131lar\u0131 burada a\u00e7\u0131l\u0131r.");
         table.put("Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.",
@@ -4896,11 +4906,11 @@ public final class L10nTranslations {
                 "Kullan\u0131m raporlar\u0131");
         table.put("Usage reports and call diagnostics",
                 "Kullan\u0131m raporlar\u0131 ve arama tan\u0131lamalar\u0131");
-        table.put("Use Google",
-                "Google'\u0131 kullan");
     }
 
     private static void fillTr7(Map<String, String> table) {
+        table.put("Use Google",
+                "Google'\u0131 kullan");
         table.put("Use normal paste",
                 "Normal yap\u0131\u015ft\u0131rmay\u0131 kullan");
         table.put("Use system font",
