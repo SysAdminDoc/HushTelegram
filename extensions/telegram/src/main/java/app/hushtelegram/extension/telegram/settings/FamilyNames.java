@@ -72,6 +72,7 @@ public final class FamilyNames {
     public static final String OUTSIDE_TRANSLATE = "Translate with an outside service";
     public static final String HIDE_CHANNEL_BUTTONS = "Hide channel bar buttons";
     public static final String HIDE_SEND_AS = "Hide Send as button";
+    public static final String FASTER_DOWNLOADS = "Faster downloads";
     public static final String DISABLE_ANALYTICS = "Disable analytics";
     public static final String DISABLE_CALL_DEBUG = "Disable call debug upload";
     public static final String DISABLE_DRAFT_PREVIEWS = "Disable draft link previews";

@@ -142,6 +142,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.OUTSIDE_TRANSLATE, "Translate with an outside service");
         ROW_TITLES.put(PatchFamily.HIDE_CHANNEL_BUTTONS, "Hide channel bar buttons");
         ROW_TITLES.put(PatchFamily.HIDE_SEND_AS, "Hide Send as button");
+        ROW_TITLES.put(PatchFamily.FASTER_DOWNLOADS, "Faster downloads");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
         ROW_TITLES.put(PatchFamily.DISABLE_CALL_DEBUG, "Stop call diagnostics");
         ROW_TITLES.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, "No previews before sending");
@@ -502,6 +503,13 @@ public class HushTelegramPreferenceFragmentTest {
             // A voice message keeps jumping to the chat until the switch is turned on.
             assertFalse(Settings.VOICE_MUSIC_PLAYER.key,
                     ((SwitchPreference) page.findPreference(Settings.VOICE_MUSIC_PLAYER.key)).isChecked());
+            assertEquals("Faster downloads", String.valueOf(page.findPreference(Settings.FASTER_DOWNLOADS.key).getTitle()));
+            assertEquals("Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces 4 at a time. If a big "
+                    + "piece fails, Telegram goes back to small ones. The next download picks this up.",
+                    String.valueOf(page.findPreference(Settings.FASTER_DOWNLOADS.key).getSummary()));
+            // Downloads keep Telegram's piece size until the switch is turned on.
+            assertFalse(Settings.FASTER_DOWNLOADS.key,
+                    ((SwitchPreference) page.findPreference(Settings.FASTER_DOWNLOADS.key)).isChecked());
             assertEquals("Silence people outside your contacts", String.valueOf(page.findPreference(Settings.SILENCE_NON_CONTACTS.key).getTitle()));
             assertEquals("Private messages from people not in your contacts still show a notification, but without "
                     + "sound or vibration. Bots, reminders and login codes keep their sound.",

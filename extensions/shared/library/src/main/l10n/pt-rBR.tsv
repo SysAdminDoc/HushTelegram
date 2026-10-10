@@ -470,3 +470,7 @@ Less clutter	Menos distrações
 Support HushTelegram	Apoie o HushTelegram
 # context: that row's summary; Ko-fi is a tipping site's name and stays as it is
 Buy me a coffee on Ko-fi	Me pague um café no Ko-fi
+# context: Faster downloads, a switch on the Playback page. Telegram downloads a file in pieces; this makes them bigger and asks for more at once.
+Faster downloads	Downloads mais rápidos
+# context: that switch's summary. KB is kilobytes. "Goes back to small ones" means Telegram drops to the small pieces on its own if a big one fails.
+Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces 4 at a time. If a big piece fails, Telegram goes back to small ones. The next download picks this up.	Os arquivos são baixados em partes de 512 KB, 8 de cada vez, em vez de partes de 128 KB, 4 de cada vez. Se uma parte grande falhar, o Telegram volta para as pequenas. O próximo download já usa isso.

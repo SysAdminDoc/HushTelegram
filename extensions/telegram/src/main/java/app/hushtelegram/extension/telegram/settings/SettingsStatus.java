@@ -101,6 +101,7 @@ public final class SettingsStatus {
     public static boolean outsideTranslate() { return false; }
     public static boolean hideChannelButtons() { return false; }
     public static boolean hideSendAs() { return false; }
+    public static boolean fasterDownloads() { return false; }
     public static boolean storyRequests() { return false; }
     public static boolean storyBar() { return false; }
     public static boolean storyCamera() { return false; }

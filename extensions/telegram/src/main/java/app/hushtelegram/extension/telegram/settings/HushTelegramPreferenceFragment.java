@@ -485,6 +485,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.VOICE_MUSIC_PLAYER.coverageSummary(L10n.t("While a voice message plays, tapping the bar above the chat opens the full music"
                             + " player, where you can drag to skip around, instead of jumping to the message."))));
         }
+        if (build.contains(PatchFamily.FASTER_DOWNLOADS)) {
+            on(pages, PatchFamily.FASTER_DOWNLOADS).addPreference(toggle(context, Settings.FASTER_DOWNLOADS, L10n.t("Faster downloads"),
+                    PatchFamily.FASTER_DOWNLOADS.coverageSummary(L10n.t("Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces"
+                            + " 4 at a time. If a big piece fails, Telegram goes back to small ones. The next download picks this up."))));
+        }
         if (build.contains(PatchFamily.SILENCE_NON_CONTACTS)) {
             on(pages, PatchFamily.SILENCE_NON_CONTACTS).addPreference(toggle(context, Settings.SILENCE_NON_CONTACTS, L10n.t("Silence people outside your contacts"),
                     PatchFamily.SILENCE_NON_CONTACTS.coverageSummary(L10n.t("Private messages from people not in your contacts still show a notification, but"

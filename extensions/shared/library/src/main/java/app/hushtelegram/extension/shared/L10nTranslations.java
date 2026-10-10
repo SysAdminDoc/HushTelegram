@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(902);
+        Map<String, String> table = new HashMap<>(906);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -312,10 +312,14 @@ public final class L10nTranslations {
                 "Diagnosebericht exportieren");
         table.put("Export settings",
                 "Einstellungen exportieren");
+        table.put("Faster downloads",
+                "Schnellere Downloads");
         table.put("File data center: %1$s",
                 "Rechenzentrum der Datei: %1$s");
         table.put("File size: %1$s",
                 "Dateigr\u00f6\u00dfe: %1$s");
+        table.put("Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces 4 at a time. If a big piece fails, Telegram goes back to small ones. The next download picks this up.",
+                "Dateien werden in 512-KB-St\u00fccken geladen, 8 gleichzeitig, statt in 128-KB-St\u00fccken, 4 gleichzeitig. Schl\u00e4gt ein gro\u00dfes St\u00fcck fehl, wechselt Telegram zur\u00fcck zu kleinen. Der n\u00e4chste Download \u00fcbernimmt das.");
         table.put("Filters for channels",
                 "Filter f\u00fcr Kan\u00e4le");
         table.put("Filters for groups",
@@ -422,13 +426,13 @@ public final class L10nTranslations {
                 "HushTelegram ist wieder aktiv, sobald Telegram neu startet.");
         table.put("ID",
                 "ID");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("ID copied",
                 "ID kopiert");
         table.put("Ignore mentions in muted chats",
                 "Erw\u00e4hnungen in stummgeschalteten Chats ignorieren");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Import",
                 "Importieren");
         table.put("Import settings",
@@ -545,13 +549,13 @@ public final class L10nTranslations {
                 "Pausieren");
         table.put("Pause HushTelegram",
                 "HushTelegram pausieren");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Photo copied",
                 "Foto kopiert");
         table.put("Play voice messages one at a time",
                 "Sprachnachrichten einzeln abspielen");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Playback",
                 "Wiedergabe");
         table.put("Post Story button",
@@ -668,13 +672,13 @@ public final class L10nTranslations {
                 "Sicherung der Einstellungen");
         table.put("Settings couldn't open",
                 "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Die Einstellungen lie\u00dfen sich nicht vollst\u00e4ndig aktualisieren. \u00d6ffne sie neu und versuche es noch einmal.");
         table.put("Settings exported.",
                 "Einstellungen exportiert.");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.",
                 "Einstellungen exportiert. Die App, in der die Datei liegt, lie\u00df HushTelegram sie nicht zur\u00fccklesen, daher wurde sie nicht gepr\u00fcft.");
         table.put("Settings imported.",
@@ -791,13 +795,13 @@ public final class L10nTranslations {
                 "Das Fotoraster im Anhangmen\u00fc beginnt mit deinen Fotos statt mit einer Live-Kamerakachel. Ein Chat \u00fcbernimmt das beim n\u00e4chsten \u00d6ffnen.");
         table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
                 "Die Kamera im Anhangmen\u00fc \u00f6ffnet sich immer mit der R\u00fcckkamera, nicht mit der zuletzt genutzten. Du kannst sie trotzdem umschalten.");
+    }
+
+    private static void fillDe6(Map<String, String> table) {
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Der Diagnosebericht lie\u00df sich noch nicht speichern. Versuche es gleich noch einmal.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Der Diagnosebericht lie\u00df sich nicht speichern. Versuche es noch einmal.");
-    }
-
-    private static void fillDe6(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.",
                 "Die Datei %1$s lie\u00df sich nicht entfernen. L\u00f6sche sie aus %2$s, um HushTelegram wieder einzuschalten.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -914,13 +918,13 @@ public final class L10nTranslations {
                 "Banner f\u00fcr Geburtstagsgeschenke");
         table.put("bot shares",
                 "von Bots geteilte Nachrichten");
+    }
+
+    private static void fillDe7(Map<String, String> table) {
         table.put("cached proxy channel",
                 "gespeicherter Proxy-Kanal");
         table.put("cached proxy folder entries",
                 "gespeicherte Proxy-Eintr\u00e4ge in Ordnern");
-    }
-
-    private static void fillDe7(Map<String, String> table) {
         table.put("cached recommendations",
                 "gespeicherte Empfehlungen");
         table.put("call debug reports",
@@ -986,7 +990,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(902);
+        Map<String, String> table = new HashMap<>(906);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1251,10 +1255,14 @@ public final class L10nTranslations {
                 "Exportar informe de diagn\u00f3stico");
         table.put("Export settings",
                 "Exportar configuraci\u00f3n");
+        table.put("Faster downloads",
+                "Descargas m\u00e1s r\u00e1pidas");
         table.put("File data center: %1$s",
                 "Centro de datos del archivo: %1$s");
         table.put("File size: %1$s",
                 "Tama\u00f1o del archivo: %1$s");
+        table.put("Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces 4 at a time. If a big piece fails, Telegram goes back to small ones. The next download picks this up.",
+                "Los archivos se descargan en partes de 512 KB, 8 a la vez, en lugar de partes de 128 KB, 4 a la vez. Si una parte grande falla, Telegram vuelve a las peque\u00f1as. La pr\u00f3xima descarga ya lo aplica.");
         table.put("Filters for channels",
                 "Filtros para canales");
         table.put("Filters for groups",
@@ -1361,13 +1369,13 @@ public final class L10nTranslations {
                 "HushTelegram vuelve a activarse cuando Telegram se reinicie.");
         table.put("ID",
                 "ID");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("ID copied",
                 "ID copiado");
         table.put("Ignore mentions in muted chats",
                 "Ignorar menciones en chats silenciados");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Import",
                 "Importar");
         table.put("Import settings",
@@ -1484,13 +1492,13 @@ public final class L10nTranslations {
                 "Pausar");
         table.put("Pause HushTelegram",
                 "Pausar HushTelegram");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("Photo copied",
                 "Foto copiada");
         table.put("Play voice messages one at a time",
                 "Reproducir los mensajes de voz de uno en uno");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("Playback",
                 "Reproducci\u00f3n");
         table.put("Post Story button",
@@ -1607,13 +1615,13 @@ public final class L10nTranslations {
                 "Copia de ajustes");
         table.put("Settings couldn't open",
                 "No se pudo abrir la configuraci\u00f3n");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "No se pudo actualizar la configuraci\u00f3n por completo. Vuelve a abrirla e int\u00e9ntalo de nuevo.");
         table.put("Settings exported.",
                 "Configuraci\u00f3n exportada.");
-    }
-
-    private static void fillEs5(Map<String, String> table) {
         table.put("Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.",
                 "Configuraci\u00f3n exportada. La app que guarda el archivo no dej\u00f3 que HushTelegram lo volviera a leer, as\u00ed que no se comprob\u00f3.");
         table.put("Settings imported.",
@@ -1730,13 +1738,13 @@ public final class L10nTranslations {
                 "La cuadr\u00edcula de fotos del men\u00fa de adjuntos empieza con tus fotos en lugar de un recuadro de c\u00e1mara en vivo. Un chat lo aplica la pr\u00f3xima vez que lo abras.");
         table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
                 "La c\u00e1mara del men\u00fa de adjuntos siempre se abre con la lente trasera, no con la que usaste por \u00faltima vez. A\u00fan puedes cambiarla.");
+    }
+
+    private static void fillEs6(Map<String, String> table) {
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Todav\u00eda no se pudo guardar el informe de diagn\u00f3stico. Int\u00e9ntalo de nuevo en un momento.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "No se pudo guardar el informe de diagn\u00f3stico. Int\u00e9ntalo de nuevo.");
-    }
-
-    private static void fillEs6(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.",
                 "No se pudo eliminar el archivo %1$s. B\u00f3rralo de %2$s para volver a activar HushTelegram.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -1853,13 +1861,13 @@ public final class L10nTranslations {
                 "banner de regalos de cumplea\u00f1os");
         table.put("bot shares",
                 "mensajes que comparten los bots");
+    }
+
+    private static void fillEs7(Map<String, String> table) {
         table.put("cached proxy channel",
                 "canal del proxy almacenado");
         table.put("cached proxy folder entries",
                 "entradas del proxy almacenadas en carpetas");
-    }
-
-    private static void fillEs7(Map<String, String> table) {
         table.put("cached recommendations",
                 "recomendaciones guardadas");
         table.put("call debug reports",
@@ -1925,7 +1933,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(902);
+        Map<String, String> table = new HashMap<>(906);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2190,10 +2198,14 @@ public final class L10nTranslations {
                 "Ekspor laporan diagnostik");
         table.put("Export settings",
                 "Ekspor pengaturan");
+        table.put("Faster downloads",
+                "Unduhan lebih cepat");
         table.put("File data center: %1$s",
                 "Pusat data file: %1$s");
         table.put("File size: %1$s",
                 "Ukuran file: %1$s");
+        table.put("Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces 4 at a time. If a big piece fails, Telegram goes back to small ones. The next download picks this up.",
+                "File diunduh dalam potongan 512 KB, 8 sekaligus, bukan potongan 128 KB, 4 sekaligus. Jika potongan besar gagal, Telegram kembali ke potongan kecil. Unduhan berikutnya langsung memakainya.");
         table.put("Filters for channels",
                 "Filter untuk kanal");
         table.put("Filters for groups",
@@ -2300,13 +2312,13 @@ public final class L10nTranslations {
                 "HushTelegram aktif lagi saat Telegram dimulai ulang.");
         table.put("ID",
                 "ID");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("ID copied",
                 "ID disalin");
         table.put("Ignore mentions in muted chats",
                 "Abaikan sebutan di obrolan yang dibisukan");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Import",
                 "Impor");
         table.put("Import settings",
@@ -2423,13 +2435,13 @@ public final class L10nTranslations {
                 "Jeda");
         table.put("Pause HushTelegram",
                 "Jeda HushTelegram");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Photo copied",
                 "Foto disalin");
         table.put("Play voice messages one at a time",
                 "Putar pesan suara satu per satu");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Playback",
                 "Pemutaran");
         table.put("Post Story button",
@@ -2546,13 +2558,13 @@ public final class L10nTranslations {
                 "Cadangan setelan");
         table.put("Settings couldn't open",
                 "Pengaturan tidak dapat dibuka");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Pengaturan tidak dapat dimuat ulang sepenuhnya. Buka kembali pengaturan lalu coba lagi.");
         table.put("Settings exported.",
                 "Pengaturan diekspor.");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.",
                 "Pengaturan diekspor. Aplikasi yang menyimpan file itu tidak mengizinkan HushTelegram membacanya kembali, jadi file itu tidak diperiksa.");
         table.put("Settings imported.",
@@ -2669,13 +2681,13 @@ public final class L10nTranslations {
                 "Kisi foto di menu lampiran dimulai dengan foto Anda, bukan kotak kamera langsung. Obrolan akan menerapkannya saat Anda membukanya lagi.");
         table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
                 "Kamera di menu lampiran selalu terbuka dengan lensa belakang, bukan lensa yang terakhir Anda pakai. Anda tetap bisa menggantinya.");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Laporan diagnostik belum dapat disimpan. Coba lagi dalam beberapa saat.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Laporan diagnostik tidak dapat disimpan. Coba lagi.");
-    }
-
-    private static void fillIn6(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.",
                 "File %1$s tidak dapat dihapus. Hapus file itu dari %2$s untuk mengaktifkan HushTelegram lagi.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -2792,13 +2804,13 @@ public final class L10nTranslations {
                 "banner hadiah ulang tahun");
         table.put("bot shares",
                 "pesan yang dibagikan bot");
+    }
+
+    private static void fillIn7(Map<String, String> table) {
         table.put("cached proxy channel",
                 "kanal proxy tersimpan");
         table.put("cached proxy folder entries",
                 "entri proxy tersimpan di folder");
-    }
-
-    private static void fillIn7(Map<String, String> table) {
         table.put("cached recommendations",
                 "rekomendasi tersimpan");
         table.put("call debug reports",
@@ -2864,7 +2876,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(902);
+        Map<String, String> table = new HashMap<>(906);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -3129,10 +3141,14 @@ public final class L10nTranslations {
                 "Exportar relat\u00f3rio de diagn\u00f3stico");
         table.put("Export settings",
                 "Exportar configura\u00e7\u00f5es");
+        table.put("Faster downloads",
+                "Downloads mais r\u00e1pidos");
         table.put("File data center: %1$s",
                 "Data center do arquivo: %1$s");
         table.put("File size: %1$s",
                 "Tamanho do arquivo: %1$s");
+        table.put("Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces 4 at a time. If a big piece fails, Telegram goes back to small ones. The next download picks this up.",
+                "Os arquivos s\u00e3o baixados em partes de 512 KB, 8 de cada vez, em vez de partes de 128 KB, 4 de cada vez. Se uma parte grande falhar, o Telegram volta para as pequenas. O pr\u00f3ximo download j\u00e1 usa isso.");
         table.put("Filters for channels",
                 "Filtros para canais");
         table.put("Filters for groups",
@@ -3239,13 +3255,13 @@ public final class L10nTranslations {
                 "O HushTelegram ser\u00e1 reativado quando o Telegram for reiniciado.");
         table.put("ID",
                 "ID");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("ID copied",
                 "ID copiado");
         table.put("Ignore mentions in muted chats",
                 "Ignorar men\u00e7\u00f5es em chats silenciados");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Import",
                 "Importar");
         table.put("Import settings",
@@ -3362,13 +3378,13 @@ public final class L10nTranslations {
                 "Pausar");
         table.put("Pause HushTelegram",
                 "Pausar o HushTelegram");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Photo copied",
                 "Foto copiada");
         table.put("Play voice messages one at a time",
                 "Tocar mensagens de voz uma de cada vez");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("Playback",
                 "Reprodu\u00e7\u00e3o");
         table.put("Post Story button",
@@ -3485,13 +3501,13 @@ public final class L10nTranslations {
                 "Backup de configura\u00e7\u00f5es");
         table.put("Settings couldn't open",
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "N\u00e3o foi poss\u00edvel atualizar completamente as configura\u00e7\u00f5es. Reabra as configura\u00e7\u00f5es e tente novamente.");
         table.put("Settings exported.",
                 "Configura\u00e7\u00f5es exportadas.");
-    }
-
-    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.",
                 "Configura\u00e7\u00f5es exportadas. O app que guarda o arquivo n\u00e3o deixou o HushTelegram l\u00ea-lo de volta, ent\u00e3o ele n\u00e3o foi conferido.");
         table.put("Settings imported.",
@@ -3608,13 +3624,13 @@ public final class L10nTranslations {
                 "A grade de fotos do menu de anexos come\u00e7a com suas fotos em vez de um bloco de c\u00e2mera ao vivo. Uma conversa aplica isso na pr\u00f3xima vez que voc\u00ea abri-la.");
         table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
                 "A c\u00e2mera do menu de anexos sempre abre na lente traseira, e n\u00e3o na que voc\u00ea usou por \u00faltimo. Voc\u00ea ainda pode alternar.");
+    }
+
+    private static void fillPt_rBR6(Map<String, String> table) {
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "O relat\u00f3rio de diagn\u00f3stico ainda n\u00e3o p\u00f4de ser salvo. Tente de novo em instantes.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "N\u00e3o foi poss\u00edvel salvar o relat\u00f3rio de diagn\u00f3stico. Tente de novo.");
-    }
-
-    private static void fillPt_rBR6(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.",
                 "N\u00e3o foi poss\u00edvel remover o arquivo %1$s. Exclua-o de %2$s para reativar o HushTelegram.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -3731,13 +3747,13 @@ public final class L10nTranslations {
                 "banner de presentes de anivers\u00e1rio");
         table.put("bot shares",
                 "mensagens compartilhadas por bots");
+    }
+
+    private static void fillPt_rBR7(Map<String, String> table) {
         table.put("cached proxy channel",
                 "canal do proxy armazenado");
         table.put("cached proxy folder entries",
                 "entradas do proxy armazenadas nas pastas");
-    }
-
-    private static void fillPt_rBR7(Map<String, String> table) {
         table.put("cached recommendations",
                 "recomenda\u00e7\u00f5es armazenadas");
         table.put("call debug reports",
@@ -3803,7 +3819,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(902);
+        Map<String, String> table = new HashMap<>(906);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -4068,10 +4084,14 @@ public final class L10nTranslations {
                 "Tan\u0131lama raporunu d\u0131\u015fa aktar");
         table.put("Export settings",
                 "Ayarlar\u0131 d\u0131\u015fa aktar");
+        table.put("Faster downloads",
+                "Daha h\u0131zl\u0131 indirmeler");
         table.put("File data center: %1$s",
                 "Dosyan\u0131n veri merkezi: %1$s");
         table.put("File size: %1$s",
                 "Dosya boyutu: %1$s");
+        table.put("Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces 4 at a time. If a big piece fails, Telegram goes back to small ones. The next download picks this up.",
+                "Dosyalar 128 KB'l\u0131k par\u00e7alar halinde 4'er 4'er de\u011fil, 512 KB'l\u0131k par\u00e7alar halinde 8'er 8'er indirilir. B\u00fcy\u00fck bir par\u00e7a ba\u015far\u0131s\u0131z olursa Telegram k\u00fc\u00e7\u00fck par\u00e7alara geri d\u00f6ner. Bir sonraki indirme bunu hemen kullan\u0131r.");
         table.put("Filters for channels",
                 "Kanallar i\u00e7in filtreler");
         table.put("Filters for groups",
@@ -4178,13 +4198,13 @@ public final class L10nTranslations {
                 "HushTelegram, Telegram yeniden ba\u015flad\u0131\u011f\u0131nda tekrar a\u00e7\u0131l\u0131r.");
         table.put("ID",
                 "Kimlik");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("ID copied",
                 "Kimlik kopyaland\u0131");
         table.put("Ignore mentions in muted chats",
                 "Sessize al\u0131nm\u0131\u015f sohbetlerdeki bahsetmeleri yok say");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Import",
                 "\u0130\u00e7e aktar");
         table.put("Import settings",
@@ -4301,13 +4321,13 @@ public final class L10nTranslations {
                 "Duraklat");
         table.put("Pause HushTelegram",
                 "HushTelegram'u duraklat");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("Photo copied",
                 "Foto\u011fraf kopyaland\u0131");
         table.put("Play voice messages one at a time",
                 "Sesli mesajlar\u0131 tek tek oynat");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("Playback",
                 "Oynatma");
         table.put("Post Story button",
@@ -4424,13 +4444,13 @@ public final class L10nTranslations {
                 "Ayar yede\u011fi");
         table.put("Settings couldn't open",
                 "Ayarlar a\u00e7\u0131lamad\u0131");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("Settings couldn't refresh completely. Reopen settings and try again.",
                 "Ayarlar tamamen yenilenemedi. Ayarlar\u0131 yeniden a\u00e7\u0131p tekrar dene.");
         table.put("Settings exported.",
                 "Ayarlar d\u0131\u015fa aktar\u0131ld\u0131.");
-    }
-
-    private static void fillTr5(Map<String, String> table) {
         table.put("Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.",
                 "Ayarlar d\u0131\u015fa aktar\u0131ld\u0131. Dosyay\u0131 tutan uygulama HushTelegram'un onu geri okumas\u0131na izin vermedi, bu y\u00fczden kontrol edilmedi.");
         table.put("Settings imported.",
@@ -4547,13 +4567,13 @@ public final class L10nTranslations {
                 "Ek men\u00fcs\u00fcndeki foto\u011fraf \u0131zgaras\u0131, canl\u0131 kamera kutucu\u011fu yerine foto\u011fraflar\u0131n\u0131zla ba\u015flar. Bir sohbet bunu bir sonraki a\u00e7\u0131\u015f\u0131n\u0131zda uygular.");
         table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
                 "Ek men\u00fcs\u00fcndeki kamera, en son kulland\u0131\u011f\u0131n\u0131z lens yerine her zaman arka lensle a\u00e7\u0131l\u0131r. Yine de de\u011fi\u015ftirebilirsiniz.");
+    }
+
+    private static void fillTr6(Map<String, String> table) {
         table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
                 "Tan\u0131lama raporu hen\u00fcz kaydedilemedi. Birazdan tekrar dene.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Tan\u0131lama raporu kaydedilemedi. Tekrar dene.");
-    }
-
-    private static void fillTr6(Map<String, String> table) {
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.",
                 "%1$s dosyas\u0131 kald\u0131r\u0131lamad\u0131. HushTelegram'u yeniden a\u00e7mak i\u00e7in onu %2$s i\u00e7inden sil.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
@@ -4670,13 +4690,13 @@ public final class L10nTranslations {
                 "do\u011fum g\u00fcn\u00fc hediyesi afi\u015fi");
         table.put("bot shares",
                 "botlar\u0131n payla\u015ft\u0131\u011f\u0131 mesajlar");
+    }
+
+    private static void fillTr7(Map<String, String> table) {
         table.put("cached proxy channel",
                 "kay\u0131tl\u0131 proxy kanal\u0131");
         table.put("cached proxy folder entries",
                 "klas\u00f6rlerdeki kay\u0131tl\u0131 proxy girdileri");
-    }
-
-    private static void fillTr7(Map<String, String> table) {
         table.put("cached recommendations",
                 "kay\u0131tl\u0131 \u00f6neriler");
         table.put("call debug reports",

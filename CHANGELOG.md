@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** A new Faster downloads switch on the Playback page, off by default, has files download in 512 KB pieces with 8 requests at a time instead of 128 KB pieces 4 at a time. That's the setting Telegram already uses for accounts its servers pick for it, so it isn't a Premium unlock, and the servers still decide how fast they send. If a big piece fails, Telegram drops back to small ones on its own like before. It applies from the next download, no restart needed. Asked for in #6.
+
 * **Telegram:** A new HushTelegram icon and name patch puts HushTelegram's own badge on your home screen, with a themed version that takes your wallpaper's color on Android 13 and up. Its one option changes the name under the icon. It isn't selected by default, since there's no switch to undo it after patching: turn on Expert mode in Morphe Manager and pick it. An alternate icon you chose in Telegram's own settings keeps its look. Asked for in #6.
 
 * **Telegram:** AMOLED black now turns the launch screen black too, on Android 13 and up while your phone is in dark mode, so Telegram no longer opens on its dark blue screen before the black one. It's Android's own black screen with Telegram's icon on it, so nothing is added to Telegram's resources. Turning AMOLED black off or pausing HushTelegram brings Telegram's own back the next time it starts. Asked for in #6.
