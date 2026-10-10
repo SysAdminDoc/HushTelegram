@@ -578,6 +578,8 @@ public final class ReleaseCheck {
             String out = L10n.f("HushTelegram %1$s is out. Update it in Morphe Manager.", L10n.isolate(newest));
             return otherTarget ? out + " " + L10n.f("It's made for Telegram %1$s.", L10n.isolate(target)) : out;
         }
+        // Running a build newer than the last check knew about: the stored target is stale, say nothing.
+        if (againstRunning != null && againstRunning < 0) return null;
         if (!otherTarget) return null;
         return L10n.f("HushTelegram %1$s is made for Telegram %2$s.", L10n.isolate(newest), L10n.isolate(target));
     }

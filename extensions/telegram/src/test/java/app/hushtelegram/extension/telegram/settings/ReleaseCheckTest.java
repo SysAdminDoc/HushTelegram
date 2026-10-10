@@ -171,6 +171,21 @@ public class ReleaseCheckTest {
     }
 
     @Test
+    public void anOlderReleaseMadeForAnotherTelegramStillSaysNothing() {
+        // The last check only knew of 0.1.5, made for an older Telegram, but a newer HushTelegram is
+        // already installed and running a newer Telegram. The stored target is stale: the card stays
+        // empty rather than claiming the running build "is made for" a Telegram it isn't.
+        github.then(Reply.release("v0.1.5", "HushTelegram 0.1.5.\n\nAll 6 patches applied without force to "
+                + "Telegram 447.0.0.50.72, with no manifest changes.\n\nRequires Morphe Manager 1.32.0 or newer.\n"));
+        ReleaseCheck.run(NOW);
+
+        assertEquals("0.1.5", Stored.NEWEST.get());
+        assertEquals("447.0.0.50.72", Stored.TARGET.get());
+        assertNull("a stale target from a release older than the running build stays off the card",
+                ReleaseCheck.statusLine());
+    }
+
+    @Test
     public void aTargetOtherThanTheRunningThreadsIsNamed() {
         ReleaseCheck.telegramForTests = "447.0.0.50.72";
         github.then(Reply.release("v0.1.8", NOTES_0_1_8));

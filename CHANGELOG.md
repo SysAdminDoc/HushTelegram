@@ -42,6 +42,8 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** The settings home page ends with Support HushTelegram, which opens the Ko-fi page in your browser.
 
+* **Telegram:** The settings status card no longer shows a stale "HushTelegram X is made for Telegram Y" line when you're already running a build newer than the last release it knew about. It stays quiet until it finds a release newer than yours.
+
 * **Tooling:** The selection matrix expects the Firebase crash and session report switches only on a build that ships those SDKs, which is Telegram Beta. It also rebuilds the one call Turn off beta debug logs adds to Telegram's startup settings the way the patcher adds it, so a default build no longer fails there, while a call in the wrong place, on the wrong register or added twice still does. With HushTelegram icon and name in the selection, it expects the app and Telegram's default launcher entry to point at the icon that patch adds, and nothing else in the manifest to change.
 
 ## 0.0.12 (2026-10-09)
