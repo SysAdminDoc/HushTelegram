@@ -8,10 +8,13 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
@@ -47,8 +50,11 @@ class UseSystemFontFixtureTest {
             val site = context.resolveSystemFont()
             val loader = key(site.method)
             val old = ImmutableMethod.of(site.method)
-            val untouched = hostState(build, context, setOf(loader))
+            val builders = site.built.map { key(it.method) }.toSet()
+            val oldBuilders = site.built.associate { key(it.method) to ImmutableMethod.of(it.method) }
+            val untouched = hostState(build, context, setOf(loader) + builders)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { useSystemFontPatch.execute(context) })
+            assertWalletBuilders(name, site.built, oldBuilders)
 
             val before = old.controlBody()
             val after = site.method.controlBody()
@@ -78,7 +84,7 @@ class UseSystemFontFixtureTest {
             }
             assertTrue("$name: nothing jumps into the hook", (0 until b.normal.size).filter { it != 0 && it != 1 && it != 2 }
                 .none { from -> b.normal[from].any { it in 1..3 } })
-            assertEquals("$name: every caller and every other host method", untouched, hostState(build, context, setOf(loader)))
+            assertEquals("$name: every caller and every other host method", untouched, hostState(build, context, setOf(loader) + builders))
             val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "useSystemFont" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }
@@ -89,10 +95,15 @@ class UseSystemFontFixtureTest {
             val named = hosts(build).flatMap { it.methods }.flatMap { m -> m.controlBody().mapNotNull { it.controlString() } }
                 .filter { it.startsWith("fonts/") && (it.endsWith(".ttf") || it.endsWith(".otf")) }.toSet()
             assertEquals("${build.name}: the switch's files", ROBOTO_ASSETS, named.intersect(ROBOTO_ASSETS))
-            // Telegram 13.0's wallet adds the Gram currency glyph face and a variable Roboto Mono it
-            // builds straight from assets for card numbers; both stay as bundled, like the digits face.
-            assertEquals("${build.name}: digits, Instant View and wallet keep Telegram's files", setOf("fonts/num.otf", "fonts/mw_bold.ttf",
-                "fonts/mw_bolditalic.ttf", "fonts/gram.ttf", "fonts/rmono_var.ttf"), named - ROBOTO_ASSETS)
+            // Telegram 13.0's Wallet builds a variable Roboto Mono straight from its assets, which
+            // the switch follows too. Its Gram face carries the Gram currency sign no phone font
+            // has, so it stays as bundled, like the digits face.
+            assertEquals("${build.name}: Wallet's own builds", BUILT_ASSETS, named.intersect(BUILT_ASSETS))
+            assertEquals("${build.name}: digits, Instant View and the Gram sign keep Telegram's files", setOf("fonts/num.otf",
+                "fonts/mw_bold.ttf", "fonts/mw_bolditalic.ttf", "fonts/gram.ttf"), named - ROBOTO_ASSETS - BUILT_ASSETS)
+            val built = context(build).resolveSystemFont().built
+            assertEquals("${build.name}: Wallet's three builds", 3, built.size)
+            assertEquals("${build.name}: one build per method", 3, built.map { key(it.method) }.toSet().size)
             // bold() is the medium face most of Telegram draws with.
             val bold = hosts(build).single { it.type == ANDROID_UTILITIES }.methods.single { it.name == "bold" && it.parameterTypes.isEmpty() }.controlBody()
             assertTrue("${build.name}: bold() loads the medium file through the loader", bold.any { it.controlString() == "fonts/rmedium.ttf" } &&
@@ -118,6 +129,19 @@ class UseSystemFontFixtureTest {
                     owner.methods.remove(h)
                     owner.methods.add(ImmutableMethod(h.definingClass, h.name, h.parameters, h.returnType, h.accessFlags, h.annotations,
                         h.hiddenApiRestrictions, ImmutableMethodImplementation(1, emptyList(), emptyList(), emptyList())).toMutable()) },
+                "missing built hook" to { c, _ -> c.mutableClassDefBy(SYSTEM_FONT).methods.removeAll { it.name == "built" } },
+                "Wallet font built elsewhere" to { _, s -> val b = s.built.first()
+                    b.method.replaceInstruction(b.method.controlBody().indexOfFirst { it.controlRef() == BUILDER_FROM_ASSET }, "nop") },
+                "Wallet builder runs other code" to { _, s -> val b = s.built.first()
+                    b.method.replaceInstruction(b.result - 1, "nop") },
+                "Wallet builder drops its face" to { _, s -> val b = s.built.first()
+                    b.method.replaceInstruction(b.result, "nop") },
+                // The weight constant before setWeight now lands in the path's register instead.
+                "Wallet path overwritten" to { _, s -> val b = s.built.first()
+                    assertEquals(Opcode.CONST_16, b.method.controlBody()[b.result - 4].opcode)
+                    b.method.replaceInstruction(b.result - 4, "const/16 v${b.asset}, 0x1f4") },
+                "Wallet builder jumped into" to { _, s -> val b = s.built.first()
+                    b.method.addInstructionsWithLabels(0, "goto/32 :hush_built", ExternalLabel("hush_built", b.method.getInstruction(b.result - 1))) },
             )
             for ((case, change) in mutations) {
                 val c = context(build)
@@ -130,6 +154,39 @@ class UseSystemFontFixtureTest {
     }
 
     private fun index(s: SystemFontSite, ref: String) = s.method.controlBody().indexOfFirst { it.controlRef() == ref }
+
+    /** Each Wallet build gains two instructions right after its face lands, with the path it was built from. */
+    private fun assertWalletBuilders(name: String, sites: List<BuiltFontSite>, old: Map<String, Method>) {
+        assertEquals("$name: Wallet's three builds", 3, sites.size)
+        for (site in sites) {
+            val where = "$name ${key(site.method)}"
+            val original = old.getValue(key(site.method))
+            val before = original.controlBody()
+            val after = site.method.controlBody()
+            val at = site.result + 1
+            assertEquals("$where: two instructions", before.size + 2, after.size)
+            assertEquals("$where: register count", original.implementation!!.registerCount, site.method.implementation!!.registerCount)
+            assertEquals("$where: the face comes from build()", "$BUILDER->build()Landroid/graphics/Typeface;", before[site.result - 1].controlRef())
+            val path = (0 until site.result).last { before[it].opcode.setsRegister() && before[it].namedRegisters().firstOrNull() == site.asset }
+            assertEquals("$where: the path register holds Wallet's file", "fonts/rmono_var.ttf", before[path].controlString())
+            assertEquals(Opcode.INVOKE_STATIC, after[at].opcode)
+            assertEquals("$SYSTEM_FONT->built(Ljava/lang/String;Landroid/graphics/Typeface;)Landroid/graphics/Typeface;", after[at].controlRef())
+            assertEquals(listOf(site.asset, site.face), after[at].namedRegisters())
+            assertEquals(Opcode.MOVE_RESULT_OBJECT, after[at + 1].opcode)
+            assertEquals("$where: the answer replaces the face", listOf(site.face), after[at + 1].namedRegisters())
+            val a = ControlFlow.of(original)
+            val b = ControlFlow.of(site.method)
+            fun moved(index: Int) = if (index > site.result) index + 2 else index
+            for (i in before.indices) {
+                assertEquals("$where: stock operand $i", before[i].operand(), after[moved(i)].operand())
+                val normal = if (i == site.result) listOf(at) else a.normal[i].map(::moved)
+                assertEquals("$where: stock normal path $i", normal, b.normal[moved(i)])
+                assertEquals("$where: stock exceptional path $i", a.exceptional[i].map(::moved), b.exceptional[moved(i)])
+            }
+            assertEquals(listOf(at + 1), b.normal[at])
+            assertEquals(listOf(at + 2), b.normal[at + 1])
+        }
+    }
 
     private fun context(build: File) = PatchContexts.of(ExtensionDex.classes() + hosts(build))
     private fun completeState(build: File, c: BytecodePatchContext) = (hosts(build).map { it.type } + listOf(SYSTEM_FONT, SETTINGS_STATUS))
@@ -164,7 +221,8 @@ class UseSystemFontFixtureTest {
 
     companion object {
         private const val CACHE_HAS = "Ljava/util/Hashtable;->containsKey(Ljava/lang/Object;)Z"
-        private const val BUILDER_FROM_ASSET = "Landroid/graphics/Typeface\$Builder;-><init>(Landroid/content/res/AssetManager;Ljava/lang/String;)V"
+        private const val BUILDER = "Landroid/graphics/Typeface\$Builder;"
+        private const val BUILDER_FROM_ASSET = "$BUILDER-><init>(Landroid/content/res/AssetManager;Ljava/lang/String;)V"
         private val HOSTS = mutableMapOf<String, SoftReference<List<ClassDef>>>()
         @AfterClass @JvmStatic fun releaseFixtures() { HOSTS.clear() }
     }

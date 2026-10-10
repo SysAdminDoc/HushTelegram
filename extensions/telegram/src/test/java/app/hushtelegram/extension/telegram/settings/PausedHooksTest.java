@@ -214,9 +214,12 @@ public class PausedHooksTest {
         // Telegram's holiday check skips its date test and shows the New Year look.
         probes.put(PatchFamily.HOLIDAY_LOOK, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.HolidayLook.mode() == app.hushtelegram.extension.telegram.misc.HolidayLook.SHOW));
-        // Telegram's medium font file is answered with the phone's own face.
-        probes.put(PatchFamily.USE_SYSTEM_FONT, Collections.singletonList(
-                () -> app.hushtelegram.extension.telegram.misc.SystemFont.typeface("fonts/rmedium.ttf") != null));
+        // Telegram's medium font file is answered with the phone's own face, and so is the variable
+        // monospace face Wallet builds itself.
+        probes.put(PatchFamily.USE_SYSTEM_FONT, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.SystemFont.typeface("fonts/rmedium.ttf") != null,
+                () -> app.hushtelegram.extension.telegram.misc.SystemFont.built("fonts/rmono_var.ttf",
+                        android.graphics.Typeface.DEFAULT) != android.graphics.Typeface.DEFAULT));
         // Night's window color, as Telegram reads it from the theme file, turns black.
         probes.put(PatchFamily.AMOLED_BLACK, Collections.singletonList(() -> {
             app.hushtelegram.extension.telegram.misc.BlackThemeForTests.useStandInIds();

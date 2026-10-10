@@ -14,6 +14,8 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** Hide Premium, gifts and Stars now also hides the Wallet row that Telegram 13.0 added to Settings. Settings then looks the way it does for an account that has no Wallet.
 
+* **Telegram:** Use system font now covers Wallet too. Card numbers and amounts switch to your phone's monospace font at the weight Wallet asks for, so the columns still line up. The small font that draws the Gram currency sign stays as it is, since phone fonts don't have that sign.
+
 ## 0.0.12 (2026-10-09)
 
 The sixth release, with 56 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.

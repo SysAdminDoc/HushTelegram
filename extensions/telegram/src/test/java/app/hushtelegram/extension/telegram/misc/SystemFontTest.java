@@ -63,12 +63,39 @@ public class SystemFontTest {
 
     @Test public void digitsInstantViewAndUnknownFilesKeepTelegramsOwn() {
         Settings.USE_SYSTEM_FONT.save(true);
+        Typeface stock = Typeface.create(Typeface.SERIF, 500, false);
         for (String asset : new String[]{"fonts/num.otf", "fonts/mw_bold.ttf", "fonts/mw_bolditalic.ttf", "fonts/gram.ttf",
-                "fonts/rmono_var.ttf", "fonts/custom.ttf", ""}) {
+                "fonts/custom.ttf", ""}) {
             assertNull(asset, SystemFont.typeface(asset));
+            assertSame(asset, stock, SystemFont.built(asset, stock));
         }
         assertNull(SystemFont.typeface(null));
+        assertSame(stock, SystemFont.built(null, stock));
+        assertNull(SystemFont.built("fonts/rmono_var.ttf", null));
         assertFalse(String.join("\n", HookStatus.report()).contains("system font used"));
+    }
+
+    @Test public void walletsMonoFollowsTheSwitchAtTheWeightWalletAskedFor() {
+        Typeface medium = Typeface.create(Typeface.SERIF, 500, false);
+        Typeface bold = Typeface.create(Typeface.SERIF, 700, false);
+        assertSame("off by default", medium, SystemFont.built("fonts/rmono_var.ttf", medium));
+        Settings.USE_SYSTEM_FONT.save(true);
+        for (Typeface built : new Typeface[]{medium, bold}) {
+            Typeface face = SystemFont.built("fonts/rmono_var.ttf", built);
+            assertNotSame(built, face);
+            assertEquals(built.getWeight(), face.getWeight());
+            assertFalse(face.isItalic());
+            assertEquals(Typeface.create(Typeface.MONOSPACE, built.getWeight(), false), face);
+        }
+        assertSame("the old Android path through the loader", Typeface.MONOSPACE, SystemFont.typeface("fonts/rmono_var.ttf"));
+        assertTrue(String.join("\n", HookStatus.report()).contains("system font used 3"));
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        assertSame("paused", bold, SystemFont.built("fonts/rmono_var.ttf", bold));
+        PauseForTests.resume();
+        SettingsContextRule.withoutContext(() -> assertSame("early start", bold, SystemFont.built("fonts/rmono_var.ttf", bold)));
+        SettingReadsForTests.breakReads(Settings.USE_SYSTEM_FONT);
+        assertSame("unreadable switch", bold, SystemFont.built("fonts/rmono_var.ttf", bold));
+        assertFalse(HookStatus.missing(FamilyNames.USE_SYSTEM_FONT).isEmpty());
     }
 
     @Test public void pausingOrAnEarlyStartKeepsTelegramsFiles() {
