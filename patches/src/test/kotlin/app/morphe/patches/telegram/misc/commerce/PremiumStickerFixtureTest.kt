@@ -28,6 +28,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -247,6 +248,75 @@ class PremiumStickerFixtureTest {
             assertEquals("${build.name}: the pack pass is left as it was", before, sorter.instructions().map(::operation))
             assertTrue("${build.name}: no emoji stubs without the pass", context.mutableClassDefBy(COMMERCE).methods
                 .single { it.name == "emojiPackFree" }.instructions().none { it.opcode == Opcode.IGET_BOOLEAN })
+        }
+    }
+
+    @Test
+    fun `an emoji pass that no longer marks featured packs free is left out after its other places are read`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val sorter = context.resolvePremiumStickerHooks().getValue(PremiumStickerTarget.EMOJI_PACKS).single().method
+            // The pass is still found by what it references, and the strip, the clear and the account
+            // read are all where they were, so only the free flag is missing.
+            sorter.replaceInstruction(sorter.instructions().indexOfFirst { it.opcode == Opcode.XOR_INT_2ADDR }, "nop")
+            val before = sorter.instructions().map(::operation)
+            val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
+            assertTrue("${build.name}: $warnings", warnings.any {
+                "commercePremiumEmojiPacks left out" in it && "marks a pack free" in it })
+            assertFact(context, "commercePremiumEmojiPacks", 0)
+            assertFact(context, "commercePremiumStickers", 1)
+            assertFact(context, "commercePremiumEffects", 1)
+            assertEquals("${build.name}: the pack pass is left as it was", before, sorter.instructions().map(::operation))
+            assertTrue("${build.name}: no emoji stubs without the pass", context.mutableClassDefBy(COMMERCE).methods
+                .single { it.name == "emojiPackFree" }.instructions().none { it.opcode == Opcode.IGET_BOOLEAN })
+        }
+    }
+
+    @Test
+    fun `a third sticker filter leaves the stickers out and the rest still apply`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val hosts = hosts(build)
+            val controller = hosts.single { it.type == CONTROLLER }
+            val filter = controller.methods.single { it.name == "filterPremiumStickers" && it.parameterTypes.single().toString() == STICKER_SET }
+            val third = ImmutableMethod(CONTROLLER, filter.name, listOf(ImmutableMethodParameter("Ljava/lang/Object;", null, null)),
+                filter.returnType, filter.accessFlags, filter.annotations, filter.hiddenApiRestrictions, filter.implementation)
+            val altered = ImmutableClassDef(controller.type, controller.accessFlags, controller.superclass, controller.interfaces,
+                controller.sourceFile, controller.annotations, controller.fields, controller.methods.toList() + third)
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts.filter { it.type != CONTROLLER } + altered)
+            val filters = context.mutableClassDefBy(CONTROLLER).methods.filter { it.name == "filterPremiumStickers" }
+            val before = filters.map { it to it.instructions().map(::operation) }
+            val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
+            assertTrue("${build.name}: $warnings", warnings.any {
+                "commercePremiumStickers left out" in it && "3 Premium sticker filters, not two" in it })
+            assertFact(context, "commercePremiumStickers", 0)
+            assertFact(context, "commercePremiumEffects", 1)
+            assertFact(context, "commercePremiumEmojiPacks", 1)
+            for ((method, operations) in before) {
+                assertEquals("${build.name}: ${method.name} is left as it was", operations, method.instructions().map(::operation))
+            }
+        }
+    }
+
+    @Test
+    fun `a filter call this reading doesn't follow leaves the stickers out instead of stopping the patch`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val stickers = context.resolvePremiumStickerHooks().getValue(PremiumStickerTarget.STICKERS)
+            val changed = stickers.first { it.method.definingClass == CONTROLLER }
+            val register = changed.method.instructions()[changed.index].namedRegisters().single()
+            // Still one premiumFeaturesBlocked call read right after, but with a register the plan can't place.
+            changed.method.replaceInstruction(changed.index, "invoke-virtual {v$register, v$register}, $PREMIUM_BLOCKED")
+            val before = stickers.map { it.method to it.method.instructions().map(::operation) }
+            val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
+            assertTrue("${build.name}: $warnings", warnings.any {
+                "commercePremiumStickers left out" in it && "IllegalArgumentException" in it })
+            assertFact(context, "hideCommerce", 1)
+            assertFact(context, "commercePremiumStickers", 0)
+            assertFact(context, "commercePremiumEffects", 1)
+            assertFact(context, "commercePremiumEmojiPacks", 1)
+            for ((method, operations) in before) {
+                assertEquals("${build.name}: ${method.name} is left as it was", operations, method.instructions().map(::operation))
+            }
         }
     }
 

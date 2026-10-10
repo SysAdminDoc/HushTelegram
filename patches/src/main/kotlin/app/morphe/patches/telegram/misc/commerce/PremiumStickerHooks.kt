@@ -119,6 +119,10 @@ internal fun BytecodePatchContext.resolvePremiumStickerHooks(): PremiumStickerPl
             hooks[target] = edits()
         } catch (drift: Drift) {
             leftOut[target] = drift.message!!
+        } catch (unread: RuntimeException) {
+            // A place this reading doesn't follow, like a call with more registers than it expects.
+            // PatchException isn't one, so two candidates for a place still refuse.
+            leftOut[target] = "${unread.javaClass.simpleName}: ${unread.message}"
         }
     }
 

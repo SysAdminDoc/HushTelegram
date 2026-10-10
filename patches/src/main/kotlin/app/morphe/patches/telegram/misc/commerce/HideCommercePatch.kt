@@ -113,8 +113,9 @@ val hideCommercePatch = bytecodePatch(
             if (changed != null) "$capability left out, $changed"
             else if (edits == null) "no structurally matching $capability target"
             else {
-                // Inserted code is what can fail to assemble, so its methods go first and a failure
-                // leaves the replace-only ones as they were. Later places first keep earlier indexes.
+                // Inserted code is what can fail to assemble, so within a target its methods go first
+                // and a failure leaves the replace-only ones as they were. Later places first keep
+                // earlier indexes.
                 edits.groupBy { it.method }.values.sortedBy { inMethod -> inMethod.all { it.replace } }.forEach { inMethod ->
                     inMethod.sortedByDescending { it.index }.forEach { edit ->
                         if (edit.replace) edit.method.replaceInstruction(edit.index, edit.code)
