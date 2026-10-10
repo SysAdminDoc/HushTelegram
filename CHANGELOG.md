@@ -36,6 +36,8 @@ Every HushTelegram release, newest first.
 
 * **Tooling:** The scripts that patch Telegram with the desktop CLI (the all-patches check, the release receipt and the selection matrix) now wait their turn in the build queue that `BUILD_QUEUE_SCRIPT` names, so they don't fight a Gradle build for the same cores. Release runs go to the front. Without a queue they run straight away and print a warning.
 
+* **Tooling:** The pre-push hook now reads `HUSHTELEGRAM_BUILD_WRAPPER` and its other settings from your user environment when the shell has them empty, not only when they're missing, since pwsh keeps an empty variable around. With no wrapper at all, its own `gradlew` run waits in the build queue too.
+
 ## 0.0.11 (2026-10-08)
 
 The fifth release, with 55 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.

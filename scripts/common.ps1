@@ -495,3 +495,30 @@ function Invoke-InHushTelegramQueue {
         $env:HUSHTELEGRAM_QUEUED_JOB = $savedQueuedJob
     }
 }
+
+function Import-UserEnvironment {
+    <#
+    .SYNOPSIS
+        Fills each named variable this process has unset or empty from the user's environment.
+    .DESCRIPTION
+        A git hook runs with git's environment, which can predate a variable set in the user scope
+        or leave it out. Empty counts as unset: pwsh keeps a variable set to an empty string, where
+        Windows PowerShell removes it, so an empty HUSHTELEGRAM_BUILD_WRAPPER would otherwise win
+        over the user's and the gate would run gradlew outside the wrapper. A value of spaces is
+        left alone, since the fixture gate tests set one to keep the machine's folder out of a
+        case, and so is a user value that's blank too. -ReadUser stands in for the registry in the
+        contract tests.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string[]]$Name,
+        [scriptblock]$ReadUser = {
+            param([string]$Variable)
+            [Environment]::GetEnvironmentVariable($Variable, [EnvironmentVariableTarget]::User)
+        }
+    )
+    foreach ($variable in $Name) {
+        if (-not [string]::IsNullOrEmpty([Environment]::GetEnvironmentVariable($variable))) { continue }
+        $value = [string](& $ReadUser $variable)
+        if (-not [string]::IsNullOrWhiteSpace($value)) { Set-Item -LiteralPath "Env:\$variable" -Value $value }
+    }
+}

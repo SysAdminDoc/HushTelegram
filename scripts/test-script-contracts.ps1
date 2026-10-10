@@ -133,7 +133,50 @@ $matrixTool = @($matrixCalls | Where-Object { $_.GetCommandName() -eq 'Invoke-Se
 Assert-True ($matrixQueue.Count -eq 1 -and $matrixTool.Count -gt 0 -and
     $matrixQueue[0].Extent.StartOffset -lt $matrixTool[0].Extent.StartOffset) `
     'The selection matrix does not ask for a build queue slot before it compiles or patches.'
+# The pre-push hook's own gradlew run, when no wrapper is set, waits for a slot as well.
+$prePushAst = [System.Management.Automation.Language.Parser]::ParseFile(
+    (Join-Path $PSScriptRoot 'pre-push.ps1'), [ref]$null, [ref]$null)
+$gradleRuns = @($prePushAst.FindAll({ param($node) $node -is [System.Management.Automation.Language.CommandAst] -and
+    $node.InvocationOperator -eq [System.Management.Automation.Language.TokenKind]::Ampersand -and
+    $node.CommandElements[0].Extent.Text -match 'gradlew' }, $true))
+$unqueuedGradle = @($gradleRuns | Where-Object {
+    $outer = $_.Parent
+    while ($outer -and -not ($outer -is [System.Management.Automation.Language.CommandAst] -and
+            $outer.GetCommandName() -eq 'Invoke-InHushTelegramQueue' -and $outer.Extent.Text -match "-Job 'gate'")) {
+        $outer = $outer.Parent
+    }
+    -not $outer })
+Assert-True ($gradleRuns.Count -gt 0 -and $unqueuedGradle.Count -eq 0) `
+    "pre-push.ps1 runs gradlew outside a build queue slot: $(@($unqueuedGradle | ForEach-Object { $_.Extent.Text }) -join '; ')"
 Write-Host '[scripts] build queue contracts passed'
+
+# --- the user environment a hook reads --------------------------------------------------------
+#
+# A hook runs with git's environment, so the hook fills its variables from the user's. An empty
+# one is filled as an unset one is: pwsh keeps a variable set to '' where Windows PowerShell drops
+# it, and an empty build wrapper would send the gate to gradlew outside the wrapper. Spaces stay, since
+# the fixture gate tests set them to keep the machine's folder out, and so does a set value.
+$importProbe = 'HUSHTELEGRAM_IMPORT_PROBE'
+foreach ($importCase in @(
+        @{ Name = 'an unset variable'; Process = $null; User = 'from the user'; Expect = 'from the user' },
+        @{ Name = 'an empty variable'; Process = ''; User = 'from the user'; Expect = 'from the user' },
+        @{ Name = 'a variable of spaces'; Process = ' '; User = 'from the user'; Expect = ' ' },
+        @{ Name = 'a set variable'; Process = 'mine'; User = 'from the user'; Expect = 'mine' },
+        @{ Name = 'a blank user value'; Process = $null; User = ' '; Expect = $null })) {
+    Remove-Item -LiteralPath "Env:\$importProbe" -ErrorAction SilentlyContinue
+    if ($null -ne $importCase.Process) { Set-Item -LiteralPath "Env:\$importProbe" -Value $importCase.Process }
+    $importUser = $importCase.User
+    Import-UserEnvironment -Name $importProbe -ReadUser { param([string]$Variable) if ($Variable -eq $importProbe) { $importUser } }
+    $imported = [Environment]::GetEnvironmentVariable($importProbe)
+    Assert-True ($(if ($null -eq $importCase.Expect) { [string]::IsNullOrEmpty($imported) } else { $imported -ceq $importCase.Expect })) `
+        "Importing the user environment over $($importCase.Name) left '$imported'."
+}
+Remove-Item -LiteralPath "Env:\$importProbe" -ErrorAction SilentlyContinue
+$importCalls = @($prePushAst.FindAll({ param($node) $node -is [System.Management.Automation.Language.CommandAst] -and
+    $node.GetCommandName() -eq 'Import-UserEnvironment' }, $true))
+Assert-True ($importCalls.Count -eq 1 -and $importCalls[0].Extent.Text -match "'HUSHTELEGRAM_BUILD_WRAPPER'") `
+    'pre-push.ps1 no longer fills an unset or empty build wrapper from the user environment.'
+Write-Host '[scripts] user environment contracts passed'
 
 # --- patch-target.ps1 ------------------------------------------------------------------------
 #

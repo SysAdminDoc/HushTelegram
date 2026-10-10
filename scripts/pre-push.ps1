@@ -47,14 +47,9 @@ $Root = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(
 # A hook runs with git's own environment. User environment variables set after the shell
 # launched, or set in the user scope only, may be absent. Import the four this script and
 # its suites need from the registry so a gate worktree can find the desktop CLI, the
-# fixture folder, the build wrapper and the device serial.
-foreach ($envName in @('HUSHTELEGRAM_DESKTOP_JAR', 'HUSHTELEGRAM_FIXTURE_DIR',
-        'HUSHTELEGRAM_BUILD_WRAPPER', 'HUSHTELEGRAM_DEVICE_SERIAL')) {
-    if (-not (Test-Path "Env:\$envName")) {
-        $regValue = [Environment]::GetEnvironmentVariable($envName, [EnvironmentVariableTarget]::User)
-        if ($regValue) { Set-Item -LiteralPath "Env:\$envName" -Value $regValue }
-    }
-}
+# fixture folder, the build wrapper and the device serial. An empty one counts as absent.
+Import-UserEnvironment -Name @('HUSHTELEGRAM_DESKTOP_JAR', 'HUSHTELEGRAM_FIXTURE_DIR',
+    'HUSHTELEGRAM_BUILD_WRAPPER', 'HUSHTELEGRAM_DEVICE_SERIAL')
 
 $zeroObject = '0' * 40
 # The tip of each pushed ref, peeled, filled in by Get-PushedPaths. The build gate builds each of
@@ -874,7 +869,9 @@ try {
                     if ($wrapper) {
                         & $wrapper -ProjectDir $gateRoot -Tasks $tasks
                     } else {
-                        & (Join-Path $gateRoot 'gradlew.bat') -p $gateRoot @tasks
+                        # The wrapper queues its builds itself. gradlew.bat on its own waits here.
+                        $gradlew = Join-Path $gateRoot 'gradlew.bat'
+                        $global:LASTEXITCODE = Invoke-InHushTelegramQueue -Job 'gate' -ScriptBlock { & $gradlew -p $gateRoot @tasks }
                     }
                     } finally { Pop-Location }
                 }
