@@ -323,6 +323,31 @@ public class LogBufferManagerClipboardTest {
         assertEquals("before", clipText(clipboard));
     }
 
+    /** An Error while building, such as running out of memory, still hands the row back. */
+    @Test
+    public void anErrorWhileBuildingStillSaysItsDone() throws Exception {
+        LogBufferManager.registerReportSection(new LogBufferManager.ReportSection() {
+            @Override
+            public String title() {
+                throw new OutOfMemoryError("stand-in");
+            }
+
+            @Override
+            public List<String> lines() {
+                return Collections.singletonList("a line");
+            }
+        });
+        events(1);
+        boolean[] done = {false};
+
+        LogBufferManager.exportToClipboard(() -> done[0] = true);
+        Utils.awaitBackgroundTasksForTests();
+        ShadowLooper.idleMainLooper();
+
+        assertTrue("the row stayed busy", done[0]);
+        assertEquals("The diagnostic report couldn't be saved. Try again.", ShadowToast.getTextOfLatestToast());
+    }
+
     /** A cut never leaves half of a character in front of the note. */
     @Test
     public void aCutNeverSplitsACharacter() {

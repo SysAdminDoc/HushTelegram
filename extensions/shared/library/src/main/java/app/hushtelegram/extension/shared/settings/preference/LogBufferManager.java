@@ -182,14 +182,21 @@ public final class LogBufferManager {
             String exportText;
             try {
                 exportText = clipboardText(CLIPBOARD_MAX_CHARS);
-            } catch (Exception ex) {
-                clipboardFailed(ex);
-                finished(done);
+            } catch (Throwable ex) {
+                // An Error too, such as running out of memory on a full buffer: the row waits on done.
+                try {
+                    clipboardFailed(ex);
+                } finally {
+                    finished(done);
+                }
                 return;
             }
             Utils.runOnMainThread(() -> {
-                copyToClipboard(exportText);
-                if (done != null) done.run();
+                try {
+                    copyToClipboard(exportText);
+                } finally {
+                    if (done != null) done.run();
+                }
             });
         });
         if (!started) {
@@ -212,7 +219,7 @@ public final class LogBufferManager {
         }
     }
 
-    private static void clipboardFailed(Exception ex) {
+    private static void clipboardFailed(Throwable ex) {
         // The exception's own text stays in the log. It can carry a path or a signed URL,
         // and a reader on a phone cannot act on it from a toast.
         Utils.showToastLong(say(exportFailedMessage, L10n.t("The diagnostic report couldn't be saved. Try again.")));
