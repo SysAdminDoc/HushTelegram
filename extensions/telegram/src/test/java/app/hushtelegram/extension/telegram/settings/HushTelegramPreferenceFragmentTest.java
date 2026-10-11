@@ -785,7 +785,7 @@ public class HushTelegramPreferenceFragmentTest {
             editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             ShadowLooper.idleMainLooper();
             assertTrue("a line that can't be used keeps the dialog", editor.isShowing());
-            assertEquals("Line 3 may be slow. Use one + or * at most, {1,9} for the rest.", ShadowToast.getTextOfLatestToast());
+            assertEquals("Line 3 may be slow on long messages. Try a simpler pattern.", ShadowToast.getTextOfLatestToast());
             assertEquals("", Settings.MESSAGE_FILTERS_GROUPS.savedValue());
 
             field.setText("/(unclosed/");

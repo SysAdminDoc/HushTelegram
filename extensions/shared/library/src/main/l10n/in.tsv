@@ -45,7 +45,7 @@ After Telegram restarts, every switch except Debug logging acts as if it were of
 Hide ads	Sembunyikan iklan
 Links, updates, backup and more	Tautan, pembaruan, cadangan, dan lainnya
 Privacy	Privasi
-Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram app. Pause, Debug logging, the update check, UnifiedPush and Folders by chat type stay out.	Menyimpan sakelar, daftar filter, dan ukuran stiker Anda ke berkas, untuk semua akun di aplikasi Telegram ini. Jeda, Pencatatan debug, pemeriksaan pembaruan, UnifiedPush, dan Folder menurut jenis obrolan tidak disertakan.
+Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram app. Pause, Debug logging, the HushTelegram release check, UnifiedPush and Folders by chat type stay out.	Menyimpan sakelar, daftar filter, dan ukuran stiker Anda ke berkas, untuk semua akun di aplikasi Telegram ini. Jeda, Pencatatan debug, pemeriksaan rilis HushTelegram, UnifiedPush, dan Folder menurut jenis obrolan tidak disertakan.
 Settings exported. The app wouldn't let HushTelegram check it.	Pengaturan diekspor. Aplikasi itu tidak mengizinkan HushTelegram memeriksanya.
 That app is slow to answer. Nothing was changed.	Aplikasi itu lambat merespons. Tidak ada yang diubah.
 That file's app still hasn't answered. Try again later.	Aplikasi file itu belum menjawab. Coba lagi nanti.
@@ -440,7 +440,7 @@ No filters yet.	Belum ada filter.
 A list holds up to %1$d filters.	Satu daftar memuat hingga %1$d filter.
 Line %1$d is longer than %2$d characters.	Baris %1$d lebih panjang dari %2$d karakter.
 Line %1$d isn't a valid regex. Fix it or take off the slashes.	Baris %1$d bukan regex yang valid. Perbaiki atau hapus garis miringnya.
-Line %1$d may be slow. Use one + or * at most, {1,9} for the rest.	Baris %1$d bisa lambat. Pakai satu + atau * saja, sisanya {1,9}.
+Line %1$d may be slow on long messages. Try a simpler pattern.	Baris %1$d bisa lambat pada pesan panjang. Coba pola yang lebih sederhana.
 This list is too long for a settings file. Remove a few lines.	Daftar ini terlalu panjang untuk file pengaturan. Hapus beberapa baris.
 One filter a line	Satu filter per baris
 Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.	Teks pada satu baris cocok di mana pun teks itu muncul dalam pesan. Baris di antara garis miring, seperti /crypto|airdrop/, adalah ekspresi reguler. Huruf besar dan kecil tidak berpengaruh.

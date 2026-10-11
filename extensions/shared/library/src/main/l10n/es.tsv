@@ -45,7 +45,7 @@ After Telegram restarts, every switch except Debug logging acts as if it were of
 Hide ads	Ocultar anuncios
 Links, updates, backup and more	Enlaces, actualizaciones, copia de seguridad y más
 Privacy	Privacidad
-Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram app. Pause, Debug logging, the update check, UnifiedPush and Folders by chat type stay out.	Guarda en un archivo tus interruptores, listas de filtros y tamaño de stickers, para todas las cuentas de esta app de Telegram. Pausar, Registro de depuración, la comprobación de actualizaciones, UnifiedPush y Carpetas por tipo de chat se quedan fuera.
+Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram app. Pause, Debug logging, the HushTelegram release check, UnifiedPush and Folders by chat type stay out.	Guarda en un archivo tus interruptores, listas de filtros y tamaño de stickers, para todas las cuentas de esta app de Telegram. Pausar, Registro de depuración, la búsqueda de versiones de HushTelegram, UnifiedPush y Carpetas por tipo de chat se quedan fuera.
 Settings exported. The app wouldn't let HushTelegram check it.	Configuración exportada. La app no dejó que HushTelegram la revisara.
 That app is slow to answer. Nothing was changed.	Esa app tarda en responder. No se cambió nada.
 That file's app still hasn't answered. Try again later.	La app de ese archivo aún no responde. Inténtalo más tarde.
@@ -440,7 +440,7 @@ No filters yet.	Aún no hay filtros.
 A list holds up to %1$d filters.	Una lista admite hasta %1$d filtros.
 Line %1$d is longer than %2$d characters.	La línea %1$d tiene más de %2$d caracteres.
 Line %1$d isn't a valid regex. Fix it or take off the slashes.	La línea %1$d no es una expresión válida. Corrígela o quita las barras.
-Line %1$d may be slow. Use one + or * at most, {1,9} for the rest.	La línea %1$d podría ser lenta. Usa un solo + o *, y {1,9} para el resto.
+Line %1$d may be slow on long messages. Try a simpler pattern.	La línea %1$d podría ser lenta con mensajes largos. Prueba un patrón más simple.
 This list is too long for a settings file. Remove a few lines.	Lista demasiado larga para el archivo de configuración. Quita unas líneas.
 One filter a line	Un filtro por línea
 Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.	El texto de una línea coincide dondequiera que aparezca en un mensaje. Una línea entre barras, como /crypto|airdrop/, es una expresión regular. No importan las mayúsculas.

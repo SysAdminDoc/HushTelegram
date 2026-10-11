@@ -704,7 +704,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         backup.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.EXPORT,
                 L10n.t("Export settings"),
                 L10n.t("Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram"
-                        + " app. Pause, Debug logging, the update check, UnifiedPush and Folders by chat type stay out.")),
+                        + " app. Pause, Debug logging, the HushTelegram release check, UnifiedPush and Folders by chat type"
+                        + " stay out.")),
                 SettingsIcons.EXPORT));
         // The preview gives a count of the switches, not each switch by name.
         backup.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.IMPORT,

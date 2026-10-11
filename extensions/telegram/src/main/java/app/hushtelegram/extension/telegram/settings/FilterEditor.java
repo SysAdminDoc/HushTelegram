@@ -63,7 +63,7 @@ final class FilterEditor {
                 case BROKEN:
                     return L10n.f("Line %1$d isn't a valid regex. Fix it or take off the slashes.", i + 1);
                 default:
-                    return L10n.f("Line %1$d may be slow. Use one + or * at most, {1,9} for the rest.", i + 1);
+                    return L10n.f("Line %1$d may be slow on long messages. Try a simpler pattern.", i + 1);
             }
         }
         if (!MessageFilters.fits(MessageFilters.lines(typed))) {

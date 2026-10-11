@@ -45,7 +45,7 @@ After Telegram restarts, every switch except Debug logging acts as if it were of
 Hide ads	Reklamları gizle
 Links, updates, backup and more	Bağlantılar, güncellemeler, yedekleme ve daha fazlası
 Privacy	Gizlilik
-Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram app. Pause, Debug logging, the update check, UnifiedPush and Folders by chat type stay out.	Anahtarlarınızı, filtre listelerinizi ve çıkartma boyutunu bir dosyaya kaydeder; bu Telegram uygulamasındaki tüm hesaplar için geçerlidir. Duraklat, Hata ayıklama günlüğü, güncelleme denetimi, UnifiedPush ve Sohbet türüne göre klasörler dahil edilmez.
+Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram app. Pause, Debug logging, the HushTelegram release check, UnifiedPush and Folders by chat type stay out.	Anahtarlarınızı, filtre listelerinizi ve çıkartma boyutunu bir dosyaya kaydeder; bu Telegram uygulamasındaki tüm hesaplar için geçerlidir. Duraklat, Hata ayıklama günlüğü, HushTelegram sürüm denetimi, UnifiedPush ve Sohbet türüne göre klasörler dahil edilmez.
 Settings exported. The app wouldn't let HushTelegram check it.	Ayarlar dışa aktarıldı. Uygulama HushTelegram'ın kontrol etmesine izin vermedi.
 That app is slow to answer. Nothing was changed.	Bu uygulama geç yanıt veriyor. Hiçbir şey değiştirilmedi.
 That file's app still hasn't answered. Try again later.	O dosyanın uygulaması hâlâ yanıt vermedi. Sonra tekrar dene.
@@ -440,7 +440,7 @@ No filters yet.	Henüz filtre yok.
 A list holds up to %1$d filters.	Bir liste en fazla %1$d filtre alır.
 Line %1$d is longer than %2$d characters.	%1$d. satır %2$d karakterden uzun.
 Line %1$d isn't a valid regex. Fix it or take off the slashes.	%1$d. satır geçerli bir regex değil. Düzelt ya da eğik çizgileri kaldır.
-Line %1$d may be slow. Use one + or * at most, {1,9} for the rest.	%1$d. satır yavaş olabilir. En fazla bir + veya * kullan, gerisi için {1,9}.
+Line %1$d may be slow on long messages. Try a simpler pattern.	%1$d. satır uzun mesajlarda yavaş olabilir. Daha basit bir kalıp dene.
 This list is too long for a settings file. Remove a few lines.	Bu liste ayar dosyası için çok uzun. Birkaç satırı kaldır.
 One filter a line	Her satıra bir filtre
 Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.	Bir satırdaki metin, mesajın neresinde geçerse geçsin eşleşir. Eğik çizgiler arasındaki bir satır, örneğin /crypto|airdrop/, bir düzenli ifadedir. Büyük ve küçük harf fark etmez.
