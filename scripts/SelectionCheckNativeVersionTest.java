@@ -21,6 +21,8 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef;
 import com.android.tools.smali.dexlib2.immutable.ImmutableAnnotation;
 import com.android.tools.smali.dexlib2.immutable.ImmutableField;
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter;
+import com.android.tools.smali.dexlib2.iface.value.EncodedValue;
+import com.android.tools.smali.dexlib2.immutable.value.ImmutableIntEncodedValue;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -176,6 +178,18 @@ public final class SelectionCheckNativeVersionTest {
                 } catch (IllegalStateException expected) { checks++; }
             }
         }
+        // A rewritten class may drop an explicit default initial value; a real value may not go.
+        var zero = withCanary(source, new ImmutableIntEncodedValue(0));
+        var none = withCanary(source, null);
+        var seven = withCanary(source, new ImmutableIntEncodedValue(7));
+        SelectionCheck.declarations(zero, none, false);
+        checks++;
+        SelectionCheck.declarations(none, zero, false);
+        checks++;
+        try {
+            SelectionCheck.declarations(seven, none, false);
+            throw new AssertionError("DROPPED_INITIAL_VALUE_ACCEPTED");
+        } catch (IllegalStateException expected) { checks++; }
         var added = new ArrayList<Method>();
         source.getMethods().forEach(added::add);
         added.add(new ImmutableMethod(source.getType(), "unexpectedAbstractMethod", java.util.List.of(), "V",
@@ -188,6 +202,16 @@ public final class SelectionCheckNativeVersionTest {
             SelectionCheck.declarations(source, withAbstract, false);
             throw new AssertionError("UNRELATED_ABSTRACT_METHOD_ACCEPTED");
         } catch (IllegalStateException expected) { checks++; }
+    }
+
+    /** The class with one more static int field holding {@code value}. */
+    private static ClassDef withCanary(ClassDef source, EncodedValue value) {
+        var fields = new ArrayList<Field>();
+        source.getFields().forEach(fields::add);
+        fields.add(new ImmutableField(source.getType(), "selectionCanary", "I",
+                AccessFlags.PRIVATE.getValue() | AccessFlags.STATIC.getValue() | AccessFlags.FINAL.getValue(), value, Set.of(), Set.of()));
+        return new ImmutableClassDef(source.getType(), source.getAccessFlags(), source.getSuperclass(),
+                source.getInterfaces(), source.getSourceFile(), source.getAnnotations(), fields, source.getMethods());
     }
 
     public static void main(String[] args) throws Exception {

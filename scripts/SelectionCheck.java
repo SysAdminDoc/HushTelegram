@@ -25,7 +25,9 @@ import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstructio
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference;
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference;
 import com.android.tools.smali.dexlib2.iface.reference.StringReference;
+import com.android.tools.smali.dexlib2.iface.value.EncodedValue;
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference;
+import com.android.tools.smali.dexlib2.util.EncodedValueUtils;
 import com.reandroid.arsc.chunk.PackageBlock;
 import com.reandroid.arsc.chunk.TableBlock;
 import com.reandroid.arsc.chunk.xml.AndroidManifestBlock;
@@ -175,6 +177,16 @@ public final class SelectionCheck {
         return result;
     }
 
+    /**
+     * A field's initial value, with an explicit default (0, false, null) read as none. The DEX
+     * writer drops trailing defaults when a patch rewrites the class, and the field starts at its
+     * type's default either way.
+     */
+    static EncodedValue initialValue(Field field) {
+        EncodedValue value = field.getInitialValue();
+        return value == null || EncodedValueUtils.isDefaultValue(value) ? null : value;
+    }
+
     static void declarations(ClassDef original, ClassDef replacement, boolean allowAddedMethods) {
         require(original.getAccessFlags() == replacement.getAccessFlags()
                 && java.util.Objects.equals(original.getSuperclass(), replacement.getSuperclass())
@@ -187,7 +199,7 @@ public final class SelectionCheck {
         for (Field field : original.getFields()) {
             Field next = fields.remove(field.getName() + ":" + field.getType());
             require(next != null && field.getAccessFlags() == next.getAccessFlags()
-                    && java.util.Objects.equals(field.getInitialValue(), next.getInitialValue())
+                    && java.util.Objects.equals(initialValue(field), initialValue(next))
                     && field.getAnnotations().equals(next.getAnnotations())
                     && field.getHiddenApiRestrictions().equals(next.getHiddenApiRestrictions()));
         }
