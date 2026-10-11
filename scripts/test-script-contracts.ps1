@@ -1536,6 +1536,12 @@ try {
         $noRepository = Resolve-IndexManagerFloor -Root $notARepo -Version '0.0.9' -Commit $releaseCommitSha
         Assert-True ($null -eq $noRepository.Floor -and $noRepository.Note -like '*doesn''t have*') `
             "A tree with no repository gave the index a Manager floor: $($noRepository.Floor), $($noRepository.Note)"
+        # A .git that git can't open is a failure, not "no repository": exit 128 is the same for both.
+        $brokenRepo = Join-Path $notARepo 'broken'
+        New-Item -ItemType Directory -Path $brokenRepo | Out-Null
+        Set-Content -LiteralPath (Join-Path $brokenRepo '.git') -Value ('gitdir: ' + (Join-Path $notARepo 'gone')) -Encoding ASCII
+        Assert-Throws { Resolve-IndexManagerFloor -Root $brokenRepo -Version '0.0.9' -Commit $releaseCommitSha } '*rev-parse --git-dir*failed*' `
+            'A .git that git could not open read as a tree with no repository.'
     } finally {
         $env:GIT_CEILING_DIRECTORIES = $null
         Remove-Item -LiteralPath $notARepo -Recurse -Force -ErrorAction SilentlyContinue

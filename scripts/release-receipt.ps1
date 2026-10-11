@@ -874,6 +874,17 @@ function Invoke-RepoGit {
     }
 }
 
+function Test-GitEntryAbove {
+    # Whether $Path or a folder above it holds a .git, the places git looks for a repository.
+    param([Parameter(Mandatory = $true)][string]$Path)
+    $folder = [IO.Path]::GetFullPath($Path)
+    while ($folder) {
+        if (Test-Path -LiteralPath (Join-Path $folder '.git')) { return $true }
+        $folder = [IO.Path]::GetDirectoryName($folder)
+    }
+    return $false
+}
+
 function Invoke-RepoGitChecked {
     <#
     .SYNOPSIS
@@ -1050,9 +1061,14 @@ function Resolve-IndexManagerFloor {
         }
     }
     # A tree with no repository (an export, a copy) holds no tag, which is the "isn't in this clone"
-    # answer below. Once there is a repository, a git failure is an error.
+    # answer below. Once there is a repository, a git failure is an error, including git refusing
+    # to open one (safe.directory, a broken worktree link), which fails with the same exit 128.
     $null = Invoke-RepoGit -Root $Root -Arguments @('rev-parse', '--git-dir')
-    $inRepository = $LASTEXITCODE -eq 0
+    $gitDirExit = $LASTEXITCODE
+    $inRepository = $gitDirExit -eq 0
+    if (-not $inRepository -and (Test-GitEntryAbove -Path $Root)) {
+        throw "git rev-parse --git-dir failed in $Root (exit $gitDirExit), though a .git is there."
+    }
     if ($Commit -notmatch '^[0-9a-f]{40}$' -and $inRepository) {
         $Commit = "$(Invoke-RepoGitChecked -Root $Root -Arguments @('rev-parse', '--verify', '--quiet', "refs/tags/$tag^{commit}") -AcceptExit @(0, 1) |
             Select-Object -First 1)".Trim()
