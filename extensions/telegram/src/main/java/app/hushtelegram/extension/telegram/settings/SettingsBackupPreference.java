@@ -39,13 +39,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Logger;
 import app.hushtelegram.extension.shared.Utils;
+import app.hushtelegram.extension.shared.settings.BooleanSetting;
+import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 
@@ -59,7 +63,7 @@ import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
  * about a request is kept on the page. Its code says which it was, and the file's address comes
  * with the result.
  *
- * <p>An import reads the file first and shows how many switches it changes. Nothing is written
+ * <p>An import reads the file first and shows which switches it changes. Nothing is written
  * until the person says so, and then everything is written in one commit. The preview is kept in
  * the page's saved state, so a rotation or a trip away from Telegram brings it back.
  *
@@ -358,6 +362,9 @@ public class SettingsBackupPreference extends Preference {
         if (size) {
             message += (message.isEmpty() ? "" : " ") + L10n.t("The sticker size will change.");
         }
+        // Each switch by name, so a file someone shared can't turn Open links externally or Disable
+        // analytics around without it showing here.
+        if (switches > 0) message += "\n\n" + String.join("\n", switchLines(page, snapshot));
         if (snapshot.unknown > 0) {
             message += "\n\n" + L10n.quantity(snapshot.unknown,
                     "%1$d item in that file isn't a setting this version of HushTelegram knows, so it'll be left out.",
@@ -380,6 +387,31 @@ public class SettingsBackupPreference extends Preference {
         }
         page.importPreview = builder.show();
         ScreenColors.dialog(page.importPreview);
+    }
+
+    /** One line per switch the file changes, in the order the file holds them, saying which way it goes. */
+    static List<String> switchLines(HushTelegramPreferenceFragment page, SettingsBackup.Snapshot snapshot) {
+        List<String> lines = new ArrayList<>();
+        for (Map.Entry<Setting<?>, Object> change : snapshot.changes().entrySet()) {
+            if (!(change.getKey() instanceof BooleanSetting)) continue;
+            String title = switchTitle(page, (BooleanSetting) change.getKey());
+            lines.add(Boolean.TRUE.equals(change.getValue())
+                    ? L10n.f("%1$s turns on", title) : L10n.f("%1$s turns off", title));
+        }
+        return lines;
+    }
+
+    /**
+     * What the switch's row is called on the page, or its patch's name when this build draws no row
+     * for it, so the line names the switch the way the person sees it.
+     */
+    static String switchTitle(HushTelegramPreferenceFragment page, BooleanSetting setting) {
+        Preference row = page.findPreference(setting.key);
+        if (row != null && row.getTitle() != null) return row.getTitle().toString();
+        for (PatchFamily family : PatchFamily.values()) {
+            if (family.switches.contains(setting)) return L10n.t(family.patchName);
+        }
+        return setting.key;
     }
 
     private static void answered(HushTelegramPreferenceFragment page) {

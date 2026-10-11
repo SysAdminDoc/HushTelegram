@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Settings:** Import settings now lists every switch the file changes and which way it goes, like "Hide ads turns off", under the count. A file someone shared with you can't quietly turn off Stop usage reports anymore.
+
 * **Telegram:** When Telegram turns down the API ID your build signs in with, the phone number screen now says so, with a button that opens the guide to using your own ID. Before, it just sat there after you tapped the arrow. This covers API_ID_PUBLISHED_FLOOD, the built-in ID being refused, and API_ID_INVALID, a registered ID or hash with a typo in it. Reported in #11 and #3.
 
 * **Telegram:** Keep deleted messages remembers the newest 5,000 kept messages per account. Past that, the oldest ones now go to Telegram's own deletion, the way they would have without the switch. Before, they stayed in the chat without their deleted label, where Clear kept messages couldn't reach them.

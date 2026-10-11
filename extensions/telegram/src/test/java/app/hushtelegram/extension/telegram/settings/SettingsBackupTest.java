@@ -805,8 +805,10 @@ public class SettingsBackupTest {
             for (BooleanSetting setting : SettingsBackup.ALLOWLIST) setting.save(!setting.savedValue());
             deliver(activity, tap(activity, page, IMPORT_ROW), new String(SettingsFileProvider.get(uri), StandardCharsets.UTF_8));
             AlertDialog preview = shownPreview();
-            assertEquals(SettingsBackup.ALLOWLIST.size() + " switches will change.",
-                    String.valueOf(shadowOf(preview).getMessage()));
+            String[] said = String.valueOf(shadowOf(preview).getMessage()).split("\n");
+            assertEquals(SettingsBackup.ALLOWLIST.size() + " switches will change.", said[0]);
+            assertEquals("every switch gets its own line", SettingsBackup.ALLOWLIST.size() + 2, said.length);
+            assertEquals("Hide ads turns off", said[2]);
             preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             settle();
             for (Map.Entry<BooleanSetting, Boolean> entry : exported.entrySet()) {
@@ -854,8 +856,9 @@ public class SettingsBackupTest {
             deliver(activity, started, file.toString());
             AlertDialog preview = shownPreview();
             assertEquals("Import settings", String.valueOf(shadowOf(preview).getTitle()));
-            assertEquals("2 switches will change.\n\n1 item in that file isn't a setting this version of "
-                    + "HushTelegram knows, so it'll be left out.", String.valueOf(shadowOf(preview).getMessage()));
+            assertEquals("2 switches will change.\n\nHide ads turns off\nTurn off Telegram's update checks turns off"
+                    + "\n\n1 item in that file isn't a setting this version of HushTelegram knows, so it'll be left out.",
+                    String.valueOf(shadowOf(preview).getMessage()));
             assertEquals("the preview wrote something", before, store());
             assertEquals("Import", String.valueOf(preview.getButton(AlertDialog.BUTTON_POSITIVE).getText()));
             assertEquals("Cancel", String.valueOf(preview.getButton(AlertDialog.BUTTON_NEGATIVE).getText()));
@@ -973,7 +976,8 @@ public class SettingsBackupTest {
 
             deliver(rebuilt, started, file);
             AlertDialog preview = shownPreview();
-            assertEquals("1 switch will change.", String.valueOf(shadowOf(preview).getMessage()));
+            assertEquals("1 switch will change.\n\nTurn off Telegram's update checks turns off",
+                    String.valueOf(shadowOf(preview).getMessage()));
             preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             settle();
             assertFalse(Settings.DISABLE_UPDATE_CHECKS.savedValue());
@@ -1009,7 +1013,7 @@ public class SettingsBackupTest {
             deliver(controller.get(), tap(controller.get(), page, IMPORT_ROW), file);
             AlertDialog first = shownPreview();
             String message = String.valueOf(shadowOf(first).getMessage());
-            assertEquals("2 switches will change.", message);
+            assertEquals("2 switches will change.\n\nHide ads turns off\nStop usage reports turns off", message);
 
             controller.recreate();
             ShadowLooper.idleMainLooper();
