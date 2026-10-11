@@ -118,6 +118,10 @@ public class SettingsBackupTest {
         out.put("hushtelegram_chat_type_folders",
                 "Flipping it makes or removes folders on the Telegram account. An import would flip it "
                         + "without doing either, so it would say folders are there that aren't.");
+        out.put("hushtelegram_unified_push",
+                "On, it signs Telegram up with a push app at the next start and routes every wake-up through "
+                        + "that app, picking the only one installed on its own. Like the release check, that's a "
+                        + "choice for the phone's own screen, not for a file someone shared.");
         return Collections.unmodifiableMap(out);
     }
 
@@ -208,7 +212,7 @@ public class SettingsBackupTest {
                         Settings.DISABLE_ANALYTICS, Settings.DISABLE_CALL_DEBUG, Settings.DISABLE_DRAFT_PREVIEWS,
                         Settings.GALLERY_CAMERA_ON_TAP,
                         Settings.OPEN_EXTERNAL_LINKS, Settings.STRIP_LINK_TRACKING, Settings.DISABLE_UPDATE_CHECKS,
-                        Settings.REPAIR_FIREBASE_PUSH, Settings.UNIFIED_PUSH),
+                        Settings.REPAIR_FIREBASE_PUSH),
                 SettingsBackup.ALLOWLIST);
     }
 
@@ -445,8 +449,8 @@ public class SettingsBackupTest {
                 shownPreview().getButton(AlertDialog.BUTTON_POSITIVE).performClick();
                 settle();
             }
-            assertEquals("Couldn't import the settings, and couldn't put back the ones you had. "
-                    + "Check the switches on this screen.", ShadowToast.getTextOfLatestToast());
+            assertEquals("Couldn't import or restore old settings. Check the switches.",
+                    ShadowToast.getTextOfLatestToast());
             assertEquals(false, store().get(Settings.HIDE_ADS.key));
             assertFalse(Settings.HIDE_ADS.savedValue());
             assertFalse("the screen shows a switch the store doesn't hold", row.isChecked());
@@ -822,7 +826,7 @@ public class SettingsBackupTest {
                 ShadowToast.reset();
                 click(page.findPreference(row));
                 ShadowLooper.idleMainLooper();
-                assertEquals(row, "This phone has no file picker, so there's no way to choose a file here.",
+                assertEquals(row, "This phone has no file picker, so you can't choose a file here.",
                         ShadowToast.getTextOfLatestToast());
                 assertTrue(row + " stayed out of reach", page.findPreference(row).isEnabled());
             }
@@ -1180,16 +1184,11 @@ public class SettingsBackupTest {
 
     // ---- The app holding the file ------------------------------------------------------------
 
-    private static final String EXPORT_TIMEOUT = "The app holding the settings file is taking too long, so HushTelegram "
-            + "stopped waiting. That app may still finish saving it, so check the file before you rely on it.";
-    private static final String IMPORT_TIMEOUT =
-            "The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.";
-    private static final String STALLED = "The app holding the last settings file still hasn't answered. Try again later.";
-    private static final String MISMATCH =
-            "The settings file was saved, but what's in it doesn't match what was written. Save it again "
-                    + "as a new file.";
-    private static final String UNCHECKED = "Settings exported. The app holding the file wouldn't let HushTelegram "
-            + "read it back, so it wasn't checked.";
+    private static final String EXPORT_TIMEOUT = "That app is slow. It may still save the file, so check it.";
+    private static final String IMPORT_TIMEOUT = "That app is slow to answer. Nothing was changed.";
+    private static final String STALLED = "That file's app still hasn't answered. Try again later.";
+    private static final String MISMATCH = "Saved, but the file doesn't match. Save it again as a new file.";
+    private static final String UNCHECKED = "Settings exported. The app wouldn't let HushTelegram check it.";
 
     /**
      * An app that turns "wt" down gets "w", which here keeps the old file's longer tail. The file is

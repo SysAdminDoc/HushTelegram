@@ -79,9 +79,10 @@ public final class SettingsBackup {
     static final String SETTINGS_NAME = "settings";
 
     /**
-     * The switches a file carries, and the only settings an import can write: every feature
-     * switch, and nothing of HushTelegram's own. A switch added to {@link Settings} stays out
-     * until someone decides it belongs here, and SettingsBackupTest fails until they do.
+     * The switches a file carries, and the only settings an import can write: the feature
+     * switches, apart from the few SettingsBackupTest's STAYS_OUT names with a reason, and nothing
+     * of HushTelegram's own. A switch added to {@link Settings} stays out until someone decides it
+     * belongs here, and SettingsBackupTest fails until they do.
      */
     static final List<BooleanSetting> ALLOWLIST = Collections.unmodifiableList(Arrays.asList(
             Settings.HIDE_ADS,
@@ -151,8 +152,7 @@ public final class SettingsBackup {
             Settings.OPEN_EXTERNAL_LINKS,
             Settings.STRIP_LINK_TRACKING,
             Settings.DISABLE_UPDATE_CHECKS,
-            Settings.REPAIR_FIREBASE_PUSH,
-            Settings.UNIFIED_PUSH));
+            Settings.REPAIR_FIREBASE_PUSH));
 
     /**
      * The text a file carries besides the switches: the message filters, each list as a JSON array
