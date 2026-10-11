@@ -23,6 +23,7 @@ import android.text.TextWatcher;
 import android.text.InputType;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -248,10 +249,27 @@ public final class SettingsDialog extends DialogFragment {
         place.setMarginEnd(dp(20));
         place.bottomMargin = dp(8);
         root.addView(results, place);
-        // A newly opened screen must not steal focus and raise the keyboard.
+        // A newly opened screen must not steal focus and raise the keyboard, so the screen itself
+        // holds focus. It keeps it when a keyboard takes over, and no view lies below or above a
+        // view this tall, so a key that moves focus hands it to the page's list.
         root.setFocusableInTouchMode(true);
+        root.setOnKeyListener((view, key, event) -> view.isFocused() && event.getAction() == KeyEvent.ACTION_DOWN
+                && movesFocus(key) && focusList());
         root.requestFocus();
         searchBox.setVisibility(View.GONE);
+    }
+
+    /** Up, down and Tab, the keys that move a keyboard's focus between rows. */
+    static boolean movesFocus(int key) {
+        return key == KeyEvent.KEYCODE_DPAD_DOWN || key == KeyEvent.KEYCODE_DPAD_UP || key == KeyEvent.KEYCODE_TAB;
+    }
+
+    /** Gives the page's list a keyboard's focus, where it selects the first row it can stop on. */
+    private boolean focusList() {
+        HushTelegramPreferenceFragment page = page();
+        View content = page == null ? null : page.getView();
+        View list = content == null ? null : content.findViewById(android.R.id.list);
+        return list != null && list.requestFocus();
     }
 
     void showPage(CharSequence title, boolean home, String query) {

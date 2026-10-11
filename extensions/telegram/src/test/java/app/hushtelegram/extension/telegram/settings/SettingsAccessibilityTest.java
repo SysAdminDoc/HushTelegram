@@ -266,6 +266,29 @@ public class SettingsAccessibilityTest {
         assertEquals("Enter moved the keyboard out of the list", list, root.findFocus());
     }
 
+    /**
+     * The opened screen holds focus itself so the search box doesn't raise the keyboard, and keeps
+     * it when a keyboard takes over. On the S22 every DOWN from there went nowhere, since nothing
+     * lies below a view as tall as the screen. The first DOWN now lands on the status card.
+     */
+    @Test
+    public void theFirstDownFromTheOpenedScreenStopsOnTheStatusCard() throws Exception {
+        SettingsDialog dialog = SettingsL10nTest.show(controller.get());
+        View screen = dialog.getView();
+        ListView list = screen.findViewById(android.R.id.list);
+        screen.requestFocus();
+        leaveTouchMode(list);
+        ShadowLooper.idleMainLooper();
+        View root = list.getRootView();
+        assertEquals("leaving touch mode moved focus off the screen", screen, root.findFocus());
+
+        assertTrue("the screen didn't take DOWN", press(root, android.view.KeyEvent.KEYCODE_DPAD_DOWN));
+        assertEquals("DOWN didn't reach the list", list, root.findFocus());
+        assertEquals("the keyboard's first stop isn't the status card", 0, list.getSelectedItemPosition());
+        assertTrue("the status card shows no ring", ringShows(list.getSelectedView().getBackground()));
+        assertFalse("a key that doesn't move focus was taken", SettingsDialog.movesFocus(android.view.KeyEvent.KEYCODE_ENTER));
+    }
+
     /** A row a finger is on looks as it always did, and the keyboard's row has the accent ring. */
     @Test
     public void onlyTheKeyboardsRowWearsTheRing() {
