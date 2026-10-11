@@ -109,20 +109,24 @@ final class GoogleTranslate {
             }
             int code = connection.getResponseCode();
             if (code != HttpURLConnection.HTTP_OK) throw new IOException("translate answered " + code);
-            return parse(read(connection.getInputStream()));
+            return parse(read(connection.getInputStream(), MAX_ANSWER, "translate answer too large"));
         } finally {
             connection.disconnect();
         }
     }
 
-    private static String read(InputStream in) throws IOException {
+    /**
+     * Reads an answer as UTF-8 and closes the stream. Past {@code limit} bytes it stops with
+     * {@code tooLarge}, so a service can't fill the phone's memory. {@link AiTranslate} reads with it too.
+     */
+    static String read(InputStream in, int limit, String tooLarge) throws IOException {
         try (InputStream stream = in) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buffer = new byte[8192];
             int n;
             while ((n = stream.read(buffer)) > 0) {
                 out.write(buffer, 0, n);
-                if (out.size() > MAX_ANSWER) throw new IOException("translate answer too large");
+                if (out.size() > limit) throw new IOException(tooLarge);
             }
             return out.toString("UTF-8");
         }

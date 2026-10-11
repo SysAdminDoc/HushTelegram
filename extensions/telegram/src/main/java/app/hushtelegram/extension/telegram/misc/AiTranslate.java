@@ -6,9 +6,7 @@ package app.hushtelegram.extension.telegram.misc;
 
 import androidx.annotation.Nullable;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -181,22 +179,9 @@ public final class AiTranslate {
             int code = connection.getResponseCode();
             if (code == HttpURLConnection.HTTP_UNAUTHORIZED || code == HttpURLConnection.HTTP_FORBIDDEN) throw new KeyRefused(code);
             if (code != HttpURLConnection.HTTP_OK) throw new IOException("AI service answered " + code);
-            return parse(read(connection.getInputStream()), target, text);
+            return parse(GoogleTranslate.read(connection.getInputStream(), MAX_ANSWER, "AI service answer too large"), target, text);
         } finally {
             connection.disconnect();
-        }
-    }
-
-    private static String read(InputStream in) throws IOException {
-        try (InputStream stream = in) {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] buffer = new byte[8192];
-            int n;
-            while ((n = stream.read(buffer)) > 0) {
-                out.write(buffer, 0, n);
-                if (out.size() > MAX_ANSWER) throw new IOException("AI service answer too large");
-            }
-            return out.toString("UTF-8");
         }
     }
 }
