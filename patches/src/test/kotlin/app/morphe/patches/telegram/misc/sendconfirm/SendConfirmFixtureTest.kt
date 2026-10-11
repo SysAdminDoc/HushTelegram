@@ -11,8 +11,8 @@ import app.morphe.PatchContexts
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
-import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
@@ -50,7 +50,7 @@ class SendConfirmFixtureTest {
         val body = m.controlBody()
         if (body.isEmpty()) return false
         if (instance && m.returnType == "V" && VideoShape.values().any { it.target == params } && body.any { it.controlRef() == CAMERA_ALLOWED }) return true
-        return body.any { it.controlCall()?.let { c -> c.returnType == "V" && c.parameterTypes.map(CharSequence::toString) == callParameters } == true }
+        return body.any { it.call()?.let { c -> c.returnType == "V" && c.parameterTypes.map(CharSequence::toString) == callParameters } == true }
     }
 
     @Test fun `each question stands in front of its method and each call goes through the extension`() {

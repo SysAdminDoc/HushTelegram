@@ -19,7 +19,6 @@ import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
-import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
@@ -28,6 +27,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -164,7 +164,7 @@ internal fun BytecodePatchContext.resolveBlackTheme(): BlackThemeSite {
         val key = body[put].namedRegisters()[1]
         // The key's own result, with nothing writing the register between it and the put.
         val written = (put - 1 downTo 1).firstOrNull { body[it].opcode.setsRegister() && (body[it] as? OneRegisterInstruction)?.registerA == key }
-        written?.takeIf { body[it].opcode == Opcode.MOVE_RESULT && body[it - 1].isStaticCall(listOf(STRING), "I") }?.let { body[it - 1].controlCall() }
+        written?.takeIf { body[it].opcode == Opcode.MOVE_RESULT && body[it - 1].isStaticCall(listOf(STRING), "I") }?.let { body[it - 1].call() }
     }
     val keyLookup = lookups.distinctBy { it.toString() }.controlSingle("theme key lookup")
     val lookupOwner = mutableClassDefByOrNull(keyLookup.definingClass.toString())
@@ -192,7 +192,7 @@ internal fun BytecodePatchContext.resolveBlackTheme(): BlackThemeSite {
 
 private fun Instruction.isStaticCall(parameters: List<String>, result: String) =
     (opcode == Opcode.INVOKE_STATIC || opcode == Opcode.INVOKE_STATIC_RANGE) &&
-        controlCall()?.let { it.parameterTypes.map { p -> p.toString() } == parameters && it.returnType == result } == true
+        call()?.let { it.parameterTypes.map { p -> p.toString() } == parameters && it.returnType == result } == true
 
 /** The writes of [register] that can reach instruction [at], along branches and handlers. */
 private fun reachingWrites(method: Method, register: Int, at: Int): Set<Int> {

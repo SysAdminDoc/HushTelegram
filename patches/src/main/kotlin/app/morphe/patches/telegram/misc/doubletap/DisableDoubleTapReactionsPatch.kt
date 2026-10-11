@@ -11,6 +11,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.*
 import app.morphe.patches.telegram.misc.localcontrols.*
 import app.morphe.patches.telegram.misc.settings.settingsPatch
+import app.morphe.util.call
 import app.morphe.util.superclassChain
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
@@ -68,7 +69,7 @@ internal fun BytecodePatchContext.resolveDoubleTapReactions(): List<DoubleTapSit
                 cls.methods.any { it.controlShape(listOf("Landroid/view/View;"), "Z") } }.controlSingle("chat double-tap delegate")
             val callers = mutableListOf<Method>()
             classDefForEach { cls -> cls.methods.filterTo(callers) { caller -> caller.controlBody().any { instruction ->
-                instruction.controlCall()?.let { call -> call.definingClass in listOf(delegate.type, owner.type) && call.name == method.name &&
+                instruction.call()?.let { call -> call.definingClass in listOf(delegate.type, owner.type) && call.name == method.name &&
                     call.controlShape(listOf("Landroid/view/View;", "F", "F"), "V") } == true
             } } }
             val caller = callers.controlSingle("chat reaction gesture caller")
@@ -76,19 +77,19 @@ internal fun BytecodePatchContext.resolveDoubleTapReactions(): List<DoubleTapSit
             val callerBody = caller.controlBody()
             controlShape(caller.name == "onDoubleTap" && caller.controlCallable(false) && caller.controlShape(listOf("Landroid/view/MotionEvent;"), "Z") &&
                 "Landroid/view/GestureDetector\$SimpleOnGestureListener;" in superclassChain(callerOwner.type).toList() &&
-                callerBody.count { it.controlCall()?.let { call -> call.definingClass == delegate.type && call.name == method.name &&
+                callerBody.count { it.call()?.let { call -> call.definingClass == delegate.type && call.name == method.name &&
                     call.controlShape(listOf("Landroid/view/View;", "F", "F"), "V") } == true } == 1 &&
-                callerBody.count { it.controlCall()?.let { call -> call.definingClass == delegate.type && call.controlShape(listOf("Landroid/view/View;"), "Z") } == true } == 1 &&
+                callerBody.count { it.call()?.let { call -> call.definingClass == delegate.type && call.controlShape(listOf("Landroid/view/View;"), "Z") } == true } == 1 &&
                 listOf("getX", "getY").all { coordinate -> callerBody.count { it.controlRef() == "Landroid/view/MotionEvent;->$coordinate()F" } == 1 },
                 "chat reaction is no longer confined to the native double-tap gesture")
             dispatcher = callerOwner.methods.filter { it.toString() == caller.toString() }.controlSingle("chat gesture dispatcher")
             controlShape(body.count { it.controlRef() == DOUBLE_TAP_CHOICE } == 1 &&
-                body.count { it.controlCall()?.let { call -> call.parameterTypes.take(2).map { p -> p.toString() } ==
+                body.count { it.call()?.let { call -> call.parameterTypes.take(2).map { p -> p.toString() } ==
                     listOf("Landroid/view/View;", "Lorg/telegram/messenger/MessageObject;") && call.returnType == "V" } == true } == 2 &&
                 body.last().opcode == Opcode.RETURN_VOID, "chat reaction sinks changed")
         } else {
             controlShape(owner.superclass == "Landroid/view/GestureDetector\$SimpleOnGestureListener;" &&
-                body.count { it.controlRef() == DOUBLE_TAP_CHOICE } == 3 && body.count { it.controlCall()?.let { call ->
+                body.count { it.controlRef() == DOUBLE_TAP_CHOICE } == 3 && body.count { it.call()?.let { call ->
                     call.definingClass == "Lorg/telegram/messenger/MessageObject;" && call.name == "selectReaction" } == true } == 1,
                 "reaction preview gesture changed")
         }

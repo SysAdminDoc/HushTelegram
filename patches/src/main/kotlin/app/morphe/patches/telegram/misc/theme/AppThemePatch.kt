@@ -11,9 +11,9 @@ import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
-import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlString
+import app.morphe.util.call
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -44,7 +44,7 @@ internal fun asksCurrentThemeDark(method: Method, isDark: Method): Boolean {
     val body = method.controlBody()
     if (body.map { it.opcode } != listOf(Opcode.SGET_OBJECT, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT, Opcode.RETURN)) return false
     val current = (body[0] as ReferenceInstruction).reference as? FieldReference ?: return false
-    val asked = body[1].controlCall() ?: return false
+    val asked = body[1].call() ?: return false
     return current.type == isDark.definingClass && asked.definingClass == isDark.definingClass &&
         asked.name == isDark.name && asked.returnType == "Z" && asked.parameterTypes.isEmpty()
 }

@@ -16,7 +16,6 @@ import app.morphe.patches.telegram.misc.extension.localRegisterCount
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
-import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
@@ -24,6 +23,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -133,7 +133,7 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
     val frameRead = frameReaders.getValue(layout).controlSingle("sticker frame read")
     val add = layoutBody.getOrNull(frameRead + 1)
     controlShape(add?.controlRef() == ADD_VIEW && add.namedRegisters().getOrNull(1) == layoutBody[frameRead].namedRegisters().first() &&
-        layoutBody.first().controlCall()?.name == "removeAllViews", "the greeting no longer lays the sticker frame out under its text")
+        layoutBody.first().call()?.name == "removeAllViews", "the greeting no longer lays the sticker frame out under its text")
 
     // onMeasure: stop layout requests, then measure twice with LinearLayout's own pass.
     val measure = owner.methods.filter { it.name == "onMeasure" && it.parameterTypes.map(CharSequence::toString) == listOf("I", "I") && it.returnType == "V" }

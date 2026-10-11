@@ -21,6 +21,7 @@ import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.ids.*
 import app.morphe.patches.telegram.misc.paste.*
 import app.morphe.util.ControlFlow
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -111,7 +112,7 @@ class LocalControlsFixtureTest {
             val dismiss = context.mutableClassDefBy(LOCAL_IDS).methods.single { it.name == "nativeDismiss" }.controlBody()
             assertEquals(listOf(Opcode.CHECK_CAST, Opcode.INVOKE_VIRTUAL, Opcode.RETURN_VOID), dismiss.map { it.opcode })
             assertEquals(plan.dismiss.toString(), dismiss[1].controlRef())
-            assertFalse((inserted + add + dismiss).any { it.controlRef()?.contains("access_hash") == true || it.controlCall()?.name == "sendRequest" })
+            assertFalse((inserted + add + dismiss).any { it.controlRef()?.contains("access_hash") == true || it.call()?.name == "sendRequest" })
             assertEquals("${build.name}: local row leaves all server, opening and stock menu methods intact", untouched,
                 hostState(build, context, setOf(plan.method)))
             flags(context, ID_FLAGS, true)
@@ -144,7 +145,7 @@ class LocalControlsFixtureTest {
     @Test fun `changed editor and reaction geometry refuse without any normal or exceptional path mutation`() {
         for (build in Fixtures.declaredBuilds()) {
             val paste: List<Pair<String, (BytecodePatchContext) -> Unit>> = listOf(
-                "missing HTML converter" to { c -> val site = c.resolveNormalPaste().first(); site.method.replaceInstruction(site.method.controlBody().indexOfFirst { it.controlCall()?.name == "getHtmlText" }, "nop") },
+                "missing HTML converter" to { c -> val site = c.resolveNormalPaste().first(); site.method.replaceInstruction(site.method.controlBody().indexOfFirst { it.call()?.name == "getHtmlText" }, "nop") },
                 "paste action moved" to { c -> c.resolveNormalPaste().first().method.replaceInstruction(0, "const v0, 0x1020031") },
                 "copy dispatch removed" to { c -> val site = c.resolveNormalPaste().last(); val at = site.method.controlBody().indexOfFirst { (it as? WideLiteralInstruction)?.wideLiteral == 0x1020021L }; site.method.replaceInstruction(at, "nop") },
                 "stock superclass fallback removed" to { c -> val site = c.resolveNormalPaste().last(); site.method.replaceInstruction(site.method.controlBody().size - 3, "nop") },
@@ -154,11 +155,11 @@ class LocalControlsFixtureTest {
             for ((name, change) in paste) { val c = context(build); change(c); refused(build, name, c) { useNormalPastePatch.execute(c) } }
             val reactions: List<Pair<String, (BytecodePatchContext) -> Unit>> = listOf(
                 "missing reaction choice" to { c -> val site = c.resolveDoubleTapReactions().last(); site.method.replaceInstruction(site.method.controlBody().indexOfFirst { it.controlRef() == DOUBLE_TAP_CHOICE }, "nop") },
-                "reaction sink removed" to { c -> val site = c.resolveDoubleTapReactions().first(); site.method.replaceInstruction(site.method.controlBody().indexOfFirst { it.controlCall()?.parameterTypes?.take(2)?.map { p -> p.toString() } == listOf("Landroid/view/View;", "Lorg/telegram/messenger/MessageObject;") }, "nop") },
+                "reaction sink removed" to { c -> val site = c.resolveDoubleTapReactions().first(); site.method.replaceInstruction(site.method.controlBody().indexOfFirst { it.call()?.parameterTypes?.take(2)?.map { p -> p.toString() } == listOf("Landroid/view/View;", "Lorg/telegram/messenger/MessageObject;") }, "nop") },
                 "private chat gesture" to { c -> makePrivate(c.resolveDoubleTapReactions().first().method) },
                 "duplicate preview gesture" to { c -> duplicateCandidate(c, c.resolveDoubleTapReactions().last().method) },
                 "missing eligibility contract" to { c -> val m = c.resolveDoubleTapReactions().first().method; val owner = c.mutableClassDefBy(m.definingClass); val iface = c.mutableClassDefBy(owner.interfaces.single()); iface.methods.removeAll { it.controlShape(listOf("Landroid/view/View;"), "Z") } },
-                "native double-tap dispatch removed" to { c -> val s = c.resolveDoubleTapReactions().first(); val d = s.dispatcher!!; d.replaceInstruction(d.controlBody().indexOfFirst { it.controlCall()?.name == s.method.name }, "nop") },
+                "native double-tap dispatch removed" to { c -> val s = c.resolveDoubleTapReactions().first(); val d = s.dispatcher!!; d.replaceInstruction(d.controlBody().indexOfFirst { it.call()?.name == s.method.name }, "nop") },
                 "native gesture coordinates removed" to { c -> val d = c.resolveDoubleTapReactions().first().dispatcher!!; d.replaceInstruction(d.controlBody().indexOfFirst { it.controlRef() == "Landroid/view/MotionEvent;->getX()F" }, "nop") },
                 "shared explicit reaction caller" to { c -> duplicate(c, c.resolveDoubleTapReactions().first().dispatcher!!, "explicitReactionFromMenu") },
             )
@@ -170,14 +171,14 @@ class LocalControlsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val mutations: List<Pair<String, (BytecodePatchContext, LocalIdsPlan) -> Unit>> = listOf(
                 "user argument renamed" to { c, _ -> val init = c.mutableClassDefBy(PROFILE).methods.single { it.name == "onFragmentCreate" }; init.replaceInstruction(init.controlBody().indexOfFirst { it.controlString() == "user_id" }, "const-string v1, \"access_hash\"") },
-                "local ID read removed" to { c, _ -> val init = c.mutableClassDefBy(PROFILE).methods.single { it.name == "onFragmentCreate" }; init.replaceInstruction(init.controlBody().indexOfFirst { it.controlCall()?.name == "getLong" }, "nop") },
+                "local ID read removed" to { c, _ -> val init = c.mutableClassDefBy(PROFILE).methods.single { it.name == "onFragmentCreate" }; init.replaceInstruction(init.controlBody().indexOfFirst { it.call()?.name == "getLong" }, "nop") },
                 "static user ID field" to { c, p -> val f = c.mutableClassDefBy(PROFILE).fields.single { it.name == p.user.name }; f.accessFlags = f.accessFlags or AccessFlags.STATIC.value },
                 "static menu field" to { c, p -> val f = c.mutableClassDefBy(PROFILE).fields.single { it.name == p.menu.name }; f.accessFlags = f.accessFlags or AccessFlags.STATIC.value },
                 "different profile receiver" to { c, _ -> val view = c.mutableClassDefBy(PROFILE).methods.single { it.name == "createView" }; val at = view.controlBody().indexOfFirst { it.controlRef() == "Lorg/telegram/messenger/R\$drawable;->ic_ab_other:I" } + 5; val store = view.controlBody()[at]; view.replaceInstruction(at, "iput-object v${store.namedRegisters()[0]}, v0, ${store.controlRef()}") },
                 "overwritten profile receiver alias" to { c, _ -> val view = c.mutableClassDefBy(PROFILE).methods.single { it.name == "createView" }; view.replaceInstruction(3, "const/4 v1, 0x0") },
                 "private native submenu factory" to { c, p -> makePrivate(c.mutableClassDefBy(p.menu.type).methods.single { it.toString() == p.addRow.toString() }) },
                 "native submenu text operand changed" to { c, p -> val factory = c.mutableClassDefBy(p.menu.type).methods.single { it.toString() == p.addRow.toString() }; factory.replaceInstruction(7, "move-object v4, p0") },
-                "native row builder requests transport" to { c, p -> val factory = c.mutableClassDefBy(p.menu.type).methods.single { it.toString() == p.addRow.toString() }; val core = factory.controlBody()[8].controlCall()!!; c.mutableClassDefBy(p.menu.type).methods.single { it.toString() == core.toString() }.replaceInstruction(0, "invoke-static {}, Lorg/telegram/tgnet/ConnectionsManager;->getInstance(I)Lorg/telegram/tgnet/ConnectionsManager;") },
+                "native row builder requests transport" to { c, p -> val factory = c.mutableClassDefBy(p.menu.type).methods.single { it.toString() == p.addRow.toString() }; val core = factory.controlBody()[8].call()!!; c.mutableClassDefBy(p.menu.type).methods.single { it.toString() == core.toString() }.replaceInstruction(0, "invoke-static {}, Lorg/telegram/tgnet/ConnectionsManager;->getInstance(I)Lorg/telegram/tgnet/ConnectionsManager;") },
                 "private menu owner" to { c, p -> val cls = c.mutableClassDefBy(p.menu.type); cls.accessFlags = cls.accessFlags and AccessFlags.PUBLIC.value.inv() },
                 "missing dismiss bridge target" to { c, p -> c.mutableClassDefBy(p.menu.type).methods.removeAll { it.toString() == p.dismiss.toString() } },
                 "dismiss receiver changed" to { c, p -> c.mutableClassDefBy(p.menu.type).methods.single { it.toString() == p.dismiss.toString() }.replaceInstruction(0, "iget-object v0, v0, " + c.mutableClassDefBy(p.menu.type).methods.single { it.toString() == p.dismiss.toString() }.controlBody()[0].controlRef()) },
@@ -318,7 +319,7 @@ class LocalControlsFixtureTest {
     private fun duplicateCandidate(c: BytecodePatchContext, source: Method) {
         val candidates = mutableListOf<MutableMethod>()
         c.classDefForEach { cls -> cls.methods.filter { it.name == source.name && it.controlShape(source.parameterTypes.map { p -> p.toString() }, source.returnType) &&
-            it.definingClass != source.definingClass && it.controlBody().none { instruction -> instruction.controlRef() == DOUBLE_TAP_CHOICE || instruction.controlCall()?.name == "getHtmlText" } }
+            it.definingClass != source.definingClass && it.controlBody().none { instruction -> instruction.controlRef() == DOUBLE_TAP_CHOICE || instruction.call()?.name == "getHtmlText" } }
             .forEach { m -> candidates += c.mutableClassDefBy(cls.type).methods.single { it.toString() == m.toString() } } }
         val target = candidates.first()
         val owner = c.mutableClassDefBy(target.definingClass)

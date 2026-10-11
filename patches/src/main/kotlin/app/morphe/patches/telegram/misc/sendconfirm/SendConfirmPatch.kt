@@ -18,7 +18,6 @@ import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
-import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
@@ -27,6 +26,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
+import app.morphe.util.call
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
@@ -188,7 +188,7 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
             if (instance && m.returnType == "V") {
                 val shape = VideoShape.values().firstOrNull { it.target == params }
                 if (shape != null && body.any { it.controlRef() == CAMERA_ALLOWED } &&
-                    body.any { it.controlCall()?.let { c -> c.name == "getParentActivity" && c.parameterTypes.isEmpty() && c.returnType == ACTIVITY } == true }) {
+                    body.any { it.call()?.let { c -> c.name == "getParentActivity" && c.parameterTypes.isEmpty() && c.returnType == ACTIVITY } == true }) {
                     videos += Triple(cls.type, signature(m), shape)
                 }
             }

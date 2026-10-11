@@ -18,7 +18,6 @@ import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
-import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
@@ -26,6 +25,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -153,7 +153,7 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
         "the Telegram Features label no longer becomes a row title")
     val title = body[label + 2].namedRegisters().single()
     val factory = (label + 3 until minOf(body.size, label + FACTORY_REACH)).firstOrNull { at ->
-        body[at].opcode in STATIC_CALLS && body[at].controlCall()?.parameterTypes?.map(CharSequence::toString) == ROW_FACTORY
+        body[at].opcode in STATIC_CALLS && body[at].call()?.parameterTypes?.map(CharSequence::toString) == ROW_FACTORY
     }
     controlShape(factory != null && body[factory].namedRegisters().getOrNull(4) == title && (label + 3 until factory).none { body[it].writes(title) },
         "the Telegram Features row isn't made from its title")

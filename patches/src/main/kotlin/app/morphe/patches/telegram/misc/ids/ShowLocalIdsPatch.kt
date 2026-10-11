@@ -15,6 +15,7 @@ import app.morphe.patches.telegram.misc.localcontrols.*
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -103,7 +104,7 @@ internal fun BytecodePatchContext.resolveLocalIds(): LocalIdsPlan {
     fun idField(key: String): FieldReference {
         val at = initial.indices.filter { initial[it].controlString() == key }.controlSingle("$key argument")
         val callAt = at + if (key == "user_id") 2 else 1
-        val call = initial.getOrNull(callAt)?.controlCall()
+        val call = initial.getOrNull(callAt)?.call()
         val field = initial.getOrNull(callAt + 2)?.controlField()
         val args = initial.getOrNull(callAt)?.namedRegisters().orEmpty()
         controlShape(call?.toString() == "Landroid/os/BaseBundle;->getLong(Ljava/lang/String;J)J" &&
@@ -126,7 +127,7 @@ internal fun BytecodePatchContext.resolveLocalIds(): LocalIdsPlan {
     controlShape(create.controlCallable(false) && create.controlShape(listOf("Landroid/content/Context;"), "Landroid/view/View;"), "profile view changed")
     val view = create.controlBody()
     val more = view.indices.filter { view[it].controlRef() == "Lorg/telegram/messenger/R\$drawable;->ic_ab_other:I" }.controlSingle("profile overflow icon")
-    val maker = view.getOrNull(more + 3)?.controlCall()
+    val maker = view.getOrNull(more + 3)?.call()
     val menu = view.getOrNull(more + 5)?.controlField()
     controlShape(view[more].opcode == Opcode.SGET && view[more + 2].opcode == Opcode.CONST_16 &&
         (view[more + 2] as? NarrowLiteralInstruction)?.narrowLiteral == 10 && maker != null &&
@@ -144,7 +145,7 @@ internal fun BytecodePatchContext.resolveLocalIds(): LocalIdsPlan {
     } && method.controlBody().any { it.controlRef() == menu.toString() } }.controlSingle("profile menu builder")
     val body = builder.controlBody()
     controlShape(builder.controlCallable(false) && body.none { (it as? NarrowLiteralInstruction)?.narrowLiteral == LOCAL_ID_ROW }, "profile menu identity collides")
-    val adds = body.mapNotNull { it.controlCall() }.filter { it.definingClass == menu.type &&
+    val adds = body.mapNotNull { it.call() }.filter { it.definingClass == menu.type &&
         it.parameterTypes.map { p -> p.toString() } == listOf("I", "I", "Ljava/lang/String;") }.distinctBy { it.toString() }
     val add = adds.controlSingle("native profile submenu factory")
     val factory = menuClass.methods.filter { it.toString() == add.toString() }.controlSingle("native submenu method")
@@ -152,7 +153,7 @@ internal fun BytecodePatchContext.resolveLocalIds(): LocalIdsPlan {
     controlShape(factory.controlCallable(false) && factory.localRegisterCount() == 8 && factoryBody.map { it.opcode } == listOf(
         Opcode.CONST_4, Opcode.IGET_OBJECT, Opcode.CONST_4, Opcode.CONST_4, Opcode.MOVE_OBJECT, Opcode.MOVE, Opcode.MOVE,
         Opcode.MOVE_OBJECT, Opcode.INVOKE_VIRTUAL_RANGE, Opcode.MOVE_RESULT_OBJECT, Opcode.RETURN_OBJECT), "native submenu factory changed")
-    val core = factoryBody[8].controlCall()
+    val core = factoryBody[8].call()
     controlShape(factoryBody.map { it.namedRegisters() } == listOf(listOf(6), listOf(7, 8), listOf(3), listOf(5), listOf(0, 8),
         listOf(1, 9), listOf(2, 10), listOf(4, 11), (0..7).toList(), listOf(9), listOf(9)) &&
         (factoryBody[0] as NarrowLiteralInstruction).narrowLiteral == 0 && (factoryBody[2] as NarrowLiteralInstruction).narrowLiteral == 0 &&
@@ -161,12 +162,12 @@ internal fun BytecodePatchContext.resolveLocalIds(): LocalIdsPlan {
         "native submenu operands changed")
     val coreFactory = menuClass.methods.filter { it.toString() == core.toString() }.controlSingle("native submenu row builder")
     controlShape(coreFactory.controlCallable(false) && coreFactory.controlBody().none { it.controlRef()?.startsWith("Lorg/telegram/tgnet/") == true ||
-        it.controlCall()?.name in listOf("sendRequest", "sendMessage") }, "native row builder is no longer local")
+        it.call()?.name in listOf("sendRequest", "sendMessage") }, "native row builder is no longer local")
     val item = mutableClassDefBy(add.returnType)
     controlShape(AccessFlags.PUBLIC.isSet(item.accessFlags) && item.superclass == "Landroid/widget/FrameLayout;", "native submenu row isn't a view")
     val dismiss = menuClass.methods.filter { it.controlCallable(false) && it.controlShape(emptyList(), "V") &&
-        it.controlBody().any { ins -> ins.controlCall()?.toString() == "Landroid/widget/PopupWindow;->isShowing()Z" } &&
-        it.controlBody().count { ins -> ins.controlCall()?.name == "dismiss" } == 1 }.controlSingle("native menu dismissal")
+        it.controlBody().any { ins -> ins.call()?.toString() == "Landroid/widget/PopupWindow;->isShowing()Z" } &&
+        it.controlBody().count { ins -> ins.call()?.name == "dismiss" } == 1 }.controlSingle("native menu dismissal")
     val dismissal = dismiss.controlBody()
     controlShape(dismiss.localRegisterCount() == 1 && dismissal.map { it.opcode } == listOf(Opcode.IGET_OBJECT, Opcode.IF_EQZ, Opcode.INVOKE_VIRTUAL,
         Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.IGET_OBJECT, Opcode.INVOKE_VIRTUAL, Opcode.RETURN_VOID) &&
@@ -178,7 +179,7 @@ internal fun BytecodePatchContext.resolveLocalIds(): LocalIdsPlan {
     // The stock final visibility refresh follows this insertion. Its sole normal exit remains intact.
     val index = body.size - 3
     controlShape(body[index].opcode == Opcode.CONST_4 && (body[index] as? NarrowLiteralInstruction)?.narrowLiteral == 0 &&
-        body[index + 1].opcode == Opcode.INVOKE_VIRTUAL && body[index + 1].controlCall()?.let {
+        body[index + 1].opcode == Opcode.INVOKE_VIRTUAL && body[index + 1].call()?.let {
             it.definingClass == PROFILE && it.controlShape(listOf("Z"), "V")
         } == true && body.last().opcode == Opcode.RETURN_VOID, "profile final visibility refresh changed")
     val flow = ControlFlow.of(builder)

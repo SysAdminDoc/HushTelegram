@@ -20,7 +20,6 @@ import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
-import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlMembers
@@ -33,6 +32,7 @@ import app.morphe.patches.telegram.misc.messagemenu.messageMenuBuilders
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -225,7 +225,7 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
     val itemDeclared = chatClass.fields.filter { it.name == translateItem!!.name && it.type == translateItem.type }.controlSingle("${translateItem!!.name} field")
     controlShape(!AccessFlags.STATIC.isSet(itemDeclared.accessFlags), "${translateItem.name} is static")
     val askAt = shown.indexOfFirst { asksHidden(it.controlRef()) }
-    val getter = shown.getOrNull(askAt - 2)?.controlCall()
+    val getter = shown.getOrNull(askAt - 2)?.call()
     controlShape(askAt >= 2 && shown[askAt - 1].opcode == Opcode.MOVE_RESULT_WIDE && shown[askAt - 2].opcode == Opcode.INVOKE_VIRTUAL &&
         getter != null && getter.parameterTypes.isEmpty() && getter.returnType == "J", "the chat's ID getter changed")
     val getterOwner = classDefByOrNull(getter!!.definingClass)
@@ -243,7 +243,7 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
     }
     val (creator, put) = creations.controlSingle("the translate item's creation")
     val made = creator.controlBody()
-    val lazyCall = made.getOrNull(put - 2)?.controlCall()
+    val lazyCall = made.getOrNull(put - 2)?.call()
     controlShape(put >= 3 && made[put - 1].opcode == Opcode.MOVE_RESULT_OBJECT && made[put - 2].opcode == Opcode.INVOKE_VIRTUAL && lazyCall != null &&
         lazyCall.returnType == translateItem.type && lazyCall.parameterTypes.map(CharSequence::toString).let { it.size == 3 && it[0] == "I" && it[1] == "I" },
         "the translate item is no longer added with an ID, an icon and a label")

@@ -13,8 +13,8 @@ import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.extension.localRegisterCount
 import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
-import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -34,7 +34,7 @@ class DisableArchivePullFixtureTest {
             val kept = FixtureDex.classes(build, setOf(MESSAGES_CONTROLLER, ARCHIVE_HIDDEN, SELECTED_ACCOUNT, ARCHIVED_CHATS, ARCHIVE_ICON)
                 .map { it.substringBefore("->") }.toSet()).values
             val chats = FixtureDex.classesWhere(build, { true }) { m ->
-                m.controlBody().any { it.controlCall()?.let { c -> c.definingClass == APPLICATION_LOADER && c.name == "addItemOptions" } == true }
+                m.controlBody().any { it.call()?.let { c -> c.definingClass == APPLICATION_LOADER && c.name == "addItemOptions" } == true }
             }
             val context = PatchContexts.of(ExtensionDex.classes() + (kept + chats).map(ImmutableClassDef::of))
             val sites = context.resolveDisableArchivePull()

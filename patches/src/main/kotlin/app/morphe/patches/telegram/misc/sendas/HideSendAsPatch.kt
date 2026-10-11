@@ -17,12 +17,12 @@ import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
-import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -98,7 +98,7 @@ internal fun BytecodePatchContext.resolveSendAsGate(): SendAsGate {
     val self = method.localRegisterCount()
     shape(body[gate].opcode == Opcode.IF_EQZ && flow.normal[gate].sorted() == listOf(gate + 1, check) &&
         build.opcode == Opcode.INVOKE_VIRTUAL && build.namedRegisters() == listOf(self) &&
-        build.controlCall()?.let { it.definingClass == ENTER_VIEW && it.parameterTypes.isEmpty() && it.returnType == "V" } == true &&
+        build.call()?.let { it.definingClass == ENTER_VIEW && it.parameterTypes.isEmpty() && it.returnType == "V" } == true &&
         flow.normal[gate + 1] == listOf(check), "the Send as button is no longer built only when it shows")
     method.requireThisIntact(PATCH, listOf(gate + 1))
     val shown = body[gate].namedRegisters().single()

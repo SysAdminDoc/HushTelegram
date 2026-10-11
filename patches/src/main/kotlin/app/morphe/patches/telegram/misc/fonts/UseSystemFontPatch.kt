@@ -19,7 +19,6 @@ import app.morphe.patches.telegram.misc.extension.localRegisterCount
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
-import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
@@ -27,6 +26,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
+import app.morphe.util.call
 import app.morphe.util.definitionReaches
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -190,7 +190,7 @@ private fun builtChain(method: Method, start: Int): BuiltChain? {
     var result = -1
     while (result < 0) {
         val step = body.getOrNull(at)
-        val call = step?.controlCall()
+        val call = step?.call()
         when {
             step == null -> controlShape(false, "$name's font builder never builds")
             call?.toString() == BUILD && step.namedRegisters() == listOf(current) -> {

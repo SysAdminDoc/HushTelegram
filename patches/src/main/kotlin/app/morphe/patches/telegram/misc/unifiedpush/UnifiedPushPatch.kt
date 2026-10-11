@@ -25,6 +25,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.requireReachable
 import app.morphe.patches.telegram.misc.settings.settingsPatch
+import app.morphe.util.call
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction

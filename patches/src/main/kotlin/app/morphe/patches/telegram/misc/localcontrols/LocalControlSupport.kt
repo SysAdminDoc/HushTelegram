@@ -29,7 +29,6 @@ internal fun <T> List<T>.controlSingle(why: String): T {
 }
 internal fun Method.controlBody() = implementation?.instructions?.toList().orEmpty()
 internal fun Instruction.controlRef() = (this as? ReferenceInstruction)?.reference?.toString()
-internal fun Instruction.controlCall() = (this as? ReferenceInstruction)?.reference as? MethodReference
 internal fun Instruction.controlField() = (this as? ReferenceInstruction)?.reference as? FieldReference
 internal fun Instruction.controlString() = ((this as? ReferenceInstruction)?.reference as? StringReference)?.string
 internal fun MethodReference.controlShape(parameters: List<String>, result: String) =

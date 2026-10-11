@@ -15,10 +15,10 @@ import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
-import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.util.ControlFlow
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -107,7 +107,7 @@ class AmoledBlackFixtureTest {
             assertEquals(listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.RETURN), stub.map { it.opcode })
             assertEquals(site.keyLookup.toString(), stub[0].controlRef())
             assertTrue("$name: the lookup is the one before the color put", before.indices.any { i ->
-                before[i].controlRef() == SPARSE_PUT && before.subList(maxOf(0, i - 4), i).any { it.controlCall()?.toString() == site.keyLookup.toString() } })
+                before[i].controlRef() == SPARSE_PUT && before.subList(maxOf(0, i - 4), i).any { it.call()?.toString() == site.keyLookup.toString() } })
             val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "amoledBlack" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }
@@ -146,9 +146,9 @@ class AmoledBlackFixtureTest {
             val mutations: List<Pair<String, (BytecodePatchContext, BlackThemeSite) -> Unit>> = listOf(
                 "reader no longer static" to { _, s -> s.method.accessFlags = s.method.accessFlags and AccessFlags.STATIC.value.inv() },
                 "asset no longer opened" to { _, s -> s.method.replaceInstruction(s.method.controlBody().indexOfFirst { i ->
-                    i.controlCall()?.let { it.parameterTypes.map { p -> p.toString() } == listOf("Ljava/lang/String;") && it.returnType == "Ljava/io/File;" } == true }, "nop") },
+                    i.call()?.let { it.parameterTypes.map { p -> p.toString() } == listOf("Ljava/lang/String;") && it.returnType == "Ljava/io/File;" } == true }, "nop") },
                 "keys go in without the lookup" to { _, s -> s.method.replaceInstruction(s.method.controlBody().indexOfFirst {
-                    it.controlCall()?.toString() == s.keyLookup.toString() }, "nop") },
+                    it.call()?.toString() == s.keyLookup.toString() }, "nop") },
                 "reader returns another set" to { _, s -> s.method.replaceInstruction(s.returns.single(), "return-object v${(s.colors + 1) % 16}") },
                 "set swapped on the way out" to { _, s -> s.method.replaceInstruction(close(s), "move-object v${s.colors}, v${(s.colors + 1) % 16}") },
                 "asset parameter overwritten" to { _, s -> s.method.replaceInstruction(close(s),
@@ -198,7 +198,7 @@ class AmoledBlackFixtureTest {
     private fun loadHosts(build: File): List<ClassDef> {
         val parsers = FixtureDex.classesWhere(build, { true }) { method -> method.controlBody().any { it.controlString() == "WLS=" } }
         val lookups = parsers.flatMap { it.methods }.filter { it.returnType == SPARSE_INT_ARRAY }.flatMap { it.controlBody() }
-            .mapNotNull { it.controlCall() }.filter { it.returnType == "I" && it.parameterTypes.map { p -> p.toString() } == listOf("Ljava/lang/String;") }
+            .mapNotNull { it.call() }.filter { it.returnType == "I" && it.parameterTypes.map { p -> p.toString() } == listOf("Ljava/lang/String;") }
             .map { it.definingClass }.filter { it.startsWith("Lorg/telegram/") }.toSet()
         return (parsers + FixtureDex.classes(build, lookups).values).associateBy { it.type }.values.map(ImmutableClassDef::of)
     }

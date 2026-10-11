@@ -13,6 +13,7 @@ import app.morphe.patches.telegram.misc.localcontrols.*
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import app.morphe.util.superclassChain
 import com.android.tools.smali.dexlib2.Opcode
@@ -56,7 +57,7 @@ internal fun BytecodePatchContext.resolveNormalPaste(): List<NormalPasteSite> {
         method.name == "onTextContextMenuItem" && method.controlBody().any { it.controlRef() == HTML }
     } }
     controlShape(found.size == 2, "plain paste editor census changed")
-    val compose = found.filter { it.controlBody().any { instruction -> instruction.controlCall()?.let {
+    val compose = found.filter { it.controlBody().any { instruction -> instruction.call()?.let {
         it.definingClass == "Lorg/telegram/messenger/MessagesController;" && it.name == "richEditorAvailable"
     } == true } }.controlSingle("compose HTML editor")
     val caption = found.filter { it != compose }.controlSingle("caption HTML editor")
@@ -73,7 +74,7 @@ internal fun BytecodePatchContext.resolveNormalPaste(): List<NormalPasteSite> {
         val branch = if (capability == "composePlainPaste") literal + 1 else literal + 3
         controlShape(literal == if (capability == "composePlainPaste") 0 else 1, "$capability paste question moved")
         controlShape(body[branch].opcode == Opcode.IF_NE && body[branch].namedRegisters() == listOf(action, body[literal].namedRegisters().single()), "$capability paste question changed")
-        val fallback = body.indices.filter { body[it].opcode == Opcode.INVOKE_SUPER && body[it].controlCall()?.let {
+        val fallback = body.indices.filter { body[it].opcode == Opcode.INVOKE_SUPER && body[it].call()?.let {
             it.name == "onTextContextMenuItem" && it.controlShape(listOf("I"), "Z")
         } == true }.controlSingle("$capability stock clipboard fallback")
         val flow = ControlFlow.of(method)

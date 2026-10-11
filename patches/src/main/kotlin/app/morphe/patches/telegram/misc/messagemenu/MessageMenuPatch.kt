@@ -22,7 +22,6 @@ import app.morphe.patches.telegram.misc.forward.IS_PREMIUM
 import app.morphe.patches.telegram.misc.forward.MESSAGE_TYPE
 import app.morphe.patches.telegram.misc.forward.NAME_HIDE
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
-import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlMembers
@@ -33,6 +32,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -189,7 +189,7 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     val label = built.indices.filter { built[it].controlRef() == FORWARD_LABEL }.controlSingle("Forward label")
     val option = built.getOrNull(label + 1) as? NarrowLiteralInstruction
     val add = built.getOrNull(label + 2)
-    val helper = add?.controlCall()
+    val helper = add?.call()
     controlShape(built[label].opcode == Opcode.SGET && option != null && built[label + 1].opcode in setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST) &&
         add != null && add.opcode == Opcode.INVOKE_STATIC && helper != null &&
         helper.parameterTypes.map(CharSequence::toString) == listOf("I", "I", LIST, LIST) && helper.returnType == "V" &&
@@ -232,14 +232,14 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     controlShape(ControlFlow.of(choose).normal.none { 0 in it }, "something jumps back to the start of the menu choice")
 
     // The chat's activity, through the getter the choice handler itself uses.
-    val activity = chosen.mapNotNull { it.controlCall() }.firstOrNull { it.name == "getParentActivity" && it.parameterTypes.isEmpty() && it.returnType == ACTIVITY }
+    val activity = chosen.mapNotNull { it.call() }.firstOrNull { it.name == "getParentActivity" && it.parameterTypes.isEmpty() && it.returnType == ACTIVITY }
     val activityOwner = activity?.let { classDefByOrNull(it.definingClass) }
     controlShape(activityOwner != null && AccessFlags.PUBLIC.isSet(activityOwner.accessFlags) && activityOwner.methods.any {
         signature(it) == activity.toString() && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
     }, "the chat screen no longer has its activity")
 
     // Telegram's file provider, which the choice handler's Share hands its files to under the app's ".provider" authority.
-    val provider = chosen.mapNotNull { it.controlCall() }.filter { it.parameterTypes.map(CharSequence::toString) == listOf(CONTEXT, "Ljava/lang/String;", FILE) && it.returnType == URI }
+    val provider = chosen.mapNotNull { it.call() }.filter { it.parameterTypes.map(CharSequence::toString) == listOf(CONTEXT, "Ljava/lang/String;", FILE) && it.returnType == URI }
         .map { it.toString() }.distinct().controlSingle("Telegram's file provider")
     val providerOwner = classDefByOrNull(provider.substringBefore("->"))
     controlShape(providerOwner != null && AccessFlags.PUBLIC.isSet(providerOwner.accessFlags) && providerOwner.methods.any {

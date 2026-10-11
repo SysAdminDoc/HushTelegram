@@ -13,12 +13,12 @@ import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
-import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.requireReachable
 import app.morphe.patches.telegram.misc.settings.settingsPatch
+import app.morphe.util.call
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -372,7 +372,7 @@ internal fun BytecodePatchContext.resolveChatTypeFolders(): String {
     // removeFilter reads dialogFiltersUpdated and hands it straight to NotificationCenter's post.
     val remove = controller.methods.singleOrNull { it.toString() == REMOVE_FILTER }?.controlBody().orEmpty()
     val read = remove.indexOfFirst { it.opcode == Opcode.SGET && it.controlRef() == FILTERS_UPDATED }
-    val post = if (read < 0) null else remove.drop(read + 1).firstOrNull { it.opcode == Opcode.INVOKE_VIRTUAL }?.controlCall()
+    val post = if (read < 0) null else remove.drop(read + 1).firstOrNull { it.opcode == Opcode.INVOKE_VIRTUAL }?.call()
     controlShape(post != null && post.definingClass == NOTIFICATIONS &&
         post.controlShape(listOf("I", "[Ljava/lang/Object;"), "V"), "Telegram's folder list update changed")
 

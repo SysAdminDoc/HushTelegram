@@ -21,7 +21,6 @@ import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
-import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
@@ -31,6 +30,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -223,7 +223,7 @@ internal fun BytecodePatchContext.resolveDisableArchivePull(): ArchivePullSites 
         "hasHiddenArchive no longer checks the hidden flag and the archive folder")
     val dialogs = hiddenBody.mapNotNull { instruction -> instruction.takeIf { it.opcode == Opcode.IGET_OBJECT }?.controlField() }
         .filter { it.definingClass == MESSAGES_CONTROLLER && it.name == "dialogs_dict" }.distinct().controlSingle("the account's dialog map")
-    val lookup = hiddenBody.mapNotNull { it.takeIf { i -> i.opcode in INVOKES }?.controlCall() }
+    val lookup = hiddenBody.mapNotNull { it.takeIf { i -> i.opcode in INVOKES }?.call() }
         .filter { it.definingClass == dialogs.type && it.parameterTypes.map(CharSequence::toString) == listOf("J") && it.returnType == "Ljava/lang/Object;" }
         .distinct().controlSingle("the dialog map's lookup")
     hidden.requireEntryRoom("hasHiddenArchive")
@@ -242,7 +242,7 @@ internal fun BytecodePatchContext.resolveDisableArchivePull(): ArchivePullSites 
     val menus = mutableListOf<Pair<String, String>>()
     classDefForEach { cls ->
         if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
-        cls.methods.filter { m -> m.controlBody().any { it.controlCall()?.let { c -> c.definingClass == APPLICATION_LOADER && c.name == "addItemOptions" } == true } }
+        cls.methods.filter { m -> m.controlBody().any { it.call()?.let { c -> c.definingClass == APPLICATION_LOADER && c.name == "addItemOptions" } == true } }
             .forEach { menus += cls.type to it.ref() }
     }
     val (chats, menuRef) = menus.controlSingle("the chat list's menu")
@@ -250,9 +250,9 @@ internal fun BytecodePatchContext.resolveDisableArchivePull(): ArchivePullSites 
     val menu = chatList.methods.single { it.ref() == menuRef }
     controlShape(!AccessFlags.STATIC.isSet(menu.accessFlags), "the chat list's menu is static")
     val body = menu.controlBody()
-    val call = body.indices.filter { body[it].controlCall()?.let { c -> c.definingClass == APPLICATION_LOADER && c.name == "addItemOptions" } == true }
+    val call = body.indices.filter { body[it].call()?.let { c -> c.definingClass == APPLICATION_LOADER && c.name == "addItemOptions" } == true }
         .controlSingle("the app build's menu entries")
-    val itemOptions = body[call].controlCall()!!.parameterTypes.singleOrNull()?.toString()
+    val itemOptions = body[call].call()!!.parameterTypes.singleOrNull()?.toString()
     controlShape(itemOptions != null && body[call].opcode == Opcode.INVOKE_VIRTUAL && body[call].namedRegisters().size == 2,
         "the app build no longer takes the chat list's menu")
     val options = body[call].namedRegisters()[1]
@@ -265,7 +265,7 @@ internal fun BytecodePatchContext.resolveDisableArchivePull(): ArchivePullSites 
     // Saved Messages is added with the same add the archive entry uses.
     val saved = body.indexOfFirst { it.controlRef() == SAVED_MESSAGES }
     controlShape(saved in 0 until index, "the chat list's menu no longer has Saved Messages before the app build's entries")
-    val add = (saved until index).mapNotNull { at -> body[at].takeIf { it.opcode in INVOKES }?.controlCall() }
+    val add = (saved until index).mapNotNull { at -> body[at].takeIf { it.opcode in INVOKES }?.call() }
         .firstOrNull { it.definingClass == itemOptions }
     val addParameters = add?.parameterTypes?.map(CharSequence::toString).orEmpty()
     controlShape(add != null && addParameters.sorted() in listOf(listOf("I", CHAR_SEQUENCE, RUNNABLE).sorted(), listOf("I", CHAR_SEQUENCE, RUNNABLE, "Z").sorted()),
@@ -284,7 +284,7 @@ internal fun BytecodePatchContext.resolveDisableArchivePull(): ArchivePullSites 
                 ((code[it] as ReferenceInstruction).reference as TypeReference).type == chats } ?: continue
             val fragment = code[made].namedRegisters()[0]
             if (code.getOrNull(made + 1)?.controlRef() != "$chats-><init>($BUNDLE)V" || code[made + 1].namedRegisters().firstOrNull() != fragment) continue
-            val shown = code.getOrNull(made + 2)?.takeIf { it.opcode == Opcode.INVOKE_VIRTUAL && it.namedRegisters().getOrNull(1) == fragment }?.controlCall() ?: continue
+            val shown = code.getOrNull(made + 2)?.takeIf { it.opcode == Opcode.INVOKE_VIRTUAL && it.namedRegisters().getOrNull(1) == fragment }?.call() ?: continue
             if (shown.returnType == "Z" && shown.parameterTypes.map(CharSequence::toString) == listOf(chatList.superclass) &&
                 (code.subList(at, made).any { it.controlString() == "folderId" })) {
                 presents += shown.ref()

@@ -16,7 +16,6 @@ import app.morphe.patches.telegram.misc.extension.requireParameterIntact
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
-import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
@@ -24,6 +23,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -87,7 +87,7 @@ internal fun BytecodePatchContext.resolveHideGalleryCameraTile(): GalleryCameraT
         !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("Z") &&
             m.controlBody().let { body ->
                 body.any { it.controlField()?.let { f -> f.definingClass == "Lorg/telegram/messenger/SharedConfig;" && f.name == "inappCamera" } == true } &&
-                    body.any { it.controlCall()?.let { c -> c.definingClass == "Lorg/telegram/messenger/camera/CameraController;" && c.name == "initCamera" } == true } &&
+                    body.any { it.call()?.let { c -> c.definingClass == "Lorg/telegram/messenger/camera/CameraController;" && c.name == "initCamera" } == true } &&
                     body.any { it.controlString() == "android.permission.CAMERA" }
             }
     }.controlSingle("checkCamera")
