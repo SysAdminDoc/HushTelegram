@@ -276,80 +276,28 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         for (PatchFamily.Page page : PatchFamily.Page.values()) {
             if (page.inBuild(build)) pages.put(page, category(screen, page.label()));
         }
+        addAdsPage(context, pages, build);
+        addChatListPage(context, pages, build);
+        addConversationsPage(context, pages, build);
+        addPlaybackPage(context, pages, build);
+        addNotificationsPage(context, pages, build);
+        addLookPage(context, pages, build);
+        addPrivacyPage(context, pages, build);
 
-        if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) {
-            PreferenceCategory notifications = pages.get(PatchFamily.Page.NOTIFICATIONS);
-            localNotificationStatus = info(context, L10n.t("Notification status on this phone"), FirebasePush.localStatus(context).summary());
-            localNotificationStatus.setKey("local_notification_status");
-            notifications.addPreference(localNotificationStatus);
-            notifications.addPreference(toggle(context, Settings.REPAIR_FIREBASE_PUSH, L10n.t("Repair Firebase push registration"),
-                    PatchFamily.REPAIR_FIREBASE_PUSH.coverageSummary(L10n.t("Tries to help this patched Telegram sign up for push notifications with Firebase, "
-                            + "Google's notification service, using Telegram's original certificate. Notification "
-                            + "permission and battery settings still apply."))));
-        }
-        if (build.contains(PatchFamily.UNIFIED_PUSH)) {
-            SwitchPreference push = toggle(context, Settings.UNIFIED_PUSH, L10n.t("UnifiedPush notifications"),
-                    PatchFamily.UNIFIED_PUSH.coverageSummary(L10n.t("For phones where Firebase notifications don't arrive. Telegram signs up an "
-                            + "address from a UnifiedPush app like ntfy, and Telegram's servers call it to wake Telegram when "
-                            + "something arrives. The messages still come from Telegram itself. Turned off, Telegram goes back "
-                            + "to Firebase the next time it starts.")));
-            Preference app = pushAppRow(context);
-            push.setOnPreferenceChangeListener((row, value) -> {
-                boolean on = Boolean.TRUE.equals(value);
-                UnifiedPush.switched(context, on);
-                // The app answers in a moment, so the row reads its state again after.
-                app.setSummary(UnifiedPush.status(context, on));
-                Utils.runOnMainThreadDelayed(() -> app.setSummary(UnifiedPush.status(context, Settings.UNIFIED_PUSH.savedValue())), 2000);
-                return true;
-            });
-            on(pages, PatchFamily.UNIFIED_PUSH).addPreference(push);
-            on(pages, PatchFamily.UNIFIED_PUSH).addPreference(app);
-        }
+        addLinksPage(context, screen, build);
+        addUpdatesPage(context, screen, build);
+        addPausePage(context, screen, build);
+        addBackupPage(context, screen);
+        addDiagnosticsPage(context, screen);
+        addAboutPage(context, screen);
+    }
 
-        if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
-                || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) {
-            PreferenceCategory privacy = pages.get(PatchFamily.Page.PRIVACY);
-            if (build.contains(PatchFamily.DISABLE_ANALYTICS)) {
-                String usage = L10n.t("Stops usage reports to Telegram, like how long you read each channel post and what "
-                        + "you tap on Premium screens. Messages and calls work as before.");
-                // Only Telegram Beta carries Firebase's reporters, so only a build that stops them says so.
-                if (PatchFamily.Capability.CRASH_REPORTS.installed() || PatchFamily.Capability.SESSION_REPORTS.installed()) {
-                    usage = usage + " " + L10n.t("Firebase crash and session reports stop too, from the next time Telegram starts.");
-                }
-                privacy.addPreference(toggle(context, Settings.DISABLE_ANALYTICS, L10n.t("Stop usage reports"),
-                    PatchFamily.DISABLE_ANALYTICS.coverageSummary(usage)));
-            }
-            if (build.contains(PatchFamily.DISABLE_CALL_DEBUG)) {
-                privacy.addPreference(toggle(context, Settings.DISABLE_CALL_DEBUG, L10n.t("Stop call diagnostics"),
-                        PatchFamily.DISABLE_CALL_DEBUG.coverageSummary(L10n.t("Stops your phone from automatically sending call problem reports and log files "
-                                + "when Telegram's server asks for them."))));
-            }
-            if (build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS)) {
-                privacy.addPreference(toggle(context, Settings.DISABLE_DRAFT_PREVIEWS, L10n.t("No previews before sending"),
-                        PatchFamily.DISABLE_DRAFT_PREVIEWS.coverageSummary(L10n.t("Telegram doesn't look up link previews for messages you haven't sent yet, "
-                                + "including shares, polls, story links and bots. Sent messages still get one."))));
-            }
-            if (build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) {
-                privacy.addPreference(toggle(context, Settings.GALLERY_CAMERA_ON_TAP, L10n.t("Camera only on tap"),
-                        PatchFamily.GALLERY_CAMERA_ON_TAP.coverageSummary(L10n.t("Opening the attachment gallery doesn't start the camera or ask for camera "
-                                + "access. Tap the camera tile to start it."))));
-            }
-        }
-
+    /** The Ads page: what Telegram sells or promotes, from sponsored messages to popular apps. */
+    private void addAdsPage(Context context, Map<PatchFamily.Page, PreferenceCategory> pages, Set<PatchFamily> build) {
         if (build.contains(PatchFamily.HIDE_ADS)) {
             on(pages, PatchFamily.HIDE_ADS).addPreference(toggle(context, Settings.HIDE_ADS, L10n.t("Hide ads"),
                     PatchFamily.HIDE_ADS.coverageSummary(L10n.t("Removes sponsored messages in channels, sponsored accounts in search and ads in "
                             + "videos. They're never loaded, so none count as seen."))));
-        }
-        if (build.contains(PatchFamily.HIDE_STORIES)) {
-            on(pages, PatchFamily.HIDE_STORIES).addPreference(toggle(context, Settings.HIDE_STORIES, L10n.t("Hide Stories"),
-                    PatchFamily.HIDE_STORIES.coverageSummary(L10n.t("Removes the story bar above your chats, the rings around profile pictures and "
-                            + "the Post Story button. Profile stories and archives stay."))));
-        }
-        if (build.contains(PatchFamily.HIDE_RECOMMENDATIONS)) {
-            on(pages, PatchFamily.HIDE_RECOMMENDATIONS).addPreference(toggle(context, Settings.HIDE_RECOMMENDATIONS, L10n.t("Hide recommendations"),
-                    PatchFamily.HIDE_RECOMMENDATIONS.coverageSummary(L10n.t("Hides suggested similar channels and bots, including ones already saved, and "
-                            + "stops asking Telegram for new ones."))));
         }
         if (build.contains(PatchFamily.HIDE_COMMERCE)) {
             on(pages, PatchFamily.HIDE_COMMERCE).addPreference(toggle(context, Settings.HIDE_COMMERCE, L10n.t("Hide Premium, gifts and Stars"),
@@ -372,124 +320,24 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.HIDE_POPULAR_APPS.coverageSummary(L10n.t("Hides the Popular apps list on the Apps tab of search, and doesn't ask Telegram "
                             + "for it. Apps you've opened and other results stay."))));
         }
+    }
+
+    /** The Chat list page: Stories, swipes, pulls, folders and the contacts under a short list. */
+    private void addChatListPage(Context context, Map<PatchFamily.Page, PreferenceCategory> pages, Set<PatchFamily> build) {
+        if (build.contains(PatchFamily.HIDE_STORIES)) {
+            on(pages, PatchFamily.HIDE_STORIES).addPreference(toggle(context, Settings.HIDE_STORIES, L10n.t("Hide Stories"),
+                    PatchFamily.HIDE_STORIES.coverageSummary(L10n.t("Removes the story bar above your chats, the rings around profile pictures and "
+                            + "the Post Story button. Profile stories and archives stay."))));
+        }
         if (build.contains(PatchFamily.HIDE_CONTACTS_BLOCK)) {
             on(pages, PatchFamily.HIDE_CONTACTS_BLOCK).addPreference(toggle(context, Settings.HIDE_CONTACTS_BLOCK, L10n.t("Hide contacts on Telegram"),
                     PatchFamily.HIDE_CONTACTS_BLOCK.coverageSummary(L10n.t("When your chat list is short, Telegram lists your contacts below it. This hides "
                             + "that list and its heading. Chats, folders and search stay."))));
         }
-        if (build.contains(PatchFamily.HIDE_GREETING_STICKERS)) {
-            on(pages, PatchFamily.HIDE_GREETING_STICKERS).addPreference(toggle(context, Settings.HIDE_GREETING_STICKERS, L10n.t("Hide greeting stickers"),
-                    PatchFamily.HIDE_GREETING_STICKERS.coverageSummary(L10n.t("Empty private chats stop suggesting a sticker to say hello. Their other text and"
-                            + " notices, and the sticker picker, stay."))));
-        }
         if (build.contains(PatchFamily.DISABLE_CHAT_SWIPE)) {
             on(pages, PatchFamily.DISABLE_CHAT_SWIPE).addPreference(toggle(context, Settings.DISABLE_CHAT_SWIPE, L10n.t("No swipe actions on chats"),
                     PatchFamily.DISABLE_CHAT_SWIPE.coverageSummary(L10n.t("Swiping a chat in your list no longer archives, mutes, pins, deletes or marks it"
                             + " read. Press and hold still offers every action."))));
-        }
-        if (build.contains(PatchFamily.QUIET_CONTACTS_NAG)) {
-            on(pages, PatchFamily.QUIET_CONTACTS_NAG).addPreference(toggle(context, Settings.QUIET_CONTACTS_NAG, L10n.t("Quiet contacts prompts"),
-                    PatchFamily.QUIET_CONTACTS_NAG.coverageSummary(L10n.t("After you say no to contacts access, the Contacts tab stops asking again and its"
-                            + " warning badge goes away."))));
-        }
-        if (build.contains(PatchFamily.DISABLE_CHANNEL_PULL)) {
-            on(pages, PatchFamily.DISABLE_CHANNEL_PULL).addPreference(toggle(context, Settings.DISABLE_CHANNEL_PULL, L10n.t("Stop pull to next channel"),
-                    L10n.t("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.")));
-            on(pages, PatchFamily.DISABLE_CHANNEL_PULL).addPreference(toggle(context, Settings.DISABLE_TOPIC_PULL, L10n.t("Stop pull to next topic"),
-                    L10n.t("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from"
-                            + " the topic list.")));
-        }
-        if (build.contains(PatchFamily.NORMAL_PASTE)) {
-            on(pages, PatchFamily.NORMAL_PASTE).addPreference(toggle(context, Settings.NORMAL_PASTE, L10n.t("Use normal paste"),
-                    PatchFamily.NORMAL_PASTE.coverageSummary(L10n.t("Pastes text exactly as you copied it, without Telegram adding formatting, tables"
-                            + " or code styling. Spaces and links stay as they were."))));
-        }
-        if (build.contains(PatchFamily.SHOW_LOCAL_IDS)) {
-            on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.SHOW_LOCAL_IDS, L10n.t("Show user and chat IDs"),
-                    PatchFamily.SHOW_LOCAL_IDS.coverageSummary(L10n.t("Adds a copyable ID number for a user or chat to the profile's menu. Telegram "
-                            + "isn't asked for anything extra."))));
-            on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.PROFILE_DATA_CENTER, L10n.t("Show where a profile photo is stored"),
-                    L10n.t("A profile's menu also shows which of Telegram's five data centers (its server "
-                            + "locations) stores the profile photo. No photo, no number.")));
-        }
-        if (build.contains(PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS)) {
-            on(pages, PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS).addPreference(toggle(context, Settings.DISABLE_DOUBLE_TAP_REACTIONS, L10n.t("Disable double-tap reactions"),
-                    PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS.coverageSummary(L10n.t("Double-tapping a message no longer adds a reaction. Scrolling, normal taps, "
-                            + "selecting and the reaction menu work as before."))));
-        }
-        if (build.contains(PatchFamily.HOLIDAY_LOOK)) {
-            on(pages, PatchFamily.HOLIDAY_LOOK).addPreference(toggle(context, Settings.HOLIDAY_LOOK, L10n.t("New Year look all year"),
-                    PatchFamily.HOLIDAY_LOOK.coverageSummary(L10n.t("Shows Telegram's Santa hat and New Year snow all year, not only around New Year."
-                            + " Snow also falls on chat backgrounds if animated backgrounds are on."))));
-        }
-        if (build.contains(PatchFamily.USE_SYSTEM_FONT)) {
-            on(pages, PatchFamily.USE_SYSTEM_FONT).addPreference(toggle(context, Settings.USE_SYSTEM_FONT, L10n.t("Use system font"),
-                    PatchFamily.USE_SYSTEM_FONT.coverageSummary(L10n.t("Bold, italic and code text use your phone's font instead of Telegram's built-in "
-                            + "one. Restart Telegram to see the change."))));
-        }
-        if (build.contains(PatchFamily.AMOLED_BLACK)) {
-            on(pages, PatchFamily.AMOLED_BLACK).addPreference(toggle(context, Settings.AMOLED_BLACK, L10n.t("AMOLED black"),
-                    PatchFamily.AMOLED_BLACK.coverageSummary(L10n.t("Night and Dark themes use pure black screens. Message bubbles and menus keep "
-                            + "their colors. Restart Telegram to see the change."))));
-        }
-        if (build.contains(PatchFamily.HIDE_TRANSLATE_BAR)) {
-            on(pages, PatchFamily.HIDE_TRANSLATE_BAR).addPreference(toggle(context, Settings.HIDE_TRANSLATE_BAR, L10n.t("Hide translate bar"),
-                    PatchFamily.HIDE_TRANSLATE_BAR.coverageSummary(L10n.t("Chats in another language stop showing the translate bar at the top. Translate "
-                            + "moves to the chat's menu, and a chat you're translating keeps its bar."))));
-        }
-        if (build.contains(PatchFamily.EXACT_NUMBERS)) {
-            on(pages, PatchFamily.EXACT_NUMBERS).addPreference(toggle(context, Settings.EXACT_NUMBERS, L10n.t("Exact numbers"),
-                    PatchFamily.EXACT_NUMBERS.coverageSummary(L10n.t("Member, subscriber, view, reply and reaction counts show in full, like 12,345 "
-                            + "instead of 12.3K."))));
-        }
-        if (build.contains(PatchFamily.REVEAL_SPOILERS)) {
-            on(pages, PatchFamily.REVEAL_SPOILERS).addPreference(toggle(context, Settings.REVEAL_SPOILERS, L10n.t("Reveal spoilers"),
-                    PatchFamily.REVEAL_SPOILERS.coverageSummary(L10n.t("Spoiler text, photos and videos show right away without a tap. View-once media, "
-                            + "sensitive content and login codes stay covered."))));
-        }
-        if (build.contains(PatchFamily.HIDE_KEYBOARD_ON_SCROLL)) {
-            on(pages, PatchFamily.HIDE_KEYBOARD_ON_SCROLL).addPreference(toggle(context, Settings.HIDE_KEYBOARD_ON_SCROLL, L10n.t("Hide keyboard on scroll"),
-                    PatchFamily.HIDE_KEYBOARD_ON_SCROLL.coverageSummary(L10n.t("The keyboard closes when you start scrolling a chat. The emoji and sticker panel"
-                            + " stays open."))));
-        }
-        if (build.contains(PatchFamily.KEEP_VIDEOS_MUTED)) {
-            on(pages, PatchFamily.KEEP_VIDEOS_MUTED).addPreference(toggle(context, Settings.KEEP_VIDEOS_MUTED, L10n.t("Keep videos muted on volume keys"),
-                    PatchFamily.KEEP_VIDEOS_MUTED.coverageSummary(L10n.t("Volume keys only change the volume. They no longer start the video or round "
-                            + "video on screen with sound. Tap a video to hear it."))));
-        }
-        if (build.contains(PatchFamily.SWIPE_BACK_ON_PROFILES)) {
-            on(pages, PatchFamily.SWIPE_BACK_ON_PROFILES).addPreference(toggle(context, Settings.SWIPE_BACK_ON_PROFILES, L10n.t("Swipe back on profiles"),
-                    PatchFamily.SWIPE_BACK_ON_PROFILES.coverageSummary(L10n.t("Swiping right on a profile's photos or media tabs goes back, like the rest of "
-                            + "the profile, instead of showing the previous photo or tab."))));
-        }
-        if (build.contains(PatchFamily.HIDE_PHONE_NUMBER)) {
-            on(pages, PatchFamily.HIDE_PHONE_NUMBER).addPreference(toggle(context, Settings.HIDE_PHONE_NUMBER, L10n.t("Hide phone number"),
-                    PatchFamily.HIDE_PHONE_NUMBER.coverageSummary(L10n.t("Your own phone number shows as dots in the side menu, Settings and your profile,"
-                            + " which helps with screenshots. Others' numbers stay visible."))));
-        }
-        if (build.contains(PatchFamily.MESSAGE_SECONDS)) {
-            on(pages, PatchFamily.MESSAGE_SECONDS).addPreference(toggle(context, Settings.MESSAGE_SECONDS, L10n.t("Message times with seconds"),
-                    PatchFamily.MESSAGE_SECONDS.coverageSummary(L10n.t("Each message's time includes seconds, like 9:41:27 PM, so messages sent close "
-                            + "together are easy to tell apart."))));
-        }
-        if (build.contains(PatchFamily.ALLOW_CHAT_BLUR)) {
-            on(pages, PatchFamily.ALLOW_CHAT_BLUR).addPreference(toggle(context, Settings.ALLOW_CHAT_BLUR, L10n.t("Allow chat blur on slower phones"),
-                    PatchFamily.ALLOW_CHAT_BLUR.coverageSummary(L10n.t("Telegram only blurs chat headers and panels on fast phones. This lets any phone "
-                            + "do it, once Blur in chat is on under Power saving."))));
-        }
-        if (build.contains(PatchFamily.VOICE_ONE_AT_A_TIME)) {
-            on(pages, PatchFamily.VOICE_ONE_AT_A_TIME).addPreference(toggle(context, Settings.VOICE_ONE_AT_A_TIME, L10n.t("Play voice messages one at a time"),
-                    PatchFamily.VOICE_ONE_AT_A_TIME.coverageSummary(L10n.t("When a voice or video message ends, the next one doesn't start by itself."))));
-        }
-        if (build.contains(PatchFamily.NO_HAPTICS)) {
-            on(pages, PatchFamily.NO_HAPTICS).addPreference(toggle(context, Settings.NO_HAPTICS, L10n.t("Stop vibrations on taps"),
-                    PatchFamily.NO_HAPTICS.coverageSummary(L10n.t("Taps, long presses, swipes and wrong entries no longer vibrate the phone. "
-                            + "Incoming calls still vibrate, and notifications follow your own settings."))));
-        }
-        if (build.contains(PatchFamily.REACTION_EFFECTS_OFF)) {
-            on(pages, PatchFamily.REACTION_EFFECTS_OFF).addPreference(toggle(context, Settings.REACTION_EFFECTS_OFF, L10n.t("Turn off reaction effects"),
-                    PatchFamily.REACTION_EFFECTS_OFF.coverageSummary(L10n.t("When someone reacts to a message, the emoji doesn't fly across the screen and "
-                            + "burst. The reaction still shows on the message."))));
         }
         if (build.contains(PatchFamily.HIDE_FOLDER_COUNTERS)) {
             on(pages, PatchFamily.HIDE_FOLDER_COUNTERS).addPreference(toggle(context, Settings.HIDE_FOLDER_COUNTERS, L10n.t("Hide folder tab counters"),
@@ -511,36 +359,51 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             });
             on(pages, PatchFamily.CHAT_TYPE_FOLDERS).addPreference(folders);
         }
-        if (build.contains(PatchFamily.FORWARD_HIDE_SENDER)) {
-            on(pages, PatchFamily.FORWARD_HIDE_SENDER).addPreference(toggle(context, Settings.FORWARD_HIDE_SENDER, L10n.t("Hide sender names when forwarding"),
-                    PatchFamily.FORWARD_HIDE_SENDER.coverageSummary(L10n.t("Each new forward starts with Hide sender's name turned on, so copies arrive "
-                            + "without the original author. You can still turn it off before sending."))));
-        }
-        if (build.contains(PatchFamily.VOICE_MUSIC_PLAYER)) {
-            on(pages, PatchFamily.VOICE_MUSIC_PLAYER).addPreference(toggle(context, Settings.VOICE_MUSIC_PLAYER, L10n.t("Voice messages in the music player"),
-                    PatchFamily.VOICE_MUSIC_PLAYER.coverageSummary(L10n.t("While a voice message plays, tapping the bar above the chat opens the full music"
-                            + " player, where you can drag to skip around, instead of jumping to the message."))));
-        }
-        if (build.contains(PatchFamily.FASTER_DOWNLOADS)) {
-            on(pages, PatchFamily.FASTER_DOWNLOADS).addPreference(toggle(context, Settings.FASTER_DOWNLOADS, L10n.t("Faster downloads"),
-                    PatchFamily.FASTER_DOWNLOADS.coverageSummary(L10n.t("Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces"
-                            + " 4 at a time. If a big piece fails, Telegram goes back to small ones. The next download picks this up."))));
-        }
-        if (build.contains(PatchFamily.SAVE_DOWNLOADS)) {
-            on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(toggle(context, Settings.SAVE_DOWNLOADS, L10n.t("Save downloaded files"),
-                    PatchFamily.SAVE_DOWNLOADS.coverageSummary(L10n.t("Each file or song you download also goes to Download/Telegram on your"
-                            + " phone, where file managers and other apps can open it. Files from secret chats and chats that don't"
-                            + " allow saving stay in Telegram."))));
-        }
-        if (build.contains(PatchFamily.SILENCE_NON_CONTACTS)) {
-            on(pages, PatchFamily.SILENCE_NON_CONTACTS).addPreference(toggle(context, Settings.SILENCE_NON_CONTACTS, L10n.t("Silence people outside your contacts"),
-                    PatchFamily.SILENCE_NON_CONTACTS.coverageSummary(L10n.t("Private messages from people not in your contacts still show a notification, but"
-                            + " without sound or vibration. Bots, reminders and login codes keep their sound."))));
-        }
         if (build.contains(PatchFamily.DISABLE_ARCHIVE_PULL)) {
             on(pages, PatchFamily.DISABLE_ARCHIVE_PULL).addPreference(toggle(context, Settings.DISABLE_ARCHIVE_PULL, L10n.t("Disable pull to archive"),
                     PatchFamily.DISABLE_ARCHIVE_PULL.coverageSummary(L10n.t("Pulling down the chat list no longer opens the archive. Use Archived chats in "
                             + "the list's menu instead. Restart Telegram to see the change."))));
+        }
+    }
+
+    /** The Conversations page: in a chat, its menus, sending, translation, hidden and kept messages. */
+    private void addConversationsPage(Context context, Map<PatchFamily.Page, PreferenceCategory> pages, Set<PatchFamily> build) {
+        if (build.contains(PatchFamily.HIDE_GREETING_STICKERS)) {
+            on(pages, PatchFamily.HIDE_GREETING_STICKERS).addPreference(toggle(context, Settings.HIDE_GREETING_STICKERS, L10n.t("Hide greeting stickers"),
+                    PatchFamily.HIDE_GREETING_STICKERS.coverageSummary(L10n.t("Empty private chats stop suggesting a sticker to say hello. Their other text and"
+                            + " notices, and the sticker picker, stay."))));
+        }
+        if (build.contains(PatchFamily.DISABLE_CHANNEL_PULL)) {
+            on(pages, PatchFamily.DISABLE_CHANNEL_PULL).addPreference(toggle(context, Settings.DISABLE_CHANNEL_PULL, L10n.t("Stop pull to next channel"),
+                    L10n.t("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.")));
+            on(pages, PatchFamily.DISABLE_CHANNEL_PULL).addPreference(toggle(context, Settings.DISABLE_TOPIC_PULL, L10n.t("Stop pull to next topic"),
+                    L10n.t("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from"
+                            + " the topic list.")));
+        }
+        if (build.contains(PatchFamily.NORMAL_PASTE)) {
+            on(pages, PatchFamily.NORMAL_PASTE).addPreference(toggle(context, Settings.NORMAL_PASTE, L10n.t("Use normal paste"),
+                    PatchFamily.NORMAL_PASTE.coverageSummary(L10n.t("Pastes text exactly as you copied it, without Telegram adding formatting, tables"
+                            + " or code styling. Spaces and links stay as they were."))));
+        }
+        if (build.contains(PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS)) {
+            on(pages, PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS).addPreference(toggle(context, Settings.DISABLE_DOUBLE_TAP_REACTIONS, L10n.t("Disable double-tap reactions"),
+                    PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS.coverageSummary(L10n.t("Double-tapping a message no longer adds a reaction. Scrolling, normal taps, "
+                            + "selecting and the reaction menu work as before."))));
+        }
+        if (build.contains(PatchFamily.HIDE_TRANSLATE_BAR)) {
+            on(pages, PatchFamily.HIDE_TRANSLATE_BAR).addPreference(toggle(context, Settings.HIDE_TRANSLATE_BAR, L10n.t("Hide translate bar"),
+                    PatchFamily.HIDE_TRANSLATE_BAR.coverageSummary(L10n.t("Chats in another language stop showing the translate bar at the top. Translate "
+                            + "moves to the chat's menu, and a chat you're translating keeps its bar."))));
+        }
+        if (build.contains(PatchFamily.REVEAL_SPOILERS)) {
+            on(pages, PatchFamily.REVEAL_SPOILERS).addPreference(toggle(context, Settings.REVEAL_SPOILERS, L10n.t("Reveal spoilers"),
+                    PatchFamily.REVEAL_SPOILERS.coverageSummary(L10n.t("Spoiler text, photos and videos show right away without a tap. View-once media, "
+                            + "sensitive content and login codes stay covered."))));
+        }
+        if (build.contains(PatchFamily.FORWARD_HIDE_SENDER)) {
+            on(pages, PatchFamily.FORWARD_HIDE_SENDER).addPreference(toggle(context, Settings.FORWARD_HIDE_SENDER, L10n.t("Hide sender names when forwarding"),
+                    PatchFamily.FORWARD_HIDE_SENDER.coverageSummary(L10n.t("Each new forward starts with Hide sender's name turned on, so copies arrive "
+                            + "without the original author. You can still turn it off before sending."))));
         }
         if (build.contains(PatchFamily.REAR_CAMERA_FIRST)) {
             on(pages, PatchFamily.REAR_CAMERA_FIRST).addPreference(toggle(context, Settings.REAR_CAMERA_FIRST, L10n.t("Start the camera on the rear lens"),
@@ -551,36 +414,6 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.HIDE_GALLERY_CAMERA_TILE).addPreference(toggle(context, Settings.HIDE_GALLERY_CAMERA_TILE, L10n.t("Hide gallery camera tile"),
                     PatchFamily.HIDE_GALLERY_CAMERA_TILE.coverageSummary(L10n.t("The attachment menu's photo grid starts with your photos instead of a live "
                             + "camera tile. A chat picks this up the next time you open it."))));
-        }
-        if (build.contains(PatchFamily.HIDE_STICKER_TIME)) {
-            on(pages, PatchFamily.HIDE_STICKER_TIME).addPreference(toggle(context, Settings.HIDE_STICKER_TIME, L10n.t("Hide time on stickers"),
-                    PatchFamily.HIDE_STICKER_TIME.coverageSummary(L10n.t("Stickers and big animated emoji no longer show the time and read checks in their"
-                            + " corner. Other messages keep their time."))));
-        }
-        if (build.contains(PatchFamily.CHANGE_STICKER_SIZE)) {
-            PreferenceCategory page = on(pages, PatchFamily.CHANGE_STICKER_SIZE);
-            page.addPreference(toggle(context, Settings.CHANGE_STICKER_SIZE, L10n.t("Change sticker size"),
-                    PatchFamily.CHANGE_STICKER_SIZE.coverageSummary(L10n.t("Stickers in chats show at the size you pick below. "
-                            + "Animated emoji and dice keep Telegram's size. A chat picks this up the next time you open it."))));
-            page.addPreference(stickerSizeRow(context));
-        }
-        if (build.contains(PatchFamily.HIDE_CHANNEL_BUTTONS)) {
-            on(pages, PatchFamily.HIDE_CHANNEL_BUTTONS).addPreference(toggle(context, Settings.HIDE_CHANNEL_BUTTONS, L10n.t("Hide channel bar buttons"),
-                    PatchFamily.HIDE_CHANNEL_BUTTONS.coverageSummary(L10n.t("Search, Direct messages and Info leave the bar at the bottom of a channel. "
-                            + "Mute and Join stay, and tapping the channel's name at the top still opens its info. A channel picks "
-                            + "this up the next time you open it."))));
-        }
-        if (build.contains(PatchFamily.HIDE_SEND_AS)) {
-            on(pages, PatchFamily.HIDE_SEND_AS).addPreference(toggle(context, Settings.HIDE_SEND_AS, L10n.t("Hide Send as button"),
-                    PatchFamily.HIDE_SEND_AS.coverageSummary(L10n.t("Your picture next to the message box goes away in groups and channels where you "
-                            + "could post as a channel, while you're posting as yourself. Once you pick a channel it shows again, so you "
-                            + "can always see who you're posting as. To pick one, turn this off first. A chat picks this up the next "
-                            + "time you open it."))));
-        }
-        if (build.contains(PatchFamily.IGNORE_MUTED_MENTIONS)) {
-            on(pages, PatchFamily.IGNORE_MUTED_MENTIONS).addPreference(toggle(context, Settings.IGNORE_MUTED_MENTIONS, L10n.t("Ignore mentions in muted chats"),
-                    PatchFamily.IGNORE_MUTED_MENTIONS.coverageSummary(L10n.t("Mentions and replies in groups or channels you've muted no longer notify you. "
-                            + "Chats you haven't muted notify as before."))));
         }
         if (build.contains(PatchFamily.HIDE_BLOCKED_IN_GROUPS)) {
             on(pages, PatchFamily.HIDE_BLOCKED_IN_GROUPS).addPreference(toggle(context, Settings.HIDE_BLOCKED_IN_GROUPS, L10n.t("Hide blocked users in groups"),
@@ -597,11 +430,6 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     L10n.t("Filters for groups")));
             page.addPreference(filtersRow(context, Settings.MESSAGE_FILTERS_CHANNELS, FilterEditor.CHANNELS,
                     L10n.t("Filters for channels")));
-        }
-        if (build.contains(PatchFamily.HIDE_FEATURES_AND_INVITE)) {
-            on(pages, PatchFamily.HIDE_FEATURES_AND_INVITE).addPreference(toggle(context, Settings.HIDE_FEATURES_AND_INVITE, L10n.t("Hide Telegram Features and Invite Friends"),
-                    PatchFamily.HIDE_FEATURES_AND_INVITE.coverageSummary(L10n.t("Removes the Telegram Features row from Settings and Invite Friends from "
-                            + "Contacts. With no contacts yet, the invite list goes too."))));
         }
         if (build.contains(PatchFamily.MESSAGE_MENU_REPEAT)) {
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_REPEAT, L10n.t("Add Repeat to the message menu"),
@@ -637,13 +465,6 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.ASK_BEFORE_STICKER.coverageSummary(L10n.t("Asks Call or Cancel before the call button in a chat or on a profile starts a "
                             + "call."))));
         }
-        if (build.contains(PatchFamily.BETA_LOGS_OFF)) {
-            on(pages, PatchFamily.BETA_LOGS_OFF).addPreference(toggle(context, Settings.BETA_LOGS_OFF, L10n.t("Turn off beta debug logs"),
-                    PatchFamily.BETA_LOGS_OFF.coverageSummary(L10n.t("Telegram Beta keeps debug logs on your phone all the time, its connection log "
-                            + "included, and its own debug menu can't stop that. This stops them. Logs already saved "
-                            + "stay until you clear them, and the regular build doesn't keep them, so nothing changes "
-                            + "there. Restart Telegram to see the change."))));
-        }
         if (build.contains(PatchFamily.OUTSIDE_TRANSLATE)) {
             SwitchPreference outside = toggle(context, Settings.OUTSIDE_TRANSLATE, L10n.t("Translate with an outside service"),
                     PatchFamily.OUTSIDE_TRANSLATE.coverageSummary(L10n.t("Adds Translate here to a message's menu and Translate this chat to a chat's menu, "
@@ -658,7 +479,228 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.OUTSIDE_TRANSLATE).addPreference(outside);
             on(pages, PatchFamily.OUTSIDE_TRANSLATE).addPreference(translateServiceRow(context));
         }
+    }
 
+    /** The Playback page: voice and video messages, and downloads. */
+    private void addPlaybackPage(Context context, Map<PatchFamily.Page, PreferenceCategory> pages, Set<PatchFamily> build) {
+        if (build.contains(PatchFamily.KEEP_VIDEOS_MUTED)) {
+            on(pages, PatchFamily.KEEP_VIDEOS_MUTED).addPreference(toggle(context, Settings.KEEP_VIDEOS_MUTED, L10n.t("Keep videos muted on volume keys"),
+                    PatchFamily.KEEP_VIDEOS_MUTED.coverageSummary(L10n.t("Volume keys only change the volume. They no longer start the video or round "
+                            + "video on screen with sound. Tap a video to hear it."))));
+        }
+        if (build.contains(PatchFamily.VOICE_ONE_AT_A_TIME)) {
+            on(pages, PatchFamily.VOICE_ONE_AT_A_TIME).addPreference(toggle(context, Settings.VOICE_ONE_AT_A_TIME, L10n.t("Play voice messages one at a time"),
+                    PatchFamily.VOICE_ONE_AT_A_TIME.coverageSummary(L10n.t("When a voice or video message ends, the next one doesn't start by itself."))));
+        }
+        if (build.contains(PatchFamily.VOICE_MUSIC_PLAYER)) {
+            on(pages, PatchFamily.VOICE_MUSIC_PLAYER).addPreference(toggle(context, Settings.VOICE_MUSIC_PLAYER, L10n.t("Voice messages in the music player"),
+                    PatchFamily.VOICE_MUSIC_PLAYER.coverageSummary(L10n.t("While a voice message plays, tapping the bar above the chat opens the full music"
+                            + " player, where you can drag to skip around, instead of jumping to the message."))));
+        }
+        if (build.contains(PatchFamily.FASTER_DOWNLOADS)) {
+            on(pages, PatchFamily.FASTER_DOWNLOADS).addPreference(toggle(context, Settings.FASTER_DOWNLOADS, L10n.t("Faster downloads"),
+                    PatchFamily.FASTER_DOWNLOADS.coverageSummary(L10n.t("Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces"
+                            + " 4 at a time. If a big piece fails, Telegram goes back to small ones. The next download picks this up."))));
+        }
+        if (build.contains(PatchFamily.SAVE_DOWNLOADS)) {
+            on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(toggle(context, Settings.SAVE_DOWNLOADS, L10n.t("Save downloaded files"),
+                    PatchFamily.SAVE_DOWNLOADS.coverageSummary(L10n.t("Each file or song you download also goes to Download/Telegram on your"
+                            + " phone, where file managers and other apps can open it. Files from secret chats and chats that don't"
+                            + " allow saving stay in Telegram."))));
+        }
+    }
+
+    /** The Notifications page: the status on this phone and the two push switches lead. */
+    private void addNotificationsPage(Context context, Map<PatchFamily.Page, PreferenceCategory> pages, Set<PatchFamily> build) {
+        if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) {
+            PreferenceCategory notifications = pages.get(PatchFamily.Page.NOTIFICATIONS);
+            localNotificationStatus = info(context, L10n.t("Notification status on this phone"), FirebasePush.localStatus(context).summary());
+            localNotificationStatus.setKey("local_notification_status");
+            notifications.addPreference(localNotificationStatus);
+            notifications.addPreference(toggle(context, Settings.REPAIR_FIREBASE_PUSH, L10n.t("Repair Firebase push registration"),
+                    PatchFamily.REPAIR_FIREBASE_PUSH.coverageSummary(L10n.t("Tries to help this patched Telegram sign up for push notifications with Firebase, "
+                            + "Google's notification service, using Telegram's original certificate. Notification "
+                            + "permission and battery settings still apply."))));
+        }
+        if (build.contains(PatchFamily.UNIFIED_PUSH)) {
+            SwitchPreference push = toggle(context, Settings.UNIFIED_PUSH, L10n.t("UnifiedPush notifications"),
+                    PatchFamily.UNIFIED_PUSH.coverageSummary(L10n.t("For phones where Firebase notifications don't arrive. Telegram signs up an "
+                            + "address from a UnifiedPush app like ntfy, and Telegram's servers call it to wake Telegram when "
+                            + "something arrives. The messages still come from Telegram itself. Turned off, Telegram goes back "
+                            + "to Firebase the next time it starts.")));
+            Preference app = pushAppRow(context);
+            push.setOnPreferenceChangeListener((row, value) -> {
+                boolean on = Boolean.TRUE.equals(value);
+                UnifiedPush.switched(context, on);
+                // The app answers in a moment, so the row reads its state again after.
+                app.setSummary(UnifiedPush.status(context, on));
+                Utils.runOnMainThreadDelayed(() -> app.setSummary(UnifiedPush.status(context, Settings.UNIFIED_PUSH.savedValue())), 2000);
+                return true;
+            });
+            on(pages, PatchFamily.UNIFIED_PUSH).addPreference(push);
+            on(pages, PatchFamily.UNIFIED_PUSH).addPreference(app);
+        }
+        if (build.contains(PatchFamily.SILENCE_NON_CONTACTS)) {
+            on(pages, PatchFamily.SILENCE_NON_CONTACTS).addPreference(toggle(context, Settings.SILENCE_NON_CONTACTS, L10n.t("Silence people outside your contacts"),
+                    PatchFamily.SILENCE_NON_CONTACTS.coverageSummary(L10n.t("Private messages from people not in your contacts still show a notification, but"
+                            + " without sound or vibration. Bots, reminders and login codes keep their sound."))));
+        }
+        if (build.contains(PatchFamily.IGNORE_MUTED_MENTIONS)) {
+            on(pages, PatchFamily.IGNORE_MUTED_MENTIONS).addPreference(toggle(context, Settings.IGNORE_MUTED_MENTIONS, L10n.t("Ignore mentions in muted chats"),
+                    PatchFamily.IGNORE_MUTED_MENTIONS.coverageSummary(L10n.t("Mentions and replies in groups or channels you've muted no longer notify you. "
+                            + "Chats you haven't muted notify as before."))));
+        }
+    }
+
+    /** The Look and feel page: theme, messages and stickers, profiles, touch, less clutter. */
+    private void addLookPage(Context context, Map<PatchFamily.Page, PreferenceCategory> pages, Set<PatchFamily> build) {
+        if (build.contains(PatchFamily.HIDE_RECOMMENDATIONS)) {
+            on(pages, PatchFamily.HIDE_RECOMMENDATIONS).addPreference(toggle(context, Settings.HIDE_RECOMMENDATIONS, L10n.t("Hide recommendations"),
+                    PatchFamily.HIDE_RECOMMENDATIONS.coverageSummary(L10n.t("Hides suggested similar channels and bots, including ones already saved, and "
+                            + "stops asking Telegram for new ones."))));
+        }
+        if (build.contains(PatchFamily.QUIET_CONTACTS_NAG)) {
+            on(pages, PatchFamily.QUIET_CONTACTS_NAG).addPreference(toggle(context, Settings.QUIET_CONTACTS_NAG, L10n.t("Quiet contacts prompts"),
+                    PatchFamily.QUIET_CONTACTS_NAG.coverageSummary(L10n.t("After you say no to contacts access, the Contacts tab stops asking again and its"
+                            + " warning badge goes away."))));
+        }
+        if (build.contains(PatchFamily.SHOW_LOCAL_IDS)) {
+            on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.SHOW_LOCAL_IDS, L10n.t("Show user and chat IDs"),
+                    PatchFamily.SHOW_LOCAL_IDS.coverageSummary(L10n.t("Adds a copyable ID number for a user or chat to the profile's menu. Telegram "
+                            + "isn't asked for anything extra."))));
+            on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.PROFILE_DATA_CENTER, L10n.t("Show where a profile photo is stored"),
+                    L10n.t("A profile's menu also shows which of Telegram's five data centers (its server "
+                            + "locations) stores the profile photo. No photo, no number.")));
+        }
+        if (build.contains(PatchFamily.HOLIDAY_LOOK)) {
+            on(pages, PatchFamily.HOLIDAY_LOOK).addPreference(toggle(context, Settings.HOLIDAY_LOOK, L10n.t("New Year look all year"),
+                    PatchFamily.HOLIDAY_LOOK.coverageSummary(L10n.t("Shows Telegram's Santa hat and New Year snow all year, not only around New Year."
+                            + " Snow also falls on chat backgrounds if animated backgrounds are on."))));
+        }
+        if (build.contains(PatchFamily.USE_SYSTEM_FONT)) {
+            on(pages, PatchFamily.USE_SYSTEM_FONT).addPreference(toggle(context, Settings.USE_SYSTEM_FONT, L10n.t("Use system font"),
+                    PatchFamily.USE_SYSTEM_FONT.coverageSummary(L10n.t("Bold, italic and code text use your phone's font instead of Telegram's built-in "
+                            + "one. Restart Telegram to see the change."))));
+        }
+        if (build.contains(PatchFamily.AMOLED_BLACK)) {
+            on(pages, PatchFamily.AMOLED_BLACK).addPreference(toggle(context, Settings.AMOLED_BLACK, L10n.t("AMOLED black"),
+                    PatchFamily.AMOLED_BLACK.coverageSummary(L10n.t("Night and Dark themes use pure black screens. Message bubbles and menus keep "
+                            + "their colors. Restart Telegram to see the change."))));
+        }
+        if (build.contains(PatchFamily.EXACT_NUMBERS)) {
+            on(pages, PatchFamily.EXACT_NUMBERS).addPreference(toggle(context, Settings.EXACT_NUMBERS, L10n.t("Exact numbers"),
+                    PatchFamily.EXACT_NUMBERS.coverageSummary(L10n.t("Member, subscriber, view, reply and reaction counts show in full, like 12,345 "
+                            + "instead of 12.3K."))));
+        }
+        if (build.contains(PatchFamily.HIDE_KEYBOARD_ON_SCROLL)) {
+            on(pages, PatchFamily.HIDE_KEYBOARD_ON_SCROLL).addPreference(toggle(context, Settings.HIDE_KEYBOARD_ON_SCROLL, L10n.t("Hide keyboard on scroll"),
+                    PatchFamily.HIDE_KEYBOARD_ON_SCROLL.coverageSummary(L10n.t("The keyboard closes when you start scrolling a chat. The emoji and sticker panel"
+                            + " stays open."))));
+        }
+        if (build.contains(PatchFamily.SWIPE_BACK_ON_PROFILES)) {
+            on(pages, PatchFamily.SWIPE_BACK_ON_PROFILES).addPreference(toggle(context, Settings.SWIPE_BACK_ON_PROFILES, L10n.t("Swipe back on profiles"),
+                    PatchFamily.SWIPE_BACK_ON_PROFILES.coverageSummary(L10n.t("Swiping right on a profile's photos or media tabs goes back, like the rest of "
+                            + "the profile, instead of showing the previous photo or tab."))));
+        }
+        if (build.contains(PatchFamily.MESSAGE_SECONDS)) {
+            on(pages, PatchFamily.MESSAGE_SECONDS).addPreference(toggle(context, Settings.MESSAGE_SECONDS, L10n.t("Message times with seconds"),
+                    PatchFamily.MESSAGE_SECONDS.coverageSummary(L10n.t("Each message's time includes seconds, like 9:41:27 PM, so messages sent close "
+                            + "together are easy to tell apart."))));
+        }
+        if (build.contains(PatchFamily.ALLOW_CHAT_BLUR)) {
+            on(pages, PatchFamily.ALLOW_CHAT_BLUR).addPreference(toggle(context, Settings.ALLOW_CHAT_BLUR, L10n.t("Allow chat blur on slower phones"),
+                    PatchFamily.ALLOW_CHAT_BLUR.coverageSummary(L10n.t("Telegram only blurs chat headers and panels on fast phones. This lets any phone "
+                            + "do it, once Blur in chat is on under Power saving."))));
+        }
+        if (build.contains(PatchFamily.NO_HAPTICS)) {
+            on(pages, PatchFamily.NO_HAPTICS).addPreference(toggle(context, Settings.NO_HAPTICS, L10n.t("Stop vibrations on taps"),
+                    PatchFamily.NO_HAPTICS.coverageSummary(L10n.t("Taps, long presses, swipes and wrong entries no longer vibrate the phone. "
+                            + "Incoming calls still vibrate, and notifications follow your own settings."))));
+        }
+        if (build.contains(PatchFamily.REACTION_EFFECTS_OFF)) {
+            on(pages, PatchFamily.REACTION_EFFECTS_OFF).addPreference(toggle(context, Settings.REACTION_EFFECTS_OFF, L10n.t("Turn off reaction effects"),
+                    PatchFamily.REACTION_EFFECTS_OFF.coverageSummary(L10n.t("When someone reacts to a message, the emoji doesn't fly across the screen and "
+                            + "burst. The reaction still shows on the message."))));
+        }
+        if (build.contains(PatchFamily.HIDE_STICKER_TIME)) {
+            on(pages, PatchFamily.HIDE_STICKER_TIME).addPreference(toggle(context, Settings.HIDE_STICKER_TIME, L10n.t("Hide time on stickers"),
+                    PatchFamily.HIDE_STICKER_TIME.coverageSummary(L10n.t("Stickers and big animated emoji no longer show the time and read checks in their"
+                            + " corner. Other messages keep their time."))));
+        }
+        if (build.contains(PatchFamily.CHANGE_STICKER_SIZE)) {
+            PreferenceCategory page = on(pages, PatchFamily.CHANGE_STICKER_SIZE);
+            page.addPreference(toggle(context, Settings.CHANGE_STICKER_SIZE, L10n.t("Change sticker size"),
+                    PatchFamily.CHANGE_STICKER_SIZE.coverageSummary(L10n.t("Stickers in chats show at the size you pick below. "
+                            + "Animated emoji and dice keep Telegram's size. A chat picks this up the next time you open it."))));
+            page.addPreference(stickerSizeRow(context));
+        }
+        if (build.contains(PatchFamily.HIDE_CHANNEL_BUTTONS)) {
+            on(pages, PatchFamily.HIDE_CHANNEL_BUTTONS).addPreference(toggle(context, Settings.HIDE_CHANNEL_BUTTONS, L10n.t("Hide channel bar buttons"),
+                    PatchFamily.HIDE_CHANNEL_BUTTONS.coverageSummary(L10n.t("Search, Direct messages and Info leave the bar at the bottom of a channel. "
+                            + "Mute and Join stay, and tapping the channel's name at the top still opens its info. A channel picks "
+                            + "this up the next time you open it."))));
+        }
+        if (build.contains(PatchFamily.HIDE_SEND_AS)) {
+            on(pages, PatchFamily.HIDE_SEND_AS).addPreference(toggle(context, Settings.HIDE_SEND_AS, L10n.t("Hide Send as button"),
+                    PatchFamily.HIDE_SEND_AS.coverageSummary(L10n.t("Your picture next to the message box goes away in groups and channels where you "
+                            + "could post as a channel, while you're posting as yourself. Once you pick a channel it shows again, so you "
+                            + "can always see who you're posting as. To pick one, turn this off first. A chat picks this up the next "
+                            + "time you open it."))));
+        }
+        if (build.contains(PatchFamily.HIDE_FEATURES_AND_INVITE)) {
+            on(pages, PatchFamily.HIDE_FEATURES_AND_INVITE).addPreference(toggle(context, Settings.HIDE_FEATURES_AND_INVITE, L10n.t("Hide Telegram Features and Invite Friends"),
+                    PatchFamily.HIDE_FEATURES_AND_INVITE.coverageSummary(L10n.t("Removes the Telegram Features row from Settings and Invite Friends from "
+                            + "Contacts. With no contacts yet, the invite list goes too."))));
+        }
+    }
+
+    /** The Privacy page: the report and preview switches lead. */
+    private void addPrivacyPage(Context context, Map<PatchFamily.Page, PreferenceCategory> pages, Set<PatchFamily> build) {
+        if (build.contains(PatchFamily.DISABLE_ANALYTICS) || build.contains(PatchFamily.DISABLE_CALL_DEBUG)
+                || build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS) || build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) {
+            PreferenceCategory privacy = pages.get(PatchFamily.Page.PRIVACY);
+            if (build.contains(PatchFamily.DISABLE_ANALYTICS)) {
+                String usage = L10n.t("Stops usage reports to Telegram, like how long you read each channel post and what "
+                        + "you tap on Premium screens. Messages and calls work as before.");
+                // Only Telegram Beta carries Firebase's reporters, so only a build that stops them says so.
+                if (PatchFamily.Capability.CRASH_REPORTS.installed() || PatchFamily.Capability.SESSION_REPORTS.installed()) {
+                    usage = usage + " " + L10n.t("Firebase crash and session reports stop too, from the next time Telegram starts.");
+                }
+                privacy.addPreference(toggle(context, Settings.DISABLE_ANALYTICS, L10n.t("Stop usage reports"),
+                    PatchFamily.DISABLE_ANALYTICS.coverageSummary(usage)));
+            }
+            if (build.contains(PatchFamily.DISABLE_CALL_DEBUG)) {
+                privacy.addPreference(toggle(context, Settings.DISABLE_CALL_DEBUG, L10n.t("Stop call diagnostics"),
+                        PatchFamily.DISABLE_CALL_DEBUG.coverageSummary(L10n.t("Stops your phone from automatically sending call problem reports and log files "
+                                + "when Telegram's server asks for them."))));
+            }
+            if (build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS)) {
+                privacy.addPreference(toggle(context, Settings.DISABLE_DRAFT_PREVIEWS, L10n.t("No previews before sending"),
+                        PatchFamily.DISABLE_DRAFT_PREVIEWS.coverageSummary(L10n.t("Telegram doesn't look up link previews for messages you haven't sent yet, "
+                                + "including shares, polls, story links and bots. Sent messages still get one."))));
+            }
+            if (build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) {
+                privacy.addPreference(toggle(context, Settings.GALLERY_CAMERA_ON_TAP, L10n.t("Camera only on tap"),
+                        PatchFamily.GALLERY_CAMERA_ON_TAP.coverageSummary(L10n.t("Opening the attachment gallery doesn't start the camera or ask for camera "
+                                + "access. Tap the camera tile to start it."))));
+            }
+        }
+        if (build.contains(PatchFamily.HIDE_PHONE_NUMBER)) {
+            on(pages, PatchFamily.HIDE_PHONE_NUMBER).addPreference(toggle(context, Settings.HIDE_PHONE_NUMBER, L10n.t("Hide phone number"),
+                    PatchFamily.HIDE_PHONE_NUMBER.coverageSummary(L10n.t("Your own phone number shows as dots in the side menu, Settings and your profile,"
+                            + " which helps with screenshots. Others' numbers stay visible."))));
+        }
+        if (build.contains(PatchFamily.BETA_LOGS_OFF)) {
+            on(pages, PatchFamily.BETA_LOGS_OFF).addPreference(toggle(context, Settings.BETA_LOGS_OFF, L10n.t("Turn off beta debug logs"),
+                    PatchFamily.BETA_LOGS_OFF.coverageSummary(L10n.t("Telegram Beta keeps debug logs on your phone all the time, its connection log "
+                            + "included, and its own debug menu can't stop that. This stops them. Logs already saved "
+                            + "stay until you clear them, and the regular build doesn't keep them, so nothing changes "
+                            + "there. Restart Telegram to see the change."))));
+        }
+    }
+
+    /** Links, in every build: the link switches, Supported links and how t.me links get here. */
+    private void addLinksPage(Context context, PreferenceScreen screen, Set<PatchFamily> build) {
         // In every build: Telegram's own links are never verified for an app, so Android opens them
         // here only for the addresses selected on the app's Open by default page.
         PreferenceCategory links = category(screen, L10n.t("Links"));
@@ -678,7 +720,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 L10n.t("Android opens t.me links in this Telegram app only if you select their addresses on its Open by "
                         + "default page. Other link settings don't change.")),
                 SettingsIcons.ABOUT));
+    }
 
+    /** Updates: Telegram's own update check, the HushTelegram release check and Check now. */
+    private void addUpdatesPage(Context context, PreferenceScreen screen, Set<PatchFamily> build) {
         // In every build: the release check is the settings entry's own, not a patch's. Its switch
         // is one Pause turns off, so it sits above the Pause row with the rest.
         PreferenceCategory updates = category(screen, L10n.t("Updates"));
@@ -692,14 +737,20 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         + " the top of these settings. Nothing is downloaded.")));
         updates.addPreference(mark(checkNowRow(context), SettingsIcons.UPDATES));
         ReleaseCheck.watch(this);
+    }
 
+    /** Pause, and what it can't reach in this build. */
+    private void addPausePage(Context context, PreferenceScreen screen, Set<PatchFamily> build) {
         PreferenceCategory pause = category(screen, L10n.t("Pause"));
         pause.addPreference(mark(toggle(context, BaseSettings.PAUSED, L10n.t("Pause HushTelegram"),
                 L10n.t("After Telegram restarts, every switch except Debug logging acts as if it were off. Your "
                         + "choices stay saved. Edits made when you patched stay in.")), SettingsIcons.PATCHED));
         String stays = PatchFamily.staysWhilePausedSummary(build);
         if (stays != null) pause.addPreference(mark(info(context, L10n.t(STAYS_WHILE_PAUSED), stays), SettingsIcons.ABOUT));
+    }
 
+    /** Settings backup: the switches to a file and back. */
+    private void addBackupPage(Context context, PreferenceScreen screen) {
         PreferenceCategory backup = category(screen, L10n.t("Settings backup"));
         // Morphe Manager can export the patch choices and the signing key, not these switches.
         backup.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.EXPORT,
@@ -713,6 +764,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 L10n.t("Import settings"),
                 L10n.t("Loads your switches, filter lists and sticker size from a saved file. You see which switches "
                         + "it will change before anything is applied. It applies to all accounts.")), SettingsIcons.DOWNLOADS));
+    }
+
+    /** Diagnostics: Debug logging, the report, and clearing what a report would hold. */
+    private void addDiagnosticsPage(Context context, PreferenceScreen screen) {
         PreferenceCategory diagnostics = category(screen, L10n.t("Diagnostics"));
         // Debug logging also fills the exported report and turns on error toasts (Logger).
         diagnostics.addPreference(mark(toggle(context, BaseSettings.DEBUG, L10n.t("Debug logging"),
@@ -730,7 +785,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         clear.setClearAndUndoSummaries(L10n.t("Clears the activity log and patch checks that a report would include."),
                 L10n.t("Diagnostic data cleared. Tap again to put it back."));
         diagnostics.addPreference(mark(clear, SettingsIcons.DELETE));
+    }
 
+    /** About: the version, accounts, source code and licenses. */
+    private void addAboutPage(Context context, PreferenceScreen screen) {
         PreferenceCategory about = category(screen, L10n.t("About"));
         about.addPreference(mark(info(context, L10n.t("Version"), L10n.f("HushTelegram %1$s on Telegram %2$s",
                 L10n.isolate(Utils.getPatchesReleaseVersion()), L10n.isolate(Utils.getAppVersionName()))), SettingsIcons.ABOUT));
