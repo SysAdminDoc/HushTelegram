@@ -97,6 +97,12 @@ public class ReportChoicesTest {
         assertCardsShowWhole(2f);
     }
 
+    /** The cards are opaque, so the keyboard ring has to be drawn over them, not under. */
+    @Test
+    public void theKeyboardRingDrawsOverTheCards() {
+        assertTrue(openChoices().getListView().isDrawSelectorOnTop());
+    }
+
     /** A card is the choice: tapping the first copies the quick report and closes the dialog. */
     @Test
     public void tappingACardRunsItsChoice() throws Exception {

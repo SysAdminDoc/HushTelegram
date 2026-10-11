@@ -265,6 +265,9 @@ public class SettingsAccessibilityTest {
         assertTrue(selector.getCurrent() instanceof android.graphics.drawable.ColorDrawable);
         assertEquals(android.graphics.Color.TRANSPARENT,
                 ((android.graphics.drawable.ColorDrawable) selector.getCurrent()).getColor());
+        // A dialog's list keeps focus in touch mode, so a finger's tap reads pressed and focused.
+        selector.setState(new int[]{android.R.attr.state_focused, android.R.attr.state_pressed});
+        assertTrue(selector.getCurrent() instanceof android.graphics.drawable.ColorDrawable);
     }
 
     @Test

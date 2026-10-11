@@ -137,7 +137,9 @@ final class ChoiceCards extends BaseAdapter {
 
         /**
          * The dialog list's selector: nothing under a finger, which gets the card's own ripple, and
-         * a ring around the card a keyboard or D-pad is on.
+         * a ring around the card a keyboard or D-pad is on. Pressed comes first because a dialog's
+         * list keeps focus in touch mode, so a tap reads focused too. The list draws it on top,
+         * since the card's surface is opaque.
          */
         static Drawable focusRing(Context context, ScreenColors colors) {
             GradientDrawable ring = new GradientDrawable();
@@ -147,6 +149,7 @@ final class ChoiceCards extends BaseAdapter {
             int side = dp(context, SIDE_INSET_DP);
             int gap = dp(context, GAP_INSET_DP);
             StateListDrawable selector = new StateListDrawable();
+            selector.addState(new int[]{android.R.attr.state_pressed}, new ColorDrawable(android.graphics.Color.TRANSPARENT));
             selector.addState(new int[]{android.R.attr.state_focused}, new InsetDrawable(ring, side, gap, side, gap));
             selector.addState(new int[]{}, new ColorDrawable(android.graphics.Color.TRANSPARENT));
             return selector;

@@ -1375,6 +1375,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             if (list != null) {
                 list.setDivider(null);
                 list.setSelector(ChoiceCards.Card.focusRing(dialog.getContext(), ScreenColors.DEFAULT));
+                list.setDrawSelectorOnTop(true);
             }
             ScreenColors.dialog(dialog);
         }
