@@ -4,6 +4,10 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** With Debug logging on, what HushTelegram writes to Android's log goes through the same redaction as an exported report, so tokens and keys in a message or an error stay out of it.
+
+* **Patching:** The App name option turns down direction marks and zero-width characters, which could flip or hide the name under the icon. Emoji built with zero-width joiners still work.
+
 * **Settings:** Export diagnostic report says "Preparing the diagnostic report" while it builds the report and takes no second tap until the copy or the file is done. The back arrow and the name at the top use the page's own white, and the back arrow shows when a keyboard is on it.
 
 * **Settings:** A keyboard or D-pad can now reach the Pause, Resume and Undo buttons, and shows which one it's on. The two Export diagnostic report choices read as buttons to a screen reader, and a ring marks the one a keyboard is on.

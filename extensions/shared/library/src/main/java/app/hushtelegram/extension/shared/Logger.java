@@ -29,6 +29,7 @@ import java.io.StringWriter;
 import java.util.function.BooleanSupplier;
 
 import app.hushtelegram.extension.shared.diagnostics.DiagnosticCategory;
+import app.hushtelegram.extension.shared.diagnostics.DiagnosticRedactor;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 
@@ -201,18 +202,18 @@ public class Logger {
         LogBufferManager.appendEvent(category, className, logLevel.name(), logText);
 
         String logTag = MORPHE_LOG_TAG_PREFIX + className;
+        // Logcat reaches adb and bug reports, so it gets the redaction an exported report gets,
+        // the exception's own text and stack included.
+        String logcatText = DiagnosticRedactor.redact(ex == null ? logText : logText + "\n" + Log.getStackTraceString(ex));
         switch (logLevel) {
             case DEBUG:
-                if (ex == null) Log.d(logTag, logText);
-                else Log.d(logTag, logText, ex);
+                Log.d(logTag, logcatText);
                 break;
             case INFO:
-                if (ex == null) Log.i(logTag, logText);
-                else Log.i(logTag, logText, ex);
+                Log.i(logTag, logcatText);
                 break;
             case ERROR:
-                if (ex == null) Log.e(logTag, logText);
-                else Log.e(logTag, logText, ex);
+                Log.e(logTag, logcatText);
                 break;
         }
 

@@ -77,8 +77,17 @@ internal fun checkedAppName(raw: String?): String? {
     if (name.any { it.isISOControl() || it == '"' || it == '\'' || it == '\\' }) {
         refuse("can't hold quotes, backslashes or control characters.")
     }
+    // Direction marks and zero-width characters show nothing and can flip or hide what the
+    // launcher shows. The zero-width joiner stays: emoji like the family ones are built with it.
+    if (name.any { it != ZERO_WIDTH_JOINER && Character.getType(it).toByte().let { type ->
+            type == Character.FORMAT || type == Character.LINE_SEPARATOR || type == Character.PARAGRAPH_SEPARATOR } }
+    ) {
+        refuse("can't hold invisible characters, such as direction marks or zero-width spaces.")
+    }
     return name
 }
+
+private const val ZERO_WIDTH_JOINER = '‍'
 
 /** The pictures the patch adds, by their path under res, read before anything is written. */
 internal fun bundledIconPictures(): Map<String, ByteArray> = ICON_DENSITIES.flatMap { density ->

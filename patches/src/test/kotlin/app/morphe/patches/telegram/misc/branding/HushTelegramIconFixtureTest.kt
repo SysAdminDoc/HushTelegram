@@ -140,6 +140,19 @@ class HushTelegramIconFixtureTest {
         assertEquals("x".repeat(MAX_APP_NAME), checkedAppName("x".repeat(MAX_APP_NAME)))
     }
 
+    /** Right-to-left override, the isolates, zero-width space, word joiner, byte order mark, line separator. */
+    @Test
+    fun `a name with invisible characters refuses`() {
+        for (hidden in listOf('‮', '⁧', '​', '‏', '⁠', '﻿', ' ')) {
+            refusal(manifest(), "Hush${hidden}gram") { message ->
+                assertTrue("U+%04X: $message".format(hidden.code), message.contains("invisible characters"))
+            }
+        }
+        // The family emoji is three faces held together with zero-width joiners.
+        val family = "Hush 👨‍👩‍👧"
+        assertEquals(family, checkedAppName(family))
+    }
+
     @Test
     fun `a manifest of another shape refuses before anything is written`() {
         refusal(manifest().replace(ANDROID_NAMESPACE, "https://example.invalid/android"))

@@ -169,6 +169,26 @@ public class LogBufferManagerExportTest {
         assertNotEquals(first, second);
     }
 
+    /** Logcat reaches adb and bug reports, so it gets redacted text: the message, the exception and its stack. */
+    @Test public void noCredentialReachesLogcat() {
+        app.hushtelegram.extension.shared.Utils.setContext(RuntimeEnvironment.getApplication());
+        org.robolectric.shadows.ShadowLog.clear();
+        String[][] corpus = app.hushtelegram.extension.shared.diagnostics.DiagnosticRedactorTest.CREDENTIAL_CORPUS;
+        for (String[] row : corpus) {
+            app.hushtelegram.extension.shared.Logger.printException(() -> "Probe " + row[0], new java.io.IOException(row[0]));
+        }
+        StringBuilder logged = new StringBuilder();
+        for (org.robolectric.shadows.ShadowLog.LogItem item : org.robolectric.shadows.ShadowLog.getLogs()) {
+            logged.append(item.msg).append('\n');
+            if (item.throwable != null) logged.append(android.util.Log.getStackTraceString(item.throwable));
+        }
+        assertTrue("nothing reached logcat", logged.indexOf("Probe ") >= 0);
+        assertTrue("the stack didn't reach logcat", logged.indexOf("java.io.IOException") >= 0);
+        for (String[] row : corpus) {
+            assertFalse(row[1] + " reached logcat", logged.indexOf(row[1]) >= 0);
+        }
+    }
+
     /** The row says it's busy and takes no second tap while a report is built, then comes back as it was. */
     @Test public void theReportRowIsBusyUntilTheReportIsDone() throws Exception {
         try (org.robolectric.android.controller.ActivityController<android.app.Activity> controller =
