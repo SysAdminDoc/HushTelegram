@@ -61,17 +61,13 @@ final class FilterEditor {
                 case TOO_LONG:
                     return L10n.f("Line %1$d is longer than %2$d characters.", i + 1, MessageFilters.MAX_FILTER_CHARS);
                 case BROKEN:
-                    return L10n.f("Line %1$d isn't a regular expression that works. Fix it, or take the slashes off "
-                            + "to match the text as written.", i + 1);
+                    return L10n.f("Line %1$d isn't a valid regex. Fix it or take off the slashes.", i + 1);
                 default:
-                    return L10n.f("Line %1$d could take too long on a long message. Use one open-ended repeat "
-                            + "like + or * at most, a count like {1,9} for the rest, and leave out repeated groups "
-                            + "that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.",
-                            i + 1);
+                    return L10n.f("Line %1$d may be slow. Use one + or * at most, {1,9} for the rest.", i + 1);
             }
         }
         if (!MessageFilters.fits(MessageFilters.lines(typed))) {
-            return L10n.t("This list is too long to fit in a settings file. Take out a few lines.");
+            return L10n.t("This list is too long for a settings file. Remove a few lines.");
         }
         return null;
     }

@@ -107,6 +107,8 @@ public final class L10nTranslations {
                 "Eine Liste fasst bis zu %1$d Filter.");
         table.put("A profile's menu also shows which of Telegram's five data centers (its server locations) stores the profile photo. No photo, no number.",
                 "Das Profilmen\u00fc zeigt au\u00dferdem, in welchem der f\u00fcnf Rechenzentren von Telegram (seinen Serverstandorten) das Profilbild liegt. Ohne Bild gibt es keine Nummer.");
+        table.put("A value in that file can't be read. Nothing was changed.",
+                "Ein Wert in dieser Datei ist nicht lesbar. Es wurde nichts ge\u00e4ndert.");
         table.put("AMOLED black",
                 "AMOLED-Schwarz");
         table.put("API key",
@@ -163,8 +165,8 @@ public final class L10nTranslations {
                 "Android \u00f6ffnet t.me-Links nur dann in dieser App, wenn du ihre Adressen auf der Seite Standardm\u00e4\u00dfig \u00f6ffnen der App ausw\u00e4hlst. Andere Link-Einstellungen \u00e4ndern sich nicht.");
         table.put("Android verified this app for Telegram's web addresses, so their links open here.",
                 "Android hat diese App f\u00fcr die Webadressen von Telegram best\u00e4tigt, deshalb \u00f6ffnen sich ihre Links hier.");
-        table.put("Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.",
-                "Die Android-Einstellungen f\u00fcr diese App lie\u00dfen sich nicht \u00f6ffnen. \u00d6ffne die App-Info \u00fcber das Telegram-Symbol, dann \u201eStandardm\u00e4\u00dfig \u00f6ffnen\u201c.");
+        table.put("App settings didn't open. Try App info, then Open by default.",
+                "Einstellungen \u00f6ffnen nicht. Versuche App-Info, dann \u201eStandardm\u00e4\u00dfig \u00f6ffnen\u201c.");
         table.put("Ask before sending a GIF",
                 "Vor dem Senden eines GIFs nachfragen");
         table.put("Ask before sending a sticker",
@@ -179,11 +181,11 @@ public final class L10nTranslations {
                 "Fragt Senden oder Abbrechen, bevor ein angetipptes GIF in einen Chat geht. Abbrechen verwirft es. Geplante GIFs gehen ohne Nachfrage raus.");
         table.put("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.",
                 "Fragt Senden oder Abbrechen, bevor ein angetippter Sticker in einen Chat geht. Abbrechen verwirft ihn. Geplante Sticker gehen ohne Nachfrage raus.");
-        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.",
-                "Fragt Senden oder Abbrechen, bevor eine aufgenommene Sprach- oder Videonachricht rausgeht. Abbrechen verwirft die Aufnahme.");
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.",
+                "Fragt Senden oder Abbrechen, bevor eine aufgenommene Sprach- oder Videonachricht rausgeht. Abbrechen verwirft die Aufnahme.");
         table.put("Attachment menu",
                 "Anhangmen\u00fc");
         table.put("Back",
@@ -208,6 +210,8 @@ public final class L10nTranslations {
                 "Kamera erst beim Tippen");
         table.put("Can't forward there",
                 "Dorthin kann nicht weitergeleitet werden");
+        table.put("Can't open the link. Go to %1$s.",
+                "Der Link l\u00e4sst sich nicht \u00f6ffnen. Geh zu %1$s.");
         table.put("Cancel",
                 "Abbrechen");
         table.put("Change sticker size",
@@ -258,8 +262,8 @@ public final class L10nTranslations {
                 "Benutzer-ID %1$s kopieren");
         table.put("Couldn't change your folders. Try again in a moment.",
                 "Deine Ordner konnten nicht ge\u00e4ndert werden. Versuch es gleich noch mal.");
-        table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
-                "Die Einstellungen lie\u00dfen sich nicht importieren, und deine vorherigen lie\u00dfen sich nicht wiederherstellen. Pr\u00fcfe die Schalter auf diesem Bildschirm.");
+        table.put("Couldn't import or restore old settings. Check the switches.",
+                "Import und Wiederherstellung sind fehlgeschlagen. Pr\u00fcfe die Schalter.");
         table.put("Couldn't import the settings. Nothing was changed.",
                 "Die Einstellungen lie\u00dfen sich nicht importieren. Es wurde nichts ge\u00e4ndert.");
         table.put("Couldn't open that file. Nothing was changed.",
@@ -270,6 +274,8 @@ public final class L10nTranslations {
                 "Die Diagnosedaten lie\u00dfen sich nicht wiederherstellen. Versuche es noch einmal.");
         table.put("Couldn't reach GitHub. Try again later.",
                 "GitHub war nicht erreichbar. Versuche es sp\u00e4ter noch einmal.");
+        table.put("Couldn't remove %1$s. Delete it by hand.",
+                "%1$s lie\u00df sich nicht entfernen. L\u00f6sche es von Hand.");
         table.put("Couldn't save the filters. Try again in a moment.",
                 "Die Filter lie\u00dfen sich nicht speichern. Versuch es gleich noch einmal.");
         table.put("Couldn't save the settings file. Try again.",
@@ -277,13 +283,15 @@ public final class L10nTranslations {
         table.put("Couldn't save the size. Try again in a moment.",
                 "Die Gr\u00f6\u00dfe lie\u00df sich nicht speichern. Versuch es gleich noch einmal.");
         table.put("Couldn't save the translation service. Try again in a moment.",
-                "Der \u00dcbersetzungsdienst konnte nicht gespeichert werden. Versuch es gleich noch einmal.");
+                "Der Dienst konnte nicht gespeichert werden. Versuch es gleich noch einmal.");
         table.put("Couldn't start that. Try again in a moment.",
                 "Das lie\u00df sich nicht starten. Versuche es gleich noch einmal.");
         table.put("Couldn't start the report export. Try again shortly.",
                 "Der Export des Berichts lie\u00df sich nicht starten. Versuche es gleich noch einmal.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "HushTelegram lie\u00df sich nicht wieder einschalten. Versuche es noch einmal.");
+        table.put("Couldn't update that setting. The switch shows what's saved.",
+                "Einstellung nicht aktualisiert. Der Schalter zeigt den gespeicherten Wert.");
         table.put("Data center %1$s",
                 "Rechenzentrum %1$s");
         table.put("Data center copied",
@@ -296,6 +304,9 @@ public final class L10nTranslations {
                 "L\u00f6scht die Nachrichten, die dieses Handy behalten hat, nachdem andere sie gel\u00f6scht haben, in jedem Konto, so wie Telegram es getan h\u00e4tte.");
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Diagnosedaten gel\u00f6scht. Tippe erneut, um sie wiederherzustellen.");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Diagnostic data put back.",
                 "Diagnosedaten wiederhergestellt.");
         table.put("Diagnostic report copied to the clipboard.",
@@ -304,9 +315,6 @@ public final class L10nTranslations {
                 "Diagnose");
         table.put("Disable double-tap reactions",
                 "Reaktionen durch Doppeltippen deaktivieren");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("Disable pull to archive",
                 "Ziehen zum Archiv ausschalten");
         table.put("Double-tapping a message no longer adds a reaction. Scrolling, normal taps, selecting and the reaction menu work as before.",
@@ -419,6 +427,9 @@ public final class L10nTranslations {
                 "Beliebte Apps ausblenden");
         table.put("Hide promotional banners",
                 "Werbebanner ausblenden");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Hide recommendations",
                 "Empfehlungen ausblenden");
         table.put("Hide sender names when forwarding",
@@ -427,9 +438,6 @@ public final class L10nTranslations {
                 "Gesponserten Proxy-Kanal ausblenden");
         table.put("Hide time on stickers",
                 "Uhrzeit auf Stickern ausblenden");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Hide translate bar",
                 "\u00dcbersetzungsleiste ausblenden");
         table.put("Hides suggested similar channels and bots, including ones already saved, and stops asking Telegram for new ones.",
@@ -490,12 +498,12 @@ public final class L10nTranslations {
                 "Weniger Ablenkung");
         table.put("Licenses",
                 "Lizenzen");
-        table.put("Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.",
-                "Zeile %1$d k\u00f6nnte bei einer langen Nachricht zu lange brauchen. Nimm h\u00f6chstens eine offene Wiederholung wie + oder *, f\u00fcr den Rest eine Anzahl wie {1,9}, und lass wiederholte Gruppen weg, die selbst eine Wiederholung oder eine Auswahl enthalten, etwa (a+)+ oder (a|b)*, ebenso R\u00fcckverweise auf eine Gruppe.");
         table.put("Line %1$d is longer than %2$d characters.",
                 "Zeile %1$d ist l\u00e4nger als %2$d Zeichen.");
-        table.put("Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.",
-                "Zeile %1$d ist kein regul\u00e4rer Ausdruck, der funktioniert. Korrigiere ihn oder nimm die Schr\u00e4gstriche weg, um den Text so zu finden, wie er dasteht.");
+        table.put("Line %1$d isn't a valid regex. Fix it or take off the slashes.",
+                "Zeile %1$d: ung\u00fcltiger Ausdruck. Korrigiere ihn oder lass die Schr\u00e4gstriche weg.");
+        table.put("Line %1$d may be slow. Use one + or * at most, {1,9} for the rest.",
+                "Zeile %1$d k\u00f6nnte langsam sein. H\u00f6chstens ein + oder *, sonst {1,9}.");
         table.put("Links",
                 "Links");
         table.put("Links, updates, backup and more",
@@ -542,17 +550,15 @@ public final class L10nTranslations {
                 "Nein");
         table.put("No HushTelegram release is out yet.",
                 "Es gibt noch keine Version von HushTelegram.");
-        table.put("No app on this phone can open the link. The address is %1$s.",
-                "Keine App auf diesem Handy kann den Link \u00f6ffnen. Die Adresse ist %1$s.");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("No chat to forward to",
                 "Kein Chat zum Weiterleiten");
         table.put("No filters yet.",
                 "Noch keine Filter.");
         table.put("No matching settings",
                 "Keine passenden Einstellungen");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("No previews before sending",
                 "Keine Vorschau vor dem Senden");
         table.put("No reply since Telegram started",
@@ -667,15 +673,15 @@ public final class L10nTranslations {
                 "Firebase-Push-Registrierung reparieren");
         table.put("Repeat",
                 "Wiederholen");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("Resume",
                 "Fortsetzen");
         table.put("Retry",
                 "Erneut versuchen");
         table.put("Reveal spoilers",
                 "Spoiler aufdecken");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("Save",
                 "Speichern");
         table.put("Save downloaded files",
@@ -684,6 +690,8 @@ public final class L10nTranslations {
                 "Vollst\u00e4ndigen Bericht speichern");
         table.put("Save the full report in Download/Morphe.",
                 "Vollst\u00e4ndigen Bericht unter Download/Morphe speichern.");
+        table.put("Saved, but the file doesn't match. Save it again as a new file.",
+                "Gespeichert, aber die Datei stimmt nicht \u00fcberein. Speichere sie als neue Datei.");
         table.put("Saved. Restart Telegram to apply this change.",
                 "Gespeichert. Starte Telegram neu, um diese \u00c4nderung zu \u00fcbernehmen.");
         table.put("Saves your switch choices to a file, for all accounts in this Telegram app. Pause, Debug logging and the update check aren't included.",
@@ -728,12 +736,12 @@ public final class L10nTranslations {
                 "Sicherung der Einstellungen");
         table.put("Settings couldn't open",
                 "Einstellungen lie\u00dfen sich nicht \u00f6ffnen");
-        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
-                "Die Einstellungen lie\u00dfen sich nicht vollst\u00e4ndig aktualisieren. \u00d6ffne sie neu und versuche es noch einmal.");
+        table.put("Settings couldn't refresh. Reopen settings and try again.",
+                "Einstellungen nicht aktualisiert. \u00d6ffne sie neu und versuche es erneut.");
         table.put("Settings exported.",
                 "Einstellungen exportiert.");
-        table.put("Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.",
-                "Einstellungen exportiert. Die App, in der die Datei liegt, lie\u00df HushTelegram sie nicht zur\u00fccklesen, daher wurde sie nicht gepr\u00fcft.");
+        table.put("Settings exported. The app wouldn't let HushTelegram check it.",
+                "Einstellungen exportiert. Die App lie\u00df HushTelegram sie nicht pr\u00fcfen.");
         table.put("Settings imported.",
                 "Einstellungen importiert.");
         table.put("Settings imported. %1$d switch changed.",
@@ -788,6 +796,9 @@ public final class L10nTranslations {
                 "Nutzungsberichte stoppen");
         table.put("Stop vibrations on taps",
                 "Vibrationen bei Ber\u00fchrungen stoppen");
+    }
+
+    private static void fillDe6(Map<String, String> table) {
         table.put("Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.",
                 "Stoppt Nutzungsberichte an Telegram, etwa wie lange du jeden Kanalbeitrag liest und was du auf Premium-Seiten antippst. Nachrichten und Anrufe funktionieren wie bisher.");
         table.put("Stops your phone from automatically sending call problem reports and log files when Telegram's server asks for them.",
@@ -796,9 +807,6 @@ public final class L10nTranslations {
                 "HushTelegram unterst\u00fctzen");
         table.put("Supported links",
                 "Unterst\u00fctzte Links");
-    }
-
-    private static void fillDe6(Map<String, String> table) {
         table.put("Swipe back on profiles",
                 "Auf Profilen zur\u00fcckwischen");
         table.put("Swiping a chat in your list no longer archives, mutes, pins, deletes or marks it read. Press and hold still offers every action.",
@@ -835,38 +843,32 @@ public final class L10nTranslations {
                 "Die Webadressen von Telegram sind in den Android-Einstellungen f\u00fcr diese App ausgew\u00e4hlt, deshalb \u00f6ffnen sich ihre Links hier.");
         table.put("Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.",
                 "Text in einer Zeile passt, wo immer er in einer Nachricht vorkommt. Eine Zeile zwischen Schr\u00e4gstrichen, etwa /crypto|airdrop/, ist ein regul\u00e4rer Ausdruck. Gro\u00df- und Kleinschreibung spielt keine Rolle.");
-        table.put("That file is too large to be a settings file. Nothing was changed.",
-                "Diese Datei ist zu gro\u00df f\u00fcr eine Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
-        table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
-                "Diese Datei ist kein lesbarer Text, sie wurde also wom\u00f6glich bei der \u00dcbertragung besch\u00e4digt. Es wurde nichts ge\u00e4ndert.");
-        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
-                "Diese Datei f\u00fchrt eine Einstellung zweimal auf, daher ist unklar, welcher Wert gilt. Es wurde nichts ge\u00e4ndert.");
+        table.put("That app is slow to answer. Nothing was changed.",
+                "Die App antwortet langsam. Es wurde nichts ge\u00e4ndert.");
+        table.put("That app is slow. It may still save the file, so check it.",
+                "Die App ist langsam. Sie speichert die Datei evtl. noch, pr\u00fcfe sie also.");
+        table.put("That file is damaged or partly downloaded. Nothing was changed.",
+                "Diese Datei ist besch\u00e4digt oder nur teilweise geladen. Es wurde nichts ge\u00e4ndert.");
+        table.put("That file is from a newer HushTelegram. Nothing was changed.",
+                "Diese Datei stammt von einem neueren HushTelegram. Es wurde nichts ge\u00e4ndert.");
+        table.put("That file is too big for a settings file. Nothing was changed.",
+                "Diese Datei ist zu gro\u00df f\u00fcr Einstellungen. Es wurde nichts ge\u00e4ndert.");
+        table.put("That file isn't readable text. Nothing was changed.",
+                "Diese Datei ist kein lesbarer Text. Es wurde nichts ge\u00e4ndert.");
+        table.put("That file lists a setting twice. Nothing was changed.",
+                "Diese Datei nennt eine Einstellung doppelt. Es wurde nichts ge\u00e4ndert.");
+        table.put("That file's app still hasn't answered. Try again later.",
+                "Die App dieser Datei hat noch nicht geantwortet. Versuche es sp\u00e4ter noch einmal.");
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Das ist keine HushTelegram-Einstellungsdatei. Es wurde nichts ge\u00e4ndert.");
-        table.put("That setting couldn't be updated. The switch shows the value that is saved.",
-                "Diese Einstellung lie\u00df sich nicht aktualisieren. Der Schalter zeigt den gespeicherten Wert.");
-        table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
-                "Diese Einstellungsdatei enth\u00e4lt einen Wert, den HushTelegram nicht lesen kann. Es wurde nichts ge\u00e4ndert.");
-        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
-                "Diese Einstellungsdatei ist besch\u00e4digt oder nur teilweise heruntergeladen. Es wurde nichts ge\u00e4ndert.");
-        table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
-                "Diese Einstellungsdatei stammt aus einer neueren HushTelegram-Version als dieser. Es wurde nichts ge\u00e4ndert.");
         table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
                 "Die Lizenz GPL-3.0 und die Hinweise zu den Projekten, auf denen HushTelegram aufbaut");
         table.put("The address has to start with https://.",
                 "Die Adresse muss mit https:// beginnen.");
-        table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
-                "Die App, in der die Datei liegt, braucht zu lange, deshalb wartet HushTelegram nicht mehr. Es wurde nichts ge\u00e4ndert.");
-        table.put("The app holding the last settings file still hasn't answered. Try again later.",
-                "Die App mit der letzten Einstellungsdatei hat noch immer nicht geantwortet. Versuche es sp\u00e4ter noch einmal.");
-        table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
-                "Die App, in der die Einstellungsdatei liegt, braucht zu lange, deshalb wartet HushTelegram nicht mehr. Sie kann das Speichern noch abschlie\u00dfen, also pr\u00fcfe die Datei, bevor du dich darauf verl\u00e4sst.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "Das Fotoraster im Anhangmen\u00fc beginnt mit deinen Fotos statt mit einer Live-Kamerakachel. Ein Chat \u00fcbernimmt das beim n\u00e4chsten \u00d6ffnen.");
         table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
                 "Die Kamera im Anhangmen\u00fc \u00f6ffnet sich immer mit der R\u00fcckkamera, nicht mit der zuletzt genutzten. Du kannst sie trotzdem umschalten.");
-        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
-                "Der Diagnosebericht lie\u00df sich noch nicht speichern. Versuche es gleich noch einmal.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Der Diagnosebericht lie\u00df sich nicht speichern. Versuche es noch einmal.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.",
@@ -877,8 +879,8 @@ public final class L10nTranslations {
                 "Die Tastatur schlie\u00dft sich, sobald du in einem Chat zu scrollen beginnst. Das Emoji- und Sticker-Fenster bleibt offen.");
         table.put("The newest HushTelegram release is %1$s.",
                 "Die neueste Version von HushTelegram ist %1$s.");
-        table.put("The settings file was saved, but what's in it doesn't match what was written. Save it again as a new file.",
-                "Die Einstellungsdatei wurde gespeichert, aber ihr Inhalt stimmt nicht mit dem \u00fcberein, was geschrieben wurde. Speichere sie erneut als neue Datei.");
+        table.put("The report couldn't be saved yet. Try again in a moment.",
+                "Der Bericht lie\u00df sich noch nicht speichern. Versuche es gleich noch einmal.");
         table.put("The sticker size will change.",
                 "Die Stickergr\u00f6\u00dfe wird ge\u00e4ndert.");
         table.put("Theme",
@@ -895,16 +897,16 @@ public final class L10nTranslations {
                 "Dieser Chat zeigt die Originalnachrichten");
         table.put("This chat will be translated",
                 "Dieser Chat wird \u00fcbersetzt");
-        table.put("This list is too long to fit in a settings file. Take out a few lines.",
-                "Diese Liste ist zu lang f\u00fcr eine Einstellungsdatei. Nimm ein paar Zeilen heraus.");
+        table.put("This list is too long for a settings file. Remove a few lines.",
+                "Diese Liste ist zu lang f\u00fcr eine Einstellungsdatei. Entferne ein paar Zeilen.");
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "Das zeigt nur, was auf diesem Handy gespeichert ist. Es beweist nicht, dass Benachrichtigungen ankommen.");
         table.put("This patched app changes %1$s but not %2$s.",
                 "Diese gepatchte App \u00e4ndert %1$s, aber nicht %2$s.");
         table.put("This patched app doesn't change %1$s.",
                 "Diese gepatchte App \u00e4ndert %1$s nicht.");
-        table.put("This phone has no file picker, so there's no way to choose a file here.",
-                "Dieses Handy hat keine Dateiauswahl, hier l\u00e4sst sich also keine Datei w\u00e4hlen.");
+        table.put("This phone has no file picker, so you can't choose a file here.",
+                "Dieses Handy hat keine Dateiauswahl, du kannst hier keine Datei w\u00e4hlen.");
         table.put("Touch and keyboard",
                 "Ber\u00fchrung und Tastatur");
         table.put("Translate here",
@@ -1142,6 +1144,8 @@ public final class L10nTranslations {
                 "Un archivo llamado %1$s en %2$s paus\u00f3 HushTelegram.");
         table.put("A list holds up to %1$d filters.",
                 "Una lista admite hasta %1$d filtros.");
+        table.put("A value in that file can't be read. Nothing was changed.",
+                "No se puede leer un valor de ese archivo. No se cambi\u00f3 nada.");
         table.put("A profile's menu also shows which of Telegram's five data centers (its server locations) stores the profile photo. No photo, no number.",
                 "El men\u00fa del perfil tambi\u00e9n muestra en cu\u00e1l de los cinco centros de datos de Telegram (sus ubicaciones de servidores) se guarda la foto de perfil. Sin foto, no hay n\u00famero.");
         table.put("AMOLED black",
@@ -1200,8 +1204,8 @@ public final class L10nTranslations {
                 "Android abre los enlaces t.me en esta app solo si seleccionas sus direcciones en su p\u00e1gina Abrir de forma predeterminada. Los dem\u00e1s ajustes de enlaces no cambian.");
         table.put("Android verified this app for Telegram's web addresses, so their links open here.",
                 "Android verific\u00f3 esta app para las direcciones web de Telegram, as\u00ed que sus enlaces se abren aqu\u00ed.");
-        table.put("Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.",
-                "No se abrieron los ajustes de Android para esta app. Abre Informaci\u00f3n de la app desde el icono de Telegram y luego Abrir de forma predeterminada.");
+        table.put("App settings didn't open. Try App info, then Open by default.",
+                "No se abri\u00f3. Prueba Info de la app, luego Abrir de forma predeterminada.");
         table.put("Ask before sending a GIF",
                 "Preguntar antes de enviar un GIF");
         table.put("Ask before sending a sticker",
@@ -1216,9 +1220,9 @@ public final class L10nTranslations {
                 "Pregunta Enviar o Cancelar antes de que un GIF que tocas entre en un chat. Cancelar lo descarta. Los GIF programados salen sin preguntar.");
         table.put("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.",
                 "Pregunta Enviar o Cancelar antes de que un sticker que tocas entre en un chat. Cancelar lo descarta. Los stickers programados salen sin preguntar.");
+    }
         table.put("Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.",
                 "Pregunta Enviar o Cancelar antes de que salga un mensaje de voz o de video que grabaste. Cancelar descarta la grabaci\u00f3n.");
-    }
 
     private static void fillEs1(Map<String, String> table) {
         table.put("Attachment menu",
@@ -1243,6 +1247,8 @@ public final class L10nTranslations {
                 "Diagn\u00f3sticos de llamadas");
         table.put("Camera only on tap",
                 "C\u00e1mara solo al tocar");
+        table.put("Can't open the link. Go to %1$s.",
+                "No se puede abrir el enlace. Ve a %1$s.");
         table.put("Can't forward there",
                 "No se puede reenviar all\u00ed");
         table.put("Cancel",
@@ -1295,8 +1301,8 @@ public final class L10nTranslations {
                 "Copiar ID de usuario %1$s");
         table.put("Couldn't change your folders. Try again in a moment.",
                 "No se pudieron cambiar tus carpetas. Int\u00e9ntalo de nuevo en un momento.");
-        table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
-                "No se pudo importar la configuraci\u00f3n ni restaurar la que ten\u00edas. Revisa los interruptores de esta pantalla.");
+        table.put("Couldn't import or restore old settings. Check the switches.",
+                "No se pudo importar ni restaurar la configuraci\u00f3n. Revisa los interruptores.");
         table.put("Couldn't import the settings. Nothing was changed.",
                 "No se pudo importar la configuraci\u00f3n. No se cambi\u00f3 nada.");
         table.put("Couldn't open that file. Nothing was changed.",
@@ -1305,6 +1311,8 @@ public final class L10nTranslations {
                 "No se pudo abrir el selector de archivos. Int\u00e9ntalo de nuevo.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "No se pudieron restaurar los datos de diagn\u00f3stico. Int\u00e9ntalo de nuevo.");
+        table.put("Couldn't remove %1$s. Delete it by hand.",
+                "No se pudo quitar %1$s. B\u00f3rralo a mano.");
         table.put("Couldn't reach GitHub. Try again later.",
                 "No se pudo contactar con GitHub. Int\u00e9ntalo de nuevo m\u00e1s tarde.");
         table.put("Couldn't save the filters. Try again in a moment.",
@@ -1319,6 +1327,8 @@ public final class L10nTranslations {
                 "No se pudo iniciar. Int\u00e9ntalo de nuevo en un momento.");
         table.put("Couldn't start the report export. Try again shortly.",
                 "No se pudo iniciar la exportaci\u00f3n del informe. Int\u00e9ntalo de nuevo en breve.");
+        table.put("Couldn't update that setting. The switch shows what's saved.",
+                "No se pudo actualizar ese ajuste. El interruptor muestra lo guardado.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
                 "No se pudo volver a activar HushTelegram. Int\u00e9ntalo de nuevo.");
         table.put("Data center %1$s",
@@ -1331,6 +1341,9 @@ public final class L10nTranslations {
                 "Mensajes eliminados");
         table.put("Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.",
                 "Elimina los mensajes que este tel\u00e9fono conserv\u00f3 despu\u00e9s de que otros los eliminaran, en todas las cuentas, como lo habr\u00eda hecho Telegram.");
+    }
+
+    private static void fillEs2(Map<String, String> table) {
         table.put("Diagnostic data cleared. Tap again to put it back.",
                 "Se borraron los datos de diagn\u00f3stico. Toca de nuevo para restaurarlos.");
         table.put("Diagnostic data put back.",
@@ -1341,9 +1354,6 @@ public final class L10nTranslations {
                 "Diagn\u00f3stico");
         table.put("Disable double-tap reactions",
                 "Desactivar reacciones al tocar dos veces");
-    }
-
-    private static void fillEs2(Map<String, String> table) {
         table.put("Disable pull to archive",
                 "Desactivar deslizar para ver el archivo");
         table.put("Double-tapping a message no longer adds a reaction. Scrolling, normal taps, selecting and the reaction menu work as before.",
@@ -1454,6 +1464,9 @@ public final class L10nTranslations {
                 "Ocultar n\u00famero de tel\u00e9fono");
         table.put("Hide popular apps",
                 "Ocultar apps populares");
+    }
+
+    private static void fillEs3(Map<String, String> table) {
         table.put("Hide promotional banners",
                 "Ocultar banners promocionales");
         table.put("Hide recommendations",
@@ -1464,9 +1477,6 @@ public final class L10nTranslations {
                 "Ocultar canal patrocinado del proxy");
         table.put("Hide time on stickers",
                 "Ocultar la hora en los stickers");
-    }
-
-    private static void fillEs3(Map<String, String> table) {
         table.put("Hide translate bar",
                 "Ocultar barra de traducci\u00f3n");
         table.put("Hides suggested similar channels and bots, including ones already saved, and stops asking Telegram for new ones.",
@@ -1527,12 +1537,12 @@ public final class L10nTranslations {
                 "Menos distracciones");
         table.put("Licenses",
                 "Licencias");
-        table.put("Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.",
-                "La l\u00ednea %1$d podr\u00eda tardar demasiado en un mensaje largo. Usa como mucho una repetici\u00f3n abierta como + o *, un n\u00famero como {1,9} para el resto, y evita los grupos repetidos que contienen una repetici\u00f3n o una alternativa, como (a+)+ o (a|b)*, y las referencias a un grupo anterior.");
         table.put("Line %1$d is longer than %2$d characters.",
                 "La l\u00ednea %1$d tiene m\u00e1s de %2$d caracteres.");
-        table.put("Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.",
-                "La l\u00ednea %1$d no es una expresi\u00f3n regular que funcione. Corr\u00edgela, o quita las barras para buscar el texto tal como est\u00e1 escrito.");
+        table.put("Line %1$d isn't a valid regex. Fix it or take off the slashes.",
+                "La l\u00ednea %1$d no es una expresi\u00f3n v\u00e1lida. Corr\u00edgela o quita las barras.");
+        table.put("Line %1$d may be slow. Use one + or * at most, {1,9} for the rest.",
+                "La l\u00ednea %1$d podr\u00eda ser lenta. Usa un solo + o *, y {1,9} para el resto.");
         table.put("Links",
                 "Enlaces");
         table.put("Links, updates, backup and more",
@@ -1579,17 +1589,15 @@ public final class L10nTranslations {
                 "No");
         table.put("No HushTelegram release is out yet.",
                 "Todav\u00eda no hay ninguna versi\u00f3n de HushTelegram.");
-        table.put("No app on this phone can open the link. The address is %1$s.",
-                "Ninguna app de este tel\u00e9fono puede abrir el enlace. La direcci\u00f3n es %1$s.");
+    }
+
+    private static void fillEs4(Map<String, String> table) {
         table.put("No chat to forward to",
                 "No hay ning\u00fan chat al que reenviar");
         table.put("No filters yet.",
                 "A\u00fan no hay filtros.");
         table.put("No matching settings",
                 "No hay ajustes coincidentes");
-    }
-
-    private static void fillEs4(Map<String, String> table) {
         table.put("No previews before sending",
                 "Sin vistas previas antes de enviar");
         table.put("No reply since Telegram started",
@@ -1702,6 +1710,9 @@ public final class L10nTranslations {
                 "Quita etiquetas de seguimiento como utm_source, gclid y fbclid de los enlaces que abres o compartes. Un enlace con cualquier otra etiqueta se deja sin cambios.");
         table.put("Repair Firebase push registration",
                 "Reparar el registro de notificaciones de Firebase");
+    }
+
+    private static void fillEs5(Map<String, String> table) {
         table.put("Repeat",
                 "Repetir");
         table.put("Resume",
@@ -1710,15 +1721,14 @@ public final class L10nTranslations {
                 "Reintentar");
         table.put("Reveal spoilers",
                 "Mostrar spoilers");
-    }
-
-    private static void fillEs5(Map<String, String> table) {
         table.put("Save",
                 "Guardar");
         table.put("Save downloaded files",
                 "Guardar archivos descargados");
         table.put("Save full report",
                 "Guardar informe completo");
+        table.put("Saved, but the file doesn't match. Save it again as a new file.",
+                "Se guard\u00f3, pero el archivo no coincide. Gu\u00e1rdalo de nuevo como archivo nuevo.");
         table.put("Save the full report in Download/Morphe.",
                 "Guarda el informe completo en Download/Morphe.");
         table.put("Saved. Restart Telegram to apply this change.",
@@ -1765,12 +1775,12 @@ public final class L10nTranslations {
                 "Copia de ajustes");
         table.put("Settings couldn't open",
                 "No se pudo abrir la configuraci\u00f3n");
-        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
-                "No se pudo actualizar la configuraci\u00f3n por completo. Vuelve a abrirla e int\u00e9ntalo de nuevo.");
+        table.put("Settings couldn't refresh. Reopen settings and try again.",
+                "La configuraci\u00f3n no se actualiz\u00f3. \u00c1brela de nuevo e int\u00e9ntalo otra vez.");
         table.put("Settings exported.",
                 "Configuraci\u00f3n exportada.");
-        table.put("Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.",
-                "Configuraci\u00f3n exportada. La app que guarda el archivo no dej\u00f3 que HushTelegram lo volviera a leer, as\u00ed que no se comprob\u00f3.");
+        table.put("Settings exported. The app wouldn't let HushTelegram check it.",
+                "Configuraci\u00f3n exportada. La app no dej\u00f3 que HushTelegram la revisara.");
         table.put("Settings imported.",
                 "Configuraci\u00f3n importada.");
         table.put("Settings imported. %1$d switch changed.",
@@ -1823,6 +1833,9 @@ public final class L10nTranslations {
                 "Impedir el salto al siguiente tema al deslizar");
         table.put("Stop usage reports",
                 "Detener los informes de uso");
+    }
+
+    private static void fillEs6(Map<String, String> table) {
         table.put("Stop vibrations on taps",
                 "Detener las vibraciones al tocar");
         table.put("Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.",
@@ -1833,9 +1846,6 @@ public final class L10nTranslations {
                 "Apoya HushTelegram");
         table.put("Supported links",
                 "Enlaces compatibles");
-    }
-
-    private static void fillEs6(Map<String, String> table) {
         table.put("Swipe back on profiles",
                 "Deslizar para volver en perfiles");
         table.put("Swiping a chat in your list no longer archives, mutes, pins, deletes or marks it read. Press and hold still offers every action.",
@@ -1872,38 +1882,32 @@ public final class L10nTranslations {
                 "Las direcciones web de Telegram est\u00e1n seleccionadas para esta app en los ajustes de Android, as\u00ed que sus enlaces se abren aqu\u00ed.");
         table.put("Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.",
                 "El texto de una l\u00ednea coincide dondequiera que aparezca en un mensaje. Una l\u00ednea entre barras, como /crypto|airdrop/, es una expresi\u00f3n regular. No importan las may\u00fasculas.");
-        table.put("That file is too large to be a settings file. Nothing was changed.",
-                "Ese archivo es demasiado grande para ser un archivo de configuraci\u00f3n. No se cambi\u00f3 nada.");
-        table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
-                "Ese archivo no es texto legible, as\u00ed que puede haberse da\u00f1ado por el camino. No se cambi\u00f3 nada.");
-        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
-                "Ese archivo incluye un ajuste dos veces, as\u00ed que no se sabe qu\u00e9 valor usar. No se cambi\u00f3 nada.");
+        table.put("That app is slow to answer. Nothing was changed.",
+                "Esa app tarda en responder. No se cambi\u00f3 nada.");
+        table.put("That app is slow. It may still save the file, so check it.",
+                "Esa app va lenta. Puede que a\u00fan guarde el archivo, as\u00ed que rev\u00edsalo.");
+        table.put("That file is damaged or partly downloaded. Nothing was changed.",
+                "Ese archivo est\u00e1 da\u00f1ado o se descarg\u00f3 a medias. No se cambi\u00f3 nada.");
+        table.put("That file is from a newer HushTelegram. Nothing was changed.",
+                "Ese archivo es de un HushTelegram m\u00e1s nuevo. No se cambi\u00f3 nada.");
+        table.put("That file is too big for a settings file. Nothing was changed.",
+                "Ese archivo es demasiado grande para ser de configuraci\u00f3n. No se cambi\u00f3 nada.");
+        table.put("That file isn't readable text. Nothing was changed.",
+                "Ese archivo no es texto legible. No se cambi\u00f3 nada.");
+        table.put("That file lists a setting twice. Nothing was changed.",
+                "Ese archivo repite una configuraci\u00f3n. No se cambi\u00f3 nada.");
+        table.put("That file's app still hasn't answered. Try again later.",
+                "La app de ese archivo a\u00fan no responde. Int\u00e9ntalo m\u00e1s tarde.");
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Eso no es un archivo de configuraci\u00f3n de HushTelegram. No se cambi\u00f3 nada.");
-        table.put("That setting couldn't be updated. The switch shows the value that is saved.",
-                "No se pudo actualizar ese ajuste. El interruptor muestra el valor guardado.");
-        table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
-                "Ese archivo de configuraci\u00f3n contiene un valor que HushTelegram no puede leer. No se cambi\u00f3 nada.");
-        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
-                "Ese archivo de configuraci\u00f3n est\u00e1 da\u00f1ado o solo se descarg\u00f3 en parte. No se cambi\u00f3 nada.");
-        table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
-                "Ese archivo de configuraci\u00f3n lo escribi\u00f3 una versi\u00f3n de HushTelegram m\u00e1s reciente que esta. No se cambi\u00f3 nada.");
         table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
                 "La licencia GPL-3.0 y los cr\u00e9ditos de los proyectos en los que se basa HushTelegram");
         table.put("The address has to start with https://.",
                 "La direcci\u00f3n tiene que empezar por https://.");
-        table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
-                "La app que guarda ese archivo tarda demasiado, as\u00ed que HushTelegram dej\u00f3 de esperar. No se cambi\u00f3 nada.");
-        table.put("The app holding the last settings file still hasn't answered. Try again later.",
-                "La app del \u00faltimo archivo de configuraci\u00f3n a\u00fan no ha respondido. Int\u00e9ntalo m\u00e1s tarde.");
-        table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
-                "La app que guarda el archivo de configuraci\u00f3n tarda demasiado, as\u00ed que HushTelegram dej\u00f3 de esperar. Esa app a\u00fan puede terminar de guardarlo, as\u00ed que revisa el archivo antes de confiar en \u00e9l.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "La cuadr\u00edcula de fotos del men\u00fa de adjuntos empieza con tus fotos en lugar de un recuadro de c\u00e1mara en vivo. Un chat lo aplica la pr\u00f3xima vez que lo abras.");
         table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
                 "La c\u00e1mara del men\u00fa de adjuntos siempre se abre con la lente trasera, no con la que usaste por \u00faltima vez. A\u00fan puedes cambiarla.");
-        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
-                "Todav\u00eda no se pudo guardar el informe de diagn\u00f3stico. Int\u00e9ntalo de nuevo en un momento.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "No se pudo guardar el informe de diagn\u00f3stico. Int\u00e9ntalo de nuevo.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.",
@@ -1914,8 +1918,8 @@ public final class L10nTranslations {
                 "El teclado se cierra cuando empiezas a desplazarte por un chat. El panel de emojis y stickers sigue abierto.");
         table.put("The newest HushTelegram release is %1$s.",
                 "La versi\u00f3n m\u00e1s reciente de HushTelegram es la %1$s.");
-        table.put("The settings file was saved, but what's in it doesn't match what was written. Save it again as a new file.",
-                "El archivo de ajustes se guard\u00f3, pero su contenido no coincide con lo que se escribi\u00f3. Gu\u00e1rdalo de nuevo como un archivo nuevo.");
+        table.put("The report couldn't be saved yet. Try again in a moment.",
+                "El informe a\u00fan no se pudo guardar. Int\u00e9ntalo de nuevo en un momento.");
         table.put("The sticker size will change.",
                 "Cambiar\u00e1 el tama\u00f1o de los stickers.");
         table.put("Theme",
@@ -1932,16 +1936,16 @@ public final class L10nTranslations {
                 "Este chat muestra los mensajes originales");
         table.put("This chat will be translated",
                 "Este chat se traducir\u00e1");
-        table.put("This list is too long to fit in a settings file. Take out a few lines.",
-                "Esta lista es demasiado larga para caber en un archivo de configuraci\u00f3n. Quita algunas l\u00edneas.");
+        table.put("This list is too long for a settings file. Remove a few lines.",
+                "Lista demasiado larga para el archivo de configuraci\u00f3n. Quita unas l\u00edneas.");
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "Esto solo muestra lo que est\u00e1 guardado en este tel\u00e9fono. No demuestra que las notificaciones vayan a llegar.");
         table.put("This patched app changes %1$s but not %2$s.",
                 "Esta app parcheada modifica %1$s, pero no %2$s.");
         table.put("This patched app doesn't change %1$s.",
                 "Esta app parcheada no modifica %1$s.");
-        table.put("This phone has no file picker, so there's no way to choose a file here.",
-                "Este tel\u00e9fono no tiene selector de archivos, as\u00ed que aqu\u00ed no hay forma de elegir un archivo.");
+        table.put("This phone has no file picker, so you can't choose a file here.",
+                "Este tel\u00e9fono no tiene selector de archivos, as\u00ed que no puedes elegir uno.");
         table.put("Touch and keyboard",
                 "Toque y teclado");
         table.put("Translate here",
@@ -2177,6 +2181,8 @@ public final class L10nTranslations {
                 "Sudah ada laporan diagnostik yang sedang disimpan.");
         table.put("A file named %1$s in %2$s paused HushTelegram.",
                 "File bernama %1$s di %2$s menjeda HushTelegram.");
+        table.put("A value in that file can't be read. Nothing was changed.",
+                "Ada nilai di file itu yang tidak bisa dibaca. Tidak ada yang diubah.");
         table.put("A list holds up to %1$d filters.",
                 "Satu daftar memuat hingga %1$d filter.");
         table.put("A profile's menu also shows which of Telegram's five data centers (its server locations) stores the profile photo. No photo, no number.",
@@ -2237,8 +2243,8 @@ public final class L10nTranslations {
                 "Android membuka tautan t.me di aplikasi ini hanya jika Anda memilih alamatnya di halaman Buka secara default milik aplikasi. Pengaturan tautan lain tidak berubah.");
         table.put("Android verified this app for Telegram's web addresses, so their links open here.",
                 "Android telah memverifikasi aplikasi ini untuk alamat web Telegram, jadi tautannya terbuka di sini.");
-        table.put("Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.",
-                "Pengaturan Android untuk aplikasi ini tidak terbuka. Buka Info aplikasi dari ikon Telegram, lalu Buka secara default.");
+        table.put("App settings didn't open. Try App info, then Open by default.",
+                "Pengaturan aplikasi tidak terbuka. Coba Info aplikasi, lalu Buka secara default.");
         table.put("Ask before sending a GIF",
                 "Tanya dulu sebelum mengirim GIF");
         table.put("Ask before sending a sticker",
@@ -2252,9 +2258,9 @@ public final class L10nTranslations {
         table.put("Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.",
                 "Menanyakan Kirim atau Batal sebelum GIF yang Anda ketuk masuk ke obrolan. Batal membuangnya. GIF terjadwal terkirim tanpa bertanya.");
         table.put("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.",
-                "Menanyakan Kirim atau Batal sebelum stiker yang Anda ketuk masuk ke obrolan. Batal membuangnya. Stiker terjadwal terkirim tanpa bertanya.");
         table.put("Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.",
                 "Menanyakan Kirim atau Batal sebelum pesan suara atau video yang Anda rekam terkirim. Batal membuang rekamannya.");
+                "Menanyakan Kirim atau Batal sebelum stiker yang Anda ketuk masuk ke obrolan. Batal membuangnya. Stiker terjadwal terkirim tanpa bertanya.");
     }
 
     private static void fillIn1(Map<String, String> table) {
@@ -2278,6 +2284,8 @@ public final class L10nTranslations {
                 "Panggil");
         table.put("Call diagnostics",
                 "Diagnostik panggilan");
+        table.put("Can't open the link. Go to %1$s.",
+                "Tautan tidak bisa dibuka. Buka %1$s.");
         table.put("Camera only on tap",
                 "Kamera hanya saat diketuk");
         table.put("Can't forward there",
@@ -2332,14 +2340,16 @@ public final class L10nTranslations {
                 "Salin ID pengguna %1$s");
         table.put("Couldn't change your folders. Try again in a moment.",
                 "Tidak bisa mengubah foldermu. Coba lagi sebentar lagi.");
-        table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
-                "Pengaturan tidak dapat diimpor, dan pengaturan sebelumnya tidak dapat dikembalikan. Periksa sakelar di layar ini.");
+        table.put("Couldn't import or restore old settings. Check the switches.",
+                "Gagal mengimpor atau memulihkan pengaturan lama. Periksa sakelarnya.");
         table.put("Couldn't import the settings. Nothing was changed.",
                 "Pengaturan tidak dapat diimpor. Tidak ada yang diubah.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "File itu tidak dapat dibuka. Tidak ada yang diubah.");
         table.put("Couldn't open the file picker. Try again.",
                 "Pemilih file tidak dapat dibuka. Coba lagi.");
+        table.put("Couldn't remove %1$s. Delete it by hand.",
+                "%1$s tidak bisa dihapus. Hapus secara manual.");
         table.put("Couldn't put back the diagnostic data. Try again.",
                 "Data diagnostik tidak dapat dikembalikan. Coba lagi.");
         table.put("Couldn't reach GitHub. Try again later.",
@@ -2354,6 +2364,8 @@ public final class L10nTranslations {
                 "Layanan terjemahan tidak bisa disimpan. Coba lagi sebentar lagi.");
         table.put("Couldn't start that. Try again in a moment.",
                 "Tidak dapat dimulai. Coba lagi dalam beberapa saat.");
+        table.put("Couldn't update that setting. The switch shows what's saved.",
+                "Pengaturan itu tidak bisa diperbarui. Sakelar menunjukkan yang tersimpan.");
         table.put("Couldn't start the report export. Try again shortly.",
                 "Ekspor laporan tidak dapat dimulai. Coba lagi dalam beberapa saat.");
         table.put("Couldn't turn HushTelegram back on. Try again.",
@@ -2366,6 +2378,9 @@ public final class L10nTranslations {
                 "Pencatatan debug");
         table.put("Deleted messages",
                 "Pesan yang dihapus");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.",
                 "Menghapus pesan yang disimpan ponsel ini setelah orang lain menghapusnya, di setiap akun, seperti yang akan dilakukan Telegram.");
         table.put("Diagnostic data cleared. Tap again to put it back.",
@@ -2378,9 +2393,6 @@ public final class L10nTranslations {
                 "Diagnostik");
         table.put("Disable double-tap reactions",
                 "Nonaktifkan reaksi ketuk dua kali");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("Disable pull to archive",
                 "Nonaktifkan tarik ke arsip");
         table.put("Double-tapping a message no longer adds a reaction. Scrolling, normal taps, selecting and the reaction menu work as before.",
@@ -2489,6 +2501,9 @@ public final class L10nTranslations {
                 "Sembunyikan pesan berdasarkan kata kunci");
         table.put("Hide phone number",
                 "Sembunyikan nomor telepon");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Hide popular apps",
                 "Sembunyikan aplikasi populer");
         table.put("Hide promotional banners",
@@ -2501,9 +2516,6 @@ public final class L10nTranslations {
                 "Sembunyikan kanal bersponsor proxy");
         table.put("Hide time on stickers",
                 "Sembunyikan waktu pada stiker");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Hide translate bar",
                 "Sembunyikan bilah terjemahan");
         table.put("Hides suggested similar channels and bots, including ones already saved, and stops asking Telegram for new ones.",
@@ -2564,12 +2576,12 @@ public final class L10nTranslations {
                 "Lebih ringkas");
         table.put("Licenses",
                 "Lisensi");
-        table.put("Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.",
-                "Baris %1$d bisa terlalu lama pada pesan yang panjang. Pakai paling banyak satu pengulangan terbuka seperti + atau *, jumlah seperti {1,9} untuk sisanya, dan hindari grup berulang yang berisi pengulangan atau pilihan, seperti (a+)+ atau (a|b)*, serta rujukan balik ke sebuah grup.");
         table.put("Line %1$d is longer than %2$d characters.",
                 "Baris %1$d lebih panjang dari %2$d karakter.");
-        table.put("Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.",
-                "Baris %1$d bukan ekspresi reguler yang berfungsi. Perbaiki, atau hapus garis miringnya agar cocok dengan teks apa adanya.");
+        table.put("Line %1$d isn't a valid regex. Fix it or take off the slashes.",
+                "Baris %1$d bukan regex yang valid. Perbaiki atau hapus garis miringnya.");
+        table.put("Line %1$d may be slow. Use one + or * at most, {1,9} for the rest.",
+                "Baris %1$d bisa lambat. Pakai satu + atau * saja, sisanya {1,9}.");
         table.put("Links",
                 "Tautan");
         table.put("Links, updates, backup and more",
@@ -2616,17 +2628,15 @@ public final class L10nTranslations {
                 "Tidak");
         table.put("No HushTelegram release is out yet.",
                 "Belum ada rilis HushTelegram.");
-        table.put("No app on this phone can open the link. The address is %1$s.",
-                "Tidak ada aplikasi di ponsel ini yang dapat membuka tautan ini. Alamatnya %1$s.");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("No chat to forward to",
                 "Tidak ada obrolan tujuan");
         table.put("No filters yet.",
                 "Belum ada filter.");
         table.put("No matching settings",
                 "Tidak ada pengaturan yang cocok");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("No previews before sending",
                 "Tanpa pratinjau sebelum mengirim");
         table.put("No reply since Telegram started",
@@ -2737,6 +2747,9 @@ public final class L10nTranslations {
                 "Menghapus bilah cerita di atas obrolan Anda, lingkaran di sekitar foto profil, dan tombol untuk memposting cerita. Cerita di profil dan arsip tetap ada.");
         table.put("Removes tracking tags like utm_source, gclid and fbclid from links you open or share. A link with any other tag is left unchanged.",
                 "Menghapus tag pelacakan seperti utm_source, gclid, dan fbclid dari tautan yang Anda buka atau bagikan. Tautan dengan tag lain tidak diubah.");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("Repair Firebase push registration",
                 "Perbaiki pendaftaran notifikasi Firebase");
         table.put("Repeat",
@@ -2747,13 +2760,12 @@ public final class L10nTranslations {
                 "Coba lagi");
         table.put("Reveal spoilers",
                 "Tampilkan spoiler");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("Save",
                 "Simpan");
         table.put("Save downloaded files",
                 "Simpan file yang diunduh");
+        table.put("Saved, but the file doesn't match. Save it again as a new file.",
+                "Tersimpan, tetapi isi file tidak cocok. Simpan lagi sebagai file baru.");
         table.put("Save full report",
                 "Simpan laporan lengkap");
         table.put("Save the full report in Download/Morphe.",
@@ -2802,12 +2814,12 @@ public final class L10nTranslations {
                 "Cadangan setelan");
         table.put("Settings couldn't open",
                 "Pengaturan tidak dapat dibuka");
-        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
-                "Pengaturan tidak dapat dimuat ulang sepenuhnya. Buka kembali pengaturan lalu coba lagi.");
+        table.put("Settings couldn't refresh. Reopen settings and try again.",
+                "Pengaturan tidak dapat disegarkan. Buka lagi pengaturan dan coba lagi.");
         table.put("Settings exported.",
                 "Pengaturan diekspor.");
-        table.put("Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.",
-                "Pengaturan diekspor. Aplikasi yang menyimpan file itu tidak mengizinkan HushTelegram membacanya kembali, jadi file itu tidak diperiksa.");
+        table.put("Settings exported. The app wouldn't let HushTelegram check it.",
+                "Pengaturan diekspor. Aplikasi itu tidak mengizinkan HushTelegram memeriksanya.");
         table.put("Settings imported.",
                 "Pengaturan diimpor.");
         table.put("Settings imported. %1$d switch changed.",
@@ -2858,6 +2870,9 @@ public final class L10nTranslations {
                 "Hentikan tarikan ke kanal berikutnya");
         table.put("Stop pull to next topic",
                 "Hentikan tarikan ke topik berikutnya");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
         table.put("Stop usage reports",
                 "Hentikan laporan penggunaan");
         table.put("Stop vibrations on taps",
@@ -2870,9 +2885,6 @@ public final class L10nTranslations {
                 "Dukung HushTelegram");
         table.put("Supported links",
                 "Tautan yang didukung");
-    }
-
-    private static void fillIn6(Map<String, String> table) {
         table.put("Swipe back on profiles",
                 "Geser kembali di profil");
         table.put("Swiping a chat in your list no longer archives, mutes, pins, deletes or marks it read. Press and hold still offers every action.",
@@ -2909,38 +2921,32 @@ public final class L10nTranslations {
                 "Alamat web Telegram dipilih untuk aplikasi ini di pengaturan Android, jadi tautannya terbuka di sini.");
         table.put("Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.",
                 "Teks pada satu baris cocok di mana pun teks itu muncul dalam pesan. Baris di antara garis miring, seperti /crypto|airdrop/, adalah ekspresi reguler. Huruf besar dan kecil tidak berpengaruh.");
-        table.put("That file is too large to be a settings file. Nothing was changed.",
-                "File itu terlalu besar untuk sebuah file pengaturan. Tidak ada yang diubah.");
-        table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
-                "File itu bukan teks yang dapat dibaca, jadi mungkin rusak saat ditransfer. Tidak ada yang diubah.");
-        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
-                "File itu mencantumkan satu pengaturan dua kali, jadi tidak jelas nilai mana yang harus dipakai. Tidak ada yang diubah.");
+        table.put("That app is slow to answer. Nothing was changed.",
+                "Aplikasi itu lambat merespons. Tidak ada yang diubah.");
+        table.put("That app is slow. It may still save the file, so check it.",
+                "Aplikasi itu lambat. Mungkin masih menyimpan file, jadi periksa file-nya.");
+        table.put("That file is damaged or partly downloaded. Nothing was changed.",
+                "File itu rusak atau hanya terunduh sebagian. Tidak ada yang diubah.");
+        table.put("That file is from a newer HushTelegram. Nothing was changed.",
+                "File itu berasal dari HushTelegram yang lebih baru. Tidak ada yang diubah.");
+        table.put("That file is too big for a settings file. Nothing was changed.",
+                "File itu terlalu besar untuk file pengaturan. Tidak ada yang diubah.");
+        table.put("That file isn't readable text. Nothing was changed.",
+                "File itu bukan teks yang bisa dibaca. Tidak ada yang diubah.");
+        table.put("That file lists a setting twice. Nothing was changed.",
+                "File itu memuat satu pengaturan dua kali. Tidak ada yang diubah.");
+        table.put("That file's app still hasn't answered. Try again later.",
+                "Aplikasi file itu belum menjawab. Coba lagi nanti.");
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Itu bukan file pengaturan HushTelegram. Tidak ada yang diubah.");
-        table.put("That setting couldn't be updated. The switch shows the value that is saved.",
-                "Pengaturan itu tidak bisa diperbarui. Sakelar menampilkan nilai yang tersimpan.");
-        table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
-                "File pengaturan itu memuat nilai yang tidak dapat dibaca HushTelegram. Tidak ada yang diubah.");
-        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
-                "File pengaturan itu rusak atau hanya terunduh sebagian. Tidak ada yang diubah.");
-        table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
-                "File pengaturan itu dibuat oleh versi HushTelegram yang lebih baru daripada versi ini. Tidak ada yang diubah.");
         table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
                 "Lisensi GPL-3.0 dan kredit untuk proyek-proyek yang menjadi dasar HushTelegram");
         table.put("The address has to start with https://.",
                 "Alamat harus diawali dengan https://.");
-        table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
-                "Aplikasi yang menyimpan file itu terlalu lama, jadi HushTelegram berhenti menunggu. Tidak ada yang diubah.");
-        table.put("The app holding the last settings file still hasn't answered. Try again later.",
-                "Aplikasi yang menyimpan file pengaturan terakhir masih belum merespons. Coba lagi nanti.");
-        table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
-                "Aplikasi yang menyimpan file pengaturan terlalu lama, jadi HushTelegram berhenti menunggu. Aplikasi itu mungkin masih menyelesaikan penyimpanannya, jadi periksa file itu sebelum mengandalkannya.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "Kisi foto di menu lampiran dimulai dengan foto Anda, bukan kotak kamera langsung. Obrolan akan menerapkannya saat Anda membukanya lagi.");
         table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
                 "Kamera di menu lampiran selalu terbuka dengan lensa belakang, bukan lensa yang terakhir Anda pakai. Anda tetap bisa menggantinya.");
-        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
-                "Laporan diagnostik belum dapat disimpan. Coba lagi dalam beberapa saat.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Laporan diagnostik tidak dapat disimpan. Coba lagi.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.",
@@ -2951,8 +2957,8 @@ public final class L10nTranslations {
                 "Keyboard menutup saat Anda mulai menggulir obrolan. Panel emoji dan stiker tetap terbuka.");
         table.put("The newest HushTelegram release is %1$s.",
                 "Rilis HushTelegram terbaru adalah %1$s.");
-        table.put("The settings file was saved, but what's in it doesn't match what was written. Save it again as a new file.",
-                "Berkas pengaturan tersimpan, tetapi isinya tidak sama dengan yang ditulis. Simpan lagi sebagai berkas baru.");
+        table.put("The report couldn't be saved yet. Try again in a moment.",
+                "Laporan belum bisa disimpan. Coba lagi sebentar lagi.");
         table.put("The sticker size will change.",
                 "Ukuran stiker akan berubah.");
         table.put("Theme",
@@ -2969,16 +2975,16 @@ public final class L10nTranslations {
                 "Obrolan ini menampilkan pesan asli");
         table.put("This chat will be translated",
                 "Obrolan ini akan diterjemahkan");
-        table.put("This list is too long to fit in a settings file. Take out a few lines.",
-                "Daftar ini terlalu panjang untuk muat di file pengaturan. Hapus beberapa baris.");
+        table.put("This list is too long for a settings file. Remove a few lines.",
+                "Daftar ini terlalu panjang untuk file pengaturan. Hapus beberapa baris.");
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "Ini hanya menunjukkan apa yang tersimpan di ponsel ini. Ini tidak membuktikan bahwa notifikasi akan sampai.");
         table.put("This patched app changes %1$s but not %2$s.",
                 "Aplikasi yang ditambal ini mengubah %1$s, tetapi tidak %2$s.");
         table.put("This patched app doesn't change %1$s.",
                 "Aplikasi yang ditambal ini tidak mengubah %1$s.");
-        table.put("This phone has no file picker, so there's no way to choose a file here.",
-                "Ponsel ini tidak memiliki pemilih file, jadi file tidak dapat dipilih di sini.");
+        table.put("This phone has no file picker, so you can't choose a file here.",
+                "Ponsel ini tidak punya pemilih file, jadi kamu tidak bisa memilih file.");
         table.put("Touch and keyboard",
                 "Sentuhan dan keyboard");
         table.put("Translate here",
@@ -3212,6 +3218,8 @@ public final class L10nTranslations {
                 "Uma altera\u00e7\u00e3o daqui vale depois que o Telegram reiniciar.");
         table.put("A diagnostic report is already being saved.",
                 "Um relat\u00f3rio de diagn\u00f3stico j\u00e1 est\u00e1 sendo salvo.");
+        table.put("A value in that file can't be read. Nothing was changed.",
+                "N\u00e3o d\u00e1 para ler um valor desse arquivo. Nada foi alterado.");
         table.put("A file named %1$s in %2$s paused HushTelegram.",
                 "Um arquivo chamado %1$s em %2$s pausou o HushTelegram.");
         table.put("A list holds up to %1$d filters.",
@@ -3274,8 +3282,8 @@ public final class L10nTranslations {
                 "O Android abre links t.me neste app s\u00f3 se voc\u00ea selecionar os endere\u00e7os deles na p\u00e1gina Abrir por padr\u00e3o do app. As outras configura\u00e7\u00f5es de links n\u00e3o mudam.");
         table.put("Android verified this app for Telegram's web addresses, so their links open here.",
                 "O Android verificou este app para os endere\u00e7os web do Telegram, ent\u00e3o os links deles abrem aqui.");
-        table.put("Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.",
-                "As configura\u00e7\u00f5es do Android para este app n\u00e3o abriram. Abra Informa\u00e7\u00f5es do app pelo \u00edcone do Telegram e depois Abrir por padr\u00e3o.");
+        table.put("App settings didn't open. Try App info, then Open by default.",
+                "As configura\u00e7\u00f5es do app n\u00e3o abriram. Tente Info do app e Abrir por padr\u00e3o.");
         table.put("Ask before sending a GIF",
                 "Perguntar antes de enviar um GIF");
         table.put("Ask before sending a sticker",
@@ -3287,11 +3295,11 @@ public final class L10nTranslations {
         table.put("Asks Call or Cancel before the call button in a chat or on a profile starts a call.",
                 "Pergunta Ligar ou Cancelar antes de o bot\u00e3o de chamada em uma conversa ou perfil iniciar uma chamada.");
         table.put("Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.",
+        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.",
+                "Pergunta Enviar ou Cancelar antes de uma mensagem de voz ou de v\u00eddeo que voc\u00ea gravou sair. Cancelar descarta a grava\u00e7\u00e3o.");
                 "Pergunta Enviar ou Cancelar antes de um GIF em que voc\u00ea tocou entrar na conversa. Cancelar o descarta. GIFs agendados saem sem perguntar.");
         table.put("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.",
                 "Pergunta Enviar ou Cancelar antes de uma figurinha em que voc\u00ea tocou entrar na conversa. Cancelar a descarta. Figurinhas agendadas saem sem perguntar.");
-        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.",
-                "Pergunta Enviar ou Cancelar antes de uma mensagem de voz ou de v\u00eddeo que voc\u00ea gravou sair. Cancelar descarta a grava\u00e7\u00e3o.");
     }
 
     private static void fillPt_rBR1(Map<String, String> table) {
@@ -3313,6 +3321,8 @@ public final class L10nTranslations {
                 "Me pague um caf\u00e9 no Ko-fi");
         table.put("Call",
                 "Ligar");
+        table.put("Can't open the link. Go to %1$s.",
+                "N\u00e3o d\u00e1 para abrir o link. V\u00e1 para %1$s.");
         table.put("Call diagnostics",
                 "Diagn\u00f3sticos de chamadas");
         table.put("Camera only on tap",
@@ -3369,12 +3379,14 @@ public final class L10nTranslations {
                 "Copiar ID de usu\u00e1rio %1$s");
         table.put("Couldn't change your folders. Try again in a moment.",
                 "N\u00e3o foi poss\u00edvel alterar suas pastas. Tente de novo em um instante.");
-        table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
-                "N\u00e3o foi poss\u00edvel importar as configura\u00e7\u00f5es nem restaurar as que voc\u00ea tinha. Confira as op\u00e7\u00f5es nesta tela.");
+        table.put("Couldn't import or restore old settings. Check the switches.",
+                "N\u00e3o foi poss\u00edvel importar nem restaurar. Confira as op\u00e7\u00f5es.");
         table.put("Couldn't import the settings. Nothing was changed.",
                 "N\u00e3o foi poss\u00edvel importar as configura\u00e7\u00f5es. Nada foi alterado.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "N\u00e3o foi poss\u00edvel abrir esse arquivo. Nada foi alterado.");
+        table.put("Couldn't remove %1$s. Delete it by hand.",
+                "N\u00e3o foi poss\u00edvel remover %1$s. Exclua-o manualmente.");
         table.put("Couldn't open the file picker. Try again.",
                 "N\u00e3o foi poss\u00edvel abrir o seletor de arquivos. Tente de novo.");
         table.put("Couldn't put back the diagnostic data. Try again.",
@@ -3389,6 +3401,8 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel salvar o tamanho. Tente de novo em instantes.");
         table.put("Couldn't save the translation service. Try again in a moment.",
                 "N\u00e3o foi poss\u00edvel salvar o servi\u00e7o de tradu\u00e7\u00e3o. Tente de novo em instantes.");
+        table.put("Couldn't update that setting. The switch shows what's saved.",
+                "N\u00e3o foi poss\u00edvel atualizar. A op\u00e7\u00e3o mostra o que est\u00e1 salvo.");
         table.put("Couldn't start that. Try again in a moment.",
                 "N\u00e3o foi poss\u00edvel iniciar isso. Tente de novo em instantes.");
         table.put("Couldn't start the report export. Try again shortly.",
@@ -3401,6 +3415,9 @@ public final class L10nTranslations {
                 "Data center copiado");
         table.put("Debug logging",
                 "Registro de depura\u00e7\u00e3o");
+    }
+
+    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Deleted messages",
                 "Mensagens apagadas");
         table.put("Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.",
@@ -3415,9 +3432,6 @@ public final class L10nTranslations {
                 "Diagn\u00f3stico");
         table.put("Disable double-tap reactions",
                 "Desativar rea\u00e7\u00f5es por toque duplo");
-    }
-
-    private static void fillPt_rBR2(Map<String, String> table) {
         table.put("Disable pull to archive",
                 "Desativar puxar para o arquivo");
         table.put("Double-tapping a message no longer adds a reaction. Scrolling, normal taps, selecting and the reaction menu work as before.",
@@ -3524,6 +3538,9 @@ public final class L10nTranslations {
                 "Ocultar teclado ao rolar");
         table.put("Hide messages by keyword",
                 "Ocultar mensagens por palavra-chave");
+    }
+
+    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Hide phone number",
                 "Ocultar n\u00famero de telefone");
         table.put("Hide popular apps",
@@ -3538,9 +3555,6 @@ public final class L10nTranslations {
                 "Ocultar canal patrocinado do proxy");
         table.put("Hide time on stickers",
                 "Ocultar a hora nas figurinhas");
-    }
-
-    private static void fillPt_rBR3(Map<String, String> table) {
         table.put("Hide translate bar",
                 "Ocultar barra de tradu\u00e7\u00e3o");
         table.put("Hides suggested similar channels and bots, including ones already saved, and stops asking Telegram for new ones.",
@@ -3601,12 +3615,12 @@ public final class L10nTranslations {
                 "Menos distra\u00e7\u00f5es");
         table.put("Licenses",
                 "Licen\u00e7as");
-        table.put("Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.",
-                "A linha %1$d pode demorar demais em uma mensagem longa. Use no m\u00e1ximo uma repeti\u00e7\u00e3o aberta como + ou *, uma contagem como {1,9} para o resto, e evite grupos repetidos que contenham uma repeti\u00e7\u00e3o ou uma escolha, como (a+)+ ou (a|b)*, e refer\u00eancias de volta a um grupo.");
         table.put("Line %1$d is longer than %2$d characters.",
                 "A linha %1$d tem mais de %2$d caracteres.");
-        table.put("Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.",
-                "A linha %1$d n\u00e3o \u00e9 uma express\u00e3o regular que funciona. Corrija, ou tire as barras para buscar o texto como est\u00e1 escrito.");
+        table.put("Line %1$d isn't a valid regex. Fix it or take off the slashes.",
+                "A linha %1$d n\u00e3o \u00e9 uma regex v\u00e1lida. Corrija ou tire as barras.");
+        table.put("Line %1$d may be slow. Use one + or * at most, {1,9} for the rest.",
+                "A linha %1$d pode ser lenta. Use s\u00f3 um + ou *, e {1,9} no resto.");
         table.put("Links",
                 "Links");
         table.put("Links, updates, backup and more",
@@ -3653,17 +3667,15 @@ public final class L10nTranslations {
                 "N\u00e3o");
         table.put("No HushTelegram release is out yet.",
                 "Ainda n\u00e3o h\u00e1 nenhuma vers\u00e3o do HushTelegram.");
-        table.put("No app on this phone can open the link. The address is %1$s.",
-                "Nenhum aplicativo neste dispositivo consegue abrir o link. O endere\u00e7o \u00e9 %1$s.");
+    }
+
+    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("No chat to forward to",
                 "Nenhum chat para encaminhar");
         table.put("No filters yet.",
                 "Nenhum filtro ainda.");
         table.put("No matching settings",
                 "Nenhuma configura\u00e7\u00e3o encontrada");
-    }
-
-    private static void fillPt_rBR4(Map<String, String> table) {
         table.put("No previews before sending",
                 "Sem pr\u00e9vias antes de enviar");
         table.put("No reply since Telegram started",
@@ -3772,6 +3784,9 @@ public final class L10nTranslations {
                 "Remove a linha Recursos do Telegram das configura\u00e7\u00f5es e Convidar amigos dos contatos. Se voc\u00ea ainda n\u00e3o tem contatos, a lista de convites tamb\u00e9m some.");
         table.put("Removes the story bar above your chats, the rings around profile pictures and the Post Story button. Profile stories and archives stay.",
                 "Remove a barra de stories acima das suas conversas, os an\u00e9is ao redor das fotos de perfil e o bot\u00e3o de publicar story. Os stories nos perfis e os arquivados continuam dispon\u00edveis.");
+    }
+
+    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("Removes tracking tags like utm_source, gclid and fbclid from links you open or share. A link with any other tag is left unchanged.",
                 "Remove etiquetas de rastreamento como utm_source, gclid e fbclid dos links que voc\u00ea abre ou compartilha. Um link com qualquer outra etiqueta fica sem altera\u00e7\u00e3o.");
         table.put("Repair Firebase push registration",
@@ -3784,11 +3799,10 @@ public final class L10nTranslations {
                 "Tentar novamente");
         table.put("Reveal spoilers",
                 "Revelar spoilers");
-    }
-
-    private static void fillPt_rBR5(Map<String, String> table) {
         table.put("Save",
                 "Salvar");
+        table.put("Saved, but the file doesn't match. Save it again as a new file.",
+                "Salvo, mas o arquivo n\u00e3o confere. Salve de novo como um arquivo novo.");
         table.put("Save downloaded files",
                 "Salvar arquivos baixados");
         table.put("Save full report",
@@ -3839,12 +3853,12 @@ public final class L10nTranslations {
                 "Backup de configura\u00e7\u00f5es");
         table.put("Settings couldn't open",
                 "N\u00e3o foi poss\u00edvel abrir as configura\u00e7\u00f5es");
-        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
-                "N\u00e3o foi poss\u00edvel atualizar completamente as configura\u00e7\u00f5es. Reabra as configura\u00e7\u00f5es e tente novamente.");
+        table.put("Settings couldn't refresh. Reopen settings and try again.",
+                "As configura\u00e7\u00f5es n\u00e3o atualizaram. Reabra-as e tente de novo.");
         table.put("Settings exported.",
                 "Configura\u00e7\u00f5es exportadas.");
-        table.put("Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.",
-                "Configura\u00e7\u00f5es exportadas. O app que guarda o arquivo n\u00e3o deixou o HushTelegram l\u00ea-lo de volta, ent\u00e3o ele n\u00e3o foi conferido.");
+        table.put("Settings exported. The app wouldn't let HushTelegram check it.",
+                "Configura\u00e7\u00f5es exportadas. O app n\u00e3o deixou o HushTelegram conferir.");
         table.put("Settings imported.",
                 "Configura\u00e7\u00f5es importadas.");
         table.put("Settings imported. %1$d switch changed.",
@@ -3893,6 +3907,9 @@ public final class L10nTranslations {
                 "Interromper diagn\u00f3sticos de chamadas");
         table.put("Stop pull to next channel",
                 "Impedir o salto para o pr\u00f3ximo canal ao deslizar");
+    }
+
+    private static void fillPt_rBR6(Map<String, String> table) {
         table.put("Stop pull to next topic",
                 "Impedir o salto para o pr\u00f3ximo t\u00f3pico ao deslizar");
         table.put("Stop usage reports",
@@ -3907,9 +3924,6 @@ public final class L10nTranslations {
                 "Apoie o HushTelegram");
         table.put("Supported links",
                 "Links compat\u00edveis");
-    }
-
-    private static void fillPt_rBR6(Map<String, String> table) {
         table.put("Swipe back on profiles",
                 "Deslizar para voltar em perfis");
         table.put("Swiping a chat in your list no longer archives, mutes, pins, deletes or marks it read. Press and hold still offers every action.",
@@ -3946,38 +3960,32 @@ public final class L10nTranslations {
                 "Os endere\u00e7os web do Telegram est\u00e3o selecionados para este app nas configura\u00e7\u00f5es do Android, ent\u00e3o os links deles abrem aqui.");
         table.put("Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.",
                 "O texto de uma linha corresponde onde quer que apare\u00e7a em uma mensagem. Uma linha entre barras, como /crypto|airdrop/, \u00e9 uma express\u00e3o regular. Mai\u00fasculas e min\u00fasculas n\u00e3o importam.");
-        table.put("That file is too large to be a settings file. Nothing was changed.",
-                "Esse arquivo \u00e9 grande demais para ser um arquivo de configura\u00e7\u00f5es. Nada foi alterado.");
-        table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
-                "Esse arquivo n\u00e3o cont\u00e9m texto leg\u00edvel, ent\u00e3o pode ter sido corrompido durante o processo. Nada foi alterado.");
-        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
-                "Esse arquivo cont\u00e9m uma configura\u00e7\u00e3o duplicada, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel saber qual valor usar. Nada foi alterado.");
+        table.put("That app is slow to answer. Nothing was changed.",
+                "Esse app demora a responder. Nada foi alterado.");
+        table.put("That app is slow. It may still save the file, so check it.",
+                "Esse app est\u00e1 lento. Ele ainda pode salvar o arquivo, ent\u00e3o confira.");
+        table.put("That file is damaged or partly downloaded. Nothing was changed.",
+                "Esse arquivo est\u00e1 danificado ou baixou s\u00f3 em parte. Nada foi alterado.");
+        table.put("That file is from a newer HushTelegram. Nothing was changed.",
+                "Esse arquivo \u00e9 de um HushTelegram mais novo. Nada foi alterado.");
+        table.put("That file is too big for a settings file. Nothing was changed.",
+                "Esse arquivo \u00e9 grande demais para configura\u00e7\u00f5es. Nada foi alterado.");
+        table.put("That file isn't readable text. Nothing was changed.",
+                "Esse arquivo n\u00e3o \u00e9 um texto leg\u00edvel. Nada foi alterado.");
+        table.put("That file lists a setting twice. Nothing was changed.",
+                "Esse arquivo repete uma configura\u00e7\u00e3o. Nada foi alterado.");
+        table.put("That file's app still hasn't answered. Try again later.",
+                "O app desse arquivo ainda n\u00e3o respondeu. Tente de novo mais tarde.");
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Isso n\u00e3o \u00e9 um arquivo de configura\u00e7\u00f5es do HushTelegram. Nada foi alterado.");
-        table.put("That setting couldn't be updated. The switch shows the value that is saved.",
-                "N\u00e3o foi poss\u00edvel atualizar essa configura\u00e7\u00e3o. A op\u00e7\u00e3o mostra o valor salvo.");
-        table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
-                "Esse arquivo de configura\u00e7\u00f5es tem um valor que o HushTelegram n\u00e3o consegue ler. Nada foi alterado.");
-        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
-                "Esse arquivo de configura\u00e7\u00f5es est\u00e1 corrompido ou foi baixado apenas parcialmente. Nada foi alterado.");
-        table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
-                "Esse arquivo de configura\u00e7\u00f5es foi criado por uma vers\u00e3o do HushTelegram mais nova que esta. Nada foi alterado.");
         table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
                 "A licen\u00e7a GPL-3.0 e os cr\u00e9ditos dos projetos em que o HushTelegram se baseia");
         table.put("The address has to start with https://.",
                 "O endere\u00e7o precisa come\u00e7ar com https://.");
-        table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
-                "O app que guarda esse arquivo est\u00e1 demorando demais, ent\u00e3o o HushTelegram parou de esperar. Nada foi alterado.");
-        table.put("The app holding the last settings file still hasn't answered. Try again later.",
-                "O app do \u00faltimo arquivo de configura\u00e7\u00f5es ainda n\u00e3o respondeu. Tente de novo mais tarde.");
-        table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
-                "O app que guarda o arquivo de configura\u00e7\u00f5es est\u00e1 demorando demais, ent\u00e3o o HushTelegram parou de esperar. Esse app ainda pode terminar de salv\u00e1-lo, ent\u00e3o confira o arquivo antes de confiar nele.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "A grade de fotos do menu de anexos come\u00e7a com suas fotos em vez de um bloco de c\u00e2mera ao vivo. Uma conversa aplica isso na pr\u00f3xima vez que voc\u00ea abri-la.");
         table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
                 "A c\u00e2mera do menu de anexos sempre abre na lente traseira, e n\u00e3o na que voc\u00ea usou por \u00faltimo. Voc\u00ea ainda pode alternar.");
-        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
-                "O relat\u00f3rio de diagn\u00f3stico ainda n\u00e3o p\u00f4de ser salvo. Tente de novo em instantes.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "N\u00e3o foi poss\u00edvel salvar o relat\u00f3rio de diagn\u00f3stico. Tente de novo.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.",
@@ -3988,8 +3996,8 @@ public final class L10nTranslations {
                 "O teclado fecha quando voc\u00ea come\u00e7a a rolar uma conversa. O painel de emojis e figurinhas continua aberto.");
         table.put("The newest HushTelegram release is %1$s.",
                 "A vers\u00e3o mais nova do HushTelegram \u00e9 %1$s.");
-        table.put("The settings file was saved, but what's in it doesn't match what was written. Save it again as a new file.",
-                "O arquivo de configura\u00e7\u00f5es foi salvo, mas o conte\u00fado n\u00e3o bate com o que foi gravado. Salve de novo como um arquivo novo.");
+        table.put("The report couldn't be saved yet. Try again in a moment.",
+                "O relat\u00f3rio ainda n\u00e3o p\u00f4de ser salvo. Tente de novo daqui a pouco.");
         table.put("The sticker size will change.",
                 "O tamanho das figurinhas ser\u00e1 alterado.");
         table.put("Theme",
@@ -4006,16 +4014,16 @@ public final class L10nTranslations {
                 "Esta conversa mostra as mensagens originais");
         table.put("This chat will be translated",
                 "Esta conversa ser\u00e1 traduzida");
-        table.put("This list is too long to fit in a settings file. Take out a few lines.",
-                "Esta lista \u00e9 longa demais para caber em um arquivo de configura\u00e7\u00f5es. Tire algumas linhas.");
+        table.put("This list is too long for a settings file. Remove a few lines.",
+                "Lista longa demais para um arquivo de configura\u00e7\u00f5es. Remova algumas linhas.");
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "Isto s\u00f3 mostra o que est\u00e1 salvo neste celular. N\u00e3o prova que as notifica\u00e7\u00f5es v\u00e3o chegar.");
         table.put("This patched app changes %1$s but not %2$s.",
                 "Este app modificado altera %1$s, mas n\u00e3o %2$s.");
         table.put("This patched app doesn't change %1$s.",
                 "Este app modificado n\u00e3o altera %1$s.");
-        table.put("This phone has no file picker, so there's no way to choose a file here.",
-                "Este dispositivo n\u00e3o tem seletor de arquivos, ent\u00e3o n\u00e3o \u00e9 poss\u00edvel escolher um arquivo aqui.");
+        table.put("This phone has no file picker, so you can't choose a file here.",
+                "Este celular n\u00e3o tem seletor de arquivos, ent\u00e3o n\u00e3o d\u00e1 para escolher um.");
         table.put("Touch and keyboard",
                 "Toque e teclado");
         table.put("Translate here",
@@ -4247,6 +4255,8 @@ public final class L10nTranslations {
                 "(\u00c7evrildi. Orijinali i\u00e7in uzun bas\u0131n.)");
         table.put("A change here applies after Telegram restarts.",
                 "Buradaki bir de\u011fi\u015fiklik Telegram yeniden ba\u015flad\u0131ktan sonra ge\u00e7erli olur.");
+        table.put("A value in that file can't be read. Nothing was changed.",
+                "Bu dosyadaki bir de\u011fer okunam\u0131yor. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("A diagnostic report is already being saved.",
                 "Bir tan\u0131lama raporu zaten kaydediliyor.");
         table.put("A file named %1$s in %2$s paused HushTelegram.",
@@ -4311,8 +4321,8 @@ public final class L10nTranslations {
                 "Android, t.me ba\u011flant\u0131lar\u0131n\u0131 bu uygulamada yaln\u0131zca adreslerini uygulaman\u0131n Varsay\u0131lan olarak a\u00e7 sayfas\u0131nda se\u00e7erseniz a\u00e7ar. Di\u011fer ba\u011flant\u0131 ayarlar\u0131 de\u011fi\u015fmez.");
         table.put("Android verified this app for Telegram's web addresses, so their links open here.",
                 "Android bu uygulamay\u0131 Telegram'\u0131n web adresleri i\u00e7in do\u011frulad\u0131, bu y\u00fczden ba\u011flant\u0131lar\u0131 burada a\u00e7\u0131l\u0131r.");
-        table.put("Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.",
-                "Bu uygulaman\u0131n Android ayarlar\u0131 a\u00e7\u0131lamad\u0131. Telegram simgesinden Uygulama bilgileri'ni, ard\u0131ndan Varsay\u0131lan olarak a\u00e7'\u0131 a\u00e7\u0131n.");
+        table.put("App settings didn't open. Try App info, then Open by default.",
+                "Ayarlar a\u00e7\u0131lmad\u0131. Uygulama bilgisi, sonra Varsay\u0131lan olarak a\u00e7'\u0131 dene.");
         table.put("Ask before sending a GIF",
                 "GIF g\u00f6ndermeden \u00f6nce sor");
         table.put("Ask before sending a sticker",
@@ -4322,13 +4332,13 @@ public final class L10nTranslations {
         table.put("Ask before starting a call",
                 "Arama ba\u015flatmadan \u00f6nce sor");
         table.put("Asks Call or Cancel before the call button in a chat or on a profile starts a call.",
+        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.",
+                "Kaydetti\u011finiz sesli veya g\u00f6r\u00fcnt\u00fcl\u00fc mesaj gitmeden \u00f6nce G\u00f6nder veya \u0130ptal sorar. \u0130ptal kayd\u0131 \u00e7\u00f6pe atar.");
                 "Bir sohbetteki veya profildeki arama d\u00fc\u011fmesi arama ba\u015flatmadan \u00f6nce Ara veya \u0130ptal sorar.");
         table.put("Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.",
                 "Dokundu\u011funuz bir GIF sohbete girmeden \u00f6nce G\u00f6nder veya \u0130ptal sorar. \u0130ptal onu atar. Zamanlanm\u0131\u015f GIF'ler sormadan gider.");
         table.put("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.",
                 "Dokundu\u011funuz bir \u00e7\u0131kartma sohbete girmeden \u00f6nce G\u00f6nder veya \u0130ptal sorar. \u0130ptal onu atar. Zamanlanm\u0131\u015f \u00e7\u0131kartmalar sormadan gider.");
-        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.",
-                "Kaydetti\u011finiz sesli veya g\u00f6r\u00fcnt\u00fcl\u00fc mesaj gitmeden \u00f6nce G\u00f6nder veya \u0130ptal sorar. \u0130ptal kayd\u0131 \u00e7\u00f6pe atar.");
     }
 
     private static void fillTr1(Map<String, String> table) {
@@ -4348,6 +4358,8 @@ public final class L10nTranslations {
                 "Ayarlar\u0131 ke\u015ffet");
         table.put("Buy me a coffee on Ko-fi",
                 "Ko-fi'de bana bir kahve \u0131smarla");
+        table.put("Can't open the link. Go to %1$s.",
+                "Ba\u011flant\u0131 a\u00e7\u0131lam\u0131yor. %1$s adresine git.");
         table.put("Call",
                 "Ara");
         table.put("Call diagnostics",
@@ -4406,10 +4418,12 @@ public final class L10nTranslations {
                 "Kullan\u0131c\u0131 kimli\u011fini kopyala %1$s");
         table.put("Couldn't change your folders. Try again in a moment.",
                 "Klas\u00f6rlerin de\u011fi\u015ftirilemedi. Birazdan tekrar dene.");
-        table.put("Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.",
-                "Ayarlar i\u00e7e aktar\u0131lamad\u0131 ve \u00f6nceki ayarlar\u0131n geri y\u00fcklenemedi. Bu ekrandaki anahtarlar\u0131 kontrol et.");
+        table.put("Couldn't import or restore old settings. Check the switches.",
+                "\u0130\u00e7e aktarma ve geri y\u00fckleme ba\u015far\u0131s\u0131z. Anahtarlar\u0131 kontrol et.");
         table.put("Couldn't import the settings. Nothing was changed.",
                 "Ayarlar i\u00e7e aktar\u0131lamad\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+        table.put("Couldn't remove %1$s. Delete it by hand.",
+                "%1$s kald\u0131r\u0131lamad\u0131. Elle sil.");
         table.put("Couldn't open that file. Nothing was changed.",
                 "Bu dosya a\u00e7\u0131lamad\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("Couldn't open the file picker. Try again.",
@@ -4424,6 +4438,8 @@ public final class L10nTranslations {
                 "Ayar dosyas\u0131 kaydedilemedi. Tekrar dene.");
         table.put("Couldn't save the size. Try again in a moment.",
                 "Boyut kaydedilemedi. Birazdan tekrar deneyin.");
+        table.put("Couldn't update that setting. The switch shows what's saved.",
+                "Bu ayar g\u00fcncellenemedi. Anahtar kay\u0131tl\u0131 de\u011feri g\u00f6steriyor.");
         table.put("Couldn't save the translation service. Try again in a moment.",
                 "\u00c7eviri hizmeti kaydedilemedi. Birazdan tekrar dene.");
         table.put("Couldn't start that. Try again in a moment.",
@@ -4436,6 +4452,9 @@ public final class L10nTranslations {
                 "Veri merkezi %1$s");
         table.put("Data center copied",
                 "Veri merkezi kopyaland\u0131");
+    }
+
+    private static void fillTr2(Map<String, String> table) {
         table.put("Debug logging",
                 "Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc");
         table.put("Deleted messages",
@@ -4452,9 +4471,6 @@ public final class L10nTranslations {
                 "Tan\u0131lama");
         table.put("Disable double-tap reactions",
                 "\u00c7ift dokunma tepkilerini kapat");
-    }
-
-    private static void fillTr2(Map<String, String> table) {
         table.put("Disable pull to archive",
                 "Ar\u015five \u00e7ekmeyi kapat");
         table.put("Double-tapping a message no longer adds a reaction. Scrolling, normal taps, selecting and the reaction menu work as before.",
@@ -4559,6 +4575,9 @@ public final class L10nTranslations {
                 "Selamlama \u00e7\u0131kartmalar\u0131n\u0131 gizle");
         table.put("Hide keyboard on scroll",
                 "Kayd\u0131r\u0131nca klavyeyi gizle");
+    }
+
+    private static void fillTr3(Map<String, String> table) {
         table.put("Hide messages by keyword",
                 "Mesajlar\u0131 anahtar kelimeye g\u00f6re gizle");
         table.put("Hide phone number",
@@ -4575,9 +4594,6 @@ public final class L10nTranslations {
                 "Proxy'nin sponsorlu kanal\u0131n\u0131 gizle");
         table.put("Hide time on stickers",
                 "\u00c7\u0131kartmalarda saati gizle");
-    }
-
-    private static void fillTr3(Map<String, String> table) {
         table.put("Hide translate bar",
                 "\u00c7eviri \u00e7ubu\u011funu gizle");
         table.put("Hides suggested similar channels and bots, including ones already saved, and stops asking Telegram for new ones.",
@@ -4638,12 +4654,12 @@ public final class L10nTranslations {
                 "Daha sade");
         table.put("Licenses",
                 "Lisanslar");
-        table.put("Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.",
-                "%1$d. sat\u0131r uzun bir mesajda \u00e7ok uzun s\u00fcrebilir. En fazla bir a\u00e7\u0131k u\u00e7lu tekrar (+ veya * gibi) kullan\u0131n, geri kalan\u0131 i\u00e7in {1,9} gibi bir say\u0131 yaz\u0131n, i\u00e7inde tekrar ya da se\u00e7enek olan tekrarlanan gruplar\u0131, \u00f6rne\u011fin (a+)+ veya (a|b)*, ve bir gruba geri ba\u015fvurular\u0131 \u00e7\u0131kar\u0131n.");
         table.put("Line %1$d is longer than %2$d characters.",
                 "%1$d. sat\u0131r %2$d karakterden uzun.");
-        table.put("Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.",
-                "%1$d. sat\u0131r \u00e7al\u0131\u015fan bir d\u00fczenli ifade de\u011fil. D\u00fczeltin veya metni yaz\u0131ld\u0131\u011f\u0131 gibi bulmak i\u00e7in e\u011fik \u00e7izgileri kald\u0131r\u0131n.");
+        table.put("Line %1$d isn't a valid regex. Fix it or take off the slashes.",
+                "%1$d. sat\u0131r ge\u00e7erli bir regex de\u011fil. D\u00fczelt ya da e\u011fik \u00e7izgileri kald\u0131r.");
+        table.put("Line %1$d may be slow. Use one + or * at most, {1,9} for the rest.",
+                "%1$d. sat\u0131r yava\u015f olabilir. En fazla bir + veya * kullan, gerisi i\u00e7in {1,9}.");
         table.put("Links",
                 "Ba\u011flant\u0131lar");
         table.put("Links, updates, backup and more",
@@ -4690,17 +4706,15 @@ public final class L10nTranslations {
                 "Hay\u0131r");
         table.put("No HushTelegram release is out yet.",
                 "Hen\u00fcz bir HushTelegram s\u00fcr\u00fcm\u00fc yay\u0131nlanmad\u0131.");
-        table.put("No app on this phone can open the link. The address is %1$s.",
-                "Bu telefondaki hi\u00e7bir uygulama ba\u011flant\u0131y\u0131 a\u00e7am\u0131yor. Adres: %1$s.");
+    }
+
+    private static void fillTr4(Map<String, String> table) {
         table.put("No chat to forward to",
                 "\u0130letilecek sohbet yok");
         table.put("No filters yet.",
                 "Hen\u00fcz filtre yok.");
         table.put("No matching settings",
                 "E\u015fle\u015fen ayar yok");
-    }
-
-    private static void fillTr4(Map<String, String> table) {
         table.put("No previews before sending",
                 "G\u00f6ndermeden \u00f6nce \u00f6nizleme yok");
         table.put("No reply since Telegram started",
@@ -4807,6 +4821,9 @@ public final class L10nTranslations {
                 "Kanallardaki sponsorlu mesajlar\u0131, aramadaki sponsorlu hesaplar\u0131 ve videolardaki reklamlar\u0131 kald\u0131r\u0131r. Hi\u00e7biri y\u00fcklenmez, bu y\u00fczden hi\u00e7biri g\u00f6r\u00fclm\u00fc\u015f say\u0131lmaz.");
         table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
                 "Telegram \u00d6zellikleri sat\u0131r\u0131n\u0131 Ayarlar'dan, Arkada\u015flar\u0131n\u0131 Davet Et'i Ki\u015filer'den kald\u0131r\u0131r. Hen\u00fcz ki\u015finiz yoksa davet listesi de kalkar.");
+    }
+
+    private static void fillTr5(Map<String, String> table) {
         table.put("Removes the story bar above your chats, the rings around profile pictures and the Post Story button. Profile stories and archives stay.",
                 "Sohbetlerinizin \u00fcst\u00fcndeki hik\u00e2ye \u00e7ubu\u011funu, profil foto\u011fraflar\u0131n\u0131n etraf\u0131ndaki halkalar\u0131 ve hik\u00e2ye payla\u015fma d\u00fc\u011fmesini kald\u0131r\u0131r. Profillerdeki ve ar\u015fivdeki hik\u00e2yeler kal\u0131r.");
         table.put("Removes tracking tags like utm_source, gclid and fbclid from links you open or share. A link with any other tag is left unchanged.",
@@ -4821,9 +4838,8 @@ public final class L10nTranslations {
                 "Yeniden dene");
         table.put("Reveal spoilers",
                 "Spoilerlar\u0131 g\u00f6ster");
-    }
-
-    private static void fillTr5(Map<String, String> table) {
+        table.put("Saved, but the file doesn't match. Save it again as a new file.",
+                "Kaydedildi ama dosya e\u015fle\u015fmiyor. Yeni bir dosya olarak tekrar kaydet.");
         table.put("Save",
                 "Kaydet");
         table.put("Save downloaded files",
@@ -4876,12 +4892,12 @@ public final class L10nTranslations {
                 "Ayar yede\u011fi");
         table.put("Settings couldn't open",
                 "Ayarlar a\u00e7\u0131lamad\u0131");
-        table.put("Settings couldn't refresh completely. Reopen settings and try again.",
-                "Ayarlar tamamen yenilenemedi. Ayarlar\u0131 yeniden a\u00e7\u0131p tekrar dene.");
+        table.put("Settings couldn't refresh. Reopen settings and try again.",
+                "Ayarlar yenilenemedi. Ayarlar\u0131 yeniden a\u00e7\u0131p tekrar dene.");
         table.put("Settings exported.",
                 "Ayarlar d\u0131\u015fa aktar\u0131ld\u0131.");
-        table.put("Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.",
-                "Ayarlar d\u0131\u015fa aktar\u0131ld\u0131. Dosyay\u0131 tutan uygulama HushTelegram'un onu geri okumas\u0131na izin vermedi, bu y\u00fczden kontrol edilmedi.");
+        table.put("Settings exported. The app wouldn't let HushTelegram check it.",
+                "Ayarlar d\u0131\u015fa aktar\u0131ld\u0131. Uygulama HushTelegram'\u0131n kontrol etmesine izin vermedi.");
         table.put("Settings imported.",
                 "Ayarlar i\u00e7e aktar\u0131ld\u0131.");
         table.put("Settings imported. %1$d switch changed.",
@@ -4928,6 +4944,9 @@ public final class L10nTranslations {
                 "Sohbetlerdeki \u00e7\u0131kartmalar a\u015fa\u011f\u0131da se\u00e7ti\u011finiz boyutta g\u00f6sterilir. Hareketli emojiler ve zarlar Telegram'\u0131n boyutunu korur. Bir sohbet bunu bir sonraki a\u00e7\u0131\u015f\u0131n\u0131zda uygular.");
         table.put("Stop call diagnostics",
                 "Arama tan\u0131lamalar\u0131n\u0131 durdur");
+    }
+
+    private static void fillTr6(Map<String, String> table) {
         table.put("Stop pull to next channel",
                 "Sonraki kanala \u00e7ekmeyi durdur");
         table.put("Stop pull to next topic",
@@ -4944,9 +4963,6 @@ public final class L10nTranslations {
                 "HushTelegram'u destekle");
         table.put("Supported links",
                 "Desteklenen ba\u011flant\u0131lar");
-    }
-
-    private static void fillTr6(Map<String, String> table) {
         table.put("Swipe back on profiles",
                 "Profillerde geri kayd\u0131r");
         table.put("Swiping a chat in your list no longer archives, mutes, pins, deletes or marks it read. Press and hold still offers every action.",
@@ -4983,38 +4999,32 @@ public final class L10nTranslations {
                 "Telegram'\u0131n web adresleri Android ayarlar\u0131nda bu uygulama i\u00e7in se\u00e7ili, bu y\u00fczden ba\u011flant\u0131lar\u0131 burada a\u00e7\u0131l\u0131r.");
         table.put("Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.",
                 "Bir sat\u0131rdaki metin, mesaj\u0131n neresinde ge\u00e7erse ge\u00e7sin e\u015fle\u015fir. E\u011fik \u00e7izgiler aras\u0131ndaki bir sat\u0131r, \u00f6rne\u011fin /crypto|airdrop/, bir d\u00fczenli ifadedir. B\u00fcy\u00fck ve k\u00fc\u00e7\u00fck harf fark etmez.");
-        table.put("That file is too large to be a settings file. Nothing was changed.",
-                "Bu dosya bir ayar dosyas\u0131 olamayacak kadar b\u00fcy\u00fck. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-        table.put("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.",
-                "Bu dosya okunabilir bir metin de\u011fil, aktar\u0131m s\u0131ras\u0131nda hasar g\u00f6rm\u00fc\u015f olabilir. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-        table.put("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.",
-                "Bu dosyada bir ayar iki kez ge\u00e7iyor, bu y\u00fczden hangi de\u011ferin kullan\u0131laca\u011f\u0131 belli de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+        table.put("That app is slow to answer. Nothing was changed.",
+                "Bu uygulama ge\u00e7 yan\u0131t veriyor. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+        table.put("That app is slow. It may still save the file, so check it.",
+                "Bu uygulama yava\u015f. Dosyay\u0131 h\u00e2l\u00e2 kaydediyor olabilir, o y\u00fczden kontrol et.");
+        table.put("That file is damaged or partly downloaded. Nothing was changed.",
+                "Bu dosya bozuk ya da yar\u0131m inmi\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+        table.put("That file is from a newer HushTelegram. Nothing was changed.",
+                "Bu dosya daha yeni bir HushTelegram'dan. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+        table.put("That file is too big for a settings file. Nothing was changed.",
+                "Bu dosya bir ayar dosyas\u0131 i\u00e7in \u00e7ok b\u00fcy\u00fck. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+        table.put("That file isn't readable text. Nothing was changed.",
+                "Bu dosya okunabilir bir metin de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+        table.put("That file lists a setting twice. Nothing was changed.",
+                "Bu dosya bir ayar\u0131 iki kez listeliyor. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+        table.put("That file's app still hasn't answered. Try again later.",
+                "O dosyan\u0131n uygulamas\u0131 h\u00e2l\u00e2 yan\u0131t vermedi. Sonra tekrar dene.");
         table.put("That isn't a HushTelegram settings file. Nothing was changed.",
                 "Bu bir HushTelegram ayar dosyas\u0131 de\u011fil. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-        table.put("That setting couldn't be updated. The switch shows the value that is saved.",
-                "Bu ayar g\u00fcncellenemedi. Anahtar kay\u0131tl\u0131 de\u011feri g\u00f6sterir.");
-        table.put("That settings file holds a value HushTelegram can't read. Nothing was changed.",
-                "Bu ayar dosyas\u0131nda HushTelegram'un okuyamad\u0131\u011f\u0131 bir de\u011fer var. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-        table.put("That settings file is damaged or only partly downloaded. Nothing was changed.",
-                "Bu ayar dosyas\u0131 hasarl\u0131 ya da yaln\u0131zca bir k\u0131sm\u0131 indirilmi\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-        table.put("That settings file was written by a newer HushTelegram than this one. Nothing was changed.",
-                "Bu ayar dosyas\u0131, HushTelegram'un bu s\u00fcr\u00fcm\u00fcnden daha yeni bir s\u00fcr\u00fcm\u00fcyle olu\u015fturulmu\u015f. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
                 "GPL-3.0 lisans\u0131 ve HushTelegram'\u0131n dayand\u0131\u011f\u0131 projelerin te\u015fekk\u00fcr notlar\u0131");
         table.put("The address has to start with https://.",
                 "Adres https:// ile ba\u015flamal\u0131.");
-        table.put("The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.",
-                "O dosyay\u0131 tutan uygulama \u00e7ok uzun s\u00fcr\u00fcyor, bu y\u00fczden HushTelegram beklemeyi b\u0131rakt\u0131. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
-        table.put("The app holding the last settings file still hasn't answered. Try again later.",
-                "Son ayar dosyas\u0131n\u0131 tutan uygulama h\u00e2l\u00e2 yan\u0131t vermedi. Daha sonra tekrar dene.");
-        table.put("The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.",
-                "Ayar dosyas\u0131n\u0131 tutan uygulama \u00e7ok uzun s\u00fcr\u00fcyor, bu y\u00fczden HushTelegram beklemeyi b\u0131rakt\u0131. O uygulama kaydetmeyi yine de bitirebilir, bu y\u00fczden dosyaya g\u00fcvenmeden \u00f6nce onu kontrol et.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "Ek men\u00fcs\u00fcndeki foto\u011fraf \u0131zgaras\u0131, canl\u0131 kamera kutucu\u011fu yerine foto\u011fraflar\u0131n\u0131zla ba\u015flar. Bir sohbet bunu bir sonraki a\u00e7\u0131\u015f\u0131n\u0131zda uygular.");
         table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
                 "Ek men\u00fcs\u00fcndeki kamera, en son kulland\u0131\u011f\u0131n\u0131z lens yerine her zaman arka lensle a\u00e7\u0131l\u0131r. Yine de de\u011fi\u015ftirebilirsiniz.");
-        table.put("The diagnostic report couldn't be saved yet. Try again in a moment.",
-                "Tan\u0131lama raporu hen\u00fcz kaydedilemedi. Birazdan tekrar dene.");
         table.put("The diagnostic report couldn't be saved. Try again.",
                 "Tan\u0131lama raporu kaydedilemedi. Tekrar dene.");
         table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.",
@@ -5025,8 +5035,8 @@ public final class L10nTranslations {
                 "Bir sohbeti kayd\u0131rmaya ba\u015flad\u0131\u011f\u0131n\u0131zda klavye kapan\u0131r. Emoji ve \u00e7\u0131kartma paneli a\u00e7\u0131k kal\u0131r.");
         table.put("The newest HushTelegram release is %1$s.",
                 "En yeni HushTelegram s\u00fcr\u00fcm\u00fc %1$s.");
-        table.put("The settings file was saved, but what's in it doesn't match what was written. Save it again as a new file.",
-                "Ayar dosyas\u0131 kaydedildi ama i\u00e7eri\u011fi yaz\u0131lanla e\u015fle\u015fmiyor. Yeni bir dosya olarak yeniden kaydedin.");
+        table.put("The report couldn't be saved yet. Try again in a moment.",
+                "Rapor hen\u00fcz kaydedilemedi. Birazdan tekrar dene.");
         table.put("The sticker size will change.",
                 "\u00c7\u0131kartma boyutu de\u011fi\u015fecek.");
         table.put("Theme",
@@ -5043,16 +5053,16 @@ public final class L10nTranslations {
                 "Bu sohbet orijinal mesajlar\u0131 g\u00f6steriyor");
         table.put("This chat will be translated",
                 "Bu sohbet \u00e7evrilecek");
-        table.put("This list is too long to fit in a settings file. Take out a few lines.",
-                "Bu liste bir ayar dosyas\u0131na s\u0131\u011fmayacak kadar uzun. Birka\u00e7 sat\u0131r\u0131 \u00e7\u0131kar\u0131n.");
+        table.put("This list is too long for a settings file. Remove a few lines.",
+                "Bu liste ayar dosyas\u0131 i\u00e7in \u00e7ok uzun. Birka\u00e7 sat\u0131r\u0131 kald\u0131r.");
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "Bu yaln\u0131zca bu telefonda nelerin kay\u0131tl\u0131 oldu\u011funu g\u00f6sterir. Bildirimlerin ula\u015faca\u011f\u0131n\u0131 kan\u0131tlamaz.");
         table.put("This patched app changes %1$s but not %2$s.",
                 "Yamalanm\u0131\u015f bu uygulamada %1$s de\u011fi\u015fti, %2$s de\u011fi\u015fmedi.");
         table.put("This patched app doesn't change %1$s.",
                 "Yamalanm\u0131\u015f bu uygulamada %1$s de\u011fi\u015fmedi.");
-        table.put("This phone has no file picker, so there's no way to choose a file here.",
-                "Bu telefonda dosya se\u00e7ici yok, bu y\u00fczden burada dosya se\u00e7menin bir yolu yok.");
+        table.put("This phone has no file picker, so you can't choose a file here.",
+                "Bu telefonda dosya se\u00e7ici yok, o y\u00fczden dosya se\u00e7emezsin.");
         table.put("Touch and keyboard",
                 "Dokunma ve klavye");
         table.put("Translate here",

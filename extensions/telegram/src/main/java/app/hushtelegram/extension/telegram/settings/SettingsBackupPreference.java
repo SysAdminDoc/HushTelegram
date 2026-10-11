@@ -179,7 +179,7 @@ public class SettingsBackupPreference extends Preference {
             page.startActivityForResult(intent, action);
         } catch (ActivityNotFoundException missing) {
             Logger.printInfo(() -> "No file picker for the settings file");
-            Utils.showToastLong(L10n.t("This phone has no file picker, so there's no way to choose a file here."));
+            Utils.showToastLong(L10n.t("This phone has no file picker, so you can't choose a file here."));
         } catch (RuntimeException error) {
             Logger.printInfo(() -> "Could not open the file picker: " + error.getClass().getSimpleName());
             Utils.showToastLong(L10n.t("Couldn't open the file picker. Try again."));
@@ -217,8 +217,7 @@ public class SettingsBackupPreference extends Preference {
             }
         });
         if (!accepted) notStarted(run);
-        else watch(run, L10n.t("The app holding the settings file is taking too long, so HushTelegram stopped waiting. "
-                + "That app may still finish saving it, so check the file before you rely on it."));
+        else watch(run, L10n.t("That app is slow. It may still save the file, so check it."));
     }
 
     /**
@@ -242,15 +241,13 @@ public class SettingsBackupPreference extends Preference {
             back = read(resolver, uri, run);
         } catch (SettingsBackup.Rejected refused) {
             if (refused.reason == SettingsBackup.Reason.UNREADABLE) {
-                return L10n.t("Settings exported. The app holding the file wouldn't let HushTelegram read it back, "
-                        + "so it wasn't checked.");
+                return L10n.t("Settings exported. The app wouldn't let HushTelegram check it.");
             }
             back = null;
         }
         if (new String(bytes, StandardCharsets.UTF_8).equals(back)) return L10n.t("Settings exported.");
         Logger.printInfo(() -> "Settings export read back differently");
-        return L10n.t("The settings file was saved, but what's in it doesn't match what was written. Save it again as a"
-                + " new file.");
+        return L10n.t("Saved, but the file doesn't match. Save it again as a new file.");
     }
 
     private static void readForPreview(HushTelegramPreferenceFragment page, Uri uri) {
@@ -271,8 +268,7 @@ public class SettingsBackupPreference extends Preference {
             }
         });
         if (!accepted) notStarted(run);
-        else watch(run, L10n.t("The app holding that file is taking too long, so HushTelegram stopped waiting. "
-                + "Nothing was changed."));
+        else watch(run, L10n.t("That app is slow to answer. Nothing was changed."));
     }
 
     /** The file's text, opened through its app with [run]'s cancel signal and held where the screen can close it. */
@@ -292,19 +288,19 @@ public class SettingsBackupPreference extends Preference {
     static String refusal(SettingsBackup.Reason reason) {
         switch (reason) {
             case SIZE:
-                return L10n.t("That file is too large to be a settings file. Nothing was changed.");
+                return L10n.t("That file is too big for a settings file. Nothing was changed.");
             case ENCODING:
-                return L10n.t("That file isn't readable text, so it may have been damaged on the way. Nothing was changed.");
+                return L10n.t("That file isn't readable text. Nothing was changed.");
             case DAMAGED:
-                return L10n.t("That settings file is damaged or only partly downloaded. Nothing was changed.");
+                return L10n.t("That file is damaged or partly downloaded. Nothing was changed.");
             case DUPLICATE:
-                return L10n.t("That file lists a setting twice, so there's no telling which value to use. Nothing was changed.");
+                return L10n.t("That file lists a setting twice. Nothing was changed.");
             case FORMAT:
                 return L10n.t("That isn't a HushTelegram settings file. Nothing was changed.");
             case SCHEMA:
-                return L10n.t("That settings file was written by a newer HushTelegram than this one. Nothing was changed.");
+                return L10n.t("That file is from a newer HushTelegram. Nothing was changed.");
             case VALUE:
-                return L10n.t("That settings file holds a value HushTelegram can't read. Nothing was changed.");
+                return L10n.t("A value in that file can't be read. Nothing was changed.");
             default:
                 return L10n.t("Couldn't open that file. Nothing was changed.");
         }
@@ -411,8 +407,7 @@ public class SettingsBackupPreference extends Preference {
                             + (failure.rolledBack ? ", rolled back" : ", not rolled back"));
                     Utils.showToastLong(failure.rolledBack
                             ? L10n.t("Couldn't import the settings. Nothing was changed.")
-                            : L10n.t("Couldn't import the settings, and couldn't put back the ones you had. "
-                                    + "Check the switches on this screen."));
+                            : L10n.t("Couldn't import or restore old settings. Check the switches."));
                 } finally {
                     Utils.runOnMainThread(() -> {
                         AbstractPreferenceFragment.settingImportInProgress = false;
@@ -513,7 +508,7 @@ public class SettingsBackupPreference extends Preference {
     private static boolean stillStalled() {
         Run held = stalled;
         if (held == null || held.ended) return false;
-        Utils.showToastLong(L10n.t("The app holding the last settings file still hasn't answered. Try again later."));
+        Utils.showToastLong(L10n.t("That file's app still hasn't answered. Try again later."));
         return true;
     }
 

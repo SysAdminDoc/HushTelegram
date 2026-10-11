@@ -24,7 +24,7 @@ Loads switch choices from a saved file. You see how many switches it will change
 Clear diagnostic data	Limpar dados de diagnóstico
 Copy a short report or save the full one to Download/Morphe. Links, IDs and sign-in details are left out. Look it over before sharing.	Copie um relatório curto ou salve o completo em Download/Morphe. Links, IDs e dados de login ficam de fora. Dê uma olhada antes de compartilhar.
 Copy quick report	Copiar relatório rápido
-Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.	Não foi possível importar as configurações nem restaurar as que você tinha. Confira as opções nesta tela.
+Couldn't import or restore old settings. Check the switches.	Não foi possível importar nem restaurar. Confira as opções.
 Couldn't import the settings. Nothing was changed.	Não foi possível importar as configurações. Nada foi alterado.
 Couldn't open that file. Nothing was changed.	Não foi possível abrir esse arquivo. Nada foi alterado.
 Couldn't open the file picker. Try again.	Não foi possível abrir o seletor de arquivos. Tente de novo.
@@ -51,7 +51,7 @@ The app holding that file is taking too long, so HushTelegram stopped waiting. N
 The app holding the last settings file still hasn't answered. Try again later.	O app do último arquivo de configurações ainda não respondeu. Tente de novo mais tarde.
 The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.	O app que guarda o arquivo de configurações está demorando demais, então o HushTelegram parou de esperar. Esse app ainda pode terminar de salvá-lo, então confira o arquivo antes de confiar nele.
 The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.	Não foi possível remover o arquivo %1$s. Exclua-o de %2$s e toque em Retomar de novo.
-The settings file was saved, but what's in it doesn't match what was written. Save it again as a new file.	O arquivo de configurações foi salvo, mas o conteúdo não bate com o que foi gravado. Salve de novo como um arquivo novo.
+Saved, but the file doesn't match. Save it again as a new file.	Salvo, mas o arquivo não confere. Salve de novo como um arquivo novo.
 Until you resume, every switch except Debug logging acts as if it were off. Edits made when you patched stay in.	Até você retomar, todas as opções, menos Registro de depuração, funcionam como se estivessem desligadas. As alterações feitas ao aplicar o patch continuam valendo.
 Full report saved to %1$s	Relatório completo salvo em %1$s
 The GPL-3.0 license, and credits for the projects HushTelegram is built on	A licença GPL-3.0 e os créditos dos projetos em que o HushTelegram se baseia
@@ -83,27 +83,28 @@ GitHub sent a reply HushTelegram couldn't read. Try again later.	O GitHub enviou
 Saving the settings file	Salvando o arquivo de configurações
 Set when you patched	Definido ao aplicar os patches
 Settings couldn't open	Não foi possível abrir as configurações
-Settings couldn't refresh completely. Reopen settings and try again.	Não foi possível atualizar completamente as configurações. Reabra as configurações e tente novamente.
+Settings couldn't refresh. Reopen settings and try again.	As configurações não atualizaram. Reabra-as e tente de novo.
 Settings exported.	Configurações exportadas.
 Settings imported. %1$d switch changed.	Configurações importadas. %1$d opção foi alterada.
 Settings imported. %1$d switches changed.	Configurações importadas. %1$d opções foram alteradas.
 Source code and issues	Código-fonte e relatos de problemas
 Stays in while paused	O que continua ativo na pausa
 Tap to turn it back on.	Toque para reativar.
-That file is too large to be a settings file. Nothing was changed.	Esse arquivo é grande demais para ser um arquivo de configurações. Nada foi alterado.
-That file isn't readable text, so it may have been damaged on the way. Nothing was changed.	Esse arquivo não contém texto legível, então pode ter sido corrompido durante o processo. Nada foi alterado.
-That file lists a setting twice, so there's no telling which value to use. Nothing was changed.	Esse arquivo contém uma configuração duplicada, então não é possível saber qual valor usar. Nada foi alterado.
+That file is too big for a settings file. Nothing was changed.	Esse arquivo é grande demais para configurações. Nada foi alterado.
+That file isn't readable text. Nothing was changed.	Esse arquivo não é um texto legível. Nada foi alterado.
+That file lists a setting twice. Nothing was changed.	Esse arquivo repete uma configuração. Nada foi alterado.
 That isn't a HushTelegram settings file. Nothing was changed.	Isso não é um arquivo de configurações do HushTelegram. Nada foi alterado.
-That settings file holds a value HushTelegram can't read. Nothing was changed.	Esse arquivo de configurações tem um valor que o HushTelegram não consegue ler. Nada foi alterado.
-That settings file is damaged or only partly downloaded. Nothing was changed.	Esse arquivo de configurações está corrompido ou foi baixado apenas parcialmente. Nada foi alterado.
-That settings file was written by a newer HushTelegram than this one. Nothing was changed.	Esse arquivo de configurações foi criado por uma versão do HushTelegram mais nova que esta. Nada foi alterado.
-The diagnostic report couldn't be saved yet. Try again in a moment.	O relatório de diagnóstico ainda não pôde ser salvo. Tente de novo em instantes.
+A value in that file can't be read. Nothing was changed.	Não dá para ler um valor desse arquivo. Nada foi alterado.
+That file is damaged or partly downloaded. Nothing was changed.	Esse arquivo está danificado ou baixou só em parte. Nada foi alterado.
+That file is from a newer HushTelegram. Nothing was changed.	Esse arquivo é de um HushTelegram mais novo. Nada foi alterado.
+The report couldn't be saved yet. Try again in a moment.	O relatório ainda não pôde ser salvo. Tente de novo daqui a pouco.
 The diagnostic report couldn't be saved. Try again.	Não foi possível salvar o relatório de diagnóstico. Tente de novo.
 The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.	Não foi possível remover o arquivo %1$s. Exclua-o de %2$s para reativar o HushTelegram.
-That setting couldn't be updated. The switch shows the value that is saved.	Não foi possível atualizar essa configuração. A opção mostra o valor salvo.
+Couldn't remove %1$s. Delete it by hand.	Não foi possível remover %1$s. Exclua-o manualmente.
+Couldn't update that setting. The switch shows what's saved.	Não foi possível atualizar. A opção mostra o que está salvo.
 There's no diagnostic data to clear.	Não há dados de diagnóstico para limpar.
 There's no diagnostic data to put back.	Não há dados de diagnóstico para restaurar.
-This phone has no file picker, so there's no way to choose a file here.	Este dispositivo não tem seletor de arquivos, então não é possível escolher um arquivo aqui.
+This phone has no file picker, so you can't choose a file here.	Este celular não tem seletor de arquivos, então não dá para escolher um.
 Version	Versão
 Records what HushTelegram does and shows error messages, to help with a bug report. Leave it off for everyday use.	Registra o que o HushTelegram faz e mostra mensagens de erro, para ajudar em um relatório de problema. Deixe desligado no uso diário.
 You paused HushTelegram.	Você pausou o HushTelegram.
@@ -111,7 +112,7 @@ Your switches already match that file, so nothing will change.	Suas opções já
 Copy a short report to the clipboard.	Copie um relatório curto para a área de transferência.
 Save the full report in Download/Morphe.	Salve o relatório completo em Download/Morphe.
 Settings imported.	Configurações importadas.
-No app on this phone can open the link. The address is %1$s.	Nenhum aplicativo neste dispositivo consegue abrir o link. O endereço é %1$s.
+Can't open the link. Go to %1$s.	Não dá para abrir o link. Vá para %1$s.
 # context: Separate pages under More settings. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
 Settings backup	Backup de configurações
 Diagnostics	Diagnóstico
@@ -138,7 +139,7 @@ Selecting links by hand	Selecionar links manualmente
 A change here applies after Telegram restarts.	Uma alteração daqui vale depois que o Telegram reiniciar.
 Android opens t.me links in this app only if you select their addresses on its Open by default page. Other link settings don't change.	O Android abre links t.me neste app só se você selecionar os endereços deles na página Abrir por padrão do app. As outras configurações de links não mudam.
 Android verified this app for Telegram's web addresses, so their links open here.	O Android verificou este app para os endereços web do Telegram, então os links deles abrem aqui.
-Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.	As configurações do Android para este app não abriram. Abra Informações do app pelo ícone do Telegram e depois Abrir por padrão.
+App settings didn't open. Try App info, then Open by default.	As configurações do app não abriram. Tente Info do app e Abrir por padrão.
 Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.	Remove mensagens patrocinadas em canais, contas patrocinadas na busca e anúncios em vídeos. Eles nunca são carregados, então nenhum conta como visto.
 HushTelegram %1$s on Telegram %2$s	HushTelegram %1$s no Telegram %2$s
 HushTelegram %1$s is made for Telegram %2$s.	O HushTelegram %1$s foi feito para o Telegram %2$s.
@@ -436,9 +437,9 @@ No filters yet.	Nenhum filtro ainda.
 %1$d filters.	%1$d filtros.
 A list holds up to %1$d filters.	Uma lista comporta até %1$d filtros.
 Line %1$d is longer than %2$d characters.	A linha %1$d tem mais de %2$d caracteres.
-Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.	A linha %1$d não é uma expressão regular que funciona. Corrija, ou tire as barras para buscar o texto como está escrito.
-Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.	A linha %1$d pode demorar demais em uma mensagem longa. Use no máximo uma repetição aberta como + ou *, uma contagem como {1,9} para o resto, e evite grupos repetidos que contenham uma repetição ou uma escolha, como (a+)+ ou (a|b)*, e referências de volta a um grupo.
-This list is too long to fit in a settings file. Take out a few lines.	Esta lista é longa demais para caber em um arquivo de configurações. Tire algumas linhas.
+Line %1$d isn't a valid regex. Fix it or take off the slashes.	A linha %1$d não é uma regex válida. Corrija ou tire as barras.
+Line %1$d may be slow. Use one + or * at most, {1,9} for the rest.	A linha %1$d pode ser lenta. Use só um + ou *, e {1,9} no resto.
+This list is too long for a settings file. Remove a few lines.	Lista longa demais para um arquivo de configurações. Remova algumas linhas.
 One filter a line	Um filtro por linha
 Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.	O texto de uma linha corresponde onde quer que apareça em uma mensagem. Uma linha entre barras, como /crypto|airdrop/, é uma expressão regular. Maiúsculas e minúsculas não importam.
 Save	Salvar

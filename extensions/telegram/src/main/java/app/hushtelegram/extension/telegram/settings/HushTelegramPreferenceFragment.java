@@ -745,7 +745,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             } catch (ActivityNotFoundException | SecurityException missing) {
                 // No browser, or none switched on. Uncaught, Android's exception closed Telegram.
                 Logger.printInfo(() -> "No app opened the source code link");
-                Utils.showToastLong(L10n.f("No app on this phone can open the link. The address is %1$s.",
+                Utils.showToastLong(L10n.f("Can't open the link. Go to %1$s.",
                         L10n.isolate(SOURCE_ADDRESS)));
             }
             return true;
@@ -900,8 +900,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     : L10n.f("The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.",
                     file, folder);
             statusCard.setSummary(left);
-            // Resume can be tapped on a category page too, where the card isn't in view.
-            Utils.showToastLong(left);
+            // Resume can be tapped on a category page too, where the card isn't in view. The toast
+            // holds the file name only, since the card has the folder.
+            Utils.showToastLong(L10n.f("Couldn't remove %1$s. Delete it by hand.", file));
             return;
         }
         if (still != HushTelegramPause.Reason.NONE) {
@@ -1098,8 +1099,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             }
         }
         Logger.printInfo(() -> "No settings page opened for supported links");
-        Utils.showToastLong(L10n.t("Android's settings for this app didn't open. Open App info from Telegram's icon, "
-                + "then Open by default."));
+        Utils.showToastLong(L10n.t("App settings didn't open. Try App info, then Open by default."));
     }
 
     /** The Ko-fi page, for a browser, in a task of its own so it never opens inside Telegram's. */
@@ -1116,7 +1116,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         } catch (ActivityNotFoundException | SecurityException missing) {
             // No browser, or none switched on. Uncaught, Android's exception closed Telegram.
             Logger.printInfo(() -> "No app opened the support link");
-            Utils.showToastLong(L10n.f("No app on this phone can open the link. The address is %1$s.",
+            Utils.showToastLong(L10n.f("Can't open the link. Go to %1$s.",
                     L10n.isolate(SUPPORT_ADDRESS)));
         }
     }

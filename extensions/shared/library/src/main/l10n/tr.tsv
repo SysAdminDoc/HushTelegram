@@ -24,7 +24,7 @@ Loads switch choices from a saved file. You see how many switches it will change
 Clear diagnostic data	Tanılama verilerini temizle
 Copy a short report or save the full one to Download/Morphe. Links, IDs and sign-in details are left out. Look it over before sharing.	Kısa bir rapor kopyalayın veya tam raporu Download/Morphe içine kaydedin. Bağlantılar, kimlikler ve oturum bilgileri dahil edilmez. Paylaşmadan önce göz atın.
 Copy quick report	Hızlı raporu kopyala
-Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.	Ayarlar içe aktarılamadı ve önceki ayarların geri yüklenemedi. Bu ekrandaki anahtarları kontrol et.
+Couldn't import or restore old settings. Check the switches.	İçe aktarma ve geri yükleme başarısız. Anahtarları kontrol et.
 Couldn't import the settings. Nothing was changed.	Ayarlar içe aktarılamadı. Hiçbir şey değiştirilmedi.
 Couldn't open that file. Nothing was changed.	Bu dosya açılamadı. Hiçbir şey değiştirilmedi.
 Couldn't open the file picker. Try again.	Dosya seçici açılamadı. Tekrar dene.
@@ -51,7 +51,7 @@ The app holding that file is taking too long, so HushTelegram stopped waiting. N
 The app holding the last settings file still hasn't answered. Try again later.	Son ayar dosyasını tutan uygulama hâlâ yanıt vermedi. Daha sonra tekrar dene.
 The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.	Ayar dosyasını tutan uygulama çok uzun sürüyor, bu yüzden HushTelegram beklemeyi bıraktı. O uygulama kaydetmeyi yine de bitirebilir, bu yüzden dosyaya güvenmeden önce onu kontrol et.
 The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.	%1$s dosyası kaldırılamadı. Onu %2$s içinden sil, sonra yeniden Devam et'e dokun.
-The settings file was saved, but what's in it doesn't match what was written. Save it again as a new file.	Ayar dosyası kaydedildi ama içeriği yazılanla eşleşmiyor. Yeni bir dosya olarak yeniden kaydedin.
+Saved, but the file doesn't match. Save it again as a new file.	Kaydedildi ama dosya eşleşmiyor. Yeni bir dosya olarak tekrar kaydet.
 Until you resume, every switch except Debug logging acts as if it were off. Edits made when you patched stay in.	Devam edene kadar Hata ayıklama günlüğü dışındaki her anahtar kapalıymış gibi davranır. Yamalama sırasında yapılan değişiklikler geçerli kalır.
 Full report saved to %1$s	Tam rapor şuraya kaydedildi: %1$s
 The GPL-3.0 license, and credits for the projects HushTelegram is built on	GPL-3.0 lisansı ve HushTelegram'ın dayandığı projelerin teşekkür notları
@@ -84,27 +84,28 @@ GitHub sent a reply HushTelegram couldn't read. Try again later.	GitHub, HushTel
 Saving the settings file	Ayar dosyası kaydediliyor
 Set when you patched	Yamaladığında ayarlananlar
 Settings couldn't open	Ayarlar açılamadı
-Settings couldn't refresh completely. Reopen settings and try again.	Ayarlar tamamen yenilenemedi. Ayarları yeniden açıp tekrar dene.
+Settings couldn't refresh. Reopen settings and try again.	Ayarlar yenilenemedi. Ayarları yeniden açıp tekrar dene.
 Settings exported.	Ayarlar dışa aktarıldı.
 Settings imported. %1$d switch changed.	Ayarlar içe aktarıldı. %1$d anahtar değişti.
 Settings imported. %1$d switches changed.	Ayarlar içe aktarıldı. %1$d anahtar değişti.
 Source code and issues	Kaynak kodu ve sorunlar
 Stays in while paused	Duraklatılsa da devrede kalır
 Tap to turn it back on.	Yeniden açmak için dokun.
-That file is too large to be a settings file. Nothing was changed.	Bu dosya bir ayar dosyası olamayacak kadar büyük. Hiçbir şey değiştirilmedi.
-That file isn't readable text, so it may have been damaged on the way. Nothing was changed.	Bu dosya okunabilir bir metin değil, aktarım sırasında hasar görmüş olabilir. Hiçbir şey değiştirilmedi.
-That file lists a setting twice, so there's no telling which value to use. Nothing was changed.	Bu dosyada bir ayar iki kez geçiyor, bu yüzden hangi değerin kullanılacağı belli değil. Hiçbir şey değiştirilmedi.
+That file is too big for a settings file. Nothing was changed.	Bu dosya bir ayar dosyası için çok büyük. Hiçbir şey değiştirilmedi.
+That file isn't readable text. Nothing was changed.	Bu dosya okunabilir bir metin değil. Hiçbir şey değiştirilmedi.
+That file lists a setting twice. Nothing was changed.	Bu dosya bir ayarı iki kez listeliyor. Hiçbir şey değiştirilmedi.
 That isn't a HushTelegram settings file. Nothing was changed.	Bu bir HushTelegram ayar dosyası değil. Hiçbir şey değiştirilmedi.
-That settings file holds a value HushTelegram can't read. Nothing was changed.	Bu ayar dosyasında HushTelegram'un okuyamadığı bir değer var. Hiçbir şey değiştirilmedi.
-That settings file is damaged or only partly downloaded. Nothing was changed.	Bu ayar dosyası hasarlı ya da yalnızca bir kısmı indirilmiş. Hiçbir şey değiştirilmedi.
-That settings file was written by a newer HushTelegram than this one. Nothing was changed.	Bu ayar dosyası, HushTelegram'un bu sürümünden daha yeni bir sürümüyle oluşturulmuş. Hiçbir şey değiştirilmedi.
-The diagnostic report couldn't be saved yet. Try again in a moment.	Tanılama raporu henüz kaydedilemedi. Birazdan tekrar dene.
+A value in that file can't be read. Nothing was changed.	Bu dosyadaki bir değer okunamıyor. Hiçbir şey değiştirilmedi.
+That file is damaged or partly downloaded. Nothing was changed.	Bu dosya bozuk ya da yarım inmiş. Hiçbir şey değiştirilmedi.
+That file is from a newer HushTelegram. Nothing was changed.	Bu dosya daha yeni bir HushTelegram'dan. Hiçbir şey değiştirilmedi.
+The report couldn't be saved yet. Try again in a moment.	Rapor henüz kaydedilemedi. Birazdan tekrar dene.
 The diagnostic report couldn't be saved. Try again.	Tanılama raporu kaydedilemedi. Tekrar dene.
 The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.	%1$s dosyası kaldırılamadı. HushTelegram'u yeniden açmak için onu %2$s içinden sil.
-That setting couldn't be updated. The switch shows the value that is saved.	Bu ayar güncellenemedi. Anahtar kayıtlı değeri gösterir.
+Couldn't remove %1$s. Delete it by hand.	%1$s kaldırılamadı. Elle sil.
+Couldn't update that setting. The switch shows what's saved.	Bu ayar güncellenemedi. Anahtar kayıtlı değeri gösteriyor.
 There's no diagnostic data to clear.	Temizlenecek tanılama verisi yok.
 There's no diagnostic data to put back.	Geri getirilecek tanılama verisi yok.
-This phone has no file picker, so there's no way to choose a file here.	Bu telefonda dosya seçici yok, bu yüzden burada dosya seçmenin bir yolu yok.
+This phone has no file picker, so you can't choose a file here.	Bu telefonda dosya seçici yok, o yüzden dosya seçemezsin.
 Version	Sürüm
 Records what HushTelegram does and shows error messages, to help with a bug report. Leave it off for everyday use.	HushTelegram'ın yaptıklarını kaydeder ve hata mesajlarını gösterir; bir hata raporuna yardımcı olur. Günlük kullanımda kapalı bırakın.
 You paused HushTelegram.	HushTelegram'u duraklattın.
@@ -112,7 +113,7 @@ Your switches already match that file, so nothing will change.	Anahtarların zat
 Copy a short report to the clipboard.	Kısa raporu panoya kopyalar.
 Save the full report in Download/Morphe.	Tam raporu Download/Morphe konumuna kaydeder.
 Settings imported.	Ayarlar içe aktarıldı.
-No app on this phone can open the link. The address is %1$s.	Bu telefondaki hiçbir uygulama bağlantıyı açamıyor. Adres: %1$s.
+Can't open the link. Go to %1$s.	Bağlantı açılamıyor. %1$s adresine git.
 # context: Separate pages under More settings. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
 Settings backup	Ayar yedeği
 Diagnostics	Tanılama
@@ -141,7 +142,7 @@ Selecting links by hand	Bağlantıları elle seçme
 A change here applies after Telegram restarts.	Buradaki bir değişiklik Telegram yeniden başladıktan sonra geçerli olur.
 Android opens t.me links in this app only if you select their addresses on its Open by default page. Other link settings don't change.	Android, t.me bağlantılarını bu uygulamada yalnızca adreslerini uygulamanın Varsayılan olarak aç sayfasında seçerseniz açar. Diğer bağlantı ayarları değişmez.
 Android verified this app for Telegram's web addresses, so their links open here.	Android bu uygulamayı Telegram'ın web adresleri için doğruladı, bu yüzden bağlantıları burada açılır.
-Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.	Bu uygulamanın Android ayarları açılamadı. Telegram simgesinden Uygulama bilgileri'ni, ardından Varsayılan olarak aç'ı açın.
+App settings didn't open. Try App info, then Open by default.	Ayarlar açılmadı. Uygulama bilgisi, sonra Varsayılan olarak aç'ı dene.
 Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.	Kanallardaki sponsorlu mesajları, aramadaki sponsorlu hesapları ve videolardaki reklamları kaldırır. Hiçbiri yüklenmez, bu yüzden hiçbiri görülmüş sayılmaz.
 HushTelegram %1$s on Telegram %2$s	Telegram %2$s üzerinde HushTelegram %1$s
 HushTelegram %1$s is made for Telegram %2$s.	HushTelegram %1$s, Telegram %2$s için hazırlandı.
@@ -439,9 +440,9 @@ No filters yet.	Henüz filtre yok.
 %1$d filters.	%1$d filtre.
 A list holds up to %1$d filters.	Bir liste en fazla %1$d filtre alır.
 Line %1$d is longer than %2$d characters.	%1$d. satır %2$d karakterden uzun.
-Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.	%1$d. satır çalışan bir düzenli ifade değil. Düzeltin veya metni yazıldığı gibi bulmak için eğik çizgileri kaldırın.
-Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.	%1$d. satır uzun bir mesajda çok uzun sürebilir. En fazla bir açık uçlu tekrar (+ veya * gibi) kullanın, geri kalanı için {1,9} gibi bir sayı yazın, içinde tekrar ya da seçenek olan tekrarlanan grupları, örneğin (a+)+ veya (a|b)*, ve bir gruba geri başvuruları çıkarın.
-This list is too long to fit in a settings file. Take out a few lines.	Bu liste bir ayar dosyasına sığmayacak kadar uzun. Birkaç satırı çıkarın.
+Line %1$d isn't a valid regex. Fix it or take off the slashes.	%1$d. satır geçerli bir regex değil. Düzelt ya da eğik çizgileri kaldır.
+Line %1$d may be slow. Use one + or * at most, {1,9} for the rest.	%1$d. satır yavaş olabilir. En fazla bir + veya * kullan, gerisi için {1,9}.
+This list is too long for a settings file. Remove a few lines.	Bu liste ayar dosyası için çok uzun. Birkaç satırı kaldır.
 One filter a line	Her satıra bir filtre
 Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.	Bir satırdaki metin, mesajın neresinde geçerse geçsin eşleşir. Eğik çizgiler arasındaki bir satır, örneğin /crypto|airdrop/, bir düzenli ifadedir. Büyük ve küçük harf fark etmez.
 Save	Kaydet

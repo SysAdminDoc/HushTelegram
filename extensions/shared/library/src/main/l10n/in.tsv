@@ -24,7 +24,7 @@ Loads switch choices from a saved file. You see how many switches it will change
 Clear diagnostic data	Hapus data diagnostik
 Copy a short report or save the full one to Download/Morphe. Links, IDs and sign-in details are left out. Look it over before sharing.	Salin laporan singkat atau simpan yang lengkap ke Download/Morphe. Tautan, ID, dan data masuk tidak disertakan. Periksa dulu sebelum membagikannya.
 Copy quick report	Salin laporan singkat
-Couldn't import the settings, and couldn't put back the ones you had. Check the switches on this screen.	Pengaturan tidak dapat diimpor, dan pengaturan sebelumnya tidak dapat dikembalikan. Periksa sakelar di layar ini.
+Couldn't import or restore old settings. Check the switches.	Gagal mengimpor atau memulihkan pengaturan lama. Periksa sakelarnya.
 Couldn't import the settings. Nothing was changed.	Pengaturan tidak dapat diimpor. Tidak ada yang diubah.
 Couldn't open that file. Nothing was changed.	File itu tidak dapat dibuka. Tidak ada yang diubah.
 Couldn't open the file picker. Try again.	Pemilih file tidak dapat dibuka. Coba lagi.
@@ -51,7 +51,7 @@ The app holding that file is taking too long, so HushTelegram stopped waiting. N
 The app holding the last settings file still hasn't answered. Try again later.	Aplikasi yang menyimpan file pengaturan terakhir masih belum merespons. Coba lagi nanti.
 The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.	Aplikasi yang menyimpan file pengaturan terlalu lama, jadi HushTelegram berhenti menunggu. Aplikasi itu mungkin masih menyelesaikan penyimpanannya, jadi periksa file itu sebelum mengandalkannya.
 The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.	File %1$s tidak dapat dihapus. Hapus file itu dari %2$s, lalu ketuk Lanjutkan lagi.
-The settings file was saved, but what's in it doesn't match what was written. Save it again as a new file.	Berkas pengaturan tersimpan, tetapi isinya tidak sama dengan yang ditulis. Simpan lagi sebagai berkas baru.
+Saved, but the file doesn't match. Save it again as a new file.	Tersimpan, tetapi isi file tidak cocok. Simpan lagi sebagai file baru.
 Until you resume, every switch except Debug logging acts as if it were off. Edits made when you patched stay in.	Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap mati. Perubahan yang dibuat saat menambal tetap berlaku.
 Full report saved to %1$s	Laporan lengkap disimpan ke %1$s
 The GPL-3.0 license, and credits for the projects HushTelegram is built on	Lisensi GPL-3.0 dan kredit untuk proyek-proyek yang menjadi dasar HushTelegram
@@ -84,27 +84,28 @@ GitHub sent a reply HushTelegram couldn't read. Try again later.	GitHub mengirim
 Saving the settings file	Menyimpan file pengaturan
 Set when you patched	Diatur saat Anda menambal
 Settings couldn't open	Pengaturan tidak dapat dibuka
-Settings couldn't refresh completely. Reopen settings and try again.	Pengaturan tidak dapat dimuat ulang sepenuhnya. Buka kembali pengaturan lalu coba lagi.
+Settings couldn't refresh. Reopen settings and try again.	Pengaturan tidak dapat disegarkan. Buka lagi pengaturan dan coba lagi.
 Settings exported.	Pengaturan diekspor.
 Settings imported. %1$d switch changed.	Pengaturan diimpor. %1$d sakelar berubah.
 Settings imported. %1$d switches changed.	Pengaturan diimpor. %1$d sakelar berubah.
 Source code and issues	Kode sumber dan laporan masalah
 Stays in while paused	Tetap aktif saat dijeda
 Tap to turn it back on.	Ketuk untuk mengaktifkan HushTelegram lagi.
-That file is too large to be a settings file. Nothing was changed.	File itu terlalu besar untuk sebuah file pengaturan. Tidak ada yang diubah.
-That file isn't readable text, so it may have been damaged on the way. Nothing was changed.	File itu bukan teks yang dapat dibaca, jadi mungkin rusak saat ditransfer. Tidak ada yang diubah.
-That file lists a setting twice, so there's no telling which value to use. Nothing was changed.	File itu mencantumkan satu pengaturan dua kali, jadi tidak jelas nilai mana yang harus dipakai. Tidak ada yang diubah.
+That file is too big for a settings file. Nothing was changed.	File itu terlalu besar untuk file pengaturan. Tidak ada yang diubah.
+That file isn't readable text. Nothing was changed.	File itu bukan teks yang bisa dibaca. Tidak ada yang diubah.
+That file lists a setting twice. Nothing was changed.	File itu memuat satu pengaturan dua kali. Tidak ada yang diubah.
 That isn't a HushTelegram settings file. Nothing was changed.	Itu bukan file pengaturan HushTelegram. Tidak ada yang diubah.
-That settings file holds a value HushTelegram can't read. Nothing was changed.	File pengaturan itu memuat nilai yang tidak dapat dibaca HushTelegram. Tidak ada yang diubah.
-That settings file is damaged or only partly downloaded. Nothing was changed.	File pengaturan itu rusak atau hanya terunduh sebagian. Tidak ada yang diubah.
-That settings file was written by a newer HushTelegram than this one. Nothing was changed.	File pengaturan itu dibuat oleh versi HushTelegram yang lebih baru daripada versi ini. Tidak ada yang diubah.
-The diagnostic report couldn't be saved yet. Try again in a moment.	Laporan diagnostik belum dapat disimpan. Coba lagi dalam beberapa saat.
+A value in that file can't be read. Nothing was changed.	Ada nilai di file itu yang tidak bisa dibaca. Tidak ada yang diubah.
+That file is damaged or partly downloaded. Nothing was changed.	File itu rusak atau hanya terunduh sebagian. Tidak ada yang diubah.
+That file is from a newer HushTelegram. Nothing was changed.	File itu berasal dari HushTelegram yang lebih baru. Tidak ada yang diubah.
+The report couldn't be saved yet. Try again in a moment.	Laporan belum bisa disimpan. Coba lagi sebentar lagi.
 The diagnostic report couldn't be saved. Try again.	Laporan diagnostik tidak dapat disimpan. Coba lagi.
 The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.	File %1$s tidak dapat dihapus. Hapus file itu dari %2$s untuk mengaktifkan HushTelegram lagi.
-That setting couldn't be updated. The switch shows the value that is saved.	Pengaturan itu tidak bisa diperbarui. Sakelar menampilkan nilai yang tersimpan.
+Couldn't remove %1$s. Delete it by hand.	%1$s tidak bisa dihapus. Hapus secara manual.
+Couldn't update that setting. The switch shows what's saved.	Pengaturan itu tidak bisa diperbarui. Sakelar menunjukkan yang tersimpan.
 There's no diagnostic data to clear.	Tidak ada data diagnostik yang dapat dihapus.
 There's no diagnostic data to put back.	Tidak ada data diagnostik yang dapat dikembalikan.
-This phone has no file picker, so there's no way to choose a file here.	Ponsel ini tidak memiliki pemilih file, jadi file tidak dapat dipilih di sini.
+This phone has no file picker, so you can't choose a file here.	Ponsel ini tidak punya pemilih file, jadi kamu tidak bisa memilih file.
 Version	Versi
 Records what HushTelegram does and shows error messages, to help with a bug report. Leave it off for everyday use.	Mencatat apa yang dilakukan HushTelegram dan menampilkan pesan kesalahan, untuk membantu laporan bug. Biarkan mati untuk pemakaian sehari-hari.
 You paused HushTelegram.	Anda menjeda HushTelegram.
@@ -112,7 +113,7 @@ Your switches already match that file, so nothing will change.	Sakelar Anda suda
 Copy a short report to the clipboard.	Salin laporan singkat ke papan klip.
 Save the full report in Download/Morphe.	Simpan laporan lengkap di Download/Morphe.
 Settings imported.	Pengaturan diimpor.
-No app on this phone can open the link. The address is %1$s.	Tidak ada aplikasi di ponsel ini yang dapat membuka tautan ini. Alamatnya %1$s.
+Can't open the link. Go to %1$s.	Tautan tidak bisa dibuka. Buka %1$s.
 # context: Separate pages under More settings. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
 Settings backup	Cadangan setelan
 Diagnostics	Diagnostik
@@ -141,7 +142,7 @@ Selecting links by hand	Memilih tautan secara manual
 A change here applies after Telegram restarts.	Perubahan di sini berlaku setelah Telegram dimulai ulang.
 Android opens t.me links in this app only if you select their addresses on its Open by default page. Other link settings don't change.	Android membuka tautan t.me di aplikasi ini hanya jika Anda memilih alamatnya di halaman Buka secara default milik aplikasi. Pengaturan tautan lain tidak berubah.
 Android verified this app for Telegram's web addresses, so their links open here.	Android telah memverifikasi aplikasi ini untuk alamat web Telegram, jadi tautannya terbuka di sini.
-Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.	Pengaturan Android untuk aplikasi ini tidak terbuka. Buka Info aplikasi dari ikon Telegram, lalu Buka secara default.
+App settings didn't open. Try App info, then Open by default.	Pengaturan aplikasi tidak terbuka. Coba Info aplikasi, lalu Buka secara default.
 Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.	Menghapus pesan bersponsor di kanal, akun bersponsor di pencarian, dan iklan di video. Semuanya tidak pernah dimuat, jadi tidak ada yang dihitung sebagai dilihat.
 HushTelegram %1$s on Telegram %2$s	HushTelegram %1$s di Telegram %2$s
 HushTelegram %1$s is made for Telegram %2$s.	HushTelegram %1$s dibuat untuk Telegram %2$s.
@@ -439,9 +440,9 @@ No filters yet.	Belum ada filter.
 %1$d filters.	%1$d filter.
 A list holds up to %1$d filters.	Satu daftar memuat hingga %1$d filter.
 Line %1$d is longer than %2$d characters.	Baris %1$d lebih panjang dari %2$d karakter.
-Line %1$d isn't a regular expression that works. Fix it, or take the slashes off to match the text as written.	Baris %1$d bukan ekspresi reguler yang berfungsi. Perbaiki, atau hapus garis miringnya agar cocok dengan teks apa adanya.
-Line %1$d could take too long on a long message. Use one open-ended repeat like + or * at most, a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, like (a+)+ or (a|b)*, and references back to a group.	Baris %1$d bisa terlalu lama pada pesan yang panjang. Pakai paling banyak satu pengulangan terbuka seperti + atau *, jumlah seperti {1,9} untuk sisanya, dan hindari grup berulang yang berisi pengulangan atau pilihan, seperti (a+)+ atau (a|b)*, serta rujukan balik ke sebuah grup.
-This list is too long to fit in a settings file. Take out a few lines.	Daftar ini terlalu panjang untuk muat di file pengaturan. Hapus beberapa baris.
+Line %1$d isn't a valid regex. Fix it or take off the slashes.	Baris %1$d bukan regex yang valid. Perbaiki atau hapus garis miringnya.
+Line %1$d may be slow. Use one + or * at most, {1,9} for the rest.	Baris %1$d bisa lambat. Pakai satu + atau * saja, sisanya {1,9}.
+This list is too long for a settings file. Remove a few lines.	Daftar ini terlalu panjang untuk file pengaturan. Hapus beberapa baris.
 One filter a line	Satu filter per baris
 Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.	Teks pada satu baris cocok di mana pun teks itu muncul dalam pesan. Baris di antara garis miring, seperti /crypto|airdrop/, adalah ekspresi reguler. Huruf besar dan kecil tidak berpengaruh.
 Save	Simpan

@@ -887,7 +887,7 @@ public class SettingsNavigationTest {
         application.checkActivities(true);
         try {
             tap(HushTelegramPreferenceFragment.SUPPORT);
-            assertEquals("No app on this phone can open the link. The address is " + L10n.isolate("ko-fi.com/X8K126YVER") + ".",
+            assertEquals("Can't open the link. Go to " + L10n.isolate("ko-fi.com/X8K126YVER") + ".",
                     ShadowToast.getTextOfLatestToast());
             assertFalse(controller.get().isFinishing());
         } finally {

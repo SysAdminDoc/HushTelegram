@@ -785,16 +785,13 @@ public class HushTelegramPreferenceFragmentTest {
             editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             ShadowLooper.idleMainLooper();
             assertTrue("a line that can't be used keeps the dialog", editor.isShowing());
-            assertEquals("Line 3 could take too long on a long message. Use one open-ended repeat like + or * at most, "
-                    + "a count like {1,9} for the rest, and leave out repeated groups that hold a repeat or a choice, "
-                    + "like (a+)+ or (a|b)*, and references back to a group.", ShadowToast.getTextOfLatestToast());
+            assertEquals("Line 3 may be slow. Use one + or * at most, {1,9} for the rest.", ShadowToast.getTextOfLatestToast());
             assertEquals("", Settings.MESSAGE_FILTERS_GROUPS.savedValue());
 
             field.setText("/(unclosed/");
             editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             ShadowLooper.idleMainLooper();
-            assertEquals("Line 1 isn't a regular expression that works. Fix it, or take the slashes off to match the "
-                    + "text as written.", ShadowToast.getTextOfLatestToast());
+            assertEquals("Line 1 isn't a valid regex. Fix it or take off the slashes.", ShadowToast.getTextOfLatestToast());
 
             StringBuilder wide = new StringBuilder();
             String line = new String(new char[MessageFilters.MAX_FILTER_CHARS]).replace('\0', '字');
@@ -803,7 +800,7 @@ public class HushTelegramPreferenceFragmentTest {
             editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             ShadowLooper.idleMainLooper();
             assertTrue("a list too big for a settings file keeps the dialog", editor.isShowing());
-            assertEquals("This list is too long to fit in a settings file. Take out a few lines.",
+            assertEquals("This list is too long for a settings file. Remove a few lines.",
                     ShadowToast.getTextOfLatestToast());
             assertEquals("", Settings.MESSAGE_FILTERS_GROUPS.savedValue());
 

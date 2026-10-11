@@ -262,7 +262,7 @@ public class SupportedLinksTest {
         assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
         ShadowLooper.idleMainLooper();
         assertNull(shadowOf(controller.get()).getNextStartedActivity());
-        assertEquals("Android's settings for this app didn't open. Open App info from Telegram's icon, then Open by default.",
+        assertEquals("App settings didn't open. Try App info, then Open by default.",
                 ShadowToast.getTextOfLatestToast());
     }
 
