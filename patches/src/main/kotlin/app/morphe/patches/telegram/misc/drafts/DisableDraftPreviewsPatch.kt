@@ -23,6 +23,7 @@ import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -408,7 +409,6 @@ private fun Method.sameSignature(other: Method) = name == other.name && returnTy
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Method.constructs(type: String) = instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.reference() == type }
 private fun Instruction.reference(): String? = (this as? ReferenceInstruction)?.reference?.toString()
-private fun Instruction.call(): MethodReference? = (this as? ReferenceInstruction)?.reference as? MethodReference
 private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference
 private fun Instruction.string(): String? = ((this as? ReferenceInstruction)?.reference as? StringReference)?.string
 /** The registers an instruction sets: the first named one for writes, both halves for a wide one. */

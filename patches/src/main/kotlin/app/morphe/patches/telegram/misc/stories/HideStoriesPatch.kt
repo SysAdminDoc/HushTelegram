@@ -24,6 +24,7 @@ import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -405,7 +406,6 @@ private fun <T> List<T>.unique(what: String): T? {
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Instruction.reference(): String? = (this as? ReferenceInstruction)?.reference?.toString()
 private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference
-private fun Instruction.call(): MethodReference? = (this as? ReferenceInstruction)?.reference as? MethodReference
 private fun MethodReference.hasShape(parameters: List<String>, returns: String) = returnType == returns && parameterTypes.map { it.toString() } == parameters
 private fun MethodReference.sameSignature(other: MethodReference) = name == other.name && returnType == other.returnType &&
     parameterTypes.map { it.toString() } == other.parameterTypes.map { it.toString() }

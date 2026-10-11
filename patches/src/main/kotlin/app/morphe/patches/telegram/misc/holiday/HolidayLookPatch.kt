@@ -19,6 +19,7 @@ import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -27,7 +28,6 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
-import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableFieldReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 
@@ -192,6 +192,5 @@ private fun <T> List<T>.one(what: String): T {
 private fun Method.sameAs(other: Method) = name == other.name && returnType == other.returnType &&
     parameterTypes.map(CharSequence::toString) == other.parameterTypes.map(CharSequence::toString)
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
-private fun Instruction.call(): MethodReference? = (this as? ReferenceInstruction)?.reference as? MethodReference
 private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference
 private fun FieldReference.immutable() = ImmutableFieldReference(definingClass, name, type)

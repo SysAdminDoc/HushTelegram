@@ -22,6 +22,7 @@ import app.morphe.util.ControlFlow
 import app.morphe.util.RegisterKind
 import app.morphe.util.RegisterKinds
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -392,7 +393,6 @@ private fun Instruction.isHeaderWrite() = opcode == Opcode.INVOKE_VIRTUAL && cal
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Method.strings() = instructions().mapNotNull { it.string() }.toSet()
 private fun Instruction.string() = ((this as? ReferenceInstruction)?.reference as? StringReference)?.string
-private fun Instruction.call() = (this as? ReferenceInstruction)?.reference as? MethodReference
 private fun Instruction.field() = (this as? ReferenceInstruction)?.reference as? FieldReference
 private fun MethodReference.hasShape(parameters: List<String>, result: String) =
     parameterTypes.map(CharSequence::toString) == parameters && returnType == result

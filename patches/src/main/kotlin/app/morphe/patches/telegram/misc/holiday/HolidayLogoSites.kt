@@ -14,6 +14,7 @@ import app.morphe.patcher.util.smali.toInstructions
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -722,7 +723,6 @@ private fun operation(instruction: Instruction) = listOf(instruction.opcode, ins
 private fun Instruction.literal() = (this as? WideLiteralInstruction)?.wideLiteral
 private fun Instruction.reference() = (this as? ReferenceInstruction)?.reference?.toString()
 private fun Instruction.field() = (this as? ReferenceInstruction)?.reference as? FieldReference
-private fun Instruction.call() = (this as? ReferenceInstruction)?.reference as? MethodReference
 private fun Method.body() = implementation?.instructions?.toList().orEmpty()
 private fun shape(valid: Boolean, reason: String) { if (!valid) refuse(reason) }
 private fun refuse(reason: String): Nothing = throw PatchException("Holiday look all year: $reason (before editing)")

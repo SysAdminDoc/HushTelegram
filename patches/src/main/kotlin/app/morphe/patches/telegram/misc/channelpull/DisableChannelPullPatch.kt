@@ -19,6 +19,7 @@ import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -314,6 +315,5 @@ private fun <T> List<T>.one(what: String): T { shape(size == 1, "$what has $size
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Instruction.reference() = (this as? ReferenceInstruction)?.reference?.toString()
 private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference
-private fun Instruction.call(): MethodReference? = (this as? ReferenceInstruction)?.reference as? MethodReference
 private fun Instruction.isChannelCall() = call()?.toString() == "$CHAT_OBJECT->isChannel($CHAT)Z"
 private fun Instruction.isBotForumCall() = call()?.toString() == "Lorg/telegram/messenger/UserObject;->isBotForum($USER)Z"

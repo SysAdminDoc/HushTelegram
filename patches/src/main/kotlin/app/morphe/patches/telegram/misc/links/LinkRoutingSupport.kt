@@ -14,6 +14,7 @@ import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
 import app.morphe.patches.telegram.misc.extension.requireParameterIntact
 import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.util.ControlFlow
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -274,7 +275,6 @@ private val OBJECT_MOVES = setOf(Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, 
 private val GOTOS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Instruction.ref() = (this as? ReferenceInstruction)?.reference?.toString()
-private fun Instruction.call() = (this as? ReferenceInstruction)?.reference as? MethodReference
 private fun Instruction.string() = ((this as? ReferenceInstruction)?.reference as? StringReference)?.string
 private fun Method.same(other: MethodReference) = name == other.name && parameterTypes == other.parameterTypes && returnType == other.returnType
 internal fun checkShape(ok: Boolean, reason: String) { if (!ok) fail(reason) }

@@ -24,6 +24,7 @@ import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -691,7 +692,6 @@ private fun Instruction.writes(register: Int): Boolean {
     return destination == register || opcode.setsWideRegister() && destination + 1 == register
 }
 private fun Instruction.reference() = (this as? ReferenceInstruction)?.reference?.toString()
-private fun Instruction.call() = (this as? ReferenceInstruction)?.reference as? MethodReference
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun MethodReference.hasShape(parameters: List<String>, result: String) =
     parameterTypes.map { it.toString() } == parameters && returnType == result

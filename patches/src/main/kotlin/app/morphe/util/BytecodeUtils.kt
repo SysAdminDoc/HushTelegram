@@ -473,6 +473,9 @@ fun BytecodePatchContext.traverseClassHierarchy(targetClass: MutableClass, callb
  */
 inline fun <reified T : Reference> Instruction.getReference() = (this as? ReferenceInstruction)?.reference as? T
 
+/** The method this instruction names, which for an invoke is the one it calls, or null when it names none. */
+internal fun Instruction.call(): MethodReference? = (this as? ReferenceInstruction)?.reference as? MethodReference
+
 /**
  * @return The mutable method for this method call reference.
  */
