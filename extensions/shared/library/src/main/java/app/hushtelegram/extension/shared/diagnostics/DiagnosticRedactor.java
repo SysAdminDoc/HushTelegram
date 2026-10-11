@@ -244,7 +244,7 @@ public final class DiagnosticRedactor {
      * around it. The isolate pair marks it in every language. A run with no pop is cut to the
      * end of the line, so a name that lost its closing mark is still not printed.
      */
-    private static final String ISOLATED_NAME = "⁨[^⁩\\n]*⁩?";
+    private static final String ISOLATED_NAME = "\u2068[^\u2069\\n]*\u2069?";
     /**
      * A name right after @ that the credential, user id or content id rules would otherwise
      * redact: {@code @token}, {@code @access_token}, {@code @sessionid}, {@code @user_id}. Left to

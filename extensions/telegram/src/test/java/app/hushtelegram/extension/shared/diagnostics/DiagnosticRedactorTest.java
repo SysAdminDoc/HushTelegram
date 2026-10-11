@@ -38,8 +38,8 @@ import java.util.regex.Pattern;
  */
 public class DiagnosticRedactorTest {
 
-    private static final String FSI = "⁨";
-    private static final String PDI = "⁩";
+    private static final String FSI = "\u2068";
+    private static final String PDI = "\u2069";
 
     /**
      * What Hushfeed's VideoAuthor.label() wraps a name in, kept here so the redactor's contract is
@@ -48,13 +48,13 @@ public class DiagnosticRedactorTest {
      */
     private static String label(String name) {
         if (name == null || name.isEmpty()) return "this account";
-        StringBuilder flat = new StringBuilder(name.length() + 2).append('⁨');
+        StringBuilder flat = new StringBuilder(name.length() + 2).append('\u2068');
         for (int at = 0; at < name.length(); at++) {
             char character = name.charAt(at);
-            if (character == '⁨' || character == '⁩') continue;
+            if (character == '\u2068' || character == '\u2069') continue;
             flat.append(character == '\n' || character == '\r' ? ' ' : character);
         }
-        return flat.append('⁩').toString();
+        return flat.append('\u2069').toString();
     }
 
     @Test public void theToastLineLosesTheNameAndKeepsTheAction() {

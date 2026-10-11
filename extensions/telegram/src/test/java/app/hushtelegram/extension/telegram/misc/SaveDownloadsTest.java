@@ -221,11 +221,12 @@ public class SaveDownloadsTest {
         assertEquals("_.._etc_passwd.txt", SaveDownloads.displayName("/../etc/passwd.txt", "2_51.txt"));
         assertEquals("2_51.txt", SaveDownloads.displayName("..", "2_51.txt"));
         assertEquals("2_51.txt", SaveDownloads.displayName("  ", "2_51.txt"));
-        // A right-to-left override would show "report‮exe.pdf" as "reportfdp.exe" in a file manager.
-        assertEquals("report_exe.pdf", SaveDownloads.displayName("report‮exe.pdf", "2_51.pdf"));
-        assertEquals("a_b_c.txt", SaveDownloads.displayName("a⁦b⁩c.txt", "2_51.txt"));
+        // A right-to-left override (U+202E) in "report<RLO>exe.pdf" would show it as "reportfdp.exe" in a file manager.
+        assertEquals("report_exe.pdf", SaveDownloads.displayName("report\u202eexe.pdf", "2_51.pdf"));
+        assertEquals("a_b_c.txt", SaveDownloads.displayName("a\u2066b\u2069c.txt", "2_51.txt"));
         // Marks that don't reorder text, like the zero-width joiner in an emoji sequence, stay.
-        assertEquals("👨‍💻.pdf", SaveDownloads.displayName("👨‍💻.pdf", "2_51.pdf"));
+        String coder = "\uD83D\uDC68\u200D\uD83D\uDCBB.pdf";
+        assertEquals(coder, SaveDownloads.displayName(coder, "2_51.pdf"));
     }
 
     @Test public void aNameTooLongForTheFileSystemLosesTheEndOfItsStemAndKeepsItsExtension() {
