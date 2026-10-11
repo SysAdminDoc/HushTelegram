@@ -56,10 +56,8 @@ import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
-import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
 import app.morphe.patcher.util.proxy.mutableTypes.MutableField
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
-import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patcher.util.smali.toInstructions
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -68,9 +66,7 @@ import com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT
 import com.android.tools.smali.dexlib2.Opcode.RETURN
 import com.android.tools.smali.dexlib2.Opcode.RETURN_OBJECT
 import com.android.tools.smali.dexlib2.Opcode.RETURN_WIDE
-import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
-import com.android.tools.smali.dexlib2.iface.MethodParameter
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
@@ -81,8 +77,6 @@ import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.Reference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
-import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
-import com.android.tools.smali.dexlib2.util.MethodUtil
 
 /**
  * Inserts instructions at a given index, using the existing control flow label at that index.
@@ -414,12 +408,6 @@ fun Method.containsLiteralInstruction(literal: Float) = indexOfFirstLiteralInstr
 fun Method.containsLiteralInstruction(literal: Double) = indexOfFirstLiteralInstruction(literal) >= 0
 
 /**
- * Traverse the class hierarchy starting from the given root class.
- *
- * @param targetClass the class to start traversing the class hierarchy from.
- * @param callback function that is called for every class in the hierarchy.
- */
-/**
  * The register an invoke hands its [argumentIndex]th argument in, for either invoke format, or
  * null when the instruction is not an invoke or has no such argument. `this` counts as argument 0
  * on an instance call.
@@ -454,16 +442,6 @@ fun BytecodePatchContext.superclassChain(type: String, maxDepth: Int = 20): Sequ
     }
 }
 
-fun BytecodePatchContext.traverseClassHierarchy(targetClass: MutableClass, callback: MutableClass.() -> Unit) {
-    callback(targetClass)
-
-    targetClass.superclass ?: return
-
-    mutableClassDefByOrNull(targetClass.superclass!!)?.let {
-        traverseClassHierarchy(it, callback)
-    }
-}
-
 /**
  * Get the [Reference] of an [Instruction] as [T].
  *
@@ -491,16 +469,6 @@ internal fun List<Instruction>.branchTarget(index: Int, refuse: (String) -> Noth
     }
     val wanted = addresses[index] + branch.codeOffset
     return addresses.indexOfFirst { it == wanted }.takeIf { it >= 0 } ?: refuse("branch $index lands outside the method")
-}
-
-/**
- * @return The mutable method for this method call reference.
- */
-context(patchContext: BytecodePatchContext)
-fun MethodReference.getMutableMethod(): MutableMethod {
-    return patchContext.mutableClassDefBy(this.definingClass).methods.first { classMethod ->
-        MethodUtil.methodSignaturesMatch(classMethod, this@getMutableMethod)
-    }
 }
 
 /**
@@ -765,14 +733,6 @@ internal fun MutableMethod.indexOfLiteralCallResult(literalIndex: Int): Int {
 }
 
 /**
- * Overrides a literal value result with a constant value.
- */
-internal fun MutableMethod.insertLiteralOverride(literal: Long, override: Boolean) {
-    val literalIndex = indexOfFirstLiteralInstructionOrThrow(literal)
-    return insertLiteralOverride(literalIndex, override)
-}
-
-/**
  * Constant value override of the first MOVE_RESULT after the index parameter.
  */
 internal fun MutableMethod.insertLiteralOverride(literalIndex: Int, override: Boolean) {
@@ -784,137 +744,6 @@ internal fun MutableMethod.insertLiteralOverride(literalIndex: Int, override: Bo
         index + 1,
         "const v$register, $overrideValue"
     )
-}
-
-/**
- * Additional registers effectively take the place of the pX parameters (p0, p1, p2, etc)
- * and contain the original contents of the method parameters.
- * Added registers always start at index: `originalMethod.implementation!!.registerCount` of the
- * original uncloned method.
- *
- * **Fingerprint match indexes will be increased positively by [numberOfParameterRegistersLogical]**.
- */
-context(patchContext: BytecodePatchContext)
-fun Method.cloneMutableAndPreserveParameters() = cloneMutableAndPreserveParameters(
-    patchContext.mutableClassDefBy(definingClass)
-)
-
-/**
- * Additional registers effectively take the place of the pX parameters (p0, p1, p2, etc)
- * and contain the original contents of the method parameters.
- * Added registers always start at index: `originalMethod.implementation!!.registerCount` of the
- * original uncloned method.
- *
- * **Fingerprint match indexes will be increased positively by [numberOfParameterRegistersLogical]**.
- */
-fun Method.cloneMutableAndPreserveParameters(mutableClass : MutableClass) : MutableMethod {
-    check (!AccessFlags.STATIC.isSet(accessFlags) || parameters.isNotEmpty()) {
-        "Static methods have no parameter registers to preserve"
-    }
-
-    val clonedMethod = cloneMutable(
-        additionalRegisters = numberOfParameterRegisters
-    )
-
-    // Replace existing method with cloned with more registers.
-    mutableClass.methods.apply {
-        remove(this@cloneMutableAndPreserveParameters)
-        add(clonedMethod)
-    }
-
-    return clonedMethod
-}
-
-/**
- * Adapted from BiliRoamingX:
- * https://github.com/BiliRoamingX/BiliRoamingX/blob/ae58109f3acdd53ec2d2b3fb439c2a2ef1886221/patches/src/main/kotlin/app/revanced/patches/bilibili/utils/Extenstions.kt#L51
- *
- * Additional registers effectively take the place of the pX parameters (p0, p1, p2, etc)
- * and contain the original contents of the method parameters.
- * Added registers always start at index: `originalMethod.implementation!!.registerCount` of the
- * original uncloned method.
- *
- * **Fingerprint match indexes will be increased positively by [additionalRegisters]**.
- */
-fun Method.cloneMutable(
-    name: String = this.name,
-    accessFlags: Int = this.accessFlags,
-    parameters: List<MethodParameter> = this.parameters,
-    returnType: String = this.returnType,
-    additionalRegisters: Int = 0,
-): MutableMethod {
-    check(additionalRegisters >= 0) {
-        "Additional registers cannot be negative"
-    }
-
-    val implementationExists = implementation != null
-    val oldFirstParameterRegister = if (implementationExists) p0Register else 0
-
-    val clonedImplementation = implementation?.let {
-        ImmutableMethodImplementation(
-            it.registerCount + additionalRegisters,
-            it.instructions,
-            it.tryBlocks,
-            it.debugItems,
-        )
-    }
-
-    return ImmutableMethod(
-        definingClass,
-        name,
-        parameters,
-        returnType,
-        accessFlags,
-        annotations,
-        hiddenApiRestrictions,
-        clonedImplementation
-    ).toMutable().apply {
-        var insertIndex = 0
-        var addedInstructions = 0
-        val isNotStatic = !AccessFlags.STATIC.isSet(accessFlags)
-
-        if (implementationExists && additionalRegisters > 0 && (parameters.isNotEmpty() || isNotStatic)) {
-            var destReg = oldFirstParameterRegister
-            var pReg = 0
-
-            // Handle `this`.
-            if (isNotStatic) {
-                addInstructions(insertIndex++, "move-object/from16 v$destReg, p$pReg")
-                addedInstructions++
-                destReg += 1
-                pReg += 1
-            }
-
-            // Handle method parameters.
-            for (parameter in parameters) {
-                val opcode = when (parameter.type) {
-                    "J", "D" -> "move-wide/from16"
-                    else -> {
-                        if (parameter.type.startsWith('L') || parameter.type.startsWith('[')) {
-                            "move-object/from16"
-                        } else {
-                            "move/from16"
-                        }
-                    }
-                }
-
-                addInstructions(insertIndex++, "$opcode v$destReg, p$pReg")
-                addedInstructions++
-
-                val width = if (opcode.startsWith("move-wide")) 2 else 1
-                destReg += width
-                pReg += width
-            }
-
-            if (addedInstructions != numberOfParameterRegistersLogical) {
-                throw IllegalStateException(
-                    "Added instructions do not match additional registers " +
-                            "addedInstructions: $addedInstructions " +
-                            "numberOfParameterRegistersLogical: $numberOfParameterRegistersLogical"
-                )
-            }
-        }
-    }
 }
 
 fun Boolean.toHexString(): String = if (this) "0x1" else "0x0"
@@ -939,41 +768,6 @@ val Method.numberOfParameterRegisters: Int
         }
 
         return count
-    }
-
-/**
- * @return The number of parameter registers, including p0 as 'this' if method is not static.
- *   This differs from [numberOfParameterRegisters] in that long/double parameters are counted only once each.
- */
-val Method.numberOfParameterRegistersLogical: Int
-    get() = parameters.count() + if (AccessFlags.STATIC.isSet(accessFlags)) {
-        0
-    } else {
-        1
-    }
-
-/**
- * @return the actual register number of p0 for this method.
- * Throws if the method has no implementation.
- */
-val Method.p0Register: Int
-    get() {
-        val impl = implementation ?: throw IllegalStateException("Method has no implementation: $this")
-        var paramRegs = 0
-
-        // Count explicit parameters (wide types take 2 registers).
-        for (type in this.parameterTypes) {
-            paramRegs += if (type == "J" || type == "D") 2 else 1
-        }
-
-        // Add implicit 'this' for non-static methods.
-        if (!AccessFlags.STATIC.isSet(this.accessFlags)) {
-            paramRegs += 1
-        }
-
-        val totalRegs = impl.registerCount
-
-        return totalRegs - paramRegs
     }
 
 private const val RETURN_TYPE_MISMATCH = "Mismatch between override type and Method return type"
@@ -1350,14 +1144,3 @@ internal fun MutableField.removeFlags(vararg flags: AccessFlags) {
     val bitField = flags.map { it.value }.reduce { acc, flag -> acc or flag }
     this.accessFlags = this.accessFlags and bitField.inv()
 }
-
-/**
- * Set the custom condition for this fingerprint to check for a literal value.
- *
- * @param customLiteral The literal value.
- */
-@Deprecated("Instead use InstructionFilter and `literal()`")
-fun customLiteral(literalSupplier: () -> Long): ((method: Method, classDef: ClassDef) -> Boolean) =
-    { method, _ ->
-        method.containsLiteralInstruction(literalSupplier())
-    }
