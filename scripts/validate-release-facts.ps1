@@ -252,6 +252,13 @@ $segments = @($assetUri.AbsolutePath.Trim('/') -split '/')
 if ($segments.Count -lt 2) {
     throw "Could not read an owner and repository out of the indexed bundle URL: $assetUri"
 }
+# The owner and repository go to `gh api` as a path, so each is held to the characters GitHub names
+# use, and a dot segment is refused.
+foreach ($part in @($segments[0], $segments[1])) {
+    if ($part -notmatch '^[A-Za-z0-9_.-]+$' -or $part -eq '.' -or $part -eq '..') {
+        throw "The indexed bundle URL names an owner or repository GitHub would not accept ('$part'): $assetUri"
+    }
+}
 $slug = $segments[0] + '/' + $segments[1]
 $encodedSlug = [Uri]::EscapeDataString($slug)
 $addSourceUrl = "https://morphe.software/add-source?github=$encodedSlug"
@@ -397,7 +404,7 @@ $sourceRoots = @('extensions/telegram/src', 'extensions/telegram/stub/src', 'ext
     ForEach-Object { Join-Path $rootPath $_ } |
     Where-Object { Test-Path -LiteralPath $_ }
 $newestSource = $sourceRoots |
-    ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -File -ErrorAction SilentlyContinue } |
+    ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -File -ErrorAction Stop } |
     Sort-Object LastWriteTimeUtc -Descending |
     Select-Object -First 1
 if ($null -ne $newestSource -and $testFiles.Count -gt 0) {
@@ -496,7 +503,7 @@ if (-not $SkipDescriptionTestCount) {
         ForEach-Object { Join-Path $rootPath $_ } |
         Where-Object { Test-Path -LiteralPath $_ }
     $newestPatchSource = $patchSourceRoots |
-        ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -File -ErrorAction SilentlyContinue } |
+        ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -File -ErrorAction Stop } |
         Sort-Object LastWriteTimeUtc -Descending |
         Select-Object -First 1
     $newestPatchResult = $patchTestFiles | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1

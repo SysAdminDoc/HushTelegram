@@ -1532,8 +1532,10 @@ try {
     New-Item -ItemType Directory -Path $notARepo | Out-Null
     try {
         $env:GIT_CEILING_DIRECTORIES = $notARepo
-        Assert-Throws { Resolve-IndexManagerFloor -Root $notARepo -Version '0.0.9' -Commit $releaseCommitSha } '*failed*' `
-            'A directory git could not read gave the index a Manager floor.'
+        # A tree with no repository holds no tag: the floor is unchecked and says so, it doesn't throw.
+        $noRepository = Resolve-IndexManagerFloor -Root $notARepo -Version '0.0.9' -Commit $releaseCommitSha
+        Assert-True ($null -eq $noRepository.Floor -and $noRepository.Note -like '*doesn''t have*') `
+            "A tree with no repository gave the index a Manager floor: $($noRepository.Floor), $($noRepository.Note)"
     } finally {
         $env:GIT_CEILING_DIRECTORIES = $null
         Remove-Item -LiteralPath $notARepo -Recurse -Force -ErrorAction SilentlyContinue
@@ -2316,11 +2318,21 @@ try {
             @{ From = '"https://github\.com/'; To = '"http://github.com/'
                 Pattern = '*must use HTTPS*'; Name = 'an index serving the bundle over plain HTTP' },
             @{ From = '"https://github\.com/'; To = '"https://example.com/'
-                Pattern = '*must be on github.com*'; Name = 'an index serving the bundle from another host' })) {
+                Pattern = '*must be on github.com*'; Name = 'an index serving the bundle from another host' },
+            @{ From = 'SysAdminDoc/HushTelegram/releases'; To = 'Sys!Admin/HushTelegram/releases'
+                Pattern = '*owner or repository GitHub would not accept*Sys!Admin*'; Name = 'an index naming an owner GitHub would not accept' },
+            @{ From = 'SysAdminDoc/HushTelegram/releases'; To = 'SysAdminDoc/Hush!Telegram/releases'
+                Pattern = '*owner or repository GitHub would not accept*Hush!Telegram*'; Name = 'an index naming a repository GitHub would not accept' })) {
         Set-FactsFile 'patches-bundle.json' { param($text) $text -replace $address.From, $address.To }
         Assert-Throws { Invoke-Facts } $address.Pattern "The release facts check accepted $($address.Name)."
         Reset-FactsFile 'patches-bundle.json'
     }
+
+    # A folder the check can't read is an error, not a folder with nothing newer in it: the
+    # newest-source scans that decide "results older than sources" used to skip it silently.
+    $factsText = [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot 'validate-release-facts.ps1'))
+    Assert-True ($factsText -notmatch '-Recurse -File -ErrorAction SilentlyContinue') `
+        'validate-release-facts.ps1 skips an unreadable source folder in its newest-source scan.'
 
     # A dead link: the address has every right shape and names a release nobody published, which
     # is how the index once pointed at a tag that did not exist yet. GitHub answers 404 for it;
