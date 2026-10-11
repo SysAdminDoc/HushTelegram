@@ -326,9 +326,8 @@ public final class KeepDeleted {
     /** One account's part of [clear]. Forgets first, so a deletion that fails on the queue can put its messages back. */
     private static int clearAccount(Source source) throws Exception {
         long owner = source.self();
-        List<String> messages = keptBy(owner);
+        List<String> messages = takeAll(owner);
         if (messages.isEmpty()) return 0;
-        forget(owner, messages);
         try {
             source.post(() -> handBack(source, owner, messages));
         } catch (Throwable refused) {
@@ -415,17 +414,32 @@ public final class KeepDeleted {
         return Collections.unmodifiableList(new ArrayList<>(load(owner)));
     }
 
-    /** Drops [messages] from what [owner] remembers, and saves the rest. */
-    static synchronized void forget(long owner, List<String> messages) {
+    /**
+     * Everything [owner] remembers, oldest first, forgotten in the same step. One lock, so an
+     * overflow on the storage queue can't hand the same messages back between a read and a forget.
+     */
+    static synchronized List<String> takeAll(long owner) {
         LinkedHashSet<String> set = load(owner);
-        set.removeAll(messages);
+        List<String> taken = new ArrayList<>(set);
+        if (taken.isEmpty()) return taken;
+        set.clear();
         save(owner, set);
+        return taken;
     }
 
-    /** Puts [messages] back in what [owner] remembers, after a clear that couldn't hand them over. */
+    /**
+     * Puts [messages] back in what [owner] remembers, after a hand-back that couldn't happen. They
+     * go back as the oldest, so they're the next to leave: as the newest, a chat whose deletion
+     * keeps failing would push real kept messages out ahead of their turn.
+     */
     static synchronized void restore(long owner, List<String> messages) {
         LinkedHashSet<String> set = load(owner);
-        set.addAll(messages);
+        LinkedHashSet<String> restored = new LinkedHashSet<>();
+        for (String message : messages) if (!set.contains(message)) restored.add(message);
+        if (restored.isEmpty()) return;
+        restored.addAll(set);
+        set.clear();
+        set.addAll(restored);
         save(owner, set);
     }
 
