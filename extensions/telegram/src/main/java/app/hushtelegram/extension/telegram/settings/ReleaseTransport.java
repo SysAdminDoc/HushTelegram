@@ -28,8 +28,10 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * The release check's connection, through the platform's HttpURLConnection. It's the only code in
- * the extension that opens one.
+ * The release check's connection, through the platform's HttpURLConnection. The two translators,
+ * {@link app.hushtelegram.extension.telegram.misc.GoogleTranslate} and
+ * {@link app.hushtelegram.extension.telegram.misc.AiTranslate}, are the only other code in the
+ * extension that opens one.
  *
  * <p>{@link ReleaseCheck} decides what may be asked and reads what comes back. This sends one GET
  * and hands back the answer: no redirect followed, no cache, the connection closed after it, and

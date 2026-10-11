@@ -19,7 +19,7 @@ import org.junit.Test
 
 /**
  * What the README's Privacy section says about the extension, held to its source: which web
- * addresses the code names, and the one place that opens a connection by itself.
+ * addresses the code names, and the few places that open a connection by themselves.
  *
  * <p>Comments don't count. Licence headers and design notes name hosts the code never contacts,
  * so string literals and code are read apart first, which also stops the `//` inside a URL from
@@ -45,15 +45,24 @@ class ExtensionHostsTest {
     }
 
     @Test
-    fun `only the release check and the outside translator open a connection themselves`() {
+    fun `only the release check and the two translators open a connection themselves`() {
         val openers = sources().filter { (_, source) -> NETWORK.containsMatchIn(split(source).second) }
             .map { it.first }.filter { it != FIREBASE_HEADER }.toSortedSet()
         assertEquals(
             "The README says the extension goes online itself only to ask GitHub for the newest " +
-                "release and to send text the person turned on to Google's translate. These files open connections",
+                "release and to send text the person turned on to Google's translate or the AI service they set " +
+                "up. These files open connections",
             TRANSPORTS.toSortedSet(),
             openers,
         )
+    }
+
+    @Test
+    fun `every transport refuses a redirect, so text and a key never follow one to another host`() {
+        for (path in TRANSPORTS) {
+            val code = split(sources().single { it.first == path }.second).second
+            assertTrue("$path follows redirects", NO_REDIRECTS.containsMatchIn(code))
+        }
     }
 
     @Test
@@ -77,6 +86,20 @@ class ExtensionHostsTest {
         val translator = sources().single { it.first == TRANSLATOR }.second
         val hosts = split(translator).first.flatMap { literal -> URL.findAll(literal).map { it.groupValues[1] }.toList() }
         assertEquals(listOf("translate.googleapis.com"), hosts)
+    }
+
+    @Test
+    fun `the AI translator names only its default address`() {
+        val translator = sources().single { it.first == AI_TRANSLATOR }.second
+        val hosts = split(translator).first.flatMap { literal -> URL.findAll(literal).map { it.groupValues[1] }.toList() }
+        assertEquals(listOf("api.openai.com"), hosts)
+    }
+
+    @Test
+    fun `a sentence that ends in https colon slash slash names no host`() {
+        // The translator's refusal "The address has to start with https://." read as the host "." once.
+        assertEquals(emptyList<String>(), URL.findAll("The address has to start with https://.").map { it.groupValues[1] }.toList())
+        assertEquals(listOf("example.org"), URL.findAll("see https://example.org.").map { it.groupValues[1] }.toList())
     }
 
     @Test
@@ -133,11 +156,12 @@ class ExtensionHostsTest {
         /**
          * The hosts the README's Privacy section names. 127.0.0.1 is where Disable analytics sends
          * Telegram's event logs: the phone itself, on a port nothing listens on.
-         * translate.googleapis.com is Translate with an outside service. ko-fi.com is the
-         * Support HushTelegram row, opened in the browser.
+         * translate.googleapis.com is Translate with an outside service, and api.openai.com is the
+         * AI service's address until the person types another (the one they type isn't in the code).
+         * ko-fi.com is the Support HushTelegram row, opened in the browser.
          */
         val ALLOWED_HOSTS = setOf("github.com", "api.github.com", "gitlab.com", "www.gnu.org", "127.0.0.1",
-            "translate.googleapis.com", "ko-fi.com")
+            "translate.googleapis.com", "api.openai.com", "ko-fi.com")
         const val RELEASE_CHECK =
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/ReleaseCheck.java"
         const val FIREBASE_HEADER =
@@ -145,10 +169,15 @@ class ExtensionHostsTest {
         val TRANSPORTS = listOf(
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/ReleaseTransport.java",
             TRANSLATOR,
+            AI_TRANSLATOR,
         )
         const val TRANSLATOR =
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GoogleTranslate.java"
-        val URL = Regex("""(?:https?|wss?)://([A-Za-z0-9.-]+)""")
+        const val AI_TRANSLATOR =
+            "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/AiTranslate.java"
+        /** A host starts and ends with a letter or digit, so a sentence that ends in `https://.` names none. */
+        val URL = Regex("""(?:https?|wss?)://([A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?)""")
+        val NO_REDIRECTS = Regex("""\bsetInstanceFollowRedirects\s*\(\s*false\s*\)""")
         val NETWORK = Regex(
             """\b(?:HttpURLConnection|HttpsURLConnection|URLConnection|openConnection|Socket|SSLSocket|""" +
                 """OkHttpClient|WebSocket|DatagramSocket)\b"""

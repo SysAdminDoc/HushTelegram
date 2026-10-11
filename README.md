@@ -218,6 +218,8 @@ HushTelegram doesn't collect anything and has no server. The patched app goes on
 
 The second is Translate with an outside service. With its switch on, a message you translate with Translate here, and the messages you open in a chat you turned on with Translate this chat, go to Google's web translate at `translate.googleapis.com`, one message at a time. Each request carries that message's text and the language you're translating into, with `HushTelegram` as its User-Agent. Google sees the text and your IP address. Your own messages and service messages aren't sent, and nothing goes out for a chat or message you haven't turned on. Which chats are on stays on the phone, and translations are kept in memory only.
 
+If you've set up an AI service under that switch (the Translation service row, with your own key), the same text goes to the address you typed instead of Google, with your key in the request so the service knows it's you. The address starts out as `api.openai.com`, and any service that takes OpenAI's chat format works, so where the text goes is your choice. The key stays on the phone otherwise: it isn't in a settings file, the diagnostic report or the log. Neither Google nor your AI service is followed through a redirect, so the text and the key only ever reach the address you set.
+
 The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.org`, and Support HushTelegram at the bottom of the settings home page links to `ko-fi.com`. Those open in your browser, and only when you tap one.
 
 Diagnostics omit named Telegram API IDs and hashes from buffered events, crash sections and exported reports. Versions, counters and unrelated hashes stay readable. Review a report before sharing it.
