@@ -110,6 +110,23 @@ public class UnifiedPushTest {
         return token();
     }
 
+    /**
+     * Seen on the S22: ntfy freshly installed and never opened sits in Android's stopped state,
+     * which drops a broadcast unless it asks to reach stopped apps, so the row said "Signing up"
+     * for good. Every broadcast to the app has to ask.
+     */
+    @Test public void everyBroadcastToTheAppReachesOneThatWasNeverOpened() {
+        String token = signedUp();
+        UnifiedPush.receive(context, from(UnifiedPush.MESSAGE, token).putExtra("id", "m1"), () -> {});
+        UnifiedPush.sync(context, false);
+        for (String action : new String[] {UnifiedPush.REGISTER, UnifiedPush.MESSAGE_ACK, UnifiedPush.UNREGISTER}) {
+            Intent intent = last(action);
+            assertNotNull(action, intent);
+            assertEquals(action, UnifiedPush.NTFY, intent.getPackage());
+            assertTrue(action, (intent.getFlags() & Intent.FLAG_INCLUDE_STOPPED_PACKAGES) != 0);
+        }
+    }
+
     @Test public void telegramKeepsItsOwnTokenUntilAnAddressIsInAndTheSwitchIsOn() {
         assertEquals("fcm-token", UnifiedPush.token(2, "fcm-token"));
         assertEquals(2, UnifiedPush.type(2));

@@ -271,7 +271,15 @@ public final class UnifiedPush {
     private static void send(Context context, Intent intent, String distributor, String token) {
         intent.setPackage(distributor).putExtra("token", token).putExtra("pi", PendingIntent.getBroadcast(context, 0,
                 new Intent(DUMMY_APP), PendingIntent.FLAG_IMMUTABLE));
-        context.sendBroadcast(intent);
+        context.sendBroadcast(toStopped(intent));
+    }
+
+    /**
+     * An app installed and never opened is in Android's stopped state, and a broadcast skips it
+     * unless it asks not to. Picking ntfy straight after installing it is the usual order.
+     */
+    private static Intent toStopped(Intent intent) {
+        return intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
     }
 
     /**
@@ -374,7 +382,7 @@ public final class UnifiedPush {
     private static void acknowledge(Context context, SharedPreferences prefs, String token, @Nullable String id) {
         String distributor = prefs.getString(DISTRIBUTOR, null);
         if (id == null || distributor == null) return;
-        context.sendBroadcast(new Intent(MESSAGE_ACK).setPackage(distributor).putExtra("token", token).putExtra("id", id));
+        context.sendBroadcast(toStopped(new Intent(MESSAGE_ACK).setPackage(distributor).putExtra("token", token).putExtra("id", id)));
     }
 
     /** From {@link UnifiedPushRaise}: a binding that keeps Telegram in front while a message arrives, signed up only. */
