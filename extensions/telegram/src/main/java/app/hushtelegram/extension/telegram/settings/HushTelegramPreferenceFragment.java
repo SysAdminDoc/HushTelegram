@@ -18,9 +18,7 @@ import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -173,6 +171,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (list != null) {
             list.setDivider(null);
             list.setDividerHeight(0);
+            // The status rows carry a Pause, Resume or Undo button. Without this a keyboard or
+            // D-pad moves only from row to row and never reaches it.
+            list.setItemsCanFocus(true);
             // Set here rather than in initialize(), so a page whose initialize() failed, the
             // recovery page, is drawn on the same black.
             list.setBackgroundColor(ScreenColors.DEFAULT.background);
@@ -1307,15 +1308,15 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
         /**
          * The screen's colours, before the dialog is shown so its first layout measures them. The
-         * cards bring their own spacing and press ripple, so the list draws no divider and no
-         * highlight of its own over them.
+         * cards bring their own spacing and press ripple, so the list draws no divider and, under
+         * a finger, no highlight of its own over them. A keyboard's place shows as a ring.
          */
         @Override
         protected void onDialogCreated(AlertDialog dialog) {
             ListView list = dialog.getListView();
             if (list != null) {
                 list.setDivider(null);
-                list.setSelector(new ColorDrawable(Color.TRANSPARENT));
+                list.setSelector(ChoiceCards.Card.focusRing(dialog.getContext(), ScreenColors.DEFAULT));
             }
             ScreenColors.dialog(dialog);
         }
@@ -1363,14 +1364,19 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
      * place and a click action and no role, and the switch drawn in a switch row can't take
      * focus, so on its own a switch row said neither that it was a switch nor whether it was on.
      * A double tap goes through the list, the way a tap does, so the preference's own click runs.
+     * A dialog's choice card has no preference behind it, and is always there to tap.
      */
     static final class RowSemantics extends View.AccessibilityDelegate {
-        private final Preference preference;
+        @Nullable private final Preference preference;
         private final Class<? extends View> role;
 
-        RowSemantics(Preference preference, Class<? extends View> role) {
+        RowSemantics(@Nullable Preference preference, Class<? extends View> role) {
             this.preference = preference;
             this.role = role;
+        }
+
+        private boolean tappable() {
+            return preference == null || preference.isEnabled();
         }
 
         @Override
@@ -1386,7 +1392,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 info.setCheckable(true);
                 info.setChecked(((TwoStatePreference) preference).isChecked());
             }
-            if (preference.isEnabled() && !info.getActionList().contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK)) {
+            if (tappable() && !info.getActionList().contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK)) {
                 info.setClickable(true);
                 info.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK);
             }
@@ -1406,7 +1412,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         @Override
         public boolean performAccessibilityAction(View host, int action, Bundle arguments) {
             AbsListView list = listOf(host);
-            if (action == AccessibilityNodeInfo.ACTION_CLICK && list != null && preference.isEnabled()) {
+            if (action == AccessibilityNodeInfo.ACTION_CLICK && list != null && tappable()) {
                 int position = list.getPositionForView(host);
                 if (position != AdapterView.INVALID_POSITION) {
                     return list.performItemClick(host, position, list.getItemIdAtPosition(position));

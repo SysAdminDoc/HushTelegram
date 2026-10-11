@@ -591,7 +591,10 @@ final class SettingsNavigation extends BaseAdapter {
         action.setAllCaps(false);
         action.setTextSize(14);
         action.setTextColor(palette().heading);
-        action.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        // Clear until it's pressed or a keyboard puts focus on it, which then shows.
+        action.setBackground(new android.graphics.drawable.RippleDrawable(
+                android.content.res.ColorStateList.valueOf(ScreenColors.half(palette().accent)), null,
+                new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE)));
         action.setMinWidth(dp(48));
         action.setMinHeight(dp(48));
         action.setMinimumWidth(dp(48));

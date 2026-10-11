@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Settings:** A keyboard or D-pad can now reach the Pause, Resume and Undo buttons, and shows which one it's on. The two Export diagnostic report choices read as buttons to a screen reader, and a ring marks the one a keyboard is on.
+
 * **Telegram:** HushTelegram's own dialogs in a chat (Message details, Forward to, the Ask before questions) now go light or dark with Telegram's theme. Before, they followed the phone's dark mode, so they could come out white over Telegram's Night theme.
 
 * **Settings:** Import settings now lists every switch the file changes and which way it goes, like "Hide ads turns off", under the count. A file someone shared with you can't quietly turn off Stop usage reports anymore.

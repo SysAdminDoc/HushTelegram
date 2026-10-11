@@ -13,9 +13,12 @@ package app.hushtelegram.extension.telegram.settings;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
 import android.graphics.drawable.RippleDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.text.SpannableStringBuilder;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -128,6 +131,25 @@ final class ChoiceCards extends BaseAdapter {
             LayoutParams trailing = new LayoutParams(dp(context, 24), dp(context, 24));
             trailing.setMarginStart(dp(context, 8));
             addView(arrow, trailing);
+            // A screen reader hears a button, and a double tap picks the choice through the list.
+            setAccessibilityDelegate(new HushTelegramPreferenceFragment.RowSemantics(null, android.widget.Button.class));
+        }
+
+        /**
+         * The dialog list's selector: nothing under a finger, which gets the card's own ripple, and
+         * a ring around the card a keyboard or D-pad is on.
+         */
+        static Drawable focusRing(Context context, ScreenColors colors) {
+            GradientDrawable ring = new GradientDrawable();
+            ring.setColor(android.graphics.Color.TRANSPARENT);
+            ring.setStroke(dp(context, 2), colors.accent);
+            ring.setCornerRadius(dp(context, 10));
+            int side = dp(context, SIDE_INSET_DP);
+            int gap = dp(context, GAP_INSET_DP);
+            StateListDrawable selector = new StateListDrawable();
+            selector.addState(new int[]{android.R.attr.state_focused}, new InsetDrawable(ring, side, gap, side, gap));
+            selector.addState(new int[]{}, new ColorDrawable(android.graphics.Color.TRANSPARENT));
+            return selector;
         }
 
         private static int dp(Context context, int value) {

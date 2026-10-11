@@ -228,6 +228,45 @@ public class SettingsAccessibilityTest {
         assertTrue("the screen's title isn't a heading", node(title).isHeading());
     }
 
+    /** The Pause, Resume and Undo buttons sit inside list rows, which a keyboard reaches only like this. */
+    @Test
+    public void aKeyboardReachesTheButtonsInsideRows() {
+        ListView list = SettingsL10nTest.show(controller.get()).getView().findViewById(android.R.id.list);
+        assertTrue(list.getItemsCanFocus());
+    }
+
+    @Test
+    public void aReportChoiceIsAButtonThatADoubleTapPicks() {
+        Activity activity = controller.get();
+        ListView list = new ListView(activity);
+        list.setAdapter(new ChoiceCards(ScreenColors.DEFAULT, new CharSequence[]{"Copy quick report", "Save full report"},
+                new CharSequence[]{"Copy a short report.", "Save the full report."}));
+        int[] picked = {-1};
+        list.setOnItemClickListener((parent, view, position, id) -> picked[0] = position);
+        activity.setContentView(list);
+        list.measure(View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(4000, View.MeasureSpec.EXACTLY));
+        list.layout(0, 0, 1080, 4000);
+
+        View save = list.getChildAt(1);
+        AccessibilityNodeInfo info = node(save);
+        assertEquals(Button.class.getName(), String.valueOf(info.getClassName()));
+        assertTrue(info.getActionList().contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK));
+        assertTrue(save.performAccessibilityAction(AccessibilityNodeInfo.ACTION_CLICK, null));
+        assertEquals(1, picked[0]);
+    }
+
+    @Test
+    public void aKeyboardOnAReportChoiceSeesARingAndAFingerDoesNot() {
+        android.graphics.drawable.Drawable selector = ChoiceCards.Card.focusRing(controller.get(), ScreenColors.DEFAULT);
+        selector.setState(new int[]{android.R.attr.state_focused});
+        assertTrue(selector.getCurrent() instanceof android.graphics.drawable.InsetDrawable);
+        selector.setState(new int[]{android.R.attr.state_pressed});
+        assertTrue(selector.getCurrent() instanceof android.graphics.drawable.ColorDrawable);
+        assertEquals(android.graphics.Color.TRANSPARENT,
+                ((android.graphics.drawable.ColorDrawable) selector.getCurrent()).getColor());
+    }
+
     @Test
     @Config(qualifiers = "ar-rXB-ldrtl")
     public void inARightToLeftLanguageTheWayBackPointsRight() {
