@@ -14,11 +14,14 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.webkit.MimeTypeMap;
 
+import androidx.annotation.RequiresApi;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -129,12 +132,33 @@ public final class SaveDownloads {
         }
     }
 
-    /** The document's own name, with the downloaded file's extension when it has none of its own. */
+    /** What ext4 and FAT give a file name: 255 bytes of UTF-8. Over that, MediaStore refuses the file. */
+    static final int MAX_NAME_BYTES = 255;
+
+    /**
+     * The document's own name, with the downloaded file's extension when it has none of its own.
+     * Path separators, control characters and the bidi controls that would show "exe.gpj" as "jpg.exe"
+     * become underscores, and a name too long for the file system loses the end of its stem.
+     */
     static String displayName(String documentName, String fileName) {
-        String name = documentName == null ? "" : documentName.replaceAll("[/\\\\\\p{Cntrl}]", "_").trim();
+        String name = documentName == null ? ""
+                : documentName.replaceAll("[/\\\\\\p{Cntrl}\\u202A-\\u202E\\u2066-\\u2069]", "_").trim();
         if (name.isEmpty() || name.equals(".") || name.equals("..")) return fileName;
         if (extension(name).isEmpty() && !extension(fileName).isEmpty()) name += "." + extension(fileName);
-        return name;
+        name = fit(name);
+        return name.isEmpty() || name.startsWith(".") ? fileName : name;
+    }
+
+    /** [name] within {@link #MAX_NAME_BYTES}, its stem cut a code point at a time so a surrogate pair stays whole. */
+    private static String fit(String name) {
+        if (name.getBytes(StandardCharsets.UTF_8).length <= MAX_NAME_BYTES) return name;
+        String ext = extension(name);
+        String tail = ext.isEmpty() ? "" : "." + ext;
+        String stem = name.substring(0, name.length() - tail.length());
+        while (!stem.isEmpty() && (stem + tail).getBytes(StandardCharsets.UTF_8).length > MAX_NAME_BYTES) {
+            stem = stem.substring(0, stem.offsetByCodePoints(stem.length(), -1));
+        }
+        return stem.trim() + tail;
     }
 
     private static String extension(String name) {
@@ -179,6 +203,7 @@ public final class SaveDownloads {
     }
 
     /** Copies into MediaStore's Downloads, hidden until it's whole. False when the same file is there already. */
+    @RequiresApi(Build.VERSION_CODES.Q)
     private static boolean copy(ContentResolver resolver, File file, String name) throws IOException {
         Uri downloads = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
         try (Cursor same = resolver.query(downloads, new String[]{MediaStore.MediaColumns._ID},

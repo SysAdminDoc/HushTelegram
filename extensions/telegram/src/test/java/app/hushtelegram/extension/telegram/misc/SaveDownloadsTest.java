@@ -221,6 +221,28 @@ public class SaveDownloadsTest {
         assertEquals("_.._etc_passwd.txt", SaveDownloads.displayName("/../etc/passwd.txt", "2_51.txt"));
         assertEquals("2_51.txt", SaveDownloads.displayName("..", "2_51.txt"));
         assertEquals("2_51.txt", SaveDownloads.displayName("  ", "2_51.txt"));
+        // A right-to-left override would show "report‮exe.pdf" as "reportfdp.exe" in a file manager.
+        assertEquals("report_exe.pdf", SaveDownloads.displayName("report‮exe.pdf", "2_51.pdf"));
+        assertEquals("a_b_c.txt", SaveDownloads.displayName("a⁦b⁩c.txt", "2_51.txt"));
+        // Marks that don't reorder text, like the zero-width joiner in an emoji sequence, stay.
+        assertEquals("👨‍💻.pdf", SaveDownloads.displayName("👨‍💻.pdf", "2_51.pdf"));
+    }
+
+    @Test public void aNameTooLongForTheFileSystemLosesTheEndOfItsStemAndKeepsItsExtension() {
+        String stem = new String(new char[300]).replace('\0', 'x');
+        String name = SaveDownloads.displayName(stem + ".pdf", "2_51.pdf");
+        assertEquals(SaveDownloads.MAX_NAME_BYTES, name.getBytes(StandardCharsets.UTF_8).length);
+        assertTrue(name, name.endsWith(".pdf"));
+        assertEquals(SaveDownloads.MAX_NAME_BYTES, SaveDownloads.displayName(stem, "2_51").getBytes(StandardCharsets.UTF_8).length);
+        // Cut by code points, so a four-byte emoji at the edge isn't halved into two broken characters.
+        StringBuilder faces = new StringBuilder();
+        for (int i = 0; i < 100; i++) faces.append("😀");
+        String cut = SaveDownloads.displayName(faces + ".mp3", "2_51.mp3");
+        assertTrue(cut, cut.getBytes(StandardCharsets.UTF_8).length <= SaveDownloads.MAX_NAME_BYTES);
+        assertTrue(cut, cut.endsWith(".mp3"));
+        assertEquals((SaveDownloads.MAX_NAME_BYTES - 4) / 4 * 2 + 4, cut.length());
+        // A name that's all extension has nothing left to cut, so the download's own name is used.
+        assertEquals("2_51.pdf", SaveDownloads.displayName("." + stem, "2_51.pdf"));
     }
 
     /** MediaStore's Downloads table, as much of it as a copy touches. */
