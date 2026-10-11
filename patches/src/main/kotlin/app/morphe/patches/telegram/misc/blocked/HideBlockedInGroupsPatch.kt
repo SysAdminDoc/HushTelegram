@@ -44,6 +44,9 @@ internal const val SKIP_NOTIFICATION = "$BLOCKED_SENDERS->skipNotification(Ljava
 internal const val IMPORTED_FORWARD = "$MESSAGE_OBJECT->isImportedForward()Z"
 private const val TTL_ACTION = "Lorg/telegram/tgnet/TLRPC\$TL_messageActionSetMessagesTTL;"
 private const val CONTROLLER = "Lorg/telegram/messenger/MessagesController;"
+internal const val BLOCKED_END = "$CONTROLLER->blockedEndReached:Z"
+internal const val BLOCKED_LOADING = "$CONTROLLER->loadingBlockedPeers:Z"
+internal const val BLOCKED_PAGE = "$CONTROLLER->getBlockedPeers(Z)V"
 
 /**
  * The extension calls that answer a message's type where the open chat tests it. Each patch puts
@@ -105,6 +108,24 @@ val hideBlockedInGroupsPatch = bytecodePatch(
             :hush_free
             const/4 v0, 0x0
             return v0
+        """)
+        // Telegram's own next page: what its Blocked users page asks for as it scrolls.
+        writeStub(BLOCKED_SENDERS, "loadMoreBlocked", 3, """
+            check-cast p0, $MESSAGE_OBJECT
+            iget v0, p0, $MESSAGE_OBJECT->currentAccount:I
+            invoke-static {v0}, $CONTROLLER->getInstance(I)$CONTROLLER
+            move-result-object v0
+            iget-boolean v1, v0, $BLOCKED_END
+            if-nez v1, :hush_done
+            iget-boolean v1, v0, $BLOCKED_LOADING
+            if-nez v1, :hush_done
+            const/4 v1, 0x0
+            invoke-virtual {v0, v1}, $BLOCKED_PAGE
+            const/4 v1, 0x1
+            return v1
+            :hush_done
+            const/4 v1, 0x0
+            return v1
         """)
         sites.forEach { (method, indices) -> insertTypeChecks(method, indices, BLOCKED_TYPE) }
         insertNotificationSkip(notify, answer)
@@ -181,12 +202,17 @@ internal fun BytecodePatchContext.resolveHideBlockedInGroups(): List<Pair<Mutabl
     for (stub in listOf("chat", "sender")) controlHook(BLOCKED_SENDERS, stub, listOf("Ljava/lang/Object;"), "J")
     controlHook(BLOCKED_SENDERS, "post", listOf("Ljava/lang/Object;"), "Z")
     controlHook(BLOCKED_SENDERS, "blocked", listOf("Ljava/lang/Object;", "J"), "Z")
+    controlHook(BLOCKED_SENDERS, "loadMoreBlocked", listOf("Ljava/lang/Object;"), "Z")
     val sites = resolveOpenChatTypeReads()
 
     val controller = classDefByOrNull(CONTROLLER)
     controlShape(controller != null && controller.methods.any { signature(it) == "getInstance(I)$CONTROLLER" && callable(it, true) } &&
         controller.fields.any { "${it.definingClass}->${it.name}:${it.type}" == BLOCKED_PEERS && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "MessagesController no longer keeps the blocked list")
+    controlShape(controller!!.methods.any { signature(it) == "getBlockedPeers(Z)V" && callable(it, false) } &&
+        listOf(BLOCKED_END, BLOCKED_LOADING).all { wanted ->
+            controller.fields.any { "${it.definingClass}->${it.name}:${it.type}" == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) }
+        }, "MessagesController no longer loads the blocked list a page at a time")
     controlShape(classDefByOrNull(PEERS)?.methods?.any { signature(it) == "indexOfKey(J)I" && callable(it, false) } == true,
         "the blocked list can no longer be looked up")
     return sites

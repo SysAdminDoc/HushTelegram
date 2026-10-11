@@ -88,6 +88,8 @@ class HideBlockedInGroupsFixtureTest {
             assertTrue(POST in stub("post"))
             assertTrue(BLOCKED_PEERS in stub("blocked"))
             assertTrue("$PEERS->indexOfKey(J)I" in stub("blocked"))
+            assertEquals("$name: the next page only when the list isn't complete or loading", listOf(BLOCKED_END, BLOCKED_LOADING, BLOCKED_PAGE),
+                stub("loadMoreBlocked").filter { it in setOf(BLOCKED_END, BLOCKED_LOADING, BLOCKED_PAGE) })
             val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "hideBlockedInGroups" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }

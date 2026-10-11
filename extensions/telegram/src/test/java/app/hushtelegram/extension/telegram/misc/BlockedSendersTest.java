@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 30)
@@ -32,6 +33,7 @@ public class BlockedSendersTest {
         SettingReadsForTests.mend(Settings.HIDE_BLOCKED_IN_GROUPS);
         Settings.HIDE_BLOCKED_IN_GROUPS.resetToDefault();
         HookStatus.clear();
+        BlockedSenders.resetPaging();
     }
 
     @Test public void offByDefaultEveryMessageKeepsItsType() {
@@ -65,6 +67,16 @@ public class BlockedSendersTest {
         assertFalse(BlockedSenders.skipNotification(new Object(), false));
         SettingReadsForTests.breakReads(Settings.HIDE_BLOCKED_IN_GROUPS);
         assertFalse("an unreadable switch", BlockedSenders.skipNotification(new Object(), false));
+    }
+
+    @Test public void askingForMoreOfTheBlockedListRunsOnTheMainThreadAndFailsQuietly() {
+        BlockedSenders.topUp(new Object());
+        BlockedSenders.topUp(new Object());
+        ShadowLooper.idleMainLooper();
+        // The unpatched stub reports the list complete, so nothing was asked and nothing failed.
+        String report = String.join("\n", HookStatus.report());
+        assertFalse(report, report.contains("blocked list page asked"));
+        assertTrue(HookStatus.missing(FamilyNames.HIDE_BLOCKED_IN_GROUPS).isEmpty());
     }
 
     @Test public void pausingAnEarlyStartOrAnUnreadableSwitchKeepsTheMessage() {

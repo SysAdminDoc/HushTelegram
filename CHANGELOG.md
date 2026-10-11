@@ -4,7 +4,7 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
-* **Telegram:** Hide blocked users in groups now keeps a blocked person's new messages in a group from notifying you too, not just out of the chat when you open it.
+* **Telegram:** Hide blocked users in groups now keeps a blocked person's new messages in a group from notifying you too, not just out of the chat when you open it. It also reads your whole blocked list now. Telegram only loads the first 20 people until you scroll its Blocked users page, so anyone past them used to slip through.
 
 * **Tooling:** The settings screen's code is split into one method per page, and patch helpers nothing called anymore are gone. The release script keeps gh's warnings out of what it publishes, and the release receipt stops on a clone git can't open instead of reading it as a copy with no history.
 
