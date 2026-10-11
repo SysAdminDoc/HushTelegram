@@ -585,7 +585,7 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
         param($Uri, $Headers, $UserAgent, [switch]$UseBasicParsing, $TimeoutSec, $Method, $OutFile, $MaximumRedirection, [switch]$PassThru)
         $url = [string]$Uri
         $authorization = if ($Headers -and $Headers.ContainsKey('Authorization')) { [string]$Headers['Authorization'] } else { $null }
-        $fakeForge.Requests.Add([pscustomobject]@{ Uri = $url; Authorization = $authorization })
+        $fakeForge.Requests.Add([pscustomobject]@{ Uri = $url; Authorization = $authorization; MaximumRedirection = $MaximumRedirection })
         $a = $fakeForge.Answers
         $answer = $null
         switch -Regex ($url) {
@@ -624,11 +624,15 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
             '^https://api\.github\.com/repos/(newcomer/telegram-patches|clone/alpha-clone)$' { $answer = $a.repoMeta; break }
             '^https://api\.github\.com/repos/fixture-owner/alpha-old$' { $answer = $a.oldNameMeta; break }
             '^https://github\.com/SysAdminDoc/HushTelegram/releases/download/v9\.9\.9/release-receipt-9\.9\.9\.json$' { $answer = $a.receipt; break }
+            '^https://api\.github\.com/repos/fixture-owner/moved-same$' { $answer = @{ Status = 301; Location = '/repos/fixture-owner/alpha-patches' }; break }
+            '^https://api\.github\.com/repos/fixture-owner/moved-away$' { $answer = @{ Status = 302; Location = 'https://elsewhere.example/steal' }; break }
+            '^https://api\.github\.com/repos/fixture-owner/moved-down$' { $answer = @{ Status = 302; Location = 'http://api.github.com/repos/fixture-owner/alpha-patches' }; break }
         }
         if ($null -eq $answer) { throw "The audit made a request no stand-in answers: $url" }
         if ($answer.Status -ne 200) {
             $failure = New-Object System.Exception "Response status code does not indicate success: $($answer.Status)."
-            Add-Member -InputObject $failure -NotePropertyName Response -NotePropertyValue ([pscustomobject]@{ StatusCode = $answer.Status })
+            Add-Member -InputObject $failure -NotePropertyName Response -NotePropertyValue ([pscustomobject]@{
+                StatusCode = $answer.Status; Headers = @{ Location = $answer.Location } })
             throw $failure
         }
         return [pscustomobject]@{ StatusCode = 200; Content = [string]$answer.Content }
@@ -696,6 +700,37 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
         'A GitHub API request went out without the token.'
     Assert-True ($clean.ReportText.IndexOf($fakeToken) -lt 0 -and $stamped.IndexOf($fakeToken) -lt 0) 'The token was written to the report or the ledger.'
     Reset-FixtureLedger
+
+    # A request that carries a token follows a redirect itself, to the same host over https and
+    # nowhere else; one that carries none is left to the client.
+    $auditAst = [System.Management.Automation.Language.Parser]::ParseFile($auditScript, [ref]$null, [ref]$null)
+    foreach ($name in @('Get-RedirectTarget', 'Invoke-SourceRequest')) {
+        $found = @($auditAst.FindAll({ param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $node.Name -eq $name }, $true))
+        Assert-True ($found.Count -eq 1) "audit-telegram-sources.ps1 no longer defines $name once."
+        Invoke-Expression $found[0].Extent.Text
+    }
+    function Write-Step { param($Text) }
+    $GitHubToken = $fakeToken
+    $GitLabToken = $null
+    $RateLimitWaitSeconds = 0
+    $script:requestCount = 0
+    $fakeForge.Requests.Clear()
+    $followed = Invoke-SourceRequest -Uri 'https://api.github.com/repos/fixture-owner/moved-same' -Auth github
+    Assert-True ($followed.Status -eq 200 -and $fakeForge.Requests.Count -eq 2 -and
+        $fakeForge.Requests[1].Uri -eq 'https://api.github.com/repos/fixture-owner/alpha-patches' -and
+        $fakeForge.Requests[0].MaximumRedirection -eq 0 -and $fakeForge.Requests[1].Authorization -eq "Bearer $fakeToken") `
+        'A same-host redirect on a token request was not followed by hand with the token kept.'
+    foreach ($away in @('moved-away', 'moved-down')) {
+        $fakeForge.Requests.Clear()
+        Assert-Throws { Invoke-SourceRequest -Uri "https://api.github.com/repos/fixture-owner/$away" -Auth github } '*Refused a redirect*' `
+            "A redirect ($away) on a token request was followed."
+        Assert-True (@($fakeForge.Requests | Where-Object { $_.Uri -notlike 'https://api.github.com/*' }).Count -eq 0) `
+            "The token request went on to another address after the $away redirect."
+    }
+    $fakeForge.Requests.Clear()
+    [void](Invoke-SourceRequest -Uri 'https://morphe-patches.software/data/bundles.json')
+    Assert-True ($null -eq $fakeForge.Requests[0].MaximumRedirection) 'A request with no token had its redirects switched off.'
 
     # -SkipGitLabCodeSearch holds with GITLAB_TOKEN set, as the audit's help tells a maintainer to
     # set it: no GitLab search goes out and the census keeps recording the skip.

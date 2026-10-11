@@ -173,6 +173,24 @@ $searchGitLab = [bool]$GitLabToken -and -not $SkipGitLabCodeSearch
 
 # --- requests --------------------------------------------------------------------------------
 
+function Get-RedirectTarget {
+    # The Location a 3xx answer names, as an absolute address; $null when it names none. Windows
+    # PowerShell hands over a web response with string headers, PowerShell 7 a message with a Uri.
+    param($Response, [string]$From)
+    $location = $null
+    try {
+        $header = $Response.Headers
+        $location = $header.Location
+        if ($null -eq $location) { $location = $header['Location'] }
+    } catch { $location = $null }
+    if ($null -eq $location) { return $null }
+    $text = "$(@($location)[0])"
+    if (-not $text) { return $null }
+    $absolute = $null
+    if ([Uri]::TryCreate([Uri]$From, $text, [ref]$absolute)) { return $absolute }
+    return $null
+}
+
 function Invoke-SourceRequest {
     <#
         One GET, answering Status and Content. A 4xx or 5xx answer comes back as its status with no
@@ -184,11 +202,22 @@ function Invoke-SourceRequest {
     $headers = @{}
     if ($Auth -eq 'github') { $headers['Authorization'] = "Bearer $GitHubToken" }
     if ($Auth -eq 'gitlab' -and $GitLabToken) { $headers['PRIVATE-TOKEN'] = $GitLabToken }
+    # A request that carries a token never lets the client follow a redirect: a hop to another host
+    # would hand the token over. A redirect is followed here instead, to the same host over https
+    # and no further than five times, which is all a renamed repository needs.
+    $redirectsAt = if ($headers.Count -gt 0) { 0 } else { -1 }
+    $fixedHost = ([Uri]$Uri).Host
+    $hops = 0
     for ($attempt = 1; ; $attempt++) {
         $script:requestCount++
         try {
-            $response = Invoke-WebRequest -Uri $Uri -Headers $headers -UserAgent 'HushTelegram-source-audit' `
-                -UseBasicParsing -TimeoutSec 120
+            if ($redirectsAt -eq 0) {
+                $response = Invoke-WebRequest -Uri $Uri -Headers $headers -UserAgent 'HushTelegram-source-audit' `
+                    -UseBasicParsing -TimeoutSec 120 -MaximumRedirection 0
+            } else {
+                $response = Invoke-WebRequest -Uri $Uri -Headers $headers -UserAgent 'HushTelegram-source-audit' `
+                    -UseBasicParsing -TimeoutSec 120
+            }
             $content = $null
             $raw = $response.PSObject.Properties['RawContentStream']
             if ($null -ne $raw -and $null -ne $raw.Value) {
@@ -205,6 +234,16 @@ function Invoke-SourceRequest {
                 $status = [int]$answer.Value.StatusCode
             }
             if ($null -eq $status) { throw "Could not reach ${Uri}: $($_.Exception.Message)" }
+            if ($redirectsAt -eq 0 -and $status -in 301, 302, 303, 307, 308) {
+                $target = Get-RedirectTarget -Response $answer.Value -From $Uri
+                $hops++
+                if ($hops -gt 5 -or -not $target -or $target.Scheme -ne 'https' -or $target.Host -ne $fixedHost) {
+                    throw "Refused a redirect from ${Uri} to $(if ($target) { $target.AbsoluteUri } else { 'nowhere' }) on a request carrying a token."
+                }
+                $Uri = $target.AbsoluteUri
+                $attempt--
+                continue
+            }
             $said = "$($_.ErrorDetails.Message) $($_.Exception.Message)"
             $limited = $status -eq 429 -or ($status -eq 403 -and $said -match '(?i)rate limit')
             if ($limited -and $attempt -lt 4) {
@@ -276,7 +315,11 @@ function Split-SourceKey {
 
 function Get-EncodedPath {
     param([string]$Path)
-    return (@($Path -split '/' | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/')
+    # A dot segment would climb out of the path the caller meant, so it is refused rather than escaped.
+    return (@($Path -split '/' | ForEach-Object {
+        if ($_ -eq '.' -or $_ -eq '..') { throw "A dot segment in '$Path' can't go into a request address." }
+        [Uri]::EscapeDataString($_)
+    }) -join '/')
 }
 
 # --- what the ledger already knows ------------------------------------------------------------
@@ -557,7 +600,7 @@ if ($searchGitLab) {
             foreach ($item in $result.Items) {
                 $projectId = [string]$item.project_id
                 if (-not $projects.ContainsKey($projectId)) {
-                    $project = Invoke-SourceRequest -Uri "https://gitlab.com/api/v4/projects/$projectId" -Auth gitlab
+                    $project = Invoke-SourceRequest -Uri "https://gitlab.com/api/v4/projects/$([Uri]::EscapeDataString($projectId))" -Auth gitlab
                     $projects[$projectId] = if ($project.Status -eq 200) {
                         ConvertTo-SourceKey ('https://gitlab.com/' + (ConvertFrom-SourceJson -Text $project.Content -What "GitLab project $projectId").path_with_namespace)
                     } else { $null }
@@ -648,7 +691,7 @@ foreach ($candidate in @($candidates.Values | Sort-Object Key)) {
     $meta = $null
     $where = Split-SourceKey $key
     if ($where.Host -eq 'github.com') {
-        $answer = Invoke-SourceRequest -Uri "https://api.github.com/repos/$($where.Path)" -Auth github
+        $answer = Invoke-SourceRequest -Uri "https://api.github.com/repos/$(Get-EncodedPath $where.Path)" -Auth github
         if ($answer.Status -eq 200) {
             $repo = ConvertFrom-SourceJson -Text $answer.Content -What $key
             # An index that still spells a renamed repository by its old name: GitHub redirects
@@ -683,7 +726,7 @@ function Get-GitHubWatchedHead {
     if (@($WatchPaths).Count -eq 0) { return $Head }
     $newest = $null
     foreach ($watch in $WatchPaths) {
-        $answer = Invoke-SourceRequest -Uri ("https://api.github.com/repos/$Path/commits?sha=" + [Uri]::EscapeDataString($Branch) +
+        $answer = Invoke-SourceRequest -Uri ("https://api.github.com/repos/$(Get-EncodedPath $Path)/commits?sha=" + [Uri]::EscapeDataString($Branch) +
             '&path=' + [Uri]::EscapeDataString($watch) + '&per_page=1') -Auth github
         if ($answer.Status -ne 200) { throw "the commits of $Branch under $watch answered HTTP $($answer.Status)" }
         foreach ($commit in (Get-JsonItems (ConvertFrom-SourceJson -Text $answer.Content -What "$Path commits"))) {
@@ -720,7 +763,7 @@ function Test-CommitContained {
     param($Where, [string]$Commit, [string]$Within)
     if ($Commit -notmatch '^[0-9a-f]{40}$' -or $Within -notmatch '^[0-9a-f]{40}$') { return $false }
     if ($Where.Host -eq 'github.com') {
-        $answer = Invoke-SourceRequest -Uri "https://api.github.com/repos/$($Where.Path)/compare/$Within...$Commit" -Auth github
+        $answer = Invoke-SourceRequest -Uri "https://api.github.com/repos/$(Get-EncodedPath $Where.Path)/compare/$Within...$Commit" -Auth github
         if ($answer.Status -ne 200) { return $false }
         $status = [string](ConvertFrom-SourceJson -Text $answer.Content -What "$($Where.Path) comparison").status
         return $status -eq 'identical' -or $status -eq 'behind'
@@ -733,11 +776,11 @@ function Test-CommitContained {
 
 function Read-GitHubSource {
     param($Entry, [string]$Path)
-    $answer = Invoke-SourceRequest -Uri "https://api.github.com/repos/$Path" -Auth github
+    $answer = Invoke-SourceRequest -Uri "https://api.github.com/repos/$(Get-EncodedPath $Path)" -Auth github
     if ($answer.Status -ne 200) { return [pscustomobject]@{ Status = $answer.Status } }
     $repo = ConvertFrom-SourceJson -Text $answer.Content -What $Path
     $license = $null
-    $licenseAnswer = Invoke-SourceRequest -Uri "https://api.github.com/repos/$Path/license" -Auth github
+    $licenseAnswer = Invoke-SourceRequest -Uri "https://api.github.com/repos/$(Get-EncodedPath $Path)/license" -Auth github
     if ($licenseAnswer.Status -eq 200) {
         $document = ConvertFrom-SourceJson -Text $licenseAnswer.Content -What "$Path licence"
         $license = [pscustomobject]@{ Spdx = [string](Get-SourceProperty $document.license 'spdx_id'); Path = [string]$document.path
@@ -745,9 +788,9 @@ function Read-GitHubSource {
     } elseif ($licenseAnswer.Status -ne 404) {
         throw "the licence of $Path answered HTTP $($licenseAnswer.Status)"
     }
-    $branchList = Get-PagedItems -Uri "https://api.github.com/repos/$Path/branches" -Auth github
+    $branchList = Get-PagedItems -Uri "https://api.github.com/repos/$(Get-EncodedPath $Path)/branches" -Auth github
     if ($branchList.Status -ne 200) { throw "the branches of $Path answered HTTP $($branchList.Status)" }
-    $forkList = Get-PagedItems -Uri "https://api.github.com/repos/$Path/forks" -Auth github
+    $forkList = Get-PagedItems -Uri "https://api.github.com/repos/$(Get-EncodedPath $Path)/forks" -Auth github
     if ($forkList.Status -ne 200) { throw "the forks of $Path answered HTTP $($forkList.Status)" }
     $watch = @(Get-SourceProperty $Entry 'watchPaths' | Where-Object { $_ })
     $branches = [ordered]@{}
