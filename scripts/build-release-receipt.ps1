@@ -121,9 +121,18 @@ if (-not $patcherMatch.Success -or -not $floorMatch.Success) {
     throw 'gradle/libs.versions.toml does not pin both morphe-patcher and manager-floor.'
 }
 
-$commit = (& git -C $Root rev-parse HEAD).Trim()
+function Invoke-GitChecked {
+    # Output lines of a git read; a non-zero exit throws, so a failure never reads as an empty answer.
+    param([string[]]$GitArgs)
+    $global:LASTEXITCODE = 0
+    $lines = @(& git -C $Root @GitArgs)
+    if ($LASTEXITCODE -ne 0) { throw "git $($GitArgs -join ' ') failed (exit $LASTEXITCODE)." }
+    return $lines
+}
+
+$commit = "$(Invoke-GitChecked @('rev-parse', 'HEAD'))".Trim()
 if ($commit -notmatch '^[0-9a-f]{40}$') { throw "git did not answer with a commit: $commit" }
-$commitTimestamp = [long](& git -C $Root log -1 --format=%ct).Trim()
+$commitTimestamp = [long]"$(Invoke-GitChecked @('log', '-1', '--format=%ct'))".Trim()
 
 # The bundle is read once, here, before any fixture is patched. Measuring it at the end instead
 # would describe whatever the release path holds when the run finishes, which is not necessarily
@@ -134,7 +143,7 @@ $bundleHash = Get-Sha256Hex -Path $Bundle
 
 # Refused here rather than reported, because a receipt that records the mismatch would be a
 # document saying its own subject cannot be rebuilt from the source it names.
-$dirty = @(& git -C $Root status --porcelain)
+$dirty = Invoke-GitChecked @('status', '--porcelain')
 if ($dirty.Count -gt 0) {
     # -join, not Join-String: the pre-push hook prefers pwsh and falls back to Windows
     # PowerShell 5.1, which has no Join-String, so a dirty tree would have stopped the run with

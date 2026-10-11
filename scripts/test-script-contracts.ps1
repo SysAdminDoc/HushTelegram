@@ -1517,6 +1517,28 @@ try {
             '(?s)function\s+Get-ReleaseReceiptSchemaVersion\b.*?#>\s*return\s+(\d+)\s*\}' -and [int]$Matches[1] -eq $currentSchema) `
         'Resolve-ReceiptSchema can no longer read the schema out of this checkout''s own release-receipt.ps1.'
 
+    # git failing is not "the file isn't there": a commit the clone doesn't hold stops each reader
+    # instead of falling back to the working copy.
+    $unheld = '0' * 40
+    Assert-Throws { Resolve-ReceiptSchema -Root $toolchainRoot -Commit $unheld } '*git ls-tree*failed*' `
+        'A commit git could not read fell back to this checkout''s receipt schema.'
+    Assert-Throws { Resolve-ReceiptToolchain -Root $toolchainRoot -Commit $unheld -WorkingToolchain $workingToolchain } '*git ls-tree*failed*' `
+        'A commit git could not read fell back to the working catalog.'
+    Assert-Throws { Resolve-ReceiptCatalog -Root $toolchainRoot -Commit $unheld -WorkingPatchList $workingList } '*git ls-tree*failed*' `
+        'A commit git could not read fell back to the working patch list.'
+    Assert-Throws { Resolve-ReceiptManifestAllowlist -Root $toolchainRoot -Commit $unheld -WorkingPath $allowlistFile } '*git ls-tree*failed*' `
+        'A commit git could not read fell back to the working allowlist.'
+    $notARepo = Join-Path ([IO.Path]::GetTempPath()) ("hushtelegram-notrepo-" + [guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $notARepo | Out-Null
+    try {
+        $env:GIT_CEILING_DIRECTORIES = $notARepo
+        Assert-Throws { Resolve-IndexManagerFloor -Root $notARepo -Version '0.0.9' -Commit $releaseCommitSha } '*failed*' `
+            'A directory git could not read gave the index a Manager floor.'
+    } finally {
+        $env:GIT_CEILING_DIRECTORIES = $null
+        Remove-Item -LiteralPath $notARepo -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
     # A catalog that pins nothing usable still stops the run, rather than being read as blank.
     foreach ($broken in @(
         @{ Name = 'no patcher pin'; Lines = @('[versions]', 'manager-floor = "1.29.0"') },

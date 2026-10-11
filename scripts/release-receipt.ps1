@@ -69,7 +69,7 @@ function Resolve-ReceiptSchema {
 
     $current = Get-ReleaseReceiptSchemaVersion
     if ($Commit -notmatch '^[0-9a-f]{40}$') { return [pscustomobject]@{ Version = $current; Note = $null } }
-    $script = (Invoke-RepoGit -Root $Root -Arguments @('show', "${Commit}:scripts/release-receipt.ps1")) -join "`n"
+    $script = (Read-RepoFileAtCommit -Root $Root -Commit $Commit -Path 'scripts/release-receipt.ps1') -join "`n"
     $written = [regex]::Match($script, '(?s)function\s+Get-ReleaseReceiptSchemaVersion\b.*?#>\s*return\s+(\d+)\s*\}')
     if (-not $written.Success) { return [pscustomobject]@{ Version = $current; Note = $null } }
     $version = [int]$written.Groups[1].Value
@@ -644,14 +644,17 @@ function Resolve-ReceiptManifestAllowlist {
     }
     $short = $Commit.Substring(0, 8)
     $path = 'scripts/manifest-delta-allowlist.txt'
-    $kind = "$(Invoke-RepoGit -Root $Root -Arguments @('cat-file', '-t', "${Commit}:$path") | Select-Object -First 1)".Trim()
+    $kind = ''
+    if (@(Invoke-RepoGitChecked -Root $Root -Arguments @('ls-tree', '--name-only', $Commit, '--', $path)).Count -gt 0) {
+        $kind = "$(Invoke-RepoGitChecked -Root $Root -Arguments @('cat-file', '-t', "${Commit}:$path") | Select-Object -First 1)".Trim()
+    }
     if ($kind -ne 'blob') {
         return [pscustomobject]@{
             Entries = @(Read-ManifestDeltaAllowlist -Path $WorkingPath)
             Note = "commit $short has no manifest delta allowlist, so the receipt is held to the working one"
         }
     }
-    $atCommit = @(ConvertFrom-ManifestDeltaAllowlist -Lines @(Invoke-RepoGit -Root $Root -Arguments @('show', "${Commit}:$path")) `
+    $atCommit = @(ConvertFrom-ManifestDeltaAllowlist -Lines @(Invoke-RepoGitChecked -Root $Root -Arguments @('show', "${Commit}:$path")) `
         -Source " at $short")
     $working = @(if (Test-Path -LiteralPath $WorkingPath -PathType Leaf) { Read-ManifestDeltaAllowlist -Path $WorkingPath })
     $note = if ((@($atCommit) -join "`n") -ceq (@($working) -join "`n")) { $null } else {
@@ -871,6 +874,45 @@ function Invoke-RepoGit {
     }
 }
 
+function Invoke-RepoGitChecked {
+    <#
+    .SYNOPSIS
+        Invoke-RepoGit that throws on an exit code outside -AcceptExit, so a git failure never reads
+        as an empty answer.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Root,
+        [Parameter(Mandatory = $true)][string[]]$Arguments,
+        [int[]]$AcceptExit = @(0)
+    )
+
+    $global:LASTEXITCODE = 0
+    $lines = @(Invoke-RepoGit -Root $Root -Arguments $Arguments)
+    $code = $LASTEXITCODE
+    if ($AcceptExit -notcontains $code) { throw "git $($Arguments -join ' ') failed (exit $code) in $Root." }
+    return $lines
+}
+
+function Read-RepoFileAtCommit {
+    <#
+    .SYNOPSIS
+        The lines of a file as a commit holds it, or nothing when that commit has no such path.
+    .DESCRIPTION
+        `git show <commit>:<path>` exits 128 for a missing path and for a broken repository alike,
+        so the tree is listed first: ls-tree answers empty for an absent path and fails only when
+        git itself does.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Root,
+        [Parameter(Mandatory = $true)][string]$Commit,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $listed = @(Invoke-RepoGitChecked -Root $Root -Arguments @('ls-tree', '--name-only', $Commit, '--', $Path))
+    if ($listed.Count -eq 0) { return @() }
+    return @(Invoke-RepoGitChecked -Root $Root -Arguments @('show', "${Commit}:$Path"))
+}
+
 function Read-CatalogToolchain {
     <#
     .SYNOPSIS
@@ -934,7 +976,7 @@ function Resolve-ReceiptToolchain {
     # Stderr is dropped inside the helper, because git writes "path does not exist in commit"
     # there and an empty result here has to mean "no catalog at that commit", not "git said
     # something".
-    $catalogAtCommit = (Invoke-RepoGit -Root $Root -Arguments @('show', "${Commit}:gradle/libs.versions.toml")) -join "`n"
+    $catalogAtCommit = (Read-RepoFileAtCommit -Root $Root -Commit $Commit -Path 'gradle/libs.versions.toml') -join "`n"
     $short = $Commit.Substring(0, 8)
     if ([string]::IsNullOrWhiteSpace($catalogAtCommit)) {
         return [pscustomobject]@{
@@ -1008,20 +1050,20 @@ function Resolve-IndexManagerFloor {
         }
     }
     if ($Commit -notmatch '^[0-9a-f]{40}$') {
-        $Commit = "$(Invoke-RepoGit -Root $Root -Arguments @('rev-parse', '--verify', '--quiet', "refs/tags/$tag^{commit}") |
+        $Commit = "$(Invoke-RepoGitChecked -Root $Root -Arguments @('rev-parse', '--verify', '--quiet', "refs/tags/$tag^{commit}") -AcceptExit @(0, 1) |
             Select-Object -First 1)".Trim()
     }
     if ($Commit -notmatch '^[0-9a-f]{40}$') {
         return [pscustomobject]@{ Floor = $null; Source = $null
             Note = "tag $tag isn't in this clone$remoteSaid, $unchecked" }
     }
-    $held = "$(Invoke-RepoGit -Root $Root -Arguments @('rev-parse', '--verify', '--quiet', "$Commit^{commit}") |
+    $held = "$(Invoke-RepoGitChecked -Root $Root -Arguments @('rev-parse', '--verify', '--quiet', "$Commit^{commit}") -AcceptExit @(0, 1) |
         Select-Object -First 1)".Trim()
     if ($held -notmatch '^[0-9a-f]{40}$') {
         return [pscustomobject]@{ Floor = $null; Source = $null
             Note = "$source names commit $($Commit.Substring(0, 8)), which this clone doesn't have, $unchecked" }
     }
-    $catalogAtTag = (Invoke-RepoGit -Root $Root -Arguments @('show', "${held}:gradle/libs.versions.toml")) -join "`n"
+    $catalogAtTag = (Read-RepoFileAtCommit -Root $Root -Commit $held -Path 'gradle/libs.versions.toml') -join "`n"
     if ([string]::IsNullOrWhiteSpace($catalogAtTag)) {
         return [pscustomobject]@{ Floor = $null; Source = $null; Note = "$source has no version catalog, $unchecked" }
     }
@@ -1056,7 +1098,7 @@ function Resolve-ReceiptCatalog {
     if ($Commit -notmatch '^[0-9a-f]{40}$') {
         return [pscustomobject]@{ PatchList = $WorkingPatchList; Note = $null }
     }
-    $listAtCommit = (Invoke-RepoGit -Root $Root -Arguments @('show', "${Commit}:patches-list.json")) -join "`n"
+    $listAtCommit = (Read-RepoFileAtCommit -Root $Root -Commit $Commit -Path 'patches-list.json') -join "`n"
     $short = $Commit.Substring(0, 8)
     if ([string]::IsNullOrWhiteSpace($listAtCommit)) {
         return [pscustomobject]@{

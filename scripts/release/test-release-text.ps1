@@ -227,6 +227,44 @@ try {
 } finally {
     Remove-Item -LiteralPath $scratch -Recurse -Force -ErrorAction SilentlyContinue
 }
+
+# git and gh answers in release.ps1: a failed call is an error, never "clean tree", "no tag" or
+# "not published". The helpers are lifted out of the script and run against stand-in git and gh.
+$releaseAst = [System.Management.Automation.Language.Parser]::ParseFile(
+    (Join-Path $PSScriptRoot 'release.ps1'), [ref]$null, [ref]$null)
+foreach ($name in @('Invoke-Git', 'Invoke-Gh', 'Get-TreeChanges', 'Test-ReleaseOnGitHub')) {
+    $found = @($releaseAst.FindAll({ param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $node.Name -eq $name }, $true))
+    Assert-True ($found.Count -eq 1) "release.ps1 no longer defines $name once."
+    Invoke-Expression $found[0].Extent.Text
+}
+$Root = 'unused'
+$tag = 'v0.0.0'
+$Repository = 'owner/repo'
+$script:fakeExit = 0
+$script:fakeText = ''
+function git { $global:LASTEXITCODE = $script:fakeExit; if ($script:fakeText) { $script:fakeText } }
+function gh { $global:LASTEXITCODE = $script:fakeExit; if ($script:fakeText) { $script:fakeText } }
+
+$script:fakeExit = 128
+$script:fakeText = 'fatal: not a git repository'
+Assert-Throws { Get-TreeChanges } '*git status*failed*128*' 'A failed git status read as a clean working tree.'
+Assert-Throws { Invoke-Git @('tag', '--list', 'v1') } '*git tag*failed*' 'A failed git tag --list read as no tag.'
+Assert-Throws { Invoke-Gh @('release', 'view', 'v1') } '*gh release view*failed*' 'A failed gh read was taken for an answer.'
+Assert-Throws { Test-ReleaseOnGitHub } '*failed*not a git repository*' 'A gh failure that is not "release not found" read as not published.'
+$script:fakeText = 'HTTP 401: Bad credentials'
+Assert-Throws { Test-ReleaseOnGitHub } '*failed*Bad credentials*' 'A gh authentication failure read as not published.'
+$script:fakeExit = 1
+$script:fakeText = 'release not found'
+Assert-True (-not (Test-ReleaseOnGitHub)) 'gh release not found no longer reads as not published.'
+$script:fakeExit = 0
+$script:fakeText = '{"tagName":"v0.0.0"}'
+Assert-True (Test-ReleaseOnGitHub) 'A release gh found no longer reads as published.'
+$script:fakeText = ' M README.md'
+Assert-True (@(Get-TreeChanges).Count -eq 1) 'A dirty tree git reported no longer reads as changes.'
+$script:fakeText = ''
+Assert-True (@(Get-TreeChanges).Count -eq 0) 'A clean tree no longer reads as clean.'
+
 Write-Host "[release] release text and stage order contracts passed ($cases cases)"
 # The stage order cases end on release.ps1 runs that refuse, and a caller reads their exit code
 # as this script's own unless it says otherwise.
