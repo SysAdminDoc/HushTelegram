@@ -8,9 +8,9 @@
 
     - the official Morphe patch bundle's patches-list.json, which has shipped no Telegram patch so
       far;
-    - the Morphe community directory, Awesome Morphe, the Morphe Patch Tracker and Jman's bundle
-      index, for every bundle that targets a census package, and for whether HushTelegram is
-      listed on each, plus the Morphe Archive for HushTelegram' own listing;
+    - the Morphe community directory, Awesome Morphe, the Morphe Patch Tracker and Jman's Patch
+      Bundle Registry (its git snapshot), for every bundle that targets a census package, and for
+      whether HushTelegram is listed on each, plus the Morphe Archive for HushTelegram' own listing;
     - GitHub code search for each census package name in patch lists, patch code and Xposed hooks,
       with the two archive mirrors mapped back to the repositories they copied, and GitLab code
       search when GITLAB_TOKEN is set and -SkipGitLabCodeSearch isn't passed;
@@ -390,9 +390,10 @@ foreach ($item in @(Get-SourceProperty $ledgerDocument 'outOfScope' | Where-Obje
     $known[(ConvertTo-SourceKey $item.repository)] = [pscustomobject]@{ Kind = 'outOfScope'; Lineage = $null; Entry = $null; Record = $item }
 }
 # The indexes' own data repositories, read below as indexes. A code search hit in one is a copy of
-# a bundle's patch list, never a source of its own.
+# a bundle's patch list, never a source of its own. Jman's registry is listed under its old name too.
 $indexRepositories = @('github.com/nvbangg/awesome-morphe', 'github.com/drnx64/morphe-track-patches',
-    'github.com/jman-github/revanced-patch-bundles', 'github.com/rushiforai/morphe-archive', 'github.com/rushiforai/revanced-archive')
+    'github.com/jman-github/patch-bundle-registry', 'github.com/jman-github/revanced-patch-bundles',
+    'github.com/rushiforai/morphe-archive', 'github.com/rushiforai/revanced-archive')
 # The two archives keep examplepatches/<owner>/<name>/patches-list.json for every bundle they
 # found, which is a pointer back to that repository.
 $archiveRepositories = @('github.com/rushiforai/morphe-archive', 'github.com/rushiforai/revanced-archive')
@@ -534,50 +535,81 @@ Invoke-Source 'Morphe Patch Tracker' {
     "$($seen.Count) Telegram bundles; HushTelegram " + $(if ($listed['morphe-patch-tracker']) { 'listed' } else { 'not listed' })
 }
 
+function Get-RegistrySource {
+    <#
+        The repository a bundle in Jman's registry is built from: the source_url its import links
+        name, or the GitHub repository its release download comes from when it has no import link.
+        Url is the repository the bundle names, if any; Key is $null when it isn't on GitHub or GitLab.
+    #>
+    param($Bundle)
+    $imports = Get-SourceProperty $Bundle 'import_urls'
+    if ($null -ne $imports) {
+        foreach ($link in $imports.PSObject.Properties) {
+            if ("$($link.Value)" -match '[?&]source_url=([^&#]+)') {
+                $url = [Uri]::UnescapeDataString($Matches[1])
+                return [pscustomobject]@{ Url = $url; Key = (ConvertTo-SourceKey $url) }
+            }
+        }
+    }
+    $download = [string](Get-SourceProperty $Bundle 'download_url')
+    if ($download -match '^https://github\.com/([^/?#]+)/([^/?#]+)/releases/') {
+        $url = "https://github.com/$($Matches[1])/$($Matches[2])"
+        return [pscustomobject]@{ Url = $url; Key = (ConvertTo-SourceKey $url) }
+    }
+    return [pscustomobject]@{ Url = $null; Key = $null }
+}
+
 Invoke-Source 'Jman''s bundle index' {
-    $bundleSources = Get-SourceJson -Uri 'https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/bundle-sources.json' `
-        -What 'Jman''s bundle-sources.json'
-    $byName = @{}
+    # Jman's Patch Bundle Registry. Its API turns down a query across the whole catalog, so this
+    # reads the git snapshot the registry's website reads: the newest generation snapshot-history.json
+    # names, every bundle in it, and the patch shards patch-index.json files each latest Telegram
+    # bundle's patches under. A shard holds many bundles' patches and is fetched once a run.
+    $base = 'https://raw.githubusercontent.com/Jman-Github/Patch-Bundle-Registry/bundles/database'
+    $history = @(Get-JsonItems (Get-SourceJson -Uri "$base/snapshot-history.json" -What 'Jman''s snapshot history'))
+    $generation = if ($history.Count -gt 0) { [string]$history[$history.Count - 1] } else { '' }
+    # The generation goes into request addresses, so only a snapshot directory is taken.
+    if ($generation -notmatch '^snapshots/[0-9a-f]+$') {
+        throw "Jman's snapshot history doesn't end in a snapshot generation (snapshots/<hex>): '$generation'"
+    }
+    $bundles = Get-SourceJson -Uri "$base/$generation/bundles.json" -What 'Jman''s bundles.json'
+    $shardsOf = Get-SourceProperty (Get-SourceJson -Uri "$base/$generation/patch-index.json" -What 'Jman''s patch-index.json') 'bundles'
+    $shards = @{}
+    $seen = @{}
     $listed['jman-bundles'] = $false
-    foreach ($property in $bundleSources.PSObject.Properties) {
-        $key = ConvertTo-SourceKey ([string](Get-SourceProperty $property.Value 'patches'))
-        if ($key -and $key -eq $selfKey) { $listed['jman-bundles'] = $true }
-        $name = ($property.Name -replace '-(stable|dev|latest)$', '').ToLowerInvariant()
-        if ($key -and -not $byName.ContainsKey($name)) { $byName[$name] = $key }
-    }
-    $catalog = Invoke-SourceRequest -Uri 'https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/PATCH-LIST-CATALOG.md'
-    if ($catalog.Status -ne 200) { throw "Jman's patch list catalog answered HTTP $($catalog.Status)." }
-    $appPackages = @{ 'telegram' = 'org.telegram.messenger.web'; 'org.telegram.messenger' = 'org.telegram.messenger'
-        'org.telegram.messenger.web' = 'org.telegram.messenger.web'; 'org.telegram.messenger.beta' = 'org.telegram.messenger.beta' }
-    $section = $null
-    $found = @{}
-    foreach ($line in ($catalog.Content -split "`r?`n")) {
-        if ($line.StartsWith('### ') -and $line -match 'Bundle Patch List:\s*$') {
-            $section = (($line -replace '^###\s+\S+\s+', '') -replace '\s+Bundle Patch List:\s*$', '').Trim()
-            continue
-        }
-        if ($null -eq $section -or -not $line.StartsWith('|')) { continue }
-        $cells = $line.Split('|')
-        if ($cells.Count -lt 5) { continue }
-        $name = $cells[1].Replace([string][char]96, '').Trim()
-        foreach ($app in ($cells[3].Replace([string][char]96, '').Trim() -split ',\s*')) {
-            $package = $appPackages[$app.Trim().ToLowerInvariant()]
-            if (-not $package) { continue }
-            if (-not $found.ContainsKey($section)) { $found[$section] = @{ Packages = @{}; Features = New-Object System.Collections.Generic.List[string] } }
-            $found[$section].Packages[$package] = $true
-            if ($name -and -not $found[$section].Features.Contains($name)) { $found[$section].Features.Add($name) }
-        }
-    }
-    foreach ($sectionName in $found.Keys) {
-        $key = $byName[$sectionName.ToLowerInvariant()]
-        if (-not $key) {
+    foreach ($bundle in (Get-JsonItems $bundles)) {
+        $source = Get-RegistrySource $bundle
+        if ($source.Key -and $source.Key -eq $selfKey) { $listed['jman-bundles'] = $true }
+        # A source's stable and dev bundles can both be latest. Add-Candidate merges the two.
+        if (-not [bool](Get-SourceProperty $bundle 'is_latest')) { continue }
+        $apps = @(Get-JsonItems (Get-SourceProperty $bundle 'packages') | Where-Object { $packages -contains $_ })
+        if ($apps.Count -eq 0) { continue }
+        $id = [string](Get-SourceProperty $bundle 'id')
+        if (-not $source.Key) {
             Add-Finding -Kind 'index-unresolved' -Repository $null `
-                -Detail "Jman's catalog lists Telegram patches under '$sectionName', and bundle-sources.json names no repository for it" -Evidence $null
+                -Detail ("Jman's registry lists bundle $id ($(Get-SourceProperty $bundle 'version')) for " + ($apps -join ', ') + ', and ' +
+                    $(if ($source.Url) { "its source $($source.Url) is not a GitHub or GitLab repository" } else { 'it names no source repository' })) `
+                -Evidence ([ordered]@{ bundle = $id; source = $source.Url; download = [string](Get-SourceProperty $bundle 'download_url') })
             continue
         }
-        Add-Candidate -Key $key -Source 'Jman''s bundle index' -Packages @($found[$sectionName].Packages.Keys) -Features @($found[$sectionName].Features)
+        $features = New-Object System.Collections.Generic.List[string]
+        foreach ($shard in @(Get-JsonItems (Get-SourceProperty $shardsOf $id))) {
+            $path = [string]$shard
+            if (-not $shards.ContainsKey($path)) {
+                $shards[$path] = @(Get-JsonItems (Get-SourceJson -Uri "$base/$generation/$(Get-EncodedPath $path)" -What "Jman's $path"))
+            }
+            foreach ($patch in $shards[$path]) {
+                if ([string](Get-SourceProperty $patch 'bundle_id') -ne $id) { continue }
+                # compatiblePackages maps a package to its versions; a patch for any app has none.
+                $compatible = Get-SourceProperty $patch 'compatiblePackages'
+                if ($null -eq $compatible -or @($compatible.PSObject.Properties | Where-Object { $packages -contains $_.Name }).Count -eq 0) { continue }
+                $name = [string](Get-SourceProperty $patch 'name')
+                if ($name -and -not $features.Contains($name)) { $features.Add($name) }
+            }
+        }
+        Add-Candidate -Key $source.Key -Source 'Jman''s bundle index' -Packages $apps -Features @($features)
+        $seen[$source.Key] = $true
     }
-    "$($found.Count) Telegram bundles; HushTelegram " + $(if ($listed['jman-bundles']) { 'listed' } else { 'not listed' })
+    "$($seen.Count) Telegram bundles; HushTelegram " + $(if ($listed['jman-bundles']) { 'listed' } else { 'not listed' })
 }
 
 Invoke-Source 'Morphe Archive' {

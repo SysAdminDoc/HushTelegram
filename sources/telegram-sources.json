@@ -48,12 +48,12 @@
     },
     {
       "id": "jman-bundles",
-      "name": "Jman's ReVanced Patch Bundles",
-      "url": "https://github.com/Jman-Github/ReVanced-Patch-Bundles",
+      "name": "Jman's Patch Bundle Registry",
+      "url": "https://github.com/Jman-Github/Patch-Bundle-Registry",
       "hushtelegram": {
         "status": "listed",
-        "checked": "2026-10-03",
-        "url": "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/hushtelegram-patch-bundles/hushtelegram-stable-patches-bundle.json"
+        "checked": "2026-10-11",
+        "url": "https://patch-bundles.api.jmancentral.com/api/v3/bundle?source_url=https%3A%2F%2Fgithub.com%2FSysAdminDoc%2FHushTelegram&version=latest&channel=stable"
       }
     },
     {
