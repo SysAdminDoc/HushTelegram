@@ -288,6 +288,36 @@ private fun ControlFlow.readsFrom(starts: List<Int>, register: Int): List<Int> {
 }
 
 /**
+ * Whether every path from the method's start to [use] passes [source] first and, when [register]
+ * is given, doesn't write it again on the way. False too when nothing reaches [use]. A throwing
+ * instruction never writes its destination, so its handlers carry on from the state before it,
+ * and a backedge can come round to [use] again from before [source].
+ */
+internal fun ControlFlow.definitionReaches(source: Int, use: Int, register: Int? = null): Boolean {
+    val seen = mutableSetOf<Pair<Int, Boolean>>()
+    val pending = ArrayDeque<Pair<Int, Boolean>>()
+    pending += 0 to false
+    var reached = false
+    while (pending.isNotEmpty()) {
+        val state = pending.removeFirst()
+        if (!seen.add(state)) continue
+        val (at, known) = state
+        if (at == use) {
+            if (!known) return false
+            reached = true
+        }
+        val instruction = instructions[at]
+        val destination = instruction.namedRegisters().firstOrNull()
+        val overwritten = register != null && instruction.opcode.setsRegister() &&
+            (destination == register || instruction.opcode.setsWideRegister() && destination?.plus(1) == register)
+        val next = if (at == source) true else known && !overwritten
+        normal[at].forEach { pending += it to next }
+        exceptional[at].forEach { pending += it to known }
+    }
+    return reached
+}
+
+/**
  * Whether the instruction at [index] reads [register] as a float and as nothing else: a float
  * compare, float arithmetic or conversion, a float argument, a float field or a float return.
  * Anything else, a move included, answers false, so a caller that needs every use to be a

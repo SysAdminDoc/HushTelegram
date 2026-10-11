@@ -25,6 +25,7 @@ import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.ControlFlow
+import app.morphe.util.definitionReaches
 import app.morphe.util.namedRegisters
 import app.morphe.util.indexOfFirstInstruction
 import app.morphe.util.indexOfFirstInstructionReversed
@@ -287,18 +288,18 @@ internal fun BytecodePatchContext.resolveAppLogHooks(): Map<AppLogEvent, AppLogH
             instructions[dataObject].appLogReference() == "Lorg/telegram/tgnet/TLRPC\$${event.data};" &&
             (event.key == null || instructions.any { it.appLogString() == event.key }), "${event.type} verified payload changed")
         val flow = ControlFlow.of(method)
-        promoShape(flow.promoDefinitionReaches(type - 1, type, instructions[type].namedRegisters()[0]),
+        promoShape(flow.definitionReaches(type - 1, type, instructions[type].namedRegisters()[0]),
             "${event.type} payload type can bypass its verified literal")
         promoShape(listOf(type, data.single(), batch.single() + 1).all {
-            flow.promoDefinitionReaches(events.single(), it, eventRegister)
+            flow.definitionReaches(events.single(), it, eventRegister)
         }, "${event.type} event identity changed before its payload or batch use")
-        promoShape(flow.promoDefinitionReaches(requests.single(), batch.single(), requestRegister) &&
-            flow.promoDefinitionReaches(requests.single(), send, requestRegister), "${event.type} request identity changed before sending")
-        promoShape(flow.promoDefinitionReaches(dataObject!!, data.single(), dataRegister),
+        promoShape(flow.definitionReaches(requests.single(), batch.single(), requestRegister) &&
+            flow.definitionReaches(requests.single(), send, requestRegister), "${event.type} request identity changed before sending")
+        promoShape(flow.definitionReaches(dataObject!!, data.single(), dataRegister),
             "${event.type} data can bypass its verified allocation")
-        promoShape(flow.promoDefinitionReaches(batch.single(), batch.single() + 1, instructions[batch.single()].namedRegisters()[0]),
+        promoShape(flow.definitionReaches(batch.single(), batch.single() + 1, instructions[batch.single()].namedRegisters()[0]),
             "${event.type} batch can bypass its verified read")
-        promoShape(listOf(type, data.single(), batch.single() + 1).all { flow.promoDefinitionReaches(it, send) },
+        promoShape(listOf(type, data.single(), batch.single() + 1).all { flow.definitionReaches(it, send) },
             "${event.type} telemetry send can bypass its verified payload or batch append")
         promoShape(flow.normal[send].size == 1, "${event.type} send continuation changed")
         val continuation = flow.normal[send].single()
@@ -352,31 +353,6 @@ internal fun BytecodePatchContext.resolveAppLogHooks(): Map<AppLogEvent, AppLogH
         """)
     }
     return hooks
-}
-
-/** A throwing definition leaves the old value, and later backedges can revisit an earlier use. */
-private fun ControlFlow.promoDefinitionReaches(source: Int, use: Int, register: Int? = null): Boolean {
-    val seen = mutableSetOf<Pair<Int, Boolean>>()
-    val pending = ArrayDeque<Pair<Int, Boolean>>()
-    pending += 0 to false
-    var reached = false
-    while (pending.isNotEmpty()) {
-        val state = pending.removeFirst()
-        if (!seen.add(state)) continue
-        val (at, known) = state
-        if (at == use) {
-            if (!known) return false
-            reached = true
-        }
-        val instruction = instructions[at]
-        val destination = instruction.namedRegisters().firstOrNull()
-        val overwritten = register != null && instruction.opcode.setsRegister() &&
-            (destination == register || instruction.opcode.setsWideRegister() && destination?.plus(1) == register)
-        val next = if (at == source) true else known && !overwritten
-        normal[at].forEach { pending += it to next }
-        exceptional[at].forEach { pending += it to known }
-    }
-    return reached
 }
 
 private fun promoShape(valid: Boolean, reason: String) {

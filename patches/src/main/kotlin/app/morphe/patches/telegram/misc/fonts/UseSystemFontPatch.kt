@@ -27,6 +27,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
+import app.morphe.util.definitionReaches
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -208,34 +209,12 @@ private fun builtChain(method: Method, start: Int): BuiltChain? {
     }
     val face = body[result].namedRegisters().single()
     val flow = ControlFlow.of(method)
-    controlShape(face != path && flow.definedAt(constant, result, path), "$name's font path doesn't survive until the face is built")
+    controlShape(face != path && flow.definitionReaches(constant, result, path), "$name's font path doesn't survive until the face is built")
     controlShape((start until result).all { flow.normal[it] == listOf(it + 1) } &&
         body.indices.none { it !in start until result && flow.normal[it].any { target -> target in start + 1..result } },
         "$name's font builder has another way in")
     controlShape(path <= 15 && face <= 15, "$name's font registers can't be passed on")
     return BuiltChain(result, path, face)
-}
-
-/** Every path from the method's start to [use] passes [source], and [register] keeps its value from there. */
-private fun ControlFlow.definedAt(source: Int, use: Int, register: Int): Boolean {
-    val seen = mutableSetOf<Pair<Int, Boolean>>()
-    val pending = ArrayDeque<Pair<Int, Boolean>>()
-    pending += 0 to false
-    var reached = false
-    while (pending.isNotEmpty()) {
-        val state = pending.removeFirst()
-        if (!seen.add(state)) continue
-        val (at, known) = state
-        if (at == use) {
-            if (!known) return false
-            reached = true
-        }
-        val next = if (at == source) true else known && !instructions[at].writesRegister(register)
-        normal[at].forEach { pending += it to next }
-        // A throwing instruction hands its handler the value from before it.
-        exceptional[at].forEach { pending += it to known }
-    }
-    return reached
 }
 
 private fun Instruction.writesRegister(register: Int): Boolean {
