@@ -2,7 +2,9 @@
 
 Every HushTelegram release, newest first.
 
-## Unreleased
+## 0.0.13 (2026-10-11)
+
+The seventh release, with 68 patches for telegram.org's Telegram 13.0.1 and the official Telegram beta 13.0.1.
 
 * **Telegram:** New Black and white launch logo patch. With AMOLED black on and your phone in dark mode, the launch screen on Android 13 and up shows Telegram's own logo in white on black, with its usual animation, instead of the app icon. It's left out of the default selection because it has Morphe rebuild Telegram's resources, so pick it in Expert mode.
 
@@ -16,19 +18,19 @@ Every HushTelegram release, newest first.
 
 * **Tooling:** The settings screen's code is split into one method per page, and patch helpers nothing called anymore are gone. The release script keeps gh's warnings out of what it publishes, and the release receipt stops on a clone git can't open instead of reading it as a copy with no history.
 
-* **Settings:** A wording pass. Pause is explained the same way everywhere, Import settings says what a file holds, and errors that left you guessing now say what to do next: download a damaged file again, update HushTelegram for a file from a newer one, or open an export that couldn't be checked.
+* **Telegram:** A wording pass. Pause is explained the same way everywhere, Import settings says what a file holds, and errors that left you guessing now say what to do next: download a damaged file again, update HushTelegram for a file from a newer one, or open an export that couldn't be checked.
 
 * **Telegram:** With Debug logging on, what HushTelegram writes to Android's log goes through the same redaction as an exported report, so tokens and keys in a message or an error stay out of it.
 
-* **Patching:** The App name option turns down direction marks and zero-width characters, which could flip or hide the name under the icon. Emoji built with zero-width joiners still work, and so do Persian, Kurdish and Indic names that need the zero-width non-joiner.
+* **Telegram:** The App name option turns down direction marks and zero-width characters, which could flip or hide the name under the icon. Emoji built with zero-width joiners still work, and so do Persian, Kurdish and Indic names that need the zero-width non-joiner.
 
-* **Settings:** Export diagnostic report says "Preparing the diagnostic report" while it builds the report and takes no second tap until the copy or the file is done. The back arrow and the name at the top use the page's own white, and the back arrow shows when a keyboard is on it.
+* **Telegram:** Export diagnostic report says "Preparing the diagnostic report" while it builds the report and takes no second tap until the copy or the file is done. The back arrow and the name at the top use the page's own white, and the back arrow shows when a keyboard is on it.
 
-* **Settings:** A keyboard or D-pad gets into the list as soon as settings opens, stops on the status card and on the paused page's status line, where Enter presses their Pause, Resume or Undo button, and a ring shows which row it's on. The two Export diagnostic report choices read as buttons to a screen reader, and a ring marks the one a keyboard is on.
+* **Telegram:** A keyboard or D-pad gets into the list as soon as settings opens, stops on the status card and on the paused page's status line, where Enter presses their Pause, Resume or Undo button, and a ring shows which row it's on. The two Export diagnostic report choices read as buttons to a screen reader, and a ring marks the one a keyboard is on.
 
 * **Telegram:** HushTelegram's own dialogs in a chat (Message details, Forward to, the Ask before questions) now go light or dark with Telegram's theme. Before, they followed the phone's dark mode, so they could come out white over Telegram's Night theme.
 
-* **Settings:** Import settings now lists every switch the file changes and which way it goes, like "Hide ads turns off", under the count. A file someone shared with you can't quietly turn off Stop usage reports anymore.
+* **Telegram:** Import settings now lists every switch the file changes and which way it goes, like "Hide ads turns off", under the count. A file someone shared with you can't quietly turn off Stop usage reports anymore.
 
 * **Telegram:** When Telegram turns down the API ID your build signs in with, the phone number screen now says so, with a button that opens the guide to using your own ID. Before, it just sat there after you tapped the arrow. This covers API_ID_PUBLISHED_FLOOD, the built-in ID being refused, and API_ID_INVALID, a registered ID or hash with a typo in it. Reported in #11 and #3.
 
@@ -89,6 +91,8 @@ Every HushTelegram release, newest first.
 * **Telegram:** The settings status card no longer shows a stale "HushTelegram X is made for Telegram Y" line when you're already running a build newer than the last release it knew about. It stays quiet until it finds a release newer than yours.
 
 * **Tooling:** The selection matrix expects the Firebase crash and session report switches only on a build that ships those SDKs, which is Telegram Beta. It also rebuilds the one call Turn off beta debug logs adds to Telegram's startup settings the way the patcher adds it, so a default build no longer fails there, while a call in the wrong place, on the wrong register or added twice still does. With HushTelegram icon and name in the selection, it expects the app and Telegram's default launcher entry to point at the icon that patch adds, and nothing else in the manifest to change.
+
+* **Tooling:** The selection matrix no longer fails every selection that includes Save downloaded files. That patch has the patcher rewrite one of Telegram's classes, which drops two values set to zero and false, and a field left without a value starts at zero or false anyway. The check now reads those as the same, and a real value that goes missing still fails it.
 
 * **Tooling:** The source audit reads the Morphe Patch Tracker again. The tracker now names some bundles twice in different case, like `ImmortalZeus:dev` and `immortalzeus:dev`, and PowerShell couldn't hold both, so the whole source failed. Files like that are now read with case kept, and both bundles count.
 
