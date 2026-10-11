@@ -80,6 +80,8 @@ Every HushTelegram release, newest first.
 
 * **Tooling:** The selection matrix expects the Firebase crash and session report switches only on a build that ships those SDKs, which is Telegram Beta. It also rebuilds the one call Turn off beta debug logs adds to Telegram's startup settings the way the patcher adds it, so a default build no longer fails there, while a call in the wrong place, on the wrong register or added twice still does. With HushTelegram icon and name in the selection, it expects the app and Telegram's default launcher entry to point at the icon that patch adds, and nothing else in the manifest to change.
 
+* **Tooling:** The source audit reads the Morphe Patch Tracker again. The tracker now names some bundles twice in different case, like `ImmortalZeus:dev` and `immortalzeus:dev`, and PowerShell couldn't hold both, so the whole source failed. Files like that are now read with case kept, and both bundles count.
+
 ## 0.0.12 (2026-10-09)
 
 The sixth release, with 56 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.

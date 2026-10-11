@@ -704,7 +704,7 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     # A request that carries a token follows a redirect itself, to the same host over https and
     # nowhere else; one that carries none is left to the client.
     $auditAst = [System.Management.Automation.Language.Parser]::ParseFile($auditScript, [ref]$null, [ref]$null)
-    foreach ($name in @('Get-RedirectTarget', 'Invoke-SourceRequest')) {
+    foreach ($name in @('Get-RedirectTarget', 'Invoke-SourceRequest', 'ConvertTo-SourceJsonObject', 'ConvertFrom-SourceJson')) {
         $found = @($auditAst.FindAll({ param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $node.Name -eq $name }, $true))
         Assert-True ($found.Count -eq 1) "audit-telegram-sources.ps1 no longer defines $name once."
@@ -731,6 +731,14 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
     $fakeForge.Requests.Clear()
     [void](Invoke-SourceRequest -Uri 'https://morphe-patches.software/data/bundles.json')
     Assert-True ($null -eq $fakeForge.Requests[0].MaximumRedirection) 'A request with no token had its redirects switched off.'
+
+    # Keys that differ only in case can't both be properties, so that JSON is read case-sensitively,
+    # in order, with arrays kept as arrays and the later key renamed. Broken JSON fails as before.
+    $cased = ConvertFrom-SourceJson -Text '{"b":1,"a":{"K":[1],"k":[]},"B":2}' -What 'the stand-in'
+    Assert-True ((@($cased.PSObject.Properties | ForEach-Object { $_.Name }) -join ',') -ceq 'b,a,B#2' -and $cased.b -eq 1 -and $cased.'B#2' -eq 2 -and
+        $cased.a.K -is [array] -and @($cased.a.K).Count -eq 1 -and $cased.a.'k#2' -is [array] -and @($cased.a.'k#2').Count -eq 0) `
+        "JSON with keys that differ only in case was misread: $($cased | ConvertTo-Json -Compress -Depth 4)"
+    Assert-Throws { ConvertFrom-SourceJson -Text '{"a":' -What 'the stand-in' } 'the stand-in did not answer JSON: *' 'Broken JSON was not refused.'
 
     # -SkipGitLabCodeSearch holds with GITLAB_TOKEN set, as the audit's help tells a maintainer to
     # set it: no GitLab search goes out and the census keeps recording the skip.
@@ -808,6 +816,22 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
 
     $fakeForge.Answers.tracker.Content = $fakeForge.Answers.tracker.Content.Replace('SysAdminDoc/HushTelegram', 'SysAdminDoc/hushfeed')
     Assert-Drift 'listing-changed' '*Morphe Patch Tracker no longer lists HushTelegram*' 'A listing that disappeared'
+    $fakeForge.Answers = New-FakeAnswers
+
+    # The tracker writes bundle keys that differ only in case (ImmortalZeus:dev and immortalzeus:dev).
+    # Both are read: the second names a repository the ledger doesn't know.
+    $trackerApps = '"apps":[{"package":"org.telegram.messenger.web","patches":[{"name":"Hide ads"}]}]'
+    $fakeForge.Answers.tracker.Content = ('{"sysadmindoc:stable":{"repo_url":"https://github.com/SysAdminDoc/HushTelegram",' + $trackerApps + '},' +
+        '"alpha:stable":{"repo_url":"https://github.com/fixture-owner/alpha-patches",' + $trackerApps + '},' +
+        '"ALPHA:stable":{"repo_url":"https://github.com/newcomer/telegram-patches",' + $trackerApps + '}}')
+    $casedTracker = Invoke-Audit
+    Assert-True (@($casedTracker.Report.findings | Where-Object { $_.kind -eq 'source-failed' }).Count -eq 0) `
+        ("A tracker answer with keys that differ only in case failed a source: " +
+            (@($casedTracker.Report.findings | ForEach-Object { "$($_.kind): $($_.detail)" }) -join ' | '))
+    Assert-True ($casedTracker.ExitCode -eq 1 -and $casedTracker.Said -like '*Morphe Patch Tracker: 3 Telegram bundles; HushTelegram listed*' -and
+        @($casedTracker.Report.findings | Where-Object { $_.kind -eq 'addition' -and $_.repository -eq 'https://github.com/newcomer/telegram-patches' -and
+            $_.detail -like '*Morphe Patch Tracker*' }).Count -eq 1) "The tracker's second, case-differing bundle was not read: $($casedTracker.Said)"
+    Assert-True ([IO.File]::ReadAllText($fixtureLedgerPath) -ceq $fixtureLedgerText) 'The case-differing tracker case changed the ledger.'
     $fakeForge.Answers = New-FakeAnswers
 
     $fakeForge.Answers.official.Content = '{"patches":[{"name":"Hide ads","compatiblePackages":[{"packageName":"org.telegram.messenger.web"}]}]}'

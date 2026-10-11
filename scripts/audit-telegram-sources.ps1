@@ -256,13 +256,54 @@ function Invoke-SourceRequest {
     }
 }
 
+function ConvertTo-SourceJsonObject {
+    <#
+        A case-sensitive parse in the shape ConvertFrom-Json answers: an object for each JSON
+        object, in its key order, and an array for each JSON array. A key that matches an earlier
+        one but for case gets a name of its own (key#2), since callers only read the values.
+    #>
+    param($Value)
+    if ($Value -is [System.Collections.IDictionary]) {
+        $object = New-Object PSObject
+        foreach ($pair in $Value.GetEnumerator()) {
+            $name = [string]$pair.Key
+            $unique = $name
+            for ($n = 2; $null -ne $object.PSObject.Properties[$unique]; $n++) { $unique = "$name#$n" }
+            $object.PSObject.Properties.Add([System.Management.Automation.PSNoteProperty]::new($unique, (ConvertTo-SourceJsonObject $pair.Value)))
+        }
+        return $object
+    }
+    if ($Value -is [System.Collections.IList]) {
+        $items = New-Object System.Collections.Generic.List[object]
+        foreach ($item in $Value) { $items.Add((ConvertTo-SourceJsonObject $item)) }
+        return , $items.ToArray()
+    }
+    return $Value
+}
+
 function ConvertFrom-SourceJson {
     param([string]$Text, [string]$What)
     try {
         return , ($Text | ConvertFrom-Json)
     } catch {
-        throw "$What did not answer JSON: $($_.Exception.Message)"
+        $failure = $_.Exception.Message
     }
+    # An object can't hold two property names that differ only in case, and some indexes write
+    # both (ImmortalZeus:dev beside immortalzeus:dev). Those are read case-sensitively instead;
+    # JSON that is broken fails this parse too and is reported as the first one saw it.
+    try {
+        if ($PSVersionTable.PSVersion.Major -ge 6) {
+            $parsed = ConvertFrom-Json -InputObject $Text -AsHashtable
+        } else {
+            Add-Type -AssemblyName System.Web.Extensions
+            $serializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
+            $serializer.MaxJsonLength = [int]::MaxValue
+            $parsed = $serializer.DeserializeObject($Text)
+        }
+    } catch {
+        throw "$What did not answer JSON: $failure"
+    }
+    return , (ConvertTo-SourceJsonObject $parsed)
 }
 
 function Get-JsonItems {
