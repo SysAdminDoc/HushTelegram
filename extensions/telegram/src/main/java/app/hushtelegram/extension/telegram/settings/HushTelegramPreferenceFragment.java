@@ -703,8 +703,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         // Morphe Manager can export the patch choices and the signing key, not these switches.
         backup.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.EXPORT,
                 L10n.t("Export settings"),
-                L10n.t("Saves your switch choices to a file, for all accounts in this Telegram app. Pause, Debug"
-                        + " logging and the update check aren't included.")), SettingsIcons.EXPORT));
+                L10n.t("Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram"
+                        + " app. Pause, Debug logging, the update check, UnifiedPush and Folders by chat type stay out.")),
+                SettingsIcons.EXPORT));
         // The preview gives a count of the switches, not each switch by name.
         backup.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.IMPORT,
                 L10n.t("Import settings"),

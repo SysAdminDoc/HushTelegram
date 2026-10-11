@@ -45,11 +45,11 @@ After Telegram restarts, every switch except Debug logging acts as if it were of
 Hide ads	Reklamları gizle
 Links, updates, backup and more	Bağlantılar, güncellemeler, yedekleme ve daha fazlası
 Privacy	Gizlilik
-Saves your switch choices to a file, for all accounts in this Telegram app. Pause, Debug logging and the update check aren't included.	Anahtar seçimlerinizi bir dosyaya kaydeder; bu Telegram uygulamasındaki tüm hesaplar için geçerlidir. Duraklat, Hata ayıklama günlüğü ve güncelleme denetimi dahil değildir.
-Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.	Ayarlar dışa aktarıldı. Dosyayı tutan uygulama HushTelegram'un onu geri okumasına izin vermedi, bu yüzden kontrol edilmedi.
-The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.	O dosyayı tutan uygulama çok uzun sürüyor, bu yüzden HushTelegram beklemeyi bıraktı. Hiçbir şey değiştirilmedi.
-The app holding the last settings file still hasn't answered. Try again later.	Son ayar dosyasını tutan uygulama hâlâ yanıt vermedi. Daha sonra tekrar dene.
-The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.	Ayar dosyasını tutan uygulama çok uzun sürüyor, bu yüzden HushTelegram beklemeyi bıraktı. O uygulama kaydetmeyi yine de bitirebilir, bu yüzden dosyaya güvenmeden önce onu kontrol et.
+Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram app. Pause, Debug logging, the update check, UnifiedPush and Folders by chat type stay out.	Anahtarlarınızı, filtre listelerinizi ve çıkartma boyutunu bir dosyaya kaydeder; bu Telegram uygulamasındaki tüm hesaplar için geçerlidir. Duraklat, Hata ayıklama günlüğü, güncelleme denetimi, UnifiedPush ve Sohbet türüne göre klasörler dahil edilmez.
+Settings exported. The app wouldn't let HushTelegram check it.	Ayarlar dışa aktarıldı. Uygulama HushTelegram'ın kontrol etmesine izin vermedi.
+That app is slow to answer. Nothing was changed.	Bu uygulama geç yanıt veriyor. Hiçbir şey değiştirilmedi.
+That file's app still hasn't answered. Try again later.	O dosyanın uygulaması hâlâ yanıt vermedi. Sonra tekrar dene.
+That app is slow. It may still save the file, so check it.	Bu uygulama yavaş. Dosyayı hâlâ kaydediyor olabilir, o yüzden kontrol et.
 The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.	%1$s dosyası kaldırılamadı. Onu %2$s içinden sil, sonra yeniden Devam et'e dokun.
 Saved, but the file doesn't match. Save it again as a new file.	Kaydedildi ama dosya eşleşmiyor. Yeni bir dosya olarak tekrar kaydet.
 Until you resume, every switch except Debug logging acts as if it were off. Edits made when you patched stay in.	Devam edene kadar Hata ayıklama günlüğü dışındaki her anahtar kapalıymış gibi davranır. Yamalama sırasında yapılan değişiklikler geçerli kalır.
@@ -82,7 +82,6 @@ Couldn't reach GitHub. Try again later.	GitHub'a ulaşılamadı. Daha sonra tekr
 GitHub is blocking checks from this network for now. Try again later.	GitHub şu an bu ağdan gelen denetimleri engelliyor. Daha sonra tekrar deneyin.
 GitHub sent a reply HushTelegram couldn't read. Try again later.	GitHub, HushTelegram'ın okuyamadığı bir yanıt gönderdi. Daha sonra tekrar deneyin.
 Saving the settings file	Ayar dosyası kaydediliyor
-Set when you patched	Yamaladığında ayarlananlar
 Settings couldn't open	Ayarlar açılamadı
 Settings couldn't refresh. Reopen settings and try again.	Ayarlar yenilenemedi. Ayarları yeniden açıp tekrar dene.
 Settings exported.	Ayarlar dışa aktarıldı.

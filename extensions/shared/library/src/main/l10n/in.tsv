@@ -45,11 +45,11 @@ After Telegram restarts, every switch except Debug logging acts as if it were of
 Hide ads	Sembunyikan iklan
 Links, updates, backup and more	Tautan, pembaruan, cadangan, dan lainnya
 Privacy	Privasi
-Saves your switch choices to a file, for all accounts in this Telegram app. Pause, Debug logging and the update check aren't included.	Menyimpan pilihan sakelar Anda ke berkas, untuk semua akun di aplikasi Telegram ini. Jeda, Pencatatan debug, dan pemeriksaan pembaruan tidak disertakan.
-Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.	Pengaturan diekspor. Aplikasi yang menyimpan file itu tidak mengizinkan HushTelegram membacanya kembali, jadi file itu tidak diperiksa.
-The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.	Aplikasi yang menyimpan file itu terlalu lama, jadi HushTelegram berhenti menunggu. Tidak ada yang diubah.
-The app holding the last settings file still hasn't answered. Try again later.	Aplikasi yang menyimpan file pengaturan terakhir masih belum merespons. Coba lagi nanti.
-The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.	Aplikasi yang menyimpan file pengaturan terlalu lama, jadi HushTelegram berhenti menunggu. Aplikasi itu mungkin masih menyelesaikan penyimpanannya, jadi periksa file itu sebelum mengandalkannya.
+Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram app. Pause, Debug logging, the update check, UnifiedPush and Folders by chat type stay out.	Menyimpan sakelar, daftar filter, dan ukuran stiker Anda ke berkas, untuk semua akun di aplikasi Telegram ini. Jeda, Pencatatan debug, pemeriksaan pembaruan, UnifiedPush, dan Folder menurut jenis obrolan tidak disertakan.
+Settings exported. The app wouldn't let HushTelegram check it.	Pengaturan diekspor. Aplikasi itu tidak mengizinkan HushTelegram memeriksanya.
+That app is slow to answer. Nothing was changed.	Aplikasi itu lambat merespons. Tidak ada yang diubah.
+That file's app still hasn't answered. Try again later.	Aplikasi file itu belum menjawab. Coba lagi nanti.
+That app is slow. It may still save the file, so check it.	Aplikasi itu lambat. Mungkin masih menyimpan file, jadi periksa file-nya.
 The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.	File %1$s tidak dapat dihapus. Hapus file itu dari %2$s, lalu ketuk Lanjutkan lagi.
 Saved, but the file doesn't match. Save it again as a new file.	Tersimpan, tetapi isi file tidak cocok. Simpan lagi sebagai file baru.
 Until you resume, every switch except Debug logging acts as if it were off. Edits made when you patched stay in.	Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap mati. Perubahan yang dibuat saat menambal tetap berlaku.
@@ -82,7 +82,6 @@ Couldn't reach GitHub. Try again later.	GitHub tidak dapat dihubungi. Coba lagi 
 GitHub is blocking checks from this network for now. Try again later.	GitHub sedang memblokir pemeriksaan dari jaringan ini untuk sementara. Coba lagi nanti.
 GitHub sent a reply HushTelegram couldn't read. Try again later.	GitHub mengirim balasan yang tidak bisa dibaca HushTelegram. Coba lagi nanti.
 Saving the settings file	Menyimpan file pengaturan
-Set when you patched	Diatur saat Anda menambal
 Settings couldn't open	Pengaturan tidak dapat dibuka
 Settings couldn't refresh. Reopen settings and try again.	Pengaturan tidak dapat disegarkan. Buka lagi pengaturan dan coba lagi.
 Settings exported.	Pengaturan diekspor.

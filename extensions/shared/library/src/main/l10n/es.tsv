@@ -45,11 +45,11 @@ After Telegram restarts, every switch except Debug logging acts as if it were of
 Hide ads	Ocultar anuncios
 Links, updates, backup and more	Enlaces, actualizaciones, copia de seguridad y más
 Privacy	Privacidad
-Saves your switch choices to a file, for all accounts in this Telegram app. Pause, Debug logging and the update check aren't included.	Guarda en un archivo tus opciones de interruptores, para todas las cuentas de esta app de Telegram. No incluye Pausar, Registro de depuración ni la comprobación de actualizaciones.
-Settings exported. The app holding the file wouldn't let HushTelegram read it back, so it wasn't checked.	Configuración exportada. La app que guarda el archivo no dejó que HushTelegram lo volviera a leer, así que no se comprobó.
-The app holding that file is taking too long, so HushTelegram stopped waiting. Nothing was changed.	La app que guarda ese archivo tarda demasiado, así que HushTelegram dejó de esperar. No se cambió nada.
-The app holding the last settings file still hasn't answered. Try again later.	La app del último archivo de configuración aún no ha respondido. Inténtalo más tarde.
-The app holding the settings file is taking too long, so HushTelegram stopped waiting. That app may still finish saving it, so check the file before you rely on it.	La app que guarda el archivo de configuración tarda demasiado, así que HushTelegram dejó de esperar. Esa app aún puede terminar de guardarlo, así que revisa el archivo antes de confiar en él.
+Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram app. Pause, Debug logging, the update check, UnifiedPush and Folders by chat type stay out.	Guarda en un archivo tus interruptores, listas de filtros y tamaño de stickers, para todas las cuentas de esta app de Telegram. Pausar, Registro de depuración, la comprobación de actualizaciones, UnifiedPush y Carpetas por tipo de chat se quedan fuera.
+Settings exported. The app wouldn't let HushTelegram check it.	Configuración exportada. La app no dejó que HushTelegram la revisara.
+That app is slow to answer. Nothing was changed.	Esa app tarda en responder. No se cambió nada.
+That file's app still hasn't answered. Try again later.	La app de ese archivo aún no responde. Inténtalo más tarde.
+That app is slow. It may still save the file, so check it.	Esa app va lenta. Puede que aún guarde el archivo, así que revísalo.
 The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.	No se pudo eliminar el archivo %1$s. Bórralo de %2$s y luego vuelve a tocar Reanudar.
 Saved, but the file doesn't match. Save it again as a new file.	Se guardó, pero el archivo no coincide. Guárdalo de nuevo como archivo nuevo.
 Until you resume, every switch except Debug logging acts as if it were off. Edits made when you patched stay in.	Hasta que reanudes, todos los interruptores salvo Registro de depuración funcionan como si estuvieran desactivados. Los cambios hechos al parchear se mantienen.
@@ -82,7 +82,6 @@ Couldn't reach GitHub. Try again later.	No se pudo contactar con GitHub. Intént
 GitHub is blocking checks from this network for now. Try again later.	GitHub está bloqueando las comprobaciones desde esta red por ahora. Inténtalo más tarde.
 GitHub sent a reply HushTelegram couldn't read. Try again later.	GitHub envió una respuesta que HushTelegram no pudo leer. Inténtalo más tarde.
 Saving the settings file	Guardando el archivo de configuración
-Set when you patched	Aplicado al parchear
 Settings couldn't open	No se pudo abrir la configuración
 Settings couldn't refresh. Reopen settings and try again.	La configuración no se actualizó. Ábrela de nuevo e inténtalo otra vez.
 Settings exported.	Configuración exportada.
