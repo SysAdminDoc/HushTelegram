@@ -32,8 +32,9 @@
       "name": "Awesome Morphe",
       "url": "https://github.com/nvbangg/awesome-morphe",
       "hushtelegram": {
-        "status": "not-listed",
-        "checked": "2026-10-03"
+        "status": "listed",
+        "checked": "2026-10-11",
+        "url": "https://raw.githubusercontent.com/nvbangg/awesome-morphe/main/data/hashes.json"
       }
     },
     {

@@ -84,6 +84,8 @@ Every HushTelegram release, newest first.
 
 * **Tooling:** The source audit reads Jman's bundle index again. It moved to `Jman-Github/Patch-Bundle-Registry`, and the bundle list and patch catalog the audit used to read are gone. The audit now reads the registry's own snapshot: the newest generation, every latest bundle that targets Telegram, and the Telegram patches in each. The ledger points at the registry and at HushTelegram's listing there.
 
+* **Tooling:** Awesome Morphe lists HushTelegram now, so the ledger records the listing and the release check stops calling it pending.
+
 ## 0.0.12 (2026-10-09)
 
 The sixth release, with 56 patches for telegram.org's Telegram 12.10.6 and the official Telegram beta 12.10.7.
