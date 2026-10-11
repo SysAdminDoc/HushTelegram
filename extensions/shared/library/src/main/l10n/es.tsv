@@ -554,3 +554,7 @@ Made Private, Groups, Channels and Bots folders.	Carpetas Privados, Grupos, Cana
 There were no folders from HushTelegram to remove.	No había carpetas de HushTelegram que quitar.
 # context: a short toast (two lines at most) after the switch went off. Folders the person renamed or changed are kept.
 Removed the folders HushTelegram made. Changed ones stay.	Se quitaron las carpetas de HushTelegram. Las cambiadas se quedan.
+Telegram refused this app's ID	Telegram rechazó el ID de esta app
+Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.	Telegram rechazó el ID de API con el que inicia sesión esta app, así que no se envió ningún código. Vuelve a parchear HushTelegram con Use registered Telegram API credentials y tu propio ID de my.telegram.org/apps. La guía te explica cómo.
+Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.	Telegram no aceptó el ID de API y el hash con los que se parcheó esta app, así que no se envió ningún código. Cópialos de nuevo desde my.telegram.org/apps y vuelve a parchear.
+Open the guide	Abrir la guía

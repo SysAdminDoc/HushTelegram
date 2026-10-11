@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** When Telegram turns down the API ID your build signs in with, the phone number screen now says so, with a button that opens the guide to using your own ID. Before, it just sat there after you tapped the arrow. This covers API_ID_PUBLISHED_FLOOD, the built-in ID being refused, and API_ID_INVALID, a registered ID or hash with a typo in it. Reported in #11 and #3.
+
 * **Telegram:** Messages that pop up at the bottom of the screen are shorter now, so Android shows them whole instead of cutting them off after two lines.
 
 * **Telegram:** The Export settings row now says what a file carries (your switches, filter lists and sticker size) and which switches stay out of it.

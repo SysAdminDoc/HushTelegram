@@ -18,6 +18,12 @@ public final class TLRPC {
 
     public static class TL_boolFalse { }
 
+    /** The request the phone screen sends for a login code. */
+    public static class TL_auth_sendCode { }
+
+    /** Any other request, for the cases that aren't sign-in. */
+    public static class TL_auth_resendCode { }
+
     public static class TL_error {
         public int code;
         public String text;

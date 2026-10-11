@@ -551,3 +551,7 @@ Made Private, Groups, Channels and Bots folders.	Pastas Privados, Grupos, Canais
 There were no folders from HushTelegram to remove.	Não havia pastas do HushTelegram para remover.
 # context: a short toast (two lines at most) after the switch went off. Folders the person renamed or changed are kept.
 Removed the folders HushTelegram made. Changed ones stay.	As pastas do HushTelegram foram removidas. As alteradas ficam.
+Telegram refused this app's ID	O Telegram recusou o ID deste app
+Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.	O Telegram recusou o ID de API que este app usa para entrar, então nenhum código foi enviado. Aplique o patch no HushTelegram de novo com Use registered Telegram API credentials e seu próprio ID de my.telegram.org/apps. O guia mostra como.
+Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.	O Telegram não aceitou o ID de API e o hash usados no patch deste app, então nenhum código foi enviado. Copie os dois de novo em my.telegram.org/apps e aplique o patch outra vez.
+Open the guide	Abrir o guia

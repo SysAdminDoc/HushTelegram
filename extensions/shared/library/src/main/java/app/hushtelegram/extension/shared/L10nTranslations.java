@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(996);
+        Map<String, String> table = new HashMap<>(1004);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -585,6 +585,8 @@ public final class L10nTranslations {
                 "Nur einige Webadressen von Telegram sind f\u00fcr diese App ausgew\u00e4hlt, und Links zu den \u00fcbrigen \u00f6ffnen sich woanders. Tippe, um sie in den Android-Einstellungen auszuw\u00e4hlen.");
         table.put("Open links externally",
                 "Links extern \u00f6ffnen");
+        table.put("Open the guide",
+                "Anleitung \u00f6ffnen");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201eUnterst\u00fctzte Links \u00f6ffnen\u201c ist f\u00fcr diese App in den Android-Einstellungen aus. Tippe, um es einzuschalten.");
         table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it.",
@@ -671,11 +673,11 @@ public final class L10nTranslations {
                 "Entfernt Tracking-Tags wie utm_source, gclid und fbclid aus Links, die du \u00f6ffnest oder teilst. Ein Link mit einem anderen Tag bleibt unver\u00e4ndert.");
         table.put("Repair Firebase push registration",
                 "Firebase-Push-Registrierung reparieren");
-        table.put("Repeat",
-                "Wiederholen");
     }
 
     private static void fillDe5(Map<String, String> table) {
+        table.put("Repeat",
+                "Wiederholen");
         table.put("Resume",
                 "Fortsetzen");
         table.put("Retry",
@@ -794,11 +796,11 @@ public final class L10nTranslations {
                 "Nutzungsberichte stoppen");
         table.put("Stop vibrations on taps",
                 "Vibrationen bei Ber\u00fchrungen stoppen");
-        table.put("Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.",
-                "Stoppt Nutzungsberichte an Telegram, etwa wie lange du jeden Kanalbeitrag liest und was du auf Premium-Seiten antippst. Nachrichten und Anrufe funktionieren wie bisher.");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.",
+                "Stoppt Nutzungsberichte an Telegram, etwa wie lange du jeden Kanalbeitrag liest und was du auf Premium-Seiten antippst. Nachrichten und Anrufe funktionieren wie bisher.");
         table.put("Stops your phone from automatically sending call problem reports and log files when Telegram's server asks for them.",
                 "Verhindert, dass dein Handy automatisch Berichte zu Anrufproblemen und Protokolldateien sendet, wenn der Telegram-Server danach fragt.");
         table.put("Support HushTelegram",
@@ -825,14 +827,20 @@ public final class L10nTranslations {
                 "Telegram Beta speichert st\u00e4ndig Debug-Protokolle auf deinem Handy, auch das Verbindungsprotokoll, und sein eigenes Debug-Men\u00fc kann das nicht abstellen. Das hier stellt sie ab. Bereits gespeicherte Protokolle bleiben, bis du sie l\u00f6schst, und die normale Version speichert keine, dort \u00e4ndert sich also nichts. Starte Telegram neu, um die \u00c4nderung zu sehen.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Telegram ist dreimal hintereinander innerhalb einer Minute nach dem Start abgest\u00fcrzt oder h\u00e4ngen geblieben, deshalb hat sich HushTelegram selbst pausiert.");
+        table.put("Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.",
+                "Telegram hat die API-ID und den Hash nicht angenommen, mit denen diese App gepatcht wurde, daher kam kein Anmeldecode. Kopiere beide erneut von my.telegram.org/apps und patche noch einmal.");
         table.put("Telegram doesn't look up link previews for messages you haven't sent yet, including shares, polls, story links and bots. Sent messages still get one.",
                 "Telegram sucht keine Linkvorschauen f\u00fcr Nachrichten, die du noch nicht gesendet hast, auch nicht beim Teilen, in Umfragen, Story-Links und Bots. Gesendete Nachrichten bekommen weiterhin eine.");
         table.put("Telegram is still loading your folders. Try again in a moment.",
                 "Telegram l\u00e4dt deine Ordner noch. Versuch es gleich noch mal.");
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "Telegram weichzeichnet Chat-Kopfzeilen und Leisten nur auf schnellen Handys. Das erlaubt es jedem Handy, sobald unter Energiesparen die Option Unsch\u00e4rfe im Chat an ist.");
+        table.put("Telegram refused this app's ID",
+                "Telegram hat die ID dieser App abgelehnt");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram bietet keine Updates von telegram.org mehr an. Sie lie\u00dfen sich nicht \u00fcber diesen gepatchten Build installieren, also patche jede neue Version stattdessen im Morphe Manager.");
+        table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
+                "Telegram hat die API-ID abgelehnt, mit der sich diese App anmeldet, daher kam kein Anmeldecode. Patche HushTelegram erneut mit Use registered Telegram API credentials und deiner eigenen ID von my.telegram.org/apps. Die Anleitung zeigt dir, wie es geht.");
         table.put("Telegram's reply to notification sign-up: %1$s",
                 "Telegrams Antwort auf die Anmeldung f\u00fcr Benachrichtigungen: %1$s");
         table.put("Telegram's wake-ups come through %1$s.",
@@ -911,6 +919,9 @@ public final class L10nTranslations {
                 "Hier \u00fcbersetzen");
         table.put("Translate this chat",
                 "Diesen Chat \u00fcbersetzen");
+    }
+
+    private static void fillDe7(Map<String, String> table) {
         table.put("Translate with an outside service",
                 "Mit einem externen Dienst \u00fcbersetzen");
         table.put("Translation",
@@ -919,9 +930,6 @@ public final class L10nTranslations {
                 "Die \u00dcbersetzung ist gerade nicht verf\u00fcgbar");
         table.put("Translation service",
                 "\u00dcbersetzungsdienst");
-    }
-
-    private static void fillDe7(Map<String, String> table) {
         table.put("Translation service saved.",
                 "\u00dcbersetzungsdienst gespeichert.");
         table.put("Tries to help this patched Telegram sign up for push notifications with Firebase, Google's notification service, using Telegram's original certificate. Notification permission and battery settings still apply.",
@@ -1034,6 +1042,9 @@ public final class L10nTranslations {
                 "Kanal-Lesemetriken");
         table.put("chat double-tap reactions",
                 "Chat-Reaktionen durch Doppeltippen");
+    }
+
+    private static void fillDe8(Map<String, String> table) {
         table.put("chat drafts",
                 "Chat-Entw\u00fcrfe");
         table.put("chat list menu Wallet item",
@@ -1042,9 +1053,6 @@ public final class L10nTranslations {
                 "Story-Leiste der Chatliste");
         table.put("compose text paste",
                 "Texteinf\u00fcgen im Nachrichtenfeld");
-    }
-
-    private static void fillDe8(Map<String, String> table) {
         table.put("deleted",
                 "gel\u00f6scht");
         table.put("dual camera reports",
@@ -1084,7 +1092,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(996);
+        Map<String, String> table = new HashMap<>(1004);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1622,6 +1630,8 @@ public final class L10nTranslations {
                 "Solo algunas direcciones web de Telegram est\u00e1n seleccionadas para esta app, y los enlaces a las dem\u00e1s se abren en otro sitio. Toca para seleccionarlas en los ajustes de Android.");
         table.put("Open links externally",
                 "Abrir enlaces externamente");
+        table.put("Open the guide",
+                "Abrir la gu\u00eda");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cAbrir enlaces compatibles\u201d est\u00e1 desactivado para esta app en los ajustes de Android. Toca para activarlo.");
         table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it.",
@@ -1708,11 +1718,11 @@ public final class L10nTranslations {
                 "Quita etiquetas de seguimiento como utm_source, gclid y fbclid de los enlaces que abres o compartes. Un enlace con cualquier otra etiqueta se deja sin cambios.");
         table.put("Repair Firebase push registration",
                 "Reparar el registro de notificaciones de Firebase");
-        table.put("Repeat",
-                "Repetir");
     }
 
     private static void fillEs5(Map<String, String> table) {
+        table.put("Repeat",
+                "Repetir");
         table.put("Resume",
                 "Reanudar");
         table.put("Retry",
@@ -1831,11 +1841,11 @@ public final class L10nTranslations {
                 "Detener los informes de uso");
         table.put("Stop vibrations on taps",
                 "Detener las vibraciones al tocar");
-        table.put("Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.",
-                "Detiene los informes de uso a Telegram, como cu\u00e1nto tiempo lees cada publicaci\u00f3n de un canal y qu\u00e9 tocas en las pantallas de Premium. Los mensajes y las llamadas funcionan como antes.");
     }
 
     private static void fillEs6(Map<String, String> table) {
+        table.put("Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.",
+                "Detiene los informes de uso a Telegram, como cu\u00e1nto tiempo lees cada publicaci\u00f3n de un canal y qu\u00e9 tocas en las pantallas de Premium. Los mensajes y las llamadas funcionan como antes.");
         table.put("Stops your phone from automatically sending call problem reports and log files when Telegram's server asks for them.",
                 "Evita que tu tel\u00e9fono env\u00ede autom\u00e1ticamente informes de problemas de llamadas y archivos de registro cuando el servidor de Telegram los pide.");
         table.put("Support HushTelegram",
@@ -1862,14 +1872,20 @@ public final class L10nTranslations {
                 "Telegram Beta guarda registros de depuraci\u00f3n en tu tel\u00e9fono todo el tiempo, incluido el registro de conexi\u00f3n, y su propio men\u00fa de depuraci\u00f3n no puede detenerlo. Esto los detiene. Los registros ya guardados se quedan hasta que los borres, y la versi\u00f3n normal no los guarda, as\u00ed que ah\u00ed no cambia nada. Reinicia Telegram para ver el cambio.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Tres veces seguidas, Telegram fall\u00f3 o se congel\u00f3 durante el primer minuto tras iniciarse, as\u00ed que HushTelegram se paus\u00f3 solo.");
+        table.put("Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.",
+                "Telegram no acept\u00f3 el ID de API y el hash con los que se parche\u00f3 esta app, as\u00ed que no se envi\u00f3 ning\u00fan c\u00f3digo. C\u00f3pialos de nuevo desde my.telegram.org/apps y vuelve a parchear.");
         table.put("Telegram doesn't look up link previews for messages you haven't sent yet, including shares, polls, story links and bots. Sent messages still get one.",
                 "Telegram no busca vistas previas de enlaces para mensajes que a\u00fan no has enviado, incluidos compartidos, encuestas, enlaces de historias y bots. Los mensajes enviados siguen recibiendo una.");
         table.put("Telegram is still loading your folders. Try again in a moment.",
                 "Telegram todav\u00eda est\u00e1 cargando tus carpetas. Int\u00e9ntalo de nuevo en un momento.");
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "Telegram solo desenfoca las cabeceras y los paneles del chat en tel\u00e9fonos r\u00e1pidos. Esto permite que cualquier tel\u00e9fono lo haga, cuando Desenfoque en el chat est\u00e9 activado en Ahorro de energ\u00eda.");
+        table.put("Telegram refused this app's ID",
+                "Telegram rechaz\u00f3 el ID de esta app");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram deja de ofrecer actualizaciones de telegram.org. No se pueden instalar sobre este build parcheado, as\u00ed que parchea cada versi\u00f3n nueva en Morphe Manager.");
+        table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
+                "Telegram rechaz\u00f3 el ID de API con el que inicia sesi\u00f3n esta app, as\u00ed que no se envi\u00f3 ning\u00fan c\u00f3digo. Vuelve a parchear HushTelegram con Use registered Telegram API credentials y tu propio ID de my.telegram.org/apps. La gu\u00eda te explica c\u00f3mo.");
         table.put("Telegram's reply to notification sign-up: %1$s",
                 "Respuesta de Telegram al registro de notificaciones: %1$s");
         table.put("Telegram's wake-ups come through %1$s.",
@@ -1948,6 +1964,9 @@ public final class L10nTranslations {
                 "Traducir aqu\u00ed");
         table.put("Translate this chat",
                 "Traducir este chat");
+    }
+
+    private static void fillEs7(Map<String, String> table) {
         table.put("Translate with an outside service",
                 "Traducir con un servicio externo");
         table.put("Translation",
@@ -1956,9 +1975,6 @@ public final class L10nTranslations {
                 "La traducci\u00f3n no est\u00e1 disponible ahora");
         table.put("Translation service",
                 "Servicio de traducci\u00f3n");
-    }
-
-    private static void fillEs7(Map<String, String> table) {
         table.put("Translation service saved.",
                 "Servicio de traducci\u00f3n guardado.");
         table.put("Tries to help this patched Telegram sign up for push notifications with Firebase, Google's notification service, using Telegram's original certificate. Notification permission and battery settings still apply.",
@@ -2071,6 +2087,9 @@ public final class L10nTranslations {
                 "m\u00e9tricas de lectura de canales");
         table.put("chat double-tap reactions",
                 "reacciones al tocar dos veces en chats");
+    }
+
+    private static void fillEs8(Map<String, String> table) {
         table.put("chat drafts",
                 "borradores de chat");
         table.put("chat list menu Wallet item",
@@ -2079,9 +2098,6 @@ public final class L10nTranslations {
                 "barra de historias de la lista de chats");
         table.put("compose text paste",
                 "pegado de texto al escribir");
-    }
-
-    private static void fillEs8(Map<String, String> table) {
         table.put("deleted",
                 "eliminado");
         table.put("dual camera reports",
@@ -2121,7 +2137,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(996);
+        Map<String, String> table = new HashMap<>(1004);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2659,6 +2675,8 @@ public final class L10nTranslations {
                 "Hanya sebagian alamat web Telegram yang dipilih untuk aplikasi ini, dan tautan ke alamat lainnya terbuka di tempat lain. Ketuk untuk memilihnya di pengaturan Android.");
         table.put("Open links externally",
                 "Buka tautan di luar aplikasi");
+        table.put("Open the guide",
+                "Buka panduan");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cBuka link yang didukung\u201d nonaktif untuk aplikasi ini di pengaturan Android. Ketuk untuk mengaktifkannya.");
         table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it.",
@@ -2745,11 +2763,11 @@ public final class L10nTranslations {
                 "Menghapus tag pelacakan seperti utm_source, gclid, dan fbclid dari tautan yang Anda buka atau bagikan. Tautan dengan tag lain tidak diubah.");
         table.put("Repair Firebase push registration",
                 "Perbaiki pendaftaran notifikasi Firebase");
-        table.put("Repeat",
-                "Ulangi");
     }
 
     private static void fillIn5(Map<String, String> table) {
+        table.put("Repeat",
+                "Ulangi");
         table.put("Resume",
                 "Lanjutkan");
         table.put("Retry",
@@ -2868,11 +2886,11 @@ public final class L10nTranslations {
                 "Hentikan laporan penggunaan");
         table.put("Stop vibrations on taps",
                 "Hentikan getaran saat mengetuk");
-        table.put("Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.",
-                "Menghentikan laporan penggunaan ke Telegram, seperti berapa lama Anda membaca tiap kiriman kanal dan apa yang Anda ketuk di layar Premium. Pesan dan panggilan berfungsi seperti biasa.");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.",
+                "Menghentikan laporan penggunaan ke Telegram, seperti berapa lama Anda membaca tiap kiriman kanal dan apa yang Anda ketuk di layar Premium. Pesan dan panggilan berfungsi seperti biasa.");
         table.put("Stops your phone from automatically sending call problem reports and log files when Telegram's server asks for them.",
                 "Mencegah ponsel Anda mengirim laporan masalah panggilan dan berkas log secara otomatis saat server Telegram memintanya.");
         table.put("Support HushTelegram",
@@ -2899,14 +2917,20 @@ public final class L10nTranslations {
                 "Telegram Beta selalu menyimpan log debug di ponsel Anda, termasuk log koneksinya, dan menu debug miliknya sendiri tidak bisa menghentikannya. Ini menghentikannya. Log yang sudah tersimpan tetap ada sampai Anda menghapusnya, dan versi biasa tidak menyimpannya, jadi di sana tidak ada yang berubah. Mulai ulang Telegram untuk melihat perubahannya.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Telegram berhenti mendadak atau macet dalam satu menit setelah dibuka, tiga kali berturut-turut, jadi HushTelegram menjeda dirinya sendiri.");
+        table.put("Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.",
+                "Telegram tidak menerima ID API dan hash yang dipakai saat menambal aplikasi ini, jadi kode login tidak dikirim. Salin keduanya lagi dari my.telegram.org/apps lalu tambal ulang.");
         table.put("Telegram doesn't look up link previews for messages you haven't sent yet, including shares, polls, story links and bots. Sent messages still get one.",
                 "Telegram tidak mencari pratinjau tautan untuk pesan yang belum Anda kirim, termasuk berbagi, polling, tautan cerita, dan bot. Pesan yang sudah terkirim tetap mendapat pratinjau.");
         table.put("Telegram is still loading your folders. Try again in a moment.",
                 "Telegram masih memuat foldermu. Coba lagi sebentar lagi.");
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "Telegram hanya mengaburkan header dan panel obrolan di ponsel yang cepat. Ini memungkinkan ponsel apa pun melakukannya, setelah Blur di obrolan aktif di bawah Penghemat daya.");
+        table.put("Telegram refused this app's ID",
+                "Telegram menolak ID aplikasi ini");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.");
+        table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
+                "Telegram menolak ID API yang dipakai aplikasi ini untuk masuk, jadi kode login tidak dikirim. Tambal ulang HushTelegram dengan Use registered Telegram API credentials dan ID Anda sendiri dari my.telegram.org/apps. Panduannya menjelaskan caranya.");
         table.put("Telegram's reply to notification sign-up: %1$s",
                 "Balasan Telegram atas pendaftaran notifikasi: %1$s");
         table.put("Telegram's wake-ups come through %1$s.",
@@ -2985,6 +3009,9 @@ public final class L10nTranslations {
                 "Terjemahkan di sini");
         table.put("Translate this chat",
                 "Terjemahkan obrolan ini");
+    }
+
+    private static void fillIn7(Map<String, String> table) {
         table.put("Translate with an outside service",
                 "Terjemahkan dengan layanan luar");
         table.put("Translation",
@@ -2993,9 +3020,6 @@ public final class L10nTranslations {
                 "Terjemahan tidak tersedia saat ini");
         table.put("Translation service",
                 "Layanan terjemahan");
-    }
-
-    private static void fillIn7(Map<String, String> table) {
         table.put("Translation service saved.",
                 "Layanan terjemahan disimpan.");
         table.put("Tries to help this patched Telegram sign up for push notifications with Firebase, Google's notification service, using Telegram's original certificate. Notification permission and battery settings still apply.",
@@ -3108,6 +3132,9 @@ public final class L10nTranslations {
                 "metrik pembacaan saluran");
         table.put("chat double-tap reactions",
                 "reaksi ketuk dua kali di chat");
+    }
+
+    private static void fillIn8(Map<String, String> table) {
         table.put("chat drafts",
                 "draf chat");
         table.put("chat list menu Wallet item",
@@ -3116,9 +3143,6 @@ public final class L10nTranslations {
                 "bilah cerita di daftar chat");
         table.put("compose text paste",
                 "tempel teks saat menulis");
-    }
-
-    private static void fillIn8(Map<String, String> table) {
         table.put("deleted",
                 "dihapus");
         table.put("dual camera reports",
@@ -3158,7 +3182,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(996);
+        Map<String, String> table = new HashMap<>(1004);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -3696,6 +3720,8 @@ public final class L10nTranslations {
                 "S\u00f3 alguns endere\u00e7os web do Telegram est\u00e3o selecionados para este app, e os links para os outros abrem em outro lugar. Toque para selecion\u00e1-los nas configura\u00e7\u00f5es do Android.");
         table.put("Open links externally",
                 "Abrir links externamente");
+        table.put("Open the guide",
+                "Abrir o guia");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cAbrir links compat\u00edveis\u201d est\u00e1 desativado para este app nas configura\u00e7\u00f5es do Android. Toque para ativar.");
         table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it.",
@@ -3782,11 +3808,11 @@ public final class L10nTranslations {
                 "Remove etiquetas de rastreamento como utm_source, gclid e fbclid dos links que voc\u00ea abre ou compartilha. Um link com qualquer outra etiqueta fica sem altera\u00e7\u00e3o.");
         table.put("Repair Firebase push registration",
                 "Corrigir o registro de notifica\u00e7\u00f5es do Firebase");
-        table.put("Repeat",
-                "Repetir");
     }
 
     private static void fillPt_rBR5(Map<String, String> table) {
+        table.put("Repeat",
+                "Repetir");
         table.put("Resume",
                 "Retomar");
         table.put("Retry",
@@ -3905,11 +3931,11 @@ public final class L10nTranslations {
                 "Parar os relat\u00f3rios de uso");
         table.put("Stop vibrations on taps",
                 "Parar as vibra\u00e7\u00f5es ao tocar");
-        table.put("Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.",
-                "Interrompe os relat\u00f3rios de uso enviados ao Telegram, como quanto tempo voc\u00ea l\u00ea cada publica\u00e7\u00e3o de canal e o que voc\u00ea toca nas telas do Premium. Mensagens e chamadas funcionam como antes.");
     }
 
     private static void fillPt_rBR6(Map<String, String> table) {
+        table.put("Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.",
+                "Interrompe os relat\u00f3rios de uso enviados ao Telegram, como quanto tempo voc\u00ea l\u00ea cada publica\u00e7\u00e3o de canal e o que voc\u00ea toca nas telas do Premium. Mensagens e chamadas funcionam como antes.");
         table.put("Stops your phone from automatically sending call problem reports and log files when Telegram's server asks for them.",
                 "Impede que seu celular envie automaticamente relat\u00f3rios de problemas de chamada e arquivos de registro quando o servidor do Telegram os pede.");
         table.put("Support HushTelegram",
@@ -3936,14 +3962,20 @@ public final class L10nTranslations {
                 "O Telegram Beta grava registros de depura\u00e7\u00e3o no seu celular o tempo todo, incluindo o registro de conex\u00e3o, e o pr\u00f3prio menu de depura\u00e7\u00e3o dele n\u00e3o consegue impedir isso. Isto os desliga. Os registros j\u00e1 salvos ficam at\u00e9 voc\u00ea apag\u00e1-los, e a vers\u00e3o normal n\u00e3o os grava, ent\u00e3o nada muda nela. Reinicie o Telegram para ver a mudan\u00e7a.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "O Telegram fechou com erro ou travou no primeiro minuto ap\u00f3s iniciar, tr\u00eas vezes seguidas, ent\u00e3o o HushTelegram foi pausado automaticamente.");
+        table.put("Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.",
+                "O Telegram n\u00e3o aceitou o ID de API e o hash usados no patch deste app, ent\u00e3o nenhum c\u00f3digo foi enviado. Copie os dois de novo em my.telegram.org/apps e aplique o patch outra vez.");
         table.put("Telegram doesn't look up link previews for messages you haven't sent yet, including shares, polls, story links and bots. Sent messages still get one.",
                 "O Telegram n\u00e3o busca pr\u00e9vias de links para mensagens que voc\u00ea ainda n\u00e3o enviou, incluindo compartilhamentos, enquetes, links de stories e bots. Mensagens enviadas continuam recebendo uma.");
         table.put("Telegram is still loading your folders. Try again in a moment.",
                 "O Telegram ainda est\u00e1 carregando suas pastas. Tente de novo em um instante.");
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "O Telegram s\u00f3 desfoca o cabe\u00e7alho e os pain\u00e9is da conversa em celulares r\u00e1pidos. Isso permite que qualquer celular fa\u00e7a isso, quando Desfoque no chat estiver ligado em Economia de energia.");
+        table.put("Telegram refused this app's ID",
+                "O Telegram recusou o ID deste app");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "O Telegram deixa de oferecer atualiza\u00e7\u00f5es do telegram.org. Elas n\u00e3o podem ser instaladas sobre este build corrigido, ent\u00e3o aplique o patch de cada nova vers\u00e3o pelo Morphe Manager.");
+        table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
+                "O Telegram recusou o ID de API que este app usa para entrar, ent\u00e3o nenhum c\u00f3digo foi enviado. Aplique o patch no HushTelegram de novo com Use registered Telegram API credentials e seu pr\u00f3prio ID de my.telegram.org/apps. O guia mostra como.");
         table.put("Telegram's reply to notification sign-up: %1$s",
                 "Resposta do Telegram ao cadastro de notifica\u00e7\u00f5es: %1$s");
         table.put("Telegram's wake-ups come through %1$s.",
@@ -4022,6 +4054,9 @@ public final class L10nTranslations {
                 "Traduzir aqui");
         table.put("Translate this chat",
                 "Traduzir esta conversa");
+    }
+
+    private static void fillPt_rBR7(Map<String, String> table) {
         table.put("Translate with an outside service",
                 "Traduzir com um servi\u00e7o externo");
         table.put("Translation",
@@ -4030,9 +4065,6 @@ public final class L10nTranslations {
                 "A tradu\u00e7\u00e3o n\u00e3o est\u00e1 dispon\u00edvel agora");
         table.put("Translation service",
                 "Servi\u00e7o de tradu\u00e7\u00e3o");
-    }
-
-    private static void fillPt_rBR7(Map<String, String> table) {
         table.put("Translation service saved.",
                 "Servi\u00e7o de tradu\u00e7\u00e3o salvo.");
         table.put("Tries to help this patched Telegram sign up for push notifications with Firebase, Google's notification service, using Telegram's original certificate. Notification permission and battery settings still apply.",
@@ -4145,6 +4177,9 @@ public final class L10nTranslations {
                 "m\u00e9tricas de leitura de canais");
         table.put("chat double-tap reactions",
                 "rea\u00e7\u00f5es por toque duplo nos chats");
+    }
+
+    private static void fillPt_rBR8(Map<String, String> table) {
         table.put("chat drafts",
                 "rascunhos de chat");
         table.put("chat list menu Wallet item",
@@ -4153,9 +4188,6 @@ public final class L10nTranslations {
                 "barra de stories da lista de conversas");
         table.put("compose text paste",
                 "colagem de texto ao escrever");
-    }
-
-    private static void fillPt_rBR8(Map<String, String> table) {
         table.put("deleted",
                 "apagada");
         table.put("dual camera reports",
@@ -4195,7 +4227,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(996);
+        Map<String, String> table = new HashMap<>(1004);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -4733,6 +4765,8 @@ public final class L10nTranslations {
                 "Telegram'\u0131n web adreslerinden yaln\u0131zca baz\u0131lar\u0131 bu uygulama i\u00e7in se\u00e7ili ve di\u011ferlerinin ba\u011flant\u0131lar\u0131 ba\u015fka yerde a\u00e7\u0131l\u0131r. Android ayarlar\u0131nda se\u00e7mek i\u00e7in dokunun.");
         table.put("Open links externally",
                 "Ba\u011flant\u0131lar\u0131 harici taray\u0131c\u0131da a\u00e7");
+        table.put("Open the guide",
+                "Rehberi a\u00e7");
         table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
                 "\u201cDesteklenen ba\u011flant\u0131lar\u0131 a\u00e7\u201d Android ayarlar\u0131nda bu uygulama i\u00e7in kapal\u0131. A\u00e7mak i\u00e7in dokunun.");
         table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it.",
@@ -4819,11 +4853,11 @@ public final class L10nTranslations {
                 "A\u00e7t\u0131\u011f\u0131n\u0131z veya payla\u015ft\u0131\u011f\u0131n\u0131z ba\u011flant\u0131lardan utm_source, gclid ve fbclid gibi izleme etiketlerini kald\u0131r\u0131r. Ba\u015fka bir etiket i\u00e7eren ba\u011flant\u0131 de\u011fi\u015ftirilmez.");
         table.put("Repair Firebase push registration",
                 "Firebase bildirim kayd\u0131n\u0131 d\u00fczelt");
-        table.put("Repeat",
-                "Tekrarla");
     }
 
     private static void fillTr5(Map<String, String> table) {
+        table.put("Repeat",
+                "Tekrarla");
         table.put("Resume",
                 "Devam et");
         table.put("Retry",
@@ -4942,11 +4976,11 @@ public final class L10nTranslations {
                 "Kullan\u0131m raporlar\u0131n\u0131 durdur");
         table.put("Stop vibrations on taps",
                 "Dokunu\u015flardaki titre\u015fimleri durdur");
-        table.put("Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.",
-                "Telegram'a g\u00f6nderilen kullan\u0131m raporlar\u0131n\u0131, \u00f6rne\u011fin her kanal g\u00f6nderisini ne kadar okudu\u011funuzu ve Premium ekranlar\u0131nda nelere dokundu\u011funuzu durdurur. Mesajlar ve aramalar eskisi gibi \u00e7al\u0131\u015f\u0131r.");
     }
 
     private static void fillTr6(Map<String, String> table) {
+        table.put("Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.",
+                "Telegram'a g\u00f6nderilen kullan\u0131m raporlar\u0131n\u0131, \u00f6rne\u011fin her kanal g\u00f6nderisini ne kadar okudu\u011funuzu ve Premium ekranlar\u0131nda nelere dokundu\u011funuzu durdurur. Mesajlar ve aramalar eskisi gibi \u00e7al\u0131\u015f\u0131r.");
         table.put("Stops your phone from automatically sending call problem reports and log files when Telegram's server asks for them.",
                 "Telegram sunucusu istedi\u011finde telefonunuzun arama sorunu raporlar\u0131n\u0131 ve g\u00fcnl\u00fck dosyalar\u0131n\u0131 otomatik g\u00f6ndermesini engeller.");
         table.put("Support HushTelegram",
@@ -4973,14 +5007,20 @@ public final class L10nTranslations {
                 "Telegram Beta, ba\u011flant\u0131 g\u00fcnl\u00fc\u011f\u00fc dahil, telefonunuza s\u00fcrekli hata ay\u0131klama g\u00fcnl\u00fckleri yazar ve kendi hata ay\u0131klama men\u00fcs\u00fc bunu durduramaz. Bu ayar onlar\u0131 durdurur. \u00d6nceden kaydedilmi\u015f g\u00fcnl\u00fckler siz silene kadar kal\u0131r, normal s\u00fcr\u00fcm ise bu g\u00fcnl\u00fckleri tutmaz, yani orada hi\u00e7bir \u015fey de\u011fi\u015fmez. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Telegram'\u0131 yeniden ba\u015flat\u0131n.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
                 "Telegram a\u00e7\u0131ld\u0131ktan sonraki bir dakika i\u00e7inde \u00fcst \u00fcste \u00fc\u00e7 kez \u00e7\u00f6kt\u00fc veya dondu, bu y\u00fczden HushTelegram kendini duraklatt\u0131.");
+        table.put("Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.",
+                "Telegram bu uygulaman\u0131n yamaland\u0131\u011f\u0131 API kimli\u011fini ve hash de\u011ferini kabul etmedi, bu y\u00fczden giri\u015f kodu g\u00f6nderilmedi. \u0130kisini my.telegram.org/apps adresinden yeniden kopyalay\u0131n ve tekrar yamalay\u0131n.");
         table.put("Telegram doesn't look up link previews for messages you haven't sent yet, including shares, polls, story links and bots. Sent messages still get one.",
                 "Telegram, hen\u00fcz g\u00f6ndermedi\u011finiz mesajlar i\u00e7in ba\u011flant\u0131 \u00f6nizlemesi aramaz; payla\u015f\u0131mlar, anketler, hik\u00e2ye ba\u011flant\u0131lar\u0131 ve botlar dahil. G\u00f6nderilen mesajlar yine \u00f6nizleme al\u0131r.");
         table.put("Telegram is still loading your folders. Try again in a moment.",
                 "Telegram klas\u00f6rlerini h\u00e2l\u00e2 y\u00fckl\u00fcyor. Birazdan tekrar dene.");
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "Telegram sohbet ba\u015fl\u0131\u011f\u0131n\u0131 ve panelleri yaln\u0131zca h\u0131zl\u0131 telefonlarda bulan\u0131kla\u015ft\u0131r\u0131r. Bu, G\u00fc\u00e7 tasarrufu alt\u0131nda Sohbette bulan\u0131kl\u0131k a\u00e7\u0131ld\u0131\u011f\u0131nda her telefonun bunu yapmas\u0131n\u0131 sa\u011flar.");
+        table.put("Telegram refused this app's ID",
+                "Telegram bu uygulaman\u0131n kimli\u011fini reddetti");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram, telegram.org g\u00fcncellemelerini sunmay\u0131 b\u0131rak\u0131r. Bunlar bu yamal\u0131 s\u00fcr\u00fcm\u00fcn \u00fczerine kurulamaz, bu y\u00fczden her yeni s\u00fcr\u00fcm\u00fc Morphe Manager'da yamala.");
+        table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
+                "Telegram bu uygulaman\u0131n giri\u015f i\u00e7in kulland\u0131\u011f\u0131 API kimli\u011fini reddetti, bu y\u00fczden giri\u015f kodu g\u00f6nderilmedi. HushTelegram'\u0131 Use registered Telegram API credentials ve my.telegram.org/apps adresinden ald\u0131\u011f\u0131n\u0131z kendi kimli\u011finizle yeniden yamalay\u0131n. Rehber ad\u0131m ad\u0131m anlat\u0131yor.");
         table.put("Telegram's reply to notification sign-up: %1$s",
                 "Telegram'\u0131n bildirim kayd\u0131na yan\u0131t\u0131: %1$s");
         table.put("Telegram's wake-ups come through %1$s.",
@@ -5059,6 +5099,9 @@ public final class L10nTranslations {
                 "Burada \u00e7evir");
         table.put("Translate this chat",
                 "Bu sohbeti \u00e7evir");
+    }
+
+    private static void fillTr7(Map<String, String> table) {
         table.put("Translate with an outside service",
                 "Harici bir hizmetle \u00e7evir");
         table.put("Translation",
@@ -5067,9 +5110,6 @@ public final class L10nTranslations {
                 "\u00c7eviri \u015fu anda kullan\u0131lam\u0131yor");
         table.put("Translation service",
                 "\u00c7eviri hizmeti");
-    }
-
-    private static void fillTr7(Map<String, String> table) {
         table.put("Translation service saved.",
                 "\u00c7eviri hizmeti kaydedildi.");
         table.put("Tries to help this patched Telegram sign up for push notifications with Firebase, Google's notification service, using Telegram's original certificate. Notification permission and battery settings still apply.",
@@ -5182,6 +5222,9 @@ public final class L10nTranslations {
                 "kanal okuma \u00f6l\u00e7\u00fcmleri");
         table.put("chat double-tap reactions",
                 "sohbette \u00e7ift dokunma tepkileri");
+    }
+
+    private static void fillTr8(Map<String, String> table) {
         table.put("chat drafts",
                 "sohbet taslaklar\u0131");
         table.put("chat list menu Wallet item",
@@ -5190,9 +5233,6 @@ public final class L10nTranslations {
                 "sohbet listesindeki hik\u00e2ye \u00e7ubu\u011fu");
         table.put("compose text paste",
                 "mesaj yazarken metin yap\u0131\u015ft\u0131rma");
-    }
-
-    private static void fillTr8(Map<String, String> table) {
         table.put("deleted",
                 "silindi");
         table.put("dual camera reports",

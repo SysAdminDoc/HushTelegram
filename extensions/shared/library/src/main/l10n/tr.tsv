@@ -554,3 +554,7 @@ Made Private, Groups, Channels and Bots folders.	Özel, Gruplar, Kanallar ve Bot
 There were no folders from HushTelegram to remove.	Kaldırılacak HushTelegram klasörü yoktu.
 # context: a short toast (two lines at most) after the switch went off. Folders the person renamed or changed are kept.
 Removed the folders HushTelegram made. Changed ones stay.	HushTelegram klasörleri kaldırıldı. Değiştirilenler kalır.
+Telegram refused this app's ID	Telegram bu uygulamanın kimliğini reddetti
+Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.	Telegram bu uygulamanın giriş için kullandığı API kimliğini reddetti, bu yüzden giriş kodu gönderilmedi. HushTelegram'ı Use registered Telegram API credentials ve my.telegram.org/apps adresinden aldığınız kendi kimliğinizle yeniden yamalayın. Rehber adım adım anlatıyor.
+Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.	Telegram bu uygulamanın yamalandığı API kimliğini ve hash değerini kabul etmedi, bu yüzden giriş kodu gönderilmedi. İkisini my.telegram.org/apps adresinden yeniden kopyalayın ve tekrar yamalayın.
+Open the guide	Rehberi aç

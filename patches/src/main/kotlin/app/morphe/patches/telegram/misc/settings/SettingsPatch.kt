@@ -22,6 +22,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
+import app.morphe.patches.telegram.misc.api.signInHelpPatch
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.TELEGRAM_APPLICATION
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
@@ -665,7 +666,9 @@ val settingsPatch = bytecodePatch(
     default = true,
 ) {
     category("Settings")
-    dependsOn(telegramExtensionPatch, settingsManifestPatch)
+    // Sign-in help rides along here because every selection carries this patch, the default one
+    // that issue #11 patched with included.
+    dependsOn(telegramExtensionPatch, settingsManifestPatch, signInHelpPatch)
     compatibleWith(*AppCompatibilities.telegram())
 
     execute {
