@@ -140,17 +140,26 @@ class HushTelegramIconFixtureTest {
         assertEquals("x".repeat(MAX_APP_NAME), checkedAppName("x".repeat(MAX_APP_NAME)))
     }
 
-    /** Right-to-left override, the isolates, zero-width space, word joiner, byte order mark, line separator. */
+    /**
+     * Right-to-left override, the isolates, zero-width space, right-to-left mark, word joiner,
+     * byte order mark, line separator, and two past U+FFFF: a language tag and a shorthand format
+     * control. Written as escapes, so the test file holds no hidden text of its own.
+     */
     @Test
     fun `a name with invisible characters refuses`() {
-        for (hidden in listOf('‮', '⁧', '​', '‏', '⁠', '﻿', ' ')) {
-            refusal(manifest(), "Hush${hidden}gram") { message ->
-                assertTrue("U+%04X: $message".format(hidden.code), message.contains("invisible characters"))
+        val hidden = listOf("\u202E", "\u2067", "\u200B", "\u200F", "\u2060", "\uFEFF", "\u2028",
+            "\uDB40\uDC01", "\uD82F\uDCA0")
+        for (mark in hidden) {
+            refusal(manifest(), "Hush${mark}gram") { message ->
+                assertTrue("U+%04X: $message".format(mark.codePointAt(0)), message.contains("invisible characters"))
             }
         }
         // The family emoji is three faces held together with zero-width joiners.
-        val family = "Hush 👨‍👩‍👧"
+        val family = "Hush \uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67"
         assertEquals(family, checkedAppName(family))
+        // Persian writes some words with a zero-width non-joiner: "Mikhaham", I want.
+        val persian = "\u0645\u06CC\u200C\u062E\u0648\u0627\u0647\u0645"
+        assertEquals(persian, checkedAppName(persian))
     }
 
     @Test

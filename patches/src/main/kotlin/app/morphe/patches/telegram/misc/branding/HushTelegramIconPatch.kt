@@ -78,16 +78,20 @@ internal fun checkedAppName(raw: String?): String? {
         refuse("can't hold quotes, backslashes or control characters.")
     }
     // Direction marks and zero-width characters show nothing and can flip or hide what the
-    // launcher shows. The zero-width joiner stays: emoji like the family ones are built with it.
-    if (name.any { it != ZERO_WIDTH_JOINER && Character.getType(it).toByte().let { type ->
-            type == Character.FORMAT || type == Character.LINE_SEPARATOR || type == Character.PARAGRAPH_SEPARATOR } }
+    // launcher shows. The joiners stay: emoji like the family ones are built with the zero-width
+    // joiner, and Persian, Kurdish and Indic names need the non-joiner. Read by code point, so a
+    // format character past U+FFFF, such as a language tag, is caught too.
+    if (name.codePoints().anyMatch { it != ZERO_WIDTH_JOINER && it != ZERO_WIDTH_NON_JOINER &&
+            Character.getType(it).toByte().let { type ->
+                type == Character.FORMAT || type == Character.LINE_SEPARATOR || type == Character.PARAGRAPH_SEPARATOR } }
     ) {
         refuse("can't hold invisible characters, such as direction marks or zero-width spaces.")
     }
     return name
 }
 
-private const val ZERO_WIDTH_JOINER = '‍'
+private const val ZERO_WIDTH_JOINER = 0x200D
+private const val ZERO_WIDTH_NON_JOINER = 0x200C
 
 /** The pictures the patch adds, by their path under res, read before anything is written. */
 internal fun bundledIconPictures(): Map<String, ByteArray> = ICON_DENSITIES.flatMap { density ->
