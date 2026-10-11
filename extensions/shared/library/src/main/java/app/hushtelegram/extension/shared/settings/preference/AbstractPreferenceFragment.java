@@ -630,7 +630,7 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
     }
 
     protected CharSequence preferenceChangeRecoveredMessage(@Nullable Context context) {
-        return L10n.t(context, "Couldn't update that setting. The switch shows what's saved.");
+        return L10n.t(context, "Couldn't save that. It's back to the saved value. Try again.");
     }
 
     protected CharSequence preferenceChangeRecoveryFailedMessage(@Nullable Context context) {

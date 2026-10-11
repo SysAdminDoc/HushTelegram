@@ -485,8 +485,8 @@ final class SettingsNavigation extends BaseAdapter {
             pageStatus.setTitle(paused ? L10n.t("HushTelegram is paused") : L10n.t("HushTelegram is on"));
             // Worded like the Pause switch: Debug logging and what was set when patching stay in.
             pageStatus.setSummary(paused == nextPaused
-                    ? L10n.t("Until you resume, every switch except Debug logging acts as if it were off. Edits "
-                            + "made when you patched stay in.")
+                    ? L10n.t("Until you resume, every switch except Debug logging acts as if it were off. Your "
+                            + "choices stay saved. Edits made when you patched stay in.")
                     : paused ? L10n.t("HushTelegram turns back on when Telegram restarts.")
                     : L10n.t("HushTelegram pauses when Telegram restarts."));
             pageStatus.setIcon(SettingsIcons.icon(context, paused ? SettingsIcons.PAUSE : SettingsIcons.PATCHED,

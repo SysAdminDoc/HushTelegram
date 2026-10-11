@@ -20,7 +20,7 @@ About	Hakkında
 Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.	Android 11 ve öncesi burada hangi bağlantıların açıldığını bildirmez. Bu uygulamanın ayarlarını açmak için dokunun, ardından Varsayılan olarak aç'a gidin.
 Back	Geri
 Cancel	İptal
-Loads switch choices from a saved file. You see how many switches it will change before anything is applied. It applies to all accounts.	Kayıtlı bir dosyadan anahtar seçimlerini yükler. Hiçbir şey uygulanmadan önce kaç anahtarın değişeceğini görürsünüz. Tüm hesaplar için geçerlidir.
+Loads your switches, filter lists and sticker size from a saved file. You see which switches it will change before anything is applied. It applies to all accounts.	Anahtarlarınızı, filtre listelerinizi ve çıkartma boyutunu kayıtlı bir dosyadan yükler. Hiçbir şey uygulanmadan önce hangi anahtarların değişeceğini görürsünüz. Tüm hesaplar için geçerlidir.
 Clear diagnostic data	Tanılama verilerini temizle
 Copy a short report or save the full one to Download/Morphe. Links, IDs and sign-in details are left out. Look it over before sharing.	Kısa bir rapor kopyalayın veya tam raporu Download/Morphe içine kaydedin. Bağlantılar, kimlikler ve oturum bilgileri dahil edilmez. Paylaşmadan önce göz atın.
 Copy quick report	Hızlı raporu kopyala
@@ -31,14 +31,14 @@ Couldn't open the file picker. Try again.	Dosya seçici açılamadı. Tekrar den
 Couldn't put back the diagnostic data. Try again.	Tanılama verileri geri getirilemedi. Tekrar dene.
 Couldn't save the settings file. Try again.	Ayar dosyası kaydedilemedi. Tekrar dene.
 Couldn't start that. Try again in a moment.	Bu işlem başlatılamadı. Birazdan tekrar dene.
-Couldn't start the report export. Try again shortly.	Rapor dışa aktarımı başlatılamadı. Birazdan tekrar dene.
+Couldn't start the report export. Try again in a moment.	Rapor dışa aktarımı başlatılamadı. Birazdan tekrar dene.
 Couldn't turn HushTelegram back on. Try again.	HushTelegram yeniden açılamadı. Tekrar dene.
 Debug logging	Hata ayıklama günlüğü
 Diagnostic data cleared. Tap again to put it back.	Tanılama verileri temizlendi. Geri getirmek için tekrar dokun.
 Diagnostic data put back.	Tanılama verileri geri getirildi.
 Diagnostic report copied to the clipboard.	Tanılama raporu panoya kopyalandı.
 Clears the activity log and patch checks that a report would include.	Bir raporda yer alacak etkinlik günlüğünü ve yama denetimlerini temizler.
-Every switch except Debug logging acts as if it were off. Edits made when you patched stay in. Your choices stay saved.	Hata ayıklama günlüğü dışındaki her anahtar kapalıymış gibi davranır. Yamalama sırasında yapılan değişiklikler geçerli kalır. Seçimleriniz kayıtlı kalır.
+Every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.	Hata ayıklama günlüğü dışındaki her anahtar kapalıymış gibi davranır. Seçimleriniz kayıtlı kalır. Yamalama sırasında yapılan değişiklikler geçerli kalır.
 Export diagnostic report	Tanılama raporunu dışa aktar
 Export settings	Ayarları dışa aktar
 After Telegram restarts, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.	Telegram yeniden başlatıldıktan sonra Hata ayıklama günlüğü dışındaki her anahtar kapalıymış gibi davranır. Seçimleriniz kayıtlı kalır. Yamalama sırasında yapılan değişiklikler geçerli kalır.
@@ -46,13 +46,13 @@ Hide ads	Reklamları gizle
 Links, updates, backup and more	Bağlantılar, güncellemeler, yedekleme ve daha fazlası
 Privacy	Gizlilik
 Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram app. Pause, Debug logging, the HushTelegram release check, UnifiedPush and Folders by chat type stay out.	Anahtarlarınızı, filtre listelerinizi ve çıkartma boyutunu bir dosyaya kaydeder; bu Telegram uygulamasındaki tüm hesaplar için geçerlidir. Duraklat, Hata ayıklama günlüğü, HushTelegram sürüm denetimi, UnifiedPush ve Sohbet türüne göre klasörler dahil edilmez.
-Settings exported. The app wouldn't let HushTelegram check it.	Ayarlar dışa aktarıldı. Uygulama HushTelegram'ın kontrol etmesine izin vermedi.
-That app is slow to answer. Nothing was changed.	Bu uygulama geç yanıt veriyor. Hiçbir şey değiştirilmedi.
+Settings exported but not checked. Open the file to make sure.	Ayarlar dışa aktarıldı ama kontrol edilmedi. Dosyayı açıp kontrol edin.
+That app is slow to answer. Nothing was changed. Try again.	Bu uygulama geç yanıt veriyor. Hiçbir şey değiştirilmedi. Tekrar deneyin.
 That file's app still hasn't answered. Try again later.	O dosyanın uygulaması hâlâ yanıt vermedi. Sonra tekrar dene.
 That app is slow. It may still save the file, so check it.	Bu uygulama yavaş. Dosyayı hâlâ kaydediyor olabilir, o yüzden kontrol et.
 The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.	%1$s dosyası kaldırılamadı. Onu %2$s içinden sil, sonra yeniden Devam et'e dokun.
 Saved, but the file doesn't match. Save it again as a new file.	Kaydedildi ama dosya eşleşmiyor. Yeni bir dosya olarak tekrar kaydet.
-Until you resume, every switch except Debug logging acts as if it were off. Edits made when you patched stay in.	Devam edene kadar Hata ayıklama günlüğü dışındaki her anahtar kapalıymış gibi davranır. Yamalama sırasında yapılan değişiklikler geçerli kalır.
+Until you resume, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.	Devam edene kadar Hata ayıklama günlüğü dışındaki her anahtar kapalıymış gibi davranır. Seçimleriniz kayıtlı kalır. Yamalama sırasında yapılan değişiklikler geçerli kalır.
 Full report saved to %1$s	Tam rapor şuraya kaydedildi: %1$s
 The GPL-3.0 license, and credits for the projects HushTelegram is built on	GPL-3.0 lisansı ve HushTelegram'ın dayandığı projelerin teşekkür notları
 HushTelegram is on	HushTelegram açık
@@ -95,13 +95,13 @@ That file isn't readable text. Nothing was changed.	Bu dosya okunabilir bir meti
 That file lists a setting twice. Nothing was changed.	Bu dosya bir ayarı iki kez listeliyor. Hiçbir şey değiştirilmedi.
 That isn't a HushTelegram settings file. Nothing was changed.	Bu bir HushTelegram ayar dosyası değil. Hiçbir şey değiştirilmedi.
 A value in that file can't be read. Nothing was changed.	Bu dosyadaki bir değer okunamıyor. Hiçbir şey değiştirilmedi.
-That file is damaged or partly downloaded. Nothing was changed.	Bu dosya bozuk ya da yarım inmiş. Hiçbir şey değiştirilmedi.
-That file is from a newer HushTelegram. Nothing was changed.	Bu dosya daha yeni bir HushTelegram'dan. Hiçbir şey değiştirilmedi.
+That file is damaged. Download it again. Nothing was changed.	Bu dosya bozuk. Yeniden indirin. Hiçbir şey değiştirilmedi.
+Update HushTelegram to read that file. Nothing was changed.	Bu dosyayı okumak için HushTelegram'ı güncelleyin. Hiçbir şey değiştirilmedi.
 The report couldn't be saved yet. Try again in a moment.	Rapor henüz kaydedilemedi. Birazdan tekrar dene.
 The diagnostic report couldn't be saved. Try again.	Tanılama raporu kaydedilemedi. Tekrar dene.
 The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.	%1$s dosyası kaldırılamadı. HushTelegram'u yeniden açmak için onu %2$s içinden sil.
 Couldn't remove %1$s. Delete it by hand.	%1$s kaldırılamadı. Elle sil.
-Couldn't update that setting. The switch shows what's saved.	Bu ayar güncellenemedi. Anahtar kayıtlı değeri gösteriyor.
+Couldn't save that. It's back to the saved value. Try again.	Kaydedilemedi. Kayıtlı değere dönüldü. Tekrar deneyin.
 There's no diagnostic data to clear.	Temizlenecek tanılama verisi yok.
 There's no diagnostic data to put back.	Geri getirilecek tanılama verisi yok.
 This phone has no file picker, so you can't choose a file here.	Bu telefonda dosya seçici yok, o yüzden dosya seçemezsin.
@@ -139,7 +139,7 @@ Android didn't say which links open here. Tap to check in Android's settings.	An
 Selecting links by hand	Bağlantıları elle seçme
 
 A change here applies after Telegram restarts.	Buradaki bir değişiklik Telegram yeniden başladıktan sonra geçerli olur.
-Android opens t.me links in this app only if you select their addresses on its Open by default page. Other link settings don't change.	Android, t.me bağlantılarını bu uygulamada yalnızca adreslerini uygulamanın Varsayılan olarak aç sayfasında seçerseniz açar. Diğer bağlantı ayarları değişmez.
+Android opens t.me links in this Telegram app only if you select their addresses on its Open by default page. Other link settings don't change.	Android, t.me bağlantılarını bu Telegram uygulamasında yalnızca adreslerini uygulamanın Varsayılan olarak aç sayfasında seçerseniz açar. Diğer bağlantı ayarları değişmez.
 Android verified this app for Telegram's web addresses, so their links open here.	Android bu uygulamayı Telegram'ın web adresleri için doğruladı, bu yüzden bağlantıları burada açılır.
 App settings didn't open. Try App info, then Open by default.	Ayarlar açılmadı. Uygulama bilgisi, sonra Varsayılan olarak aç'ı dene.
 Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.	Kanallardaki sponsorlu mesajları, aramadaki sponsorlu hesapları ve videolardaki reklamları kaldırır. Hiçbiri yüklenmez, bu yüzden hiçbiri görülmüş sayılmaz.

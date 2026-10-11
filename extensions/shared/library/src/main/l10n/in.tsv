@@ -20,7 +20,7 @@ About	Tentang
 Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.	Android 11 dan versi sebelumnya tidak memberi tahu tautan mana yang terbuka di sini. Ketuk untuk membuka pengaturan aplikasi ini, lalu Buka secara default.
 Back	Kembali
 Cancel	Batal
-Loads switch choices from a saved file. You see how many switches it will change before anything is applied. It applies to all accounts.	Memuat pilihan sakelar dari berkas yang disimpan. Anda melihat berapa sakelar yang akan berubah sebelum apa pun diterapkan. Berlaku untuk semua akun.
+Loads your switches, filter lists and sticker size from a saved file. You see which switches it will change before anything is applied. It applies to all accounts.	Memuat sakelar, daftar filter, dan ukuran stiker Anda dari berkas yang disimpan. Anda melihat sakelar mana yang akan berubah sebelum apa pun diterapkan. Berlaku untuk semua akun.
 Clear diagnostic data	Hapus data diagnostik
 Copy a short report or save the full one to Download/Morphe. Links, IDs and sign-in details are left out. Look it over before sharing.	Salin laporan singkat atau simpan yang lengkap ke Download/Morphe. Tautan, ID, dan data masuk tidak disertakan. Periksa dulu sebelum membagikannya.
 Copy quick report	Salin laporan singkat
@@ -31,14 +31,14 @@ Couldn't open the file picker. Try again.	Pemilih file tidak dapat dibuka. Coba 
 Couldn't put back the diagnostic data. Try again.	Data diagnostik tidak dapat dikembalikan. Coba lagi.
 Couldn't save the settings file. Try again.	File pengaturan tidak dapat disimpan. Coba lagi.
 Couldn't start that. Try again in a moment.	Tidak dapat dimulai. Coba lagi dalam beberapa saat.
-Couldn't start the report export. Try again shortly.	Ekspor laporan tidak dapat dimulai. Coba lagi dalam beberapa saat.
+Couldn't start the report export. Try again in a moment.	Ekspor laporan tidak dapat dimulai. Coba lagi dalam beberapa saat.
 Couldn't turn HushTelegram back on. Try again.	HushTelegram tidak dapat diaktifkan lagi. Coba lagi.
 Debug logging	Pencatatan debug
 Diagnostic data cleared. Tap again to put it back.	Data diagnostik dihapus. Ketuk lagi untuk mengembalikannya.
 Diagnostic data put back.	Data diagnostik dikembalikan.
 Diagnostic report copied to the clipboard.	Laporan diagnostik disalin ke papan klip.
 Clears the activity log and patch checks that a report would include.	Menghapus catatan aktivitas dan hasil pemeriksaan tambalan yang akan disertakan dalam laporan.
-Every switch except Debug logging acts as if it were off. Edits made when you patched stay in. Your choices stay saved.	Semua sakelar kecuali Pencatatan debug dianggap mati. Perubahan yang dibuat saat menambal tetap berlaku. Pilihan Anda tetap tersimpan.
+Every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.	Semua sakelar kecuali Pencatatan debug dianggap mati. Pilihan Anda tetap tersimpan. Perubahan yang dibuat saat menambal tetap berlaku.
 Export diagnostic report	Ekspor laporan diagnostik
 Export settings	Ekspor pengaturan
 After Telegram restarts, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.	Setelah Telegram dimulai ulang, semua sakelar kecuali Pencatatan debug dianggap mati. Pilihan Anda tetap tersimpan. Perubahan yang dibuat saat menambal tetap berlaku.
@@ -46,13 +46,13 @@ Hide ads	Sembunyikan iklan
 Links, updates, backup and more	Tautan, pembaruan, cadangan, dan lainnya
 Privacy	Privasi
 Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram app. Pause, Debug logging, the HushTelegram release check, UnifiedPush and Folders by chat type stay out.	Menyimpan sakelar, daftar filter, dan ukuran stiker Anda ke berkas, untuk semua akun di aplikasi Telegram ini. Jeda, Pencatatan debug, pemeriksaan rilis HushTelegram, UnifiedPush, dan Folder menurut jenis obrolan tidak disertakan.
-Settings exported. The app wouldn't let HushTelegram check it.	Pengaturan diekspor. Aplikasi itu tidak mengizinkan HushTelegram memeriksanya.
-That app is slow to answer. Nothing was changed.	Aplikasi itu lambat merespons. Tidak ada yang diubah.
+Settings exported but not checked. Open the file to make sure.	Pengaturan diekspor tapi belum diperiksa. Buka filenya untuk memastikan.
+That app is slow to answer. Nothing was changed. Try again.	Aplikasi itu lambat merespons. Tidak ada yang diubah. Coba lagi.
 That file's app still hasn't answered. Try again later.	Aplikasi file itu belum menjawab. Coba lagi nanti.
 That app is slow. It may still save the file, so check it.	Aplikasi itu lambat. Mungkin masih menyimpan file, jadi periksa file-nya.
 The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.	File %1$s tidak dapat dihapus. Hapus file itu dari %2$s, lalu ketuk Lanjutkan lagi.
 Saved, but the file doesn't match. Save it again as a new file.	Tersimpan, tetapi isi file tidak cocok. Simpan lagi sebagai file baru.
-Until you resume, every switch except Debug logging acts as if it were off. Edits made when you patched stay in.	Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap mati. Perubahan yang dibuat saat menambal tetap berlaku.
+Until you resume, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.	Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap mati. Pilihan Anda tetap tersimpan. Perubahan yang dibuat saat menambal tetap berlaku.
 Full report saved to %1$s	Laporan lengkap disimpan ke %1$s
 The GPL-3.0 license, and credits for the projects HushTelegram is built on	Lisensi GPL-3.0 dan kredit untuk proyek-proyek yang menjadi dasar HushTelegram
 HushTelegram is on	HushTelegram aktif
@@ -95,13 +95,13 @@ That file isn't readable text. Nothing was changed.	File itu bukan teks yang bis
 That file lists a setting twice. Nothing was changed.	File itu memuat satu pengaturan dua kali. Tidak ada yang diubah.
 That isn't a HushTelegram settings file. Nothing was changed.	Itu bukan file pengaturan HushTelegram. Tidak ada yang diubah.
 A value in that file can't be read. Nothing was changed.	Ada nilai di file itu yang tidak bisa dibaca. Tidak ada yang diubah.
-That file is damaged or partly downloaded. Nothing was changed.	File itu rusak atau hanya terunduh sebagian. Tidak ada yang diubah.
-That file is from a newer HushTelegram. Nothing was changed.	File itu berasal dari HushTelegram yang lebih baru. Tidak ada yang diubah.
+That file is damaged. Download it again. Nothing was changed.	File itu rusak. Unduh lagi. Tidak ada yang diubah.
+Update HushTelegram to read that file. Nothing was changed.	Perbarui HushTelegram untuk membaca file itu. Tidak ada yang diubah.
 The report couldn't be saved yet. Try again in a moment.	Laporan belum bisa disimpan. Coba lagi sebentar lagi.
 The diagnostic report couldn't be saved. Try again.	Laporan diagnostik tidak dapat disimpan. Coba lagi.
 The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.	File %1$s tidak dapat dihapus. Hapus file itu dari %2$s untuk mengaktifkan HushTelegram lagi.
 Couldn't remove %1$s. Delete it by hand.	%1$s tidak bisa dihapus. Hapus secara manual.
-Couldn't update that setting. The switch shows what's saved.	Pengaturan itu tidak bisa diperbarui. Sakelar menunjukkan yang tersimpan.
+Couldn't save that. It's back to the saved value. Try again.	Tidak bisa disimpan. Nilai tersimpan dipulihkan. Coba lagi.
 There's no diagnostic data to clear.	Tidak ada data diagnostik yang dapat dihapus.
 There's no diagnostic data to put back.	Tidak ada data diagnostik yang dapat dikembalikan.
 This phone has no file picker, so you can't choose a file here.	Ponsel ini tidak punya pemilih file, jadi kamu tidak bisa memilih file.
@@ -139,7 +139,7 @@ Android didn't say which links open here. Tap to check in Android's settings.	An
 Selecting links by hand	Memilih tautan secara manual
 
 A change here applies after Telegram restarts.	Perubahan di sini berlaku setelah Telegram dimulai ulang.
-Android opens t.me links in this app only if you select their addresses on its Open by default page. Other link settings don't change.	Android membuka tautan t.me di aplikasi ini hanya jika Anda memilih alamatnya di halaman Buka secara default milik aplikasi. Pengaturan tautan lain tidak berubah.
+Android opens t.me links in this Telegram app only if you select their addresses on its Open by default page. Other link settings don't change.	Android membuka tautan t.me di aplikasi Telegram ini hanya jika Anda memilih alamatnya di halaman Buka secara default milik aplikasi. Pengaturan tautan lain tidak berubah.
 Android verified this app for Telegram's web addresses, so their links open here.	Android telah memverifikasi aplikasi ini untuk alamat web Telegram, jadi tautannya terbuka di sini.
 App settings didn't open. Try App info, then Open by default.	Pengaturan aplikasi tidak terbuka. Coba Info aplikasi, lalu Buka secara default.
 Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.	Menghapus pesan bersponsor di kanal, akun bersponsor di pencarian, dan iklan di video. Semuanya tidak pernah dimuat, jadi tidak ada yang dihitung sebagai dilihat.

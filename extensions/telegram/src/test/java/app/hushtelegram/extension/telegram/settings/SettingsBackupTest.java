@@ -1189,10 +1189,10 @@ public class SettingsBackupTest {
     // ---- The app holding the file ------------------------------------------------------------
 
     private static final String EXPORT_TIMEOUT = "That app is slow. It may still save the file, so check it.";
-    private static final String IMPORT_TIMEOUT = "That app is slow to answer. Nothing was changed.";
+    private static final String IMPORT_TIMEOUT = "That app is slow to answer. Nothing was changed. Try again.";
     private static final String STALLED = "That file's app still hasn't answered. Try again later.";
     private static final String MISMATCH = "Saved, but the file doesn't match. Save it again as a new file.";
-    private static final String UNCHECKED = "Settings exported. The app wouldn't let HushTelegram check it.";
+    private static final String UNCHECKED = "Settings exported but not checked. Open the file to make sure.";
 
     /**
      * An app that turns "wt" down gets "w", which here keeps the old file's longer tail. The file is

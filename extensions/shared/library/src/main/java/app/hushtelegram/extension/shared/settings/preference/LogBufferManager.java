@@ -193,7 +193,7 @@ public final class LogBufferManager {
             });
         });
         if (!started) {
-            Utils.showToastLong(say(couldNotStartMessage, L10n.t("Couldn't start the report export. Try again shortly.")));
+            Utils.showToastLong(say(couldNotStartMessage, L10n.t("Couldn't start the report export. Try again in a moment.")));
             finished(done);
         }
     }
@@ -255,7 +255,7 @@ public final class LogBufferManager {
         } catch (RejectedExecutionException error) {
             FILE_EXPORT_RUNNING.set(false);
             Logger.printException(() -> "Could not start diagnostic export", error);
-            Utils.showToastLong(say(couldNotStartMessage, L10n.t("Couldn't start the report export. Try again shortly.")));
+            Utils.showToastLong(say(couldNotStartMessage, L10n.t("Couldn't start the report export. Try again in a moment.")));
             finished(done);
         }
     }

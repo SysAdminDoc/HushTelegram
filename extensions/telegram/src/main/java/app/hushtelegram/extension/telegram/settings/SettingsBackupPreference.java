@@ -245,7 +245,7 @@ public class SettingsBackupPreference extends Preference {
             back = read(resolver, uri, run);
         } catch (SettingsBackup.Rejected refused) {
             if (refused.reason == SettingsBackup.Reason.UNREADABLE) {
-                return L10n.t("Settings exported. The app wouldn't let HushTelegram check it.");
+                return L10n.t("Settings exported but not checked. Open the file to make sure.");
             }
             back = null;
         }
@@ -272,7 +272,7 @@ public class SettingsBackupPreference extends Preference {
             }
         });
         if (!accepted) notStarted(run);
-        else watch(run, L10n.t("That app is slow to answer. Nothing was changed."));
+        else watch(run, L10n.t("That app is slow to answer. Nothing was changed. Try again."));
     }
 
     /** The file's text, opened through its app with [run]'s cancel signal and held where the screen can close it. */
@@ -296,13 +296,13 @@ public class SettingsBackupPreference extends Preference {
             case ENCODING:
                 return L10n.t("That file isn't readable text. Nothing was changed.");
             case DAMAGED:
-                return L10n.t("That file is damaged or partly downloaded. Nothing was changed.");
+                return L10n.t("That file is damaged. Download it again. Nothing was changed.");
             case DUPLICATE:
                 return L10n.t("That file lists a setting twice. Nothing was changed.");
             case FORMAT:
                 return L10n.t("That isn't a HushTelegram settings file. Nothing was changed.");
             case SCHEMA:
-                return L10n.t("That file is from a newer HushTelegram. Nothing was changed.");
+                return L10n.t("Update HushTelegram to read that file. Nothing was changed.");
             case VALUE:
                 return L10n.t("A value in that file can't be read. Nothing was changed.");
             default:

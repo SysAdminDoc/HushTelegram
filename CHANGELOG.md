@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Settings:** A wording pass. Pause is explained the same way everywhere, Import settings says what a file holds, and errors that left you guessing now say what to do next: download a damaged file again, update HushTelegram for a file from a newer one, or open an export that couldn't be checked.
+
 * **Telegram:** With Debug logging on, what HushTelegram writes to Android's log goes through the same redaction as an exported report, so tokens and keys in a message or an error stay out of it.
 
 * **Patching:** The App name option turns down direction marks and zero-width characters, which could flip or hide the name under the icon. Emoji built with zero-width joiners still work.

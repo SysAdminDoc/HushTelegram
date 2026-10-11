@@ -675,7 +675,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         links.addPreference(mark(supportedLinksRow(context), SettingsIcons.LINKS));
         // An explanation, not a control: the info mark says so, as it does for Version on About.
         links.addPreference(mark(info(context, L10n.t("Selecting links by hand"),
-                L10n.t("Android opens t.me links in this app only if you select their addresses on its Open by "
+                L10n.t("Android opens t.me links in this Telegram app only if you select their addresses on its Open by "
                         + "default page. Other link settings don't change.")),
                 SettingsIcons.ABOUT));
 
@@ -708,11 +708,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         + " app. Pause, Debug logging, the HushTelegram release check, UnifiedPush and Folders by chat type"
                         + " stay out.")),
                 SettingsIcons.EXPORT));
-        // The preview gives a count of the switches, not each switch by name.
+        // The preview gives the count of the switches and each one by name.
         backup.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.IMPORT,
                 L10n.t("Import settings"),
-                L10n.t("Loads switch choices from a saved file. You see how many switches it will change before "
-                        + "anything is applied. It applies to all accounts.")), SettingsIcons.DOWNLOADS));
+                L10n.t("Loads your switches, filter lists and sticker size from a saved file. You see which switches "
+                        + "it will change before anything is applied. It applies to all accounts.")), SettingsIcons.DOWNLOADS));
         PreferenceCategory diagnostics = category(screen, L10n.t("Diagnostics"));
         // Debug logging also fills the exported report and turns on error toasts (Logger).
         diagnostics.addPreference(mark(toggle(context, BaseSettings.DEBUG, L10n.t("Debug logging"),
@@ -1152,8 +1152,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 why = L10n.t("You paused HushTelegram.");
                 break;
         }
-        return why + " " + L10n.t("Every switch except Debug logging acts as if it were off. Edits made when you patched stay in. "
-                + "Your choices stay saved.");
+        return why + " " + L10n.t("Every switch except Debug logging acts as if it were off. Your choices stay saved. "
+                + "Edits made when you patched stay in.");
     }
 
     /**

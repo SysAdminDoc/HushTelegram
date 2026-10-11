@@ -99,7 +99,7 @@ public class ToastLengthTest {
         assertTrue("found " + texts.size(), texts.size() >= 40);
         assertTrue(texts.contains("Filters saved."));
         assertTrue(texts.contains("Can't open the link. Go to %1$s."));
-        assertTrue(texts.contains("That app is slow to answer. Nothing was changed."));
+        assertTrue(texts.contains("That app is slow to answer. Nothing was changed. Try again."));
         // Toast.makeText straight from a hook, and a text handed to it through a variable.
         assertTrue(texts.contains("Photo copied"));
         assertTrue(texts.contains("Forwarding to %1$s"));

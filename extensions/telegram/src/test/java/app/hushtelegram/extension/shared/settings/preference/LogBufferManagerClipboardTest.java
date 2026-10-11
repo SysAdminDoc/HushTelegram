@@ -288,7 +288,7 @@ public class LogBufferManagerClipboardTest {
         try (WorkerPoolForTests full = WorkerPoolForTests.fill()) {
             LogBufferManager.exportToClipboard();
             ShadowLooper.idleMainLooper();
-            assertEquals("Couldn't start the report export. Try again shortly.", ShadowToast.getTextOfLatestToast());
+            assertEquals("Couldn't start the report export. Try again in a moment.", ShadowToast.getTextOfLatestToast());
             assertEquals("before", clipText(clipboard));
         }
 
