@@ -39,13 +39,15 @@ import org.robolectric.shadows.ShadowLooper;
 public class SendConfirmTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
-    private static final List<BooleanSetting> SWITCHES = Arrays.asList(Settings.ASK_BEFORE_STICKER, Settings.ASK_BEFORE_GIF,
-            Settings.ASK_BEFORE_VOICE_VIDEO, Settings.ASK_BEFORE_CALL);
+    /** Built when a test runs, after the rule gave the settings a context; run alone, a field here would load Settings without one. */
+    private static List<BooleanSetting> switches() {
+        return Arrays.asList(Settings.ASK_BEFORE_STICKER, Settings.ASK_BEFORE_GIF, Settings.ASK_BEFORE_VOICE_VIDEO, Settings.ASK_BEFORE_CALL);
+    }
 
     @Before public void reset() { restore(); }
     @After public void restore() {
         PauseForTests.resume();
-        for (BooleanSetting setting : SWITCHES) {
+        for (BooleanSetting setting : switches()) {
             SettingReadsForTests.mend(setting);
             setting.resetToDefault();
         }
@@ -74,7 +76,7 @@ public class SendConfirmTest {
     }
 
     @Test public void offByDefaultEveryHookLetsTelegramGoOn() {
-        for (BooleanSetting setting : SWITCHES) assertFalse(setting.key, setting.get());
+        for (BooleanSetting setting : switches()) assertFalse(setting.key, setting.get());
         Activity window = window();
         View view = new View(window);
         assertTrue(sticker(view));
@@ -82,6 +84,7 @@ public class SendConfirmTest {
         assertTrue(SendConfirm.voice(new Object(), 1, true, 0, false, 0L));
         assertTrue(SendConfirm.video(new Object(), 1, true, 0, 0, 0L, 0L));
         assertTrue(SendConfirm.videoReordered(new Object(), 1, 0, 0, 0L, 0L, true));
+        assertTrue(SendConfirm.stripSticker(new Object(), 0L));
         assertNull("no question was put", ShadowDialog.getLatestDialog());
         assertTrue(String.join("\n", HookStatus.report()).contains(FamilyNames.ASK_BEFORE_STICKER));
     }
@@ -115,6 +118,33 @@ public class SendConfirmTest {
         // A flag for another kind doesn't let a sticker through.
         SendConfirm.answered(2, () -> other.set(sticker(view)));
         assertFalse(other.get());
+    }
+
+    @Test public void theStripAsksOnlyWhenTelegramDidNotAndItsAnsweredSendTakesOnlyItsOwnFlag() {
+        Settings.ASK_BEFORE_STICKER.save(true);
+        Object send = new Object();
+        assertTrue(SendConfirm.paid(1L));
+        assertFalse(SendConfirm.paid(0L));
+        assertFalse(SendConfirm.paid(null));
+        assertFalse(SendConfirm.paid("25"));
+        assertTrue("Telegram's own paid-message question already asked", SendConfirm.stripSticker(send, 25L));
+        assertTrue("no main window in front, so Telegram goes on", SendConfirm.stripSticker(send, 0L));
+        assertNull(ShadowDialog.getLatestDialog());
+
+        AtomicBoolean through = new AtomicBoolean();
+        AtomicBoolean left = new AtomicBoolean(true);
+        SendConfirm.answered(6, () -> {
+            through.set(SendConfirm.stripSticker(send, 0L));
+            left.set(SendConfirm.passed(6));
+        });
+        assertTrue(through.get());
+        assertFalse("the strip's hook used its flag up", left.get());
+        AtomicBoolean kept = new AtomicBoolean();
+        SendConfirm.answered(1, () -> {
+            SendConfirm.stripSticker(send, 0L);
+            kept.set(SendConfirm.passed(1));
+        });
+        assertTrue("the chat bar's flag is left for the chat bar", kept.get());
     }
 
     @Test public void backingOutCountsAsCancelOnceAndSendAnswersOnce() {
@@ -182,7 +212,7 @@ public class SendConfirmTest {
     }
 
     @Test public void pausingAnEarlyStartOrAnUnreadableSwitchKeepsTelegramsOwnWay() {
-        for (BooleanSetting setting : SWITCHES) {
+        for (BooleanSetting setting : switches()) {
             setting.save(true);
             assertTrue(setting.key, SendConfirm.on(setting));
             for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {

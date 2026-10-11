@@ -32,8 +32,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * counts as Cancel, so a recording never keeps running behind a closed dialog.
  *
  * <p>Only what a person starts by hand is asked about: a sticker or GIF picked in Telegram's
- * panels, a recording sent from the record button, and the call buttons in a chat's header and on
- * a profile. A scheduled send, a send that already carries its own paid-message confirmation and a
+ * panels or its suggestion strip, a recording sent from the record button, and the call buttons in
+ * a chat's header and on a profile. A scheduled send, a send that already carries its own paid-message confirmation and a
  * call started from anywhere else go through untouched.
  */
 public final class SendConfirm {
@@ -44,6 +44,7 @@ public final class SendConfirm {
     private static final int VOICE = 3;
     private static final int VIDEO = 4;
     private static final int CALL = 5;
+    private static final int STRIP = 6;
 
     /** The kind of send the next call through its hook is the answered one of, or 0. */
     private static volatile int passing;
@@ -61,6 +62,27 @@ public final class SendConfirm {
         if (window == null) return true;
         return ask(STICKER, window, L10n.t(window, "Send sticker"), L10n.t(window, "Send this sticker to this chat?"), L10n.t(window, "Send"),
                 () -> resumeSticker(view, document, query, parent, animation, clears, notify, scheduleDate, repeat), null);
+    }
+
+    /**
+     * In front of the send of a sticker picked from the strip Telegram suggests above the keyboard
+     * for a typed emoji, in a chat or a story's reply bar.
+     *
+     * @param send Telegram's callback that sends it, run again on Send
+     * @param stars the stars Telegram's own paid-message question settled on, a Long
+     */
+    public static boolean stripSticker(Object send, Object stars) {
+        if (passed(STRIP)) return true;
+        if (paid(stars) || !on(Settings.ASK_BEFORE_STICKER)) return true;
+        Activity window = current();
+        if (window == null) return true;
+        return ask(STRIP, window, L10n.t(window, "Send sticker"), L10n.t(window, "Send this sticker to this chat?"), L10n.t(window, "Send"),
+                () -> resumeStripSticker(send, stars), null);
+    }
+
+    /** Whether Telegram already asked about this send, because it costs stars. */
+    static boolean paid(Object stars) {
+        return stars instanceof Long && (Long) stars > 0L;
     }
 
     /**
@@ -237,6 +259,9 @@ public final class SendConfirm {
     /** Telegram's own sticker send, again, with the same arguments. Replaced when patching. */
     public static void resumeSticker(Object view, Object document, Object query, Object parent, Object animation,
                                      boolean clears, boolean notify, int scheduleDate, int repeat) {}
+
+    /** Telegram's callback for the strip's sticker, run again with the same argument. Replaced when patching. */
+    public static void resumeStripSticker(Object send, Object stars) {}
 
     /** Telegram's own GIF send, again. Replaced when patching. */
     public static void resumeGif(Object delegate, Object view, Object gif, Object query, Object parent, boolean notify,

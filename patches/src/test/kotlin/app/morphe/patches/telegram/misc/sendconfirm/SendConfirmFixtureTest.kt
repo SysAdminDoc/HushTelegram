@@ -12,6 +12,7 @@ import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.util.ControlFlow
 import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
@@ -33,6 +34,7 @@ class SendConfirmFixtureTest {
     )
     private val fixed = setOf(
         "Lorg/telegram/ui/Components/ChatActivityEnterView;", "Lorg/telegram/messenger/MediaController;", "Lorg/telegram/ui/LaunchActivity;",
+        CALLBACK,
     )
 
     private fun Instruction.shape() = listOf(opcode, namedRegisters(), (this as? ReferenceInstruction)?.reference?.toString())
@@ -50,6 +52,7 @@ class SendConfirmFixtureTest {
         val body = m.controlBody()
         if (body.isEmpty()) return false
         if (instance && m.returnType == "V" && VideoShape.values().any { it.target == params } && body.any { it.controlRef() == CAMERA_ALLOWED }) return true
+        if (body.any { it.call()?.let { c -> c.definingClass == SEND_HELPER && c.name == "sendSticker" } == true }) return true
         return body.any { it.call()?.let { c -> c.returnType == "V" && c.parameterTypes.map(CharSequence::toString) == callParameters } == true }
     }
 
@@ -68,6 +71,8 @@ class SendConfirmFixtureTest {
                 "sticker" to ImmutableMethod.of(site.sticker), "gif" to ImmutableMethod.of(site.gif), "voice" to ImmutableMethod.of(site.voice),
                 "video" to ImmutableMethod.of(site.video), "header" to ImmutableMethod.of(site.header), "profile" to ImmutableMethod.of(site.profile),
             )
+            assertEquals("$name: the strip's two sends, in a chat and in a story's reply bar", 2, site.strips.size)
+            val stripsBefore = site.strips.map { ImmutableMethod.of(it.method) }
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { sendConfirmPatch.execute(context) })
 
             // A question: the extension's call first, then Telegram's own code, which is everything the method held.
@@ -88,6 +93,25 @@ class SendConfirmFixtureTest {
                 assertEquals(listOf(Opcode.MOVE_RESULT, Opcode.IF_NEZ, Opcode.RETURN_VOID), gated.subList(1, 4).map { it.opcode })
                 assertEquals("$name $key: the answer lands in a local", listOf(0), gated[1].namedRegisters())
                 for (i in stock.indices) assertEquals("$name $key: stock $i", stock[i].shape(), gated[i + 4].shape())
+            }
+
+            // The strip: the question at the send itself, the rest of the callback as it was.
+            val kept = { list: List<Instruction> -> list.filter { it.opcode != Opcode.NOP }.map { it.shape() } }
+            for ((strip, unchanged) in site.strips.zip(stripsBefore)) {
+                val key = "${strip.method.definingClass} strip"
+                val stock = unchanged.controlBody()
+                val gated = strip.method.controlBody()
+                val top = strip.method.implementation!!.registerCount
+                val at = gated.indexOfFirst { it.controlRef()?.startsWith("$SEND_CONFIRM->stripSticker(") == true }
+                assertEquals("$name $key: at the send", strip.call, at)
+                assertEquals("$name $key: the callback and its argument", listOf(top - 2, top - 1), gated[at].namedRegisters())
+                assertTrue("$name $key: the answer comes back as a boolean", gated[at].controlRef()!!.endsWith(")Z"))
+                assertEquals(listOf(Opcode.MOVE_RESULT, Opcode.IF_NEZ, Opcode.RETURN_VOID, Opcode.NOP), gated.subList(at + 1, at + 5).map { it.opcode })
+                assertEquals("$name $key: the answer lands in a free local", listOf(strip.answer), gated[at + 1].namedRegisters())
+                assertEquals("$name $key: Send goes on to the send", setOf(at + 3, at + 4), ControlFlow.of(strip.method).normal[at + 2].toSet())
+                assertEquals("$name $key: the send", "sendSticker", gated[at + 5].call()?.name)
+                assertEquals("$name $key: everything before", kept(stock.subList(0, at)), kept(gated.subList(0, at)))
+                assertEquals("$name $key: everything after", kept(stock.subList(at, stock.size)), kept(gated.subList(at + 5, gated.size)))
             }
 
             // A call: the same registers and the same place, to the extension.
@@ -119,6 +143,10 @@ class SendConfirmFixtureTest {
             assertEquals(site.startCall, start.controlRef())
             assertEquals((0..5).toList(), start.namedRegisters())
             assertEquals("$name: the main window", site.launchField, stub("launchActivity").first().controlRef())
+            val resume = stub("resumeStripSticker")
+            assertEquals(listOf(Opcode.CHECK_CAST, Opcode.INVOKE_INTERFACE, Opcode.RETURN_VOID), resume.map { it.opcode })
+            assertEquals("$name: the strip's callback again", "$CALLBACK->run(Ljava/lang/Object;)V", resume[1].controlRef())
+            assertEquals(listOf(0, 1), resume[1].namedRegisters())
             val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "askBeforeSending" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }

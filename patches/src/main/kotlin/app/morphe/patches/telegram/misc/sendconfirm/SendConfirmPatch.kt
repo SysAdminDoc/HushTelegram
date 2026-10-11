@@ -14,6 +14,7 @@ import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.enableStatus
+import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
@@ -26,10 +27,14 @@ import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
+import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.call
+import app.morphe.util.definitionReaches
+import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 
@@ -49,6 +54,15 @@ private const val MEDIA_CONTROLLER = "Lorg/telegram/messenger/MediaController;"
 private const val ENTER_VIEW = "Lorg/telegram/ui/Components/ChatActivityEnterView;"
 private const val LAUNCH_ACTIVITY = "Lorg/telegram/ui/LaunchActivity;"
 internal const val CAMERA_ALLOWED = "Lorg/telegram/messenger/camera/CameraView;->isCameraAllowed()Z"
+internal const val SEND_HELPER = "Lorg/telegram/messenger/SendMessagesHelper;"
+internal const val CALLBACK = "Lorg/telegram/messenger/Utilities\$Callback;"
+private const val TL_DOCUMENT = "Lorg/telegram/tgnet/TLRPC\$TL_document;"
+private const val LONG = "Ljava/lang/Long;"
+private const val SET_FIELD_TEXT = "$ENTER_VIEW->setFieldText(Ljava/lang/CharSequence;)V"
+
+/** How far before a strip's send its sticker and its paid-message answer are cast, and how soon after it the typed emoji is cleared. */
+private const val STRIP_BEFORE = 60
+private const val STRIP_AFTER = 12
 
 /** What each hook takes, in the order the method it stands in front of takes its arguments. */
 private val STICKER_TARGET = listOf(DOCUMENT, STRING, OBJECT, SEND_ANIMATION, "Z", "Z", "I", "I")
@@ -93,7 +107,7 @@ val sendConfirmPatch = bytecodePatch(
 internal class SendConfirmSite(
     val sticker: MutableMethod, val gif: MutableMethod, val voice: MutableMethod, val video: MutableMethod,
     val shape: VideoShape, val header: MutableMethod, val headerCall: Int, val profile: MutableMethod, val profileCall: Int,
-    val startCall: String, val launchField: String,
+    val startCall: String, val launchField: String, val strips: List<StripSite>,
 ) {
     /** Hands each place that gets code to [change] with the edit that does it, copy or real. */
     fun insert(change: (MutableMethod, (MutableMethod) -> Unit) -> Unit) {
@@ -103,7 +117,34 @@ internal class SendConfirmSite(
         change(video) { gate(it, "$SEND_CONFIRM->${shape.hook}(${listOf(OBJECT).plus(shape.target).joinToString("")})Z") }
         change(header) { replaceCall(it, headerCall) }
         change(profile) { replaceCall(it, profileCall) }
+        strips.forEach { strip -> change(strip.method) { stripGate(it, strip) } }
     }
+}
+
+/**
+ * One of Telegram's callbacks that sends a sticker picked from the suggestion strip above the
+ * keyboard, at its send, with a local nothing reads there.
+ */
+internal class StripSite(val method: MutableMethod, val call: Int, val answer: Int)
+
+/**
+ * Asks in front of the strip's send, with the callback and the argument Telegram ran it with, which
+ * sit together in the top two registers. On true the send goes on; on false the callback returns,
+ * and Send runs it again from the start with the same argument.
+ */
+private fun stripGate(target: MutableMethod, strip: StripSite) {
+    val top = target.implementation!!.registerCount
+    target.addInstructionsAtControlFlowLabel(
+        strip.call,
+        """
+            invoke-static/range {v${top - 2} .. v${top - 1}}, $SEND_CONFIRM->stripSticker($OBJECT$OBJECT)Z
+            move-result v${strip.answer}
+            if-nez v${strip.answer}, :hush_send
+            return-void
+            :hush_send
+            nop
+        """,
+    )
 }
 
 /**
@@ -154,6 +195,8 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     controlHook(SEND_CONFIRM, "resumeGif", GIF_HOOK, "V")
     controlHook(SEND_CONFIRM, "resumeVoice", VOICE_HOOK, "V")
     controlHook(SEND_CONFIRM, "startCall", CALL_HOOK, "V")
+    controlHook(SEND_CONFIRM, "stripSticker", listOf(OBJECT, OBJECT), "Z")
+    controlHook(SEND_CONFIRM, "resumeStripSticker", listOf(OBJECT, OBJECT), "V")
     for (shape in VideoShape.values()) {
         controlHook(SEND_CONFIRM, shape.hook, listOf(OBJECT).plus(shape.target), "Z")
         controlHook(SEND_CONFIRM, shape.resume, listOf(OBJECT).plus(shape.target), "V")
@@ -177,6 +220,7 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     val videos = mutableListOf<Triple<String, String, VideoShape>>()
     val headers = mutableListOf<Triple<String, String, List<Int>>>()
     val profiles = mutableListOf<Triple<String, String, List<Int>>>()
+    val strips = mutableListOf<Triple<String, String, Int>>()
     classDefForEach { cls ->
         if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
         cls.methods.forEach { m ->
@@ -185,6 +229,9 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
             if (instance && m.returnType == "V" && params == GIF_TARGET) gifs += cls.type to signature(m)
             if (m.implementation == null) return@forEach
             val body = m.controlBody()
+            if (instance && m.name == "run" && m.returnType == "V" && params == listOf(OBJECT) && CALLBACK in cls.interfaces) {
+                body.indices.filter { stripSend(m, body, it) }.forEach { strips += Triple(cls.type, signature(m), it) }
+            }
             if (instance && m.returnType == "V") {
                 val shape = VideoShape.values().firstOrNull { it.target == params }
                 if (shape != null && body.any { it.controlRef() == CAMERA_ALLOWED } &&
@@ -258,7 +305,52 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     val declared = launchClass.fields.filter { "${it.definingClass}->${it.name}:${it.type}" == own }.controlSingle("the main window's field")
     controlShape(AccessFlags.PUBLIC.isSet(declared.accessFlags) && AccessFlags.STATIC.isSet(declared.accessFlags), "the main window's field is inaccessible")
 
-    return SendConfirmSite(sticker, gif, voice, video, shape, header, headerCall, profile, profileCall, startRef, own)
+    // The suggestion strip's sends, each a case of a merged callback that Telegram runs once its own
+    // paid-message check has answered. Send runs the callback again through the interface.
+    val callback = mutableClassDefBy(CALLBACK)
+    controlShape(AccessFlags.PUBLIC.isSet(callback.accessFlags) && AccessFlags.INTERFACE.isSet(callback.accessFlags) &&
+        callback.methods.any { it.name == "run" && it.returnType == "V" && it.parameterTypes.map(CharSequence::toString) == listOf(OBJECT) },
+        "Telegram's callback is no longer a public interface run with one argument")
+    controlShape(strips.isNotEmpty(), "the sticker suggestion strip's send is gone")
+    controlShape(strips.map { it.second }.distinct().size == strips.size, "a callback sends from the sticker strip more than once")
+    val stripSites = strips.map { (type, wanted, call) ->
+        val method = mutableClassDefBy(type).methods.single { signature(it) == wanted }
+        val top = method.implementation!!.registerCount
+        val flow = ControlFlow.of(method)
+        for (register in listOf(top - 2, top - 1)) {
+            controlShape(!writes(method.controlBody()[0], register) && flow.definitionReaches(0, call, register),
+                "${signature(method)} changes its callback or its argument before the strip's send")
+        }
+        StripSite(method, call, method.freeLocalsAt(NAME, call, 1, highest = 255).single())
+    }
+
+    return SendConfirmSite(sticker, gif, voice, video, shape, header, headerCall, profile, profileCall, startRef, own, stripSites)
+}
+
+/**
+ * Whether instruction [at] of [method] is a strip's send: Telegram's sticker send, with the picked
+ * sticker and a Long, the paid-message check's answer, cast shortly before it, and the typed emoji
+ * cleared with an empty text right after it.
+ */
+private fun stripSend(method: Method, body: List<Instruction>, at: Int): Boolean {
+    val call = body[at].call() ?: return false
+    if (call.definingClass != SEND_HELPER || call.name != "sendSticker") return false
+    val before = body.subList(maxOf(0, at - STRIP_BEFORE), at)
+    if (listOf(TL_DOCUMENT, LONG).any { type -> before.none { it.opcode == Opcode.CHECK_CAST && it.controlRef() == type } }) return false
+    val flow by lazy { ControlFlow.of(method) }
+    return (at + 1 until minOf(body.size, at + 1 + STRIP_AFTER)).any { clear ->
+        val text = body[clear].namedRegisters().getOrNull(1)
+        body[clear].controlRef() == SET_FIELD_TEXT && text != null && body.indices.any { empty ->
+            body[empty].opcode in setOf(Opcode.CONST_STRING, Opcode.CONST_STRING_JUMBO) && body[empty].controlString() == "" &&
+                body[empty].namedRegisters().first() == text && flow.definitionReaches(empty, clear, text)
+        }
+    }
+}
+
+/** Whether [instruction] writes [register], alone or as the second half of a wide pair. */
+private fun writes(instruction: Instruction, register: Int): Boolean {
+    val first = instruction.namedRegisters().firstOrNull() ?: return false
+    return instruction.opcode.setsRegister() && first == register || instruction.opcode.setsWideRegister() && first == register - 1
 }
 
 /** The method takes a local to borrow at its start, nothing jumps back to its first instruction, and it can be called from outside. */
@@ -308,6 +400,11 @@ internal fun BytecodePatchContext.writeSendConfirmStubs(site: SendConfirmSite) {
         check-cast p4, $USER_FULL
         check-cast p5, $ACCOUNT_INSTANCE
         invoke-static/range {p0 .. p5}, ${site.startCall}
+        return-void
+    """)
+    writeStub(SEND_CONFIRM, "resumeStripSticker", 2, """
+        check-cast p0, $CALLBACK
+        invoke-interface {p0, p1}, $CALLBACK->run($OBJECT)V
         return-void
     """)
 }
