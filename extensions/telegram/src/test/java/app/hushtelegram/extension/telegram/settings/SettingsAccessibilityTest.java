@@ -71,6 +71,7 @@ public class SettingsAccessibilityTest {
         HushTelegramPreferenceFragment.failNextInitialization = null;
         PauseForTests.resume();
         Settings.HIDE_ADS.resetToDefault();
+        app.hushtelegram.extension.shared.settings.BaseSettings.PAUSED.resetToDefault();
         controller.close();
     }
 
@@ -228,11 +229,98 @@ public class SettingsAccessibilityTest {
         assertTrue("the screen's title isn't a heading", node(title).isHeading());
     }
 
-    /** The Pause, Resume and Undo buttons sit inside list rows, which a keyboard reaches only like this. */
+    /**
+     * Seen on the S22 with D-pad keys: DOWN went Ads, Chat list and on, stepping over the status
+     * card and its Pause, and no row showed which one the keyboard was on. Focus inside a row
+     * isn't the answer: moving on from a row's button, the list hands focus to the window's first
+     * view. So the list keeps the keyboard, the card is a stop with a ring, and Enter presses Pause.
+     */
     @Test
-    public void aKeyboardReachesTheButtonsInsideRows() {
-        ListView list = SettingsL10nTest.show(controller.get()).getView().findViewById(android.R.id.list);
-        assertTrue(list.getItemsCanFocus());
+    public void aDpadStopsOnTheStatusCardWhereEnterPressesPause() throws Exception {
+        SettingsDialog dialog = SettingsL10nTest.show(controller.get());
+        ListView list = dialog.getView().findViewById(android.R.id.list);
+        leaveTouchMode(list);
+        list.requestFocus();
+        ShadowLooper.idleMainLooper();
+        View root = list.getRootView();
+        assertEquals("a view inside a row took the keyboard", list, root.findFocus());
+        if (list.getSelectedItemPosition() != 0) press(root, android.view.KeyEvent.KEYCODE_DPAD_DOWN);
+        assertEquals("the keyboard's first stop isn't the status card", 0, list.getSelectedItemPosition());
+        View card = list.getSelectedView();
+        assertTrue("the status card shows no ring", ringShows(card.getBackground()));
+
+        press(root, android.view.KeyEvent.KEYCODE_DPAD_DOWN);
+        assertEquals("DOWN left the list", list, root.findFocus());
+        View row = list.getSelectedView();
+        CharSequence title = ((Preference) list.getSelectedItem()).getTitle();
+        assertTrue(title + " is selected, not a row under the card", list.getSelectedItemPosition() > 0);
+        assertTrue(title + " shows no ring", ringShows(row.getBackground()));
+        assertFalse("the card kept its ring", ringShows(card.getBackground()));
+
+        press(root, android.view.KeyEvent.KEYCODE_DPAD_UP);
+        assertEquals(0, list.getSelectedItemPosition());
+        assertFalse(app.hushtelegram.extension.shared.settings.BaseSettings.PAUSED.savedValue());
+        press(root, android.view.KeyEvent.KEYCODE_ENTER);
+        assertTrue("Enter on the card didn't press Pause",
+                app.hushtelegram.extension.shared.settings.BaseSettings.PAUSED.savedValue());
+        assertEquals("Enter moved the keyboard out of the list", list, root.findFocus());
+    }
+
+    /** A row a finger is on looks as it always did, and the keyboard's row has the accent ring. */
+    @Test
+    public void onlyTheKeyboardsRowWearsTheRing() {
+        View row = new View(controller.get());
+        SwitchPreference preference = new SwitchPreference(controller.get());
+        ScreenColors.DEFAULT.paintSurface(row, preference, true, true);
+        android.graphics.drawable.Drawable background = row.getBackground();
+        background.setState(new int[]{android.R.attr.state_pressed, android.R.attr.state_enabled});
+        assertFalse("a finger's press shows the ring", ringShows(background));
+        background.setState(new int[]{android.R.attr.state_enabled});
+        assertFalse(ringShows(background));
+        background.setState(new int[]{android.R.attr.state_selected, android.R.attr.state_enabled});
+        assertTrue(ringShows(background));
+    }
+
+    /** Whether the accent-stroked ring layer in a row's background is the one showing. */
+    private static boolean ringShows(android.graphics.drawable.Drawable background) {
+        if (background instanceof android.graphics.drawable.LayerDrawable) {
+            android.graphics.drawable.LayerDrawable layers = (android.graphics.drawable.LayerDrawable) background;
+            for (int i = 0; i < layers.getNumberOfLayers(); i++) {
+                if (ringShows(layers.getDrawable(i))) return true;
+            }
+            return false;
+        }
+        if (background instanceof android.graphics.drawable.StateListDrawable) {
+            android.graphics.drawable.Drawable current = background.getCurrent();
+            return current instanceof android.graphics.drawable.InsetDrawable
+                    && ((android.graphics.drawable.InsetDrawable) current).getDrawable()
+                            instanceof android.graphics.drawable.GradientDrawable;
+        }
+        return false;
+    }
+
+    /** A key press as the window delivers it, with its focus move when no view takes the key. */
+    private static boolean press(View root, int key) {
+        android.view.KeyEvent down = new android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, key);
+        boolean handled = root.dispatchKeyEvent(down);
+        root.dispatchKeyEvent(new android.view.KeyEvent(android.view.KeyEvent.ACTION_UP, key));
+        if (!handled) {
+            int direction = key == android.view.KeyEvent.KEYCODE_DPAD_UP ? View.FOCUS_UP : View.FOCUS_DOWN;
+            View focused = root.findFocus();
+            View next = focused == null ? null : focused.focusSearch(direction);
+            if (next != null) next.requestFocus(direction);
+        }
+        ShadowLooper.idleMainLooper();
+        return handled;
+    }
+
+    /** What a key press does first in a real window: leaves touch mode. */
+    private static void leaveTouchMode(View view) throws Exception {
+        Object viewRoot = View.class.getMethod("getViewRootImpl").invoke(view);
+        java.lang.reflect.Method local = viewRoot.getClass().getDeclaredMethod("ensureTouchModeLocally", boolean.class);
+        local.setAccessible(true);
+        local.invoke(viewRoot, false);
+        assertFalse(view.isInTouchMode());
     }
 
     @Test

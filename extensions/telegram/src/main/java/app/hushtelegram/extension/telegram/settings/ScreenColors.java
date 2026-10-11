@@ -192,18 +192,32 @@ final class ScreenColors {
     /** Group boundaries follow the visible rows, including a filtered search result. */
     void paintSurface(View row, Preference preference, boolean first, boolean last) {
         float radius = dp(row, 10);
-        GradientDrawable surface = new GradientDrawable();
-        surface.setColor(card);
-        surface.setStroke(dp(row, 1), outline);
-        surface.setCornerRadii(new float[]{
+        float[] corners = {
                 first ? radius : 0, first ? radius : 0,
                 first ? radius : 0, first ? radius : 0,
                 last ? radius : 0, last ? radius : 0,
-                last ? radius : 0, last ? radius : 0});
-        Drawable inset = new InsetDrawable(surface, dp(row, 16), first ? dp(row, 6) : -dp(row, 1),
-                dp(row, 16), last ? dp(row, 6) : 0);
+                last ? radius : 0, last ? radius : 0};
+        GradientDrawable surface = new GradientDrawable();
+        surface.setColor(card);
+        surface.setStroke(dp(row, 1), outline);
+        surface.setCornerRadii(corners);
+        int top = first ? dp(row, 6) : -dp(row, 1);
+        int bottom = last ? dp(row, 6) : 0;
+        // Outside touch mode the list marks the row a keyboard is on as selected. Its selector
+        // draws under this opaque surface, so the row shows the ring itself.
+        GradientDrawable ring = new GradientDrawable();
+        ring.setColor(android.graphics.Color.TRANSPARENT);
+        ring.setStroke(dp(row, 2), accent);
+        ring.setCornerRadii(corners);
+        android.graphics.drawable.StateListDrawable keyboard = new android.graphics.drawable.StateListDrawable();
+        keyboard.addState(new int[]{android.R.attr.state_selected},
+                new InsetDrawable(ring, dp(row, 16), top, dp(row, 16), bottom));
+        android.graphics.drawable.LayerDrawable layers = new android.graphics.drawable.LayerDrawable(new Drawable[]{
+                new InsetDrawable(surface, dp(row, 16), top, dp(row, 16), bottom), keyboard});
+        // Stacked, so the ring isn't inset a second time by the surface's padding.
+        layers.setPaddingMode(android.graphics.drawable.LayerDrawable.PADDING_MODE_STACK);
         row.setBackground(preference.isSelectable()
-                ? new RippleDrawable(ColorStateList.valueOf(half(accent)), inset, null) : inset);
+                ? new RippleDrawable(ColorStateList.valueOf(half(accent)), layers, null) : layers);
         // Explicit padding after the inset background prevents its padding from moving the text.
         int vertical = preference.getIcon() == null ? 20 : 12;
         row.setPaddingRelative(dp(row, 34), dp(row, vertical + (first ? 6 : 0)),

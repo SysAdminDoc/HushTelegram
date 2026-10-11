@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -143,6 +144,19 @@ final class SettingsNavigation extends BaseAdapter {
         }
         source.registerDataSetObserver(changes);
         list.setAdapter(this);
+        // The list ignores Enter on a row holding a focusable view, so a status row's Enter
+        // presses the button it shows, whose label says what that does.
+        list.setOnKeyListener((view, key, event) -> {
+            if (key != KeyEvent.KEYCODE_DPAD_CENTER && key != KeyEvent.KEYCODE_ENTER
+                    && key != KeyEvent.KEYCODE_NUMPAD_ENTER) return false;
+            int position = list.getSelectedItemPosition();
+            if (position < 0 || position >= getCount() || !carriesAction(getItem(position))) return false;
+            View row = list.getSelectedView();
+            View action = row == null ? null : row.findViewWithTag(STATUS_ACTION);
+            if (action == null) return false;
+            if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) action.performClick();
+            return true;
+        });
         list.setOnItemClickListener((parent, view, position, id) -> {
             Preference item = getItem(position);
             int original = originalPosition(item);
@@ -531,7 +545,19 @@ final class SettingsNavigation extends BaseAdapter {
     @Override public long getItemId(int position) { return System.identityHashCode(getItem(position)); }
     @Override public boolean hasStableIds() { return true; }
     @Override public boolean areAllItemsEnabled() { return false; }
-    @Override public boolean isEnabled(int position) { return getItem(position).isEnabled() && getItem(position).isSelectable(); }
+    /**
+     * A row with a Pause, Resume or Undo button counts too, so a keyboard stops on it and Enter
+     * presses the button (the key listener). A tap still isn't an item click: the list skips
+     * those on rows holding a focusable view, and TalkBack reads that row as it did.
+     */
+    @Override public boolean isEnabled(int position) {
+        Preference item = getItem(position);
+        return (item.isEnabled() && item.isSelectable()) || carriesAction(item);
+    }
+
+    private boolean carriesAction(Preference item) {
+        return item == screen.getPreference(0) || (item == pageStatus && pageAction);
+    }
     // Preference creates several incompatible layouts. Never recycle one kind into another.
     @Override public int getItemViewType(int position) { return IGNORE_ITEM_VIEW_TYPE; }
 
@@ -600,6 +626,7 @@ final class SettingsNavigation extends BaseAdapter {
         action.setMinimumWidth(dp(48));
         action.setMinimumHeight(dp(48));
         action.setPadding(0, 0, 0, 0);
+        action.setTag(STATUS_ACTION);
         action.setOnClickListener(ignored -> {
             if (pageStatusAction) pageStatusHeight = Math.max(pageStatusHeight, row.getHeight());
             if (nextPaused) {
@@ -622,7 +649,6 @@ final class SettingsNavigation extends BaseAdapter {
             ViewGroup column = (ViewGroup) summary.getParent();
             View earlier = column.findViewWithTag(STATUS_ACTION);
             if (earlier != null) column.removeView(earlier);
-            action.setTag(STATUS_ACTION);
             column.addView(action, place);
             frame.setVisibility(View.GONE);
             return;

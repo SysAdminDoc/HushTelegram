@@ -171,9 +171,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (list != null) {
             list.setDivider(null);
             list.setDividerHeight(0);
-            // The status rows carry a Pause, Resume or Undo button. Without this a keyboard or
-            // D-pad moves only from row to row and never reaches it.
-            list.setItemsCanFocus(true);
+            // The list keeps a keyboard's focus and moves it row to row, the status rows included,
+            // where Enter presses their Pause, Resume or Undo button. Focus inside a row is no
+            // good: moving on from a row's button, the list hands focus to the window's first view.
+            list.setItemsCanFocus(false);
             // Set here rather than in initialize(), so a page whose initialize() failed, the
             // recovery page, is drawn on the same black.
             list.setBackgroundColor(ScreenColors.DEFAULT.background);

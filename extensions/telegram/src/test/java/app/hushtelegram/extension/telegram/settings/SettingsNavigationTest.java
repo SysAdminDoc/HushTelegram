@@ -394,7 +394,14 @@ public class SettingsNavigationTest {
         Preference line = (Preference) list().getItemAtPosition(0);
         assertEquals("HushTelegram is paused", String.valueOf(line.getTitle()));
         assertEquals(PAUSED_LINE, String.valueOf(line.getSummary()));
-        assertFalse("the line reads as a button of its own", list().getAdapter().isEnabled(0));
+        // The line is a keyboard's stop now, where Enter presses its Resume, so what's checked is
+        // what a screen reader gets from it.
+        assertEquals(0, list().getFirstVisiblePosition());
+        android.view.accessibility.AccessibilityNodeInfo lineNode = list().getChildAt(0).createAccessibilityNodeInfo();
+        assertFalse("the line reads as a button of its own", lineNode.isClickable());
+        assertFalse("the line reads as a button of its own", lineNode.getActionList()
+                .contains(android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK));
+        assertNotEquals(android.widget.Button.class.getName(), String.valueOf(lineNode.getClassName()));
         assertTrue("a saved choice was changed to look paused",
                 ((SwitchPreference) page.findPreference(Settings.REVEAL_SPOILERS.key)).isChecked());
         assertTrue(Settings.REVEAL_SPOILERS.savedValue());
