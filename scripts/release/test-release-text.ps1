@@ -251,6 +251,11 @@ $script:fakeText = 'fatal: not a git repository'
 Assert-Throws { Get-TreeChanges } '*git status*failed*128*' 'A failed git status read as a clean working tree.'
 Assert-Throws { Invoke-Git @('tag', '--list', 'v1') } '*git tag*failed*' 'A failed git tag --list read as no tag.'
 Assert-Throws { Invoke-Gh @('release', 'view', 'v1') } '*gh release view*failed*' 'A failed gh read was taken for an answer.'
+# A gh warning on standard error isn't part of the answer, or the repo description would carry it.
+function gh { $global:LASTEXITCODE = 0; Write-Error 'A new release of gh is available'; 'the description' }
+$answer = @(Invoke-Gh @('repo', 'view', 'owner/repo', '--json', 'description'))
+Assert-True (($answer.Count -eq 1) -and ($answer[0] -eq 'the description')) "A gh warning was read as part of gh's answer: $($answer -join ' | ')"
+function gh { $global:LASTEXITCODE = $script:fakeExit; if ($script:fakeText) { $script:fakeText } }
 Assert-Throws { Test-ReleaseOnGitHub } '*failed*not a git repository*' 'A gh failure that is not "release not found" read as not published.'
 $script:fakeText = 'HTTP 401: Bad credentials'
 Assert-Throws { Test-ReleaseOnGitHub } '*failed*Bad credentials*' 'A gh authentication failure read as not published.'

@@ -279,18 +279,21 @@ function Test-Assets {
 }
 
 function Invoke-Gh {
-    # Output lines of a gh read; a non-zero exit throws with gh's own message.
+    # Output lines of a gh read; a non-zero exit throws with gh's own message. Standard error stays
+    # out of what it returns: a gh warning there would otherwise be published as a description.
     param([string[]]$GhArgs)
     $preference = $ErrorActionPreference
     try {
         $ErrorActionPreference = 'Continue'
         $global:LASTEXITCODE = 0
-        $lines = @(& gh @GhArgs 2>&1 | ForEach-Object { "$_" })
+        $all = @(& gh @GhArgs 2>&1)
         $code = $LASTEXITCODE
     } finally {
         $ErrorActionPreference = $preference
     }
-    if ($code -ne 0) { throw "gh $($GhArgs -join ' ') failed (exit $code): $($lines -join ' ')" }
+    $lines = @($all | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] } | ForEach-Object { "$_" })
+    $errors = @($all | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] } | ForEach-Object { "$_" })
+    if ($code -ne 0) { throw "gh $($GhArgs -join ' ') failed (exit $code): $(($errors + $lines) -join ' ')" }
     return $lines
 }
 
