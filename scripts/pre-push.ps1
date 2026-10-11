@@ -946,6 +946,7 @@ try {
                     if ([string]::IsNullOrWhiteSpace($login) -or [string]::IsNullOrWhiteSpace($token)) {
                         throw 'gh is not signed in, so the patches plugin cannot be resolved. Run gh auth login.'
                     }
+                    # The token sits in Gradle's environment: no Gradle task may print its environment.
                     $env:GITHUB_ACTOR = $login
                     $env:GITHUB_TOKEN = $token
                 }
