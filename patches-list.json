@@ -862,7 +862,7 @@
     },
     {
       "name": "Folders by chat type",
-      "description": "Makes Private, Groups, Channels and Bots folders in one tap, with Telegram's own folders, so they show as tabs above the chat list and on your other devices. Turning it off removes the ones it made, unless you changed them. Starts off. Turn it on in HushTelegram settings > Chat list.",
+      "description": "Makes Private, Groups, Channels and Bots folders in one tap. They're Telegram's own folders, so they show as tabs above the chat list and on your other devices too. Turning it off removes the ones it made, unless you renamed or changed them. Starts off. Turn it on in HushTelegram settings > Chat list.",
       "category": "Chats",
       "use": true,
       "dependencies": [
