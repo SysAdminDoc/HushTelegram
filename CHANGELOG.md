@@ -8,7 +8,7 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** With Debug logging on, what HushTelegram writes to Android's log goes through the same redaction as an exported report, so tokens and keys in a message or an error stay out of it.
 
-* **Patching:** The App name option turns down direction marks and zero-width characters, which could flip or hide the name under the icon. Emoji built with zero-width joiners still work.
+* **Patching:** The App name option turns down direction marks and zero-width characters, which could flip or hide the name under the icon. Emoji built with zero-width joiners still work, and so do Persian, Kurdish and Indic names that need the zero-width non-joiner.
 
 * **Settings:** Export diagnostic report says "Preparing the diagnostic report" while it builds the report and takes no second tap until the copy or the file is done. The back arrow and the name at the top use the page's own white, and the back arrow shows when a keyboard is on it.
 
@@ -20,7 +20,7 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** When Telegram turns down the API ID your build signs in with, the phone number screen now says so, with a button that opens the guide to using your own ID. Before, it just sat there after you tapped the arrow. This covers API_ID_PUBLISHED_FLOOD, the built-in ID being refused, and API_ID_INVALID, a registered ID or hash with a typo in it. Reported in #11 and #3.
 
-* **Telegram:** Keep deleted messages remembers the newest 5,000 kept messages per account. Past that, the oldest ones now go to Telegram's own deletion, the way they would have without the switch. Before, they stayed in the chat without their deleted label, where Clear kept messages couldn't reach them.
+* **Telegram:** Keep deleted messages remembers the newest 5,000 kept messages per account. Past that, the oldest ones now go to Telegram's own deletion, the way they would have without the switch. Before, they stayed in the chat without their deleted label, where Clear kept messages couldn't reach them. If Telegram can't take some of them back, they stay kept and are first in line next time, so newer kept messages aren't pushed out early. Clear kept messages also can't hand the same message over twice when another one is kept at that moment, so its count stays right.
 
 * **Telegram:** Messages that pop up at the bottom of the screen are shorter now, so Android shows them whole instead of cutting them off after two lines.
 
