@@ -90,6 +90,23 @@ public class LaunchScreenTest {
         assertEquals(Collections.singletonList(TELEGRAMS), asked);
     }
 
+    @Test public void withTheLogoPatchInTheBuildItsThemeIsAskedForInstead() {
+        int logo = 0x7f1009a0;
+        BlackThemeForTests.watchLaunchScreens(asked, logo);
+        Settings.AMOLED_BLACK.save(true);
+        SettingsEntry.onActivityCreate(activity);
+        stopped();
+        Settings.AMOLED_BLACK.save(false);
+        stopped();
+        Settings.AMOLED_BLACK.save(true);
+        RuntimeEnvironment.setQualifiers("+notnight");
+        stopped();
+        assertEquals(Arrays.asList(logo, TELEGRAMS), asked);
+        String report = String.join("\n", HookStatus.report());
+        assertTrue(report, report.contains("launch screen turned black with the white logo 1"));
+        assertTrue(report, !report.contains("launch screen turned black 1"));
+    }
+
     @Test public void aBuildWithoutThePatchNeverStartsBlack() {
         PatchFamily.inBuildForTests = EnumSet.noneOf(PatchFamily.class);
         Settings.AMOLED_BLACK.save(true);

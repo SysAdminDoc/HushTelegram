@@ -27,6 +27,8 @@ class DefaultSelectionPolicyTest {
         "HushTelegram icon and name" to "It changes the home screen icon when the app is patched, which no switch in " +
             "HushTelegram settings can turn back, and it has Morphe rebuild Telegram's resources, which a patch " +
             "with the defaults never needs.",
+        "Black and white launch logo" to "It adds a logo and a launch theme to Telegram's resources, so Morphe has to " +
+            "rebuild them, which a patch with the defaults never needs. AMOLED black's switch still decides whether it shows.",
     )
 
     private fun shippedPatches() = run {

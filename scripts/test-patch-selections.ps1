@@ -14,11 +14,13 @@ $model = Get-SelectionStatusModel -Root $Root
 $optional = @($model.Capabilities | Where-Object Optional | ForEach-Object Status | Sort-Object)
 Assert-Selection (($optional -join ',') -ceq 'crashReports,sessionReports') 'The targets only some builds carry changed without the checker''s markers.'
 $plans = @(Get-PatchSelectionCases -Catalog $catalog -StatusModel $model)
-Assert-Selection ($plans.Count -eq 85 -and @($plans.Id | Sort-Object -Unique).Count -eq 85) 'The matrix changed its bounded case inventory.'
+Assert-Selection ($plans.Count -eq 86 -and @($plans.Id | Sort-Object -Unique).Count -eq 86) 'The matrix changed its bounded case inventory.'
 Assert-Selection (@($plans | Where-Object Failure).Count -eq 10) 'A malformed, incomplete or typed-input refusal is missing.'
 Assert-Selection (@($plans | Where-Object Id -CEQ 'maps-array-noop').Count -eq 1) 'The CLI typed-option no-op case is missing.'
 Assert-Selection (@($plans | Where-Object Default).Count -eq 1 -and $plans[0].Id -ceq 'default64') 'Defaults must be exercised through the actual CLI defaults.'
-Assert-Selection ($plans[0].Names.Count -eq 64 -and ($plans | Where-Object Id -CEQ 'full67').Names.Count -eq 67) 'Default and full catalog counts changed.'
+Assert-Selection ($plans[0].Names.Count -eq 64 -and ($plans | Where-Object Id -CEQ 'full68').Names.Count -eq 68) 'Default and full catalog counts changed.'
+$logoCase = @($plans | Where-Object Id -CEQ 'launch-logo')
+Assert-Selection ($logoCase.Count -eq 1 -and ($logoCase[0].Names -join ',') -ceq 'AMOLED black,Black and white launch logo') 'The launch logo needs its own case beside the switch it shows behind.'
 $hostile = $catalog | ConvertTo-Json -Depth 20 | ConvertFrom-Json
 ($hostile.patches | Where-Object name -CEQ 'Use registered Telegram API credentials').name = 'private_catalog_name_canary_472009'
 $refusal = $null
@@ -165,16 +167,27 @@ try {
     Assert-Selection ($LASTEXITCODE -ne 0 -and $publicOutput.Contains('MATRIX_FAILED') -and
         (Test-SelectionPublicText -Text $publicOutput -Canaries @($canary))) 'An invalid input leaked its path through the public error stream.'
 } finally { Remove-GeneratedPath -Path $scratch -Root ([IO.Path]::GetTempPath()) }
-# The icon patch adds its three mipmaps, and only a case that selects it may.
+# The icon patch adds its three mipmaps and the launch logo its two drawables and its theme, and
+# only a case that selects one may add its own.
 $none = "[resources] added resources: 0`r`n[resources] files named by the patched table: 7115, moved 0"
-$icons = "[resources] added resources: 3`r`n  0x7f0d0021 mipmap/hush_launcher`r`n  0x7f0d0022 mipmap/hush_launcher_foreground`r`n" +
-    "  0x7f0d0023 mipmap/hush_launcher_monochrome`r`n[resources] files named by the patched table: 7115, moved 0"
-$full = ($plans | Where-Object Id -CEQ 'full67').Names
+$iconLines = "  0x7f0d0021 mipmap/hush_launcher`r`n  0x7f0d0022 mipmap/hush_launcher_foreground`r`n  0x7f0d0023 mipmap/hush_launcher_monochrome"
+$logoLines = "  0x7f0807f0 drawable/hush_launch_logo`r`n  0x7f0807f1 drawable/hush_launch_logo_shape`r`n  0x7f1003a0 style/HushTelegramLaunchBlack"
+$tail = "`r`n[resources] files named by the patched table: 7117, moved 0"
+$icons = "[resources] added resources: 3`r`n$iconLines$tail"
+$logos = "[resources] added resources: 3`r`n$logoLines$tail"
+$both = "[resources] added resources: 6`r`n$iconLines`r`n$logoLines$tail"
+$full = ($plans | Where-Object Id -CEQ 'full68').Names
 $default = $plans[0].Names
+$logoOnly = ($plans | Where-Object Id -CEQ 'launch-logo').Names
 Assert-Selection (Test-SelectionAddedResources -Report $none -Closure $default) 'A case without the icon was refused for adding nothing.'
 Assert-Selection (-not (Test-SelectionAddedResources -Report $icons -Closure $default)) 'A case without the icon patch was allowed its mipmaps.'
-Assert-Selection (Test-SelectionAddedResources -Report $icons -Closure $full) 'The full catalog was refused the icon patch''s mipmaps.'
+Assert-Selection (-not (Test-SelectionAddedResources -Report $logos -Closure $default)) 'A case without the launch logo was allowed its drawables and theme.'
+Assert-Selection (Test-SelectionAddedResources -Report $both -Closure $full) 'The full catalog was refused the icon''s and the launch logo''s resources.'
+Assert-Selection (-not (Test-SelectionAddedResources -Report $icons -Closure $full)) 'The full catalog passed without the launch logo''s resources.'
 Assert-Selection (-not (Test-SelectionAddedResources -Report $none -Closure $full)) 'The full catalog passed without the icon patch''s mipmaps.'
-Assert-Selection (-not (Test-SelectionAddedResources -Report ($icons -replace 'hush_launcher_monochrome', 'hush_other') -Closure $full)) 'A stray added resource passed as the icon patch''s.'
+Assert-Selection (Test-SelectionAddedResources -Report $logos -Closure $logoOnly) 'The launch logo case was refused its drawables and theme.'
+Assert-Selection (-not (Test-SelectionAddedResources -Report $both -Closure $logoOnly)) 'The launch logo case was allowed the icon patch''s mipmaps.'
+Assert-Selection (-not (Test-SelectionAddedResources -Report ($both -replace 'hush_launcher_monochrome', 'hush_other') -Closure $full)) 'A stray added resource passed as the icon patch''s.'
+Assert-Selection (-not (Test-SelectionAddedResources -Report ($both -replace 'hush_launch_logo_shape', 'hush_other') -Closure $full)) 'A stray added resource passed as the launch logo''s.'
 Assert-Selection (-not (Test-SelectionAddedResources -Report 'no table report' -Closure $default)) 'A report without its added resources line passed.'
 Write-Host "[selections] contracts passed ($assertions assertions)"

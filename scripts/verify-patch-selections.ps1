@@ -61,10 +61,11 @@ function Get-PatchSelectionCases {
     $api = 'Use registered Telegram API credentials'
     $maps = 'Use registered Maps API key'
     $icon = 'HushTelegram icon and name'
+    $logo = 'Black and white launch logo'
     $all = @($Catalog.patches.name)
     $defaults = @($Catalog.patches | Where-Object { $_.use -is [bool] -and $_.use } | ForEach-Object { $_.name })
-    $required = @($StatusModel.Families.Name) + @('HushTelegram settings', $api, $maps, $icon)
-    if ($all.Count -ne 67 -or $defaults.Count -ne 64 -or $defaults -ccontains $api -or $defaults -ccontains $maps -or $defaults -ccontains $icon -or
+    $required = @($StatusModel.Families.Name) + @('HushTelegram settings', $api, $maps, $icon, $logo)
+    if ($all.Count -ne 68 -or $defaults.Count -ne 64 -or $defaults -ccontains $api -or $defaults -ccontains $maps -or $defaults -ccontains $icon -or $defaults -ccontains $logo -or
         @($Catalog.patches | Where-Object { $_.use -isnot [bool] }).Count -or
         (Compare-Object ($all | Sort-Object) ($required | Sort-Object) -CaseSensitive)) { throw 'CATALOG_INVALID' }
     $syntheticApiId = '19077001'
@@ -80,13 +81,14 @@ function Get-PatchSelectionCases {
             ApiId = $syntheticApiId; ApiHash = $hash; MapsKey = $key; Canaries = @($syntheticApiId, $hash, $key, $sentinel) }
     }
     New-SelectionCase 'default64' $defaults -Default $true
-    New-SelectionCase 'full67' $all
+    New-SelectionCase 'full68' $all
     New-SelectionCase 'settings-only' @('HushTelegram settings')
     foreach ($family in $StatusModel.Families) {
         New-SelectionCase ('single-' + $family.Enum.ToLowerInvariant().Replace('_', '-')) @($family.Name)
     }
     New-SelectionCase 'links-pair' @('Open links externally', 'Strip link tracking')
     New-SelectionCase 'previews-camera-pair' @('Disable draft link previews', 'Gallery camera on tap')
+    New-SelectionCase 'launch-logo' @('AMOLED black', $logo)
     New-SelectionCase 'credentials-unset' @($api, $maps)
     New-SelectionCase 'credentials-null' @($api, $maps) @{ $api = @{ apiId = $null; apiHash = $null }; $maps = @{ apiKey = $null } }
     New-SelectionCase 'credentials-configured' @($api, $maps) $configured -ApiConfigured $true -MapsConfigured $true
@@ -134,15 +136,20 @@ function Test-SelectionAddedResources {
     <#
     .SYNOPSIS
         Whether ResourceTableCheck's added resources are the ones the selection may add: the icon
-        patch's three mipmaps when it's in, and none otherwise.
+        patch's three mipmaps when it's in, the launch logo's two drawables and its theme when
+        that's in, and none otherwise.
     #>
     param([string]$Report, [string[]]$Closure)
     $match = [regex]::Match($Report, '\[resources\] added resources: (\d+)((?:\r?\n  [^\r\n]+)*)')
     if (-not $match.Success) { return $false }
     $names = @([regex]::Matches($match.Groups[2].Value, '(?m)^  0x7f[0-9a-f]{6} (\S+)\r?$') | ForEach-Object { $_.Groups[1].Value })
-    $allowed = if ($Closure -ccontains 'HushTelegram icon and name') {
-        @('mipmap/hush_launcher', 'mipmap/hush_launcher_foreground', 'mipmap/hush_launcher_monochrome')
-    } else { @() }
+    $allowed = @()
+    if ($Closure -ccontains 'HushTelegram icon and name') {
+        $allowed += @('mipmap/hush_launcher', 'mipmap/hush_launcher_foreground', 'mipmap/hush_launcher_monochrome')
+    }
+    if ($Closure -ccontains 'Black and white launch logo') {
+        $allowed += @('drawable/hush_launch_logo', 'drawable/hush_launch_logo_shape', 'style/HushTelegramLaunchBlack')
+    }
     return [int]$match.Groups[1].Value -eq $allowed.Count -and $names.Count -eq $allowed.Count -and
         (@($names | Sort-Object -CaseSensitive) -join "`n") -ceq (@($allowed | Sort-Object -CaseSensitive) -join "`n")
 }
@@ -283,7 +290,7 @@ function Invoke-PatchSelectionMatrix {
     $plans = @(Get-PatchSelectionCases -Catalog $catalog -StatusModel $model)
     if ($Case.Count) {
         if (@($Case | Where-Object { $plans.Id -cnotcontains $_ }).Count) { throw 'CASE_INVALID' }
-        if ($Case -ccontains 'full-configured' -and $Case -cnotcontains 'full67') { $Case += 'full67' }
+        if ($Case -ccontains 'full-configured' -and $Case -cnotcontains 'full68') { $Case += 'full68' }
         $plans = @($plans | Where-Object { $Case -ccontains $_.Id })
     }
     $stock = Get-ApkManifestFacts -Apk $Apk -Aapt2 $Aapt2
@@ -387,7 +394,7 @@ function Invoke-PatchSelectionMatrix {
                 $compiledPath = Join-Path $caseDir 'compiled-private.json'
                 $request = @($output, $expectationPath, $compiledPath)
                 if ($selection.Id -ceq 'full-configured') {
-                    $baseline = Join-Path $run 'full67-private.apk'
+                    $baseline = Join-Path $run 'full68-private.apk'
                     if (-not (Test-Path -LiteralPath $baseline -PathType Leaf)) { throw 'FULL_BASELINE_MISSING' }
                     $request += $baseline
                 }
@@ -416,7 +423,7 @@ function Invoke-PatchSelectionMatrix {
                     changedMethods = $facts.changedMethods; addedMethods = $facts.addedMethods; structuralFindings = $facts.structuralFindings
                     nativeEntries = $native.NativeLibraries.stock.nativeEntryCount; zipalignPassed = $native.ZipAlignment.passed })
                 $casePassed = $true
-                if ($selection.Id -ceq 'full67') { Copy-Item -LiteralPath $output -Destination (Join-Path $run 'full67-private.apk') }
+                if ($selection.Id -ceq 'full68') { Copy-Item -LiteralPath $output -Destination (Join-Path $run 'full68-private.apk') }
                 Write-Host "[selections] $($selection.Id) SELECTION_PASSED"
             } catch {
                 # CLI and Java failures can contain option values. Only this fixed code reaches the console.

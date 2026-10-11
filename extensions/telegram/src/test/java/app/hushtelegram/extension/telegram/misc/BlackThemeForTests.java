@@ -4,6 +4,8 @@
  */
 package app.hushtelegram.extension.telegram.misc;
 
+import android.app.Activity;
+
 import java.util.List;
 
 /** Lets a test outside this package give BlackTheme ids without Telegram's lookup, and watch its launch screens. */
@@ -18,6 +20,14 @@ public final class BlackThemeForTests {
     /** Each launch screen BlackTheme asks for lands in {@code asked}, and Android isn't asked. */
     public static void watchLaunchScreens(List<Integer> asked) {
         BlackTheme.launchScreens = (activity, theme) -> asked.add(theme);
+    }
+
+    /** {@link #watchLaunchScreens(List)} on a build where Black and white launch logo's theme has the id {@code logo}. */
+    public static void watchLaunchScreens(List<Integer> asked, int logo) {
+        BlackTheme.launchScreens = new BlackTheme.LaunchScreens() {
+            @Override public void use(Activity activity, int theme) { asked.add(theme); }
+            @Override public int logo(Activity activity) { return logo; }
+        };
     }
 
     public static void stopWatchingLaunchScreens() {

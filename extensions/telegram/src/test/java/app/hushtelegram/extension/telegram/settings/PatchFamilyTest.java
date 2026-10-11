@@ -731,6 +731,11 @@ public class PatchFamilyTest {
                         : Collections.singleton("Use registered Maps API key".equals(name) ? "apiKey" : "appName");
                 assertEquals(expected, keys);
                 assertEquals(expected.size(), options.length());
+            } else if ("Black and white launch logo".equals(name)) {
+                // A resource the launch screen shows behind AMOLED black's switch, with no switch of its own.
+                assertFalse("a patch that rebuilds resources must be optional", patch.getBoolean("use"));
+                assertEquals(0, patch.getJSONArray("options").length());
+                assertTrue(patch.getJSONArray("dependencies").toString().contains("\"AMOLED black\""));
             } else listed.add(patch.getString("name"));
         }
         assertTrue("the settings entry left the patch list", listed.remove("HushTelegram settings"));

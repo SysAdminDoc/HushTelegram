@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** New Black and white launch logo patch. With AMOLED black on and your phone in dark mode, the launch screen on Android 13 and up shows Telegram's own logo in white on black, with its usual animation, instead of the app icon. It's left out of the default selection because it has Morphe rebuild Telegram's resources, so pick it in Expert mode.
+
 * **Telegram:** New Hide Contacts tab switch on the Chat list page. Turn it on and the Contacts tab is gone from the bar at the bottom of the main screen after a restart, and a swipe no longer lands on its page. Calls or Settings stays as you had it, and the new message button on the chat list still opens your contacts. It starts off.
 
 * **Telegram:** Ask before sending a sticker now covers the stickers Telegram suggests above the keyboard when you type an emoji, in a chat and in a story's reply bar. Those went out on one tap before. A sticker that costs stars still gets Telegram's own question only.
