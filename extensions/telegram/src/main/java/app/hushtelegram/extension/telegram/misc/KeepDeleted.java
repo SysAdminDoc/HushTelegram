@@ -35,7 +35,7 @@ import java.util.Map;
 public final class KeepDeleted {
     private KeepDeleted() {}
 
-    /** Newest messages remembered per account. Older ones lose the label first. */
+    /** Newest messages remembered per account. Past it, the oldest go to Telegram's own deletion. */
     static final int LIMIT = 5000;
 
     /** Bubbles measured lately, which a chat on screen can be asked to draw again. */
@@ -215,6 +215,7 @@ public final class KeepDeleted {
     static void decide(Source source, long dialogId, ArrayList<Integer> ids, long channelId) {
         ArrayList<Integer> release = new ArrayList<>(ids);
         ArrayList<long[]> kept = new ArrayList<>();
+        List<String> overflow = Collections.emptyList();
         long self = 0;
         try {
             self = source.self();
@@ -222,12 +223,18 @@ public final class KeepDeleted {
                 if (!keeps(row, self) || !release.remove(Integer.valueOf(row.id))) continue;
                 kept.add(new long[] {row.dialog, row.id});
             }
-            remember(self, kept);
+            overflow = remember(self, kept);
             if (!kept.isEmpty()) HookStatus.counted(FamilyNames.KEEP_DELETED_MESSAGES, "deleted messages kept");
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "decision", failure);
             release = new ArrayList<>(ids);
             kept.clear();
+        }
+        // Forgotten past the cap, a kept message would stay in the database with no label, out of
+        // reach of Clear kept messages, so it goes to Telegram's own deletion now instead.
+        if (!overflow.isEmpty()) {
+            handBack(source, self, overflow);
+            HookStatus.counted(FamilyNames.KEEP_DELETED_MESSAGES, "oldest kept messages handed back");
         }
         redraw(source, self, kept);
         if (release.isEmpty()) return;
@@ -377,16 +384,18 @@ public final class KeepDeleted {
         }
     }
 
-    static synchronized void remember(long owner, List<long[]> messages) {
-        if (messages.isEmpty()) return;
+    /** Remembers [messages] for [owner] as the newest, and returns the oldest ones past {@link #LIMIT}, now forgotten. */
+    static synchronized List<String> remember(long owner, List<long[]> messages) {
+        if (messages.isEmpty()) return Collections.emptyList();
         LinkedHashSet<String> set = load(owner);
         for (long[] message : messages) {
             String key = key(message[0], message[1]);
             set.remove(key);
             set.add(key);
         }
+        List<String> dropped = new ArrayList<>();
         for (Iterator<String> oldest = set.iterator(); set.size() > LIMIT && oldest.hasNext(); ) {
-            oldest.next();
+            dropped.add(oldest.next());
             oldest.remove();
         }
         try {
@@ -394,6 +403,7 @@ public final class KeepDeleted {
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "saving kept messages", failure);
         }
+        return dropped;
     }
 
     static synchronized boolean isKept(long owner, long dialog, long id) {
