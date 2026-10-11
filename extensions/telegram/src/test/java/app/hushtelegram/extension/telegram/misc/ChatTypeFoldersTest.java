@@ -144,10 +144,10 @@ public class ChatTypeFoldersTest {
 
     @Test public void turningItOffRemovesOnlyTheFoldersLeftAsTheyWereMade() {
         turn(true);
-        telegram.edit(2, 1 | 2, "Friends", true);
-        telegram.edit(3, 4 | 8, "Groups", true);
+        telegram.edit(2, 1 | 2, "Friends", 0);
+        telegram.edit(3, 4 | 8, "Groups", 0);
         // Chats added, left out or pinned, a color or an emoji: Telegram's list says it isn't plain.
-        telegram.edit(4, 8, "Channels", false);
+        telegram.edit(4, 8, "Channels", ChatTypeFolders.CHATS_PINNED);
 
         assertEquals(REMOVED, turn(false));
         assertEquals(Collections.singletonList(5), telegram.deleted);
@@ -156,6 +156,20 @@ public class ChatTypeFoldersTest {
 
         assertEquals(NONE_TO_REMOVE, turn(false));
         assertEquals(1, telegram.deleted.size());
+    }
+
+    @Test public void eachThingYouCanSetOnAFolderKeepsIt() {
+        int[] each = {ChatTypeFolders.COLOR, ChatTypeFolders.TITLE_EMOJI, ChatTypeFolders.CHATS_ADDED,
+                ChatTypeFolders.CHATS_LEFT_OUT, ChatTypeFolders.CHATS_PINNED};
+        for (int change : each) {
+            telegram = new ChatTypeFoldersForTests.Recorder();
+            ChatTypeFolders.telegram = telegram;
+            turn(true);
+            telegram.edit(2, 1 | 2, "Private", change);
+
+            assertEquals(String.valueOf(change), REMOVED, turn(false));
+            assertEquals(String.valueOf(change), Arrays.asList(3, 4, 5), sorted(telegram.deleted));
+        }
     }
 
     @Test public void aFolderYouDeletedIsForgottenAndNothingIsSentForItsId() {

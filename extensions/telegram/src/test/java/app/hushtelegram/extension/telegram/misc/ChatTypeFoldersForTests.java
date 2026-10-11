@@ -33,18 +33,19 @@ public final class ChatTypeFoldersForTests {
 
         /** A folder Telegram's list already has, with nothing set on it but its name and chat types. */
         Recorder with(int id, int flags, String name) {
-            return with(id, flags, name, true);
+            return with(id, flags, name, 0);
         }
 
-        Recorder with(int id, int flags, String name, boolean plain) {
-            folders.add(new ChatTypeFolders.Folder(id, flags, name, plain));
+        /** {@code changes} as {@link ChatTypeFolders#COLOR} and the rest. */
+        Recorder with(int id, int flags, String name, int changes) {
+            folders.add(new ChatTypeFolders.Folder(id, flags, name, changes));
             return this;
         }
 
         /** Swaps a listed folder for one with these details, as an edit in Telegram's folder screen would. */
-        void edit(int id, int flags, String name, boolean plain) {
+        void edit(int id, int flags, String name, int changes) {
             folders.removeIf(folder -> folder.id == id);
-            with(id, flags, name, plain);
+            with(id, flags, name, changes);
         }
 
         @Override public int account() { return account; }
@@ -55,7 +56,7 @@ public final class ChatTypeFoldersForTests {
 
         @Override public void create(int account, int id, String name, int flags) {
             created.add(account + "/" + id + "/" + name + "/" + flags);
-            folders.add(new ChatTypeFolders.Folder(id, flags, name, true));
+            folders.add(new ChatTypeFolders.Folder(id, flags, name, 0));
         }
 
         @Override public void delete(int account, int id) {

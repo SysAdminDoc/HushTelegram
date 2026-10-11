@@ -163,31 +163,39 @@ private fun BytecodePatchContext.writeChatTypeFolderStubs(post: String) {
         "folderName" to "iget-object v0, v0, $LOCAL_NAME\n return-object v0")) {
         writeStub(CHAT_TYPE_FOLDERS, stub, 3, FOLDER_AT + read)
     }
-    // Anything you can set on a folder besides its name and chat types makes it yours.
-    writeStub(CHAT_TYPE_FOLDERS, "folderPlain", 4, FOLDER_AT + """
+    // Anything you can set on a folder besides its name and chat types makes it yours: one bit for each,
+    // as ChatTypeFolders.COLOR and the rest.
+    writeStub(CHAT_TYPE_FOLDERS, "folderChanges", 5, FOLDER_AT + """
+        const/4 v2, 0x0
         iget v1, v0, $LOCAL_COLOR
-        if-gez v1, :hush_changed
+        if-ltz v1, :hush_no_color
+        or-int/lit8 v2, v2, 0x1
+        :hush_no_color
         iget-object v1, v0, $LOCAL_ENTITIES
         invoke-virtual {v1}, Ljava/util/ArrayList;->isEmpty()Z
         move-result v1
-        if-eqz v1, :hush_changed
+        if-nez v1, :hush_no_emoji
+        or-int/lit8 v2, v2, 0x2
+        :hush_no_emoji
         iget-object v1, v0, $LOCAL_ALWAYS
         invoke-virtual {v1}, Ljava/util/ArrayList;->isEmpty()Z
         move-result v1
-        if-eqz v1, :hush_changed
+        if-nez v1, :hush_none_added
+        or-int/lit8 v2, v2, 0x4
+        :hush_none_added
         iget-object v1, v0, $LOCAL_NEVER
         invoke-virtual {v1}, Ljava/util/ArrayList;->isEmpty()Z
         move-result v1
-        if-eqz v1, :hush_changed
+        if-nez v1, :hush_none_left_out
+        or-int/lit8 v2, v2, 0x8
+        :hush_none_left_out
         iget-object v1, v0, $LOCAL_PINNED
         invoke-virtual {v1}, $PINS_SIZE
         move-result v1
-        if-nez v1, :hush_changed
-        const/4 v0, 0x1
-        return v0
-        :hush_changed
-        const/4 v0, 0x0
-        return v0
+        if-eqz v1, :hush_none_pinned
+        or-int/lit8 v2, v2, 0x10
+        :hush_none_pinned
+        return v2
     """)
     // What Telegram's own folder screen allows you to make: All chats takes one of Premium's places.
     writeStub(CHAT_TYPE_FOLDERS, "folderLimit", 2, """
@@ -333,7 +341,7 @@ internal fun BytecodePatchContext.resolveChatTypeFolders(): String {
     controlHook(CHAT_TYPE_FOLDERS, "folderId", listOf("I", "I"), "I")
     controlHook(CHAT_TYPE_FOLDERS, "folderFlags", listOf("I", "I"), "I")
     controlHook(CHAT_TYPE_FOLDERS, "folderName", listOf("I", "I"), STRING)
-    controlHook(CHAT_TYPE_FOLDERS, "folderPlain", listOf("I", "I"), "Z")
+    controlHook(CHAT_TYPE_FOLDERS, "folderChanges", listOf("I", "I"), "I")
     controlHook(CHAT_TYPE_FOLDERS, "folderLimit", listOf("I"), "I")
     controlHook(CHAT_TYPE_FOLDERS, "createFolder", listOf("I", "I", STRING, "Z", "Z", "Z", "Z", "Z"), "V")
     controlHook(CHAT_TYPE_FOLDERS, "addFolder", listOf("I", "I", STRING, "I"), "V")

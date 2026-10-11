@@ -22,6 +22,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.value.IntEncodedValue
@@ -38,7 +39,7 @@ class ChatTypeFoldersFixtureTest {
     private val hosts = setOf(MESSAGES_CONTROLLER, LOCAL_FILTER, USER_CONFIG, CONNECTIONS, SERVER_FILTER, NEW_FILTER, TITLE,
         UPDATE_FILTER, UPDATE_ORDER, STORAGE, NOTIFICATIONS, "Lorg/telegram/messenger/support/LongSparseIntArray;")
     private val stubs = listOf("selectedAccount", "signedIn", "userId", "foldersLoaded", "folderCount", "folderId",
-        "folderFlags", "folderName", "folderPlain", "folderLimit", "createFolder", "addFolder", "deleteFolder",
+        "folderFlags", "folderName", "folderChanges", "folderLimit", "createFolder", "addFolder", "deleteFolder",
         "sendFolderOrder")
     private val get = "Ljava/util/ArrayList;->get(I)Ljava/lang/Object;"
     private val isEmpty = "Ljava/util/ArrayList;->isEmpty()Z"
@@ -86,9 +87,15 @@ class ChatTypeFoldersFixtureTest {
                 assertEquals("$name: $stub index", context.method(stub).param(1), context.stub(stub).single { it.controlRef() == get }.namedRegisters()[1])
             }
             assertEquals(listOf(CONTROLLER_INSTANCE, FILTERS, get, LOCAL_FILTER, LOCAL_COLOR, LOCAL_ENTITIES, isEmpty,
-                LOCAL_ALWAYS, isEmpty, LOCAL_NEVER, isEmpty, LOCAL_PINNED, PINS_SIZE), context.stub("folderPlain").refs())
+                LOCAL_ALWAYS, isEmpty, LOCAL_NEVER, isEmpty, LOCAL_PINNED, PINS_SIZE), context.stub("folderChanges").refs())
             // A set color is 0 or more; no color is -1, as Telegram reads a folder without one.
-            assertTrue(name, context.stub("folderPlain").any { it.opcode == Opcode.IF_GEZ })
+            val changes = context.stub("folderChanges")
+            assertTrue(name, changes.any { it.opcode == Opcode.IF_LTZ })
+            // One bit each, in ChatTypeFolders' order, all into the register that's returned.
+            val bits = changes.filter { it.opcode == Opcode.OR_INT_LIT8 }
+            assertEquals(name, listOf(1, 2, 4, 8, 16), bits.map { (it as NarrowLiteralInstruction).narrowLiteral })
+            val result = (changes.last { it.opcode == Opcode.RETURN } as OneRegisterInstruction).registerA
+            assertTrue(name, bits.all { it.namedRegisters() == listOf(result, result) })
             assertEquals(listOf(CONTROLLER_INSTANCE, USER_CONFIG_INSTANCE, IS_PREMIUM, LIMIT_PREMIUM, LIMIT_DEFAULT),
                 context.stub("folderLimit").refs())
 

@@ -74,19 +74,27 @@ public final class ChatTypeFolders {
         }
     }
 
+    /** What {@link #folderChanges} sets for each thing on a folder besides its name and chat types. */
+    static final int COLOR = 1, TITLE_EMOJI = 2, CHATS_ADDED = 4, CHATS_LEFT_OUT = 8, CHATS_PINNED = 16;
+
     /** One of Telegram's folders. */
     static final class Folder {
         final int id;
         final int flags;
         final String name;
-        /** No chats added, left out or pinned, no color and no emoji in its name. */
-        final boolean plain;
+        /** What's set on it besides its name and chat types, as {@link #COLOR} and the rest; 0 when nothing is. */
+        final int changes;
 
-        Folder(int id, int flags, String name, boolean plain) {
+        Folder(int id, int flags, String name, int changes) {
             this.id = id;
             this.flags = flags;
             this.name = name;
-            this.plain = plain;
+            this.changes = changes;
+        }
+
+        /** No chats added, left out or pinned, no color and no emoji in its name. */
+        boolean plain() {
+            return changes == 0;
         }
     }
 
@@ -137,7 +145,7 @@ public final class ChatTypeFolders {
             List<Folder> folders = new ArrayList<>();
             for (int i = 0, count = folderCount(account); i < count; i++) {
                 folders.add(new Folder(folderId(account, i), folderFlags(account, i), folderName(account, i),
-                        folderPlain(account, i)));
+                        folderChanges(account, i)));
             }
             return folders;
         }
@@ -265,14 +273,14 @@ public final class ChatTypeFolders {
             }
             // Gone already means you deleted it; nothing is sent for an id that may be reused.
             boolean sameName = now != null && made.length == 2 && made[1].equals(now.name);
-            if (now != null && now.plain && now.flags == flags && sameName) {
+            if (now != null && now.plain() && now.flags == flags && sameName) {
                 telegram.delete(account, id);
                 count++;
             } else {
                 final Folder kept = now;
                 final int keptId = id, madeFlags = flags;
                 Logger.printDebug(() -> "Folders by chat type kept folder " + keptId + ": "
-                        + (kept == null ? "not in Telegram's list" : "plain " + kept.plain + ", flags " + kept.flags
+                        + (kept == null ? "not in Telegram's list" : "changes " + kept.changes + ", flags " + kept.flags
                         + " (made with " + madeFlags + "), same name " + sameName));
             }
             records++;
@@ -326,8 +334,11 @@ public final class ChatTypeFolders {
     /** {@code dialogFilters.get(index).name}. */
     public static String folderName(int account, int index) { return null; }
 
-    /** No color, no title entities, and empty alwaysShow, neverShow and pinnedDialogs. */
-    public static boolean folderPlain(int account, int index) { return false; }
+    /**
+     * {@link #COLOR} for a color of 0 or more, {@link #TITLE_EMOJI} for title entities, and {@link #CHATS_ADDED},
+     * {@link #CHATS_LEFT_OUT} and {@link #CHATS_PINNED} for alwaysShow, neverShow and pinnedDialogs holding any.
+     */
+    public static int folderChanges(int account, int index) { return 0; }
 
     /** {@code dialogFiltersLimitPremium - 1} with Premium, {@code dialogFiltersLimitDefault} without. */
     public static int folderLimit(int account) { return 0; }
