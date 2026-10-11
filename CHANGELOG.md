@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Settings:** Export diagnostic report says "Preparing the diagnostic report" while it builds the report and takes no second tap until the copy or the file is done. The back arrow and the name at the top use the page's own white, and the back arrow shows when a keyboard is on it.
+
 * **Settings:** A keyboard or D-pad can now reach the Pause, Resume and Undo buttons, and shows which one it's on. The two Export diagnostic report choices read as buttons to a screen reader, and a ring marks the one a keyboard is on.
 
 * **Telegram:** HushTelegram's own dialogs in a chat (Message details, Forward to, the Ask before questions) now go light or dark with Telegram's theme. Before, they followed the phone's dark mode, so they could come out white over Telegram's Night theme.

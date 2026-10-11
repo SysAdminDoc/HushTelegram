@@ -1327,6 +1327,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             showAllText(view);
             ScreenColors.row(view, this);
             view.setAccessibilityDelegate(new RowSemantics(this, Button.class));
+            // While a report is built a screen reader hears the row as unavailable, and this says
+            // why. Older versions read the summary, which shows the same line.
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                view.setStateDescription(isBusy() ? getSummary() : null);
+            }
         }
     }
 

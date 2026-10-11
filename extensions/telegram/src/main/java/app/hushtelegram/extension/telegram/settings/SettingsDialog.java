@@ -121,12 +121,14 @@ public final class SettingsDialog extends DialogFragment {
         bar.setPaddingRelative(dp(4), dp(12), pad, dp(12));
 
         android.widget.ImageButton back = new android.widget.ImageButton(getContext());
-        android.graphics.drawable.Drawable arrow = SettingsIcons.icon(getContext(), SettingsIcons.BACK, Color.WHITE);
+        android.graphics.drawable.Drawable arrow = SettingsIcons.icon(getContext(), SettingsIcons.BACK, ScreenColors.DEFAULT.title);
         arrow.setBounds(0, 0, dp(24), dp(24));
         arrow.setLayoutDirection(rightToLeft() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
         back.setImageDrawable(arrow);
         back.setPadding(dp(12), dp(12), dp(12), dp(12));
-        back.setBackgroundColor(Color.TRANSPARENT);
+        // A round ripple, which also shows where a keyboard's focus is.
+        back.setBackground(new android.graphics.drawable.RippleDrawable(
+                android.content.res.ColorStateList.valueOf(ScreenColors.half(ScreenColors.DEFAULT.accent)), null, null));
         back.setMinimumWidth(dp(48));
         back.setMinimumHeight(dp(48));
         back.setContentDescription(L10n.t(getContext(), "Back"));
@@ -149,7 +151,7 @@ public final class SettingsDialog extends DialogFragment {
         TextView title = new TextView(getContext());
         pageTitle = title;
         title.setText("HushTelegram");
-        title.setTextColor(Color.WHITE);
+        title.setTextColor(ScreenColors.DEFAULT.title);
         title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
         title.setPaddingRelative(dp(8), 0, 0, 0);

@@ -26,14 +26,22 @@ import app.hushtelegram.extension.shared.L10n;
 /** Offers a compact choice between a quick clipboard report and a full text file. */
 @SuppressWarnings({"deprecation", "unused"})
 public class ExportDiagnosticReportPreference extends Preference {
+    /** The summary to put back once a report is done, while the row says it's busy; null otherwise. */
+    @Nullable private CharSequence restingSummary;
+    private boolean busy;
+
     {
         // A key so the settings search can index this row. Nothing in the settings
         // framework treats it as a setting: a key with no Setting behind it is skipped.
         setKey("action_export_diagnostic_report");
         setOnPreferenceClickListener(pref -> {
             DialogInterface.OnClickListener choose = (dialog, which) -> {
-                if (which == 0) LogBufferManager.exportToClipboard();
-                if (which == 1) LogBufferManager.exportToFile();
+                if (which != 0 && which != 1) return;
+                // Building the report can take a few seconds on a full buffer, so the row says
+                // so and takes no second tap until the copy or the file is done.
+                showBusy();
+                if (which == 0) LogBufferManager.exportToClipboard(this::showResting);
+                else LogBufferManager.exportToFile(this::showResting);
             };
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext()).setTitle(dialogTitle());
             ListAdapter drawn = choices(builder.getContext());
@@ -48,6 +56,27 @@ public class ExportDiagnosticReportPreference extends Preference {
             dialog.show();
             return true;
         });
+    }
+
+    /** Whether a report this row started is still being built. */
+    public boolean isBusy() {
+        return busy;
+    }
+
+    private void showBusy() {
+        if (busy) return;
+        busy = true;
+        restingSummary = getSummary();
+        setSummary(L10n.t(getContext(), "Preparing the diagnostic report"));
+        setEnabled(false);
+    }
+
+    private void showResting() {
+        if (!busy) return;
+        busy = false;
+        setSummary(restingSummary);
+        restingSummary = null;
+        setEnabled(true);
     }
 
     /**

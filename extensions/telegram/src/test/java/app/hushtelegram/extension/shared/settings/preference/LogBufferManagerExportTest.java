@@ -14,6 +14,7 @@
 package app.hushtelegram.extension.shared.settings.preference;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -166,6 +167,30 @@ public class LogBufferManagerExportTest {
             assertEquals(report, new String(java.nio.file.Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8));
         }
         assertNotEquals(first, second);
+    }
+
+    /** The row says it's busy and takes no second tap while a report is built, then comes back as it was. */
+    @Test public void theReportRowIsBusyUntilTheReportIsDone() throws Exception {
+        try (org.robolectric.android.controller.ActivityController<android.app.Activity> controller =
+                     Robolectric.buildActivity(android.app.Activity.class).setup()) {
+            app.hushtelegram.extension.shared.Utils.setContext(RuntimeEnvironment.getApplication());
+            LogBufferManager.clearLogBuffer();
+            ExportDiagnosticReportPreference row = new ExportDiagnosticReportPreference(controller.get());
+            row.setSummary("Copy a short report or save the full one.");
+            row.getOnPreferenceClickListener().onPreferenceClick(row);
+            android.app.AlertDialog dialog = (android.app.AlertDialog) org.robolectric.shadows.ShadowAlertDialog.getLatestAlertDialog();
+            Shadows.shadowOf(dialog).clickOnItem(0);
+
+            assertTrue(row.isBusy());
+            assertFalse(row.isEnabled());
+            assertEquals("Preparing the diagnostic report", String.valueOf(row.getSummary()));
+
+            app.hushtelegram.extension.shared.Utils.awaitBackgroundTasksForTests();
+            org.robolectric.shadows.ShadowLooper.idleMainLooper();
+            assertFalse(row.isBusy());
+            assertTrue(row.isEnabled());
+            assertEquals("Copy a short report or save the full one.", String.valueOf(row.getSummary()));
+        }
     }
 
     /**

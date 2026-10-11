@@ -27,6 +27,8 @@ import android.provider.MediaStore;
 import android.util.AtomicFile;
 import android.database.Cursor;
 
+import androidx.annotation.Nullable;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -171,19 +173,33 @@ public final class LogBufferManager {
      * 250,000 characters, and on the main thread that held up the tap that asked for it.
      */
     public static void exportToClipboard() {
+        exportToClipboard(null);
+    }
+
+    /** Copy quick report, then [done] on the main thread however it ended, so a row can show it's busy. */
+    public static void exportToClipboard(@Nullable Runnable done) {
         boolean started = Utils.runOnBackgroundThread(() -> {
             String exportText;
             try {
                 exportText = clipboardText(CLIPBOARD_MAX_CHARS);
             } catch (Exception ex) {
                 clipboardFailed(ex);
+                finished(done);
                 return;
             }
-            Utils.runOnMainThread(() -> copyToClipboard(exportText));
+            Utils.runOnMainThread(() -> {
+                copyToClipboard(exportText);
+                if (done != null) done.run();
+            });
         });
         if (!started) {
             Utils.showToastLong(say(couldNotStartMessage, L10n.t("Couldn't start the report export. Try again shortly.")));
+            finished(done);
         }
+    }
+
+    private static void finished(@Nullable Runnable done) {
+        if (done != null) Utils.runOnMainThread(done);
     }
 
     /** Puts a built report on the clipboard, on the main thread. */
@@ -204,15 +220,22 @@ public final class LogBufferManager {
     }
 
     public static void exportToFile() {
+        exportToFile(null);
+    }
+
+    /** Save full report, then [done] on the main thread however it ended, so a row can show it's busy. */
+    public static void exportToFile(@Nullable Runnable done) {
         Context context = Utils.getContext();
         if (context == null) {
             Utils.showToastLong(say(noContextMessage, L10n.t("The report couldn't be saved yet. Try again in a moment.")));
+            finished(done);
             return;
         }
         Context application = context.getApplicationContext();
         final Context app = application == null ? context : application;
         if (!FILE_EXPORT_RUNNING.compareAndSet(false, true)) {
             Utils.showToastShort(say(alreadySavingMessage, L10n.t("A diagnostic report is already being saved.")));
+            finished(done);
             return;
         }
         try {
@@ -225,6 +248,7 @@ public final class LogBufferManager {
                     Logger.printException(() -> "Failed to save diagnostics", ex);
                 } finally {
                     FILE_EXPORT_RUNNING.set(false);
+                    finished(done);
                 }
                 return null;
             });
@@ -232,6 +256,7 @@ public final class LogBufferManager {
             FILE_EXPORT_RUNNING.set(false);
             Logger.printException(() -> "Could not start diagnostic export", error);
             Utils.showToastLong(say(couldNotStartMessage, L10n.t("Couldn't start the report export. Try again shortly.")));
+            finished(done);
         }
     }
 
