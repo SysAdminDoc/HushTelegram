@@ -6,6 +6,20 @@ package app.hushtelegram.extension.telegram.misc;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -102,5 +116,110 @@ public class AiTranslateTest {
     @Test public void aRefusedKeySaysOnlyItsStatus() {
         String message = new AiTranslate.KeyRefused(401).getMessage();
         assertEquals("AI service refused the key: 401", message);
+    }
+
+    /** The request as a service sees it: one POST to the chat path, the key as a bearer, the answer read back. */
+    @Test public void theRequestCarriesTheKeyToTheChatPathAndTheAnswerComesBack() throws Exception {
+        try (LocalService service = new LocalService(path -> answer(200, "OK", "",
+                "{\"choices\":[{\"message\":{\"content\":\"Hello\"}}]}"))) {
+            GoogleTranslate.Result result = AiTranslate.fetch(new AiTranslate.Service(service.base(), "local-model", "sk-secret"), "en", "Привет");
+            assertEquals("Hello", result.text);
+            assertEquals(1, service.seen.size());
+            LocalService.Request request = service.seen.get(0);
+            assertEquals("POST /v1/chat/completions", request.line);
+            assertEquals("Bearer sk-secret", request.authorization);
+            assertEquals("local-model", new JSONObject(request.body).getString("model"));
+        }
+    }
+
+    /** A service that answers with a redirect gets a failure, not a second request carrying the key. */
+    @Test public void aRedirectIsRefusedSoTheKeyGoesNowhereElse() throws Exception {
+        LocalService[] holder = new LocalService[1];
+        try (LocalService service = new LocalService(path -> path.equals("/v1/chat/completions")
+                ? answer(302, "Found", "Location: " + holder[0].base().replace("/v1", "/elsewhere") + "\r\n", "")
+                : answer(200, "OK", "", "{\"choices\":[{\"message\":{\"content\":\"stolen\"}}]}"))) {
+            holder[0] = service;
+            try {
+                AiTranslate.fetch(new AiTranslate.Service(service.base(), "m", "sk-secret"), "en", "Привет");
+                fail("the redirect was followed");
+            } catch (IOException refused) {
+                assertEquals("AI service answered 302", refused.getMessage());
+            }
+            assertEquals(1, service.seen.size());
+            assertEquals("POST /v1/chat/completions", service.seen.get(0).line);
+        }
+    }
+
+    private static String answer(int code, String reason, String headers, String body) {
+        byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+        return "HTTP/1.1 " + code + " " + reason + "\r\n" + headers + "Content-Length: " + bytes.length
+                + "\r\nConnection: close\r\n\r\n" + body;
+    }
+
+    /**
+     * An HTTP service on the phone's own address, the one the translator takes over plain http.
+     * Android's unit tests compile against android.jar, which has no com.sun.net.httpserver, so
+     * this reads each request off a ServerSocket itself and answers with what [answer] says.
+     */
+    private static final class LocalService implements AutoCloseable {
+        static final class Request {
+            final String line;
+            final String authorization;
+            final String body;
+
+            Request(String line, String authorization, String body) {
+                this.line = line;
+                this.authorization = authorization;
+                this.body = body;
+            }
+        }
+
+        private static final Pattern CONTENT_LENGTH = Pattern.compile("(?im)^Content-Length:\\s*(\\d+)\\s*$");
+        private static final Pattern AUTHORIZATION = Pattern.compile("(?im)^Authorization:\\s*(.+?)\\s*$");
+
+        final List<Request> seen = Collections.synchronizedList(new ArrayList<>());
+        private final ServerSocket socket;
+
+        LocalService(Function<String, String> answer) throws IOException {
+            socket = new ServerSocket(0, 2, InetAddress.getLoopbackAddress());
+            Thread thread = new Thread(() -> {
+                while (!socket.isClosed()) {
+                    try (Socket client = socket.accept()) {
+                        Request request = read(client.getInputStream());
+                        seen.add(request);
+                        client.getOutputStream().write(answer.apply(request.line.split(" ")[1]).getBytes(StandardCharsets.UTF_8));
+                        client.getOutputStream().flush();
+                    } catch (IOException closed) {
+                        return;
+                    }
+                }
+            }, "local-service");
+            thread.setDaemon(true);
+            thread.start();
+        }
+
+        String base() {
+            return "http://127.0.0.1:" + socket.getLocalPort() + "/v1";
+        }
+
+        private static Request read(InputStream in) throws IOException {
+            ByteArrayOutputStream head = new ByteArrayOutputStream();
+            for (int last = 0, b; (b = in.read()) != -1; ) {
+                head.write(b);
+                last = (last << 8) | b;
+                if (last == 0x0d0a0d0a) break;
+            }
+            String headers = head.toString("UTF-8");
+            Matcher length = CONTENT_LENGTH.matcher(headers);
+            byte[] body = new byte[length.find() ? Integer.parseInt(length.group(1)) : 0];
+            for (int read = 0, n; read < body.length && (n = in.read(body, read, body.length - read)) != -1; ) read += n;
+            Matcher authorization = AUTHORIZATION.matcher(headers);
+            return new Request(headers.substring(0, headers.indexOf("\r\n")).replaceAll(" HTTP/1\\.[01]$", ""),
+                    authorization.find() ? authorization.group(1) : "", new String(body, StandardCharsets.UTF_8));
+        }
+
+        @Override public void close() throws IOException {
+            socket.close();
+        }
     }
 }

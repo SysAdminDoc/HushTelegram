@@ -96,6 +96,8 @@ final class GoogleTranslate {
         try {
             connection.setConnectTimeout(CONNECT_MS);
             connection.setReadTimeout(READ_MS);
+            // The text goes to Google's translate and nowhere else.
+            connection.setInstanceFollowRedirects(false);
             connection.setRequestProperty("User-Agent", "HushTelegram");
             if (body) {
                 connection.setRequestMethod("POST");

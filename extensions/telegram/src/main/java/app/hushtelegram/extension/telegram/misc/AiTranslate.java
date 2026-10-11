@@ -168,6 +168,8 @@ public final class AiTranslate {
         try {
             connection.setConnectTimeout(CONNECT_MS);
             connection.setReadTimeout(READ_MS);
+            // The key and the text go to the address the person typed and nowhere else.
+            connection.setInstanceFollowRedirects(false);
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
             connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
