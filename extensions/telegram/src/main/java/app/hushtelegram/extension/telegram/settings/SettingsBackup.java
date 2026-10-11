@@ -137,6 +137,7 @@ public final class SettingsBackup {
             Settings.OUTSIDE_TRANSLATE,
             Settings.HIDE_CHANNEL_BUTTONS,
             Settings.HIDE_SEND_AS,
+            Settings.HIDE_CONTACTS_TAB,
             Settings.FASTER_DOWNLOADS,
             Settings.SAVE_DOWNLOADS,
             Settings.ASK_BEFORE_GIF,

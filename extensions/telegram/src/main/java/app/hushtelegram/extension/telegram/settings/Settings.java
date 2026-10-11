@@ -338,6 +338,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_SEND_AS =
             new BooleanSetting("hushtelegram_hide_send_as", FALSE);
 
+    /**
+     * The Contacts tab leaves the bar at the bottom of the main screen, and a swipe doesn't land on
+     * its page. The bar is set up when the main screen is built, so a restart shows the change.
+     */
+    public static final BooleanSetting HIDE_CONTACTS_TAB =
+            new BooleanSetting("hushtelegram_hide_contacts_tab", FALSE, true);
+
     /** Downloads take 512 KB pieces, 8 at a time, unless Telegram drops back to small ones itself. */
     public static final BooleanSetting FASTER_DOWNLOADS =
             new BooleanSetting("hushtelegram_faster_downloads", FALSE);

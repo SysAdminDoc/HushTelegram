@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** New Hide Contacts tab switch on the Chat list page. Turn it on and the Contacts tab is gone from the bar at the bottom of the main screen after a restart, and a swipe no longer lands on its page. Calls or Settings stays as you had it, and the new message button on the chat list still opens your contacts. It starts off.
+
 * **Telegram:** Ask before sending a sticker now covers the stickers Telegram suggests above the keyboard when you type an emoji, in a chat and in a story's reply bar. Those went out on one tap before. A sticker that costs stars still gets Telegram's own question only.
 
 * **Telegram:** Hide blocked users in groups now keeps a blocked person's new messages in a group from notifying you too, not just out of the chat when you open it. It also reads your whole blocked list now. Telegram only loads the first 20 people until you scroll its Blocked users page, so anyone past them used to slip through.

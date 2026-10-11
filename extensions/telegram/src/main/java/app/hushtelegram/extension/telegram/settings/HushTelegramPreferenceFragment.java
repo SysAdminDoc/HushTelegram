@@ -365,6 +365,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.DISABLE_ARCHIVE_PULL.coverageSummary(L10n.t("Pulling down the chat list no longer opens the archive. Use Archived chats in "
                             + "the list's menu instead. Restart Telegram to see the change."))));
         }
+        if (build.contains(PatchFamily.HIDE_CONTACTS_TAB)) {
+            on(pages, PatchFamily.HIDE_CONTACTS_TAB).addPreference(toggle(context, Settings.HIDE_CONTACTS_TAB, L10n.t("Hide Contacts tab"),
+                    PatchFamily.HIDE_CONTACTS_TAB.coverageSummary(L10n.t("The Contacts tab leaves the bar at the bottom of the main screen, and "
+                            + "swiping doesn't open its page either. The Calls or Settings tab stays as Telegram has it, and the chat "
+                            + "list's new message button still opens your contacts. Restart Telegram to see the change."))));
+        }
     }
 
     /** The Conversations page: in a chat, its menus, sending, translation, hidden and kept messages. */

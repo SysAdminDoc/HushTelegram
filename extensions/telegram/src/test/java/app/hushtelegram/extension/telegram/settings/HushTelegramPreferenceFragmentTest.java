@@ -143,6 +143,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.OUTSIDE_TRANSLATE, "Translate with an outside service");
         ROW_TITLES.put(PatchFamily.HIDE_CHANNEL_BUTTONS, "Hide channel bar buttons");
         ROW_TITLES.put(PatchFamily.HIDE_SEND_AS, "Hide Send as button");
+        ROW_TITLES.put(PatchFamily.HIDE_CONTACTS_TAB, "Hide Contacts tab");
         ROW_TITLES.put(PatchFamily.FASTER_DOWNLOADS, "Faster downloads");
         ROW_TITLES.put(PatchFamily.SAVE_DOWNLOADS, "Save downloaded files");
         ROW_TITLES.put(PatchFamily.DISABLE_ANALYTICS, "Stop usage reports");
@@ -593,8 +594,8 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse(Settings.IGNORE_MUTED_MENTIONS.key,
                     ((SwitchPreference) page.findPreference(Settings.IGNORE_MUTED_MENTIONS.key)).isChecked());
             assertEquals("Hide blocked users in groups", String.valueOf(page.findPreference(Settings.HIDE_BLOCKED_IN_GROUPS.key).getTitle()));
-            assertEquals("Messages from people you've blocked are left out of groups and supergroups you open. Nothing"
-                    + " is deleted. Private chats and channel posts stay as they are.",
+            assertEquals("Messages from people you've blocked are left out of groups and supergroups you open, and don't"
+                    + " notify you. Nothing is deleted. Private chats and channel posts stay as they are.",
                     String.valueOf(page.findPreference(Settings.HIDE_BLOCKED_IN_GROUPS.key).getSummary()));
             // Blocked people's group messages show until the switch is turned on.
             assertFalse(Settings.HIDE_BLOCKED_IN_GROUPS.key,
@@ -666,6 +667,13 @@ public class HushTelegramPreferenceFragmentTest {
             // A channel's bar and the message box stay stock until their switches are turned on.
             assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_CHANNEL_BUTTONS.key)).isChecked());
             assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_SEND_AS.key)).isChecked());
+            assertEquals("Hide Contacts tab", String.valueOf(page.findPreference(Settings.HIDE_CONTACTS_TAB.key).getTitle()));
+            assertEquals("The Contacts tab leaves the bar at the bottom of the main screen, and swiping doesn't open its "
+                            + "page either. The Calls or Settings tab stays as Telegram has it, and the chat list's new "
+                            + "message button still opens your contacts. Restart Telegram to see the change.",
+                    String.valueOf(page.findPreference(Settings.HIDE_CONTACTS_TAB.key).getSummary()));
+            // The main screen keeps its Contacts tab until the switch is turned on.
+            assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_CONTACTS_TAB.key)).isChecked());
             assertEquals("Ask before sending a GIF", String.valueOf(page.findPreference(Settings.ASK_BEFORE_GIF.key).getTitle()));
             assertEquals("Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs "
                     + "go out without asking.",

@@ -345,6 +345,9 @@ public class PausedHooksTest {
         // The message box keeps its Send as button.
         probes.put(PatchFamily.HIDE_SEND_AS, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.ChannelButtonsForTests.sendAsOn()));
+        // The main screen keeps its Contacts tab, and a swipe from Chats lands on its page.
+        probes.put(PatchFamily.HIDE_CONTACTS_TAB, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.MainTabs.blocksSwipe(0, true)));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),

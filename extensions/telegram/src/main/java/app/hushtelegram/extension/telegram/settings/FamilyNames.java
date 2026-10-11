@@ -72,6 +72,7 @@ public final class FamilyNames {
     public static final String OUTSIDE_TRANSLATE = "Translate with an outside service";
     public static final String HIDE_CHANNEL_BUTTONS = "Hide channel bar buttons";
     public static final String HIDE_SEND_AS = "Hide Send as button";
+    public static final String HIDE_CONTACTS_TAB = "Hide Contacts tab";
     public static final String FASTER_DOWNLOADS = "Faster downloads";
     public static final String SAVE_DOWNLOADS = "Save downloaded files";
     public static final String CHAT_TYPE_FOLDERS = "Folders by chat type";
