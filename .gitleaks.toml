@@ -1,5 +1,6 @@
 # gitleaks reads this from the repository root. The default rules apply; this only names the one
-# file whose findings are made up on purpose.
+# file whose findings are made up on purpose. [[allowlists]] needs gitleaks 8.25 or later (8.30.1
+# checked 2026-10-11); an older one skips it without a word and flags that file.
 title = "HushTelegram"
 
 [extend]
