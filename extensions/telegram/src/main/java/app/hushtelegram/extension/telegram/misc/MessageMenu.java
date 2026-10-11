@@ -270,10 +270,10 @@ public final class MessageMenu {
     private static void forward(Context context, int account, Destination destination, ArrayList<Object> batch, boolean hide) {
         try {
             int result = forwardTo(account, batch, destination.id, hide);
-            String text = result == 0
+            String said = result == 0
                     ? L10n.f(context, "Forwarding to %1$s", L10n.isolate(destination.title))
                     : L10n.t(context, "Can't forward there");
-            Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, said, Toast.LENGTH_SHORT).show();
             if (result == 0) HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "quick forwarded");
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "quick forward", failure);

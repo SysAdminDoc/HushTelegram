@@ -34,7 +34,7 @@ public class ToastLengthTest {
     private static final int TRANSLATION_LIMIT = 80;
     private static final String[] LANGUAGES = {"de", "es", "in", "pt-rBR", "tr"};
 
-    private static final Pattern TOAST_CALL = Pattern.compile("\\b(?:showToastShort|showToastLong|watch)\\(");
+    private static final Pattern TOAST_CALL = Pattern.compile("\\b(?:showToastShort|showToastLong|watch|makeText)\\(");
     // Texts that reach a toast through a variable of this name.
     private static final Pattern TOAST_VARIABLE = Pattern.compile("\\b(?:said|refused|done)\\s*=(?!=)");
     // Methods that build a toast text and hand it back.
@@ -80,6 +80,7 @@ public class ToastLengthTest {
         for (Found toast : toastTexts()) {
             for (String language : LANGUAGES) {
                 String translated = tables.get(language).get(toast.english);
+                // L10nCatalogTest holds each table to the code's English, so a missing row fails there.
                 if (translated == null) continue;
                 int length = fixedLength(translated);
                 if (length > TRANSLATION_LIMIT) {
@@ -99,6 +100,9 @@ public class ToastLengthTest {
         assertTrue(texts.contains("Filters saved."));
         assertTrue(texts.contains("Can't open the link. Go to %1$s."));
         assertTrue(texts.contains("That app is slow to answer. Nothing was changed."));
+        // Toast.makeText straight from a hook, and a text handed to it through a variable.
+        assertTrue(texts.contains("Photo copied"));
+        assertTrue(texts.contains("Forwarding to %1$s"));
     }
 
     private static int fixedLength(String text) {
