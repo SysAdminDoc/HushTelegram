@@ -163,8 +163,8 @@ private fun BytecodePatchContext.writeChatTypeFolderStubs(post: String) {
         "folderName" to "iget-object v0, v0, $LOCAL_NAME\n return-object v0")) {
         writeStub(CHAT_TYPE_FOLDERS, stub, 3, FOLDER_AT + read)
     }
-    // Anything you can set on a folder besides its name and chat types makes it yours: one bit for each,
-    // as ChatTypeFolders.COLOR and the rest.
+    // One bit for each thing you can set on a folder besides its name and chat types, as ChatTypeFolders.COLOR
+    // and the rest. ChatTypeFolders decides which of them make a folder yours.
     writeStub(CHAT_TYPE_FOLDERS, "folderChanges", 5, FOLDER_AT + """
         const/4 v2, 0x0
         iget v1, v0, $LOCAL_COLOR

@@ -92,9 +92,12 @@ public final class ChatTypeFolders {
             this.changes = changes;
         }
 
-        /** No chats added, left out or pinned, no color and no emoji in its name. */
+        /**
+         * No chats added, left out or pinned and no emoji in its name. A color doesn't count: Telegram's server
+         * gives a new folder a tag color of its own, and only Premium lets you pick one.
+         */
         boolean plain() {
-            return changes == 0;
+            return (changes & ~COLOR) == 0;
         }
     }
 

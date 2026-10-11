@@ -158,9 +158,20 @@ public class ChatTypeFoldersTest {
         assertEquals(1, telegram.deleted.size());
     }
 
+    @Test public void theColorTelegramsServerGivesANewFolderDoesntKeepIt() {
+        turn(true);
+        // What Telegram's list holds once its server sends the folders back: each with a tag color.
+        for (ChatTypeFolders.Folder made : new ArrayList<>(telegram.folders)) {
+            telegram.edit(made.id, made.flags, made.name, ChatTypeFolders.COLOR);
+        }
+
+        assertEquals(REMOVED, turn(false));
+        assertEquals(Arrays.asList(2, 3, 4, 5), sorted(telegram.deleted));
+    }
+
     @Test public void eachThingYouCanSetOnAFolderKeepsIt() {
-        int[] each = {ChatTypeFolders.COLOR, ChatTypeFolders.TITLE_EMOJI, ChatTypeFolders.CHATS_ADDED,
-                ChatTypeFolders.CHATS_LEFT_OUT, ChatTypeFolders.CHATS_PINNED};
+        int[] each = {ChatTypeFolders.TITLE_EMOJI, ChatTypeFolders.CHATS_ADDED, ChatTypeFolders.CHATS_LEFT_OUT,
+                ChatTypeFolders.CHATS_PINNED, ChatTypeFolders.COLOR | ChatTypeFolders.CHATS_ADDED};
         for (int change : each) {
             telegram = new ChatTypeFoldersForTests.Recorder();
             ChatTypeFolders.telegram = telegram;
