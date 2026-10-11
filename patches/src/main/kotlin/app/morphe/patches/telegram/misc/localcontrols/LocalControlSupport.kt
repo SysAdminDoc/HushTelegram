@@ -64,6 +64,24 @@ internal fun BytecodePatchContext.requireReachable(reference: String, static: Bo
     controlShape(reachable, "$reference isn't reachable from the extension")
 }
 
+/**
+ * Throws unless [type] is a public class and each of [wanted] is public on it. A field is written
+ * `name:Type` and a method `name(Parameters)Return`, after `static ` when it's static; a method
+ * also mustn't be abstract.
+ */
+internal fun BytecodePatchContext.controlMembers(type: String, vararg wanted: String) {
+    val owner = classDefByOrNull(type)
+    controlShape(owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags), "$type is missing")
+    for (member in wanted) {
+        val static = member.startsWith("static ")
+        val name = member.removePrefix("static ")
+        val ok = if ('(' in name) owner!!.methods.any { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == name &&
+            AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static && !AccessFlags.ABSTRACT.isSet(it.accessFlags) }
+        else owner!!.fields.any { "${it.name}:${it.type}" == name && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static }
+        controlShape(ok, "$type no longer has $member")
+    }
+}
+
 /** Proves that a receiver copied at entry still names this instance on every path to its use. */
 internal fun Method.controlReceiverAlias(register: Int, use: Int) {
     val flow = ControlFlow.of(this)

@@ -7,6 +7,7 @@ package app.morphe.patches.telegram.misc.messagemenu
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
@@ -24,6 +25,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
+import app.morphe.patches.telegram.misc.localcontrols.controlMembers
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
@@ -35,6 +37,7 @@ import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
@@ -168,36 +171,18 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     controlHook(MESSAGE_MENU, "photoFile", listOf(OBJECT), FILE)
     controlHook(MESSAGE_MENU, "uri", listOf(CONTEXT, FILE), URI)
 
-    // One pass over the app: the builder, the only method taking a message and three lists with
-    // Telegram's Forward and Cancel sending labels, and the Premium gate on hiding an article's sender.
-    val builders = mutableListOf<Pair<String, String>>()
+    // One pass over the app: the builder, and the Premium gate on hiding an article's sender.
     val articles = mutableSetOf<Int>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
-        cls.methods.forEach { m ->
-            val body = m.controlBody()
-            if (!AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" &&
-                m.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE, LIST, LIST, LIST) &&
-                body.any { it.controlRef() == FORWARD_LABEL } && body.any { it.controlRef() == CANCEL_SENDING }) builders += cls.type to signature(m)
-            val premium = body.indexOfFirst { it.controlRef() == IS_PREMIUM }
-            if (premium < 0 || body.none { it.controlRef() == FORWARDS } || body.none { it.controlRef() == NAME_HIDE }) return@forEach
-            for (i in premium until body.size - 2) {
-                val literal = body[i + 1] as? NarrowLiteralInstruction ?: continue
-                if (body[i].controlRef() == MESSAGE_TYPE && body[i + 2].opcode in COMPARES) articles += literal.narrowLiteral
-            }
+    val builders = messageMenuBuilders { _, body ->
+        val premium = body.indexOfFirst { it.controlRef() == IS_PREMIUM }
+        if (premium < 0 || body.none { it.controlRef() == FORWARDS } || body.none { it.controlRef() == NAME_HIDE }) return@messageMenuBuilders
+        for (i in premium until body.size - 2) {
+            val literal = body[i + 1] as? NarrowLiteralInstruction ?: continue
+            if (body[i].controlRef() == MESSAGE_TYPE && body[i + 2].opcode in COMPARES) articles += literal.narrowLiteral
         }
     }
     val article = articles.toList().controlSingle("the Premium gate on hiding an article's sender")
-    val (chat, wanted) = builders.controlSingle("message menu builder")
-    val chatClass = mutableClassDefBy(chat)
-    controlShape(AccessFlags.PUBLIC.isSet(chatClass.accessFlags), "the chat screen is inaccessible")
-    val fill = chatClass.methods.single { signature(it) == wanted }
-    val built = fill.controlBody()
-    val end = built.size - 1
-    controlShape(built[end].opcode == Opcode.RETURN_VOID && built.count { it.opcode == Opcode.RETURN_VOID } == 1,
-        "the message menu builder no longer ends in its one return")
-    fill.requireThisIntact(NAME, listOf(end))
-    for (i in 0..3) fill.requireParameterIntact(NAME, i, listOf(end))
+    val (chat, chatClass, fill, built) = messageMenuBuilder(builders, NAME)
     controlShape(built.none { (it as? NarrowLiteralInstruction)?.narrowLiteral in MENU_OPTIONS }, "the message menu already uses the extension's numbers")
 
     // Forward goes in through a helper taking the label, the option number and two of the lists.
@@ -274,6 +259,50 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
 }
 
 /**
+ * The chat screen's message menu builders, as owner type and signature: each method taking a
+ * message and three lists that loads Telegram's Forward and Cancel sending labels. One pass over
+ * the app, which also hands [visit] every method it reads and its body, for a caller looking for
+ * something else on the same walk. Translate with an outside service adds to the same menu.
+ */
+internal fun BytecodePatchContext.messageMenuBuilders(
+    visit: (Method, List<Instruction>) -> Unit = { _, _ -> },
+): List<Pair<String, String>> {
+    val builders = mutableListOf<Pair<String, String>>()
+    classDefForEach { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+        cls.methods.forEach { m ->
+            val body = m.controlBody()
+            if (!AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" &&
+                m.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE, LIST, LIST, LIST) &&
+                body.any { it.controlRef() == FORWARD_LABEL } && body.any { it.controlRef() == CANCEL_SENDING }) builders += cls.type to signature(m)
+            visit(m, body)
+        }
+    }
+    return builders
+}
+
+/** The chat screen [chat], its menu builder [fill] and the builder's instructions [built]. */
+internal data class MessageMenuBuilder(val chat: String, val chatClass: MutableClass, val fill: MutableMethod, val built: List<Instruction>)
+
+/**
+ * The one builder [builders] found, on a public chat screen, ending in its one return with `this`
+ * and its four arguments still there. [patch] names the patch whose hook goes at that return.
+ */
+internal fun BytecodePatchContext.messageMenuBuilder(builders: List<Pair<String, String>>, patch: String): MessageMenuBuilder {
+    val (chat, wanted) = builders.controlSingle("message menu builder")
+    val chatClass = mutableClassDefBy(chat)
+    controlShape(AccessFlags.PUBLIC.isSet(chatClass.accessFlags), "the chat screen is inaccessible")
+    val fill = chatClass.methods.single { signature(it) == wanted }
+    val built = fill.controlBody()
+    val end = built.size - 1
+    controlShape(built[end].opcode == Opcode.RETURN_VOID && built.count { it.opcode == Opcode.RETURN_VOID } == 1,
+        "the message menu builder no longer ends in its one return")
+    fill.requireThisIntact(patch, listOf(end))
+    for (i in 0..3) fill.requireParameterIntact(patch, i, listOf(end))
+    return MessageMenuBuilder(chat, chatClass, fill, built)
+}
+
+/**
  * The send takes the messages, Hide sender's name, Hide captions, notify, the schedule date and the
  * stars straight from the method's own parameters, each moved in just before the call.
  */
@@ -299,43 +328,31 @@ private fun requireForwardArguments(forward: Method) {
 
 /** Every Telegram member the stubs reach, with the access and kind each call needs. */
 private fun BytecodePatchContext.requireHostMembers() {
-    fun members(type: String, vararg wanted: String) {
-        val owner = classDefByOrNull(type)
-        controlShape(owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags), "$type is missing")
-        for (member in wanted) {
-            val static = member.startsWith("static ")
-            val name = member.removePrefix("static ")
-            val ok = if ('(' in name) owner!!.methods.any { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == name &&
-                AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static && !AccessFlags.ABSTRACT.isSet(it.accessFlags) }
-            else owner!!.fields.any { "${it.name}:${it.type}" == name && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static }
-            controlShape(ok, "$type no longer has $member")
-        }
-    }
-    members(MESSAGE, "messageOwner:$TL_MESSAGE", "type:I", "currentAccount:I", "scheduled:Z",
+    controlMembers(MESSAGE, "messageOwner:$TL_MESSAGE", "type:I", "currentAccount:I", "scheduled:Z",
         "getId()I", "getDialogId()J", "getFromChatId()J", "getForwardedName()Ljava/lang/String;", "getDocument()$DOCUMENT",
         "isPoll()Z", "isTodo()Z", "isPhoto()Z", "isHiddenSensitive()Z", "static getPeerId($PEER)J", "static getMedia($MESSAGE)$MEDIA")
-    members(GROUPED, "messages:$LIST")
-    members(TL_MESSAGE, "date:I", "edit_date:I", "fwd_from:$FWD_HEADER", "action:$ACTION", "attachPath:Ljava/lang/String;")
-    members(FILE_LOADER, "static getInstance(I)$FILE_LOADER", "getPathToMessage($TL_MESSAGE)$FILE")
-    members("Lorg/telegram/messenger/ApplicationLoader;", "static getApplicationId()Ljava/lang/String;")
-    members(FWD_HEADER, "date:I", "from_id:$PEER")
-    members(MEDIA, "photo:$PHOTO")
-    members(PHOTO, "dc_id:I", "sizes:$LIST")
-    members(PHOTO_SIZE, "size:I")
-    members(DOCUMENT, "dc_id:I", "size:J")
-    members(PAID_MEDIA)
-    members(ACTION_EMPTY)
-    members(CONTROLLER, "static getInstance(I)$CONTROLLER", "getChat(Ljava/lang/Long;)$TL_CHAT", "getUser(Ljava/lang/Long;)$TL_USER", "getAllDialogs()$LIST")
-    members(CHAT_OBJECT, "static isNotInChat($TL_CHAT)Z", "static canSendMessages($TL_CHAT)Z", "static isForum($TL_CHAT)Z", "static isMonoForum($TL_CHAT)Z")
-    members(USER_OBJECT, "static isDeleted($TL_USER)Z", "static isReplyUser(J)Z", "static isService(J)Z", "static getUserName($TL_USER)$STRING")
-    members(TL_CHAT, "title:$STRING")
-    members(TL_DIALOG, "id:J")
-    members(SEND_HELPER, "static getInstance(I)$SEND_HELPER", "sendMessage(${LIST}JZZZIJ)I")
-    members(LOCALE, "static getString(I)$STRING")
-    members(STRINGS, "static SavedMessages:I")
-    members(DIALOG_OBJECT, "static isEncryptedDialog(J)Z")
-    members(ACCOUNT_CONFIG, "static getInstance(I)$ACCOUNT_CONFIG", "isPremium()Z", "getClientUserId()J")
-    members(DRAWABLES, "static msg_retry:I", "static msg_copy:I", "static msg_info:I", "static msg_forward:I")
+    controlMembers(GROUPED, "messages:$LIST")
+    controlMembers(TL_MESSAGE, "date:I", "edit_date:I", "fwd_from:$FWD_HEADER", "action:$ACTION", "attachPath:Ljava/lang/String;")
+    controlMembers(FILE_LOADER, "static getInstance(I)$FILE_LOADER", "getPathToMessage($TL_MESSAGE)$FILE")
+    controlMembers("Lorg/telegram/messenger/ApplicationLoader;", "static getApplicationId()Ljava/lang/String;")
+    controlMembers(FWD_HEADER, "date:I", "from_id:$PEER")
+    controlMembers(MEDIA, "photo:$PHOTO")
+    controlMembers(PHOTO, "dc_id:I", "sizes:$LIST")
+    controlMembers(PHOTO_SIZE, "size:I")
+    controlMembers(DOCUMENT, "dc_id:I", "size:J")
+    controlMembers(PAID_MEDIA)
+    controlMembers(ACTION_EMPTY)
+    controlMembers(CONTROLLER, "static getInstance(I)$CONTROLLER", "getChat(Ljava/lang/Long;)$TL_CHAT", "getUser(Ljava/lang/Long;)$TL_USER", "getAllDialogs()$LIST")
+    controlMembers(CHAT_OBJECT, "static isNotInChat($TL_CHAT)Z", "static canSendMessages($TL_CHAT)Z", "static isForum($TL_CHAT)Z", "static isMonoForum($TL_CHAT)Z")
+    controlMembers(USER_OBJECT, "static isDeleted($TL_USER)Z", "static isReplyUser(J)Z", "static isService(J)Z", "static getUserName($TL_USER)$STRING")
+    controlMembers(TL_CHAT, "title:$STRING")
+    controlMembers(TL_DIALOG, "id:J")
+    controlMembers(SEND_HELPER, "static getInstance(I)$SEND_HELPER", "sendMessage(${LIST}JZZZIJ)I")
+    controlMembers(LOCALE, "static getString(I)$STRING")
+    controlMembers(STRINGS, "static SavedMessages:I")
+    controlMembers(DIALOG_OBJECT, "static isEncryptedDialog(J)Z")
+    controlMembers(ACCOUNT_CONFIG, "static getInstance(I)$ACCOUNT_CONFIG", "isPremium()Z", "getClientUserId()J")
+    controlMembers(DRAWABLES, "static msg_retry:I", "static msg_copy:I", "static msg_info:I", "static msg_forward:I")
 }
 
 /** The stubs' bodies, from the members [site] found. */

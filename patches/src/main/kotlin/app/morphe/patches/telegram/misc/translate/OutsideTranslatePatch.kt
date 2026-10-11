@@ -23,10 +23,13 @@ import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlCall
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
+import app.morphe.patches.telegram.misc.localcontrols.controlMembers
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.controlString
+import app.morphe.patches.telegram.misc.messagemenu.messageMenuBuilder
+import app.morphe.patches.telegram.misc.messagemenu.messageMenuBuilders
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -52,8 +55,6 @@ private const val DIALOG_TRANSLATABLE = "$TRANSLATE_CONTROLLER->isDialogTranslat
 private const val IS_TRANSLATABLE = "$TRANSLATE_CONTROLLER->isTranslatable($MESSAGE_OBJECT)Z"
 /** Hide translate bar's stand-in for the chat screen's [BAR_HIDDEN] reads, with the same registers. */
 internal const val BAR_HIDDEN_HOOK = "$TRANSLATE_BAR->hidden(Ljava/lang/Object;J)Z"
-private const val FORWARD_LABEL = "Lorg/telegram/messenger/R\$string;->Forward:I"
-private const val CANCEL_SENDING = "Lorg/telegram/messenger/R\$string;->CancelSending:I"
 private const val TL_MESSAGE = "Lorg/telegram/tgnet/TLRPC\$Message;"
 private const val TL_TEXT = "Lorg/telegram/tgnet/TLRPC\$TL_textWithEntities;"
 private const val NOTIFICATIONS = "Lorg/telegram/messenger/NotificationCenter;"
@@ -190,26 +191,7 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
     update.requireThisIntact(NAME, listOf(0))
 
     // The chat screen's menu builder.
-    val builders = mutableListOf<Pair<String, String>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
-        cls.methods.forEach { m ->
-            val body = m.controlBody()
-            if (!AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" &&
-                m.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE_OBJECT, LIST, LIST, LIST) &&
-                body.any { it.controlRef() == FORWARD_LABEL } && body.any { it.controlRef() == CANCEL_SENDING }) builders += cls.type to signature(m)
-        }
-    }
-    val (chat, wanted) = builders.controlSingle("message menu builder")
-    val chatClass = mutableClassDefBy(chat)
-    controlShape(AccessFlags.PUBLIC.isSet(chatClass.accessFlags), "the chat screen is inaccessible")
-    val fill = chatClass.methods.single { signature(it) == wanted }
-    val built = fill.controlBody()
-    val end = built.size - 1
-    controlShape(built[end].opcode == Opcode.RETURN_VOID && built.count { it.opcode == Opcode.RETURN_VOID } == 1,
-        "the message menu builder no longer ends in its one return")
-    fill.requireThisIntact(NAME, listOf(end))
-    for (i in 0..3) fill.requireParameterIntact(NAME, i, listOf(end))
+    val (chat, chatClass, fill, built) = messageMenuBuilder(messageMenuBuilders(), NAME)
 
     // The selected message, as the builder reads it.
     val selected = built.firstOrNull { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.definingClass == chat && f.type == MESSAGE_OBJECT } == true }?.controlField()
@@ -310,28 +292,16 @@ private fun branches(opcode: Opcode): Boolean {
 
 /** Every Telegram member the stubs reach, with the access and kind each use needs. */
 private fun BytecodePatchContext.requireTranslateHostMembers() {
-    fun members(type: String, vararg wanted: String) {
-        val owner = classDefByOrNull(type)
-        controlShape(owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags), "$type is missing")
-        for (member in wanted) {
-            val static = member.startsWith("static ")
-            val name = member.removePrefix("static ")
-            val ok = if ('(' in name) owner!!.methods.any { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == name &&
-                AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static && !AccessFlags.ABSTRACT.isSet(it.accessFlags) }
-            else owner!!.fields.any { "${it.name}:${it.type}" == name && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static }
-            controlShape(ok, "$type no longer has $member")
-        }
-    }
-    members(MESSAGE_OBJECT, "messageOwner:$TL_MESSAGE", "type:I", "currentAccount:I", "translated:Z", "summarized:Z",
+    controlMembers(MESSAGE_OBJECT, "messageOwner:$TL_MESSAGE", "type:I", "currentAccount:I", "translated:Z", "summarized:Z",
         "getId()I", "getDialogId()J", "applyNewText(Ljava/lang/CharSequence;)V", "generateCaption()V")
-    members(TL_MESSAGE, "message:Ljava/lang/String;", "entities:$LIST", "translatedText:$TL_TEXT", "translatedToLanguage:Ljava/lang/String;")
-    members(TL_TEXT, "text:Ljava/lang/String;", "entities:$LIST")
-    members(TRANSLATE_CONTROLLER, "static isTranslatable($MESSAGE_OBJECT)Z")
-    members(NOTIFICATIONS, "static getInstance(I)$NOTIFICATIONS", "postNotificationName(I[Ljava/lang/Object;)V",
+    controlMembers(TL_MESSAGE, "message:Ljava/lang/String;", "entities:$LIST", "translatedText:$TL_TEXT", "translatedToLanguage:Ljava/lang/String;")
+    controlMembers(TL_TEXT, "text:Ljava/lang/String;", "entities:$LIST")
+    controlMembers(TRANSLATE_CONTROLLER, "static isTranslatable($MESSAGE_OBJECT)Z")
+    controlMembers(NOTIFICATIONS, "static getInstance(I)$NOTIFICATIONS", "postNotificationName(I[Ljava/lang/Object;)V",
         "static messageTranslated:I", "static dialogTranslate:I")
-    members(ACCOUNT_CONFIG, "static selectedAccount:I")
-    members(LOCALES, "static getInstance()$LOCALES", "getCurrentLocale()Ljava/util/Locale;")
-    members(DRAWABLES, "static msg_translate:I")
+    controlMembers(ACCOUNT_CONFIG, "static selectedAccount:I")
+    controlMembers(LOCALES, "static getInstance()$LOCALES", "getCurrentLocale()Ljava/util/Locale;")
+    controlMembers(DRAWABLES, "static msg_translate:I")
     // An empty list to start with, which the stub relies on for entities the text doesn't have.
     val text = classDefByOrNull(TL_TEXT)!!
     controlShape(text.methods.single { it.name == "<init>" && it.parameterTypes.isEmpty() }.controlBody().any { it.controlRef() == "Ljava/util/ArrayList;-><init>()V" },
