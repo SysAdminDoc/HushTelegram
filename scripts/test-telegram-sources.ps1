@@ -80,7 +80,7 @@ foreach ($package in Get-SourcePackages) {
 # These pinned research facts distinguish a feature union, a camera candidate and an archived
 # reference. None changes a source's adoption status or the commit in an adopted provenance rule.
 $rush = @($entries | Where-Object { $_.id -eq 'rushiranpise' })[0]
-Assert-True ($rush.branches[0].name -eq 'main' -and $rush.branches[0].commit -eq 'e3bb3af54e13ecfac60eb8bf9bdf287330f0529f' -and
+Assert-True ($rush.branches[0].name -eq 'main' -and $rush.branches[0].commit -eq '0c30eb2a471f2d847e334722d1e03040b7266039' -and
     $rush.patchCounts.'org.telegram.messenger' -eq 14 -and $rush.patchCounts.'org.telegram.messenger.web' -eq 14 -and
     $rush.patchCounts.'org.telegram.plus' -eq 15 -and @($rush.features).Count -eq 15) `
     'Rush must keep its pinned union separate from the 14 standard/web and 15 Plus patches.'
