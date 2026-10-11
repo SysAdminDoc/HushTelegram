@@ -36,9 +36,10 @@ import org.junit.Test
 /** The folder stubs on both declared builds: Telegram's own folder list, limit, update request and local list. */
 class ChatTypeFoldersFixtureTest {
     private val hosts = setOf(MESSAGES_CONTROLLER, LOCAL_FILTER, USER_CONFIG, CONNECTIONS, SERVER_FILTER, NEW_FILTER, TITLE,
-        UPDATE_FILTER, STORAGE, NOTIFICATIONS, "Lorg/telegram/messenger/support/LongSparseIntArray;")
+        UPDATE_FILTER, UPDATE_ORDER, STORAGE, NOTIFICATIONS, "Lorg/telegram/messenger/support/LongSparseIntArray;")
     private val stubs = listOf("selectedAccount", "signedIn", "userId", "foldersLoaded", "folderCount", "folderId",
-        "folderFlags", "folderName", "folderPlain", "folderLimit", "createFolder", "addFolder", "deleteFolder")
+        "folderFlags", "folderName", "folderPlain", "folderLimit", "createFolder", "addFolder", "deleteFolder",
+        "sendFolderOrder")
     private val get = "Ljava/util/ArrayList;->get(I)Ljava/lang/Object;"
     private val isEmpty = "Ljava/util/ArrayList;->isEmpty()Z"
 
@@ -118,6 +119,18 @@ class ChatTypeFoldersFixtureTest {
                 CONTROLLER_INSTANCE to 0, STORAGE_INSTANCE to 0))
             assertEquals(name, context.method("deleteFolder").param(1),
                 context.stub("deleteFolder").single { it.controlRef()?.startsWith("Landroid/util/SparseArray;") == true }.namedRegisters()[1])
+
+            // Every folder id in the list, All chats too, goes into the order request that is sent.
+            val order = context.stub("sendFolderOrder")
+            assertEquals(listOf(UPDATE_ORDER, ORDER_INIT, ORDER_IDS, CONTROLLER_INSTANCE, FILTERS, "Ljava/util/ArrayList;->size()I",
+                get, LOCAL_FILTER, LOCAL_ID, "Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;",
+                "Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z", CONNECTIONS_INSTANCE, SEND_REQUEST), order.refs())
+            context.assertParams(name, "sendFolderOrder", listOf(CONTROLLER_INSTANCE to 0, CONNECTIONS_INSTANCE to 0))
+            val request = order.first { it.controlRef() == UPDATE_ORDER }.namedRegisters().first()
+            assertEquals(name, request, order.single { it.controlRef() == SEND_REQUEST }.namedRegisters()[1])
+            assertEquals(name, order.single { it.controlRef() == ORDER_IDS }.namedRegisters()[0],
+                order.single { it.controlRef() == "Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z" }.namedRegisters()[0])
+            assertTrue(name, order.any { it.opcode == Opcode.GOTO } && order.any { it.opcode == Opcode.IF_GE })
 
             for (stub in stubs) {
                 val method = context.method(stub)

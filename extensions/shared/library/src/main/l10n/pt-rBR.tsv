@@ -541,13 +541,13 @@ Telegram is still loading your folders. Try again in a moment.	O Telegram ainda 
 Couldn't change your folders. Try again in a moment.	Não foi possível alterar suas pastas. Tente de novo em um instante.
 # context: a toast when every chat type already has a folder, so none were made.
 You already have a folder for each chat type.	Você já tem uma pasta para cada tipo de chat.
-# context: a toast when Telegram's maximum number of folders leaves no room.
-Telegram's folder limit is reached, so no folders were made. Remove one and try again.	O limite de pastas do Telegram foi atingido, então nenhuma pasta foi criada. Remova uma e tente de novo.
-# context: a toast when only some of the four folders fit under Telegram's folder limit.
-Made some of the folders. Telegram's folder limit left no room for the rest.	Algumas das pastas foram criadas. O limite de pastas do Telegram não deixou espaço para o resto.
-# context: a toast after the folders were made. They show as tabs above the chat list.
-Made folders for private chats, groups, channels and bots. They're at the top of your chat list.	Pastas criadas para chats privados, grupos, canais e bots. Elas ficam no topo da sua lista de chats.
+# context: a short toast (two lines at most) when Telegram's folder limit left no room, so no folders were made.
+Folder limit reached. Remove a folder and try again.	Limite de pastas atingido. Remova uma e tente de novo.
+# context: a short toast (two lines at most) when only some of the folders fit under Telegram's folder limit.
+Made some folders. The folder limit left no room for the rest.	Algumas pastas criadas. O limite não deixou espaço para o resto.
+# context: a short toast (two lines at most) after the folders were made. Private, Groups, Channels and Bots are the folder names, use the same words as their own entries.
+Made Private, Groups, Channels and Bots folders.	Pastas Privados, Grupos, Canais e Bots criadas.
 # context: a toast after turning the switch off when none of its folders were left to remove.
 There were no folders from HushTelegram to remove.	Não havia pastas do HushTelegram para remover.
-# context: a toast after turning the switch off. Folders the person renamed or edited are kept.
-Removed the folders HushTelegram made. Any you renamed or changed stay.	As pastas criadas pelo HushTelegram foram removidas. As que você renomeou ou alterou continuam.
+# context: a short toast (two lines at most) after the switch went off. Folders the person renamed or changed are kept.
+Removed the folders HushTelegram made. Changed ones stay.	As pastas do HushTelegram foram removidas. As alteradas ficam.

@@ -34,6 +34,7 @@ internal const val SERVER_FILTER = "Lorg/telegram/tgnet/TLRPC\$DialogFilter;"
 internal const val NEW_FILTER = "Lorg/telegram/tgnet/TLRPC\$TL_dialogFilter;"
 internal const val TITLE = "Lorg/telegram/tgnet/TLRPC\$TL_textWithEntities;"
 internal const val UPDATE_FILTER = "Lorg/telegram/tgnet/TLRPC\$TL_messages_updateDialogFilter;"
+internal const val UPDATE_ORDER = "Lorg/telegram/tgnet/TLRPC\$TL_messages_updateDialogFiltersOrder;"
 internal const val STORAGE = "Lorg/telegram/messenger/MessagesStorage;"
 internal const val NOTIFICATIONS = "Lorg/telegram/messenger/NotificationCenter;"
 private const val PINS = "Lorg/telegram/messenger/support/LongSparseIntArray;"
@@ -84,6 +85,8 @@ internal const val FILTER_BOTS = "$SERVER_FILTER->bots:Z"
 internal const val UPDATE_FLAGS = "$UPDATE_FILTER->flags:I"
 internal const val UPDATE_ID = "$UPDATE_FILTER->id:I"
 internal const val UPDATE_FILTER_FIELD = "$UPDATE_FILTER->filter:$NEW_FILTER"
+internal const val ORDER_INIT = "$UPDATE_ORDER-><init>()V"
+internal const val ORDER_IDS = "$UPDATE_ORDER->order:$LIST"
 
 /** The chat type bits of a local folder's flags, as ChatTypeFolders compares them. */
 internal val TYPE_FLAGS = listOf(
@@ -280,6 +283,35 @@ private fun BytecodePatchContext.writeChatTypeFolderStubs(post: String) {
         :hush_gone
         return-void
     """)
+    // What Telegram's folder screen sends after a reorder: every folder id, All chats included, as the list has them.
+    writeStub(CHAT_TYPE_FOLDERS, "sendFolderOrder", 7, """
+        new-instance v0, $UPDATE_ORDER
+        invoke-direct {v0}, $ORDER_INIT
+        iget-object v1, v0, $ORDER_IDS
+        invoke-static {p0}, $CONTROLLER_INSTANCE
+        move-result-object v2
+        iget-object v2, v2, $FILTERS
+        invoke-virtual {v2}, Ljava/util/ArrayList;->size()I
+        move-result v3
+        const/4 v4, 0x0
+        :hush_next
+        if-ge v4, v3, :hush_send
+        invoke-virtual {v2, v4}, Ljava/util/ArrayList;->get(I)Ljava/lang/Object;
+        move-result-object v5
+        check-cast v5, $LOCAL_FILTER
+        iget v5, v5, $LOCAL_ID
+        invoke-static {v5}, Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;
+        move-result-object v5
+        invoke-virtual {v1, v5}, Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z
+        add-int/lit8 v4, v4, 0x1
+        goto :hush_next
+        :hush_send
+        invoke-static {p0}, $CONNECTIONS_INSTANCE
+        move-result-object v2
+        const/4 v3, 0x0
+        invoke-virtual {v2, v0, v3}, $SEND_REQUEST
+        return-void
+    """)
 }
 
 /**
@@ -306,6 +338,7 @@ internal fun BytecodePatchContext.resolveChatTypeFolders(): String {
     controlHook(CHAT_TYPE_FOLDERS, "createFolder", listOf("I", "I", STRING, "Z", "Z", "Z", "Z", "Z"), "V")
     controlHook(CHAT_TYPE_FOLDERS, "addFolder", listOf("I", "I", STRING, "I"), "V")
     controlHook(CHAT_TYPE_FOLDERS, "deleteFolder", listOf("I", "I"), "V")
+    controlHook(CHAT_TYPE_FOLDERS, "sendFolderOrder", listOf("I"), "V")
 
     val controller = mutableClassDefByOrNull(MESSAGES_CONTROLLER)
     controlShape(controller != null, "MessagesController is missing")
@@ -345,7 +378,8 @@ internal fun BytecodePatchContext.resolveChatTypeFolders(): String {
         CONNECTIONS_INSTANCE to true, SEND_REQUEST to false, NEW_FILTER_INIT to false, UPDATE_INIT to false,
         "$TITLE-><init>()V" to false, FILTER_ID to false, FILTER_TITLE to false, TITLE_TEXT to false,
         FILTER_CONTACTS to false, FILTER_NON_CONTACTS to false, FILTER_GROUPS to false, FILTER_BROADCASTS to false,
-        FILTER_BOTS to false, UPDATE_FLAGS to false, UPDATE_ID to false, UPDATE_FILTER_FIELD to false)) {
+        FILTER_BOTS to false, UPDATE_FLAGS to false, UPDATE_ID to false, UPDATE_FILTER_FIELD to false,
+        ORDER_INIT to false, ORDER_IDS to false)) {
         requireReachable(reference, static)
     }
     return post.toString()

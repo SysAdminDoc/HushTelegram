@@ -33,8 +33,8 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 30)
 public class ChatTypeFoldersTest {
-    private static final String MADE = "Made folders for private chats, groups, channels and bots. They're at the top of your chat list.";
-    private static final String REMOVED = "Removed the folders HushTelegram made. Any you renamed or changed stay.";
+    private static final String MADE = "Made Private, Groups, Channels and Bots folders.";
+    private static final String REMOVED = "Removed the folders HushTelegram made. Changed ones stay.";
     private static final String NONE_TO_REMOVE = "There were no folders from HushTelegram to remove.";
 
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
@@ -83,6 +83,33 @@ public class ChatTypeFoldersTest {
         assertEquals("16:Bots", ChatTypeFolders.prefs(context).getString("1000:6", null));
         assertTrue(Settings.CHAT_TYPE_FOLDERS.savedValue());
         assertTrue(String.join("\n", HookStatus.report()).contains("folder made"));
+        // Once, after all four, with the list as the tabs show it, so Telegram's server keeps that order.
+        assertEquals(Collections.singletonList(Arrays.asList(0, 2, 3, 4, 5, 6)), telegram.orders);
+    }
+
+    @Test public void noOrderIsSentWhenNothingWasMade() {
+        telegram.with(2, 1 | 2, "People").with(3, 4, "Groups").with(4, 8, "Channels").with(5, 16, "Bots");
+        assertEquals("You already have a folder for each chat type.", turn(true));
+
+        telegram.folders.clear();
+        telegram.limit = 0;
+        assertEquals("Folder limit reached. Remove a folder and try again.", turn(true));
+
+        turn(false);
+        assertTrue(telegram.created.isEmpty());
+        assertTrue(telegram.orders.isEmpty());
+    }
+
+    @Test public void eachToastFitsTwoLines() {
+        // Android shows two lines of a toast from an app that targets 12 or later; about 70 characters fit there.
+        for (String said : Arrays.asList(MADE, REMOVED, NONE_TO_REMOVE, "You already have a folder for each chat type.",
+                "Folder limit reached. Remove a folder and try again.",
+                "Made some folders. The folder limit left no room for the rest.",
+                "HushTelegram is paused, so your folders stay as they are.", "Sign in to Telegram first.",
+                "Telegram is still loading your folders. Try again in a moment.",
+                "Couldn't change your folders. Try again in a moment.")) {
+            assertTrue(said, said.length() <= 64);
+        }
     }
 
     @Test public void typesYouAlreadyHaveAFolderForAreSkipped() {
@@ -102,11 +129,13 @@ public class ChatTypeFoldersTest {
         telegram.limit = 3;
         telegram.with(0, 0, "All chats").with(2, 7, "Work");
 
-        assertEquals("Made some of the folders. Telegram's folder limit left no room for the rest.", turn(true));
+        assertEquals("Made some folders. The folder limit left no room for the rest.", turn(true));
         assertEquals(Arrays.asList("0/3/Private/3", "0/4/Groups/4"), telegram.created);
+        assertEquals(1, telegram.orders.size());
 
         telegram.created.clear();
-        assertEquals("Telegram's folder limit is reached, so no folders were made. Remove one and try again.", turn(true));
+        assertEquals("Folder limit reached. Remove a folder and try again.", turn(true));
+        assertEquals(1, telegram.orders.size());
         assertTrue(telegram.created.isEmpty());
         assertEquals(2, ChatTypeFolders.prefs(context).getAll().size());
         // Nothing was made, so the switch goes back off.

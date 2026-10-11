@@ -544,13 +544,13 @@ Telegram is still loading your folders. Try again in a moment.	Telegram masih me
 Couldn't change your folders. Try again in a moment.	Tidak bisa mengubah foldermu. Coba lagi sebentar lagi.
 # context: a toast when every chat type already has a folder, so none were made.
 You already have a folder for each chat type.	Kamu sudah punya folder untuk setiap jenis obrolan.
-# context: a toast when Telegram's maximum number of folders leaves no room.
-Telegram's folder limit is reached, so no folders were made. Remove one and try again.	Batas folder Telegram sudah tercapai, jadi tidak ada folder yang dibuat. Hapus satu lalu coba lagi.
-# context: a toast when only some of the four folders fit under Telegram's folder limit.
-Made some of the folders. Telegram's folder limit left no room for the rest.	Sebagian folder sudah dibuat. Batas folder Telegram tidak menyisakan tempat untuk sisanya.
-# context: a toast after the folders were made. They show as tabs above the chat list.
-Made folders for private chats, groups, channels and bots. They're at the top of your chat list.	Folder untuk obrolan pribadi, grup, kanal, dan bot sudah dibuat. Folder itu ada di bagian atas daftar obrolanmu.
+# context: a short toast (two lines at most) when Telegram's folder limit left no room, so no folders were made.
+Folder limit reached. Remove a folder and try again.	Batas folder tercapai. Hapus satu folder lalu coba lagi.
+# context: a short toast (two lines at most) when only some of the folders fit under Telegram's folder limit.
+Made some folders. The folder limit left no room for the rest.	Sebagian folder dibuat. Batas folder tidak cukup untuk sisanya.
+# context: a short toast (two lines at most) after the folders were made. Private, Groups, Channels and Bots are the folder names, use the same words as their own entries.
+Made Private, Groups, Channels and Bots folders.	Folder Pribadi, Grup, Kanal, dan Bot dibuat.
 # context: a toast after turning the switch off when none of its folders were left to remove.
 There were no folders from HushTelegram to remove.	Tidak ada folder dari HushTelegram yang perlu dihapus.
-# context: a toast after turning the switch off. Folders the person renamed or edited are kept.
-Removed the folders HushTelegram made. Any you renamed or changed stay.	Folder yang dibuat HushTelegram sudah dihapus. Folder yang kamu ganti nama atau ubah tetap ada.
+# context: a short toast (two lines at most) after the switch went off. Folders the person renamed or changed are kept.
+Removed the folders HushTelegram made. Changed ones stay.	Folder buatan HushTelegram dihapus. Yang diubah tetap ada.

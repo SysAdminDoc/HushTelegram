@@ -355,6 +355,8 @@ public final class L10nTranslations {
                 "Firebase-Absturzberichte");
         table.put("Firebase session reports",
                 "Firebase-Sitzungsberichte");
+        table.put("Folder limit reached. Remove a folder and try again.",
+                "Ordnerlimit erreicht. Entferne einen Ordner und versuch es noch mal.");
         table.put("Folder tabs above the chat list show just their names, without unread counts. Chats stay unread and the app icon badge doesn't change.",
                 "Die Ordner-Tabs \u00fcber der Chatliste zeigen nur ihre Namen, ohne Z\u00e4hler f\u00fcr Ungelesenes. Chats bleiben ungelesen, und das Symbol-Abzeichen der App \u00e4ndert sich nicht.");
         table.put("Folders by chat type",
@@ -425,11 +427,11 @@ public final class L10nTranslations {
                 "Gesponserten Proxy-Kanal ausblenden");
         table.put("Hide time on stickers",
                 "Uhrzeit auf Stickern ausblenden");
-        table.put("Hide translate bar",
-                "\u00dcbersetzungsleiste ausblenden");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Hide translate bar",
+                "\u00dcbersetzungsleiste ausblenden");
         table.put("Hides suggested similar channels and bots, including ones already saved, and stops asking Telegram for new ones.",
                 "Blendet vorgeschlagene \u00e4hnliche Kan\u00e4le und Bots aus, auch bereits gespeicherte, und fragt bei Telegram keine neuen mehr an.");
         table.put("Hides the Popular apps list on the Apps tab of search, and doesn't ask Telegram for it. Apps you've opened and other results stay.",
@@ -502,10 +504,10 @@ public final class L10nTranslations {
                 "L\u00e4dt Schalter-Auswahlen aus einer gespeicherten Datei. Du siehst, wie viele Schalter sich \u00e4ndern, bevor etwas angewendet wird. Gilt f\u00fcr alle Konten.");
         table.put("Look and feel",
                 "Aussehen und Bedienung");
-        table.put("Made folders for private chats, groups, channels and bots. They're at the top of your chat list.",
-                "Ordner f\u00fcr private Chats, Gruppen, Kan\u00e4le und Bots erstellt. Sie stehen oben in deiner Chatliste.");
-        table.put("Made some of the folders. Telegram's folder limit left no room for the rest.",
-                "Einige Ordner wurden erstellt. F\u00fcr den Rest lie\u00df das Ordnerlimit von Telegram keinen Platz.");
+        table.put("Made Private, Groups, Channels and Bots folders.",
+                "Ordner Privat, Gruppen, Kan\u00e4le und Bots erstellt.");
+        table.put("Made some folders. The folder limit left no room for the rest.",
+                "Einige Ordner erstellt. F\u00fcr den Rest reichte das Ordnerlimit nicht.");
         table.put("Member, subscriber, view, reply and reaction counts show in full, like 12,345 instead of 12.3K.",
                 "Zahlen f\u00fcr Mitglieder, Abonnenten, Aufrufe, Antworten und Reaktionen erscheinen vollst\u00e4ndig, etwa 12.345 statt 12,3K.");
         table.put("Mentions and replies in groups or channels you've muted no longer notify you. Chats you haven't muted notify as before.",
@@ -548,11 +550,11 @@ public final class L10nTranslations {
                 "Noch keine Filter.");
         table.put("No matching settings",
                 "Keine passenden Einstellungen");
-        table.put("No previews before sending",
-                "Keine Vorschau vor dem Senden");
     }
 
     private static void fillDe4(Map<String, String> table) {
+        table.put("No previews before sending",
+                "Keine Vorschau vor dem Senden");
         table.put("No reply since Telegram started",
                 "Keine Antwort seit dem Start von Telegram");
         table.put("No swipe actions on chats",
@@ -649,8 +651,8 @@ public final class L10nTranslations {
                 "%1$d behaltene Nachricht entfernt.");
         table.put("Removed %1$d kept messages.",
                 "%1$d behaltene Nachrichten entfernt.");
-        table.put("Removed the folders HushTelegram made. Any you renamed or changed stay.",
-                "Die Ordner von HushTelegram wurden entfernt. Umbenannte oder ge\u00e4nderte bleiben.");
+        table.put("Removed the folders HushTelegram made. Changed ones stay.",
+                "Die Ordner von HushTelegram sind entfernt. Ge\u00e4nderte bleiben.");
         table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, the Gift button in channels, and Premium stickers, their effects and Premium emoji packs if you don't have Premium.",
                 "Entfernt Premium, Stars, My Grams, Wallet, Business und Geschenk senden aus den Einstellungen, Wallet und Gram senden aus den Chat-, Profil- und Linkmen\u00fcs, die Geschenke-Tabs in Profilen, die Geschenk-Schaltfl\u00e4che in Kan\u00e4len und Premium-Sticker samt ihren Effekten sowie Premium-Emoji-Pakete, wenn du kein Premium hast.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
@@ -671,11 +673,11 @@ public final class L10nTranslations {
                 "Erneut versuchen");
         table.put("Reveal spoilers",
                 "Spoiler aufdecken");
-        table.put("Save",
-                "Speichern");
     }
 
     private static void fillDe5(Map<String, String> table) {
+        table.put("Save",
+                "Speichern");
         table.put("Save downloaded files",
                 "Heruntergeladene Dateien speichern");
         table.put("Save full report",
@@ -794,11 +796,11 @@ public final class L10nTranslations {
                 "HushTelegram unterst\u00fctzen");
         table.put("Supported links",
                 "Unterst\u00fctzte Links");
-        table.put("Swipe back on profiles",
-                "Auf Profilen zur\u00fcckwischen");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("Swipe back on profiles",
+                "Auf Profilen zur\u00fcckwischen");
         table.put("Swiping a chat in your list no longer archives, mutes, pins, deletes or marks it read. Press and hold still offers every action.",
                 "Wischen \u00fcber einen Chat in deiner Liste archiviert, stummschaltet, fixiert, l\u00f6scht oder markiert ihn nicht mehr als gelesen. Gedr\u00fcckt halten bietet weiterhin alle Aktionen.");
         table.put("Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.",
@@ -825,8 +827,6 @@ public final class L10nTranslations {
                 "Telegram weichzeichnet Chat-Kopfzeilen und Leisten nur auf schnellen Handys. Das erlaubt es jedem Handy, sobald unter Energiesparen die Option Unsch\u00e4rfe im Chat an ist.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram bietet keine Updates von telegram.org mehr an. Sie lie\u00dfen sich nicht \u00fcber diesen gepatchten Build installieren, also patche jede neue Version stattdessen im Morphe Manager.");
-        table.put("Telegram's folder limit is reached, so no folders were made. Remove one and try again.",
-                "Das Ordnerlimit von Telegram ist erreicht, deshalb wurden keine Ordner erstellt. Entferne einen und versuch es noch mal.");
         table.put("Telegram's reply to notification sign-up: %1$s",
                 "Telegrams Antwort auf die Anmeldung f\u00fcr Benachrichtigungen: %1$s");
         table.put("Telegram's wake-ups come through %1$s.",
@@ -1392,6 +1392,8 @@ public final class L10nTranslations {
                 "informes de fallos de Firebase");
         table.put("Firebase session reports",
                 "informes de sesi\u00f3n de Firebase");
+        table.put("Folder limit reached. Remove a folder and try again.",
+                "L\u00edmite de carpetas alcanzado. Quita una y vuelve a intentarlo.");
         table.put("Folder tabs above the chat list show just their names, without unread counts. Chats stay unread and the app icon badge doesn't change.",
                 "Las pesta\u00f1as de carpetas sobre la lista de chats muestran solo su nombre, sin contador de no le\u00eddos. Los chats siguen sin leer y la insignia del icono de la app no cambia.");
         table.put("Folders by chat type",
@@ -1462,11 +1464,11 @@ public final class L10nTranslations {
                 "Ocultar canal patrocinado del proxy");
         table.put("Hide time on stickers",
                 "Ocultar la hora en los stickers");
-        table.put("Hide translate bar",
-                "Ocultar barra de traducci\u00f3n");
     }
 
     private static void fillEs3(Map<String, String> table) {
+        table.put("Hide translate bar",
+                "Ocultar barra de traducci\u00f3n");
         table.put("Hides suggested similar channels and bots, including ones already saved, and stops asking Telegram for new ones.",
                 "Oculta los canales y bots similares sugeridos, incluidos los ya guardados, y deja de pedirle otros nuevos a Telegram.");
         table.put("Hides the Popular apps list on the Apps tab of search, and doesn't ask Telegram for it. Apps you've opened and other results stay.",
@@ -1539,10 +1541,10 @@ public final class L10nTranslations {
                 "Carga opciones de interruptores desde un archivo guardado. Ves cu\u00e1ntos interruptores cambiar\u00e1 antes de aplicar nada. Se aplica a todas las cuentas.");
         table.put("Look and feel",
                 "Apariencia y uso");
-        table.put("Made folders for private chats, groups, channels and bots. They're at the top of your chat list.",
-                "Se crearon carpetas para chats privados, grupos, canales y bots. Est\u00e1n arriba de tu lista de chats.");
-        table.put("Made some of the folders. Telegram's folder limit left no room for the rest.",
-                "Se crearon algunas de las carpetas. El l\u00edmite de carpetas de Telegram no dej\u00f3 espacio para el resto.");
+        table.put("Made Private, Groups, Channels and Bots folders.",
+                "Carpetas Privados, Grupos, Canales y Bots creadas.");
+        table.put("Made some folders. The folder limit left no room for the rest.",
+                "Se crearon algunas carpetas. El l\u00edmite no dej\u00f3 sitio para el resto.");
         table.put("Member, subscriber, view, reply and reaction counts show in full, like 12,345 instead of 12.3K.",
                 "Los recuentos de miembros, suscriptores, vistas, respuestas y reacciones se muestran completos, como 12.345 en lugar de 12,3 K.");
         table.put("Mentions and replies in groups or channels you've muted no longer notify you. Chats you haven't muted notify as before.",
@@ -1585,11 +1587,11 @@ public final class L10nTranslations {
                 "A\u00fan no hay filtros.");
         table.put("No matching settings",
                 "No hay ajustes coincidentes");
-        table.put("No previews before sending",
-                "Sin vistas previas antes de enviar");
     }
 
     private static void fillEs4(Map<String, String> table) {
+        table.put("No previews before sending",
+                "Sin vistas previas antes de enviar");
         table.put("No reply since Telegram started",
                 "Sin respuesta desde que se abri\u00f3 Telegram");
         table.put("No swipe actions on chats",
@@ -1686,8 +1688,8 @@ public final class L10nTranslations {
                 "Se elimin\u00f3 %1$d mensaje conservado.");
         table.put("Removed %1$d kept messages.",
                 "Se eliminaron %1$d mensajes conservados.");
-        table.put("Removed the folders HushTelegram made. Any you renamed or changed stay.",
-                "Se quitaron las carpetas que cre\u00f3 HushTelegram. Las que renombraste o cambiaste se quedan.");
+        table.put("Removed the folders HushTelegram made. Changed ones stay.",
+                "Se quitaron las carpetas de HushTelegram. Las cambiadas se quedan.");
         table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, the Gift button in channels, and Premium stickers, their effects and Premium emoji packs if you don't have Premium.",
                 "Quita Premium, Stars, My Grams, Billetera, Business y Enviar un regalo de los ajustes, Billetera y Enviar Gram de los men\u00fas de chats, perfiles y enlaces, las pesta\u00f1as de regalos en los perfiles, el bot\u00f3n de regalo en los canales y los stickers Premium con sus efectos y los paquetes de emojis Premium si no tienes Premium.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
@@ -1708,11 +1710,11 @@ public final class L10nTranslations {
                 "Reintentar");
         table.put("Reveal spoilers",
                 "Mostrar spoilers");
-        table.put("Save",
-                "Guardar");
     }
 
     private static void fillEs5(Map<String, String> table) {
+        table.put("Save",
+                "Guardar");
         table.put("Save downloaded files",
                 "Guardar archivos descargados");
         table.put("Save full report",
@@ -1831,11 +1833,11 @@ public final class L10nTranslations {
                 "Apoya HushTelegram");
         table.put("Supported links",
                 "Enlaces compatibles");
-        table.put("Swipe back on profiles",
-                "Deslizar para volver en perfiles");
     }
 
     private static void fillEs6(Map<String, String> table) {
+        table.put("Swipe back on profiles",
+                "Deslizar para volver en perfiles");
         table.put("Swiping a chat in your list no longer archives, mutes, pins, deletes or marks it read. Press and hold still offers every action.",
                 "Deslizar un chat de tu lista ya no lo archiva, silencia, fija, elimina ni marca como le\u00eddo. Al mantenerlo pulsado siguen estando todas las acciones.");
         table.put("Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.",
@@ -1862,8 +1864,6 @@ public final class L10nTranslations {
                 "Telegram solo desenfoca las cabeceras y los paneles del chat en tel\u00e9fonos r\u00e1pidos. Esto permite que cualquier tel\u00e9fono lo haga, cuando Desenfoque en el chat est\u00e9 activado en Ahorro de energ\u00eda.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram deja de ofrecer actualizaciones de telegram.org. No se pueden instalar sobre este build parcheado, as\u00ed que parchea cada versi\u00f3n nueva en Morphe Manager.");
-        table.put("Telegram's folder limit is reached, so no folders were made. Remove one and try again.",
-                "Se alcanz\u00f3 el l\u00edmite de carpetas de Telegram, as\u00ed que no se cre\u00f3 ninguna. Quita una e int\u00e9ntalo de nuevo.");
         table.put("Telegram's reply to notification sign-up: %1$s",
                 "Respuesta de Telegram al registro de notificaciones: %1$s");
         table.put("Telegram's wake-ups come through %1$s.",
@@ -2429,6 +2429,8 @@ public final class L10nTranslations {
                 "laporan crash Firebase");
         table.put("Firebase session reports",
                 "laporan sesi Firebase");
+        table.put("Folder limit reached. Remove a folder and try again.",
+                "Batas folder tercapai. Hapus satu folder lalu coba lagi.");
         table.put("Folder tabs above the chat list show just their names, without unread counts. Chats stay unread and the app icon badge doesn't change.",
                 "Tab folder di atas daftar obrolan hanya menampilkan namanya, tanpa jumlah belum dibaca. Obrolan tetap belum dibaca dan lencana ikon aplikasi tidak berubah.");
         table.put("Folders by chat type",
@@ -2499,11 +2501,11 @@ public final class L10nTranslations {
                 "Sembunyikan kanal bersponsor proxy");
         table.put("Hide time on stickers",
                 "Sembunyikan waktu pada stiker");
-        table.put("Hide translate bar",
-                "Sembunyikan bilah terjemahan");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Hide translate bar",
+                "Sembunyikan bilah terjemahan");
         table.put("Hides suggested similar channels and bots, including ones already saved, and stops asking Telegram for new ones.",
                 "Menyembunyikan saran kanal dan bot serupa, termasuk yang sudah tersimpan, dan berhenti meminta saran baru dari Telegram.");
         table.put("Hides the Popular apps list on the Apps tab of search, and doesn't ask Telegram for it. Apps you've opened and other results stay.",
@@ -2576,10 +2578,10 @@ public final class L10nTranslations {
                 "Memuat pilihan sakelar dari berkas yang disimpan. Anda melihat berapa sakelar yang akan berubah sebelum apa pun diterapkan. Berlaku untuk semua akun.");
         table.put("Look and feel",
                 "Tampilan dan penggunaan");
-        table.put("Made folders for private chats, groups, channels and bots. They're at the top of your chat list.",
-                "Folder untuk obrolan pribadi, grup, kanal, dan bot sudah dibuat. Folder itu ada di bagian atas daftar obrolanmu.");
-        table.put("Made some of the folders. Telegram's folder limit left no room for the rest.",
-                "Sebagian folder sudah dibuat. Batas folder Telegram tidak menyisakan tempat untuk sisanya.");
+        table.put("Made Private, Groups, Channels and Bots folders.",
+                "Folder Pribadi, Grup, Kanal, dan Bot dibuat.");
+        table.put("Made some folders. The folder limit left no room for the rest.",
+                "Sebagian folder dibuat. Batas folder tidak cukup untuk sisanya.");
         table.put("Member, subscriber, view, reply and reaction counts show in full, like 12,345 instead of 12.3K.",
                 "Jumlah anggota, pelanggan, tayangan, balasan, dan reaksi ditampilkan lengkap, misalnya 12.345 dan bukan 12,3 rb.");
         table.put("Mentions and replies in groups or channels you've muted no longer notify you. Chats you haven't muted notify as before.",
@@ -2622,11 +2624,11 @@ public final class L10nTranslations {
                 "Belum ada filter.");
         table.put("No matching settings",
                 "Tidak ada pengaturan yang cocok");
-        table.put("No previews before sending",
-                "Tanpa pratinjau sebelum mengirim");
     }
 
     private static void fillIn4(Map<String, String> table) {
+        table.put("No previews before sending",
+                "Tanpa pratinjau sebelum mengirim");
         table.put("No reply since Telegram started",
                 "Belum ada balasan sejak Telegram dibuka");
         table.put("No swipe actions on chats",
@@ -2723,8 +2725,8 @@ public final class L10nTranslations {
                 "%1$d pesan yang disimpan telah dihapus.");
         table.put("Removed %1$d kept messages.",
                 "%1$d pesan yang disimpan telah dihapus.");
-        table.put("Removed the folders HushTelegram made. Any you renamed or changed stay.",
-                "Folder yang dibuat HushTelegram sudah dihapus. Folder yang kamu ganti nama atau ubah tetap ada.");
+        table.put("Removed the folders HushTelegram made. Changed ones stay.",
+                "Folder buatan HushTelegram dihapus. Yang diubah tetap ada.");
         table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, the Gift button in channels, and Premium stickers, their effects and Premium emoji packs if you don't have Premium.",
                 "Menghapus Premium, Stars, My Grams, Dompet, Business, dan Kirim Hadiah dari Pengaturan, Dompet dan Kirim Gram dari menu chat, profil, dan tautan, tab Hadiah di profil, tombol Hadiah di kanal, serta stiker Premium beserta efeknya dan paket emoji Premium jika kamu tidak punya Premium.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
@@ -2745,11 +2747,11 @@ public final class L10nTranslations {
                 "Coba lagi");
         table.put("Reveal spoilers",
                 "Tampilkan spoiler");
-        table.put("Save",
-                "Simpan");
     }
 
     private static void fillIn5(Map<String, String> table) {
+        table.put("Save",
+                "Simpan");
         table.put("Save downloaded files",
                 "Simpan file yang diunduh");
         table.put("Save full report",
@@ -2868,11 +2870,11 @@ public final class L10nTranslations {
                 "Dukung HushTelegram");
         table.put("Supported links",
                 "Tautan yang didukung");
-        table.put("Swipe back on profiles",
-                "Geser kembali di profil");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("Swipe back on profiles",
+                "Geser kembali di profil");
         table.put("Swiping a chat in your list no longer archives, mutes, pins, deletes or marks it read. Press and hold still offers every action.",
                 "Menggeser obrolan di daftar Anda tidak lagi mengarsipkan, membisukan, menyematkan, menghapus, atau menandainya sudah dibaca. Tekan lama tetap menyediakan semua aksi.");
         table.put("Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.",
@@ -2899,8 +2901,6 @@ public final class L10nTranslations {
                 "Telegram hanya mengaburkan header dan panel obrolan di ponsel yang cepat. Ini memungkinkan ponsel apa pun melakukannya, setelah Blur di obrolan aktif di bawah Penghemat daya.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.");
-        table.put("Telegram's folder limit is reached, so no folders were made. Remove one and try again.",
-                "Batas folder Telegram sudah tercapai, jadi tidak ada folder yang dibuat. Hapus satu lalu coba lagi.");
         table.put("Telegram's reply to notification sign-up: %1$s",
                 "Balasan Telegram atas pendaftaran notifikasi: %1$s");
         table.put("Telegram's wake-ups come through %1$s.",
@@ -3466,6 +3466,8 @@ public final class L10nTranslations {
                 "relat\u00f3rios de falhas do Firebase");
         table.put("Firebase session reports",
                 "relat\u00f3rios de sess\u00e3o do Firebase");
+        table.put("Folder limit reached. Remove a folder and try again.",
+                "Limite de pastas atingido. Remova uma e tente de novo.");
         table.put("Folder tabs above the chat list show just their names, without unread counts. Chats stay unread and the app icon badge doesn't change.",
                 "As abas de pastas acima da lista de conversas mostram s\u00f3 o nome, sem a contagem de n\u00e3o lidas. As conversas continuam n\u00e3o lidas e o selo do \u00edcone do app n\u00e3o muda.");
         table.put("Folders by chat type",
@@ -3536,11 +3538,11 @@ public final class L10nTranslations {
                 "Ocultar canal patrocinado do proxy");
         table.put("Hide time on stickers",
                 "Ocultar a hora nas figurinhas");
-        table.put("Hide translate bar",
-                "Ocultar barra de tradu\u00e7\u00e3o");
     }
 
     private static void fillPt_rBR3(Map<String, String> table) {
+        table.put("Hide translate bar",
+                "Ocultar barra de tradu\u00e7\u00e3o");
         table.put("Hides suggested similar channels and bots, including ones already saved, and stops asking Telegram for new ones.",
                 "Oculta canais e bots semelhantes sugeridos, inclusive os j\u00e1 salvos, e deixa de pedir novas sugest\u00f5es ao Telegram.");
         table.put("Hides the Popular apps list on the Apps tab of search, and doesn't ask Telegram for it. Apps you've opened and other results stay.",
@@ -3613,10 +3615,10 @@ public final class L10nTranslations {
                 "Carrega escolhas de op\u00e7\u00f5es de um arquivo salvo. Voc\u00ea v\u00ea quantas op\u00e7\u00f5es v\u00e3o mudar antes de aplicar qualquer coisa. Vale para todas as contas.");
         table.put("Look and feel",
                 "Apar\u00eancia e uso");
-        table.put("Made folders for private chats, groups, channels and bots. They're at the top of your chat list.",
-                "Pastas criadas para chats privados, grupos, canais e bots. Elas ficam no topo da sua lista de chats.");
-        table.put("Made some of the folders. Telegram's folder limit left no room for the rest.",
-                "Algumas das pastas foram criadas. O limite de pastas do Telegram n\u00e3o deixou espa\u00e7o para o resto.");
+        table.put("Made Private, Groups, Channels and Bots folders.",
+                "Pastas Privados, Grupos, Canais e Bots criadas.");
+        table.put("Made some folders. The folder limit left no room for the rest.",
+                "Algumas pastas criadas. O limite n\u00e3o deixou espa\u00e7o para o resto.");
         table.put("Member, subscriber, view, reply and reaction counts show in full, like 12,345 instead of 12.3K.",
                 "As contagens de membros, inscritos, visualiza\u00e7\u00f5es, respostas e rea\u00e7\u00f5es aparecem completas, como 12.345 em vez de 12,3 mil.");
         table.put("Mentions and replies in groups or channels you've muted no longer notify you. Chats you haven't muted notify as before.",
@@ -3659,11 +3661,11 @@ public final class L10nTranslations {
                 "Nenhum filtro ainda.");
         table.put("No matching settings",
                 "Nenhuma configura\u00e7\u00e3o encontrada");
-        table.put("No previews before sending",
-                "Sem pr\u00e9vias antes de enviar");
     }
 
     private static void fillPt_rBR4(Map<String, String> table) {
+        table.put("No previews before sending",
+                "Sem pr\u00e9vias antes de enviar");
         table.put("No reply since Telegram started",
                 "Sem resposta desde que o Telegram abriu");
         table.put("No swipe actions on chats",
@@ -3760,8 +3762,8 @@ public final class L10nTranslations {
                 "%1$d mensagem mantida removida.");
         table.put("Removed %1$d kept messages.",
                 "%1$d mensagens mantidas removidas.");
-        table.put("Removed the folders HushTelegram made. Any you renamed or changed stay.",
-                "As pastas criadas pelo HushTelegram foram removidas. As que voc\u00ea renomeou ou alterou continuam.");
+        table.put("Removed the folders HushTelegram made. Changed ones stay.",
+                "As pastas do HushTelegram foram removidas. As alteradas ficam.");
         table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, the Gift button in channels, and Premium stickers, their effects and Premium emoji packs if you don't have Premium.",
                 "Remove Premium, Stars, My Grams, Carteira, Business e Enviar presente das configura\u00e7\u00f5es, Carteira e Enviar Gram dos menus de conversas, perfis e links, as abas de presentes nos perfis, o bot\u00e3o de presente nos canais e os stickers Premium com seus efeitos e os pacotes de emojis Premium se voc\u00ea n\u00e3o tem Premium.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
@@ -3782,11 +3784,11 @@ public final class L10nTranslations {
                 "Tentar novamente");
         table.put("Reveal spoilers",
                 "Revelar spoilers");
-        table.put("Save",
-                "Salvar");
     }
 
     private static void fillPt_rBR5(Map<String, String> table) {
+        table.put("Save",
+                "Salvar");
         table.put("Save downloaded files",
                 "Salvar arquivos baixados");
         table.put("Save full report",
@@ -3905,11 +3907,11 @@ public final class L10nTranslations {
                 "Apoie o HushTelegram");
         table.put("Supported links",
                 "Links compat\u00edveis");
-        table.put("Swipe back on profiles",
-                "Deslizar para voltar em perfis");
     }
 
     private static void fillPt_rBR6(Map<String, String> table) {
+        table.put("Swipe back on profiles",
+                "Deslizar para voltar em perfis");
         table.put("Swiping a chat in your list no longer archives, mutes, pins, deletes or marks it read. Press and hold still offers every action.",
                 "Deslizar uma conversa da sua lista n\u00e3o a arquiva, silencia, fixa, apaga nem marca como lida. Pressionar e segurar continua oferecendo todas as a\u00e7\u00f5es.");
         table.put("Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.",
@@ -3936,8 +3938,6 @@ public final class L10nTranslations {
                 "O Telegram s\u00f3 desfoca o cabe\u00e7alho e os pain\u00e9is da conversa em celulares r\u00e1pidos. Isso permite que qualquer celular fa\u00e7a isso, quando Desfoque no chat estiver ligado em Economia de energia.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "O Telegram deixa de oferecer atualiza\u00e7\u00f5es do telegram.org. Elas n\u00e3o podem ser instaladas sobre este build corrigido, ent\u00e3o aplique o patch de cada nova vers\u00e3o pelo Morphe Manager.");
-        table.put("Telegram's folder limit is reached, so no folders were made. Remove one and try again.",
-                "O limite de pastas do Telegram foi atingido, ent\u00e3o nenhuma pasta foi criada. Remova uma e tente de novo.");
         table.put("Telegram's reply to notification sign-up: %1$s",
                 "Resposta do Telegram ao cadastro de notifica\u00e7\u00f5es: %1$s");
         table.put("Telegram's wake-ups come through %1$s.",
@@ -4503,6 +4503,8 @@ public final class L10nTranslations {
                 "Firebase \u00e7\u00f6kme raporlar\u0131");
         table.put("Firebase session reports",
                 "Firebase oturum raporlar\u0131");
+        table.put("Folder limit reached. Remove a folder and try again.",
+                "Klas\u00f6r s\u0131n\u0131r\u0131na ula\u015f\u0131ld\u0131. Bir klas\u00f6r\u00fc kald\u0131r\u0131p tekrar dene.");
         table.put("Folder tabs above the chat list show just their names, without unread counts. Chats stay unread and the app icon badge doesn't change.",
                 "Sohbet listesinin \u00fcst\u00fcndeki klas\u00f6r sekmeleri okunmam\u0131\u015f say\u0131s\u0131 olmadan yaln\u0131zca adlar\u0131n\u0131 g\u00f6sterir. Sohbetler okunmam\u0131\u015f kal\u0131r ve uygulama simgesindeki rozet de\u011fi\u015fmez.");
         table.put("Folders by chat type",
@@ -4573,11 +4575,11 @@ public final class L10nTranslations {
                 "Proxy'nin sponsorlu kanal\u0131n\u0131 gizle");
         table.put("Hide time on stickers",
                 "\u00c7\u0131kartmalarda saati gizle");
-        table.put("Hide translate bar",
-                "\u00c7eviri \u00e7ubu\u011funu gizle");
     }
 
     private static void fillTr3(Map<String, String> table) {
+        table.put("Hide translate bar",
+                "\u00c7eviri \u00e7ubu\u011funu gizle");
         table.put("Hides suggested similar channels and bots, including ones already saved, and stops asking Telegram for new ones.",
                 "\u00d6nerilen benzer kanallar\u0131 ve botlar\u0131, daha \u00f6nce kaydedilmi\u015f olanlar dahil, gizler ve Telegram'dan yenilerini istemeyi b\u0131rak\u0131r.");
         table.put("Hides the Popular apps list on the Apps tab of search, and doesn't ask Telegram for it. Apps you've opened and other results stay.",
@@ -4650,10 +4652,10 @@ public final class L10nTranslations {
                 "Kay\u0131tl\u0131 bir dosyadan anahtar se\u00e7imlerini y\u00fckler. Hi\u00e7bir \u015fey uygulanmadan \u00f6nce ka\u00e7 anahtar\u0131n de\u011fi\u015fece\u011fini g\u00f6r\u00fcrs\u00fcn\u00fcz. T\u00fcm hesaplar i\u00e7in ge\u00e7erlidir.");
         table.put("Look and feel",
                 "G\u00f6r\u00fcn\u00fcm ve kullan\u0131m");
-        table.put("Made folders for private chats, groups, channels and bots. They're at the top of your chat list.",
-                "\u00d6zel sohbetler, gruplar, kanallar ve botlar i\u00e7in klas\u00f6rler olu\u015fturuldu. Sohbet listenin en \u00fcst\u00fcndeler.");
-        table.put("Made some of the folders. Telegram's folder limit left no room for the rest.",
-                "Klas\u00f6rlerin bir k\u0131sm\u0131 olu\u015fturuldu. Telegram'\u0131n klas\u00f6r s\u0131n\u0131r\u0131 geri kalan\u0131na yer b\u0131rakmad\u0131.");
+        table.put("Made Private, Groups, Channels and Bots folders.",
+                "\u00d6zel, Gruplar, Kanallar ve Botlar klas\u00f6rleri olu\u015fturuldu.");
+        table.put("Made some folders. The folder limit left no room for the rest.",
+                "Baz\u0131 klas\u00f6rler olu\u015fturuldu. S\u0131n\u0131r, kalan\u0131na yer b\u0131rakmad\u0131.");
         table.put("Member, subscriber, view, reply and reaction counts show in full, like 12,345 instead of 12.3K.",
                 "\u00dcye, abone, g\u00f6r\u00fcnt\u00fclenme, yan\u0131t ve tepki say\u0131lar\u0131 tam g\u00f6sterilir, \u00f6rne\u011fin 12,3 B yerine 12.345.");
         table.put("Mentions and replies in groups or channels you've muted no longer notify you. Chats you haven't muted notify as before.",
@@ -4696,11 +4698,11 @@ public final class L10nTranslations {
                 "Hen\u00fcz filtre yok.");
         table.put("No matching settings",
                 "E\u015fle\u015fen ayar yok");
-        table.put("No previews before sending",
-                "G\u00f6ndermeden \u00f6nce \u00f6nizleme yok");
     }
 
     private static void fillTr4(Map<String, String> table) {
+        table.put("No previews before sending",
+                "G\u00f6ndermeden \u00f6nce \u00f6nizleme yok");
         table.put("No reply since Telegram started",
                 "Telegram a\u00e7\u0131ld\u0131\u011f\u0131ndan beri yan\u0131t yok");
         table.put("No swipe actions on chats",
@@ -4797,8 +4799,8 @@ public final class L10nTranslations {
                 "%1$d saklanan mesaj kald\u0131r\u0131ld\u0131.");
         table.put("Removed %1$d kept messages.",
                 "%1$d saklanan mesaj kald\u0131r\u0131ld\u0131.");
-        table.put("Removed the folders HushTelegram made. Any you renamed or changed stay.",
-                "HushTelegram'\u0131n olu\u015fturdu\u011fu klas\u00f6rler kald\u0131r\u0131ld\u0131. Yeniden adland\u0131rd\u0131\u011f\u0131n ya da de\u011fi\u015ftirdi\u011fin klas\u00f6rler kal\u0131yor.");
+        table.put("Removed the folders HushTelegram made. Changed ones stay.",
+                "HushTelegram klas\u00f6rleri kald\u0131r\u0131ld\u0131. De\u011fi\u015ftirilenler kal\u0131r.");
         table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, the Gift button in channels, and Premium stickers, their effects and Premium emoji packs if you don't have Premium.",
                 "Premium, Stars, My Grams, C\u00fczdan, Business ve Hediye G\u00f6nder'i Ayarlar'dan, C\u00fczdan ve Gram G\u00f6nder'i sohbet, profil ve ba\u011flant\u0131 men\u00fclerinden, profillerdeki Hediyeler sekmelerini, kanallardaki Hediye d\u00fc\u011fmesini ve Premium'unuz yoksa Premium \u00e7\u0131kartmalar\u0131, efektlerini ve Premium emoji paketlerini kald\u0131r\u0131r.");
         table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
@@ -4819,11 +4821,11 @@ public final class L10nTranslations {
                 "Yeniden dene");
         table.put("Reveal spoilers",
                 "Spoilerlar\u0131 g\u00f6ster");
-        table.put("Save",
-                "Kaydet");
     }
 
     private static void fillTr5(Map<String, String> table) {
+        table.put("Save",
+                "Kaydet");
         table.put("Save downloaded files",
                 "\u0130ndirilen dosyalar\u0131 kaydet");
         table.put("Save full report",
@@ -4942,11 +4944,11 @@ public final class L10nTranslations {
                 "HushTelegram'u destekle");
         table.put("Supported links",
                 "Desteklenen ba\u011flant\u0131lar");
-        table.put("Swipe back on profiles",
-                "Profillerde geri kayd\u0131r");
     }
 
     private static void fillTr6(Map<String, String> table) {
+        table.put("Swipe back on profiles",
+                "Profillerde geri kayd\u0131r");
         table.put("Swiping a chat in your list no longer archives, mutes, pins, deletes or marks it read. Press and hold still offers every action.",
                 "Listenizdeki bir sohbeti kayd\u0131rmak onu art\u0131k ar\u015fivlemez, sessize almaz, sabitlemez, silmez veya okundu yapmaz. Bas\u0131l\u0131 tutmak t\u00fcm eylemleri sunmaya devam eder.");
         table.put("Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.",
@@ -4973,8 +4975,6 @@ public final class L10nTranslations {
                 "Telegram sohbet ba\u015fl\u0131\u011f\u0131n\u0131 ve panelleri yaln\u0131zca h\u0131zl\u0131 telefonlarda bulan\u0131kla\u015ft\u0131r\u0131r. Bu, G\u00fc\u00e7 tasarrufu alt\u0131nda Sohbette bulan\u0131kl\u0131k a\u00e7\u0131ld\u0131\u011f\u0131nda her telefonun bunu yapmas\u0131n\u0131 sa\u011flar.");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram, telegram.org g\u00fcncellemelerini sunmay\u0131 b\u0131rak\u0131r. Bunlar bu yamal\u0131 s\u00fcr\u00fcm\u00fcn \u00fczerine kurulamaz, bu y\u00fczden her yeni s\u00fcr\u00fcm\u00fc Morphe Manager'da yamala.");
-        table.put("Telegram's folder limit is reached, so no folders were made. Remove one and try again.",
-                "Telegram'\u0131n klas\u00f6r s\u0131n\u0131r\u0131na ula\u015f\u0131ld\u0131, bu y\u00fczden klas\u00f6r olu\u015fturulmad\u0131. Birini kald\u0131r\u0131p tekrar dene.");
         table.put("Telegram's reply to notification sign-up: %1$s",
                 "Telegram'\u0131n bildirim kayd\u0131na yan\u0131t\u0131: %1$s");
         table.put("Telegram's wake-ups come through %1$s.",

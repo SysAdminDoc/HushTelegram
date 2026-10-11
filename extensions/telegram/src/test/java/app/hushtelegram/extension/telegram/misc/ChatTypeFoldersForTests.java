@@ -28,6 +28,8 @@ public final class ChatTypeFoldersForTests {
         final List<ChatTypeFolders.Folder> folders = new ArrayList<>();
         final List<String> created = new ArrayList<>();
         final List<Integer> deleted = new ArrayList<>();
+        /** Each order sent, as the folder ids in the list at the time. */
+        final List<List<Integer>> orders = new ArrayList<>();
 
         /** A folder Telegram's list already has, with nothing set on it but its name and chat types. */
         Recorder with(int id, int flags, String name) {
@@ -60,6 +62,12 @@ public final class ChatTypeFoldersForTests {
             deleted.add(id);
             folders.removeIf(folder -> folder.id == id);
         }
+
+        @Override public void order(int account) {
+            List<Integer> ids = new ArrayList<>();
+            for (ChatTypeFolders.Folder folder : folders) ids.add(folder.id);
+            orders.add(ids);
+        }
     }
 
     /** With no folders yet and none made before, whether flipping the switch to what's saved asks Telegram for any. */
@@ -78,6 +86,6 @@ public final class ChatTypeFoldersForTests {
             ChatTypeFolders.prefs(context).edit().clear().commit();
             if (Settings.CHAT_TYPE_FOLDERS.savedValue() != saved) Settings.CHAT_TYPE_FOLDERS.save(saved);
         }
-        return !recorder.created.isEmpty() || !recorder.deleted.isEmpty();
+        return !recorder.created.isEmpty() || !recorder.deleted.isEmpty() || !recorder.orders.isEmpty();
     }
 }

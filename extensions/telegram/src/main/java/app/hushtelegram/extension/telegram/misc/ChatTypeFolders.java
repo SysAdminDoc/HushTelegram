@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import app.hushtelegram.extension.shared.L10n;
+import app.hushtelegram.extension.shared.Logger;
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
@@ -109,6 +110,9 @@ public final class ChatTypeFolders {
 
         /** Sends the delete and takes the folder out of Telegram's list, as Telegram's Delete folder does. */
         void delete(int account, int id);
+
+        /** Sends Telegram's folder order as its list has it, as Telegram's folder screen does after a reorder. */
+        void order(int account);
     }
 
     static Telegram telegram = new Telegram() {
@@ -153,6 +157,11 @@ public final class ChatTypeFolders {
         @Override
         public void delete(int account, int id) {
             deleteFolder(account, id);
+        }
+
+        @Override
+        public void order(int account) {
+            sendFolderOrder(account);
         }
     };
 
@@ -221,18 +230,23 @@ public final class ChatTypeFolders {
             room--;
             count++;
         }
-        if (count > 0) HookStatus.counted(FamilyNames.CHAT_TYPE_FOLDERS, "folder made");
+        if (count > 0) {
+            // Telegram's server lists new folders in its own order; this keeps them where the tabs show them.
+            telegram.order(account);
+            HookStatus.counted(FamilyNames.CHAT_TYPE_FOLDERS, "folder made");
+        }
+        // Android shows two lines of a toast, so each of these stays short.
         if (count == 0 && left == 0) return L10n.t("You already have a folder for each chat type.");
-        if (count == 0) return undo(true, L10n.t("Telegram's folder limit is reached, so no folders were made. Remove one and try again."));
-        if (left > 0) return L10n.t("Made some of the folders. Telegram's folder limit left no room for the rest.");
-        return L10n.t("Made folders for private chats, groups, channels and bots. They're at the top of your chat list.");
+        if (count == 0) return undo(true, L10n.t("Folder limit reached. Remove a folder and try again."));
+        if (left > 0) return L10n.t("Made some folders. The folder limit left no room for the rest.");
+        return L10n.t("Made Private, Groups, Channels and Bots folders.");
     }
 
     private static String remove(Context context, int account, long user, List<Folder> folders) {
         SharedPreferences prefs = prefs(context);
         SharedPreferences.Editor forget = prefs.edit();
         String prefix = user + ":";
-        int count = 0;
+        int count = 0, records = 0;
         for (Map.Entry<String, ?> entry : prefs.getAll().entrySet()) {
             if (!entry.getKey().startsWith(prefix) || !(entry.getValue() instanceof String)) continue;
             forget.remove(entry.getKey());
@@ -250,15 +264,28 @@ public final class ChatTypeFolders {
                 if (folder.id == id) now = folder;
             }
             // Gone already means you deleted it; nothing is sent for an id that may be reused.
-            if (now != null && now.plain && now.flags == flags && made.length == 2 && made[1].equals(now.name)) {
+            boolean sameName = now != null && made.length == 2 && made[1].equals(now.name);
+            if (now != null && now.plain && now.flags == flags && sameName) {
                 telegram.delete(account, id);
                 count++;
+            } else {
+                final Folder kept = now;
+                final int keptId = id, madeFlags = flags;
+                Logger.printDebug(() -> "Folders by chat type kept folder " + keptId + ": "
+                        + (kept == null ? "not in Telegram's list" : "plain " + kept.plain + ", flags " + kept.flags
+                        + " (made with " + madeFlags + "), same name " + sameName));
             }
+            records++;
         }
         forget.commit();
-        if (count == 0) return L10n.t("There were no folders from HushTelegram to remove.");
+        if (count == 0) {
+            final int found = records, all = prefs.getAll().size();
+            Logger.printDebug(() -> "Folders by chat type removed nothing: " + found + " records for this user, "
+                    + folders.size() + " folders in Telegram's list, " + all + " records left");
+            return L10n.t("There were no folders from HushTelegram to remove.");
+        }
         HookStatus.counted(FamilyNames.CHAT_TYPE_FOLDERS, "folder removed");
-        return L10n.t("Removed the folders HushTelegram made. Any you renamed or changed stay.");
+        return L10n.t("Removed the folders HushTelegram made. Changed ones stay.");
     }
 
     /** Whether a folder already shows exactly these chat types, whatever else it leaves out. */
@@ -314,4 +341,7 @@ public final class ChatTypeFolders {
 
     /** {@code messages.updateDialogFilter} with no filter, then {@code removeFilter} and {@code deleteDialogFilter}. */
     public static void deleteFolder(int account, int id) {}
+
+    /** {@code messages.updateDialogFiltersOrder} with every folder id in {@code dialogFilters}, sent without a callback. */
+    public static void sendFolderOrder(int account) {}
 }

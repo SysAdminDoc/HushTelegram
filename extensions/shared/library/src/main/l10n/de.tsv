@@ -544,13 +544,13 @@ Telegram is still loading your folders. Try again in a moment.	Telegram lädt de
 Couldn't change your folders. Try again in a moment.	Deine Ordner konnten nicht geändert werden. Versuch es gleich noch mal.
 # context: a toast when every chat type already has a folder, so none were made.
 You already have a folder for each chat type.	Du hast schon für jeden Chattyp einen Ordner.
-# context: a toast when Telegram's maximum number of folders leaves no room.
-Telegram's folder limit is reached, so no folders were made. Remove one and try again.	Das Ordnerlimit von Telegram ist erreicht, deshalb wurden keine Ordner erstellt. Entferne einen und versuch es noch mal.
-# context: a toast when only some of the four folders fit under Telegram's folder limit.
-Made some of the folders. Telegram's folder limit left no room for the rest.	Einige Ordner wurden erstellt. Für den Rest ließ das Ordnerlimit von Telegram keinen Platz.
-# context: a toast after the folders were made. They show as tabs above the chat list.
-Made folders for private chats, groups, channels and bots. They're at the top of your chat list.	Ordner für private Chats, Gruppen, Kanäle und Bots erstellt. Sie stehen oben in deiner Chatliste.
+# context: a short toast (two lines at most) when Telegram's folder limit left no room, so no folders were made.
+Folder limit reached. Remove a folder and try again.	Ordnerlimit erreicht. Entferne einen Ordner und versuch es noch mal.
+# context: a short toast (two lines at most) when only some of the folders fit under Telegram's folder limit.
+Made some folders. The folder limit left no room for the rest.	Einige Ordner erstellt. Für den Rest reichte das Ordnerlimit nicht.
+# context: a short toast (two lines at most) after the folders were made. Private, Groups, Channels and Bots are the folder names, use the same words as their own entries.
+Made Private, Groups, Channels and Bots folders.	Ordner Privat, Gruppen, Kanäle und Bots erstellt.
 # context: a toast after turning the switch off when none of its folders were left to remove.
 There were no folders from HushTelegram to remove.	Es gab keine Ordner von HushTelegram zum Entfernen.
-# context: a toast after turning the switch off. Folders the person renamed or edited are kept.
-Removed the folders HushTelegram made. Any you renamed or changed stay.	Die Ordner von HushTelegram wurden entfernt. Umbenannte oder geänderte bleiben.
+# context: a short toast (two lines at most) after the switch went off. Folders the person renamed or changed are kept.
+Removed the folders HushTelegram made. Changed ones stay.	Die Ordner von HushTelegram sind entfernt. Geänderte bleiben.
