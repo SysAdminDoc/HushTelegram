@@ -62,6 +62,7 @@ public final class SelectionCheck {
     private static final String PUSH_RAISE = "app.hushtelegram.extension.telegram.misc.UnifiedPushRaise";
     private static final String PUSH_SIGN_UP = "Lorg/telegram/messenger/PushListenerController;->sendRegistrationToServer(ILjava/lang/String;)V";
     private static final String ATTACH_NAME = "Lorg/telegram/messenger/FileLoader;->getAttachFileName(Lorg/telegram/tgnet/TLObject;)Ljava/lang/String;";
+    private static final String REMOVE_FILTER = "Lorg/telegram/messenger/MessagesController;->removeFilter(Lorg/telegram/messenger/MessagesController$DialogFilter;)V";
     private static final String DEBUG_VERSION = "Lorg/telegram/messenger/BuildVars;->DEBUG_VERSION:Z";
     private static final String BETA_LOGS = OWN + "telegram/misc/BetaLogs;";
     /**
@@ -404,6 +405,14 @@ public final class SelectionCheck {
                 && attach.get(3).getOpcode() == Opcode.RETURN_OBJECT;
         require(attachLinked == Boolean.TRUE.equals(flags.get("saveDownloads")));
         if (attachLinked) method(types, ATTACH_NAME);
+        // Folders by chat type has no hook; its stubs are the patch, so the delete one stands for them.
+        List<Instruction> delete = instructions(method(types, OWN + "telegram/misc/ChatTypeFolders;->deleteFolder(II)V"));
+        long removes = delete.stream().filter(instruction -> instruction.getOpcode() == Opcode.INVOKE_VIRTUAL
+                && instruction instanceof ReferenceInstruction call
+                && call.getReference().toString().equals(REMOVE_FILTER)).count();
+        boolean deleteLinked = removes == 1 && delete.get(delete.size() - 1).getOpcode() == Opcode.RETURN_VOID;
+        require(deleteLinked == Boolean.TRUE.equals(flags.get("chatTypeFolders")));
+        if (deleteLinked) method(types, REMOVE_FILTER);
     }
 
     /**

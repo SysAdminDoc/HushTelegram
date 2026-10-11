@@ -111,6 +111,7 @@ body:
         - Turn off haptic feedback
         - Turn off reaction effects
         - Hide folder tab counters
+        - Folders by chat type
         - Hide sender names when forwarding
         - Voice messages in the music player
         - Faster downloads

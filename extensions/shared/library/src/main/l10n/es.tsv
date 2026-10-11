@@ -522,3 +522,35 @@ Tap to pick which UnifiedPush app to use.	Toca para elegir qué app de UnifiedPu
 Save downloaded files	Guardar archivos descargados
 # context: that switch's summary. "Download/Telegram" is a folder path and stays as it is. Chats that don't allow saving are ones whose owner turned on Telegram's content protection.
 Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.	Cada archivo o canción que descargues también va a Download/Telegram en tu teléfono, donde los gestores de archivos y otras apps pueden abrirlo. Los archivos de chats secretos y de chats que no permiten guardar se quedan en Telegram.
+# context: Folders by chat type, a switch on the Chat list page. Turning it on makes Telegram chat folders for each kind of chat.
+Folders by chat type	Carpetas por tipo de chat
+# context: that switch's summary. Private, Groups, Channels and Bots are the folder names, use the same words as their own entries.
+Turning this on makes Private, Groups, Channels and Bots folders, as tabs above the chat list and on your other devices. Turning it off removes the ones it made, unless you renamed or changed them.	Al activarlo se crean las carpetas Privados, Grupos, Canales y Bots, como pestañas sobre la lista de chats y en tus otros dispositivos. Al desactivarlo se quitan las que creó, salvo las que hayas renombrado o cambiado.
+# context: a chat folder name for one-to-one chats with people. Telegram allows at most 12 characters.
+Private	Privados
+# context: a chat folder name for group chats. At most 12 characters.
+Groups	Grupos
+# context: a chat folder name for channels. At most 12 characters.
+Channels	Canales
+# context: a chat folder name for chats with bots. At most 12 characters.
+Bots	Bots
+# context: a toast after flipping the Folders by chat type switch while HushTelegram is paused.
+HushTelegram is paused, so your folders stay as they are.	HushTelegram está en pausa, así que tus carpetas se quedan como están.
+# context: a toast when the folder switch is flipped before signing in.
+Sign in to Telegram first.	Primero inicia sesión en Telegram.
+# context: a toast when the folder switch is flipped before Telegram has loaded the folder list.
+Telegram is still loading your folders. Try again in a moment.	Telegram todavía está cargando tus carpetas. Inténtalo de nuevo en un momento.
+# context: a toast when making or removing the folders failed.
+Couldn't change your folders. Try again in a moment.	No se pudieron cambiar tus carpetas. Inténtalo de nuevo en un momento.
+# context: a toast when every chat type already has a folder, so none were made.
+You already have a folder for each chat type.	Ya tienes una carpeta para cada tipo de chat.
+# context: a toast when Telegram's maximum number of folders leaves no room.
+Telegram's folder limit is reached, so no folders were made. Remove one and try again.	Se alcanzó el límite de carpetas de Telegram, así que no se creó ninguna. Quita una e inténtalo de nuevo.
+# context: a toast when only some of the four folders fit under Telegram's folder limit.
+Made some of the folders. Telegram's folder limit left no room for the rest.	Se crearon algunas de las carpetas. El límite de carpetas de Telegram no dejó espacio para el resto.
+# context: a toast after the folders were made. They show as tabs above the chat list.
+Made folders for private chats, groups, channels and bots. They're at the top of your chat list.	Se crearon carpetas para chats privados, grupos, canales y bots. Están arriba de tu lista de chats.
+# context: a toast after turning the switch off when none of its folders were left to remove.
+There were no folders from HushTelegram to remove.	No había carpetas de HushTelegram que quitar.
+# context: a toast after turning the switch off. Folders the person renamed or edited are kept.
+Removed the folders HushTelegram made. Any you renamed or changed stay.	Se quitaron las carpetas que creó HushTelegram. Las que renombraste o cambiaste se quedan.

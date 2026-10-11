@@ -346,6 +346,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting SAVE_DOWNLOADS =
             new BooleanSetting("hushtelegram_save_downloads", FALSE);
 
+    /** Turned on, makes Private, Groups, Channels and Bots folders; turned off, removes the untouched ones it made. */
+    public static final BooleanSetting CHAT_TYPE_FOLDERS =
+            new BooleanSetting("hushtelegram_chat_type_folders", FALSE);
+
     /** A GIF you tap asks Send or Cancel before it goes into the chat. */
     public static final BooleanSetting ASK_BEFORE_GIF =
             new BooleanSetting("hushtelegram_ask_before_gif", FALSE);

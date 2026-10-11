@@ -522,3 +522,35 @@ Tap to pick which UnifiedPush app to use.	Tippe, um die UnifiedPush-App auszuwä
 Save downloaded files	Heruntergeladene Dateien speichern
 # context: that switch's summary. "Download/Telegram" is a folder path and stays as it is. Chats that don't allow saving are ones whose owner turned on Telegram's content protection.
 Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.	Jede Datei und jeder Song, den du herunterlädst, landet zusätzlich in Download/Telegram auf deinem Handy, wo Dateimanager und andere Apps sie öffnen können. Dateien aus geheimen Chats und aus Chats, die das Speichern nicht erlauben, bleiben in Telegram.
+# context: Folders by chat type, a switch on the Chat list page. Turning it on makes Telegram chat folders for each kind of chat.
+Folders by chat type	Ordner nach Chattyp
+# context: that switch's summary. Private, Groups, Channels and Bots are the folder names, use the same words as their own entries.
+Turning this on makes Private, Groups, Channels and Bots folders, as tabs above the chat list and on your other devices. Turning it off removes the ones it made, unless you renamed or changed them.	Wenn du das einschaltest, entstehen die Ordner Privat, Gruppen, Kanäle und Bots, als Tabs über der Chatliste und auf deinen anderen Geräten. Beim Ausschalten werden die so entstandenen Ordner entfernt, außer du hast sie umbenannt oder geändert.
+# context: a chat folder name for one-to-one chats with people. Telegram allows at most 12 characters.
+Private	Privat
+# context: a chat folder name for group chats. At most 12 characters.
+Groups	Gruppen
+# context: a chat folder name for channels. At most 12 characters.
+Channels	Kanäle
+# context: a chat folder name for chats with bots. At most 12 characters.
+Bots	Bots
+# context: a toast after flipping the Folders by chat type switch while HushTelegram is paused.
+HushTelegram is paused, so your folders stay as they are.	HushTelegram ist pausiert, deine Ordner bleiben also, wie sie sind.
+# context: a toast when the folder switch is flipped before signing in.
+Sign in to Telegram first.	Melde dich zuerst bei Telegram an.
+# context: a toast when the folder switch is flipped before Telegram has loaded the folder list.
+Telegram is still loading your folders. Try again in a moment.	Telegram lädt deine Ordner noch. Versuch es gleich noch mal.
+# context: a toast when making or removing the folders failed.
+Couldn't change your folders. Try again in a moment.	Deine Ordner konnten nicht geändert werden. Versuch es gleich noch mal.
+# context: a toast when every chat type already has a folder, so none were made.
+You already have a folder for each chat type.	Du hast schon für jeden Chattyp einen Ordner.
+# context: a toast when Telegram's maximum number of folders leaves no room.
+Telegram's folder limit is reached, so no folders were made. Remove one and try again.	Das Ordnerlimit von Telegram ist erreicht, deshalb wurden keine Ordner erstellt. Entferne einen und versuch es noch mal.
+# context: a toast when only some of the four folders fit under Telegram's folder limit.
+Made some of the folders. Telegram's folder limit left no room for the rest.	Einige Ordner wurden erstellt. Für den Rest ließ das Ordnerlimit von Telegram keinen Platz.
+# context: a toast after the folders were made. They show as tabs above the chat list.
+Made folders for private chats, groups, channels and bots. They're at the top of your chat list.	Ordner für private Chats, Gruppen, Kanäle und Bots erstellt. Sie stehen oben in deiner Chatliste.
+# context: a toast after turning the switch off when none of its folders were left to remove.
+There were no folders from HushTelegram to remove.	Es gab keine Ordner von HushTelegram zum Entfernen.
+# context: a toast after turning the switch off. Folders the person renamed or edited are kept.
+Removed the folders HushTelegram made. Any you renamed or changed stay.	Die Ordner von HushTelegram wurden entfernt. Umbenannte oder geänderte bleiben.

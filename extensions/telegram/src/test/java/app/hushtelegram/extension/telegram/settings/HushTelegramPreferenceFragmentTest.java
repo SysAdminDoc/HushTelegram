@@ -123,6 +123,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.NO_HAPTICS, "Stop vibrations on taps");
         ROW_TITLES.put(PatchFamily.REACTION_EFFECTS_OFF, "Turn off reaction effects");
         ROW_TITLES.put(PatchFamily.HIDE_FOLDER_COUNTERS, "Hide folder tab counters");
+        ROW_TITLES.put(PatchFamily.CHAT_TYPE_FOLDERS, "Folders by chat type");
         ROW_TITLES.put(PatchFamily.FORWARD_HIDE_SENDER, "Hide sender names when forwarding");
         ROW_TITLES.put(PatchFamily.VOICE_MUSIC_PLAYER, "Voice messages in the music player");
         ROW_TITLES.put(PatchFamily.SILENCE_NON_CONTACTS, "Silence people outside your contacts");
@@ -504,6 +505,13 @@ public class HushTelegramPreferenceFragmentTest {
             // Folder tabs show their counts until the switch is turned on.
             assertFalse(Settings.HIDE_FOLDER_COUNTERS.key,
                     ((SwitchPreference) page.findPreference(Settings.HIDE_FOLDER_COUNTERS.key)).isChecked());
+            assertEquals("Folders by chat type", String.valueOf(page.findPreference(Settings.CHAT_TYPE_FOLDERS.key).getTitle()));
+            assertEquals("Turning this on makes Private, Groups, Channels and Bots folders, as tabs above the chat list "
+                    + "and on your other devices. Turning it off removes the ones it made, unless you renamed or changed them.",
+                    String.valueOf(page.findPreference(Settings.CHAT_TYPE_FOLDERS.key).getSummary()));
+            // No folders are made until the switch is turned on.
+            assertFalse(Settings.CHAT_TYPE_FOLDERS.key,
+                    ((SwitchPreference) page.findPreference(Settings.CHAT_TYPE_FOLDERS.key)).isChecked());
             assertEquals("Hide sender names when forwarding", String.valueOf(page.findPreference(Settings.FORWARD_HIDE_SENDER.key).getTitle()));
             assertEquals("Each new forward starts with Hide sender's name turned on, so copies arrive without the "
                     + "original author. You can still turn it off before sending.",

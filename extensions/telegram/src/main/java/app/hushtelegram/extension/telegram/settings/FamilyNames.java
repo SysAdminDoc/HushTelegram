@@ -74,6 +74,7 @@ public final class FamilyNames {
     public static final String HIDE_SEND_AS = "Hide Send as button";
     public static final String FASTER_DOWNLOADS = "Faster downloads";
     public static final String SAVE_DOWNLOADS = "Save downloaded files";
+    public static final String CHAT_TYPE_FOLDERS = "Folders by chat type";
     public static final String DISABLE_ANALYTICS = "Disable analytics";
     public static final String DISABLE_CALL_DEBUG = "Disable call debug upload";
     public static final String DISABLE_DRAFT_PREVIEWS = "Disable draft link previews";

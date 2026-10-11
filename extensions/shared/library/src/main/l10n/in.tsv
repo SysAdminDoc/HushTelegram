@@ -522,3 +522,35 @@ Tap to pick which UnifiedPush app to use.	Ketuk untuk memilih aplikasi UnifiedPu
 Save downloaded files	Simpan file yang diunduh
 # context: that switch's summary. "Download/Telegram" is a folder path and stays as it is. Chats that don't allow saving are ones whose owner turned on Telegram's content protection.
 Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.	Setiap file atau lagu yang kamu unduh juga masuk ke Download/Telegram di ponselmu, tempat pengelola file dan aplikasi lain bisa membukanya. File dari obrolan rahasia dan obrolan yang tidak mengizinkan penyimpanan tetap di Telegram.
+# context: Folders by chat type, a switch on the Chat list page. Turning it on makes Telegram chat folders for each kind of chat.
+Folders by chat type	Folder menurut jenis obrolan
+# context: that switch's summary. Private, Groups, Channels and Bots are the folder names, use the same words as their own entries.
+Turning this on makes Private, Groups, Channels and Bots folders, as tabs above the chat list and on your other devices. Turning it off removes the ones it made, unless you renamed or changed them.	Jika diaktifkan, folder Pribadi, Grup, Kanal, dan Bot dibuat sebagai tab di atas daftar obrolan dan di perangkatmu yang lain. Jika dimatikan, folder yang dibuatnya dihapus, kecuali yang sudah kamu ganti nama atau ubah.
+# context: a chat folder name for one-to-one chats with people. Telegram allows at most 12 characters.
+Private	Pribadi
+# context: a chat folder name for group chats. At most 12 characters.
+Groups	Grup
+# context: a chat folder name for channels. At most 12 characters.
+Channels	Kanal
+# context: a chat folder name for chats with bots. At most 12 characters.
+Bots	Bot
+# context: a toast after flipping the Folders by chat type switch while HushTelegram is paused.
+HushTelegram is paused, so your folders stay as they are.	HushTelegram sedang dijeda, jadi foldermu tetap seperti semula.
+# context: a toast when the folder switch is flipped before signing in.
+Sign in to Telegram first.	Masuk ke Telegram terlebih dahulu.
+# context: a toast when the folder switch is flipped before Telegram has loaded the folder list.
+Telegram is still loading your folders. Try again in a moment.	Telegram masih memuat foldermu. Coba lagi sebentar lagi.
+# context: a toast when making or removing the folders failed.
+Couldn't change your folders. Try again in a moment.	Tidak bisa mengubah foldermu. Coba lagi sebentar lagi.
+# context: a toast when every chat type already has a folder, so none were made.
+You already have a folder for each chat type.	Kamu sudah punya folder untuk setiap jenis obrolan.
+# context: a toast when Telegram's maximum number of folders leaves no room.
+Telegram's folder limit is reached, so no folders were made. Remove one and try again.	Batas folder Telegram sudah tercapai, jadi tidak ada folder yang dibuat. Hapus satu lalu coba lagi.
+# context: a toast when only some of the four folders fit under Telegram's folder limit.
+Made some of the folders. Telegram's folder limit left no room for the rest.	Sebagian folder sudah dibuat. Batas folder Telegram tidak menyisakan tempat untuk sisanya.
+# context: a toast after the folders were made. They show as tabs above the chat list.
+Made folders for private chats, groups, channels and bots. They're at the top of your chat list.	Folder untuk obrolan pribadi, grup, kanal, dan bot sudah dibuat. Folder itu ada di bagian atas daftar obrolanmu.
+# context: a toast after turning the switch off when none of its folders were left to remove.
+There were no folders from HushTelegram to remove.	Tidak ada folder dari HushTelegram yang perlu dihapus.
+# context: a toast after turning the switch off. Folders the person renamed or edited are kept.
+Removed the folders HushTelegram made. Any you renamed or changed stay.	Folder yang dibuat HushTelegram sudah dihapus. Folder yang kamu ganti nama atau ubah tetap ada.

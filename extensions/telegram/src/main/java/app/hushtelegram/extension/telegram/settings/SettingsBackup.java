@@ -62,7 +62,8 @@ import app.hushtelegram.extension.telegram.misc.StickerSize;
  * preference commit. A file that is too large, isn't JSON, names something twice, holds a value of
  * the wrong type or comes from a newer version changes nothing.
  * <p>The release check stays out of the file: it puts the phone online, so it's switched on
- * from the phone's own screen, never by a file.
+ * from the phone's own screen, never by a file. So does Folders by chat type: flipping it makes or
+ * removes folders on your account, and an import would flip it without doing either.
  *
  * <p>Call the file and preference work on a worker thread.
  */

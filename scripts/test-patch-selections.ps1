@@ -14,11 +14,11 @@ $model = Get-SelectionStatusModel -Root $Root
 $optional = @($model.Capabilities | Where-Object Optional | ForEach-Object Status | Sort-Object)
 Assert-Selection (($optional -join ',') -ceq 'crashReports,sessionReports') 'The targets only some builds carry changed without the checker''s markers.'
 $plans = @(Get-PatchSelectionCases -Catalog $catalog -StatusModel $model)
-Assert-Selection ($plans.Count -eq 83 -and @($plans.Id | Sort-Object -Unique).Count -eq 83) 'The matrix changed its bounded case inventory.'
+Assert-Selection ($plans.Count -eq 84 -and @($plans.Id | Sort-Object -Unique).Count -eq 84) 'The matrix changed its bounded case inventory.'
 Assert-Selection (@($plans | Where-Object Failure).Count -eq 10) 'A malformed, incomplete or typed-input refusal is missing.'
 Assert-Selection (@($plans | Where-Object Id -CEQ 'maps-array-noop').Count -eq 1) 'The CLI typed-option no-op case is missing.'
-Assert-Selection (@($plans | Where-Object Default).Count -eq 1 -and $plans[0].Id -ceq 'default62') 'Defaults must be exercised through the actual CLI defaults.'
-Assert-Selection ($plans[0].Names.Count -eq 62 -and ($plans | Where-Object Id -CEQ 'full65').Names.Count -eq 65) 'Default and full catalog counts changed.'
+Assert-Selection (@($plans | Where-Object Default).Count -eq 1 -and $plans[0].Id -ceq 'default63') 'Defaults must be exercised through the actual CLI defaults.'
+Assert-Selection ($plans[0].Names.Count -eq 63 -and ($plans | Where-Object Id -CEQ 'full66').Names.Count -eq 66) 'Default and full catalog counts changed.'
 $hostile = $catalog | ConvertTo-Json -Depth 20 | ConvertFrom-Json
 ($hostile.patches | Where-Object name -CEQ 'Use registered Telegram API credentials').name = 'private_catalog_name_canary_472009'
 $refusal = $null
@@ -169,7 +169,7 @@ try {
 $none = "[resources] added resources: 0`r`n[resources] files named by the patched table: 7115, moved 0"
 $icons = "[resources] added resources: 3`r`n  0x7f0d0021 mipmap/hush_launcher`r`n  0x7f0d0022 mipmap/hush_launcher_foreground`r`n" +
     "  0x7f0d0023 mipmap/hush_launcher_monochrome`r`n[resources] files named by the patched table: 7115, moved 0"
-$full = ($plans | Where-Object Id -CEQ 'full65').Names
+$full = ($plans | Where-Object Id -CEQ 'full66').Names
 $default = $plans[0].Names
 Assert-Selection (Test-SelectionAddedResources -Report $none -Closure $default) 'A case without the icon was refused for adding nothing.'
 Assert-Selection (-not (Test-SelectionAddedResources -Report $icons -Closure $default)) 'A case without the icon patch was allowed its mipmaps.'

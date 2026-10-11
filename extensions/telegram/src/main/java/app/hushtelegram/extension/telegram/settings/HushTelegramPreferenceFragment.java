@@ -71,6 +71,7 @@ import app.hushtelegram.extension.shared.settings.preference.ClearLogBufferPrefe
 import app.hushtelegram.extension.shared.settings.preference.ExportDiagnosticReportPreference;
 import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
+import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
 import app.hushtelegram.extension.telegram.misc.KeepDeleted;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
@@ -493,6 +494,21 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.HIDE_FOLDER_COUNTERS).addPreference(toggle(context, Settings.HIDE_FOLDER_COUNTERS, L10n.t("Hide folder tab counters"),
                     PatchFamily.HIDE_FOLDER_COUNTERS.coverageSummary(L10n.t("Folder tabs above the chat list show just their names, without unread counts. "
                             + "Chats stay unread and the app icon badge doesn't change."))));
+        }
+        if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS)) {
+            SwitchPreference folders = toggle(context, Settings.CHAT_TYPE_FOLDERS, L10n.t("Folders by chat type"),
+                    PatchFamily.CHAT_TYPE_FOLDERS.coverageSummary(L10n.t("Turning this on makes Private, Groups, Channels and Bots "
+                            + "folders, as tabs above the chat list and on your other devices. Turning it off removes the ones it "
+                            + "made, unless you renamed or changed them.")));
+            folders.setOnPreferenceChangeListener((row, value) -> {
+                // Once the switch is saved, so the folders follow what it says.
+                Utils.runOnMainThreadDelayed(() -> {
+                    String said = ChatTypeFolders.apply(context);
+                    if (said != null) Utils.showToastLong(said);
+                }, 0);
+                return true;
+            });
+            on(pages, PatchFamily.CHAT_TYPE_FOLDERS).addPreference(folders);
         }
         if (build.contains(PatchFamily.FORWARD_HIDE_SENDER)) {
             on(pages, PatchFamily.FORWARD_HIDE_SENDER).addPreference(toggle(context, Settings.FORWARD_HIDE_SENDER, L10n.t("Hide sender names when forwarding"),

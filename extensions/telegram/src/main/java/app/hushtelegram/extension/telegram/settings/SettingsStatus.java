@@ -103,6 +103,7 @@ public final class SettingsStatus {
     public static boolean hideSendAs() { return false; }
     public static boolean fasterDownloads() { return false; }
     public static boolean saveDownloads() { return false; }
+    public static boolean chatTypeFolders() { return false; }
     public static boolean storyRequests() { return false; }
     public static boolean storyBar() { return false; }
     public static boolean storyCamera() { return false; }
