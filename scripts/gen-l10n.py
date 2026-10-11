@@ -154,6 +154,13 @@ def literal(text):
             out.append('\\"')
         elif char == "\n":
             out.append("\\n")
+        elif char == "\r":
+            # Not \u000d: Java reads unicode escapes before it splits lines, so that would end the literal.
+            out.append("\\r")
+        elif char == "\t":
+            out.append("\\t")
+        elif code < 0x20 or code == 0x7F:
+            out.append("\\u%04x" % code)
         elif code < 0x80:
             out.append(char)
         elif code <= 0xFFFF:
