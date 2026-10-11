@@ -155,10 +155,25 @@ public class Logger {
             logBuilt(logLevel, category, explicitSource, message, messageString, ex, includeStackTrace, showToast);
         } catch (Throwable failure) {
             try {
-                Log.e(MORPHE_LOG_TAG_PREFIX + "Logger", "Could not log a message: " + messageString, failure);
+                // Redacted like every other logcat line: the failure can carry the message's text.
+                Log.e(MORPHE_LOG_TAG_PREFIX + "Logger", forLogcat(
+                        "Could not log a message: " + messageString + "\n" + Log.getStackTraceString(failure)));
             } catch (Throwable ignored) {
-                // Nothing is left to report through.
+                try {
+                    Log.e(MORPHE_LOG_TAG_PREFIX + "Logger", "Could not log a message.");
+                } catch (Throwable alsoIgnored) {
+                    // Nothing is left to report through.
+                }
             }
+        }
+    }
+
+    /** The redacted text, or none of it when redaction is what failed. */
+    private static String forLogcat(String text) {
+        try {
+            return DiagnosticRedactor.redact(text);
+        } catch (Throwable failure) {
+            return "Could not log a message: it couldn't be redacted.";
         }
     }
 

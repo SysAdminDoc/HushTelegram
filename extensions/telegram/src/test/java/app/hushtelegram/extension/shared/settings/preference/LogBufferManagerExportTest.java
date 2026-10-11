@@ -189,6 +189,32 @@ public class LogBufferManagerExportTest {
         }
     }
 
+    /** The line logged when logging itself fails is redacted too, the failure's own text included. */
+    @Test public void noCredentialReachesLogcatWhenLoggingFails() {
+        app.hushtelegram.extension.shared.Utils.setContext(RuntimeEnvironment.getApplication());
+        org.robolectric.shadows.ShadowLog.clear();
+        String[][] corpus = app.hushtelegram.extension.shared.diagnostics.DiagnosticRedactorTest.CREDENTIAL_CORPUS;
+        for (String[] row : corpus) {
+            // Logger asks the exception for its message, so this one fails the log on purpose.
+            Throwable hostile = new java.io.IOException() {
+                @Override public String getMessage() {
+                    throw new IllegalStateException("Hostile " + row[0]);
+                }
+            };
+            app.hushtelegram.extension.shared.Logger.printException(() -> "Probe " + row[0], hostile);
+        }
+        StringBuilder logged = new StringBuilder();
+        for (org.robolectric.shadows.ShadowLog.LogItem item : org.robolectric.shadows.ShadowLog.getLogs()) {
+            logged.append(item.msg).append('\n');
+            if (item.throwable != null) logged.append(android.util.Log.getStackTraceString(item.throwable));
+        }
+        assertTrue("the fallback line never ran", logged.indexOf("Could not log a message: Probe ") >= 0);
+        assertTrue("the failure didn't reach logcat", logged.indexOf("IllegalStateException") >= 0);
+        for (String[] row : corpus) {
+            assertFalse(row[1] + " reached logcat", logged.indexOf(row[1]) >= 0);
+        }
+    }
+
     /** The row says it's busy and takes no second tap while a report is built, then comes back as it was. */
     @Test public void theReportRowIsBusyUntilTheReportIsDone() throws Exception {
         try (org.robolectric.android.controller.ActivityController<android.app.Activity> controller =
