@@ -186,6 +186,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         super.onResume();
         SettingsBackupPreference.onPageResumed(this);
         showSupportedLinks();
+        showPushApp();
         if (localNotificationStatus != null) localNotificationStatus.setSummary(FirebasePush.localStatus(getContext()).summary());
     }
 
@@ -1116,6 +1117,16 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             return true;
         });
         return row;
+    }
+
+    /**
+     * The push app can end the sign-up, or be removed, while Telegram is in the background, so the
+     * row reads its state again on the way back.
+     */
+    private void showPushApp() {
+        if (getPreferenceScreen() == null) return;
+        Preference row = findPreference(UnifiedPushPicker.KEY);
+        if (row != null) row.setSummary(UnifiedPush.status(row.getContext(), Settings.UNIFIED_PUSH.savedValue()));
     }
 
     /** Which UnifiedPush app the sign-up goes to, and how it's going. Tapping it picks another app. */
