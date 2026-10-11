@@ -10,7 +10,7 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** Ask before sending a sticker now covers the stickers Telegram suggests above the keyboard when you type an emoji, in a chat and in a story's reply bar. Those went out on one tap before. A sticker that costs stars still gets Telegram's own question only.
 
-* **Telegram:** Hide blocked users in groups now keeps a blocked person's new messages in a group from notifying you too, not just out of the chat when you open it. It also reads your whole blocked list now. Telegram only loads the first 20 people until you scroll its Blocked users page, so anyone past them used to slip through.
+* **Telegram:** Hide blocked users in groups now keeps a blocked person's new messages in a group from notifying you too, not just out of the chat when you open it. It also reads your whole blocked list now. Telegram only loads the first 20 people until you scroll its Blocked users page, so anyone past them used to slip through. And when someone else replies to a blocked person, their reply now shows without the quote of what was said, the way a reply to a deleted message looks.
 
 * **Tooling:** The source ledger is caught up with the October 11 audit (new sources, moved pins, 397 forks), and the census is fresh again. Sources hosted somewhere other than GitHub or GitLab now get their own list with the version an index last showed, so the audit stops flagging one it can't read and speaks up again when a new version appears.
 

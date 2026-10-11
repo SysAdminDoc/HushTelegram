@@ -13,8 +13,10 @@ import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.notifications.NOTIFICATIONS
+import app.morphe.util.branchTarget
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
@@ -23,7 +25,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** The open chat's three type tests, the new-message notification skip, the stubs and the runtime. */
+/** The open chat's three type tests, the new-message notification skip, the reply header check, the stubs and the runtime. */
 class HideBlockedInGroupsFixtureTest {
     private val hostTypes = setOf(MESSAGE_OBJECT, "Lorg/telegram/messenger/MessagesController;", PEERS, "Lorg/telegram/tgnet/TLRPC\$Message;", NOTIFICATIONS)
 
@@ -44,7 +46,29 @@ class HideBlockedInGroupsFixtureTest {
             val oldNotify = ImmutableMethod.of(notify).controlBody()
             assertEquals(Opcode.MOVE_RESULT, oldNotify[answer].opcode)
             assertEquals(IMPORTED_FORWARD, oldNotify[answer - 1].controlRef())
+            val (reply, yes) = context.resolveBlockedReplyQuote()
+            assertEquals("$name: the message's own reply check", listOf(MESSAGE_OBJECT, VALID_REPLY),
+                listOf(reply.definingClass, "${reply.name}(${reply.parameterTypes.joinToString("")})${reply.returnType}"))
+            val oldReply = ImmutableMethod.of(reply).controlBody()
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { hideBlockedInGroupsPatch.execute(context) })
+
+            val newReply = reply.controlBody()
+            assertEquals("$name: five instructions before the reply header's yes", oldReply.size + 5, newReply.size)
+            val (said) = oldReply[yes].namedRegisters()
+            val self = reply.implementation!!.registerCount - 1
+            assertEquals("$name: the reply goes to the extension", listOf(Opcode.INVOKE_STATIC, HIDE_REPLY, listOf(self)),
+                listOf(newReply[yes].opcode, newReply[yes].controlRef(), newReply[yes].namedRegisters()))
+            assertEquals(listOf(Opcode.MOVE_RESULT, listOf(said)), listOf(newReply[yes + 1].opcode, newReply[yes + 1].namedRegisters()))
+            assertEquals(listOf(Opcode.IF_EQZ, listOf(said)), listOf(newReply[yes + 2].opcode, newReply[yes + 2].namedRegisters()))
+            assertEquals("$name: a no from the extension goes on to Telegram's yes", yes + 5, newReply.branchTarget(yes + 2) { error(it) })
+            assertEquals("$name: a yes answers no header", listOf(Opcode.CONST_4, listOf(said), 0),
+                listOf(newReply[yes + 3].opcode, newReply[yes + 3].namedRegisters(), (newReply[yes + 3] as NarrowLiteralInstruction).narrowLiteral))
+            assertEquals(listOf(Opcode.RETURN, listOf(said)), listOf(newReply[yes + 4].opcode, newReply[yes + 4].namedRegisters()))
+            for (i in oldReply.indices) {
+                val j = if (i < yes) i else i + 5
+                assertEquals("$name: stock reply check $i", listOf(oldReply[i].opcode, oldReply[i].namedRegisters(), oldReply[i].controlRef()),
+                    listOf(newReply[j].opcode, newReply[j].namedRegisters(), newReply[j].controlRef()))
+            }
 
             val newNotify = notify.controlBody()
             assertEquals("$name: two instructions in the notification loop", oldNotify.size + 2, newNotify.size)
@@ -86,6 +110,7 @@ class HideBlockedInGroupsFixtureTest {
             assertTrue("$MESSAGE_OBJECT->getDialogId()J" in stub("chat"))
             assertTrue("$MESSAGE_OBJECT->getFromChatId()J" in stub("sender"))
             assertTrue(POST in stub("post"))
+            assertTrue(REPLY_MESSAGE in stub("quoted"))
             assertTrue(BLOCKED_PEERS in stub("blocked"))
             assertTrue("$PEERS->indexOfKey(J)I" in stub("blocked"))
             assertEquals("$name: the next page only when the list isn't complete or loading", listOf(BLOCKED_END, BLOCKED_LOADING, BLOCKED_PAGE),

@@ -13,7 +13,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
 /**
  * Telegram still shows what someone you've blocked writes in a group you share. With the switch
  * on, an open group or supergroup leaves their messages out of its list, the way Telegram leaves
- * out a message it can't show, and a new one from them doesn't notify. Nothing is deleted or
+ * out a message it can't show, someone else's reply drops its quote of one the way a reply to a
+ * deleted message does, and a new one from them doesn't notify. Nothing is deleted or
  * reported, and private chats and a channel's own posts stay as they are. Telegram loads only
  * the first 20 people you've blocked until its Blocked users page scrolls, so while the switch
  * is on, group messages also ask Telegram for the rest of the list a page at a time.
@@ -76,6 +77,30 @@ public final class BlockedSenders {
     }
 
     /**
+     * Asked where a message decides its reply header has a message to show, once Telegram has
+     * said yes. A yes here leaves the header out, as Telegram does for a reply to a deleted
+     * message. The chat's message cell asks while it draws, so this stays a few field reads and a
+     * lookup, and the blocked list's next page is left to {@link #type}.
+     *
+     * @param message Telegram's message, the reply
+     * @return true when the message replied to is a blocked person's in a group
+     */
+    public static boolean hideReply(Object message) {
+        if (message == null || !on()) return false;
+        try {
+            Object quoted = quoted(message);
+            if (quoted == null) return false;
+            long sender = sender(quoted);
+            if (!listedInGroup(chat(quoted), post(quoted), sender) || !blocked(quoted, sender)) return false;
+            HookStatus.counted(FamilyNames.HIDE_BLOCKED_IN_GROUPS, "reply quote hidden");
+            return true;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_BLOCKED_IN_GROUPS, "reply quote", failure);
+            return false;
+        }
+    }
+
+    /**
      * Asks Telegram for the next page of the blocked list, at most once every
      * {@link #PAGE_GAP_MS}, on the main thread where Telegram asks for its own pages.
      */
@@ -125,6 +150,9 @@ public final class BlockedSenders {
 
     /** Whether the message is a channel post. Replaced when patching. */
     public static boolean post(Object message) { return false; }
+
+    /** The message this one replies to, or null before it's loaded. Replaced when patching. */
+    public static Object quoted(Object message) { return null; }
 
     /**
      * Asks the message's account for the next page of its blocked list unless the list is

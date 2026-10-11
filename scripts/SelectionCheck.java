@@ -362,7 +362,7 @@ public final class SelectionCheck {
         hook(calls, flags, "hideStickerTime", "misc/StickerTime", "hidden");
         hook(calls, flags, "stickerSize", "misc/StickerSize", "size");
         hook(calls, flags, "ignoreMutedMentions", "misc/MutedMentions", "notifyDialog");
-        hook(calls, flags, "hideBlockedInGroups", "misc/BlockedSenders", "type");
+        hook(calls, flags, "hideBlockedInGroups", "misc/BlockedSenders", "type", "hideReply");
         hook(calls, flags, "hideFeaturesAndInvite", "misc/FeaturesInvite", "addFeaturesRow");
         hook(calls, flags, "messageMenuRepeat", "misc/MessageMenu", "fill");
         hook(calls, flags, "keepDeleted", "misc/KeepDeleted", "userUpdate", "channelUpdate", "push", "measuring");

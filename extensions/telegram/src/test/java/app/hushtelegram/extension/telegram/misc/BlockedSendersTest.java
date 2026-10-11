@@ -69,6 +69,18 @@ public class BlockedSendersTest {
         assertFalse("an unreadable switch", BlockedSenders.skipNotification(new Object(), false));
     }
 
+    @Test public void aReplyKeepsItsQuoteUnlessTheMessageQuotedIsABlockedPersonsInAGroup() {
+        assertFalse("switch off", BlockedSenders.hideReply(new Object()));
+        Settings.HIDE_BLOCKED_IN_GROUPS.save(true);
+        assertFalse("no message", BlockedSenders.hideReply(null));
+        // The unpatched stub has no message replied to, so the quote stays.
+        assertFalse(BlockedSenders.hideReply(new Object()));
+        SettingReadsForTests.breakReads(Settings.HIDE_BLOCKED_IN_GROUPS);
+        assertFalse("an unreadable switch", BlockedSenders.hideReply(new Object()));
+        String report = String.join("\n", HookStatus.report());
+        assertFalse(report, report.contains("reply quote hidden"));
+    }
+
     @Test public void askingForMoreOfTheBlockedListRunsOnTheMainThreadAndFailsQuietly() {
         BlockedSenders.topUp(new Object());
         BlockedSenders.topUp(new Object());

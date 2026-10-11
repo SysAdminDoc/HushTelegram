@@ -5,13 +5,17 @@
 package app.morphe.patches.telegram.misc.blocked
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
+import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
@@ -28,6 +32,7 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 
 internal const val BLOCKED_SENDERS = "$EXTENSION_PACKAGE/misc/BlockedSenders;"
@@ -47,6 +52,9 @@ private const val CONTROLLER = "Lorg/telegram/messenger/MessagesController;"
 internal const val BLOCKED_END = "$CONTROLLER->blockedEndReached:Z"
 internal const val BLOCKED_LOADING = "$CONTROLLER->loadingBlockedPeers:Z"
 internal const val BLOCKED_PAGE = "$CONTROLLER->getBlockedPeers(Z)V"
+internal const val HIDE_REPLY = "$BLOCKED_SENDERS->hideReply(Ljava/lang/Object;)Z"
+internal const val REPLY_MESSAGE = "$MESSAGE_OBJECT->replyMessageObject:$MESSAGE_OBJECT"
+internal const val VALID_REPLY = "hasValidReplyMessageObject()Z"
 
 /**
  * The extension calls that answer a message's type where the open chat tests it. Each patch puts
@@ -73,9 +81,11 @@ val hideBlockedInGroupsPatch = bytecodePatch(
     execute {
         val sites = resolveHideBlockedInGroups()
         val (notify, answer) = resolveBlockedNotificationSkip()
+        val (reply, yes) = resolveBlockedReplyQuote()
         // Assembled on copies first, so a refusal leaves the app untouched.
         sites.forEach { (method, indices) -> insertTypeChecks(MutableMethod(ImmutableMethod.of(method)), indices, BLOCKED_TYPE) }
         insertNotificationSkip(MutableMethod(ImmutableMethod.of(notify)), answer)
+        insertReplyCheck(MutableMethod(ImmutableMethod.of(reply)), yes)
         writeStub(BLOCKED_SENDERS, "chat", 3, """
             check-cast p0, $MESSAGE_OBJECT
             invoke-virtual {p0}, $MESSAGE_OBJECT->getDialogId()J
@@ -127,8 +137,14 @@ val hideBlockedInGroupsPatch = bytecodePatch(
             const/4 v1, 0x0
             return v1
         """)
+        writeStub(BLOCKED_SENDERS, "quoted", 2, """
+            check-cast p0, $MESSAGE_OBJECT
+            iget-object v0, p0, $REPLY_MESSAGE
+            return-object v0
+        """)
         sites.forEach { (method, indices) -> insertTypeChecks(method, indices, BLOCKED_TYPE) }
         insertNotificationSkip(notify, answer)
+        insertReplyCheck(reply, yes)
         enableStatus("hideBlockedInGroups")
     }
 }
@@ -153,6 +169,43 @@ internal fun insertNotificationSkip(target: MutableMethod, answer: Int) {
         invoke-static {v$message, v$skip}, $SKIP_NOTIFICATION
         move-result v$skip
     """)
+}
+
+/** Before the reply header's yes the extension may answer no, as for a reply to a deleted message. */
+internal fun insertReplyCheck(target: MutableMethod, yes: Int) {
+    val (answer) = target.controlBody()[yes].namedRegisters()
+    target.addInstructionsWithLabels(yes, """
+        invoke-static {p0}, $HIDE_REPLY
+        move-result v$answer
+        if-eqz v$answer, :hush_stock
+        const/4 v$answer, 0x0
+        return v$answer
+    """, ExternalLabel("hush_stock", target.getInstruction(yes)))
+}
+
+/**
+ * A message's answer to whether its reply header has a message to show. The chat's message cell
+ * asks it before it measures, draws or takes a tap on the header, and a reply to a deleted message
+ * gets no header from a no here. Returns the method and the index of its one `const/4 1` before
+ * the matching `return`.
+ */
+internal fun BytecodePatchContext.resolveBlockedReplyQuote(): Pair<MutableMethod, Int> {
+    controlHook(BLOCKED_SENDERS, "hideReply", listOf("Ljava/lang/Object;"), "Z")
+    controlHook(BLOCKED_SENDERS, "quoted", listOf("Ljava/lang/Object;"), "Ljava/lang/Object;")
+    val message = mutableClassDefByOrNull(MESSAGE_OBJECT)
+    controlShape(message != null && message.fields.any { "${it.definingClass}->${it.name}:${it.type}" == REPLY_MESSAGE && !AccessFlags.STATIC.isSet(it.accessFlags) },
+        "a message no longer keeps the message it replies to")
+    val valid = message!!.methods.filter { signature(it) == VALID_REPLY && callable(it, false) }.controlSingle("the reply header's check")
+    val body = valid.controlBody()
+    controlShape(body.any { it.opcode == Opcode.IGET_OBJECT && it.controlRef() == REPLY_MESSAGE }, "the reply header's check no longer looks at the message replied to")
+    val yes = body.indices.filter { at ->
+        body[at].opcode == Opcode.CONST_4 && (body[at] as NarrowLiteralInstruction).narrowLiteral == 1 &&
+            body.getOrNull(at + 1)?.opcode == Opcode.RETURN && body[at + 1].namedRegisters() == body[at].namedRegisters()
+    }.controlSingle("the reply header's yes")
+    val flow = ControlFlow.of(valid)
+    controlShape(yes > 0 && flow.normal.indices.filter { yes in flow.normal[it] } == listOf(yes - 1), "something jumps into the reply header's yes")
+    valid.requireThisIntact("the reply header's check", listOf(yes))
+    return valid to yes
 }
 
 /**
