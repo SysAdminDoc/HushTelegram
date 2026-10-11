@@ -419,7 +419,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (build.contains(PatchFamily.HIDE_BLOCKED_IN_GROUPS)) {
             on(pages, PatchFamily.HIDE_BLOCKED_IN_GROUPS).addPreference(toggle(context, Settings.HIDE_BLOCKED_IN_GROUPS, L10n.t("Hide blocked users in groups"),
                     PatchFamily.HIDE_BLOCKED_IN_GROUPS.coverageSummary(L10n.t("Messages from people you've blocked are left out of groups and supergroups you "
-                            + "open. Nothing is deleted. Private chats and channel posts stay as they are."))));
+                            + "open, and don't notify you. Nothing is deleted. Private chats and channel posts stay as they are."))));
         }
         if (build.contains(PatchFamily.HIDE_BY_KEYWORD)) {
             PreferenceCategory page = on(pages, PatchFamily.HIDE_BY_KEYWORD);

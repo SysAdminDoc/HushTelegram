@@ -292,7 +292,7 @@ Stickers and big animated emoji no longer show the time and read checks in their
 Ignore mentions in muted chats	Sessize alınmış sohbetlerdeki bahsetmeleri yok say
 Mentions and replies in groups or channels you've muted no longer notify you. Chats you haven't muted notify as before.	Sessize aldığınız grup veya kanallardaki bahsetmeler ve yanıtlar artık bildirim göndermez. Sessize almadığınız sohbetler eskisi gibi bildirim gönderir.
 Hide blocked users in groups	Gruplarda engellenen kullanıcıları gizle
-Messages from people you've blocked are left out of groups and supergroups you open. Nothing is deleted. Private chats and channel posts stay as they are.	Engellediğiniz kişilerin mesajları açtığınız grup ve süper gruplarda gösterilmez. Hiçbir şey silinmez. Özel sohbetler ve kanal gönderileri olduğu gibi kalır.
+Messages from people you've blocked are left out of groups and supergroups you open, and don't notify you. Nothing is deleted. Private chats and channel posts stay as they are.	Engellediğiniz kişilerin mesajları açtığınız grup ve süper gruplarda gösterilmez ve bildirim olarak gelmez. Hiçbir şey silinmez. Özel sohbetler ve kanal gönderileri olduğu gibi kalır.
 Hide Telegram Features and Invite Friends	Telegram Özellikleri ve Arkadaşlarını Davet Et satırlarını gizle
 Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.	Telegram Özellikleri satırını Ayarlar'dan, Arkadaşlarını Davet Et'i Kişiler'den kaldırır. Henüz kişiniz yoksa davet listesi de kalkar.
 Add Repeat to the message menu	Mesaj menüsüne Tekrarla ekle

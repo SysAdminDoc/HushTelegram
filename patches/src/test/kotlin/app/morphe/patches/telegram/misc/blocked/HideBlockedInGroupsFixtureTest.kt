@@ -12,6 +12,7 @@ import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.patches.telegram.misc.notifications.NOTIFICATIONS
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -22,9 +23,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** The open chat's three type tests, the stubs and the runtime. */
+/** The open chat's three type tests, the new-message notification skip, the stubs and the runtime. */
 class HideBlockedInGroupsFixtureTest {
-    private val hostTypes = setOf(MESSAGE_OBJECT, "Lorg/telegram/messenger/MessagesController;", PEERS, "Lorg/telegram/tgnet/TLRPC\$Message;")
+    private val hostTypes = setOf(MESSAGE_OBJECT, "Lorg/telegram/messenger/MessagesController;", PEERS, "Lorg/telegram/tgnet/TLRPC\$Message;", NOTIFICATIONS)
 
     @Test fun `the extension answers each type test before the open chat skips a message`() {
         for (build in Fixtures.declaredBuilds()) {
@@ -38,7 +39,28 @@ class HideBlockedInGroupsFixtureTest {
             assertEquals("$name: one load test, two new-message tests", listOf(1, 2), sites.map { it.second.size }.sorted())
             assertEquals("$name: one chat screen", 1, sites.map { it.first.definingClass }.distinct().size)
             val old = sites.map { ImmutableMethod.of(it.first) }
+            val (notify, answer) = context.resolveBlockedNotificationSkip()
+            assertTrue("$name: the new-message loop", notify.name.contains("processNewMessages"))
+            val oldNotify = ImmutableMethod.of(notify).controlBody()
+            assertEquals(Opcode.MOVE_RESULT, oldNotify[answer].opcode)
+            assertEquals(IMPORTED_FORWARD, oldNotify[answer - 1].controlRef())
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { hideBlockedInGroupsPatch.execute(context) })
+
+            val newNotify = notify.controlBody()
+            assertEquals("$name: two instructions in the notification loop", oldNotify.size + 2, newNotify.size)
+            val (message) = oldNotify[answer - 1].namedRegisters()
+            val (skip) = oldNotify[answer].namedRegisters()
+            assertEquals(SKIP_NOTIFICATION, newNotify[answer + 1].controlRef())
+            assertEquals("$name: the message and Telegram's answer", listOf(message, skip), newNotify[answer + 1].namedRegisters())
+            assertEquals(Opcode.MOVE_RESULT, newNotify[answer + 2].opcode)
+            assertEquals(listOf(skip), newNotify[answer + 2].namedRegisters())
+            assertEquals("$name: Telegram's own skip follows", listOf(Opcode.IF_NEZ, listOf(skip)),
+                listOf(newNotify[answer + 3].opcode, newNotify[answer + 3].namedRegisters()))
+            for (i in oldNotify.indices) {
+                val j = if (i <= answer) i else i + 2
+                assertEquals("$name: stock notification $i", listOf(oldNotify[i].opcode, oldNotify[i].controlRef()),
+                    listOf(newNotify[j].opcode, newNotify[j].controlRef()))
+            }
 
             sites.forEachIndexed { s, (method, reads) ->
                 val before = old[s].controlBody()

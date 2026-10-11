@@ -55,6 +55,18 @@ public class BlockedSendersTest {
         assertEquals(3, BlockedSenders.type(new Object(), 3));
     }
 
+    @Test public void aNotificationTelegramSkipsStaysSkippedAndOthersStillNotify() {
+        assertTrue("Telegram's own skip, switch off", BlockedSenders.skipNotification(new Object(), true));
+        assertFalse("switch off", BlockedSenders.skipNotification(new Object(), false));
+        Settings.HIDE_BLOCKED_IN_GROUPS.save(true);
+        assertTrue("Telegram's own skip, switch on", BlockedSenders.skipNotification(new Object(), true));
+        assertFalse("no message", BlockedSenders.skipNotification(null, false));
+        // The unpatched stub knows nobody is blocked, so the message notifies.
+        assertFalse(BlockedSenders.skipNotification(new Object(), false));
+        SettingReadsForTests.breakReads(Settings.HIDE_BLOCKED_IN_GROUPS);
+        assertFalse("an unreadable switch", BlockedSenders.skipNotification(new Object(), false));
+    }
+
     @Test public void pausingAnEarlyStartOrAnUnreadableSwitchKeepsTheMessage() {
         Settings.HIDE_BLOCKED_IN_GROUPS.save(true);
         for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {

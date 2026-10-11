@@ -1261,7 +1261,7 @@
     },
     {
       "name": "Hide blocked users in groups",
-      "description": "Leaves messages from people you've blocked out of groups and supergroups you open. Nothing is deleted. Starts off. Turn it on in HushTelegram settings > Conversations.",
+      "description": "Leaves messages from people you've blocked out of groups and supergroups you open, and keeps them from notifying you. Nothing is deleted. Starts off. Turn it on in HushTelegram settings > Conversations.",
       "category": "Conversations",
       "use": true,
       "dependencies": [

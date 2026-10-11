@@ -19,6 +19,7 @@ import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.patches.telegram.misc.notifications.NOTIFICATIONS
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
@@ -31,7 +32,7 @@ import org.junit.Test
 
 /** The open chat's three type tests, shared with Hide blocked users, the stubs and the runtime. */
 class HideByKeywordFixtureTest {
-    private val hostTypes = setOf(MESSAGE_OBJECT, "Lorg/telegram/messenger/MessagesController;", PEERS, TL_MESSAGE)
+    private val hostTypes = setOf(MESSAGE_OBJECT, "Lorg/telegram/messenger/MessagesController;", PEERS, TL_MESSAGE, NOTIFICATIONS)
 
     @Test fun `the filters answer each type test before the open chat skips a message`() {
         for (build in Fixtures.declaredBuilds()) {

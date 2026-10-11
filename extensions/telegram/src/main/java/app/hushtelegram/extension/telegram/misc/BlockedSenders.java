@@ -12,8 +12,9 @@ import app.hushtelegram.extension.telegram.settings.Settings;
 /**
  * Telegram still shows what someone you've blocked writes in a group you share. With the switch
  * on, an open group or supergroup leaves their messages out of its list, the way Telegram leaves
- * out a message it can't show. Nothing is deleted or reported, and private chats and a channel's
- * own posts stay as they are. Telegram's list of blocked people is what it has loaded so far.
+ * out a message it can't show, and a new one from them doesn't notify. Nothing is deleted or
+ * reported, and private chats and a channel's own posts stay as they are. Telegram's list of
+ * blocked people is what it has loaded so far.
  */
 public final class BlockedSenders {
     private BlockedSenders() {}
@@ -38,6 +39,27 @@ public final class BlockedSenders {
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.HIDE_BLOCKED_IN_GROUPS, "message", failure);
             return type;
+        }
+    }
+
+    /**
+     * Asked where Telegram decides a new message doesn't notify, right after its first reason
+     * (an imported forward), so a blocked person's message in a group is skipped the same way.
+     *
+     * @param message Telegram's message
+     * @param skipped whether Telegram skips it already
+     * @return true when the message shouldn't notify
+     */
+    public static boolean skipNotification(Object message, boolean skipped) {
+        if (skipped || message == null || !on()) return skipped;
+        try {
+            long sender = sender(message);
+            if (!listedInGroup(chat(message), post(message), sender) || !blocked(message, sender)) return false;
+            HookStatus.counted(FamilyNames.HIDE_BLOCKED_IN_GROUPS, "notification skipped");
+            return true;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_BLOCKED_IN_GROUPS, "notification", failure);
+            return false;
         }
     }
 

@@ -292,7 +292,7 @@ Stickers and big animated emoji no longer show the time and read checks in their
 Ignore mentions in muted chats	Ignorar menciones en chats silenciados
 Mentions and replies in groups or channels you've muted no longer notify you. Chats you haven't muted notify as before.	Las menciones y respuestas en grupos o canales que has silenciado ya no te notifican. Los chats que no has silenciado notifican como antes.
 Hide blocked users in groups	Ocultar usuarios bloqueados en grupos
-Messages from people you've blocked are left out of groups and supergroups you open. Nothing is deleted. Private chats and channel posts stay as they are.	Los mensajes de personas que has bloqueado se omiten en los grupos y supergrupos que abres. No se elimina nada. Los chats privados y las publicaciones de canales no cambian.
+Messages from people you've blocked are left out of groups and supergroups you open, and don't notify you. Nothing is deleted. Private chats and channel posts stay as they are.	Los mensajes de personas que has bloqueado se omiten en los grupos y supergrupos que abres, y no te notifican. No se elimina nada. Los chats privados y las publicaciones de canales no cambian.
 Hide Telegram Features and Invite Friends	Ocultar Funciones de Telegram e Invitar amigos
 Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.	Quita la fila Funciones de Telegram de los ajustes e Invitar amigos de los contactos. Si aún no tienes contactos, también desaparece la lista de invitaciones.
 Add Repeat to the message menu	Añadir Repetir al menú de mensajes

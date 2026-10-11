@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Hide blocked users in groups now keeps a blocked person's new messages in a group from notifying you too, not just out of the chat when you open it.
+
 * **Tooling:** The settings screen's code is split into one method per page, and patch helpers nothing called anymore are gone. The release script keeps gh's warnings out of what it publishes, and the release receipt stops on a clone git can't open instead of reading it as a copy with no history.
 
 * **Settings:** A wording pass. Pause is explained the same way everywhere, Import settings says what a file holds, and errors that left you guessing now say what to do next: download a damaged file again, update HushTelegram for a file from a newer one, or open an export that couldn't be checked.

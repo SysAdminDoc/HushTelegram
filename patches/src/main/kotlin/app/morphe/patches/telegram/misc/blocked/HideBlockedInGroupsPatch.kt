@@ -19,8 +19,10 @@ import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
+import app.morphe.patches.telegram.misc.notifications.NOTIFICATIONS
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
+import app.morphe.util.branchTarget
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -38,6 +40,9 @@ internal const val PEERS = "Lorg/telegram/messenger/support/LongSparseIntArray;"
 internal const val BLOCKED_PEERS = "Lorg/telegram/messenger/MessagesController;->blockePeers:$PEERS"
 internal const val POST = "Lorg/telegram/tgnet/TLRPC\$Message;->post:Z"
 internal const val TL_MESSAGE = "Lorg/telegram/tgnet/TLRPC\$Message;"
+internal const val SKIP_NOTIFICATION = "$BLOCKED_SENDERS->skipNotification(Ljava/lang/Object;Z)Z"
+internal const val IMPORTED_FORWARD = "$MESSAGE_OBJECT->isImportedForward()Z"
+private const val TTL_ACTION = "Lorg/telegram/tgnet/TLRPC\$TL_messageActionSetMessagesTTL;"
 private const val CONTROLLER = "Lorg/telegram/messenger/MessagesController;"
 
 /**
@@ -49,11 +54,14 @@ internal val TYPE_HOOKS = setOf(BLOCKED_TYPE, "$EXTENSION_PACKAGE/misc/MessageFi
 /** How soon after the type test the open chat's next check comes. */
 private const val NEXT_CHECK = 4
 
+/** How far after the imported-forward test the timer-change test comes. */
+private const val NEXT_SKIP = 8
+
 @Suppress("unused")
 val hideBlockedInGroupsPatch = bytecodePatch(
     name = "Hide blocked users in groups",
-    description = "Leaves messages from people you've blocked out of groups and supergroups you open. Nothing is " +
-        "deleted. Starts off. Turn it on in HushTelegram settings > Conversations.",
+    description = "Leaves messages from people you've blocked out of groups and supergroups you open, and keeps them " +
+        "from notifying you. Nothing is deleted. Starts off. Turn it on in HushTelegram settings > Conversations.",
     default = true,
 ) {
     category("Conversations")
@@ -61,8 +69,10 @@ val hideBlockedInGroupsPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.telegram())
     execute {
         val sites = resolveHideBlockedInGroups()
+        val (notify, answer) = resolveBlockedNotificationSkip()
         // Assembled on copies first, so a refusal leaves the app untouched.
         sites.forEach { (method, indices) -> insertTypeChecks(MutableMethod(ImmutableMethod.of(method)), indices, BLOCKED_TYPE) }
+        insertNotificationSkip(MutableMethod(ImmutableMethod.of(notify)), answer)
         writeStub(BLOCKED_SENDERS, "chat", 3, """
             check-cast p0, $MESSAGE_OBJECT
             invoke-virtual {p0}, $MESSAGE_OBJECT->getDialogId()J
@@ -97,6 +107,7 @@ val hideBlockedInGroupsPatch = bytecodePatch(
             return v0
         """)
         sites.forEach { (method, indices) -> insertTypeChecks(method, indices, BLOCKED_TYPE) }
+        insertNotificationSkip(notify, answer)
         enableStatus("hideBlockedInGroups")
     }
 }
@@ -111,6 +122,50 @@ internal fun insertTypeChecks(target: MutableMethod, reads: List<Int>, hook: Str
             move-result v$type
         """)
     }
+}
+
+/** After Telegram's imported-forward answer the extension may say to skip the notification too. */
+internal fun insertNotificationSkip(target: MutableMethod, answer: Int) {
+    val (skip) = target.controlBody()[answer].namedRegisters()
+    val (message) = target.controlBody()[answer - 1].namedRegisters()
+    target.addInstructions(answer + 1, """
+        invoke-static {v$message, v$skip}, $SKIP_NOTIFICATION
+        move-result v$skip
+    """)
+}
+
+/**
+ * NotificationsController's new-message loop first skips imported forwards, timer changes and
+ * silent joins, all by one jump to the same place. A message skipped there never notifies, and
+ * the chat's unread count is Telegram's as before. Returns the loop and the index of the
+ * imported-forward answer's move-result.
+ */
+internal fun BytecodePatchContext.resolveBlockedNotificationSkip(): Pair<MutableMethod, Int> {
+    controlHook(BLOCKED_SENDERS, "skipNotification", listOf("Ljava/lang/Object;", "Z"), "Z")
+    val notifications = mutableClassDefByOrNull(NOTIFICATIONS)
+    controlShape(notifications != null, "NotificationsController is missing")
+    val sites = notifications!!.methods.filter { it.name.contains("processNewMessages") }.flatMap { method ->
+        val body = method.controlBody()
+        body.indices.filter { at ->
+            body[at].opcode == Opcode.INVOKE_VIRTUAL && body[at].controlRef() == IMPORTED_FORWARD &&
+                body.getOrNull(at + 1)?.opcode == Opcode.MOVE_RESULT && body.getOrNull(at + 2)?.opcode == Opcode.IF_NEZ &&
+                body[at + 2].namedRegisters() == body[at + 1].namedRegisters()
+        }.map { method to it + 1 }
+    }
+    val (method, answer) = sites.controlSingle("the new-message notification skip")
+    val body = method.controlBody()
+    val (message) = body[answer - 1].namedRegisters()
+    val (skip) = body[answer].namedRegisters()
+    controlShape(message != skip && message <= 15 && skip <= 15, "the new-message notification skip can't be passed to the extension as it is")
+    val refuse: (String) -> Nothing = { why -> controlShape(false, "the new-message notification skip: $why"); error(why) }
+    val skipTo = body.branchTarget(answer + 1, refuse)
+    val timer = (answer + 2 until minOf(body.size - 1, answer + 2 + NEXT_SKIP)).firstOrNull {
+        body[it].opcode == Opcode.INSTANCE_OF && body[it].controlRef() == TTL_ACTION && body[it + 1].opcode == Opcode.IF_NEZ
+    }
+    controlShape(timer != null && body.branchTarget(timer + 1, refuse) == skipTo, "new messages no longer skip timer changes the way they skip imported forwards")
+    val flow = ControlFlow.of(method)
+    controlShape(flow.normal.indices.filter { answer + 1 in flow.normal[it] } == listOf(answer), "something jumps into the new-message notification skip")
+    return method to answer
 }
 
 /**
