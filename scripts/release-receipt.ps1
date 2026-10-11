@@ -1049,7 +1049,11 @@ function Resolve-IndexManagerFloor {
             $source = "tag $tag on $RemoteUrl"
         }
     }
-    if ($Commit -notmatch '^[0-9a-f]{40}$') {
+    # A tree with no repository (an export, a copy) holds no tag, which is the "isn't in this clone"
+    # answer below. Once there is a repository, a git failure is an error.
+    $null = Invoke-RepoGit -Root $Root -Arguments @('rev-parse', '--git-dir')
+    $inRepository = $LASTEXITCODE -eq 0
+    if ($Commit -notmatch '^[0-9a-f]{40}$' -and $inRepository) {
         $Commit = "$(Invoke-RepoGitChecked -Root $Root -Arguments @('rev-parse', '--verify', '--quiet', "refs/tags/$tag^{commit}") -AcceptExit @(0, 1) |
             Select-Object -First 1)".Trim()
     }
@@ -1057,8 +1061,10 @@ function Resolve-IndexManagerFloor {
         return [pscustomobject]@{ Floor = $null; Source = $null
             Note = "tag $tag isn't in this clone$remoteSaid, $unchecked" }
     }
-    $held = "$(Invoke-RepoGitChecked -Root $Root -Arguments @('rev-parse', '--verify', '--quiet', "$Commit^{commit}") -AcceptExit @(0, 1) |
-        Select-Object -First 1)".Trim()
+    $held = if ($inRepository) {
+        "$(Invoke-RepoGitChecked -Root $Root -Arguments @('rev-parse', '--verify', '--quiet', "$Commit^{commit}") -AcceptExit @(0, 1) |
+            Select-Object -First 1)".Trim()
+    } else { '' }
     if ($held -notmatch '^[0-9a-f]{40}$') {
         return [pscustomobject]@{ Floor = $null; Source = $null
             Note = "$source names commit $($Commit.Substring(0, 8)), which this clone doesn't have, $unchecked" }
