@@ -169,6 +169,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/MessageMenu.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/KeepDeleted.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SendConfirm.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SignInHelp.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/BetaLogs.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/OutsideTranslate.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GoogleTranslate.java",
