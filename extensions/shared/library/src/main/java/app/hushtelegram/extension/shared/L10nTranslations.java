@@ -4485,7 +4485,7 @@ public final class L10nTranslations {
         table.put("Couldn't remove %1$s. Delete it by hand.",
                 "%1$s kald\u0131r\u0131lamad\u0131. Elle sil.");
         table.put("Couldn't save that. It's back to the saved value. Try again.",
-                "Kaydedilemedi. Kay\u0131tl\u0131 de\u011fere d\u00f6n\u00fcld\u00fc. Tekrar deneyin.");
+                "Kaydedilemedi. Kay\u0131tl\u0131 de\u011fere d\u00f6n\u00fcld\u00fc. Tekrar dene.");
         table.put("Couldn't save the filters. Try again in a moment.",
                 "Filtreler kaydedilemedi. Birazdan tekrar deneyin.");
         table.put("Couldn't save the settings file. Try again.",
@@ -4949,7 +4949,7 @@ public final class L10nTranslations {
         table.put("Settings couldn't refresh. Reopen settings and try again.",
                 "Ayarlar yenilenemedi. Ayarlar\u0131 yeniden a\u00e7\u0131p tekrar dene.");
         table.put("Settings exported but not checked. Open the file to make sure.",
-                "Ayarlar d\u0131\u015fa aktar\u0131ld\u0131 ama kontrol edilmedi. Dosyay\u0131 a\u00e7\u0131p kontrol edin.");
+                "Ayarlar d\u0131\u015fa aktar\u0131ld\u0131 ama kontrol edilmedi. Dosyay\u0131 a\u00e7\u0131p kontrol et.");
         table.put("Settings exported.",
                 "Ayarlar d\u0131\u015fa aktar\u0131ld\u0131.");
         table.put("Settings imported.",
@@ -5060,11 +5060,11 @@ public final class L10nTranslations {
         table.put("Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.",
                 "Bir sat\u0131rdaki metin, mesaj\u0131n neresinde ge\u00e7erse ge\u00e7sin e\u015fle\u015fir. E\u011fik \u00e7izgiler aras\u0131ndaki bir sat\u0131r, \u00f6rne\u011fin /crypto|airdrop/, bir d\u00fczenli ifadedir. B\u00fcy\u00fck ve k\u00fc\u00e7\u00fck harf fark etmez.");
         table.put("That app is slow to answer. Nothing was changed. Try again.",
-                "Bu uygulama ge\u00e7 yan\u0131t veriyor. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi. Tekrar deneyin.");
+                "Bu uygulama ge\u00e7 yan\u0131t veriyor. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi. Tekrar dene.");
         table.put("That app is slow. It may still save the file, so check it.",
                 "Bu uygulama yava\u015f. Dosyay\u0131 h\u00e2l\u00e2 kaydediyor olabilir, o y\u00fczden kontrol et.");
         table.put("That file is damaged. Download it again. Nothing was changed.",
-                "Bu dosya bozuk. Yeniden indirin. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+                "Bu dosya bozuk. Yeniden indir. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That file is too big for a settings file. Nothing was changed.",
                 "Bu dosya bir ayar dosyas\u0131 i\u00e7in \u00e7ok b\u00fcy\u00fck. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("That file isn't readable text. Nothing was changed.",
@@ -5167,7 +5167,7 @@ public final class L10nTranslations {
         table.put("Until you resume, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
                 "Devam edene kadar Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Se\u00e7imleriniz kay\u0131tl\u0131 kal\u0131r. Yamalama s\u0131ras\u0131nda yap\u0131lan de\u011fi\u015fiklikler ge\u00e7erli kal\u0131r.");
         table.put("Update HushTelegram to read that file. Nothing was changed.",
-                "Bu dosyay\u0131 okumak i\u00e7in HushTelegram'\u0131 g\u00fcncelleyin. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
+                "Bu dosyay\u0131 okumak i\u00e7in HushTelegram'\u0131 g\u00fcncelle. Hi\u00e7bir \u015fey de\u011fi\u015ftirilmedi.");
         table.put("Updates",
                 "G\u00fcncellemeler");
         table.put("Usage reports",

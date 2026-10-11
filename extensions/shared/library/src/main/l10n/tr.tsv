@@ -46,8 +46,8 @@ Hide ads	Reklamları gizle
 Links, updates, backup and more	Bağlantılar, güncellemeler, yedekleme ve daha fazlası
 Privacy	Gizlilik
 Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram app. Pause, Debug logging, the HushTelegram release check, UnifiedPush and Folders by chat type stay out.	Anahtarlarınızı, filtre listelerinizi ve çıkartma boyutunu bir dosyaya kaydeder; bu Telegram uygulamasındaki tüm hesaplar için geçerlidir. Duraklat, Hata ayıklama günlüğü, HushTelegram sürüm denetimi, UnifiedPush ve Sohbet türüne göre klasörler dahil edilmez.
-Settings exported but not checked. Open the file to make sure.	Ayarlar dışa aktarıldı ama kontrol edilmedi. Dosyayı açıp kontrol edin.
-That app is slow to answer. Nothing was changed. Try again.	Bu uygulama geç yanıt veriyor. Hiçbir şey değiştirilmedi. Tekrar deneyin.
+Settings exported but not checked. Open the file to make sure.	Ayarlar dışa aktarıldı ama kontrol edilmedi. Dosyayı açıp kontrol et.
+That app is slow to answer. Nothing was changed. Try again.	Bu uygulama geç yanıt veriyor. Hiçbir şey değiştirilmedi. Tekrar dene.
 That file's app still hasn't answered. Try again later.	O dosyanın uygulaması hâlâ yanıt vermedi. Sonra tekrar dene.
 That app is slow. It may still save the file, so check it.	Bu uygulama yavaş. Dosyayı hâlâ kaydediyor olabilir, o yüzden kontrol et.
 The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.	%1$s dosyası kaldırılamadı. Onu %2$s içinden sil, sonra yeniden Devam et'e dokun.
@@ -95,13 +95,13 @@ That file isn't readable text. Nothing was changed.	Bu dosya okunabilir bir meti
 That file lists a setting twice. Nothing was changed.	Bu dosya bir ayarı iki kez listeliyor. Hiçbir şey değiştirilmedi.
 That isn't a HushTelegram settings file. Nothing was changed.	Bu bir HushTelegram ayar dosyası değil. Hiçbir şey değiştirilmedi.
 A value in that file can't be read. Nothing was changed.	Bu dosyadaki bir değer okunamıyor. Hiçbir şey değiştirilmedi.
-That file is damaged. Download it again. Nothing was changed.	Bu dosya bozuk. Yeniden indirin. Hiçbir şey değiştirilmedi.
-Update HushTelegram to read that file. Nothing was changed.	Bu dosyayı okumak için HushTelegram'ı güncelleyin. Hiçbir şey değiştirilmedi.
+That file is damaged. Download it again. Nothing was changed.	Bu dosya bozuk. Yeniden indir. Hiçbir şey değiştirilmedi.
+Update HushTelegram to read that file. Nothing was changed.	Bu dosyayı okumak için HushTelegram'ı güncelle. Hiçbir şey değiştirilmedi.
 The report couldn't be saved yet. Try again in a moment.	Rapor henüz kaydedilemedi. Birazdan tekrar dene.
 The diagnostic report couldn't be saved. Try again.	Tanılama raporu kaydedilemedi. Tekrar dene.
 The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.	%1$s dosyası kaldırılamadı. HushTelegram'u yeniden açmak için onu %2$s içinden sil.
 Couldn't remove %1$s. Delete it by hand.	%1$s kaldırılamadı. Elle sil.
-Couldn't save that. It's back to the saved value. Try again.	Kaydedilemedi. Kayıtlı değere dönüldü. Tekrar deneyin.
+Couldn't save that. It's back to the saved value. Try again.	Kaydedilemedi. Kayıtlı değere dönüldü. Tekrar dene.
 There's no diagnostic data to clear.	Temizlenecek tanılama verisi yok.
 There's no diagnostic data to put back.	Geri getirilecek tanılama verisi yok.
 This phone has no file picker, so you can't choose a file here.	Bu telefonda dosya seçici yok, o yüzden dosya seçemezsin.
