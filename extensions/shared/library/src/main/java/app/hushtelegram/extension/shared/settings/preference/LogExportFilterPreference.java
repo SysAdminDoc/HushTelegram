@@ -79,8 +79,7 @@ public class LogExportFilterPreference extends Preference {
      *
      * <p>This library is shared with bundles that carry no tables at all, so it cannot reach
      * into one. The English here is what those get, and a subclass overrides what it can say
-     * better, which is what TintedLogExportFilterPreference already does for the title and the
-     * summary of the row itself.
+     * better, the way {@link #dialogTitle()} and the row's own title and summary can be.
      */
     protected String[] labels() {
         return LABELS;

@@ -1,0 +1,10 @@
+# gitleaks reads this from the repository root. The default rules apply; this only names the one
+# file whose findings are made up on purpose.
+title = "HushTelegram"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "The diagnostic redactor's tests hold invented API hashes, tokens and ids so they can prove each one gets hidden from a report."
+paths = ['''extensions/telegram/src/test/java/app/hushtelegram/extension/shared/diagnostics/DiagnosticRedactorTest\.java''']

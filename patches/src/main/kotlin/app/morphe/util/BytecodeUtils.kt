@@ -1502,13 +1502,13 @@ private fun MutableMethod.overrideReturnValue(
 
     // The override writes its value into v0, and a wide one into v0 and v1, so the frame has to
     // hold those registers. Nothing above asks: a method with no room takes the instructions
-    // anyway and the result does not verify on the phone rather than failing here. Enable voice
-    // comments was checking this for itself beside its own hand-written smali; the check belongs
-    // with the code that decides which registers to write.
+    // anyway and the result does not verify on the phone rather than failing here. Patches used
+    // to check this for themselves beside their own hand-written smali; the check belongs with
+    // the code that decides which registers to write.
     //
     // A void override writes into nothing and needs none of them. A static method with no
-    // parameters and no locals is `.registers 0`, `return-void` assembles against it, and
-    // RememberClearDisplayPatch goes looking for exactly that shape.
+    // parameters and no locals is `.registers 0`, and `return-void` assembles against it, so a
+    // patch that blanks such a method must not be refused here.
     val registersNeeded = when (returnType.first()) {
         'V' -> 0
         'J', 'D' -> 2

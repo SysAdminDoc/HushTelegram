@@ -47,7 +47,6 @@ internal const val CHANNEL_DELETE = "Lorg/telegram/tgnet/tl/TL_update\$TL_update
 internal const val USER_DELETE_MESSAGES = "$USER_DELETE->messages:Ljava/util/ArrayList;"
 internal const val CHANNEL_DELETE_MESSAGES = "$CHANNEL_DELETE->messages:Ljava/util/ArrayList;"
 internal const val ADD_ALL = "Ljava/util/ArrayList;->addAll(Ljava/util/Collection;)Z"
-internal const val DELETE_BY_PUSH = "$MESSAGES_CONTROLLER->deleteMessagesByPush(JLjava/util/ArrayList;J)V"
 private const val OBJECT = "Ljava/lang/Object;"
 private const val LIST = "Ljava/util/ArrayList;"
 internal const val MESSAGE_OBJECT = "Lorg/telegram/messenger/MessageObject;"
