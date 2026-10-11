@@ -25,11 +25,24 @@ import java.nio.ByteBuffer
  */
 internal object ExtensionDex {
     private const val PAYLOAD = "extensions/telegram.mpe"
+    private const val SHARED_PAYLOAD = "extensions/shared.mpe"
 
-    private val dex: DexBackedDexFile by lazy {
-        val bytes = ExtensionDex::class.java.classLoader.getResourceAsStream(PAYLOAD)?.use { it.readBytes() }
-            ?: throw AssertionError("$PAYLOAD is not on the test classpath. :patches:processResources copies it there.")
-        DexBackedDexFile(Opcodes.getDefault(), ByteBuffer.wrap(bytes))
+    private val dex: DexBackedDexFile by lazy { read(PAYLOAD) }
+    private val shared: DexBackedDexFile by lazy { read(SHARED_PAYLOAD) }
+
+    private fun read(payload: String): DexBackedDexFile {
+        val bytes = ExtensionDex::class.java.classLoader.getResourceAsStream(payload)?.use { it.readBytes() }
+            ?: throw AssertionError("$payload is not on the test classpath. :patches:processResources copies it there.")
+        return DexBackedDexFile(Opcodes.getDefault(), ByteBuffer.wrap(bytes))
+    }
+
+    /**
+     * Every class in the shared extension (Utils, the settings framework), which the patcher merges
+     * in beside the Telegram one, minus any the Telegram payload already carries.
+     */
+    fun sharedClasses(): List<ClassDef> {
+        val own = dex.classes.mapTo(HashSet()) { it.type }
+        return shared.classes.filter { it.type !in own }
     }
 
     /** The class of [type] in the payload. */

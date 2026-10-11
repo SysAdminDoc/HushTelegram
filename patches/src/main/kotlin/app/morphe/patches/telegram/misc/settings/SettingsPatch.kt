@@ -28,6 +28,7 @@ import app.morphe.patches.telegram.misc.extension.TELEGRAM_APPLICATION
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
 import app.morphe.patches.telegram.misc.extension.patchLog
+import app.morphe.patches.telegram.misc.theme.appThemePatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.RegisterLiveness
 import app.morphe.util.RegisterKind
@@ -666,9 +667,9 @@ val settingsPatch = bytecodePatch(
     default = true,
 ) {
     category("Settings")
-    // Sign-in help rides along here because every selection carries this patch, the default one
-    // that issue #11 patched with included.
-    dependsOn(telegramExtensionPatch, settingsManifestPatch, signInHelpPatch)
+    // Sign-in help and the dialogs' theme ride along here because every selection carries this
+    // patch, the default one that issue #11 patched with included.
+    dependsOn(telegramExtensionPatch, settingsManifestPatch, signInHelpPatch, appThemePatch)
     compatibleWith(*AppCompatibilities.telegram())
 
     execute {

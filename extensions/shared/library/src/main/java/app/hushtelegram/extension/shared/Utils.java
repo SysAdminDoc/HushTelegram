@@ -792,7 +792,8 @@ public class Utils {
 
     /**
      * @return The current dark mode as set by any patch.
-     *         Or if none is set, then the system dark mode status is returned.
+     *         Or if none is set, whether the app's own theme is dark, and when the patch found no way
+     *         to ask the app, the system dark mode status.
      */
     public static boolean isDarkModeEnabled() {
         Boolean isDarkMode = isDarkModeEnabled;
@@ -800,9 +801,30 @@ public class Utils {
             return isDarkMode;
         }
 
+        // Telegram can be on its Night theme while the phone is light, or on Day while it's dark,
+        // and a dialog drawn over Telegram should match Telegram.
+        int appTheme = -1;
+        try {
+            appTheme = appThemeDark();
+        } catch (Throwable failure) {
+            Logger.printException(() -> "Can't read the app's theme", failure);
+        }
+        if (appTheme >= 0) {
+            return appTheme == 1;
+        }
+
         Configuration config = Resources.getSystem().getConfiguration();
         final int currentNightMode = config.uiMode & Configuration.UI_MODE_NIGHT_MASK;
         return currentNightMode == Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    /**
+     * Whether the app's own theme is dark: 1 when it is, 0 when it isn't, and -1 when the patch found
+     * no way to ask, which leaves it to the system dark mode. Replaced with the app's own check when
+     * patching.
+     */
+    public static int appThemeDark() {
+        return -1;
     }
 
     /**

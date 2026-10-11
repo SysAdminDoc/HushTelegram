@@ -4,6 +4,8 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** HushTelegram's own dialogs in a chat (Message details, Forward to, the Ask before questions) now go light or dark with Telegram's theme. Before, they followed the phone's dark mode, so they could come out white over Telegram's Night theme.
+
 * **Settings:** Import settings now lists every switch the file changes and which way it goes, like "Hide ads turns off", under the count. A file someone shared with you can't quietly turn off Stop usage reports anymore.
 
 * **Telegram:** When Telegram turns down the API ID your build signs in with, the phone number screen now says so, with a button that opens the guide to using your own ID. Before, it just sat there after you tapped the arrow. This covers API_ID_PUBLISHED_FLOOD, the built-in ID being refused, and API_ID_INVALID, a registered ID or hash with a typo in it. Reported in #11 and #3.
