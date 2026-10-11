@@ -361,6 +361,17 @@ Test-Broken { param($c) (Get-NagramReference $c).kind = 'dependency' } '*referen
     'Research recorded as a dependency'
 Test-Broken { param($c) (Get-NagramReference $c).kind = 'maintained' } '*is archived, so its kind must be historical*' `
     'An archived reference classified as maintained'
+
+# A source on a forge the audit can't read.
+Assert-True (@($ruleLedger.elsewhere).Count -gt 0) 'The ledger records no source elsewhere, so the cases below would prove nothing.'
+Test-Broken { param($c) $c.elsewhere[0].repository = 'https://github.com/someone/patches' } '*is on GitHub or GitLab, so it belongs in entries or outOfScope*' `
+    'A GitHub source filed under elsewhere'
+Test-Broken { param($c) $c.elsewhere[0].repository = 'git.example.org/someone/patches' } '*is not an https repository address*' 'An elsewhere source with no address'
+Test-Broken { param($c) $c.elsewhere[0].version = '' } '*records no version*' 'An elsewhere source with no version'
+Test-Broken { param($c) $c.elsewhere[0].packages = @('org.example.client') } "*names 'org.example.client'*" 'An elsewhere source naming a package outside the census'
+Test-Broken { param($c) $c.elsewhere[0].packages = @() } '*elsewhere*names no Telegram package*' 'An elsewhere source naming no package'
+Test-Broken { param($c) $c.elsewhere[0].reason = ' ' } '*elsewhere*gives no reason*' 'An elsewhere source with no reason'
+Test-Broken { param($c) $c.elsewhere = @($c.elsewhere[0], (Copy-Json $c.elsewhere[0])) } '*elsewhere*is listed twice*' 'An elsewhere source listed twice'
 Test-Broken { param($c) (Get-NagramReference $c).archived = 'true' } '*reference must say whether it is archived*' `
     'A string used for archive status'
 Test-Broken { param($c) (Get-NagramReference $c).archived = @($true) } '*reference must say whether it is archived*' `
@@ -420,6 +431,7 @@ function Save-GateLedger {
     # Every date the audit's clean run stamps is set here, or a ledger stamped after these fixed
     # days would put a record after the gate's today and fail the case for the wrong reason.
     foreach ($entry in $copy.entries) { $entry.lastChecked = $CheckedAt }
+    foreach ($item in @($copy.elsewhere | Where-Object { $_ })) { $item.lastChecked = $CheckedAt }
     foreach ($item in @($copy.outOfScope)) {
         $item.lastChecked = $CheckedAt
         # This synthetic gate runs in September. Its reference verification must also be in that
@@ -528,6 +540,8 @@ $fixtureLedger = [ordered]@{
     outOfScope = @([ordered]@{ repository = 'https://github.com/noise/mentions-telegram'; reason = 'A historical client reference.'
         reference = [ordered]@{ kind = 'historical'; branch = 'dev'; commit = ('d1' * 20); archived = $true; verifiedAt = '2026-08-27'; archivedAt = $null }
         lastChecked = '2026-09-01' })
+    elsewhere = @([ordered]@{ repository = 'https://git.example.net/recorded/patches'; packages = @('org.telegram.messenger.web'); version = 'v2.0.0'
+        reason = 'A fixture source on another forge.'; lastChecked = '2026-09-01' })
 }
 $fixtureLedgerText = ($fixtureLedger | ConvertTo-Json -Depth 20) -replace "`r`n", "`n"
 function Reset-FixtureLedger { [IO.File]::WriteAllText($fixtureLedgerPath, $fixtureLedgerText, (New-Object Text.UTF8Encoding $false)) }
@@ -941,6 +955,24 @@ $fakeForge = @{ Answers = (New-FakeAnswers); Requests = (New-Object System.Colle
             packages = @('org.telegram.messenger.web'); source_id = 'delta'; import_urls = $unresolved.Import; download_url = $unresolved.Download })
         Assert-Drift 'index-unresolved' "*Jman's registry lists bundle $jmanDelta (v1.0.0) for org.telegram.messenger.web*$($unresolved.Detail)" `
             'A latest Telegram bundle no repository stands behind'
+        $fakeForge.Answers = New-FakeAnswers
+    }
+
+    # The same kind of bundle from a source the ledger records elsewhere: quiet at the recorded
+    # version, a finding once the registry shows another.
+    foreach ($shown in @('v2.0.0', 'v2.1.0')) {
+        $fakeForge.Answers.jmanBundles = @($fakeForge.Answers.jmanBundles) + , ([ordered]@{ id = $jmanDelta; version = $shown; is_latest = $true
+            packages = @('org.telegram.messenger.web'); source_id = 'delta'
+            import_urls = [ordered]@{ latest = 'https://patch-bundles.api.jmancentral.com/api/reseam/bundle?source_url=https%3A%2F%2Fgit.example.net%2Frecorded%2Fpatches.git&version=latest&channel=any' }
+            download_url = "https://git.example.net/recorded/patches/releases/download/$shown/patches.reseam" })
+        if ($shown -eq 'v2.0.0') {
+            $quiet = Invoke-Audit
+            Assert-True ($quiet.ExitCode -eq 0 -and @($quiet.Report.findings).Count -eq 0) ("A recorded source elsewhere at its recorded version was reported: " +
+                (@($quiet.Report.findings | ForEach-Object { "$($_.kind): $($_.repository) $($_.detail)" }) -join ' | '))
+            Reset-FixtureLedger
+        } else {
+            Assert-Drift 'elsewhere-changed' '*git.example.net/recorded/patches*now lists v2.1.0, the ledger records v2.0.0*' 'A recorded source elsewhere with a new release'
+        }
         $fakeForge.Answers = New-FakeAnswers
     }
 

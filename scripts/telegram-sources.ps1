@@ -24,6 +24,8 @@
     - Optional patchCounts records counts per declared package, separately from the feature union.
       An outOfScope reference can pin historical client research with the date its archive status
       was verified. An unknown archive date is null, never the verification date.
+    - A source on a forge the audit can't read (not GitHub or GitLab) goes in elsewhere, with the
+      packages and version an index showed for it and why it isn't used.
 
     scripts/audit-telegram-sources.ps1 refreshes the ledger against those indexes and the forges.
     validate-release-facts.ps1 refuses a release whose census is more than two weeks old. Nothing in
@@ -133,6 +135,21 @@ function ConvertTo-SourceKey {
         return $null
     }
     return ($sourceHost + '/' + ($segments -join '/')).ToLowerInvariant()
+}
+
+function ConvertTo-ElsewhereKey {
+    <#
+    .SYNOPSIS
+        host/path in lower case for a repository on a forge the audit can't read, such as a
+        Forgejo or Gitea server, or $null when it isn't an https address with a path.
+    #>
+    param([string]$Repository)
+
+    $uri = $null
+    if (-not [Uri]::TryCreate("$Repository".Trim(), [UriKind]::Absolute, [ref]$uri) -or $uri.Scheme -ne 'https') { return $null }
+    $path = ([Uri]::UnescapeDataString($uri.AbsolutePath).Trim('/') -replace '\.git$', '').ToLowerInvariant()
+    if (-not $path) { return $null }
+    return ($uri.Host.ToLowerInvariant() -replace '^www\.', '') + '/' + $path
 }
 
 function Test-SourceDate {
@@ -505,6 +522,31 @@ function Test-SourceLedger {
                 }
             }
         }
+    }
+    # Sources on a forge the audit can't read. An index listing one is a finding until it's
+    # recorded here, and again whenever the index shows a version other than the recorded one.
+    $elsewhereKeys = @{}
+    foreach ($item in @(Get-SourceProperty $Ledger 'elsewhere' | Where-Object { $null -ne $_ })) {
+        $repository = [string](Get-SourceProperty $item 'repository')
+        $label = "elsewhere $repository"
+        $key = ConvertTo-ElsewhereKey $repository
+        if (-not $key) {
+            $problems.Add("$label is not an https repository address.")
+            continue
+        }
+        if (ConvertTo-SourceKey $repository) { $problems.Add("$label is on GitHub or GitLab, so it belongs in entries or outOfScope.") }
+        if ($elsewhereKeys.ContainsKey($key)) { $problems.Add("$label is listed twice.") }
+        $elsewhereKeys[$key] = $true
+        $listed = @(Get-SourceProperty $item 'packages' | Where-Object { $null -ne $_ })
+        if ($listed.Count -eq 0) { $problems.Add("$label names no Telegram package.") }
+        foreach ($package in $listed) {
+            if ($packages -notcontains "$package") { $problems.Add("$label names '$package', which is not a package the census covers.") }
+        }
+        if ([string]::IsNullOrWhiteSpace([string](Get-SourceProperty $item 'version'))) {
+            $problems.Add("$label records no version, so a new release would go unnoticed.")
+        }
+        if ([string]::IsNullOrWhiteSpace([string](Get-SourceProperty $item 'reason'))) { $problems.Add("$label gives no reason.") }
+        Add-DateProblem (Get-SourceProperty $item 'lastChecked') "$label lastChecked"
     }
 
     # The adopted gates, and provenance.json held to the ledger.

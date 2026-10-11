@@ -389,6 +389,11 @@ foreach ($entry in $entries) {
 foreach ($item in @(Get-SourceProperty $ledgerDocument 'outOfScope' | Where-Object { $_ })) {
     $known[(ConvertTo-SourceKey $item.repository)] = [pscustomobject]@{ Kind = 'outOfScope'; Lineage = $null; Entry = $null; Record = $item }
 }
+# Sources on a forge the audit can't read, with the version an index last showed for each.
+$elsewhere = @{}
+foreach ($item in @(Get-SourceProperty $ledgerDocument 'elsewhere' | Where-Object { $_ })) {
+    $elsewhere[(ConvertTo-ElsewhereKey $item.repository)] = $item
+}
 # The indexes' own data repositories, read below as indexes. A code search hit in one is a copy of
 # a bundle's patch list, never a source of its own. Jman's registry is listed under its old name too.
 $indexRepositories = @('github.com/nvbangg/awesome-morphe', 'github.com/drnx64/morphe-track-patches',
@@ -585,6 +590,16 @@ Invoke-Source 'Jman''s bundle index' {
         if ($apps.Count -eq 0) { continue }
         $id = [string](Get-SourceProperty $bundle 'id')
         if (-not $source.Key) {
+            $away = if ($source.Url) { ConvertTo-ElsewhereKey $source.Url } else { $null }
+            $recorded = if ($away -and $elsewhere.ContainsKey($away)) { $elsewhere[$away] } else { $null }
+            $version = [string](Get-SourceProperty $bundle 'version')
+            if ($recorded -and [string]$recorded.version -eq $version) { continue }
+            if ($recorded) {
+                Add-Finding -Kind 'elsewhere-changed' -Repository ([string]$recorded.repository) `
+                    -Detail "Jman's registry now lists $version, the ledger records $($recorded.version); read its Telegram patches again" `
+                    -Evidence ([ordered]@{ bundle = $id; recorded = [string]$recorded.version; found = $version })
+                continue
+            }
             Add-Finding -Kind 'index-unresolved' -Repository $null `
                 -Detail ("Jman's registry lists bundle $id ($(Get-SourceProperty $bundle 'version')) for " + ($apps -join ', ') + ', and ' +
                     $(if ($source.Url) { "its source $($source.Url) is not a GitHub or GitLab repository" } else { 'it names no source repository' })) `

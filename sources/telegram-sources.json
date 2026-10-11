@@ -2573,5 +2573,16 @@
       "reason": "An Xposed module that makes a third-party client identify itself as official Telegram (API id, hash and signer). It changes how another client presents itself and patches nothing in the official app.",
       "lastChecked": "2026-10-11"
     }
+  ],
+  "elsewhere": [
+    {
+      "repository": "https://git.reseam.app/reseam/patches",
+      "packages": [
+        "org.telegram.messenger"
+      ],
+      "version": "v0.25.1",
+      "reason": "A bundle for the ReSeam patch engine (.reseam files, not Morphe) on the project's own Forgejo server, AGPL-3.0-or-later with section 7 terms since 2026-10-06. Its Telegram part targets 12.10.6: hide sponsored ads, a download boost, push notifications after re-signing by spoofing the signature, an integrity bypass, screenshots, a deleted-message archive, restriction and forward-from-restricted bypasses, hiding the typing indicator, removing Play Store restrictions, Unlock Pro and turning off auto-update (read through the Forgejo API at e629ca4, 2026-10-10). Recorded for reference only. The bypasses, the deleted-message archive and Unlock Pro stay out under HushTelegram's rules, and a different engine's code isn't ported.",
+      "lastChecked": "2026-10-11"
+    }
   ]
 }

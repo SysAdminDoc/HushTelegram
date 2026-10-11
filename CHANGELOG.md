@@ -8,6 +8,8 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** Hide blocked users in groups now keeps a blocked person's new messages in a group from notifying you too, not just out of the chat when you open it. It also reads your whole blocked list now. Telegram only loads the first 20 people until you scroll its Blocked users page, so anyone past them used to slip through.
 
+* **Tooling:** The source ledger is caught up with the October 11 audit (new sources, moved pins, 397 forks), and the census is fresh again. Sources hosted somewhere other than GitHub or GitLab now get their own list with the version an index last showed, so the audit stops flagging one it can't read and speaks up again when a new version appears.
+
 * **Tooling:** The settings screen's code is split into one method per page, and patch helpers nothing called anymore are gone. The release script keeps gh's warnings out of what it publishes, and the release receipt stops on a clone git can't open instead of reading it as a copy with no history.
 
 * **Settings:** A wording pass. Pause is explained the same way everywhere, Import settings says what a file holds, and errors that left you guessing now say what to do next: download a damaged file again, update HushTelegram for a file from a newer one, or open an export that couldn't be checked.
