@@ -18,14 +18,15 @@ import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.branchTarget
 import app.morphe.util.call
 import app.morphe.util.namedRegisters
+import app.morphe.util.one
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
@@ -70,7 +71,7 @@ internal fun BytecodePatchContext.resolvePopularAppsSites(): PopularAppsSites {
         if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
         classDef.methods.filterTo(builders) { method -> method.instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.type() == GET_POPULAR_APP_BOTS } }
     }
-    val builder = builders.one("getPopularAppBots builder")
+    val builder = builders.one("getPopularAppBots builder", ::refuse)
     val loaderType = builder.definingClass
     shape(!AccessFlags.STATIC.isSet(builder.accessFlags) && builder.parameterTypes.isEmpty() && builder.returnType == "V",
         "the popular apps loader is no longer an instance method with no arguments")
@@ -79,7 +80,7 @@ internal fun BytecodePatchContext.resolvePopularAppsSites(): PopularAppsSites {
     // The loader keeps its list in its one ArrayList field, and says it is loading by setting a
     // boolean to true right after checking it.
     val loaderClass = classDefBy(loaderType)
-    val list = loaderClass.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.type == ARRAY_LIST }.one("loader list field")
+    val list = loaderClass.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.type == ARRAY_LIST }.one("loader list field", ::refuse)
     val loadBody = load.instructions()
     shape(loadBody.size > 2 && loadBody[0].opcode == Opcode.IGET_BOOLEAN && loadBody[1].opcode == Opcode.IF_NEZ,
         "the loader no longer starts by checking whether it is loading")
@@ -98,11 +99,11 @@ internal fun BytecodePatchContext.resolvePopularAppsSites(): PopularAppsSites {
                 body.any { it.opcode == Opcode.SGET && it.field()?.let { field -> field.definingClass == STRINGS && field.name == "SearchAppsPopular" } == true }
         } }
     }
-    val fill = fills.one("Apps tab fill")
+    val fill = fills.one("Apps tab fill", ::refuse)
     val section = mutableClassDefBy(fill.definingClass).methods.single { it.name == fill.name &&
         it.parameterTypes.map(CharSequence::toString) == fill.parameterTypes.map(CharSequence::toString) && it.returnType == fill.returnType }
     val body = section.instructions()
-    val read = body.indices.filter { body[it].opcode == Opcode.IGET_OBJECT && body[it].field() == list }.one("list read in the Apps tab")
+    val read = body.indices.filter { body[it].opcode == Opcode.IGET_OBJECT && body[it].field() == list }.one("list read in the Apps tab", ::refuse)
     val listRegister = body[read].namedRegisters()[0]
     val owner = body[read].namedRegisters()[1]
     // isEmpty() on the list, and its true branch.
@@ -110,12 +111,12 @@ internal fun BytecodePatchContext.resolvePopularAppsSites(): PopularAppsSites {
         body[read + 1].namedRegisters() == listOf(listRegister) && body[read + 2].opcode == Opcode.MOVE_RESULT &&
         body[read + 3].opcode == Opcode.IF_NEZ && body[read + 3].namedRegisters() == body[read + 2].namedRegisters(),
         "the Apps tab no longer checks whether the popular list is empty")
-    val emptyBranch = body.target(read + 3)
+    val emptyBranch = body.branchTarget(read + 3, ::refuse)
     // Empty: loading shows placeholders, a list with more to load shows them too, a finished list adds nothing.
     shape(body[emptyBranch].isFieldRead(Opcode.IGET_BOOLEAN, loading, owner) && body[emptyBranch + 1].opcode == Opcode.IF_NEZ &&
         body[emptyBranch + 2].isFieldRead(Opcode.IGET_BOOLEAN, finished, owner) && body[emptyBranch + 3].opcode == Opcode.IF_NEZ,
         "the empty popular list no longer checks loading and then whether it is finished")
-    val empty = body.target(emptyBranch + 3)
+    val empty = body.branchTarget(emptyBranch + 3, ::refuse)
     shape(body[empty].opcode == Opcode.CONST_4 && (body[empty] as NarrowLiteralInstruction).narrowLiteral == 0,
         "a finished, empty popular list no longer clears the section's footer flag")
     val footerFlag = body[empty].namedRegisters()[0]
@@ -157,29 +158,12 @@ private fun BytecodePatchContext.requireRuntimeHooks() {
     }
 }
 
-/** The index a branch at [index] jumps to. */
-private fun List<Instruction>.target(index: Int): Int {
-    val branch = this[index] as? OffsetInstruction ?: refuse("instruction $index is no longer a branch")
-    var address = 0
-    val addresses = IntArray(size)
-    for (at in indices) {
-        addresses[at] = address
-        address += this[at].codeUnits
-    }
-    val wanted = addresses[index] + branch.codeOffset
-    return addresses.indexOfFirst { it == wanted }.takeIf { it >= 0 } ?: refuse("branch $index lands outside the method")
-}
-
 private fun Instruction.isFieldRead(opcode: Opcode, field: FieldReference, owner: Int) =
     this.opcode == opcode && field() == field && namedRegisters().getOrNull(1) == owner
 private fun refuse(reason: String): Nothing =
     throw PatchException("$PATCH: $reason; refuses changed popular apps geometry before editing")
 private fun shape(valid: Boolean, reason: String) {
     if (!valid) refuse(reason)
-}
-private fun <T> List<T>.one(what: String): T {
-    shape(size == 1, "$what has $size matches")
-    return single()
 }
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference

@@ -19,8 +19,10 @@ import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.branchTarget
 import app.morphe.util.call
 import app.morphe.util.namedRegisters
+import app.morphe.util.one
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
@@ -89,10 +91,10 @@ internal fun BytecodePatchContext.resolveContactsNagSites(): ContactsNagSites {
             body.any { it.string() == ASKED_IN_CONTACTS } && body.any { it.isGetBoolean() }
         } }
     }
-    val reader = readers.one("reader of the Contacts tab's prompt flag")
+    val reader = readers.one("reader of the Contacts tab's prompt flag", ::refuse)
     val badge = mutableClassDefBy(reader.definingClass).methods.single { it.sameAs(reader) }
     val badgeBody = badge.instructions()
-    val read = badgeBody.indices.filter { badgeBody[it].isGetBoolean() }.one("prompt flag read in the badge")
+    val read = badgeBody.indices.filter { badgeBody[it].isGetBoolean() }.one("prompt flag read in the badge", ::refuse)
     val (prefsRegister, keyRegister) = badgeBody[read].namedRegisters()
     shape(read >= 2 && badgeBody[read - 2].opcode == Opcode.INVOKE_STATIC && badgeBody[read - 1].opcode == Opcode.MOVE_RESULT_OBJECT &&
         badgeBody[read - 1].namedRegisters() == listOf(prefsRegister), "the badge no longer reads the flag from a settings getter")
@@ -102,9 +104,9 @@ internal fun BytecodePatchContext.resolveContactsNagSites(): ContactsNagSites {
     shape(badgeBody.getOrNull(read + 1)?.opcode == Opcode.MOVE_RESULT && badgeBody.getOrNull(read + 2)?.opcode == Opcode.IF_EQZ &&
         badgeBody[read + 2].namedRegisters() == badgeBody[read + 1].namedRegisters(), "the badge no longer acts on the flag")
     val badgeGate = read + 3
-    val badgeClear = badgeBody.target(read + 2)
+    val badgeClear = badgeBody.branchTarget(read + 2, ::refuse)
     // "!" and the clear: the same badge call, one with "!" and one with null, each followed by a return.
-    val mark = (badgeGate until badgeClear).filter { badgeBody[it].string() == "!" }.one("badge mark")
+    val mark = (badgeGate until badgeClear).filter { badgeBody[it].string() == "!" }.one("badge mark", ::refuse)
     val setMark = badgeBody.getOrNull(mark + 1)
     val setter = setMark?.call()
     shape(setter != null && setMark.opcode == Opcode.INVOKE_VIRTUAL && setter.parameterTypes.map(CharSequence::toString) ==
@@ -128,17 +130,17 @@ internal fun BytecodePatchContext.resolveContactsNagSites(): ContactsNagSites {
         classDef.methods.filterTo(visibles) { method -> method.name == "onBecomeFullyVisible" && method.parameterTypes.isEmpty() &&
             method.instructions().any { it.string() == READ_CONTACTS } }
     }
-    val visible = visibles.one("Contacts tab check")
+    val visible = visibles.one("Contacts tab check", ::refuse)
     val ask = mutableClassDefBy(visible.definingClass).methods.single { it.sameAs(visible) }
     val askBody = ask.instructions()
     val check = askBody.indices.filter { askBody[it].call()?.let { call -> call.name == "checkSelfPermission" && call.definingClass in setOf(ACTIVITY, CONTEXT) } == true }
-        .one("permission check in the Contacts tab")
+        .one("permission check in the Contacts tab", ::refuse)
     shape(askBody[check].namedRegisters()[1].writtenLastBy(askBody, check)?.string() == READ_CONTACTS,
         "the Contacts tab no longer checks contacts permission")
     shape(askBody.getOrNull(check + 1)?.opcode == Opcode.MOVE_RESULT && askBody.getOrNull(check + 2)?.opcode == Opcode.IF_EQZ &&
         askBody[check + 2].namedRegisters() == askBody[check + 1].namedRegisters(), "the Contacts tab no longer branches on the permission")
     val askGate = check + 3
-    val askDone = askBody.target(check + 2)
+    val askDone = askBody.branchTarget(check + 2, ::refuse)
     shape(askBody[askDone].opcode == Opcode.RETURN_VOID && askDone > askGate, "granted permission no longer leaves the Contacts tab check")
     // From the gate, the tab only asks: Android's rationale check, a dialog, or its own request.
     val flow = ControlFlow.of(ask)
@@ -148,7 +150,7 @@ internal fun BytecodePatchContext.resolveContactsNagSites(): ContactsNagSites {
     shape(askBody[askGate].call()?.name == "shouldShowRequestPermissionRationale", "the prompt no longer starts with Android's rationale check")
     val calls = region.sorted().mapNotNull { askBody[it].call() }
     val request = calls.filter { it.definingClass == ask.definingClass && it.parameterTypes.map(CharSequence::toString) == listOf("Z") }
-        .one("Contacts tab's own request")
+        .one("Contacts tab's own request", ::refuse)
     shape(calls.count { it.name == "showDialog" } == 1, "the prompt no longer shows one dialog")
     shape(calls.all { it.name in setOf("shouldShowRequestPermissionRationale", "<init>", "showDialog") || it == request ||
         it.returnType.endsWith("AlertDialog\$Builder;") }, "the prompt does more than ask for contacts")
@@ -211,19 +213,6 @@ private fun reach(flow: ControlFlow, from: Int): Set<Int> {
 private fun Int.writtenLastBy(body: List<Instruction>, index: Int): Instruction? =
     (index - 1 downTo 0).map { body[it] }.firstOrNull { it.opcode.setsRegister() && it.namedRegisters().firstOrNull() == this }
 
-/** The index a branch at [index] jumps to. */
-private fun List<Instruction>.target(index: Int): Int {
-    val branch = this[index] as? OffsetInstruction ?: refuse("instruction $index is no longer a branch")
-    var address = 0
-    val addresses = IntArray(size)
-    for (at in indices) {
-        addresses[at] = address
-        address += this[at].codeUnits
-    }
-    val wanted = addresses[index] + branch.codeOffset
-    return addresses.indexOfFirst { it == wanted }.takeIf { it >= 0 } ?: refuse("branch $index lands outside the method")
-}
-
 private val FIELD_WRITES = setOf(Opcode.IPUT, Opcode.IPUT_WIDE, Opcode.IPUT_OBJECT, Opcode.IPUT_BOOLEAN, Opcode.IPUT_BYTE,
     Opcode.IPUT_CHAR, Opcode.IPUT_SHORT, Opcode.SPUT, Opcode.SPUT_WIDE, Opcode.SPUT_OBJECT, Opcode.SPUT_BOOLEAN,
     Opcode.SPUT_BYTE, Opcode.SPUT_CHAR, Opcode.SPUT_SHORT)
@@ -238,10 +227,6 @@ private fun refuse(reason: String): Nothing =
     throw PatchException("$PATCH: $reason; refuses changed contacts prompt geometry before editing")
 private fun shape(valid: Boolean, reason: String) {
     if (!valid) refuse(reason)
-}
-private fun <T> List<T>.one(what: String): T {
-    shape(size == 1, "$what has $size matches")
-    return single()
 }
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 @Suppress("unused")

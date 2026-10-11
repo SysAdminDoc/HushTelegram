@@ -21,6 +21,7 @@ import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.call
 import app.morphe.util.namedRegisters
+import app.morphe.util.one
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
@@ -88,7 +89,7 @@ internal fun BytecodePatchContext.resolveHolidayLookSites(): HolidayLookSites {
         if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
         classDef.methods.filterTo(users) { method -> method.instructions().any { it.field()?.toString() == NEW_YEAR_HAT } }
     }
-    val user = users.one("reader of the New Year hat")
+    val user = users.one("reader of the New Year hat", ::refuse)
     shape(AccessFlags.STATIC.isSet(user.accessFlags) && user.parameterTypes.isEmpty() && user.returnType == DRAWABLE,
         "the holiday check no longer takes nothing and returns the hat")
     val check = mutableClassDefBy(user.definingClass).methods.single { it.sameAs(user) }
@@ -112,7 +113,7 @@ internal fun BytecodePatchContext.resolveHolidayLookSites(): HolidayLookSites {
     val snow = snowWrites[0].field()!!.immutable()
 
     // The hat's load: application resources, the hat's id, getDrawable, stored to the hat field.
-    val read = body.indices.filter { body[it].field()?.toString() == NEW_YEAR_HAT }.one("read of the hat's id")
+    val read = body.indices.filter { body[it].field()?.toString() == NEW_YEAR_HAT }.one("read of the hat's id", ::refuse)
     val load = read - 3
     shape(load >= 0 && body[load].opcode == Opcode.SGET_OBJECT && body[load].field()?.toString() == APP_CONTEXT &&
         body[load + 1].call()?.name == "getResources" && body[load + 2].opcode == Opcode.MOVE_RESULT_OBJECT &&
@@ -184,10 +185,6 @@ private fun refuse(reason: String): Nothing =
     throw PatchException("$PATCH: $reason; refuses changed holiday check geometry before editing")
 private fun shape(valid: Boolean, reason: String) {
     if (!valid) refuse(reason)
-}
-private fun <T> List<T>.one(what: String): T {
-    shape(size == 1, "$what has $size matches")
-    return single()
 }
 private fun Method.sameAs(other: Method) = name == other.name && returnType == other.returnType &&
     parameterTypes.map(CharSequence::toString) == other.parameterTypes.map(CharSequence::toString)

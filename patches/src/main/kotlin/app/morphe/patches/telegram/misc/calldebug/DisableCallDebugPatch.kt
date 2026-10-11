@@ -24,6 +24,7 @@ import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.call
 import app.morphe.util.namedRegisters
+import app.morphe.util.one
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
@@ -82,7 +83,7 @@ internal data class CallDebugHook(val method: MutableMethod, val index: Int, val
 /** Kept requests and file calls select the private callbacks, without their synthetic names. */
 internal fun BytecodePatchContext.resolveCallDebugHooks(): Map<CallDebugTarget, CallDebugHook> {
     val methods = mutableClassDefBy(VOIP_DEBUG).methods.toList()
-    val done = methods.filter { it.constructs(SAVE_CALL_DEBUG) }.one("saveCallDebug method")
+    val done = methods.filter { it.constructs(SAVE_CALL_DEBUG) }.one("saveCallDebug method", ::refuse)
     shape(done.name == "done" && done.hasShape(listOf("J", "Z"), "V"), "call-end entry signature changed")
     val instructions = done.instructions()
     val flow = ControlFlow.of(done)
@@ -90,7 +91,7 @@ internal fun BytecodePatchContext.resolveCallDebugHooks(): Map<CallDebugTarget, 
     val cleanup = instructions.indices.filter { instructions[it].call()?.let { call ->
         call.definingClass == "Ljava/util/HashMap;" && call.name == "remove" &&
             call.hasShape(listOf("Ljava/lang/Object;"), "Ljava/lang/Object;")
-    } == true }.one("pending call cleanup")
+    } == true }.one("pending call cleanup", ::refuse)
     val dataResult = cleanup + 1
     val cast = dataResult + 1
     val dataBranch = cast + 1
@@ -111,7 +112,7 @@ internal fun BytecodePatchContext.resolveCallDebugHooks(): Map<CallDebugTarget, 
     done.requireParameterIntact(PATCH, 1, listOf(requestedBranch, request))
     val dataType = (instructions[cast] as ReferenceInstruction).reference.toString()
 
-    val log = methods.filter { it.constructs(SAVE_CALL_LOG) }.one("saveCallLog method")
+    val log = methods.filter { it.constructs(SAVE_CALL_LOG) }.one("saveCallLog method", ::refuse)
     shape(log.hasShape(listOf(SAVE_CALL_DEBUG, INPUT_FILE), "V"), "call log callback signature changed")
     val logInstructions = log.instructions()
     val logFlow = ControlFlow.of(log)
@@ -124,10 +125,10 @@ internal fun BytecodePatchContext.resolveCallDebugHooks(): Map<CallDebugTarget, 
         logRequest in logFlow.normal[fileBranch], "call log no longer checks a nonnull uploaded file")
     log.requireParameterIntact(PATCH, 1, listOf(fileBranch, logRequest))
 
-    val upload = methods.filter { method -> method.instructions().any { it.fileUpload() } }.one("call log file upload")
+    val upload = methods.filter { method -> method.instructions().any { it.fileUpload() } }.one("call log file upload", ::refuse)
     shape(upload.hasShape(listOf(FILE, SAVE_CALL_DEBUG), "V"), "call log file uploader signature changed")
     val uploading = upload.instructions()
-    val uploadAt = uploading.indices.filter { uploading[it].fileUpload() }.one("FileLoader uploadFile call")
+    val uploadAt = uploading.indices.filter { uploading[it].fileUpload() }.one("FileLoader uploadFile call", ::refuse)
     val uploadFinish = ControlFlow.of(upload).normal[uploadAt].single()
     shape(uploading[uploadFinish].opcode == Opcode.RETURN_VOID, "file upload has unrelated work after it")
 
@@ -135,15 +136,15 @@ internal fun BytecodePatchContext.resolveCallDebugHooks(): Map<CallDebugTarget, 
     val response = methods.filter { it.hasShape(listOf(dataType, SAVE_CALL_DEBUG,
         "Lorg/telegram/tgnet/TLObject;", "Lorg/telegram/tgnet/TLRPC\$TL_error;"), "V") &&
         it.instructions().any { instruction -> instruction.opcode == Opcode.INSTANCE_OF && instruction.reference() == BOOL_FALSE }
-    }.one("server log-file request callback")
+    }.one("server log-file request callback", ::refuse)
     val responding = response.instructions()
     val responseFlow = ControlFlow.of(response)
     val typeCheck = responding.indices.filter { responding[it].opcode == Opcode.INSTANCE_OF && responding[it].reference() == BOOL_FALSE }
-        .one("log-file opt-in response check")
+        .one("log-file opt-in response check", ::refuse)
     val responseBranch = typeCheck + 1
     val empty = responding.indices.filter { responding[it].call()?.let { call ->
         call.definingClass == "Landroid/text/TextUtils;" && call.name == "isEmpty"
-    } == true }.one("log path empty check")
+    } == true }.one("log path empty check", ::refuse)
     val emptyBranch = empty + 2
     shape(responding.getOrNull(responseBranch)?.opcode == Opcode.IF_EQZ &&
         responding[responseBranch].namedRegisters() == listOf(responding[typeCheck].namedRegisters()[0]) &&
@@ -159,10 +160,10 @@ internal fun BytecodePatchContext.resolveCallDebugHooks(): Map<CallDebugTarget, 
             call.definingClass == "Lorg/telegram/messenger/DispatchQueue;" && call.name == "postRunnable"
         } == true }, "wrong response/empty log path no longer leave before log preparation")
 
-    val compress = methods.filter { method -> method.instructions().any { it.gzip() } }.one("call log compression")
+    val compress = methods.filter { method -> method.instructions().any { it.gzip() } }.one("call log compression", ::refuse)
     shape(compress.hasShape(listOf(dataType, FILE, SAVE_CALL_DEBUG), "V"), "call log compression signature changed")
     val compressing = compress.instructions()
-    val gzip = compressing.indices.filter { compressing[it].gzip() }.one("call log gzip call")
+    val gzip = compressing.indices.filter { compressing[it].gzip() }.one("call log gzip call", ::refuse)
     val compressionBranch = gzip + 2
     shape(compressing.getOrNull(gzip + 1)?.opcode == Opcode.MOVE_RESULT &&
         compressing.getOrNull(compressionBranch)?.opcode == Opcode.IF_NEZ &&
@@ -189,23 +190,21 @@ private fun gate(method: MutableMethod, index: Int, finish: Int, hook: String, p
 private fun requestSite(method: Method, type: String): Int {
     val instructions = method.instructions()
     val index = instructions.indices.filter { instructions[it].opcode == Opcode.NEW_INSTANCE && instructions[it].reference() == type }
-        .one("$type construction")
+        .one("$type construction", ::refuse)
     val initialize = instructions.getOrNull(index + 1)
     shape(initialize?.call()?.let { it.definingClass == type && it.name == "<init>" && it.parameterTypes.isEmpty() } == true &&
         initialize.namedRegisters() == instructions[index].namedRegisters(), "call diagnostic request constructor changed")
     val send = instructions.filter { it.call()?.let { call -> call.definingClass == CONNECTIONS && call.name == "sendRequest" &&
-        call.hasShape(listOf("Lorg/telegram/tgnet/TLObject;", "Lorg/telegram/tgnet/RequestDelegate;"), "I") } == true }.one("$type sendRequest")
+        call.hasShape(listOf("Lorg/telegram/tgnet/TLObject;", "Lorg/telegram/tgnet/RequestDelegate;"), "I") } == true }.one("$type sendRequest", ::refuse)
     shape(send.namedRegisters().size == 3 && send.namedRegisters()[1] == instructions[index].namedRegisters()[0],
         "call diagnostic request is not the object sent")
     return index
 }
 
+private fun refuse(reason: String): Nothing =
+    throw PatchException("$PATCH: $reason; refuses changed call diagnostic geometry before editing")
 private fun shape(valid: Boolean, reason: String) {
-    if (!valid) throw PatchException("$PATCH: $reason; refuses changed call diagnostic geometry before editing")
-}
-private fun <T> List<T>.one(what: String): T {
-    shape(size == 1, "$what has $size matches")
-    return single()
+    if (!valid) refuse(reason)
 }
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Instruction.reference(): String? = (this as? ReferenceInstruction)?.reference?.toString()

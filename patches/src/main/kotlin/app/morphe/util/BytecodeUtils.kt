@@ -73,6 +73,7 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.MethodParameter
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
@@ -475,6 +476,22 @@ inline fun <reified T : Reference> Instruction.getReference() = (this as? Refere
 
 /** The method this instruction names, which for an invoke is the one it calls, or null when it names none. */
 internal fun Instruction.call(): MethodReference? = (this as? ReferenceInstruction)?.reference as? MethodReference
+
+/**
+ * The index the branch at [index] jumps to. The patch's own [refuse] answers when that
+ * instruction is no branch, or when the jump doesn't land on an instruction of this list.
+ */
+internal fun List<Instruction>.branchTarget(index: Int, refuse: (String) -> Nothing): Int {
+    val branch = this[index] as? OffsetInstruction ?: refuse("instruction $index is no longer a branch")
+    var address = 0
+    val addresses = IntArray(size)
+    for (at in indices) {
+        addresses[at] = address
+        address += this[at].codeUnits
+    }
+    val wanted = addresses[index] + branch.codeOffset
+    return addresses.indexOfFirst { it == wanted }.takeIf { it >= 0 } ?: refuse("branch $index lands outside the method")
+}
 
 /**
  * @return The mutable method for this method call reference.

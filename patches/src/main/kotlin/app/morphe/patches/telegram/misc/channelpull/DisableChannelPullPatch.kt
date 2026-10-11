@@ -21,6 +21,7 @@ import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.call
 import app.morphe.util.namedRegisters
+import app.morphe.util.one
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -119,13 +120,13 @@ internal fun BytecodePatchContext.resolveChannelPullSites(): ChannelPullSites {
     classDefForEach { owner ->
         if (!owner.type.startsWith("Lapp/hushtelegram/extension/")) owner.methods.filterTo(candidates) { it.isChannelPullScroll() }
     }
-    val found = candidates.one("bottom-pull layout manager")
+    val found = candidates.one("bottom-pull layout manager", ::refuse)
     val layout = mutableClassDefBy(found.definingClass)
     val scroll = layout.methods.single { it.name == found.name && it.parameterTypes == found.parameterTypes && it.returnType == found.returnType }
     shape(!AccessFlags.STATIC.isSet(scroll.accessFlags), "scroll callback became static")
     val body = scroll.instructions()
     val flow = ControlFlow.of(scroll)
-    val channelCall = body.indices.filter { body[it].isChannelCall() }.one("channel predicate")
+    val channelCall = body.indices.filter { body[it].isChannelCall() }.one("channel predicate", ::refuse)
     shape(channelCall >= 3 && channelCall + 12 < body.size, "channel predicate moved outside the pull branch")
     val currentChat = body[channelCall - 1].field()
     shape(body[channelCall - 1].opcode == Opcode.IGET_OBJECT && currentChat?.type == CHAT &&
@@ -163,7 +164,7 @@ internal fun BytecodePatchContext.resolveChannelPullSites(): ChannelPullSites {
 
     // Both ordinary scrolling calls precede the positive-dy, zero-scrolled pull test.
     val ordinary = body.indices.filter { body[it].opcode == Opcode.INVOKE_SUPER }
-    val superOwner = ordinary.mapNotNull { body[it].call()?.definingClass }.distinct().one("ordinary scroll implementation")
+    val superOwner = ordinary.mapNotNull { body[it].call()?.definingClass }.distinct().one("ordinary scroll implementation", ::refuse)
     val ancestors = mutableSetOf<String>()
     var ancestor = layout.superclass
     while (ancestor != null && ancestor != "Ljava/lang/Object;" && ancestor !in ancestors) {
@@ -189,7 +190,7 @@ internal fun BytecodePatchContext.resolveChannelPullSites(): ChannelPullSites {
         body[channelCall - 2].namedRegisters() == listOf(scrolled) && branch(flow, channelCall - 2) == scrollExit,
         "pull no longer requires positive drag after a zero stock scroll")
 
-    val offsetWrite = (commonEntry until scrollExit).filter { body[it].opcode == Opcode.IPUT && body[it].field() == offset }.one("bottom offset accumulation")
+    val offsetWrite = (commonEntry until scrollExit).filter { body[it].opcode == Opcode.IPUT && body[it].field() == offset }.one("bottom offset accumulation", ::refuse)
     shape(body[offsetWrite - 1].opcode == Opcode.ADD_FLOAT_2ADDR && body[offsetWrite - 2].opcode == Opcode.IGET &&
         body[offsetWrite - 2].field() == offset && body[offsetWrite].namedRegisters()[1] == holder,
         "bottom pull no longer accumulates its offset")
@@ -206,16 +207,16 @@ internal fun BytecodePatchContext.resolveChannelPullSites(): ChannelPullSites {
     }
     val list = body.mapNotNull { it.field() }.filter { it.definingClass == owner.type &&
         classDefByOrNull(it.type)?.methods?.any { method -> method.name == "onTouchEvent" && method.parameterTypes == listOf(MOTION_EVENT) } == true }
-        .distinct().one("channel list field")
+        .distinct().one("channel list field", ::refuse)
     instanceField(owner, list)
     val listOwner = mutableClassDefBy(list.type)
-    val draw = listOwner.methods.filter { it.name == "onDraw" && it.parameterTypes == listOf(CANVAS) && it.returnType == "V" }.one("channel list drawing")
+    val draw = listOwner.methods.filter { it.name == "onDraw" && it.parameterTypes == listOf(CANVAS) && it.returnType == "V" }.one("channel list drawing", ::refuse)
     val drawBody = draw.instructions()
     val drawable = body.mapNotNull { it.field() }.filter { field -> field.definingClass == owner.type && field.type != list.type &&
         drawBody.any { it.opcode == Opcode.IPUT_OBJECT && it.field() == field } &&
         classDefByOrNull(field.type)?.methods?.any { method -> method.name == "<init>" && method.parameterTypes.map(CharSequence::toString).let { params ->
             params.size == 7 && params.take(6) == listOf("I", VIEW, "J", "I", "I", "J") && params[6].startsWith("L") } } == true }
-        .distinct().one("pull drawable field")
+        .distinct().one("pull drawable field", ::refuse)
     // The constructor has seven declared parameters, with wide dialog/topic identifiers.
     val drawableOwner = mutableClassDefBy(drawable.type)
     shape(drawableOwner.interfaces.contains("Lorg/telegram/messenger/NotificationCenter\$NotificationCenterDelegate;") &&
@@ -223,10 +224,10 @@ internal fun BytecodePatchContext.resolveChannelPullSites(): ChannelPullSites {
             call.parameterTypes == listOf(CANVAS, list.type, "F", "F") && call.returnType == "V" } == true },
         "the accumulated offset isn't the drawn channel pull")
     instanceField(owner, drawable)
-    val touch = listOwner.methods.filter { it.name == "onTouchEvent" && it.parameterTypes == listOf(MOTION_EVENT) && it.returnType == "Z" }.one("channel list touch")
+    val touch = listOwner.methods.filter { it.name == "onTouchEvent" && it.parameterTypes == listOf(MOTION_EVENT) && it.returnType == "Z" }.one("channel list touch", ::refuse)
     val touchBody = touch.instructions()
     val touchFlow = ControlFlow.of(touch)
-    val progress = touchBody.indices.filter { touchBody[it].call()?.toString() == "Ljava/lang/Math;->min(FF)F" }.one("release progress")
+    val progress = touchBody.indices.filter { touchBody[it].call()?.toString() == "Ljava/lang/Math;->min(FF)F" }.one("release progress", ::refuse)
     shape(progress >= 7 && progress + 12 < touchBody.size &&
         touchBody[progress - 7].opcode == Opcode.IGET && touchBody[progress - 7].field() == offset &&
         touchBody[progress - 6].let { it is NarrowLiteralInstruction && it.narrowLiteral == 110f.toBits() } &&
@@ -262,12 +263,12 @@ internal fun BytecodePatchContext.resolveChannelPullSites(): ChannelPullSites {
             "channel release can be entered around its eligibility checks")
     }
     val transitionCall = (releaseGate until retract).filter { touchBody[it].call()?.let { call ->
-        call.definingClass == owner.type && call.parameterTypes == listOf(owner.type) && call.returnType == "V" } == true }.one("next-chat release")
+        call.definingClass == owner.type && call.parameterTypes == listOf(owner.type) && call.returnType == "V" } == true }.one("next-chat release", ::refuse)
     val transition = touchBody[transitionCall].call()!!
     shape(touchBody[transitionCall].opcode == Opcode.INVOKE_STATIC && touchBody[transitionCall].namedRegisters() == listOf(activity),
         "release no longer opens through its own activity")
     val opener = owner.methods.filter { it.name == transition.name && it.parameterTypes == transition.parameterTypes && it.returnType == transition.returnType }
-        .one("next-chat opener").instructions()
+        .one("next-chat opener", ::refuse).instructions()
     shape(opener.any { it.field() == topic } && opener.any { it.field() == drawable } && opener.any { it.reference() == "pulled" } &&
         opener.any { it.reference() == "chat_id" } && opener.any { it.call()?.name == "presentFragment" },
         "release opener no longer binds this drawable and topic state")
@@ -295,11 +296,11 @@ private fun BytecodePatchContext.requireRuntimeHooks(type: String, kind: String,
 }
 
 private fun instanceField(owner: ClassDef, reference: FieldReference, public: Boolean = false) {
-    val field = owner.fields.filter { it.name == reference.name && it.type == reference.type }.one("bound ${reference.name} field")
+    val field = owner.fields.filter { it.name == reference.name && it.type == reference.type }.one("bound ${reference.name} field", ::refuse)
     shape(!AccessFlags.STATIC.isSet(field.accessFlags) && (!public || AccessFlags.PUBLIC.isSet(field.accessFlags)),
         "bound ${reference.name} field is not an accessible instance field")
 }
-private fun branch(flow: ControlFlow, at: Int): Int = flow.normal[at].filter { it != at + 1 }.one("branch at $at")
+private fun branch(flow: ControlFlow, at: Int): Int = flow.normal[at].filter { it != at + 1 }.one("branch at $at", ::refuse)
 private fun reachable(flow: ControlFlow, from: Int, blocked: Int): Set<Int> {
     val reached = mutableSetOf<Int>()
     val pending = ArrayDeque(listOf(from))
@@ -311,7 +312,6 @@ private fun reachable(flow: ControlFlow, from: Int, blocked: Int): Set<Int> {
 }
 private fun refuse(reason: String): Nothing = throw PatchException("$PATCH: $reason; refuses changed channel pull geometry before editing")
 private fun shape(valid: Boolean, reason: String) { if (!valid) refuse(reason) }
-private fun <T> List<T>.one(what: String): T { shape(size == 1, "$what has $size matches"); return single() }
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Instruction.reference() = (this as? ReferenceInstruction)?.reference?.toString()
 private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference

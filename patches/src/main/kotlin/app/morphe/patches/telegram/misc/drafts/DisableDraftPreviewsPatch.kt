@@ -25,6 +25,7 @@ import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.call
 import app.morphe.util.namedRegisters
+import app.morphe.util.one
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
@@ -122,7 +123,7 @@ internal fun BytecodePatchContext.resolveDraftPreviewHooks(): Map<DraftPreviewTa
     }
     val hooks = linkedMapOf<DraftPreviewTarget, DraftPreviewHook>()
     for ((target, matches) in found) {
-        val match = matches.one("$target preview builder")
+        val match = matches.one("$target preview builder", ::refuse)
         val method = mutableClassDefBy(match.definingClass).methods.single { it.sameSignature(match) }
         hooks[target] = when (target) {
             DraftPreviewTarget.CHAT -> chatHook(method)
@@ -142,7 +143,7 @@ private fun chatHook(method: MutableMethod): DraftPreviewHook {
     val fragment = method.parameterRegisterNumber(0)
     val request = requestSite(method)
     val secret = body.indices.filter { body[it].opcode == Opcode.IGET_OBJECT && body[it].field()?.let { field ->
-        field.definingClass == method.definingClass && field.type == ENCRYPTED_CHAT } == true }.one("chat secret-chat read")
+        field.definingClass == method.definingClass && field.type == ENCRYPTED_CHAT } == true }.one("chat secret-chat read", ::refuse)
     val secretBranch = secret + 1
     val mode = secret + 2
     shape(body[secret].namedRegisters() == listOf(body[secret].namedRegisters()[0], fragment) &&
@@ -155,14 +156,14 @@ private fun chatHook(method: MutableMethod): DraftPreviewHook {
     // the same clear Telegram posts after the block for text too short to hold a link.
     val store = body.indices.filter { body[it].opcode == Opcode.IPUT_OBJECT && body[it].field()?.let { field ->
         field.definingClass == method.definingClass && field.type == ARRAY_LIST } == true &&
-        body[it].namedRegisters().getOrNull(1) == fragment }.one("found link list store")
+        body[it].namedRegisters().getOrNull(1) == fragment }.one("found link list store", ::refuse)
     val noLinks = store + 1
     shape(body.getOrNull(noLinks)?.opcode == Opcode.IF_NEZ && body[noLinks].namedRegisters() == listOf(body[store].namedRegisters()[0]) &&
         clearRunnable(method, store + 2, fragment), "no-link clear changed")
     val flow = ControlFlow.of(method)
     val clear = body[store + 2].reference()
     val finish = body.indices.filter { it != store + 2 && clearRunnable(method, it, fragment) && body[it].reference() == clear &&
-        (it..it + 3).all { at -> flow.exceptional[at].isEmpty() } }.one("no-link clear outside the link search")
+        (it..it + 3).all { at -> flow.exceptional[at].isEmpty() } }.one("no-link clear outside the link search", ::refuse)
     shape(finish > secret, "no-link clear outside the link search moved in front of the request")
     method.requireParameterIntact(PATCH, 0, listOf(secret, finish + 2))
     // The links were stored before the hook. A draft with none stores null there, and so does a skip,
@@ -179,7 +180,7 @@ private fun shareHook(method: MutableMethod): DraftPreviewHook {
     val flow = ControlFlow.of(method)
     val request = requestSite(method)
     val join = body.indices.filter { body[it].call()?.let { call -> call.definingClass == "Landroid/text/TextUtils;" &&
-        call.name == "join" && call.hasShape(listOf(CHAR_SEQUENCE, "Ljava/lang/Iterable;"), STRING) } == true }.one("share link join")
+        call.name == "join" && call.hasShape(listOf(CHAR_SEQUENCE, "Ljava/lang/Iterable;"), STRING) } == true }.one("share link join", ::refuse)
     val index = join - 1
     val skip = index - 1
     val emptyBranch = index - 2
@@ -203,7 +204,7 @@ private fun shareHook(method: MutableMethod): DraftPreviewHook {
     // The sheet keeps the links it last saw in a list it empties and refills before the hook. A
     // draft with none leaves it empty, and so does a skip, so the same links fetch once the switch is off.
     val reset = body.indices.filter { body[it].call()?.let { call -> call.definingClass == ARRAY_LIST && call.name == "clear" &&
-        call.parameterTypes.isEmpty() } == true }.one("share link list reset")
+        call.parameterTypes.isEmpty() } == true }.one("share link list reset", ::refuse)
     val held = body[reset].namedRegisters().single()
     val load = (reset - 1 downTo 0).firstOrNull { held in body[it].writes() } ?: refuse("share link list isn't loaded")
     shape(reset < index && body[load].opcode == Opcode.IGET_OBJECT && body[load].namedRegisters()[1] == thisRegister &&
@@ -236,8 +237,8 @@ private fun pollHook(method: MutableMethod): DraftPreviewHook {
     // There Telegram shows the link without a preview: checkPollLinkMedia(link, false).
     val media = method.parameterRegisterNumber(1)
     val linkType = body.indices.filter { body[it].opcode == Opcode.INSTANCE_OF && body[it].namedRegisters()[1] == media }
-        .one("poll attached link test").let { body[it].reference() }
-    val link = body.indices.filter { body[it].opcode == Opcode.CHECK_CAST && body[it].reference() == linkType }.one("poll link cast")
+        .one("poll attached link test", ::refuse).let { body[it].reference() }
+    val link = body.indices.filter { body[it].opcode == Opcode.CHECK_CAST && body[it].reference() == linkType }.one("poll link cast", ::refuse)
     val linkRegister = body[link].namedRegisters()[0]
     val thisRegister = method.parameterRegisterNumber(0) - 1
     val check = body.getOrNull(finish + 1)?.call()
@@ -254,12 +255,12 @@ private fun BytecodePatchContext.storyHook(builder: MutableMethod): DraftPreview
     val sheet = builder.definingClass
     val checks = mutableClassDefBy(sheet).methods.filter { it.isStatic() && it.hasShape(listOf(sheet, STRING), "V") &&
         it.instructions().any { instruction -> instruction.call()?.let { call -> call.definingClass == UTILITIES && call.name == "cancelRunOnUIThread" } == true } }
-    val method = checks.one("story link URL check")
+    val method = checks.one("story link URL check", ::refuse)
     val body = method.instructions()
     val flow = ControlFlow.of(method)
-    val cancel = body.indices.filter { body[it].call()?.let { call -> call.definingClass == UTILITIES && call.name == "cancelRunOnUIThread" } == true }.one("story preview cancel")
+    val cancel = body.indices.filter { body[it].call()?.let { call -> call.definingClass == UTILITIES && call.name == "cancelRunOnUIThread" } == true }.one("story preview cancel", ::refuse)
     val post = body.indices.filter { body[it].call()?.let { call -> call.definingClass == UTILITIES && call.name == "runOnUIThread" &&
-        call.hasShape(listOf(RUNNABLE, "J"), "V") } == true }.one("story preview post")
+        call.hasShape(listOf(RUNNABLE, "J"), "V") } == true }.one("story preview post", ::refuse)
     val runnable = body[cancel].namedRegisters().single()
     shape(body[post].namedRegisters()[0] == runnable, "story URL check posts another runnable")
     val load = (cancel - 1 downTo 0).firstOrNull { runnable in body[it].writes() } ?: refuse("story preview runnable isn't loaded")
@@ -271,7 +272,7 @@ private fun BytecodePatchContext.storyHook(builder: MutableMethod): DraftPreview
             instruction.call()?.let { call -> call.definingClass == sheet && call.name == builder.name } == true } } == true,
         "story preview runnable no longer builds the request")
     val result = body.indices.filter { body[it].opcode == Opcode.MOVE_RESULT && body.getOrNull(it - 1)?.call()?.let { call ->
-        call.definingClass == sheet && call.hasShape(listOf(STRING), "Z") } == true }.one("story containsURL result")
+        call.definingClass == sheet && call.hasShape(listOf(STRING), "Z") } == true }.one("story containsURL result", ::refuse)
     val hasUrl = body[result].namedRegisters().single()
     val branch = cancel + 3
     val index = branch + 1
@@ -280,7 +281,7 @@ private fun BytecodePatchContext.storyHook(builder: MutableMethod): DraftPreview
     val finish = flow.normal[branch].single { it != index }
     shape(finish > post, "story no-URL path no longer follows the post")
     // The Done button still follows the real URL check after a skip.
-    val enable = body.indices.filter { body[it].call()?.name == "setEnabled" }.one("story Done button")
+    val enable = body.indices.filter { body[it].call()?.name == "setEnabled" }.one("story Done button", ::refuse)
     shape(enable > finish && body[enable].namedRegisters().last() == hasUrl &&
         body.indices.none { it > result && hasUrl in body[it].writes() }, "story Done button no longer reads the URL check")
     method.requireParameterIntact(PATCH, 0, listOf(index, finish))
@@ -373,7 +374,7 @@ private fun clearRunnable(method: Method, at: Int, fragment: Int): Boolean {
 private fun requestSite(method: Method): Int {
     val body = method.instructions()
     val index = body.indices.filter { body[it].opcode == Opcode.NEW_INSTANCE && body[it].reference() == WEB_PAGE_PREVIEW }
-        .one("${method.definingClass}->${method.name} preview request")
+        .one("${method.definingClass}->${method.name} preview request", ::refuse)
     shape(body.getOrNull(index + 1)?.call()?.let { it.definingClass == WEB_PAGE_PREVIEW && it.name == "<init>" && it.parameterTypes.isEmpty() } == true &&
         body[index + 1].namedRegisters() == body[index].namedRegisters(), "preview request constructor changed")
     return index
@@ -395,10 +396,6 @@ private fun refuse(reason: String): Nothing =
     throw PatchException("$PATCH: $reason; refuses changed draft preview geometry before editing")
 private fun shape(valid: Boolean, reason: String) {
     if (!valid) refuse(reason)
-}
-private fun <T> List<T>.one(what: String): T {
-    shape(size == 1, "$what has $size matches")
-    return single()
 }
 private fun Method.isStatic() = AccessFlags.STATIC.isSet(accessFlags)
 private fun Method.params(): List<String> = parameterTypes.map { it.toString() }

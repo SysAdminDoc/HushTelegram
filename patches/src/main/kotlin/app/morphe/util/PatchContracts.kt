@@ -24,6 +24,15 @@ internal fun <T> Iterable<T>.singleOrPatchException(contract: String): T {
 }
 
 /**
+ * The only element, or the patch's own [refuse] saying how many matches [what] had. Each patch
+ * hands in its refusal, so the message still names the patch and the code it won't edit.
+ */
+internal fun <T> List<T>.one(what: String, refuse: (String) -> Nothing): T {
+    if (size != 1) refuse("$what has $size matches")
+    return single()
+}
+
+/**
  * Every match, when they are all the same body, and a refusal when they are not.
  *
  * <p>For a boundary where a duplicate is the host repeating itself rather than the selector
