@@ -305,7 +305,14 @@ public final class OutsideTranslate {
         final List<Waiter> done = waiters;
         final boolean failed = result == null;
         final boolean keyRefused = failure instanceof AiTranslate.KeyRefused;
-        if (failed) HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "translate request", failure);
+        if (failed) {
+            // A refused key or a service out of reach is the service's answer, not a broken hook.
+            if (failure instanceof java.io.IOException) {
+                HookStatus.counted(FamilyNames.OUTSIDE_TRANSLATE, keyRefused ? "translate key refused" : "translate request failed");
+            } else {
+                HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "translate request", failure);
+            }
+        }
         Utils.runOnMainThread(() -> {
             try {
                 // Switched off or paused while the request was out: nothing to show or say.

@@ -11,6 +11,7 @@ import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.PauseForTests;
 import app.hushtelegram.extension.shared.settings.SettingReadsForTests;
+import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -297,6 +298,27 @@ public class OutsideTranslateTest {
         assertEquals("Your AI service didn't accept the key", org.robolectric.shadows.ShadowToast.getTextOfLatestToast());
         // What the diagnostic report keeps of the failure is its status, never the key.
         assertFalse(String.join("\n", HookStatus.report()).contains("sk-"));
+        // A turned-down key is counted, and the family's hooks still read as working.
+        assertTrue(String.join("\n", HookStatus.report()).contains("translate key refused"));
+        assertTrue(HookStatus.missing(FamilyNames.OUTSIDE_TRANSLATE).isEmpty());
+    }
+
+    @Test public void onlyAnUnexpectedFailureReadsAsABrokenHook() {
+        OutsideTranslate.fetcher = (target, text) -> { throw new java.io.IOException("no route"); };
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(10);
+        Fake offline = new Fake();
+        OutsideTranslate.showMessage(offline, offline);
+        ShadowLooper.idleMainLooper();
+        assertTrue(String.join("\n", HookStatus.report()).contains("translate request failed"));
+        assertTrue(HookStatus.missing(FamilyNames.OUTSIDE_TRANSLATE).isEmpty());
+
+        OutsideTranslate.fetcher = (target, text) -> { throw new IllegalStateException("parser bug"); };
+        Fake broken = new Fake();
+        broken.original = "Другой текст";
+        OutsideTranslate.showMessage(broken, broken);
+        ShadowLooper.idleMainLooper();
+        assertFalse(HookStatus.missing(FamilyNames.OUTSIDE_TRANSLATE).isEmpty());
     }
 
     /** Telegram doesn't know the chat item's number, so a tap on one left in an open menu stays ours. */
