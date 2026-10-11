@@ -828,6 +828,20 @@ public class Utils {
     }
 
     /**
+     * Builds with {@link #isDarkModeEnabled()} answering dark, then puts back what it answered before:
+     * for a dialog over a screen that stays dark whatever the app's theme. Main thread only.
+     */
+    public static <T> T buildDark(java.util.function.Supplier<T> build) {
+        Boolean before = isDarkModeEnabled;
+        isDarkModeEnabled = true;
+        try {
+            return build.get();
+        } finally {
+            isDarkModeEnabled = before;
+        }
+    }
+
+    /**
      * Overrides dark mode status as returned by {@link #isDarkModeEnabled()}.
      */
     public static void setIsDarkModeEnabled(boolean isDarkMode) {

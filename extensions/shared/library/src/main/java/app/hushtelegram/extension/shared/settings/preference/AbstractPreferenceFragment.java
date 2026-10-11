@@ -125,6 +125,14 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
         return null;
     }
 
+    /**
+     * True for a screen that stays dark whatever the app's theme, so its dialogs are drawn dark too.
+     * False by default: they follow the app's theme.
+     */
+    protected boolean alwaysDark() {
+        return false;
+    }
+
     /** The host can give recovery's explanation its own layout without altering retry behavior. */
     protected void styleInitializationMessage(View row) { }
 
@@ -390,7 +398,7 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
         CharSequence message = BulletPointPreference.formatIntoBulletPoints(
                 Objects.requireNonNull(setting.userDialogMessage).toString());
 
-        Pair<Dialog, LinearLayout> dialogPair = CustomDialog.create(
+        java.util.function.Supplier<Pair<Dialog, LinearLayout>> build = () -> CustomDialog.create(
                 context,
                 confirmDialogTitle, // Title.
                 message,
@@ -418,6 +426,7 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
                 null, // No Neutral button action.
                 true  // Dismiss dialog when onNeutralClick.
         );
+        Pair<Dialog, LinearLayout> dialogPair = alwaysDark() ? Utils.buildDark(build) : build.get();
 
         dialogPair.first.setOnDismissListener(d -> showingUserDialogMessage = false);
         dialogPair.first.setCancelable(false);

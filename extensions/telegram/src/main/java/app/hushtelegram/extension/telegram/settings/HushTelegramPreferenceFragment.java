@@ -1241,6 +1241,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         return ScreenColors::recoveryAction;
     }
 
+    /** The page is black in every Telegram theme (the AMOLED rule), so a confirm over it is dark too. */
+    @Override
+    protected boolean alwaysDark() {
+        return true;
+    }
+
     @Override
     protected void styleInitializationMessage(View row) {
         ScreenColors.recoveryMessage(row);
