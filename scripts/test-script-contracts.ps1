@@ -404,6 +404,7 @@ try {
     # The isolated suite retains absent-package and ADB-failure coverage and proves owned leases,
     # signer/version refusal and install ordering without touching any shared device.
     & (Join-Path $Root 'scripts/test-device-install.ps1') -Root $Root
+    & (Join-Path $Root 'scripts/test-settings-navigation-harness.ps1')
 
     $emptyJdk = Join-Path $caseRoot 'empty-jdk'
     New-Item -ItemType Directory -Path $emptyJdk | Out-Null

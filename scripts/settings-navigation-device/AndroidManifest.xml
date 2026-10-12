@@ -1,0 +1,7 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="app.hushtelegram.navigationprobe" android:versionCode="1" android:versionName="1">
+    <uses-sdk android:minSdkVersion="28" android:targetSdkVersion="36" />
+    <application android:label="Settings navigation checks" />
+    <instrumentation android:name=".SettingsNavigationChecks" android:targetPackage="__TARGET_PACKAGE__"
+        android:functionalTest="true" />
+</manifest>

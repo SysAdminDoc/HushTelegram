@@ -4,7 +4,11 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
-Working version 0.0.14.
+Working version 0.0.15.
+
+* **Tooling:** Added the native settings navigation runner and its host checks. Reopening Telegram's existing activity uses a bounded wait, and switch checks read the actual accessibility row. Settings snapshots accept device-specific provider names while keeping recovery limited to the required settings.
+
+* **Tooling:** Verified the original sign-in reporter's successful recovery with registered credentials. Delivery without another signed-in Telegram session still needs a separate check.
 
 * **Telegram:** All 15 settings pages now use mint controls on black. Larger headings and compact navigation make the pages easier to scan. Switch explanations use the full card width. Notification status has its own card, while search and Pause keep their existing behavior.
 
