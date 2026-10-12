@@ -99,7 +99,7 @@ class NativeSettingsFixtureTest {
             assertEquals(setOf(start + 2, start + 6), flow.normal[start + 1].toSet())
             assertEquals(Opcode.IF_NE, body[start + 1].opcode)
             assertEquals(Opcode.RETURN_VOID, body[start + 5].opcode)
-            for (id in (1..25).toList() + listOf(-1, 0, NATIVE_ROW_ID)) {
+            for (id in (1..26).toList() + listOf(-1, 0, NATIVE_ROW_ID)) {
                 val next = if (id == NATIVE_ROW_ID) start + 2 else start + 6
                 assertTrue(next in flow.normal[start + 1])
                 assertEquals(if (id == NATIVE_ROW_ID) Opcode.INVOKE_VIRTUAL else Opcode.CONST_STRING, body[next].opcode)

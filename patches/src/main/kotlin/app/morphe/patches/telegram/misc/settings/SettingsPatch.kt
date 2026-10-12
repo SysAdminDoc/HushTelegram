@@ -485,8 +485,9 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
         clickBody.indices.none { it != idRead && clickAt in clickFlow.normal[it] || clickAt in clickFlow.exceptional[it] },
         "click identity or scratch register changed")
     val payload = clickBody.filterIsInstance<SwitchPayload>().nativeSingle("click switch")
-    // Telegram 13.0 added identity 25, the Wallet row.
-    nativeShape(payload.switchElements.map { it.key } == (1..25).toList(), "ordinary click identities changed")
+    // Telegram 13.0 added identity 25, the Wallet row, and the 13.0.2 beta added 26, its audio recorder settings.
+    nativeShape(payload.switchElements.map { it.key }.let { it == (1..25).toList() || it == (1..26).toList() },
+        "ordinary click identities changed")
     val addresses = IntArray(clickBody.size + 1)
     clickBody.indices.forEach { addresses[it + 1] = addresses[it] + clickBody[it].codeUnits }
     var present: String? = null
