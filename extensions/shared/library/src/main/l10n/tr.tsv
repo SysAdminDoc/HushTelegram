@@ -241,7 +241,7 @@ Quiet contacts prompts	Kişi isteklerini sustur
 After you say no to contacts access, the Contacts tab stops asking again and its warning badge goes away.	Kişilere erişimi reddettikten sonra Kişiler sekmesi tekrar sormaz ve uyarı rozeti kaybolur.
 
 New Year look all year	Yıl boyu yılbaşı görünümü
-Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow also falls on chat backgrounds if animated backgrounds are on.	Telegram'ın Noel Baba şapkasını ve yılbaşı karını sadece yılbaşında değil, yıl boyu gösterir. Animasyonlu arka planlar açıksa kar sohbet arka planlarına da yağar.
+Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow falls on the chat list's top bar and on chat backgrounds once Background rotation is on under Power saving.	Telegram'ın Noel Baba şapkasını ve yılbaşı karını sadece yılbaşında değil, yıl boyu gösterir. Güç tasarrufu altında Arka plan döndürme açıldığında kar, sohbet listesinin üst çubuğuna ve sohbet arka planlarına yağar.
 Use system font	Sistem yazı tipini kullan
 Bold, italic and code text use your phone's font instead of Telegram's built-in one. Restart Telegram to see the change.	Kalın, italik ve kod metni, Telegram'ın yerleşik yazı tipi yerine telefonunuzun yazı tipini kullanır. Değişikliği görmek için Telegram'ı yeniden başlatın.
 AMOLED black	AMOLED siyahı

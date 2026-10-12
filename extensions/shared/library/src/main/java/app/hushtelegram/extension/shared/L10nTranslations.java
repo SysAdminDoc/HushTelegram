@@ -782,8 +782,8 @@ public final class L10nTranslations {
                 "Benutzer- und Chat-IDs anzeigen");
         table.put("Show where a profile photo is stored",
                 "Anzeigen, wo ein Profilbild gespeichert ist");
-        table.put("Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow also falls on chat backgrounds if animated backgrounds are on.",
-                "Zeigt Telegrams Weihnachtsm\u00fctze und den Neujahrsschnee das ganze Jahr, nicht nur zum Jahreswechsel. Der Schnee f\u00e4llt auch auf Chat-Hintergr\u00fcnde, wenn animierte Hintergr\u00fcnde an sind.");
+        table.put("Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow falls on the chat list's top bar and on chat backgrounds once Background rotation is on under Power saving.",
+                "Zeigt Telegrams Weihnachtsm\u00fctze und den Neujahrsschnee das ganze Jahr, nicht nur zum Jahreswechsel. Der Schnee f\u00e4llt auf die obere Leiste der Chatliste und auf Chat-Hintergr\u00fcnde, sobald unter Energiesparen die Option Hintergrundrotation an ist.");
         table.put("Sign in to Telegram first.",
                 "Melde dich zuerst bei Telegram an.");
         table.put("Signed-in accounts: %1$s",
@@ -1863,8 +1863,8 @@ public final class L10nTranslations {
                 "Mostrar IDs de usuario y chat");
         table.put("Show where a profile photo is stored",
                 "Mostrar d\u00f3nde se guarda una foto de perfil");
-        table.put("Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow also falls on chat backgrounds if animated backgrounds are on.",
-                "Muestra el gorro de Pap\u00e1 Noel de Telegram y la nieve de A\u00f1o Nuevo todo el a\u00f1o, no solo en esas fechas. La nieve tambi\u00e9n cae sobre los fondos de chat si los fondos animados est\u00e1n activados.");
+        table.put("Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow falls on the chat list's top bar and on chat backgrounds once Background rotation is on under Power saving.",
+                "Muestra el gorro de Pap\u00e1 Noel de Telegram y la nieve de A\u00f1o Nuevo todo el a\u00f1o, no solo en esas fechas. La nieve cae sobre la barra superior de la lista de chats y sobre los fondos de chat cuando Rotaci\u00f3n del fondo est\u00e9 activada en Ahorro de energ\u00eda.");
         table.put("Sign in to Telegram first.",
                 "Primero inicia sesi\u00f3n en Telegram.");
         table.put("Signed-in accounts: %1$s",
@@ -2944,8 +2944,8 @@ public final class L10nTranslations {
                 "Tampilkan ID pengguna dan chat");
         table.put("Show where a profile photo is stored",
                 "Tampilkan lokasi penyimpanan foto profil");
-        table.put("Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow also falls on chat backgrounds if animated backgrounds are on.",
-                "Menampilkan topi Santa Telegram dan salju Tahun Baru sepanjang tahun, bukan hanya saat Tahun Baru. Salju juga turun di latar obrolan jika latar animasi aktif.");
+        table.put("Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow falls on the chat list's top bar and on chat backgrounds once Background rotation is on under Power saving.",
+                "Menampilkan topi Santa Telegram dan salju Tahun Baru sepanjang tahun, bukan hanya saat Tahun Baru. Salju turun di bilah atas daftar obrolan dan di latar obrolan setelah Rotasi latar aktif di bawah Penghemat daya.");
         table.put("Sign in to Telegram first.",
                 "Masuk ke Telegram terlebih dahulu.");
         table.put("Signed-in accounts: %1$s",
@@ -4025,8 +4025,8 @@ public final class L10nTranslations {
                 "Mostrar IDs de usu\u00e1rio e chat");
         table.put("Show where a profile photo is stored",
                 "Mostrar onde uma foto de perfil est\u00e1 guardada");
-        table.put("Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow also falls on chat backgrounds if animated backgrounds are on.",
-                "Mostra o gorro de Papai Noel do Telegram e a neve de Ano Novo o ano todo, n\u00e3o s\u00f3 na virada. A neve tamb\u00e9m cai nos fundos das conversas se os fundos animados estiverem ligados.");
+        table.put("Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow falls on the chat list's top bar and on chat backgrounds once Background rotation is on under Power saving.",
+                "Mostra o gorro de Papai Noel do Telegram e a neve de Ano Novo o ano todo, n\u00e3o s\u00f3 na virada. A neve cai na barra superior da lista de conversas e nos fundos das conversas quando Rota\u00e7\u00e3o do fundo estiver ligada em Economia de energia.");
         table.put("Sign in to Telegram first.",
                 "Entre no Telegram primeiro.");
         table.put("Signed-in accounts: %1$s",
@@ -5106,8 +5106,8 @@ public final class L10nTranslations {
                 "Kullan\u0131c\u0131 ve sohbet kimliklerini g\u00f6ster");
         table.put("Show where a profile photo is stored",
                 "Profil foto\u011fraf\u0131n\u0131n nerede sakland\u0131\u011f\u0131n\u0131 g\u00f6ster");
-        table.put("Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow also falls on chat backgrounds if animated backgrounds are on.",
-                "Telegram'\u0131n Noel Baba \u015fapkas\u0131n\u0131 ve y\u0131lba\u015f\u0131 kar\u0131n\u0131 sadece y\u0131lba\u015f\u0131nda de\u011fil, y\u0131l boyu g\u00f6sterir. Animasyonlu arka planlar a\u00e7\u0131ksa kar sohbet arka planlar\u0131na da ya\u011far.");
+        table.put("Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow falls on the chat list's top bar and on chat backgrounds once Background rotation is on under Power saving.",
+                "Telegram'\u0131n Noel Baba \u015fapkas\u0131n\u0131 ve y\u0131lba\u015f\u0131 kar\u0131n\u0131 sadece y\u0131lba\u015f\u0131nda de\u011fil, y\u0131l boyu g\u00f6sterir. G\u00fc\u00e7 tasarrufu alt\u0131nda Arka plan d\u00f6nd\u00fcrme a\u00e7\u0131ld\u0131\u011f\u0131nda kar, sohbet listesinin \u00fcst \u00e7ubu\u011funa ve sohbet arka planlar\u0131na ya\u011far.");
         table.put("Sign in to Telegram first.",
                 "\u00d6nce Telegram'a giri\u015f yap.");
         table.put("Signed-in accounts: %1$s",

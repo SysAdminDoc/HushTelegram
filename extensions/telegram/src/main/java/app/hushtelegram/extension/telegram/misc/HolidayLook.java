@@ -22,7 +22,10 @@ import app.hushtelegram.extension.telegram.settings.Settings;
 /**
  * Telegram's New Year look on any day. Telegram's holiday check loads the Santa hat for the chat
  * list title only on Dec 31 and Jan 1, and lets snow start by itself only on Jan 1, over the chat
- * list's top bar and, with animated chat backgrounds on, over chat backgrounds. The check runs
+ * list's top bar and over chat backgrounds. The snow effect draws nothing at all while Telegram's
+ * Background rotation power setting is off, on the top bar too (13.0.2's SnowflakesEffect checks
+ * LiteMode's chat background flag in onDraw), and only Telegram's high performance class turns it on by
+ * default. The check runs
  * whenever the top bar draws its title, so the hook at its start asks here on every frame and the
  * counts below move only when the answer changes. The logo bridge uses only the ImageSpan created
  * for the chat list title. Other titles keep Telegram's plain-text drawing path.

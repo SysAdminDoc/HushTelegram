@@ -397,8 +397,8 @@ public class HushTelegramPreferenceFragmentTest {
             assertTrue(Settings.QUIET_CONTACTS_NAG.key,
                     ((SwitchPreference) page.findPreference(Settings.QUIET_CONTACTS_NAG.key)).isChecked());
             assertEquals("New Year look all year", String.valueOf(page.findPreference(Settings.HOLIDAY_LOOK.key).getTitle()));
-            assertEquals("Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow also "
-                    + "falls on chat backgrounds if animated backgrounds are on.",
+            assertEquals("Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow falls "
+                    + "on the chat list's top bar and on chat backgrounds once Background rotation is on under Power saving.",
                     String.valueOf(page.findPreference(Settings.HOLIDAY_LOOK.key).getSummary()));
             // Telegram keeps its own holiday dates until someone turns the switch on.
             assertFalse(Settings.HOLIDAY_LOOK.key,

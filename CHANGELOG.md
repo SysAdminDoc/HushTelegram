@@ -6,6 +6,8 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.17.
 
+* **Telegram:** The New Year look switch now says what the snow needs. Telegram only draws it while Background rotation is on under Power saving, and it leaves that off on most phones that aren't high end. Refs #14.
+
 * **Telegram:** When your UnifiedPush app is uninstalled or ends the sign-up itself, Telegram is told to ask Firebase for a token again, the same way turning the switch off does. Before, Telegram's servers could keep sending to an address nothing answered. A phone without Google services has no Firebase to fall back on, so pick another UnifiedPush app there.
 
 * **Telegram:** An API ID or hash pasted with a stray space or line break is trimmed, and two empty fields keep Telegram's own pair instead of stopping the patch.
