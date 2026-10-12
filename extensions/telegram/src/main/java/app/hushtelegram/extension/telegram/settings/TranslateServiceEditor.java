@@ -104,8 +104,8 @@ final class TranslateServiceEditor {
     private static EditText field(Activity activity, int id, String hint, String text, int type) {
         EditText field = new EditText(HushTelegramPreferenceFragment.themed(activity));
         field.setId(id);
-        field.setInputType(type);
         field.setSingleLine(true);
+        field.setInputType(type);
         field.setHint(hint);
         field.setText(text);
         return field;

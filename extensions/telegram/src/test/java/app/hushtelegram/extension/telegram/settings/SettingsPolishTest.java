@@ -149,6 +149,8 @@ public class SettingsPolishTest {
             try {
                 EditText key = dialog.findViewById(android.R.id.edit);
                 EditText model = dialog.findViewById(android.R.id.text2);
+                assertTrue("Single-line formatting must not remove password masking",
+                        key.getTransformationMethod() instanceof android.text.method.PasswordTransformationMethod);
                 key.setText("local-test-key");
                 model.setText("model with spaces");
                 dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
