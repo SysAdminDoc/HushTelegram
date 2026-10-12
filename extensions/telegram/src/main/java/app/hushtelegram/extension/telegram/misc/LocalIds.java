@@ -51,7 +51,11 @@ public final class LocalIds {
             if (!enabled()) return;
             try {
                 ClipboardManager clipboard = (ClipboardManager) clicked.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                if (clipboard == null) return;
+                if (clipboard == null) {
+                    Toast.makeText(clicked.getContext(), L10n.t(clicked.getContext(),
+                            "Couldn't copy that. Try again."), Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 clipboard.setPrimaryClip(ClipData.newPlainText(L10n.t(clicked.getContext(), "ID"),
                         Long.toString(userId > 0 ? userId : chatId)));
                 nativeDismiss(menu);
@@ -59,6 +63,8 @@ public final class LocalIds {
                 HookStatus.counted(FamilyNames.SHOW_LOCAL_IDS, "local ID copied");
             } catch (Throwable failure) {
                 HookStatus.threw(FamilyNames.SHOW_LOCAL_IDS, "local ID copy", failure);
+                Toast.makeText(clicked.getContext(), L10n.t(clicked.getContext(),
+                        "Couldn't copy that. Try again."), Toast.LENGTH_SHORT).show();
             }
         });
         // A switch change, Pause or safe mode hides an already built menu before its next draw.

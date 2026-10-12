@@ -106,7 +106,7 @@ val outsideTranslatePatch = bytecodePatch(
 internal class OutsideTranslateSite(
     val chat: String, val update: MutableMethod, val fill: MutableMethod, val choose: MutableMethod, val visibility: MutableMethod,
     val delegate: MutableMethod, val selected: FieldReference, val translateItem: FieldReference, val headerItem: FieldReference,
-    val lazyAdd: MethodReference, val dialogGetter: MethodReference, val outer: FieldReference,
+    val lazyAdd: MethodReference, val setHeaderText: MethodReference, val dialogGetter: MethodReference, val outer: FieldReference,
 ) {
     /** The extension answers first; a yes means the message shows its translation and Telegram's own check is skipped. */
     fun insertShow(target: MutableMethod) {
@@ -177,7 +177,8 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
     controlHook(OUTSIDE_TRANSLATE, "notifyDialog", listOf("J"), "V")
     controlHook(OUTSIDE_TRANSLATE, "translateIcon", listOf(), "I")
     controlHook(OUTSIDE_TRANSLATE, "appLocale", listOf(), "Ljava/util/Locale;")
-    controlHook(OUTSIDE_TRANSLATE, "addHeaderItem", listOf(OBJECT, "I", "I", "Ljava/lang/String;"), "V")
+    controlHook(OUTSIDE_TRANSLATE, "addHeaderItem", listOf(OBJECT, "I", "I", "Ljava/lang/String;"), OBJECT)
+    controlHook(OUTSIDE_TRANSLATE, "setHeaderText", listOf(OBJECT, "Ljava/lang/String;"), "V")
     controlHook(OUTSIDE_TRANSLATE, "chatOf", listOf(OBJECT), OBJECT)
 
     // The message's own decision.
@@ -245,7 +246,9 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
     val made = creator.controlBody()
     val lazyCall = made.getOrNull(put - 2)?.call()
     controlShape(put >= 3 && made[put - 1].opcode == Opcode.MOVE_RESULT_OBJECT && made[put - 2].opcode == Opcode.INVOKE_VIRTUAL && lazyCall != null &&
-        lazyCall.returnType == translateItem.type && lazyCall.parameterTypes.map(CharSequence::toString).let { it.size == 3 && it[0] == "I" && it[1] == "I" },
+        lazyCall.returnType == translateItem.type && lazyCall.parameterTypes.map(CharSequence::toString).let {
+            it.size == 3 && it[0] == "I" && it[1] == "I" && it[2] in setOf("Ljava/lang/String;", "Ljava/lang/CharSequence;")
+        },
         "the translate item is no longer added with an ID, an icon and a label")
     val receiver = made[put - 2].namedRegisters().first()
     val sourceAt = (put - 3 downTo 0).firstOrNull { i -> made[i].opcode.setsRegister() && (made[i] as? OneRegisterInstruction)?.registerA == receiver }
@@ -259,6 +262,22 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
     controlShape(lazyOwner != null && AccessFlags.PUBLIC.isSet(lazyOwner.accessFlags) && lazyOwner.methods.any {
         signature(it) == lazyCall.toString() && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
     }, "the header menu's item adder is inaccessible")
+    val itemOwner = classDefByOrNull(lazyCall.returnType)
+    controlShape(itemOwner != null && AccessFlags.PUBLIC.isSet(itemOwner.accessFlags), "the header item's class is inaccessible")
+    // R8 renames Item.setText, unlike the submenu view's TextView override. Bind the wrapper's
+    // label setter by its argument and field write, then require it to update the visible text.
+    val setHeaderText = itemOwner!!.methods.filter {
+        it.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/CharSequence;") && it.returnType == "V" &&
+            it.controlBody().any { instruction -> instruction.opcode == Opcode.IPUT_OBJECT && instruction.controlField()?.let { field ->
+                field.definingClass == itemOwner.type && field.type == "Ljava/lang/CharSequence;"
+            } == true }
+    }.controlSingle("the header item's text setter in ${itemOwner.type}")
+    controlShape(AccessFlags.PUBLIC.isSet(setHeaderText.accessFlags) && !AccessFlags.STATIC.isSet(setHeaderText.accessFlags) &&
+        !AccessFlags.ABSTRACT.isSet(setHeaderText.accessFlags) && !AccessFlags.NATIVE.isSet(setHeaderText.accessFlags),
+        "the header item's text setter is inaccessible")
+    controlShape(setHeaderText.controlBody().any { instruction -> instruction.call()?.let { method ->
+        method.name == "setText" && method.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/CharSequence;") && method.returnType == "V"
+    } == true }, "the header item's text setter no longer updates its view")
 
     // The header's click delegate, the one that calls Telegram's own translate toggle.
     val delegates = mutableListOf<Pair<String, String>>()
@@ -282,7 +301,7 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
 
     requireTranslateHostMembers()
     return OutsideTranslateSite(chat, update, fill, choose, visibility, delegate, selected, translateItem, header,
-        lazyCall, getter, outer)
+        lazyCall, setHeaderText, getter, outer)
 }
 
 private fun branches(opcode: Opcode): Boolean {
@@ -422,6 +441,12 @@ internal fun BytecodePatchContext.writeOutsideTranslateStubs(site: OutsideTransl
         check-cast p0, $chat
         iget-object v0, p0, ${site.headerItem}
         invoke-virtual {v0, p1, p2, p3}, ${site.lazyAdd}
+        move-result-object v0
+        return-object v0
+    """)
+    writeStub(OUTSIDE_TRANSLATE, "setHeaderText", 2, """
+        check-cast p0, ${site.lazyAdd.returnType}
+        invoke-virtual {p0, p1}, ${site.setHeaderText}
         return-void
     """)
     writeStub(OUTSIDE_TRANSLATE, "chatOf", 2, """

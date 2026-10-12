@@ -8,6 +8,9 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.forward.FORWARDS
@@ -25,12 +28,14 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -71,7 +76,11 @@ class OutsideTranslateFixtureTest {
                     m.name == "getParentActivity" && params.isEmpty() ||
                     m.controlBody().map { it.controlRef() }.let { IS_PREMIUM in it && FORWARDS in it && NAME_HIDE in it })
         }
-        val types = if (neighbours) fixed + menuFixed else fixed
+        val items = found.flatMap { it.methods }.filter { m ->
+            m.parameterTypes.map(CharSequence::toString) in listOf(listOf("I", "I", "Ljava/lang/String;"), listOf("I", "I", "Ljava/lang/CharSequence;")) &&
+                m.returnType.startsWith("Lorg/telegram/ui/ActionBar/")
+        }.map { it.returnType }.toSet()
+        val types = (if (neighbours) fixed + menuFixed else fixed) + items
         return (FixtureDex.classes(build, types).values + found).distinctBy { it.type }.map(ImmutableClassDef::of)
     }
 
@@ -80,6 +89,11 @@ class OutsideTranslateFixtureTest {
             val name = build.name
             val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
             val site = context.resolveOutsideTranslate()
+            val itemType = "Lorg/telegram/ui/ActionBar/${if (name.startsWith("telegram-web-")) "w0" else "t0"};"
+            val menuType = "Lorg/telegram/ui/ActionBar/${if (name.startsWith("telegram-web-")) "y0" else "v0"};"
+            assertEquals("$name: the stock lazy item adder", "$menuType->u(IILjava/lang/String;)$itemType", site.lazyAdd.toString())
+            assertEquals("$name: the wrapper's renamed text setter", "$itemType->d(Ljava/lang/CharSequence;)V", site.setHeaderText.toString())
+            assertEquals("$name: the stock Translate item uses the same wrapper", itemType, site.translateItem.type)
             val oldUpdate = ImmutableMethod.of(site.update)
             val oldFill = ImmutableMethod.of(site.fill)
             val oldChoose = ImmutableMethod.of(site.choose)
@@ -145,7 +159,7 @@ class OutsideTranslateFixtureTest {
             // The stubs reach what Telegram's own translation reads, and nothing of its Premium path.
             val stub = { n: String -> context.mutableClassDefBy(OUTSIDE_TRANSLATE).methods.single { it.name == n }.controlBody() }
             val everything = listOf("selected", "original", "translatable", "messageType", "dialog", "id", "entities", "isTranslated", "applyTranslated",
-                "notifyTranslated", "notifyDialog", "translateIcon", "appLocale", "hasTranslateItem", "addHeaderItem", "chatOf", "chatDialog")
+                "notifyTranslated", "notifyDialog", "translateIcon", "appLocale", "hasTranslateItem", "addHeaderItem", "setHeaderText", "chatOf", "chatDialog")
                 .flatMap { stub(it) }.mapNotNull { it.controlRef() }
             assertFalse("$name: Telegram's Premium and availability stay untouched",
                 everything.any { it.contains("isFeatureAvailable") || it.contains("isPremium") || it.contains("setHideTranslateDialog") || it.contains("toggleTranslatingDialog") })
@@ -156,10 +170,58 @@ class OutsideTranslateFixtureTest {
             assertTrue("$name: the chat is told through Telegram's own notice", stub("notifyTranslated").any { it.controlRef() == "Lorg/telegram/messenger/NotificationCenter;->messageTranslated:I" })
             assertEquals("Lorg/telegram/messenger/R\$drawable;->msg_translate:I", stub("translateIcon").first().controlRef())
             assertEquals("$name: adds through the item adder Telegram's own Translate uses", site.lazyAdd.toString(), stub("addHeaderItem").single { it.opcode == Opcode.INVOKE_VIRTUAL }.controlRef())
+            assertEquals("$name: the native item is returned for later updates", listOf(Opcode.MOVE_RESULT_OBJECT, Opcode.RETURN_OBJECT),
+                stub("addHeaderItem").takeLast(2).map { it.opcode })
+            assertTrue("$name: the returned item stays in the same register", stub("addHeaderItem").takeLast(2).all { it.namedRegisters() == listOf(0) })
+            assertEquals("$name: the bridge returns an object", "Ljava/lang/Object;",
+                context.mutableClassDefBy(OUTSIDE_TRANSLATE).methods.single { it.name == "addHeaderItem" }.returnType)
+            val setter = stub("setHeaderText")
+            assertEquals(listOf(Opcode.CHECK_CAST, Opcode.INVOKE_VIRTUAL, Opcode.RETURN_VOID), setter.map { it.opcode })
+            assertEquals("$name: the cast uses the resolved native item", itemType, setter[0].controlRef())
+            assertEquals("$name: the label is changed on that item", site.setHeaderText.toString(), setter[1].controlRef())
+            assertEquals(listOf(0, 1), setter[1].namedRegisters())
             assertEquals("$name: the delegate's chat", site.outer.toString(), stub("chatOf").single { it.opcode == Opcode.IGET_OBJECT }.controlRef())
             assertTrue("$name: the delegate is public", site.delegate.definingClass.isNotEmpty() && AccessFlags.PUBLIC.isSet(site.delegate.accessFlags))
             val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "outsideTranslate" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
+        }
+    }
+
+    @Test fun `missing or inaccessible native text updates refuse before hooks stubs or status change`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val hostClasses = hosts(build)
+            val types = hostClasses.map { it.type } + listOf(OUTSIDE_TRANSLATE, SETTINGS_STATUS)
+            for (mutation in listOf("missing setter", "private setter", "static setter", "no visible text update", "missing bridge")) {
+                val context = PatchContexts.of(ExtensionDex.classes() + hostClasses)
+                val site = context.resolveOutsideTranslate()
+                val owner = context.mutableClassDefBy(site.setHeaderText.definingClass)
+                val setter = owner.methods.single { signature(it) == site.setHeaderText.toString() }
+                when (mutation) {
+                    "missing setter" -> owner.methods.remove(setter)
+                    "private setter" -> setter.accessFlags = setter.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value
+                    "static setter" -> setter.accessFlags = setter.accessFlags or AccessFlags.STATIC.value
+                    "no visible text update" -> setter.controlBody().mapIndexedNotNull { index, instruction ->
+                        index.takeIf { instruction.controlRef()?.contains("->setText(Ljava/lang/CharSequence;)V") == true }
+                    }.asReversed().forEach { setter.replaceInstruction(it, "nop") }
+                    "missing bridge" -> context.mutableClassDefBy(OUTSIDE_TRANSLATE).methods.removeAll { it.name == "setHeaderText" }
+                }
+                val before = state(context, types)
+                assertThrows("${build.name}: $mutation", PatchException::class.java) { outsideTranslatePatch.execute(context) }
+                assertEquals("${build.name}: $mutation leaves all host methods, runtime bridges and build flags unchanged",
+                    before, state(context, types))
+            }
+        }
+    }
+
+    private fun state(context: BytecodePatchContext, types: List<String>) = types.associateWith { type ->
+        context.mutableClassDefBy(type).let { cls ->
+            listOf(cls.accessFlags, cls.methods.associate { method -> signature(method) to listOf(
+                method.accessFlags, method.implementation?.registerCount,
+                method.controlBody().map { instruction -> instruction.shape() + listOf(
+                    (instruction as? WideLiteralInstruction)?.wideLiteral, (instruction as? OffsetInstruction)?.codeOffset) },
+                method.implementation?.tryBlocks?.map { block -> listOf(block.startCodeAddress, block.codeUnitCount,
+                    block.exceptionHandlers.map { listOf(it.exceptionType, it.handlerCodeAddress) }) },
+            ) })
         }
     }
 

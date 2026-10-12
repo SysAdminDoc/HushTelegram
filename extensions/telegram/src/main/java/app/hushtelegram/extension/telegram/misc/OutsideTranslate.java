@@ -6,6 +6,7 @@ package app.hushtelegram.extension.telegram.misc;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -118,7 +119,8 @@ public final class OutsideTranslate {
     private static final Set<String> MESSAGES_OFF = new HashSet<>();
     private static final Set<Long> TOASTED = new HashSet<>();
     private static final Map<Object, String> APPLIED = Collections.synchronizedMap(new WeakHashMap<>());
-    private static final Map<Object, Boolean> HEADERS = Collections.synchronizedMap(new WeakHashMap<>());
+    // A native item can refer back to its chat. Neither side should keep that screen alive here.
+    private static final Map<Object, WeakReference<Object>> HEADERS = Collections.synchronizedMap(new WeakHashMap<>());
     private static Set<Long> chats;
     private static AiTranslate.Service service;
     /** Goes up when the service changes, so an answer from the old one isn't kept. */
@@ -183,7 +185,7 @@ public final class OutsideTranslate {
                 APPLIED.remove(key);
                 return false;
             }
-            String shown = result.text + "\n\n" + L10n.t("(Translated. Long-press for the original.)");
+            String shown = result.text + "\n\n" + L10n.t("(Translated. Open the message menu for the original.)");
             if (shown.equals(APPLIED.get(key)) && message.translated()) return true;
             message.apply(shown, target);
             APPLIED.put(key, shown);
@@ -564,11 +566,32 @@ public final class OutsideTranslate {
     /** Asked whenever the chat updates its own Translate item, which exists when the chat has a header menu. */
     public static void headerMenu(Object chat) {
         try {
-            if (chat == null || !active() || !hasTranslateItem(chat) || HEADERS.containsKey(chat)) return;
-            HEADERS.put(chat, Boolean.TRUE);
-            addHeaderItem(chat, HEADER_ITEM, translateIcon(), L10n.t("Translate this chat"));
+            if (chat == null || !active() || !hasTranslateItem(chat)) return;
+            long dialog = chatDialog(chat);
+            synchronized (HEADERS) {
+                if (!HEADERS.containsKey(chat)) {
+                    Object item = addHeaderItem(chat, HEADER_ITEM, translateIcon(), headerText(dialog));
+                    HEADERS.put(chat, new WeakReference<>(item));
+                } else {
+                    updateHeaderText(chat, dialog);
+                }
+            }
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "header menu", failure);
+        }
+    }
+
+    private static String headerText(long dialog) {
+        return L10n.t(chatOn(dialog) ? "Stop translating this chat" : "Translate this chat");
+    }
+
+    private static void updateHeaderText(Object chat, long dialog) {
+        try {
+            WeakReference<Object> remembered = HEADERS.get(chat);
+            Object item = remembered == null ? null : remembered.get();
+            if (item != null) setHeaderText(item, headerText(dialog));
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "header label", failure);
         }
     }
 
@@ -586,6 +609,7 @@ public final class OutsideTranslate {
             if (chat == null) return false;
             long dialog = chatDialog(chat);
             boolean on = toggleChat(dialog);
+            updateHeaderText(chat, dialog);
             Utils.showToastShort(on ? L10n.t("This chat will be translated") : L10n.t("This chat shows the original messages"));
             notifyDialog(dialog);
             HookStatus.counted(FamilyNames.OUTSIDE_TRANSLATE, on ? "chat translate on" : "chat translate off");
@@ -639,7 +663,10 @@ public final class OutsideTranslate {
     public static boolean hasTranslateItem(Object chat) { return false; }
 
     /** Adds an item to the chat's header menu. */
-    public static void addHeaderItem(Object chat, int id, int icon, String text) {}
+    public static Object addHeaderItem(Object chat, int id, int icon, String text) { return null; }
+
+    /** Updates the native item's label without adding another item. */
+    public static void setHeaderText(Object item, String text) {}
 
     /** The chat screen a header menu delegate belongs to. */
     public static Object chatOf(Object delegate) { return null; }

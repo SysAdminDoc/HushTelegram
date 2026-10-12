@@ -8,13 +8,19 @@ import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.RippleDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.net.Uri;
 import android.text.format.Formatter;
 import android.util.Pair;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Utils;
@@ -90,42 +96,73 @@ public final class MessageMenu {
     /** Asked first when an option is chosen. Telegram's own numbers pass by untouched. */
     public static void chosen(Object chat, int option) {
         if (option != REPEAT && option != DETAILS && option != COPY_PHOTO && option != QUICK_FORWARD) return;
+        Context context = null;
         try {
+            if (!Utils.settingsReady()) return;
+            BooleanSetting setting = option == REPEAT ? Settings.MESSAGE_MENU_REPEAT
+                    : option == DETAILS ? Settings.MESSAGE_MENU_DETAILS
+                    : option == COPY_PHOTO ? Settings.MESSAGE_MENU_COPY_PHOTO : Settings.MESSAGE_MENU_QUICK_FORWARD;
+            if (!on(setting)) return;
+            context = Utils.getContext();
+            Context host = activity(chat);
+            if (host != null) context = host;
             Object message = selected(chat);
-            if (message == null) return;
+            if (message == null) {
+                feedback(context, failureMessage(context, option));
+                return;
+            }
             if (option == REPEAT) {
-                if (!on(Settings.MESSAGE_MENU_REPEAT)) return;
                 ArrayList<Object> batch = batch(chat, message);
                 // Sent once the menu has closed, the way Telegram's own forward panel sends.
-                Utils.runOnMainThread(() -> send(chat, batch));
-                HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "message repeated");
+                Context target = context;
+                Utils.runOnMainThread(() -> repeat(target, chat, batch));
             } else if (option == QUICK_FORWARD) {
-                if (!on(Settings.MESSAGE_MENU_QUICK_FORWARD)) return;
-                Context context = activity(chat);
-                if (context == null) return;
                 ArrayList<Object> batch = batch(chat, message);
                 int account = account(message);
                 long from = dialog(message);
                 boolean hide = hidesSender(message, batch);
-                Utils.runOnMainThread(() -> chooseChat(context, account, from, batch, hide));
+                Context target = context;
+                Utils.runOnMainThread(() -> chooseChat(target, account, from, batch, hide));
                 HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "quick forward opened");
             } else if (option == COPY_PHOTO) {
-                if (!on(Settings.MESSAGE_MENU_COPY_PHOTO)) return;
-                Context context = activity(chat);
                 File file = downloaded(message);
-                if (context == null || file == null) return;
+                if (file == null) {
+                    feedback(context, L10n.t(context, "Couldn't copy that. Try again."));
+                    return;
+                }
                 copyPhoto(context, file);
-                HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "photo copied");
             } else {
-                if (!on(Settings.MESSAGE_MENU_DETAILS)) return;
-                Context context = activity(chat);
-                if (context == null) return;
                 String text = describe(context, facts(message));
-                Utils.runOnMainThread(() -> show(context, text));
+                Context target = context;
+                Utils.runOnMainThread(() -> show(target, text));
                 HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "message details shown");
             }
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "message menu choice", failure);
+            feedback(context, failureMessage(context, option));
+        }
+    }
+
+    private static String failureMessage(Context context, int option) {
+        return option == COPY_PHOTO ? L10n.t(context, "Couldn't copy that. Try again.")
+                : option == QUICK_FORWARD ? L10n.t(context, "Can't forward there")
+                : L10n.t(context, "Couldn't complete that action. Try again.");
+    }
+
+    private static void feedback(Context context, String message) {
+        if (context == null) return;
+        Utils.runOnMainThreadNowOrLater(() ->
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show());
+    }
+
+    private static void repeat(Context context, Object chat, ArrayList<Object> batch) {
+        if (!on(Settings.MESSAGE_MENU_REPEAT)) return;
+        try {
+            send(chat, batch);
+            HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "message repeated");
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "repeat message", failure);
+            feedback(context, L10n.t(context, "Couldn't complete that action. Try again."));
         }
     }
 
@@ -232,42 +269,72 @@ public final class MessageMenu {
 
     /** The list of chats to forward to, a row each. */
     private static void chooseChat(Context context, int account, long from, ArrayList<Object> batch, boolean hide) {
+        if (!on(Settings.MESSAGE_MENU_QUICK_FORWARD)) return;
         try {
             List<Destination> where = destinations(account, from);
             if (where.isEmpty()) {
                 Toast.makeText(context, L10n.t(context, "No chat to forward to"), Toast.LENGTH_SHORT).show();
                 return;
             }
-            Pair<Dialog, LinearLayout> dialog = CustomDialog.create(context, L10n.t(context, "Forward to"), null, null, null,
-                    null, () -> {}, null, null, true);
-            LinearLayout rows = dialog.second;
-            // Between the title and the Cancel button.
-            int at = Math.min(1, rows.getChildCount());
-            float density = context.getResources().getDisplayMetrics().density;
+            LinearLayout rows = new LinearLayout(context);
+            rows.setOrientation(LinearLayout.VERTICAL);
+            Pair<Dialog, LinearLayout> dialog = CustomDialog.createWithContent(context,
+                    L10n.t(context, "Forward to"), rows, () -> {});
+            Context themed = dialog.second.getContext();
+            int pad = Math.round(16 * themed.getResources().getDisplayMetrics().density);
             for (Destination destination : where) {
-                TextView row = new TextView(context);
+                Button row = new Button(themed, null, 0);
                 row.setText(destination.title);
+                row.setAllCaps(false);
                 row.setTextSize(16f);
                 row.setTextColor(Utils.getAppForegroundColor());
-                row.setGravity(Gravity.CENTER_VERTICAL);
-                row.setSingleLine(true);
-                int pad = (int) (16 * density);
+                row.setTextDirection(View.TEXT_DIRECTION_LOCALE);
+                row.setLayoutDirection(themed.getResources().getConfiguration().getLayoutDirection());
+                row.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+                row.setSingleLine(false);
+                row.setMaxLines(Integer.MAX_VALUE);
+                row.setEllipsize(null);
                 row.setPadding(pad, pad / 2, pad, pad / 2);
-                row.setMinHeight((int) (48 * density));
-                row.setClickable(true);
+                int height = Math.round(48 * themed.getResources().getDisplayMetrics().density);
+                row.setMinHeight(height);
+                row.setMinimumHeight(height);
+                row.setFocusable(true);
+                row.setBackground(destinationBackground(themed));
                 row.setOnClickListener((View view) -> {
                     dialog.first.dismiss();
                     forward(context, account, destination, batch, hide);
                 });
-                rows.addView(row, at++);
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                params.topMargin = rows.getChildCount() == 0 ? 0 : pad / 2;
+                rows.addView(row, params);
             }
             dialog.first.show();
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "quick forward list", failure);
+            feedback(context, L10n.t(context, "Can't forward there"));
         }
     }
 
+    private static RippleDrawable destinationBackground(Context context) {
+        int foreground = Utils.getAppForegroundColor();
+        float density = context.getResources().getDisplayMetrics().density;
+        StateListDrawable states = new StateListDrawable();
+        for (int state : new int[]{android.R.attr.state_focused, android.R.attr.state_hovered, 0}) {
+            GradientDrawable fill = new GradientDrawable();
+            fill.setColor(Utils.getCancelOrNeutralButtonBackgroundColor());
+            fill.setCornerRadius(8 * density);
+            if (state != 0) fill.setStroke(Math.round((state == android.R.attr.state_focused ? 2 : 1) * density), foreground);
+            states.addState(state == 0 ? new int[0] : new int[]{state}, fill);
+        }
+        GradientDrawable mask = new GradientDrawable();
+        mask.setColor(Color.WHITE);
+        mask.setCornerRadius(8 * density);
+        return new RippleDrawable(ColorStateList.valueOf((foreground & 0x00ffffff) | 0x33000000), states, mask);
+    }
+
     private static void forward(Context context, int account, Destination destination, ArrayList<Object> batch, boolean hide) {
+        if (!on(Settings.MESSAGE_MENU_QUICK_FORWARD)) return;
         try {
             int result = forwardTo(account, batch, destination.id, hide);
             String said = result == 0
@@ -277,6 +344,7 @@ public final class MessageMenu {
             if (result == 0) HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "quick forwarded");
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "quick forward", failure);
+            feedback(context, L10n.t(context, "Can't forward there"));
         }
     }
 
@@ -293,11 +361,20 @@ public final class MessageMenu {
 
     /** The picture itself on the clipboard, as a content link the app it's pasted into can read. */
     private static void copyPhoto(Context context, File file) {
-        Uri uri = uri(context, file);
-        ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-        if (uri == null || clipboard == null) return;
-        clipboard.setPrimaryClip(ClipData.newUri(context.getContentResolver(), L10n.t(context, "Copy photo"), uri));
-        Toast.makeText(context, L10n.t(context, "Photo copied"), Toast.LENGTH_SHORT).show();
+        try {
+            Uri uri = uri(context, file);
+            ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+            if (uri == null || clipboard == null) {
+                feedback(context, L10n.t(context, "Couldn't copy that. Try again."));
+                return;
+            }
+            clipboard.setPrimaryClip(ClipData.newUri(context.getContentResolver(), L10n.t(context, "Copy photo"), uri));
+            Toast.makeText(context, L10n.t(context, "Photo copied"), Toast.LENGTH_SHORT).show();
+            HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "photo copied");
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "photo copy", failure);
+            feedback(context, L10n.t(context, "Couldn't copy that. Try again."));
+        }
     }
 
     /** The whole album when the message is part of one, so the copy stays an album. */
@@ -382,6 +459,7 @@ public final class MessageMenu {
             dialog.first.show();
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "message details dialog", failure);
+            feedback(context, L10n.t(context, "Couldn't complete that action. Try again."));
         }
     }
 
@@ -391,6 +469,7 @@ public final class MessageMenu {
             Toast.makeText(context, L10n.t(context, "Message details copied"), Toast.LENGTH_SHORT).show();
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "message details copy", failure);
+            feedback(context, L10n.t(context, "Couldn't copy that. Try again."));
         }
     }
 
