@@ -4,7 +4,7 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
-Working version 0.0.16.
+Working version 0.0.17.
 
 * **Telegram:** Settings controls share visible focus outlines, readable disabled text and 48dp touch targets. Cards, switches and dialogs use the same corner scale. Search updates its heading as you type and keeps the keyboard open when you clear it.
 
