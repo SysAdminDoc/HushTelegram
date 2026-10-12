@@ -56,8 +56,10 @@ public final class SettingsDialog extends DialogFragment {
      * carries an id.
      */
     static final int CONTAINER_ID = 0x48464301;
+    static final String PAGE_TITLE = "hushtelegram_page_title";
 
     private TextView pageTitle;
+    private TextView introduction;
     private LinearLayout searchBox;
     private EditText search;
     private TextView results;
@@ -117,9 +119,8 @@ public final class SettingsDialog extends DialogFragment {
         LinearLayout bar = new LinearLayout(getContext());
         bar.setOrientation(LinearLayout.HORIZONTAL);
         bar.setGravity(Gravity.CENTER_VERTICAL);
-        int pad = dp(16);
         // Start and end, not left and right: in a right-to-left language the bar is mirrored.
-        bar.setPaddingRelative(dp(4), dp(12), pad, dp(12));
+        bar.setPaddingRelative(dp(8), 0, dp(20), 0);
 
         android.widget.ImageButton back = new android.widget.ImageButton(getContext());
         android.graphics.drawable.Drawable arrow = SettingsIcons.icon(getContext(), SettingsIcons.BACK, ScreenColors.DEFAULT.title);
@@ -149,17 +150,34 @@ public final class SettingsDialog extends DialogFragment {
         });
         bar.addView(back, new LinearLayout.LayoutParams(dp(48), dp(48)));
 
-        TextView title = new TextView(getContext());
-        pageTitle = title;
-        title.setText("HushTelegram");
-        title.setTextColor(ScreenColors.DEFAULT.title);
-        title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
-        title.setPaddingRelative(dp(8), 0, 0, 0);
-        title.setAccessibilityHeading(true);
-        bar.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        TextView brand = new TextView(getContext());
+        brand.setText("HushTelegram");
+        brand.setAllCaps(true);
+        brand.setTextColor(ScreenColors.DEFAULT.heading);
+        brand.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        brand.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        brand.setLetterSpacing(0.08f);
+        brand.setPaddingRelative(dp(4), 0, 0, 0);
+        brand.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        bar.addView(brand, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         root.addView(bar);
 
+        pageTitle = new TextView(getContext());
+        pageTitle.setTag(PAGE_TITLE);
+        pageTitle.setText("HushTelegram");
+        pageTitle.setTextColor(ScreenColors.DEFAULT.title);
+        pageTitle.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
+        pageTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+        pageTitle.setAccessibilityHeading(true);
+        pageTitle.setPaddingRelative(dp(22), dp(4), dp(20), dp(16));
+        root.addView(pageTitle);
+        introduction = new TextView(getContext());
+        introduction.setText(L10n.t("A quieter space, your way."));
+        introduction.setTextColor(ScreenColors.DEFAULT.summary);
+        introduction.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        introduction.setPaddingRelative(dp(22), 0, dp(20), dp(14));
+        introduction.setVisibility(View.GONE);
+        root.addView(introduction);
         buildSearch(root);
 
         FrameLayout container = new FrameLayout(getContext());
@@ -189,7 +207,7 @@ public final class SettingsDialog extends DialogFragment {
         searchBox.setGravity(Gravity.CENTER_VERTICAL);
         android.graphics.drawable.GradientDrawable surface = new android.graphics.drawable.GradientDrawable();
         surface.setColor(palette.card);
-        surface.setCornerRadius(dp(10));
+        surface.setCornerRadius(dp(16));
         surface.setStroke(dp(1), palette.outline);
         searchBox.setBackground(surface);
         searchBox.setPaddingRelative(dp(16), 0, 0, 0);
@@ -208,7 +226,7 @@ public final class SettingsDialog extends DialogFragment {
         search.setTextColor(palette.title);
         search.setHintTextColor(palette.summary);
         search.setPaddingRelative(dp(12), dp(12), 0, dp(12));
-        search.setMinimumHeight(dp(52));
+        search.setMinimumHeight(dp(48));
         searchBox.addView(search, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         android.widget.ImageButton clear = new android.widget.ImageButton(getContext());
         clear.setImageDrawable(SettingsIcons.icon(getContext(), SettingsIcons.CLOSE, palette.summary));
@@ -234,7 +252,7 @@ public final class SettingsDialog extends DialogFragment {
         });
         LinearLayout.LayoutParams layout = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        layout.setMargins(dp(16), 0, dp(16), dp(12));
+        layout.setMargins(dp(20), 0, dp(20), dp(8));
         root.addView(searchBox, layout);
         // Typed letters alone tell a screen reader nothing about the list below, so the count is
         // spoken from a polite live region, once the typing has settled.
@@ -273,7 +291,9 @@ public final class SettingsDialog extends DialogFragment {
     }
 
     void showPage(CharSequence title, boolean home, String query) {
-        pageTitle.setText(title);
+        pageTitle.setText(home ? L10n.t(query.isEmpty() ? "Your Telegram." : "Search settings") : title);
+        introduction.setVisibility(home && query.isEmpty() ? View.VISIBLE : View.GONE);
+        pageTitle.setPaddingRelative(dp(22), dp(4), dp(20), dp(home && query.isEmpty() ? 6 : 16));
         searchBox.setVisibility(home ? View.VISIBLE : View.GONE);
         settingSearch = true;
         if (!search.getText().toString().equals(query)) search.setText(query);

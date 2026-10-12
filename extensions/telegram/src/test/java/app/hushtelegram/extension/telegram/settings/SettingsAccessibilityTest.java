@@ -224,8 +224,8 @@ public class SettingsAccessibilityTest {
         assertTrue(info.getActionList().contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK));
         assertNotNull("the back icon is missing", back.getDrawable());
 
-        View title = ((android.view.ViewGroup) back.getParent()).getChildAt(1);
-        assertEquals("HushTelegram", String.valueOf(((TextView) title).getText()));
+        View title = dialog.getView().findViewWithTag(SettingsDialog.PAGE_TITLE);
+        assertEquals("Your Telegram.", String.valueOf(((TextView) title).getText()));
         assertTrue("the screen's title isn't a heading", node(title).isHeading());
     }
 

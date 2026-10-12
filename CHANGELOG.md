@@ -2,6 +2,14 @@
 
 Every HushTelegram release, newest first.
 
+## Unreleased
+
+Working version 0.0.14.
+
+* **Telegram:** All 15 settings pages now use mint controls on black. Larger headings and compact navigation make the pages easier to scan. Switch explanations use the full card width. Notification status has its own card, while search and Pause keep their existing behavior.
+
+* **Tooling:** Refreshed the settings screenshots and added a visual reference for every page. Checked navigation and search on a patched build, including Pause and Resume from a keyboard.
+
 ## 0.0.13 (2026-10-11)
 
 The seventh release, with 68 patches for telegram.org's Telegram 13.0.1 and the official Telegram beta 13.0.1.

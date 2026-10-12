@@ -20,6 +20,7 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.SwitchPreference;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -209,8 +210,7 @@ public class SettingsNavigationTest {
     }
 
     private TextView pageTitle() {
-        android.widget.LinearLayout bar = (android.widget.LinearLayout) ((android.widget.LinearLayout) dialog.getView()).getChildAt(0);
-        return (TextView) bar.getChildAt(1);
+        return dialog.getView().findViewWithTag(SettingsDialog.PAGE_TITLE);
     }
 
     private int occurrences(String key) {
@@ -316,6 +316,25 @@ public class SettingsNavigationTest {
         assertFalse(BaseSettings.PAUSED.savedValue());
         assertEquals("Pause", statusAction().getText().toString());
         assertTrue(Settings.HIDE_ADS.savedValue());
+    }
+
+    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    public void theBorderlessSupportRowShowsKeyboardSelection() {
+        View row = list().getAdapter().getView(list().getCount() - 1, null, list());
+        row.measure(View.MeasureSpec.makeMeasureSpec(780, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(96, View.MeasureSpec.EXACTLY));
+        row.layout(0, 0, 780, 96);
+        row.getBackground().setBounds(0, 0, 780, 96);
+        Bitmap idle = Bitmap.createBitmap(780, 96, Bitmap.Config.ARGB_8888);
+        row.getBackground().draw(new Canvas(idle));
+        assertEquals("the link should be borderless until selected", 0, idle.getPixel(41, 48));
+        row.setSelected(true);
+        Bitmap selected = Bitmap.createBitmap(780, 96, Bitmap.Config.ARGB_8888);
+        row.getBackground().draw(new Canvas(selected));
+        assertEquals("keyboard selection must be visible", ScreenColors.DEFAULT.accent,
+                selected.getPixel(41, 48));
+        idle.recycle();
+        selected.recycle();
     }
 
     /** A Resume the store can't keep leaves the pause on screen, in storage and in the switch, and says so. */
@@ -998,10 +1017,39 @@ public class SettingsNavigationTest {
 
     /** All pages are rendered with the same viewport as the design reference. */
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    public void switchDescriptionsUseTheRowWidthAndTheRowStillChangesTheSavedChoice() {
+        page.navigation.navigate("Ads");
+        layout(dialog.getView());
+        View row = list().getChildAt(0);
+        TextView summary = row.findViewById(android.R.id.summary);
+        TextView title = row.findViewById(android.R.id.title);
+        assertTrue("the switch must not narrow its explanation", summary.getWidth() > title.getWidth());
+        assertEquals(row.getWidth() - row.getPaddingLeft() - row.getPaddingRight(), summary.getWidth());
+        SwitchPreference preference = (SwitchPreference) list().getItemAtPosition(0);
+        boolean previous = preference.isChecked();
+        list().performItemClick(row, 0, list().getItemIdAtPosition(0));
+        ShadowLooper.idleMainLooper();
+        assertEquals(!previous, preference.isChecked());
+        assertEquals(!previous, Settings.HIDE_ADS.get());
+    }
+
+    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    @Config(sdk = 33)
+    public void overviewActionKeepsItsFullTouchHeight() {
+        layout(dialog.getView());
+        View action = statusAction();
+        assertNotNull(action);
+        int minimum = Math.round(48 * action.getResources().getDisplayMetrics().density);
+        assertTrue("Pause touch target was clipped to the text column", action.getHeight() >= minimum);
+    }
+
+    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
     public void renderEveryPageAndSearchOffscreen() throws Exception {
         capture("00-overview");
         for (Preference section : page.sections()) {
-            page.navigation.open(section);
+            // A fresh window avoids reusing native renderer display lists from another bitmap.
+            recreate();
+            page.navigation.navigate(section.getTitle().toString());
             capture(section.getTitle().toString().toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z]+", "-"));
         }
         page.navigation.navigate("more");
@@ -1139,12 +1187,21 @@ public class SettingsNavigationTest {
         assertTrue(folder.isDirectory() || folder.mkdirs());
         View root = dialog.getView();
         layout(root, height);
+        invalidateTree(root);
         Bitmap image = Bitmap.createBitmap(780, height, Bitmap.Config.ARGB_8888);
         root.draw(new Canvas(image));
         try (FileOutputStream out = new FileOutputStream(new File(folder, name + ".png"))) {
             assertTrue(image.compress(Bitmap.CompressFormat.PNG, 100, out));
         }
         image.recycle();
+    }
+
+    private static void invalidateTree(View view) {
+        view.invalidate();
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) invalidateTree(group.getChildAt(i));
+        }
     }
 
     private static void layout(View root) {

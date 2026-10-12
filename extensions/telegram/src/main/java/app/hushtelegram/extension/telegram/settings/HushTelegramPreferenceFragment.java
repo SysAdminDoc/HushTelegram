@@ -35,6 +35,7 @@ import android.text.util.Linkify;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.AbsListView;
@@ -524,6 +525,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             PreferenceCategory notifications = pages.get(PatchFamily.Page.NOTIFICATIONS);
             localNotificationStatus = info(context, L10n.t("Notification status on this phone"), FirebasePush.localStatus(context).summary());
             localNotificationStatus.setKey("local_notification_status");
+            localNotificationStatus.setIcon(SettingsIcons.icon(context, SettingsIcons.ABOUT, ScreenColors.DEFAULT.heading));
             notifications.addPreference(localNotificationStatus);
             notifications.addPreference(toggle(context, Settings.REPAIR_FIREBASE_PUSH, L10n.t("Repair Firebase push registration"),
                     PatchFamily.REPAIR_FIREBASE_PUSH.coverageSummary(L10n.t("Tries to help this patched Telegram sign up for push notifications with Firebase, "
@@ -1364,8 +1366,17 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         }
 
         @Override
+        protected View onCreateView(ViewGroup parent) {
+            return ScreenColors.switchRow(getContext());
+        }
+
+        @Override
         protected void onBindView(View view) {
             super.onBindView(view);
+            View icon = view.findViewById(android.R.id.icon);
+            if (icon != null && icon.getParent() instanceof View) {
+                ((View) icon.getParent()).setVisibility(getIcon() == null ? View.GONE : View.VISIBLE);
+            }
             showAllText(view);
             ScreenColors.row(view, this);
             view.setAccessibilityDelegate(new RowSemantics(this, Switch.class));

@@ -11,6 +11,7 @@
 package app.hushtelegram.extension.telegram.settings;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -33,10 +34,13 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.Gravity;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -70,6 +74,8 @@ final class ScreenColors {
     final int outline;
     /** Text on the filled primary dialog action. */
     final int onAccent;
+    /** Low-emphasis fill behind navigation glyphs. */
+    final int iconTile;
 
     /** The one palette the screen is drawn in. */
     static final ScreenColors DEFAULT = new ScreenColors();
@@ -79,23 +85,24 @@ final class ScreenColors {
 
     private ScreenColors() {
         background = Color.BLACK;
-        dialog = 0xFF11151D;
-        title = 0xFFF3F5F9;
-        summary = 0xFFA6AFBE;
-        heading = 0xFF6AA7FF;
-        accent = 0xFF236BE7;
-        switchOff = 0xFF858D9C;
-        card = 0xFF11151D;
-        outline = 0xFF252B36;
-        onAccent = Color.WHITE;
+        dialog = 0xFF101715;
+        title = 0xFFF1F6F3;
+        summary = 0xFFA2B3AC;
+        heading = 0xFF7CE6C4;
+        accent = 0xFF7CE6C4;
+        switchOff = 0xFF73807B;
+        card = 0xFF101715;
+        outline = 0xFF23332C;
+        onAccent = 0xFF071D16;
+        iconTile = 0xFF192F26;
     }
 
     /**
-     * The thumb of a switch that's off, read against its track: the white that fills the on thumb
-     * clears the 3:1 a control's state needs there.
+     * The white thumb of an off switch reads against its muted track. On switches use dark ink
+     * against mint, so the thumb's position stays distinct in both states.
      */
     int offThumb() {
-        return onAccent;
+        return Color.WHITE;
     }
 
     /**
@@ -109,8 +116,7 @@ final class ScreenColors {
     }
 
     /**
-     * The text of a dialog's outlined actions, such as Cancel. The black page's accent reads at
-     * 3.4:1 on its dialog, under the 4.5:1 text needs, so these take the heading colour.
+     * The text of a dialog's outlined actions, such as Cancel, uses the same mint as headings.
      */
     int secondaryActionText() {
         return heading;
@@ -122,7 +128,7 @@ final class ScreenColors {
         if (title != null) {
             title.setTextColor(dimmedWhenDisabled(this.title));
             title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-            title.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
+            title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
             if (title.getParent() instanceof View) {
                 View text = (View) title.getParent();
                 text.setPadding(0, 0, 0, 0);
@@ -145,8 +151,8 @@ final class ScreenColors {
             thumb.setSize(dp(row, 20), dp(row, 20));
             thumb.setColor(Color.WHITE);
             GradientDrawable track = new GradientDrawable();
-            track.setCornerRadius(dp(row, 12));
-            track.setSize(dp(row, 42), dp(row, 24));
+            track.setCornerRadius(dp(row, 13));
+            track.setSize(dp(row, 44), dp(row, 26));
             track.setColor(Color.WHITE);
             toggle.setThumbDrawable(thumb);
             toggle.setTrackDrawable(track);
@@ -158,27 +164,30 @@ final class ScreenColors {
         ImageView icon = row.findViewById(android.R.id.icon);
         if (icon != null && preference.getIcon() != null) {
             ViewGroup.LayoutParams imageSize = icon.getLayoutParams();
-            imageSize.width = dp(row, 24);
-            imageSize.height = dp(row, 24);
+            // Replace the platform's icon padding and margins, including Samsung's large-text
+            // template, with one consistent tile and a full-size glyph.
+            icon.setColorFilter(heading);
+            icon.setBackground(rounded(iconTile, dp(row, 12)));
+            icon.setPadding(dp(row, 8), dp(row, 8), dp(row, 8), dp(row, 8));
+            imageSize.width = dp(row, 40);
+            imageSize.height = dp(row, 40);
             icon.setLayoutParams(imageSize);
-            // From 2x text Samsung lays a switch row out from tw_preference_switch_large, which puts
-            // the 16dp gap on the icon itself and nests the icon's frame in a line of its own, without
-            // the frame's -4dp start margin. The padding squeezed the glyph to a third of its box and
-            // the missing margin moved the row's text.
-            icon.setPadding(0, 0, 0, 0);
             if (icon.getParent() instanceof ViewGroup) {
                 ViewGroup frame = (ViewGroup) icon.getParent();
-                frame.setPaddingRelative(0, 0, dp(row, 16), 0);
+                frame.setPaddingRelative(0, 0, dp(row, 14), 0);
                 ViewGroup.LayoutParams size = frame.getLayoutParams();
-                size.width = dp(row, 40);
+                size.width = dp(row, 54);
+                if (!(preference instanceof android.preference.SwitchPreference)
+                        && size instanceof LinearLayout.LayoutParams) {
+                    ((LinearLayout.LayoutParams) size).gravity = Gravity.TOP;
+                }
                 frame.setLayoutParams(size);
-                // The -4dp goes on the row's own child, which may draw into the row's padding. On the
-                // nested frame it would push the glyph past its line's edge, where the line clips it.
+                // A nested Samsung frame must not move its glyph past its clipping parent.
                 View line = frame;
                 while (line.getParent() instanceof View && line.getParent() != row) line = (View) line.getParent();
                 if (line.getParent() == row) {
                     startMargin(frame, 0);
-                    startMargin(line, -dp(row, 4));
+                    startMargin(line, 0);
                 }
             }
         }
@@ -191,15 +200,20 @@ final class ScreenColors {
 
     /** Group boundaries follow the visible rows, including a filtered search result. */
     void paintSurface(View row, Preference preference, boolean first, boolean last) {
-        float radius = dp(row, 10);
+        paintSurface(row, preference, first, last, false, false);
+    }
+
+    void paintSurface(View row, Preference preference, boolean first, boolean last,
+                      boolean emphasized, boolean transparent) {
+        float radius = dp(row, 16);
         float[] corners = {
                 first ? radius : 0, first ? radius : 0,
                 first ? radius : 0, first ? radius : 0,
                 last ? radius : 0, last ? radius : 0,
                 last ? radius : 0, last ? radius : 0};
         GradientDrawable surface = new GradientDrawable();
-        surface.setColor(card);
-        surface.setStroke(dp(row, 1), outline);
+        surface.setColor(transparent ? Color.TRANSPARENT : card);
+        surface.setStroke(transparent ? 0 : dp(row, 1), emphasized ? heading : outline);
         surface.setCornerRadii(corners);
         int top = first ? dp(row, 6) : -dp(row, 1);
         int bottom = last ? dp(row, 6) : 0;
@@ -211,30 +225,81 @@ final class ScreenColors {
         ring.setCornerRadii(corners);
         android.graphics.drawable.StateListDrawable keyboard = new android.graphics.drawable.StateListDrawable();
         keyboard.addState(new int[]{android.R.attr.state_selected},
-                new InsetDrawable(ring, dp(row, 16), top, dp(row, 16), bottom));
+                new InsetDrawable(ring, dp(row, 20), top, dp(row, 20), bottom));
         android.graphics.drawable.LayerDrawable layers = new android.graphics.drawable.LayerDrawable(new Drawable[]{
-                new InsetDrawable(surface, dp(row, 16), top, dp(row, 16), bottom), keyboard});
+                new InsetDrawable(surface, dp(row, 20), top, dp(row, 20), bottom), keyboard});
         // Stacked, so the ring isn't inset a second time by the surface's padding.
         layers.setPaddingMode(android.graphics.drawable.LayerDrawable.PADDING_MODE_STACK);
         row.setBackground(preference.isSelectable()
                 ? new RippleDrawable(ColorStateList.valueOf(half(accent)), layers, null) : layers);
         // Explicit padding after the inset background prevents its padding from moving the text.
-        int vertical = preference.getIcon() == null ? 20 : 12;
-        row.setPaddingRelative(dp(row, 34), dp(row, vertical + (first ? 6 : 0)),
-                dp(row, 34), dp(row, vertical + (last ? 6 : 0)));
-        row.setMinimumHeight(dp(row, 72));
+        int vertical = preference.getSummary() == null ? 12 : 16;
+        row.setPaddingRelative(dp(row, 38), dp(row, vertical + (first ? 6 : 0)),
+                dp(row, 38), dp(row, vertical + (last ? 6 : 0)));
+        row.setMinimumHeight(dp(row, 64));
     }
 
     /** A section title. */
     void paintHeading(View row) {
         TextView title = row.findViewById(android.R.id.title);
         if (title != null) {
-            title.setTextColor(heading);
+            title.setTextColor(summary);
             title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-            title.setLetterSpacing(0.07f);
+            title.setLetterSpacing(0.06f);
             title.setAllCaps(true);
         }
-        row.setPaddingRelative(dp(row, 20), dp(row, 20), dp(row, 20), dp(row, 8));
+        row.setPaddingRelative(dp(row, 22), dp(row, 16), dp(row, 22), dp(row, 8));
+    }
+
+    static GradientDrawable rounded(int color, float radius) {
+        GradientDrawable surface = new GradientDrawable();
+        surface.setColor(color);
+        surface.setCornerRadius(radius);
+        return surface;
+    }
+
+    /**
+     * The switch shares a line with the title, leaving the explanation the full width below.
+     * Framework SwitchPreference still binds and persists the real switch using its usual ids.
+     * Owning this small layout also keeps Samsung's large-font preference template from changing
+     * the available text width or placing its switch over a description.
+     */
+    static View switchRow(Context context) {
+        LinearLayout row = new LinearLayout(context);
+        row.setOrientation(LinearLayout.VERTICAL);
+        row.setLayoutParams(new android.widget.AbsListView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        LinearLayout header = new LinearLayout(context);
+        header.setGravity(Gravity.CENTER_VERTICAL);
+        FrameLayout iconFrame = new FrameLayout(context);
+        ImageView icon = new ImageView(context);
+        icon.setId(android.R.id.icon);
+        icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        iconFrame.addView(icon, new FrameLayout.LayoutParams(dp(row, 40), dp(row, 40)));
+        header.addView(iconFrame);
+        TextView title = new TextView(context);
+        title.setId(android.R.id.title);
+        header.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        LinearLayout widget = new LinearLayout(context);
+        widget.setId(android.R.id.widget_frame);
+        widget.setGravity(Gravity.CENTER_VERTICAL);
+        widget.setPaddingRelative(dp(row, 12), 0, 0, 0);
+        Switch toggle = new Switch(context);
+        toggle.setId(android.R.id.switch_widget);
+        toggle.setFocusable(false);
+        toggle.setClickable(false);
+        toggle.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        widget.addView(toggle);
+        header.addView(widget);
+        row.addView(header);
+        RelativeLayout detail = new RelativeLayout(context);
+        detail.setPadding(0, dp(row, 4), 0, 0);
+        TextView summary = new TextView(context);
+        summary.setId(android.R.id.summary);
+        detail.addView(summary, new RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        row.addView(detail);
+        return row;
     }
 
     /** Marks the chevron a row was given, so a recycled row's can be found and taken off. */

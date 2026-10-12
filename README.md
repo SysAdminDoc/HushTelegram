@@ -1,7 +1,7 @@
 ![HushTelegram. Keep the chat. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.0.13-2AABEE" alt="Version 0.0.13">
+  <img src="https://img.shields.io/badge/version-0.0.14-7CE6C4" alt="Version 0.0.14">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Telegram-13.0.1-2AABEE" alt="Telegram 13.0.1">
@@ -21,6 +21,8 @@
 # <img src="assets/icon.png" width="36" alt=""> HushTelegram
 
 HushTelegram is a Morphe patch bundle for Android that takes the sponsored messages out of Telegram and keeps a few things on your phone that Telegram would otherwise send home.
+
+The current source is v0.0.14, with redesigned settings.
 
 The latest release is [v0.0.13](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.13), with 68 patches built for Telegram 13.0.1, both telegram.org's build and the official beta. On a signed-in phone Hide ads took a live search ad off the screen. See [the before and after](#hide-ads-before-and-after).
 
@@ -162,13 +164,13 @@ On v0.0.8 there's no row in Telegram's Settings, so use the long-press or App in
 
 More settings has separate pages for Pause, Settings backup and Diagnostics. Search finds each control by its name or page. Your saved switches and backup files work as before. Support HushTelegram, the last row on the home page, opens the project's Ko-fi page in your browser.
 
-Since v0.0.13 the old Chats page is split into Ads, Chat list, Conversations, Playback, Notifications, Look and feel and Privacy, matching the groups Morphe Manager shows. Each patch description below names its page. The screenshots still show v0.0.12's single Chats page.
+The overview has seven control pages, matching the groups Morphe Manager shows. v0.0.14 gives every page a black background with mint controls. It pairs larger headings with compact navigation. Switch descriptions use the width of the card, so longer explanations stay readable. Notification status has its own card. Search and the Pause controls work as before.
 
-<p><img src="assets/settings-overview.png" width="320" alt="HushTelegram settings with search, Pause, and rows for Chats, Privacy and More settings that say what each page holds"><img src="assets/settings-chats.png" width="320" alt="The Chats page with Hide ads and Hide Stories turned on"></p>
+<p><img src="assets/settings-overview.png" width="320" alt="HushTelegram settings with mint controls, search, Pause and seven settings pages"><img src="assets/settings-ads.png" width="320" alt="The Ads page with Hide ads turned on"></p>
 
-v0.0.8 added a Notifications page and the channel-pull switch. Both are shown below.
+Notifications separates this phone's saved push status from its controls. Conversations groups message and chat controls under smaller headings.
 
-<p><img src="assets/settings-notifications.png" width="320" alt="Notifications settings with the local notification status and the Firebase push registration repair switch"><img src="assets/settings-channel-pull.png" width="320" alt="Chats settings with Stop pull to next channel turned on, and Stop pull to next topic and Hide greeting stickers off by default"></p>
+<p><img src="assets/settings-notifications.png" width="320" alt="Notifications settings with a separate local status card and push controls"><img src="assets/settings-conversations.png" width="320" alt="Conversations settings with grouped message controls and full-width descriptions"></p>
 
 ## Notifications on a patched Telegram
 
