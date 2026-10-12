@@ -187,6 +187,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/UnifiedPushPicker.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/MessageFilters.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/FilterEditor.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/EditorForm.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/KeepDeletedBridge.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/localcontrols/**",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/paste/**",

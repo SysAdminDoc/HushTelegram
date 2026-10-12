@@ -14,7 +14,7 @@ Working version 0.0.17.
 
 * **Telegram:** Quick forward destinations wrap long names inside a scrollable dialog. Clipboard and message actions explain failures, and pending actions respect Pause. Whole-chat translation now changes its menu label when you switch it on or off. Refs #8.
 
-* **Tooling:** Refreshed all 15 settings screenshots from the patched app. Native checks cover the settings pages and editor recovery at 200% text in German, Portuguese and mirrored layouts. Shared dialogs were checked in both themes.
+* **Tooling:** Refreshed all 15 settings screenshots from the patched app. Native checks cover the settings pages and editor recovery at 200% text in German, Portuguese and mirrored layouts. Shared dialogs were checked in both themes. The source-origin ledger includes the new form helper, and the README patch table matches the shipped descriptions.
 
 * **Tooling:** Resource patches no longer require XML parser features missing from Android. DTDs, XInclude and external entities are refused before any resource changes are written. Android parser checks cover ordinary UTF-8 and UTF-16 resources and confirm refusals make no file changes or network requests. Refs #6.
 
