@@ -254,11 +254,14 @@ public class UnifiedPushTest {
         String token = signedUp();
         UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token), () -> {});
         assertEquals("io.heckel.ntfy ended the sign-up. Turn the switch off and on to sign up again.", UnifiedPush.status(context, true));
+        assertEquals("nothing answers at the old address, so Telegram is asked for Firebase again",
+                java.util.Collections.singletonList(ENDPOINT), released);
         int registers = count(UnifiedPush.REGISTER);
         UnifiedPush.sync(context, true);
         assertEquals("a new start doesn't sign up again behind the app's back", registers, count(UnifiedPush.REGISTER));
 
         UnifiedPush.sync(context, false);
+        assertEquals("the address was already handed back", 1, released.size());
         assertEquals("io.heckel.ntfy. Turn the switch on to sign up with it.", UnifiedPush.status(context, false));
         UnifiedPush.sync(context, true);
         assertEquals(registers + 1, count(UnifiedPush.REGISTER));
@@ -313,6 +316,10 @@ public class UnifiedPushTest {
         UnifiedPush.sync(context, true);
         assertNull(token());
         assertNull(UnifiedPush.activeEndpoint());
+        assertEquals("Telegram is asked for Firebase again, as when the switch goes off",
+                java.util.Collections.singletonList(ENDPOINT), released);
+        UnifiedPush.sync(context, true);
+        assertEquals("a later start has no address left to hand back", 1, released.size());
         assertEquals("fcm-token", UnifiedPush.token(2, "fcm-token"));
         assertEquals(2, UnifiedPush.type(2));
         assertEquals("Install a UnifiedPush app like ntfy, then come back here.", UnifiedPush.status(context, true));

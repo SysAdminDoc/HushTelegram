@@ -87,7 +87,10 @@ public final class UnifiedPush {
         /** Starts Telegram if it isn't yet and has each signed-in account fetch what's new. Runs done after. */
         void wake(Runnable done);
 
-        /** With the switch off: if Telegram still holds this address, asks its push provider for a new token now. */
+        /**
+         * With the switch off, or the app gone or done with the sign-up: if Telegram still holds this
+         * address, asks its push provider for a new token now.
+         */
         void release(String endpoint);
     }
 
@@ -135,7 +138,7 @@ public final class UnifiedPush {
                     requestPushToken();
                     HookStatus.counted(FamilyNames.UNIFIED_PUSH, "handed back to Firebase");
                 } catch (Throwable failure) {
-                    HookStatus.threw(FamilyNames.UNIFIED_PUSH, "switching off", failure);
+                    HookStatus.threw(FamilyNames.UNIFIED_PUSH, "handing back to Firebase", failure);
                 }
             });
         }
@@ -249,7 +252,11 @@ public final class UnifiedPush {
                 if (token != null && current != null && installed.contains(current)) {
                     send(context, new Intent(UNREGISTER), current, token);
                 }
+                String endpoint = prefs.getString(ENDPOINT, null);
                 prefs.edit().remove(DISTRIBUTOR).remove(TOKEN).remove(ENDPOINT).commit();
+                // Telegram's servers may still hold the dead address, from before or from a sign-up
+                // that ran ahead of this one at start, so Firebase is asked again the way off does.
+                if (endpoint != null) telegram.release(endpoint);
                 return;
             }
             if (token == null || !distributor.equals(current)) {
@@ -345,10 +352,14 @@ public final class UnifiedPush {
                     Logger.printInfo(() -> "UnifiedPush: the app turned the sign-up down ("
                             + intent.getStringExtra("reason") + ")");
                     break;
-                case UNREGISTERED:
+                case UNREGISTERED: {
+                    String ended = prefs.getString(ENDPOINT, null);
                     prefs.edit().remove(TOKEN).remove(ENDPOINT).putString(PROBLEM, ENDED).commit();
                     Logger.printInfo(() -> "UnifiedPush: the app ended the sign-up");
+                    // Nothing answers at that address now, so Telegram is pointed back at Firebase.
+                    if (ended != null) telegram.release(ended);
                     break;
+                }
                 default:
                     break;
             }
