@@ -23,7 +23,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.RippleDrawable;
 import android.graphics.drawable.StateListDrawable;
-import android.os.Build;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
@@ -124,7 +123,7 @@ public class CustomDialog {
 
         // Create main layout.
         mainLayout = createMainLayout();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !TextUtils.isEmpty(title)) {
+        if (!TextUtils.isEmpty(title)) {
             mainLayout.setAccessibilityPaneTitle(title);
         }
         addTitle(title);
@@ -169,7 +168,7 @@ public class CustomDialog {
         titleView.setTextSize(18);
         titleView.setTextColor(Utils.getAppForegroundColor());
         titleView.setGravity(Gravity.CENTER);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) titleView.setAccessibilityHeading(true);
+        titleView.setAccessibilityHeading(true);
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -197,9 +196,7 @@ public class CustomDialog {
         scrollView.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
         scrollView.setVerticalFadingEdgeEnabled(true);
         scrollView.setFadingEdgeLength(dp(16));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            scrollView.setScrollIndicators(View.SCROLL_INDICATOR_TOP | View.SCROLL_INDICATOR_BOTTOM);
-        }
+        scrollView.setScrollIndicators(View.SCROLL_INDICATOR_TOP | View.SCROLL_INDICATOR_BOTTOM);
 
         LinearLayout contentContainer = new LinearLayout(context);
         contentContainer.setOrientation(LinearLayout.VERTICAL);
