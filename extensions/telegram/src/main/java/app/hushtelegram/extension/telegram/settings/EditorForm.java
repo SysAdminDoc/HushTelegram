@@ -93,6 +93,14 @@ final class EditorForm extends ScrollView {
         field.setTag(INVALID);
         field.requestFocus();
         ScreenColors.DEFAULT.paintField(field);
+        error.getViewTreeObserver().addOnGlobalLayoutListener(new android.view.ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override public void onGlobalLayout() {
+                error.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                if (invalid == field && error.getVisibility() == VISIBLE) {
+                    error.requestRectangleOnScreen(new android.graphics.Rect(0, 0, error.getWidth(), error.getHeight()), true);
+                }
+            }
+        });
     }
 
     private int dp(int value) {
