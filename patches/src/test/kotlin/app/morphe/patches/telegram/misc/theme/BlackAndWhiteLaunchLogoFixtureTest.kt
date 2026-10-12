@@ -6,6 +6,8 @@ package app.morphe.patches.telegram.misc.theme
 
 import app.morphe.Fixtures
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patches.telegram.misc.maps.resourceXmlDeclarations
+import app.morphe.patches.telegram.misc.maps.withAndroidResourceXmlFactory
 import com.reandroid.apk.ApkModule
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -38,7 +40,7 @@ class BlackAndWhiteLaunchLogoFixtureTest {
     }
 
     @Test
-    fun `every declared build gets a white circle and a black plane on black and nothing else changes`() {
+    fun `every declared build gets a white circle and a black plane on Android's DOM factory`() = withAndroidResourceXmlFactory {
         for (build in Fixtures.declaredBuilds()) {
             val res = stockRes(build)
             val stock = res.walkTopDown().filter { it.isFile }.associate { it.relativeTo(res).invariantSeparatorsPath to it.readBytes() }
@@ -76,6 +78,21 @@ class BlackAndWhiteLaunchLogoFixtureTest {
                 elements(added, "item").map { it.getAttribute("name") to it.textContent },
             )
             assertEquals(2, all.size)
+        }
+    }
+
+    @Test
+    fun `a declaration in any input refuses before any resource changes`() = withAndroidResourceXmlFactory {
+        val build = Fixtures.declaredBuilds().first()
+        for (input in listOf("splash", "picture", "styles")) for (declaration in resourceXmlDeclarations("resources")) {
+            val res = stockRes(build)
+            val file = when (input) {
+                "splash" -> res.resolve(SPLASH)
+                "picture" -> pictureOf(res)
+                else -> res.resolve(LOGO_STYLES)
+            }
+            rewrite(file) { it.replaceFirst(Regex("(<\\?xml[^?]*\\?>)?"), "$1$declaration") }
+            refuses(res, "resource XML")
         }
     }
 

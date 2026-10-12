@@ -42,7 +42,7 @@ class UseRegisteredMapsApiKeyFixtureTest {
     }
 
     @Test
-    fun `every declared fixture changes only the installed SDK key literal`() {
+    fun `every declared fixture changes only the SDK key with Android's DOM factory`() = withAndroidResourceXmlFactory {
         for (build in Fixtures.declaredBuilds()) withManifest(fixtureManifest(build)) { context, file ->
             val original = parse(file)
             val stock = resolveMapsApiKey(original)
@@ -54,6 +54,11 @@ class UseRegisteredMapsApiKeyFixtureTest {
             assertEquals(KEY, key.getAttribute("android:value"))
             assertEquals("${build.name}: all other attributes and elements survive", before, state(result.documentElement, key))
         }
+    }
+
+    @Test
+    fun `a DTD never opens the saving manifest or changes any resource`() = withAndroidResourceXmlFactory {
+        for (declaration in resourceXmlDeclarations("manifest")) refusal(declaration + manifest(metadata()))
     }
 
     @Test
@@ -121,7 +126,7 @@ class UseRegisteredMapsApiKeyFixtureTest {
     }
 
     private fun refusal(xml: String) = withManifest(xml) { context, file ->
-        val before = file.readBytes()
+        val before = resourceTree(file.parentFile)
         withOption(KEY) {
             try {
                 useRegisteredMapsApiKeyPatch.execute(context)
@@ -130,7 +135,7 @@ class UseRegisteredMapsApiKeyFixtureTest {
                 assertFalse(expected.message.orEmpty().contains(KEY))
             }
         }
-        assertArrayEquals("refusal does not even rewrite manifest formatting", before, file.readBytes())
+        assertResourceTreeUnchanged(before, file.parentFile)
     }
 
     private fun fixtureManifest(build: File): String = ApkModule.loadApkFile(build).use { module ->
@@ -159,6 +164,7 @@ class UseRegisteredMapsApiKeyFixtureTest {
                 file.parentFile.mkdirs()
                 file.writeText(xml)
             }
+            file.parentFile.apply { mkdirs() }.resolve("unrelated.txt").writeText("unchanged")
             action(context, file)
         }
     }

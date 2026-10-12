@@ -9,6 +9,11 @@ import app.morphe.patcher.PatcherConfig
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.ResourcePatchContext
 import app.morphe.patches.telegram.misc.maps.ANDROID_NAMESPACE
+import app.morphe.patches.telegram.misc.maps.assertResourceTreeUnchanged
+import app.morphe.patches.telegram.misc.maps.resourceTree
+import app.morphe.patches.telegram.misc.maps.resourceXmlDeclarations
+import app.morphe.patches.telegram.misc.maps.readResourceXml
+import app.morphe.patches.telegram.misc.maps.withAndroidResourceXmlFactory
 import com.reandroid.apk.ApkModule
 import com.reandroid.arsc.chunk.xml.AndroidManifestBlock
 import org.junit.Assert.assertArrayEquals
@@ -48,13 +53,13 @@ class HushTelegramIconFixtureTest {
     }
 
     @Test
-    fun `every declared build gets the icon and the name and nothing else changes`() {
+    fun `every declared build gets the icon and name with Android's DOM factory`() = withAndroidResourceXmlFactory {
         for (build in Fixtures.declaredBuilds()) {
             val original = document(fixtureManifest(build))
             val (stockApplication, stockDefault) = resolveLaunchers(original)
             assertFalse("${build.name}: Telegram's default entry shows the application's icon", stockDefault.hasAttribute("android:icon"))
             val stockLabel = stockApplication.getAttribute("android:label")
-            val result = document(fixtureManifest(build))
+            val result = readResourceXml(temporary.newFile().apply { writeText(fixtureManifest(build)) }, "icon")
             showIcon(result, checkedAppName("  Hush  "))
 
             val (application, defaultIcon) = resolveLaunchers(result)
@@ -69,6 +74,13 @@ class HushTelegramIconFixtureTest {
             }
             application.setAttribute("android:label", stockLabel)
             assertEquals("${build.name}: every other attribute and element survives", state(original.documentElement), state(result.documentElement))
+        }
+    }
+
+    @Test
+    fun `a DTD refuses before the manifest or icon files change`() = withAndroidResourceXmlFactory {
+        for (declaration in resourceXmlDeclarations("manifest")) {
+            refusal(declaration + manifest()) { assertTrue(it.contains("resource XML")) }
         }
     }
 
@@ -194,7 +206,22 @@ class HushTelegramIconFixtureTest {
     }
 
     /** Runs the patch itself, which has to refuse while it's still checking, before it reads the resources. */
-    private fun refusal(xml: String, name: String? = "Hush", check: (String) -> Unit = {}) {
+    private fun refusal(xml: String, name: String? = "Hush", check: (String) -> Unit = {}) = withManifest(xml) { context, manifest ->
+        val before = resourceTree(manifest.parentFile)
+        hushTelegramIconPatch.options["appName"] = name
+        try {
+            hushTelegramIconPatch.execute(context)
+            fail("accepted")
+        } catch (expected: PatchException) {
+            assertTrue(expected.message.orEmpty(), expected.message.orEmpty().contains("Nothing was changed"))
+            check(expected.message.orEmpty())
+        } finally {
+            hushTelegramIconPatch.options.values.forEach { it.reset() }
+        }
+        assertResourceTreeUnchanged(before, manifest.parentFile)
+    }
+
+    private fun withManifest(xml: String, action: (ResourcePatchContext, File) -> Unit) {
         val work = temporary.newFolder()
         val apk = File(work, "input.apk")
         ApkModule().use { module ->
@@ -210,18 +237,8 @@ class HushTelegramIconFixtureTest {
             val manifest = context["AndroidManifest.xml"]
             manifest.parentFile.mkdirs()
             manifest.writeText(xml)
-            val before = manifest.readBytes()
-            hushTelegramIconPatch.options["appName"] = name
-            try {
-                hushTelegramIconPatch.execute(context)
-                fail("accepted")
-            } catch (expected: PatchException) {
-                assertTrue(expected.message.orEmpty(), expected.message.orEmpty().contains("Nothing was changed"))
-                check(expected.message.orEmpty())
-            } finally {
-                hushTelegramIconPatch.options.values.forEach { it.reset() }
-            }
-            assertArrayEquals("the manifest's bytes are untouched", before, manifest.readBytes())
+            manifest.parentFile.resolve("res").apply { mkdirs() }.resolve("unrelated.txt").writeText("unchanged")
+            action(context, manifest)
         }
     }
 

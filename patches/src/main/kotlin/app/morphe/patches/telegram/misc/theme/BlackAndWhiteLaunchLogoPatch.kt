@@ -7,10 +7,10 @@ package app.morphe.patches.telegram.misc.theme
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
+import app.morphe.patches.telegram.misc.maps.readResourceXml
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import java.io.File
-import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
@@ -52,7 +52,7 @@ internal fun addLaunchLogo(res: File) {
     if (!res.isDirectory) refuse("Telegram's resources weren't decoded")
     val splashFile = res.resolve(SPLASH)
     if (!splashFile.isFile) refuse("Telegram's launch logo $SPLASH is missing")
-    val splash = parse(splashFile)
+    val splash = readResourceXml(splashFile, PATCH)
     val animated = splash.documentElement
     requireShape(animated.tagName == "animated-vector", "Telegram's launch logo is no longer an animated vector")
     val reference = animated.getAttribute("android:drawable")
@@ -61,13 +61,13 @@ internal fun addLaunchLogo(res: File) {
         "Telegram's launch logo doesn't name its picture")
     val shapeFile = res.resolve("drawable/$shapeName.xml")
     if (!shapeFile.isFile) refuse("Telegram's launch logo picture drawable/$shapeName.xml is missing")
-    val shape = parse(shapeFile)
+    val shape = readResourceXml(shapeFile, PATCH)
     requireShape(shape.documentElement.tagName == "vector", "Telegram's launch logo picture is no longer a vector")
     val circle = namedPath(shape, "circle")
     val plane = namedPath(shape, "plane")
     val stylesFile = res.resolve(LOGO_STYLES)
     if (!stylesFile.isFile) refuse("Telegram's $LOGO_STYLES is missing")
-    val styles = parse(stylesFile)
+    val styles = readResourceXml(stylesFile, PATCH)
     requireShape(styles.documentElement.tagName == "resources", "Telegram's $LOGO_STYLES has another shape")
     listOf(LOGO, LOGO_SHAPE).map { res.resolve("drawable/$it.xml") }.firstOrNull { it.exists() }?.let {
         refuse("this Telegram already has ${it.relativeTo(res).invariantSeparatorsPath}")
@@ -105,14 +105,6 @@ private fun item(document: Document, name: String, value: String): Element =
         setAttribute("name", name)
         textContent = value
     }
-
-private fun parse(file: File): Document = DocumentBuilderFactory.newInstance().apply {
-    setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
-    setFeature("http://xml.org/sax/features/external-general-entities", false)
-    setFeature("http://xml.org/sax/features/external-parameter-entities", false)
-    isXIncludeAware = false
-    isExpandEntityReferences = false
-}.newDocumentBuilder().parse(file)
 
 private fun write(document: Document, file: File) = file.outputStream().use { out ->
     TransformerFactory.newInstance().newTransformer().apply {

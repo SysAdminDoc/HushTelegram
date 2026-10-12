@@ -11,7 +11,6 @@ import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.compat.AppCompatibilities
 import org.w3c.dom.Document
 import org.w3c.dom.Element
-import javax.xml.parsers.DocumentBuilderFactory
 
 private const val PATCH = "Use registered Maps API key"
 internal const val ANDROID_NAMESPACE = "http://schemas.android.com/apk/res/android"
@@ -47,13 +46,7 @@ internal fun checkedMapsApiKey(key: String?): String? {
 internal fun ResourcePatchContext.applyRegisteredMapsApiKey(key: String?) {
     val registered = checkedMapsApiKey(key) ?: return
     // Validate the file without the patcher's saving DOM. A refusal leaves its bytes untouched.
-    val readOnly = DocumentBuilderFactory.newInstance().apply {
-        setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
-        setFeature("http://xml.org/sax/features/external-general-entities", false)
-        setFeature("http://xml.org/sax/features/external-parameter-entities", false)
-        isXIncludeAware = false
-        isExpandEntityReferences = false
-    }.newDocumentBuilder().parse(this["AndroidManifest.xml"])
+    val readOnly = readResourceXml(this["AndroidManifest.xml"], PATCH)
     val stock = resolveMapsApiKey(readOnly).getAttribute("android:value")
     document("AndroidManifest.xml").use { manifest ->
         val target = resolveMapsApiKey(manifest)

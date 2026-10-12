@@ -10,10 +10,10 @@ import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.maps.ANDROID_NAMESPACE
+import app.morphe.patches.telegram.misc.maps.readResourceXml
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import java.io.File
-import javax.xml.parsers.DocumentBuilderFactory
 
 private const val PATCH = "HushTelegram icon and name"
 internal const val ICON = "hush_launcher"
@@ -109,7 +109,7 @@ internal fun ResourcePatchContext.applyHushTelegramIcon(rawName: String?) {
     val name = checkedAppName(rawName)
     val pictures = bundledIconPictures()
     // Checked on a read-only copy first, so a refusal leaves the manifest's bytes alone.
-    resolveLaunchers(readOnly(this["AndroidManifest.xml"]))
+    resolveLaunchers(readResourceXml(this["AndroidManifest.xml"], PATCH))
     addIconFiles(this["res"], pictures)
     document("AndroidManifest.xml").use { showIcon(it, name) }
 }
@@ -159,14 +159,6 @@ internal fun resolveLaunchers(manifest: Document): Pair<Element, Element> {
         "Telegram's default launcher entry is missing or ambiguous")
     return application to defaults.single()
 }
-
-private fun readOnly(file: File): Document = DocumentBuilderFactory.newInstance().apply {
-    setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
-    setFeature("http://xml.org/sax/features/external-general-entities", false)
-    setFeature("http://xml.org/sax/features/external-parameter-entities", false)
-    isXIncludeAware = false
-    isExpandEntityReferences = false
-}.newDocumentBuilder().parse(file)
 
 private fun requireShape(valid: Boolean, reason: String) {
     if (!valid) throw PatchException("$PATCH: $reason. Nothing was changed.")

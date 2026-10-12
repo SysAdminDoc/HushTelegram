@@ -6,6 +6,8 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.16.
 
+* **Tooling:** Resource patches no longer require XML parser features missing from Android. DTDs, XInclude and external entities are refused before any resource changes are written. Android parser checks cover ordinary UTF-8 and UTF-16 resources and confirm refusals make no file changes or network requests. Refs #6.
+
 * **Telegram:** Settings now mirror correctly in right-to-left languages, including Back and the preference list. Telegram's host layout settings stay unchanged.
 
 * **Tooling:** Native navigation checks stop when device lease ownership is lost. Recovery is tied to the original device and preserves settings that were absent before the check. Bounded main-thread callbacks keep the checks usable while the settings page animates. All 12 Android 9 and Android 16 cases passed, including cancelled Back gestures, keyboard dismissal, rotation, mirrored layouts and 200% text. Settings and permission grants were restored exactly.

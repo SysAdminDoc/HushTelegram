@@ -820,6 +820,9 @@ tasks.withType<Test>().configureEach {
 
 dependencies {
     compileOnly(libs.morphe.patcher)
+    // XMLPull is supplied by Android and this exact ARSCLib in the desktop patcher. The
+    // matching provided jar avoids duplicate XMLPull classes in the bundle's DEX classpath.
+    compileOnly("com.github.MorpheApp:ARSCLib:9b742c412d")
 
     // Used by JsonGenerator.
     implementation(libs.gson)
