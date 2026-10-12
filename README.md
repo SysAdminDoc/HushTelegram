@@ -170,7 +170,7 @@ The overview has seven control pages, matching the groups Morphe Manager shows. 
 
 Notifications separates this phone's saved push status from its controls. Conversations groups message and chat controls under smaller headings.
 
-<p><img src="assets/settings-notifications.png" width="320" alt="Notifications settings with a separate local status card and push controls"><img src="assets/settings-conversations.png" width="320" alt="Conversations settings with grouped message controls and full-width descriptions"></p>
+<p><img src="assets/settings-notifications.png" width="320" alt="Notifications settings with compact local status and a button for details"><img src="assets/settings-conversations.png" width="320" alt="Conversations settings with grouped message controls and full-width descriptions"></p>
 
 ## Notifications on a patched Telegram
 
@@ -178,7 +178,7 @@ Telegram's push notifications go through Google's Firebase. Its Android API key 
 
 When Firebase still won't deliver, UnifiedPush notifications is the other route. Install a UnifiedPush app like [ntfy](https://ntfy.sh), turn the switch on, and Telegram signs up the address that app hands out, using the Simple push token type Telegram's own API offers. Telegram's servers call that address when something arrives, and the app wakes Telegram so it fetches the message itself. Nothing of the message goes through the UnifiedPush app, only the wake-up. Pick the app under Push app on the same page if you have more than one. For messages to show up while the phone sleeps, Telegram may need its battery use set to Unrestricted.
 
-The Notifications page also shows what this phone knows about push. It says whether notifications are allowed and whether Telegram has saved a push token, then counts your signed-in accounts and how many of them Telegram has confirmed for push. It only reads what's already on the phone. It doesn't send anything, and it can't tell you whether a notification will actually arrive. The diagnostic report carries the same facts, without the token itself.
+The Notifications page also shows what this phone knows about push. Open the status details to see whether notifications are allowed, whether Telegram has saved a push token, and how many signed-in accounts Telegram has confirmed for push. You can open Android's notification settings from the same dialog. These are local facts. They can't tell you whether a notification will actually arrive. The diagnostic report carries the same facts, without the token itself.
 
 Push delivery also depends on Telegram's server holding push credentials for the app's Firebase project, which [Telegram documents separately](https://core.telegram.org/api/push-updates). A new API ID and hash don't set that up on their own. Telegram has its own fallback for this. Under Settings, Notifications and Sounds, turn on Keep-Alive Service and Background Connection to keep its connection open. That costs some battery.
 
