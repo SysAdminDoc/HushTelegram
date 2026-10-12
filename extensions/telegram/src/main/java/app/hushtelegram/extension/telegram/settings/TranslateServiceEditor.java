@@ -8,10 +8,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.preference.Preference;
 import android.text.InputType;
-import android.util.TypedValue;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Utils;
@@ -36,7 +34,7 @@ final class TranslateServiceEditor {
     }
 
     /** Opens the editor over the settings page. The row's summary follows what's saved. */
-    static void open(Activity activity, Preference row) {
+    static AlertDialog open(Activity activity, Preference row) {
         AiTranslate.Service saved = OutsideTranslate.service();
         EditText address = field(activity, android.R.id.text1, L10n.t("Service address"), saved.address,
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
@@ -46,21 +44,19 @@ final class TranslateServiceEditor {
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         // A password field invites an autofill service to save it to the cloud; the key stays on this phone.
         key.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO);
-        LinearLayout fields = new LinearLayout(address.getContext());
-        fields.setOrientation(LinearLayout.VERTICAL);
-        int side = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20,
-                activity.getResources().getDisplayMetrics()));
-        fields.setPaddingRelative(side, side / 2, side, 0);
+        key.setSaveEnabled(false);
+        key.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_DONE | android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+        address.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);
+        model.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);
+        EditorForm fields = new EditorForm(address.getContext(), L10n.t("With a key, the text you translate goes to this AI service instead of Google. Any "
+                + "service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. "
+                + "The key stays on this phone and never goes in a settings file."));
         for (EditText field : new EditText[]{address, model, key}) {
-            fields.addView(field, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            fields.add(field, field.getHint().toString());
         }
 
         AlertDialog dialog = new AlertDialog.Builder(HushTelegramPreferenceFragment.themed(activity))
                 .setTitle(L10n.t("Translation service"))
-                .setMessage(L10n.t("With a key, the text you translate goes to this AI service instead of Google. Any "
-                        + "service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. "
-                        + "The key stays on this phone and never goes in a settings file."))
                 .setView(fields)
                 .setPositiveButton(L10n.t("Save"), null)
                 .setNeutralButton(L10n.t("Use Google"), null)
@@ -70,28 +66,39 @@ final class TranslateServiceEditor {
         // Set after show, so a service that can't be saved keeps the dialog and what was typed.
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
             String a = address.getText().toString(), m = model.getText().toString(), k = key.getText().toString();
-            String refused = AiTranslate.refusal(a, m, k);
+            AiTranslate.Validation refused = AiTranslate.validate(a, m, k);
             if (refused != null) {
-                Utils.showToastLong(refused);
+                fields.refuse(new EditText[]{address, model, key}[refused.field], refused.message);
+                Utils.showToastLong(refused.message);
                 return;
             }
             if (!OutsideTranslate.saveService(a, m, k)) {
-                Utils.showToastLong(L10n.t("Couldn't save the translation service. Try again in a moment."));
+                String reason = L10n.t("Couldn't save the translation service. Try again in a moment.");
+                fields.refuse(key, reason);
+                Utils.showToastLong(reason);
                 return;
             }
             row.setSummary(summary(OutsideTranslate.service()));
             Utils.showToastShort(L10n.t("Translation service saved."));
             dialog.dismiss();
         });
+        key.setOnEditorActionListener((view, action, event) -> {
+            if (action != android.view.inputmethod.EditorInfo.IME_ACTION_DONE) return false;
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            return true;
+        });
         dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
             if (!OutsideTranslate.saveService(address.getText().toString(), model.getText().toString(), "")) {
-                Utils.showToastLong(L10n.t("Couldn't save the translation service. Try again in a moment."));
+                String reason = L10n.t("Couldn't save the translation service. Try again in a moment.");
+                fields.refuse(key, reason);
+                Utils.showToastLong(reason);
                 return;
             }
             row.setSummary(summary(OutsideTranslate.service()));
             Utils.showToastShort(L10n.t("Back to Google's web translate."));
             dialog.dismiss();
         });
+        return dialog;
     }
 
     private static EditText field(Activity activity, int id, String hint, String text, int type) {
@@ -100,7 +107,6 @@ final class TranslateServiceEditor {
         field.setInputType(type);
         field.setSingleLine(true);
         field.setHint(hint);
-        field.setContentDescription(hint);
         field.setText(text);
         return field;
     }

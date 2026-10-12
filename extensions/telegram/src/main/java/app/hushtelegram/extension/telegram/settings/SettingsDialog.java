@@ -15,7 +15,6 @@ package app.hushtelegram.extension.telegram.settings;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
@@ -147,9 +146,7 @@ public final class SettingsDialog extends DialogFragment {
         arrow.setLayoutDirection(rightToLeft() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
         back.setImageDrawable(arrow);
         back.setPadding(dp(12), dp(12), dp(12), dp(12));
-        // A round ripple, which also shows where a keyboard's focus is.
-        back.setBackground(new android.graphics.drawable.RippleDrawable(
-                android.content.res.ColorStateList.valueOf(ScreenColors.half(ScreenColors.DEFAULT.accent)), null, null));
+        back.setBackground(ScreenColors.DEFAULT.control(back, ScreenColors.DEFAULT.background, ScreenColors.BUTTON_RADIUS, false));
         back.setMinimumWidth(dp(48));
         back.setMinimumHeight(dp(48));
         back.setContentDescription(L10n.t(getContext(), "Back"));
@@ -226,8 +223,8 @@ public final class SettingsDialog extends DialogFragment {
         searchBox.setGravity(Gravity.CENTER_VERTICAL);
         android.graphics.drawable.GradientDrawable surface = new android.graphics.drawable.GradientDrawable();
         surface.setColor(palette.card);
-        surface.setCornerRadius(dp(16));
-        surface.setStroke(dp(1), palette.outline);
+        surface.setCornerRadius(dp(ScreenColors.CARD_RADIUS));
+        surface.setStroke(dp(1), palette.fieldBorder);
         searchBox.setBackground(surface);
         searchBox.setPaddingRelative(dp(16), 0, 0, 0);
         ImageView icon = new ImageView(getContext());
@@ -244,12 +241,15 @@ public final class SettingsDialog extends DialogFragment {
         search.setBackground(null);
         search.setTextColor(palette.title);
         search.setHintTextColor(palette.summary);
+        palette.paintSelection(search);
+        search.setOnFocusChangeListener((view, focused) ->
+                surface.setStroke(dp(focused ? 2 : 1), focused ? palette.accent : palette.fieldBorder));
         search.setPaddingRelative(dp(12), dp(12), 0, dp(12));
         search.setMinimumHeight(dp(48));
         searchBox.addView(search, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         android.widget.ImageButton clear = new android.widget.ImageButton(getContext());
         clear.setImageDrawable(SettingsIcons.icon(getContext(), SettingsIcons.CLOSE, palette.summary));
-        clear.setBackgroundColor(Color.TRANSPARENT);
+        clear.setBackground(palette.control(clear, palette.card, ScreenColors.BUTTON_RADIUS, false));
         clear.setPadding(dp(12), dp(12), dp(12), dp(12));
         clear.setContentDescription(L10n.t("Clear search"));
         clear.setVisibility(View.INVISIBLE);
@@ -310,9 +310,7 @@ public final class SettingsDialog extends DialogFragment {
     }
 
     void showPage(CharSequence title, boolean home, String query) {
-        pageTitle.setText(home ? L10n.t(query.isEmpty() ? "Your Telegram." : "Search settings") : title);
-        introduction.setVisibility(home && query.isEmpty() ? View.VISIBLE : View.GONE);
-        pageTitle.setPaddingRelative(dp(22), dp(4), dp(20), dp(home && query.isEmpty() ? 6 : 16));
+        showHeading(title, home, query);
         searchBox.setVisibility(home ? View.VISIBLE : View.GONE);
         settingSearch = true;
         if (!search.getText().toString().equals(query)) search.setText(query);
@@ -323,6 +321,16 @@ public final class SettingsDialog extends DialogFragment {
         }
     }
 
+    void showSearchHeading(String query) {
+        showHeading(null, true, query);
+    }
+
+    private void showHeading(CharSequence title, boolean home, String query) {
+        pageTitle.setText(home ? L10n.t(query.isEmpty() ? "Your Telegram." : "Search settings") : title);
+        introduction.setVisibility(home && query.isEmpty() ? View.VISIBLE : View.GONE);
+        pageTitle.setPaddingRelative(dp(22), dp(4), dp(20), dp(home && query.isEmpty() ? 6 : 16));
+    }
+
     /** How many settings the search shows, or -1 when there is no search. */
     void showResults(int count) {
         results.removeCallbacks(showFound);
@@ -331,6 +339,10 @@ public final class SettingsDialog extends DialogFragment {
             results.setText("");
             return;
         }
+        if (results.getVisibility() == View.GONE) {
+            results.setMinimumHeight(results.getLineHeight());
+            results.setVisibility(View.INVISIBLE);
+        }
         found = count;
         results.postDelayed(showFound, 600);
     }
@@ -338,6 +350,12 @@ public final class SettingsDialog extends DialogFragment {
     private void hideKeyboard() {
         android.view.inputmethod.InputMethodManager keyboard = getContext().getSystemService(android.view.inputmethod.InputMethodManager.class);
         if (keyboard != null) keyboard.hideSoftInputFromWindow(search.getWindowToken(), 0);
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (results != null) results.removeCallbacks(showFound);
+        super.onDestroyView();
     }
 
     @Override

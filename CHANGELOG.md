@@ -6,6 +6,12 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.16.
 
+* **Telegram:** Settings controls share visible focus outlines, readable disabled text and 48dp touch targets. Cards, switches and dialogs use the same corner scale. Search updates its heading as you type and keeps the keyboard open when you clear it.
+
+* **Telegram:** Filter and translation editors keep labels visible and show errors beside the field that needs attention. Errors remain readable without a second popup covering the form. Dialog actions stay visible at the largest text size. Translation fields share one style, the keyboard's Done action saves, and API keys stay out of saved view state. Failed sticker-size saves keep the picker open.
+
+* **Telegram:** Notifications show a compact local status with a button for the full details and Android's notification settings. Import previews name changed filter lists and show the old and new sticker size. Both backup actions explain when they're busy, and cleared logs offer Undo while recovery is available.
+
 * **Tooling:** Resource patches no longer require XML parser features missing from Android. DTDs, XInclude and external entities are refused before any resource changes are written. Android parser checks cover ordinary UTF-8 and UTF-16 resources and confirm refusals make no file changes or network requests. Refs #6.
 
 * **Telegram:** Settings now mirror correctly in right-to-left languages, including Back and the preference list. Telegram's host layout settings stay unchanged.

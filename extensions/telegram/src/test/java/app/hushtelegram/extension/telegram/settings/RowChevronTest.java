@@ -71,7 +71,7 @@ public class RowChevronTest {
 
     /** Every row on the screen whose tap opens a dialog, a file picker, the browser, Android's settings or another page. */
     private static final Set<String> OPENS_SOMETHING = new LinkedHashSet<>(Arrays.asList(
-            "Jump to a section", "Push app", "Translation service", "Filters for groups", "Filters for channels", "Sticker size", "Supported links", "Export settings", "Import settings",
+            "Jump to a section", "Push app", "Translation service", "Filters for groups", "Filters for channels", "Notification status on this phone", "Sticker size", "Supported links", "Export settings", "Import settings",
             "Export diagnostic report", "Source code and issues", "Licenses"));
 
     /** Built by the first show(), after a test has set the text size it wants. */
@@ -135,7 +135,8 @@ public class RowChevronTest {
         assertTrue(item(card).isSelectable());
         assertNotNull(item(card).getOnPreferenceClickListener());
         assertNull("the paused card wears a chevron", chevronOf(card));
-        assertNull("Clear diagnostic data wears a chevron", chevronOf(rowTitled(rows, "Clear diagnostic data")));
+        View clear = rows.stream().filter(row -> "action_clear_diagnostic_data".equals(item(row).getKey())).findFirst().orElseThrow();
+        assertNull("Clear or Undo wears a chevron", chevronOf(clear));
         View checkNow = rowTitled(rows, "Check now");
         assertNotNull(item(checkNow).getOnPreferenceClickListener());
         assertNull("Check now wears a chevron", chevronOf(checkNow));

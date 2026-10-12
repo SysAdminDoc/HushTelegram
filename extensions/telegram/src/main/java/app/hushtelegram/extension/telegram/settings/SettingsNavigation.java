@@ -306,6 +306,7 @@ final class SettingsNavigation extends BaseAdapter {
         pageStatusHeight = 0;
         query = text;
         route = "";
+        host.showSearchHeading(query);
         rebuild();
         showAt(query.isEmpty() ? homePosition : 0, query.isEmpty() ? homeOffset : 0);
     }
@@ -636,7 +637,9 @@ final class SettingsNavigation extends BaseAdapter {
         boolean paused = HushTelegramPause.isPaused();
         TextView summary = row.findViewById(android.R.id.summary);
         if (!paused && !nextPaused && ReleaseCheck.statusLine() == null) {
-            summary.setText(L10n.t("Your switches are working."));
+            summary.setText(AbstractPreferenceFragment.restartPending.isEmpty()
+                    ? L10n.t("Your switches are working.")
+                    : L10n.t("A change here applies after Telegram restarts."));
         } else if (paused && nextPaused && HushTelegramPause.reason() == HushTelegramPause.Reason.SWITCH
                 && !markerLeft()) {
             // A marker Resume couldn't remove keeps the card's own line, which says what to do.
@@ -662,11 +665,9 @@ final class SettingsNavigation extends BaseAdapter {
         action.setAllCaps(false);
         action.setTextSize(14);
         action.setTextColor(palette().onAccent);
-        // A smaller visible pill keeps the full 48dp touch and keyboard target.
-        action.setBackground(new android.graphics.drawable.RippleDrawable(
-                android.content.res.ColorStateList.valueOf(ScreenColors.half(palette().onAccent)),
-                new android.graphics.drawable.InsetDrawable(
-                        ScreenColors.rounded(palette().accent, dp(24)), 0, dp(8), 0, dp(8)), null));
+        action.setBackground(new android.graphics.drawable.InsetDrawable(
+                palette().control(action, palette().accent, ScreenColors.BUTTON_RADIUS, false),
+                0, dp(6), 0, dp(6)));
         action.setMinWidth(dp(48));
         action.setMinHeight(dp(48));
         action.setMinimumWidth(dp(48));

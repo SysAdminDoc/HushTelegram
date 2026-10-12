@@ -903,7 +903,7 @@ public class SettingsBackupTest {
             HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
             deliver(activity, tap(activity, page, IMPORT_ROW), file);
             AlertDialog preview = shownPreview();
-            assertEquals("The sticker size will change.", String.valueOf(shadowOf(preview).getMessage()));
+            assertEquals("The sticker size will change.\n\nSticker size: 75% to 125%", String.valueOf(shadowOf(preview).getMessage()));
             assertEquals("Import", String.valueOf(preview.getButton(AlertDialog.BUTTON_POSITIVE).getText()));
             preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             settle();
@@ -1096,7 +1096,7 @@ public class SettingsBackupTest {
                 assertFalse(export.isEnabled());
                 assertFalse(importRow.isEnabled());
                 assertEquals("Reading the settings file", String.valueOf(importRow.getSummary()));
-                assertEquals("a row that isn't acting changed its summary", exportSummary, String.valueOf(export.getSummary()));
+                assertEquals("the other row explains why it is unavailable", "Reading the settings file", String.valueOf(export.getSummary()));
 
                 click(export);
                 assertNull("a tap during a read opened a picker", shadowOf(activity).getNextStartedActivityForResult());
@@ -1106,6 +1106,7 @@ public class SettingsBackupTest {
             settle();
             assertTrue(export.isEnabled());
             assertTrue(importRow.isEnabled());
+            assertEquals(exportSummary, String.valueOf(export.getSummary()));
             assertEquals(importSummary, String.valueOf(importRow.getSummary()));
             shownPreview().cancel();
             settle();

@@ -183,7 +183,7 @@ public class NotificationStatusTest {
         assertEquals(Boolean.FALSE, FirebasePush.localStatus(context()).notificationPermission);
     }
 
-    @Test public void readOnlyRowRefreshesLocalFactsWhenThePageResumes() {
+    @Test public void localFactsRefreshAndDetailsKeepRegistrationSeparateFromPermission() {
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             HushTelegramPreferenceFragment page = new HushTelegramPreferenceFragment();
             controller.get().getFragmentManager().beginTransaction().add(android.R.id.content, page).commitNow();
@@ -193,13 +193,22 @@ public class NotificationStatusTest {
             Shadows.shadowOf(manager()).setNotificationsEnabled(false);
             page.onResume();
             assertTrue(status.getSummary().toString().contains("Notification permission: Blocked"));
-            assertTrue(status.getSummary().toString().contains("Notification ID saved on this phone: No"));
             assertTrue(status.getSummary().toString().contains("Signed-in accounts: 0"));
             FirebasePush.registerDeviceAnswer(new TLRPC.TL_boolTrue(), null);
             page.onResume();
-            assertTrue(status.getSummary().toString().contains("Telegram's reply to notification sign-up: Accepted"));
-            assertFalse(status.isSelectable());
+            assertTrue(status.isSelectable());
             assertNull(status.getIntent());
+            status.getOnPreferenceClickListener().onPreferenceClick(status);
+            android.app.AlertDialog details = org.robolectric.shadows.ShadowAlertDialog.getLatestAlertDialog();
+            String message = org.robolectric.Shadows.shadowOf(details).getMessage().toString();
+            assertTrue(message.contains("Notification ID saved on this phone: No"));
+            assertTrue(message.contains("Telegram's reply to notification sign-up: Accepted"));
+            assertTrue(message.contains("It doesn't prove notifications will arrive."));
+            details.getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick();
+            org.robolectric.shadows.ShadowLooper.idleMainLooper();
+            android.content.Intent launched = org.robolectric.Shadows.shadowOf(controller.get()).getNextStartedActivity();
+            assertEquals(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS, launched.getAction());
+            assertEquals(controller.get().getPackageName(), launched.getStringExtra(android.provider.Settings.EXTRA_APP_PACKAGE));
         }
     }
 

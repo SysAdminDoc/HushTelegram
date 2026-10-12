@@ -197,7 +197,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         SettingsBackupPreference.onPageResumed(this);
         showSupportedLinks();
         showPushApp();
-        if (localNotificationStatus != null) localNotificationStatus.setSummary(FirebasePush.localStatus(getContext()).summary());
+        if (localNotificationStatus != null) localNotificationStatus.setSummary(notificationSummary(FirebasePush.localStatus(getContext())));
     }
 
     @Override
@@ -451,16 +451,16 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         }
         if (build.contains(PatchFamily.MESSAGE_MENU_REPEAT)) {
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_REPEAT, L10n.t("Add Repeat to the message menu"),
-                    PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Repeat under Forward in a message's press-and-hold menu. It sends the same "
+                    PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Repeat under Forward in a message's menu. It sends the same "
                             + "message again to the chat. Not shown in protected or secret chats."))));
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_COPY_PHOTO, L10n.t("Add Copy photo to the message menu"),
-                    PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Copy photo to a downloaded photo's press-and-hold menu, so you can paste "
+                    PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Copy photo to a downloaded photo's menu, so you can paste "
                             + "the picture into another app. Not shown in protected or secret chats."))));
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_DETAILS, L10n.t("Add Message details to the message menu"),
-                    PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Message details to a message's press-and-hold menu. It shows IDs, send and "
+                    PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Message details to a message's menu. It shows IDs, send and "
                             + "edit times, where it was forwarded from, and file info."))));
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_QUICK_FORWARD, L10n.t("Add Quick forward to the message menu"),
-                    PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Quick forward to a message's press-and-hold menu. One tap sends it to Saved"
+                    PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Quick forward to a message's menu. One tap sends it to Saved"
                             + " Messages or a recent chat. Not in protected or secret chats."))));
         }
         if (build.contains(PatchFamily.KEEP_DELETED_MESSAGES)) {
@@ -486,8 +486,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (build.contains(PatchFamily.OUTSIDE_TRANSLATE)) {
             SwitchPreference outside = toggle(context, Settings.OUTSIDE_TRANSLATE, L10n.t("Translate with an outside service"),
                     PatchFamily.OUTSIDE_TRANSLATE.coverageSummary(L10n.t("Adds Translate here to a message's menu and Translate this chat to a chat's menu, "
-                            + "using Google's web translate in place of Telegram's Premium translation. The text you "
-                            + "ask to translate is sent to Google, one message at a time, and nothing leaves your "
+                            + "using the translation service you choose. The text you ask to translate is sent to that service, "
+                            + "one message at a time. Nothing leaves your "
                             + "phone until you turn a chat or message on.")));
             // Off means off: switching back on later starts with no chat or message turned on.
             outside.setOnPreferenceChangeListener((row, value) -> {
@@ -529,12 +529,46 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     }
 
     /** The Notifications page: the status on this phone and the two push switches lead. */
+    static String notificationSummary(FirebasePush.LocalStatus status) {
+        return L10n.f("Notification permission: %1$s", status.notificationPermission == null ? L10n.t("Unknown")
+                : status.notificationPermission ? L10n.t("Allowed") : L10n.t("Blocked"))
+                + "\n" + L10n.f("Signed-in accounts: %1$s", status.activeAccounts < 0 ? L10n.t("Unknown") : status.activeAccounts)
+                + "\n" + L10n.t("Tap for details and Android settings.");
+    }
+
+    void openNotificationSettings(Context context) {
+        Intent notifications = new Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.getPackageName());
+        Intent details = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:" + context.getPackageName()));
+        for (Intent intent : new Intent[]{notifications, details}) {
+            try {
+                context.startActivity(intent);
+                return;
+            } catch (ActivityNotFoundException | SecurityException exception) {
+                Logger.printException(() -> "Could not open notification settings", exception);
+            }
+        }
+        Utils.showToastLong(L10n.t("Couldn't open notification settings. Open Android settings."));
+    }
+
     private void addNotificationsPage(Context context, Map<PatchFamily.Page, PreferenceCategory> pages, Set<PatchFamily> build) {
         if (build.contains(PatchFamily.REPAIR_FIREBASE_PUSH)) {
             PreferenceCategory notifications = pages.get(PatchFamily.Page.NOTIFICATIONS);
-            localNotificationStatus = info(context, L10n.t("Notification status on this phone"), FirebasePush.localStatus(context).summary());
+            localNotificationStatus = new Row(context);
+            localNotificationStatus.setTitle(L10n.t("Notification status on this phone"));
+            localNotificationStatus.setPersistent(false);
+            localNotificationStatus.setSummary(notificationSummary(FirebasePush.localStatus(context)));
             localNotificationStatus.setKey("local_notification_status");
             localNotificationStatus.setIcon(SettingsIcons.icon(context, SettingsIcons.ABOUT, ScreenColors.DEFAULT.heading));
+            localNotificationStatus.setOnPreferenceClickListener(row -> {
+                show(new AlertDialog.Builder(themed(context))
+                        .setTitle(L10n.t("Notification status on this phone"))
+                        .setMessage(FirebasePush.localStatus(context).summary())
+                        .setPositiveButton(L10n.t("Open notification settings"), (dialog, which) -> openNotificationSettings(context))
+                        .setNegativeButton(L10n.t("Close"), null));
+                return true;
+            });
             notifications.addPreference(localNotificationStatus);
             notifications.addPreference(toggle(context, Settings.REPAIR_FIREBASE_PUSH, L10n.t("Repair Firebase push registration"),
                     PatchFamily.REPAIR_FIREBASE_PUSH.coverageSummary(L10n.t("Tries to help this patched Telegram sign up for push notifications with Firebase, "
@@ -781,8 +815,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         // The preview gives the count of the switches and each one by name.
         backup.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.IMPORT,
                 L10n.t("Import settings"),
-                L10n.t("Loads your switches, filter lists and sticker size from a saved file. You see which switches "
-                        + "it will change before anything is applied. It applies to all accounts.")), SettingsIcons.DOWNLOADS));
+                L10n.t("Loads your switches, filter lists and sticker size from a saved file. You see what will "
+                        + "change before anything is applied. It applies to all accounts.")), SettingsIcons.DOWNLOADS));
     }
 
     /** Diagnostics: Debug logging, the report, and clearing what a report would hold. */
@@ -796,7 +830,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         // resources that Telegram's APK doesn't have, and untitled they showed as blank rows.
         ExportDiagnosticReportPreference export = new ExportRow(context);
         export.setTitle(L10n.t("Export diagnostic report"));
-        export.setSummary(L10n.t("Copy a short report or save the full one to Download/Morphe. Links, IDs and sign-in details are "
+        export.setSummary(L10n.t("Copy a short report or save the full one to a file. The saved location is shown afterward. Links, IDs and sign-in details are "
                 + "left out. Look it over before sharing."));
         diagnostics.addPreference(mark(export, SettingsIcons.LICENSE));
         ClearLogBufferPreference clear = new ClearRow(context);
@@ -883,6 +917,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (getView() == null || activity == null || activity.isFinishing() || activity.isDestroyed()) return;
         AlertDialog dialog = builder.show();
         ScreenColors.dialog(dialog);
+        own(dialog);
+    }
+
+    private void own(Dialog dialog) {
         shownDialogs.add(dialog);
         dialog.setOnDismissListener(shownDialogs::remove);
     }
@@ -1003,7 +1041,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         String status;
         if (!HushTelegramPause.isPaused()) {
             // The version lives on the About page. Here it pushed the line that matters below it.
-            status = pausedNext ? L10n.t("HushTelegram pauses when Telegram restarts.") : L10n.t("Your switches are working.");
+            status = pausedNext ? L10n.t("HushTelegram pauses when Telegram restarts.")
+                    : restartPending.isEmpty() ? L10n.t("Your switches are working.")
+                    : L10n.t("A change here applies after Telegram restarts.");
         } else if (pausedNext) {
             status = pausedSummary(HushTelegramPause.reason(), context.getPackageName())
                     + " " + L10n.t("Tap to turn it back on.");
@@ -1078,15 +1118,17 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             labels[i] = percent(StickerSize.CHOICES[i]);
             if (StickerSize.CHOICES[i] == saved) checked = i;
         }
+        final int savedChoice = checked;
         show(new AlertDialog.Builder(context)
                 .setTitle(L10n.t("Sticker size"))
                 .setSingleChoiceItems(labels, checked, (dialog, which) -> {
                     if (Settings.STICKER_SIZE.save(StickerSize.CHOICES[which])) {
                         row.setSummary(stickerSizeSummary());
+                        dialog.dismiss();
                     } else {
+                        ((AlertDialog) dialog).getListView().setItemChecked(savedChoice, true);
                         Utils.showToastLong(L10n.t("Couldn't save the size. Try again in a moment."));
                     }
-                    dialog.dismiss();
                 })
                 .setNegativeButton(L10n.t("Cancel"), null));
     }
@@ -1109,7 +1151,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         row.setSummary(FilterEditor.summary(list));
         row.setOnPreferenceClickListener(p -> {
             Activity activity = getActivity();
-            if (activity != null) FilterEditor.open(activity, p, list, title);
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) own(FilterEditor.open(activity, p, list, title));
             return true;
         });
         return row;
@@ -1124,7 +1166,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         row.setSummary(TranslateServiceEditor.summary(OutsideTranslate.service()));
         row.setOnPreferenceClickListener(p -> {
             Activity activity = getActivity();
-            if (activity != null) TranslateServiceEditor.open(activity, p);
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) own(TranslateServiceEditor.open(activity, p));
             return true;
         });
         return row;
@@ -1149,7 +1191,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         row.setSummary(UnifiedPush.status(context, Settings.UNIFIED_PUSH.savedValue()));
         row.setOnPreferenceClickListener(p -> {
             Activity activity = getActivity();
-            if (activity != null) UnifiedPushPicker.open(activity, p);
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                AlertDialog picker = UnifiedPushPicker.open(activity, p);
+                if (picker != null) own(picker);
+            }
             return true;
         });
         return row;
@@ -1412,7 +1457,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     new CharSequence[]{L10n.t(getContext(), "Copy quick report"),
                             L10n.t(getContext(), "Save full report")},
                     new CharSequence[]{L10n.t(getContext(), "Copy a short report to the clipboard."),
-                            L10n.t(getContext(), "Save the full report in Download/Morphe.")});
+                            L10n.t(getContext(), "Save the full report to a file. The saved location is shown afterward.")});
         }
 
         /**

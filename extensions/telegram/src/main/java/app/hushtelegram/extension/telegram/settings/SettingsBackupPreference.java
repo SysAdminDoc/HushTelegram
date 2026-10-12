@@ -39,6 +39,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -50,8 +51,11 @@ import app.hushtelegram.extension.shared.Logger;
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.settings.Setting;
+import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
+import app.hushtelegram.extension.telegram.misc.MessageFilters;
+import app.hushtelegram.extension.telegram.misc.StickerSize;
 
 /**
  * Export settings and Import settings.
@@ -364,7 +368,8 @@ public class SettingsBackupPreference extends Preference {
         }
         // Each switch by name, so a file someone shared can't turn Open links externally or Disable
         // analytics around without it showing here.
-        if (switches > 0) message += "\n\n" + String.join("\n", switchLines(page, snapshot));
+        List<String> details = changeLines(page, snapshot);
+        if (!details.isEmpty()) message += "\n\n" + String.join("\n", details);
         if (snapshot.unknown > 0) {
             message += "\n\n" + L10n.quantity(snapshot.unknown,
                     "%1$d item in that file isn't a setting this version of HushTelegram knows, so it'll be left out.",
@@ -397,6 +402,24 @@ public class SettingsBackupPreference extends Preference {
             String title = switchTitle(page, (BooleanSetting) change.getKey());
             lines.add(Boolean.TRUE.equals(change.getValue())
                     ? L10n.f("%1$s turns on", title) : L10n.f("%1$s turns off", title));
+        }
+        return lines;
+    }
+
+    /** Name the affected lists without showing their private filters, and show the actual size change. */
+    static List<String> changeLines(HushTelegramPreferenceFragment page, SettingsBackup.Snapshot snapshot) {
+        List<String> lines = switchLines(page, snapshot);
+        for (Map.Entry<Setting<?>, Object> change : snapshot.changes().entrySet()) {
+            if (change.getKey() instanceof StringSetting) {
+                String title = L10n.t(change.getKey() == Settings.MESSAGE_FILTERS_GROUPS ? "Filters for groups" : "Filters for channels");
+                int count = MessageFilters.lines((String) change.getValue()).size();
+                lines.add(title + ": " + L10n.quantity(count, "%1$d filter", "%1$d filters", count));
+            } else if (change.getKey() == Settings.STICKER_SIZE) {
+                NumberFormat percent = NumberFormat.getPercentInstance(L10n.locale());
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Sticker size"),
+                        percent.format(StickerSize.percent(Settings.STICKER_SIZE.savedValue()) / 100.0),
+                        percent.format(((Integer) change.getValue()) / 100.0)));
+            }
         }
         return lines;
     }
@@ -570,7 +593,7 @@ public class SettingsBackupPreference extends Preference {
     }
 
     private void showBusy(int action, @Nullable String line) {
-        busyLine = rowAction == action ? line : null;
+        busyLine = line;
         setEnabled(false);
         if (busyLine != null) setSummary(busyLine);
     }

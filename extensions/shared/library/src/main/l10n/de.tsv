@@ -20,9 +20,7 @@ About	Info
 Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.	Android 11 und älter melden nicht, welche Links sich hier öffnen. Tippe, um die Einstellungen dieser App zu öffnen, dann auf „Standardmäßig öffnen“.
 Back	Zurück
 Cancel	Abbrechen
-Loads your switches, filter lists and sticker size from a saved file. You see which switches it will change before anything is applied. It applies to all accounts.	Lädt deine Schalter, Filterlisten und die Stickergröße aus einer gespeicherten Datei. Du siehst, welche Schalter sich ändern, bevor etwas angewendet wird. Gilt für alle Konten.
 Clear diagnostic data	Diagnosedaten löschen
-Copy a short report or save the full one to Download/Morphe. Links, IDs and sign-in details are left out. Look it over before sharing.	Kopiere einen kurzen Bericht oder speichere den vollständigen unter Download/Morphe. Links, IDs und Anmeldedaten sind nicht enthalten. Sieh ihn dir vor dem Teilen an.
 Copy quick report	Kurzbericht kopieren
 Couldn't import or restore old settings. Check the switches.	Import und Wiederherstellung sind fehlgeschlagen. Prüfe die Schalter.
 Couldn't import the settings. Nothing was changed.	Die Einstellungen ließen sich nicht importieren. Es wurde nichts geändert.
@@ -110,7 +108,6 @@ Records what HushTelegram does and shows error messages, to help with a bug repo
 You paused HushTelegram.	Du hast HushTelegram pausiert.
 Your switches already match that file, so nothing will change.	Deine Schalter entsprechen bereits dieser Datei, es ändert sich also nichts.
 Copy a short report to the clipboard.	Kurzen Bericht in die Zwischenablage kopieren.
-Save the full report in Download/Morphe.	Vollständigen Bericht unter Download/Morphe speichern.
 Settings imported.	Einstellungen importiert.
 Can't open the link. Go to %1$s.	Der Link lässt sich nicht öffnen. Geh zu %1$s.
 # context: Separate pages under More settings. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
@@ -296,7 +293,6 @@ Messages from people you've blocked are left out of groups and supergroups you o
 Hide Telegram Features and Invite Friends	Telegram-Funktionen und Freunde einladen ausblenden
 Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.	Entfernt die Zeile Telegram-Funktionen aus den Einstellungen und Freunde einladen aus den Kontakten. Hast du noch keine Kontakte, verschwindet auch die Einladungsliste.
 Add Repeat to the message menu	Wiederholen zum Nachrichtenmenü hinzufügen
-Adds Repeat under Forward in a message's press-and-hold menu. It sends the same message again to the chat. Not shown in protected or secret chats.	Fügt Wiederholen unter Weiterleiten im Menü einer Nachricht hinzu, das du durch gedrückt halten öffnest. Es sendet dieselbe Nachricht noch einmal in den Chat. In geschützten oder geheimen Chats nicht sichtbar.
 Keep deleted messages	Gelöschte Nachrichten behalten
 Messages others delete stay in your chat on this phone, marked deleted next to the time. Your own deletes and disappearing messages work as usual.	Nachrichten, die andere löschen, bleiben auf diesem Handy in deinem Chat und sind neben der Uhrzeit als gelöscht markiert. Deine eigenen Löschungen und verschwindende Nachrichten funktionieren wie gewohnt.
 # context: an action row under Keep deleted messages; a tap deletes every message that switch kept
@@ -312,13 +308,11 @@ Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. 
 Turn off beta debug logs	Beta-Debug-Protokolle ausschalten
 Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.	Telegram Beta speichert ständig Debug-Protokolle auf deinem Handy, auch das Verbindungsprotokoll, und sein eigenes Debug-Menü kann das nicht abstellen. Das hier stellt sie ab. Bereits gespeicherte Protokolle bleiben, bis du sie löschst, und die normale Version speichert keine, dort ändert sich also nichts. Starte Telegram neu, um die Änderung zu sehen.
 Translate with an outside service	Mit einem externen Dienst übersetzen
-Adds Translate here to a message's menu and Translate this chat to a chat's menu, using Google's web translate in place of Telegram's Premium translation. The text you ask to translate is sent to Google, one message at a time, and nothing leaves your phone until you turn a chat or message on.	Fügt dem Nachrichtenmenü Hier übersetzen und dem Chatmenü Diesen Chat übersetzen hinzu und nutzt dafür Google Übersetzer statt der Premium-Übersetzung von Telegram. Text, den du übersetzen lässt, geht an Google, jeweils eine Nachricht, und nichts verlässt dein Handy, bevor du einen Chat oder eine Nachricht einschaltest.
 Translate here	Hier übersetzen
 Show original	Original anzeigen
 Translate this chat	Diesen Chat übersetzen
 This chat will be translated	Dieser Chat wird übersetzt
 This chat shows the original messages	Dieser Chat zeigt die Originalnachrichten
-(Translated. Long-press for the original.)	(Übersetzt. Lange drücken für das Original.)
 Translation isn't available right now	Die Übersetzung ist gerade nicht verfügbar
 Ask before sending a GIF	Vor dem Senden eines GIFs nachfragen
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Fragt Senden oder Abbrechen, bevor ein angetipptes GIF in einen Chat geht. Abbrechen verwirft es. Geplante GIFs gehen ohne Nachfrage raus.
@@ -342,9 +336,7 @@ Call	Anrufen
 # context: the label before the time of a message someone else deleted that this phone kept
 deleted	gelöscht
 Add Copy photo to the message menu	Foto kopieren zum Nachrichtenmenü hinzufügen
-Adds Copy photo to a downloaded photo's press-and-hold menu, so you can paste the picture into another app. Not shown in protected or secret chats.	Fügt Foto kopieren zum Menü eines heruntergeladenen Fotos hinzu, das du durch gedrückt halten öffnest, damit du das Bild in eine andere App einfügen kannst. In geschützten oder geheimen Chats nicht sichtbar.
 Add Message details to the message menu	Nachrichtendetails zum Nachrichtenmenü hinzufügen
-Adds Message details to a message's press-and-hold menu. It shows IDs, send and edit times, where it was forwarded from, and file info.	Fügt Nachrichtendetails zum Menü einer Nachricht hinzu, das du durch gedrückt halten öffnest. Es zeigt IDs, Sende- und Bearbeitungszeiten, woher sie weitergeleitet wurde, und Dateiinfos.
 Repeat	Wiederholen
 Copy photo	Foto kopieren
 Photo copied	Foto kopiert
@@ -362,7 +354,6 @@ File size: %1$s	Dateigröße: %1$s
 Copy	Kopieren
 Message details copied	Nachrichtendetails kopiert
 Add Quick forward to the message menu	Schnell weiterleiten zum Nachrichtenmenü hinzufügen
-Adds Quick forward to a message's press-and-hold menu. One tap sends it to Saved Messages or a recent chat. Not in protected or secret chats.	Fügt Schnell weiterleiten zum Menü einer Nachricht hinzu, das du durch gedrückt halten öffnest. Ein Tipp sendet sie an Gespeicherte Nachrichten oder einen letzten Chat. Nicht in geschützten oder geheimen Chats.
 Quick forward	Schnell weiterleiten
 Forward to	Weiterleiten an
 Forwarding to %1$s	Wird weitergeleitet an %1$s
@@ -566,3 +557,27 @@ Open the guide	Anleitung öffnen
 Preparing the diagnostic report	Diagnosebericht wird erstellt
 Your Telegram.	Dein Telegram.
 A quieter space, your way.	Ein ruhigerer Ort, ganz nach deinem Geschmack.
+# context: Readable actions, validation, import details and notification recovery.
+Open notification settings	Benachrichtigungseinstellungen öffnen
+Tap for details and Android settings.	Tippe für Details und Android-Einstellungen.
+%1$d filter	%1$d Filter
+%1$d filters	%1$d Filter
+%1$s: %2$s to %3$s	%1$s: von %2$s auf %3$s
+This field is too long. Use %1$d characters or fewer.	Dieses Feld ist zu lang. Verwende höchstens %1$d Zeichen.
+Couldn't copy that. Try again.	Das konnte nicht kopiert werden. Versuch es noch einmal.
+Couldn't complete that action. Try again.	Die Aktion konnte nicht abgeschlossen werden. Versuch es noch einmal.
+Stop translating this chat	Diesen Chat nicht mehr übersetzen
+(Translated. Open the message menu for the original.)	(Übersetzt. Öffne das Nachrichtenmenü für das Original.)
+Adds Repeat under Forward in a message's menu. It sends the same message again to the chat. Not shown in protected or secret chats.	Fügt Wiederholen unter Weiterleiten im Nachrichtenmenü hinzu. Sendet dieselbe Nachricht erneut in den Chat. Wird in geschützten und geheimen Chats nicht angezeigt.
+Adds Copy photo to a downloaded photo's menu, so you can paste the picture into another app. Not shown in protected or secret chats.	Fügt Foto kopieren zum Menü eines heruntergeladenen Fotos hinzu, damit du es in eine andere App einfügen kannst. Wird in geschützten und geheimen Chats nicht angezeigt.
+Adds Message details to a message's menu. It shows IDs, send and edit times, where it was forwarded from, and file info.	Fügt Nachrichtendetails zum Nachrichtenmenü hinzu. Zeigt IDs, Sende- und Bearbeitungszeiten, die Herkunft weitergeleiteter Nachrichten und Dateiinformationen.
+Adds Quick forward to a message's menu. One tap sends it to Saved Messages or a recent chat. Not in protected or secret chats.	Fügt Schnell weiterleiten zum Nachrichtenmenü hinzu. Ein Tippen sendet die Nachricht an Gespeicherte Nachrichten oder einen letzten Chat. Nicht in geschützten oder geheimen Chats.
+Adds Translate here to a message's menu and Translate this chat to a chat's menu, using the translation service you choose. The text you ask to translate is sent to that service, one message at a time. Nothing leaves your phone until you turn a chat or message on.	Fügt Hier übersetzen zum Nachrichtenmenü und Diesen Chat übersetzen zum Chatmenü hinzu. Verwendet den von dir gewählten Übersetzungsdienst. Text wird nur auf deinen Wunsch und Nachricht für Nachricht an diesen Dienst gesendet. Nichts verlässt dein Handy, bis du die Übersetzung für einen Chat oder eine Nachricht einschaltest.
+Save the full report to a file. The saved location is shown afterward.	Speichere den vollständigen Bericht in einer Datei. Der Speicherort wird danach angezeigt.
+# context: Readable actions, validation, import details and notification recovery.
+Copy a short report or save the full one to a file. The saved location is shown afterward. Links, IDs and sign-in details are left out. Look it over before sharing.	Kopiere einen kurzen Bericht oder speichere den vollständigen Bericht in einer Datei. Der Speicherort wird danach angezeigt. Links, IDs und Anmeldedaten werden ausgelassen. Sieh ihn vor dem Teilen durch.
+# context: Readable actions, validation, import details and notification recovery.
+Loads your switches, filter lists and sticker size from a saved file. You see what will change before anything is applied. It applies to all accounts.	Lädt deine Schalter, Filterlisten und Stickergröße aus einer gespeicherten Datei. Du siehst vor dem Anwenden, was sich ändert. Gilt für alle Konten.
+# context: Readable actions, validation, import details and notification recovery.
+Close	Schließen
+Couldn't open notification settings. Open Android settings.	Benachrichtigungen nicht erreichbar. Öffne die Android-Einstellungen.

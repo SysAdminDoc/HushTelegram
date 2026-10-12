@@ -25,6 +25,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
 import android.graphics.drawable.RippleDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
@@ -76,6 +77,15 @@ final class ScreenColors {
     final int onAccent;
     /** Low-emphasis fill behind navigation glyphs. */
     final int iconTile;
+    final int fieldBorder;
+    final int selection;
+    final int error;
+    final int ripple;
+    static final int CARD_RADIUS = 12;
+    static final int BUTTON_RADIUS = 8;
+    static final int FIELD_RADIUS = 8;
+    static final int ICON_RADIUS = 10;
+    static final int DISABLED_TEXT = 0xFF82958B;
 
     /** The one palette the screen is drawn in. */
     static final ScreenColors DEFAULT = new ScreenColors();
@@ -95,6 +105,10 @@ final class ScreenColors {
         outline = 0xFF23332C;
         onAccent = 0xFF071D16;
         iconTile = 0xFF192F26;
+        fieldBorder = 0xFF71877A;
+        selection = 0xFF20372C;
+        error = 0xFFFFB4A8;
+        ripple = 0x337CE6C4;
     }
 
     /**
@@ -106,13 +120,10 @@ final class ScreenColors {
     }
 
     /**
-     * [color], at Material's 38% on a disabled row. A plain colour replaced the theme's own
-     * disabled state, so a row that ignored taps, such as Import while an export runs, looked
-     * the same as one that would take them.
+     * Disabled explanations stay readable while the unavailable control and its status explain why.
      */
     static ColorStateList dimmedWhenDisabled(int color) {
-        int dimmed = (color & 0x00FFFFFF) | 0x61000000;
-        return new ColorStateList(new int[][]{{-android.R.attr.state_enabled}, {}}, new int[]{dimmed, color});
+        return new ColorStateList(new int[][]{{-android.R.attr.state_enabled}, {}}, new int[]{DISABLED_TEXT, color});
     }
 
     /**
@@ -147,11 +158,11 @@ final class ScreenColors {
                     {-android.R.attr.state_enabled}, {android.R.attr.state_checked}, {}};
             Switch toggle = (Switch) widget;
             GradientDrawable thumb = new GradientDrawable();
-            thumb.setShape(GradientDrawable.OVAL);
+            thumb.setCornerRadius(dp(row, 4));
             thumb.setSize(dp(row, 20), dp(row, 20));
             thumb.setColor(Color.WHITE);
             GradientDrawable track = new GradientDrawable();
-            track.setCornerRadius(dp(row, 13));
+            track.setCornerRadius(dp(row, 6));
             track.setSize(dp(row, 44), dp(row, 26));
             track.setColor(Color.WHITE);
             toggle.setThumbDrawable(thumb);
@@ -167,7 +178,7 @@ final class ScreenColors {
             // Replace the platform's icon padding and margins, including Samsung's large-text
             // template, with one consistent tile and a full-size glyph.
             icon.setColorFilter(heading);
-            icon.setBackground(rounded(iconTile, dp(row, 12)));
+            icon.setBackground(rounded(iconTile, dp(row, ICON_RADIUS)));
             icon.setPadding(dp(row, 8), dp(row, 8), dp(row, 8), dp(row, 8));
             imageSize.width = dp(row, 40);
             imageSize.height = dp(row, 40);
@@ -205,7 +216,7 @@ final class ScreenColors {
 
     void paintSurface(View row, Preference preference, boolean first, boolean last,
                       boolean emphasized, boolean transparent) {
-        float radius = dp(row, 16);
+        float radius = dp(row, CARD_RADIUS);
         float[] corners = {
                 first ? radius : 0, first ? radius : 0,
                 first ? radius : 0, first ? radius : 0,
@@ -224,6 +235,8 @@ final class ScreenColors {
         ring.setStroke(dp(row, 2), accent);
         ring.setCornerRadii(corners);
         android.graphics.drawable.StateListDrawable keyboard = new android.graphics.drawable.StateListDrawable();
+        keyboard.addState(new int[]{android.R.attr.state_focused},
+                new InsetDrawable(ring, dp(row, 20), top, dp(row, 20), bottom));
         keyboard.addState(new int[]{android.R.attr.state_selected},
                 new InsetDrawable(ring, dp(row, 20), top, dp(row, 20), bottom));
         android.graphics.drawable.LayerDrawable layers = new android.graphics.drawable.LayerDrawable(new Drawable[]{
@@ -231,7 +244,7 @@ final class ScreenColors {
         // Stacked, so the ring isn't inset a second time by the surface's padding.
         layers.setPaddingMode(android.graphics.drawable.LayerDrawable.PADDING_MODE_STACK);
         row.setBackground(preference.isSelectable()
-                ? new RippleDrawable(ColorStateList.valueOf(half(accent)), layers, null) : layers);
+                ? new RippleDrawable(ColorStateList.valueOf(ripple), layers, null) : layers);
         // Explicit padding after the inset background prevents its padding from moving the text.
         int vertical = preference.getSummary() == null ? 12 : 16;
         row.setPaddingRelative(dp(row, 38), dp(row, vertical + (first ? 6 : 0)),
@@ -256,6 +269,22 @@ final class ScreenColors {
         surface.setColor(color);
         surface.setCornerRadius(radius);
         return surface;
+    }
+
+    /** Stateful controls retain a visible outline with a keyboard, D-pad or mouse. */
+    RippleDrawable control(View view, int fill, int radius, boolean bordered) {
+        int focus = fill == accent ? onAccent : accent;
+        StateListDrawable states = new StateListDrawable();
+        for (int state : new int[]{android.R.attr.state_focused, android.R.attr.state_selected, android.R.attr.state_hovered}) {
+            GradientDrawable active = rounded(fill, dp(view, radius));
+            active.setStroke(dp(view, 2), focus);
+            states.addState(new int[]{state}, active);
+        }
+        GradientDrawable resting = rounded(fill, dp(view, radius));
+        if (bordered) resting.setStroke(dp(view, 1), outline);
+        states.addState(new int[]{}, resting);
+        return new RippleDrawable(ColorStateList.valueOf(fill == accent ? half(onAccent) : ripple),
+                states, rounded(Color.WHITE, dp(view, radius)));
     }
 
     /**
@@ -457,12 +486,8 @@ final class ScreenColors {
             size.width = ViewGroup.LayoutParams.MATCH_PARENT;
             title.setLayoutParams(size);
         }
-        GradientDrawable surface = new GradientDrawable();
-        surface.setColor(primary ? accent : Color.TRANSPARENT);
-        surface.setCornerRadius(dp(row, 8));
-        if (primary) surface.setStroke(dp(row, 1), accent);
-        row.setBackground(new RippleDrawable(ColorStateList.valueOf(half(primary ? onAccent : accent)),
-                new InsetDrawable(surface, dp(row, 16), dp(row, 4), dp(row, 16), dp(row, 4)), null));
+        row.setBackground(new InsetDrawable(control(row, primary ? accent : background, BUTTON_RADIUS, !primary),
+                dp(row, 16), dp(row, 4), dp(row, 16), dp(row, 4)));
         row.setMinimumHeight(dp(row, 56));
         row.setPadding(dp(row, 32), dp(row, 8), dp(row, 32), dp(row, 8));
     }
@@ -511,7 +536,7 @@ final class ScreenColors {
         if (window != null) {
             GradientDrawable panel = new GradientDrawable();
             panel.setColor(this.dialog);
-            panel.setCornerRadius(dp(window.getDecorView(), 10));
+            panel.setCornerRadius(dp(window.getDecorView(), CARD_RADIUS));
             panel.setStroke(dp(window.getDecorView(), 1), outline);
             window.setBackgroundDrawable(panel);
             int width = Math.min(dialog.getContext().getResources().getDisplayMetrics().widthPixels
@@ -542,23 +567,39 @@ final class ScreenColors {
             Button button = dialog.getButton(which);
             if (button == null) continue;
             boolean primary = which == AlertDialog.BUTTON_POSITIVE;
-            GradientDrawable surface = new GradientDrawable();
-            surface.setColor(primary ? accent : this.dialog);
-            surface.setCornerRadius(dp(button, 8));
-            if (primary) surface.setStroke(dp(button, 1), accent);
-            RippleDrawable background = new RippleDrawable(ColorStateList.valueOf(half(primary ? onAccent : accent)),
-                    surface, null);
+            RippleDrawable background = control(button, primary ? accent : this.dialog, BUTTON_RADIUS, false);
             // The framework button's own insets: the 48dp touch height keeps a 36dp fill, clear of
             // the dialog's edge like every Material button.
             background.setLayerInsetRelative(0, dp(button, 4), dp(button, 6), dp(button, 4), dp(button, 6));
             button.setBackground(background);
             button.setTextColor(primary ? onAccent : secondaryActionText());
             button.setAllCaps(false);
+            button.setSingleLine(false);
+            button.setMaxLines(Integer.MAX_VALUE);
+            button.setEllipsize(null);
             button.setMinHeight(dp(button, 48));
             button.setPaddingRelative(dp(button, 16), dp(button, 6), dp(button, 16), dp(button, 6));
         }
-        View field = dialog.findViewById(android.R.id.edit);
-        if (field instanceof EditText) paintField((EditText) field);
+        // AlertDialog otherwise reserves only one button's height for a stacked action panel.
+        // Keep every action outside the form's scroll area, including at the largest font size.
+        @SuppressWarnings("DiscouragedApi")
+        int actionsId = dialog.getContext().getResources().getIdentifier("buttonPanel", "id", "android");
+        View actions = actionsId == 0 ? null : dialog.findViewById(actionsId);
+        if (actions != null) {
+            int width = Math.max(1, dialog.getContext().getResources().getDisplayMetrics().widthPixels - dp(actions, 32));
+            actions.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+            actions.setMinimumHeight(actions.getMeasuredHeight());
+        }
+        if (window != null) paintFields(window.getDecorView());
+    }
+
+    private void paintFields(View view) {
+        if (view instanceof EditText) paintField((EditText) view);
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) paintFields(group.getChildAt(i));
+        }
     }
 
     /**
@@ -567,14 +608,23 @@ final class ScreenColors {
      */
     void paintField(EditText field) {
         field.setHintTextColor(summary);
-        GradientDrawable outline = new GradientDrawable();
-        outline.setColor(dialog);
-        outline.setCornerRadius(dp(field, 8));
-        outline.setStroke(dp(field, 2), accent);
+        boolean invalid = field.getError() != null || EditorForm.INVALID.equals(field.getTag());
+        StateListDrawable border = new StateListDrawable();
+        GradientDrawable focused = rounded(dialog, dp(field, FIELD_RADIUS));
+        focused.setStroke(dp(field, 2), invalid ? error : accent);
+        border.addState(new int[]{android.R.attr.state_focused}, focused);
+        GradientDrawable resting = rounded(dialog, dp(field, FIELD_RADIUS));
+        resting.setStroke(dp(field, 1), invalid ? error : fieldBorder);
+        border.addState(new int[]{}, resting);
         field.setBackgroundTintList(null);
-        field.setBackground(outline);
+        field.setBackground(border);
+        field.setMinimumHeight(dp(field, 48));
         field.setPaddingRelative(dp(field, 12), dp(field, 10), dp(field, 12), dp(field, 10));
         field.setTextColor(title);
+        paintSelection(field);
+    }
+
+    void paintSelection(EditText field) {
         field.setHighlightColor(half(accent));
         // Android 9 has no way to set the cursor or the handles from code, so they keep the teal.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) paintCursorAndHandles(field);

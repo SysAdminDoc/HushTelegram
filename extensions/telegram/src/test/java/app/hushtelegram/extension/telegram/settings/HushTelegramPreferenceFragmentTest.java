@@ -617,7 +617,7 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse(Settings.HIDE_FEATURES_AND_INVITE.key,
                     ((SwitchPreference) page.findPreference(Settings.HIDE_FEATURES_AND_INVITE.key)).isChecked());
             assertEquals("Add Repeat to the message menu", String.valueOf(page.findPreference(Settings.MESSAGE_MENU_REPEAT.key).getTitle()));
-            assertEquals("Adds Repeat under Forward in a message's press-and-hold menu. It sends the same message "
+            assertEquals("Adds Repeat under Forward in a message's menu. It sends the same message "
                     + "again to the chat. Not shown in protected or secret chats.",
                     String.valueOf(page.findPreference(Settings.MESSAGE_MENU_REPEAT.key).getSummary()));
             // The message menu stays as Telegram builds it until the switch is turned on.
@@ -648,8 +648,8 @@ public class HushTelegramPreferenceFragmentTest {
                     ((SwitchPreference) page.findPreference(Settings.BETA_LOGS_OFF.key)).isChecked());
             assertEquals("Translate with an outside service", String.valueOf(page.findPreference(Settings.OUTSIDE_TRANSLATE.key).getTitle()));
             assertEquals("Adds Translate here to a message's menu and Translate this chat to a chat's menu, using "
-                            + "Google's web translate in place of Telegram's Premium translation. The text you ask to "
-                            + "translate is sent to Google, one message at a time, and nothing leaves your phone until "
+                            + "the translation service you choose. The text you ask to translate is sent to that service, "
+                            + "one message at a time. Nothing leaves your phone until "
                             + "you turn a chat or message on.",
                     String.valueOf(page.findPreference(Settings.OUTSIDE_TRANSLATE.key).getSummary()));
             // Messages stay as sent until a chat or message is turned on.
@@ -692,21 +692,21 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse(Settings.ASK_BEFORE_CALL.key,
                     ((SwitchPreference) page.findPreference(Settings.ASK_BEFORE_CALL.key)).isChecked());
             assertEquals("Add Copy photo to the message menu", String.valueOf(page.findPreference(Settings.MESSAGE_MENU_COPY_PHOTO.key).getTitle()));
-            assertEquals("Adds Copy photo to a downloaded photo's press-and-hold menu, so you can paste the picture "
+            assertEquals("Adds Copy photo to a downloaded photo's menu, so you can paste the picture "
                     + "into another app. Not shown in protected or secret chats.",
                     String.valueOf(page.findPreference(Settings.MESSAGE_MENU_COPY_PHOTO.key).getSummary()));
             // Each of the menu's items stays out until its own switch is turned on.
             assertFalse(Settings.MESSAGE_MENU_COPY_PHOTO.key,
                     ((SwitchPreference) page.findPreference(Settings.MESSAGE_MENU_COPY_PHOTO.key)).isChecked());
             assertEquals("Add Message details to the message menu", String.valueOf(page.findPreference(Settings.MESSAGE_MENU_DETAILS.key).getTitle()));
-            assertEquals("Adds Message details to a message's press-and-hold menu. It shows IDs, send and edit times, "
+            assertEquals("Adds Message details to a message's menu. It shows IDs, send and edit times, "
                     + "where it was forwarded from, and file info.",
                     String.valueOf(page.findPreference(Settings.MESSAGE_MENU_DETAILS.key).getSummary()));
             // Each of the menu's items stays out until its own switch is turned on.
             assertFalse(Settings.MESSAGE_MENU_DETAILS.key,
                     ((SwitchPreference) page.findPreference(Settings.MESSAGE_MENU_DETAILS.key)).isChecked());
             assertEquals("Add Quick forward to the message menu", String.valueOf(page.findPreference(Settings.MESSAGE_MENU_QUICK_FORWARD.key).getTitle()));
-            assertEquals("Adds Quick forward to a message's press-and-hold menu. One tap sends it to Saved Messages or"
+            assertEquals("Adds Quick forward to a message's menu. One tap sends it to Saved Messages or"
                     + " a recent chat. Not in protected or secret chats.",
                     String.valueOf(page.findPreference(Settings.MESSAGE_MENU_QUICK_FORWARD.key).getSummary()));
             assertFalse(Settings.MESSAGE_MENU_QUICK_FORWARD.key,
@@ -1010,11 +1010,15 @@ public class HushTelegramPreferenceFragmentTest {
                 Preference status = pageOf(controller).findPreference("local_notification_status");
                 assertNotNull("local facts must remain visible with repair off and Pause " + reason, status);
                 assertEquals("Notification status on this phone", status.getTitle());
-                assertFalse("reading local status must not be an action", status.isSelectable());
+                assertTrue("local status opens details and Android settings", status.isSelectable());
                 assertFalse("local facts must not become a saved preference", status.isPersistent());
-                assertTrue(String.valueOf(status.getSummary()), String.valueOf(status.getSummary()).contains("Notification ID saved on this phone: Unknown"));
+                assertTrue(String.valueOf(status.getSummary()), String.valueOf(status.getSummary()).contains("Notification permission:"));
                 assertTrue(String.valueOf(status.getSummary()), String.valueOf(status.getSummary()).contains("Signed-in accounts: Unknown"));
-                assertTrue(String.valueOf(status.getSummary()), String.valueOf(status.getSummary()).contains("Accounts Telegram confirmed for notifications: Unknown"));
+                assertTrue(String.valueOf(status.getSummary()), String.valueOf(status.getSummary()).contains("Tap for details and Android settings."));
+                status.getOnPreferenceClickListener().onPreferenceClick(status);
+                AlertDialog details = ShadowAlertDialog.getLatestAlertDialog();
+                assertTrue(String.valueOf(shadowOf(details).getMessage()).contains("Accounts Telegram confirmed for notifications: Unknown"));
+                details.dismiss();
             }
             PauseForTests.resume();
         }

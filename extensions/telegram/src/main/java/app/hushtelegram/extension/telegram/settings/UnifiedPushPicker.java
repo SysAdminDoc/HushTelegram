@@ -8,6 +8,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.preference.Preference;
 
+import androidx.annotation.Nullable;
+
 import java.util.List;
 
 import app.hushtelegram.extension.shared.L10n;
@@ -23,11 +25,12 @@ final class UnifiedPushPicker {
 
     private UnifiedPushPicker() {}
 
-    static void open(Activity activity, Preference row) {
+    @Nullable
+    static AlertDialog open(Activity activity, Preference row) {
         List<String> apps = UnifiedPush.distributors(activity);
         if (apps.isEmpty()) {
             Utils.showToastLong(L10n.t("Install a UnifiedPush app like ntfy first."));
-            return;
+            return null;
         }
         String[] labels = new String[apps.size()];
         for (int i = 0; i < labels.length; i++) labels[i] = UnifiedPush.label(activity, apps.get(i));
@@ -44,5 +47,6 @@ final class UnifiedPushPicker {
                 .setNegativeButton(L10n.t("Cancel"), null)
                 .show();
         ScreenColors.dialog(dialog);
+        return dialog;
     }
 }

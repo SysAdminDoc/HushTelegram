@@ -12,7 +12,6 @@ package app.hushtelegram.extension.telegram.settings;
 
 import android.content.res.ColorStateList;
 import android.database.DataSetObserver;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,8 +58,8 @@ final class DialogChoices extends BaseAdapter {
                 if (drawable != null) drawable.mutate().setTintList(indicator);
             }
             StateListDrawable background = new StateListDrawable();
-            background.addState(new int[]{android.R.attr.state_checked}, new ColorDrawable((colors.accent & 0xFFFFFF) | 0x22000000));
-            background.addState(new int[]{}, new ColorDrawable(android.graphics.Color.TRANSPARENT));
+            background.addState(new int[]{android.R.attr.state_checked}, colors.control(row, colors.selection, ScreenColors.BUTTON_RADIUS, false));
+            background.addState(new int[]{}, colors.control(row, colors.dialog, ScreenColors.BUTTON_RADIUS, false));
             choice.setBackground(background);
             // Rounding both sides up at densities such as 450dpi exceeds the measured 48dp row.
             int verticalPadding = (int) (8 * density);

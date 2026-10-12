@@ -20,9 +20,7 @@ About	Tentang
 Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.	Android 11 dan versi sebelumnya tidak memberi tahu tautan mana yang terbuka di sini. Ketuk untuk membuka pengaturan aplikasi ini, lalu Buka secara default.
 Back	Kembali
 Cancel	Batal
-Loads your switches, filter lists and sticker size from a saved file. You see which switches it will change before anything is applied. It applies to all accounts.	Memuat sakelar, daftar filter, dan ukuran stiker Anda dari berkas yang disimpan. Anda melihat sakelar mana yang akan berubah sebelum apa pun diterapkan. Berlaku untuk semua akun.
 Clear diagnostic data	Hapus data diagnostik
-Copy a short report or save the full one to Download/Morphe. Links, IDs and sign-in details are left out. Look it over before sharing.	Salin laporan singkat atau simpan yang lengkap ke Download/Morphe. Tautan, ID, dan data masuk tidak disertakan. Periksa dulu sebelum membagikannya.
 Copy quick report	Salin laporan singkat
 Couldn't import or restore old settings. Check the switches.	Gagal mengimpor atau memulihkan pengaturan lama. Periksa sakelarnya.
 Couldn't import the settings. Nothing was changed.	Pengaturan tidak dapat diimpor. Tidak ada yang diubah.
@@ -110,7 +108,6 @@ Records what HushTelegram does and shows error messages, to help with a bug repo
 You paused HushTelegram.	Anda menjeda HushTelegram.
 Your switches already match that file, so nothing will change.	Sakelar Anda sudah sesuai dengan file itu, jadi tidak ada yang akan berubah.
 Copy a short report to the clipboard.	Salin laporan singkat ke papan klip.
-Save the full report in Download/Morphe.	Simpan laporan lengkap di Download/Morphe.
 Settings imported.	Pengaturan diimpor.
 Can't open the link. Go to %1$s.	Tautan tidak bisa dibuka. Buka %1$s.
 # context: Separate pages under More settings. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
@@ -296,7 +293,6 @@ Messages from people you've blocked are left out of groups and supergroups you o
 Hide Telegram Features and Invite Friends	Sembunyikan Fitur Telegram dan Undang Teman
 Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.	Menghapus baris Fitur Telegram dari Pengaturan dan Undang Teman dari Kontak. Jika Anda belum punya kontak, daftar undangan juga hilang.
 Add Repeat to the message menu	Tambahkan Ulangi ke menu pesan
-Adds Repeat under Forward in a message's press-and-hold menu. It sends the same message again to the chat. Not shown in protected or secret chats.	Menambahkan Ulangi di bawah Teruskan pada menu pesan yang muncul saat ditekan lama. Ini mengirim pesan yang sama lagi ke obrolan. Tidak tampil di obrolan yang dilindungi atau rahasia.
 Keep deleted messages	Simpan pesan yang dihapus
 Messages others delete stay in your chat on this phone, marked deleted next to the time. Your own deletes and disappearing messages work as usual.	Pesan yang dihapus orang lain tetap ada di obrolan Anda di ponsel ini, ditandai terhapus di samping waktu. Penghapusan oleh Anda dan pesan yang menghilang berfungsi seperti biasa.
 # context: an action row under Keep deleted messages; a tap deletes every message that switch kept
@@ -312,13 +308,11 @@ Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. 
 Turn off beta debug logs	Matikan log debug beta
 Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.	Telegram Beta selalu menyimpan log debug di ponsel Anda, termasuk log koneksinya, dan menu debug miliknya sendiri tidak bisa menghentikannya. Ini menghentikannya. Log yang sudah tersimpan tetap ada sampai Anda menghapusnya, dan versi biasa tidak menyimpannya, jadi di sana tidak ada yang berubah. Mulai ulang Telegram untuk melihat perubahannya.
 Translate with an outside service	Terjemahkan dengan layanan luar
-Adds Translate here to a message's menu and Translate this chat to a chat's menu, using Google's web translate in place of Telegram's Premium translation. The text you ask to translate is sent to Google, one message at a time, and nothing leaves your phone until you turn a chat or message on.	Menambahkan Terjemahkan di sini ke menu pesan dan Terjemahkan obrolan ini ke menu obrolan, memakai terjemahan web Google sebagai pengganti terjemahan Premium Telegram. Teks yang Anda minta diterjemahkan dikirim ke Google, satu pesan sekali kirim, dan tidak ada yang keluar dari ponsel Anda sebelum Anda mengaktifkan obrolan atau pesan.
 Translate here	Terjemahkan di sini
 Show original	Tampilkan asli
 Translate this chat	Terjemahkan obrolan ini
 This chat will be translated	Obrolan ini akan diterjemahkan
 This chat shows the original messages	Obrolan ini menampilkan pesan asli
-(Translated. Long-press for the original.)	(Diterjemahkan. Tekan lama untuk melihat aslinya.)
 Translation isn't available right now	Terjemahan tidak tersedia saat ini
 Ask before sending a GIF	Tanya dulu sebelum mengirim GIF
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Menanyakan Kirim atau Batal sebelum GIF yang Anda ketuk masuk ke obrolan. Batal membuangnya. GIF terjadwal terkirim tanpa bertanya.
@@ -342,9 +336,7 @@ Call	Panggil
 # context: the label before the time of a message someone else deleted that this phone kept
 deleted	dihapus
 Add Copy photo to the message menu	Tambahkan Salin foto ke menu pesan
-Adds Copy photo to a downloaded photo's press-and-hold menu, so you can paste the picture into another app. Not shown in protected or secret chats.	Menambahkan Salin foto pada menu foto yang sudah diunduh saat ditekan lama, sehingga Anda bisa menempel gambarnya di aplikasi lain. Tidak tampil di obrolan yang dilindungi atau rahasia.
 Add Message details to the message menu	Tambahkan Detail pesan ke menu pesan
-Adds Message details to a message's press-and-hold menu. It shows IDs, send and edit times, where it was forwarded from, and file info.	Menambahkan Detail pesan pada menu pesan yang muncul saat ditekan lama. Menampilkan ID, waktu kirim dan edit, asal penerusan, dan info berkas.
 Repeat	Ulangi
 Copy photo	Salin foto
 Photo copied	Foto disalin
@@ -362,7 +354,6 @@ File size: %1$s	Ukuran file: %1$s
 Copy	Salin
 Message details copied	Detail pesan disalin
 Add Quick forward to the message menu	Tambahkan Teruskan cepat ke menu pesan
-Adds Quick forward to a message's press-and-hold menu. One tap sends it to Saved Messages or a recent chat. Not in protected or secret chats.	Menambahkan Teruskan cepat pada menu pesan yang muncul saat ditekan lama. Satu ketukan mengirimnya ke Pesan Tersimpan atau obrolan terbaru. Tidak ada di obrolan yang dilindungi atau rahasia.
 Quick forward	Teruskan cepat
 Forward to	Teruskan ke
 Forwarding to %1$s	Meneruskan ke %1$s
@@ -566,3 +557,27 @@ Open the guide	Buka panduan
 Preparing the diagnostic report	Menyiapkan laporan diagnostik
 Your Telegram.	Telegram milikmu.
 A quieter space, your way.	Ruang yang lebih tenang, sesuai keinginanmu.
+# context: Readable actions, validation, import details and notification recovery.
+Open notification settings	Buka setelan notifikasi
+Tap for details and Android settings.	Ketuk untuk melihat detail dan setelan Android.
+%1$d filter	%1$d filter
+%1$d filters	%1$d filter
+%1$s: %2$s to %3$s	%1$s: dari %2$s ke %3$s
+This field is too long. Use %1$d characters or fewer.	Kolom ini terlalu panjang. Gunakan maksimal %1$d karakter.
+Couldn't copy that. Try again.	Tidak bisa disalin. Coba lagi.
+Couldn't complete that action. Try again.	Tindakan tidak bisa diselesaikan. Coba lagi.
+Stop translating this chat	Berhenti menerjemahkan chat ini
+(Translated. Open the message menu for the original.)	(Diterjemahkan. Buka menu pesan untuk melihat aslinya.)
+Adds Repeat under Forward in a message's menu. It sends the same message again to the chat. Not shown in protected or secret chats.	Menambahkan Ulangi di bawah Teruskan pada menu pesan. Mengirim pesan yang sama lagi ke chat. Tidak muncul di chat terlindungi atau rahasia.
+Adds Copy photo to a downloaded photo's menu, so you can paste the picture into another app. Not shown in protected or secret chats.	Menambahkan Salin foto ke menu foto yang sudah diunduh agar bisa ditempel ke aplikasi lain. Tidak muncul di chat terlindungi atau rahasia.
+Adds Message details to a message's menu. It shows IDs, send and edit times, where it was forwarded from, and file info.	Menambahkan Detail pesan ke menu pesan. Menampilkan ID, waktu kirim dan edit, asal penerusan, serta info file.
+Adds Quick forward to a message's menu. One tap sends it to Saved Messages or a recent chat. Not in protected or secret chats.	Menambahkan Teruskan cepat ke menu pesan. Satu ketukan mengirimnya ke Pesan Tersimpan atau chat terbaru. Tidak tersedia di chat terlindungi atau rahasia.
+Adds Translate here to a message's menu and Translate this chat to a chat's menu, using the translation service you choose. The text you ask to translate is sent to that service, one message at a time. Nothing leaves your phone until you turn a chat or message on.	Menambahkan Terjemahkan di sini ke menu pesan dan Terjemahkan chat ini ke menu chat, menggunakan layanan terjemahan pilihanmu. Teks yang diminta akan dikirim ke layanan itu satu pesan setiap kali. Tidak ada yang keluar dari ponsel sampai kamu mengaktifkan terjemahan untuk chat atau pesan.
+Save the full report to a file. The saved location is shown afterward.	Simpan laporan lengkap ke file. Lokasi penyimpanan akan ditampilkan setelahnya.
+# context: Readable actions, validation, import details and notification recovery.
+Copy a short report or save the full one to a file. The saved location is shown afterward. Links, IDs and sign-in details are left out. Look it over before sharing.	Salin laporan singkat atau simpan laporan lengkap ke file. Lokasi penyimpanan akan ditampilkan setelahnya. Tautan, ID, dan detail login tidak disertakan. Periksa sebelum dibagikan.
+# context: Readable actions, validation, import details and notification recovery.
+Loads your switches, filter lists and sticker size from a saved file. You see what will change before anything is applied. It applies to all accounts.	Memuat sakelar, daftar filter, dan ukuran stiker dari file tersimpan. Kamu bisa melihat apa yang akan berubah sebelum diterapkan. Berlaku untuk semua akun.
+# context: Readable actions, validation, import details and notification recovery.
+Close	Tutup
+Couldn't open notification settings. Open Android settings.	Setelan notifikasi tidak bisa dibuka. Buka setelan Android.

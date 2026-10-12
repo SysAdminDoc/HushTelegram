@@ -301,7 +301,7 @@ public class SettingsNavigationTest {
         assertEquals("Pause", action.getText().toString());
         assertTrue(action.getMinimumWidth() <= Math.round(48 * action.getResources().getDisplayMetrics().density));
         assertTrue("a keyboard on the button wouldn't show",
-                action.getBackground() instanceof android.graphics.drawable.RippleDrawable);
+                action.getBackground().isStateful());
         action.performClick();
         ShadowLooper.idleMainLooper();
         layout(dialog.getView());

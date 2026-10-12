@@ -90,24 +90,41 @@ public final class AiTranslate {
      */
     @Nullable
     public static String refusal(String address, String model, String key) {
+        Validation failure = validate(address, model, key);
+        return failure == null ? null : failure.message;
+    }
+
+    /** A validation error points the editor to the field that needs attention. */
+    public static final class Validation {
+        public final int field;
+        public final String message;
+        private Validation(int field, String message) { this.field = field; this.message = message; }
+    }
+
+    public static Validation validate(String address, String model, String key) {
         String a = address.trim(), m = model.trim(), k = key.trim();
-        if (k.isEmpty()) return L10n.t("Type your API key, or tap Use Google.");
-        if (m.isEmpty()) return L10n.t("Type a model name.");
-        if (a.length() > MAX_FIELD || m.length() > MAX_FIELD || k.length() > MAX_FIELD
-                || hasSpace(a) || hasSpace(m) || hasSpace(k)) {
-            return L10n.t("Take the spaces out of the address, model and key.");
+        if (k.isEmpty()) return new Validation(2, L10n.t("Type your API key, or tap Use Google."));
+        if (m.isEmpty()) return new Validation(1, L10n.t("Type a model name."));
+        String[] values = {a, m, k};
+        for (int field = 0; field < values.length; field++) {
+            if (values[field].length() > MAX_FIELD) {
+                return new Validation(field, L10n.f("This field is too long. Use %1$d characters or fewer.", MAX_FIELD));
+            }
+            if (hasSpace(values[field])) {
+                return new Validation(field, L10n.t("Take the spaces out of the address, model and key."));
+            }
         }
         URI uri;
         try {
             uri = new URI(a);
         } catch (URISyntaxException unreadable) {
-            return L10n.t("The address has to start with https://.");
+            return new Validation(0, L10n.t("The address has to start with https://."));
         }
         String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase(Locale.ROOT);
         String host = uri.getHost() == null ? "" : uri.getHost().toLowerCase(Locale.ROOT);
         boolean onPhone = host.equals("localhost") || host.equals("127.0.0.1");
         if (host.isEmpty() || !(scheme.equals("https") || (scheme.equals("http") && onPhone))) {
-            return L10n.t("The address has to start with https://.");
+            return new Validation(0, L10n.t("The address has to start with https://."));
         }
         return null;
     }

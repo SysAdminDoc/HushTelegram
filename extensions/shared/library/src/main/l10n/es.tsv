@@ -20,9 +20,7 @@ About	Acerca de
 Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.	Android 11 y las versiones anteriores no indican qué enlaces se abren aquí. Toca para abrir los ajustes de esta app y luego Abrir de forma predeterminada.
 Back	Atrás
 Cancel	Cancelar
-Loads your switches, filter lists and sticker size from a saved file. You see which switches it will change before anything is applied. It applies to all accounts.	Carga tus interruptores, listas de filtros y tamaño de stickers desde un archivo guardado. Ves qué interruptores cambiará antes de aplicar nada. Se aplica a todas las cuentas.
 Clear diagnostic data	Borrar datos de diagnóstico
-Copy a short report or save the full one to Download/Morphe. Links, IDs and sign-in details are left out. Look it over before sharing.	Copia un informe breve o guarda el completo en Download/Morphe. Los enlaces, los ID y los datos de inicio de sesión no se incluyen. Revísalo antes de compartirlo.
 Copy quick report	Copiar informe rápido
 Couldn't import or restore old settings. Check the switches.	No se pudo importar ni restaurar la configuración. Revisa los interruptores.
 Couldn't import the settings. Nothing was changed.	No se pudo importar la configuración. No se cambió nada.
@@ -110,7 +108,6 @@ Records what HushTelegram does and shows error messages, to help with a bug repo
 You paused HushTelegram.	Pausaste HushTelegram.
 Your switches already match that file, so nothing will change.	Tus interruptores ya coinciden con ese archivo, así que no cambiará nada.
 Copy a short report to the clipboard.	Copia un informe breve en el portapapeles.
-Save the full report in Download/Morphe.	Guarda el informe completo en Download/Morphe.
 Settings imported.	Configuración importada.
 Can't open the link. Go to %1$s.	No se puede abrir el enlace. Ve a %1$s.
 # context: Separate pages under More settings. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
@@ -296,7 +293,6 @@ Messages from people you've blocked are left out of groups and supergroups you o
 Hide Telegram Features and Invite Friends	Ocultar Funciones de Telegram e Invitar amigos
 Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.	Quita la fila Funciones de Telegram de los ajustes e Invitar amigos de los contactos. Si aún no tienes contactos, también desaparece la lista de invitaciones.
 Add Repeat to the message menu	Añadir Repetir al menú de mensajes
-Adds Repeat under Forward in a message's press-and-hold menu. It sends the same message again to the chat. Not shown in protected or secret chats.	Añade Repetir debajo de Reenviar en el menú de un mensaje que se abre al mantenerlo pulsado. Envía el mismo mensaje otra vez al chat. No aparece en chats protegidos ni secretos.
 Keep deleted messages	Conservar los mensajes eliminados
 Messages others delete stay in your chat on this phone, marked deleted next to the time. Your own deletes and disappearing messages work as usual.	Los mensajes que otros eliminan se quedan en tu chat en este teléfono, marcados como eliminados junto a la hora. Tus propias eliminaciones y los mensajes que desaparecen funcionan como siempre.
 # context: an action row under Keep deleted messages; a tap deletes every message that switch kept
@@ -312,13 +308,11 @@ Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. 
 Turn off beta debug logs	Desactivar los registros de depuración de la beta
 Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.	Telegram Beta guarda registros de depuración en tu teléfono todo el tiempo, incluido el registro de conexión, y su propio menú de depuración no puede detenerlo. Esto los detiene. Los registros ya guardados se quedan hasta que los borres, y la versión normal no los guarda, así que ahí no cambia nada. Reinicia Telegram para ver el cambio.
 Translate with an outside service	Traducir con un servicio externo
-Adds Translate here to a message's menu and Translate this chat to a chat's menu, using Google's web translate in place of Telegram's Premium translation. The text you ask to translate is sent to Google, one message at a time, and nothing leaves your phone until you turn a chat or message on.	Añade Traducir aquí al menú de un mensaje y Traducir este chat al menú de un chat, con el traductor web de Google en lugar de la traducción Premium de Telegram. El texto que pidas traducir se envía a Google, un mensaje cada vez, y nada sale de tu teléfono hasta que actives un chat o un mensaje.
 Translate here	Traducir aquí
 Show original	Mostrar original
 Translate this chat	Traducir este chat
 This chat will be translated	Este chat se traducirá
 This chat shows the original messages	Este chat muestra los mensajes originales
-(Translated. Long-press for the original.)	(Traducido. Mantén pulsado para ver el original.)
 Translation isn't available right now	La traducción no está disponible ahora
 Ask before sending a GIF	Preguntar antes de enviar un GIF
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Pregunta Enviar o Cancelar antes de que un GIF que tocas entre en un chat. Cancelar lo descarta. Los GIF programados salen sin preguntar.
@@ -342,9 +336,7 @@ Call	Llamar
 # context: the label before the time of a message someone else deleted that this phone kept
 deleted	eliminado
 Add Copy photo to the message menu	Añadir Copiar foto al menú de mensajes
-Adds Copy photo to a downloaded photo's press-and-hold menu, so you can paste the picture into another app. Not shown in protected or secret chats.	Añade Copiar foto al menú de una foto descargada, que se abre al mantenerla pulsada, para que puedas pegar la imagen en otra app. No aparece en chats protegidos ni secretos.
 Add Message details to the message menu	Añadir Detalles del mensaje al menú de mensajes
-Adds Message details to a message's press-and-hold menu. It shows IDs, send and edit times, where it was forwarded from, and file info.	Añade Detalles del mensaje al menú de un mensaje que se abre al mantenerlo pulsado. Muestra los ID, las horas de envío y edición, de dónde se reenvió y datos del archivo.
 Repeat	Repetir
 Copy photo	Copiar foto
 Photo copied	Foto copiada
@@ -362,7 +354,6 @@ File size: %1$s	Tamaño del archivo: %1$s
 Copy	Copiar
 Message details copied	Detalles del mensaje copiados
 Add Quick forward to the message menu	Añadir Reenvío rápido al menú de mensajes
-Adds Quick forward to a message's press-and-hold menu. One tap sends it to Saved Messages or a recent chat. Not in protected or secret chats.	Añade Reenvío rápido al menú de un mensaje que se abre al mantenerlo pulsado. Un toque lo envía a Mensajes guardados o a un chat reciente. No está en chats protegidos ni secretos.
 Quick forward	Reenvío rápido
 Forward to	Reenviar a
 Forwarding to %1$s	Reenviando a %1$s
@@ -566,3 +557,27 @@ Open the guide	Abrir la guía
 Preparing the diagnostic report	Preparando el informe de diagnóstico
 Your Telegram.	Tu Telegram.
 A quieter space, your way.	Un espacio más tranquilo, a tu manera.
+# context: Readable actions, validation, import details and notification recovery.
+Open notification settings	Abrir ajustes de notificaciones
+Tap for details and Android settings.	Toca para ver los detalles y los ajustes de Android.
+%1$d filter	%1$d filtro
+%1$d filters	%1$d filtros
+%1$s: %2$s to %3$s	%1$s: de %2$s a %3$s
+This field is too long. Use %1$d characters or fewer.	Este campo es demasiado largo. Usa como máximo %1$d caracteres.
+Couldn't copy that. Try again.	No se pudo copiar. Inténtalo de nuevo.
+Couldn't complete that action. Try again.	No se pudo completar la acción. Inténtalo de nuevo.
+Stop translating this chat	Dejar de traducir este chat
+(Translated. Open the message menu for the original.)	(Traducido. Abre el menú del mensaje para ver el original.)
+Adds Repeat under Forward in a message's menu. It sends the same message again to the chat. Not shown in protected or secret chats.	Añade Repetir debajo de Reenviar en el menú de un mensaje. Envía de nuevo el mismo mensaje al chat. No aparece en chats protegidos ni secretos.
+Adds Copy photo to a downloaded photo's menu, so you can paste the picture into another app. Not shown in protected or secret chats.	Añade Copiar foto al menú de una foto descargada para que puedas pegarla en otra aplicación. No aparece en chats protegidos ni secretos.
+Adds Message details to a message's menu. It shows IDs, send and edit times, where it was forwarded from, and file info.	Añade Detalles del mensaje al menú de un mensaje. Muestra los identificadores, las horas de envío y edición, el origen del reenvío y los datos del archivo.
+Adds Quick forward to a message's menu. One tap sends it to Saved Messages or a recent chat. Not in protected or secret chats.	Añade Reenvío rápido al menú de un mensaje. Un toque lo envía a Mensajes guardados o a un chat reciente. No aparece en chats protegidos ni secretos.
+Adds Translate here to a message's menu and Translate this chat to a chat's menu, using the translation service you choose. The text you ask to translate is sent to that service, one message at a time. Nothing leaves your phone until you turn a chat or message on.	Añade Traducir aquí al menú de un mensaje y Traducir este chat al menú de un chat. Usa el servicio de traducción que elijas. El texto que pidas traducir se envía a ese servicio, un mensaje a la vez. Nada sale del teléfono hasta que actives un chat o un mensaje.
+Save the full report to a file. The saved location is shown afterward.	Guarda el informe completo en un archivo. Después se muestra dónde se guardó.
+# context: Readable actions, validation, import details and notification recovery.
+Copy a short report or save the full one to a file. The saved location is shown afterward. Links, IDs and sign-in details are left out. Look it over before sharing.	Copia un informe breve o guarda el completo en un archivo. Después se muestra dónde se guardó. Se omiten los enlaces, los identificadores y los datos de inicio de sesión. Revísalo antes de compartirlo.
+# context: Readable actions, validation, import details and notification recovery.
+Loads your switches, filter lists and sticker size from a saved file. You see what will change before anything is applied. It applies to all accounts.	Carga tus interruptores, listas de filtros y tamaño de stickers desde un archivo guardado. Verás qué cambiará antes de aplicar nada. Se aplica a todas las cuentas.
+# context: Readable actions, validation, import details and notification recovery.
+Close	Cerrar
+Couldn't open notification settings. Open Android settings.	No se pudieron abrir las notificaciones. Abre los ajustes de Android.

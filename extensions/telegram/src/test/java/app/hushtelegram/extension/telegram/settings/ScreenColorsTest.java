@@ -190,14 +190,13 @@ public class ScreenColorsTest {
                 int enabledColor = drawn | 0xFF000000;
                 assertTrue("\"" + title.getText() + "\" is " + Integer.toHexString(drawn),
                         enabledColor == colors.title || enabledColor == colors.heading
-                                || enabledColor == colors.summary);
-                assertEquals(title.getText().toString(),
-                        title.isEnabled() || !title.getTextColors().isStateful() ? 255 : 0x61, Color.alpha(drawn));
+                                || enabledColor == colors.summary || enabledColor == ScreenColors.DISABLED_TEXT);
+                assertEquals(title.getText().toString(), 255, Color.alpha(drawn));
                 assertTrue(contrast(enabledColor, colors.background) >= TEXT);
                 titles++;
                 TextView summary = row.findViewById(android.R.id.summary);
                 if (summary != null && summary.getVisibility() == View.VISIBLE) {
-                    int expected = summary.isEnabled() ? colors.summary : (colors.summary & 0x00FFFFFF) | 0x61000000;
+                    int expected = summary.isEnabled() ? colors.summary : ScreenColors.DISABLED_TEXT;
                     assertEquals(expected, summary.getCurrentTextColor());
                 }
                 View widget = row.findViewById(android.R.id.switch_widget);

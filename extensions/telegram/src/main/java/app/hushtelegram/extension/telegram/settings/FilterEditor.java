@@ -8,10 +8,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.preference.Preference;
 import android.text.InputType;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 
@@ -73,7 +71,7 @@ final class FilterEditor {
     }
 
     /** Opens the editor over the settings page. The row's summary follows what's saved. */
-    static void open(Activity activity, Preference row, StringSetting list, String title) {
+    static AlertDialog open(Activity activity, Preference row, StringSetting list, String title) {
         EditText field = new EditText(HushTelegramPreferenceFragment.themed(activity));
         field.setId(android.R.id.edit);
         field.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE
@@ -84,18 +82,13 @@ final class FilterEditor {
         field.setGravity(Gravity.TOP | Gravity.START);
         field.setHint(L10n.t("One filter a line"));
         field.setText(list.savedValue());
-        FrameLayout frame = new FrameLayout(field.getContext());
-        int side = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20,
-                activity.getResources().getDisplayMetrics()));
-        frame.setPaddingRelative(side, side / 2, side, 0);
-        frame.addView(field, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT));
+        EditorForm form = new EditorForm(field.getContext(), L10n.t("Text on a line matches wherever it appears in a message. A line in slashes, like "
+                + "/crypto|airdrop/, is a regular expression. Case doesn't matter."));
+        form.add(field, L10n.t("One filter a line"));
 
         AlertDialog dialog = new AlertDialog.Builder(HushTelegramPreferenceFragment.themed(activity))
                 .setTitle(title)
-                .setMessage(L10n.t("Text on a line matches wherever it appears in a message. A line in slashes, like "
-                        + "/crypto|airdrop/, is a regular expression. Case doesn't matter."))
-                .setView(frame)
+                .setView(form)
                 .setPositiveButton(L10n.t("Save"), null)
                 .setNegativeButton(L10n.t("Cancel"), null)
                 .show();
@@ -105,18 +98,22 @@ final class FilterEditor {
             String typed = field.getText().toString();
             String refused = refusal(typed);
             if (refused != null) {
+                form.refuse(field, refused);
                 Utils.showToastLong(refused);
                 return;
             }
             List<String> lines = MessageFilters.lines(typed);
             if (!list.save(MessageFilters.join(lines))) {
                 Logger.printInfo(() -> "Message filters not saved: " + list.key);
-                Utils.showToastLong(L10n.t("Couldn't save the filters. Try again in a moment."));
+                String reason = L10n.t("Couldn't save the filters. Try again in a moment.");
+                form.refuse(field, reason);
+                Utils.showToastLong(reason);
                 return;
             }
             row.setSummary(summary(list));
             Utils.showToastShort(L10n.t("Filters saved."));
             dialog.dismiss();
         });
+        return dialog;
     }
 }

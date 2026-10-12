@@ -16,10 +16,14 @@ package app.hushtelegram.extension.shared.ui;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.graphics.Color;
+import android.content.ContextWrapper;
+import android.content.pm.ApplicationInfo;
+import android.content.res.ColorStateList;
 import android.graphics.Typeface;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.RoundRectShape;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.RippleDrawable;
+import android.graphics.drawable.StateListDrawable;
+import android.os.Build;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
@@ -34,7 +38,6 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
@@ -55,9 +58,8 @@ public class CustomDialog {
     /**
      * Creates a custom dialog with a styled layout, including a title, message, buttons, and an optional EditText.
      * The dialog's appearance adapts to the app's dark mode setting, with rounded corners and customizable button actions.
-     * Buttons adjust dynamically to their text content and are arranged in a single row if they fit within 80% of the
-     * screen width, with the Neutral button aligned to the left and OK/Cancel buttons centered on the right.
-     * If buttons do not fit, each is placed on a separate row, all aligned to the right.
+     * Buttons use a single row when their labels fit within the available content width.
+     * Otherwise they stack with the primary action first and allow labels to wrap.
      *
      * @param context                     Context used to create the dialog.
      * @param title                       Title text of the dialog.
@@ -80,7 +82,15 @@ public class CustomDialog {
         Logger.printDebug(() -> "Creating custom dialog with title: " + title);
         CustomDialog customDialog = new CustomDialog(context, title, message, editText,
                 okButtonText, onOkClick, onCancelClick,
-                neutralButtonText, onNeutralClick, dismissDialogOnNeutralClick);
+                neutralButtonText, onNeutralClick, dismissDialogOnNeutralClick, null);
+        return new Pair<>(customDialog.dialog, customDialog.mainLayout);
+    }
+
+    /** Places custom content in the dialog's scroll area, with an optional Cancel action. */
+    public static Pair<Dialog, LinearLayout> createWithContent(Context context, CharSequence title, View content,
+                                                              @Nullable Runnable onCancelClick) {
+        CustomDialog customDialog = new CustomDialog(context, title, null, null, null, null,
+                onCancelClick, null, null, true, content);
         return new Pair<>(customDialog.dialog, customDialog.mainLayout);
     }
 
@@ -101,15 +111,24 @@ public class CustomDialog {
     private CustomDialog(Context context, CharSequence title, CharSequence message, @Nullable EditText editText,
                          CharSequence okButtonText, Runnable onOkClick, Runnable onCancelClick,
                          @Nullable CharSequence neutralButtonText, @Nullable Runnable onNeutralClick,
-                         boolean dismissDialogOnNeutralClick) {
-        this.context = context;
+                         boolean dismissDialogOnNeutralClick, @Nullable View content) {
+        // Telegram disables framework RTL. Opt in for these views without changing its theme or flags.
+        this.context = new ContextWrapper(context) {
+            private final ApplicationInfo info = new ApplicationInfo(context.getApplicationInfo());
+            { info.flags |= ApplicationInfo.FLAG_SUPPORTS_RTL; }
+            @Override public ApplicationInfo getApplicationInfo() { return info; }
+        };
         this.dialog = new Dialog(context);
         this.dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // Remove default title bar.
+        if (!TextUtils.isEmpty(title)) dialog.setTitle(title);
 
         // Create main layout.
         mainLayout = createMainLayout();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !TextUtils.isEmpty(title)) {
+            mainLayout.setAccessibilityPaneTitle(title);
+        }
         addTitle(title);
-        addContent(message, editText);
+        addContent(message, editText, content);
         addButtons(okButtonText, onOkClick, onCancelClick, neutralButtonText, onNeutralClick, dismissDialogOnNeutralClick);
 
         // Set dialog content and window attributes.
@@ -128,14 +147,10 @@ public class CustomDialog {
     private LinearLayout createMainLayout() {
         LinearLayout layout = new LinearLayout(context);
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(Dim.dp24, Dim.dp16, Dim.dp24, Dim.dp24);
-
-        // Set rounded rectangle background.
-        ShapeDrawable background = new ShapeDrawable(new RoundRectShape(
-                Dim.roundedCorners(28), null, null));
-        // Dialog background.
-        background.getPaint().setColor(Utils.getDialogBackgroundColor());
-        layout.setBackground(background);
+        layout.setPadding(dp(24), dp(16), dp(24), dp(24));
+        layout.setLayoutDirection(context.getResources().getConfiguration().getLayoutDirection());
+        layout.setTextDirection(View.TEXT_DIRECTION_LOCALE);
+        layout.setBackground(roundedBackground(Utils.getDialogBackgroundColor(), 12));
 
         return layout;
     }
@@ -154,11 +169,12 @@ public class CustomDialog {
         titleView.setTextSize(18);
         titleView.setTextColor(Utils.getAppForegroundColor());
         titleView.setGravity(Gravity.CENTER);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) titleView.setAccessibilityHeading(true);
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.setMargins(0, 0, 0, Dim.dp16);
+        params.setMargins(0, 0, 0, dp(16));
         titleView.setLayoutParams(params);
 
         mainLayout.addView(titleView);
@@ -170,26 +186,33 @@ public class CustomDialog {
      * @param message  The message text to display (supports Spanned for HTML), or null if replaced by EditText.
      * @param editText The EditText to include, or null if no EditText is needed.
      */
-    private void addContent(CharSequence message, @Nullable EditText editText) {
+    private void addContent(CharSequence message, @Nullable EditText editText, @Nullable View content) {
         // Create content container (message/EditText) inside a ScrollView only if message or editText is provided.
-        if (message == null && editText == null) return;
+        if (message == null && editText == null && content == null) return;
 
         ScrollView scrollView = new ScrollView(context);
-        // Disable the vertical scrollbar.
-        scrollView.setVerticalScrollBarEnabled(false);
-        scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        scrollView.setVerticalScrollBarEnabled(true);
+        scrollView.setScrollbarFadingEnabled(false);
+        scrollView.setScrollBarStyle(View.SCROLLBARS_INSIDE_INSET);
+        scrollView.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
+        scrollView.setVerticalFadingEdgeEnabled(true);
+        scrollView.setFadingEdgeLength(dp(16));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            scrollView.setScrollIndicators(View.SCROLL_INDICATOR_TOP | View.SCROLL_INDICATOR_BOTTOM);
+        }
 
         LinearLayout contentContainer = new LinearLayout(context);
         contentContainer.setOrientation(LinearLayout.VERTICAL);
         scrollView.addView(contentContainer);
 
-        // EditText (if provided).
-        if (editText != null) {
-            ShapeDrawable background = new ShapeDrawable(new RoundRectShape(
-                    Dim.roundedCorners(10), null, null));
-            background.getPaint().setColor(Utils.getEditTextBackground());
-            scrollView.setPadding(Dim.dp8, Dim.dp8, Dim.dp8, Dim.dp8);
-            scrollView.setBackground(background);
+        if (content != null) {
+            ViewGroup parent = (ViewGroup) content.getParent();
+            if (parent != null) parent.removeView(content);
+            contentContainer.addView(content, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        } else if (editText != null) {
+            scrollView.setPadding(dp(8), dp(8), dp(8), dp(8));
+            scrollView.setBackground(roundedBackground(Utils.getEditTextBackground(), 10));
             scrollView.setClipToOutline(true);
 
             // Remove EditText from its current parent, if any.
@@ -197,7 +220,7 @@ public class CustomDialog {
             if (parent != null) parent.removeView(editText);
             // Style the EditText to match the dialog theme.
             editText.setTextColor(Utils.getAppForegroundColor());
-            editText.setBackgroundColor(Color.TRANSPARENT);
+            editText.setBackground(null);
             editText.setPadding(0, 0, 0, 0);
             contentContainer.addView(editText, new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -241,39 +264,30 @@ public class CustomDialog {
     private void addButtons(CharSequence okButtonText, Runnable onOkClick, Runnable onCancelClick,
                             @Nullable CharSequence neutralButtonText, @Nullable Runnable onNeutralClick,
                             boolean dismissDialogOnNeutralClick) {
-        // Button container.
-        LinearLayout buttonContainer = new LinearLayout(context);
-        buttonContainer.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams buttonContainerParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        buttonContainerParams.setMargins(0, Dim.dp16, 0, 0);
-        buttonContainer.setLayoutParams(buttonContainerParams);
-
         List<Button> buttons = new ArrayList<>();
-        List<Integer> buttonWidths = new ArrayList<>();
 
         // Create buttons in order: Neutral, Cancel, OK.
         if (neutralButtonText != null && onNeutralClick != null) {
             Button neutralButton = createButton(neutralButtonText, onNeutralClick, false, dismissDialogOnNeutralClick);
             buttons.add(neutralButton);
-            buttonWidths.add(measureButtonWidth(neutralButton));
         }
         if (onCancelClick != null) {
             Button cancelButton = createButton(context.getString(android.R.string.cancel), onCancelClick, false, true);
             buttons.add(cancelButton);
-            buttonWidths.add(measureButtonWidth(cancelButton));
         }
         if (onOkClick != null) {
             Button okButton = createButton(
                     okButtonText != null ? okButtonText : context.getString(android.R.string.ok),
                     onOkClick, true, true);
             buttons.add(okButton);
-            buttonWidths.add(measureButtonWidth(okButton));
         }
 
-        // Handle button layout.
-        layoutButtons(buttonContainer, buttons, buttonWidths);
+        ActionLayout buttonContainer = new ActionLayout(buttons);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        params.topMargin = buttons.isEmpty() ? 0 : dp(16);
+        buttonContainer.setLayoutParams(params);
         mainLayout.addView(buttonContainer);
     }
 
@@ -291,24 +305,32 @@ public class CustomDialog {
         button.setText(text);
         button.setTextSize(14);
         button.setAllCaps(false);
-        button.setSingleLine(true);
-        button.setEllipsize(TextUtils.TruncateAt.END);
+        button.setSingleLine(false);
+        button.setMaxLines(Integer.MAX_VALUE);
+        button.setEllipsize(null);
         button.setGravity(Gravity.CENTER);
-        // Set internal padding.
-        button.setPadding(Dim.dp16, 0, Dim.dp16, 0);
+        button.setMinHeight(dp(48));
+        button.setMinimumHeight(dp(48));
+        button.setMinWidth(dp(48));
+        button.setMinimumWidth(dp(48));
+        button.setPadding(dp(16), dp(10), dp(16), dp(10));
 
-        // Background color for OK button (inversion).
-        // Background color for Cancel or Neutral buttons.
-        ShapeDrawable background = new ShapeDrawable(new RoundRectShape(
-                Dim.roundedCorners(20), null, null));
-        background.getPaint().setColor(isOkButton
+        int backgroundColor = isOkButton
                 ? Utils.getOkButtonBackgroundColor()
-                : Utils.getCancelOrNeutralButtonBackgroundColor());
-        button.setBackground(background);
-
-        button.setTextColor(Utils.isDarkModeEnabled()
-                ? (isOkButton ? Color.BLACK : Color.WHITE)
-                : (isOkButton ? Color.WHITE : Color.BLACK));
+                : Utils.getCancelOrNeutralButtonBackgroundColor();
+        int textColor = isOkButton ? Utils.getDialogBackgroundColor() : Utils.getAppForegroundColor();
+        StateListDrawable states = new StateListDrawable();
+        GradientDrawable focused = roundedBackground(backgroundColor, 8);
+        focused.setStroke(dp(2), textColor);
+        states.addState(new int[]{android.R.attr.state_focused}, focused);
+        GradientDrawable hovered = roundedBackground(backgroundColor, 8);
+        hovered.setStroke(dp(1), textColor);
+        states.addState(new int[]{android.R.attr.state_hovered}, hovered);
+        states.addState(new int[0], roundedBackground(backgroundColor, 8));
+        int rippleColor = (textColor & 0x00ffffff) | 0x33000000;
+        button.setBackground(new RippleDrawable(ColorStateList.valueOf(rippleColor), states,
+                roundedBackground(textColor | 0xff000000, 8)));
+        button.setTextColor(textColor);
 
         button.setOnClickListener(v -> {
             if (onClick != null) onClick.run();
@@ -318,160 +340,65 @@ public class CustomDialog {
         return button;
     }
 
-    /**
-     * Measures the width of a button.
-     */
-    private int measureButtonWidth(Button button) {
-        button.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        return button.getMeasuredWidth();
+    private int dp(int value) {
+        return Math.round(value * context.getResources().getDisplayMetrics().density);
     }
 
-    /**
-     * Arranges buttons in the dialog, either in a single row or multiple rows based on their total width.
-     *
-     * @param buttonContainer The container for the buttons.
-     * @param buttons         The list of buttons to arrange.
-     * @param buttonWidths    The measured widths of the buttons.
-     */
-    private void layoutButtons(LinearLayout buttonContainer, List<Button> buttons, List<Integer> buttonWidths) {
-        if (buttons.isEmpty()) return;
-
-        // Check if buttons fit in one row.
-        int totalWidth = 0;
-        for (Integer width : buttonWidths) {
-            totalWidth += width;
-        }
-        if (buttonWidths.size() > 1) {
-            // Add margins for gaps.
-            totalWidth += (buttonWidths.size() - 1) * Dim.dp8;
-        }
-
-        // Single button: stretch to full width.
-        if (buttons.size() == 1) {
-            layoutSingleButton(buttonContainer, buttons.get(0));
-        } else if (totalWidth <= Dim.pctWidth(80)) {
-            // Single row: Neutral, Cancel, OK.
-            layoutButtonsInRow(buttonContainer, buttons, buttonWidths);
-        } else {
-            // Multiple rows: OK, Cancel, Neutral.
-            layoutButtonsInColumns(buttonContainer, buttons);
-        }
+    private GradientDrawable roundedBackground(int color, int radius) {
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(color);
+        background.setCornerRadius(dp(radius));
+        return background;
     }
 
-    /**
-     * Arranges a single button, stretching it to full width.
-     *
-     * @param buttonContainer The container for the button.
-     * @param button          The button to arrange.
-     */
-    private void layoutSingleButton(LinearLayout buttonContainer, Button button) {
-        LinearLayout singleContainer = new LinearLayout(context);
-        singleContainer.setOrientation(LinearLayout.HORIZONTAL);
-        singleContainer.setGravity(Gravity.CENTER);
+    private final class ActionLayout extends LinearLayout {
+        private final List<Button> buttons;
+        private boolean stacked = true;
 
-        ViewGroup parent = (ViewGroup) button.getParent();
-        if (parent != null) parent.removeView(button);
-
-        button.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                Dim.dp36));
-        singleContainer.addView(button);
-        buttonContainer.addView(singleContainer);
-    }
-
-    /**
-     * Arranges buttons in a single horizontal row with proportional widths.
-     *
-     * @param buttonContainer The container for the buttons.
-     * @param buttons         The list of buttons to arrange.
-     * @param buttonWidths    The measured widths of the buttons.
-     */
-    private void layoutButtonsInRow(LinearLayout buttonContainer, List<Button> buttons, List<Integer> buttonWidths) {
-        LinearLayout rowContainer = new LinearLayout(context);
-        rowContainer.setOrientation(LinearLayout.HORIZONTAL);
-        rowContainer.setGravity(Gravity.CENTER);
-        rowContainer.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT));
-
-        // Add all buttons with proportional weights and specific margins.
-        for (int i = 0; i < buttons.size(); i++) {
-            Button button = getButton(buttons, buttonWidths, i);
-            rowContainer.addView(button);
+        ActionLayout(List<Button> buttons) {
+            super(CustomDialog.this.context);
+            this.buttons = buttons;
+            setBaselineAligned(false);
+            arrange();
         }
 
-        buttonContainer.addView(rowContainer);
-    }
-
-    @NonNull
-    private Button getButton(List<Button> buttons, List<Integer> buttonWidths, int i) {
-        Button button = buttons.get(i);
-        ViewGroup parent = (ViewGroup) button.getParent();
-        if (parent != null) parent.removeView(button);
-
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                0, Dim.dp36, buttonWidths.get(i));
-
-        // Set margins based on button type and combination.
-        if (buttons.size() == 2) {
-            // Neutral + OK or Cancel + OK.
-            params.setMargins(i == 0 ? 0 : Dim.dp4, 0, i == 0 ? Dim.dp4 : 0, 0);
-        } else if (buttons.size() == 3) {
-            // Neutral.
-            // Cancel.
-            // OK.
-            params.setMargins(i == 0 ? 0 : Dim.dp4, 0, i == 2 ? 0 : Dim.dp4, 0);
-        }
-
-        button.setLayoutParams(params);
-        return button;
-    }
-
-    /**
-     * Arranges buttons in separate rows, ordered OK, Cancel, Neutral.
-     *
-     * @param buttonContainer The container for the buttons.
-     * @param buttons         The list of buttons to arrange.
-     */
-    private void layoutButtonsInColumns(LinearLayout buttonContainer, List<Button> buttons) {
-        // Reorder: OK, Cancel, Neutral.
-        List<Button> reorderedButtons = new ArrayList<>();
-        if (buttons.size() == 3) {
-            reorderedButtons.add(buttons.get(2)); // OK
-            reorderedButtons.add(buttons.get(1)); // Cancel
-            reorderedButtons.add(buttons.get(0)); // Neutral
-        } else if (buttons.size() == 2) {
-            reorderedButtons.add(buttons.get(1)); // OK or Cancel
-            reorderedButtons.add(buttons.get(0)); // Neutral or Cancel
-        }
-
-        for (int i = 0; i < reorderedButtons.size(); i++) {
-            Button button = reorderedButtons.get(i);
-            LinearLayout singleContainer = new LinearLayout(context);
-            singleContainer.setOrientation(LinearLayout.HORIZONTAL);
-            singleContainer.setGravity(Gravity.CENTER);
-            singleContainer.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    Dim.dp36));
-
-            ViewGroup parent = (ViewGroup) button.getParent();
-            if (parent != null) parent.removeView(button);
-
-            button.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    Dim.dp36));
-            singleContainer.addView(button);
-            buttonContainer.addView(singleContainer);
-
-            // Add a spacer between the buttons (except the last one).
-            if (i < reorderedButtons.size() - 1) {
-                View spacer = new View(context);
-                LinearLayout.LayoutParams spacerParams = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        Dim.dp8);
-                spacer.setLayoutParams(spacerParams);
-                buttonContainer.addView(spacer);
+        @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            int availableWidth = MeasureSpec.getSize(widthMeasureSpec) - getPaddingLeft() - getPaddingRight();
+            int requiredWidth = Math.max(0, buttons.size() - 1) * dp(8);
+            for (Button button : buttons) {
+                button.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
+                requiredWidth += button.getMeasuredWidth();
             }
+            boolean shouldStack = buttons.size() <= 1
+                    || MeasureSpec.getMode(widthMeasureSpec) != MeasureSpec.UNSPECIFIED && requiredWidth > availableWidth;
+            if (stacked != shouldStack) {
+                stacked = shouldStack;
+                arrange();
+            }
+            if (!stacked) {
+                for (Button button : buttons) {
+                    LayoutParams params = (LayoutParams) button.getLayoutParams();
+                    params.weight = button.getMeasuredWidth();
+                }
+            }
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        }
+
+        private void arrange() {
+            View focused = findFocus();
+            removeAllViews();
+            setOrientation(stacked ? VERTICAL : HORIZONTAL);
+            for (int i = 0; i < buttons.size(); i++) {
+                Button button = buttons.get(stacked ? buttons.size() - 1 - i : i);
+                LayoutParams params = new LayoutParams(stacked ? LayoutParams.MATCH_PARENT : 0,
+                        LayoutParams.WRAP_CONTENT);
+                if (i > 0) {
+                    if (stacked) params.topMargin = dp(8);
+                    else params.setMarginStart(dp(8));
+                }
+                addView(button, params);
+            }
+            if (focused != null) focused.requestFocus();
         }
     }
 }

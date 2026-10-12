@@ -159,8 +159,9 @@ public class SettingsScreenStatesTest {
 
             row.setEnabled(false);
             android.view.View off = row.getView(null, list);
-            assertTrue(alphaOf(off, android.R.id.title) < 0xFF);
-            assertTrue(alphaOf(off, android.R.id.summary) < 0xFF);
+            assertEquals(ScreenColors.DISABLED_TEXT, ((android.widget.TextView) off.findViewById(android.R.id.title)).getCurrentTextColor());
+            assertEquals(ScreenColors.DISABLED_TEXT, ((android.widget.TextView) off.findViewById(android.R.id.summary)).getCurrentTextColor());
+            assertTrue(ScreenColorsTest.contrast(ScreenColors.DISABLED_TEXT, ScreenColors.DEFAULT.card) >= 4.5);
 
             row.setEnabled(true);
             android.view.View on = row.getView(null, list);

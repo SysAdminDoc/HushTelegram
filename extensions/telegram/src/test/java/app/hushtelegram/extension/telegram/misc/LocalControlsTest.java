@@ -10,6 +10,7 @@ import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.text.SpannableString;
@@ -157,6 +158,28 @@ public class LocalControlsTest {
                 assertEquals(ids, Settings.SHOW_LOCAL_IDS.savedValue());
                 assertEquals(reaction, Settings.DISABLE_DOUBLE_TAP_REACTIONS.savedValue());
             }
+    }
+
+    @Test public void idCopyFailuresStayVisibleAndKeepTheMenuOpen() {
+        Settings.SHOW_LOCAL_IDS.save(true);
+        for (boolean refuse : new boolean[]{false, true}) {
+            Context unavailable = new ContextWrapper(context()) {
+                @Override public Object getSystemService(String name) {
+                    if (Context.CLIPBOARD_SERVICE.equals(name)) {
+                        if (refuse) throw new SecurityException("clipboard unavailable");
+                        return null;
+                    }
+                    return super.getSystemService(name);
+                }
+            };
+            FrameLayout menu = new FrameLayout(unavailable);
+            LocalIds.addToProfile(menu, 42, 0);
+            ShadowToast.reset();
+            assertTrue(menu.getChildAt(0).performClick());
+            assertEquals("Couldn't copy that. Try again.", ShadowToast.getTextOfLatestToast());
+            assertEquals(0, NativeMenu.dismisses);
+            assertFalse(HookStatus.report().toString().contains("local ID copied"));
+        }
     }
 
     @Test public void pauseAndUnavailableSettingsRestoreStockAndDisableExistingIdCopy() {

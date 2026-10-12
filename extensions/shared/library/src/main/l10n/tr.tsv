@@ -20,9 +20,7 @@ About	Hakkında
 Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.	Android 11 ve öncesi burada hangi bağlantıların açıldığını bildirmez. Bu uygulamanın ayarlarını açmak için dokunun, ardından Varsayılan olarak aç'a gidin.
 Back	Geri
 Cancel	İptal
-Loads your switches, filter lists and sticker size from a saved file. You see which switches it will change before anything is applied. It applies to all accounts.	Anahtarlarınızı, filtre listelerinizi ve çıkartma boyutunu kayıtlı bir dosyadan yükler. Hiçbir şey uygulanmadan önce hangi anahtarların değişeceğini görürsünüz. Tüm hesaplar için geçerlidir.
 Clear diagnostic data	Tanılama verilerini temizle
-Copy a short report or save the full one to Download/Morphe. Links, IDs and sign-in details are left out. Look it over before sharing.	Kısa bir rapor kopyalayın veya tam raporu Download/Morphe içine kaydedin. Bağlantılar, kimlikler ve oturum bilgileri dahil edilmez. Paylaşmadan önce göz atın.
 Copy quick report	Hızlı raporu kopyala
 Couldn't import or restore old settings. Check the switches.	İçe aktarma ve geri yükleme başarısız. Anahtarları kontrol et.
 Couldn't import the settings. Nothing was changed.	Ayarlar içe aktarılamadı. Hiçbir şey değiştirilmedi.
@@ -110,7 +108,6 @@ Records what HushTelegram does and shows error messages, to help with a bug repo
 You paused HushTelegram.	HushTelegram'u duraklattın.
 Your switches already match that file, so nothing will change.	Anahtarların zaten o dosyayla aynı, bu yüzden hiçbir şey değişmeyecek.
 Copy a short report to the clipboard.	Kısa raporu panoya kopyalar.
-Save the full report in Download/Morphe.	Tam raporu Download/Morphe konumuna kaydeder.
 Settings imported.	Ayarlar içe aktarıldı.
 Can't open the link. Go to %1$s.	Bağlantı açılamıyor. %1$s adresine git.
 # context: Separate pages under More settings. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
@@ -296,7 +293,6 @@ Messages from people you've blocked are left out of groups and supergroups you o
 Hide Telegram Features and Invite Friends	Telegram Özellikleri ve Arkadaşlarını Davet Et satırlarını gizle
 Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.	Telegram Özellikleri satırını Ayarlar'dan, Arkadaşlarını Davet Et'i Kişiler'den kaldırır. Henüz kişiniz yoksa davet listesi de kalkar.
 Add Repeat to the message menu	Mesaj menüsüne Tekrarla ekle
-Adds Repeat under Forward in a message's press-and-hold menu. It sends the same message again to the chat. Not shown in protected or secret chats.	Bir mesajın basılı tutunca açılan menüsünde İlet'in altına Tekrarla ekler. Aynı mesajı sohbete yeniden gönderir. Korumalı veya gizli sohbetlerde görünmez.
 Keep deleted messages	Silinen mesajları sakla
 Messages others delete stay in your chat on this phone, marked deleted next to the time. Your own deletes and disappearing messages work as usual.	Başkalarının sildiği mesajlar bu telefonda sohbetinizde kalır ve saatin yanında silindi olarak işaretlenir. Kendi sildikleriniz ve kaybolan mesajlar her zamanki gibi çalışır.
 # context: an action row under Keep deleted messages; a tap deletes every message that switch kept
@@ -312,13 +308,11 @@ Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. 
 Turn off beta debug logs	Beta hata ayıklama günlüklerini kapat
 Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.	Telegram Beta, bağlantı günlüğü dahil, telefonunuza sürekli hata ayıklama günlükleri yazar ve kendi hata ayıklama menüsü bunu durduramaz. Bu ayar onları durdurur. Önceden kaydedilmiş günlükler siz silene kadar kalır, normal sürüm ise bu günlükleri tutmaz, yani orada hiçbir şey değişmez. Değişikliği görmek için Telegram'ı yeniden başlatın.
 Translate with an outside service	Harici bir hizmetle çevir
-Adds Translate here to a message's menu and Translate this chat to a chat's menu, using Google's web translate in place of Telegram's Premium translation. The text you ask to translate is sent to Google, one message at a time, and nothing leaves your phone until you turn a chat or message on.	Bir mesajın menüsüne Burada çevir, bir sohbetin menüsüne Bu sohbeti çevir ekler ve Telegram'ın Premium çevirisi yerine Google'ın web çevirisini kullanır. Çevirmesini istediğiniz metin birer mesaj olarak Google'a gönderilir ve siz bir sohbeti ya da mesajı açana kadar telefonunuzdan hiçbir şey çıkmaz.
 Translate here	Burada çevir
 Show original	Orijinali göster
 Translate this chat	Bu sohbeti çevir
 This chat will be translated	Bu sohbet çevrilecek
 This chat shows the original messages	Bu sohbet orijinal mesajları gösteriyor
-(Translated. Long-press for the original.)	(Çevrildi. Orijinali için uzun basın.)
 Translation isn't available right now	Çeviri şu anda kullanılamıyor
 Ask before sending a GIF	GIF göndermeden önce sor
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Dokunduğunuz bir GIF sohbete girmeden önce Gönder veya İptal sorar. İptal onu atar. Zamanlanmış GIF'ler sormadan gider.
@@ -342,9 +336,7 @@ Call	Ara
 # context: the label before the time of a message someone else deleted that this phone kept
 deleted	silindi
 Add Copy photo to the message menu	Mesaj menüsüne Fotoğrafı kopyala ekle
-Adds Copy photo to a downloaded photo's press-and-hold menu, so you can paste the picture into another app. Not shown in protected or secret chats.	İndirilmiş bir fotoğrafın basılı tutunca açılan menüsüne Fotoğrafı kopyala ekler; böylece resmi başka bir uygulamaya yapıştırabilirsiniz. Korumalı veya gizli sohbetlerde görünmez.
 Add Message details to the message menu	Mesaj menüsüne Mesaj ayrıntıları ekle
-Adds Message details to a message's press-and-hold menu. It shows IDs, send and edit times, where it was forwarded from, and file info.	Bir mesajın basılı tutunca açılan menüsüne Mesaj ayrıntıları ekler. Kimlikleri, gönderme ve düzenleme saatlerini, nereden iletildiğini ve dosya bilgilerini gösterir.
 Repeat	Tekrarla
 Copy photo	Fotoğrafı kopyala
 Photo copied	Fotoğraf kopyalandı
@@ -362,7 +354,6 @@ File size: %1$s	Dosya boyutu: %1$s
 Copy	Kopyala
 Message details copied	Mesaj ayrıntıları kopyalandı
 Add Quick forward to the message menu	Mesaj menüsüne Hızlı ilet ekle
-Adds Quick forward to a message's press-and-hold menu. One tap sends it to Saved Messages or a recent chat. Not in protected or secret chats.	Bir mesajın basılı tutunca açılan menüsüne Hızlı ilet ekler. Tek dokunuşla Kayıtlı Mesajlar'a veya yakın zamandaki bir sohbete gönderir. Korumalı veya gizli sohbetlerde yoktur.
 Quick forward	Hızlı ilet
 Forward to	İlet
 Forwarding to %1$s	%1$s sohbetine iletiliyor
@@ -566,3 +557,27 @@ Open the guide	Rehberi aç
 Preparing the diagnostic report	Tanılama raporu hazırlanıyor
 Your Telegram.	Senin Telegram’ın.
 A quieter space, your way.	Daha sakin bir alan, tam istediğin gibi.
+# context: Readable actions, validation, import details and notification recovery.
+Open notification settings	Bildirim ayarlarını aç
+Tap for details and Android settings.	Ayrıntılar ve Android ayarları için dokun.
+%1$d filter	%1$d filtre
+%1$d filters	%1$d filtre
+%1$s: %2$s to %3$s	%1$s: %2$s değerinden %3$s değerine
+This field is too long. Use %1$d characters or fewer.	Bu alan çok uzun. En fazla %1$d karakter kullan.
+Couldn't copy that. Try again.	Kopyalanamadı. Tekrar dene.
+Couldn't complete that action. Try again.	İşlem tamamlanamadı. Tekrar dene.
+Stop translating this chat	Bu sohbeti çevirmeyi durdur
+(Translated. Open the message menu for the original.)	(Çevrildi. Orijinali için mesaj menüsünü aç.)
+Adds Repeat under Forward in a message's menu. It sends the same message again to the chat. Not shown in protected or secret chats.	Mesaj menüsünde İlet seçeneğinin altına Tekrarla ekler. Aynı mesajı sohbete yeniden gönderir. Korumalı veya gizli sohbetlerde görünmez.
+Adds Copy photo to a downloaded photo's menu, so you can paste the picture into another app. Not shown in protected or secret chats.	İndirilen fotoğrafın menüsüne Fotoğrafı kopyala ekler. Fotoğrafı başka bir uygulamaya yapıştırabilirsin. Korumalı veya gizli sohbetlerde görünmez.
+Adds Message details to a message's menu. It shows IDs, send and edit times, where it was forwarded from, and file info.	Mesaj menüsüne Mesaj ayrıntıları ekler. Kimlikleri, gönderim ve düzenleme zamanlarını, iletildiği yeri ve dosya bilgilerini gösterir.
+Adds Quick forward to a message's menu. One tap sends it to Saved Messages or a recent chat. Not in protected or secret chats.	Mesaj menüsüne Hızlı ilet ekler. Tek dokunuşla Kayıtlı Mesajlar veya son sohbetlerden birine gönderir. Korumalı veya gizli sohbetlerde kullanılamaz.
+Adds Translate here to a message's menu and Translate this chat to a chat's menu, using the translation service you choose. The text you ask to translate is sent to that service, one message at a time. Nothing leaves your phone until you turn a chat or message on.	Mesaj menüsüne Burada çevir, sohbet menüsüne Bu sohbeti çevir ekler. Seçtiğin çeviri hizmetini kullanır. Çevrilmesini istediğin metin bu hizmete her seferinde bir mesaj olarak gönderilir. Bir sohbet veya mesaj için çeviriyi açana kadar telefonundan hiçbir şey gönderilmez.
+Save the full report to a file. The saved location is shown afterward.	Raporun tamamını dosyaya kaydet. Kaydedildiği yer sonrasında gösterilir.
+# context: Readable actions, validation, import details and notification recovery.
+Copy a short report or save the full one to a file. The saved location is shown afterward. Links, IDs and sign-in details are left out. Look it over before sharing.	Kısa bir raporu kopyala veya raporun tamamını dosyaya kaydet. Kaydedildiği yer sonrasında gösterilir. Bağlantılar, kimlikler ve giriş bilgileri eklenmez. Paylaşmadan önce gözden geçir.
+# context: Readable actions, validation, import details and notification recovery.
+Loads your switches, filter lists and sticker size from a saved file. You see what will change before anything is applied. It applies to all accounts.	Anahtarları, filtre listelerini ve çıkartma boyutunu kayıtlı bir dosyadan yükler. Uygulanmadan önce nelerin değişeceğini görürsün. Tüm hesaplar için geçerlidir.
+# context: Readable actions, validation, import details and notification recovery.
+Close	Kapat
+Couldn't open notification settings. Open Android settings.	Bildirim ayarları açılamadı. Android ayarlarını aç.

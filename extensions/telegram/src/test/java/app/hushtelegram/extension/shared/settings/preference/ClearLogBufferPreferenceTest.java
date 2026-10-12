@@ -72,10 +72,12 @@ public class ClearLogBufferPreferenceTest {
         LogBufferManager.persistNpthCrashReport(context, "old native crash");
 
         ClearLogBufferPreference first = row();
+        assertEquals("Clear diagnostic data", first.getTitle());
         assertTrue(first.getOnPreferenceClickListener().onPreferenceClick(first));
         Shadows.shadowOf(Looper.getMainLooper()).idle();
         assertTrue(LogBufferManager.canUndoClear());
         assertEquals("Cleared summary", first.getSummary());
+        assertEquals("Undo", first.getTitle());
         // A report still has the build's facts, and none of what was cleared.
         String cleared = LogBufferManager.buildExportText();
         assertFalse(cleared, cleared.contains("old buffered event"));
@@ -92,6 +94,7 @@ public class ClearLogBufferPreferenceTest {
         // retained after the older data is put back in front of it.
         ClearLogBufferPreference rebuilt = row();
         assertEquals("Cleared summary", rebuilt.getSummary());
+        assertEquals("Undo", rebuilt.getTitle());
         LogBufferManager.appendEvent(DiagnosticCategory.OTHER,
                 "AfterClear", "INFO", "new buffered event");
         HookStatus.bound("inbox", "item_view");
@@ -100,6 +103,7 @@ public class ClearLogBufferPreferenceTest {
 
         assertFalse(LogBufferManager.canUndoClear());
         assertEquals("Clear summary", rebuilt.getSummary());
+        assertEquals("Clear diagnostic data", rebuilt.getTitle());
         assertEquals("old java crash", LogBufferManager.readCrashReport(context));
         assertEquals("old native crash", LogBufferManager.readNpthCrashReport(context));
         String report = LogBufferManager.buildExportText();
@@ -123,8 +127,44 @@ public class ClearLogBufferPreferenceTest {
 
         assertFalse(LogBufferManager.canUndoClear());
         assertEquals("Clear summary", preference.getSummary());
+        assertEquals("Clear diagnostic data", preference.getTitle());
         assertEquals("There is no diagnostic data to clear",
                 ShadowToast.getTextOfLatestToast());
+    }
+
+    @Test public void anOlderRowKeepsItsClearTitleAfterAnotherRowUsesUndo() {
+        LogBufferManager.appendEvent(DiagnosticCategory.OTHER, "BeforeClear", "INFO", "old event");
+        ClearLogBufferPreference first = row();
+        first.getOnPreferenceClickListener().onPreferenceClick(first);
+        ClearLogBufferPreference rebuilt = row();
+        rebuilt.getOnPreferenceClickListener().onPreferenceClick(rebuilt);
+        assertEquals("Undo", first.getTitle());
+
+        first.getOnPreferenceClickListener().onPreferenceClick(first);
+        assertEquals("Undo", first.getTitle());
+        first.getOnPreferenceClickListener().onPreferenceClick(first);
+        assertEquals("Clear diagnostic data", first.getTitle());
+        assertEquals("Clear summary", first.getSummary());
+    }
+
+    @Test public void aFailedUndoKeepsTheUndoLabelAndCanBeRetried() throws Exception {
+        LogBufferManager.persistCrashReport(context, "saved crash");
+        ClearLogBufferPreference preference = row();
+        preference.getOnPreferenceClickListener().onPreferenceClick(preference);
+        Utils.setContext(new ContextWrapper(context) {
+            @Override public File getFilesDir() { throw new SecurityException("files unavailable"); }
+        });
+        try {
+            preference.getOnPreferenceClickListener().onPreferenceClick(preference);
+            assertTrue(LogBufferManager.canUndoClear());
+            assertEquals("Undo", preference.getTitle());
+            assertEquals("Cleared summary", preference.getSummary());
+        } finally {
+            Utils.setContext(context);
+        }
+        preference.getOnPreferenceClickListener().onPreferenceClick(preference);
+        assertEquals("Clear diagnostic data", preference.getTitle());
+        assertEquals("saved crash", LogBufferManager.readCrashReport(context));
     }
 
     @Test public void anEventArrivingDuringClearStartsTheNewGeneration() throws Exception {
@@ -187,6 +227,7 @@ public class ClearLogBufferPreferenceTest {
 
     private ClearLogBufferPreference row() {
         ClearLogBufferPreference preference = new ClearLogBufferPreference(context);
+        preference.setTitle("Clear diagnostic data");
         preference.setClearAndUndoSummaries("Clear summary", "Cleared summary");
         return preference;
     }

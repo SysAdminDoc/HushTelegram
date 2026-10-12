@@ -30,6 +30,7 @@ import app.hushtelegram.extension.shared.L10n;
 public class ClearLogBufferPreference extends Preference implements ImmediateAction {
     @Override public boolean actsOnTap() { return true; }
 
+    private CharSequence clearTitle;
     private CharSequence clearSummary;
     private CharSequence undoSummary = L10n.t("Diagnostic data cleared. Tap again to put it back.");
 
@@ -40,15 +41,14 @@ public class ClearLogBufferPreference extends Preference implements ImmediateAct
         setOnPreferenceClickListener(pref -> {
             if (LogBufferManager.canUndoClear()) {
                 LogBufferManager.UndoResult result = LogBufferManager.undoClear();
-                if (result != LogBufferManager.UndoResult.FAILED && clearSummary != null) {
-                    setSummary(clearSummary);
-                }
+                if (result != LogBufferManager.UndoResult.FAILED) refreshAction();
                 return true;
             }
 
             if (clearSummary == null) clearSummary = getSummary();
+            if (clearTitle == null) clearTitle = getTitle();
             LogBufferManager.clearLogBuffer();
-            if (LogBufferManager.canUndoClear()) setSummary(undoSummary);
+            refreshAction();
             return true;
         });
     }
@@ -57,7 +57,14 @@ public class ClearLogBufferPreference extends Preference implements ImmediateAct
     public final void setClearAndUndoSummaries(CharSequence clearSummary, CharSequence undoSummary) {
         this.clearSummary = clearSummary;
         this.undoSummary = undoSummary;
-        setSummary(LogBufferManager.canUndoClear() ? undoSummary : clearSummary);
+        if (clearTitle == null) clearTitle = getTitle();
+        refreshAction();
+    }
+
+    private void refreshAction() {
+        boolean undo = LogBufferManager.canUndoClear();
+        setTitle(undo ? L10n.t(getContext(), "Undo") : clearTitle);
+        setSummary(undo ? undoSummary : clearSummary);
     }
 
     public ClearLogBufferPreference(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
