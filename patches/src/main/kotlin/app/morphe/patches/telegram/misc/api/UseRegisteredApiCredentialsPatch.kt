@@ -72,14 +72,18 @@ internal data class ApiCredentialsPlan(
 
 /** Error messages name an option, never echo either supplied credential. */
 internal fun checkedApiCredentials(id: String?, hash: String?): ApiCredentials? {
-    if (id == null && hash == null) return null
-    if (id == null || hash == null) throw PatchException("$PATCH: supply both apiId and apiHash.")
-    val number = id.takeIf { it.matches(Regex("[1-9][0-9]*")) }?.toIntOrNull()
+    // Copied from my.telegram.org, a value often brings a space or line break along, and a field
+    // cleared in Manager can arrive empty rather than unset: both empty keeps the originals.
+    val givenId = id?.trim()?.takeIf { it.isNotEmpty() }
+    val givenHash = hash?.trim()?.takeIf { it.isNotEmpty() }
+    if (givenId == null && givenHash == null) return null
+    if (givenId == null || givenHash == null) throw PatchException("$PATCH: supply both apiId and apiHash.")
+    val number = givenId.takeIf { it.matches(Regex("[1-9][0-9]*")) }?.toIntOrNull()
         ?: throw PatchException("$PATCH: apiId must be a positive 32-bit decimal integer.")
-    if (!hash.matches(Regex("[0-9a-fA-F]{32}"))) {
+    if (!givenHash.matches(Regex("[0-9a-fA-F]{32}"))) {
         throw PatchException("$PATCH: apiHash must contain exactly 32 hexadecimal characters.")
     }
-    return ApiCredentials(number, hash)
+    return ApiCredentials(number, givenHash)
 }
 
 internal fun BytecodePatchContext.applyRegisteredApiCredentials(id: String?, hash: String?) {

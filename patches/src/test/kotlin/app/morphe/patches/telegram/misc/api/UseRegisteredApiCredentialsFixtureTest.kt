@@ -241,6 +241,24 @@ class UseRegisteredApiCredentialsFixtureTest {
     }
 
     @Test
+    fun `values pasted with spaces or line breaks are trimmed, and two empty fields keep the originals`() {
+        val pasted = checkNotNull(checkedApiCredentials(" $ID\n", "\t$HASH \r\n"))
+        assertEquals(ID.toInt(), pasted.id)
+        assertEquals(HASH, pasted.hash)
+        assertNull(checkedApiCredentials("", ""))
+        assertNull(checkedApiCredentials("  ", null))
+        assertNull(checkedApiCredentials(null, "\n"))
+        for ((id, hash) in listOf(" " to HASH, ID to " ", "1 2" to HASH, ID to HASH.take(16) + " " + HASH.drop(16))) {
+            try {
+                checkedApiCredentials(id, hash)
+                fail("a blank or split value was accepted")
+            } catch (expected: PatchException) {
+                assertFalse(expected.message.orEmpty().contains(HASH.take(16)))
+            }
+        }
+    }
+
+    @Test
     fun `each missing field and changed field flag refuses before either literal changes`() {
         for (name in listOf("APP_ID", "APP_HASH")) {
             refusal { context, _ -> context.mutableClassDefBy(BUILD_VARS).fields.removeAll { it.name == name } }

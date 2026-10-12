@@ -8,6 +8,8 @@ Working version 0.0.17.
 
 * **Telegram:** When your UnifiedPush app is uninstalled or ends the sign-up itself, Telegram is told to ask Firebase for a token again, the same way turning the switch off does. Before, Telegram's servers could keep sending to an address nothing answered. A phone without Google services has no Firebase to fall back on, so pick another UnifiedPush app there.
 
+* **Telegram:** An API ID or hash pasted with a stray space or line break is trimmed, and two empty fields keep Telegram's own pair instead of stopping the patch.
+
 * **Telegram:** Settings controls share visible focus outlines, readable disabled text and 48dp touch targets. Cards, switches and dialogs use the same corner scale. Dialog headings are exposed to accessibility services. Search updates its heading as you type and keeps the keyboard open when you clear it.
 
 * **Telegram:** Filter and translation editors keep labels visible and show errors beside the field that needs attention. Validation scrolls its explanation into view, without a second popup covering the form. Dialog actions stay visible at the largest text size. Translation fields share one style, the keyboard's Done action saves, and API keys are masked and stay out of saved view state. Failed sticker-size saves keep the picker open.
