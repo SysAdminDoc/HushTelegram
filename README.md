@@ -164,7 +164,7 @@ On v0.0.8 there's no row in Telegram's Settings, so use the long-press or App in
 
 More settings has separate pages for Pause, Settings backup and Diagnostics. Search finds each control by its name or page. Your saved switches and backup files work as before. Support HushTelegram, the last row on the home page, opens the project's Ko-fi page in your browser.
 
-The overview has seven control pages, matching the groups Morphe Manager shows. v0.0.14 gives every page a black background with mint controls. It pairs larger headings with compact navigation. Switch descriptions use the width of the card, so longer explanations stay readable. Notification status has its own card. Search and the Pause controls work as before.
+The overview has seven control pages, matching the groups Morphe Manager shows. Every page has a black background with mint controls, larger headings and compact navigation. Switch descriptions use the width of the card, so longer explanations stay readable. Notification status has its own card. Search and the Pause controls work as before.
 
 <p><img src="assets/settings-overview.png" width="320" alt="HushTelegram settings with mint controls, search, Pause and seven settings pages"><img src="assets/settings-ads.png" width="320" alt="The Ads page with Hide ads turned on"></p>
 
