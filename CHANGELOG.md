@@ -10,6 +10,8 @@ Working version 0.0.17.
 
 * **Telegram:** An API ID or hash pasted with a stray space or line break is trimmed, and two empty fields keep Telegram's own pair instead of stopping the patch.
 
+* **Telegram:** When translation keeps failing, for example offline, old failures are forgotten once their one-minute wait is over instead of piling up until the service changes.
+
 * **Telegram:** HushTelegram's startup hook goes in at each return's own label in Telegram's app start, so a branch that jumps straight to a return still runs it.
 
 * **Telegram:** Settings controls share visible focus outlines, readable disabled text and 48dp touch targets. Cards, switches and dialogs use the same corner scale. Dialog headings are exposed to accessibility services. Search updates its heading as you type and keeps the keyboard open when you clear it.

@@ -20,6 +20,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.LongSupplier;
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
@@ -128,6 +129,7 @@ public final class OutsideTranslate {
     private static ExecutorService pool;
 
     static Fetcher fetcher = OutsideTranslate::fetchWithService;
+    static LongSupplier clock = System::currentTimeMillis;
     static Executor executor = task -> {
         synchronized (LOCK) {
             if (pool == null) pool = Executors.newFixedThreadPool(3, runnable -> {
@@ -268,7 +270,7 @@ public final class OutsideTranslate {
         synchronized (LOCK) {
             asked = generation;
             Long failed = FAILED.get(key);
-            if (failed != null && System.currentTimeMillis() - failed < RETRY_MS) return;
+            if (failed != null && clock.getAsLong() - failed < RETRY_MS) return;
             List<Waiter> waiters = PENDING.get(key);
             if (waiters != null) {
                 waiters.add(new Waiter(message));
@@ -300,7 +302,10 @@ public final class OutsideTranslate {
                 CACHE.put(key, result);
                 FAILED.remove(key);
             } else {
-                FAILED.put(key, System.currentTimeMillis());
+                long now = clock.getAsLong();
+                // A failure past the retry wait holds nothing back, so an offline hour doesn't pile them up.
+                FAILED.values().removeIf(at -> now - at >= RETRY_MS);
+                FAILED.put(key, now);
             }
         }
         if (waiters == null) return;
@@ -673,6 +678,13 @@ public final class OutsideTranslate {
 
     /** The chat's ID. */
     public static long chatDialog(Object chat) { return 0L; }
+
+    /** How many texts are waiting out a failure, for tests. */
+    static int failuresForTests() {
+        synchronized (LOCK) {
+            return FAILED.size();
+        }
+    }
 
     /** Clears what's remembered, for tests. */
     static void resetForTests() {

@@ -86,6 +86,7 @@ public class OutsideTranslateTest {
         HookStatus.clear();
         if (originalFetcher != null) OutsideTranslate.fetcher = originalFetcher;
         if (originalExecutor != null) OutsideTranslate.executor = originalExecutor;
+        OutsideTranslate.clock = System::currentTimeMillis;
     }
 
     @Test public void offByDefaultChangesNothingAndSendsNothing() {
@@ -162,6 +163,34 @@ public class OutsideTranslateTest {
         assertEquals(1, fetches.get());
         assertEquals(0, message.applied);
         assertEquals(0, message.refreshed);
+    }
+
+    @Test public void aFailureWhoseWaitIsOverIsForgottenWhenTheNextOneLands() {
+        long[] now = {1_000_000L};
+        OutsideTranslate.clock = () -> now[0];
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.fetcher = (target, text) -> {
+            fetches.incrementAndGet();
+            throw new java.io.IOException("offline");
+        };
+        Fake first = new Fake();
+        OutsideTranslate.showMessage(first, first);
+        now[0] += 59_999L;
+        Fake second = new Fake();
+        second.id = 2;
+        second.original = "Пока, мир";
+        OutsideTranslate.showMessage(second, second);
+        assertEquals("both still wait", 2, OutsideTranslate.failuresForTests());
+        now[0] += 1L;
+        Fake third = new Fake();
+        third.id = 3;
+        third.original = "Доброе утро";
+        OutsideTranslate.showMessage(third, third);
+        assertEquals("the first one's minute is up, so only the newer two are kept", 2, OutsideTranslate.failuresForTests());
+        // The forgotten text is asked again, as it would have been anyway.
+        OutsideTranslate.showMessage(first, first);
+        assertEquals(4, fetches.get());
     }
 
     @Test public void aMessageThatIsNotEligibleIsNeverSent() {
