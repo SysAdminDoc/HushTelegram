@@ -4,7 +4,11 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
-Working version 0.0.15.
+Working version 0.0.16.
+
+* **Telegram:** Settings now mirror correctly in right-to-left languages, including Back and the preference list. Telegram's host layout settings stay unchanged.
+
+* **Tooling:** Native navigation checks stop when device lease ownership is lost. Recovery is tied to the original device and preserves settings that were absent before the check. Bounded main-thread callbacks keep the checks usable while the settings page animates. All 12 Android 9 and Android 16 cases passed, including cancelled Back gestures, keyboard dismissal, rotation, mirrored layouts and 200% text. Settings and permission grants were restored exactly.
 
 * **Tooling:** Added the native settings navigation runner and its host checks. Reopening Telegram's existing activity uses a bounded wait, and switch checks read the actual accessibility row. Settings snapshots accept device-specific provider names while keeping recovery limited to the required settings.
 

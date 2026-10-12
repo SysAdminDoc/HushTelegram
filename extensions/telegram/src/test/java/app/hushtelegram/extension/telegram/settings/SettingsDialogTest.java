@@ -19,11 +19,13 @@ import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.pm.ApplicationInfo;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.preference.Preference;
 import android.view.View;
+import android.view.ViewGroup;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
 
@@ -124,6 +126,32 @@ public class SettingsDialogTest {
 
         assertNull("the settings stayed open", activity.getFragmentManager().findFragmentByTag(TAG));
         assertFalse("Back finished the host activity", activity.isFinishing());
+    }
+
+    @Test
+    @Config(sdk = 28, qualifiers = "ar-rXB")
+    public void settingsMirrorWhenTheHostDisablesFrameworkRtl() {
+        Activity activity = controller.get();
+        ApplicationInfo host = activity.getApplicationInfo();
+        int originalFlags = host.flags;
+        host.flags &= ~ApplicationInfo.FLAG_SUPPORTS_RTL;
+        int retainedFlags = host.flags;
+        try {
+            assertEquals(View.LAYOUT_DIRECTION_RTL, activity.getResources().getConfiguration().getLayoutDirection());
+            SettingsDialog dialog = show(activity);
+            View root = dialog.getView();
+            root.measure(View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY));
+            root.layout(0, 0, 1080, 1920);
+            assertEquals("settings root stayed left to right", View.LAYOUT_DIRECTION_RTL, root.getLayoutDirection());
+            HushTelegramPreferenceFragment page = pageOf(dialog);
+            assertEquals("settings list stayed left to right", View.LAYOUT_DIRECTION_RTL,
+                    page.getView().findViewById(android.R.id.list).getLayoutDirection());
+            ViewGroup bar = (ViewGroup) ((ViewGroup) root).getChildAt(0);
+            assertTrue("Back didn't move to the right of the brand", bar.getChildAt(0).getLeft() > bar.getChildAt(1).getLeft());
+            assertTrue((page.getPreferenceScreen().getContext().getApplicationInfo().flags & ApplicationInfo.FLAG_SUPPORTS_RTL) != 0);
+            assertEquals("settings changed the host's flags", retainedFlags, host.flags);
+        } finally { host.flags = originalFlags; }
     }
 
     /**

@@ -10,8 +10,12 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.net.LocalSocket;
+import android.net.LocalSocketAddress;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.LocaleList;
 import android.os.SystemClock;
 import android.view.InputDevice;
@@ -27,9 +31,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 import org.json.JSONObject;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Real system input against the installed settings dialog. Never calls its Back method.
@@ -45,6 +54,7 @@ public final class SettingsNavigationChecks extends Instrumentation {
     private UiAutomation automation;
     private ClassLoader loader;
     private String mode, locale, packageName;
+    private String leaseSocket, leaseCapability;
     private long deadline;
     private final Map<Resources, Configuration> originals = new IdentityHashMap<>();
     private final JSONObject checks = new JSONObject();
@@ -61,47 +71,60 @@ public final class SettingsNavigationChecks extends Instrumentation {
             locale = arguments.getString("locale");
             packageName = arguments.getString("package");
             deadline = Long.parseLong(arguments.getString("leaseExpiry"));
+            leaseSocket = arguments.getString("leaseSocket");
+            leaseCapability = arguments.getString("leaseCapability");
+            require(leaseSocket != null && leaseSocket.matches("hushtelegram-nav-[0-9a-f]{32}") &&
+                leaseCapability != null && leaseCapability.matches("[0-9a-f]{64}"), "No live lease ownership channel");
             require("button".equals(mode) || "gesture".equals(mode), "Unknown navigation mode");
             require("en".equals(locale) || "ar-XB".equals(locale), "Unknown test locale");
             require(packageName.equals(getTargetContext().getPackageName()), "Wrong instrumentation target");
             require(Build.VERSION.SDK_INT == 28 || Build.VERSION.SDK_INT == 36, "Expected API28 or API36");
             require(!"gesture".equals(mode) || Build.VERSION.SDK_INT == 36, "API28 has no edge Back gesture");
             loader = getTargetContext().getClassLoader();
+            stage("connect accessibility service");
+            guard();
             automation = getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES);
             android.accessibilityservice.AccessibilityServiceInfo service = automation.getServiceInfo();
             service.flags |= android.accessibilityservice.AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS;
+            guard();
             automation.setServiceInfo(service);
             android.view.accessibility.AccessibilityManager a11y = getTargetContext().getSystemService(android.view.accessibility.AccessibilityManager.class);
             require(!a11y.isTouchExplorationEnabled(), "This system-input check requires touch exploration off; existing services were retained");
-            open();
+            stage("open settings"); open();
             switches = switches();
             accounts = accounts();
-            applyHostLocale();
+            stage("apply locale"); applyHostLocale();
             close(); open();
+            guard();
             require(automation.setRotation(UiAutomation.ROTATION_FREEZE_0), "Could not freeze portrait rotation");
             settle();
             applyHostLocale();
             close(); open();
-            verifyTree();
-            nestedBack();
-            searchBackAndRotation();
+            stage("verify localized tree"); verifyTree();
+            stage("nested system Back"); nestedBack();
+            stage("IME search and rotation"); searchBackAndRotation();
             require(switches.equals(switches()), "A saved switch changed during navigation");
             require(accounts.equals(accounts()), "Account activation, identity or selection changed");
             checks.put("switchesRetained", true).put("accountsRetained", true);
         } catch (Throwable error) { failure = unwrap(error); }
         finally {
+            stage("preserve state and restore environment");
             try {
                 if (switches != null) require(switches.equals(switches()), "Saved switches changed during a failed check");
                 if (accounts != null) require(accounts.equals(accounts()), "Accounts changed during a failed check");
             } catch (Throwable preservation) { if (failure == null) failure = unwrap(preservation); else failure.addSuppressed(unwrap(preservation)); }
             try {
-                runOnMainSync(() -> {
+                guard();
+                onMain(() -> {
                     for (Map.Entry<Resources, Configuration> saved : originals.entrySet())
                         saved.getKey().updateConfiguration(saved.getValue(), saved.getKey().getDisplayMetrics());
                 });
                 for (Map.Entry<Resources, Configuration> saved : originals.entrySet())
                     require(saved.getKey().getConfiguration().equals(saved.getValue()), "Process locale configuration did not restore exactly");
-                if (automation != null) require(automation.setRotation(UiAutomation.ROTATION_UNFREEZE), "Could not release temporary rotation freeze");
+                if (automation != null) {
+                    guard();
+                    require(automation.setRotation(UiAutomation.ROTATION_UNFREEZE), "Could not release temporary rotation freeze");
+                }
                 checks.put("processLocaleRestored", true);
             } catch (Throwable cleanup) {
                 if (failure == null) failure = unwrap(cleanup); else failure.addSuppressed(unwrap(cleanup));
@@ -128,7 +151,9 @@ public final class SettingsNavigationChecks extends Instrumentation {
             .setClassName(packageName, arguments.getString("activity", "org.telegram.ui.LaunchActivity"))
             .putExtra("app.hushtelegram.extension.telegram.OPEN_SETTINGS", true)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        runOnMainSync(() -> getTargetContext().startActivity(intent));
+        stage("dispatch settings activity");
+        onMain(() -> getTargetContext().startActivity(intent));
+        stage("wait for settings dialog");
         long until = Math.min(deadline, System.currentTimeMillis() + 15000);
         while (dialog() == null && System.currentTimeMillis() < until) {
             guard();
@@ -148,7 +173,7 @@ public final class SettingsNavigationChecks extends Instrumentation {
 
     private DialogFragment dialog() throws Exception {
         final DialogFragment[] found = {null};
-        runOnMainSync(() -> {
+        onMain(() -> {
             try {
                 Class<?> entry = loader.loadClass("app.hushtelegram.extension.telegram.settings.SettingsEntry");
                 java.lang.ref.WeakReference<?> reference = (java.lang.ref.WeakReference<?>) field(entry, "host").get(null);
@@ -164,7 +189,7 @@ public final class SettingsNavigationChecks extends Instrumentation {
 
     private void close() throws Exception {
         DialogFragment current = dialog();
-        if (current != null) runOnMainSync(() -> current.dismissAllowingStateLoss());
+        if (current != null) { guard(); onMain(() -> current.dismissAllowingStateLoss()); }
         settle();
     }
 
@@ -179,7 +204,8 @@ public final class SettingsNavigationChecks extends Instrumentation {
     }
 
     private void applyHostLocale() {
-        runOnMainSync(() -> {
+        guard();
+        onMain(() -> {
             try { applyLocale(host()); }
             catch (Exception error) { throw new RuntimeException(error); }
         });
@@ -200,18 +226,24 @@ public final class SettingsNavigationChecks extends Instrumentation {
         AccessibilityNodeInfo search = node(root, searchLabel, "android.widget.EditText");
         require(back != null && search != null && back.isEnabled() && search.isEnabled(), "Localized controls missing from service tree");
         final View[] backView = {null};
-        runOnMainSync(() -> {
+        onMain(() -> {
             require(current.getView().getLayoutDirection() == (rtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR), "Real dialog layout direction differs");
             backView[0] = findDescription(current.getView(), backLabel);
             require(backView[0] instanceof ImageButton, "No actual Back image button");
             ImageButton image = (ImageButton) backView[0];
             require(image.getDrawable().isAutoMirrored() && image.getDrawable().getLayoutDirection() == image.getLayoutDirection(), "Back drawable does not mirror");
-            TextView title;
-            try { title = (TextView) field(current.getClass(), "pageTitle").get(current); }
-            catch (Exception error) { throw new RuntimeException(error); }
-            int[] backAt = new int[2], titleAt = new int[2];
-            image.getLocationOnScreen(backAt); title.getLocationOnScreen(titleAt);
-            require(rtl ? backAt[0] > titleAt[0] : backAt[0] < titleAt[0], "Back/navigation geometry was not mirrored");
+            ViewGroup bar = (ViewGroup) image.getParent();
+            TextView brand = null;
+            for (int i = 0; i < bar.getChildCount(); i++) {
+                View sibling = bar.getChildAt(i);
+                if (sibling instanceof TextView && "HushTelegram".equalsIgnoreCase(((TextView)sibling).getText().toString())) {
+                    require(brand == null, "Ambiguous navigation brand label"); brand = (TextView)sibling;
+                }
+            }
+            require(brand != null, "No navigation brand beside Back");
+            int[] backAt = new int[2], brandAt = new int[2];
+            image.getLocationOnScreen(backAt); brand.getLocationOnScreen(brandAt);
+            require(rtl ? backAt[0] > brandAt[0] : backAt[0] < brandAt[0], "Back/navigation geometry was not mirrored");
             require(Math.abs(current.getResources().getConfiguration().fontScale - Float.parseFloat(arguments.getString("fontScale"))) < .01f, "Requested system font scale is not effective");
         });
         checks.put("localizedServiceTree", true).put("backAndNavigationMirrored", true).put("effectiveFontScale", true);
@@ -235,7 +267,7 @@ public final class SettingsNavigationChecks extends Instrumentation {
     private void searchBackAndRotation() throws Exception {
         Position home = position();
         setQuery("a", true);
-        require(imeVisible(), "Actual software keyboard did not become visible");
+        require(imeVisible(), "Actual software keyboard did not become visible; windows " + imeWindows());
         back();
         require(!imeVisible() && "a".equals(query()) && dialog() != null, "First system Back did not dismiss only IME");
         if ("gesture".equals(mode)) cancelGesture();
@@ -249,9 +281,11 @@ public final class SettingsNavigationChecks extends Instrumentation {
         for (int i = 0; i < 4 && position().equals(before); i++) scroll();
         Position searched = position();
         require(!searched.equals(before), "Installed build has no measurable search scroll; this acceptance needs a full settings build");
+        guard();
         require(automation.setRotation(UiAutomation.ROTATION_FREEZE_90), "Could not rotate to landscape");
         settle();
         require("a".equals(query()), "Rotation lost the search query");
+        guard();
         require(automation.setRotation(UiAutomation.ROTATION_FREEZE_0), "Could not rotate back to portrait");
         settle();
         require("a".equals(query()), "Portrait restoration lost the search query");
@@ -265,7 +299,7 @@ public final class SettingsNavigationChecks extends Instrumentation {
     private void verifySearchSwitches() throws Exception {
         AccessibilityNodeInfo tree = root();
         final int[] observed = {0};
-        runOnMainSync(() -> {
+        onMain(() -> {
             try {
                 ListView list = (ListView) field(navigation().getClass(), "list").get(navigation());
                 for (int i = 0; i < list.getChildCount(); i++) {
@@ -298,6 +332,10 @@ public final class SettingsNavigationChecks extends Instrumentation {
         Bundle value = new Bundle(); value.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text);
         guard(); require(search.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, value), "Service tree refused search input");
         settle();
+        if (showIme) {
+            long until = Math.min(deadline, System.currentTimeMillis() + 5000);
+            while (!imeVisible() && System.currentTimeMillis() < until) { guard(); Thread.sleep(100); }
+        }
     }
 
     private AccessibilityNodeInfo root() throws Exception {
@@ -350,9 +388,19 @@ public final class SettingsNavigationChecks extends Instrumentation {
             WindowInsets insets = current.getDialog().getWindow().getDecorView().getRootWindowInsets();
             return insets != null && insets.isVisible(WindowInsets.Type.ime());
         }
-        for (AccessibilityWindowInfo window : automation.getWindows())
-            if (window.getType() == AccessibilityWindowInfo.TYPE_INPUT_METHOD && window.getRoot() != null) return true;
+        for (AccessibilityWindowInfo window : automation.getWindows()) {
+            Rect bounds = new Rect(); window.getBoundsInScreen(bounds);
+            if (window.getType() == AccessibilityWindowInfo.TYPE_INPUT_METHOD && !bounds.isEmpty()) return true;
+        }
         return false;
+    }
+    private String imeWindows() {
+        StringBuilder types = new StringBuilder();
+        for (AccessibilityWindowInfo window : automation.getWindows()) {
+            Rect bounds = new Rect(); window.getBoundsInScreen(bounds);
+            types.append(window.getType()).append(':').append(bounds.width()).append('x').append(bounds.height()).append(' ');
+        }
+        return types.toString();
     }
 
     private void back() throws Exception {
@@ -400,6 +448,7 @@ public final class SettingsNavigationChecks extends Instrumentation {
             released = true;
         } finally {
             if (!released) {
+                guard();
                 MotionEvent rollback = MotionEvent.obtain(time, SystemClock.uptimeMillis(), MotionEvent.ACTION_CANCEL, 1, y, 0);
                 rollback.setSource(InputDevice.SOURCE_TOUCHSCREEN);
                 try { automation.injectInputEvent(rollback, true); } finally { rollback.recycle(); }
@@ -428,7 +477,7 @@ public final class SettingsNavigationChecks extends Instrumentation {
     private String query() throws Exception { return (String) field(navigation().getClass(), "query").get(navigation()); }
     private Position position() throws Exception {
         final Position[] position = {null};
-        runOnMainSync(() -> {
+        onMain(() -> {
             try {
                 ListView list = (ListView) field(navigation().getClass(), "list").get(navigation());
                 position[0] = new Position(list.getFirstVisiblePosition(), list.getChildAt(0) == null ? 0 : list.getChildAt(0).getTop());
@@ -476,8 +525,57 @@ public final class SettingsNavigationChecks extends Instrumentation {
         if (view instanceof ViewGroup) for (int i = 0; i < ((ViewGroup)view).getChildCount(); i++) { View found = findDescription(((ViewGroup)view).getChildAt(i), description); if (found != null) return found; }
         return null;
     }
-    private void settle() throws Exception { guard(); automation.waitForIdle(250, 5000); Thread.sleep(250); waitForIdleSync(); }
-    private void guard() { require(System.currentTimeMillis() < deadline, "Lease expired during system input; test stopped"); }
+    private void settle() throws Exception {
+        guard(); stage("wait for accessibility idle"); automation.waitForIdle(250, 5000);
+        Thread.sleep(250); stage("wait for main callback"); onMain(() -> {});
+        stage("settled");
+    }
+    private void onMain(Runnable action) {
+        if (Looper.myLooper() == Looper.getMainLooper()) { guard(); action.run(); return; }
+        Handler handler = new Handler(Looper.getMainLooper());
+        CountDownLatch done = new CountDownLatch(1);
+        AtomicBoolean cancelled = new AtomicBoolean();
+        AtomicReference<Throwable> failure = new AtomicReference<>();
+        Runnable task = () -> {
+            try {
+                if (!cancelled.get()) {
+                    guard();
+                    if (!cancelled.get()) action.run();
+                }
+            }
+            catch (Throwable error) { failure.set(error); }
+            finally { done.countDown(); }
+        };
+        require(handler.post(task), "Main thread refused navigation callback");
+        try {
+            long until = Math.min(deadline, System.currentTimeMillis() + 5000);
+            while (!done.await(100, TimeUnit.MILLISECONDS)) {
+                guard();
+                require(System.currentTimeMillis() < until, "Main navigation callback timed out");
+            }
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError("Main navigation callback interrupted", interrupted);
+        } finally { cancelled.set(true); handler.removeCallbacks(task); }
+        Throwable error = failure.get();
+        if (error instanceof Error) throw (Error)error;
+        if (error instanceof RuntimeException) throw (RuntimeException)error;
+        if (error != null) throw new AssertionError("Main navigation callback failed", error);
+    }
+    private void stage(String name) {
+        Bundle progress = new Bundle(); progress.putString("stream", "NAV_STAGE:" + name + "\n"); sendStatus(0, progress);
+    }
+    private void guard() {
+        require(System.currentTimeMillis() < deadline, "Lease expired during system input; test stopped");
+        try (LocalSocket socket = new LocalSocket()) {
+            socket.connect(new LocalSocketAddress(leaseSocket, LocalSocketAddress.Namespace.ABSTRACT));
+            socket.setSoTimeout(1000);
+            socket.getOutputStream().write((leaseCapability + "\n").getBytes(StandardCharsets.US_ASCII));
+            require(socket.getInputStream().read() == 1, "Whole-device lease ownership lost; test stopped");
+        } catch (java.io.IOException unavailable) {
+            throw new AssertionError("Live whole-device lease check unavailable; test stopped", unavailable);
+        }
+    }
     private static void require(boolean condition, String message) { if (!condition) throw new AssertionError(message); }
     private static Throwable unwrap(Throwable error) { while ((error instanceof java.lang.reflect.InvocationTargetException || error instanceof RuntimeException) && error.getCause() != null) error = error.getCause(); return error; }
 }

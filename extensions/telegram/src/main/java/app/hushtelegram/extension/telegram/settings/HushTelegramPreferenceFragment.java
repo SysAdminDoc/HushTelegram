@@ -34,6 +34,7 @@ import android.text.style.StyleSpan;
 import android.text.util.Linkify;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
@@ -180,6 +181,14 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             // recovery page, is drawn on the same black.
             list.setBackgroundColor(ScreenColors.DEFAULT.background);
         }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+        Context context = themed(getContext());
+        View view = super.onCreateView(inflater.cloneInContext(context), parent, savedInstanceState);
+        view.setLayoutDirection(context.getResources().getConfiguration().getLayoutDirection());
+        return view;
     }
 
     @Override
@@ -1247,7 +1256,14 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
      * Material, which the black page reads on whatever the host activity's theme is.
      */
     static Context themed(Context base) {
-        return new ContextThemeWrapper(base, ScreenColors.THEME);
+        // Telegram mirrors its own widgets and disables framework RTL in its manifest. Only
+        // these platform settings views opt in; the host's ApplicationInfo stays untouched.
+        return new ContextThemeWrapper(base, ScreenColors.THEME) {
+            private final android.content.pm.ApplicationInfo info =
+                    new android.content.pm.ApplicationInfo(base.getApplicationInfo());
+            { info.flags |= android.content.pm.ApplicationInfo.FLAG_SUPPORTS_RTL; }
+            @Override public android.content.pm.ApplicationInfo getApplicationInfo() { return info; }
+        };
     }
 
     /** The recovery page draws on the same page as the rows, so it gets the same theme. */

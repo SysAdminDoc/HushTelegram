@@ -13,6 +13,8 @@
     keyboard changes. Finally restores exact present/absent settings and the navigation overlay.
     If ownership is lost, recovery is retained and no further device commands are authorized.
     RestoreState can replay that record after ownership is legitimately reacquired.
+    Set HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY to the host's shared whole-device lease directory.
+    Device runs refuse an unset configuration or a LeaseDirectory outside that shared pool.
 #>
 [CmdletBinding()]
 param(
@@ -31,6 +33,7 @@ param(
 . (Join-Path $PSScriptRoot 'Resolve-Java.ps1')
 . (Join-Path $PSScriptRoot 'release-receipt.ps1')
 . (Join-Path $PSScriptRoot 'injected-register-contracts.ps1')
+. (Join-Path $PSScriptRoot 'settings-navigation-lease.ps1')
 
 function Invoke-NavigationProcess {
     param([string]$Executable, [string[]]$Arguments, [int]$TimeoutMs = 15000)
@@ -74,6 +77,21 @@ function New-NavigationSession {
     if ($Serial.StartsWith('emulator-', [StringComparison]::Ordinal) -and -not $ExpectedAvd) {
         throw 'An emulator test requires its expected AVD profile.'
     }
+    $sharedLeaseRoot = $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY
+    if (-not $Invoker) {
+        if ([string]::IsNullOrWhiteSpace($sharedLeaseRoot)) {
+            throw 'Configure HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY for the shared whole-device lease directory.'
+        }
+        $pathRoot = [IO.Path]::GetPathRoot($sharedLeaseRoot)
+        if (-not [IO.Path]::IsPathRooted($sharedLeaseRoot) -or $pathRoot -match '^[A-Za-z]:$' -or $pathRoot -ceq '\') {
+            throw 'HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY must be an absolute shared pool path.'
+        }
+    }
+    if (-not $LeaseDirectory) { $LeaseDirectory = $sharedLeaseRoot }
+    $leaseRoot = [IO.Path]::GetFullPath($LeaseDirectory).TrimEnd('\', '/')
+    if (-not $Invoker -and -not $leaseRoot.Equals([IO.Path]::GetFullPath($sharedLeaseRoot).TrimEnd('\', '/'), [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Device runs require the shared whole-device lease directory.'
+    }
     if (-not $Invoker) {
         $Invoker = {
             param($Executable, [string[]]$Arguments)
@@ -81,7 +99,6 @@ function New-NavigationSession {
             Invoke-NavigationProcess $Executable $Arguments $timeout
         }
     }
-    $leaseRoot = [IO.Path]::GetFullPath($LeaseDirectory)
     [pscustomobject]@{ Adb = $Adb; Serial = $Serial; Model = $ExpectedModel; Avd = $ExpectedAvd;
         Api = $ExpectedApi; Token = $LeaseToken; Chat = $ChatIdentity; Invoker = $Invoker;
         Lease = (Resolve-WithinRoot -Root $leaseRoot -Path (Join-Path $leaseRoot "$Serial.json"));
@@ -109,7 +126,11 @@ function Invoke-NavigationRawAdb {
     param($Session, [string[]]$Arguments)
     Assert-NavigationLease $Session
     $answer = & $Session.Invoker $Session.Adb (@('-s', $Session.Serial) + $Arguments)
-    if ($answer.TimedOut) { throw "ADB $($Arguments[0]) timed out on the selected device." }
+    if ($answer.TimedOut) {
+        $stage = @($answer.Output | Where-Object { $_ -match 'NAV_STAGE:[A-Za-z ]+$' } | Select-Object -Last 1)
+        $detail = if ($stage.Count) { ' Last navigation stage: ' + $stage[0].Substring($stage[0].IndexOf('NAV_STAGE:') + 10) + '.' } else { '' }
+        throw "ADB $($Arguments[0]) timed out on the selected device.$detail"
+    }
     if ($null -eq $answer -or $answer.ExitCode -ne 0) { throw "ADB $($Arguments[0]) failed on the selected device." }
     return @($answer.Output)
 }
@@ -222,6 +243,7 @@ function Get-NavigationAppLocale {
 
 function Restore-NavigationEnvironment {
     param($Session, $State)
+    Assert-NavigationRecoveryIdentity $Session $State $State.Package
     # A truncated or edited recovery record must never turn missing rows into device deletions.
     $required = @('system/font_scale', 'system/system_locales', 'system/accelerometer_rotation', 'system/user_rotation',
         'secure/navigation_mode', 'secure/default_input_method', 'secure/enabled_input_methods', 'secure/show_ime_with_hard_keyboard',
@@ -245,6 +267,10 @@ function Restore-NavigationEnvironment {
         throw 'Invalid navigation recovery target or overlay.'
     }
     $failures = [Collections.Generic.List[string]]::new()
+    # Activating an overlay can write navigation_mode. Restore it before exact provider rows.
+    if ($State.Overlay.Active.Count -eq 1) {
+        try { Set-NavigationOverlay $Session $State.Overlay.Active[0] } catch { $failures.Add("Navigation restoration failed: $($_.Exception.Message)") }
+    }
     try {
         $current = @(Get-NavigationSettings $Session)
         $allKeys = @($State.Settings | ForEach-Object { "$($_.Namespace)/$($_.Key)" }) + @($current | ForEach-Object { "$($_.Namespace)/$($_.Key)" })
@@ -257,9 +283,6 @@ function Restore-NavigationEnvironment {
             catch { $failures.Add("Restore $id failed: $($_.Exception.Message)") }
         }
     } catch { $failures.Add("Settings restoration could not start: $($_.Exception.Message)") }
-    if ($State.Overlay.Active.Count -eq 1) {
-        try { Set-NavigationOverlay $Session $State.Overlay.Active[0] } catch { $failures.Add("Navigation restoration failed: $($_.Exception.Message)") }
-    }
     if ($Session.Api -ge 33) {
         try {
             if ((Get-NavigationAppLocale $Session $State.Package) -cne $State.AppLocale) {
@@ -272,12 +295,32 @@ function Restore-NavigationEnvironment {
     }
     try {
         $after = @(Get-NavigationSettings $Session)
+        # Returning from a changed font scale can asynchronously persist the default as 1.0,
+        # recreating an originally absent row. Reapply its exact saved state once after that
+        # configuration transition, then verify every row normally. Repeated drift still fails.
+        $savedFont = @($State.Settings | Where-Object { $_.Namespace -ceq 'system' -and $_.Key -ceq 'font_scale' })[0]
+        $actualFont = @($after | Where-Object { $_.Namespace -ceq 'system' -and $_.Key -ceq 'font_scale' })[0]
+        if ($actualFont.Exists -ne $savedFont.Exists -or $actualFont.Value -cne $savedFont.Value) {
+            Set-NavigationSetting $Session 'system' 'font_scale' $savedFont.Value $savedFont.Exists
+            Start-Sleep -Milliseconds 250
+            $after = @(Get-NavigationSettings $Session)
+        }
         foreach ($saved in $State.Settings) {
             $row = @($after | Where-Object { $_.Namespace -ceq $saved.Namespace -and $_.Key -ceq $saved.Key })
             if ($row.Count -ne 1 -or $row[0].Exists -ne $saved.Exists -or $row[0].Value -cne $saved.Value) { throw "Setting $($saved.Key) differs after restoration." }
         }
     } catch { $failures.Add("Restoration verification failed: $($_.Exception.Message)") }
     if ($failures.Count) { throw ($failures -join "`n") }
+}
+
+function Assert-NavigationRecoveryIdentity {
+    param($Session, $State, [string]$Package)
+    if ($State.SchemaVersion -ne 1 -or $State.Serial -cne $Session.Serial -or $State.Api -ne $Session.Api -or
+        $State.Model -cne $Session.Model -or $State.Avd -cne $Session.Avd -or $State.Package -cne $Package -or
+        -not $State.Fingerprint -or ($Session.Fingerprint -and $State.Fingerprint -cne $Session.Fingerprint)) {
+        throw 'Recovery record belongs to another target or has no original device identity.'
+    }
+    $Session.Fingerprint = $State.Fingerprint
 }
 
 function Get-NavigationGrantRows {
@@ -374,10 +417,11 @@ if ($MyInvocation.InvocationName -ne '.') {
     $session = New-NavigationSession $Adb $Serial $ExpectedModel $ExpectedAvd $ExpectedApi $LeaseDirectory $LeaseToken $ChatIdentity
     if ($RestoreState) {
         $state = Get-Content -LiteralPath $RestoreState -Raw | ConvertFrom-Json
-        if ($state.SchemaVersion -ne 1 -or $state.Serial -cne $Serial -or $state.Package -cne $PackageName -or $state.Api -ne $ExpectedApi) { throw 'Recovery record belongs to another target.' }
-        if (-not $state.Fingerprint) { throw 'Recovery record has no device build identity.' }
-        $session.Fingerprint = $state.Fingerprint
-        Restore-NavigationEnvironment $session $state
+        Assert-NavigationRecoveryIdentity $session $state $PackageName
+        $restoreFailures = [Collections.Generic.List[string]]::new()
+        try { Restore-NavigationEnvironment $session $state } catch { $restoreFailures.Add($_.Exception.Message) }
+        try { Remove-NavigationLeaseReverse $session $state } catch { $restoreFailures.Add($_.Exception.Message) }
+        if ($restoreFailures.Count) { throw ($restoreFailures -join "`n") }
         Write-Host '[navigation] exact environment restored from recovery record'
         return
     }
@@ -389,7 +433,7 @@ if ($MyInvocation.InvocationName -ne '.') {
     $run = Resolve-WithinRoot -Root $WorkDirectory -Path (Join-Path $WorkDirectory "navigation-$runId")
     New-Item -ItemType Directory -Path $run | Out-Null
     $target = Join-Path $run 'target.apk'; $installedProbe = Join-Path $run 'probe.apk'
-    $state = $null; $failure = $null; $cleanupFailure = $null
+    $state = $null; $failure = $null; $cleanupFailure = $null; $leaseServer = $null
     $runs = [Collections.Generic.List[object]]::new()
     try {
         Get-NavigationInstalledApk $session $PackageName $target
@@ -402,12 +446,15 @@ if ($MyInvocation.InvocationName -ne '.') {
         $entries = @("instrumentation:app.hushtelegram.navigationprobe/app.hushtelegram.navigationprobe.SettingsNavigationChecks (target=$PackageName)",
             "instrumentation:app.hushtelegram.navigationprobe/.SettingsNavigationChecks (target=$PackageName)")
         if (@($instrumentation | Where-Object { $entries -ccontains $_ }).Count -ne 1) { throw 'No unique instrumentation entry for the expected target.' }
-        $state = [pscustomobject]@{ SchemaVersion = 1; Serial = $Serial; Package = $PackageName; Api = $ExpectedApi;
+        $leaseServer = Start-NavigationLeaseServer $session
+        $state = [pscustomobject]@{ SchemaVersion = 1; Serial = $Serial; Model = $ExpectedModel; Avd = $ExpectedAvd;
+            Package = $PackageName; Api = $ExpectedApi; LeaseSocket = $leaseServer.Socket; LeasePort = $leaseServer.Port;
             Fingerprint = $session.Fingerprint; Settings = @(Get-NavigationSettings $session);
             Overlay = (Get-NavigationOverlay $session); AppLocale = (Get-NavigationAppLocale $session $PackageName);
             TargetSha256 = (Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash;
             Grants = @(Get-NavigationGrantRows $session $PackageName) }
         $state | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $run 'recovery.json') -Encoding UTF8
+        [void](Invoke-NavigationAdb $session @('reverse', '--no-rebind', ('localabstract:' + $leaseServer.Socket), "tcp:$($leaseServer.Port)"))
         Set-NavigationSetting $session 'secure' 'show_ime_with_hard_keyboard' '1'
         $modes = if ($ExpectedApi -eq 36) { @('button', 'gesture') } else { @('button') }
         foreach ($mode in $modes) {
@@ -424,6 +471,7 @@ if ($MyInvocation.InvocationName -ne '.') {
                     $output = @(Invoke-NavigationAdb $session @('shell', 'am', 'instrument', '-w', '-r', '-e', 'mode', $mode,
                         '-e', 'locale', $language, '-e', 'fontScale', $scale, '-e', 'package', $PackageName,
                         '-e', 'activity', $Activity, '-e', 'runId', $runId, '-e', 'leaseExpiry', ([string]$session.Expires.ToUnixTimeMilliseconds()),
+                        '-e', 'leaseSocket', $leaseServer.Socket, '-e', 'leaseCapability', $leaseServer.Capability,
                         'app.hushtelegram.navigationprobe/app.hushtelegram.navigationprobe.SettingsNavigationChecks'))
                     if (@($output | Where-Object { $_ -match '^INSTRUMENTATION_CODE: -?\d+$' }).Count -eq 1) { $session.InstrumentationUnfinished = $false }
                     $runs.Add((Read-NavigationResult $output $runId $ExpectedApi $mode $language $scale))
@@ -442,16 +490,21 @@ if ($MyInvocation.InvocationName -ne '.') {
                 Get-NavigationInstalledApk $session $PackageName $target
                 if ((Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash -cne $state.TargetSha256 -or
                     (@(Get-NavigationGrantRows $session $PackageName) -join "`n") -cne ($state.Grants -join "`n")) { throw 'Installed target identity or permission grants/flags changed.' }
-            } catch { $cleanupFailure = $_ }
+            } catch { $cleanupFailure = $_.Exception.Message }
+            # A settings failure must not retain a reverse mapping to a stopped host server.
+            try { Remove-NavigationLeaseReverse $session $state }
+            catch { $cleanupFailure = @($cleanupFailure, $_.Exception.Message | Where-Object { $_ }) -join "`n" }
         }
+        try { Stop-NavigationLeaseServer $leaseServer }
+        catch { $cleanupFailure = @($cleanupFailure, $_.Exception.Message | Where-Object { $_ }) -join "`n" }
         [pscustomobject]@{ SchemaVersion = 1; Serial = $Serial; Api = $ExpectedApi; Fingerprint = $session.Fingerprint;
             Passed = ($null -eq $failure -and $null -eq $cleanupFailure); Runs = $runs.ToArray();
             Error = if ($failure) { $failure.Exception.Message } else { $null };
-            RestorationError = if ($cleanupFailure) { $cleanupFailure.Exception.Message } else { $null } } |
+            RestorationError = $cleanupFailure } |
             ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $run 'results.json') -Encoding UTF8
         foreach ($path in @($target, $installedProbe)) { Remove-GeneratedPath -Root $run -Path $path -NoRecurse }
     }
-    if ($cleanupFailure) { throw "Navigation environment restoration failed. Retained recovery record: $(Join-Path $run 'recovery.json'). $($cleanupFailure.Exception.Message)" }
+    if ($cleanupFailure) { throw "Navigation environment restoration failed. Retained recovery record: $(Join-Path $run 'recovery.json'). $cleanupFailure" }
     if ($failure) { throw $failure }
     Write-Host "[navigation] $($runs.Count) device cases passed; exact environment, target APK and every grant/flag row retained. Results: $(Join-Path $run 'results.json')"
 }

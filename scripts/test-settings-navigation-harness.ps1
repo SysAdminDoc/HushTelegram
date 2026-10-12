@@ -4,6 +4,7 @@ $ErrorActionPreference = 'Stop'
 $testRoot = Join-Path ([IO.Path]::GetTempPath()) ("hushtelegram-navigation-host-" + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $testRoot | Out-Null
 $leasePath = Join-Path $testRoot 'emulator-9998.json'
+$previousLeaseDirectory = $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY
 $count = 0
 function Assert-True([bool]$Condition, [string]$Message) { if (-not $Condition) { throw $Message }; $script:count++ }
 function Assert-Fails([scriptblock]$Action, [string]$Pattern) {
@@ -26,8 +27,8 @@ function New-TestSession {
         Secure = @{ navigation_mode = '0'; default_input_method = 'fixture.ime/.Keyboard'; enabled_input_methods = 'fixture.ime/.Keyboard;123';
             accessibility_enabled = '1'; enabled_accessibility_services = 'fixture.reader/.Service'; touch_exploration_enabled = '0' };
         Global = @{ development_settings_enabled = '1' }; Overlay = 'threebutton'; AppLocale = 'de-DE';
-        LoseLeaseAt = 0; FailKey = $null; MalformedNamespace = $null; EmptyNamespace = $null; FailAdb = $false;
-        ExtraInventory = @{}
+        LoseLeaseAt = 0; FailKey = $null; MalformedNamespace = $null; EmptyNamespace = $null; FailAdb = $false; FailTimeout = $false;
+        ExtraInventory = @{}; Reverse = @{}; FontRewrites = 0
     }
     $invoker = {
         param($Executable, [string[]]$Arguments)
@@ -56,7 +57,12 @@ function New-TestSession {
             $operation = $Matches[1]; $values = $state.($Matches[2]); $key = $Matches[3]; $value = $Matches[4]
             if ($state.Api -eq 28 -and $operation -eq 'delete' -and $line.Contains('--user')) { throw 'API28 does not accept --user for delete.' }
             if ($state.FailKey -ceq $key) { $exit = 41 }
-            elseif ($operation -eq 'delete') { $values.Remove($key) }
+            elseif ($operation -eq 'delete') {
+                $values.Remove($key)
+                if ($key -ceq 'font_scale' -and $state.FontRewrites -gt 0) {
+                    $values[$key] = '1.0'; $state.FontRewrites--
+                }
+            }
             else { $values[$key] = $value.Substring(1, $value.Length - 2).Replace("'\''", "'") }
         } elseif ($line -ceq 'shell cmd overlay list --user 0') {
             $output = @('android', '[ ] com.android.internal.systemui.navbar.threebutton', '[ ] com.android.internal.systemui.navbar.gestural')
@@ -68,20 +74,85 @@ function New-TestSession {
             $output = @("Locales for fixture.target for user 0 are [$($state.AppLocale)]")
         } elseif ($line -match '^shell cmd locale set-app-locales fixture.target --user 0(?: --locales ([A-Za-z0-9,-]+))?$') {
             $state.AppLocale = [string]$Matches[1]
-        } elseif ($line -ceq 'shell harmless') { $output = @('ok') }
+        } elseif ($line -ceq 'reverse --list') {
+            $output = @($state.Reverse.Keys | ForEach-Object { "fixture $_ $($state.Reverse[$_])" })
+        } elseif ($line -match '^reverse --remove (localabstract:hushtelegram-nav-[0-9a-f]{32})$') {
+            $state.Reverse.Remove($Matches[1])
+        } elseif ($line -ceq 'shell harmless') {
+            $output = if ($state.FailTimeout) { @('INSTRUMENTATION_STATUS: stream=NAV_STAGE:wait for main queue idle') } else { @('ok') }
+        }
         else { throw "Unexpected fake ADB: $line" }
         if ($state.LoseLeaseAt -eq $state.Calls.Count) {
             $lease = Get-Content -LiteralPath $OwnedLease -Raw | ConvertFrom-Json
             $lease.ownershipToken = 'another-owner'
             $lease | ConvertTo-Json | Set-Content -LiteralPath $OwnedLease -Encoding UTF8
         }
-        [pscustomobject]@{ ExitCode = $exit; Output = $output }
+        [pscustomobject]@{ ExitCode = $exit; Output = $output; TimedOut = ($state.FailTimeout -and $line -ceq 'shell harmless') }
     }.GetNewClosure()
     $session = New-NavigationSession 'fake-adb' 'emulator-9998' 'sdk-test' 'Navigation_API36' $Api $testRoot 'owned-token' 'navigation-host' $invoker
     [pscustomobject]@{ Session = $session; State = $state }
 }
+function New-TestSnapshot($Test) {
+    [pscustomobject]@{ SchemaVersion = 1; Serial = $Test.Session.Serial; Model = $Test.Session.Model;
+        Avd = $Test.Session.Avd; Api = $Test.Session.Api; Fingerprint = 'fixture/build'; Package = 'fixture.target';
+        Settings = @(Get-NavigationSettings $Test.Session); Overlay = (Get-NavigationOverlay $Test.Session);
+        AppLocale = (Get-NavigationAppLocale $Test.Session 'fixture.target'); LeaseSocket = $null; LeasePort = $null }
+}
+function Request-TestGrant($Server, [string]$Capability) {
+    $client = [Net.Sockets.TcpClient]::new()
+    try {
+        $client.Connect([Net.IPAddress]::Loopback, $Server.Port)
+        $stream = $client.GetStream(); $stream.ReadTimeout = 3000
+        $bytes = [Text.Encoding]::ASCII.GetBytes($Capability + "`n")
+        $stream.Write($bytes, 0, $bytes.Length)
+        return $stream.ReadByte()
+    } finally { $client.Dispose() }
+}
 try {
     [void](Write-TestLease)
+    $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY = $null
+    Assert-Fails { New-NavigationSession 'fake-adb' 'emulator-9998' 'sdk-test' 'Navigation_API36' 36 $testRoot 'owned-token' 'navigation-host' } '*Configure HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY*'
+    foreach ($relativePool in @('relative-pool', 'C:relative-pool', '\relative-pool')) {
+        $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY = $relativePool
+        Assert-Fails { New-NavigationSession 'fake-adb' 'emulator-9998' 'sdk-test' 'Navigation_API36' 36 '' 'owned-token' 'navigation-host' } '*absolute shared pool path*'
+    }
+    $sharedPool = Join-Path $testRoot 'shared-pool'
+    New-Item -ItemType Directory -Path $sharedPool | Out-Null
+    $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY = $sharedPool
+    Assert-Fails { New-NavigationSession 'fake-adb' 'emulator-9998' 'sdk-test' 'Navigation_API36' 36 $testRoot 'owned-token' 'navigation-host' } '*shared whole-device lease directory*'
+    $production = New-NavigationSession 'fake-adb' 'emulator-9998' 'sdk-test' 'Navigation_API36' 36 '' 'owned-token' 'navigation-host'
+    Assert-True ($production.Lease -ceq (Join-Path $sharedPool 'emulator-9998.json')) 'Production lease root was not pinned to host configuration.'
+    $explicit = New-NavigationSession 'fake-adb' 'emulator-9998' 'sdk-test' 'Navigation_API36' 36 $sharedPool 'owned-token' 'navigation-host'
+    Assert-True ($explicit.Lease -ceq $production.Lease) 'The configured shared pool was refused when supplied explicitly.'
+    $test = New-TestSession; $server = Start-NavigationLeaseServer $test.Session
+    try {
+        Assert-True ((Request-TestGrant $server $server.Capability) -eq 1) 'An owned lease was refused.'
+        Assert-True ((Request-TestGrant $server ('0' * 64)) -eq 0) 'The server accepted another run capability.'
+        Assert-True ((Request-TestGrant $server ('x' * 65)) -eq 0) 'An oversized lease request was accepted.'
+        foreach ($field in @('ownershipToken', 'serial', 'project', 'chatIdentity', 'expiresUtc', 'acquiredUtc', 'schemaVersion')) {
+            $changed = Write-TestLease
+            $changed[$field] = switch ($field) {
+                expiresUtc { [DateTimeOffset]::UtcNow.AddSeconds(-1).ToString('o') }
+                acquiredUtc { [DateTimeOffset]::UtcNow.AddHours(2).ToString('o') }
+                schemaVersion { '1' }; default { 'replacement' }
+            }
+            $changed | ConvertTo-Json | Set-Content -LiteralPath $leasePath -Encoding UTF8
+            Assert-True ((Request-TestGrant $server $server.Capability) -eq 0) "Live server missed changed $field."
+        }
+        Remove-Item -LiteralPath $leasePath
+        Assert-True ((Request-TestGrant $server $server.Capability) -eq 0) 'A deleted lease still granted input.'
+        [void](Write-TestLease)
+        Assert-True ((Request-TestGrant $server $server.Capability) -eq 1) 'Restored ownership was not rechecked.'
+        Assert-True ($test.State.Calls.Count -eq 0) 'Host ownership checks reached a device.'
+        $stalled = [Net.Sockets.TcpClient]::new()
+        try {
+            $stalled.Connect([Net.IPAddress]::Loopback, $server.Port)
+            $stalled.GetStream().WriteByte(120)
+            $stopClock = [Diagnostics.Stopwatch]::StartNew()
+            Stop-NavigationLeaseServer $server; $server = $null
+            Assert-True ($stopClock.ElapsedMilliseconds -lt 3000) 'A stalled request prevented bounded server shutdown.'
+        } finally { $stalled.Dispose() }
+    } finally { if ($server) { Stop-NavigationLeaseServer $server } }
     $legacy = New-TestSession -Api 28
     $legacySettings = @(Get-NavigationSettings $legacy.Session)
     Set-NavigationSetting $legacy.Session 'secure' 'show_ime_with_hard_keyboard' $null $false
@@ -146,18 +217,19 @@ try {
     Assert-True ($test.State.Calls.Count -eq 3) 'Lease loss did not stop the next identity command.'
     [void](Write-TestLease); $test = New-TestSession; $test.State.FailAdb = $true
     Assert-Fails { Invoke-NavigationAdb $test.Session @('shell', 'harmless') } '*ADB*failed*'
+    $test = New-TestSession; $test.State.FailTimeout = $true
+    Assert-Fails { Invoke-NavigationAdb $test.Session @('shell', 'harmless') } '*timed out*Last navigation stage: wait for main queue idle.*'
     foreach ($kind in @('MalformedNamespace', 'EmptyNamespace')) {
         [void](Write-TestLease); $test = New-TestSession; $test.State.$kind = 'secure'
         Assert-Fails { Get-NavigationSettings $test.Session } '*settings inventory*'
     }
     [void](Write-TestLease); $test = New-TestSession
-    $snapshot = [pscustomobject]@{ Package = 'fixture.target'; Settings = @(Get-NavigationSettings $test.Session);
-        Overlay = (Get-NavigationOverlay $test.Session); AppLocale = (Get-NavigationAppLocale $test.Session 'fixture.target') }
-    $truncated = [pscustomobject]@{ Package = $snapshot.Package; Settings = @($snapshot.Settings | Where-Object { $_.Key -ne 'font_scale' }); Overlay = $snapshot.Overlay; AppLocale = $snapshot.AppLocale }
+    $snapshot = New-TestSnapshot $test
+    $truncated = $snapshot.PSObject.Copy(); $truncated.Settings = @($snapshot.Settings | Where-Object { $_.Key -ne 'font_scale' })
     $beforeCalls = $test.State.Calls.Count
     Assert-Fails { Restore-NavigationEnvironment $test.Session $truncated } '*Incomplete*record*'
     Assert-True ($test.State.Calls.Count -eq $beforeCalls) 'An incomplete recovery record reached ADB.'
-    $unsafeLocale = [pscustomobject]@{ Package = $snapshot.Package; Settings = $snapshot.Settings; Overlay = $snapshot.Overlay; AppLocale = 'en;invalid' }
+    $unsafeLocale = $snapshot.PSObject.Copy(); $unsafeLocale.AppLocale = 'en;invalid'
     Assert-Fails { Restore-NavigationEnvironment $test.Session $unsafeLocale } '*Invalid*overlay*'
     Assert-True ($test.State.Calls.Count -eq $beforeCalls) 'An invalid recovery locale reached ADB.'
     Set-NavigationSetting $test.Session 'system' 'font_scale' '2'
@@ -171,6 +243,39 @@ try {
     Assert-True (-not $test.State.Secure.ContainsKey('show_ime_with_hard_keyboard') -and -not $test.State.Secure.ContainsKey('accessibility_temporary')) 'Absent settings were not restored by deletion.'
     Assert-True ($test.State.Secure.default_input_method -ceq 'fixture.ime/.Keyboard' -and $test.State.Secure.enabled_accessibility_services -ceq 'fixture.reader/.Service') 'IME/a11y state was not restored.'
     Assert-True ($test.State.AppLocale -ceq 'de-DE' -and $test.State.Overlay -ceq 'threebutton') 'Locale/navigation state was not restored.'
+    $noNavigation = $snapshot.PSObject.Copy()
+    $noNavigation.Settings = @($snapshot.Settings | ForEach-Object {
+        if ($_.Key -ceq 'navigation_mode') { [pscustomobject]@{ Namespace = 'secure'; Key = 'navigation_mode'; Exists = $false; Value = $null } }
+        else { $_ }
+    })
+    Set-NavigationOverlay $test.Session 'com.android.internal.systemui.navbar.gestural'
+    Restore-NavigationEnvironment $test.Session $noNavigation
+    Assert-True (-not $test.State.Secure.ContainsKey('navigation_mode') -and $test.State.Overlay -ceq 'threebutton') 'Overlay restoration recreated an originally absent navigation setting.'
+    $font = New-TestSession -Api 28; $font.State.System.Remove('font_scale')
+    $fontSnapshot = New-TestSnapshot $font
+    Set-NavigationSetting $font.Session 'system' 'font_scale' '2'; $font.State.FontRewrites = 1
+    Restore-NavigationEnvironment $font.Session $fontSnapshot
+    Assert-True (-not $font.State.System.ContainsKey('font_scale')) 'Framework default persistence recreated an absent font setting.'
+    Assert-True ($font.State.FontRewrites -eq 0) 'The font restoration regression did not exercise framework persistence.'
+    Set-NavigationSetting $font.Session 'system' 'font_scale' '2'; $font.State.FontRewrites = 2
+    Assert-Fails { Restore-NavigationEnvironment $font.Session $fontSnapshot } '*font_scale*differs*'
+    Assert-True ($font.State.FontRewrites -eq 0) 'Repeated font drift was hidden or retried without a bound.'
+    foreach ($field in @('Model', 'Avd', 'Serial', 'Api', 'Fingerprint', 'SchemaVersion')) {
+        $wrong = $snapshot.PSObject.Copy(); $wrong.$field = if ($field -in @('Api', 'SchemaVersion')) { 999 } else { 'another-device' }
+        $calls = $test.State.Calls.Count
+        Assert-Fails { Restore-NavigationEnvironment $test.Session $wrong } '*another target*'
+        Assert-True ($test.State.Calls.Count -eq $calls) 'Another device recovery record reached ADB.'
+    }
+    Assert-Fails { Assert-NavigationRecoveryIdentity $test.Session $snapshot 'another.package' } '*another target*'
+    $mapping = $snapshot.PSObject.Copy(); $mapping.LeaseSocket = 'hushtelegram-nav-' + ('a' * 32); $mapping.LeasePort = 45678
+    $mapping = $mapping | ConvertTo-Json -Depth 8 | ConvertFrom-Json
+    $remote = 'localabstract:' + $mapping.LeaseSocket
+    $test.State.Reverse[$remote] = 'tcp:45679'
+    Assert-Fails { Remove-NavigationLeaseReverse $test.Session $mapping } '*another endpoint*'
+    Assert-True ($test.State.Reverse.ContainsKey($remote)) 'Recovery removed another endpoint mapping.'
+    $test.State.Reverse[$remote] = 'tcp:45678'; $test.State.Reverse['tcp:9999'] = 'tcp:9999'
+    Remove-NavigationLeaseReverse $test.Session $mapping
+    Assert-True (-not $test.State.Reverse.ContainsKey($remote) -and $test.State.Reverse.ContainsKey('tcp:9999')) 'Recovery changed unrelated reverse mappings.'
     Set-NavigationSetting $test.Session 'system' 'font_scale' '2'; $test.State.FailKey = 'font_scale'
     Assert-Fails { Restore-NavigationEnvironment $test.Session $snapshot } '*restoration*'
     $test.State.FailKey = $null; [void](Write-TestLease); Restore-NavigationEnvironment $test.Session $snapshot
@@ -215,5 +320,6 @@ try {
     Assert-Fails { Read-NavigationResult (Result-Lines) 'another-run' 36 'gesture' 'en' '1' } '*incomplete*'
     Write-Host "[navigation] $count host assertions passed; no device acceptance was run"
 } finally {
+    $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY = $previousLeaseDirectory
     Remove-GeneratedPath -Root ([IO.Path]::GetTempPath().TrimEnd('\')) -Path $testRoot
 }

@@ -14,6 +14,7 @@ package app.hushtelegram.extension.telegram.settings;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
@@ -48,6 +49,23 @@ import app.hushtelegram.extension.shared.Logger;
  */
 @SuppressWarnings("deprecation") // Framework fragments are what the shared preference code builds on.
 public final class SettingsDialog extends DialogFragment {
+    private Context settingsContext;
+
+    @Override
+    public Context getContext() {
+        Context base = super.getContext();
+        if (base == null) return null;
+        if (!(settingsContext instanceof android.view.ContextThemeWrapper)
+                || ((android.view.ContextThemeWrapper) settingsContext).getBaseContext() != base)
+            settingsContext = HushTelegramPreferenceFragment.themed(base);
+        return settingsContext;
+    }
+
+    @Override
+    public void onDetach() {
+        settingsContext = null;
+        super.onDetach();
+    }
     /**
      * The preference list's container. Fixed, because the child manager saves the page with this
      * id and puts it back into a view with the same id after rotation or process recreation. A
@@ -82,7 +100,7 @@ public final class SettingsDialog extends DialogFragment {
         // What the framework's own onCreateDialog builds, with Back first taking the list back to
         // where it was before a section jump. Dialog's back callback on Android 13 and newer ends
         // in onBackPressed as well, so this covers the gesture and the key alike.
-        Dialog dialog = new Dialog(getActivity(), getTheme()) {
+        Dialog dialog = new Dialog(getContext(), getTheme()) {
             @Override
             public void onBackPressed() {
                 HushTelegramPreferenceFragment page = page();
@@ -114,6 +132,7 @@ public final class SettingsDialog extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         LinearLayout root = new LinearLayout(getContext());
         root.setOrientation(LinearLayout.VERTICAL);
+        root.setLayoutDirection(getResources().getConfiguration().getLayoutDirection());
         root.setBackgroundColor(ScreenColors.DEFAULT.background);
 
         LinearLayout bar = new LinearLayout(getContext());
