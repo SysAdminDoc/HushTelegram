@@ -166,4 +166,30 @@ foreach ($alignment in @(0, 1)) {
         param($entry) $entry.elf.loadSegments[0].alignmentBytes = $alignment
     }
 }
+
+# The fixture's ELF has no GNU_RELRO list, like receipts from before it was recorded, and passed above.
+function Set-Relro {
+    param($Entry, $Segments)
+    $Entry.elf | Add-Member -NotePropertyName relroSegments -NotePropertyValue $Segments
+}
+$relroCases = @(
+    @{ Name = 'GNU_RELRO ending on a 16 KB boundary'; Valid = $true
+       Segments = @([ordered]@{ index = 1; virtualAddress = 4096; memorySize = 12288; endAddress = 16384; endsOn16KbBoundary = $true }) }
+    # The binary checker decides whether a mid-page end is safe. The receipt only has to be consistent.
+    @{ Name = 'GNU_RELRO ending mid-page'; Valid = $true
+       Segments = @([ordered]@{ index = 1; virtualAddress = 0; memorySize = 4096; endAddress = 4096; endsOn16KbBoundary = $false }) }
+    @{ Name = 'no GNU_RELRO segments'; Valid = $true; Segments = @() }
+    @{ Name = 'GNU_RELRO boundary fact contradicting its end'; Valid = $false
+       Segments = @([ordered]@{ index = 1; virtualAddress = 0; memorySize = 4096; endAddress = 4096; endsOn16KbBoundary = $true }) }
+    @{ Name = 'GNU_RELRO end that is not its start plus size'; Valid = $false
+       Segments = @([ordered]@{ index = 1; virtualAddress = 0; memorySize = 4096; endAddress = 16384; endsOn16KbBoundary = $true }) }
+    @{ Name = 'coerced GNU_RELRO boundary fact'; Valid = $false
+       Segments = @([ordered]@{ index = 1; virtualAddress = 4096; memorySize = 12288; endAddress = 16384; endsOn16KbBoundary = 'true' }) }
+    @{ Name = 'GNU_RELRO list that is not a list'; Valid = $false; Segments = 'none' }
+    @{ Name = 'GNU_RELRO segment without numbers'; Valid = $false; Segments = @([ordered]@{ index = 1 }) }
+)
+foreach ($case in $relroCases) {
+    $segments = $case.Segments
+    Check-IdenticalElfMutation $case.Name -Valid:$case.Valid -Change { param($entry) Set-Relro $entry $segments }
+}
 Write-Host "[scripts] native packaging evidence contracts passed ($cases cases)"

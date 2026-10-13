@@ -23,6 +23,8 @@ import java.util.zip.ZipFile;
  * Compare native ZIP names, decompressed SHA-256 and compression without changing either APK.
  * ELF32 and ELF64 headers and LOAD ranges are checked in their declared byte order. Only
  * arm64-v8a and x86_64 LOAD segments require at least 16 KB alignment; compressed entries pass.
+ * GNU_RELRO segments are recorded for every ABI, and on those two must not share a 16 KB page
+ * with writable or executable LOAD memory (see {@link #checkRelroPages}).
  *
  * <p>Usage: {@code java NativeLibraryCheck.java <stock.apk> <patched.apk> [report.json]}.
  * Stdout and the optional report contain the same deterministic JSON. Exit 0 means all native
@@ -33,6 +35,9 @@ import java.util.zip.ZipFile;
 public final class NativeLibraryCheck {
     private static final BigInteger ALIGNMENT = BigInteger.valueOf(16384);
     private static final BigInteger ADDRESS_SPACE = BigInteger.ONE.shiftLeft(64);
+    private static final long PT_GNU_RELRO = 0x6474e552L;
+    private static final long PF_X = 1;
+    private static final long PF_W = 2;
     private final TreeSet<String> failures = new TreeSet<>();
 
     public static void main(String[] args) throws IOException {
@@ -206,6 +211,9 @@ public final class NativeLibraryCheck {
         }
         range(phOffset, phCount, phEntrySize, entry.getSize(), "ELF program-header table");
         List<Map<String, Object>> loads = new ArrayList<>();
+        List<Span> loadSpans = new ArrayList<>();
+        List<Span> relros = new ArrayList<>();
+        BigInteger addressSpace = is64 ? ADDRESS_SPACE : BigInteger.ONE.shiftLeft(32);
         BigInteger previousAddress = BigInteger.valueOf(-1);
         try (InputStream in = zip.getInputStream(entry)) {
             in.skipNBytes(phOffset);
@@ -218,13 +226,19 @@ public final class NativeLibraryCheck {
                 long fileOffset = offset(ph, is64 ? 8 : 4, is64, "ELF segment file offset");
                 long fileSize = offset(ph, is64 ? 32 : 16, is64, "ELF segment file size");
                 range(fileOffset, fileSize, 1, entry.getSize(), "ELF segment[" + index + "] file range");
+                if (type == PT_GNU_RELRO) {
+                    BigInteger address = unsigned(ph, is64 ? 16 : 8, is64);
+                    BigInteger end = address.add(unsigned(ph, is64 ? 40 : 20, is64));
+                    if (end.compareTo(addressSpace) > 0) throw new IOException("ELF GNU_RELRO[" + index + "] memory range overflows");
+                    relros.add(new Span(index, address, end, 0));
+                    continue;
+                }
                 if (type != 1) continue;
                 BigInteger address = unsigned(ph, is64 ? 16 : 8, is64);
                 BigInteger memorySize = unsigned(ph, is64 ? 40 : 20, is64);
                 BigInteger alignment = unsigned(ph, is64 ? 48 : 28, is64);
                 String label = "ELF LOAD[" + index + "]";
                 if (memorySize.compareTo(BigInteger.valueOf(fileSize)) < 0) throw new IOException(label + " file size exceeds memory size");
-                BigInteger addressSpace = is64 ? ADDRESS_SPACE : BigInteger.ONE.shiftLeft(32);
                 if (address.add(memorySize).compareTo(addressSpace) > 0) throw new IOException(label + " memory range overflows");
                 if (address.compareTo(previousAddress) < 0) throw new IOException(label + " virtual addresses are out of order");
                 previousAddress = address;
@@ -238,13 +252,53 @@ public final class NativeLibraryCheck {
                 }
                 loads.add(object("index", index, "offset", fileOffset, "virtualAddress", address,
                         "fileSize", fileSize, "memorySize", memorySize, "alignmentBytes", alignment));
+                loadSpans.add(new Span(index, address, address.add(memorySize), u32(ph, is64 ? 4 : 24)));
             }
         }
         if (loads.isEmpty()) throw new IOException("ELF has no LOAD segments");
+        List<Map<String, Object>> relroSegments = new ArrayList<>();
+        for (Span relro : relros) {
+            relroSegments.add(object("index", relro.index(), "virtualAddress", relro.start(),
+                    "memorySize", relro.end().subtract(relro.start()), "endAddress", relro.end(),
+                    "endsOn16KbBoundary", relro.end().mod(ALIGNMENT).signum() == 0));
+            if (alignmentRequired) checkRelroPages(relro, loadSpans, abi);
+        }
         return object("classBits", is64 ? 64 : 32, "machine", machine,
                 "byteOrder", data == 1 ? "little" : "big",
-                "requiredLoadAlignmentBytes", alignmentRequired ? 16384 : 0, "loadSegments", loads);
+                "requiredLoadAlignmentBytes", alignmentRequired ? 16384 : 0, "loadSegments", loads,
+                "relroSegments", relroSegments);
     }
+
+    /**
+     * After relocation the loader makes GNU_RELRO read-only by whole pages, from the page holding
+     * its start to the page holding its end. On a 16 KB device that can reach past the segment.
+     * Google's guidance asks for (p_vaddr + p_memsz) % 16384 == 0, which {@code endsOn16KbBoundary}
+     * records. What breaks is writable or executable LOAD memory in those pages losing W or X, so
+     * that's what fails here. A RELRO ending mid-page with nothing else in the page still loads.
+     */
+    private static void checkRelroPages(Span relro, List<Span> loads, String abi) throws IOException {
+        BigInteger pageStart = relro.start().subtract(relro.start().mod(ALIGNMENT));
+        BigInteger pageEnd = relro.end().add(ALIGNMENT.subtract(BigInteger.ONE)).divide(ALIGNMENT).multiply(ALIGNMENT);
+        for (Span load : loads) {
+            if ((load.flags() & (PF_W | PF_X)) == 0) continue; // Already read-only, so nothing changes.
+            BigInteger shared = firstShared(load.start(), load.end().min(relro.start()), pageStart, pageEnd);
+            if (shared == null) shared = firstShared(load.start().max(relro.end()), load.end(), pageStart, pageEnd);
+            if (shared != null) {
+                throw new IOException("ELF GNU_RELRO[" + relro.index() + "] ends at 0x" + relro.end().toString(16)
+                        + ", and its 16 KB pages also hold LOAD[" + load.index() + "] memory at 0x" + shared.toString(16)
+                        + " that a 16 KB " + abi + " device would make read-only");
+            }
+        }
+    }
+
+    /** Where [start, end) first meets [from, to), or null when they don't meet. */
+    private static BigInteger firstShared(BigInteger start, BigInteger end, BigInteger from, BigInteger to) {
+        BigInteger first = start.max(from);
+        return first.compareTo(end.min(to)) < 0 ? first : null;
+    }
+
+    /** A segment's memory, [start, end), with its program-header index and p_flags. */
+    private record Span(long index, BigInteger start, BigInteger end, long flags) {}
 
     private static byte[] read(ZipFile zip, ZipEntry entry, long offset, int size, String label) throws IOException {
         range(offset, size, 1, entry.getSize(), label);

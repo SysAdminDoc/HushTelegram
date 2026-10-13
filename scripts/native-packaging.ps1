@@ -98,6 +98,21 @@ function Test-NativePackagingEvidence {
                     $previousIndex = $index
                     $previousAddress = $address
                 }
+                # Receipts written before the checker recorded GNU_RELRO have no list. A list that's there must add up.
+                if ($elf.PSObject.Properties.Name -ccontains 'relroSegments') {
+                    if ($elf.relroSegments -isnot [System.Collections.IList]) { return Fail-Native 'Native ELF GNU_RELRO evidence is invalid.' }
+                    foreach ($relro in $elf.relroSegments) {
+                        $null = Read-NativeInteger $relro.index -Maximum 4294967294
+                        $relroAddress = Read-NativeInteger $relro.virtualAddress -Maximum $fieldMaximum
+                        $relroSize = Read-NativeInteger $relro.memorySize -Maximum $fieldMaximum
+                        $relroEnd = Read-NativeInteger $relro.endAddress -Maximum $addressSpace
+                        if ($relroEnd -ne [System.Numerics.BigInteger]::Add($relroAddress, $relroSize) -or
+                            $relro.endsOn16KbBoundary -isnot [bool] -or
+                            $relro.endsOn16KbBoundary -ne ([System.Numerics.BigInteger]::Remainder($relroEnd, [System.Numerics.BigInteger]16384) -eq 0)) {
+                            return Fail-Native 'Native ELF GNU_RELRO evidence is invalid.'
+                        }
+                    }
+                }
                 $entries.Add($entry.name, $entry)
             }
             $sides[$side] = $entries
