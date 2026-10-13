@@ -242,9 +242,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         SettingsBackupPreference.onResult(this, requestCode, resultCode, data);
     }
 
-    /** Shows what the switches are saved as and which are in reach, as an import starts and when it ends. */
+    /**
+     * Shows what the switches are saved as, which are in reach and whether a restart is owed, as an
+     * import starts and when it ends.
+     */
     void refreshSwitches() {
         updateUIToSettingValues();
+        onRestartPendingChanged();
         // An import can change the filter lists, the sticker size and the title emoji too, and their rows say so.
         if (getPreferenceScreen() == null) return;
         Preference groups = findPreference(FilterEditor.GROUPS);

@@ -198,6 +198,24 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
      */
     protected boolean noteRestartPending(Setting<?> setting, Object valueBefore) {
         if (setting == null || !setting.rebootApp) return false;
+        boolean pending = restartOwed(setting, valueBefore);
+        onRestartPendingChanged();
+        return pending;
+    }
+
+    /**
+     * The same for a write that went past the rows, such as a settings import: each of
+     * [valuesBefore] is a setting and the value it had before that write. A write that was put
+     * back leaves every one of them owing what it owed. No page is told; the caller has each page
+     * on screen show it.
+     */
+    public static void noteRestartPending(Map<Setting<?>, Object> valuesBefore) {
+        for (Map.Entry<Setting<?>, Object> before : valuesBefore.entrySet()) {
+            if (before.getKey().rebootApp) restartOwed(before.getKey(), before.getValue());
+        }
+    }
+
+    private static boolean restartOwed(Setting<?> setting, Object valueBefore) {
         Object running;
         synchronized (runningValues) {
             if (!runningValues.containsKey(setting.key)) runningValues.put(setting.key, valueBefore);
@@ -206,7 +224,6 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
         boolean pending = !Objects.equals(running, setting.savedValue());
         if (pending) restartPending.add(setting.key);
         else restartPending.remove(setting.key);
-        onRestartPendingChanged();
         return pending;
     }
 

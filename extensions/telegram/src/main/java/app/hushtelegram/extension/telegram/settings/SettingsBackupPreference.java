@@ -41,6 +41,7 @@ import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -471,6 +472,10 @@ public class SettingsBackupPreference extends Preference {
         Set<Setting<?>> named = new HashSet<>(snapshot.values.keySet());
         named.addAll(snapshot.lists.keySet());
         named.addAll(snapshot.numbers.keySet());
+        // What each is saved as now. A switch that waits for a restart is running that, unless a
+        // change before this one already put its running value on record.
+        Map<Setting<?>, Object> before = new HashMap<>();
+        for (Setting<?> setting : named) before.put(setting, setting.savedValue());
         importing(named);
         boolean accepted = false;
         try {
@@ -488,6 +493,9 @@ public class SettingsBackupPreference extends Preference {
                             : L10n.t("Couldn't import or restore old settings. Check the switches."));
                 } finally {
                     Utils.runOnMainThread(() -> {
+                        // A row's own change notes the restart it owes. The import's skipped that,
+                        // and the card went on saying every switch was working.
+                        AbstractPreferenceFragment.noteRestartPending(before);
                         importing(null);
                         finish(run);
                     });

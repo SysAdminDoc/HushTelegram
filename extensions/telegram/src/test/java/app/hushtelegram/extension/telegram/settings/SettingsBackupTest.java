@@ -1326,6 +1326,77 @@ public class SettingsBackupTest {
         }
     }
 
+    /**
+     * A switch that takes effect at the next start owes a restart when a file changes it, the same
+     * as when its row does. The card and the restart row say so, on the page and on one rebuilt
+     * afterwards, until a file puts back the value Telegram is running with, and then only for that
+     * switch. A file that names the switch as it is, or whose write is put back, owes nothing new.
+     * Nothing is asked along the way: the preview is the only dialog.
+     *
+     * <p>An import used to skip that bookkeeping, and the card said "Your switches are working."
+     * over a font, a theme or a tab bar that hadn't changed yet.
+     */
+    @Test
+    public void anImportedSwitchThatWaitsForARestartSaysSoUntilItsRunningValueIsBack() throws Exception {
+        List<BooleanSetting> gated = Arrays.asList(Settings.USE_SYSTEM_FONT, Settings.AMOLED_BLACK,
+                Settings.DISABLE_ARCHIVE_PULL, Settings.HIDE_CONTACTS_TAB);
+        String on = fileWith(Settings.USE_SYSTEM_FONT, true, Settings.AMOLED_BLACK, true,
+                Settings.DISABLE_ARCHIVE_PULL, true, Settings.HIDE_CONTACTS_TAB, true);
+        String off = fileWith(Settings.USE_SYSTEM_FONT, false, Settings.AMOLED_BLACK, false,
+                Settings.DISABLE_ARCHIVE_PULL, false, Settings.HIDE_CONTACTS_TAB, false);
+        String working = "Your switches are working.";
+        String waiting = "A change here applies after Telegram restarts.";
+        Set<String> owed = AbstractPreferenceFragment.restartPending;
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(controller.get()));
+            for (BooleanSetting setting : gated) assertTrue(setting.key + " takes effect at once", setting.rebootApp);
+
+            // Named as they are, next to a switch that does change.
+            JSONObject asTheyAre = new JSONObject(off);
+            asTheyAre.getJSONObject("settings").put(Settings.HIDE_ADS.key, false);
+            importFile(controller.get(), page, asTheyAre.toString());
+            assertFalse(Settings.HIDE_ADS.savedValue());
+            assertEquals("a switch a file left as it was owes a restart", Collections.emptySet(), new TreeSet<>(owed));
+            assertEquals(working, overview(page));
+
+            // A write that's put back changed nothing.
+            importFile(controller.get(), page, on, FailingStore.Fault.COMMIT_THROWS);
+            assertEquals("Couldn't import the settings. Nothing was changed.", ShadowToast.getTextOfLatestToast());
+            assertEquals("a write that was put back owes a restart", Collections.emptySet(), new TreeSet<>(owed));
+            assertEquals(working, overview(page));
+
+            importFile(controller.get(), page, on);
+            assertEquals("Settings imported. 4 switches changed.", ShadowToast.getTextOfLatestToast());
+            assertFalse("the import asked something after its preview", ShadowAlertDialog.getLatestAlertDialog().isShowing());
+            assertEquals(keys(gated), new TreeSet<>(owed));
+            assertEquals(waiting, overview(page));
+            assertEquals("Restart Telegram to apply 4 changes", restartRow(page));
+
+            // The page is rebuilt. Telegram runs what it ran, so it owes what it owed.
+            controller.recreate();
+            ShadowLooper.idleMainLooper();
+            page = SettingsL10nTest.pageOf(dialogOf(controller.get()));
+            assertEquals(keys(gated), new TreeSet<>(owed));
+            assertEquals(waiting, overview(page));
+            assertEquals("Restart Telegram to apply 4 changes", restartRow(page));
+
+            // A file that would put them back, whose write doesn't land.
+            importFile(controller.get(), page, off, FailingStore.Fault.COMMIT_THROWS);
+            assertEquals(keys(gated), new TreeSet<>(owed));
+            assertEquals(waiting, overview(page));
+
+            // Back to the running value one at a time: each takes its own debt off and no other.
+            Set<String> left = keys(gated);
+            for (BooleanSetting setting : gated) {
+                importFile(controller.get(), page, fileWith(setting, false));
+                left.remove(setting.key);
+                assertEquals("after " + setting.key + " went back", left, new TreeSet<>(owed));
+                assertEquals("after " + setting.key + " went back", left.isEmpty() ? working : waiting, overview(page));
+            }
+            assertNull("the restart row outlived the changes it was for", restartRow(page));
+        }
+    }
+
     // ---- The app holding the file ------------------------------------------------------------
 
     private static final String EXPORT_TIMEOUT = "That app is slow. It may still save the file, so check it.";
@@ -1584,6 +1655,36 @@ public class SettingsBackupTest {
         Uri uri = SettingsFileProvider.put(AUTHORITY, System.nanoTime() + ".json", text.getBytes(StandardCharsets.UTF_8));
         shadowOf(activity).receiveResult(started.intent, Activity.RESULT_OK, new Intent().setData(uri));
         settle();
+    }
+
+    /**
+     * Imports [file] the whole way: the picker, the preview and its Import button, through a store
+     * with [faults], and waits for it to end.
+     */
+    private static void importFile(Activity activity, HushTelegramPreferenceFragment page, String file,
+                                   FailingStore.Fault... faults) throws Exception {
+        deliver(activity, tap(activity, page, IMPORT_ROW), file);
+        try (FailingStore ignored = FailingStore.install(faults)) {
+            shownPreview().getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+        }
+    }
+
+    /** What the card at the top of the settings home page says, as it's drawn. */
+    private static String overview(HushTelegramPreferenceFragment page) {
+        while (page.navigation.back()) { }
+        android.widget.ListView list = page.getView().findViewById(android.R.id.list);
+        android.view.View card = page.navigation.getView(0, null, list);
+        return ((android.widget.TextView) card.findViewById(android.R.id.summary)).getText().toString();
+    }
+
+    /** The restart row's title on the page showing, or null when the row isn't there. */
+    private static String restartRow(HushTelegramPreferenceFragment page) {
+        for (int position = 0; position < page.navigation.getCount(); position++) {
+            Preference row = page.navigation.getItem(position);
+            if (SettingsNavigation.RESTART.equals(row.getKey())) return String.valueOf(row.getTitle());
+        }
+        return null;
     }
 
     private static AlertDialog shownPreview() {
