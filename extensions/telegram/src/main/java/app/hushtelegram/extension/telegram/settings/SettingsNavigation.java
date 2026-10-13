@@ -59,6 +59,8 @@ final class SettingsNavigation extends BaseAdapter {
     private static final String STATUS_ACTION = "hushtelegram_status_action";
     /** The restart row's key. Like the other rows only this view draws, it stores nothing. */
     static final String RESTART = "action_restart_to_apply";
+    static final String QUICK_SETUPS = "action_quick_setups";
+    static final String REPORT = "action_report_problem";
     private final HushTelegramPreferenceFragment page;
     private final SettingsDialog host;
     private final ListView list;
@@ -71,6 +73,10 @@ final class SettingsNavigation extends BaseAdapter {
     private final Preference more;
     /** The home page's last row, which opens HushTelegram's Ko-fi page in a browser. */
     private final Preference support;
+    /** Just above Support: a new GitHub bug report with this install's versions filled in. */
+    private final Preference report;
+    /** Under the home page's status card: a set of switches in one tap. */
+    private final Preference quickSetups;
     /**
      * Shown on every page while a change waits for a restart: a tap restarts Telegram and the
      * screen comes back on the same page ({@link ReopenSettingsAfterRestart}).
@@ -137,7 +143,15 @@ final class SettingsNavigation extends BaseAdapter {
         support = link(context, L10n.t("Support HushTelegram"), L10n.t("Buy me a coffee on Ko-fi"), SettingsIcons.OPENING);
         support.setKey(HushTelegramPreferenceFragment.SUPPORT);
         support.setOnPreferenceClickListener(row -> { HushTelegramPreferenceFragment.openSupport(row.getContext()); return true; });
-        restart = new HushTelegramPreferenceFragment.Row(context);
+        report = link(context, L10n.t("Report a problem"),
+                L10n.t("Opens a GitHub report with your versions and settings filled in. Add what happened."), SettingsIcons.BUG);
+        report.setKey(REPORT);
+        report.setOnPreferenceClickListener(row -> { ReportProblemForm.open(row.getContext(), screen); return true; });
+        quickSetups = link(context, L10n.t("Quick setups"),
+                L10n.t("Turn on a set of switches in one tap, or put every switch back the way it started."), SettingsIcons.TOOLS);
+        quickSetups.setKey(QUICK_SETUPS);
+        quickSetups.setOnPreferenceClickListener(ignored -> { page.showQuickSetups(); return true; });
+        restart =new HushTelegramPreferenceFragment.Row(context);
         restart.setKey(RESTART);
         restart.setPersistent(false);
         // A tap restarts at once, so the row goes without a chevron.
@@ -451,9 +465,11 @@ final class SettingsNavigation extends BaseAdapter {
             for (Section section : sections) if (!section.primary) visible.add(section.link);
         } else {
             visible.add(screen.getPreference(0));
+            visible.add(quickSetups);
             visible.add(browse);
             for (Section section : sections) if (section.primary) visible.add(section.link);
             visible.add(more);
+            visible.add(report);
             visible.add(support);
         }
         addRestart();
@@ -778,7 +794,7 @@ final class SettingsNavigation extends BaseAdapter {
         Object card = cards.get(item);
         if (card != null) return card;
         if (item == more || item == support || item == browse || item == screen.getPreference(0)
-                || item == restart) return item;
+                || item == restart || item == quickSetups || item == report) return item;
         if (item.getParent() != null) return item.getParent();
         return sections;
     }

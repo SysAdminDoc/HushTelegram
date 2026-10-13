@@ -13,8 +13,9 @@ build and release checks come from there, and through them from Hushfeed,
 which is built on icysymmetra/tiktok-patches-for-morphe, which is built on
 Morphe, which hard forked ReVanced. Some of the files Hushfacebook carries are
 rewritten from Andrew Liang's patches, which credit FroggoMorphePatches for
-some of their ideas and implementations. The settings screen's restart row
-comes from HushPinterest, its Pinterest sibling. The Telegram patches
+some of their ideas and implementations. The settings screen's restart row,
+Report a problem and Quick setups come from HushPinterest, its Pinterest
+sibling. The Telegram patches
 themselves are written here, from Telegram's own code. The notices below are
 reproduced from those projects. Morphe requires its text to be carried in
 derivative works and shown to the person using the software, so it is also

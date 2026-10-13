@@ -32,7 +32,11 @@
     },
     {
       "paths": [
-        "extensions/shared/library/src/main/java/app/hushtelegram/extension/shared/settings/preference/ReopenSettingsAfterRestart.java"
+        "extensions/shared/library/src/main/java/app/hushtelegram/extension/shared/settings/preference/ReopenSettingsAfterRestart.java",
+        "extensions/shared/library/src/main/java/app/hushtelegram/extension/shared/settings/preference/ReportProblem.java",
+        "extensions/shared/library/src/main/java/app/hushtelegram/extension/shared/settings/preference/QuickSetups.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/ReportProblemForm.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/QuickSetupKeys.java"
       ],
       "origin": "ported",
       "upstream": "https://github.com/SysAdminDoc/HushPinterest",
@@ -41,7 +45,7 @@
         "https://github.com/SysAdminDoc/hushfeed"
       ],
       "license": "GPL-3.0-only",
-      "changes": "Hush settings standard (2026-10-12) copied from the Pinterest sibling: packages renamed to app.hushtelegram.extension.shared and HushTelegramPause in place of HushPinterestPause."
+      "changes": "Hush settings standard (2026-10-12) copied from the Pinterest sibling: packages renamed to app.hushtelegram.extension.shared and app.hushtelegram.extension.telegram, HushTelegramPause in place of HushPinterestPause, Telegram's repository, names and switches in Report a problem and Quick setups, and Quick setups running each switch row's change listener before it sets the switch."
     },
     {
       "paths": [

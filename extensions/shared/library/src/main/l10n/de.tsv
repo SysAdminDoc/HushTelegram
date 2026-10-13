@@ -154,6 +154,28 @@ Restart Telegram to apply this change	Starte Telegram neu, um diese Änderung zu
 Restart Telegram to apply %1$d changes	Starte Telegram neu, um %1$d Änderungen zu übernehmen
 # context: the restart row's summary; the settings screen comes back on the page it was on
 Telegram closes and reopens on this page.	Telegram schließt sich und öffnet sich wieder auf dieser Seite.
+# context: home page row just above Support; a tap opens a new bug report on GitHub in a browser
+Report a problem	Problem melden
+# context: that row's summary
+Opens a GitHub report with your versions and settings filled in. Add what happened.	Öffnet eine GitHub-Meldung, in der deine Versionen und Einstellungen schon stehen. Ergänze, was passiert ist.
+# context: home page row under the status card, and the title of the dialog it opens
+Quick setups	Schnelleinstellungen
+# context: that row's summary
+Turn on a set of switches in one tap, or put every switch back the way it started.	Schalte mehrere Schalter mit einem Tippen ein oder setze alle Schalter auf ihren Ausgangszustand zurück.
+# context: Quick setups choice that turns on the switches that hide ads, suggestions and nags
+Quiet	Ruhig
+# context: what Quiet does, under its name
+Hides ads, suggestions, stories, promotions and nags.	Blendet Werbung, Vorschläge, Stories, Angebote und Erinnerungen aus.
+# context: what the Privacy choice does, under its name; the phone number is the person's own, covered where Telegram shows it
+Stops usage reports, strips tracking from links and covers your own phone number on screen.	Stoppt Nutzungsberichte, entfernt Tracking aus Links und verdeckt deine eigene Telefonnummer auf dem Bildschirm.
+# context: Quick setups choice that puts every feature switch back to its starting value
+Back to defaults	Zurück zum Standard
+# context: what Back to defaults does, under its name
+Puts every feature switch back the way it started.	Setzt jeden Funktionsschalter auf seinen Ausgangszustand zurück.
+# context: toast after a Quick setups choice changed exactly one switch
+Changed %1$d setting	%1$d Einstellung geändert
+# context: the same toast for any other count, zero included; %1$d is how many
+Changed %1$d settings	%1$d Einstellungen geändert
 Ads in channels and search	Werbung in Kanälen und in der Suche
 Ads in channels	Werbung in Kanälen
 Ads in search	Werbung in der Suche

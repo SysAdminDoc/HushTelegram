@@ -66,12 +66,15 @@ public class SectionJumpTest {
         HushTelegramPreferenceFragment page = page(dialog);
         ListView list = laidOut(dialog);
 
-        assertEquals("Browse settings", ((Preference) list.getItemAtPosition(1)).getTitle());
+        // Quick setups sits between the status card and the sections.
+        assertEquals(SettingsNavigation.QUICK_SETUPS, ((Preference) list.getItemAtPosition(1)).getKey());
+        assertEquals("Browse settings", ((Preference) list.getItemAtPosition(2)).getTitle());
         List<String> titles = new ArrayList<>();
-        // More settings, then Support HushTelegram, which opens a web page rather than a section.
+        // More settings, then Report a problem and Support HushTelegram, which open web pages rather than sections.
         assertEquals(HushTelegramPreferenceFragment.SUPPORT, ((Preference) list.getItemAtPosition(list.getCount() - 1)).getKey());
-        for (int i = 2; i < list.getCount() - 2; i++) titles.add(((Preference) list.getItemAtPosition(i)).getTitle().toString());
-        Preference more = (Preference) list.getItemAtPosition(list.getCount() - 2);
+        assertEquals(SettingsNavigation.REPORT, ((Preference) list.getItemAtPosition(list.getCount() - 2)).getKey());
+        for (int i = 3; i < list.getCount() - 3; i++) titles.add(((Preference) list.getItemAtPosition(i)).getTitle().toString());
+        Preference more = (Preference) list.getItemAtPosition(list.getCount() - 3);
         assertEquals("More settings", more.getTitle());
         assertTrue(more.getOnPreferenceClickListener().onPreferenceClick(more));
         for (int i = 0; i < list.getCount(); i++) titles.add(((Preference) list.getItemAtPosition(i)).getTitle().toString());
@@ -100,7 +103,7 @@ public class SectionJumpTest {
         relayout(list);
         assertTrue("Back closed the page instead of going back", dialog.getDialog().isShowing());
         // The status card at 0 can't be selected while HushTelegram is on, so outside touch mode
-        // the same rule lands on the row under it.
+        // the same rule lands on the row under it, Quick setups.
         assertTrue("Back didn't return to the top: " + list.getFirstVisiblePosition(), list.getFirstVisiblePosition() <= 1);
 
         dialog.getDialog().onBackPressed();

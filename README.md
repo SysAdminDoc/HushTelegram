@@ -43,7 +43,7 @@ The latest release is [v0.0.13](https://github.com/SysAdminDoc/HushTelegram/rele
 
 Open Telegram's Settings and tap **HushTelegram settings**, or press and hold the **Telegram** title at the top of your chat list. Telegram's chat list has no logo to press, so its title stands in. If neither works, long-press Telegram's icon and tap **HushTelegram**, or open Telegram's App info page and tap **Additional settings in the app** (Samsung calls it **Configure in Telegram**).
 
-The home page has search and seven pages of switches, grouped the way Morphe Manager groups them. **Pause HushTelegram** turns its changes off from the next start and keeps your choices for when you resume. **More settings** has the update check, link options, settings backup and diagnostics.
+The home page has search and seven pages of switches, grouped the way Morphe Manager groups them. **Quick setups** turns on the Quiet or Privacy switches in one tap, or puts every switch back the way it started. **Pause HushTelegram** turns its changes off from the next start and keeps your choices for when you resume. **More settings** has the update check, link options, settings backup and diagnostics. **Report a problem** opens a GitHub bug report with your versions and switches already filled in.
 
 These screenshots show the unreleased settings design.
 

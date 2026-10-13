@@ -382,6 +382,41 @@ public class SettingsL10nTest {
             collect(page.getPreferenceScreen(), rows, shown);
             shown.add(String.valueOf(backOf(dialog).getContentDescription()));
 
+            // The rows only the navigation draws: Quick setups, Browse settings, the section links,
+            // Report a problem and Support, then the restart row with one change and two waiting.
+            addListed(dialog, shown);
+            app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
+                    .add(Settings.HIDE_ADS.key);
+            page.navigation.restartChanged();
+            addListed(dialog, shown);
+            app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
+                    .add(Settings.USE_SYSTEM_FONT.key);
+            page.navigation.restartChanged();
+            addListed(dialog, shown);
+            app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.clear();
+            page.navigation.restartChanged();
+
+            // Quick setups: each choice is its name and, on the next line, what it does. Then the
+            // toast after a choice, for one change and for none.
+            page.showQuickSetups();
+            ShadowLooper.idleMainLooper();
+            AlertDialog setups = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertNotNull("Quick setups opened no dialog", setups);
+            shown.add(String.valueOf(org.robolectric.Shadows.shadowOf(setups).getTitle()));
+            android.widget.ListAdapter cards = setups.getListView().getAdapter();
+            for (int i = 0; i < cards.getCount(); i++) shown.addAll(Arrays.asList(String.valueOf(cards.getItem(i)).split("\n")));
+            String setupsCancel = String.valueOf(setups.getButton(AlertDialog.BUTTON_NEGATIVE).getText());
+            assertEquals(L10n.t("Cancel"), setupsCancel);
+            shown.add(setupsCancel);
+            setups.dismiss();
+            page.applyQuickSetup(java.util.Collections.singletonMap(Settings.HIDE_CONTACTS_BLOCK,
+                    !Settings.HIDE_CONTACTS_BLOCK.savedValue()));
+            addToast(shown);
+            page.applyQuickSetup(java.util.Collections.singletonMap(Settings.HIDE_CONTACTS_BLOCK,
+                    Settings.HIDE_CONTACTS_BLOCK.defaultValue));
+            page.applyQuickSetup(java.util.Collections.emptyMap());
+            addToast(shown);
+
             // The export row's dialog.
             Preference export = find(rows, "action_export_diagnostic_report");
             export.getOnPreferenceClickListener().onPreferenceClick(export);
@@ -561,6 +596,18 @@ public class SettingsL10nTest {
         ShadowLooper.idleMainLooper();
         app.hushtelegram.extension.shared.Utils.awaitBackgroundTasksForTests();
         ShadowLooper.idleMainLooper();
+    }
+
+    /** The title and summary of every row the dialog's list shows now. */
+    private static void addListed(SettingsDialog dialog, Set<String> shown) {
+        android.widget.ListView list = dialog.getView().findViewById(android.R.id.list);
+        for (int i = 0; i < list.getCount(); i++) {
+            Object item = list.getItemAtPosition(i);
+            if (!(item instanceof Preference)) continue;
+            shown.add(String.valueOf(((Preference) item).getTitle()));
+            CharSequence summary = ((Preference) item).getSummary();
+            if (summary != null) shown.add(String.valueOf(summary));
+        }
     }
 
     private static void addToast(Set<String> shown) {

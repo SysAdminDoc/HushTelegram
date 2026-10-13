@@ -91,8 +91,9 @@ public class SettingsNavigationTest {
     @Test @Config(sdk = {28, 30, 33, 36})
     public void homeAndEveryCategoryAreReachableWithoutRemovingTheModel() {
         assertNotNull(page.navigation);
-        // The status card, Browse settings, the seven switch pages, More settings and Support HushTelegram.
-        assertEquals(11, list().getCount());
+        // The status card, Quick setups, Browse settings, the seven switch pages, More settings,
+        // Report a problem and Support HushTelegram.
+        assertEquals(13, list().getCount());
         assertEquals(13, page.sections().size());
         int total = page.getPreferenceScreen().getRootAdapter().getCount();
         for (Preference section : page.sections()) {
@@ -112,7 +113,7 @@ public class SettingsNavigationTest {
             assertTrue(page.navigation.back());
             while (page.navigation.back()) { }
         }
-        assertEquals(11, list().getCount());
+        assertEquals(13, list().getCount());
     }
 
     @Test public void categoryClickChangesOnlyTheSettingWhoseRowWasTapped() {
@@ -657,7 +658,7 @@ public class SettingsNavigationTest {
         assertEquals(categoryCount("Privacy") + 1, list().getCount());
         while (page.navigation.back()) { }
         assertEquals(SettingsNavigation.RESTART, ((Preference) list().getItemAtPosition(1)).getKey());
-        assertEquals(12, list().getCount());
+        assertEquals(14, list().getCount());
 
         // Two changes are counted, and the row goes once neither is owed.
         app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.add(
@@ -668,7 +669,7 @@ public class SettingsNavigationTest {
         app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.clear();
         page.navigation.restartChanged();
         assertFalse(contains(SettingsNavigation.RESTART));
-        assertEquals(11, list().getCount());
+        assertEquals(13, list().getCount());
     }
 
     /** A switch that needs a restart brings the row up the moment it's flipped, and flipping it back takes it away. */
@@ -729,7 +730,7 @@ public class SettingsNavigationTest {
         controller.get().getFragmentManager().executePendingTransactions();
         ShadowLooper.idleMainLooper();
         page = page(dialog);
-        assertEquals(11, list().getCount());
+        assertEquals(13, list().getCount());
     }
 
     /** The paused line on real pages, dark and light, for a look before the phone does. */
@@ -850,7 +851,7 @@ public class SettingsNavigationTest {
         assertEquals("No matching settings", ((Preference) list().getItemAtPosition(0)).getTitle());
         assertTrue(page.navigation.back());
         assertEquals("", search.getText().toString());
-        assertEquals(11, list().getCount());
+        assertEquals(13, list().getCount());
     }
 
     /**
@@ -956,20 +957,20 @@ public class SettingsNavigationTest {
         page.navigation.open(page.findPreference(Settings.HIDE_ADS.key));
         SettingsL10nTest.backOf(dialog).performClick();
         assertTrue(dialog.getDialog().isShowing());
-        assertEquals(11, list().getCount());
+        assertEquals(13, list().getCount());
         page.navigation.navigate("About");
         dialog.getDialog().onBackPressed();
         // More settings: Links, Updates, Pause, Settings backup, Diagnostics and About.
         assertEquals(6, list().getCount());
         dialog.getDialog().onBackPressed();
-        assertEquals(11, list().getCount());
+        assertEquals(13, list().getCount());
         dialog.getDialog().onBackPressed();
         ShadowLooper.idleMainLooper();
         assertFalse(controller.get().isFinishing());
     }
 
     /**
-     * The home page ends with Support HushTelegram, under More settings. A tap opens the Ko-fi page
+     * The home page ends with Support HushTelegram, under Report a problem. A tap opens the Ko-fi page
      * in a browser of its own, and with no browser a tip names the address and Telegram keeps running.
      */
     @Test public void theHomePageEndsWithSupportWhichOpensKoFi() {
@@ -979,7 +980,8 @@ public class SettingsNavigationTest {
         assertEquals(HushTelegramPreferenceFragment.SUPPORT, row.getKey());
         assertEquals("Support HushTelegram", String.valueOf(row.getTitle()));
         assertEquals("Buy me a coffee on Ko-fi", String.valueOf(row.getSummary()));
-        assertEquals("More settings", String.valueOf(((Preference) list().getItemAtPosition(last - 1)).getTitle()));
+        assertEquals("Report a problem", String.valueOf(((Preference) list().getItemAtPosition(last - 1)).getTitle()));
+        assertEquals("More settings", String.valueOf(((Preference) list().getItemAtPosition(last - 2)).getTitle()));
         assertTrue(list().getAdapter().isEnabled(last));
 
         tap(HushTelegramPreferenceFragment.SUPPORT);
@@ -1005,7 +1007,135 @@ public class SettingsNavigationTest {
             application.checkActivities(false);
         }
         assertEquals(before, savedValues());
-        assertEquals(11, list().getCount());
+        assertEquals(13, list().getCount());
+    }
+
+    /** Each Quick setups choice changes its switches through their rows and says how many changed. */
+    @Test public void quickSetupsChangeTheirSwitchesAndSayHowMany() {
+        Preference row = (Preference) list().getItemAtPosition(1);
+        assertEquals(SettingsNavigation.QUICK_SETUPS, row.getKey());
+        assertEquals("Quick setups", String.valueOf(row.getTitle()));
+        tap(SettingsNavigation.QUICK_SETUPS);
+        AlertDialog choices = (AlertDialog) org.robolectric.shadows.ShadowDialog.getLatestDialog();
+        assertNotNull("Quick setups opened no dialog", choices);
+        android.widget.ListAdapter cards = choices.getListView().getAdapter();
+        assertEquals(3, cards.getCount());
+        assertTrue(String.valueOf(cards.getItem(0)).startsWith("Quiet\n"));
+        assertTrue(String.valueOf(cards.getItem(1)).startsWith("Privacy\n"));
+        assertTrue(String.valueOf(cards.getItem(2)).startsWith("Back to defaults\n"));
+        try {
+            // Most of Quiet starts on, so a fresh install has only the rest to change.
+            int quietOff = offOnScreen(QuickSetupKeys.QUIET);
+            assertTrue("Quiet changes nothing on a fresh install", quietOff > 0);
+            choices.getListView().performItemClick(null, 0, 0);
+            ShadowLooper.idleMainLooper();
+            assertEquals(0, offOnScreen(QuickSetupKeys.QUIET));
+            assertEquals(changed(quietOff), ShadowToast.getTextOfLatestToast());
+            assertFalse("nothing in Quiet waits for a restart", contains(SettingsNavigation.RESTART));
+            assertEquals(0, page.applyQuickSetup(QuickSetupKeys.quiet()));
+            assertEquals("Changed 0 settings", ShadowToast.getTextOfLatestToast());
+
+            int privacyOff = offOnScreen(QuickSetupKeys.PRIVACY);
+            assertTrue("Privacy changes nothing on a fresh install", privacyOff > 0);
+            assertEquals(privacyOff, page.applyQuickSetup(QuickSetupKeys.privacy()));
+            assertEquals(0, offOnScreen(QuickSetupKeys.PRIVACY));
+            assertFalse(contains(SettingsNavigation.RESTART));
+
+            assertEquals(quietOff + privacyOff, page.applyQuickSetup(QuickSetupKeys.defaults()));
+            for (app.hushtelegram.extension.shared.settings.BooleanSetting setting : QuickSetupKeys.DEFAULTS) {
+                assertEquals(setting.key, setting.defaultValue, setting.savedValue());
+            }
+        } finally {
+            for (app.hushtelegram.extension.shared.settings.BooleanSetting setting : QuickSetupKeys.DEFAULTS) {
+                setting.resetToDefault();
+            }
+        }
+    }
+
+    /**
+     * A Quick setups change runs the row's own change listener first, as a tap does. Telegram's rows
+     * do work there (Translate with an outside service forgets its chats as it goes off), and a
+     * listener that turns the change down keeps the switch as it was, uncounted.
+     */
+    @Test public void quickSetupsGoThroughEachRowsChangeListener() {
+        SwitchPreference contacts = (SwitchPreference) page.findPreference(Settings.HIDE_CONTACTS_BLOCK.key);
+        SwitchPreference greeting = (SwitchPreference) page.findPreference(Settings.HIDE_GREETING_STICKERS.key);
+        assertFalse(contacts.isChecked());
+        assertFalse(greeting.isChecked());
+        List<Object> heard = new ArrayList<>();
+        contacts.setOnPreferenceChangeListener((changed, value) -> false);
+        greeting.setOnPreferenceChangeListener((changed, value) -> { heard.add(value); return true; });
+        Map<app.hushtelegram.extension.shared.settings.BooleanSetting, Boolean> both = new java.util.LinkedHashMap<>();
+        both.put(Settings.HIDE_CONTACTS_BLOCK, true);
+        both.put(Settings.HIDE_GREETING_STICKERS, true);
+        try {
+            assertEquals(1, page.applyQuickSetup(both));
+            assertEquals("Changed 1 setting", ShadowToast.getTextOfLatestToast());
+            assertFalse("a change its row turned down went through", contacts.isChecked());
+            assertFalse(Settings.HIDE_CONTACTS_BLOCK.savedValue());
+            assertTrue(greeting.isChecked());
+            assertTrue(Settings.HIDE_GREETING_STICKERS.savedValue());
+            assertEquals("the row's listener didn't hear the change", Arrays.asList((Object) Boolean.TRUE), heard);
+        } finally {
+            Settings.HIDE_CONTACTS_BLOCK.resetToDefault();
+            Settings.HIDE_GREETING_STICKERS.resetToDefault();
+        }
+    }
+
+    /** Report a problem opens GitHub's bug form in a browser with the versions and switches filled in. */
+    @Test public void reportAProblemOpensAFilledInGitHubForm() throws Exception {
+        Map<String, Object> before = savedValues();
+        assertEquals("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                String.valueOf(((Preference) list().getItemAtPosition(position(SettingsNavigation.REPORT))).getSummary()));
+        tap(SettingsNavigation.REPORT);
+        android.content.Intent started = org.robolectric.Shadows.shadowOf(controller.get()).getNextStartedActivity();
+        assertNotNull("nothing opened", started);
+        assertEquals(android.content.Intent.ACTION_VIEW, started.getAction());
+        assertTrue(started.hasCategory(android.content.Intent.CATEGORY_BROWSABLE));
+        assertTrue((started.getFlags() & android.content.Intent.FLAG_ACTIVITY_NEW_TASK) != 0);
+        assertNull(started.getComponent());
+        String url = started.getDataString();
+        assertTrue(url, url.startsWith("https://github.com/SysAdminDoc/HushTelegram/issues/new?template=bug_report.yml&"));
+        assertTrue(url, url.length() <= app.hushtelegram.extension.shared.settings.preference.ReportProblem.MAX_LENGTH);
+        String decoded = java.net.URLDecoder.decode(url, "UTF-8");
+        assertTrue(decoded, decoded.contains("&versions=HushTelegram "));
+        assertTrue(decoded, decoded.contains(" on Telegram "));
+        assertTrue(decoded, decoded.contains("&device="));
+        assertTrue(decoded, decoded.contains("What happened:"));
+        assertTrue(decoded, decoded.contains("What I expected:"));
+        // Hide ads starts on, Hide contacts on Telegram starts off.
+        assertTrue(decoded, decoded.contains("&additional_context=Switches on: "));
+        String switches = decoded.substring(decoded.indexOf("&additional_context=Switches on: "));
+        assertTrue(switches, switches.contains("Hide ads"));
+        assertFalse(switches, switches.contains("Hide contacts on Telegram"));
+        assertEquals("the tap left the home page", 13, list().getCount());
+
+        org.robolectric.shadows.ShadowApplication application =
+                org.robolectric.Shadows.shadowOf(org.robolectric.RuntimeEnvironment.getApplication());
+        application.checkActivities(true);
+        try {
+            tap(SettingsNavigation.REPORT);
+            assertEquals("Can't open the link. Go to " + L10n.isolate("github.com/SysAdminDoc/HushTelegram") + ".",
+                    ShadowToast.getTextOfLatestToast());
+            assertFalse(controller.get().isFinishing());
+        } finally {
+            application.checkActivities(false);
+        }
+        assertEquals(before, savedValues());
+    }
+
+    /** How many of [settings] have a switch on this screen that's off. */
+    private int offOnScreen(List<app.hushtelegram.extension.shared.settings.BooleanSetting> settings) {
+        int off = 0;
+        for (app.hushtelegram.extension.shared.settings.BooleanSetting setting : settings) {
+            Preference row = page.findPreference(setting.key);
+            if (row instanceof SwitchPreference && !((SwitchPreference) row).isChecked()) off++;
+        }
+        return off;
+    }
+
+    private static String changed(int count) {
+        return count == 1 ? "Changed 1 setting" : "Changed " + count + " settings";
     }
 
     // A window as short as the layouts below, 400 px, so the window's own layout leaves both the

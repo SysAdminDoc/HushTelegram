@@ -6,6 +6,8 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.17.
 
+* **Telegram:** The settings home page has two new rows. **Quick setups** turns on the Quiet or Privacy switches in one tap, or puts every switch back the way it started, and tells you how many settings changed. **Report a problem**, just above Support, opens a GitHub bug report with your HushTelegram and Telegram versions, your phone and the switches you have on already filled in. It doesn't include anything about your account.
+
 * **Telegram:** Press and hold the Telegram title at the top of your chat list to open HushTelegram settings. Telegram's chat list has no logo, so its title stands in. A tap on the title still scrolls the list back to the top, and it works while HushTelegram is paused.
 
 * **Telegram:** Flip a switch that needs a restart and a Restart Telegram row shows up right away at the top of the settings page, counting the changes waiting. Tap it and Telegram closes, then reopens on the same settings page. Before, a toast said to restart and there was nothing to tap.

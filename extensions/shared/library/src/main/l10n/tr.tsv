@@ -154,6 +154,28 @@ Restart Telegram to apply this change	Bu değişikliği uygulamak için Telegram
 Restart Telegram to apply %1$d changes	%1$d değişikliği uygulamak için Telegram'ı yeniden başlat
 # context: the restart row's summary; the settings screen comes back on the page it was on
 Telegram closes and reopens on this page.	Telegram kapanır ve bu sayfada yeniden açılır.
+# context: home page row just above Support; a tap opens a new bug report on GitHub in a browser
+Report a problem	Sorun bildir
+# context: that row's summary
+Opens a GitHub report with your versions and settings filled in. Add what happened.	Sürümlerin ve ayarların doldurulmuş bir GitHub raporu açar. Ne olduğunu ekle.
+# context: home page row under the status card, and the title of the dialog it opens
+Quick setups	Hızlı kurulumlar
+# context: that row's summary
+Turn on a set of switches in one tap, or put every switch back the way it started.	Bir grup anahtarı tek dokunuşla aç veya tüm anahtarları başlangıçtaki hâline döndür.
+# context: Quick setups choice that turns on the switches that hide ads, suggestions and nags
+Quiet	Sessiz
+# context: what Quiet does, under its name
+Hides ads, suggestions, stories, promotions and nags.	Reklamları, önerileri, hikâyeleri, tanıtımları ve ısrarcı hatırlatmaları gizler.
+# context: what the Privacy choice does, under its name; the phone number is the person's own, covered where Telegram shows it
+Stops usage reports, strips tracking from links and covers your own phone number on screen.	Kullanım raporlarını durdurur, bağlantılardaki takibi kaldırır ve kendi telefon numaranı ekranda gizler.
+# context: Quick setups choice that puts every feature switch back to its starting value
+Back to defaults	Varsayılanlara dön
+# context: what Back to defaults does, under its name
+Puts every feature switch back the way it started.	Her özellik anahtarını başlangıçtaki hâline döndürür.
+# context: toast after a Quick setups choice changed exactly one switch
+Changed %1$d setting	%1$d ayar değiştirildi
+# context: the same toast for any other count, zero included; %1$d is how many
+Changed %1$d settings	%1$d ayar değiştirildi
 Ads in channels and search	Kanallarda ve aramada reklamlar
 Ads in channels	Kanallarda reklamlar
 Ads in search	Aramada reklamlar

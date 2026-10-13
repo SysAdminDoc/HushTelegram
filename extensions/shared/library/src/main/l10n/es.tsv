@@ -154,6 +154,28 @@ Restart Telegram to apply this change	Reinicia Telegram para aplicar este cambio
 Restart Telegram to apply %1$d changes	Reinicia Telegram para aplicar %1$d cambios
 # context: the restart row's summary; the settings screen comes back on the page it was on
 Telegram closes and reopens on this page.	Telegram se cierra y se vuelve a abrir en esta página.
+# context: home page row just above Support; a tap opens a new bug report on GitHub in a browser
+Report a problem	Informar de un problema
+# context: that row's summary
+Opens a GitHub report with your versions and settings filled in. Add what happened.	Abre un informe en GitHub con tus versiones y ajustes ya puestos. Añade qué pasó.
+# context: home page row under the status card, and the title of the dialog it opens
+Quick setups	Configuración rápida
+# context: that row's summary
+Turn on a set of switches in one tap, or put every switch back the way it started.	Activa varios interruptores con un toque o devuelve todos los interruptores a como estaban al principio.
+# context: Quick setups choice that turns on the switches that hide ads, suggestions and nags
+Quiet	Tranquilo
+# context: what Quiet does, under its name
+Hides ads, suggestions, stories, promotions and nags.	Oculta anuncios, sugerencias, historias, promociones y avisos insistentes.
+# context: what the Privacy choice does, under its name; the phone number is the person's own, covered where Telegram shows it
+Stops usage reports, strips tracking from links and covers your own phone number on screen.	Detiene los informes de uso, quita el seguimiento de los enlaces y tapa tu propio número de teléfono en pantalla.
+# context: Quick setups choice that puts every feature switch back to its starting value
+Back to defaults	Volver a los valores predeterminados
+# context: what Back to defaults does, under its name
+Puts every feature switch back the way it started.	Devuelve cada interruptor de función a como estaba al principio.
+# context: toast after a Quick setups choice changed exactly one switch
+Changed %1$d setting	Se cambió %1$d ajuste
+# context: the same toast for any other count, zero included; %1$d is how many
+Changed %1$d settings	Se cambiaron %1$d ajustes
 Ads in channels and search	Anuncios en canales y en la búsqueda
 Ads in channels	Anuncios en canales
 Ads in search	Anuncios en la búsqueda
