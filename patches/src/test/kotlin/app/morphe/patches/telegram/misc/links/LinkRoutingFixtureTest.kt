@@ -8,9 +8,11 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.util.ControlFlow
@@ -37,7 +39,7 @@ import java.io.File
 
 /** Real pinned host methods prove sink scope, both patch orders and untouched stock control flow. */
 class LinkRoutingFixtureTest {
-    private val trackingFlags = listOf("stripLinkTracking", "openedLinkTracking", "sharedLinkTracking")
+    private val trackingFlags = listOf("stripLinkTracking", "openedLinkTracking", "sharedLinkTracking", "skipAutologin")
     private val externalFlags = listOf("openExternalLinks", "externalBrowserRouting")
 
     @Test fun `both selectable patches work in either order and retain all stock operands branches and handlers`() {
@@ -69,6 +71,7 @@ class LinkRoutingFixtureTest {
                 assertTrue("the selected account is used", "$UC->selectedAccount:I" in calls)
                 assertEquals("one route guard", 1, plan.browser.instructions().count { it.ref()?.startsWith("$LINKS->tryOpenExternal(") == true })
                 assertEquals("one opened-URI cleaner", 1, plan.browser.instructions().count { it.ref()?.startsWith("$LINKS->cleanOpenedUri(") == true })
+                assertAutologinGated(build.name, plan.browser)
                 for (share in plan.shares) assertEquals("only the chooser target is passed to cleaning", 1,
                     share.method.instructions().count { it.ref()?.startsWith("$LINKS->cleanShareIntent(") == true })
             }
@@ -86,6 +89,39 @@ class LinkRoutingFixtureTest {
             if (external) for (share in plan.shares) assertEquals("routing doesn't touch sharing", beforeShares.getValue(key(share.method)), share.method.instructions().map(::operands))
             assertEquals(if (external) 0 else 1, plan.browser.instructions().count { it.ref()?.startsWith("$LINKS->cleanOpenedUri(") == true })
             assertEquals(if (external) 1 else 0, plan.browser.instructions().count { it.ref()?.startsWith("$LINKS->tryOpenExternal(") == true })
+            assertEquals(if (external) 0 else 1, plan.browser.instructions().count { it.ref() == AUTOLOGIN_GATE })
+        }
+    }
+
+    @Test fun `a changed sign-in token branch refuses before any insertion`() {
+        val cases = listOf<Triple<String, String, (MutableMethod) -> Unit>>(
+            // The domain check's answer lands somewhere the branch doesn't test.
+            Triple("answer moved", "autologin domain answer no longer decides the token") { browser ->
+                val code = browser.instructions()
+                val answer = code.indexOfFirst { it.ref() == "$MC->autologinDomains:Ljava/util/Set;" } + 2
+                val other = (0..15).first { it != code[answer].namedRegisters().single() }
+                browser.replaceInstruction(answer, "move-result v$other")
+            },
+            // The token is read again before the domain check, where the switch can't see it.
+            Triple("token read elsewhere", "autologin token is read outside its branch") { browser ->
+                val code = browser.instructions()
+                val domains = code.indexOfFirst { it.ref() == "$MC->autologinDomains:Ljava/util/Set;" }
+                val (set, controller) = code[domains].namedRegisters()
+                browser.addInstructions(domains, "iget-object v$set, v$controller, $MC->autologinToken:Ljava/lang/String;")
+            },
+        )
+        for (build in Fixtures.declaredBuilds()) for ((name, reason, mutate) in cases) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hostClasses(build))
+            val plan = context.resolveLinkHooks()
+            mutate(plan.browser)
+            val methods = listOf(plan.browser) + plan.shares.map { it.method }
+            val before = methods.map { it.instructions().map(::operands) }
+            val stub = context.mutableClassDefBy(LINKS).methods.single { it.name == "protectedByTelegram" }.instructions().map(::operands)
+            val refused = assertThrows("${build.name}: $name", PatchException::class.java) { stripLinkTrackingPatch.execute(context) }
+            assertTrue("${build.name}: $name refused for its own reason: ${refused.message}", refused.message.orEmpty().contains(reason))
+            assertEquals("${build.name}: $name leaves every host as it was", before, methods.map { it.instructions().map(::operands) })
+            assertEquals(stub, context.mutableClassDefBy(LINKS).methods.single { it.name == "protectedByTelegram" }.instructions().map(::operands))
+            (trackingFlags + externalFlags).forEach { assertFlag(context, it, false) }
         }
     }
 
@@ -137,7 +173,7 @@ class LinkRoutingFixtureTest {
     }
 
     @Test fun `inaccessible or nonconcrete link runtime refuses before host scope or status changes`() {
-        for (build in Fixtures.declaredBuilds()) for (name in listOf("tryOpenExternal", "cleanOpenedUri", "cleanShareIntent")) {
+        for (build in Fixtures.declaredBuilds()) for (name in listOf("tryOpenExternal", "cleanOpenedUri", "cleanShareIntent", "addAutologinToken")) {
             for (mutation in 0..4) {
                 val context = PatchContexts.of(ExtensionDex.classes() + hostClasses(build))
                 val plan = context.resolveLinkHooks()
@@ -236,6 +272,7 @@ class LinkRoutingFixtureTest {
                 after[index].ref()?.startsWith("$LINKS->tryOpenExternal(") == true -> injected += index - 1..index + 4
                 after[index].ref()?.startsWith("$LINKS->cleanOpenedUri(") == true -> injected += index..index + 3
                 after[index].ref()?.startsWith("$LINKS->cleanShareIntent(") == true -> injected += index..index + 1
+                after[index].ref() == AUTOLOGIN_GATE -> injected += index..index + 1
             }
         }
         val stock = after.indices.filter { index -> injected.none { index in it } }
@@ -259,6 +296,30 @@ class LinkRoutingFixtureTest {
                 assertEquals("success returns; false resumes stock", setOf(site.first + 4, site.last), newFlow.normal[site.first + 3].toSet())
             }
         }
+    }
+
+    /**
+     * The domain check's answer goes through the switch, which hands back the register the stock branch
+     * tests, and only then decides whether the token is added. Both ways rejoin where they did.
+     */
+    private fun assertAutologinGated(where: String, browser: Method) {
+        val code = browser.instructions()
+        val gate = code.indices.single { code[it].ref() == AUTOLOGIN_GATE }
+        val domains = code.indices.single { code[it].ref() == "$MC->autologinDomains:Ljava/util/Set;" }
+        assertEquals("$where: the gate follows the domain check's answer", domains + 3, gate)
+        val answer = code[domains + 2].namedRegisters().single()
+        assertEquals(Opcode.INVOKE_STATIC_RANGE, code[gate].opcode)
+        assertEquals(listOf(answer), code[gate].namedRegisters())
+        assertEquals(Opcode.MOVE_RESULT, code[gate + 1].opcode)
+        assertEquals(listOf(answer), code[gate + 1].namedRegisters())
+        assertEquals(Opcode.IF_EQZ, code[gate + 2].opcode)
+        assertEquals("$where: the stock branch tests what the switch said", listOf(answer), code[gate + 2].namedRegisters())
+        val flow = ControlFlow.of(browser)
+        assertEquals(setOf(gate + 1), flow.normal[gate].toSet())
+        val append = code.indices.single { code[it].ref()?.endsWith("->appendQueryParameter(Ljava/lang/String;Ljava/lang/String;)Landroid/net/Uri\$Builder;") == true &&
+            code.subList(it - 2, it).any { instruction -> instruction.ref() == "autologin_token" } }
+        val skip = flow.normal[gate + 2].single { it != gate + 3 }
+        assertEquals("$where: with the token or without, routing picks up in one place", listOf(skip), flow.normal[append + 4])
     }
 
     private fun operands(instruction: Instruction): List<Any?> = listOf(
@@ -295,6 +356,7 @@ class LinkRoutingFixtureTest {
         val HOST_CENSUS = FixtureDex.ClassCensus()
         const val MC = "Lorg/telegram/messenger/MessagesController;"
         const val UC = "Lorg/telegram/messenger/UserConfig;"
-        val RUNTIME_WORDS = mapOf("tryOpenExternal" to 5, "cleanOpenedUri" to 3, "cleanShareIntent" to 1)
+        val RUNTIME_WORDS = mapOf("tryOpenExternal" to 5, "cleanOpenedUri" to 3, "cleanShareIntent" to 1, "addAutologinToken" to 1)
+        const val AUTOLOGIN_GATE = "$LINKS->addAutologinToken(Z)Z"
     }
 }

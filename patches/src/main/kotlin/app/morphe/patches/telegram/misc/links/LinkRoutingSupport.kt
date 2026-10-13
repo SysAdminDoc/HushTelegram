@@ -27,6 +27,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.w3c.dom.Element
+import java.util.BitSet
 
 /** Android 11+ filters browser queries unless the host declares the intents it resolves. */
 internal val browserVisibilityPatch = resourcePatch {
@@ -118,9 +119,7 @@ internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
         code[index].opcode in OBJECT_MOVES && code[index].namedRegisters() == listOf(uriAlias, uriParameter)
     } == true, "classified URI isn't the original Uri parameter")
 
-    val append = code.indices.singleOrNull { code[it].ref() == "$URI_BUILDER->appendQueryParameter(Ljava/lang/String;Ljava/lang/String;)$URI_BUILDER" &&
-        code.subList(maxOf(0, it - 2), it).any { instruction -> instruction.string() == "autologin_token" } }
-        ?: fail("autologin augmentation no longer has its unique builder call")
+    val append = autologinAppend(code) ?: fail("autologin augmentation no longer has its unique builder call")
     checkShape(code[append + 2].ref() == "$URI_BUILDER->build()$URI" && code[append + 3].opcode == Opcode.MOVE_RESULT_OBJECT &&
         code[append + 4].opcode in GOTOS, "autologin builder has no guarded merge")
     var routingAt = ControlFlow.of(browser).normal[append + 4].single()
@@ -192,6 +191,54 @@ internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
     checkShape(shares.any { it.method.definingClass == "Lorg/telegram/messenger/ShareBroadcastReceiver;" && it.method.name == "onReceive" &&
         it.method.parameterTypes == listOf(CONTEXT, INTENT) }, "the kept Share Link broadcast receiver has no verified outgoing chooser")
     return LinkPlan(browser, classifier, cleanAt, cleanCode, routingAt, routingCode, shares)
+}
+
+/** The autologin domain check's answer at [index], where [code] hands it to the switch first. */
+internal data class AutologinGate(val index: Int, val code: String)
+
+/**
+ * Telegram's dispatcher adds the account's sign-in token only when the link's host is on the
+ * server's autologin list: it reads autologinDomains, asks the set, and skips the append when the
+ * answer is false. The switch sits on that answer, so a token left off takes Telegram's own way for
+ * an unlisted site, rejoining routing exactly where the append would have.
+ */
+internal fun resolveAutologinGate(plan: LinkPlan): AutologinGate {
+    val browser = plan.browser
+    val code = browser.instructions()
+    val domains = code.indices.singleOrNull { code[it].opcode == Opcode.IGET_OBJECT && code[it].ref() == "$MC->autologinDomains:Ljava/util/Set;" }
+        ?: fail("autologin domain check isn't unique")
+    val set = code[domains].namedRegisters()[0]
+    val contains = code.getOrNull(domains + 1) ?: fail("autologin domain check no longer asks the set")
+    checkShape(contains.opcode == Opcode.INVOKE_INTERFACE && contains.ref() == "Ljava/util/Set;->contains(Ljava/lang/Object;)Z" &&
+        contains.namedRegisters().firstOrNull() == set, "autologin domain check no longer asks the set")
+    val answer = code.getOrNull(domains + 2)?.takeIf { it.opcode == Opcode.MOVE_RESULT }?.namedRegisters()?.single()
+        ?: fail("autologin domain check has no adjacent answer")
+    val gate = domains + 3
+    checkShape(gate > plan.cleanIndex && code.getOrNull(gate)?.opcode == Opcode.IF_EQZ && code[gate].namedRegisters().single() == answer,
+        "autologin domain answer no longer decides the token")
+    val flow = ControlFlow.of(browser)
+    val skip = flow.normal[gate].filter { it != gate + 1 }.singleOrNull() ?: fail("autologin skip has no single target")
+    val append = autologinAppend(code) ?: fail("autologin augmentation no longer has its unique builder call")
+    checkShape(append > gate && flow.normal[append + 4].singleOrNull() == skip, "autologin token doesn't rejoin where it's skipped")
+    val reads = code.indices.filter { code[it].ref() == "$MC->autologinToken:Ljava/lang/String;" }
+    checkShape(reads.size == 1 && reads.single() in gate + 1 until append, "autologin token is read outside its branch")
+    // Nothing reaches the append, or the token read, without passing the check.
+    val seen = BitSet()
+    val pending = ArrayDeque(listOf(0))
+    while (pending.isNotEmpty()) {
+        val index = pending.removeFirst()
+        if (index == gate || seen[index]) continue
+        seen.set(index)
+        pending += flow.normal[index]
+        pending += flow.exceptional[index]
+    }
+    checkShape(!seen[append] && !seen[reads.single()], "autologin token is added without the domain check")
+    return AutologinGate(gate, "invoke-static/range {v$answer .. v$answer}, $LINKS->addAutologinToken(Z)Z\nmove-result v$answer")
+}
+
+private fun autologinAppend(code: List<Instruction>): Int? = code.indices.singleOrNull {
+    code[it].ref() == "$URI_BUILDER->appendQueryParameter(Ljava/lang/String;Ljava/lang/String;)$URI_BUILDER" &&
+        code.subList(maxOf(0, it - 2), it).any { instruction -> instruction.string() == "autologin_token" }
 }
 
 internal fun BytecodePatchContext.requireRuntime(name: String, parameters: List<String>, result: String) {

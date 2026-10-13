@@ -154,6 +154,7 @@ public final class SettingsBackup {
             Settings.GALLERY_CAMERA_ON_TAP,
             Settings.OPEN_EXTERNAL_LINKS,
             Settings.STRIP_LINK_TRACKING,
+            Settings.SKIP_AUTOLOGIN,
             Settings.DISABLE_UPDATE_CHECKS,
             Settings.REPAIR_FIREBASE_PUSH));
 

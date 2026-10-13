@@ -375,7 +375,8 @@ public class PausedHooksTest {
         probes.put(PatchFamily.STRIP_LINK_TRACKING, Arrays.asList(
                 () -> PROBE_URL.equals(LinkRouting.cleanOpenedUri(Uri.parse(TRACKED_URL), false, new boolean[1]).toString()),
                 () -> PROBE_URL.equals(LinkRouting.cleanShareIntent(new Intent(Intent.ACTION_SEND).setType("text/plain")
-                        .putExtra(Intent.EXTRA_TEXT, TRACKED_URL)).getStringExtra(Intent.EXTRA_TEXT))));
+                        .putExtra(Intent.EXTRA_TEXT, TRACKED_URL)).getStringExtra(Intent.EXTRA_TEXT)),
+                () -> !LinkRouting.addAutologinToken(true)));
         // telegram.org's build never asks the server whether a newer one is out.
         probes.put(PatchFamily.DISABLE_UPDATE_CHECKS, Collections.singletonList(UpdateChecks::skipUpdateCheck));
         probes.put(PatchFamily.REPAIR_FIREBASE_PUSH, Collections.singletonList(PausedHooksTest::firebaseHeaderChanged));

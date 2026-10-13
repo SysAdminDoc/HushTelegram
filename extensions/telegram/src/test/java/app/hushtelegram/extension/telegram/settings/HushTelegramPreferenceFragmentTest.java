@@ -355,6 +355,14 @@ public class HushTelegramPreferenceFragmentTest {
             }
             assertFalse(Settings.STRIP_LINK_TRACKING.key,
                     ((SwitchPreference) page.findPreference(Settings.STRIP_LINK_TRACKING.key)).isChecked());
+            assertEquals("No automatic sign-in on Telegram's sites",
+                    String.valueOf(page.findPreference(Settings.SKIP_AUTOLOGIN.key).getTitle()));
+            assertEquals("Telegram adds a sign-in token for your account to links to some of its own websites. With this "
+                    + "on, those links open without it, and you can sign in there yourself.",
+                    String.valueOf(page.findPreference(Settings.SKIP_AUTOLOGIN.key).getSummary()));
+            // Telegram's sites keep signing you in until someone turns the switch on.
+            assertFalse(Settings.SKIP_AUTOLOGIN.key,
+                    ((SwitchPreference) page.findPreference(Settings.SKIP_AUTOLOGIN.key)).isChecked());
             assertEquals("No previews before sending", String.valueOf(page.findPreference(Settings.DISABLE_DRAFT_PREVIEWS.key).getTitle()));
             assertEquals("Telegram doesn't look up link previews for messages you haven't sent yet, including shares, "
                     + "polls, story links and bots. Sent messages still get one.",

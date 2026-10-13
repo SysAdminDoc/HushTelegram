@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1102);
+        Map<String, String> table = new HashMap<>(1108);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -600,6 +600,8 @@ public final class L10nTranslations {
                 "Nein");
         table.put("No HushTelegram release is out yet.",
                 "Es gibt noch keine Version von HushTelegram.");
+        table.put("No automatic sign-in on Telegram's sites",
+                "Keine automatische Anmeldung auf Telegram-Websites");
         table.put("No chat to forward to",
                 "Kein Chat zum Weiterleiten");
         table.put("No filters yet.",
@@ -672,11 +674,11 @@ public final class L10nTranslations {
                 "Antippen von Premium-Angeboten");
         table.put("Premium promo views",
                 "Aufrufe der Premium-Angebotsseite");
-        table.put("Premium sticker effects",
-                "Effekte von Premium-Stickern");
     }
 
     private static void fillDe5(Map<String, String> table) {
+        table.put("Premium sticker effects",
+                "Effekte von Premium-Stickern");
         table.put("Premium stickers in the keyboard and packs",
                 "Premium-Sticker in Tastatur und Paketen");
         table.put("Preparing the diagnostic report",
@@ -795,11 +797,11 @@ public final class L10nTranslations {
                 "Sprachnachricht senden");
         table.put("Sender ID: %1$s",
                 "Absender-ID: %1$s");
-        table.put("Sending",
-                "Senden");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("Sending",
+                "Senden");
         table.put("Sent: %1$s",
                 "Gesendet: %1$s");
         table.put("Service address",
@@ -900,6 +902,8 @@ public final class L10nTranslations {
                 "Tippen, langes Dr\u00fccken, Wischen und falsche Eingaben lassen das Handy nicht mehr vibrieren. Eingehende Anrufe vibrieren weiterhin, und Benachrichtigungen folgen deinen eigenen Einstellungen.");
         table.put("Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.",
                 "Telegram Beta speichert st\u00e4ndig Debug-Protokolle auf deinem Handy, auch das Verbindungsprotokoll, und sein eigenes Debug-Men\u00fc kann das nicht abstellen. Das hier stellt sie ab. Bereits gespeicherte Protokolle bleiben, bis du sie l\u00f6schst, und die normale Version speichert keine, dort \u00e4ndert sich also nichts. Starte Telegram neu, um die \u00c4nderung zu sehen.");
+        table.put("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, those links open without it, and you can sign in there yourself.",
+                "Telegram h\u00e4ngt an Links zu einigen eigenen Websites ein Anmelde-Token f\u00fcr dein Konto an. Wenn das an ist, \u00f6ffnen sich diese Links ohne Token, und du kannst dich dort selbst anmelden.");
         table.put("Telegram closes and reopens on this page.",
                 "Telegram schlie\u00dft sich und \u00f6ffnet sich wieder auf dieser Seite.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -916,13 +920,13 @@ public final class L10nTranslations {
                 "Telegram l\u00e4dt deine Ordner noch. Versuch es gleich noch mal.");
         table.put("Telegram kept some folders. Turn this off again to retry.",
                 "Telegram hat einige Ordner behalten. Zum Wiederholen erneut ausschalten.");
+    }
+
+    private static void fillDe7(Map<String, String> table) {
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "Telegram weichzeichnet Chat-Kopfzeilen und Leisten nur auf schnellen Handys. Das erlaubt es jedem Handy, sobald unter Energiesparen die Option Unsch\u00e4rfe im Chat an ist.");
         table.put("Telegram refused this app's ID",
                 "Telegram hat die ID dieser App abgelehnt");
-    }
-
-    private static void fillDe7(Map<String, String> table) {
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram bietet keine Updates von telegram.org mehr an. Sie lie\u00dfen sich nicht \u00fcber diesen gepatchten Build installieren, also patche jede neue Version stattdessen im Morphe Manager.");
         table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
@@ -1039,13 +1043,13 @@ public final class L10nTranslations {
                 "Schalte mehrere Schalter mit einem Tippen ein oder setze alle Schalter auf ihren Ausgangszustand zur\u00fcck.");
         table.put("Turning this on makes Private, Groups, Channels and Bots folders, as tabs above the chat list and on your other devices. Turning it off removes the ones it made, unless you renamed or changed them.",
                 "Wenn du das einschaltest, entstehen die Ordner Privat, Gruppen, Kan\u00e4le und Bots, als Tabs \u00fcber der Chatliste und auf deinen anderen Ger\u00e4ten. Beim Ausschalten werden die so entstandenen Ordner entfernt, au\u00dfer du hast sie umbenannt oder ge\u00e4ndert.");
+    }
+
+    private static void fillDe8(Map<String, String> table) {
         table.put("Type a model name.",
                 "Gib einen Modellnamen ein.");
         table.put("Type your API key, or tap Use Google.",
                 "Gib deinen API-Schl\u00fcssel ein oder tippe auf Google nutzen.");
-    }
-
-    private static void fillDe8(Map<String, String> table) {
         table.put("Undo",
                 "R\u00fcckg\u00e4ngig");
         table.put("UnifiedPush notifications",
@@ -1162,13 +1166,13 @@ public final class L10nTranslations {
                 "lokaler Benachrichtigungsstatus");
         table.put("opened link tracking",
                 "Tracking beim \u00d6ffnen von Links");
+    }
+
+    private static void fillDe9(Map<String, String> table) {
         table.put("poll links",
                 "Umfrage-Links");
         table.put("preview double-tap reactions",
                 "Vorschaureaktionen durch Doppeltippen");
-    }
-
-    private static void fillDe9(Map<String, String> table) {
         table.put("profile Gifts tabs",
                 "Geschenke-Tabs in Profilen");
         table.put("profile local IDs",
@@ -1191,10 +1195,12 @@ public final class L10nTranslations {
                 "Anfragen zur Story-Liste");
         table.put("video ads",
                 "Videowerbung");
+        table.put("website sign-in tokens",
+                "Anmelde-Tokens f\u00fcr Websites");
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(1102);
+        Map<String, String> table = new HashMap<>(1108);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1747,6 +1753,8 @@ public final class L10nTranslations {
                 "No");
         table.put("No HushTelegram release is out yet.",
                 "Todav\u00eda no hay ninguna versi\u00f3n de HushTelegram.");
+        table.put("No automatic sign-in on Telegram's sites",
+                "Sin inicio de sesi\u00f3n autom\u00e1tico en los sitios de Telegram");
         table.put("No chat to forward to",
                 "No hay ning\u00fan chat al que reenviar");
         table.put("No filters yet.",
@@ -1819,11 +1827,11 @@ public final class L10nTranslations {
                 "toques en promociones de Premium");
         table.put("Premium promo views",
                 "vistas de promociones de Premium");
-        table.put("Premium sticker effects",
-                "efectos de los stickers Premium");
     }
 
     private static void fillEs5(Map<String, String> table) {
+        table.put("Premium sticker effects",
+                "efectos de los stickers Premium");
         table.put("Premium stickers in the keyboard and packs",
                 "stickers Premium del teclado y los paquetes");
         table.put("Preparing the diagnostic report",
@@ -1942,11 +1950,11 @@ public final class L10nTranslations {
                 "Enviar mensaje de voz");
         table.put("Sender ID: %1$s",
                 "ID del remitente: %1$s");
-        table.put("Sending",
-                "Env\u00edo");
     }
 
     private static void fillEs6(Map<String, String> table) {
+        table.put("Sending",
+                "Env\u00edo");
         table.put("Sent: %1$s",
                 "Enviado: %1$s");
         table.put("Service address",
@@ -2047,6 +2055,8 @@ public final class L10nTranslations {
                 "Los toques, las pulsaciones largas, los deslizamientos y las entradas incorrectas ya no hacen vibrar el tel\u00e9fono. Las llamadas entrantes siguen vibrando y las notificaciones siguen tus propios ajustes.");
         table.put("Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.",
                 "Telegram Beta guarda registros de depuraci\u00f3n en tu tel\u00e9fono todo el tiempo, incluido el registro de conexi\u00f3n, y su propio men\u00fa de depuraci\u00f3n no puede detenerlo. Esto los detiene. Los registros ya guardados se quedan hasta que los borres, y la versi\u00f3n normal no los guarda, as\u00ed que ah\u00ed no cambia nada. Reinicia Telegram para ver el cambio.");
+        table.put("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, those links open without it, and you can sign in there yourself.",
+                "Telegram a\u00f1ade un token de inicio de sesi\u00f3n de tu cuenta a los enlaces de algunos de sus propios sitios web. Con esto activado, esos enlaces se abren sin \u00e9l y puedes iniciar sesi\u00f3n t\u00fa mismo.");
         table.put("Telegram closes and reopens on this page.",
                 "Telegram se cierra y se vuelve a abrir en esta p\u00e1gina.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -2063,13 +2073,13 @@ public final class L10nTranslations {
                 "Telegram todav\u00eda est\u00e1 cargando tus carpetas. Int\u00e9ntalo de nuevo en un momento.");
         table.put("Telegram kept some folders. Turn this off again to retry.",
                 "Telegram conserv\u00f3 algunas carpetas. Desact\u00edvalo otra vez para reintentar.");
+    }
+
+    private static void fillEs7(Map<String, String> table) {
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "Telegram solo desenfoca las cabeceras y los paneles del chat en tel\u00e9fonos r\u00e1pidos. Esto permite que cualquier tel\u00e9fono lo haga, cuando Desenfoque en el chat est\u00e9 activado en Ahorro de energ\u00eda.");
         table.put("Telegram refused this app's ID",
                 "Telegram rechaz\u00f3 el ID de esta app");
-    }
-
-    private static void fillEs7(Map<String, String> table) {
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram deja de ofrecer actualizaciones de telegram.org. No se pueden instalar sobre este build parcheado, as\u00ed que parchea cada versi\u00f3n nueva en Morphe Manager.");
         table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
@@ -2186,13 +2196,13 @@ public final class L10nTranslations {
                 "Activa varios interruptores con un toque o devuelve todos los interruptores a como estaban al principio.");
         table.put("Turning this on makes Private, Groups, Channels and Bots folders, as tabs above the chat list and on your other devices. Turning it off removes the ones it made, unless you renamed or changed them.",
                 "Al activarlo se crean las carpetas Privados, Grupos, Canales y Bots, como pesta\u00f1as sobre la lista de chats y en tus otros dispositivos. Al desactivarlo se quitan las que cre\u00f3, salvo las que hayas renombrado o cambiado.");
+    }
+
+    private static void fillEs8(Map<String, String> table) {
         table.put("Type a model name.",
                 "Escribe el nombre de un modelo.");
         table.put("Type your API key, or tap Use Google.",
                 "Escribe tu clave de API o toca Usar Google.");
-    }
-
-    private static void fillEs8(Map<String, String> table) {
         table.put("Undo",
                 "Deshacer");
         table.put("UnifiedPush notifications",
@@ -2309,13 +2319,13 @@ public final class L10nTranslations {
                 "estado local de notificaciones");
         table.put("opened link tracking",
                 "seguimiento de enlaces abiertos");
+    }
+
+    private static void fillEs9(Map<String, String> table) {
         table.put("poll links",
                 "enlaces de encuestas");
         table.put("preview double-tap reactions",
                 "reacciones al tocar dos veces en la vista previa");
-    }
-
-    private static void fillEs9(Map<String, String> table) {
         table.put("profile Gifts tabs",
                 "pesta\u00f1as de regalos de los perfiles");
         table.put("profile local IDs",
@@ -2338,10 +2348,12 @@ public final class L10nTranslations {
                 "consultas de la lista de historias");
         table.put("video ads",
                 "anuncios en videos");
+        table.put("website sign-in tokens",
+                "tokens de inicio de sesi\u00f3n en sitios web");
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1102);
+        Map<String, String> table = new HashMap<>(1108);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2894,6 +2906,8 @@ public final class L10nTranslations {
                 "Tidak");
         table.put("No HushTelegram release is out yet.",
                 "Belum ada rilis HushTelegram.");
+        table.put("No automatic sign-in on Telegram's sites",
+                "Tanpa masuk otomatis di situs Telegram");
         table.put("No chat to forward to",
                 "Tidak ada obrolan tujuan");
         table.put("No filters yet.",
@@ -2966,11 +2980,11 @@ public final class L10nTranslations {
                 "ketukan promosi Premium");
         table.put("Premium promo views",
                 "tampilan promosi Premium");
-        table.put("Premium sticker effects",
-                "efek stiker Premium");
     }
 
     private static void fillIn5(Map<String, String> table) {
+        table.put("Premium sticker effects",
+                "efek stiker Premium");
         table.put("Premium stickers in the keyboard and packs",
                 "stiker Premium di keyboard dan paket");
         table.put("Preparing the diagnostic report",
@@ -3089,11 +3103,11 @@ public final class L10nTranslations {
                 "Kirim pesan suara");
         table.put("Sender ID: %1$s",
                 "ID pengirim: %1$s");
-        table.put("Sending",
-                "Mengirim");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("Sending",
+                "Mengirim");
         table.put("Sent: %1$s",
                 "Dikirim: %1$s");
         table.put("Service address",
@@ -3194,6 +3208,8 @@ public final class L10nTranslations {
                 "Ketukan, tekan lama, geseran, dan input yang salah tidak lagi membuat ponsel bergetar. Panggilan masuk tetap bergetar, dan notifikasi mengikuti pengaturan Anda sendiri.");
         table.put("Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.",
                 "Telegram Beta selalu menyimpan log debug di ponsel Anda, termasuk log koneksinya, dan menu debug miliknya sendiri tidak bisa menghentikannya. Ini menghentikannya. Log yang sudah tersimpan tetap ada sampai Anda menghapusnya, dan versi biasa tidak menyimpannya, jadi di sana tidak ada yang berubah. Mulai ulang Telegram untuk melihat perubahannya.");
+        table.put("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, those links open without it, and you can sign in there yourself.",
+                "Telegram menambahkan token masuk untuk akun Anda ke tautan menuju beberapa situs webnya sendiri. Jika ini aktif, tautan itu terbuka tanpa token, dan Anda bisa masuk sendiri di sana.");
         table.put("Telegram closes and reopens on this page.",
                 "Telegram ditutup lalu dibuka lagi di halaman ini.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -3210,13 +3226,13 @@ public final class L10nTranslations {
                 "Telegram masih memuat foldermu. Coba lagi sebentar lagi.");
         table.put("Telegram kept some folders. Turn this off again to retry.",
                 "Telegram menyimpan sebagian folder. Matikan lagi untuk mengulang.");
+    }
+
+    private static void fillIn7(Map<String, String> table) {
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "Telegram hanya mengaburkan header dan panel obrolan di ponsel yang cepat. Ini memungkinkan ponsel apa pun melakukannya, setelah Blur di obrolan aktif di bawah Penghemat daya.");
         table.put("Telegram refused this app's ID",
                 "Telegram menolak ID aplikasi ini");
-    }
-
-    private static void fillIn7(Map<String, String> table) {
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.");
         table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
@@ -3333,13 +3349,13 @@ public final class L10nTranslations {
                 "Nyalakan sekumpulan sakelar dengan sekali ketuk, atau kembalikan semua sakelar seperti semula.");
         table.put("Turning this on makes Private, Groups, Channels and Bots folders, as tabs above the chat list and on your other devices. Turning it off removes the ones it made, unless you renamed or changed them.",
                 "Jika diaktifkan, folder Pribadi, Grup, Kanal, dan Bot dibuat sebagai tab di atas daftar obrolan dan di perangkatmu yang lain. Jika dimatikan, folder yang dibuatnya dihapus, kecuali yang sudah kamu ganti nama atau ubah.");
+    }
+
+    private static void fillIn8(Map<String, String> table) {
         table.put("Type a model name.",
                 "Ketik nama model.");
         table.put("Type your API key, or tap Use Google.",
                 "Ketik kunci API-mu, atau ketuk Pakai Google.");
-    }
-
-    private static void fillIn8(Map<String, String> table) {
         table.put("Undo",
                 "Urungkan");
         table.put("UnifiedPush notifications",
@@ -3456,13 +3472,13 @@ public final class L10nTranslations {
                 "status notifikasi lokal");
         table.put("opened link tracking",
                 "pelacakan tautan yang dibuka");
+    }
+
+    private static void fillIn9(Map<String, String> table) {
         table.put("poll links",
                 "tautan polling");
         table.put("preview double-tap reactions",
                 "reaksi ketuk dua kali di pratinjau");
-    }
-
-    private static void fillIn9(Map<String, String> table) {
         table.put("profile Gifts tabs",
                 "tab Hadiah pada profil");
         table.put("profile local IDs",
@@ -3485,10 +3501,12 @@ public final class L10nTranslations {
                 "permintaan daftar cerita");
         table.put("video ads",
                 "iklan video");
+        table.put("website sign-in tokens",
+                "token masuk situs web");
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(1102);
+        Map<String, String> table = new HashMap<>(1108);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -4041,6 +4059,8 @@ public final class L10nTranslations {
                 "N\u00e3o");
         table.put("No HushTelegram release is out yet.",
                 "Ainda n\u00e3o h\u00e1 nenhuma vers\u00e3o do HushTelegram.");
+        table.put("No automatic sign-in on Telegram's sites",
+                "Sem login autom\u00e1tico nos sites do Telegram");
         table.put("No chat to forward to",
                 "Nenhum chat para encaminhar");
         table.put("No filters yet.",
@@ -4113,11 +4133,11 @@ public final class L10nTranslations {
                 "toques em promo\u00e7\u00f5es do Premium");
         table.put("Premium promo views",
                 "visualiza\u00e7\u00f5es de promo\u00e7\u00f5es do Premium");
-        table.put("Premium sticker effects",
-                "efeitos dos stickers Premium");
     }
 
     private static void fillPt_rBR5(Map<String, String> table) {
+        table.put("Premium sticker effects",
+                "efeitos dos stickers Premium");
         table.put("Premium stickers in the keyboard and packs",
                 "stickers Premium do teclado e dos pacotes");
         table.put("Preparing the diagnostic report",
@@ -4236,11 +4256,11 @@ public final class L10nTranslations {
                 "Enviar mensagem de voz");
         table.put("Sender ID: %1$s",
                 "ID do remetente: %1$s");
-        table.put("Sending",
-                "Envio");
     }
 
     private static void fillPt_rBR6(Map<String, String> table) {
+        table.put("Sending",
+                "Envio");
         table.put("Sent: %1$s",
                 "Enviada: %1$s");
         table.put("Service address",
@@ -4341,6 +4361,8 @@ public final class L10nTranslations {
                 "Toques, press\u00f5es longas, deslizes e entradas erradas n\u00e3o fazem mais o celular vibrar. Chamadas recebidas continuam vibrando e as notifica\u00e7\u00f5es seguem as suas configura\u00e7\u00f5es.");
         table.put("Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.",
                 "O Telegram Beta grava registros de depura\u00e7\u00e3o no seu celular o tempo todo, incluindo o registro de conex\u00e3o, e o pr\u00f3prio menu de depura\u00e7\u00e3o dele n\u00e3o consegue impedir isso. Isto os desliga. Os registros j\u00e1 salvos ficam at\u00e9 voc\u00ea apag\u00e1-los, e a vers\u00e3o normal n\u00e3o os grava, ent\u00e3o nada muda nela. Reinicie o Telegram para ver a mudan\u00e7a.");
+        table.put("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, those links open without it, and you can sign in there yourself.",
+                "O Telegram adiciona um token de login da sua conta aos links de alguns dos pr\u00f3prios sites. Com isto ligado, esses links abrem sem ele, e voc\u00ea pode entrar l\u00e1 por conta pr\u00f3pria.");
         table.put("Telegram closes and reopens on this page.",
                 "O Telegram fecha e abre de novo nesta p\u00e1gina.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -4357,13 +4379,13 @@ public final class L10nTranslations {
                 "O Telegram ainda est\u00e1 carregando suas pastas. Tente de novo em um instante.");
         table.put("Telegram kept some folders. Turn this off again to retry.",
                 "O Telegram manteve algumas pastas. Desligue de novo para tentar outra vez.");
+    }
+
+    private static void fillPt_rBR7(Map<String, String> table) {
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "O Telegram s\u00f3 desfoca o cabe\u00e7alho e os pain\u00e9is da conversa em celulares r\u00e1pidos. Isso permite que qualquer celular fa\u00e7a isso, quando Desfoque no chat estiver ligado em Economia de energia.");
         table.put("Telegram refused this app's ID",
                 "O Telegram recusou o ID deste app");
-    }
-
-    private static void fillPt_rBR7(Map<String, String> table) {
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "O Telegram deixa de oferecer atualiza\u00e7\u00f5es do telegram.org. Elas n\u00e3o podem ser instaladas sobre este build corrigido, ent\u00e3o aplique o patch de cada nova vers\u00e3o pelo Morphe Manager.");
         table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
@@ -4480,13 +4502,13 @@ public final class L10nTranslations {
                 "Ative um conjunto de op\u00e7\u00f5es com um toque ou volte todas as op\u00e7\u00f5es ao estado inicial.");
         table.put("Turning this on makes Private, Groups, Channels and Bots folders, as tabs above the chat list and on your other devices. Turning it off removes the ones it made, unless you renamed or changed them.",
                 "Ao ativar, s\u00e3o criadas as pastas Privados, Grupos, Canais e Bots, como abas acima da lista de chats e nos seus outros dispositivos. Ao desativar, as que ele criou s\u00e3o removidas, exceto as que voc\u00ea renomeou ou alterou.");
+    }
+
+    private static void fillPt_rBR8(Map<String, String> table) {
         table.put("Type a model name.",
                 "Digite o nome de um modelo.");
         table.put("Type your API key, or tap Use Google.",
                 "Digite sua chave de API ou toque em Usar o Google.");
-    }
-
-    private static void fillPt_rBR8(Map<String, String> table) {
         table.put("Undo",
                 "Desfazer");
         table.put("UnifiedPush notifications",
@@ -4603,13 +4625,13 @@ public final class L10nTranslations {
                 "estado local das notifica\u00e7\u00f5es");
         table.put("opened link tracking",
                 "rastreamento de links abertos");
+    }
+
+    private static void fillPt_rBR9(Map<String, String> table) {
         table.put("poll links",
                 "links de enquetes");
         table.put("preview double-tap reactions",
                 "rea\u00e7\u00f5es por toque duplo na pr\u00e9via");
-    }
-
-    private static void fillPt_rBR9(Map<String, String> table) {
         table.put("profile Gifts tabs",
                 "abas de presentes dos perfis");
         table.put("profile local IDs",
@@ -4632,10 +4654,12 @@ public final class L10nTranslations {
                 "solicita\u00e7\u00f5es da lista de stories");
         table.put("video ads",
                 "an\u00fancios em v\u00eddeos");
+        table.put("website sign-in tokens",
+                "tokens de login em sites");
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(1102);
+        Map<String, String> table = new HashMap<>(1108);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -5188,6 +5212,8 @@ public final class L10nTranslations {
                 "Hay\u0131r");
         table.put("No HushTelegram release is out yet.",
                 "Hen\u00fcz bir HushTelegram s\u00fcr\u00fcm\u00fc yay\u0131nlanmad\u0131.");
+        table.put("No automatic sign-in on Telegram's sites",
+                "Telegram sitelerinde otomatik oturum a\u00e7ma yok");
         table.put("No chat to forward to",
                 "\u0130letilecek sohbet yok");
         table.put("No filters yet.",
@@ -5260,11 +5286,11 @@ public final class L10nTranslations {
                 "Premium tan\u0131t\u0131m dokunu\u015flar\u0131");
         table.put("Premium promo views",
                 "Premium tan\u0131t\u0131m g\u00f6r\u00fcnt\u00fclemeleri");
-        table.put("Premium sticker effects",
-                "Premium \u00e7\u0131kartma efektleri");
     }
 
     private static void fillTr5(Map<String, String> table) {
+        table.put("Premium sticker effects",
+                "Premium \u00e7\u0131kartma efektleri");
         table.put("Premium stickers in the keyboard and packs",
                 "klavye ve paketlerdeki Premium \u00e7\u0131kartmalar");
         table.put("Preparing the diagnostic report",
@@ -5383,11 +5409,11 @@ public final class L10nTranslations {
                 "Sesli mesaj g\u00f6nder");
         table.put("Sender ID: %1$s",
                 "G\u00f6nderen kimli\u011fi: %1$s");
-        table.put("Sending",
-                "G\u00f6nderme");
     }
 
     private static void fillTr6(Map<String, String> table) {
+        table.put("Sending",
+                "G\u00f6nderme");
         table.put("Sent: %1$s",
                 "G\u00f6nderildi: %1$s");
         table.put("Service address",
@@ -5488,6 +5514,8 @@ public final class L10nTranslations {
                 "Dokunmalar, uzun basmalar, kayd\u0131rmalar ve hatal\u0131 giri\u015fler art\u0131k telefonu titre\u015ftirmez. Gelen aramalar titre\u015fmeye devam eder ve bildirimler kendi ayarlar\u0131n\u0131z\u0131 izler.");
         table.put("Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.",
                 "Telegram Beta, ba\u011flant\u0131 g\u00fcnl\u00fc\u011f\u00fc dahil, telefonunuza s\u00fcrekli hata ay\u0131klama g\u00fcnl\u00fckleri yazar ve kendi hata ay\u0131klama men\u00fcs\u00fc bunu durduramaz. Bu ayar onlar\u0131 durdurur. \u00d6nceden kaydedilmi\u015f g\u00fcnl\u00fckler siz silene kadar kal\u0131r, normal s\u00fcr\u00fcm ise bu g\u00fcnl\u00fckleri tutmaz, yani orada hi\u00e7bir \u015fey de\u011fi\u015fmez. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Telegram'\u0131 yeniden ba\u015flat\u0131n.");
+        table.put("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, those links open without it, and you can sign in there yourself.",
+                "Telegram, kendi sitelerinden baz\u0131lar\u0131na giden ba\u011flant\u0131lara hesab\u0131n\u0131z i\u00e7in bir oturum a\u00e7ma anahtar\u0131 ekler. Bu a\u00e7\u0131kken o ba\u011flant\u0131lar anahtar olmadan a\u00e7\u0131l\u0131r ve orada kendiniz oturum a\u00e7abilirsiniz.");
         table.put("Telegram closes and reopens on this page.",
                 "Telegram kapan\u0131r ve bu sayfada yeniden a\u00e7\u0131l\u0131r.");
         table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
@@ -5504,13 +5532,13 @@ public final class L10nTranslations {
                 "Telegram klas\u00f6rlerini h\u00e2l\u00e2 y\u00fckl\u00fcyor. Birazdan tekrar dene.");
         table.put("Telegram kept some folders. Turn this off again to retry.",
                 "Telegram baz\u0131 klas\u00f6rleri tuttu. Tekrar denemek i\u00e7in bunu yeniden kapat.");
+    }
+
+    private static void fillTr7(Map<String, String> table) {
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "Telegram sohbet ba\u015fl\u0131\u011f\u0131n\u0131 ve panelleri yaln\u0131zca h\u0131zl\u0131 telefonlarda bulan\u0131kla\u015ft\u0131r\u0131r. Bu, G\u00fc\u00e7 tasarrufu alt\u0131nda Sohbette bulan\u0131kl\u0131k a\u00e7\u0131ld\u0131\u011f\u0131nda her telefonun bunu yapmas\u0131n\u0131 sa\u011flar.");
         table.put("Telegram refused this app's ID",
                 "Telegram bu uygulaman\u0131n kimli\u011fini reddetti");
-    }
-
-    private static void fillTr7(Map<String, String> table) {
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
                 "Telegram, telegram.org g\u00fcncellemelerini sunmay\u0131 b\u0131rak\u0131r. Bunlar bu yamal\u0131 s\u00fcr\u00fcm\u00fcn \u00fczerine kurulamaz, bu y\u00fczden her yeni s\u00fcr\u00fcm\u00fc Morphe Manager'da yamala.");
         table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
@@ -5627,13 +5655,13 @@ public final class L10nTranslations {
                 "Bir grup anahtar\u0131 tek dokunu\u015fla a\u00e7 veya t\u00fcm anahtarlar\u0131 ba\u015flang\u0131\u00e7taki h\u00e2line d\u00f6nd\u00fcr.");
         table.put("Turning this on makes Private, Groups, Channels and Bots folders, as tabs above the chat list and on your other devices. Turning it off removes the ones it made, unless you renamed or changed them.",
                 "A\u00e7\u0131nca \u00d6zel, Gruplar, Kanallar ve Botlar klas\u00f6rleri olu\u015fturulur. Sohbet listesinin \u00fcst\u00fcnde sekme olarak ve di\u011fer cihazlar\u0131nda da g\u00f6r\u00fcn\u00fcrler. Kapat\u0131nca olu\u015fturdu\u011fu klas\u00f6rler kald\u0131r\u0131l\u0131r, yeniden adland\u0131rd\u0131\u011f\u0131n ya da de\u011fi\u015ftirdi\u011fin klas\u00f6rler kal\u0131r.");
+    }
+
+    private static void fillTr8(Map<String, String> table) {
         table.put("Type a model name.",
                 "Bir model ad\u0131 yaz.");
         table.put("Type your API key, or tap Use Google.",
                 "API anahtar\u0131n\u0131 yaz ya da Google'\u0131 kullan se\u00e7ene\u011fine dokun.");
-    }
-
-    private static void fillTr8(Map<String, String> table) {
         table.put("Undo",
                 "Geri al");
         table.put("UnifiedPush notifications",
@@ -5750,13 +5778,13 @@ public final class L10nTranslations {
                 "yerel bildirim durumu");
         table.put("opened link tracking",
                 "a\u00e7\u0131lan ba\u011flant\u0131lar\u0131n takibi");
+    }
+
+    private static void fillTr9(Map<String, String> table) {
         table.put("poll links",
                 "anket ba\u011flant\u0131lar\u0131");
         table.put("preview double-tap reactions",
                 "\u00f6nizlemede \u00e7ift dokunma tepkileri");
-    }
-
-    private static void fillTr9(Map<String, String> table) {
         table.put("profile Gifts tabs",
                 "profil Hediyeler sekmeleri");
         table.put("profile local IDs",
@@ -5779,5 +5807,7 @@ public final class L10nTranslations {
                 "hik\u00e2ye listesi istekleri");
         table.put("video ads",
                 "video reklamlar\u0131");
+        table.put("website sign-in tokens",
+                "web sitesi oturum a\u00e7ma anahtarlar\u0131");
     }
 }

@@ -232,9 +232,15 @@ Open links externally	Bağlantıları harici tarayıcıda aç
 Opens normal web links in your browser. Telegram links, sign-in and payment pages keep working the way they did.	Normal web bağlantılarını tarayıcınızda açar. Telegram bağlantıları, oturum açma ve ödeme sayfaları eskisi gibi çalışmaya devam eder.
 Remove link tracking tags	Bağlantı izleme etiketlerini kaldır
 Removes tracking tags like utm_source, gclid and fbclid from links you open or share. A link with any other tag is left unchanged.	Açtığınız veya paylaştığınız bağlantılardan utm_source, gclid ve fbclid gibi izleme etiketlerini kaldırır. Başka bir etiket içeren bağlantı değiştirilmez.
+# context: Links page switch title. When on, links to the websites Telegram signs you in to automatically open without your account's sign-in token.
+No automatic sign-in on Telegram's sites	Telegram sitelerinde otomatik oturum açma yok
+# context: Summary under that switch. The token is what signs the account in on those sites without asking.
+Telegram adds a sign-in token for your account to links to some of its own websites. With this on, those links open without it, and you can sign in there yourself.	Telegram, kendi sitelerinden bazılarına giden bağlantılara hesabınız için bir oturum açma anahtarı ekler. Bu açıkken o bağlantılar anahtar olmadan açılır ve orada kendiniz oturum açabilirsiniz.
 external browser routing	harici tarayıcıya yönlendirme
 opened link tracking	açılan bağlantıların takibi
 shared link tracking	paylaşılan bağlantıların takibi
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Strip link tracking that leaves the account's sign-in token off links to Telegram's websites.
+website sign-in tokens	web sitesi oturum açma anahtarları
 Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.	Telegram'a gönderilen kullanım raporlarını, örneğin her kanal gönderisini ne kadar okuduğunuzu ve Premium ekranlarında nelere dokunduğunuzu durdurur. Mesajlar ve aramalar eskisi gibi çalışır.
 Firebase crash and session reports stop too, from the next time Telegram starts.	Firebase çökme ve oturum raporları da Telegram'ın bir sonraki açılışından itibaren durur.
 Premium promo views	Premium tanıtım görüntülemeleri

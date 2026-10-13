@@ -135,6 +135,7 @@ public final class SettingsStatus {
     public static boolean stripLinkTracking() { return false; }
     public static boolean openedLinkTracking() { return false; }
     public static boolean sharedLinkTracking() { return false; }
+    public static boolean skipAutologin() { return false; }
 
     public static boolean disableUpdateChecks() {
         return false;

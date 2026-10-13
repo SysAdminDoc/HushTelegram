@@ -83,6 +83,17 @@ public final class LinkRouting {
     }
 
     /**
+     * Telegram adds the account's sign-in token to a link whose site its server lists for automatic
+     * sign-in; {@code listed} is that check's answer. With the switch on the token is left off, so the
+     * link opens as it is and still goes where Telegram would send it. The token is never read here.
+     */
+    public static boolean addAutologinToken(boolean listed) {
+        if (!enabled(Settings.SKIP_AUTOLOGIN, FamilyNames.STRIP_LINK_TRACKING) || !listed) return listed;
+        HookStatus.counted(FamilyNames.STRIP_LINK_TRACKING, "sign-in tokens left off");
+        return false;
+    }
+
+    /**
      * Returns true only after a browser or browser-only chooser starts. Native routes, login and
      * payment paths, Telegram auth/autologin domains and failures retain the full stock method.
      * The requested browser package is Telegram's own resolved browser choice, never a guessed ID.

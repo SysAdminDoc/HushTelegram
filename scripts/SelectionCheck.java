@@ -319,6 +319,7 @@ public final class SelectionCheck {
         hook(calls, flags, "storyLinkPreviews", "misc/DraftPreviews", "skipStoryLinkPreview");
         hook(calls, flags, "botSharePreviews", "misc/DraftPreviews", "skipBotSharePreview");
         hook(calls, flags, "localDrafts", "misc/LocalDrafts", "keepOnPhone");
+        hook(calls, flags, "skipAutologin", "misc/LinkRouting", "addAutologinToken");
         hook(calls, flags, "commerceSettingsRows", "misc/Commerce", "addSettingsRow", "showWalletRow");
         hook(calls, flags, "commerceProfileGifts", "misc/Commerce", "addProfileTab", "showGiftsTab");
         hook(calls, flags, "commerceChannelGift", "misc/Commerce", "showChannelGiftButton");

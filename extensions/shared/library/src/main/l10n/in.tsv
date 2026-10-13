@@ -232,9 +232,15 @@ Open links externally	Buka tautan di luar aplikasi
 Opens normal web links in your browser. Telegram links, sign-in and payment pages keep working the way they did.	Membuka tautan web biasa di browser Anda. Tautan Telegram, halaman masuk, dan pembayaran tetap berfungsi seperti sebelumnya.
 Remove link tracking tags	Hapus tag pelacakan tautan
 Removes tracking tags like utm_source, gclid and fbclid from links you open or share. A link with any other tag is left unchanged.	Menghapus tag pelacakan seperti utm_source, gclid, dan fbclid dari tautan yang Anda buka atau bagikan. Tautan dengan tag lain tidak diubah.
+# context: Links page switch title. When on, links to the websites Telegram signs you in to automatically open without your account's sign-in token.
+No automatic sign-in on Telegram's sites	Tanpa masuk otomatis di situs Telegram
+# context: Summary under that switch. The token is what signs the account in on those sites without asking.
+Telegram adds a sign-in token for your account to links to some of its own websites. With this on, those links open without it, and you can sign in there yourself.	Telegram menambahkan token masuk untuk akun Anda ke tautan menuju beberapa situs webnya sendiri. Jika ini aktif, tautan itu terbuka tanpa token, dan Anda bisa masuk sendiri di sana.
 external browser routing	pengarahan ke browser eksternal
 opened link tracking	pelacakan tautan yang dibuka
 shared link tracking	pelacakan tautan yang dibagikan
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Strip link tracking that leaves the account's sign-in token off links to Telegram's websites.
+website sign-in tokens	token masuk situs web
 Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.	Menghentikan laporan penggunaan ke Telegram, seperti berapa lama Anda membaca tiap kiriman kanal dan apa yang Anda ketuk di layar Premium. Pesan dan panggilan berfungsi seperti biasa.
 Firebase crash and session reports stop too, from the next time Telegram starts.	Laporan crash dan sesi Firebase juga berhenti, mulai saat Telegram dibuka berikutnya.
 Premium promo views	tampilan promosi Premium

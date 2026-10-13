@@ -54,6 +54,7 @@ public class LinkRoutingTest {
         HostProtection.fail = false;
         Settings.OPEN_EXTERNAL_LINKS.resetToDefault();
         Settings.STRIP_LINK_TRACKING.resetToDefault();
+        Settings.SKIP_AUTOLOGIN.resetToDefault();
         HookStatus.clear();
         while (shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivity() != null) { }
     }
@@ -62,9 +63,44 @@ public class LinkRoutingTest {
         PauseForTests.resume();
         SettingReadsForTests.mend(Settings.OPEN_EXTERNAL_LINKS);
         SettingReadsForTests.mend(Settings.STRIP_LINK_TRACKING);
+        SettingReadsForTests.mend(Settings.SKIP_AUTOLOGIN);
         Settings.OPEN_EXTERNAL_LINKS.resetToDefault();
         Settings.STRIP_LINK_TRACKING.resetToDefault();
+        Settings.SKIP_AUTOLOGIN.resetToDefault();
         HookStatus.clear();
+    }
+
+    @Test public void signInTokensStayAsTelegramAddsThemUntilTheSwitchIsOn() {
+        assertFalse(Settings.SKIP_AUTOLOGIN.get());
+        assertTrue(LinkRouting.addAutologinToken(true));
+        assertFalse(LinkRouting.addAutologinToken(false));
+        assertNoCount();
+
+        Settings.SKIP_AUTOLOGIN.save(true);
+        assertFalse("a listed site's link opens without the token", LinkRouting.addAutologinToken(true));
+        assertFalse(LinkRouting.addAutologinToken(false));
+        assertTrue(HookStatus.report().toString(), HookStatus.report().toString().contains("sign-in tokens left off 1"));
+    }
+
+    // The tracking switch is its own choice and says nothing about sign-in tokens.
+    @Test public void removingTrackingTagsAloneKeepsSignInTokens() {
+        Settings.STRIP_LINK_TRACKING.save(true);
+        Settings.OPEN_EXTERNAL_LINKS.save(true);
+        assertTrue(LinkRouting.addAutologinToken(true));
+    }
+
+    @Test public void pauseAndSettingsFailuresKeepSignInTokens() {
+        Settings.SKIP_AUTOLOGIN.save(true);
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
+            PauseForTests.pause(reason);
+            assertTrue(reason.name(), LinkRouting.addAutologinToken(true));
+            PauseForTests.resume();
+        }
+        SettingsContextRule.withoutContext(() -> assertTrue(LinkRouting.addAutologinToken(true)));
+        SettingReadsForTests.breakReads(Settings.SKIP_AUTOLOGIN);
+        assertTrue(LinkRouting.addAutologinToken(true));
+        assertNoCount();
     }
 
     @Test public void cleaningDefaultsOffAndRoutingDefaultsOn() {

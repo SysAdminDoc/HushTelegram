@@ -232,9 +232,15 @@ Open links externally	Abrir enlaces externamente
 Opens normal web links in your browser. Telegram links, sign-in and payment pages keep working the way they did.	Abre los enlaces web normales en tu navegador. Los enlaces de Telegram, el inicio de sesión y las páginas de pago siguen funcionando como antes.
 Remove link tracking tags	Quitar etiquetas de seguimiento de enlaces
 Removes tracking tags like utm_source, gclid and fbclid from links you open or share. A link with any other tag is left unchanged.	Quita etiquetas de seguimiento como utm_source, gclid y fbclid de los enlaces que abres o compartes. Un enlace con cualquier otra etiqueta se deja sin cambios.
+# context: Links page switch title. When on, links to the websites Telegram signs you in to automatically open without your account's sign-in token.
+No automatic sign-in on Telegram's sites	Sin inicio de sesión automático en los sitios de Telegram
+# context: Summary under that switch. The token is what signs the account in on those sites without asking.
+Telegram adds a sign-in token for your account to links to some of its own websites. With this on, those links open without it, and you can sign in there yourself.	Telegram añade un token de inicio de sesión de tu cuenta a los enlaces de algunos de sus propios sitios web. Con esto activado, esos enlaces se abren sin él y puedes iniciar sesión tú mismo.
 external browser routing	apertura en navegador externo
 opened link tracking	seguimiento de enlaces abiertos
 shared link tracking	seguimiento de enlaces compartidos
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Strip link tracking that leaves the account's sign-in token off links to Telegram's websites.
+website sign-in tokens	tokens de inicio de sesión en sitios web
 Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.	Detiene los informes de uso a Telegram, como cuánto tiempo lees cada publicación de un canal y qué tocas en las pantallas de Premium. Los mensajes y las llamadas funcionan como antes.
 Firebase crash and session reports stop too, from the next time Telegram starts.	Los informes de fallos y de sesión de Firebase también se detienen, a partir del próximo inicio de Telegram.
 Premium promo views	vistas de promociones de Premium

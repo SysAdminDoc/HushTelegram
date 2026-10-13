@@ -775,6 +775,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.STRIP_LINK_TRACKING.coverageSummary(L10n.t("Removes tracking tags like utm_source, gclid and fbclid from links you open or "
                             + "share. A link with any other tag is left unchanged."))));
         }
+        if (PatchFamily.Capability.SKIP_AUTOLOGIN.installed()) {
+            links.addPreference(toggle(context, Settings.SKIP_AUTOLOGIN, L10n.t("No automatic sign-in on Telegram's sites"),
+                    L10n.t("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, "
+                            + "those links open without it, and you can sign in there yourself.")));
+        }
         links.addPreference(mark(supportedLinksRow(context), SettingsIcons.LINKS));
         // An explanation, not a control: the info mark says so, as it does for Version on About.
         links.addPreference(mark(info(context, L10n.t("Selecting links by hand"),

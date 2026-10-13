@@ -25,12 +25,16 @@ val stripLinkTrackingPatch = bytecodePatch(
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
     execute {
-        listOf("stripLinkTracking", "openedLinkTracking", "sharedLinkTracking").forEach { requireStatusMethod(it) }
+        listOf("stripLinkTracking", "openedLinkTracking", "sharedLinkTracking", "skipAutologin").forEach { requireStatusMethod(it) }
         val plan = resolveLinkHooks()
         requireRuntime("cleanOpenedUri", listOf(URI, "Z", "[Z"), URI)
         requireRuntime("cleanShareIntent", listOf(INTENT), INTENT)
+        requireRuntime("addAutologinToken", listOf("Z"), "Z")
+        val autologin = resolveAutologinGate(plan)
         checkShape(plan.shares.isNotEmpty(), "no verified Share Link chooser")
         writeProtection(plan)
+        // The sign-in token check comes after the cleaner's site, so it goes in first and that index still holds.
+        plan.browser.addInstructionsAtControlFlowLabel(autologin.index, autologin.code)
         plan.browser.addInstructionsAtControlFlowLabel(plan.cleanIndex, plan.cleanCode)
         plan.shares.groupBy { it.method }.forEach { (method, sites) ->
             sites.sortedByDescending { it.index }.forEach { site ->
@@ -40,6 +44,7 @@ val stripLinkTrackingPatch = bytecodePatch(
         }
         enableCapability("openedLinkTracking")
         enableCapability("sharedLinkTracking")
+        enableCapability("skipAutologin")
         enableStatus("stripLinkTracking")
     }
 }

@@ -416,6 +416,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_strip_link_tracking", FALSE);
 
     /**
+     * The account's sign-in token Telegram adds to links for the sites its server lists for automatic
+     * sign-in; with this on those links open as they are. Routing and every other link stay stock.
+     */
+    public static final BooleanSetting SKIP_AUTOLOGIN =
+            new BooleanSetting("hushtelegram_skip_autologin", FALSE);
+
+    /**
      * telegram.org's build stops checking for its own updates, which can't install over a re-signed
      * build anyway ({@link app.hushtelegram.extension.telegram.misc.UpdateChecks}).
      */
