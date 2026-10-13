@@ -555,7 +555,7 @@ public final class ChatTypeFolders {
         if (batch.waiting.isEmpty()) return switchBack(batch.on, L10n.t("Couldn't change your folders. Try again in a moment."));
         running.add(batch);
         Utils.runOnMainThreadDelayed(() -> {
-            if (batch.finished || !here(batch)) return;
+            if (batch.finished || !here(batch) || !open(batch)) return;
             String said = batch.on ? L10n.t("Asking Telegram to make your folders.") : L10n.t("Asking Telegram to remove the folders.");
             Utils.showToastShort(said);
         }, PATIENCE_MS);
@@ -567,6 +567,16 @@ public final class ChatTypeFolders {
         // Answers run on the main thread, where a throw would close Telegram. Not knowing counts as gone.
         try {
             return batch.telegram.signedIn(batch.account) && batch.telegram.user(batch.account) == batch.user;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.CHAT_TYPE_FOLDERS, "folder account check", failure);
+            return false;
+        }
+    }
+
+    /** The flip's account is still the one Telegram has open. */
+    private static boolean open(Batch batch) {
+        try {
+            return batch.telegram.account() == batch.account;
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.CHAT_TYPE_FOLDERS, "folder account check", failure);
             return false;
@@ -695,7 +705,8 @@ public final class ChatTypeFolders {
         int count = batch.done.size();
         if (count > 0) HookStatus.counted(FamilyNames.CHAT_TYPE_FOLDERS, batch.on ? "folder made" : "folder removed");
         // Signed out, or someone else signed in: the records stay theirs, and there's no one to tell.
-        if (!here(batch)) return;
+        // Another account open now: the switch and what's said are about that one, so neither changes.
+        if (!here(batch) || !open(batch)) return;
         String said;
         if (batch.on) {
             if (count == 0 && batch.limited > 0) said = switchBack(true, L10n.t("Folder limit reached. Remove a folder and try again."));

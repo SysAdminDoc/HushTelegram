@@ -402,6 +402,24 @@ public class ChatTypeFoldersTest {
         assertTrue(records().isEmpty());
     }
 
+    // The switch and its notes are about the account Telegram has open, so a slow answer for another one keeps quiet.
+    @Test public void answersForAnAccountThatsNoLongerOpenLeaveTheSwitchAlone() {
+        turn(true);
+        telegram.offline = true;
+        telegram.refuse.put(3, "FLOOD_WAIT_5");
+        assertNull(turn(false));
+
+        // The person opens another account before Telegram answers.
+        telegram.account = 1;
+        ShadowLooper.idleMainLooper(ChatTypeFolders.PATIENCE_MS, TimeUnit.MILLISECONDS);
+        assertNull("the wait isn't announced over another account", ShadowToast.getTextOfLatestToast());
+        assertNull("nothing is said while another account is open", reconnect());
+        assertFalse("the switch isn't put back on for the account on screen", Settings.CHAT_TYPE_FOLDERS.savedValue());
+        // The answers still settle the first account's records: the kept folder stays its to remove.
+        assertEquals(Collections.singletonList(3), ids(telegram.folders));
+        assertEquals(Collections.singleton("1000:3"), records());
+    }
+
     @Test public void whenTelegramKeepsEveryFolderTheSwitchGoesBackOn() {
         turn(true);
         for (int id = 2; id <= 5; id++) telegram.refuse.put(id, "INTERNAL");
