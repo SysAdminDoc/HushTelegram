@@ -3015,6 +3015,71 @@ try {
         $env:GITHUB_TOKEN = $savedNewBranchToken
     }
 
+    # A record that isn't one git writes stops the hook before it asks git anything. A line of
+    # fewer than four fields used to be skipped, so 'not a ref' read as a push of nothing: the hook
+    # said there was nothing to scan and passed. A git that only counts its calls stands in for
+    # these, since a refusal that came after the good line of a mixed push had already been read
+    # would have run git first. The new branch and both tag forms above went through the same
+    # reading, and the other forms git writes follow the bad ones here with the routing they had.
+    function Invoke-RecordHook {
+        param([string]$Refs, [switch]$WithoutGit)
+        $run = @{ Said = New-Object System.Collections.Generic.List[string]; Error = ''; Exit = 0; Git = 0 }
+        if ($WithoutGit) { function git { $run.Git++; $global:LASTEXITCODE = 0 } }
+        $global:LASTEXITCODE = 0
+        try {
+            & $prePushScript -Root $hookRoot -PushedRefs $Refs 6>&1 | ForEach-Object { $run.Said.Add("$_") }
+            $run.Exit = $LASTEXITCODE
+        } catch {
+            $run.Error = $_.Exception.Message
+        }
+        return $run
+    }
+    $zeroId = '0' * 40
+    $goodRecord = "refs/heads/main $newBranchHead refs/heads/main $firstCommit"
+    $badRecords = [ordered]@{
+        'a line that is no record' = @('not a ref', 1)
+        'three fields' = @("refs/heads/main $newBranchHead refs/heads/main", 1)
+        'five fields' = @("$goodRecord extra", 1)
+        'a local ID one digit short' = @("refs/heads/main $($newBranchHead.Substring(1)) refs/heads/main $firstCommit", 1)
+        'a remote ID outside hex' = @("refs/heads/main $newBranchHead refs/heads/main $('g' * 40)", 1)
+        'an upper-case ID' = @("refs/heads/main $('A' * 40) refs/heads/main $firstCommit", 1)
+        'an ID of sixty-four digits' = @("refs/heads/main $('a' * 64) refs/heads/main $firstCommit", 1)
+        'a bad line after a good one' = @("$goodRecord`nnot a ref", 2)
+        'a bad line before a good one' = @("refs/heads/main $newBranchHead`r`n$goodRecord", 1)
+        'a remote ref outside refs/' = @("refs/heads/main $newBranchHead main $firstCommit", 1)
+        'a remote ref with two dots' = @("refs/heads/main $newBranchHead refs/heads/a..b $firstCommit", 1)
+        'a remote ref ending in .lock' = @("refs/heads/main $newBranchHead refs/heads/main.lock $firstCommit", 1)
+        'a remote ref with a hidden part' = @("refs/heads/main $newBranchHead refs/heads/.main $firstCommit", 1)
+        'a remote ref ending in a slash' = @("refs/heads/main $newBranchHead refs/heads/ $firstCommit", 1)
+        'a remote ref with a caret' = @("refs/heads/main $newBranchHead refs/heads/main^ $firstCommit", 1)
+        'a remote ref with a reflog mark' = @("refs/heads/main $newBranchHead refs/heads/main@{1} $firstCommit", 1)
+        'a deletion that names a commit' = @("(delete) $newBranchHead refs/heads/main $firstCommit", 1)
+        'the all-zero ID under a ref name' = @("refs/heads/main $zeroId refs/heads/main $firstCommit", 1)
+    }
+    foreach ($case in $badRecords.Keys) {
+        $run = Invoke-RecordHook -Refs $badRecords[$case][0] -WithoutGit
+        Assert-True ($run.Error -like "Pushed ref record $($badRecords[$case][1]) is not one git writes:*Nothing was checked*") `
+            "A push naming $case was not refused as a malformed record: exit $($run.Exit), '$($run.Error)'"
+        Assert-True ($run.Git -eq 0 -and $run.Said.Count -eq 0) `
+            "A push naming $case ran git $($run.Git) time(s) or reported a result before it was refused: $($run.Said -join ' / ')"
+    }
+    # No input, blank lines and a deletion publish nothing, and still say so without asking git.
+    foreach ($nothing in @('', "`r`n`n", "(delete) $zeroId refs/heads/old $firstCommit")) {
+        $run = Invoke-RecordHook -Refs $nothing -WithoutGit
+        Assert-True (-not $run.Error -and $run.Exit -eq 0 -and $run.Git -eq 0 -and
+            ($run.Said -join "`n") -like '*the push publishes no commit*nothing to check*') `
+            "A push of nothing ('$($nothing.Trim())') lost its routing: exit $($run.Exit), '$($run.Error)', $($run.Said -join ' / ')"
+    }
+    # An update of a hosted branch whose range moves only a document, under its ref name, under the
+    # bare ID git passes on when the push named one, and beside a deletion with Windows line ends.
+    foreach ($update in @($goodRecord, "$newBranchHead $newBranchHead refs/heads/main $firstCommit",
+            "(delete) $zeroId refs/heads/old $firstCommit`r`n$goodRecord`r`n")) {
+        $run = Invoke-RecordHook -Refs $update
+        Assert-True (-not $run.Error -and $run.Exit -eq 0 -and
+            ($run.Said -join "`n") -like '*the 1 commit(s) this push publishes*no code or published file changed*') `
+            "A document-only update lost its routing: exit $($run.Exit), '$($run.Error)', $($run.Said -join ' / ')"
+    }
+
     # The scan every push gets. A doc naming the maintainer's notes folder or a phone's serial
     # routes to no gate at all, and a test under patches/ or extensions/ only to the Gradle
     # gates, which never read for them, so neither reached the contract tests' scan. The hook

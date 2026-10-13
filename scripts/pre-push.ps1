@@ -128,6 +128,32 @@ function Assert-PatchFixtures {
     return $directory
 }
 
+function Get-PushedRefFault {
+    <#
+        What is wrong with one record of the pushed refs, already split on white space, or nothing
+        when it is a record git writes. The object IDs are the forty hex digits the rest of this
+        hook reads. A deletion is the local name "(delete)" with the all-zero ID, and neither comes
+        without the other. Any other local name is taken as given: git passes on whatever the push
+        named, HEAD~1 or a bare ID included. The remote name is always a full ref, held to
+        git check-ref-format's rules here so that nothing has to be run to refuse it.
+    #>
+    param([string[]]$Parts)
+
+    if ($Parts.Count -ne 4) { return "it has $($Parts.Count) field(s), not four" }
+    foreach ($id in @($Parts[1], $Parts[3])) {
+        if ($id -cnotmatch '^[0-9a-f]{40}$') { return 'an object ID is not forty lowercase hex digits' }
+    }
+    if (($Parts[0] -ceq '(delete)') -ne ($Parts[1] -eq $zeroObject)) {
+        return 'a deletion is "(delete)" with the all-zero object ID, and nothing else carries either'
+    }
+    if ($Parts[0] -cmatch '[\x00-\x1f\x7f]') { return 'the local ref holds a control character' }
+    if ($Parts[2] -cnotmatch '^refs/' -or
+            $Parts[2] -cmatch '[\x00-\x20\x7f~^:?*\[\\]|\.\.|@\{|//|(^|/)\.|\.lock(/|$)|[/.]$') {
+        return 'the remote ref is not a full ref name git accepts'
+    }
+    return $null
+}
+
 function Get-PushedPaths {
     <#
         Git writes "<local ref> <local sha> <remote ref> <remote sha>" per ref on stdin. A remote
@@ -141,10 +167,23 @@ function Get-PushedPaths {
     param([string]$Text)
 
     $paths = New-Object System.Collections.Generic.HashSet[string]
+    # Every record is held to git's form before git is asked about any of them. A line that wasn't
+    # four fields used to be skipped, so input naming no ref at all read as a push with nothing to
+    # scan and the hook said so and passed. No input at all is still a push of nothing.
+    $records = New-Object 'System.Collections.Generic.List[string[]]'
+    $number = 0
     foreach ($line in ($Text -split "`r?`n")) {
+        $number++
         if ([string]::IsNullOrWhiteSpace($line)) { continue }
-        $parts = $line.Trim() -split '\s+'
-        if ($parts.Count -lt 4) { continue }
+        $parts = [string[]]($line.Trim() -split '\s+')
+        $fault = Get-PushedRefFault -Parts $parts
+        if ($fault) {
+            throw ("Pushed ref record $number is not one git writes: $fault. Nothing was checked, so " +
+                'the push stops. Each line is "<local ref> <local object> <remote ref> <remote object>".')
+        }
+        $records.Add($parts)
+    }
+    foreach ($parts in $records) {
         $localSha = $parts[1]
         $remoteSha = $parts[3]
         if ($localSha -eq $zeroObject) { continue }
