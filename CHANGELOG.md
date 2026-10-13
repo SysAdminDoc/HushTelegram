@@ -10,6 +10,8 @@ Working version 0.0.17.
 
 * **Telegram:** Closing settings also closes the diagnostic report chooser. Dialogs on wide displays reserve enough space for their actions at the actual dialog width.
 
+* **Tooling:** Build notes now name both the source and published catalog APKs required by the push checks.
+
 * **Tooling:** The README is a lot shorter now and sticks to installing and using HushTelegram, with the patch table in the order of the settings pages. The long version, with its version history and build check notes, is still in the repository history at commit 0cbd721.
 
 * **Telegram:** Moved to Telegram 13.0.2, telegram.org's build (version code 71759) and the official beta (71809). The beta added an audio recorder settings entry, and HushTelegram leaves it alone.
