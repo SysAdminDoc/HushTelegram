@@ -739,6 +739,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             L10n.t("A message you start but don't send stays on this phone and stops syncing to your other "
                                     + "devices. Clearing a draft still clears it there.")));
                 }
+                if (PatchFamily.Capability.LOCAL_SEARCH.installed()) {
+                    privacy.addPreference(toggle(context, Settings.LOCAL_SEARCH, L10n.t("Keep searches on this phone"),
+                            L10n.t("What you type in search's Chats tab isn't sent to Telegram. It finds the chats, contacts and "
+                                    + "recent searches on this phone, but not messages, public accounts or posts. The other "
+                                    + "tabs search as usual.")));
+                }
             }
             if (build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) {
                 privacy.addPreference(toggle(context, Settings.GALLERY_CAMERA_ON_TAP, L10n.t("Camera only on tap"),

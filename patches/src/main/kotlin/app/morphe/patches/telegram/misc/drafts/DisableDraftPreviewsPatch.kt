@@ -92,16 +92,23 @@ val disableDraftPreviewsPatch = bytecodePatch(
         requireStatusMethod("disableDraftPreviews")
         DraftPreviewTarget.entries.forEach { requireStatusMethod(it.capability) }
         requireStatusMethod("localDrafts")
+        requireStatusMethod("localSearch")
         // Every builder, skip target and borrowed register is checked before the first edit.
         val hooks = resolveDraftPreviewHooks()
         val drafts = resolveLocalDraftHook()
+        val search = resolveLocalSearch()
         shape(hooks.values.none { it.method === drafts.method }, "the draft upload shares a method with a preview builder")
+        shape(search.edits.none { edit -> edit.method === drafts.method || hooks.values.any { it.method === edit.method } },
+            "chat search shares a method with a draft hook")
+        search.rehearse()
         // The runtime's stubs first: on their own nothing calls them.
         writeStub(LOCAL_DRAFTS, "carries", 2, drafts.reader)
         writeStub(LOCAL_DRAFTS, "clear", 3, drafts.emptier)
         drafts.method.addInstructionsAtControlFlowLabel(drafts.index, drafts.code,
             ExternalLabel("hush_done", drafts.method.getInstruction(drafts.finish)))
         enableCapability("localDrafts")
+        search.apply()
+        enableCapability("localSearch")
         for ((target, hook) in hooks) {
             hook.method.addInstructionsAtControlFlowLabel(hook.index, hook.code,
                 ExternalLabel("hush_done", hook.method.getInstruction(hook.finish)))

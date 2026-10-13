@@ -377,6 +377,14 @@ public class HushTelegramPreferenceFragmentTest {
             // Drafts keep syncing the way Telegram's do until someone turns the switch on.
             assertFalse(Settings.LOCAL_DRAFTS.key,
                     ((SwitchPreference) page.findPreference(Settings.LOCAL_DRAFTS.key)).isChecked());
+            assertEquals("Keep searches on this phone", String.valueOf(page.findPreference(Settings.LOCAL_SEARCH.key).getTitle()));
+            assertEquals("What you type in search's Chats tab isn't sent to Telegram. It finds the chats, contacts and "
+                    + "recent searches on this phone, but not messages, public accounts or posts. The other tabs search "
+                    + "as usual.",
+                    String.valueOf(page.findPreference(Settings.LOCAL_SEARCH.key).getSummary()));
+            // Search keeps asking Telegram's server until someone turns the switch on.
+            assertFalse(Settings.LOCAL_SEARCH.key,
+                    ((SwitchPreference) page.findPreference(Settings.LOCAL_SEARCH.key)).isChecked());
             assertEquals("Camera only on tap", String.valueOf(page.findPreference(Settings.GALLERY_CAMERA_ON_TAP.key).getTitle()));
             assertEquals("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the "
                     + "camera tile to start it.",

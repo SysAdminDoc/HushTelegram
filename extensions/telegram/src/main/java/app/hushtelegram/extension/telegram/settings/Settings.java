@@ -410,6 +410,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting LOCAL_DRAFTS =
             new BooleanSetting("hushtelegram_local_drafts", FALSE);
 
+    /**
+     * Search's Chats tab only: what you type there isn't sent for usernames, messages, sponsored
+     * accounts or public posts; the chats, contacts and recent searches on this phone still show
+     * ({@link app.hushtelegram.extension.telegram.misc.LocalSearch}).
+     */
+    public static final BooleanSetting LOCAL_SEARCH =
+            new BooleanSetting("hushtelegram_local_search", FALSE);
+
     /** The attachment gallery's camera tile only; the camera wakes on a tap and every other camera stays stock. */
     public static final BooleanSetting GALLERY_CAMERA_ON_TAP =
             new BooleanSetting("hushtelegram_gallery_camera_on_tap", FALSE);

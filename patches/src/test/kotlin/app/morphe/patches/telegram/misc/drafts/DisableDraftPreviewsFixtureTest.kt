@@ -43,7 +43,7 @@ import org.junit.Assert.fail
 import org.junit.Test
 
 private const val MEDIA_DATA = "Lorg/telegram/messenger/MediaDataController;"
-private val FLAGS = listOf("disableDraftPreviews", "localDrafts") + DraftPreviewTarget.entries.map { it.capability }
+private val FLAGS = listOf("disableDraftPreviews", "localDrafts", "localSearch") + DraftPreviewTarget.entries.map { it.capability }
 
 /** The builders' classes and the classes they hand work to are the whole context; nothing else is a target. */
 class DisableDraftPreviewsFixtureTest {
@@ -281,14 +281,17 @@ class DisableDraftPreviewsFixtureTest {
         }
     }
 
-    private fun assertRefusedUntouched(build: String, case: String, context: BytecodePatchContext, hooks: Map<DraftPreviewTarget, DraftPreviewHook>) {
+    /** @return what the refusal said */
+    private fun assertRefusedUntouched(build: String, case: String, context: BytecodePatchContext, hooks: Map<DraftPreviewTarget, DraftPreviewHook>): String {
         val before = hooks.mapValues { it.value.method.instructions().map(::operation) }
         val uploads = listOf(MEDIA_DATA, LOCAL_DRAFTS).associateWith { owner -> methodOperations(context, owner) }
+        var refusal = ""
         try {
             disableDraftPreviewsPatch.execute(context)
             fail("$build: $case was accepted")
         } catch (expected: PatchException) {
-            assertTrue(expected.message.orEmpty().contains("before editing"))
+            refusal = expected.message.orEmpty()
+            assertTrue("$build: $case: $refusal", refusal.contains("before editing"))
         }
         for ((target, hook) in hooks) assertEquals("$build: $case doesn't partly mutate $target",
             before.getValue(target), hook.method.instructions().map(::operation))
@@ -298,6 +301,25 @@ class DisableDraftPreviewsFixtureTest {
             val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
             assertEquals("$build: $case leaves $flag false", 0, (status[0] as NarrowLiteralInstruction).narrowLiteral)
         }
+        return refusal
+    }
+
+    /** Chat search rides in this patch, so a change to it refuses the whole patch, drafts and previews included. */
+    @Test
+    fun `changed chat search geometry refuses before any partial mutation`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val hosts = localSearchHosts(build).map { it.type }
+            for ((change, reason) in SEARCH_CHANGES) {
+                val context = contextFor(build)
+                val hooks = context.resolveDraftPreviewHooks()
+                changeSearch(change, context.resolveLocalSearch())
+                val before = hosts.associateWith { methodOperations(context, it) }
+                val refusal = assertRefusedUntouched(build.name, change, context, hooks)
+                assertTrue("${build.name}: $change refused for its own reason: $refusal", refusal.contains(reason))
+                for ((host, operations) in before) assertEquals("${build.name}: $change doesn't partly mutate $host",
+                    operations, methodOperations(context, host))
+            }
+        }
     }
 
     private fun methodOperations(context: BytecodePatchContext, owner: String) =
@@ -305,7 +327,7 @@ class DisableDraftPreviewsFixtureTest {
 
     /**
      * Builder classes plus every class their builders and URL checks construct or read, so callbacks
-     * and runnables resolve, and the draft upload's class with the request it builds.
+     * and runnables resolve, the draft upload's class with the request it builds, and chat search.
      */
     private fun contextFor(build: java.io.File): BytecodePatchContext {
         val owners = (FixtureDex.classesWhere(build, { true }) { it.constructs(WEB_PAGE_PREVIEW) } +
@@ -318,8 +340,9 @@ class DisableDraftPreviewsFixtureTest {
                 else -> null
             } } }
             .filter { it.startsWith("L") && it !in owners.map(ClassDef::getType) }.toSet()
-        return PatchContexts.of(ExtensionDex.classes() + owners +
-            FixtureDex.classes(build, helpers + SAVE_DRAFT + INPUT_REPLY_TO + MONO_FORUM_REPLY).values)
+        return PatchContexts.of((ExtensionDex.classes() + owners +
+            FixtureDex.classes(build, helpers + SAVE_DRAFT + INPUT_REPLY_TO + MONO_FORUM_REPLY).values +
+            localSearchHosts(build)).distinctBy(ClassDef::getType))
     }
 
     private fun BytecodePatchContext.excludedBuilders(): List<Method> {
