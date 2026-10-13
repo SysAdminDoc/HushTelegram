@@ -540,6 +540,10 @@ Install a UnifiedPush app like ntfy, then come back here.	Pasang aplikasi Unifie
 %1$s. Turn the switch on to sign up with it.	%1$s. Nyalakan sakelar untuk mendaftar dengannya.
 %1$s ended the sign-up. Turn the switch off and on to sign up again.	%1$s mengakhiri pendaftaran. Matikan lalu nyalakan sakelar untuk mendaftar lagi.
 %1$s turned the sign-up down. Check that it allows UnifiedPush.	%1$s menolak pendaftaran. Periksa apakah aplikasi itu mengizinkan UnifiedPush.
+# context: the Push app row's summary when the UnifiedPush app (%1$s, its name) hands out a plain http address; Telegram only calls https
+%1$s gave an address without https, which Telegram's servers won't call.	%1$s memberi alamat tanpa https, dan server Telegram tidak akan memanggilnya.
+# context: the Push app row's summary while the UnifiedPush app (%1$s, its name) says its push server is temporarily down; the sign-up is kept
+The server behind %1$s is down for now. Wake-ups come back once it's up.	Server di balik %1$s sedang mati. Telegram dibangunkan lagi setelah server itu menyala.
 # context: the row's summary once signed up: Telegram's servers wake Telegram up through that app.
 Telegram's wake-ups come through %1$s.	Telegram dibangunkan lewat %1$s.
 Signing up with %1$s…	Mendaftar dengan %1$s…

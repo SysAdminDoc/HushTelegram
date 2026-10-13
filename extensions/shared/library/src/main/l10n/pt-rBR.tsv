@@ -537,6 +537,10 @@ Install a UnifiedPush app like ntfy, then come back here.	Instale um app de Unif
 %1$s. Turn the switch on to sign up with it.	%1$s. Ligue a chave para se cadastrar com ele.
 %1$s ended the sign-up. Turn the switch off and on to sign up again.	%1$s encerrou o cadastro. Desligue e ligue a chave para se cadastrar de novo.
 %1$s turned the sign-up down. Check that it allows UnifiedPush.	%1$s recusou o cadastro. Verifique se ele permite UnifiedPush.
+# context: the Push app row's summary when the UnifiedPush app (%1$s, its name) hands out a plain http address; Telegram only calls https
+%1$s gave an address without https, which Telegram's servers won't call.	%1$s deu um endereço sem https, e os servidores do Telegram não o chamam.
+# context: the Push app row's summary while the UnifiedPush app (%1$s, its name) says its push server is temporarily down; the sign-up is kept
+The server behind %1$s is down for now. Wake-ups come back once it's up.	O servidor por trás do %1$s está fora do ar. O Telegram volta a ser acordado quando ele voltar.
 # context: the row's summary once signed up: Telegram's servers wake Telegram up through that app.
 Telegram's wake-ups come through %1$s.	O Telegram é acordado pelo %1$s.
 Signing up with %1$s…	Cadastrando no %1$s…

@@ -47,6 +47,7 @@ public class UnifiedPushTest {
     private final List<String> released = new ArrayList<>();
     private UnifiedPush.Telegram real;
     private java.util.concurrent.Executor realWork;
+    private final java.util.function.Function<Context, android.content.SharedPreferences> realStore = UnifiedPush.store;
     private Context context;
 
     @Before public void setUp() {
@@ -67,6 +68,7 @@ public class UnifiedPushTest {
     @After public void restore() {
         UnifiedPush.telegram = real;
         UnifiedPush.work = realWork;
+        UnifiedPush.store = realStore;
         PatchFamilyForTests.reset();
         PauseForTests.resume();
         UnifiedPush.prefs(context).edit().clear().commit();
@@ -240,6 +242,7 @@ public class UnifiedPushTest {
         // Asked again at a start, the app fails for a moment: the address it gave before still works.
         UnifiedPush.receive(context, from(UnifiedPush.REGISTRATION_FAILED, token).putExtra("reason", "NETWORK"), () -> {});
         assertEquals(ENDPOINT, UnifiedPush.activeEndpoint());
+        assertEquals("a refusal after the address came in is ignored, token and all", token, token());
         assertEquals("Telegram's wake-ups come through io.heckel.ntfy.", UnifiedPush.status(context, true));
 
         // Turned down before there was ever an address, the row says so.
@@ -353,6 +356,181 @@ public class UnifiedPushTest {
         assertTrue(wakes.isEmpty());
         assertNull(UnifiedPush.raise(context));
         assertEquals(registers, count(UnifiedPush.REGISTER));
+    }
+
+    /** The spec: a refused registration's token is changed for the next one, and its late answers are a stranger's. */
+    @Test public void aRefusedFirstSignUpGetsANewTokenNextTime() {
+        install(UnifiedPush.NTFY);
+        Settings.UNIFIED_PUSH.save(true);
+        UnifiedPush.sync(context, true);
+        String refused = token();
+        UnifiedPush.receive(context, from(UnifiedPush.REGISTRATION_FAILED, refused).putExtra("reason", "ACTION_REQUIRED"), () -> {});
+        assertNull(token());
+        assertEquals("io.heckel.ntfy turned the sign-up down. Check that it allows UnifiedPush.", UnifiedPush.status(context, true));
+        UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, refused).putExtra("endpoint", ENDPOINT), () -> {});
+        assertNull(UnifiedPush.activeEndpoint());
+        assertTrue(registered.isEmpty());
+
+        UnifiedPush.sync(context, true);
+        assertNotNull(token());
+        assertNotEquals(refused, token());
+        assertEquals(token(), last(UnifiedPush.REGISTER).getStringExtra("token"));
+        assertEquals("Signing up with io.heckel.ntfy…", UnifiedPush.status(context, true));
+    }
+
+    @Test public void aNewAddressIsAcknowledgedWhenItCarriesAnId() {
+        install(UnifiedPush.NTFY);
+        Settings.UNIFIED_PUSH.save(true);
+        UnifiedPush.sync(context, true);
+        UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, token()).putExtra("endpoint", ENDPOINT).putExtra("id", "e1"), () -> {});
+        Intent ack = last(UnifiedPush.MESSAGE_ACK);
+        assertNotNull("an address nobody acknowledges may be dropped by the app", ack);
+        assertEquals(UnifiedPush.NTFY, ack.getPackage());
+        assertEquals(token(), ack.getStringExtra("token"));
+        assertEquals("e1", ack.getStringExtra("id"));
+        // Somebody else's address isn't acknowledged either.
+        UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, "someone-else").putExtra("endpoint", ENDPOINT).putExtra("id", "e2"), () -> {});
+        assertEquals("e1", last(UnifiedPush.MESSAGE_ACK).getStringExtra("id"));
+    }
+
+    @Test public void aPlainHttpAddressIsTurnedAwayAndTheRowSaysWhy() {
+        install(UnifiedPush.NTFY);
+        Settings.UNIFIED_PUSH.save(true);
+        UnifiedPush.sync(context, true);
+        assertFalse(UnifiedPush.usable("http://ntfy.example/upAbC"));
+        UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, token()).putExtra("endpoint", "http://ntfy.example/upAbC"), () -> {});
+        assertNull(UnifiedPush.activeEndpoint());
+        assertTrue(registered.isEmpty());
+        assertEquals("io.heckel.ntfy gave an address without https, which Telegram's servers won't call.",
+                UnifiedPush.status(context, true));
+        UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, token()).putExtra("endpoint", ENDPOINT), () -> {});
+        assertEquals(ENDPOINT, UnifiedPush.activeEndpoint());
+        assertEquals("Telegram's wake-ups come through io.heckel.ntfy.", UnifiedPush.status(context, true));
+    }
+
+    @Test public void anOutageKeepsTheSignUpAndItsAddressUntilTheAppIsBack() {
+        String token = signedUp();
+        UnifiedPush.receive(context, from(UnifiedPush.TEMP_UNAVAILABLE, "someone-else"), () -> {});
+        assertEquals("Telegram's wake-ups come through io.heckel.ntfy.", UnifiedPush.status(context, true));
+        int[] done = {0};
+        UnifiedPush.receive(context, from(UnifiedPush.TEMP_UNAVAILABLE, token).putExtra("useDistributor", OTHER), () -> done[0]++);
+        assertEquals(1, done[0]);
+        assertEquals("The server behind io.heckel.ntfy is down for now. Wake-ups come back once it's up.",
+                UnifiedPush.status(context, true));
+        assertEquals(token, token());
+        assertEquals(ENDPOINT, UnifiedPush.activeEndpoint());
+        assertTrue("Telegram keeps the address through an outage", released.isEmpty());
+        for (Intent intent : sent()) assertNotEquals("a suggested stand-in app was signed up with", OTHER, intent.getPackage());
+        // A start during the outage asks again with the same token, and the app's next address says it's back.
+        UnifiedPush.sync(context, true);
+        assertEquals(token, last(UnifiedPush.REGISTER).getStringExtra("token"));
+        UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, token).putExtra("endpoint", ENDPOINT), () -> {});
+        assertEquals("Telegram's wake-ups come through io.heckel.ntfy.", UnifiedPush.status(context, true));
+    }
+
+    /** On Android 14 and up the spec's FLAG_SHARE_IDENTITY takes the stand-in PendingIntent's place. */
+    @Config(sdk = 34)
+    @Test public void onAndroid14AndroidTellsTheAppWhoIsAsking() {
+        List<Intent> intents = new ArrayList<>();
+        List<android.os.Bundle> options = new ArrayList<>();
+        UnifiedPush.Broadcasts kept = UnifiedPush.broadcasts;
+        UnifiedPush.broadcasts = (ignored, intent, bundle) -> {
+            intents.add(intent);
+            options.add(bundle);
+        };
+        try {
+            String token = signedUp();
+            UnifiedPush.receive(context, from(UnifiedPush.MESSAGE, token).putExtra("id", "m1"), () -> {});
+            UnifiedPush.sync(context, false);
+        } finally {
+            UnifiedPush.broadcasts = kept;
+        }
+        List<String> actions = new ArrayList<>();
+        for (int i = 0; i < intents.size(); i++) {
+            String action = intents.get(i).getAction();
+            actions.add(action);
+            if (UnifiedPush.REGISTER.equals(action) || UnifiedPush.UNREGISTER.equals(action)) {
+                assertFalse(action, intents.get(i).hasExtra("pi"));
+                assertNotNull(action, options.get(i));
+                assertTrue(action, android.app.BroadcastOptions.fromBundle(options.get(i)).isShareIdentityEnabled());
+            } else {
+                assertNull(action, options.get(i));
+            }
+        }
+        assertTrue(actions.toString(), actions.contains(UnifiedPush.REGISTER));
+        assertTrue(actions.toString(), actions.contains(UnifiedPush.UNREGISTER));
+        assertTrue(actions.toString(), actions.contains(UnifiedPush.MESSAGE_ACK));
+    }
+
+    /** The real file, except that a write can be made to fail the way a full disk does. */
+    private static final class Flaky implements android.content.SharedPreferences {
+        final android.content.SharedPreferences real;
+        boolean failWrites;
+
+        Flaky(android.content.SharedPreferences real) {
+            this.real = real;
+        }
+
+        @Override public java.util.Map<String, ?> getAll() { return real.getAll(); }
+        @Override public String getString(String key, String fallback) { return real.getString(key, fallback); }
+        @Override public java.util.Set<String> getStringSet(String key, java.util.Set<String> fallback) { return real.getStringSet(key, fallback); }
+        @Override public int getInt(String key, int fallback) { return real.getInt(key, fallback); }
+        @Override public long getLong(String key, long fallback) { return real.getLong(key, fallback); }
+        @Override public float getFloat(String key, float fallback) { return real.getFloat(key, fallback); }
+        @Override public boolean getBoolean(String key, boolean fallback) { return real.getBoolean(key, fallback); }
+        @Override public boolean contains(String key) { return real.contains(key); }
+        @Override public void registerOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
+            real.registerOnSharedPreferenceChangeListener(listener);
+        }
+        @Override public void unregisterOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
+            real.unregisterOnSharedPreferenceChangeListener(listener);
+        }
+
+        /** Changes wait in the real editor and are dropped when the write fails. */
+        @Override public Editor edit() {
+            Editor writes = real.edit();
+            return new Editor() {
+                @Override public Editor putString(String key, String value) { writes.putString(key, value); return this; }
+                @Override public Editor putStringSet(String key, java.util.Set<String> values) { writes.putStringSet(key, values); return this; }
+                @Override public Editor putInt(String key, int value) { writes.putInt(key, value); return this; }
+                @Override public Editor putLong(String key, long value) { writes.putLong(key, value); return this; }
+                @Override public Editor putFloat(String key, float value) { writes.putFloat(key, value); return this; }
+                @Override public Editor putBoolean(String key, boolean value) { writes.putBoolean(key, value); return this; }
+                @Override public Editor remove(String key) { writes.remove(key); return this; }
+                @Override public Editor clear() { writes.clear(); return this; }
+                @Override public boolean commit() { return !failWrites && writes.commit(); }
+                @Override public void apply() { if (!failWrites) writes.apply(); }
+            };
+        }
+    }
+
+    /** Nothing goes to the app or to Telegram on a write that didn't reach the disk. */
+    @Test public void nothingGoesOutUntilWhatItDependsOnIsSaved() {
+        install(UnifiedPush.NTFY);
+        Settings.UNIFIED_PUSH.save(true);
+        Flaky flaky = new Flaky(UnifiedPush.prefs(context));
+        UnifiedPush.store = ignored -> flaky;
+        flaky.failWrites = true;
+        UnifiedPush.sync(context, true);
+        assertNull("a token this side couldn't keep was sent", last(UnifiedPush.REGISTER));
+        assertTrue(String.join("\n", HookStatus.report()).contains("sign-up not saved"));
+        UnifiedPush.choose(context, UnifiedPush.NTFY, true);
+        assertNull(last(UnifiedPush.REGISTER));
+
+        flaky.failWrites = false;
+        UnifiedPush.sync(context, true);
+        String token = token();
+        assertEquals(token, last(UnifiedPush.REGISTER).getStringExtra("token"));
+        flaky.failWrites = true;
+        UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, token).putExtra("endpoint", ENDPOINT), () -> {});
+        assertTrue("Telegram got an address that a restart would forget", registered.isEmpty());
+        assertNull(UnifiedPush.activeEndpoint());
+        assertTrue(String.join("\n", HookStatus.report()).contains("address not saved"));
+
+        // Off still ends the sign-up with the app, and says the file still holds it.
+        UnifiedPush.sync(context, false);
+        assertEquals(token, last(UnifiedPush.UNREGISTER).getStringExtra("token"));
+        assertTrue(String.join("\n", HookStatus.report()).contains("sign-up not forgotten"));
     }
 
     private int count(String action) {

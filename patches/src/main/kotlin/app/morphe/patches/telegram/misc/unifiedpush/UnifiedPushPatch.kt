@@ -44,6 +44,7 @@ internal val CONNECTOR_ACTIONS = listOf(
     "org.unifiedpush.android.connector.MESSAGE",
     "org.unifiedpush.android.connector.UNREGISTERED",
     "org.unifiedpush.android.connector.REGISTRATION_FAILED",
+    "org.unifiedpush.android.connector.TEMP_UNAVAILABLE",
 )
 
 private const val STRING = "Ljava/lang/String;"

@@ -540,6 +540,10 @@ Install a UnifiedPush app like ntfy, then come back here.	ntfy gibi bir UnifiedP
 %1$s. Turn the switch on to sign up with it.	%1$s. Onunla kaydolmak için anahtarı aç.
 %1$s ended the sign-up. Turn the switch off and on to sign up again.	%1$s kaydı sonlandırdı. Yeniden kaydolmak için anahtarı kapatıp aç.
 %1$s turned the sign-up down. Check that it allows UnifiedPush.	%1$s kaydı reddetti. UnifiedPush'a izin verip vermediğini kontrol et.
+# context: the Push app row's summary when the UnifiedPush app (%1$s, its name) hands out a plain http address; Telegram only calls https
+%1$s gave an address without https, which Telegram's servers won't call.	%1$s https olmayan bir adres verdi ve Telegram sunucuları bu adresi çağırmaz.
+# context: the Push app row's summary while the UnifiedPush app (%1$s, its name) says its push server is temporarily down; the sign-up is kept
+The server behind %1$s is down for now. Wake-ups come back once it's up.	%1$s arkasındaki sunucu şu an kapalı. Sunucu açılınca Telegram yeniden uyandırılır.
 # context: the row's summary once signed up: Telegram's servers wake Telegram up through that app.
 Telegram's wake-ups come through %1$s.	Telegram %1$s üzerinden uyandırılıyor.
 Signing up with %1$s…	%1$s ile kaydolunuyor…

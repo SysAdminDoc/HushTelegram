@@ -4,6 +4,7 @@
  */
 package app.hushtelegram.extension.telegram.misc;
 
+import android.app.BroadcastOptions;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +14,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
+import android.os.Bundle;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
@@ -24,6 +27,7 @@ import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Logger;
@@ -43,14 +47,22 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * each call into a broadcast here; Telegram then connects and fetches what's new the same way it
  * does after a Firebase push it couldn't read.
  *
- * <p>Sign-up follows the UnifiedPush Android spec: a REGISTER broadcast to the chosen app with a
- * random token, answered by NEW_ENDPOINT with the address. Every broadcast back has to carry that
- * token, which is how a stranger's broadcast is told apart. The address goes to Telegram through
- * its own {@code PushListenerController.sendRegistrationToServer}, and while the switch is on the
- * patch keeps Firebase from taking that place back at the next start.
+ * <p>Sign-up follows the UnifiedPush Android spec (AND_3): a REGISTER broadcast to the chosen app
+ * with a random token, answered by NEW_ENDPOINT with the address. Every broadcast back has to carry
+ * that token, which is how a stranger's broadcast is told apart. On Android 14 and up Android
+ * tells the app who's asking (the spec's FLAG_SHARE_IDENTITY), and below it a PendingIntent that
+ * names nothing but this package does. The address goes to Telegram through its own
+ * {@code PushListenerController.sendRegistrationToServer}, and while the switch is on the patch
+ * keeps Firebase from taking that place back at the next start. Telegram's servers call only an
+ * https address, so a plain http one is turned away.
+ *
+ * <p>A refusal before any address came in means a new token next time, as the spec asks, and one
+ * after this token's address came in is ignored. TEMP_UNAVAILABLE, the app's server being down,
+ * keeps the sign-up and its address. The next NEW_ENDPOINT says it's back.
  *
  * <p>Everything this keeps is in its own prefs file: which app, the token, and the address.
- * None of it is a setting, so it isn't in settings backups.
+ * None of it is a setting, so it isn't in settings backups. Nothing goes out to the app or to
+ * Telegram until the state it depends on is on disk, so a restart never finds a sign-up it forgot.
  */
 public final class UnifiedPush {
     static final String PREFS = "hushtelegram_unified_push";
@@ -61,6 +73,10 @@ public final class UnifiedPush {
     static final String PROBLEM = "problem";
     static final String REFUSED = "refused";
     static final String ENDED = "ended";
+    /** The app's server is down for now. The sign-up stays. */
+    static final String UNAVAILABLE = "unavailable";
+    /** The app gave a plain http address, which Telegram's servers don't call. */
+    static final String INSECURE = "insecure";
 
     static final String REGISTER = "org.unifiedpush.android.distributor.REGISTER";
     static final String UNREGISTER = "org.unifiedpush.android.distributor.UNREGISTER";
@@ -69,6 +85,7 @@ public final class UnifiedPush {
     static final String MESSAGE = "org.unifiedpush.android.connector.MESSAGE";
     static final String UNREGISTERED = "org.unifiedpush.android.connector.UNREGISTERED";
     static final String REGISTRATION_FAILED = "org.unifiedpush.android.connector.REGISTRATION_FAILED";
+    static final String TEMP_UNAVAILABLE = "org.unifiedpush.android.connector.TEMP_UNAVAILABLE";
     /** The spec's stand-in package: the PendingIntent only tells the app who's asking. */
     static final String DUMMY_APP = "org.unifiedpush.dummy_app";
     static final String NTFY = "io.heckel.ntfy";
@@ -154,6 +171,22 @@ public final class UnifiedPush {
         return thread;
     });
 
+    /** How a broadcast to the app goes out. Tests swap in one that also keeps the options. */
+    interface Broadcasts {
+        void send(Context context, Intent intent, @Nullable Bundle options);
+    }
+
+    static Broadcasts broadcasts = (context, intent, options) -> {
+        if (options != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            context.sendBroadcast(intent, null, options);
+        } else {
+            context.sendBroadcast(intent);
+        }
+    };
+
+    /** Where the sign-up is kept. Tests swap in one whose writes can fail. */
+    static Function<Context, SharedPreferences> store = context -> context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+
     /** Whether the address replaced Telegram's token in this thread's sign-up, for {@link #type}. */
     private static final ThreadLocal<Boolean> SWAPPED = new ThreadLocal<>();
 
@@ -220,7 +253,10 @@ public final class UnifiedPush {
     public static void choose(Context context, String distributor, boolean on) {
         if (context == null || !PatchFamily.UNIFIED_PUSH.inBuild()) return;
         Context app = context.getApplicationContext() != null ? context.getApplicationContext() : context;
-        prefs(app).edit().putString(CHOSEN, distributor).remove(PROBLEM).commit();
+        if (!prefs(app).edit().putString(CHOSEN, distributor).remove(PROBLEM).commit()) {
+            HookStatus.counted(FamilyNames.UNIFIED_PUSH, "app choice not saved");
+            return;
+        }
         work.execute(() -> sync(app, on));
     }
 
@@ -237,10 +273,13 @@ public final class UnifiedPush {
             String token = prefs.getString(TOKEN, null);
             if (!on) {
                 String endpoint = prefs.getString(ENDPOINT, null);
+                // The choice of app stays. Everything about the sign-up goes, before the app hears,
+                // so a broadcast with the old token is somebody else's from here on.
+                boolean forgotten = prefs.edit().remove(DISTRIBUTOR).remove(TOKEN).remove(ENDPOINT).remove(PROBLEM).commit();
                 if (token != null && current != null) send(context, new Intent(UNREGISTER), current, token);
-                // The choice of app stays; everything about the sign-up goes.
-                prefs.edit().remove(DISTRIBUTOR).remove(TOKEN).remove(ENDPOINT).remove(PROBLEM).commit();
                 if (endpoint != null) telegram.release(endpoint);
+                // Still on disk, it's ended again at the next start with the switch off. The app ignores a token it no longer knows.
+                if (!forgotten) HookStatus.counted(FamilyNames.UNIFIED_PUSH, "sign-up not forgotten, ended again at the next start");
                 return;
             }
             if (ENDED.equals(prefs.getString(PROBLEM, null))) return;
@@ -253,7 +292,9 @@ public final class UnifiedPush {
                     send(context, new Intent(UNREGISTER), current, token);
                 }
                 String endpoint = prefs.getString(ENDPOINT, null);
-                prefs.edit().remove(DISTRIBUTOR).remove(TOKEN).remove(ENDPOINT).commit();
+                if (!prefs.edit().remove(DISTRIBUTOR).remove(TOKEN).remove(ENDPOINT).commit()) {
+                    HookStatus.counted(FamilyNames.UNIFIED_PUSH, "sign-up not forgotten, ended again at the next start");
+                }
                 // Telegram's servers may still hold the dead address, from before or from a sign-up
                 // that ran ahead of this one at start, so Firebase is asked again the way off does.
                 if (endpoint != null) telegram.release(endpoint);
@@ -261,9 +302,15 @@ public final class UnifiedPush {
             }
             if (token == null || !distributor.equals(current)) {
                 if (token != null && current != null) send(context, new Intent(UNREGISTER), current, token);
-                token = UUID.randomUUID().toString();
-                prefs.edit().putString(DISTRIBUTOR, distributor).putString(TOKEN, token)
-                        .remove(ENDPOINT).remove(PROBLEM).commit();
+                String fresh = UUID.randomUUID().toString();
+                // The token goes out only once it's on disk. An app holding a token this side forgot
+                // would have its answers dropped as a stranger's.
+                if (!prefs.edit().putString(DISTRIBUTOR, distributor).putString(TOKEN, fresh)
+                        .remove(ENDPOINT).remove(PROBLEM).commit()) {
+                    HookStatus.counted(FamilyNames.UNIFIED_PUSH, "sign-up not saved, tried again at the next start");
+                    return;
+                }
+                token = fresh;
             }
             send(context, new Intent(REGISTER)
                     .putExtra("application", context.getPackageName())
@@ -274,11 +321,18 @@ public final class UnifiedPush {
         }
     }
 
-    /** A broadcast to the app, carrying the token and the PendingIntent that names this app to it. */
+    /**
+     * A REGISTER or UNREGISTER to the app, carrying the token and this app's identity: Android's
+     * own on 14 and up, a PendingIntent that names only this package below it.
+     */
     private static void send(Context context, Intent intent, String distributor, String token) {
-        intent.setPackage(distributor).putExtra("token", token).putExtra("pi", PendingIntent.getBroadcast(context, 0,
-                new Intent(DUMMY_APP), PendingIntent.FLAG_IMMUTABLE));
-        context.sendBroadcast(toStopped(intent));
+        toStopped(intent.setPackage(distributor).putExtra("token", token));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            broadcasts.send(context, intent, BroadcastOptions.makeBasic().setShareIdentityEnabled(true).toBundle());
+        } else {
+            intent.putExtra("pi", PendingIntent.getBroadcast(context, 0, new Intent(DUMMY_APP), PendingIntent.FLAG_IMMUTABLE));
+            broadcasts.send(context, intent, null);
+        }
     }
 
     /**
@@ -336,6 +390,8 @@ public final class UnifiedPush {
             String action = String.valueOf(intent.getAction());
             switch (action) {
                 case NEW_ENDPOINT:
+                    // The spec asks for this acknowledgement too, and an app may drop an address nobody acknowledged.
+                    acknowledge(context, prefs, token, intent.getStringExtra("id"));
                     endpoint(context, prefs, intent.getStringExtra("endpoint"));
                     break;
                 case MESSAGE:
@@ -346,15 +402,33 @@ public final class UnifiedPush {
                     }
                     break;
                 case REGISTRATION_FAILED:
-                    // Asked again at a start, the app can fail for a moment (no network) while the
-                    // address it gave before still works, so a saved address stays.
-                    if (prefs.getString(ENDPOINT, null) == null) prefs.edit().putString(PROBLEM, REFUSED).commit();
+                    if (prefs.getString(ENDPOINT, null) != null) {
+                        // This token's address already came in, so the spec says a refusal is ignored.
+                        // Asked again at a start, the app can fail for a moment while the address still works.
+                        Logger.printInfo(() -> "UnifiedPush: ignored a refusal after the address came in ("
+                                + intent.getStringExtra("reason") + ")");
+                        break;
+                    }
+                    // The spec asks for a new token on the next sign-up, so this one is let go.
+                    if (!prefs.edit().remove(TOKEN).putString(PROBLEM, REFUSED).commit()) {
+                        HookStatus.counted(FamilyNames.UNIFIED_PUSH, "refusal not saved");
+                    }
                     Logger.printInfo(() -> "UnifiedPush: the app turned the sign-up down ("
                             + intent.getStringExtra("reason") + ")");
                     break;
+                case TEMP_UNAVAILABLE:
+                    // The app's server is down for now. The sign-up and its address stay, and its next
+                    // NEW_ENDPOINT says it's back. A stand-in app it suggests (useDistributor) isn't used.
+                    if (!prefs.edit().putString(PROBLEM, UNAVAILABLE).commit()) {
+                        HookStatus.counted(FamilyNames.UNIFIED_PUSH, "outage not saved");
+                    }
+                    Logger.printInfo(() -> "UnifiedPush: the app's server is down for now");
+                    break;
                 case UNREGISTERED: {
                     String ended = prefs.getString(ENDPOINT, null);
-                    prefs.edit().remove(TOKEN).remove(ENDPOINT).putString(PROBLEM, ENDED).commit();
+                    if (!prefs.edit().remove(TOKEN).remove(ENDPOINT).putString(PROBLEM, ENDED).commit()) {
+                        HookStatus.counted(FamilyNames.UNIFIED_PUSH, "ended sign-up not saved");
+                    }
                     Logger.printInfo(() -> "UnifiedPush: the app ended the sign-up");
                     // Nothing answers at that address now, so Telegram is pointed back at Firebase.
                     if (ended != null) telegram.release(ended);
@@ -371,29 +445,40 @@ public final class UnifiedPush {
 
     private static void endpoint(Context context, SharedPreferences prefs, @Nullable String endpoint) {
         if (!usable(endpoint)) {
-            Logger.printInfo(() -> "UnifiedPush: ignored an address that isn't a web address");
+            if (endpoint != null && endpoint.regionMatches(true, 0, "http://", 0, 7)) {
+                // Telegram's servers call only https, so the row says why nothing arrives.
+                prefs.edit().putString(PROBLEM, INSECURE).commit();
+                Logger.printInfo(() -> "UnifiedPush: turned away a plain http address");
+            } else {
+                Logger.printInfo(() -> "UnifiedPush: ignored an address that isn't a web address");
+            }
             return;
         }
-        prefs.edit().putString(ENDPOINT, endpoint).remove(PROBLEM).commit();
+        // Handed to Telegram only once it's on disk. Unsaved, the next start's sign-up brings it again.
+        if (!prefs.edit().putString(ENDPOINT, endpoint).remove(PROBLEM).commit()) {
+            HookStatus.counted(FamilyNames.UNIFIED_PUSH, "address not saved, asked again at the next start");
+            return;
+        }
         Logger.printInfo(() -> "UnifiedPush: got an address at " + Uri.parse(endpoint).getHost());
         // Paused, Telegram keeps the address it has; the next start hands this one over.
         if (Utils.settingsReady() && Settings.UNIFIED_PUSH.get()) telegram.register(endpoint);
     }
 
-    /** An http or https address with a host, no longer than the spec allows. */
+    /**
+     * An https address with a host, no longer than the spec allows. Telegram's push documentation
+     * says its servers PUT to "the specified HTTPS endpoint".
+     */
     static boolean usable(@Nullable String endpoint) {
         if (endpoint == null || endpoint.isEmpty() || endpoint.length() > MAX_ENDPOINT) return false;
         Uri uri = Uri.parse(endpoint);
-        String scheme = uri.getScheme();
-        return ("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme))
-                && uri.getHost() != null && !uri.getHost().isEmpty();
+        return "https".equalsIgnoreCase(uri.getScheme()) && uri.getHost() != null && !uri.getHost().isEmpty();
     }
 
     /** The spec asks for an acknowledgement when a message carries an id. */
     private static void acknowledge(Context context, SharedPreferences prefs, String token, @Nullable String id) {
         String distributor = prefs.getString(DISTRIBUTOR, null);
         if (id == null || distributor == null) return;
-        context.sendBroadcast(toStopped(new Intent(MESSAGE_ACK).setPackage(distributor).putExtra("token", token).putExtra("id", id)));
+        broadcasts.send(context, toStopped(new Intent(MESSAGE_ACK).setPackage(distributor).putExtra("token", token).putExtra("id", id)), null);
     }
 
     /** From {@link UnifiedPushRaise}: a binding that keeps Telegram in front while a message arrives, signed up only. */
@@ -428,6 +513,8 @@ public final class UnifiedPush {
         String problem = prefs.getString(PROBLEM, null);
         if (ENDED.equals(problem)) return L10n.f("%1$s ended the sign-up. Turn the switch off and on to sign up again.", name);
         if (REFUSED.equals(problem)) return L10n.f("%1$s turned the sign-up down. Check that it allows UnifiedPush.", name);
+        if (INSECURE.equals(problem)) return L10n.f("%1$s gave an address without https, which Telegram's servers won't call.", name);
+        if (UNAVAILABLE.equals(problem)) return L10n.f("The server behind %1$s is down for now. Wake-ups come back once it's up.", name);
         if (app.equals(prefs.getString(DISTRIBUTOR, null)) && prefs.getString(ENDPOINT, null) != null) {
             return L10n.f("Telegram's wake-ups come through %1$s.", name);
         }
@@ -448,7 +535,7 @@ public final class UnifiedPush {
     }
 
     static SharedPreferences prefs(Context context) {
-        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        return store.apply(context);
     }
 
     private static Runnable once(Runnable done) {

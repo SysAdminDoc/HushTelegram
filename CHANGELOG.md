@@ -6,6 +6,8 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.17.
 
+* **Telegram:** **UnifiedPush notifications** follows the current UnifiedPush rules more closely, so stricter push apps work with it. On Android 14 and up, Android tells the push app who's signing up. A new address is acknowledged right away (some apps drop one that isn't). If the push app's server goes down for a while, the sign-up and its address stay and the Push app row says the server is down. A sign-up the app turned down gets a fresh start next time, and a late refusal after a working address came in no longer counts. An address without https is turned away with a note in the row, since Telegram's servers only call https. Nothing about the sign-up goes out until it's saved on the phone.
+
 * **Telegram:** **Translate with an outside service** keeps up with fast scrolling instead of piling up work. At most 24 texts wait for an answer at once. The rest are asked for when you scroll back to them, and a short notice says so (once a minute at most). A message redrawn while it waits doesn't line up a second time, failures while you're offline stop growing a list in memory, and a request still trickling in after 20 seconds (90 for an AI service) is closed so the next one can go.
 
 * **Telegram:** **Save downloaded files** tells files apart by the document they came from instead of their name and size. Two different files that happen to share both now each get a copy, and the same file downloaded again still lands only once. If you delete a copy from Downloads, it comes back the next time that file downloads. Turning the switch off or pausing HushTelegram also stops copies still waiting their turn, and one caught halfway is removed.
