@@ -6,6 +6,8 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.17.
 
+* **Telegram:** Leaving the optional Maps key blank now keeps Telegram's key, as the option says. Spaces around a valid key are ignored. Invalid keys still stop patching without printing the key.
+
 * **Tooling:** Quick setups now builds against Android's public preference API. Each switch still runs its change listener and keeps its value when that listener refuses a change. The accessibility check now finds the heading and Ads row by name after Quick setups moved them down.
 * **Tooling:** The draft fixture checks compile again after two mask assertions reused one local variable name. Both checks remain in place.
 * **Tooling:** Chat-list title fixture checks now recognize method calls by their reference type. The previous uppercase opcode check missed every call because the bytecode library uses lowercase instruction names.

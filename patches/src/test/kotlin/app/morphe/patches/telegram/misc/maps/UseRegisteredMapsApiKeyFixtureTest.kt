@@ -10,7 +10,6 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.ResourcePatchContext
 import com.reandroid.apk.ApkModule
 import com.reandroid.arsc.chunk.xml.AndroidManifestBlock
-import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -43,12 +42,12 @@ class UseRegisteredMapsApiKeyFixtureTest {
 
     @Test
     fun `every declared fixture changes only the SDK key with Android's DOM factory`() = withAndroidResourceXmlFactory {
-        for (build in Fixtures.declaredBuilds()) withManifest(fixtureManifest(build)) { context, file ->
+        for (option in listOf(KEY, " \t$KEY\r\n")) for (build in Fixtures.declaredBuilds()) withManifest(fixtureManifest(build)) { context, file ->
             val original = parse(file)
             val stock = resolveMapsApiKey(original)
             assertEquals("com.google.android.maps.v2.API_KEY", stock.getAttribute("android:name"))
             val before = state(original.documentElement, stock)
-            withOption(KEY) { useRegisteredMapsApiKeyPatch.execute(context) }
+            withOption(option) { useRegisteredMapsApiKeyPatch.execute(context) }
             val result = parse(file)
             val key = resolveMapsApiKey(result)
             assertEquals(KEY, key.getAttribute("android:value"))
@@ -62,16 +61,20 @@ class UseRegisteredMapsApiKeyFixtureTest {
     }
 
     @Test
-    fun `unset option leaves fixture manifest bytes untouched`() {
-        for (build in Fixtures.declaredBuilds()) withManifest(fixtureManifest(build)) { context, file ->
-            val before = file.readBytes()
-            withOption(null) { useRegisteredMapsApiKeyPatch.execute(context) }
-            assertArrayEquals(before, file.readBytes())
-        }
-        withManifest(null) { context, file ->
-            assertFalse(file.exists())
-            withOption(null) { useRegisteredMapsApiKeyPatch.execute(context) }
-            assertFalse(file.exists())
+    fun `absent and blank options leave every resource untouched without opening a manifest`() {
+        for (option in listOf(null, "", " \t\r\n")) {
+            for (build in Fixtures.declaredBuilds()) withManifest(fixtureManifest(build)) { context, file ->
+                val before = resourceTree(file.parentFile)
+                withOption(option) { useRegisteredMapsApiKeyPatch.execute(context) }
+                assertResourceTreeUnchanged(before, file.parentFile)
+            }
+            withManifest(null) { context, file ->
+                assertFalse(file.exists())
+                val before = resourceTree(file.parentFile)
+                withOption(option) { useRegisteredMapsApiKeyPatch.execute(context) }
+                assertFalse(file.exists())
+                assertResourceTreeUnchanged(before, file.parentFile)
+            }
         }
     }
 
@@ -87,7 +90,7 @@ class UseRegisteredMapsApiKeyFixtureTest {
 
     @Test
     fun `invalid options refuse before opening resources and never echo key inputs`() {
-        for (key in listOf("", "secret", KEY.dropLast(1), KEY + "x", "AIzax" + "?".repeat(34))) {
+        for (key in listOf("secret", " \tsecret\r\n", KEY.dropLast(1), KEY + "x", "AIzax" + "?".repeat(34))) {
             withManifest(null) { context, file ->
                 withOption(key) {
                     try {
@@ -95,7 +98,7 @@ class UseRegisteredMapsApiKeyFixtureTest {
                         fail("invalid key option accepted")
                     } catch (expected: PatchException) {
                         assertTrue(expected.message.orEmpty().contains("apiKey"))
-                        if (key.isNotEmpty()) assertFalse(expected.message.orEmpty().contains(key))
+                        assertFalse(expected.message.orEmpty().contains(key.trim()))
                     }
                 }
                 assertFalse(file.exists())

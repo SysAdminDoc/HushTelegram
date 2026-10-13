@@ -38,9 +38,9 @@ val useRegisteredMapsApiKeyPatch = resourcePatch(
 }
 
 internal fun checkedMapsApiKey(key: String?): String? {
-    if (key == null) return null
-    if (!KEY_FORMAT.matches(key)) throw PatchException("$PATCH: apiKey must be a 39-character Google API key.")
-    return key
+    val given = key?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+    if (!KEY_FORMAT.matches(given)) throw PatchException("$PATCH: apiKey must be a 39-character Google API key.")
+    return given
 }
 
 internal fun ResourcePatchContext.applyRegisteredMapsApiKey(key: String?) {
