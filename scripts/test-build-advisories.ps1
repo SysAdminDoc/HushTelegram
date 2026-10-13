@@ -174,6 +174,59 @@ try {
     Assert-Fails { Invoke-Gate } '*OSV*Recorded OSV query failure*'
     $answers = @{ $purl = '{"vulns":[{"summary":"missing advisory identity"}]}' }
     Assert-Fails { Invoke-Gate } '*OSV*has no id*'
+
+    # An answer that is an object and still no query result is not a clean one. An error object used
+    # to read as a library with no advisory and passed the gate. Each shape is refused, with the
+    # word to run the check again where OSV is the one in trouble, and never after the line that
+    # says OSV has nothing for the resolved libraries.
+    function Assert-Refuses([string]$Answer, [string]$Pattern) {
+        $script:answers = @{ $purl = $Answer }
+        $said = New-Object Collections.Generic.List[string]
+        Assert-Fails { Invoke-Gate 6>&1 | ForEach-Object { $said.Add("$_") } } $Pattern
+        Assert-True (@($said | Where-Object { $_ -like '*OSV has*' }).Count -eq 0) "The gate reported a result before it refused $Answer."
+    }
+    foreach ($envelope in @('{"error":"temporarily unavailable"}', '{"code":14,"message":"unavailable","details":[]}',
+            '{"results":[]}', '{"vulns":[],"error":"temporarily unavailable"}')) {
+        Assert-Refuses $envelope "*$purl*fields a query result does not have*fails closed*run the check again*"
+    }
+    foreach ($list in @('{"vulns":{}}', '{"vulns":"none"}', '{"vulns":null}', '{"vulns":0}')) {
+        Assert-Refuses $list '*vulns that is not a list*fails closed*run the check again*'
+    }
+    foreach ($token in @('{"vulns":[],"next_page_token":7}', '{"next_page_token":{"page":2}}',
+            '{"next_page_token":null}', '{"next_page_token":["p2"]}')) {
+        Assert-Refuses $token '*next_page_token that is not text*fails closed*run the check again*'
+    }
+    foreach ($record in @('{"vulns":["GHSA-aaaa-bbbb-cccc"]}', '{"vulns":[null]}', '{"vulns":[[]]}',
+            '{"vulns":[{"id":7}]}', '{"vulns":[{"id":" "}]}')) {
+        Assert-Refuses $record '*OSV*advisory that is not a record or has no id*'
+    }
+    Assert-Refuses '{"vulns":[{"id":"GHSA-aaaa-bbbb-cccc","withdrawn":true}]}' '*GHSA-aaaa-bbbb-cccc withdrawn on something that is not a date*'
+    # The script the push gate runs stops on the same answer, so its process ends nonzero.
+    $answers = @{ $purl = '{"error":"temporarily unavailable"}' }
+    $scannerSaid = New-Object Collections.Generic.List[string]
+    Assert-Fails { & (Join-Path $Root 'scripts/build-advisories.ps1') -Root $Root -ReportPath $reportPath `
+            -ExceptionsPath $exceptionPath 6>&1 | ForEach-Object { $scannerSaid.Add("$_") } } '*fields a query result does not have*'
+    Assert-True ($scannerSaid.Count -eq 0) "The build advisory script reported a result on an error object: $($scannerSaid -join ' / ')"
+
+    # What OSV does send still reads: an empty list, a second page, an advisory its publisher took
+    # back, and an answer that never stops paging, which is cut off at twenty pages.
+    $answers = @{ $purl = '{"vulns":[]}' }
+    $output = @(& { Invoke-Gate } 6>&1) -join ' '
+    Assert-True ($output -like '*OSV has no advisory for 1 resolved libraries*') "An empty advisory list was not a clean answer: $output"
+    $cases++
+    $lowAdvisory = '{"id":"GHSA-aaaa-bbbb-cccc","summary":"Second page fixture.","database_specific":{"severity":"LOW"}}'
+    $answers = @{ $purl = '{"vulns":[],"next_page_token":"p2"}'; "$purl page p2" = "{`"vulns`":[$lowAdvisory]}" }
+    $asked.Clear()
+    $output = @(& { Invoke-Gate } 6>&1) -join ' '
+    Assert-True ($output -like '*below high, let through: GHSA-aaaa-bbbb-cccc*' -and ($asked -join ', ') -ceq "$purl, $purl page p2") `
+        "The second page of an answer was not read: $output; asked $($asked -join ', ')"
+    $cases++
+    $answers = @{ $purl = "{`"vulns`":[$($lowAdvisory.Replace('{"id"', '{"withdrawn":"2026-09-01T00:00:00Z","id"'))]}" }
+    $output = @(& { Invoke-Gate } 6>&1) -join ' '
+    Assert-True ($output -like '*OSV has no advisory for 1 resolved libraries*') "A withdrawn advisory was counted: $output"
+    $cases++
+    $answers = @{ $purl = '{"next_page_token":"again"}'; "$purl page again" = '{"next_page_token":"again"}' }
+    Assert-Fails { Invoke-Gate } '*still paging*after 20 pages*'
     Remove-Item -LiteralPath $exceptionPath
     Assert-Fails { Invoke-Gate } '*exception list is missing*'
 

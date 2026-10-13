@@ -221,12 +221,42 @@ function Invoke-OsvQuery {
         if ($answer -isnot [System.Management.Automation.PSCustomObject]) {
             throw "OSV answered the query about $Purl with something that isn't a query result: $answer"
         }
-        foreach ($advisory in @($answer.vulns | Where-Object { $null -ne $_ })) {
-            if ([string]::IsNullOrWhiteSpace([string]$advisory.id)) {
-                throw "OSV answered the query about $Purl with an advisory that has no id."
+        # A query result is {} or holds a vulns list, a next_page_token or both, and nothing else.
+        # An error that arrives as an object, {"error":"temporarily unavailable"} say, has neither,
+        # and read as a package with no advisory it passed the gate on a check that never ran.
+        $fields = @($answer.PSObject.Properties | ForEach-Object { $_.Name })
+        $odd = if (@($fields | Where-Object { $_ -cnotin @('vulns', 'next_page_token') }).Count -gt 0) {
+            'fields a query result does not have'
+        } elseif ($fields -ccontains 'vulns' -and $answer.vulns -isnot [array]) {
+            'vulns that is not a list'
+        } elseif ($fields -ccontains 'next_page_token' -and $answer.next_page_token -isnot [string]) {
+            'a next_page_token that is not text'
+        }
+        if ($odd) {
+            $shown = [string]($answer | ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue)
+            if ($shown.Length -gt 200) { $shown = $shown.Substring(0, 200) + '...' }
+            throw ("OSV answered the query about $Purl with $odd, which isn't a query result, so nothing " +
+                "says the package has no advisory: $shown. The advisory check fails closed. An answer like " +
+                'this is OSV reporting trouble, so run the check again in a few minutes.')
+        }
+        # Assigned, not taken from an if expression: that unrolls the list, and [null] came out as
+        # nothing to read.
+        $vulns = @()
+        if ($fields -ccontains 'vulns') { $vulns = $answer.vulns }
+        foreach ($advisory in $vulns) {
+            if ($advisory -isnot [System.Management.Automation.PSCustomObject] -or $advisory.id -isnot [string] -or
+                    [string]::IsNullOrWhiteSpace($advisory.id)) {
+                throw "OSV answered the query about $Purl with an advisory that is not a record or has no id."
             }
-            # A withdrawn advisory is one its publisher took back.
-            if ($advisory.PSObject.Properties['withdrawn'] -and $advisory.withdrawn) { continue }
+            # A withdrawn advisory is one its publisher took back, on a date. ConvertFrom-Json hands
+            # that date over as text in Windows PowerShell and as a date in PowerShell 7. Anything
+            # else there is not a withdrawal, and taking it for one would drop the advisory.
+            $withdrawn = $advisory.PSObject.Properties['withdrawn']
+            if ($withdrawn -and $null -ne $withdrawn.Value -and $withdrawn.Value -isnot [string] -and
+                    $withdrawn.Value -isnot [datetime]) {
+                throw "OSV answered the query about $Purl with $($advisory.id) withdrawn on something that is not a date."
+            }
+            if ($withdrawn -and $withdrawn.Value) { continue }
             $found.Add($advisory)
         }
         $token = [string]$answer.next_page_token

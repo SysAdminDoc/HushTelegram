@@ -1626,9 +1626,12 @@ try {
         Set-Content -LiteralPath $list -Encoding ASCII -Value (@('# exceptions for this case') + @($Exceptions))
         . $osvStandIn
         $osvAsked.Clear()
+        $gateSaid.Clear()
         return (@(Invoke-ReleaseAdvisoryGate -Sbom (New-GateSbom $Purls) -ExceptionsPath $list -Today $today `
-            -SkipAdvisoryCheck:$Skip 3>&1 6>&1 | ForEach-Object { "$_" }) -join "`n")
+            -SkipAdvisoryCheck:$Skip 3>&1 6>&1 | ForEach-Object { $gateSaid.Add("$_"); "$_" }) -join "`n")
     }
+    # Each line of the last run as it was said, which a run that throws leaves behind.
+    $gateSaid = New-Object System.Collections.Generic.List[string]
     $later = $today.AddDays(30).ToString('yyyy-MM-dd')
     $why = 'Only the build reads JSON with it, never input from outside.'
 
@@ -1761,16 +1764,46 @@ try {
     # OSV has to answer, and answer with something the gate can read.
     Assert-Throws { Invoke-Gate @('pkg:maven/com.example/unknown@1.0') } '*could not be asked about pkg:maven/com.example/unknown@1.0*fails closed*' `
         'The gate read an OSV it could not reach as no advisories.'
+    # An object is not a query result for being one: an error that arrived as {"error":...} has
+    # neither vulns nor a page token, and read as a library with no advisory it let a release out
+    # on a check that never ran. None of these is followed by the line that says OSV has nothing.
+    $retry = '*fails closed*run the check again*'
     $unreadable = @(
         @{ Name = 'a page of HTML'; Answer = '<html>Service Unavailable</html>'; Pattern = '*isn''t a query result*' },
-        @{ Name = 'an advisory with no id'; Answer = '{"vulns":[{"summary":"no id"}]}'; Pattern = '*has no id*' })
+        @{ Name = 'an advisory with no id'; Answer = '{"vulns":[{"summary":"no id"}]}'; Pattern = '*has no id*' },
+        @{ Name = 'an error object'; Answer = '{"error":"temporarily unavailable"}'
+            Pattern = "*$cleanPurl*fields a query result does not have*temporarily unavailable$retry" },
+        @{ Name = 'a gateway status'; Answer = '{"code":14,"message":"unavailable","details":[]}'; Pattern = "*fields a query result does not have$retry" },
+        @{ Name = 'an object with no query field'; Answer = '{"results":[]}'; Pattern = "*fields a query result does not have$retry" },
+        @{ Name = 'an error beside an empty list'; Answer = '{"vulns":[],"error":"temporarily unavailable"}'; Pattern = "*fields a query result does not have$retry" },
+        @{ Name = 'vulns as an object'; Answer = '{"vulns":{}}'; Pattern = "*vulns that is not a list$retry" },
+        @{ Name = 'vulns as text'; Answer = '{"vulns":"none"}'; Pattern = "*vulns that is not a list$retry" },
+        @{ Name = 'vulns as null'; Answer = '{"vulns":null}'; Pattern = "*vulns that is not a list$retry" },
+        @{ Name = 'a page token that is a number'; Answer = '{"vulns":[],"next_page_token":7}'; Pattern = "*next_page_token that is not text$retry" },
+        @{ Name = 'a page token that is an object'; Answer = '{"next_page_token":{"page":2}}'; Pattern = "*next_page_token that is not text$retry" },
+        @{ Name = 'an advisory that is only its id'; Answer = '{"vulns":["GHSA-4jrv-ppp4-jm57"]}'; Pattern = '*not a record or has no id*' },
+        @{ Name = 'a null advisory'; Answer = '{"vulns":[null]}'; Pattern = '*not a record or has no id*' },
+        @{ Name = 'an advisory with a number for an id'; Answer = '{"vulns":[{"id":7}]}'; Pattern = '*not a record or has no id*' },
+        @{ Name = 'an advisory withdrawn on true'; Answer = "{`"vulns`":[$($gsonAdvisory.Replace('{"id"', '{"withdrawn":true,"id"'))]}"
+            Pattern = '*GHSA-4jrv-ppp4-jm57 withdrawn on something that is not a date*' })
     foreach ($odd in $unreadable) {
         $osvAnswers = @{ $cleanPurl = $odd.Answer }
         try {
             Assert-Throws { Invoke-Gate @($cleanPurl) } $odd.Pattern "The gate took $($odd.Name) from OSV for an answer."
+            Assert-True (@($gateSaid | Where-Object { $_ -like '*OSV has*' }).Count -eq 0) `
+                "The gate said OSV had answered before it refused $($odd.Name): $($gateSaid -join ' / ')"
         } finally {
             $osvAnswers = $osvRecorded
         }
+    }
+    # The empty list OSV can send in place of {} is as clean as {} is.
+    $osvAnswers = @{ $cleanPurl = '{"vulns":[]}' }
+    try {
+        $said = Invoke-Gate @($cleanPurl)
+        Assert-True ($said -like '*OSV has no advisory for the libraries patches-9.9.9.cdx.json lists: gson 2.14.0*') `
+            "An empty advisory list was not read as a clean answer: $said"
+    } finally {
+        $osvAnswers = $osvRecorded
     }
     # The second page of an answer is read, and an advisory OSV withdrew is not one.
     $osvAnswers = @{ $gsonPurl = '{"next_page_token":"p2"}'; "$gsonPurl page p2" = "{`"vulns`":[$gsonAdvisory]}" }
