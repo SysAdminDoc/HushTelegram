@@ -6,6 +6,8 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.17.
 
+* **Tooling:** The README is a lot shorter now and sticks to installing and using HushTelegram, with the patch table in the order of the settings pages. The long version, with its version history and build check notes, is still in the repository history at commit 0cbd721.
+
 * **Telegram:** Moved to Telegram 13.0.2, telegram.org's build (version code 71759) and the official beta (71809). The beta added an audio recorder settings entry, and HushTelegram leaves it alone.
 
 * **Telegram:** The New Year look switch now says what the snow needs. Telegram only draws it while Background rotation is on under Power saving, and it leaves that off on most phones that aren't high end. Refs #14.
