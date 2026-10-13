@@ -140,7 +140,7 @@ final class SettingsNavigation extends BaseAdapter {
         browse.setTitle(L10n.t("Browse settings"));
         more = link(context, L10n.t("More settings"), L10n.t("Links, updates, backup and more"), SettingsIcons.SETTINGS);
         more.setOnPreferenceClickListener(ignored -> { navigate(MORE); return true; });
-        support = link(context, L10n.t("Support HushTelegram"), L10n.t("Buy me a coffee on Ko-fi"), SettingsIcons.OPENING);
+        support = link(context, L10n.t("Support HushTelegram"), null, SettingsIcons.OPENING);
         support.setKey(HushTelegramPreferenceFragment.SUPPORT);
         support.setOnPreferenceClickListener(row -> { HushTelegramPreferenceFragment.openSupport(row.getContext()); return true; });
         report = link(context, L10n.t("Report a problem"),

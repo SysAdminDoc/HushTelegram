@@ -2,6 +2,10 @@
 
 Every HushTelegram release, newest first.
 
+## Unreleased
+
+* **Telegram:** The Support HushTelegram row at the bottom of HushTelegram settings is just its name now. The line under it is gone.
+
 ## 0.0.17 (2026-10-13)
 
 The eighth release, with 68 patches for telegram.org's Telegram 13.0.2 and the official Telegram beta 13.0.2.
