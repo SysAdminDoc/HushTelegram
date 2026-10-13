@@ -345,8 +345,8 @@ Translate this chat	Terjemahkan obrolan ini
 This chat will be translated	Obrolan ini akan diterjemahkan
 This chat shows the original messages	Obrolan ini menampilkan pesan asli
 Translation isn't available right now	Terjemahan tidak tersedia saat ini
-# context: a short toast when messages scroll by faster than the translation service answers; the skipped ones are asked for again when the person scrolls back to them
-Too many to translate at once. Scroll back for the rest.	Terlalu banyak untuk diterjemahkan sekaligus. Gulir kembali untuk sisanya.
+# context: a short toast when messages scroll by faster than the translation service answers; the newest skipped ones are asked for as answers come in, the others when they're shown again
+Lots to translate at once. The rest will follow.	Banyak yang diterjemahkan sekaligus. Sisanya akan menyusul.
 # context: Toast shown once after an update clears the translated chats saved before each choice belonged to a Telegram account.
 Turn chat translation on again. It's now set per account.	Nyalakan lagi terjemahan obrolan. Sekarang diatur per akun.
 Ask before sending a GIF	Tanya dulu sebelum mengirim GIF

@@ -345,8 +345,8 @@ Translate this chat	Bu sohbeti çevir
 This chat will be translated	Bu sohbet çevrilecek
 This chat shows the original messages	Bu sohbet orijinal mesajları gösteriyor
 Translation isn't available right now	Çeviri şu anda kullanılamıyor
-# context: a short toast when messages scroll by faster than the translation service answers; the skipped ones are asked for again when the person scrolls back to them
-Too many to translate at once. Scroll back for the rest.	Aynı anda çevrilecek çok fazla şey var. Geri kalanı için geri kaydır.
+# context: a short toast when messages scroll by faster than the translation service answers; the newest skipped ones are asked for as answers come in, the others when they're shown again
+Lots to translate at once. The rest will follow.	Aynı anda çevrilecek çok şey var. Kalanı ardından gelecek.
 # context: Toast shown once after an update clears the translated chats saved before each choice belonged to a Telegram account.
 Turn chat translation on again. It's now set per account.	Sohbet çevirisini yeniden açın. Artık her hesap için ayrı.
 Ask before sending a GIF	GIF göndermeden önce sor

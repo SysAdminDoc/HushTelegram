@@ -124,7 +124,8 @@ public class GoogleTranslateTest {
         ScheduledFuture<?> cancelled = GoogleTranslate.closeAt(connection(done), GoogleTranslate.deadline(300));
         cancelled.cancel(false);
         assertTrue("a request past its deadline stayed open", late.await(5, TimeUnit.SECONDS));
-        assertTrue(fires.isDone());
+        // disconnect() counts down before the task is marked done, so wait for that rather than read it.
+        fires.get(5, TimeUnit.SECONDS);
         assertFalse("a request done in time was closed anyway", done.await(600, TimeUnit.MILLISECONDS));
     }
 

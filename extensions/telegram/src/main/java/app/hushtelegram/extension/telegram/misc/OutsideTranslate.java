@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -74,11 +75,16 @@ public final class OutsideTranslate {
     private static final long RETRY_MS = 60_000L;
     /**
      * Texts asked for at once, sent or waiting for one of the three workers. Past it a message isn't
-     * asked for and nothing is noted against it, so it asks again the next time it's drawn.
+     * asked for yet: it's held, see {@link #MAX_HELD}, and nothing is noted against it.
      */
     static final int MAX_PENDING = 24;
     /** Messages waiting on one text. The same message drawn again takes its own place, not a new one. */
     static final int MAX_WAITERS = 32;
+    /**
+     * Messages held back, newest kept. Where a fast scroll stops, the messages on screen are drawn
+     * last, so they're the ones drawn again as places free up. Older ones ask when they're next drawn.
+     */
+    static final int MAX_HELD = 32;
     /** Texts held back after a failure. Past it the oldest is let go before its minute is up. */
     static final int MAX_FAILED = 200;
     private static final String PREFS = "hushtelegram_outside_translate";
@@ -142,6 +148,17 @@ public final class OutsideTranslate {
         }
     }
 
+    /** A message held back, and the request whose text it wants. */
+    private static final class Held {
+        final Waiter waiter;
+        final String key;
+
+        Held(Waiter waiter, String key) {
+            this.waiter = waiter;
+            this.key = key;
+        }
+    }
+
     private static Message of(Object message) {
         return new Message() {
             @Override public long owner() { return OutsideTranslate.owner(message); }
@@ -169,6 +186,8 @@ public final class OutsideTranslate {
     };
     private static final Map<String, List<Waiter>> PENDING = new HashMap<>();
     private static final Map<String, Long> FAILED = new HashMap<>();
+    /** Messages held back, by {@link #key}, oldest first. */
+    private static final LinkedHashMap<String, Held> HELD = new LinkedHashMap<>();
     private static final Set<String> MESSAGES_ON = new HashSet<>();
     private static final Set<String> MESSAGES_OFF = new HashSet<>();
     /** The chats, as "owner:chat", already told a request failed. */
@@ -351,11 +370,16 @@ public final class OutsideTranslate {
             if (failed != null && clock.getAsLong() - failed < RETRY_MS) return;
             waiters = PENDING.get(key);
             if (waiters != null) {
-                join(waiters, waiter);
+                if (join(waiters, waiter)) {
+                    HELD.remove(key(waiter.owner, waiter.dialog, waiter.id));
+                } else {
+                    hold(waiter, key);
+                }
                 return;
             }
             if (PENDING.size() >= MAX_PENDING) {
-                // Scrolling faster than the service answers: the rest waits for its next draw.
+                // Scrolling faster than the service answers: held until a place frees up.
+                hold(waiter, key);
                 long now = clock.getAsLong();
                 if (busySaid == Long.MIN_VALUE || now - busySaid >= RETRY_MS) {
                     busySaid = now;
@@ -367,13 +391,14 @@ public final class OutsideTranslate {
                 waiters = new ArrayList<>();
                 waiters.add(waiter);
                 PENDING.put(key, waiters);
+                HELD.remove(key(waiter.owner, waiter.dialog, waiter.id));
                 provider = service();
             }
         }
         if (waiters == null) {
             HookStatus.counted(FamilyNames.OUTSIDE_TRANSLATE, "translate request held back, too many waiting");
             if (sayBusy) {
-                Utils.runOnMainThread(() -> Utils.showToastShort(L10n.t("Too many to translate at once. Scroll back for the rest.")));
+                Utils.runOnMainThread(() -> Utils.showToastShort(L10n.t("Lots to translate at once. The rest will follow.")));
             }
             return;
         }
@@ -403,19 +428,71 @@ public final class OutsideTranslate {
 
     /**
      * Adds [waiter] to a request already out, or puts it in place of the same message drawn
-     * earlier, so a message redrawn while it waits doesn't pile up. Past {@link #MAX_WAITERS} the
-     * message isn't added: the answer is cached either way, and it shows on its next draw. The list
-     * only grows, since {@link #sendable} reads the ones that joined by position. Run under {@link #LOCK}.
+     * earlier, so a message redrawn while it waits doesn't pile up. Past {@link #MAX_WAITERS} it
+     * isn't added and the caller holds it, so it's drawn again once the answer is in. The list only
+     * grows, since {@link #sendable} reads the ones that joined by position. Run under {@link #LOCK}.
+     *
+     * @return whether the message is waiting on the request now
      */
-    private static void join(List<Waiter> waiters, Waiter waiter) {
+    private static boolean join(List<Waiter> waiters, Waiter waiter) {
         for (int i = 0; i < waiters.size(); i++) {
             Waiter other = waiters.get(i);
             if (other.owner == waiter.owner && other.dialog == waiter.dialog && other.id == waiter.id) {
                 waiters.set(i, waiter);
-                return;
+                return true;
             }
         }
-        if (waiters.size() < MAX_WAITERS) waiters.add(waiter);
+        if (waiters.size() >= MAX_WAITERS) return false;
+        waiters.add(waiter);
+        return true;
+    }
+
+    /** Holds a message that couldn't wait on [key] yet, as the newest. Past {@link #MAX_HELD} the oldest goes. Run under {@link #LOCK}. */
+    private static void hold(Waiter waiter, String key) {
+        String message = key(waiter.owner, waiter.dialog, waiter.id);
+        HELD.remove(message);
+        HELD.put(message, new Held(waiter, key));
+        if (HELD.size() > MAX_HELD) {
+            Iterator<String> oldest = HELD.keySet().iterator();
+            oldest.next();
+            oldest.remove();
+        }
+    }
+
+    /**
+     * The held messages to draw again now that [key]'s place is free: every one that wanted the
+     * same text, whose answer is in, and the newest of the rest, which takes the place. Run under {@link #LOCK}.
+     */
+    private static List<Waiter> release(String key) {
+        List<Waiter> released = new ArrayList<>();
+        boolean placeTaken = false;
+        List<Map.Entry<String, Held>> newestFirst = new ArrayList<>(HELD.entrySet());
+        Collections.reverse(newestFirst);
+        for (Map.Entry<String, Held> entry : newestFirst) {
+            boolean sameText = entry.getValue().key.equals(key);
+            if (!sameText) {
+                if (placeTaken) continue;
+                placeTaken = true;
+            }
+            HELD.remove(entry.getKey());
+            released.add(entry.getValue().waiter);
+        }
+        return released;
+    }
+
+    /** Draws held messages again, so each asks for its text now there's room. */
+    private static void redraw(List<Waiter> released) {
+        if (released.isEmpty()) return;
+        Utils.runOnMainThread(() -> {
+            try {
+                if (!active()) return;
+                for (Waiter waiter : released) {
+                    if (wanted(waiter.owner, waiter.dialog, waiter.id) && waiter.sameAccount()) waiter.message.refresh();
+                }
+            } catch (Throwable thrown) {
+                HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "held message refresh", thrown);
+            }
+        });
     }
 
     /**
@@ -437,6 +514,7 @@ public final class OutsideTranslate {
         for (Waiter waiter : waiters) {
             if (waiter.sameAccount()) signedIn.add(waiter);
         }
+        List<Waiter> released;
         synchronized (LOCK) {
             // Read again here, so a pause while the accounts were read stops this one too.
             boolean stillOn = on && active();
@@ -452,8 +530,10 @@ public final class OutsideTranslate {
                 }
             }
             PENDING.remove(key);
-            return false;
+            released = stillOn ? release(key) : Collections.emptyList();
         }
+        redraw(released);
+        return false;
     }
 
     /**
@@ -463,16 +543,19 @@ public final class OutsideTranslate {
     private static void dropQueued() {
         generation++;
         PENDING.clear();
+        HELD.clear();
         // What's still waiting for a worker can't be sent now, so it leaves the queue instead of waiting its turn.
         if (pool instanceof ThreadPoolExecutor) ((ThreadPoolExecutor) pool).getQueue().clear();
     }
 
     private static void finish(String key, int asked, GoogleTranslate.Result result, Throwable failure) {
         List<Waiter> waiters;
+        List<Waiter> released;
         synchronized (LOCK) {
             // The service changed while this was out: its answer isn't the one the person chose.
             if (asked != generation) return;
             waiters = PENDING.remove(key);
+            released = waiters == null ? Collections.emptyList() : release(key);
             if (result != null) {
                 CACHE.put(key, result);
                 FAILED.remove(key);
@@ -487,6 +570,7 @@ public final class OutsideTranslate {
                 FAILED.put(key, now);
             }
         }
+        redraw(released);
         if (waiters == null) return;
         final List<Waiter> done = waiters;
         final boolean failed = result == null;
@@ -692,7 +776,8 @@ public final class OutsideTranslate {
     public static void forgetChats() {
         synchronized (LOCK) {
             boolean saved = chats == null || !chats.isEmpty();
-            if (!saved && MESSAGES_ON.isEmpty() && MESSAGES_OFF.isEmpty() && TOASTED.isEmpty() && PENDING.isEmpty()) return;
+            if (!saved && MESSAGES_ON.isEmpty() && MESSAGES_OFF.isEmpty() && TOASTED.isEmpty() && PENDING.isEmpty()
+                    && HELD.isEmpty()) return;
             dropQueued();
             chats = new HashSet<>();
             MESSAGES_ON.clear();
@@ -926,6 +1011,13 @@ public final class OutsideTranslate {
         }
     }
 
+    /** How many messages are held back, for tests. */
+    static int heldForTests() {
+        synchronized (LOCK) {
+            return HELD.size();
+        }
+    }
+
     /** How many messages in [owner]'s account wait on [text], for tests. */
     static int waitersForTests(long owner, String text) {
         String key = cacheKey(owner, target(), text);
@@ -947,6 +1039,7 @@ public final class OutsideTranslate {
         synchronized (LOCK) {
             CACHE.clear();
             PENDING.clear();
+            HELD.clear();
             FAILED.clear();
             MESSAGES_ON.clear();
             MESSAGES_OFF.clear();

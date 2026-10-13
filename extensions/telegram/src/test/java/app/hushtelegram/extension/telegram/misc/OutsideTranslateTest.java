@@ -58,6 +58,8 @@ public class OutsideTranslateTest {
         String shown;
         /** Runs once, the next time the account is read. */
         Runnable onOwnerRead;
+        /** Runs each time the chat is told to draw the message again. */
+        Runnable onRefresh;
 
         @Override public long owner() {
             Runnable once = onOwnerRead;
@@ -71,7 +73,10 @@ public class OutsideTranslateTest {
         @Override public String original() { return original; }
         @Override public boolean translated() { return translated; }
         @Override public void apply(String text, String language) { applied++; shown = text; translated = true; }
-        @Override public void refresh() { refreshed++; }
+        @Override public void refresh() {
+            refreshed++;
+            if (onRefresh != null) onRefresh.run();
+        }
     }
 
     @Before public void reset() {
@@ -869,8 +874,9 @@ public class OutsideTranslateTest {
         assertEquals(OutsideTranslate.MAX_PENDING, queued.size());
         assertTrue(String.join("\n", HookStatus.report()).contains("translate request held back, too many waiting"));
         assertEquals("the busy notice repeated while scrolling", 1, org.robolectric.shadows.ShadowToast.shownToastCount());
-        assertEquals("Too many to translate at once. Scroll back for the rest.",
+        assertEquals("Lots to translate at once. The rest will follow.",
                 org.robolectric.shadows.ShadowToast.getTextOfLatestToast());
+        assertEquals(OutsideTranslate.MAX_HELD, OutsideTranslate.heldForTests());
 
         // Nothing was noted against the ones held back, so scrolling back to them asks once there's room.
         runQueued(queued);
@@ -897,19 +903,70 @@ public class OutsideTranslateTest {
         for (int i = 0; i < 50; i++) OutsideTranslate.showMessage(message, message);
         assertEquals(1, OutsideTranslate.waitersForTests(OWNER, message.original));
         // The same text in many messages, a forwarded post or a repeated greeting.
+        List<Fake> copies = new ArrayList<>();
         for (int id = 2; id < 100; id++) {
             Fake copy = new Fake();
             copy.id = id;
+            copies.add(copy);
             OutsideTranslate.showMessage(copy, copy);
         }
         assertEquals(OutsideTranslate.MAX_WAITERS, OutsideTranslate.waitersForTests(OWNER, message.original));
         assertEquals("one text is asked once", 1, queued.size());
         runQueued(queued);
         assertEquals(1, message.refreshed);
-        // One past the cap wasn't waiting, but the answer is there the next time it's drawn.
-        Fake past = new Fake();
-        past.id = 99;
+        // Past the cap they were held, and the newest are drawn again once the answer is in.
+        Fake lastWaiting = copies.get(OutsideTranslate.MAX_WAITERS - 2);
+        assertEquals(OutsideTranslate.MAX_WAITERS, lastWaiting.id);
+        assertEquals(1, lastWaiting.refreshed);
+        for (int i = copies.size() - OutsideTranslate.MAX_HELD; i < copies.size(); i++) {
+            assertEquals("message " + copies.get(i).id, 1, copies.get(i).refreshed);
+        }
+        assertEquals(0, copies.get(copies.size() - OutsideTranslate.MAX_HELD - 1).refreshed);
+        assertEquals(0, OutsideTranslate.heldForTests());
+        // An older one let go still finds the answer the next time it's drawn.
+        Fake past = copies.get(copies.size() - OutsideTranslate.MAX_HELD - 1);
         assertTrue(OutsideTranslate.showMessage(past, past));
+        assertEquals(1, fetches.get());
+    }
+
+    /** Where a fast scroll stops, the messages on screen were drawn last and held back. */
+    @Test public void heldBackMessagesAreAskedAsPlacesFreeUpNewestFirst() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        List<Runnable> queued = holdTheWorker();
+        List<Fake> drawn = new ArrayList<>();
+        for (int n = 1; n <= 100; n++) {
+            Fake message = text(n);
+            // Telegram draws a message again when it's told the message changed.
+            message.onRefresh = () -> OutsideTranslate.showMessage(message, message);
+            drawn.add(message);
+            OutsideTranslate.showMessage(message, message);
+        }
+        ShadowLooper.idleMainLooper();
+        assertEquals(OutsideTranslate.MAX_PENDING, queued.size());
+        assertEquals(OutsideTranslate.MAX_HELD, OutsideTranslate.heldForTests());
+
+        // Two answers land, and their places go to the two messages drawn last.
+        queued.remove(0).run();
+        queued.remove(0).run();
+        ShadowLooper.idleMainLooper();
+        assertEquals(OutsideTranslate.MAX_PENDING, OutsideTranslate.pendingForTests());
+        assertEquals(OutsideTranslate.MAX_PENDING, queued.size());
+        assertEquals(1, drawn.get(99).refreshed);
+        assertEquals(1, drawn.get(98).refreshed);
+        assertEquals(0, drawn.get(97).refreshed);
+
+        // Once everything lands, every held message shows its translation.
+        while (!queued.isEmpty()) {
+            queued.remove(0).run();
+            ShadowLooper.idleMainLooper();
+        }
+        assertEquals(0, OutsideTranslate.heldForTests());
+        assertEquals(OutsideTranslate.MAX_PENDING + OutsideTranslate.MAX_HELD, fetches.get());
+        int firstHeld = 100 - OutsideTranslate.MAX_HELD + 1;
+        for (int n = firstHeld; n <= 100; n++) assertTrue("message " + n, drawn.get(n - 1).translated);
+        // One held back but let go, past the limit, asks the next time it's drawn.
+        assertFalse(drawn.get(firstHeld - 2).translated);
     }
 
     @Test public void failuresWhileOfflineStayWithinTheirLimit() {
