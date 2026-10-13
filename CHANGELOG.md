@@ -6,6 +6,8 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.17.
 
+* **Telegram:** **Keep deleted messages** doesn't lose track of what it kept anymore. A message only counts as kept once the list naming it is saved, and if that save fails Telegram deletes it as usual. **Clear kept messages** does its work away from the screen, says "Removing" right away and "Removed" once Telegram has actually deleted them. If Telegram closes partway through, the rest goes the next time that account gets a deletion or you tap Clear again. An account slot that now holds a different account never deletes the first one's messages.
+
 * **Telegram:** **Translate with an outside service** checks again right before a message's text is sent. If you turned the chat off, turned the feature off (from its row or with a settings file), paused HushTelegram, signed out of that account or changed the translation service while it waited, nothing goes out. Waiting text always goes to the service that was set when the message was opened. Text already on its way can't be called back, but its answer isn't shown.
 
 * **Telegram:** With more than one account signed in, **Translate with an outside service** keeps each account's chats to itself. A chat you turn on in one account no longer sends messages from the chat with the same ID in another, and a different account you sign in later doesn't pick up the old one's choices. Chats turned on before this update didn't record which account chose them, so they're cleared once with a short notice. Turn translation back on in the chats you want.

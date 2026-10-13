@@ -328,7 +328,10 @@ Clear kept messages	Borrar los mensajes conservados
 Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.	Elimina los mensajes que este teléfono conservó después de que otros los eliminaran, en todas las cuentas, como lo habría hecho Telegram.
 # context: the notice after that tap when nothing was kept
 There are no kept messages to clear.	No hay mensajes conservados para borrar.
-# context: the notice after that tap, with how many kept messages went
+# context: the notice right after that tap, while the kept messages are still being removed
+Removing %1$d kept message.	Eliminando %1$d mensaje conservado.
+Removing %1$d kept messages.	Eliminando %1$d mensajes conservados.
+# context: the notice once Telegram has finished removing them, with how many went
 Removed %1$d kept message.	Se eliminó %1$d mensaje conservado.
 Removed %1$d kept messages.	Se eliminaron %1$d mensajes conservados.
 Ask before sending a sticker	Preguntar antes de enviar un sticker

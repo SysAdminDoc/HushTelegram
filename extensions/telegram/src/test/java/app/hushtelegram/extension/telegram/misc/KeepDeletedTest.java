@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowToast;
 import org.telegram.tgnet.TLRPC;
 
 @RunWith(RobolectricTestRunner.class)
@@ -40,10 +41,14 @@ public class KeepDeletedTest {
 
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
+    private Memory memory;
+
     @Before public void reset() {
         restore();
-        KeepDeleted.persist = new Memory();
+        memory = new Memory();
+        KeepDeleted.persist = memory;
         KeepDeleted.forgetAllForTests();
+        ShadowToast.reset();
     }
 
     @After public void restore() {
@@ -259,22 +264,26 @@ public class KeepDeletedTest {
 
         assertFalse("works with the switch off", Settings.KEEP_DELETED_MESSAGES.get());
         assertEquals(6, KeepDeleted.clear());
-        assertEquals("forgotten at once", Collections.emptyList(), KeepDeleted.keptBy(SELF));
         assertTrue("the deletion runs on the storage queue", first.stock.isEmpty());
+        assertEquals("and nothing moves before it does", 5, KeepDeleted.keptBy(SELF).size());
         first.posted.get(0).run();
         second.posted.get(0).run();
+        assertEquals("off the kept list", Collections.emptyList(), KeepDeleted.keptBy(SELF));
         assertEquals("one deletion per chat, with the channel's ID for a channel and 0 otherwise",
                 Arrays.asList("10:[1, 2]:0", CHANNEL + ":[7, 9]:" + -CHANNEL, "-555:[8]:0"), first.stock);
         assertEquals("only groups are asked whether they're channels", Arrays.asList(CHANNEL, -555L), first.asked);
         assertEquals(Arrays.asList("[1, 2]:0", "[7, 9]:" + -CHANNEL, "[8]:0"), first.cleared);
         assertEquals(Arrays.asList("20:[3]:0"), second.stock);
+        // Each account's last step runs after Telegram's own deletion, on the same queue.
+        first.posted.get(1).run();
+        second.posted.get(1).run();
 
         KeepDeleted.forgetAllForTests();
         assertFalse("still forgotten after a restart", KeepDeleted.isKept(SELF, 10, 1));
         assertFalse(KeepDeleted.isKept(SELF, CHANNEL, 9));
         assertFalse(KeepDeleted.isKept(77, 20, 3));
-        assertEquals("Removed 6 kept messages.", KeepDeleted.clearedMessage(6));
-        assertEquals("Removed 1 kept message.", KeepDeleted.clearedMessage(1));
+        assertEquals("Removing 6 kept messages.", KeepDeleted.clearedMessage(6));
+        assertEquals("Removing 1 kept message.", KeepDeleted.clearedMessage(1));
     }
 
     @Test public void pastTheCapTheOldestKeptMessagesGoToTelegramsOwnDeletion() {
@@ -287,6 +296,10 @@ public class KeepDeletedTest {
         Fake telegram = new Fake(new KeepDeleted.Row(10, next, false, false, false),
                 new KeepDeleted.Row(10, next + 1, false, false, false));
         KeepDeleted.decide(telegram, 0, ids(next, next + 1), 0);
+        assertTrue("labelled until Telegram's deletion has run", KeepDeleted.isKept(SELF, 10, 1));
+        assertEquals(Arrays.asList("10:1", "10:2"), KeepDeleted.handingBy(SELF));
+        assertEquals(1, telegram.posted.size());
+        telegram.posted.get(0).run();
 
         assertTrue(KeepDeleted.isKept(SELF, 10, next + 1));
         assertFalse(KeepDeleted.isKept(SELF, 10, 1));
@@ -344,6 +357,8 @@ public class KeepDeletedTest {
         KeepDeleted.remember(77, Arrays.asList(new long[] {20, 3}));
         KeepDeleted.accounts = () -> Arrays.asList(refusing, unreadable, other);
         assertEquals(1, KeepDeleted.clear());
+        other.posted.get(0).run();
+        other.posted.get(1).run();
         KeepDeleted.forgetAllForTests();
         assertTrue("saved back", KeepDeleted.isKept(SELF, 10, 1) && KeepDeleted.isKept(SELF, CHANNEL, 9));
         assertFalse(KeepDeleted.isKept(77, 20, 3));
@@ -355,11 +370,183 @@ public class KeepDeletedTest {
         assertEquals(3, KeepDeleted.clear());
         failing.posted.get(0).run();
         assertEquals(Arrays.asList("10:[1]:0"), failing.stock);
+        failing.posted.get(1).run();
         KeepDeleted.forgetAllForTests();
         assertFalse(KeepDeleted.isKept(SELF, 10, 1));
         assertTrue(KeepDeleted.isKept(SELF, CHANNEL, 7));
         assertTrue(KeepDeleted.isKept(SELF, CHANNEL, 9));
         assertTrue(HookStatus.missing(FamilyNames.KEEP_DELETED_MESSAGES).toString().contains("clearing kept messages"));
+    }
+
+    // The saved lists, a failed write and a restart at each step.
+
+    @Test public void aMessageIsOnlyKeptOnceTheListNamingItIsSaved() {
+        Settings.KEEP_DELETED_MESSAGES.save(true);
+        memory.failWrites = true;
+        Fake telegram = new Fake(new KeepDeleted.Row(10, 1, false, false, false));
+        KeepDeleted.decide(telegram, 0, ids(1), 0);
+        assertEquals("unsaved, it's left to Telegram", Arrays.asList("0:[1]:0"), telegram.stock);
+        assertFalse(KeepDeleted.isKept(SELF, 10, 1));
+        assertTrue(HookStatus.missing(FamilyNames.KEEP_DELETED_MESSAGES).toString().contains("saving kept messages"));
+        KeepDeleted.forgetAllForTests();
+        assertFalse(KeepDeleted.isKept(SELF, 10, 1));
+    }
+
+    @Test public void aDeletionForNoSignedInAccountIsLeftToTelegram() {
+        Settings.KEEP_DELETED_MESSAGES.save(true);
+        Fake telegram = new Fake(new KeepDeleted.Row(10, 1, false, false, false));
+        telegram.self = 0;
+        KeepDeleted.decide(telegram, 0, ids(1), 0);
+        assertEquals(Arrays.asList("0:[1]:0"), telegram.stock);
+        assertEquals(0, memory.writes);
+    }
+
+    @Test public void aClearWhoseMoveCantBeSavedChangesNothing() {
+        KeepDeleted.remember(SELF, Arrays.asList(new long[] {10, 1}, new long[] {10, 2}));
+        Fake telegram = new Fake();
+        KeepDeleted.accounts = () -> Collections.singletonList(telegram);
+        assertEquals(2, KeepDeleted.clear());
+        memory.failWrites = true;
+        telegram.posted.get(0).run();
+        assertTrue(telegram.stock.isEmpty());
+        assertEquals(Arrays.asList("10:1", "10:2"), KeepDeleted.keptBy(SELF));
+        assertTrue(KeepDeleted.handingBy(SELF).isEmpty());
+    }
+
+    /** The move off the kept list is saved, then the app dies before Telegram is asked. */
+    @Test public void aRestartAfterTheMoveHandsTheMessagesBackAndKeepsTheirLabelUntilThen() {
+        KeepDeleted.remember(SELF, Arrays.asList(new long[] {10, 1}, new long[] {10, 2}));
+        assertTrue(KeepDeleted.beginHandBack(SELF));
+        KeepDeleted.forgetAllForTests();
+        assertTrue("still labelled while it waits", KeepDeleted.isKept(SELF, 10, 1));
+        assertEquals(Arrays.asList("10:1", "10:2"), KeepDeleted.handingBy(SELF));
+
+        // The account's next deletion picks them up.
+        Fake telegram = new Fake();
+        KeepDeleted.decide(telegram, 0, ids(5), 0);
+        assertEquals(Arrays.asList("10:[1, 2]:0", "0:[5]:0"), telegram.stock);
+        assertEquals(1, telegram.posted.size());
+        assertTrue("until Telegram's deletion has run", KeepDeleted.isKept(SELF, 10, 1));
+        telegram.posted.get(0).run();
+        assertFalse(KeepDeleted.isKept(SELF, 10, 1));
+        KeepDeleted.forgetAllForTests();
+        assertTrue(KeepDeleted.handingBy(SELF).isEmpty());
+        assertTrue(KeepDeleted.keptBy(SELF).isEmpty());
+    }
+
+    /** Telegram was asked, then the app dies before its deletion ran on the queue. */
+    @Test public void aRestartAfterTelegramWasAskedDeletesAgainThenForgets() {
+        KeepDeleted.remember(SELF, Arrays.asList(new long[] {10, 1}));
+        Fake before = new Fake();
+        KeepDeleted.accounts = () -> Collections.singletonList(before);
+        assertEquals(1, KeepDeleted.clear());
+        before.posted.get(0).run();
+        assertEquals(Arrays.asList("10:[1]:0"), before.stock);
+        KeepDeleted.forgetAllForTests();
+        assertEquals("nothing came off the list", Arrays.asList("10:1"), KeepDeleted.handingBy(SELF));
+
+        Fake after = new Fake();
+        KeepDeleted.accounts = () -> Collections.singletonList(after);
+        assertEquals("a tap counts what's still on its way", 1, KeepDeleted.clear());
+        after.posted.get(0).run();
+        assertEquals("deleting it again finds nothing, so it's safe", Arrays.asList("10:[1]:0"), after.stock);
+        after.posted.get(1).run();
+        assertTrue(KeepDeleted.handingBy(SELF).isEmpty());
+    }
+
+    @Test public void aFinishThatCantBeSavedLeavesTheMessagesToBeDeletedAgain() {
+        KeepDeleted.remember(SELF, Arrays.asList(new long[] {10, 1}));
+        Fake telegram = new Fake();
+        KeepDeleted.accounts = () -> Collections.singletonList(telegram);
+        KeepDeleted.clear();
+        telegram.posted.get(0).run();
+        memory.failWrites = true;
+        telegram.posted.get(1).run();
+        memory.failWrites = false;
+        KeepDeleted.forgetAllForTests();
+        assertEquals(Arrays.asList("10:1"), KeepDeleted.handingBy(SELF));
+    }
+
+    @Test public void aSecondTapWhileTheFirstIsOnItsWayAsksTelegramNothingTwice() {
+        KeepDeleted.remember(SELF, Arrays.asList(new long[] {10, 1}));
+        Fake telegram = new Fake();
+        KeepDeleted.accounts = () -> Collections.singletonList(telegram);
+        assertEquals(1, KeepDeleted.clear());
+        telegram.posted.get(0).run();
+        assertEquals("already on its way", 0, KeepDeleted.clear());
+        assertEquals(2, telegram.posted.size());
+    }
+
+    /** A slot signed out, with another account signed in, before the queue ran. */
+    @Test public void aSlotNowHoldingAnotherAccountDeletesNoneOfTheFirstOnesMessages() {
+        KeepDeleted.remember(SELF, Arrays.asList(new long[] {10, 1}, new long[] {11, 2}));
+        Fake slot = new Fake();
+        KeepDeleted.accounts = () -> Collections.singletonList(slot);
+        assertEquals(2, KeepDeleted.clear());
+        slot.self = 77;
+        slot.posted.get(0).run();
+        assertTrue(slot.stock.isEmpty());
+        assertEquals("still kept for the account that kept them", Arrays.asList("10:1", "11:2"), KeepDeleted.keptBy(SELF));
+        assertTrue(String.join("\n", HookStatus.report()).contains("kept messages left for their own account"));
+
+        // The account changes between two chats of one hand-back: the second chat waits for it.
+        slot.self = SELF;
+        slot.posted.clear();
+        assertEquals(2, KeepDeleted.clear());
+        slot.afterStock = () -> slot.self = 77;
+        slot.posted.get(0).run();
+        assertEquals(Arrays.asList("10:[1]:0"), slot.stock);
+        slot.posted.get(1).run();
+        assertEquals(Arrays.asList("11:2"), KeepDeleted.handingBy(SELF));
+        assertTrue(KeepDeleted.isKept(SELF, 11, 2));
+        assertTrue(KeepDeleted.handingBy(77).isEmpty());
+    }
+
+    @Test public void listsSavedByANewerVersionAreReadButNeverWrittenOver() {
+        memory.values.put("version", "3");
+        memory.values.put("kept_" + SELF, "10:1");
+        Settings.KEEP_DELETED_MESSAGES.save(true);
+        assertTrue("its messages still show the label", KeepDeleted.isKept(SELF, 10, 1));
+        Fake telegram = new Fake(new KeepDeleted.Row(10, 2, false, false, false));
+        KeepDeleted.decide(telegram, 0, ids(2), 0);
+        assertEquals("a new message goes the stock way", Arrays.asList("0:[2]:0"), telegram.stock);
+        assertEquals(0, memory.writes);
+        assertEquals("10:1", memory.values.get("kept_" + SELF));
+    }
+
+    /** Version 1 saved only the kept list, with no number. */
+    @Test public void aListFromBeforeTheJournalIsReadAndKeptWhole() {
+        memory.values.put("kept_" + SELF, "10:1,10:2");
+        assertTrue(KeepDeleted.isKept(SELF, 10, 2));
+        assertNotNull(KeepDeleted.remember(SELF, Arrays.asList(new long[] {10, 3})));
+        assertEquals(String.valueOf(KeepDeleted.VERSION), memory.values.get("version"));
+        assertEquals("10:1,10:2,10:3", memory.values.get("kept_" + SELF));
+        assertEquals("", memory.values.get("handing_" + SELF));
+    }
+
+    @Test public void theRowSaysRemovingAtOnceAndRemovedOnceTelegramIsDone() {
+        KeepDeleted.remember(SELF, Arrays.asList(new long[] {10, 1}, new long[] {10, 2}));
+        Fake telegram = new Fake();
+        KeepDeleted.accounts = () -> Collections.singletonList(telegram);
+        assertEquals("Removing 2 kept messages.", KeepDeleted.clearedMessage(KeepDeleted.clear()));
+        telegram.posted.get(0).run();
+        ShadowLooper.idleMainLooper();
+        assertNull("nothing says done before Telegram is", ShadowToast.getLatestToast());
+        telegram.posted.get(1).run();
+        ShadowLooper.idleMainLooper();
+        assertEquals("Removed 2 kept messages.", ShadowToast.getTextOfLatestToast());
+    }
+
+    @Test public void theCapsOwnHandBackSaysNothing() {
+        Settings.KEEP_DELETED_MESSAGES.save(true);
+        List<long[]> full = new ArrayList<>();
+        for (int id = 1; id <= KeepDeleted.LIMIT; id++) full.add(new long[] {10, id});
+        KeepDeleted.remember(SELF, full);
+        Fake telegram = new Fake(new KeepDeleted.Row(10, KeepDeleted.LIMIT + 1, false, false, false));
+        KeepDeleted.decide(telegram, 0, ids(KeepDeleted.LIMIT + 1), 0);
+        telegram.posted.get(0).run();
+        ShadowLooper.idleMainLooper();
+        assertNull(ShadowToast.getLatestToast());
     }
 
     @Test public void theBridgeTellsAChannelOrSupergroupFromABasicGroup() throws Exception {
@@ -449,12 +636,20 @@ public class KeepDeletedTest {
         Update(Integer first, Integer second) { messages = ids(first, second); }
     }
 
+    /** The phone's storage, which a test can make refuse a commit. A refused one writes nothing. */
     private static final class Memory implements KeepDeleted.Persist {
-        private final Map<String, String> values = new HashMap<>();
+        final Map<String, String> values = new HashMap<>();
+        boolean failWrites;
+        int writes;
 
         @Override public String read(String key) { return values.get(key); }
 
-        @Override public void write(String key, String value) { values.put(key, value); }
+        @Override public boolean write(Map<String, String> entries) {
+            if (failWrites) return false;
+            writes++;
+            values.putAll(entries);
+            return true;
+        }
     }
 
     private static final class Fake implements KeepDeleted.Source {
@@ -473,6 +668,8 @@ public class KeepDeletedTest {
         boolean failClear;
         boolean failChannel;
         boolean failRedraw;
+        /** Run after each deletion Telegram is asked for, to change things between two chats. */
+        Runnable afterStock;
 
         Fake(KeepDeleted.Row... rows) { this.rows = Arrays.asList(rows); }
 
@@ -494,6 +691,7 @@ public class KeepDeletedTest {
         @Override public void stock(long dialogId, ArrayList<Integer> ids, long channelId) {
             if (failStock) throw new IllegalStateException("no deletion");
             stock.add(dialogId + ":" + ids + ":" + channelId);
+            if (afterStock != null) afterStock.run();
         }
 
         @Override public void clearNotifications(ArrayList<Integer> ids, long channelId) {

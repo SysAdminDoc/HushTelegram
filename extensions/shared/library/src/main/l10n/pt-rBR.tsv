@@ -325,7 +325,10 @@ Clear kept messages	Limpar mensagens mantidas
 Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.	Apaga as mensagens que este celular manteve depois que outras pessoas as apagaram, em todas as contas, como o Telegram teria feito.
 # context: the notice after that tap when nothing was kept
 There are no kept messages to clear.	Não há mensagens mantidas para limpar.
-# context: the notice after that tap, with how many kept messages went
+# context: the notice right after that tap, while the kept messages are still being removed
+Removing %1$d kept message.	Removendo %1$d mensagem mantida.
+Removing %1$d kept messages.	Removendo %1$d mensagens mantidas.
+# context: the notice once Telegram has finished removing them, with how many went
 Removed %1$d kept message.	%1$d mensagem mantida removida.
 Removed %1$d kept messages.	%1$d mensagens mantidas removidas.
 Ask before sending a sticker	Perguntar antes de enviar um sticker

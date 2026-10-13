@@ -328,7 +328,10 @@ Clear kept messages	Hapus pesan yang disimpan
 Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.	Menghapus pesan yang disimpan ponsel ini setelah orang lain menghapusnya, di setiap akun, seperti yang akan dilakukan Telegram.
 # context: the notice after that tap when nothing was kept
 There are no kept messages to clear.	Tidak ada pesan yang disimpan untuk dihapus.
-# context: the notice after that tap, with how many kept messages went
+# context: the notice right after that tap, while the kept messages are still being removed
+Removing %1$d kept message.	Menghapus %1$d pesan yang disimpan.
+Removing %1$d kept messages.	Menghapus %1$d pesan yang disimpan.
+# context: the notice once Telegram has finished removing them, with how many went
 Removed %1$d kept message.	%1$d pesan yang disimpan telah dihapus.
 Removed %1$d kept messages.	%1$d pesan yang disimpan telah dihapus.
 Ask before sending a sticker	Tanya dulu sebelum mengirim stiker

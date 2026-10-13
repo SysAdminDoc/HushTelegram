@@ -1081,8 +1081,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
     /**
      * The way out of Keep deleted messages: a tap hands every message it kept, in every signed-in
-     * account, to Telegram's own deletion and says how many went. The tap is the whole request, so
-     * nothing asks first and nothing opens.
+     * account, to Telegram's own deletion and says how many are on their way, then again how many
+     * went once Telegram has deleted them. The tap is the whole request, so nothing asks first and
+     * nothing opens.
      */
     private static Preference clearKeptRow(Context context) {
         Row row = new Row(context);
