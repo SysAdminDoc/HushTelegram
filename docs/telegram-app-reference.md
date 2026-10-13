@@ -2,13 +2,19 @@
 
 This guide describes the factory Telegram APK that HushTelegram patches. It gives patch work a shared starting point for app identity, first-run screens, manifest entry points, bytecode anchors and target updates.
 
-For a deeper map of ad delivery, telemetry, common friction and patch opportunities, see the [Telegram 12.10.6 app audit](telegram-audit-12.10.6.md).
+## Current targets
 
-The [signed-in runtime audit](telegram-runtime-audit-12.10.7.md) adds a physical S22 walkthrough of official beta 12.10.7, live search-ad evidence, network captures and background measurements.
+The builds HushTelegram patches are declared in one place, [AppCompatibilities.kt](../patches/src/main/kotlin/app/morphe/patches/shared/compat/AppCompatibilities.kt), with each build's package, version, version code and signer and the patched app's minimum Android version. The fixture tests read that same list, so every patch check runs against exactly those builds. The generated [patches-list.json](../patches-list.json) carries what each published patch declares, and the README's [supported builds](../README.md#supported-telegram-builds) section gives users the release's builds and checksums. Main can target a newer build than the latest release, so the README and the code can name different versions for a while.
 
-The reference uses Telegram 12.10.6, version code 71129, from telegram.org's single APK. Its SHA-256 is `7827ea506d297644b1d350266bdfbd8d5d38a7869fa3fc1a0fbcb1ebc81f45ad`. The APK stays in the local, gitignored `fixtures/` folder.
+This page doesn't copy those numbers. Wherever it names a Telegram version, it's describing what was seen on that build.
 
-## Factory install inspected
+## What earlier builds showed
+
+The first-run screens and the APK identity table below were read from Telegram 12.10.6, version code 71129, telegram.org's single APK. Its SHA-256 is `7827ea506d297644b1d350266bdfbd8d5d38a7869fa3fc1a0fbcb1ebc81f45ad`. The fixture APKs stay in the local, gitignored `fixtures/` folder.
+
+Two deeper audits come from the same period. The [Telegram 12.10.6 app audit](telegram-audit-12.10.6.md) maps ad delivery, telemetry, common friction and patch opportunities. The [signed-in runtime audit](telegram-runtime-audit-12.10.7.md) adds a physical S22 walkthrough of official beta 12.10.7, live search-ad evidence, network captures and background measurements. Both describe those builds. Treat a finding there as a lead to check again on the current target, not as proof that it still holds.
+
+### Factory install inspected
 
 The APK was installed on a clean Android 13 API 33 Pixel 7 emulator profile. Its package, version and installed APK hash matched the fixture. No Morphe bundle or HushTelegram extension was applied.
 
@@ -22,9 +28,9 @@ Start Messaging opens Telegram's call-verification explanation. Android then dis
 
 No phone number or login code was entered during this emulator flow. `READ_PHONE_NUMBERS` and `READ_PHONE_STATE` remained ungranted. The later [S22 walkthrough](telegram-runtime-audit-12.10.7.md) covers signed-in screens on the official beta. Android's permission dialog can vary by system version and prior permission history.
 
-## APK identity
+### APK identity
 
-| Field | Factory web APK |
+| Field | Factory web APK, 12.10.6 |
 |---|---|
 | App label | Telegram |
 | Package | `org.telegram.messenger.web` |
@@ -34,9 +40,9 @@ No phone number or login code was entered during this emulator flow. `READ_PHONE
 | Manifest SDK | minimum 21, target 36, compiled with SDK 36 |
 | Native ABIs | `arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64` |
 
-HushTelegram also supports Telegram Beta at `org.telegram.messenger.beta`, version 12.10.7, code 71239. It has the same vendor signer and its own fixture checks. The Telegram APK itself declares Android 5 as its minimum. HushTelegram's extension raises the patched app floor to Android 9, API 28.
+The package and signer rows are the ones AppCompatibilities.kt still declares. The version and SDK rows belong to 12.10.6. The official beta, `org.telegram.messenger.beta`, has the same vendor signer and gets its own fixture checks. It was at 12.10.7, code 71239, when this page was first written. That Telegram APK declared Android 5 as its minimum, and HushTelegram's extension raises the patched app floor to Android 9, API 28.
 
-The current compatibility list covers the telegram.org web APK and its beta APK. It does not declare the Play Store package `org.telegram.messenger` as a target.
+AppCompatibilities.kt declares the telegram.org web APK and the beta APK. It doesn't declare the Play Store package `org.telegram.messenger` as a target.
 
 ## App entry points and component families
 
@@ -57,7 +63,7 @@ Most activity screens live under `org.telegram.ui`. Reusable widgets and views s
 
 Telegram runs R8 over much of the UI. Many internal `org.telegram.ui` class and method names change on each build. Most `org.telegram.messenger` and `org.telegram.tgnet.TLRPC` names stay readable, while generated lambda suffixes can move. Manifest components and stable resource names also remain useful.
 
-Use a Telegram request class, a kept method or field, a stable resource name and nearby bytecode shape to find a patch point. A raw obfuscated UI name or a lambda number is weak evidence by itself. The table gives examples already used by HushTelegram.
+Use a Telegram request class, a kept method or field, a stable resource name and nearby bytecode shape to find a patch point. A raw obfuscated UI name or a lambda number is weak evidence by itself. The table gives examples already used by HushTelegram, and each fixture test it names runs against every build AppCompatibilities.kt declares.
 
 | Feature area | Stable evidence in the APK | Current implementation and fixture check |
 |---|---|---|
