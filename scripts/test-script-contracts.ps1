@@ -5243,6 +5243,259 @@ class AlignmentFixture {
     Assert-Throws { Invoke-DeviceBuild -Apk $otherApkm } $otherRefusal 'patch-for-device.ps1 took another package.'
     Assert-True (-not (Test-Path -LiteralPath $javaLog)) 'patch-for-device.ps1 started the CLI on another package.'
 
+    # Two device builds at once in the default output folder, which is all a second terminal takes.
+    # Every run used to write the same names there: morphe-patch.args with the signing password,
+    # tmp, result.json and the APK. Held inside the CLI together, two runs with different signing
+    # aliases showed what that does: the second rewrote the argument file the first was about to
+    # read, deleted the first one's APK as it started, and took the argument file and the scratch
+    # away as it ended, with the first still patching. Each run works in a folder of its own now.
+    # Here the stand-in CLI holds both runs at once, each known by the alias its own argument file
+    # carries, and they're let go one at a time: the first finishes, fails or is stopped while the
+    # second is still held. Each run signs with its own alias, patches its own package and installs
+    # on its own stand-in phone, so the report it's judged by and the APK adb is handed are both on
+    # record. %TEMP% is a folder of this fixture for the length of it, which makes the default
+    # -OutDir one, and the stand-in adb is the first on the PATH.
+    $raceRoot = Join-Path $releaseRoot 'race'
+    $raceBin = Join-Path $raceRoot 'bin'
+    $raceLeases = Join-Path $raceRoot 'device-leases'
+    $raceSignals = Join-Path $tools 'race'
+    $raceAdbLog = Join-Path $raceBin 'adb.log'
+    $raceBarrier = Join-Path $tools 'during-patch.cmd'
+    $raceApkName = "hushtelegram-$releaseVersionHere-signed.apk"
+    New-Item -ItemType Directory -Path $raceBin, $raceLeases -Force | Out-Null
+    [System.IO.File]::WriteAllText((Join-Path $raceBin 'adb.cmd'), ((@(
+        '@echo off',
+        '>>"%~dp0adb.log" echo %*',
+        'if "%3"=="get-state" echo device',
+        'if "%3"=="get-serialno" echo %2',
+        'if "%3|%4|%5"=="shell|getprop|ro.product.model" echo ContractPhone',
+        'rem The app is not on the phone, which Android answers with 1 and nothing. The inventory agrees.',
+        'if "%3|%4|%5"=="shell|pm|path" exit /b 1',
+        'if "%3|%4|%5|%6"=="shell|pm|list|packages" echo package:android',
+        'rem Only a file that is there installs.',
+        'if "%3"=="install" if not exist "%~5" exit /b 20',
+        'if "%3"=="install" echo Success',
+        'exit /b 0') -join "`r`n") + "`r`n"), [System.Text.Encoding]::ASCII)
+    $betaTarget = @($releaseTargets | Where-Object { $_.PackageName -ceq 'org.telegram.messenger.beta' })[0]
+    Assert-True ($null -ne $betaTarget) 'The catalog declares no beta build, so the two runs below would patch one package.'
+    $raceRuns = [ordered]@{
+        alpha = @{ Apk = $fixturePaths[$releaseTarget.PackageVersion]; Package = $releaseTarget.PackageName
+            Serial = 'contract-phone-a' }
+        beta = @{ Apk = $fixturePaths[(Get-FixtureKey -Package $betaTarget.PackageName -Version $betaTarget.PackageVersion)]
+            Package = $betaTarget.PackageName; Serial = 'contract-phone-b' }
+    }
+    # A whole-device lease for each stand-in phone, owned by the run that installs on it.
+    function Save-RaceLeases {
+        $now = [DateTimeOffset]::UtcNow
+        foreach ($alias in @($raceRuns.Keys)) {
+            $run = $raceRuns[$alias]
+            $run.Token = [guid]::NewGuid().ToString()
+            [System.IO.File]::WriteAllText((Join-Path $raceLeases "$($run.Serial).json"), ([ordered]@{
+                    schemaVersion = 1; serial = $run.Serial; project = 'HushTelegram'; chatIdentity = 'race-contract'
+                    ownershipToken = $run.Token; acquiredUtc = $now.AddMinutes(-1).ToString('o')
+                    expiresUtc = $now.AddMinutes(20).ToString('o'); purpose = 'two device builds at once' } | ConvertTo-Json))
+        }
+    }
+    # Starts a run in a runspace of its own and comes back once its CLI is held, with the argument
+    # file that CLI was handed and the folder it's in.
+    function Start-RaceBuild([string]$Alias) {
+        $run = $raceRuns[$Alias]
+        $run.Shell = [powershell]::Create()
+        [void]$run.Shell.AddCommand((Join-Path $PSScriptRoot 'patch-for-device.ps1')).AddParameters(@{
+                Root = $releaseRepo; DesktopJar = $stubJar; Java = $stubJava; Aapt2 = $stubAapt2; Apk = $run.Apk
+                KeyAlias = $Alias; Serial = $run.Serial; ExpectedModel = 'ContractPhone'
+                LeaseDirectory = $raceLeases; LeaseToken = $run.Token; ChatIdentity = 'race-contract' })
+        $run.Handle = $run.Shell.BeginInvoke()
+        $entered = Join-Path $raceSignals "entered-$Alias.txt"
+        $clock = [System.Diagnostics.Stopwatch]::StartNew()
+        while ($true) {
+            if (Test-Path -LiteralPath $entered -PathType Leaf) {
+                $handed = "$(Get-Content -LiteralPath $entered -Raw -ErrorAction SilentlyContinue)".Trim()
+                if ($handed) {
+                    $run.Arguments = $handed
+                    $run.Folder = Split-Path -Parent $handed
+                    return
+                }
+            }
+            if ($run.Handle.IsCompleted) {
+                throw "The device build signed as $Alias ended before its CLI started: $(Complete-RaceBuild $Alias)"
+            }
+            if ($clock.Elapsed.TotalSeconds -gt 90) { throw "The device build signed as $Alias never started its CLI." }
+            Start-Sleep -Milliseconds 50
+        }
+    }
+    # What a run ended with: nothing, or its error.
+    function Complete-RaceBuild([string]$Alias) {
+        $run = $raceRuns[$Alias]
+        if (-not $run.Handle.AsyncWaitHandle.WaitOne(120000)) {
+            throw "The device build signed as $Alias did not end within two minutes."
+        }
+        try {
+            $null = $run.Shell.EndInvoke($run.Handle)
+            return ''
+        } catch {
+            return "$($_.Exception.Message)"
+        } finally {
+            $run.Shell.Dispose()
+            $run.Shell = $null
+        }
+    }
+    # The arguments in a run's file, as the CLI reads them. Never printed: the password is one.
+    function Read-RaceArguments([string]$Path) {
+        return @([System.IO.File]::ReadAllLines($Path) | ForEach-Object {
+            $_.Substring(1, $_.Length - 2).Replace('\"', '"').Replace('\\', '\') })
+    }
+    function Get-RaceInstalls {
+        if (-not (Test-Path -LiteralPath $raceAdbLog -PathType Leaf)) { return @() }
+        return @(Get-Content -LiteralPath $raceAdbLog | Where-Object { $_ -match '^-s (\S+) install -r (.+)$' } |
+            ForEach-Object { "$($Matches[1])|$($Matches[2].Trim().Trim('"'))" })
+    }
+    function Get-RaceOutput([string]$Folder) {
+        if (-not (Test-Path -LiteralPath $Folder -PathType Container)) { return @() }
+        return @(Get-ChildItem -LiteralPath $Folder -Force | ForEach-Object { $_.Name } | Sort-Object)
+    }
+    $savedRaceTemp = $env:TEMP
+    $savedRacePath = $env:PATH
+    try {
+        [System.IO.File]::WriteAllText($raceBarrier, ((@(
+            '@echo off',
+            'rem Which run this is, by the signing alias in the argument file its own CLI was handed,',
+            'rem and the scratch folder that file names, where a real CLI unpacks the APK.',
+            'set "RACE_ALIAS=" & set "RACE_SCRATCH=" & set "RACE_BEFORE="',
+            'for /f "usebackq delims=" %%L in ("%ARGUMENTS%") do (',
+            '    set "RACE_VALUE=%%~L"',
+            '    set "RACE_VALUE=!RACE_VALUE:\\=\!"',
+            '    if "!RACE_BEFORE!"=="--keystore-entry-alias" set "RACE_ALIAS=!RACE_VALUE!"',
+            '    if "!RACE_BEFORE!"=="-t" set "RACE_SCRATCH=!RACE_VALUE!"',
+            '    set "RACE_BEFORE=!RACE_VALUE!"',
+            ')',
+            'mkdir "!RACE_SCRATCH!"',
+            '>"!RACE_SCRATCH!\unpacked.txt" echo !RACE_ALIAS!',
+            '>"!HERE!race\entered-!RACE_ALIAS!.txt" echo !ARGUMENTS!',
+            ':held',
+            'if exist "!HERE!race\go-!RACE_ALIAS!.txt" goto released',
+            'ping -n 2 127.0.0.1 >nul',
+            'goto held',
+            ':released',
+            'rem A CLI that dies with no report and no APK.',
+            'if exist "!HERE!race\fail-!RACE_ALIAS!.txt" exit 6',
+            'exit /b 0') -join "`r`n") + "`r`n"), [System.Text.Encoding]::ASCII)
+        $env:PATH = "$raceBin;$savedRacePath"
+        Assert-True ("$((Get-Command adb -ErrorAction SilentlyContinue).Source)" -ieq (Join-Path $raceBin 'adb.cmd')) `
+            'The stand-in adb is not the adb a device build would find, so no build is started.'
+        foreach ($ending in @('finishes', 'fails', 'is stopped')) {
+            $raceTemp = Join-Path $raceRoot ('temp-' + ($ending -replace ' ', '-'))
+            $raceOut = Join-Path $raceTemp 'hushtelegram-device'
+            Remove-Item -LiteralPath $raceSignals -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item -LiteralPath $raceAdbLog -Force -ErrorAction SilentlyContinue
+            New-Item -ItemType Directory -Path $raceTemp, $raceSignals -Force | Out-Null
+            Save-RaceLeases
+            $env:TEMP = $raceTemp
+            Start-RaceBuild 'alpha'
+            Start-RaceBuild 'beta'
+            $alpha = $raceRuns.alpha
+            $beta = $raceRuns.beta
+
+            # Both CLIs are held. Each was handed a file of its own, in a folder of its own under
+            # the default output folder, naming its own alias, vendor APK, scratch, report and APK.
+            Assert-True ($alpha.Arguments -ine $beta.Arguments) `
+                "Two device builds at once handed their CLIs one argument file: $($alpha.Arguments)"
+            foreach ($alias in @($raceRuns.Keys)) {
+                $run = $raceRuns[$alias]
+                Assert-True ((Split-Path -Parent $run.Folder) -ieq $raceOut -and (Split-Path -Leaf $run.Folder) -match '^run-[0-9a-f]{32}$') `
+                    "The device build signed as $alias does not work in a folder of its own under the default output folder: $($run.Folder)"
+                $run.ArgumentText = [System.IO.File]::ReadAllText($run.Arguments)
+                $values = [string[]]@(Read-RaceArguments $run.Arguments)
+                Assert-True ($values[[Array]::IndexOf($values, '--keystore-entry-alias') + 1] -ceq $alias -and $values[-1] -ieq $run.Apk) `
+                    "The CLI of the device build signed as $alias was handed another run's alias or vendor APK."
+                foreach ($flag in @('-o', '-t', '-r')) {
+                    Assert-True ($values[[Array]::IndexOf($values, $flag) + 1].StartsWith($run.Folder + '\', [System.StringComparison]::OrdinalIgnoreCase)) `
+                        "The device build signed as $alias has its CLI write $flag outside its own folder."
+                }
+                $run.Scratch = Join-Path $values[[Array]::IndexOf($values, '-t') + 1] 'unpacked.txt'
+                Assert-True (Test-Path -LiteralPath $run.Scratch -PathType Leaf) "The CLI of the device build signed as $alias left no scratch to watch."
+            }
+
+            # The first run ends while the second is still held.
+            if ($ending -eq 'is stopped') {
+                $stopping = $alpha.Shell.BeginStop($null, $null)
+                Assert-True ($stopping.AsyncWaitHandle.WaitOne(60000)) 'A device build held in its CLI did not stop within a minute.'
+                $alpha.Shell.EndStop($stopping)
+            } else {
+                if ($ending -eq 'fails') {
+                    Set-Content -LiteralPath (Join-Path $raceSignals 'fail-alpha.txt') -Value 'fail' -Encoding ASCII
+                }
+                Set-Content -LiteralPath (Join-Path $raceSignals 'go-alpha.txt') -Value 'go' -Encoding ASCII
+            }
+            $ended = Complete-RaceBuild 'alpha'
+            $expectedEnd = @{ 'finishes' = ''; 'fails' = '*Patching failed:*'; 'is stopped' = '*stopped*' }[$ending]
+            Assert-True ($(if ($expectedEnd) { $ended -like $expectedEnd } else { $ended -eq '' })) `
+                "The device build that $ending ended with: $ended"
+            # Its own folder is gone, the argument file with the password in it included, and it
+            # touched nothing of the run still patching.
+            Assert-True (-not (Test-Path -LiteralPath $alpha.Folder)) `
+                "The device build that $ending left its folder behind: $(@(Get-RaceOutput $alpha.Folder) -join ', ')"
+            Assert-True (-not $beta.Handle.IsCompleted -and (Test-Path -LiteralPath $beta.Scratch -PathType Leaf) -and
+                (Test-Path -LiteralPath $beta.Arguments -PathType Leaf) -and
+                [System.IO.File]::ReadAllText($beta.Arguments) -ceq $beta.ArgumentText) `
+                "The device build that $ending removed or rewrote the argument file or the scratch of the run still patching."
+            # What it left in the output folder: the APK and the summary when it finished, the
+            # summary a bug report attaches when it failed, nothing when it was stopped.
+            $expectedOutput = @(@(Split-Path -Leaf $beta.Folder) + @(switch ($ending) {
+                    'finishes' { $raceApkName; 'public-summary.json' }
+                    'fails' { 'public-summary.json' } }) | Sort-Object)
+            Assert-True ((@(Get-RaceOutput $raceOut) -join ', ') -ceq ($expectedOutput -join ', ')) `
+                "The device build that $ending left other files in the output folder than its own: $(@(Get-RaceOutput $raceOut) -join ', ')"
+            $alphaInstall = "$($alpha.Serial)|$(Join-Path $alpha.Folder $raceApkName)"
+            $betaInstall = "$($beta.Serial)|$(Join-Path $beta.Folder $raceApkName)"
+            $installs = @(Get-RaceInstalls)
+            if ($ending -eq 'finishes') {
+                Assert-True ($installs.Count -eq 1 -and $installs[0] -ieq $alphaInstall) `
+                    "The device build that finished first did not install the APK in its own folder, once: $($installs -join '; ')"
+                $summary = Get-Content -LiteralPath (Join-Path $raceOut 'public-summary.json') -Raw | ConvertFrom-Json
+                Assert-True ($summary.packageName -ceq $alpha.Package -and @($summary.failureCodes).Count -eq 0) `
+                    "The summary of the device build that finished first is not its own: $($summary.packageName)"
+            } else {
+                Assert-True (-not (Test-Path -LiteralPath $raceAdbLog)) `
+                    "A device build that $ending went on to adb: $(@(Get-Content -LiteralPath $raceAdbLog -ErrorAction SilentlyContinue) -join '; ')"
+            }
+            if ($ending -eq 'fails') {
+                $summary = Get-Content -LiteralPath (Join-Path $raceOut 'public-summary.json') -Raw | ConvertFrom-Json
+                Assert-True (@($summary.failureCodes).Count -gt 0) 'A device build whose CLI died published a summary with no failure code.'
+            }
+
+            # The second run goes on with what it started with: its own report, its own APK on its
+            # own phone, and nothing left but the two published files.
+            Set-Content -LiteralPath (Join-Path $raceSignals 'go-beta.txt') -Value 'go' -Encoding ASCII
+            $ended = Complete-RaceBuild 'beta'
+            Assert-True ($ended -eq '') "The device build held while the one beside it $ending did not finish: $ended"
+            Assert-True ((@(Get-RaceOutput $raceOut) -join ', ') -ceq (@($raceApkName, 'public-summary.json' | Sort-Object) -join ', ')) `
+                "Two device builds left more in the output folder than the APK and the summary: $(@(Get-RaceOutput $raceOut) -join ', ')"
+            $summary = Get-Content -LiteralPath (Join-Path $raceOut 'public-summary.json') -Raw | ConvertFrom-Json
+            Assert-True ($summary.packageName -ceq $beta.Package -and @($summary.failureCodes).Count -eq 0) `
+                "The device build that finished last was judged by another run's report: $($summary.packageName), $(@($summary.failureCodes) -join ', ')"
+            $expectedInstalls = @(if ($ending -eq 'finishes') { $alphaInstall }) + @($betaInstall)
+            Assert-True ((@(Get-RaceInstalls) -join '; ') -ieq ($expectedInstalls -join '; ')) `
+                "Each device build did not install the APK in its own folder on its own phone: $(@(Get-RaceInstalls) -join '; ')"
+        }
+    } finally {
+        $env:TEMP = $savedRaceTemp
+        $env:PATH = $savedRacePath
+        # A case that failed part way leaves a CLI held. Let it go, and end its run.
+        if (Test-Path -LiteralPath $raceSignals -PathType Container) {
+            foreach ($alias in @($raceRuns.Keys)) {
+                Set-Content -LiteralPath (Join-Path $raceSignals "go-$alias.txt") -Value 'go' -Encoding ASCII
+            }
+        }
+        foreach ($alias in @($raceRuns.Keys)) {
+            $shell = $raceRuns[$alias].Shell
+            if ($null -eq $shell) { continue }
+            $null = $shell.BeginStop($null, $null).AsyncWaitHandle.WaitOne(30000)
+            $shell.Dispose()
+        }
+        Remove-Item -LiteralPath $raceBarrier -Force -ErrorAction SilentlyContinue
+    }
+
     # The builder, the release check and the device build given relative paths, from a location
     # the process directory isn't. Each found its file with Test-Path, in PowerShell's location,
     # and then opened or wrote it with .NET, which reads the process directory: the builder died
