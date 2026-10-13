@@ -404,8 +404,8 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_disable_draft_previews", FALSE);
 
     /**
-     * The server copy of an unsent draft only; the draft on this phone, an empty clear and drafts
-     * the server sends stay stock ({@link app.hushtelegram.extension.telegram.misc.LocalDrafts}).
+     * The server copy of an unsent draft only, which goes emptied; the draft on this phone, an empty
+     * clear and drafts the server sends stay stock ({@link app.hushtelegram.extension.telegram.misc.LocalDrafts}).
      */
     public static final BooleanSetting LOCAL_DRAFTS =
             new BooleanSetting("hushtelegram_local_drafts", FALSE);
