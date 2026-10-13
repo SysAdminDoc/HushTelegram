@@ -15,13 +15,17 @@ import android.content.SharedPreferences;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import app.hushtelegram.extension.shared.settings.preference.SharedPrefCategory;
 
 /**
  * Setting's store with a fault put in on purpose for each editor it opens, in order. Editors past
- * the list work. Closing it puts the store it replaced back.
+ * the list work. Closing it puts the store it replaced back. {@link #holding} also keeps the first
+ * commit waiting, for what happens while a write is still out.
  */
 public final class FailingStore implements AutoCloseable {
     /** What one editor does. */
@@ -45,10 +49,16 @@ public final class FailingStore implements AutoCloseable {
     /** How many editors were asked for, the refused ones included. */
     public final AtomicInteger editors = new AtomicInteger();
 
+    /** Whether the next commit waits at the store, as a slow disk makes it. */
+    private final AtomicBoolean holds = new AtomicBoolean();
+    private final CountDownLatch reached = new CountDownLatch(1);
+    private final CountDownLatch released = new CountDownLatch(1);
+
     private final Field field;
     private final Object replaced;
 
-    private FailingStore(Fault[] faults) throws ReflectiveOperationException {
+    private FailingStore(Fault[] faults, boolean holdFirstCommit) throws ReflectiveOperationException {
+        holds.set(holdFirstCommit);
         field = SharedPrefCategory.class.getDeclaredField("preferences");
         field.setAccessible(true);
         replaced = field.get(Setting.preferences);
@@ -63,7 +73,15 @@ public final class FailingStore implements AutoCloseable {
                     return Proxy.newProxyInstance(editor.getClass().getClassLoader(),
                             new Class<?>[]{SharedPreferences.Editor.class}, (editorProxy, edit, values) -> {
                                 String name = edit.getName();
-                                if (name.equals("commit")) return commit(fault, editor);
+                                if (name.equals("commit")) {
+                                    if (holds.compareAndSet(true, false)) {
+                                        reached.countDown();
+                                        if (!released.await(10, TimeUnit.SECONDS)) {
+                                            throw new IllegalStateException("the held commit was never let go");
+                                        }
+                                    }
+                                    return commit(fault, editor);
+                                }
                                 if (fault == Fault.STAGE_THROWS && (name.startsWith("put") || name.equals("remove"))) {
                                     throw new IllegalArgumentException("injected staging failure");
                                 }
@@ -76,14 +94,38 @@ public final class FailingStore implements AutoCloseable {
     /** Puts the faults in, one per editor, until {@link #close()}. */
     public static FailingStore install(Fault... faults) {
         try {
-            return new FailingStore(faults);
+            return new FailingStore(faults, false);
         } catch (ReflectiveOperationException failure) {
             throw new IllegalStateException("Could not replace Setting's store", failure);
         }
     }
 
+    /**
+     * The same, with the first commit waiting at the store until {@link #letGo()}: a write caught
+     * part way, with its caller still inside it. Whatever fault that editor has comes after the wait.
+     */
+    public static FailingStore holding(Fault... faults) {
+        try {
+            return new FailingStore(faults, true);
+        } catch (ReflectiveOperationException failure) {
+            throw new IllegalStateException("Could not replace Setting's store", failure);
+        }
+    }
+
+    /** Waits for the held commit to reach the store, and answers whether it did. */
+    public boolean awaitHeld() throws InterruptedException {
+        return reached.await(5, TimeUnit.SECONDS);
+    }
+
+    /** Lets the held commit through. */
+    public void letGo() {
+        released.countDown();
+    }
+
     @Override
     public void close() {
+        // A test that failed while the commit was held leaves no worker waiting on it.
+        released.countDown();
         try {
             field.set(Setting.preferences, replaced);
         } catch (IllegalAccessException failure) {

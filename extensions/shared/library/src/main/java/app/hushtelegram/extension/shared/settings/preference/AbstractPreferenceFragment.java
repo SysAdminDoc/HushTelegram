@@ -152,6 +152,19 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
     public static volatile boolean settingImportInProgress;
 
     /**
+     * The keys the running import may write. Only a change to one of them is shown from its
+     * Setting, and their rows wait out of reach until the import ends. A change to any other key is
+     * the person's own tap and syncs the usual way: held back along with the import's, it reached
+     * the store while its Setting and its row kept the old value.
+     */
+    public static volatile Set<String> settingImportKeys = Collections.emptySet();
+
+    /** Whether [key] is one the running import may write. */
+    static boolean importOwns(String key) {
+        return settingImportInProgress && settingImportKeys.contains(key);
+    }
+
+    /**
      * Prevents recursive calls during preference <-> UI syncing from showing extra dialogs.
      */
     private static boolean updatingPreference;
@@ -248,16 +261,17 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
             Logger.printDebug(() -> "Preference changed: " + key);
             // Read before the Setting takes the new value: this is what the process runs with.
             Object valueBefore = setting.savedValue();
+            boolean importing = importOwns(key);
 
             updatingPreference = true;
-            if (!settingImportInProgress) {
+            if (!importing) {
                 // Another live page may own the change. Its persisted value is authoritative;
                 // reading this page's older control would overwrite it, including removing defaults.
                 syncPreferenceWithStoredValue(pref, setting, sharedPreferences);
             }
 
             boolean showRestartAfterUpdate = false;
-            if (!settingImportInProgress && !showingUserDialogMessage) {
+            if (!importing && !showingUserDialogMessage) {
                 // A confirmation needs a page to draw it on. A page's own dialog closing after
                 // the page is gone skips straight to applying, the same as a confirmed OK.
                 if (setting.userDialogMessage != null && !prefIsSetToDefault(pref, setting) && isAdded()) {
@@ -270,7 +284,7 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
             }
 
             // Apply 'Setting <- Preference', unless importing already updated the Setting.
-            updatePreference(pref, setting, true, settingImportInProgress);
+            updatePreference(pref, setting, true, importing);
             // Update any other preference availability that may now be different.
             updateUIAvailability();
             // Report success only after every operation that can still enter recovery succeeded.
@@ -586,7 +600,9 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
     }
 
     protected void updatePreferenceAvailability(@NonNull Preference pref, @NonNull Setting<?> setting) {
-        pref.setEnabled(setting.isAvailable());
+        // A row the running import may write waits for it: a tap in between would reach the store
+        // after the import's value and leave the row and its Setting showing the import's.
+        pref.setEnabled(setting.isAvailable() && !importOwns(setting.key));
     }
 
     protected void updateListPreferenceSummary(ListPreference listPreference, Setting<?> setting) {

@@ -58,6 +58,8 @@ public final class QuickSetups {
         for (Map.Entry<BooleanSetting, Boolean> value : values.entrySet()) {
             Preference row = screen.findPreference(value.getKey().key);
             if (!(row instanceof TwoStatePreference) || value.getValue() == null) continue;
+            // Out of reach of a tap while a settings import may write it, so out of reach here too.
+            if (AbstractPreferenceFragment.importOwns(row.getKey())) continue;
             TwoStatePreference toggle = (TwoStatePreference) row;
             boolean wanted = value.getValue();
             if (toggle.isChecked() == wanted) continue;

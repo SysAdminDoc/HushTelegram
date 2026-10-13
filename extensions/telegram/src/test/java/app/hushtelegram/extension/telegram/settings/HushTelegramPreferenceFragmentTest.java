@@ -34,16 +34,20 @@ import android.widget.ListView;
 
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.SettingsContextRule;
+import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.settings.FailingStore;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.PauseForTests;
+import app.hushtelegram.extension.shared.settings.Setting;
+import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests;
 
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -1374,6 +1378,98 @@ public class HushTelegramPreferenceFragmentTest {
         }
         assertTrue(bold.toString(), bold.containsAll(Arrays.asList(
                 "HushTelegram NOTICE", "Morphe: Project Name Restriction", "Trademarks", "Material Design icons")));
+    }
+
+    /**
+     * A switch the file doesn't name stays the person's to change while an import writes. Tapped on
+     * a second page with the import's commit still out, it's saved, running and shown on both pages
+     * and on one built afterwards, whether the import lands or is put back. The switch the file
+     * names waits out of reach meanwhile, for a tap and for Quick setups, and is back when it ends.
+     *
+     * <p>Every switch used to be shown from its Setting while an import ran, so the tap reached the
+     * store and the row went back: the screen and the running value said off, and the next start
+     * loaded on.
+     */
+    @Test
+    public void aSwitchTappedWhileAnImportWritesIsSavedRunningAndShownOnEveryPage() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_ADS, PatchFamily.NORMAL_PASTE);
+        String file = new JSONObject().put("format", SettingsBackup.FORMAT).put("schema", SettingsBackup.SCHEMA)
+                .put("settings", new JSONObject().put(Settings.HIDE_ADS.key, false)).toString();
+        for (boolean lands : new boolean[]{true, false}) {
+            String name = lands ? "an import that lands: " : "an import that's put back: ";
+            ShadowToast.reset();
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                HushTelegramPreferenceFragment first = pageOf(controller);
+                HushTelegramPreferenceFragment second = pageOf(controller);
+                try (FailingStore store = lands ? FailingStore.holding()
+                        : FailingStore.holding(FailingStore.Fault.COMMIT_THROWS)) {
+                    first.pendingImport = SettingsBackup.parse(file).toBundle();
+                    SettingsBackupPreference.showPreview(first);
+                    ShadowAlertDialog.getLatestAlertDialog().getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+                    ShadowLooper.idleMainLooper();
+                    assertTrue(name + "the import never reached its commit", store.awaitHeld());
+
+                    for (HushTelegramPreferenceFragment page : Arrays.asList(first, second)) {
+                        assertFalse(name + "a switch the import writes is in reach",
+                                page.findPreference(Settings.HIDE_ADS.key).isEnabled());
+                        assertEquals("Importing settings",
+                                String.valueOf(page.findPreference("action_import_settings").getSummary()));
+                    }
+                    tap(second, Settings.HIDE_ADS.key);
+                    assertEquals(name + "Quick setups reached a switch the import writes", 0,
+                            second.applyQuickSetup(Collections.singletonMap(Settings.HIDE_ADS, false)));
+                    assertFalse(name + "a tap reached a switch the import writes",
+                            Setting.preferences.preferences.contains(Settings.HIDE_ADS.key));
+
+                    tap(second, Settings.NORMAL_PASTE.key);
+                    assertAgreed(name + "while it writes, ", Settings.NORMAL_PASTE, true, first, second);
+
+                    store.letGo();
+                    for (int round = 0; round < 3; round++) {
+                        Utils.awaitBackgroundTasksForTests();
+                        ShadowLooper.idleMainLooper();
+                    }
+                }
+                assertEquals(name, lands ? "Settings imported. 1 switch changed."
+                        : "Couldn't import the settings. Nothing was changed.", ShadowToast.getTextOfLatestToast());
+                assertFalse(name + "the import still holds its switches",
+                        AbstractPreferenceFragment.settingImportInProgress);
+                assertAgreed(name, Settings.NORMAL_PASTE, true, first, second);
+                assertAgreed(name, Settings.HIDE_ADS, !lands, first, second);
+
+                controller.recreate();
+                ShadowLooper.idleMainLooper();
+                HushTelegramPreferenceFragment rebuilt = pageOf(controller);
+                assertAgreed(name + "on a page built afterwards, ", Settings.NORMAL_PASTE, true, rebuilt);
+                assertAgreed(name + "on a page built afterwards, ", Settings.HIDE_ADS, !lands, rebuilt);
+            } finally {
+                Settings.HIDE_ADS.resetToDefault();
+                Settings.NORMAL_PASTE.resetToDefault();
+            }
+        }
+    }
+
+    /** Taps the row for [key] the way a finger does, through the page's list. A row out of reach ignores it. */
+    private static void tap(HushTelegramPreferenceFragment page, String key) {
+        Preference row = page.findPreference(key);
+        ListView list = page.getView().findViewById(android.R.id.list);
+        int position = -1;
+        for (int i = 0; i < list.getCount(); i++) if (list.getItemAtPosition(i) == row) position = i;
+        assertTrue("no row in the list for " + key, position >= 0);
+        list.performItemClick(null, position, list.getAdapter().getItemId(position));
+    }
+
+    /** [setting] is [expected] in the store, in the process and on each of [pages], with its row in reach. */
+    private static void assertAgreed(String when, BooleanSetting setting, boolean expected,
+                                     HushTelegramPreferenceFragment... pages) {
+        Object stored = Setting.preferences.preferences.getAll().get(setting.key);
+        assertEquals(when + setting.key + " in the store", expected, stored == null ? setting.defaultValue : stored);
+        assertEquals(when + setting.key + " in the process", expected, setting.savedValue());
+        for (HushTelegramPreferenceFragment page : pages) {
+            SwitchPreference row = (SwitchPreference) page.findPreference(setting.key);
+            assertEquals(when + setting.key + " on a page", expected, row.isChecked());
+            assertTrue(when + setting.key + "'s row is out of reach", row.isEnabled());
+        }
     }
 
     private static int indexOfKey(List<Preference> rows, String key) {

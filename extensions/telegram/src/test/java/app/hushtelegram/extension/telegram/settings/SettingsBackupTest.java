@@ -69,6 +69,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
@@ -407,6 +408,40 @@ public class SettingsBackupTest {
                 });
         assertFalse("a store left changed was reported as put back", failure.rolledBack);
         assertEquals(2, counts.commits.get());
+    }
+
+    /**
+     * A rollback puts back what the file named and nothing else. A switch the file doesn't name,
+     * saved the way its row saves it while the import's commit was still out, keeps that value in
+     * the store and in the process.
+     */
+    @Test
+    public void aRollbackLeavesASwitchSavedSinceAlone() throws Exception {
+        SettingsBackup.Snapshot snapshot = SettingsBackup.parse(fileWith(Settings.HIDE_ADS, false));
+        SharedPreferences real = Setting.preferences.preferences;
+        SettingsBackup.ApplyFailed failure;
+        try (FailingStore store = FailingStore.holding(FailingStore.Fault.COMMIT_THROWS_AFTER_LANDING)) {
+            Future<SettingsBackup.ApplyFailed> applied = Utils.submitOnBackgroundThread(() -> {
+                try {
+                    SettingsBackup.apply(snapshot);
+                    return null;
+                } catch (SettingsBackup.ApplyFailed failed) {
+                    return failed;
+                }
+            });
+            assertTrue("the import never reached its commit", store.awaitHeld());
+            assertTrue(real.edit().putBoolean(Settings.NORMAL_PASTE.key, true).commit());
+            BooleanSetting.privateSetValue(Settings.NORMAL_PASTE, true);
+            store.letGo();
+            failure = applied.get(5, TimeUnit.SECONDS);
+        }
+        assertNotNull("a failed commit was reported as written", failure);
+        assertTrue("the switch the file named isn't back", failure.rolledBack);
+        assertTrue(Settings.HIDE_ADS.savedValue());
+        assertFalse(store().containsKey(Settings.HIDE_ADS.key));
+        assertEquals("the rollback took a later write to another switch with it",
+                true, store().get(Settings.NORMAL_PASTE.key));
+        assertTrue(Settings.NORMAL_PASTE.savedValue());
     }
 
     /**
