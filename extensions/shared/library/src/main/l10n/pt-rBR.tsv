@@ -584,6 +584,22 @@ Made Private, Groups, Channels and Bots folders.	Pastas Privados, Grupos, Canais
 There were no folders from HushTelegram to remove.	Não havia pastas do HushTelegram para remover.
 # context: a short toast (two lines at most) after the switch went off. Folders the person renamed or changed are kept.
 Removed the folders HushTelegram made. Changed ones stay.	As pastas do HushTelegram foram removidas. As alteradas ficam.
+# context: a short toast (two lines at most) when Telegram hasn't answered the new folder requests after two seconds, for example while offline.
+Asking Telegram to make your folders.	Pedindo ao Telegram para criar suas pastas.
+# context: a short toast (two lines at most) when Telegram hasn't answered the folder delete requests after two seconds, for example while offline.
+Asking Telegram to remove the folders.	Pedindo ao Telegram para remover as pastas.
+# context: a short toast (two lines at most) when Telegram's server made some of the folders and turned the others down.
+Made some folders. Telegram turned the rest down.	Algumas pastas criadas. O Telegram recusou o resto.
+# context: a short toast (two lines at most) when Telegram's server turned down every folder, so the switch went back off.
+Telegram turned the folders down. Try again later.	O Telegram recusou as pastas. Tente de novo mais tarde.
+# context: a short toast (two lines at most) when the folders were made but Telegram's server didn't take the order of the tabs.
+Made the folders. Telegram didn't save their order.	Pastas criadas. O Telegram não salvou a ordem delas.
+# context: a short toast (two lines at most) after the switch went off, when Telegram's server wouldn't delete some of the folders. Turning the switch on and off asks again.
+Telegram kept some folders. Turn this on and off to retry.	O Telegram manteve algumas pastas. Ligue e desligue isto para tentar de novo.
+# context: a short toast (two lines at most) when Telegram's server wouldn't delete any of the folders, so the switch went back on.
+Telegram didn't remove the folders. Try again in a moment.	O Telegram não removeu as pastas. Tente de novo em um instante.
+# context: a short toast (two lines at most) when the folder switch is flipped while Telegram still hasn't answered the last flip.
+Telegram is still answering. Try again in a moment.	O Telegram ainda está respondendo. Tente de novo em um instante.
 Telegram refused this app's ID	O Telegram recusou o ID deste app
 Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.	O Telegram recusou o ID de API que este app usa para entrar, então nenhum código foi enviado. Aplique o patch no HushTelegram de novo com Use registered Telegram API credentials e seu próprio ID de my.telegram.org/apps. O guia mostra como.
 Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.	O Telegram não aceitou o ID de API e o hash usados no patch deste app, então nenhum código foi enviado. Copie os dois de novo em my.telegram.org/apps e aplique o patch outra vez.

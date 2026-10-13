@@ -34,7 +34,8 @@ public class ToastLengthTest {
     private static final int TRANSLATION_LIMIT = 80;
     private static final String[] LANGUAGES = {"de", "es", "in", "pt-rBR", "tr"};
 
-    private static final Pattern TOAST_CALL = Pattern.compile("\\b(?:showToastShort|showToastLong|watch|makeText)\\(");
+    // ChatTypeFolders.switchBack hands its text back to be shown, as the folder switch's toast.
+    private static final Pattern TOAST_CALL = Pattern.compile("\\b(?:showToastShort|showToastLong|watch|makeText|switchBack)\\(");
     // Texts that reach a toast through a variable of this name.
     private static final Pattern TOAST_VARIABLE = Pattern.compile("\\b(?:said|refused|done)\\s*=(?!=)");
     // Methods that build a toast text and hand it back.
@@ -103,6 +104,10 @@ public class ToastLengthTest {
         // Toast.makeText straight from a hook, and a text handed to it through a variable.
         assertTrue(texts.contains("Photo copied"));
         assertTrue(texts.contains("Forwarding to %1$s"));
+        // The folder switch's texts, put back with the switch and said once Telegram answers.
+        assertTrue(texts.contains("Sign in to Telegram first."));
+        assertTrue(texts.contains("Telegram turned the folders down. Try again later."));
+        assertTrue(texts.contains("Asking Telegram to make your folders."));
     }
 
     private static int fixedLength(String text) {

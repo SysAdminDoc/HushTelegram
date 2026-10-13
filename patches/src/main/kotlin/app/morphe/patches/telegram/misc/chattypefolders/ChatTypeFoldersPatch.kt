@@ -19,6 +19,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.requireReachable
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.call
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -39,6 +40,11 @@ internal const val STORAGE = "Lorg/telegram/messenger/MessagesStorage;"
 internal const val NOTIFICATIONS = "Lorg/telegram/messenger/NotificationCenter;"
 private const val PINS = "Lorg/telegram/messenger/support/LongSparseIntArray;"
 private const val LIST = "Ljava/util/ArrayList;"
+private const val OBJECT = "Ljava/lang/Object;"
+internal const val REQUEST_DELEGATE = "Lorg/telegram/tgnet/RequestDelegate;"
+internal const val TL_ERROR = "Lorg/telegram/tgnet/TLRPC\$TL_error;"
+internal const val GET_FILTERS = "Lorg/telegram/tgnet/TLRPC\$TL_messages_getDialogFilters;"
+internal const val SERVER_FILTERS = "Lorg/telegram/tgnet/TLRPC\$TL_messages_dialogFilters;"
 
 internal const val SELECTED_ACCOUNT = "$USER_CONFIG->selectedAccount:I"
 internal const val USER_CONFIG_INSTANCE = "$USER_CONFIG->getInstance(I)$USER_CONFIG"
@@ -87,6 +93,15 @@ internal const val UPDATE_ID = "$UPDATE_FILTER->id:I"
 internal const val UPDATE_FILTER_FIELD = "$UPDATE_FILTER->filter:$NEW_FILTER"
 internal const val ORDER_INIT = "$UPDATE_ORDER-><init>()V"
 internal const val ORDER_IDS = "$UPDATE_ORDER->order:$LIST"
+internal const val ERROR_TEXT = "$TL_ERROR->text:$STRING"
+internal const val GET_FILTERS_INIT = "$GET_FILTERS-><init>()V"
+internal const val SERVER_FILTERS_LIST = "$SERVER_FILTERS->filters:$LIST"
+internal const val FILTER_FLAGS = "$SERVER_FILTER->flags:I"
+internal const val FILTER_COLOR = "$SERVER_FILTER->color:I"
+/** The one method of Telegram's request callback, as `name(parameters)result`. */
+internal const val DELEGATE_RUN = "run(Lorg/telegram/tgnet/TLObject;$TL_ERROR)V"
+/** dialogFilter's flag 27, set when the folder has a tag color. */
+internal const val FILTER_HAS_COLOR = 1 shl 27
 
 /** The chat type bits of a local folder's flags, as ChatTypeFolders compares them. */
 internal val TYPE_FLAGS = listOf(
@@ -160,7 +175,8 @@ private fun BytecodePatchContext.writeChatTypeFolderStubs(post: String) {
     """)
     for ((stub, read) in listOf("folderId" to "iget v0, v0, $LOCAL_ID\n return v0",
         "folderFlags" to "iget v0, v0, $LOCAL_FLAGS\n return v0",
-        "folderName" to "iget-object v0, v0, $LOCAL_NAME\n return-object v0")) {
+        "folderName" to "iget-object v0, v0, $LOCAL_NAME\n return-object v0",
+        "folderColor" to "iget v0, v0, $LOCAL_COLOR\n return v0")) {
         writeStub(CHAT_TYPE_FOLDERS, stub, 3, FOLDER_AT + read)
     }
     // One bit for each thing you can set on a folder besides its name and chat types, as ChatTypeFolders.COLOR
@@ -213,8 +229,49 @@ private fun BytecodePatchContext.writeChatTypeFolderStubs(post: String) {
         iget p0, v0, $LIMIT_DEFAULT
         return p0
     """)
+    // Telegram's request callback, for the extension's Proxy, and the name of the error a request was refused with.
+    writeStub(CHAT_TYPE_FOLDERS, "requestDelegate", 1, """
+        const-class v0, $REQUEST_DELEGATE
+        return-object v0
+    """)
+    writeStub(CHAT_TYPE_FOLDERS, "errorText", 1, """
+        check-cast p0, $TL_ERROR
+        iget-object p0, p0, $ERROR_TEXT
+        return-object p0
+    """)
+    // A folder's tag color in the server's list, the way MessagesStorage reads it when it loads that list:
+    // the color with flag 27 set, -1 without, and -2 when the list doesn't have the folder.
+    writeStub(CHAT_TYPE_FOLDERS, "serverFolderColor", 7, """
+        check-cast p0, $SERVER_FILTERS
+        iget-object v0, p0, $SERVER_FILTERS_LIST
+        invoke-virtual {v0}, Ljava/util/ArrayList;->size()I
+        move-result v1
+        const/4 v2, 0x0
+        :hush_next
+        if-ge v2, v1, :hush_missing
+        invoke-virtual {v0, v2}, Ljava/util/ArrayList;->get(I)Ljava/lang/Object;
+        move-result-object v3
+        check-cast v3, $SERVER_FILTER
+        iget v4, v3, $FILTER_ID
+        if-eq v4, p1, :hush_found
+        add-int/lit8 v2, v2, 0x1
+        goto :hush_next
+        :hush_found
+        iget v4, v3, $FILTER_FLAGS
+        const/high16 v1, 0x8000000
+        and-int/2addr v4, v1
+        if-eqz v4, :hush_no_color
+        iget v4, v3, $FILTER_COLOR
+        return v4
+        :hush_no_color
+        const/4 v4, -0x1
+        return v4
+        :hush_missing
+        const/4 v4, -0x2
+        return v4
+    """)
     // The request Telegram's own folder screen sends for a new folder, with only chat types in it.
-    writeStub(CHAT_TYPE_FOLDERS, "createFolder", 11, """
+    writeStub(CHAT_TYPE_FOLDERS, "createFolder", 12, """
         new-instance v0, $NEW_FILTER
         invoke-direct {v0}, $NEW_FILTER_INIT
         iput p1, v0, $FILTER_ID
@@ -236,12 +293,12 @@ private fun BytecodePatchContext.writeChatTypeFolderStubs(post: String) {
         iput-object v0, v1, $UPDATE_FILTER_FIELD
         invoke-static {p0}, $CONNECTIONS_INSTANCE
         move-result-object v0
-        const/4 v2, 0x0
-        invoke-virtual {v0, v1, v2}, $SEND_REQUEST
+        check-cast p8, $REQUEST_DELEGATE
+        invoke-virtual {v0, v1, p8}, $SEND_REQUEST
         return-void
     """)
-    // What Telegram's folder screen does with a new folder once it's sent: into the list at the end
-    // and the database, with its unread count to be worked out, then the tabs redrawn.
+    // What Telegram's folder screen does with a new folder, called here once the server has it: into
+    // the list at the end and the database, with its unread count to be worked out, then the tabs redrawn.
     writeStub(CHAT_TYPE_FOLDERS, "addFolder", 8, """
         new-instance v0, $LOCAL_FILTER
         invoke-direct {v0}, $LOCAL_INIT
@@ -268,15 +325,19 @@ private fun BytecodePatchContext.writeChatTypeFolderStubs(post: String) {
         invoke-virtual {v1, v2, v3}, $post
         return-void
     """)
-    // Telegram's own Delete folder: an update with no filter in it, then out of the list and database.
+    // Telegram's own Delete folder: an update with no filter in it, and once the server says yes, out of
+    // the list and database.
     writeStub(CHAT_TYPE_FOLDERS, "deleteFolder", 5, """
         new-instance v0, $UPDATE_FILTER
         invoke-direct {v0}, $UPDATE_INIT
         iput p1, v0, $UPDATE_ID
         invoke-static {p0}, $CONNECTIONS_INSTANCE
         move-result-object v1
-        const/4 v2, 0x0
-        invoke-virtual {v1, v0, v2}, $SEND_REQUEST
+        check-cast p2, $REQUEST_DELEGATE
+        invoke-virtual {v1, v0, p2}, $SEND_REQUEST
+        return-void
+    """)
+    writeStub(CHAT_TYPE_FOLDERS, "dropFolder", 4, """
         invoke-static {p0}, $CONTROLLER_INSTANCE
         move-result-object v0
         iget-object v1, v0, $FILTERS_BY_ID
@@ -292,7 +353,7 @@ private fun BytecodePatchContext.writeChatTypeFolderStubs(post: String) {
         return-void
     """)
     // What Telegram's folder screen sends after a reorder: every folder id, All chats included, as the list has them.
-    writeStub(CHAT_TYPE_FOLDERS, "sendFolderOrder", 7, """
+    writeStub(CHAT_TYPE_FOLDERS, "sendFolderOrder", 8, """
         new-instance v0, $UPDATE_ORDER
         invoke-direct {v0}, $ORDER_INIT
         iget-object v1, v0, $ORDER_IDS
@@ -316,8 +377,43 @@ private fun BytecodePatchContext.writeChatTypeFolderStubs(post: String) {
         :hush_send
         invoke-static {p0}, $CONNECTIONS_INSTANCE
         move-result-object v2
+        check-cast p1, $REQUEST_DELEGATE
+        invoke-virtual {v2, v0, p1}, $SEND_REQUEST
+        return-void
+    """)
+    // The request Telegram sends when it loads folders from the server, for the tag colors it gave the new ones.
+    writeStub(CHAT_TYPE_FOLDERS, "fetchFolders", 4, """
+        new-instance v0, $GET_FILTERS
+        invoke-direct {v0}, $GET_FILTERS_INIT
+        invoke-static {p0}, $CONNECTIONS_INSTANCE
+        move-result-object v1
+        check-cast p1, $REQUEST_DELEGATE
+        invoke-virtual {v1, v0, p1}, $SEND_REQUEST
+        return-void
+    """)
+    // What loading the server's list does to a folder's color: set, saved as Telegram's folder screen saves
+    // an edit, and the tabs redrawn.
+    writeStub(CHAT_TYPE_FOLDERS, "setFolderColor", 7, """
+        invoke-static {p0}, $CONTROLLER_INSTANCE
+        move-result-object v0
+        iget-object v0, v0, $FILTERS_BY_ID
+        invoke-virtual {v0, p1}, Landroid/util/SparseArray;->get(I)Ljava/lang/Object;
+        move-result-object v0
+        if-eqz v0, :hush_gone
+        check-cast v0, $LOCAL_FILTER
+        iput p2, v0, $LOCAL_COLOR
+        invoke-static {p0}, $STORAGE_INSTANCE
+        move-result-object v1
+        const/4 v2, 0x0
+        const/4 v3, 0x1
+        invoke-virtual {v1, v0, v2, v3}, $SAVE_FILTER
+        invoke-static {p0}, $NOTIFICATIONS_INSTANCE
+        move-result-object v1
+        sget v2, $FILTERS_UPDATED
         const/4 v3, 0x0
-        invoke-virtual {v2, v0, v3}, $SEND_REQUEST
+        new-array v3, v3, [Ljava/lang/Object;
+        invoke-virtual {v1, v2, v3}, $post
+        :hush_gone
         return-void
     """)
 }
@@ -342,11 +438,26 @@ internal fun BytecodePatchContext.resolveChatTypeFolders(): String {
     controlHook(CHAT_TYPE_FOLDERS, "folderFlags", listOf("I", "I"), "I")
     controlHook(CHAT_TYPE_FOLDERS, "folderName", listOf("I", "I"), STRING)
     controlHook(CHAT_TYPE_FOLDERS, "folderChanges", listOf("I", "I"), "I")
+    controlHook(CHAT_TYPE_FOLDERS, "folderColor", listOf("I", "I"), "I")
     controlHook(CHAT_TYPE_FOLDERS, "folderLimit", listOf("I"), "I")
-    controlHook(CHAT_TYPE_FOLDERS, "createFolder", listOf("I", "I", STRING, "Z", "Z", "Z", "Z", "Z"), "V")
+    controlHook(CHAT_TYPE_FOLDERS, "requestDelegate", emptyList(), "Ljava/lang/Class;")
+    controlHook(CHAT_TYPE_FOLDERS, "errorText", listOf(OBJECT), STRING)
+    controlHook(CHAT_TYPE_FOLDERS, "serverFolderColor", listOf(OBJECT, "I"), "I")
+    controlHook(CHAT_TYPE_FOLDERS, "createFolder", listOf("I", "I", STRING, "Z", "Z", "Z", "Z", "Z", OBJECT), "V")
     controlHook(CHAT_TYPE_FOLDERS, "addFolder", listOf("I", "I", STRING, "I"), "V")
-    controlHook(CHAT_TYPE_FOLDERS, "deleteFolder", listOf("I", "I"), "V")
-    controlHook(CHAT_TYPE_FOLDERS, "sendFolderOrder", listOf("I"), "V")
+    controlHook(CHAT_TYPE_FOLDERS, "deleteFolder", listOf("I", "I", OBJECT), "V")
+    controlHook(CHAT_TYPE_FOLDERS, "dropFolder", listOf("I", "I"), "V")
+    controlHook(CHAT_TYPE_FOLDERS, "sendFolderOrder", listOf("I", OBJECT), "V")
+    controlHook(CHAT_TYPE_FOLDERS, "fetchFolders", listOf("I", OBJECT), "V")
+    controlHook(CHAT_TYPE_FOLDERS, "setFolderColor", listOf("I", "I", "I"), "V")
+
+    // Telegram calls a request's callback through RequestDelegate's one method, and the extension answers
+    // it with a Proxy that knows only that method, so the interface has to be exactly that.
+    val delegate = mutableClassDefByOrNull(REQUEST_DELEGATE)
+    controlShape(delegate != null && AccessFlags.PUBLIC.isSet(delegate.accessFlags) &&
+        AccessFlags.INTERFACE.isSet(delegate.accessFlags) &&
+        delegate.methods.map { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" } == listOf(DELEGATE_RUN),
+        "Telegram's request callback changed")
 
     val controller = mutableClassDefByOrNull(MESSAGES_CONTROLLER)
     controlShape(controller != null, "MessagesController is missing")
@@ -387,7 +498,8 @@ internal fun BytecodePatchContext.resolveChatTypeFolders(): String {
         "$TITLE-><init>()V" to false, FILTER_ID to false, FILTER_TITLE to false, TITLE_TEXT to false,
         FILTER_CONTACTS to false, FILTER_NON_CONTACTS to false, FILTER_GROUPS to false, FILTER_BROADCASTS to false,
         FILTER_BOTS to false, UPDATE_FLAGS to false, UPDATE_ID to false, UPDATE_FILTER_FIELD to false,
-        ORDER_INIT to false, ORDER_IDS to false)) {
+        ORDER_INIT to false, ORDER_IDS to false, ERROR_TEXT to false, GET_FILTERS_INIT to false,
+        SERVER_FILTERS_LIST to false, FILTER_FLAGS to false, FILTER_COLOR to false)) {
         requireReachable(reference, static)
     }
     return post.toString()

@@ -37,12 +37,16 @@ import org.junit.Test
 /** The folder stubs on both declared builds: Telegram's own folder list, limit, update request and local list. */
 class ChatTypeFoldersFixtureTest {
     private val hosts = setOf(MESSAGES_CONTROLLER, LOCAL_FILTER, USER_CONFIG, CONNECTIONS, SERVER_FILTER, NEW_FILTER, TITLE,
-        UPDATE_FILTER, UPDATE_ORDER, STORAGE, NOTIFICATIONS, "Lorg/telegram/messenger/support/LongSparseIntArray;")
+        UPDATE_FILTER, UPDATE_ORDER, STORAGE, NOTIFICATIONS, "Lorg/telegram/messenger/support/LongSparseIntArray;",
+        REQUEST_DELEGATE, TL_ERROR, GET_FILTERS, SERVER_FILTERS)
     private val stubs = listOf("selectedAccount", "signedIn", "userId", "foldersLoaded", "folderCount", "folderId",
-        "folderFlags", "folderName", "folderChanges", "folderLimit", "createFolder", "addFolder", "deleteFolder",
-        "sendFolderOrder")
+        "folderFlags", "folderName", "folderChanges", "folderColor", "folderLimit", "requestDelegate", "errorText",
+        "serverFolderColor", "createFolder", "addFolder", "deleteFolder", "dropFolder", "sendFolderOrder", "fetchFolders",
+        "setFolderColor")
     private val get = "Ljava/util/ArrayList;->get(I)Ljava/lang/Object;"
     private val isEmpty = "Ljava/util/ArrayList;->isEmpty()Z"
+    private val size = "Ljava/util/ArrayList;->size()I"
+    private val sparseGet = "Landroid/util/SparseArray;->get(I)Ljava/lang/Object;"
 
     private fun context(build: File): BytecodePatchContext {
         val host = FixtureDex.classes(build, hosts).values.map(ImmutableClassDef::of)
@@ -69,6 +73,17 @@ class ChatTypeFoldersFixtureTest {
         for ((reference, index) in uses) assertEquals("$name: $stub $reference", method.param(index), first(stub, reference))
     }
 
+    /** The request [stub] sends goes out with the callback it was handed in parameter [reply], cast to Telegram's. */
+    private fun BytecodePatchContext.assertSentWith(name: String, stub: String, reply: Int) {
+        val method = method(stub)
+        val body = stub(stub)
+        val cast = body.single { it.controlRef() == REQUEST_DELEGATE }
+        assertEquals("$name: $stub", Opcode.CHECK_CAST, cast.opcode)
+        assertEquals("$name: $stub cast", method.param(reply), cast.namedRegisters().single())
+        assertEquals("$name: $stub callback", method.param(reply), body.single { it.controlRef() == SEND_REQUEST }.namedRegisters()[2])
+        assertTrue("$name: $stub", body.indexOf(cast) < body.indexOfFirst { it.controlRef() == SEND_REQUEST })
+    }
+
     @Test fun `the stubs reach Telegram's folders and do what its own folder screens do`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
@@ -81,7 +96,8 @@ class ChatTypeFoldersFixtureTest {
             assertEquals(Opcode.MOVE_RESULT_WIDE, context.stub("userId")[3].opcode)
             assertEquals(listOf(CONTROLLER_INSTANCE, FILTERS_LOADED), context.stub("foldersLoaded").refs())
             assertEquals(listOf(CONTROLLER_INSTANCE, FILTERS, "Ljava/util/ArrayList;->size()I"), context.stub("folderCount").refs())
-            for ((stub, read) in listOf("folderId" to LOCAL_ID, "folderFlags" to LOCAL_FLAGS, "folderName" to LOCAL_NAME)) {
+            for ((stub, read) in listOf("folderId" to LOCAL_ID, "folderFlags" to LOCAL_FLAGS, "folderName" to LOCAL_NAME,
+                "folderColor" to LOCAL_COLOR)) {
                 assertEquals("$name: $stub", listOf(CONTROLLER_INSTANCE, FILTERS, get, LOCAL_FILTER, read), context.stub(stub).refs())
                 context.assertParams(name, stub, listOf(CONTROLLER_INSTANCE to 0))
                 assertEquals("$name: $stub index", context.method(stub).param(1), context.stub(stub).single { it.controlRef() == get }.namedRegisters()[1])
@@ -99,13 +115,36 @@ class ChatTypeFoldersFixtureTest {
             assertEquals(listOf(CONTROLLER_INSTANCE, USER_CONFIG_INSTANCE, IS_PREMIUM, LIMIT_PREMIUM, LIMIT_DEFAULT),
                 context.stub("folderLimit").refs())
 
+            // The callback the extension's Proxy answers, and the error text it reads from a refusal.
+            val callback = context.stub("requestDelegate")
+            assertEquals(listOf(REQUEST_DELEGATE), callback.refs())
+            assertEquals(name, Opcode.CONST_CLASS, callback.first().opcode)
+            assertEquals(listOf(TL_ERROR, ERROR_TEXT), context.stub("errorText").refs())
+            context.assertParams(name, "errorText", listOf(TL_ERROR to 0, ERROR_TEXT to 0))
+
+            // A folder's color in the server's list: the folder with this id, its color only with flag 27 set.
+            val colors = context.stub("serverFolderColor")
+            assertEquals(listOf(SERVER_FILTERS, SERVER_FILTERS_LIST, size, get, SERVER_FILTER, FILTER_ID, FILTER_FLAGS,
+                FILTER_COLOR), colors.refs())
+            context.assertParams(name, "serverFolderColor", listOf(SERVER_FILTERS to 0))
+            assertTrue(name, colors.single { it.opcode == Opcode.IF_EQ }.namedRegisters().contains(context.method("serverFolderColor").param(1)))
+            assertEquals(name, FILTER_HAS_COLOR, (colors.single { it.opcode == Opcode.CONST_HIGH16 } as NarrowLiteralInstruction).narrowLiteral)
+            assertTrue(name, colors.any { it.opcode == Opcode.AND_INT_2ADDR })
+            assertEquals(name, listOf(-1, -2), colors.filter { it.opcode == Opcode.CONST_4 }
+                .map { (it as NarrowLiteralInstruction).narrowLiteral }.filter { it < 0 })
+            // The color returned is the one read from the folder that matched.
+            val read = colors.single { it.controlRef() == FILTER_COLOR }.namedRegisters()
+            assertEquals(name, read[0], (colors[colors.indexOfFirst { it.controlRef() == FILTER_COLOR } + 1] as OneRegisterInstruction).registerA)
+            assertEquals(name, colors.single { it.controlRef() == FILTER_ID }.namedRegisters()[1], read[1])
+
             assertEquals(listOf(NEW_FILTER, NEW_FILTER_INIT, FILTER_ID, TITLE, "$TITLE-><init>()V", TITLE_TEXT, FILTER_TITLE,
                 FILTER_CONTACTS, FILTER_NON_CONTACTS, FILTER_GROUPS, FILTER_BROADCASTS, FILTER_BOTS, UPDATE_FILTER, UPDATE_INIT,
-                UPDATE_ID, UPDATE_FLAGS, UPDATE_FLAGS, UPDATE_FILTER_FIELD, CONNECTIONS_INSTANCE, SEND_REQUEST),
+                UPDATE_ID, UPDATE_FLAGS, UPDATE_FLAGS, UPDATE_FILTER_FIELD, CONNECTIONS_INSTANCE, REQUEST_DELEGATE, SEND_REQUEST),
                 context.stub("createFolder").refs())
             context.assertParams(name, "createFolder", listOf(FILTER_ID to 1, TITLE_TEXT to 2, FILTER_CONTACTS to 3,
                 FILTER_NON_CONTACTS to 4, FILTER_GROUPS to 5, FILTER_BROADCASTS to 6, FILTER_BOTS to 7, UPDATE_ID to 1,
                 CONNECTIONS_INSTANCE to 0))
+            context.assertSentWith(name, "createFolder", 8)
             // The filter flag is set before the filter goes in, so the request carries it.
             assertTrue(name, context.stub("createFolder").any { it.opcode == Opcode.OR_INT_LIT8 })
 
@@ -119,25 +158,55 @@ class ChatTypeFoldersFixtureTest {
             context.assertParams(name, "addFolder", listOf(LOCAL_ID to 1, LOCAL_NAME to 2, LOCAL_FLAGS to 3,
                 CONTROLLER_INSTANCE to 0, STORAGE_INSTANCE to 0, NOTIFICATIONS_INSTANCE to 0))
 
-            assertEquals(listOf(UPDATE_FILTER, UPDATE_INIT, UPDATE_ID, CONNECTIONS_INSTANCE, SEND_REQUEST, CONTROLLER_INSTANCE,
-                FILTERS_BY_ID, "Landroid/util/SparseArray;->get(I)Ljava/lang/Object;", LOCAL_FILTER, REMOVE_FILTER,
-                STORAGE_INSTANCE, DELETE_FILTER), context.stub("deleteFolder").refs())
-            context.assertParams(name, "deleteFolder", listOf(UPDATE_ID to 1, CONNECTIONS_INSTANCE to 0,
-                CONTROLLER_INSTANCE to 0, STORAGE_INSTANCE to 0))
-            assertEquals(name, context.method("deleteFolder").param(1),
-                context.stub("deleteFolder").single { it.controlRef()?.startsWith("Landroid/util/SparseArray;") == true }.namedRegisters()[1])
+            // Delete sends only the request; the folder leaves the list through dropFolder once the server says yes.
+            val delete = context.stub("deleteFolder")
+            assertEquals(listOf(UPDATE_FILTER, UPDATE_INIT, UPDATE_ID, CONNECTIONS_INSTANCE, REQUEST_DELEGATE, SEND_REQUEST),
+                delete.refs())
+            context.assertParams(name, "deleteFolder", listOf(UPDATE_ID to 1, CONNECTIONS_INSTANCE to 0))
+            context.assertSentWith(name, "deleteFolder", 2)
+            assertEquals(name, delete.first { it.controlRef() == UPDATE_FILTER }.namedRegisters().first(),
+                delete.single { it.controlRef() == SEND_REQUEST }.namedRegisters()[1])
+            assertTrue(name, delete.none { it.controlRef() == UPDATE_FILTER_FIELD })
+
+            assertEquals(listOf(CONTROLLER_INSTANCE, FILTERS_BY_ID, sparseGet, LOCAL_FILTER, REMOVE_FILTER, STORAGE_INSTANCE,
+                DELETE_FILTER), context.stub("dropFolder").refs())
+            context.assertParams(name, "dropFolder", listOf(CONTROLLER_INSTANCE to 0, STORAGE_INSTANCE to 0))
+            assertEquals(name, context.method("dropFolder").param(1),
+                context.stub("dropFolder").single { it.controlRef() == sparseGet }.namedRegisters()[1])
 
             // Every folder id in the list, All chats too, goes into the order request that is sent.
             val order = context.stub("sendFolderOrder")
-            assertEquals(listOf(UPDATE_ORDER, ORDER_INIT, ORDER_IDS, CONTROLLER_INSTANCE, FILTERS, "Ljava/util/ArrayList;->size()I",
+            assertEquals(listOf(UPDATE_ORDER, ORDER_INIT, ORDER_IDS, CONTROLLER_INSTANCE, FILTERS, size,
                 get, LOCAL_FILTER, LOCAL_ID, "Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;",
-                "Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z", CONNECTIONS_INSTANCE, SEND_REQUEST), order.refs())
+                "Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z", CONNECTIONS_INSTANCE, REQUEST_DELEGATE, SEND_REQUEST),
+                order.refs())
             context.assertParams(name, "sendFolderOrder", listOf(CONTROLLER_INSTANCE to 0, CONNECTIONS_INSTANCE to 0))
+            context.assertSentWith(name, "sendFolderOrder", 1)
             val request = order.first { it.controlRef() == UPDATE_ORDER }.namedRegisters().first()
             assertEquals(name, request, order.single { it.controlRef() == SEND_REQUEST }.namedRegisters()[1])
             assertEquals(name, order.single { it.controlRef() == ORDER_IDS }.namedRegisters()[0],
                 order.single { it.controlRef() == "Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z" }.namedRegisters()[0])
             assertTrue(name, order.any { it.opcode == Opcode.GOTO } && order.any { it.opcode == Opcode.IF_GE })
+
+            val fetch = context.stub("fetchFolders")
+            assertEquals(listOf(GET_FILTERS, GET_FILTERS_INIT, CONNECTIONS_INSTANCE, REQUEST_DELEGATE, SEND_REQUEST), fetch.refs())
+            context.assertParams(name, "fetchFolders", listOf(CONNECTIONS_INSTANCE to 0))
+            context.assertSentWith(name, "fetchFolders", 1)
+            assertEquals(name, fetch.first { it.controlRef() == GET_FILTERS }.namedRegisters().first(),
+                fetch.single { it.controlRef() == SEND_REQUEST }.namedRegisters()[1])
+
+            // The color goes on the folder with this id, saved as an edit is and posted as removeFilter posts.
+            val recolor = context.stub("setFolderColor").refs()
+            assertEquals(listOf(CONTROLLER_INSTANCE, FILTERS_BY_ID, sparseGet, LOCAL_FILTER, LOCAL_COLOR, STORAGE_INSTANCE,
+                SAVE_FILTER, NOTIFICATIONS_INSTANCE, FILTERS_UPDATED, "[Ljava/lang/Object;"), recolor.dropLast(1))
+            assertEquals(name, post, recolor.last())
+            context.assertParams(name, "setFolderColor", listOf(CONTROLLER_INSTANCE to 0, LOCAL_COLOR to 2,
+                STORAGE_INSTANCE to 0, NOTIFICATIONS_INSTANCE to 0))
+            assertEquals(name, context.method("setFolderColor").param(1),
+                context.stub("setFolderColor").single { it.controlRef() == sparseGet }.namedRegisters()[1])
+            val folder = context.stub("setFolderColor").single { it.controlRef() == LOCAL_FILTER }.namedRegisters().single()
+            assertEquals(name, folder, context.stub("setFolderColor").single { it.controlRef() == LOCAL_COLOR }.namedRegisters()[1])
+            assertEquals(name, folder, context.stub("setFolderColor").single { it.controlRef() == SAVE_FILTER }.namedRegisters()[1])
 
             for (stub in stubs) {
                 val method = context.method(stub)
@@ -183,6 +252,16 @@ class ChatTypeFoldersFixtureTest {
             "$UPDATE_FILTER_FIELD isn't reachable from the extension" to { context ->
                 val update = context.mutableClassDefBy(UPDATE_FILTER)
                 val field = update.fields.single { "$UPDATE_FILTER->${it.name}:${it.type}" == UPDATE_FILTER_FIELD }
+                field.accessFlags = field.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value
+            },
+            // A callback the Proxy can't implement, from the extension's package, leaves every answer unheard.
+            "Telegram's request callback changed" to { context ->
+                val delegate = context.mutableClassDefBy(REQUEST_DELEGATE)
+                delegate.accessFlags = delegate.accessFlags and AccessFlags.PUBLIC.value.inv()
+            },
+            "$FILTER_COLOR isn't reachable from the extension" to { context ->
+                val filter = context.mutableClassDefBy(SERVER_FILTER)
+                val field = filter.fields.single { "$SERVER_FILTER->${it.name}:${it.type}" == FILTER_COLOR }
                 field.accessFlags = field.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value
             },
         )
