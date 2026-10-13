@@ -5,6 +5,7 @@ Every HushTelegram release, newest first.
 ## Unreleased
 
 * **Telegram:** The Support HushTelegram row at the bottom of HushTelegram settings is just its name now. The line under it is gone.
+* **Tooling:** The build runs on Gradle 9.8.1 now. 9.7.1 was inside three of Gradle's own high severity advisories, and 9.8.1 is the release that fixes them.
 
 ## 0.0.17 (2026-10-13)
 

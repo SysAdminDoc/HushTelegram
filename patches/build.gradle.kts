@@ -900,7 +900,7 @@ val fixtureTest = tasks.register<Test>("fixtureTest") {
     testClassesDirs = sourceSets.test.get().output.classesDirs
     classpath = sourceSets.test.get().runtimeClasspath
     include(fixtureTestClasses)
-    // TestFilter has no public getter for --tests patterns in Gradle 9.7.1. The selection is read
+    // TestFilter has no public getter for --tests patterns in Gradle 9.8.1. The selection is read
     // as an input before snapshotting and applied just before the tests run.
     inputs.property("suiteSelection", provider {
         (tasks.test.get().filter as DefaultTestFilter).commandLineIncludePatterns.sorted()
