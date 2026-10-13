@@ -323,7 +323,7 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Repair Firebase push registration", String.valueOf(page.findPreference(Settings.REPAIR_FIREBASE_PUSH.key).getTitle()));
             assertEquals("Tries to help this patched Telegram sign up for push notifications with Firebase, Google's "
                     + "notification service, using Telegram's original certificate. Notification permission and "
-                    + "battery settings still apply.",
+                    + "battery settings still apply. A change here applies after Telegram restarts.",
                     String.valueOf(page.findPreference(Settings.REPAIR_FIREBASE_PUSH.key).getSummary()));
             assertEquals("UnifiedPush notifications", String.valueOf(page.findPreference(Settings.UNIFIED_PUSH.key).getTitle()));
             assertEquals("For phones where Firebase notifications don't arrive. Telegram signs up an address from a "

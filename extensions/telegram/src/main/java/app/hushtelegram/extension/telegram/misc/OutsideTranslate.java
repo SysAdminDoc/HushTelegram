@@ -57,8 +57,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * one it was queued under, and a message waiting on it is still in a chat or message turned on, in
  * an account still signed in as the one that chose it. A request that fails that is dropped
  * unsent. A change that lands after the check, while the connection is opening, can't stop that
- * one request, and an answer already on its way can't be called back; either answer is still kept
- * out of sight.
+ * one request, and text already sent can't be called back. Its answer stays hidden while the chat
+ * is off or HushTelegram is paused, and a new service or a switch-off throws it away.
  */
 public final class OutsideTranslate {
     private OutsideTranslate() {}
@@ -331,11 +331,12 @@ public final class OutsideTranslate {
         String key = cacheKey(waiter.owner, target, text);
         int asked;
         AiTranslate.Service provider;
+        List<Waiter> waiters;
         synchronized (LOCK) {
             asked = generation;
             Long failed = FAILED.get(key);
             if (failed != null && clock.getAsLong() - failed < RETRY_MS) return;
-            List<Waiter> waiters = PENDING.get(key);
+            waiters = PENDING.get(key);
             if (waiters != null) {
                 waiters.add(waiter);
                 return;
@@ -345,20 +346,28 @@ public final class OutsideTranslate {
             PENDING.put(key, waiters);
             provider = service();
         }
-        executor.execute(() -> {
-            if (!sendable(key, asked)) {
-                HookStatus.counted(FamilyNames.OUTSIDE_TRANSLATE, "translate request dropped before sending");
-                return;
+        try {
+            executor.execute(() -> {
+                if (!sendable(key, asked)) {
+                    HookStatus.counted(FamilyNames.OUTSIDE_TRANSLATE, "translate request dropped before sending");
+                    return;
+                }
+                GoogleTranslate.Result result = null;
+                Throwable failure = null;
+                try {
+                    result = fetcher.fetch(provider, target, text);
+                } catch (Throwable thrown) {
+                    failure = thrown;
+                }
+                finish(key, asked, result, failure);
+            });
+        } catch (Throwable refused) {
+            // Nothing will run it, so the text isn't left waiting forever: a later look asks again.
+            synchronized (LOCK) {
+                if (PENDING.get(key) == waiters) PENDING.remove(key);
             }
-            GoogleTranslate.Result result = null;
-            Throwable failure = null;
-            try {
-                result = fetcher.fetch(provider, target, text);
-            } catch (Throwable thrown) {
-                failure = thrown;
-            }
-            finish(key, asked, result, failure);
-        });
+            HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "translate request", refused);
+        }
     }
 
     /**
@@ -381,14 +390,18 @@ public final class OutsideTranslate {
             if (waiter.sameAccount()) signedIn.add(waiter);
         }
         synchronized (LOCK) {
+            // Read again here, so a pause while the accounts were read stops this one too.
+            boolean stillOn = on && active();
             // Switched off or a new service while the accounts were read.
             if (asked != generation || PENDING.get(key) != mine) return false;
-            if (on) {
+            if (stillOn) {
                 for (Waiter waiter : signedIn) {
                     if (wanted(waiter.owner, waiter.dialog, waiter.id)) return true;
                 }
-                // A message that joined after the copy passed the same checks as it was drawn just now.
-                if (mine.size() > waiters.size()) return true;
+                // A message that joined after the copy read its account as it was drawn just now.
+                for (Waiter waiter : mine.subList(waiters.size(), mine.size())) {
+                    if (wanted(waiter.owner, waiter.dialog, waiter.id)) return true;
+                }
             }
             PENDING.remove(key);
             return false;
@@ -437,12 +450,13 @@ public final class OutsideTranslate {
                 // Switched off or paused while the request was out: nothing to show or say.
                 if (!active()) return;
                 for (Waiter waiter : done) {
+                    // A chat turned off while the request was out hears nothing back, a failure included.
+                    if (!wanted(waiter.owner, waiter.dialog, waiter.id)) continue;
                     String chat = chatKey(waiter.owner, waiter.dialog);
                     if (failed) {
                         toastOnce(chat, keyRefused);
                         continue;
                     }
-                    if (!wanted(waiter.owner, waiter.dialog, waiter.id)) continue;
                     synchronized (LOCK) {
                         TOASTED.remove(chat);
                     }
@@ -562,7 +576,9 @@ public final class OutsideTranslate {
                 }
                 if (cleared) {
                     HookStatus.counted(FamilyNames.OUTSIDE_TRANSLATE, "chats without an account cleared");
-                    Utils.showToastLong(L10n.t("Turn chat translation on again. It's now set per account."));
+                    // Posted, so the toast isn't drawn while the lock is held.
+                    Utils.runOnMainThread(() -> Utils.showToastLong(
+                            L10n.t("Turn chat translation on again. It's now set per account.")));
                 }
             }
             return chats;

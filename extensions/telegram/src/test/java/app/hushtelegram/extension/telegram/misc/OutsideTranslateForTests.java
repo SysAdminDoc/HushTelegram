@@ -56,6 +56,8 @@ public final class OutsideTranslateForTests {
         } finally {
             OutsideTranslate.executor = kept;
         }
+        // Otherwise a test that expects nothing sent passes on a message that never asked.
+        if (queued.size() != 1) throw new AssertionError("expected one queued request, got " + queued.size());
         return () -> {
             AtomicInteger sent = new AtomicInteger();
             OutsideTranslate.Fetcher fetcher = OutsideTranslate.fetcher;

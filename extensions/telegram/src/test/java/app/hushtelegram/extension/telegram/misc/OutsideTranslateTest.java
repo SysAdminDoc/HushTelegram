@@ -56,8 +56,15 @@ public class OutsideTranslateTest {
         int applied;
         int refreshed;
         String shown;
+        /** Runs once, the next time the account is read. */
+        Runnable onOwnerRead;
 
-        @Override public long owner() { return owner; }
+        @Override public long owner() {
+            Runnable once = onOwnerRead;
+            onOwnerRead = null;
+            if (once != null) once.run();
+            return owner;
+        }
         @Override public long dialog() { return dialog; }
         @Override public int id() { return id; }
         @Override public boolean eligible() { return eligible; }
@@ -776,6 +783,68 @@ public class OutsideTranslateTest {
         assertEquals(1, fetches.get());
         assertNull(org.robolectric.shadows.ShadowToast.getLatestToast());
         assertEquals(0, message.refreshed);
+    }
+
+    @Test public void aFailureForAChatTurnedOffWhileItWasOutSaysNothing() {
+        org.robolectric.shadows.ShadowToast.reset();
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        OutsideTranslate.fetcher = (service, target, text) -> {
+            fetches.incrementAndGet();
+            OutsideTranslate.toggleChat(OWNER, 10);
+            throw new AiTranslate.KeyRefused(401);
+        };
+        Fake message = new Fake();
+        OutsideTranslate.showMessage(message, message);
+        ShadowLooper.idleMainLooper();
+        assertEquals(1, fetches.get());
+        assertNull(org.robolectric.shadows.ShadowToast.getLatestToast());
+    }
+
+    /** A message that joins while the worker reads the accounts still needs its chat on when the check ends. */
+    @Test public void aMessageThatJoinsDuringTheCheckDoesntSendForAChatTurnedOff() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        OutsideTranslate.toggleChat(OWNER, 11);
+        List<Runnable> queued = holdTheWorker();
+        Fake first = new Fake();
+        Fake joiner = new Fake();
+        joiner.dialog = 11;
+        OutsideTranslate.showMessage(first, first);
+        assertEquals(1, queued.size());
+        first.onOwnerRead = () -> {
+            OutsideTranslate.showMessage(joiner, joiner);
+            OutsideTranslate.toggleChat(OWNER, 10);
+            OutsideTranslate.toggleChat(OWNER, 11);
+        };
+        runQueued(queued);
+        assertEquals("a message that joined late carried the text out of a chat turned off", 0, fetches.get());
+        assertTrue(droppedUnsent());
+    }
+
+    @Test public void aPauseWhileTheAccountsAreReadSendsNothing() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        List<Runnable> queued = holdTheWorker();
+        Fake message = new Fake();
+        OutsideTranslate.showMessage(message, message);
+        message.onOwnerRead = () -> PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        runQueued(queued);
+        assertEquals(0, fetches.get());
+        assertTrue(droppedUnsent());
+    }
+
+    @Test public void aWorkerThatTurnsTheRequestAwayDoesntLeaveItWaiting() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        OutsideTranslate.executor = task -> { throw new java.util.concurrent.RejectedExecutionException("shut down"); };
+        Fake message = new Fake();
+        assertFalse(OutsideTranslate.showMessage(message, message));
+        assertTrue(String.join("\n", HookStatus.report()).contains("translate request"));
+        // Nothing is stuck under that text, so the next look asks again.
+        OutsideTranslate.executor = Runnable::run;
+        OutsideTranslate.showMessage(message, message);
+        assertEquals(1, fetches.get());
     }
 
     private static android.content.SharedPreferences prefs() {

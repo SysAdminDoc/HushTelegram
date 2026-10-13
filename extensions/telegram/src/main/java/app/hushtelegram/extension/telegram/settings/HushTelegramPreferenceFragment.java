@@ -575,7 +575,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             notifications.addPreference(toggle(context, Settings.REPAIR_FIREBASE_PUSH, L10n.t("Repair Firebase push registration"),
                     PatchFamily.REPAIR_FIREBASE_PUSH.coverageSummary(L10n.t("Tries to help this patched Telegram sign up for push notifications with Firebase, "
                             + "Google's notification service, using Telegram's original certificate. Notification "
-                            + "permission and battery settings still apply."))));
+                            + "permission and battery settings still apply.") + " "
+                            + L10n.t("A change here applies after Telegram restarts."))));
         }
         if (build.contains(PatchFamily.UNIFIED_PUSH)) {
             SwitchPreference push = toggle(context, Settings.UNIFIED_PUSH, L10n.t("UnifiedPush notifications"),
