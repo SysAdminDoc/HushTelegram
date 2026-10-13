@@ -680,8 +680,9 @@ val settingsPatch = bytecodePatch(
 ) {
     category("Settings")
     // Sign-in help and the dialogs' theme ride along here because every selection carries this
-    // patch, the default one that issue #11 patched with included.
-    dependsOn(telegramExtensionPatch, settingsManifestPatch, signInHelpPatch, appThemePatch)
+    // patch, the default one that issue #11 patched with included. The chat list title's long
+    // press is optional and says so itself when Telegram's chat list changes shape.
+    dependsOn(telegramExtensionPatch, settingsManifestPatch, signInHelpPatch, appThemePatch, chatListTitlePressPatch)
     compatibleWith(*AppCompatibilities.telegram())
 
     execute {

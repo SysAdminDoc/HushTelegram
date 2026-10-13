@@ -6,6 +6,8 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.17.
 
+* **Telegram:** Press and hold the Telegram title at the top of your chat list to open HushTelegram settings. Telegram's chat list has no logo, so its title stands in. A tap on the title still scrolls the list back to the top, and it works while HushTelegram is paused.
+
 * **Telegram:** Flip a switch that needs a restart and a Restart Telegram row shows up right away at the top of the settings page, counting the changes waiting. Tap it and Telegram closes, then reopens on the same settings page. Before, a toast said to restart and there was nothing to tap.
 
 * **Telegram:** All 15 settings pages now share blue-black cards and cyan controls on an AMOLED background. Editors and dialogs use the same restrained corners. Switch explanations keep their full width at larger text sizes.

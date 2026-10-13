@@ -8,6 +8,8 @@
  * Copyright 2026 Hushfacebook contributors
  * https://github.com/SysAdminDoc/Hushfacebook
  *
+ * TitlePress is Hushfacebook's LogoPress at 108c05a2, modified for Telegram's chat list top bar.
+ *
  * Built on SysAdminDoc/hushfeed (GPL-3.0).
  */
 package app.hushtelegram.extension.telegram.settings;
@@ -17,6 +19,7 @@ import android.app.Application;
 import android.app.FragmentManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
@@ -29,6 +32,10 @@ import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.view.HapticFeedbackConstants;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewConfiguration;
 
 import androidx.annotation.RequiresApi;
 
@@ -54,7 +61,8 @@ import app.hushtelegram.extension.telegram.misc.UnifiedPush;
  * Telegram activity reports its intent here from {@code onCreate} and {@code onNewIntent}, and the
  * next Telegram activity to resume shows the screen as a full screen dialog. The shortcut is kept
  * first among Telegram's own, because a launcher shows only the first few, and some launchers have no
- * shortcut menu at all.
+ * shortcut menu at all. Inside Telegram, a long press on the "Telegram" title at the top of the chat
+ * list opens it too.
  */
 @SuppressWarnings("unused")
 public final class SettingsEntry {
@@ -310,6 +318,143 @@ public final class SettingsEntry {
         }
     }
 
+    /**
+     * Injected in the chat list's {@code createView}, right after Telegram makes its logo the title
+     * of the chat list's top bar. Telegram's chat list has no logo button, so that "Telegram" title
+     * stands in for one: a press held on it opens this screen.
+     *
+     * <p>The bar gets the listener, not the title. The title takes no touches of its own (only the
+     * emoji status beside a name, which it keeps), so a press on it lands on the bar, and the bar's
+     * buttons take their own presses before the bar sees them. Telegram gives the bar a tap, which
+     * scrolls the list back to the top, and no touch listener. It builds the chat list's view again
+     * after a theme change, and the new listener takes the old one's place.
+     *
+     * <p>No switch reads this, so Pause leaves it working: it's the way back to the switch that
+     * resumes HushTelegram. Anything that goes wrong leaves the bar as Telegram made it.
+     */
+    public static void watchChatListTitle(View bar) {
+        if (bar == null) return;
+        try {
+            bar.setOnTouchListener(new TitlePress());
+            Logger.printInfo(() -> "Settings entry: a long press on the chat list title opens the settings");
+        } catch (Throwable failure) {
+            Logger.printException(() -> "Settings entry: could not watch the chat list title", failure);
+        }
+    }
+
+    /**
+     * Times a press on the chat list's top bar, the way Hushfacebook times a press on the Facebook
+     * logo. Every touch still reaches the bar as it did, so a tap is Telegram's. A press held for
+     * the phone's long-press time opens this screen, with the same vibration a long press gives,
+     * and the rest of that touch is kept from the bar, so letting go isn't also a tap.
+     *
+     * <p>The bar has to have taken the press itself, so it's still pressed when the time is up. A
+     * press the bar turned down never brings this the lift of the finger, and isn't timed out.
+     */
+    static final class TitlePress implements View.OnTouchListener {
+        private final Runnable fire = this::fire;
+        /** The bar while a press on it is being timed. */
+        private View pressed;
+        private float downX;
+        private float downY;
+        /** This touch opened the screen, so the rest of it isn't the bar's. */
+        private boolean opened;
+
+        @Override
+        public boolean onTouch(View bar, MotionEvent event) {
+            try {
+                switch (event.getActionMasked()) {
+                    case MotionEvent.ACTION_DOWN:
+                        stop();
+                        opened = false;
+                        // A long press Telegram gave the bar itself stays Telegram's.
+                        if (bar.isLongClickable()) return false;
+                        pressed = bar;
+                        downX = event.getX();
+                        downY = event.getY();
+                        bar.postDelayed(fire, ViewConfiguration.getLongPressTimeout());
+                        return false;
+                    case MotionEvent.ACTION_MOVE:
+                        // The same leeway the bar gives its own press before it lets go.
+                        if (pressed != null && !within(bar, event)) stop();
+                        return opened;
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL:
+                        stop();
+                        boolean ours = opened;
+                        opened = false;
+                        return ours;
+                    default:
+                        return opened;
+                }
+            } catch (Throwable failure) {
+                Logger.printException(() -> "Settings entry: could not follow a press on the chat list title", failure);
+                return false;
+            }
+        }
+
+        private static boolean within(View bar, MotionEvent event) {
+            float slop = ViewConfiguration.get(bar.getContext()).getScaledTouchSlop();
+            float x = event.getX();
+            float y = event.getY();
+            return x >= -slop && y >= -slop && x < bar.getWidth() + slop && y < bar.getHeight() + slop;
+        }
+
+        private void stop() {
+            View bar = pressed;
+            pressed = null;
+            if (bar != null) bar.removeCallbacks(fire);
+        }
+
+        private void fire() {
+            View bar = pressed;
+            pressed = null;
+            if (bar == null || !bar.isAttachedToWindow()) return;
+            // The bar turned the press down or already let go of it, so the finger's lift never
+            // comes here and the press can't be followed.
+            if (!bar.isPressed()) return;
+            try {
+                // Not asked for, and letting go is Telegram's tap, as it is on a Telegram without this.
+                if (!requestFromTitle(bar)) return;
+                opened = true;
+                bar.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                // The bar lets go of its press here, so letting go of the screen isn't a tap on it.
+                long now = SystemClock.uptimeMillis();
+                MotionEvent cancel = MotionEvent.obtain(now, now, MotionEvent.ACTION_CANCEL, downX, downY, 0);
+                bar.onTouchEvent(cancel);
+                cancel.recycle();
+            } catch (Throwable failure) {
+                Logger.printException(() -> "Settings entry: the long press on the chat list title failed", failure);
+            }
+        }
+    }
+
+    /**
+     * Asks for the screen over the chat list's activity, the way the launcher shortcut does, so it
+     * waits for the activity to settle and follows it to the next screen if it goes away.
+     *
+     * @return whether the request was made.
+     */
+    static boolean requestFromTitle(View bar) {
+        Activity activity = activityOf(bar.getContext());
+        if (activity == null) {
+            Logger.printInfo(() -> "Settings entry: the chat list title isn't in an activity, so its long press is Telegram's");
+            return false;
+        }
+        request("a long press on the chat list title");
+        OpenWhenResumed.openWhenSettled(activity);
+        return true;
+    }
+
+    private static Activity activityOf(Context context) {
+        for (int depth = 0; context != null && depth < 10; depth++) {
+            if (context instanceof Activity) return (Activity) context;
+            if (!(context instanceof ContextWrapper)) return null;
+            context = ((ContextWrapper) context).getBaseContext();
+        }
+        return null;
+    }
+
     static final class OpenWhenResumed implements Application.ActivityLifecycleCallbacks {
         /** The Telegram screen in front right now, if any. */
         private WeakReference<Activity> resumed;
@@ -357,7 +502,7 @@ public final class SettingsEntry {
          * activity resumes for a moment while it clears itself for the login screen, and a
          * request spent on it would be lost.
          */
-        private static void openWhenSettled(Activity activity) {
+        static void openWhenSettled(Activity activity) {
             Utils.runOnMainThread(() -> {
                 if (!openPending) return;
                 if (SystemClock.elapsedRealtime() - requestedAt > REQUEST_LIFETIME_MS) {
