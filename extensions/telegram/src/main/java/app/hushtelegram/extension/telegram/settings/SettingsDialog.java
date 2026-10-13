@@ -74,6 +74,8 @@ public final class SettingsDialog extends DialogFragment {
      */
     static final int CONTAINER_ID = 0x48464301;
     static final String PAGE_TITLE = "hushtelegram_page_title";
+    /** The argument naming the page the screen opens on: a route of {@link SettingsNavigation}. */
+    static final String START_PAGE = "hushtelegram_start_page";
 
     private TextView pageTitle;
     private TextView introduction;
@@ -87,6 +89,26 @@ public final class SettingsDialog extends DialogFragment {
         if (!count.contentEquals(results.getText())) results.setText(count);
     };
     private boolean settingSearch;
+
+    /**
+     * The screen, opening on [page] when nothing saved says otherwise: the page a restart from the
+     * restart row left. Null or empty opens the first page.
+     */
+    static SettingsDialog onPage(@Nullable String page) {
+        SettingsDialog dialog = new SettingsDialog();
+        if (page != null && !page.isEmpty()) {
+            Bundle arguments = new Bundle();
+            arguments.putString(START_PAGE, page);
+            dialog.setArguments(arguments);
+        }
+        return dialog;
+    }
+
+    /** The page this screen was asked to open on, or "" for the first page. */
+    String startPage() {
+        Bundle arguments = getArguments();
+        return arguments == null ? "" : arguments.getString(START_PAGE, "");
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

@@ -32,6 +32,19 @@
     },
     {
       "paths": [
+        "extensions/shared/library/src/main/java/app/hushtelegram/extension/shared/settings/preference/ReopenSettingsAfterRestart.java"
+      ],
+      "origin": "ported",
+      "upstream": "https://github.com/SysAdminDoc/HushPinterest",
+      "commit": "44fb93384a319d8e5d324f51b416efdc3d3147e6",
+      "via": [
+        "https://github.com/SysAdminDoc/hushfeed"
+      ],
+      "license": "GPL-3.0-only",
+      "changes": "Hush settings standard (2026-10-12) copied from the Pinterest sibling: packages renamed to app.hushtelegram.extension.shared and HushTelegramPause in place of HushPinterestPause."
+    },
+    {
+      "paths": [
         "patches/src/main/kotlin/app/morphe/patches/shared/compat/**"
       ],
       "origin": "ported",

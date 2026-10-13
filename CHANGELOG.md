@@ -6,6 +6,8 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.17.
 
+* **Telegram:** Flip a switch that needs a restart and a Restart Telegram row shows up right away at the top of the settings page, counting the changes waiting. Tap it and Telegram closes, then reopens on the same settings page. Before, a toast said to restart and there was nothing to tap.
+
 * **Telegram:** All 15 settings pages now share blue-black cards and cyan controls on an AMOLED background. Editors and dialogs use the same restrained corners. Switch explanations keep their full width at larger text sizes.
 
 * **Telegram:** Closing settings also closes the diagnostic report chooser. Dialogs on wide displays reserve enough space for their actions at the actual dialog width.

@@ -145,6 +145,12 @@ It's made for Telegram %1$s.	Feito para o Telegram %1$s.
 None of Telegram's web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.	Nenhum endereço web do Telegram está selecionado para este app, então os links deles abrem em outro lugar. Toque para selecioná-los nas configurações do Android.
 Only some of Telegram's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Só alguns endereços web do Telegram estão selecionados para este app, e os links para os outros abrem em outro lugar. Toque para selecioná-los nas configurações do Android.
 Saved. Restart Telegram to apply this change.	Salvo. Reinicie o Telegram para aplicar esta alteração.
+# context: the restart row's title while one change waits for a restart; a tap restarts Telegram
+Restart Telegram to apply this change	Reinicie o Telegram para aplicar esta alteração
+# context: the same row with several changes waiting; %1$d is how many
+Restart Telegram to apply %1$d changes	Reinicie o Telegram para aplicar %1$d alterações
+# context: the restart row's summary; the settings screen comes back on the page it was on
+Telegram closes and reopens on this page.	O Telegram fecha e abre de novo nesta página.
 Ads in channels and search	Anúncios em canais e na busca
 Ads in channels	Anúncios em canais
 Ads in search	Anúncios na busca

@@ -148,6 +148,12 @@ It's made for Telegram %1$s.	Rilis ini dibuat untuk Telegram %1$s.
 None of Telegram's web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.	Tidak ada alamat web Telegram yang dipilih untuk aplikasi ini, jadi tautannya terbuka di tempat lain. Ketuk untuk memilihnya di pengaturan Android.
 Only some of Telegram's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.	Hanya sebagian alamat web Telegram yang dipilih untuk aplikasi ini, dan tautan ke alamat lainnya terbuka di tempat lain. Ketuk untuk memilihnya di pengaturan Android.
 Saved. Restart Telegram to apply this change.	Tersimpan. Mulai ulang Telegram untuk menerapkan perubahan ini.
+# context: the restart row's title while one change waits for a restart; a tap restarts Telegram
+Restart Telegram to apply this change	Mulai ulang Telegram untuk menerapkan perubahan ini
+# context: the same row with several changes waiting; %1$d is how many
+Restart Telegram to apply %1$d changes	Mulai ulang Telegram untuk menerapkan %1$d perubahan
+# context: the restart row's summary; the settings screen comes back on the page it was on
+Telegram closes and reopens on this page.	Telegram ditutup lalu dibuka lagi di halaman ini.
 Ads in channels and search	Iklan di saluran dan pencarian
 Ads in channels	Iklan di saluran
 Ads in search	Iklan di pencarian

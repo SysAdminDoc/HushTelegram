@@ -45,6 +45,7 @@ import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
+import app.hushtelegram.extension.shared.settings.preference.ReopenSettingsAfterRestart;
 
 /**
  * A view of the complete preference model. Filtering never removes preferences from their
@@ -56,6 +57,8 @@ final class SettingsNavigation extends BaseAdapter {
     private static final String MORE = "more";
     /** Marks the Pause, Resume or Undo button placed under a status row's text, so a rebind replaces it. */
     private static final String STATUS_ACTION = "hushtelegram_status_action";
+    /** The restart row's key. Like the other rows only this view draws, it stores nothing. */
+    static final String RESTART = "action_restart_to_apply";
     private final HushTelegramPreferenceFragment page;
     private final SettingsDialog host;
     private final ListView list;
@@ -68,8 +71,17 @@ final class SettingsNavigation extends BaseAdapter {
     private final Preference more;
     /** The home page's last row, which opens HushTelegram's Ko-fi page in a browser. */
     private final Preference support;
+    /**
+     * Shown on every page while a change waits for a restart: a tap restarts Telegram and the
+     * screen comes back on the same page ({@link ReopenSettingsAfterRestart}).
+     */
+    private final HushTelegramPreferenceFragment.Row restart;
+    /** Keeps the shared fragment's restart toast off this screen, which shows the restart row instead. */
+    private final AbstractPreferenceFragment.RestartFeedbackPresenter restartFeedback;
+    /** The page the last rebuild drew, so a row coming or going on that same page keeps the list's place. */
+    private String rebuiltPage;
     private final Preference empty;
-    /** The line a category or search page starts with while a pause or a restart applies to it. */
+    /** The line a category or search page starts with while a pause applies to it. */
     private final Preference pageStatus;
     /** Whether that line is about Pause, and so carries Resume or Undo. */
     private boolean pageAction;
@@ -125,6 +137,21 @@ final class SettingsNavigation extends BaseAdapter {
         support = link(context, L10n.t("Support HushTelegram"), L10n.t("Buy me a coffee on Ko-fi"), SettingsIcons.OPENING);
         support.setKey(HushTelegramPreferenceFragment.SUPPORT);
         support.setOnPreferenceClickListener(row -> { HushTelegramPreferenceFragment.openSupport(row.getContext()); return true; });
+        restart = new HushTelegramPreferenceFragment.Row(context);
+        restart.setKey(RESTART);
+        restart.setPersistent(false);
+        // A tap restarts at once, so the row goes without a chevron.
+        restart.actsAtOnce = true;
+        restart.setSummary(L10n.t("Telegram closes and reopens on this page."));
+        restart.setIcon(SettingsIcons.icon(context, SettingsIcons.UPDATES, palette().heading));
+        restart.setOnPreferenceClickListener(row -> {
+            ReopenSettingsAfterRestart.restartInto(row.getContext(), route);
+            return true;
+        });
+        // The row appears as the switch flips. A screen reader hears the saved message as well,
+        // since the row can land above the part of the list in view.
+        restartFeedback = (ignored, message) -> list.announceForAccessibility(message);
+        AbstractPreferenceFragment.setRestartFeedbackPresenter(restartFeedback);
         empty =new HushTelegramPreferenceFragment.Row(context);
         empty.setTitle(L10n.t("No matching settings"));
         empty.setSummary(L10n.t("Try a different word or clear the search."));
@@ -141,6 +168,11 @@ final class SettingsNavigation extends BaseAdapter {
             homeOffset = state.getInt("homeOffset");
             morePosition = state.getInt("morePosition");
             moreOffset = state.getInt("moreOffset");
+            if (!MORE.equals(route) && selected() == null) route = "";
+        } else {
+            // Nothing saved: the page the screen was asked to open on, such as the one a restart
+            // from the restart row left.
+            route = host.startPage();
             if (!MORE.equals(route) && selected() == null) route = "";
         }
         source.registerDataSetObserver(changes);
@@ -380,9 +412,17 @@ final class SettingsNavigation extends BaseAdapter {
         out.putBundle(STATE, state);
     }
 
-    void close() { source.unregisterDataSetObserver(changes); }
+    void close() {
+        source.unregisterDataSetObserver(changes);
+        AbstractPreferenceFragment.clearRestartFeedbackPresenter(restartFeedback);
+    }
+
+    /** A change that waits for a restart was made or taken back: the restart row comes, goes or counts again. */
+    void restartChanged() { rebuild(); }
 
     private void rebuild() {
+        int restartWas = visible.indexOf(restart);
+        boolean pageStatusWas = visible.contains(pageStatus);
         visible.clear();
         cards.clear();
         String terms = normalized(query).trim();
@@ -416,6 +456,7 @@ final class SettingsNavigation extends BaseAdapter {
             visible.add(more);
             visible.add(support);
         }
+        addRestart();
         if (terms.isEmpty()) host.showResults(-1);
         // Undo can remove the entire status card. Reserve its former scroll range at the
         // bottom until navigation, without retaining a stale status row or changing choices.
@@ -424,6 +465,41 @@ final class SettingsNavigation extends BaseAdapter {
             list.setPadding(list.getPaddingLeft(), list.getPaddingTop(), list.getPaddingRight(), bottom);
         }
         notifyDataSetChanged();
+        keepPlace(restartWas, pageStatusWas);
+    }
+
+    /**
+     * The restart row, on whatever page is showing, while a change waits for a restart: under the
+     * home page's status card or a page's pause line, and otherwise first. Its title counts the
+     * changes a restart applies.
+     */
+    private void addRestart() {
+        Context context = screen.getContext();
+        int count = ReopenSettingsAfterRestart.changesWaiting(context);
+        if (count <= 0) return;
+        restart.setTitle(L10n.quantity(context, count, "Restart Telegram to apply this change",
+                "Restart Telegram to apply %1$d changes", count));
+        boolean underStatus = !visible.isEmpty()
+                && (visible.get(0) == pageStatus || visible.get(0) == screen.getPreference(0));
+        visible.add(underStatus ? 1 : 0, restart);
+    }
+
+    /**
+     * The restart row comes and goes above the rows in view when a switch is flipped. On the same
+     * page, with nothing else above moving, the list moves with it, so the row that was tapped
+     * stays where it was. A row added at the top of what's in view is left to push the list down,
+     * so it's seen.
+     */
+    private void keepPlace(int restartWas, boolean pageStatusWas) {
+        String pageWas = rebuiltPage;
+        rebuiltPage = route + '\n' + query;
+        int restartNow = visible.indexOf(restart);
+        if (!rebuiltPage.equals(pageWas) || (restartWas < 0) == (restartNow < 0)
+                || pageStatusWas != visible.contains(pageStatus) || list.getChildCount() == 0) return;
+        int first = list.getFirstVisiblePosition();
+        int top = list.getChildAt(0).getTop();
+        if (restartNow >= 0 && restartNow < first) list.setSelectionFromTop(first + 1, top);
+        else if (restartWas >= 0 && restartWas < first) list.setSelectionFromTop(first - 1, top);
     }
 
     /**
@@ -491,32 +567,25 @@ final class SettingsNavigation extends BaseAdapter {
 
     /**
      * Starts a category or search page with a short line while HushTelegram is paused or a pause
-     * or its end waits for a restart, when the page shows a switch Pause reaches, or while a restart
-     * is owed for a setting the page shows. On a paused start the switches keep showing what was
-     * saved, which read as active without it. Nothing here changes a saved choice.
+     * or its end waits for a restart, when the page shows a switch Pause reaches. On a paused start
+     * the switches keep showing what was saved, which read as active without it. Nothing here
+     * changes a saved choice. A restart owed for anything else is the restart row's to say.
      */
     private void addPageStatus() {
         Context context = screen.getContext();
         boolean paused = HushTelegramPause.isPaused();
         boolean nextPaused = HushTelegramPause.pausesNextStart(context);
         pageAction = (paused || nextPaused) && showsPausable();
-        if (pageAction) {
-            pageStatus.setTitle(paused ? L10n.t("HushTelegram is paused") : L10n.t("HushTelegram is on"));
-            // Worded like the Pause switch: Debug logging and what was set when patching stay in.
-            pageStatus.setSummary(paused == nextPaused
-                    ? L10n.t("Until you resume, every switch except Debug logging acts as if it were off. Your "
-                            + "choices stay saved. Edits made when you patched stay in.")
-                    : paused ? L10n.t("HushTelegram turns back on when Telegram restarts.")
-                    : L10n.t("HushTelegram pauses when Telegram restarts."));
-            pageStatus.setIcon(SettingsIcons.icon(context, paused ? SettingsIcons.PAUSE : SettingsIcons.PATCHED,
-                    paused ? palette().summary : palette().heading));
-        } else if (showsRestartOwed()) {
-            pageStatus.setTitle(L10n.t("A change here applies after Telegram restarts."));
-            pageStatus.setSummary(null);
-            pageStatus.setIcon(SettingsIcons.icon(context, SettingsIcons.UPDATES, palette().heading));
-        } else {
-            return;
-        }
+        if (!pageAction) return;
+        pageStatus.setTitle(paused ? L10n.t("HushTelegram is paused") : L10n.t("HushTelegram is on"));
+        // Worded like the Pause switch: Debug logging and what was set when patching stay in.
+        pageStatus.setSummary(paused == nextPaused
+                ? L10n.t("Until you resume, every switch except Debug logging acts as if it were off. Your "
+                        + "choices stay saved. Edits made when you patched stay in.")
+                : paused ? L10n.t("HushTelegram turns back on when Telegram restarts.")
+                : L10n.t("HushTelegram pauses when Telegram restarts."));
+        pageStatus.setIcon(SettingsIcons.icon(context, paused ? SettingsIcons.PAUSE : SettingsIcons.PATCHED,
+                paused ? palette().summary : palette().heading));
         visible.add(0, pageStatus);
     }
 
@@ -525,13 +594,6 @@ final class SettingsNavigation extends BaseAdapter {
         for (Preference row : visible) {
             Setting<?> setting = row.hasKey() ? Setting.getSettingFromPath(row.getKey()) : null;
             if (setting != null && (!setting.isKeptWhenPaused() || setting == BaseSettings.PAUSED)) return true;
-        }
-        return false;
-    }
-
-    private boolean showsRestartOwed() {
-        for (Preference row : visible) {
-            if (row.hasKey() && AbstractPreferenceFragment.restartPending.contains(row.getKey())) return true;
         }
         return false;
     }
@@ -578,7 +640,8 @@ final class SettingsNavigation extends BaseAdapter {
             Object group = group(item);
             boolean first = position == 0 || group(getItem(position - 1)) != group;
             boolean last = position + 1 == getCount() || group(getItem(position + 1)) != group;
-            palette().paintSurface(row, item, first, last, item == screen.getPreference(0), item == support);
+            palette().paintSurface(row, item, first, last, item == screen.getPreference(0) || item == restart,
+                    item == support);
             if (isNavigation(item)) {
                 // Keep the accurate page summaries in the searchable model, while this index
                 // stays compact enough to scan all seven destinations at a glance.
@@ -714,7 +777,8 @@ final class SettingsNavigation extends BaseAdapter {
     private Object group(Preference item) {
         Object card = cards.get(item);
         if (card != null) return card;
-        if (item == more || item == support || item == browse || item == screen.getPreference(0)) return item;
+        if (item == more || item == support || item == browse || item == screen.getPreference(0)
+                || item == restart) return item;
         if (item.getParent() != null) return item.getParent();
         return sections;
     }

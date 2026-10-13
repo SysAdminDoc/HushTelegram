@@ -499,7 +499,7 @@ public class SettingsNavigationTest {
         assertFalse(HushTelegramPause.isPaused());
         assertEquals(position, list().getFirstVisiblePosition());
         assertEquals(offset, list().getChildAt(0).getTop());
-        if (restart) assertEquals("A change here applies after Telegram restarts.",
+        if (restart) assertEquals("Restart Telegram to apply this change",
                 String.valueOf(((Preference) list().getItemAtPosition(0)).getTitle()));
         else assertFalse(titles().contains("HushTelegram is on"));
         capture("undo-pending-" + (restart ? "restart" : search == null ? "category" : "search"), 1200);
@@ -616,21 +616,29 @@ public class SettingsNavigationTest {
     }
 
     /**
-     * Pause switched on from its own page is owed a restart: the page says so and Undo takes it
-     * back, after which the line goes. A restart owed for a setting a page shows is said there too.
+     * Pause switched on from its own page is owed a restart: the page says so, the restart row
+     * sits under that line, and Undo takes both back. A change owed a restart brings the row up
+     * on every page, first on a page without a pause line and under the home page's status card.
      */
-    @Test public void aPauseOrAChangeWaitingOnARestartIsSaidOnItsPage() {
+    @Test public void aPauseOrAChangeWaitingOnARestartBringsUpTheRestartRow() {
         page.navigation.navigate("Pause");
         tap(BaseSettings.PAUSED.key);
         layout(dialog.getView());
         Preference line = (Preference) list().getItemAtPosition(0);
         assertEquals("HushTelegram is on", String.valueOf(line.getTitle()));
         assertEquals("HushTelegram pauses when Telegram restarts.", String.valueOf(line.getSummary()));
+        Preference restart = (Preference) list().getItemAtPosition(1);
+        assertEquals(SettingsNavigation.RESTART, restart.getKey());
+        assertEquals("Restart Telegram to apply this change", String.valueOf(restart.getTitle()));
+        assertEquals("Telegram closes and reopens on this page.", String.valueOf(restart.getSummary()));
+        assertTrue("the restart row can't be tapped", list().getAdapter().isEnabled(1));
+        assertNull("a restart saved message went to a toast instead of the row", ShadowToast.getLatestToast());
         pageAction().performClick();
         ShadowLooper.idleMainLooper();
         layout(dialog.getView());
         assertFalse(BaseSettings.PAUSED.savedValue());
         assertEquals(BaseSettings.PAUSED.key, ((Preference) list().getItemAtPosition(0)).getKey());
+        assertFalse(contains(SettingsNavigation.RESTART));
 
         page.navigation.back();
         app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.add(
@@ -638,15 +646,90 @@ public class SettingsNavigationTest {
         page.navigation.navigate("Ads");
         layout(dialog.getView());
         line = (Preference) list().getItemAtPosition(0);
-        assertEquals("A change here applies after Telegram restarts.", String.valueOf(line.getTitle()));
+        assertEquals(SettingsNavigation.RESTART, line.getKey());
         assertEquals(String.valueOf(line.getTitle()),
                 String.valueOf(((android.widget.TextView) list().getChildAt(0)
                         .findViewById(android.R.id.title)).getText()));
-        android.view.ViewGroup frame = list().getChildAt(0).findViewById(android.R.id.widget_frame);
-        assertTrue("a restart line offered an action", frame == null || frame.getChildCount() == 0);
+        assertEquals(categoryCount("Ads") + 1, list().getCount());
         page.navigation.back();
         page.navigation.navigate("Privacy");
-        assertEquals("a restart owed elsewhere was said here", categoryCount("Privacy"), list().getCount());
+        assertEquals(SettingsNavigation.RESTART, ((Preference) list().getItemAtPosition(0)).getKey());
+        assertEquals(categoryCount("Privacy") + 1, list().getCount());
+        while (page.navigation.back()) { }
+        assertEquals(SettingsNavigation.RESTART, ((Preference) list().getItemAtPosition(1)).getKey());
+        assertEquals(12, list().getCount());
+
+        // Two changes are counted, and the row goes once neither is owed.
+        app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.add(
+                Settings.USE_SYSTEM_FONT.key);
+        page.navigation.restartChanged();
+        assertEquals("Restart Telegram to apply 2 changes",
+                String.valueOf(((Preference) list().getItemAtPosition(1)).getTitle()));
+        app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.clear();
+        page.navigation.restartChanged();
+        assertFalse(contains(SettingsNavigation.RESTART));
+        assertEquals(11, list().getCount());
+    }
+
+    /** A switch that needs a restart brings the row up the moment it's flipped, and flipping it back takes it away. */
+    @Test public void flippingARestartGatedSwitchShowsTheRowAtOnce() {
+        try {
+            page.navigation.navigate("Look and feel");
+            assertFalse(contains(SettingsNavigation.RESTART));
+            tap(Settings.USE_SYSTEM_FONT.key);
+            assertTrue(Settings.USE_SYSTEM_FONT.savedValue());
+            assertEquals(SettingsNavigation.RESTART, ((Preference) list().getItemAtPosition(0)).getKey());
+            assertEquals("Restart Telegram to apply this change",
+                    String.valueOf(((Preference) list().getItemAtPosition(0)).getTitle()));
+            assertNull("the restart was said in a toast with nothing to tap", ShadowToast.getLatestToast());
+            tap(Settings.USE_SYSTEM_FONT.key);
+            assertFalse(Settings.USE_SYSTEM_FONT.savedValue());
+            assertFalse(contains(SettingsNavigation.RESTART));
+        } finally {
+            Settings.USE_SYSTEM_FONT.resetToDefault();
+        }
+    }
+
+    /** The row restarts Telegram and leaves a marker that opens the screen again on this page. */
+    @Test public void theRestartRowRestartsIntoThePageItWasTappedOn() {
+        List<android.content.Context> restarted = new ArrayList<>();
+        app.hushtelegram.extension.shared.settings.preference.ReopenSettingsAfterRestart.setRestarterForTests(restarted::add);
+        app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.add(
+                Settings.USE_SYSTEM_FONT.key);
+        page.navigation.navigate("Look and feel");
+        Map<String, Object> before = savedValues();
+        tap(SettingsNavigation.RESTART);
+        assertEquals(1, restarted.size());
+        assertEquals(before, savedValues());
+        assertEquals("Look and feel", app.hushtelegram.extension.shared.settings.preference.ReopenSettingsAfterRestart
+                .takeFresh(Setting.preferences.preferences, android.os.SystemClock.elapsedRealtime()));
+    }
+
+    /** Asked to open on a page, as after that restart, the screen starts there with its title. */
+    @Test public void aScreenAskedToStartOnAPageOpensThere() {
+        dialog.dismissAllowingStateLoss();
+        ShadowLooper.idleMainLooper();
+        dialog = SettingsDialog.onPage("Links");
+        dialog.show(controller.get().getFragmentManager(), "hushtelegram_settings");
+        controller.get().getFragmentManager().executePendingTransactions();
+        ShadowLooper.idleMainLooper();
+        page = page(dialog);
+        assertEquals("Links", dialog.startPage());
+        assertTrue(contains(Settings.OPEN_EXTERNAL_LINKS.key));
+        assertEquals(categoryCount("Links"), list().getCount());
+        assertEquals("Links", pageTitle().getText().toString());
+        assertTrue(page.navigation.back());
+        assertTrue("Back from a More settings page goes to More settings", contains("section_Links"));
+
+        // A page this build doesn't have opens the first page.
+        dialog.dismissAllowingStateLoss();
+        ShadowLooper.idleMainLooper();
+        dialog = SettingsDialog.onPage("No such page");
+        dialog.show(controller.get().getFragmentManager(), "hushtelegram_settings");
+        controller.get().getFragmentManager().executePendingTransactions();
+        ShadowLooper.idleMainLooper();
+        page = page(dialog);
+        assertEquals(11, list().getCount());
     }
 
     /** The paused line on real pages, dark and light, for a look before the phone does. */

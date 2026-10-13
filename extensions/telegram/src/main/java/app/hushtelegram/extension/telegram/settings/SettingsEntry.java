@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Logger;
 import app.hushtelegram.extension.shared.Utils;
+import app.hushtelegram.extension.shared.settings.preference.ReopenSettingsAfterRestart;
 import app.hushtelegram.extension.telegram.misc.BlackTheme;
 import app.hushtelegram.extension.telegram.misc.UnifiedPush;
 
@@ -72,6 +73,12 @@ public final class SettingsEntry {
 
     private static volatile boolean openPending;
     private static volatile long requestedAt;
+    /**
+     * The page the next open lands on, or null for the first page. Set by a restart from the
+     * restart row, kept while the screen is opened again over a later activity, and dropped
+     * once the person closes it or asks for it another way.
+     */
+    private static volatile String requestedPage;
     private static volatile boolean callbacksRegistered;
     /** The activity the screen was last shown over, while the person hasn't closed it. */
     private static WeakReference<Activity> host;
@@ -91,7 +98,8 @@ public final class SettingsEntry {
      * startup. Watches every Telegram activity, so a pending open lands on whichever one resumes
      * next: signed out, the launcher hands straight over to the login screen. Also where the
      * release check, when it's on, asks at most once a day, on a worker, and where a UnifiedPush
-     * sign-up is renewed.
+     * sign-up is renewed. A start that the settings screen's restart row asked for opens the
+     * screen again, on the page it was on.
      */
     public static void onApplicationCreate(Context context) {
         try {
@@ -100,6 +108,7 @@ public final class SettingsEntry {
                 ((Application) context).registerActivityLifecycleCallbacks(new OpenWhenResumed());
                 callbacksRegistered = true;
             }
+            ReopenSettingsAfterRestart.reopenIfPending(SettingsEntry::reopenOn);
         } catch (Exception ex) {
             Logger.printException(() -> "Settings entry: could not watch activities", ex);
         }
@@ -387,7 +396,7 @@ public final class SettingsEntry {
             }
             closedByUser = false;
             openingHost = new WeakReference<>(activity);
-            new SettingsDialog().show(fragments, DIALOG_TAG);
+            SettingsDialog.onPage(requestedPage).show(fragments, DIALOG_TAG);
             host = new WeakReference<>(activity);
             Logger.printInfo(() -> "Settings opened over " + name);
             return true;
@@ -420,6 +429,7 @@ public final class SettingsEntry {
         closedByUser = true;
         host = null;
         openingHost = null;
+        requestedPage = null;
     }
 
     /**
@@ -441,8 +451,24 @@ public final class SettingsEntry {
 
     private static void request(String from) {
         requestedAt = SystemClock.elapsedRealtime();
+        requestedPage = null;
         openPending = true;
         Logger.printInfo(() -> "Settings requested by " + from);
+    }
+
+    /**
+     * The screen again after the restart row restarted Telegram, on [page], over the first
+     * Telegram screen to resume: the same open the launcher shortcut and Telegram's settings row
+     * lead to.
+     */
+    static void reopenOn(String page) {
+        request("a restart from the settings screen");
+        requestedPage = page;
+    }
+
+    /** The page the next open lands on. Package-visible for tests. */
+    static String requestedPage() {
+        return requestedPage;
     }
 
     /**
