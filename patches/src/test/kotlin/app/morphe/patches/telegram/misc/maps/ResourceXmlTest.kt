@@ -209,6 +209,17 @@ class ResourceXmlTest {
             assertEquals("XInclude performs no external I/O", 0, requests.get())
         } finally { server.stop(0) }
     }
+
+    @Test
+    fun `shipped patches reach an XML parser only through the shared reader`() {
+        val root = File("src/main/kotlin").takeIf { it.isDirectory } ?: File("patches/src/main/kotlin")
+        val parsers = Regex("DocumentBuilderFactory|SAXParserFactory|XMLInputFactory|XMLReaderFactory")
+        val own = root.walkTopDown().filter { it.isFile && it.extension == "kt" && it.name != "ResourceXml.kt" }
+            .filter { parsers.containsMatchIn(it.readText()) }.map { it.name }.sorted().toList()
+        // v0.0.13's icon, launch logo and Maps patches each set Xerces features on their own factory,
+        // which Android's factory refuses, so all three stopped a Morphe Manager run.
+        assertEquals("a patch that builds its own parser fails on a phone", emptyList<String>(), own)
+    }
 }
 
 /** Android's provider also inherits unsupported XInclude accessors, even when disabling it. */

@@ -73,7 +73,9 @@ Working version 0.0.17.
 
 * **Tooling:** Refreshed all 15 settings screenshots from the patched app. Native checks cover the settings pages and editor recovery at 200% text in German, Portuguese and mirrored layouts. Shared dialogs were checked in both themes. The source-origin ledger includes the new form helper, and the README patch table matches the shipped descriptions.
 
-* **Tooling:** Resource patches no longer require XML parser features missing from Android. DTDs, XInclude and external entities are refused before any resource changes are written. Android parser checks cover ordinary UTF-8 and UTF-16 resources and confirm refusals make no file changes or network requests. Refs #6.
+* **Telegram:** Patching on a phone no longer stops with a `disallow-doctype-decl` error when `HushTelegram icon and name`, `Black and white launch logo` or `Use registered Maps API key` is picked. All three asked Android's XML reader for safety switches it doesn't have, so they only worked when patching from a computer. They now check each file for DTDs, XInclude and outside entities themselves before anything is written. Seen patching both Telegram builds in Morphe Manager on Android 14. Refs #6.
+
+* **Tooling:** Android parser checks cover ordinary UTF-8 and UTF-16 resources and confirm a refused file makes no changes and no network requests. A source check now fails the build if a patch sets up an XML parser of its own.
 
 * **Telegram:** Settings now mirror correctly in right-to-left languages, including Back and the preference list. Telegram's host layout settings stay unchanged.
 
