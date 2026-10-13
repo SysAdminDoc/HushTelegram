@@ -145,7 +145,9 @@ class ChatListTitlePressFixtureTest {
     private fun Method.body(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
     private fun Instruction.reference(): String? = ((this as? ReferenceInstruction)?.reference as? Any)?.let {
         if (it is FieldReference) "${it.definingClass}->${it.name}:${it.type}" else it.toString() }
-    private fun Instruction.callName(): String? = reference()?.takeIf { opcode.name.startsWith("INVOKE") }
+    private fun Instruction.callName(): String? = reference()?.takeIf {
+        (this as? ReferenceInstruction)?.reference is MethodReference
+    }
     // dexlib re-aligns switch payloads with a NOP and widens a goto whose jump grew when an
     // instruction goes in, so those don't count as changes.
     private fun List<Instruction>.operations() = filter { it.opcode != Opcode.NOP }.map { instruction ->

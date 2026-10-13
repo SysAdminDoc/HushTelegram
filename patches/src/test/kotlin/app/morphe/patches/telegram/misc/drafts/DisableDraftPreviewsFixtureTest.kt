@@ -179,9 +179,9 @@ class DisableDraftPreviewsFixtureTest {
         assertEquals("$build: every content field, the flags and the effect are emptied, and nothing else",
             (DRAFT_CONTENT.keys + listOf("flags", "effect")).toSet(), written.toSet())
         assertTrue("$build: the chat and the two switches stay", written.none { it in setOf("peer", "no_webpage", "invert_media") })
-        val mask = empty.single { it.opcode == Opcode.AND_INT_LIT16 } as NarrowLiteralInstruction
+        val emptyMask = empty.single { it.opcode == Opcode.AND_INT_LIT16 } as NarrowLiteralInstruction
         assertEquals("$build: the effect and media bits go, every other flag stays",
-            (DRAFT_EFFECT_FLAG or DRAFT_MEDIA_FLAG).inv(), mask.narrowLiteral)
+            (DRAFT_EFFECT_FLAG or DRAFT_MEDIA_FLAG).inv(), emptyMask.narrowLiteral)
         assertEquals("$build: the text is empty, not missing", "", empty.firstNotNullOf { (((it as? ReferenceInstruction)?.reference) as? StringReference)?.string })
         assertEquals("$build: a direct messages draft keeps the person's chat it's for", listOf(MONO_FORUM_REPLY, "$MONO_FORUM_REPLY-><init>()V"),
             empty.filter { it.opcode == Opcode.NEW_INSTANCE || it.opcode == Opcode.INVOKE_DIRECT }.map { it.reference() })

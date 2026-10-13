@@ -63,7 +63,8 @@ public final class QuickSetups {
             if (toggle.isChecked() == wanted) continue;
             // setChecked skips the row's change listener, which a tap runs. Telegram's rows use it
             // for work a tap does, such as forgetting chats' translate choices when that switch goes off.
-            if (!toggle.callChangeListener(wanted)) continue;
+            Preference.OnPreferenceChangeListener listener = toggle.getOnPreferenceChangeListener();
+            if (listener != null && !listener.onPreferenceChange(toggle, wanted)) continue;
             toggle.setChecked(wanted);
             changed++;
         }

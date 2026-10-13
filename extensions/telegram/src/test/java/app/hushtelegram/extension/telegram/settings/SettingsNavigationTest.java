@@ -1184,9 +1184,9 @@ public class SettingsNavigationTest {
 
     @Test public void visibleNavigationAndSearchKeepTheirAccessibilityRoles() {
         layout(dialog.getView());
-        View heading = list().getChildAt(1);
+        View heading = list().getChildAt(titles().indexOf("Browse settings") - list().getFirstVisiblePosition());
         assertTrue(heading.createAccessibilityNodeInfo().isHeading());
-        View feed = list().getChildAt(2);
+        View feed = list().getChildAt(position("section_Ads") - list().getFirstVisiblePosition());
         assertEquals(android.widget.Button.class.getName(), feed.createAccessibilityNodeInfo().getClassName());
         assertTrue(feed.performAccessibilityAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK, null));
         assertEquals("Hide ads", ((Preference) list().getItemAtPosition(0)).getTitle());

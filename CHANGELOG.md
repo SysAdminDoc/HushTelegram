@@ -6,6 +6,11 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.17.
 
+* **Tooling:** Quick setups now builds against Android's public preference API. Each switch still runs its change listener and keeps its value when that listener refuses a change. The accessibility check now finds the heading and Ads row by name after Quick setups moved them down.
+* **Tooling:** The draft fixture checks compile again after two mask assertions reused one local variable name. Both checks remain in place.
+* **Tooling:** Chat-list title fixture checks now recognize method calls by their reference type. The previous uppercase opcode check missed every call because the bytecode library uses lowercase instruction names.
+* **Tooling:** The source ledger now covers the files behind the new privacy switches.
+
 * **Telegram:** The HushTelegram row in Telegram's Settings now sits at the top of the account settings, right above Account, instead of below Language. While Telegram's new Wallet row is showing at the top, HushTelegram comes just under its divider. Asked for in #14.
 * **Telegram:** The Telegram app reference for contributors now points to where the current target builds are declared, and marks what it recorded from 12.10.6 and the 12.10.7 beta as observations of those builds rather than of today's targets.
 * **Telegram:** **Disable draft link previews** has a second switch on the Privacy page, **Keep drafts on this phone**. With it on, a message you start typing and leave unsent stays on this phone, and Telegram gets an empty draft in its place. Your other devices drop any copy of that chat's draft they had, and an older copy on Telegram's side can't come back over the one on this phone. Emptying the text box still clears it everywhere, in a channel's direct messages too. Turn the switch off and a draft goes up again the next time you change it. It's off unless you turn it on, and drafts sync as usual while HushTelegram is paused.
