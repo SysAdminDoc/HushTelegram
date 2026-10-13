@@ -51,6 +51,14 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * account sends nothing from another account's chat with the same ID, and an account signed in
  * later in the same slot starts with nothing on. A message or chat whose account can't be read
  * is left alone.
+ *
+ * <p>A request waits in a queue, so whether its text may leave the phone is asked again on the
+ * worker just before it's sent: the switch is on and HushTelegram isn't paused, the service is the
+ * one it was queued under, and a message waiting on it is still in a chat or message turned on, in
+ * an account still signed in as the one that chose it. A request that fails that is dropped
+ * unsent. A change that lands after the check, while the connection is opening, can't stop that
+ * one request, and an answer already on its way can't be called back; either answer is still kept
+ * out of sight.
  */
 public final class OutsideTranslate {
     private OutsideTranslate() {}
@@ -97,14 +105,30 @@ public final class OutsideTranslate {
         void refresh();
     }
 
-    /** A message waiting on a request. It's held only until the answer lands or fails. */
+    /**
+     * A message waiting on a request, with the account, chat and message it was asked for in. It's
+     * held only until the answer lands or fails.
+     */
     private static final class Waiter {
         final Message message;
         final long owner;
+        final long dialog;
+        final int id;
 
-        Waiter(Message message, long owner) {
+        Waiter(Message message, long owner, long dialog, int id) {
             this.message = message;
             this.owner = owner;
+            this.dialog = dialog;
+            this.id = id;
+        }
+
+        /** Whether the message's account still reads as the one that asked. A signed-out or reused slot doesn't. */
+        boolean sameAccount() {
+            try {
+                return message.owner() == owner;
+            } catch (Throwable unreadable) {
+                return false;
+            }
         }
     }
 
@@ -122,7 +146,8 @@ public final class OutsideTranslate {
     }
 
     interface Fetcher {
-        GoogleTranslate.Result fetch(String target, String text) throws Exception;
+        /** Sends the text to [service], the one the request was queued under, never whichever is saved by then. */
+        GoogleTranslate.Result fetch(AiTranslate.Service service, String target, String text) throws Exception;
     }
 
     private static final Object LOCK = new Object();
@@ -148,7 +173,7 @@ public final class OutsideTranslate {
     private static int generation;
     private static ExecutorService pool;
 
-    static Fetcher fetcher = OutsideTranslate::fetchWithService;
+    static Fetcher fetcher = OutsideTranslate::fetchWith;
     static LongSupplier clock = System::currentTimeMillis;
     static Executor executor = task -> {
         synchronized (LOCK) {
@@ -200,7 +225,7 @@ public final class OutsideTranslate {
             String target = target();
             GoogleTranslate.Result result = cached(owner, target, original);
             if (result == null) {
-                request(message, owner, target, original);
+                request(new Waiter(message, owner, dialog, id), target, original);
                 APPLIED.remove(key);
                 return false;
             }
@@ -298,33 +323,85 @@ public final class OutsideTranslate {
         }
     }
 
-    /** Asks the service for the text in the background, once however many of [owner]'s messages want it. */
-    static void request(Message message, long owner, String target, String text) {
-        String key = cacheKey(owner, target, text);
+    /**
+     * Asks the service for the text in the background, once however many of the waiter's account's
+     * messages want it. The request keeps the service saved now.
+     */
+    static void request(Waiter waiter, String target, String text) {
+        String key = cacheKey(waiter.owner, target, text);
         int asked;
+        AiTranslate.Service provider;
         synchronized (LOCK) {
             asked = generation;
             Long failed = FAILED.get(key);
             if (failed != null && clock.getAsLong() - failed < RETRY_MS) return;
             List<Waiter> waiters = PENDING.get(key);
             if (waiters != null) {
-                waiters.add(new Waiter(message, owner));
+                waiters.add(waiter);
                 return;
             }
             waiters = new ArrayList<>();
-            waiters.add(new Waiter(message, owner));
+            waiters.add(waiter);
             PENDING.put(key, waiters);
+            provider = service();
         }
         executor.execute(() -> {
+            if (!sendable(key, asked)) {
+                HookStatus.counted(FamilyNames.OUTSIDE_TRANSLATE, "translate request dropped before sending");
+                return;
+            }
             GoogleTranslate.Result result = null;
             Throwable failure = null;
             try {
-                result = fetcher.fetch(target, text);
+                result = fetcher.fetch(provider, target, text);
             } catch (Throwable thrown) {
                 failure = thrown;
             }
             finish(key, asked, result, failure);
         });
+    }
+
+    /**
+     * Asked on the worker just before a request's text is sent. A request nobody may still send
+     * is forgotten, so a later look asks again under whatever is chosen then.
+     */
+    static boolean sendable(String key, int asked) {
+        List<Waiter> mine;
+        List<Waiter> waiters;
+        synchronized (LOCK) {
+            if (asked != generation) return false;
+            mine = PENDING.get(key);
+            if (mine == null) return false;
+            waiters = new ArrayList<>(mine);
+        }
+        boolean on = active();
+        // Each account is read again outside the lock, since that's Telegram's own code.
+        List<Waiter> signedIn = new ArrayList<>();
+        for (Waiter waiter : waiters) {
+            if (waiter.sameAccount()) signedIn.add(waiter);
+        }
+        synchronized (LOCK) {
+            // Switched off or a new service while the accounts were read.
+            if (asked != generation || PENDING.get(key) != mine) return false;
+            if (on) {
+                for (Waiter waiter : signedIn) {
+                    if (wanted(waiter.owner, waiter.dialog, waiter.id)) return true;
+                }
+                // A message that joined after the copy passed the same checks as it was drawn just now.
+                if (mine.size() > waiters.size()) return true;
+            }
+            PENDING.remove(key);
+            return false;
+        }
+    }
+
+    /**
+     * Drops every request not yet sent, and keeps the answer to any already out from being kept or
+     * shown. The choices themselves stay. Run under {@link #LOCK}.
+     */
+    private static void dropQueued() {
+        generation++;
+        PENDING.clear();
     }
 
     private static void finish(String key, int asked, GoogleTranslate.Result result, Throwable failure) {
@@ -360,13 +437,12 @@ public final class OutsideTranslate {
                 // Switched off or paused while the request was out: nothing to show or say.
                 if (!active()) return;
                 for (Waiter waiter : done) {
-                    long dialog = waiter.message.dialog();
-                    String chat = chatKey(waiter.owner, dialog);
+                    String chat = chatKey(waiter.owner, waiter.dialog);
                     if (failed) {
                         toastOnce(chat, keyRefused);
                         continue;
                     }
-                    if (!wanted(waiter.owner, dialog, waiter.message.id())) continue;
+                    if (!wanted(waiter.owner, waiter.dialog, waiter.id)) continue;
                     synchronized (LOCK) {
                         TOASTED.remove(chat);
                     }
@@ -404,9 +480,8 @@ public final class OutsideTranslate {
         }
     }
 
-    static GoogleTranslate.Result fetchWithService(String target, String text) throws Exception {
-        AiTranslate.Service current = service();
-        return current.enabled() ? AiTranslate.fetch(current, target, text) : GoogleTranslate.fetch(target, text);
+    static GoogleTranslate.Result fetchWith(AiTranslate.Service service, String target, String text) throws Exception {
+        return service.enabled() ? AiTranslate.fetch(service, target, text) : GoogleTranslate.fetch(target, text);
     }
 
     /**
@@ -431,9 +506,9 @@ public final class OutsideTranslate {
                 return false;
             }
             service = next.enabled() ? next : null;
-            generation++;
+            // A queued request would otherwise go to the service it wasn't queued for.
+            dropQueued();
             CACHE.clear();
-            PENDING.clear();
             FAILED.clear();
             TOASTED.clear();
         }
@@ -540,13 +615,16 @@ public final class OutsideTranslate {
     }
 
     /**
-     * Forgets every chat and message turned on, saved list included, so nothing is sent again
-     * until the person chooses again. Run when the switch goes off.
+     * Forgets every chat and message turned on, saved list included, and drops the requests not yet
+     * sent, so nothing is sent again until the person chooses again. Run when the switch goes off,
+     * from its row or from a settings file. Pause doesn't run this: its choices come back on
+     * Resume, and each queued request checks for Pause itself before it's sent.
      */
     public static void forgetChats() {
         synchronized (LOCK) {
             boolean saved = chats == null || !chats.isEmpty();
-            if (!saved && MESSAGES_ON.isEmpty() && MESSAGES_OFF.isEmpty() && TOASTED.isEmpty()) return;
+            if (!saved && MESSAGES_ON.isEmpty() && MESSAGES_OFF.isEmpty() && TOASTED.isEmpty() && PENDING.isEmpty()) return;
+            dropQueued();
             chats = new HashSet<>();
             MESSAGES_ON.clear();
             MESSAGES_OFF.clear();

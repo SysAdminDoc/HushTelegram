@@ -340,6 +340,29 @@ public class SettingsBackupTest {
         assertEquals(0, none.edits.get());
     }
 
+    /**
+     * Translate with an outside service forgets its chats as it goes off, from its row or from a
+     * file. Off from one file and on from another, with no message drawn between them, still
+     * leaves nothing turned on and sends nothing that was queued.
+     */
+    @Test
+    public void aFileThatTurnsTheTranslatorOffForgetsItsChatsAndWhatWasQueued() throws Exception {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.reset();
+        try {
+            assertTrue(app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.toggleChat(7, 10));
+            java.util.function.IntSupplier send = app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.queueOne(7, 10);
+            assertEquals(1, SettingsBackup.apply(SettingsBackup.parse(fileWith(Settings.OUTSIDE_TRANSLATE, false))));
+            assertEquals(1, SettingsBackup.apply(SettingsBackup.parse(fileWith(Settings.OUTSIDE_TRANSLATE, true))));
+            assertTrue(Settings.OUTSIDE_TRANSLATE.savedValue());
+            assertEquals("a request queued before the file turned translation off went out", 0, send.getAsInt());
+            assertFalse(app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.chatOn(7, 10));
+        } finally {
+            Settings.OUTSIDE_TRANSLATE.resetToDefault();
+            app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.reset();
+        }
+    }
+
     @Test
     public void aFailedCommitIsPutBackAndSaysSo() throws Exception {
         String file = fileWith(Settings.HIDE_ADS, false, Settings.DISABLE_UPDATE_CHECKS, false);

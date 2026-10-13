@@ -72,7 +72,7 @@ public class OutsideTranslateTest {
         originalFetcher = OutsideTranslate.fetcher;
         originalExecutor = OutsideTranslate.executor;
         OutsideTranslate.executor = Runnable::run;
-        OutsideTranslate.fetcher = (target, text) -> {
+        OutsideTranslate.fetcher = (service, target, text) -> {
             fetches.incrementAndGet();
             return new GoogleTranslate.Result("Hello, world", "ru");
         };
@@ -147,7 +147,7 @@ public class OutsideTranslateTest {
     @Test public void textAlreadyInTheAppLanguageIsLeftAlone() {
         Settings.OUTSIDE_TRANSLATE.save(true);
         OutsideTranslate.toggleChat(OWNER, 10);
-        OutsideTranslate.fetcher = (target, text) -> new GoogleTranslate.Result("same", target);
+        OutsideTranslate.fetcher = (service, target, text) -> new GoogleTranslate.Result("same", target);
         Fake message = new Fake();
         OutsideTranslate.showMessage(message, message);
         ShadowLooper.idleMainLooper();
@@ -158,7 +158,7 @@ public class OutsideTranslateTest {
     @Test public void aFailedRequestIsNotRepeatedAtOnceAndNothingIsShown() {
         Settings.OUTSIDE_TRANSLATE.save(true);
         OutsideTranslate.toggleChat(OWNER, 10);
-        OutsideTranslate.fetcher = (target, text) -> {
+        OutsideTranslate.fetcher = (service, target, text) -> {
             fetches.incrementAndGet();
             throw new java.io.IOException("offline");
         };
@@ -176,7 +176,7 @@ public class OutsideTranslateTest {
         OutsideTranslate.clock = () -> now[0];
         Settings.OUTSIDE_TRANSLATE.save(true);
         OutsideTranslate.toggleChat(OWNER, 10);
-        OutsideTranslate.fetcher = (target, text) -> {
+        OutsideTranslate.fetcher = (service, target, text) -> {
             fetches.incrementAndGet();
             throw new java.io.IOException("offline");
         };
@@ -273,7 +273,7 @@ public class OutsideTranslateTest {
     @Test public void aFailureThatLandsAfterTheSwitchWentOffSaysNothing() {
         List<Runnable> queued = new ArrayList<>();
         OutsideTranslate.executor = queued::add;
-        OutsideTranslate.fetcher = (target, text) -> { throw new java.io.IOException("offline"); };
+        OutsideTranslate.fetcher = (service, target, text) -> { throw new java.io.IOException("offline"); };
         Settings.OUTSIDE_TRANSLATE.save(true);
         OutsideTranslate.toggleChat(OWNER, 10);
         Fake message = new Fake();
@@ -320,17 +320,18 @@ public class OutsideTranslateTest {
         Fake again = new Fake();
         assertFalse(OutsideTranslate.showMessage(again, again));
         assertEquals(1, queued.size());
-        // The service changes again before that answer lands: the answer isn't kept or shown.
+        // The service changes again before that request goes out: it's dropped unsent.
         assertTrue(OutsideTranslate.saveService("https://api.openai.com/v1", "gpt-4o", "sk-1"));
         queued.get(0).run();
         ShadowLooper.idleMainLooper();
+        assertEquals("the queued text went to a service it wasn't queued for", 1, fetches.get());
         assertEquals(0, again.refreshed);
         assertNull(OutsideTranslate.cached(OWNER, OutsideTranslate.target(), again.original));
     }
 
     @Test public void aKeyTheServiceTurnsDownSaysSo() {
         org.robolectric.shadows.ShadowToast.reset();
-        OutsideTranslate.fetcher = (target, text) -> { throw new AiTranslate.KeyRefused(401); };
+        OutsideTranslate.fetcher = (service, target, text) -> { throw new AiTranslate.KeyRefused(401); };
         Settings.OUTSIDE_TRANSLATE.save(true);
         OutsideTranslate.toggleChat(OWNER, 10);
         Fake message = new Fake();
@@ -345,7 +346,7 @@ public class OutsideTranslateTest {
     }
 
     @Test public void onlyAnUnexpectedFailureReadsAsABrokenHook() {
-        OutsideTranslate.fetcher = (target, text) -> { throw new java.io.IOException("no route"); };
+        OutsideTranslate.fetcher = (service, target, text) -> { throw new java.io.IOException("no route"); };
         Settings.OUTSIDE_TRANSLATE.save(true);
         OutsideTranslate.toggleChat(OWNER, 10);
         Fake offline = new Fake();
@@ -354,7 +355,7 @@ public class OutsideTranslateTest {
         assertTrue(String.join("\n", HookStatus.report()).contains("translate request failed"));
         assertTrue(HookStatus.missing(FamilyNames.OUTSIDE_TRANSLATE).isEmpty());
 
-        OutsideTranslate.fetcher = (target, text) -> { throw new IllegalStateException("parser bug"); };
+        OutsideTranslate.fetcher = (service, target, text) -> { throw new IllegalStateException("parser bug"); };
         Fake broken = new Fake();
         broken.original = "Другой текст";
         OutsideTranslate.showMessage(broken, broken);
@@ -607,6 +608,174 @@ public class OutsideTranslateTest {
         OutsideTranslate.resetForTests();
         assertFalse(OutsideTranslate.chatOn(OWNER, 10));
         assertFalse(OutsideTranslate.chatOn(OTHER, 11));
+    }
+
+    // A queued request asks again just before it's sent.
+
+    /** Holds the worker so a test can change things between the queue and the send. */
+    private List<Runnable> holdTheWorker() {
+        List<Runnable> queued = new ArrayList<>();
+        OutsideTranslate.executor = queued::add;
+        return queued;
+    }
+
+    private void runQueued(List<Runnable> queued) {
+        for (Runnable task : new ArrayList<>(queued)) task.run();
+        queued.clear();
+        ShadowLooper.idleMainLooper();
+    }
+
+    private static boolean droppedUnsent() {
+        return String.join("\n", HookStatus.report()).contains("translate request dropped before sending");
+    }
+
+    @Test public void aChatTurnedOffWhileItsRequestWaitsSendsNothingAndCanAskAgainLater() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        List<Runnable> queued = holdTheWorker();
+        Fake message = new Fake();
+        assertFalse(OutsideTranslate.showMessage(message, message));
+        assertEquals(1, queued.size());
+        assertFalse(OutsideTranslate.toggleChat(OWNER, 10));
+        runQueued(queued);
+        assertEquals("text from a chat turned off went out", 0, fetches.get());
+        assertTrue(droppedUnsent());
+        assertEquals(0, message.refreshed);
+
+        // The dropped request isn't left waiting, so turning the chat back on asks again.
+        OutsideTranslate.toggleChat(OWNER, 10);
+        assertFalse(OutsideTranslate.showMessage(message, message));
+        assertEquals(1, queued.size());
+        runQueued(queued);
+        assertEquals(1, fetches.get());
+        assertTrue(OutsideTranslate.showMessage(message, message));
+    }
+
+    /** Pause is a break: what's queued doesn't go out, and the chats are still on after Resume. */
+    @Test public void pauseStopsWhatsQueuedAndResumeKeepsTheChats() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        List<Runnable> queued = holdTheWorker();
+        Fake message = new Fake();
+        OutsideTranslate.showMessage(message, message);
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        runQueued(queued);
+        assertEquals(0, fetches.get());
+        assertTrue(droppedUnsent());
+        PauseForTests.resume();
+        assertTrue(OutsideTranslate.chatOn(OWNER, 10));
+        OutsideTranslate.showMessage(message, message);
+        runQueued(queued);
+        assertEquals(1, fetches.get());
+    }
+
+    @Test public void theSwitchGoingOffWhileARequestWaitsSendsNothing() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        List<Runnable> queued = holdTheWorker();
+        Fake message = new Fake();
+        OutsideTranslate.showMessage(message, message);
+        Settings.OUTSIDE_TRANSLATE.save(false);
+        runQueued(queued);
+        assertEquals(0, fetches.get());
+        assertFalse(OutsideTranslate.chatOn(OWNER, 10));
+    }
+
+    /** The settings row and a settings file both forget, so on again before the worker runs still sends nothing. */
+    @Test public void offThenOnBeforeTheWorkerRunsSendsNothing() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        List<Runnable> queued = holdTheWorker();
+        Fake message = new Fake();
+        OutsideTranslate.showMessage(message, message);
+        Settings.OUTSIDE_TRANSLATE.save(false);
+        OutsideTranslate.forgetChats();
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        runQueued(queued);
+        assertEquals(0, fetches.get());
+        assertFalse(OutsideTranslate.chatOn(OWNER, 10));
+    }
+
+    @Test public void anAccountSignedOutOrReplacedWhileARequestWaitsSendsNothing() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        OutsideTranslate.toggleChat(OTHER, 10);
+        for (long after : new long[] {0, OTHER}) {
+            List<Runnable> queued = holdTheWorker();
+            Fake message = new Fake();
+            message.original = "Сообщение " + after;
+            OutsideTranslate.showMessage(message, message);
+            assertEquals(1, queued.size());
+            // The slot the message was in now reads as signed out, or as another account.
+            message.owner = after;
+            runQueued(queued);
+            assertEquals("sent after the account changed to " + after, 0, fetches.get());
+            assertEquals(0, message.refreshed);
+        }
+        assertTrue(OutsideTranslate.chatOn(OWNER, 10));
+    }
+
+    @Test public void aRequestGoesToTheServiceItWasQueuedUnder() throws Exception {
+        List<AiTranslate.Service> used = new ArrayList<>();
+        OutsideTranslate.fetcher = (service, target, text) -> {
+            used.add(service);
+            return new GoogleTranslate.Result("Hello, world", "ru");
+        };
+        assertTrue(OutsideTranslate.saveService("https://api.openai.com/v1", "gpt-4o-mini", "sk-1"));
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        List<Runnable> queued = holdTheWorker();
+        Fake message = new Fake();
+        OutsideTranslate.showMessage(message, message);
+        runQueued(queued);
+        assertEquals(1, used.size());
+        assertEquals("gpt-4o-mini", used.get(0).model);
+        assertTrue(used.get(0).enabled());
+
+        // Use Google again with a request waiting: it isn't sent anywhere.
+        Fake next = new Fake();
+        next.id = 2;
+        next.original = "Пока, мир";
+        OutsideTranslate.showMessage(next, next);
+        assertTrue(OutsideTranslate.saveService("https://api.openai.com/v1", "gpt-4o-mini", ""));
+        runQueued(queued);
+        assertEquals("a queued request was sent after the service changed", 1, used.size());
+    }
+
+    @Test public void oneMessageStillTurnedOnIsEnoughToSendTheTextTheyShare() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        OutsideTranslate.toggleChat(OWNER, 11);
+        List<Runnable> queued = holdTheWorker();
+        Fake first = new Fake();
+        Fake second = new Fake();
+        second.dialog = 11;
+        OutsideTranslate.showMessage(first, first);
+        OutsideTranslate.showMessage(second, second);
+        assertEquals("the same text is asked once", 1, queued.size());
+        OutsideTranslate.toggleChat(OWNER, 10);
+        runQueued(queued);
+        assertEquals(1, fetches.get());
+        assertEquals("the chat turned off isn't drawn again", 0, first.refreshed);
+        assertEquals(1, second.refreshed);
+    }
+
+    @Test public void aFailureThatLandsWhileTheSwitchIsOffSaysNothing() {
+        org.robolectric.shadows.ShadowToast.reset();
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        OutsideTranslate.fetcher = (service, target, text) -> {
+            fetches.incrementAndGet();
+            // Switched off while the request was out.
+            Settings.OUTSIDE_TRANSLATE.save(false);
+            throw new java.io.IOException("offline");
+        };
+        Fake message = new Fake();
+        OutsideTranslate.showMessage(message, message);
+        ShadowLooper.idleMainLooper();
+        assertEquals(1, fetches.get());
+        assertNull(org.robolectric.shadows.ShadowToast.getLatestToast());
+        assertEquals(0, message.refreshed);
     }
 
     private static android.content.SharedPreferences prefs() {

@@ -45,6 +45,7 @@ import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.SettingsJson;
 import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
+import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
 
 /**
@@ -566,6 +567,10 @@ public final class SettingsBackup {
         if (changes.isEmpty()) return 0;
         try {
             Setting.saveAll(changes);
+            // What the switch's row does as it goes off. A file skips the row, and the translator
+            // would otherwise only notice at the next message drawn, after a second file might
+            // have turned it back on.
+            if (Boolean.FALSE.equals(changes.get(Settings.OUTSIDE_TRANSLATE))) OutsideTranslate.forgetChats();
             return changes.size();
         } catch (Setting.BatchFailed failed) {
             throw new ApplyFailed(failed.restored, failed);
