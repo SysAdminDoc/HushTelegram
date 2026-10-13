@@ -74,6 +74,12 @@ class NativeSettingsFixtureTest {
             val context = context(build)
             val plan = context.resolveNativeSettings()!!
             val originals = methods(context).associate { it.toString() to operations(it) }
+            val stock = plan.builder.body()
+            val account = stock.indexOfFirst { it.ref() == "Lorg/telegram/messenger/R\$drawable;->settings_account:I" }
+            val stockFlow = ControlFlow.of(plan.builder)
+            val skips = stock.indices.filter { account in stockFlow.normal[it] && it != account - 1 }
+            assertEquals("$build: the new Wallet row's time and availability skips", 2, skips.size)
+            assertEquals(APPEND, stock[account - 1].ref())
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { settingsPatch.execute(context) })
             val owner = context.mutableClassDefBy(plan.builder.definingClass)
             val row = owner.methods.single { it.name == NATIVE_ROW_BRIDGE }
@@ -89,6 +95,16 @@ class NativeSettingsFixtureTest {
             val bridge = row.toString()
             assertEquals(1, builder.body().count { it.ref() == bridge })
             assertEquals(originals.getValue(builder.toString()), operations(builder, skip = { it.ref() == bridge }))
+            // HushTelegram leads the account rows: right before Account, reached by the divider
+            // above it and by both Wallet skips, so the new Wallet row shown or hidden it comes first.
+            val call = builder.body().indexOfFirst { it.ref() == bridge }
+            assertEquals("$build: the row goes in where Account began", account, call)
+            assertEquals("Lorg/telegram/messenger/R\$drawable;->settings_account:I", builder.body()[call + 1].ref())
+            val patchedFlow = ControlFlow.of(builder)
+            assertEquals(listOf(call + 1), patchedFlow.normal[call])
+            for (from in skips + (account - 1)) assertTrue("$build: $from reaches the row", call in patchedFlow.normal[from])
+            assertTrue("$build: nothing jumps past the row into Account",
+                builder.body().indices.none { call + 1 in patchedFlow.normal[it] && it != call })
             val click = owner.methods.single { it.toString() == plan.click.toString() }
             val body = click.body()
             val start = body.indexOfFirst { (it as? NarrowLiteralInstruction)?.narrowLiteral == NATIVE_ROW_ID }

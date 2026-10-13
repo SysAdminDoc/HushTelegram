@@ -548,7 +548,12 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
             return-void
         """)
     }
-    val rowIndex = previousEnd + 1
+    // The row leads the account block, ahead of Account. While Telegram 13.0's Wallet row is new it
+    // sits above with its own divider, and its skips land on Account's first instruction; that label
+    // moves to the bridge call, so the row comes first whether Wallet shows or not. Only branches
+    // reach that instruction (the block check above refuses throws), and the list register holds
+    // its one binding everywhere.
+    val rowIndex = first
     val bridgeRef = owner.type + "->$NATIVE_ROW_BRIDGE($NATIVE_LIST)V"
     val patchedBuilder = ImmutableMethod.of(builder).toMutable().apply {
         addInstructionsAtControlFlowLabel(rowIndex, "invoke-static {v$rows}, $bridgeRef")
