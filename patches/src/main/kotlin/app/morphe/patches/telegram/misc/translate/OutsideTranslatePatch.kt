@@ -34,6 +34,7 @@ import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.call
 import app.morphe.util.namedRegisters
+import app.morphe.util.superclassChain
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
@@ -107,6 +108,7 @@ internal class OutsideTranslateSite(
     val chat: String, val update: MutableMethod, val fill: MutableMethod, val choose: MutableMethod, val visibility: MutableMethod,
     val delegate: MutableMethod, val selected: FieldReference, val translateItem: FieldReference, val headerItem: FieldReference,
     val lazyAdd: MethodReference, val setHeaderText: MethodReference, val dialogGetter: MethodReference, val outer: FieldReference,
+    val accountGetter: String,
 ) {
     /** The extension answers first; a yes means the message shows its translation and Telegram's own check is skipped. */
     fun insertShow(target: MutableMethod) {
@@ -170,7 +172,7 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
     controlHook(OUTSIDE_TRANSLATE, "original", listOf(OBJECT), "Ljava/lang/String;")
     for (name in listOf("translatable", "isTranslated", "hasTranslateItem")) controlHook(OUTSIDE_TRANSLATE, name, listOf(OBJECT), "Z")
     for (name in listOf("messageType", "id")) controlHook(OUTSIDE_TRANSLATE, name, listOf(OBJECT), "I")
-    for (name in listOf("dialog", "chatDialog")) controlHook(OUTSIDE_TRANSLATE, name, listOf(OBJECT), "J")
+    for (name in listOf("dialog", "chatDialog", "owner", "chatOwner")) controlHook(OUTSIDE_TRANSLATE, name, listOf(OBJECT), "J")
     controlHook(OUTSIDE_TRANSLATE, "entities", listOf(OBJECT), LIST)
     controlHook(OUTSIDE_TRANSLATE, "applyTranslated", listOf(OBJECT, "Ljava/lang/String;", "Ljava/lang/String;"), "V")
     controlHook(OUTSIDE_TRANSLATE, "notifyTranslated", listOf(OBJECT), "V")
@@ -299,9 +301,19 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
     val outer = delegateClass.fields.filter { it.type == chat && !AccessFlags.STATIC.isSet(it.accessFlags) }.controlSingle("the delegate's chat field")
     controlShape(AccessFlags.PUBLIC.isSet(outer.accessFlags), "the delegate's chat field is inaccessible")
 
+    // The account the chat screen is in, from the public getter on Telegram's base screen class,
+    // which R8 renames on its own (s2 on the web build, m2 on the beta) but leaves this name on.
+    val accountGetter = superclassChain(chat).mapNotNull { classDefByOrNull(it) }
+        .flatMap { it.methods.asSequence() }
+        .firstOrNull { it.name == "getCurrentAccount" && it.parameterTypes.isEmpty() && it.returnType == "I" && !AccessFlags.STATIC.isSet(it.accessFlags) }
+    controlShape(accountGetter != null && AccessFlags.PUBLIC.isSet(accountGetter.accessFlags) &&
+        classDefByOrNull(accountGetter.definingClass)?.let { AccessFlags.PUBLIC.isSet(it.accessFlags) } == true &&
+        accountGetter.controlBody().any { it.opcode == Opcode.IGET && it.controlField()?.let { f -> f.name == "currentAccount" && f.type == "I" } == true },
+        "the chat screen no longer says which account it's in")
+
     requireTranslateHostMembers()
     return OutsideTranslateSite(chat, update, fill, choose, visibility, delegate, selected, translateItem, header,
-        lazyCall, setHeaderText, getter, outer)
+        lazyCall, setHeaderText, getter, outer, signature(accountGetter!!))
 }
 
 private fun branches(opcode: Opcode): Boolean {
@@ -318,7 +330,7 @@ private fun BytecodePatchContext.requireTranslateHostMembers() {
     controlMembers(TRANSLATE_CONTROLLER, "static isTranslatable($MESSAGE_OBJECT)Z")
     controlMembers(NOTIFICATIONS, "static getInstance(I)$NOTIFICATIONS", "postNotificationName(I[Ljava/lang/Object;)V",
         "static messageTranslated:I", "static dialogTranslate:I")
-    controlMembers(ACCOUNT_CONFIG, "static selectedAccount:I")
+    controlMembers(ACCOUNT_CONFIG, "static selectedAccount:I", "static getInstance(I)$ACCOUNT_CONFIG", "getClientUserId()J")
     controlMembers(LOCALES, "static getInstance()$LOCALES", "getCurrentLocale()Ljava/util/Locale;")
     controlMembers(DRAWABLES, "static msg_translate:I")
     // An empty list to start with, which the stub relies on for entities the text doesn't have.
@@ -457,6 +469,26 @@ internal fun BytecodePatchContext.writeOutsideTranslateStubs(site: OutsideTransl
     writeStub(OUTSIDE_TRANSLATE, "chatDialog", 3, """
         check-cast p0, $chat
         invoke-virtual {p0}, ${site.dialogGetter}
+        move-result-wide v0
+        return-wide v0
+    """)
+    // Each choice belongs to the account's user ID, which a slot signed into later doesn't share.
+    writeStub(OUTSIDE_TRANSLATE, "owner", 3, """
+        check-cast p0, $MESSAGE_OBJECT
+        iget v0, p0, $MESSAGE_OBJECT->currentAccount:I
+        invoke-static {v0}, $ACCOUNT_CONFIG->getInstance(I)$ACCOUNT_CONFIG
+        move-result-object v0
+        invoke-virtual {v0}, $ACCOUNT_CONFIG->getClientUserId()J
+        move-result-wide v0
+        return-wide v0
+    """)
+    writeStub(OUTSIDE_TRANSLATE, "chatOwner", 3, """
+        check-cast p0, $chat
+        invoke-virtual {p0}, ${site.accountGetter}
+        move-result v0
+        invoke-static {v0}, $ACCOUNT_CONFIG->getInstance(I)$ACCOUNT_CONFIG
+        move-result-object v0
+        invoke-virtual {v0}, $ACCOUNT_CONFIG->getClientUserId()J
         move-result-wide v0
         return-wide v0
     """)

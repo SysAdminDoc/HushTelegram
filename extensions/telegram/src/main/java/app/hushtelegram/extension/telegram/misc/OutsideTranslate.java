@@ -45,6 +45,12 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * <p>Which chats are on is kept on the phone and stays out of the settings file, and so does the AI
  * service, its key included. Translations are
  * kept in memory only, never in Telegram's database.
+ *
+ * <p>Every choice belongs to the Telegram account it was made in, by that account's user ID rather
+ * than its slot in the app, and so does each translation and request. A chat turned on in one
+ * account sends nothing from another account's chat with the same ID, and an account signed in
+ * later in the same slot starts with nothing on. A message or chat whose account can't be read
+ * is left alone.
  */
 public final class OutsideTranslate {
     private OutsideTranslate() {}
@@ -58,7 +64,13 @@ public final class OutsideTranslate {
     private static final int CACHE_SIZE = 400;
     private static final long RETRY_MS = 60_000L;
     private static final String PREFS = "hushtelegram_outside_translate";
-    private static final String CHATS = "chats";
+    /** The chats that are on, each as "owner:chat". */
+    private static final String CHATS = "owner_chats";
+    /**
+     * The chats that were on before choices belonged to an account. Nothing says which account
+     * chose them, so they're cleared rather than guessed, and the person is told once.
+     */
+    private static final String UNSCOPED_CHATS = "chats";
     private static final String AI_ADDRESS = "ai_address";
     private static final String AI_MODEL = "ai_model";
     private static final String AI_KEY = "ai_key";
@@ -67,6 +79,9 @@ public final class OutsideTranslate {
 
     /** What the extension needs to know about a message, and to do to it. Telegram's own class stands behind it. */
     interface Message {
+        /** The user ID of the account the message is in, or 0 when it can't be read. */
+        long owner();
+
         long dialog();
 
         int id();
@@ -85,14 +100,17 @@ public final class OutsideTranslate {
     /** A message waiting on a request. It's held only until the answer lands or fails. */
     private static final class Waiter {
         final Message message;
+        final long owner;
 
-        Waiter(Message message) {
+        Waiter(Message message, long owner) {
             this.message = message;
+            this.owner = owner;
         }
     }
 
     private static Message of(Object message) {
         return new Message() {
+            @Override public long owner() { return OutsideTranslate.owner(message); }
             @Override public long dialog() { return OutsideTranslate.dialog(message); }
             @Override public int id() { return OutsideTranslate.id(message); }
             @Override public boolean eligible() { return OutsideTranslate.eligible(message); }
@@ -118,11 +136,13 @@ public final class OutsideTranslate {
     private static final Map<String, Long> FAILED = new HashMap<>();
     private static final Set<String> MESSAGES_ON = new HashSet<>();
     private static final Set<String> MESSAGES_OFF = new HashSet<>();
-    private static final Set<Long> TOASTED = new HashSet<>();
+    /** The chats, as "owner:chat", already told a request failed. */
+    private static final Set<String> TOASTED = new HashSet<>();
     private static final Map<Object, String> APPLIED = Collections.synchronizedMap(new WeakHashMap<>());
     // A native item can refer back to its chat. Neither side should keep that screen alive here.
     private static final Map<Object, WeakReference<Object>> HEADERS = Collections.synchronizedMap(new WeakHashMap<>());
-    private static Set<Long> chats;
+    /** The chats that are on, as "owner:chat". */
+    private static Set<String> chats;
     private static AiTranslate.Service service;
     /** Goes up when the service changes, so an answer from the old one isn't kept. */
     private static int generation;
@@ -166,9 +186,10 @@ public final class OutsideTranslate {
                 APPLIED.remove(key);
                 return false;
             }
+            long owner = message.owner();
             long dialog = message.dialog();
             int id = message.id();
-            if (!wanted(dialog, id)) {
+            if (!wanted(owner, dialog, id)) {
                 APPLIED.remove(key);
                 return false;
             }
@@ -177,9 +198,9 @@ public final class OutsideTranslate {
             if (!message.eligible()) return false;
             String original = message.original();
             String target = target();
-            GoogleTranslate.Result result = cached(target, original);
+            GoogleTranslate.Result result = cached(owner, target, original);
             if (result == null) {
-                request(message, target, original);
+                request(message, owner, target, original);
                 APPLIED.remove(key);
                 return false;
             }
@@ -215,13 +236,22 @@ public final class OutsideTranslate {
         }
     }
 
-    /** Whether this message is one the person asked to see translated, by chat or by itself. */
-    static boolean wanted(long dialog, int id) {
-        String key = key(dialog, id);
+    /**
+     * Whether this message is one the person asked to see translated in [owner]'s account, by chat
+     * or by itself. A message whose account can't be read never is.
+     */
+    static boolean wanted(long owner, long dialog, int id) {
+        if (!known(owner)) return false;
+        String key = key(owner, dialog, id);
         synchronized (LOCK) {
             if (MESSAGES_OFF.contains(key)) return false;
-            return MESSAGES_ON.contains(key) || chatSet().contains(dialog);
+            return MESSAGES_ON.contains(key) || chatSet().contains(chatKey(owner, dialog));
         }
+    }
+
+    /** Telegram's user IDs start at 1; 0 is a signed-out slot or a value the bridge couldn't read. */
+    static boolean known(long owner) {
+        return owner > 0;
     }
 
     /** Whether the message is one Telegram itself would translate, and plain enough for this. */
@@ -249,23 +279,28 @@ public final class OutsideTranslate {
 
     // Requests and the cache.
 
-    static String key(long dialog, int id) {
-        return dialog + ":" + id;
+    static String key(long owner, long dialog, int id) {
+        return owner + ":" + dialog + ":" + id;
     }
 
-    static String cacheKey(String target, String text) {
-        return target + "\u0000" + text;
+    static String chatKey(long owner, long dialog) {
+        return owner + ":" + dialog;
     }
 
-    static GoogleTranslate.Result cached(String target, String text) {
+    /** A translation, and the request for it, belong to one account as well as to a language and a text. */
+    static String cacheKey(long owner, String target, String text) {
+        return owner + "\u0000" + target + "\u0000" + text;
+    }
+
+    static GoogleTranslate.Result cached(long owner, String target, String text) {
         synchronized (LOCK) {
-            return CACHE.get(cacheKey(target, text));
+            return CACHE.get(cacheKey(owner, target, text));
         }
     }
 
-    /** Asks the service for the text in the background, once however many messages want it. */
-    static void request(Message message, String target, String text) {
-        String key = cacheKey(target, text);
+    /** Asks the service for the text in the background, once however many of [owner]'s messages want it. */
+    static void request(Message message, long owner, String target, String text) {
+        String key = cacheKey(owner, target, text);
         int asked;
         synchronized (LOCK) {
             asked = generation;
@@ -273,11 +308,11 @@ public final class OutsideTranslate {
             if (failed != null && clock.getAsLong() - failed < RETRY_MS) return;
             List<Waiter> waiters = PENDING.get(key);
             if (waiters != null) {
-                waiters.add(new Waiter(message));
+                waiters.add(new Waiter(message, owner));
                 return;
             }
             waiters = new ArrayList<>();
-            waiters.add(new Waiter(message));
+            waiters.add(new Waiter(message, owner));
             PENDING.put(key, waiters);
         }
         executor.execute(() -> {
@@ -326,13 +361,14 @@ public final class OutsideTranslate {
                 if (!active()) return;
                 for (Waiter waiter : done) {
                     long dialog = waiter.message.dialog();
+                    String chat = chatKey(waiter.owner, dialog);
                     if (failed) {
-                        toastOnce(dialog, keyRefused);
+                        toastOnce(chat, keyRefused);
                         continue;
                     }
-                    if (!wanted(dialog, waiter.message.id())) continue;
+                    if (!wanted(waiter.owner, dialog, waiter.message.id())) continue;
                     synchronized (LOCK) {
-                        TOASTED.remove(dialog);
+                        TOASTED.remove(chat);
                     }
                     waiter.message.refresh();
                 }
@@ -342,9 +378,9 @@ public final class OutsideTranslate {
         });
     }
 
-    private static void toastOnce(long dialog, boolean keyRefused) {
+    private static void toastOnce(String chat, boolean keyRefused) {
         synchronized (LOCK) {
-            if (!TOASTED.add(dialog)) return;
+            if (!TOASTED.add(chat)) return;
         }
         Utils.showToastShort(keyRefused ? L10n.t("Your AI service didn't accept the key")
                 : L10n.t("Translation isn't available right now"));
@@ -431,17 +467,44 @@ public final class OutsideTranslate {
 
     // The chats that are on.
 
-    private static Set<Long> chatSet() {
+    private static Set<String> chatSet() {
         synchronized (LOCK) {
             if (chats == null) {
                 chats = new HashSet<>();
+                boolean cleared = false;
                 try {
-                    for (String id : prefs().getStringSet(CHATS, Collections.emptySet())) chats.add(Long.parseLong(id));
+                    SharedPreferences saved = prefs();
+                    for (String chat : saved.getStringSet(CHATS, Collections.emptySet())) {
+                        if (ownedChat(chat)) chats.add(chat);
+                    }
+                    Set<String> unscoped = saved.getStringSet(UNSCOPED_CHATS, null);
+                    if (unscoped != null) {
+                        cleared = !unscoped.isEmpty();
+                        saved.edit().remove(UNSCOPED_CHATS).apply();
+                    }
                 } catch (Throwable unreadable) {
                     chats.clear();
                 }
+                if (cleared) {
+                    HookStatus.counted(FamilyNames.OUTSIDE_TRANSLATE, "chats without an account cleared");
+                    Utils.showToastLong(L10n.t("Translated chats now belong to the account that turned them on. "
+                            + "Turn translation back on in the chats you want."));
+                }
             }
             return chats;
+        }
+    }
+
+    /** "owner:chat" with a user ID that's known and a chat ID that reads as one. */
+    static boolean ownedChat(String chat) {
+        int split = chat == null ? -1 : chat.indexOf(':');
+        if (split <= 0) return false;
+        try {
+            long owner = Long.parseLong(chat.substring(0, split));
+            Long.parseLong(chat.substring(split + 1));
+            return known(owner);
+        } catch (NumberFormatException unreadable) {
+            return false;
         }
     }
 
@@ -450,22 +513,25 @@ public final class OutsideTranslate {
         return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 
-    /** Turns a chat on or off and remembers it. Returns whether it's on now. */
-    static boolean toggleChat(long dialog) {
+    /**
+     * Turns a chat on or off in [owner]'s account and remembers it. Returns whether it's on now. A
+     * chat whose account can't be read stays off.
+     */
+    static boolean toggleChat(long owner, long dialog) {
+        if (!known(owner)) return false;
         boolean on;
         synchronized (LOCK) {
-            Set<Long> set = chatSet();
-            on = set.add(dialog);
-            if (!on) set.remove(dialog);
-            String prefix = dialog + ":";
+            Set<String> set = chatSet();
+            String chat = chatKey(owner, dialog);
+            on = set.add(chat);
+            if (!on) set.remove(chat);
+            String prefix = chat + ":";
             // A new choice for the whole chat replaces the ones made message by message.
             MESSAGES_ON.removeIf(key -> key.startsWith(prefix));
             MESSAGES_OFF.removeIf(key -> key.startsWith(prefix));
-            TOASTED.remove(dialog);
-            Set<String> saved = new HashSet<>();
-            for (Long id : set) saved.add(Long.toString(id));
+            TOASTED.remove(chat);
             try {
-                prefs().edit().putStringSet(CHATS, saved).apply();
+                prefs().edit().putStringSet(CHATS, new HashSet<>(set)).apply();
             } catch (Throwable unsaved) {
                 HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "chat list", unsaved);
             }
@@ -487,16 +553,17 @@ public final class OutsideTranslate {
             TOASTED.clear();
             if (!saved) return;
             try {
-                prefs().edit().remove(CHATS).apply();
+                prefs().edit().remove(CHATS).remove(UNSCOPED_CHATS).apply();
             } catch (Throwable unsaved) {
                 HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "chat list", unsaved);
             }
         }
     }
 
-    static boolean chatOn(long dialog) {
+    static boolean chatOn(long owner, long dialog) {
+        if (!known(owner)) return false;
         synchronized (LOCK) {
-            return chatSet().contains(dialog);
+            return chatSet().contains(chatKey(owner, dialog));
         }
     }
 
@@ -514,7 +581,7 @@ public final class OutsideTranslate {
         if (!active()) return;
         try {
             Object message = selected(chat);
-            if (message == null || !eligible(message)) return;
+            if (message == null || !known(owner(message)) || !eligible(message)) return;
             offer(icons, items, options, APPLIED.containsKey(message));
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "message menu", failure);
@@ -540,8 +607,13 @@ public final class OutsideTranslate {
             if (!active()) return;
             Object message = selected(chat);
             if (message == null) return;
+            long owner = owner(message);
+            if (!known(owner)) {
+                HookStatus.counted(FamilyNames.OUTSIDE_TRANSLATE, "message account unknown");
+                return;
+            }
             boolean translate = !APPLIED.containsKey(message);
-            String key = key(dialog(message), id(message));
+            String key = key(owner, dialog(message), id(message));
             synchronized (LOCK) {
                 if (translate) {
                     MESSAGES_OFF.remove(key);
@@ -572,13 +644,16 @@ public final class OutsideTranslate {
     public static void headerMenu(Object chat) {
         try {
             if (chat == null || !active() || !hasTranslateItem(chat)) return;
+            long owner = chatOwner(chat);
+            // An item for a chat whose account can't be read couldn't turn anything on.
+            if (!known(owner)) return;
             long dialog = chatDialog(chat);
             synchronized (HEADERS) {
                 if (!HEADERS.containsKey(chat)) {
-                    Object item = addHeaderItem(chat, HEADER_ITEM, translateIcon(), headerText(dialog));
+                    Object item = addHeaderItem(chat, HEADER_ITEM, translateIcon(), headerText(owner, dialog));
                     HEADERS.put(chat, new WeakReference<>(item));
                 } else {
-                    updateHeaderText(chat, dialog);
+                    updateHeaderText(chat, owner, dialog);
                 }
             }
         } catch (Throwable failure) {
@@ -586,15 +661,15 @@ public final class OutsideTranslate {
         }
     }
 
-    private static String headerText(long dialog) {
-        return L10n.t(chatOn(dialog) ? "Stop translating this chat" : "Translate this chat");
+    private static String headerText(long owner, long dialog) {
+        return L10n.t(chatOn(owner, dialog) ? "Stop translating this chat" : "Translate this chat");
     }
 
-    private static void updateHeaderText(Object chat, long dialog) {
+    private static void updateHeaderText(Object chat, long owner, long dialog) {
         try {
             WeakReference<Object> remembered = HEADERS.get(chat);
             Object item = remembered == null ? null : remembered.get();
-            if (item != null) setHeaderText(item, headerText(dialog));
+            if (item != null) setHeaderText(item, headerText(owner, dialog));
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "header label", failure);
         }
@@ -612,9 +687,14 @@ public final class OutsideTranslate {
             if (!active()) return true;
             Object chat = chatOf(delegate);
             if (chat == null) return false;
+            long owner = chatOwner(chat);
+            if (!known(owner)) {
+                HookStatus.counted(FamilyNames.OUTSIDE_TRANSLATE, "chat account unknown");
+                return true;
+            }
             long dialog = chatDialog(chat);
-            boolean on = toggleChat(dialog);
-            updateHeaderText(chat, dialog);
+            boolean on = toggleChat(owner, dialog);
+            updateHeaderText(chat, owner, dialog);
             Utils.showToastShort(on ? L10n.t("This chat will be translated") : L10n.t("This chat shows the original messages"));
             notifyDialog(dialog);
             HookStatus.counted(FamilyNames.OUTSIDE_TRANSLATE, on ? "chat translate on" : "chat translate off");
@@ -642,6 +722,9 @@ public final class OutsideTranslate {
     public static long dialog(Object message) { return 0L; }
 
     public static int id(Object message) { return 0; }
+
+    /** The user ID of the account the message is in, or 0 when that account is signed out. */
+    public static long owner(Object message) { return 0L; }
 
     /** The message's entities. */
     public static ArrayList<?> entities(Object message) { return null; }
@@ -678,6 +761,9 @@ public final class OutsideTranslate {
 
     /** The chat's ID. */
     public static long chatDialog(Object chat) { return 0L; }
+
+    /** The user ID of the account the chat screen is in, or 0 when that account is signed out. */
+    public static long chatOwner(Object chat) { return 0L; }
 
     /** How many texts are waiting out a failure, for tests. */
     static int failuresForTests() {

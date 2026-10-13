@@ -987,13 +987,13 @@ public class HushTelegramPreferenceFragmentTest {
         Settings.OUTSIDE_TRANSLATE.save(true);
         app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.reset();
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            assertTrue(OutsideTranslateForTests.toggleChat(42));
+            assertTrue(OutsideTranslateForTests.toggleChat(7, 42));
             SwitchPreference row = (SwitchPreference) pageOf(controller).findPreference(Settings.OUTSIDE_TRANSLATE.key);
             assertTrue(row.getOnPreferenceChangeListener().onPreferenceChange(row, Boolean.TRUE));
-            assertTrue("switching on forgot the chat", OutsideTranslateForTests.chatOn(42));
+            assertTrue("switching on forgot the chat", OutsideTranslateForTests.chatOn(7, 42));
             assertTrue(row.getOnPreferenceChangeListener().onPreferenceChange(row, Boolean.FALSE));
             app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.reset();
-            assertFalse(OutsideTranslateForTests.chatOn(42));
+            assertFalse(OutsideTranslateForTests.chatOn(7, 42));
         } finally {
             Settings.OUTSIDE_TRANSLATE.resetToDefault();
             app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.reset();

@@ -339,6 +339,8 @@ Translate this chat	Traduzir esta conversa
 This chat will be translated	Esta conversa será traduzida
 This chat shows the original messages	Esta conversa mostra as mensagens originais
 Translation isn't available right now	A tradução não está disponível agora
+# context: Toast shown once after an update clears the translated chats saved before each choice belonged to a Telegram account.
+Translated chats now belong to the account that turned them on. Turn translation back on in the chats you want.	As conversas traduzidas agora pertencem à conta que as ativou. Ative a tradução de novo nas conversas que você quiser.
 Ask before sending a GIF	Perguntar antes de enviar um GIF
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Pergunta Enviar ou Cancelar antes de um GIF em que você tocou entrar na conversa. Cancelar o descarta. GIFs agendados saem sem perguntar.
 Ask before sending a voice or video message	Perguntar antes de enviar uma mensagem de voz ou de vídeo

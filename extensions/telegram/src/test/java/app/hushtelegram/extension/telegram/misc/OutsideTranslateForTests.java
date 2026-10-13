@@ -13,13 +13,13 @@ public final class OutsideTranslateForTests {
         return OutsideTranslate.active();
     }
 
-    /** Turns a chat on or off, the way its header item does. */
-    public static boolean toggleChat(long dialog) {
-        return OutsideTranslate.toggleChat(dialog);
+    /** Turns a chat on or off in the account with user ID [owner], the way its header item does. */
+    public static boolean toggleChat(long owner, long dialog) {
+        return OutsideTranslate.toggleChat(owner, dialog);
     }
 
-    public static boolean chatOn(long dialog) {
-        return OutsideTranslate.chatOn(dialog);
+    public static boolean chatOn(long owner, long dialog) {
+        return OutsideTranslate.chatOn(owner, dialog);
     }
 
     public static void reset() {

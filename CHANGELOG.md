@@ -6,6 +6,8 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.17.
 
+* **Telegram:** With more than one account signed in, **Translate with an outside service** keeps each account's chats to itself. A chat you turn on in one account no longer sends messages from the chat with the same ID in another, and a different account you sign in later doesn't pick up the old one's choices. Chats turned on before this update didn't record which account chose them, so they're cleared once with a short notice. Turn translation back on in the chats you want.
+
 * **Telegram:** Flipping **Repair Firebase push registration** now shows the restart row right away. Firebase only signs up when Telegram starts, so the change never took effect until the next launch anyway.
 
 * **Telegram:** The settings home page has two new rows. **Quick setups** turns on the Quiet or Privacy switches in one tap, or puts every switch back the way it started, and tells you how many settings changed. **Report a problem**, just above Support, opens a GitHub bug report with your HushTelegram and Telegram versions, your phone and the switches you have on already filled in. It doesn't include anything about your account.

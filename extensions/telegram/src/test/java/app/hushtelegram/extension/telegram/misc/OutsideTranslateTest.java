@@ -37,12 +37,17 @@ import org.robolectric.shadows.ShadowLooper;
 public class OutsideTranslateTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
+    /** The user IDs of two signed-in accounts. */
+    private static final long OWNER = 7;
+    private static final long OTHER = 8;
+
     private final AtomicInteger fetches = new AtomicInteger();
     private OutsideTranslate.Fetcher originalFetcher;
     private java.util.concurrent.Executor originalExecutor;
 
     /** A message the tests can read and change without Telegram's classes. */
     private static final class Fake implements OutsideTranslate.Message {
+        long owner = OWNER;
         long dialog = 10;
         int id = 1;
         boolean eligible = true;
@@ -52,6 +57,7 @@ public class OutsideTranslateTest {
         int refreshed;
         String shown;
 
+        @Override public long owner() { return owner; }
         @Override public long dialog() { return dialog; }
         @Override public int id() { return id; }
         @Override public boolean eligible() { return eligible; }
@@ -91,7 +97,7 @@ public class OutsideTranslateTest {
 
     @Test public void offByDefaultChangesNothingAndSendsNothing() {
         assertFalse(Settings.OUTSIDE_TRANSLATE.get());
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         Fake message = new Fake();
         assertFalse(OutsideTranslate.showMessage(message, message));
         assertEquals(0, fetches.get());
@@ -100,7 +106,7 @@ public class OutsideTranslateTest {
 
     @Test public void aChatThatIsOnAsksOnceThenShowsTheTranslation() {
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         Fake message = new Fake();
         // The original stays until the answer lands.
         assertFalse(OutsideTranslate.showMessage(message, message));
@@ -119,7 +125,7 @@ public class OutsideTranslateTest {
 
     @Test public void theSameTextInTwoMessagesIsAskedOnce() {
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         Fake first = new Fake();
         Fake second = new Fake();
         second.id = 2;
@@ -131,16 +137,16 @@ public class OutsideTranslateTest {
 
     @Test public void turningTheChatOffClearsTheChoicesMadeMessageByMessage() {
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
-        assertTrue(OutsideTranslate.wanted(10, 1));
-        OutsideTranslate.toggleChat(10);
-        assertFalse(OutsideTranslate.wanted(10, 1));
-        assertFalse(OutsideTranslate.wanted(11, 1));
+        OutsideTranslate.toggleChat(OWNER, 10);
+        assertTrue(OutsideTranslate.wanted(OWNER, 10, 1));
+        OutsideTranslate.toggleChat(OWNER, 10);
+        assertFalse(OutsideTranslate.wanted(OWNER, 10, 1));
+        assertFalse(OutsideTranslate.wanted(OWNER, 11, 1));
     }
 
     @Test public void textAlreadyInTheAppLanguageIsLeftAlone() {
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         OutsideTranslate.fetcher = (target, text) -> new GoogleTranslate.Result("same", target);
         Fake message = new Fake();
         OutsideTranslate.showMessage(message, message);
@@ -151,7 +157,7 @@ public class OutsideTranslateTest {
 
     @Test public void aFailedRequestIsNotRepeatedAtOnceAndNothingIsShown() {
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         OutsideTranslate.fetcher = (target, text) -> {
             fetches.incrementAndGet();
             throw new java.io.IOException("offline");
@@ -169,7 +175,7 @@ public class OutsideTranslateTest {
         long[] now = {1_000_000L};
         OutsideTranslate.clock = () -> now[0];
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         OutsideTranslate.fetcher = (target, text) -> {
             fetches.incrementAndGet();
             throw new java.io.IOException("offline");
@@ -195,7 +201,7 @@ public class OutsideTranslateTest {
 
     @Test public void aMessageThatIsNotEligibleIsNeverSent() {
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         Fake message = new Fake();
         message.eligible = false;
         assertFalse(OutsideTranslate.showMessage(message, message));
@@ -204,7 +210,7 @@ public class OutsideTranslateTest {
 
     @Test public void telegramsOwnTranslationOfAMessageIsLeftAlone() {
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         Fake message = new Fake();
         message.translated = true;
         assertFalse(OutsideTranslate.showMessage(message, message));
@@ -213,7 +219,7 @@ public class OutsideTranslateTest {
 
     @Test public void pausedTakesTelegramsPathAndSendsNothing() {
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
         Fake message = new Fake();
         assertFalse(OutsideTranslate.showMessage(message, message));
@@ -222,7 +228,7 @@ public class OutsideTranslateTest {
 
     @Test public void aTurnedOffSwitchSendsTelegramsCodeOnToPutTheOriginalBack() {
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         Fake message = new Fake();
         OutsideTranslate.showMessage(message, message);
         ShadowLooper.idleMainLooper();
@@ -234,13 +240,13 @@ public class OutsideTranslateTest {
     /** The settings row promises nothing is sent until a chat or message is turned on, so switching off starts over. */
     @Test public void turningTheSwitchOffForgetsTheChatsSoTurningItBackOnSendsNothing() {
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         Settings.OUTSIDE_TRANSLATE.save(false);
         assertFalse(OutsideTranslate.active());
         Settings.OUTSIDE_TRANSLATE.save(true);
-        assertFalse(OutsideTranslate.chatOn(10));
+        assertFalse(OutsideTranslate.chatOn(OWNER, 10));
         OutsideTranslate.resetForTests();
-        assertFalse("the saved list kept the chat", OutsideTranslate.chatOn(10));
+        assertFalse("the saved list kept the chat", OutsideTranslate.chatOn(OWNER, 10));
         Fake message = new Fake();
         assertFalse(OutsideTranslate.showMessage(message, message));
         assertEquals(0, fetches.get());
@@ -248,20 +254,20 @@ public class OutsideTranslateTest {
 
     @Test public void theSwitchRowForgetsTheChatsAsItGoesOff() {
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         OutsideTranslate.forgetChats();
         OutsideTranslate.resetForTests();
-        assertFalse(OutsideTranslate.chatOn(10));
+        assertFalse(OutsideTranslate.chatOn(OWNER, 10));
     }
 
     /** Pause is a break, not a choice, so the chats turned on come back with Resume. */
     @Test public void pausingKeepsTheChatsTurnedOn() {
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
         assertFalse(OutsideTranslate.active());
         PauseForTests.resume();
-        assertTrue(OutsideTranslate.chatOn(10));
+        assertTrue(OutsideTranslate.chatOn(OWNER, 10));
     }
 
     @Test public void aFailureThatLandsAfterTheSwitchWentOffSaysNothing() {
@@ -269,7 +275,7 @@ public class OutsideTranslateTest {
         OutsideTranslate.executor = queued::add;
         OutsideTranslate.fetcher = (target, text) -> { throw new java.io.IOException("offline"); };
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         Fake message = new Fake();
         assertFalse(OutsideTranslate.showMessage(message, message));
         assertEquals(1, queued.size());
@@ -300,7 +306,7 @@ public class OutsideTranslateTest {
 
     @Test public void aNewServiceDropsTheOldTranslationsAndAnAnswerStillOut() {
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         Fake message = new Fake();
         OutsideTranslate.showMessage(message, message);
         ShadowLooper.idleMainLooper();
@@ -319,14 +325,14 @@ public class OutsideTranslateTest {
         queued.get(0).run();
         ShadowLooper.idleMainLooper();
         assertEquals(0, again.refreshed);
-        assertNull(OutsideTranslate.cached(OutsideTranslate.target(), again.original));
+        assertNull(OutsideTranslate.cached(OWNER, OutsideTranslate.target(), again.original));
     }
 
     @Test public void aKeyTheServiceTurnsDownSaysSo() {
         org.robolectric.shadows.ShadowToast.reset();
         OutsideTranslate.fetcher = (target, text) -> { throw new AiTranslate.KeyRefused(401); };
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         Fake message = new Fake();
         OutsideTranslate.showMessage(message, message);
         ShadowLooper.idleMainLooper();
@@ -341,7 +347,7 @@ public class OutsideTranslateTest {
     @Test public void onlyAnUnexpectedFailureReadsAsABrokenHook() {
         OutsideTranslate.fetcher = (target, text) -> { throw new java.io.IOException("no route"); };
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(10);
+        OutsideTranslate.toggleChat(OWNER, 10);
         Fake offline = new Fake();
         OutsideTranslate.showMessage(offline, offline);
         ShadowLooper.idleMainLooper();
@@ -360,13 +366,13 @@ public class OutsideTranslateTest {
     @Test public void theChatItemIsOursEvenAfterTheSwitchWentOff() {
         assertFalse(Settings.OUTSIDE_TRANSLATE.get());
         assertTrue(OutsideTranslate.headerClick(new Object(), OutsideTranslate.HEADER_ITEM));
-        assertFalse(OutsideTranslate.chatOn(0));
+        assertFalse(OutsideTranslate.chatOn(OWNER, 0));
         assertFalse(OutsideTranslate.headerClick(new Object(), OutsideTranslate.HEADER_ITEM + 1));
     }
 
     @Test public void theChatMenuLabelFollowsSavedStateWithoutAddingDuplicates() {
         Settings.OUTSIDE_TRANSLATE.save(true);
-        OutsideTranslate.toggleChat(42);
+        OutsideTranslate.toggleChat(OWNER, 42);
         OutsideTranslate.resetForTests();
         Chat chat = new Chat(42);
         OutsideTranslate.headerMenu(chat);
@@ -375,7 +381,7 @@ public class OutsideTranslateTest {
         HeaderItem item = chat.items.get(0);
         assertEquals("Stop translating this chat", item.text);
         assertEquals(OutsideTranslate.HEADER_ITEM, item.id);
-        OutsideTranslate.toggleChat(42);
+        OutsideTranslate.toggleChat(OWNER, 42);
         OutsideTranslate.headerMenu(chat);
         assertEquals("Translate this chat", item.text);
         assertEquals(1, chat.items.size());
@@ -388,10 +394,10 @@ public class OutsideTranslateTest {
         OutsideTranslate.headerMenu(chat);
         assertEquals("Translate this chat", chat.items.get(0).text);
         assertTrue(OutsideTranslate.headerClick(chat, OutsideTranslate.HEADER_ITEM));
-        assertTrue(OutsideTranslate.chatOn(42));
+        assertTrue(OutsideTranslate.chatOn(OWNER, 42));
         assertEquals("Stop translating this chat", chat.items.get(0).text);
         assertTrue(OutsideTranslate.headerClick(chat, OutsideTranslate.HEADER_ITEM));
-        assertFalse(OutsideTranslate.chatOn(42));
+        assertFalse(OutsideTranslate.chatOn(OWNER, 42));
         assertEquals("Translate this chat", chat.items.get(0).text);
         assertEquals(1, chat.items.size());
         assertEquals(2, HeaderHost.refreshed);
@@ -420,7 +426,7 @@ public class OutsideTranslateTest {
         assertEquals(1, chat.items.size());
         chat.items.get(0).failText = true;
         assertTrue(OutsideTranslate.headerClick(chat, OutsideTranslate.HEADER_ITEM));
-        assertTrue(OutsideTranslate.chatOn(42));
+        assertTrue(OutsideTranslate.chatOn(OWNER, 42));
         assertEquals(1, HeaderHost.refreshed);
         chat.items.get(0).failText = false;
         OutsideTranslate.headerMenu(chat);
@@ -446,19 +452,165 @@ public class OutsideTranslateTest {
     }
 
     @Test public void theChatsThatAreOnAreRememberedOnThePhone() {
-        assertTrue(OutsideTranslate.toggleChat(42));
+        assertTrue(OutsideTranslate.toggleChat(OWNER, 42));
         OutsideTranslate.resetForTests();
-        assertTrue(OutsideTranslate.chatOn(42));
-        assertFalse(OutsideTranslate.chatOn(43));
-        assertFalse(OutsideTranslate.toggleChat(42));
+        assertTrue(OutsideTranslate.chatOn(OWNER, 42));
+        assertFalse(OutsideTranslate.chatOn(OWNER, 43));
+        assertFalse(OutsideTranslate.toggleChat(OWNER, 42));
         OutsideTranslate.resetForTests();
-        assertFalse(OutsideTranslate.chatOn(42));
+        assertFalse(OutsideTranslate.chatOn(OWNER, 42));
     }
 
-    @Test public void theCacheKeepsEachLanguageApart() {
+    @Test public void theCacheKeepsEachLanguageAndAccountApart() {
         OutsideTranslate.resetForTests();
-        assertNull(OutsideTranslate.cached("de", "x"));
-        assertNotEquals(OutsideTranslate.cacheKey("de", "x"), OutsideTranslate.cacheKey("en", "x"));
+        assertNull(OutsideTranslate.cached(OWNER, "de", "x"));
+        assertNotEquals(OutsideTranslate.cacheKey(OWNER, "de", "x"), OutsideTranslate.cacheKey(OWNER, "en", "x"));
+        assertNotEquals(OutsideTranslate.cacheKey(OWNER, "de", "x"), OutsideTranslate.cacheKey(OTHER, "de", "x"));
+    }
+
+    // Each account's own choices.
+
+    @Test public void aChatTurnedOnInOneAccountSendsNothingFromTheSameChatInAnother() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        assertTrue(OutsideTranslate.toggleChat(OWNER, 10));
+        Fake theirs = new Fake();
+        theirs.owner = OTHER;
+        assertFalse(OutsideTranslate.wanted(OTHER, 10, 1));
+        assertFalse(OutsideTranslate.showMessage(theirs, theirs));
+        assertEquals("another account's chat with the same ID sent its text", 0, fetches.get());
+        Fake mine = new Fake();
+        assertFalse(OutsideTranslate.showMessage(mine, mine));
+        assertEquals(1, fetches.get());
+    }
+
+    @Test public void theSameChatIdInTwoAccountsIsTurnedOnAndOffApart() {
+        assertTrue(OutsideTranslate.toggleChat(OWNER, 10));
+        assertFalse(OutsideTranslate.chatOn(OTHER, 10));
+        assertTrue(OutsideTranslate.toggleChat(OTHER, 10));
+        assertFalse(OutsideTranslate.toggleChat(OWNER, 10));
+        assertFalse(OutsideTranslate.chatOn(OWNER, 10));
+        assertTrue(OutsideTranslate.chatOn(OTHER, 10));
+        OutsideTranslate.resetForTests();
+        assertFalse("read back from the phone", OutsideTranslate.chatOn(OWNER, 10));
+        assertTrue(OutsideTranslate.chatOn(OTHER, 10));
+        assertEquals(Collections.singleton(OTHER + ":10"), prefs().getStringSet("owner_chats", null));
+    }
+
+    @Test public void aMessageOrChatWhoseAccountCantBeReadIsNeverSentOrTurnedOn() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        for (long unknown : new long[] {0, -1}) {
+            assertFalse(OutsideTranslate.toggleChat(unknown, 10));
+            assertFalse(OutsideTranslate.chatOn(unknown, 10));
+            assertFalse(OutsideTranslate.wanted(unknown, 10, 1));
+            Fake message = new Fake();
+            message.owner = unknown;
+            assertFalse(OutsideTranslate.showMessage(message, message));
+        }
+        assertEquals(0, fetches.get());
+        assertFalse(prefs().contains("owner_chats"));
+    }
+
+    @Test public void aChatItemWhoseAccountCantBeReadIsNotAddedAndATapDoesNothing() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        Chat chat = new Chat(42);
+        chat.owner = 0;
+        OutsideTranslate.headerMenu(chat);
+        assertTrue(chat.items.isEmpty());
+        assertTrue("the item number is still ours", OutsideTranslate.headerClick(chat, OutsideTranslate.HEADER_ITEM));
+        assertFalse(OutsideTranslate.chatOn(OWNER, 42));
+        assertEquals(0, HeaderHost.refreshed);
+        assertTrue(String.join("\n", HookStatus.report()).contains("chat account unknown"));
+    }
+
+    @Test public void theChatItemTurnsTheChatOnInTheAccountItsScreenIsIn() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        Chat chat = new Chat(42);
+        chat.owner = OTHER;
+        OutsideTranslate.headerMenu(chat);
+        assertTrue(OutsideTranslate.headerClick(chat, OutsideTranslate.HEADER_ITEM));
+        assertTrue(OutsideTranslate.chatOn(OTHER, 42));
+        assertFalse(OutsideTranslate.chatOn(OWNER, 42));
+        Chat same = new Chat(42);
+        OutsideTranslate.headerMenu(same);
+        assertEquals("the other account's choice shows in its own label only", "Translate this chat", same.items.get(0).text);
+    }
+
+    @Test public void translationsAreNotSharedBetweenAccounts() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        OutsideTranslate.toggleChat(OTHER, 10);
+        Fake mine = new Fake();
+        OutsideTranslate.showMessage(mine, mine);
+        ShadowLooper.idleMainLooper();
+        assertTrue(OutsideTranslate.showMessage(mine, mine));
+        Fake theirs = new Fake();
+        theirs.owner = OTHER;
+        assertFalse("one account's translation showed in another's chat", OutsideTranslate.showMessage(theirs, theirs));
+        assertEquals("the other account asks for its own", 2, fetches.get());
+    }
+
+    /** Chats saved before choices had an account can't be given one, so they're cleared once, with a word. */
+    @Test public void chatsSavedWithoutAnAccountAreClearedAndThePersonIsToldOnce() {
+        prefs().edit().putStringSet("chats", new java.util.HashSet<>(Arrays.asList("10", "42"))).commit();
+        OutsideTranslate.resetForTests();
+        org.robolectric.shadows.ShadowToast.reset();
+        assertFalse(OutsideTranslate.chatOn(OWNER, 10));
+        assertFalse(OutsideTranslate.chatOn(OWNER, 42));
+        ShadowLooper.idleMainLooper();
+        assertEquals("Translated chats now belong to the account that turned them on. Turn translation back on in the chats you want.",
+                org.robolectric.shadows.ShadowToast.getTextOfLatestToast());
+        assertEquals(1, org.robolectric.shadows.ShadowToast.shownToastCount());
+        assertFalse(prefs().contains("chats"));
+        assertTrue(String.join("\n", HookStatus.report()).contains("chats without an account cleared 1"));
+
+        OutsideTranslate.resetForTests();
+        org.robolectric.shadows.ShadowToast.reset();
+        assertFalse(OutsideTranslate.chatOn(OWNER, 10));
+        ShadowLooper.idleMainLooper();
+        assertNull("told again", org.robolectric.shadows.ShadowToast.getLatestToast());
+    }
+
+    @Test public void anEmptyListFromBeforeIsDroppedWithoutAWord() {
+        prefs().edit().putStringSet("chats", Collections.emptySet()).commit();
+        OutsideTranslate.resetForTests();
+        org.robolectric.shadows.ShadowToast.reset();
+        assertFalse(OutsideTranslate.chatOn(OWNER, 10));
+        ShadowLooper.idleMainLooper();
+        assertNull(org.robolectric.shadows.ShadowToast.getLatestToast());
+        assertFalse(prefs().contains("chats"));
+    }
+
+    @Test public void onlySavedChatsWithAKnownAccountAreRead() {
+        prefs().edit().putStringSet("owner_chats", new java.util.HashSet<>(Arrays.asList(
+                OWNER + ":10", "0:11", "-3:12", "x:13", "14", OWNER + ":y", ":15", OTHER + ":-100123"))).commit();
+        OutsideTranslate.resetForTests();
+        assertTrue(OutsideTranslate.chatOn(OWNER, 10));
+        assertTrue("a group's negative ID is still a chat", OutsideTranslate.chatOn(OTHER, -100123));
+        assertFalse(OutsideTranslate.chatOn(OWNER, 11));
+        assertFalse(OutsideTranslate.chatOn(OWNER, 13));
+        assertFalse(OutsideTranslate.chatOn(OWNER, 14));
+        assertFalse(OutsideTranslate.chatOn(OWNER, 15));
+        assertFalse(OutsideTranslate.ownedChat(null));
+        assertFalse(OutsideTranslate.ownedChat("0:12"));
+        assertTrue(OutsideTranslate.ownedChat("1:2"));
+    }
+
+    @Test public void turningTheSwitchOffForgetsEveryAccountsChats() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        OutsideTranslate.toggleChat(OTHER, 11);
+        prefs().edit().putStringSet("chats", Collections.singleton("12")).commit();
+        Settings.OUTSIDE_TRANSLATE.save(false);
+        assertFalse(OutsideTranslate.active());
+        assertFalse(prefs().contains("owner_chats"));
+        assertFalse(prefs().contains("chats"));
+        OutsideTranslate.resetForTests();
+        assertFalse(OutsideTranslate.chatOn(OWNER, 10));
+        assertFalse(OutsideTranslate.chatOn(OTHER, 11));
+    }
+
+    private static android.content.SharedPreferences prefs() {
+        return app.hushtelegram.extension.shared.Utils.getContext().getSharedPreferences("hushtelegram_outside_translate", 0);
     }
 
     @Test public void googlesCodesForJavasLanguages() {
@@ -512,6 +664,7 @@ public class OutsideTranslateTest {
 
     private static final class Chat {
         final long dialog;
+        long owner = OWNER;
         final List<HeaderItem> items = new ArrayList<>();
         boolean hasTranslateItem = true;
         boolean failAdd;
@@ -531,6 +684,7 @@ public class OutsideTranslateTest {
         static int refreshed;
         @Implementation protected static boolean hasTranslateItem(Object chat) { return ((Chat) chat).hasTranslateItem; }
         @Implementation protected static long chatDialog(Object chat) { return ((Chat) chat).dialog; }
+        @Implementation protected static long chatOwner(Object chat) { return ((Chat) chat).owner; }
         @Implementation protected static Object chatOf(Object delegate) { return delegate; }
         @Implementation protected static Object addHeaderItem(Object chat, int id, int icon, String text) {
             Chat owner = (Chat) chat;

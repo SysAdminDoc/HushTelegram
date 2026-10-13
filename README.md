@@ -165,7 +165,7 @@ A bare "ERROR" page usually goes away with your VPN or ad blocker off, in a priv
 HushTelegram collects nothing and has no server. It goes online by itself for two things, and both start off.
 
 - **The release check** asks `api.github.com` for the newest release at most once a day when Telegram starts, and when you tap **Check now**. It's a plain HTTPS request with no cookies and nothing about you. GitHub sees your IP address, like any site does.
-- **Translate with an outside service** sends a message you translate, or each message you open in a chat you turned it on for, to Google's web translate at `translate.googleapis.com`. Set up an AI service with your own key and the text goes to the address you typed instead, which starts out as `api.openai.com` and takes any service with OpenAI's chat format. The key stays out of backups, reports and logs, and neither service is followed through a redirect.
+- **Translate with an outside service** sends a message you translate, or each message you open in a chat you turned it on for, to Google's web translate at `translate.googleapis.com`. Set up an AI service with your own key and the text goes to the address you typed instead, which starts out as `api.openai.com` and takes any service with OpenAI's chat format. The key stays out of backups, reports and logs, and neither service is followed through a redirect. A chat you turn on is on only in the Telegram account you turned it on in.
 
 The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.org`, and Support HushTelegram links to `ko-fi.com`. They open in your browser only when you tap one. Diagnostic reports leave out API IDs and hashes, but read one before you share it.
 

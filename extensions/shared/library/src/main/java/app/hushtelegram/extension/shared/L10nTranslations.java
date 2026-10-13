@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1068);
+        Map<String, String> table = new HashMap<>(1070);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -982,6 +982,8 @@ public final class L10nTranslations {
                 "Diesen Chat \u00fcbersetzen");
         table.put("Translate with an outside service",
                 "Mit einem externen Dienst \u00fcbersetzen");
+        table.put("Translated chats now belong to the account that turned them on. Turn translation back on in the chats you want.",
+                "\u00dcbersetzte Chats geh\u00f6ren jetzt zu dem Konto, das sie eingeschaltet hat. Schalte die \u00dcbersetzung in den Chats, die du willst, wieder ein.");
         table.put("Translation",
                 "\u00dcbersetzung");
         table.put("Translation isn't available right now",
@@ -1040,11 +1042,11 @@ public final class L10nTranslations {
                 "Sprachnachrichten im Musikplayer");
         table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
                 "Die Lautst\u00e4rketasten \u00e4ndern nur die Lautst\u00e4rke. Sie starten das Video oder Rundvideo auf dem Bildschirm nicht mehr mit Ton. Tippe ein Video an, um es zu h\u00f6ren.");
-        table.put("When a voice or video message ends, the next one doesn't start by itself.",
-                "Wenn eine Sprach- oder Videonachricht endet, startet die n\u00e4chste nicht von selbst.");
     }
 
     private static void fillDe8(Map<String, String> table) {
+        table.put("When a voice or video message ends, the next one doesn't start by itself.",
+                "Wenn eine Sprach- oder Videonachricht endet, startet die n\u00e4chste nicht von selbst.");
         table.put("When someone reacts to a message, the emoji doesn't fly across the screen and burst. The reaction still shows on the message.",
                 "Wenn jemand auf eine Nachricht reagiert, fliegt das Emoji nicht \u00fcber den Bildschirm und platzt nicht auf. Die Reaktion bleibt an der Nachricht sichtbar.");
         table.put("When your chat list is short, Telegram lists your contacts below it. This hides that list and its heading. Chats, folders and search stay.",
@@ -1156,7 +1158,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(1068);
+        Map<String, String> table = new HashMap<>(1070);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -2091,6 +2093,8 @@ public final class L10nTranslations {
                 "Traducir este chat");
         table.put("Translate with an outside service",
                 "Traducir con un servicio externo");
+        table.put("Translated chats now belong to the account that turned them on. Turn translation back on in the chats you want.",
+                "Los chats traducidos ahora pertenecen a la cuenta que los activ\u00f3. Vuelve a activar la traducci\u00f3n en los chats que quieras.");
         table.put("Translation",
                 "Traducci\u00f3n");
         table.put("Translation isn't available right now",
@@ -2149,11 +2153,11 @@ public final class L10nTranslations {
                 "Mensajes de voz en el reproductor de m\u00fasica");
         table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
                 "Las teclas de volumen solo cambian el volumen. Ya no inician con sonido el video o video redondo que se ve en pantalla. Toca un video para o\u00edrlo.");
-        table.put("When a voice or video message ends, the next one doesn't start by itself.",
-                "Cuando termina un mensaje de voz o de video, el siguiente no empieza solo.");
     }
 
     private static void fillEs8(Map<String, String> table) {
+        table.put("When a voice or video message ends, the next one doesn't start by itself.",
+                "Cuando termina un mensaje de voz o de video, el siguiente no empieza solo.");
         table.put("When someone reacts to a message, the emoji doesn't fly across the screen and burst. The reaction still shows on the message.",
                 "Cuando alguien reacciona a un mensaje, el emoji no cruza la pantalla ni estalla. La reacci\u00f3n sigue apareciendo en el mensaje.");
         table.put("When your chat list is short, Telegram lists your contacts below it. This hides that list and its heading. Chats, folders and search stay.",
@@ -2265,7 +2269,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1068);
+        Map<String, String> table = new HashMap<>(1070);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -3200,6 +3204,8 @@ public final class L10nTranslations {
                 "Terjemahkan obrolan ini");
         table.put("Translate with an outside service",
                 "Terjemahkan dengan layanan luar");
+        table.put("Translated chats now belong to the account that turned them on. Turn translation back on in the chats you want.",
+                "Obrolan yang diterjemahkan sekarang milik akun yang menyalakannya. Nyalakan lagi terjemahan di obrolan yang Anda inginkan.");
         table.put("Translation",
                 "Terjemahan");
         table.put("Translation isn't available right now",
@@ -3258,11 +3264,11 @@ public final class L10nTranslations {
                 "Pesan suara di pemutar musik");
         table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
                 "Tombol volume hanya mengubah volume. Tombol ini tidak lagi memutar video atau video bulat di layar dengan suara. Ketuk video untuk mendengarnya.");
-        table.put("When a voice or video message ends, the next one doesn't start by itself.",
-                "Saat pesan suara atau video selesai, pesan berikutnya tidak mulai sendiri.");
     }
 
     private static void fillIn8(Map<String, String> table) {
+        table.put("When a voice or video message ends, the next one doesn't start by itself.",
+                "Saat pesan suara atau video selesai, pesan berikutnya tidak mulai sendiri.");
         table.put("When someone reacts to a message, the emoji doesn't fly across the screen and burst. The reaction still shows on the message.",
                 "Saat seseorang bereaksi pada pesan, emoji tidak melayang melintasi layar dan meledak. Reaksinya tetap tampil di pesan.");
         table.put("When your chat list is short, Telegram lists your contacts below it. This hides that list and its heading. Chats, folders and search stay.",
@@ -3374,7 +3380,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(1068);
+        Map<String, String> table = new HashMap<>(1070);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -4309,6 +4315,8 @@ public final class L10nTranslations {
                 "Traduzir esta conversa");
         table.put("Translate with an outside service",
                 "Traduzir com um servi\u00e7o externo");
+        table.put("Translated chats now belong to the account that turned them on. Turn translation back on in the chats you want.",
+                "As conversas traduzidas agora pertencem \u00e0 conta que as ativou. Ative a tradu\u00e7\u00e3o de novo nas conversas que voc\u00ea quiser.");
         table.put("Translation",
                 "Tradu\u00e7\u00e3o");
         table.put("Translation isn't available right now",
@@ -4367,11 +4375,11 @@ public final class L10nTranslations {
                 "Mensagens de voz no player de m\u00fasica");
         table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
                 "As teclas de volume s\u00f3 mudam o volume. Elas n\u00e3o iniciam mais com som o v\u00eddeo ou v\u00eddeo redondo que est\u00e1 na tela. Toque em um v\u00eddeo para ouvi-lo.");
-        table.put("When a voice or video message ends, the next one doesn't start by itself.",
-                "Quando uma mensagem de voz ou de v\u00eddeo termina, a pr\u00f3xima n\u00e3o come\u00e7a sozinha.");
     }
 
     private static void fillPt_rBR8(Map<String, String> table) {
+        table.put("When a voice or video message ends, the next one doesn't start by itself.",
+                "Quando uma mensagem de voz ou de v\u00eddeo termina, a pr\u00f3xima n\u00e3o come\u00e7a sozinha.");
         table.put("When someone reacts to a message, the emoji doesn't fly across the screen and burst. The reaction still shows on the message.",
                 "Quando algu\u00e9m reage a uma mensagem, o emoji n\u00e3o voa pela tela nem explode. A rea\u00e7\u00e3o continua aparecendo na mensagem.");
         table.put("When your chat list is short, Telegram lists your contacts below it. This hides that list and its heading. Chats, folders and search stay.",
@@ -4483,7 +4491,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(1068);
+        Map<String, String> table = new HashMap<>(1070);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -5418,6 +5426,8 @@ public final class L10nTranslations {
                 "Bu sohbeti \u00e7evir");
         table.put("Translate with an outside service",
                 "Harici bir hizmetle \u00e7evir");
+        table.put("Translated chats now belong to the account that turned them on. Turn translation back on in the chats you want.",
+                "\u00c7evrilen sohbetler art\u0131k onlar\u0131 a\u00e7an hesaba ait. \u00c7eviriyi istedi\u011finiz sohbetlerde yeniden a\u00e7\u0131n.");
         table.put("Translation",
                 "\u00c7eviri");
         table.put("Translation isn't available right now",
@@ -5476,11 +5486,11 @@ public final class L10nTranslations {
                 "Sesli mesajlar m\u00fczik \u00e7alarda");
         table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
                 "Ses tu\u015flar\u0131 yaln\u0131zca sesi de\u011fi\u015ftirir. Ekrandaki videoyu veya yuvarlak videoyu art\u0131k sesle ba\u015flatmaz. Duymak i\u00e7in bir videoya dokunun.");
-        table.put("When a voice or video message ends, the next one doesn't start by itself.",
-                "Bir sesli veya g\u00f6r\u00fcnt\u00fcl\u00fc mesaj bitti\u011finde bir sonrakisi kendili\u011finden ba\u015flamaz.");
     }
 
     private static void fillTr8(Map<String, String> table) {
+        table.put("When a voice or video message ends, the next one doesn't start by itself.",
+                "Bir sesli veya g\u00f6r\u00fcnt\u00fcl\u00fc mesaj bitti\u011finde bir sonrakisi kendili\u011finden ba\u015flamaz.");
         table.put("When someone reacts to a message, the emoji doesn't fly across the screen and burst. The reaction still shows on the message.",
                 "Biri bir mesaja tepki verdi\u011finde emoji ekranda u\u00e7up patlamaz. Tepki mesaj\u0131n \u00fczerinde g\u00f6r\u00fcnmeye devam eder.");
         table.put("When your chat list is short, Telegram lists your contacts below it. This hides that list and its heading. Chats, folders and search stay.",

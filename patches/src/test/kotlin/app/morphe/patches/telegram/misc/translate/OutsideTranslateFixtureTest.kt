@@ -23,6 +23,7 @@ import app.morphe.patches.telegram.misc.messagemenu.FILL
 import app.morphe.patches.telegram.misc.messagemenu.messageMenuPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
+import app.morphe.util.superclassChain
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -81,7 +82,15 @@ class OutsideTranslateFixtureTest {
                 m.returnType.startsWith("Lorg/telegram/ui/ActionBar/")
         }.map { it.returnType }.toSet()
         val types = (if (neighbours) fixed + menuFixed else fixed) + items
-        return (FixtureDex.classes(build, types).values + found).distinctBy { it.type }.map(ImmutableClassDef::of)
+        // The screens' base classes, where the chat screen's account getter is declared.
+        val bases = mutableListOf<ClassDef>()
+        var next = found.mapNotNull { it.superclass }.filter { it.startsWith("Lorg/telegram/") }.toSet()
+        while (next.isNotEmpty()) {
+            val loaded = FixtureDex.classes(build, next).values
+            bases += loaded
+            next = loaded.mapNotNull { it.superclass }.filter { it.startsWith("Lorg/telegram/") }.toSet() - bases.map { it.type }.toSet()
+        }
+        return (FixtureDex.classes(build, types).values + found + bases).distinctBy { it.type }.map(ImmutableClassDef::of)
     }
 
     @Test fun `each site calls the extension first and Telegram's own code follows unchanged`() {
@@ -159,7 +168,8 @@ class OutsideTranslateFixtureTest {
             // The stubs reach what Telegram's own translation reads, and nothing of its Premium path.
             val stub = { n: String -> context.mutableClassDefBy(OUTSIDE_TRANSLATE).methods.single { it.name == n }.controlBody() }
             val everything = listOf("selected", "original", "translatable", "messageType", "dialog", "id", "entities", "isTranslated", "applyTranslated",
-                "notifyTranslated", "notifyDialog", "translateIcon", "appLocale", "hasTranslateItem", "addHeaderItem", "setHeaderText", "chatOf", "chatDialog")
+                "notifyTranslated", "notifyDialog", "translateIcon", "appLocale", "hasTranslateItem", "addHeaderItem", "setHeaderText", "chatOf", "chatDialog",
+                "owner", "chatOwner")
                 .flatMap { stub(it) }.mapNotNull { it.controlRef() }
             assertFalse("$name: Telegram's Premium and availability stay untouched",
                 everything.any { it.contains("isFeatureAvailable") || it.contains("isPremium") || it.contains("setHideTranslateDialog") || it.contains("toggleTranslatingDialog") })
@@ -181,6 +191,18 @@ class OutsideTranslateFixtureTest {
             assertEquals("$name: the label is changed on that item", site.setHeaderText.toString(), setter[1].controlRef())
             assertEquals(listOf(0, 1), setter[1].namedRegisters())
             assertEquals("$name: the delegate's chat", site.outer.toString(), stub("chatOf").single { it.opcode == Opcode.IGET_OBJECT }.controlRef())
+            // Both owners end at the account's user ID, never at its slot number.
+            val userId = "Lorg/telegram/messenger/UserConfig;->getClientUserId()J"
+            val accountConfig = "Lorg/telegram/messenger/UserConfig;->getInstance(I)Lorg/telegram/messenger/UserConfig;"
+            assertEquals("$name: a message's account", listOf("Lorg/telegram/messenger/MessageObject;->currentAccount:I", accountConfig, userId),
+                stub("owner").mapNotNull { it.controlRef() }.filter { it.contains("->") })
+            assertEquals(Opcode.RETURN_WIDE, stub("owner").last().opcode)
+            val chatOwner = stub("chatOwner").mapNotNull { it.controlRef() }.filter { it.contains("->") }
+            assertEquals("$name: the chat screen's account", listOf(site.accountGetter, accountConfig, userId), chatOwner)
+            val base = site.accountGetter.substringBefore("->")
+            assertTrue("$name: the getter is on the chat screen or a class above it", site.accountGetter.endsWith(";->getCurrentAccount()I") &&
+                context.classDefByOrNull(base) != null && base in context.superclassChain(site.chat).toList())
+            assertEquals(Opcode.RETURN_WIDE, stub("chatOwner").last().opcode)
             assertTrue("$name: the delegate is public", site.delegate.definingClass.isNotEmpty() && AccessFlags.PUBLIC.isSet(site.delegate.accessFlags))
             val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "outsideTranslate" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
