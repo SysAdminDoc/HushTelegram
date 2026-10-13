@@ -45,7 +45,9 @@ Open Telegram's Settings and tap **HushTelegram settings**. If that row is ever 
 
 The home page has search and seven pages of switches, grouped the way Morphe Manager groups them. **Pause HushTelegram** turns its changes off from the next start and keeps your choices for when you resume. **More settings** has the update check, link options, settings backup and diagnostics.
 
-<p><img src="assets/settings-overview.png" width="320" alt="HushTelegram settings with mint controls, search, Pause and seven settings pages"><img src="assets/settings-ads.png" width="320" alt="The Ads page with Hide ads turned on"></p>
+These screenshots show the unreleased settings design.
+
+<p><img src="assets/settings-overview.png" width="320" alt="HushTelegram settings with cyan controls, search, Pause and seven settings pages"><img src="assets/settings-ads.png" width="320" alt="The Ads page with Hide ads turned on"></p>
 
 ## Patches
 

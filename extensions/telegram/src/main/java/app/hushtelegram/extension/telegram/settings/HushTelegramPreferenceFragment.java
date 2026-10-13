@@ -828,7 +828,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         + "Leave it off for everyday use.")), SettingsIcons.BUG));
         // Both rows come without a title of their own: Hushfeed's gave them one from string
         // resources that Telegram's APK doesn't have, and untitled they showed as blank rows.
-        ExportDiagnosticReportPreference export = new ExportRow(context);
+        ExportDiagnosticReportPreference export = new ExportRow(this, context);
         export.setTitle(L10n.t("Export diagnostic report"));
         export.setSummary(L10n.t("Copy a short report or save the full one to a file. The saved location is shown afterward. Links, IDs and sign-in details are "
                 + "left out. Look it over before sharing."));
@@ -1445,8 +1445,17 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     }
 
     static final class ExportRow extends ExportDiagnosticReportPreference {
-        ExportRow(Context context) {
+        private final HushTelegramPreferenceFragment page;
+
+        ExportRow(HushTelegramPreferenceFragment page, Context context) {
             super(context);
+            this.page = page;
+        }
+
+        @Override
+        protected boolean canStartExport() {
+            Activity activity = page.getActivity();
+            return page.getView() != null && activity != null && !activity.isFinishing() && !activity.isDestroyed();
         }
 
         /** The two choices as cards, each saying what it does under its name. */
@@ -1467,6 +1476,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
          */
         @Override
         protected void onDialogCreated(AlertDialog dialog) {
+            page.own(dialog);
             ListView list = dialog.getListView();
             if (list != null) {
                 list.setDivider(null);

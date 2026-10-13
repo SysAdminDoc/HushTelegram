@@ -585,15 +585,15 @@ final class SettingsNavigation extends BaseAdapter {
                 TextView summary = row.findViewById(android.R.id.summary);
                 if (summary != null) summary.setVisibility(View.GONE);
                 row.setMinimumHeight(dp(56));
-                row.setPaddingRelative(dp(34), dp(first ? 14 : 10), dp(34), dp(last ? 14 : 10));
+                row.setPaddingRelative(dp(36), dp(first ? 12 : 8), dp(36), dp(last ? 12 : 8));
                 ImageView icon = row.findViewById(android.R.id.icon);
                 if (icon != null) {
                     icon.setPadding(dp(7), dp(7), dp(7), dp(7));
-                    icon.getLayoutParams().width = dp(36);
-                    icon.getLayoutParams().height = dp(36);
+                    icon.getLayoutParams().width = dp(40);
+                    icon.getLayoutParams().height = dp(40);
                     if (icon.getParent() instanceof View) {
                         ViewGroup.LayoutParams size = ((View) icon.getParent()).getLayoutParams();
-                        size.width = dp(50);
+                        size.width = dp(56);
                         if (size instanceof LinearLayout.LayoutParams) {
                             ((LinearLayout.LayoutParams) size).gravity = android.view.Gravity.CENTER_VERTICAL;
                         }
@@ -602,7 +602,7 @@ final class SettingsNavigation extends BaseAdapter {
             }
         }
         if (item == screen.getPreference(0)) {
-            row.setPaddingRelative(dp(38), dp(16), dp(38), dp(16));
+            row.setPaddingRelative(dp(36), dp(16), dp(36), dp(16));
             TextView title = row.findViewById(android.R.id.title);
             if (title != null) title.setTypeface(android.graphics.Typeface.create("sans-serif-medium", 0));
         }

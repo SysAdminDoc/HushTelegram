@@ -82,10 +82,10 @@ final class ScreenColors {
     final int error;
     final int ripple;
     static final int CARD_RADIUS = 12;
-    static final int BUTTON_RADIUS = 8;
-    static final int FIELD_RADIUS = 8;
-    static final int ICON_RADIUS = 10;
-    static final int DISABLED_TEXT = 0xFF82958B;
+    static final int BUTTON_RADIUS = 12;
+    static final int FIELD_RADIUS = 12;
+    static final int ICON_RADIUS = 12;
+    static final int DISABLED_TEXT = 0xFF8296A8;
 
     /** The one palette the screen is drawn in. */
     static final ScreenColors DEFAULT = new ScreenColors();
@@ -95,25 +95,25 @@ final class ScreenColors {
 
     private ScreenColors() {
         background = Color.BLACK;
-        dialog = 0xFF101715;
-        title = 0xFFF1F6F3;
-        summary = 0xFFA2B3AC;
-        heading = 0xFF7CE6C4;
-        accent = 0xFF7CE6C4;
-        switchOff = 0xFF73807B;
-        card = 0xFF101715;
-        outline = 0xFF23332C;
-        onAccent = 0xFF071D16;
-        iconTile = 0xFF192F26;
-        fieldBorder = 0xFF71877A;
-        selection = 0xFF20372C;
+        dialog = 0xFF0A111C;
+        title = 0xFFEEF6FC;
+        summary = 0xFFA5B7C7;
+        heading = 0xFF63D5FF;
+        accent = 0xFF63D5FF;
+        switchOff = 0xFF60758A;
+        card = 0xFF0A111C;
+        outline = 0xFF223044;
+        onAccent = 0xFF041B29;
+        iconTile = 0xFF0C2936;
+        fieldBorder = 0xFF607C92;
+        selection = 0xFF17344A;
         error = 0xFFFFB4A8;
-        ripple = 0x337CE6C4;
+        ripple = 0x3363D5FF;
     }
 
     /**
      * The white thumb of an off switch reads against its muted track. On switches use dark ink
-     * against mint, so the thumb's position stays distinct in both states.
+     * against cyan, so the thumb's position stays distinct in both states.
      */
     int offThumb() {
         return Color.WHITE;
@@ -127,7 +127,7 @@ final class ScreenColors {
     }
 
     /**
-     * The text of a dialog's outlined actions, such as Cancel, uses the same mint as headings.
+     * The text of a dialog's outlined actions, such as Cancel, uses the same cyan as headings.
      */
     int secondaryActionText() {
         return heading;
@@ -158,16 +158,24 @@ final class ScreenColors {
                     {-android.R.attr.state_enabled}, {android.R.attr.state_checked}, {}};
             Switch toggle = (Switch) widget;
             GradientDrawable thumb = new GradientDrawable();
-            thumb.setCornerRadius(dp(row, 4));
+            thumb.setCornerRadius(dp(row, 10));
             thumb.setSize(dp(row, 20), dp(row, 20));
             thumb.setColor(Color.WHITE);
-            GradientDrawable track = new GradientDrawable();
-            track.setCornerRadius(dp(row, 6));
-            track.setSize(dp(row, 44), dp(row, 26));
+            GradientDrawable track = new GradientDrawable() {
+                @Override public boolean getPadding(android.graphics.Rect padding) {
+                    int inset = dp(row, 3);
+                    padding.set(inset, inset, inset, inset);
+                    return true;
+                }
+            };
+            track.setCornerRadius(dp(row, 13));
+            track.setSize(dp(row, 46), dp(row, 26));
             track.setColor(Color.WHITE);
-            toggle.setThumbDrawable(thumb);
+            // Switch stretches its thumb to the track height. Keep a circular 20dp glyph
+            // inside that 26dp box, with the track's end padding leaving a visible rim.
+            toggle.setThumbDrawable(new InsetDrawable(thumb, 0, dp(row, 3), 0, dp(row, 3)));
             toggle.setTrackDrawable(track);
-            toggle.setSwitchMinWidth(dp(row, 44));
+            toggle.setSwitchMinWidth(dp(row, 46));
             toggle.setThumbTintList(new ColorStateList(states, new int[]{half(onAccent), half(offThumb()), onAccent, offThumb()}));
             toggle.setTrackTintList(new ColorStateList(states, new int[]{half(accent), half(switchOff), accent, switchOff}));
         }
@@ -246,9 +254,9 @@ final class ScreenColors {
         row.setBackground(preference.isSelectable()
                 ? new RippleDrawable(ColorStateList.valueOf(ripple), layers, null) : layers);
         // Explicit padding after the inset background prevents its padding from moving the text.
-        int vertical = preference.getSummary() == null ? 12 : 16;
-        row.setPaddingRelative(dp(row, 38), dp(row, vertical + (first ? 6 : 0)),
-                dp(row, 38), dp(row, vertical + (last ? 6 : 0)));
+        int vertical = preference.getSummary() == null ? 12 : 14;
+        row.setPaddingRelative(dp(row, 36), dp(row, vertical + (first ? 6 : 0)),
+                dp(row, 36), dp(row, vertical + (last ? 6 : 0)));
         row.setMinimumHeight(dp(row, 64));
     }
 
@@ -586,7 +594,9 @@ final class ScreenColors {
         int actionsId = dialog.getContext().getResources().getIdentifier("buttonPanel", "id", "android");
         View actions = actionsId == 0 ? null : dialog.findViewById(actionsId);
         if (actions != null) {
-            int width = Math.max(1, dialog.getContext().getResources().getDisplayMetrics().widthPixels - dp(actions, 32));
+            int width = window == null ? dialog.getContext().getResources().getDisplayMetrics().widthPixels
+                    - dp(actions, 32) : window.getAttributes().width;
+            width = Math.max(1, width);
             actions.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
                     View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
             actions.setMinimumHeight(actions.getMeasuredHeight());

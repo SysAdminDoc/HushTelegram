@@ -26,6 +26,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.shadows.ShadowAlertDialog;
 import org.robolectric.shadows.ShadowLooper;
 
@@ -101,6 +102,73 @@ public class SettingsPolishTest {
                 }
             } finally { dialog.dismiss(); }
         }
+    }
+
+    @Test public void diagnosticChooserClosesWithSettingsAndReopensWithANewOwner() {
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
+        try (ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class).setup()) {
+            SettingsDialog owner = show(activity.get());
+            Preference export = page(owner).findPreference("action_export_diagnostic_report");
+            export.getOnPreferenceClickListener().onPreferenceClick(export);
+            AlertDialog chooser = ShadowAlertDialog.getLatestAlertDialog();
+            assertTrue(chooser.isShowing());
+            owner.dismiss();
+            activity.get().getFragmentManager().executePendingTransactions();
+            ShadowLooper.idleMainLooper();
+            assertNull(owner.getView());
+            assertFalse("The chooser must not retain the removed settings window", chooser.isShowing());
+            export.getOnPreferenceClickListener().onPreferenceClick(export);
+            assertSame("A queued click must not open another window for the removed owner",
+                    chooser, ShadowAlertDialog.getLatestAlertDialog());
+            chooser.getListView().performItemClick(null, 0, 0);
+            ShadowLooper.idleMainLooper();
+            assertFalse("A stale chooser must not start an export",
+                    ((HushTelegramPreferenceFragment.ExportRow) export).isBusy());
+
+            owner = show(activity.get());
+            export = page(owner).findPreference("action_export_diagnostic_report");
+            export.getOnPreferenceClickListener().onPreferenceClick(export);
+            AlertDialog reopened = ShadowAlertDialog.getLatestAlertDialog();
+            assertNotSame(chooser, reopened);
+            assertTrue(reopened.isShowing());
+            reopened.onBackPressed();
+            assertFalse(reopened.isShowing());
+        }
+    }
+
+    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE) @Config(qualifiers = "w1000dp-h900dp-xhdpi")
+    public void wideDisplayReservesStackedActionsAtTheCappedDialogWidth() {
+        org.robolectric.RuntimeEnvironment.setFontScale(2f);
+        try (ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class).setup()) {
+            AlertDialog dialog = new AlertDialog.Builder(HushTelegramPreferenceFragment.themed(activity.get()))
+                    .setTitle("Translation service")
+                    .setPositiveButton("Save settings", null)
+                    .setNegativeButton("Keep editing", null)
+                    .setNeutralButton("Use Google instead", null).show();
+            try {
+                ScreenColors.dialog(dialog);
+                int panelId = dialog.getContext().getResources().getIdentifier("buttonPanel", "id", "android");
+                View panel = dialog.findViewById(panelId);
+                assertNotNull(panel);
+                int width = dialog.getWindow().getAttributes().width;
+                assertEquals(Math.round(560 * panel.getResources().getDisplayMetrics().density), width);
+                panel.setMinimumHeight(0);
+                int displayWidth = panel.getResources().getDisplayMetrics().widthPixels
+                        - Math.round(32 * panel.getResources().getDisplayMetrics().density);
+                panel.measure(View.MeasureSpec.makeMeasureSpec(displayWidth, View.MeasureSpec.EXACTLY),
+                        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+                int uncappedHeight = panel.getMeasuredHeight();
+                panel.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+                int cappedHeight = panel.getMeasuredHeight();
+                assertTrue("Action panel " + panel.getClass().getName() + " at " + width + "/" + displayWidth
+                                + " pixels has heights " + cappedHeight + "/" + uncappedHeight,
+                        cappedHeight > uncappedHeight);
+                ScreenColors.dialog(dialog);
+                assertTrue("The form must reserve every stacked action's height",
+                        panel.getMinimumHeight() >= cappedHeight);
+            } finally { dialog.dismiss(); }
+        } finally { org.robolectric.RuntimeEnvironment.setFontScale(1f); }
     }
 
     @Test public void genericDialogActionsRemainTouchableAndUnclippedAtLargeText() throws Exception {

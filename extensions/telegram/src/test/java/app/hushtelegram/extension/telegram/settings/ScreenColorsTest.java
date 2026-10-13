@@ -136,10 +136,10 @@ public class ScreenColorsTest {
     public void theBlackPagesRatios() {
         ScreenColors page = ScreenColors.DEFAULT;
         assertEquals(19.22, contrast(page.title, page.background), 0.01);
-        assertEquals(9.58, contrast(page.summary, page.background), 0.01);
-        assertEquals(13.97, contrast(page.heading, page.background), 0.01);
-        assertEquals(11.68, contrast(page.onAccent, page.accent), 0.01);
-        assertEquals(4.12, contrast(page.offThumb(), page.switchOff), 0.01);
+        assertEquals(10.20, contrast(page.summary, page.background), 0.01);
+        assertEquals(12.49, contrast(page.heading, page.background), 0.01);
+        assertEquals(10.46, contrast(page.onAccent, page.accent), 0.01);
+        assertEquals(4.76, contrast(page.offThumb(), page.switchOff), 0.01);
     }
 
     /**

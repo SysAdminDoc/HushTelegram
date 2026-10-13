@@ -6,6 +6,10 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.17.
 
+* **Telegram:** All 15 settings pages now share blue-black cards and cyan controls on an AMOLED background. Editors and dialogs use the same restrained corners. Switch explanations keep their full width at larger text sizes.
+
+* **Telegram:** Closing settings also closes the diagnostic report chooser. Dialogs on wide displays reserve enough space for their actions at the actual dialog width.
+
 * **Tooling:** The README is a lot shorter now and sticks to installing and using HushTelegram, with the patch table in the order of the settings pages. The long version, with its version history and build check notes, is still in the repository history at commit 0cbd721.
 
 * **Telegram:** Moved to Telegram 13.0.2, telegram.org's build (version code 71759) and the official beta (71809). The beta added an audio recorder settings entry, and HushTelegram leaves it alone.
@@ -39,8 +43,6 @@ Working version 0.0.17.
 * **Tooling:** Added the native settings navigation runner and its host checks. Reopening Telegram's existing activity uses a bounded wait, and switch checks read the actual accessibility row. Settings snapshots accept device-specific provider names while keeping recovery limited to the required settings.
 
 * **Tooling:** Verified the original sign-in reporter's successful recovery with registered credentials. Delivery without another signed-in Telegram session still needs a separate check.
-
-* **Telegram:** All 15 settings pages now use mint controls on black. Larger headings and compact navigation make the pages easier to scan. Switch explanations use the full card width. Notification status has its own card, while search and Pause keep their existing behavior.
 
 * **Tooling:** Refreshed the settings screenshots and added a visual reference for every page. Checked navigation and search on a patched build, including Pause and Resume from a keyboard.
 

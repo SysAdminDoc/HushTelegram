@@ -183,7 +183,7 @@ public final class SettingsDialog extends DialogFragment {
         pageTitle.setText("HushTelegram");
         pageTitle.setTextColor(ScreenColors.DEFAULT.title);
         pageTitle.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
-        pageTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+        pageTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
         pageTitle.setAccessibilityHeading(true);
         pageTitle.setPaddingRelative(dp(22), dp(4), dp(20), dp(16));
         root.addView(pageTitle);

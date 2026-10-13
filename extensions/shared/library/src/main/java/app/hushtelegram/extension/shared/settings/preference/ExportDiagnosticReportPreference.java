@@ -35,8 +35,10 @@ public class ExportDiagnosticReportPreference extends Preference {
         // framework treats it as a setting: a key with no Setting behind it is skipped.
         setKey("action_export_diagnostic_report");
         setOnPreferenceClickListener(pref -> {
+            if (busy || !canStartExport()) return true;
             DialogInterface.OnClickListener choose = (dialog, which) -> {
                 if (which != 0 && which != 1) return;
+                if (busy || !canStartExport()) return;
                 // Building the report can take a few seconds on a full buffer, so the row says
                 // so and takes no second tap until the copy or the file is done.
                 showBusy();
@@ -56,6 +58,11 @@ public class ExportDiagnosticReportPreference extends Preference {
             dialog.show();
             return true;
         });
+    }
+
+    /** A host can reject queued clicks after the settings view that owns this row is gone. */
+    protected boolean canStartExport() {
+        return true;
     }
 
     /** Whether a report this row started is still being built. */
