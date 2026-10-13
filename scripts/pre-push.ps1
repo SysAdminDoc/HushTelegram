@@ -682,7 +682,7 @@ try {
         $_ -in $runtimeTestInputs
     }).Count -gt 0
     $buildAdvisoryInputs = @('scripts/build-advisories.ps1', 'scripts/build-advisory-exceptions.txt',
-        'scripts/test-build-advisories.ps1', 'scripts/release-advisories.ps1',
+        'scripts/build-tool-advisories.txt', 'scripts/test-build-advisories.ps1', 'scripts/release-advisories.ps1',
         'gradle.properties', 'gradle/wrapper/gradle-wrapper.properties', 'gradle/wrapper/gradle-wrapper.jar')
     $touchesBuildAdvisories = $touchesCode -or @($paths | Where-Object { $_ -in $buildAdvisoryInputs }).Count -gt 0
     $touchesScripts = @($paths | Where-Object { $_ -like 'scripts/*' }).Count -gt 0

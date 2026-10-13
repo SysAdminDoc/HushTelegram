@@ -1,0 +1,23 @@
+# Advisories against the tools that run the build. scripts/build-advisories.ps1 holds the Gradle
+# version the dependency report names to this list before it asks OSV about any library. Gradle is
+# the build tool and not something the build resolves, so no library scan covers it: OSV answered {}
+# when it was asked about the three advisories below.
+#
+# One per line:
+#
+#   <advisory> <tool> <severity> <affected> <fixed> <read yyyy-MM-dd>
+#
+# The advisory is the maintainer's GHSA id. The tool is gradle, the only one read so far. The
+# severity is the maintainer's own: LOW, MODERATE, HIGH or CRITICAL. Affected is every range the
+# advisory names, joined by commas with no spaces, "<8.14.6" for every release below a version and
+# "9.0.0..9.8.0" for both ends included. Fixed is the first release of each line that has the fix,
+# joined the same way. The date is the day the record was last read from the maintainer's page,
+# https://github.com/gradle/gradle/security/advisories/<advisory>.
+#
+# High and critical records refuse a build on a version inside their ranges, and there are no
+# exceptions here: the way out is a fixed Gradle. Nothing is fetched when the gate runs, so this
+# list is all it knows. An advisory published after the newest date below is not in it until
+# somebody reads Gradle's advisories again and adds the line.
+GHSA-mvvg-497x-hmj8 gradle HIGH <8.14.6,9.0.0..9.8.0 8.14.6,9.8.1 2026-10-13
+GHSA-xwqc-3h47-hg64 gradle HIGH <8.14.6,9.0.0..9.8.0 8.14.6,9.8.1 2026-10-13
+GHSA-j5m7-59rp-24f5 gradle HIGH <8.14.6,9.0.0..9.8.0 8.14.6,9.8.1 2026-10-13

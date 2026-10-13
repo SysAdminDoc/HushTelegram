@@ -404,3 +404,172 @@ function Invoke-ReleaseAdvisoryGate {
     $said = if ($findings.Count -eq 0) { 'no advisory' } else { "$($findings.Count) advisories, none refused" }
     Write-Host "[advisories] OSV has $said for the libraries $sbomName lists: $packages"
 }
+
+function ConvertTo-BuildToolVersion {
+    <#
+    .SYNOPSIS
+        A released tool version, two or three dotted numbers, as a [version], or $null.
+    .DESCRIPTION
+        9.8 is 9.8.0. A release candidate, a milestone or a nightly has no place in an advisory's
+        ranges that this can work out, so it has no version here and the caller refuses it.
+    #>
+    param([string]$Text)
+
+    if ("$Text" -notmatch '^\d{1,4}\.\d{1,4}(\.\d{1,4})?$') { return $null }
+    $parts = @("$Text".Split('.') | ForEach-Object { [int]$_ })
+    if ($parts.Count -eq 2) { $parts += 0 }
+    return New-Object System.Version($parts[0], $parts[1], $parts[2])
+}
+
+function Read-BuildToolAdvisories {
+    <#
+    .SYNOPSIS
+        The advisories recorded against the tools that run the build, one per line:
+        "<advisory> <tool> <severity> <affected> <fixed> <read yyyy-MM-dd>".
+    .DESCRIPTION
+        A build tool is not a library the build resolves, so no package URL names it and OSV is
+        never asked about it: the list is the whole of what the gate knows, kept by hand from the
+        maintainer's own advisories. Affected is every range an advisory names, joined by commas,
+        "<8.14.6" for all below a version and "9.0.0..9.8.0" for both ends included. Fixed is the
+        first release of each line with the fix.
+
+        Read strictly, as the exception lists are. A missing or oversized list, a line in another
+        shape, an id that is not a GHSA id, a severity outside the four, a tool this does not
+        check, a range or version it cannot place, a fixed version inside its own affected range
+        and a record given twice all stop the run, naming the line.
+    #>
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw "The build tool advisory list is missing: $Path"
+    }
+    if ((Get-Item -LiteralPath $Path).Length -gt 65536) {
+        throw "The build tool advisory list is over 64 KB, which is not a list this check reads: $Path"
+    }
+    $records = New-Object System.Collections.Generic.List[object]
+    $seen = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+    $number = 0
+    foreach ($line in Get-Content -LiteralPath $Path) {
+        $number++
+        $text = ([string]$line).Trim()
+        if (-not $text -or $text.StartsWith('#')) { continue }
+        $shape = [regex]::Match($text,
+            '^(?<id>GHSA(-[23456789cfghjmpqrvwx]{4}){3}) (?<tool>\S+) (?<severity>\S+) (?<affected>\S+) (?<fixed>\S+) (?<read>\S+)$')
+        if (-not $shape.Success) {
+            throw ("Line $number of $Path is not ""<advisory> <tool> <severity> <affected> <fixed> <read yyyy-MM-dd>"" " +
+                "with a GHSA id: $text")
+        }
+        $advisory = $shape.Groups['id'].Value
+        $tool = $shape.Groups['tool'].Value
+        if ($tool -cne 'gradle') {
+            throw "Line $number of $Path names the tool $tool, which this check does not read a version for: $text"
+        }
+        $severity = $shape.Groups['severity'].Value
+        if ($severity -cnotin @('LOW', 'MODERATE', 'HIGH', 'CRITICAL')) {
+            throw "Line $number of $Path rates $advisory $severity, which is not LOW, MODERATE, HIGH or CRITICAL: $text"
+        }
+        $ranges = @(foreach ($range in $shape.Groups['affected'].Value.Split(',')) {
+            # The versions are held to their own shape below, so these only find the two ends.
+            $below = [regex]::Match($range, '^<(?<end>.+)$')
+            $between = [regex]::Match($range, '^(?<start>.+?)\.\.(?<end>.+)$')
+            $start = if ($between.Success) { ConvertTo-BuildToolVersion $between.Groups['start'].Value } else { $null }
+            $end = if ($below.Success) { ConvertTo-BuildToolVersion $below.Groups['end'].Value } elseif ($between.Success) {
+                ConvertTo-BuildToolVersion $between.Groups['end'].Value } else { $null }
+            if ($null -eq $end -or ($between.Success -and ($null -eq $start -or $start -gt $end))) {
+                throw ("Line $number of $Path gives $advisory the affected range $range, which is neither " +
+                    """<X"" nor ""X..Y"" with released versions in order: $text")
+            }
+            [pscustomobject]@{ Text = $range; Start = $start; End = $end; EndIncluded = $between.Success }
+        })
+        $fixed = @(foreach ($release in $shape.Groups['fixed'].Value.Split(',')) {
+            $version = ConvertTo-BuildToolVersion $release
+            if ($null -eq $version) {
+                throw "Line $number of $Path gives $advisory the fixed version $release, which is not a released version: $text"
+            }
+            if (@($ranges | Where-Object { Test-BuildToolRange -Range $_ -Version $version }).Count -gt 0) {
+                throw "Line $number of $Path calls $release fixed for $advisory, inside the range it calls affected: $text"
+            }
+            $release
+        })
+        $read = [datetime]::MinValue
+        if (-not [datetime]::TryParseExact($shape.Groups['read'].Value, 'yyyy-MM-dd',
+                [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::None, [ref]$read)) {
+            throw "Line $number of $Path says $advisory was read on $($shape.Groups['read'].Value), which isn't a yyyy-MM-dd date: $text"
+        }
+        if (-not $seen.Add("$advisory $tool")) {
+            throw "Line $number of $Path records $advisory for $tool a second time."
+        }
+        $records.Add([pscustomobject]@{
+            Advisory = $advisory
+            Tool     = $tool
+            Severity = $severity
+            Affected = $ranges
+            Fixed    = $fixed
+            Read     = $read
+            Line     = $number
+        })
+    }
+    return $records.ToArray()
+}
+
+function Test-BuildToolRange {
+    # Whether a version is inside one affected range Read-BuildToolAdvisories read.
+    param([Parameter(Mandatory = $true)]$Range, [Parameter(Mandatory = $true)][version]$Version)
+
+    if ($null -ne $Range.Start -and $Version -lt $Range.Start) { return $false }
+    if ($Range.EndIncluded) { return $Version -le $Range.End }
+    return $Version -lt $Range.End
+}
+
+function Test-BuildToolAdvisories {
+    <#
+    .SYNOPSIS
+        Whether a build may run on this version of a tool: @{ Valid; Reason; Refused; Minor;
+        Recorded; LastRead }.
+    .DESCRIPTION
+        Refused and Minor are the lines to print, for the recorded advisories whose ranges hold
+        the version: high and critical ones refuse it, as they do a library, and the rest are let
+        through. Recorded counts the advisories the list holds for the tool and LastRead is the
+        earliest day any of them was read, which is how old the answer may be.
+
+        A version this cannot place, and a tool the list records nothing for, throw instead of
+        answering: neither is a version known to be outside every range.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Tool,
+        [string]$Version,
+        [object[]]$Records = @()
+    )
+
+    $placed = ConvertTo-BuildToolVersion $Version
+    if ($null -eq $placed) {
+        throw ("The build ran on $Tool '$Version', which is not a released version this check can place in " +
+            'an advisory range. Build on a released version.')
+    }
+    $mine = @(@($Records) | Where-Object { $null -ne $_ -and $_.Tool -ceq $Tool })
+    if ($mine.Count -eq 0) {
+        throw "The build tool advisory list records nothing for $Tool, so nothing says $Tool $Version is clear of its advisories."
+    }
+    $refused = New-Object System.Collections.Generic.List[string]
+    $minor = New-Object System.Collections.Generic.List[string]
+    foreach ($record in $mine) {
+        if (@($record.Affected | Where-Object { Test-BuildToolRange -Range $_ -Version $placed }).Count -eq 0) { continue }
+        $described = ("$($record.Advisory) ($($record.Severity)) covers $Tool " +
+            "$(@($record.Affected | ForEach-Object { $_.Text }) -join ', ') and is fixed in $($record.Fixed -join ' and ')")
+        if ($record.Severity -cin @('HIGH', 'CRITICAL')) { $refused.Add($described) } else { $minor.Add($described) }
+    }
+    $reason = $null
+    if ($refused.Count -gt 0) {
+        $reason = ("The build ran on $Tool $Version, which its maintainer's high or critical advisories cover: " +
+            ($refused -join '; ') + '. Move the build to a fixed version. This is the tool that runs the ' +
+            'build, not a library it resolves.')
+    }
+    return [pscustomobject]@{
+        Valid    = $refused.Count -eq 0
+        Reason   = $reason
+        Refused  = $refused.ToArray()
+        Minor    = $minor.ToArray()
+        Recorded = $mine.Count
+        LastRead = @($mine | ForEach-Object { $_.Read } | Sort-Object)[0]
+    }
+}

@@ -5,9 +5,14 @@
     Generate the report with :patches:buildDependencyReport. This report includes the toolchain
     classpaths that the shipped SBOM deliberately excludes. Query failures stop the gate, and
     high, critical and unrated findings need a current exception specific to the build graph.
+
+    The Gradle version the report names is held first to scripts/build-tool-advisories.txt, the
+    maintainer advisories recorded for the build tool, which no library scan covers. A version
+    inside a high or critical range stops the gate whatever OSV says about the libraries, and so
+    does a list or a version that cannot be read. Tools are reported on a line of their own.
 #>
 [CmdletBinding()]
-param([string]$Root, [string]$ReportPath, [string]$ExceptionsPath)
+param([string]$Root, [string]$ReportPath, [string]$ExceptionsPath, [string]$ToolAdvisoriesPath)
 
 . (Join-Path $PSScriptRoot 'release-advisories.ps1')
 
@@ -63,15 +68,36 @@ function Read-BuildDependencyReport {
             Purl = $component.purl; Configurations = @($component.configurations)
         })
     }
-    return [pscustomobject]@{ Path = $Path; Libraries = $libraries.ToArray(); Configurations = @($report.configurations) }
+    # The tool that ran the build, kept apart from the libraries it resolved: Gradle is no Maven
+    # component of this graph, and OSV is never asked about it under a package URL made up for it.
+    return [pscustomobject]@{ Path = $Path; Libraries = $libraries.ToArray(); Configurations = @($report.configurations)
+        Tools = @([pscustomobject]@{ Name = 'gradle'; Version = [string]$report.gradleVersion }) }
 }
 
 function Invoke-BuildAdvisoryGate {
     param(
         [Parameter(Mandatory = $true)]$Report,
         [Parameter(Mandatory = $true)][string]$ExceptionsPath,
+        [string]$ToolAdvisoriesPath,
         [datetime]$Today = [datetime]::Today
     )
+    # The build tool first, against the maintainer advisories recorded for it. It needs no network,
+    # and a clean answer about the libraries says nothing about the Gradle that resolved them.
+    if (-not $ToolAdvisoriesPath) { $ToolAdvisoriesPath = Join-Path $PSScriptRoot 'build-tool-advisories.txt' }
+    $toolRecords = @(Read-BuildToolAdvisories -Path $ToolAdvisoriesPath)
+    $tools = @(@($Report.Tools) | Where-Object { $null -ne $_ })
+    if ($tools.Count -eq 0) {
+        throw 'The resolved build report names no build tool, so nothing was held to the build tool advisory list.'
+    }
+    $toolLines = @(foreach ($tool in $tools) {
+        $toolVerdict = Test-BuildToolAdvisories -Tool $tool.Name -Version $tool.Version -Records $toolRecords
+        foreach ($line in @($toolVerdict.Minor)) { Write-Host "[build advisories] build tool, below high, let through: $line" }
+        if (-not $toolVerdict.Valid) { throw $toolVerdict.Reason }
+        ("[build advisories] build tool $($tool.Name) $($tool.Version) is outside the high and critical ranges of the " +
+            "$($toolVerdict.Recorded) maintainer advisories recorded for it, last read " +
+            "$($toolVerdict.LastRead.ToString('yyyy-MM-dd', [Globalization.CultureInfo]::InvariantCulture)). " +
+            'Nothing newer was asked about.')
+    })
     $exceptions = @(Read-AdvisoryExceptions -Path $ExceptionsPath -Today $Today)
     $findings = @(Get-SbomAdvisories -Sbom $Report)
     $verdict = Test-AdvisoryFindings -Findings $findings -Exceptions $exceptions
@@ -90,6 +116,7 @@ function Invoke-BuildAdvisoryGate {
     if ($reasons.Count -gt 0) { throw ($reasons -join ' ') }
     $said = if ($findings.Count -eq 0) { 'no advisory' } else { "$($findings.Count) advisories, none refused" }
     Write-Host "[build advisories] OSV has $said for $(@($Report.Libraries).Count) resolved libraries"
+    foreach ($line in $toolLines) { Write-Host $line }
 }
 
 # Dot-sourcing exposes the reader and gate for isolated recorded-response contracts.
@@ -98,5 +125,6 @@ $ErrorActionPreference = 'Stop'
 if (-not $Root) { $Root = Split-Path -Parent $PSScriptRoot }
 if (-not $ReportPath) { $ReportPath = Join-Path $Root 'patches/build/dependency-reports/build-dependencies.json' }
 if (-not $ExceptionsPath) { $ExceptionsPath = Join-Path $Root 'scripts/build-advisory-exceptions.txt' }
+if (-not $ToolAdvisoriesPath) { $ToolAdvisoriesPath = Join-Path $Root 'scripts/build-tool-advisories.txt' }
 $resolvedReport = Read-BuildDependencyReport -Path $ReportPath
-Invoke-BuildAdvisoryGate -Report $resolvedReport -ExceptionsPath $ExceptionsPath
+Invoke-BuildAdvisoryGate -Report $resolvedReport -ExceptionsPath $ExceptionsPath -ToolAdvisoriesPath $ToolAdvisoriesPath
