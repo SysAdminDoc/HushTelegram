@@ -47,13 +47,14 @@ final class FilterEditor {
     static String refusal(String typed) {
         String[] lines = typed.split("\r\n|\r|\n", -1);
         int filters = 0;
+        long[] spent = new long[1];
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i].trim();
             if (line.isEmpty()) continue;
             if (++filters > MessageFilters.MAX_FILTERS) {
                 return L10n.f("A list holds up to %1$d filters.", MessageFilters.MAX_FILTERS);
             }
-            MessageFilters.Problem problem = MessageFilters.problem(line);
+            MessageFilters.Problem problem = MessageFilters.problem(line, spent);
             if (problem == null) continue;
             switch (problem) {
                 case TOO_LONG:

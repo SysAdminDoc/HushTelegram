@@ -134,8 +134,9 @@ public class MessageFiltersTest {
         }
         assertTrue("ICU reads a comment", MessageFilters.slow("(?#[)(a|aa)+b"));
         assertNotNull(MessageFilters.problem("/(?#[)(a|aa)+b/"));
-        assertFalse("a count past any number", MessageFilters.slow("a{0,99999999999999999999}"));
-        assertFalse(MessageFilters.slow("a{99999999999}b+"));
+        // Read without overflowing, and refused for what it would walk rather than passed as one try.
+        assertTrue("a count past any number", MessageFilters.slow("a{0,99999999999999999999}"));
+        assertTrue(MessageFilters.slow("a{99999999999}b+"));
         for (String fine : new String[]{"/[+*]+/", "/\\(a?\\)+/", "/(a+)?/", "/(a{1})+/", "/(?:foo|bar) now/", "/\\Q(a+)+\\E/",
                 "/a{2}b+/", "/[(]a?[)]+/", "/(ab)+c/", "/https?:\\/\\/\\S+/", "/a+?b/", "/a*+b/", "/(?i)x+/",
                 "/\\d{3}[-.]?\\d{4}/", "/\\bfree\\s{1,9}crypto\\s{1,9}now\\b/", "/\\(?\\d{3}\\)? ?\\d+/",
@@ -151,6 +152,93 @@ public class MessageFiltersTest {
         List<MessageFilters.Filter> kept = parsed("/(unclosed/\n/(a+)+/\nspam");
         assertEquals("only the line that works", 1, kept.size());
         assertTrue(MessageFilters.matches(kept, "spam"));
+    }
+
+    /**
+     * A count used to cost one try however large it was, so {@code (?:(?=x)){16777215}(?!x)} passed
+     * and ran its assertion sixteen million times at a place without ever matching "x". A count is
+     * now walked as many times as it says, for each way of getting to it.
+     */
+    @Test public void aCountIsWalkedAsOftenAsItSaysSoALargeOneIsRefused() {
+        for (String slow : new String[]{"/(?:(?=x)){16777215}(?!x)/", "/a{16777215}/", "/a{50000}/", "/(?:ab){20000}/",
+                // After a repeat, a count is walked again for each length the repeat tries.
+                "/.*a{1000}y/", "/.*\\d{40}/", "/\\w+ x{17}/"}) {
+            assertEquals(slow, MessageFilters.Problem.SLOW, MessageFilters.problem(slow));
+        }
+        // An assertion or an empty group reads no text, so the text never ends its count early. A
+        // spread is tried from its largest number, and a count with no end has to reach its least.
+        for (String slow : new String[]{"(?=x){16777215}y", "(?:\\b){16777215}x", "(?:^){40000}x", "(){16777215}x",
+                "(?:){16777215}x", "(?:(?=x)){0,16777215}(?!x)", "(?:(?=x)){40000,}(?!x)", "[a-f0-9]{40000}",
+                // The same count on a longer group is more walking.
+                "(?:(?=a)(?=b)(?=c)(?=d)){2048}x", "a?b?c?d?e?(?:(?=x)){2000}"}) {
+            assertTrue(slow, MessageFilters.slow(slow));
+        }
+        for (String fine : new String[]{"/\\d{16}/", "/0x[a-f0-9]{40}/", "/[a-f0-9]{64}/", "/(?:ha){3}/",
+                "/\\d{4}-\\d{2}-\\d{2}/", "/\\d{3}\\.\\d{3}\\.\\d{3}\\.\\d{3}/", "/.{1000}/", "/^.{500,}/", "/@\\w{5,32}/",
+                "/\\b\\w{2}\\b/",
+                // A count before the repeat is walked once, and a short one after it a few times.
+                "/0x[a-f0-9]{40}.*airdrop/", "/\\d{40}.*/", "/.*\\d{8}/", "/free\\s+\\d{2}%/"}) {
+            assertNull(fine, MessageFilters.problem(fine));
+        }
+        assertFalse("a small count on an assertion", MessageFilters.slow("(?=x){3}x"));
+        assertFalse(MessageFilters.slow("(?:(?=x)){2048}(?!x)"));
+    }
+
+    /**
+     * Each of a hundred lines with a count just under the limit passed alone, and together they
+     * were a hundred times the work on every message. A list's expressions share one number, and a
+     * line past it is left out like any other that can't be used.
+     */
+    @Test public void aListsExpressionsShareTheirTries() {
+        // One open-ended repeat with four optional parts is as much as one line may hold.
+        List<String> lines = new ArrayList<>();
+        for (int i = 0; i < 7; i++) lines.add("/x.*a?b?c?d?" + i + "/");
+        long[] spent = new long[1];
+        for (String line : lines.subList(0, 6)) assertNull(line, MessageFilters.problem(line, spent));
+        assertEquals(6 * MessageFilters.MAX_TRIES, spent[0]);
+        assertEquals("the line the list runs out at", MessageFilters.Problem.SLOW, MessageFilters.problem(lines.get(6), spent));
+        assertEquals("a refused line spends nothing", 6 * MessageFilters.MAX_TRIES, spent[0]);
+        assertNull("it's fine on its own", MessageFilters.problem(lines.get(6)));
+        assertNull("plain text costs nothing", MessageFilters.problem("spam", spent));
+        assertEquals(6 * MessageFilters.MAX_TRIES, spent[0]);
+        assertNull("a cheaper expression still fits", MessageFilters.problem("/scam\\d/", spent));
+        assertEquals(6 * MessageFilters.MAX_TRIES + 1, spent[0]);
+
+        lines.add("spam");
+        lines.add("/scam\\d/");
+        List<MessageFilters.Filter> kept = parsed(MessageFilters.join(lines));
+        assertEquals("six that fit, then the words and the cheap expression", 8, kept.size());
+        assertTrue(MessageFilters.matches(kept, "x and 5"));
+        assertFalse("the seventh was never built", MessageFilters.matches(kept, "x and 6"));
+        assertTrue(MessageFilters.matches(kept, "scam7"));
+
+        List<String> full = new ArrayList<>();
+        for (int i = 0; i < MessageFilters.MAX_FILTERS; i++) full.add("/word" + i + "\\s+now/");
+        assertEquals("a full list with one open-ended repeat a line", MessageFilters.MAX_FILTERS,
+                parsed(MessageFilters.join(full)).size());
+        full.set(0, "/word0\\s+now\\d?/");
+        assertEquals("one more optional part and the last line no longer fits", MessageFilters.MAX_FILTERS - 1,
+                parsed(MessageFilters.join(full)).size());
+
+        List<String> hundred = new ArrayList<>();
+        for (int count = 16777000; count < 16777100; count++) hundred.add("/(?:(?=x)){" + count + "}(?!x)/");
+        assertTrue(parsed(MessageFilters.join(hundred)).isEmpty());
+    }
+
+    /**
+     * A list saved before the check, or brought in with a settings file, keeps its text for the
+     * editor. In the chat the slow line has no expression built for it, so there's nothing to run.
+     */
+    @Test public void aSlowLineAlreadySavedIsKeptAsTextAndNeverBuiltOrRun() {
+        String saved = "/(?:(?=x)){16777215}(?!x)/\nspam";
+        Settings.HIDE_BY_KEYWORD.save(true);
+        Settings.MESSAGE_FILTERS_GROUPS.save(saved);
+        List<MessageFilters.Filter> kept = MessageFilters.filters(false);
+        assertEquals(1, kept.size());
+        assertNull("only the plain line is left", kept.get(0).pattern);
+        assertFalse(MessageFilters.hides(GROUP, false, false, "x"));
+        assertTrue(MessageFilters.hides(GROUP, false, false, "more spam"));
+        assertEquals(saved, Settings.MESSAGE_FILTERS_GROUPS.savedValue());
     }
 
     @Test public void aListIsItsTrimmedLinesUpToItsLimit() {

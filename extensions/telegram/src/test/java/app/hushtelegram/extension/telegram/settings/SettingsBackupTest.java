@@ -558,8 +558,10 @@ public class SettingsBackupTest {
         // A line that isn't a working filter, such as an expression edited by hand, still comes in:
         // the editor shows it and a chat leaves it out.
         JSONObject file = new JSONObject(SettingsBackup.create());
-        file.getJSONObject("settings").put(Settings.MESSAGE_FILTERS_GROUPS.key, new org.json.JSONArray(Arrays.asList("/(unclosed/", "/(a+)+/")));
-        assertEquals("/(unclosed/\n/(a+)+/", SettingsBackup.parse(file.toString()).lists.get(Settings.MESSAGE_FILTERS_GROUPS));
+        file.getJSONObject("settings").put(Settings.MESSAGE_FILTERS_GROUPS.key,
+                new org.json.JSONArray(Arrays.asList("/(unclosed/", "/(a+)+/", "/(?:(?=x)){16777215}(?!x)/")));
+        assertEquals("/(unclosed/\n/(a+)+/\n/(?:(?=x)){16777215}(?!x)/",
+                SettingsBackup.parse(file.toString()).lists.get(Settings.MESSAGE_FILTERS_GROUPS));
     }
 
     /**

@@ -1113,6 +1113,46 @@ public class HushTelegramPreferenceFragmentTest {
         assertNull(FilterEditor.refusal("\n  \n"));
     }
 
+    /**
+     * Save names the line whose count only makes work, and the line a list's expressions run out of
+     * room at, and saves neither list. Each of the second list's lines is fine alone.
+     */
+    @Test
+    public void saveNamesTheLineACountMakesSlowAndTheLineAListRunsOutAt() {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_BY_KEYWORD);
+        ShadowToast.reset();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Preference groups = pageOf(controller).findPreference(FilterEditor.GROUPS);
+            assertTrue(groups.getOnPreferenceClickListener().onPreferenceClick(groups));
+            ShadowLooper.idleMainLooper();
+            AlertDialog editor = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            EditText field = editor.findViewById(android.R.id.edit);
+
+            field.setText("spam\n\n/\\d{4}-\\d{2}/\n/(?:(?=x)){16777215}(?!x)/");
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertTrue("a count that only makes work keeps the dialog", editor.isShowing());
+            assertEquals("Line 4 may be slow on long messages. Try a simpler pattern.", ShadowToast.getTextOfLatestToast());
+            assertEquals("", Settings.MESSAGE_FILTERS_GROUPS.savedValue());
+
+            StringBuilder heavy = new StringBuilder("spam\n");
+            for (int i = 0; i < 7; i++) {
+                String line = "/x.*a?b?c?d?" + i + "/";
+                assertNull(line, MessageFilters.problem(line));
+                heavy.append(line).append('\n');
+            }
+            field.setText(heavy);
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertTrue("a list past what its expressions may add up to keeps the dialog", editor.isShowing());
+            assertEquals("Line 8 may be slow on long messages. Try a simpler pattern.", ShadowToast.getTextOfLatestToast());
+            assertEquals("", Settings.MESSAGE_FILTERS_GROUPS.savedValue());
+        } finally {
+            Settings.MESSAGE_FILTERS_GROUPS.resetToDefault();
+            Settings.MESSAGE_FILTERS_CHANNELS.resetToDefault();
+        }
+    }
+
     /** Its row says nothing leaves the phone until a chat or message is turned on, so off forgets them. */
     @Test
     public void switchingOutsideTranslateOffForgetsTheChatsTurnedOn() {

@@ -36,7 +36,9 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * long message are refused instead: a repeat inside a repeated group, a repeated choice like
  * {@code (a|aa)+}, more than one open-ended repeat (or one with many optional parts beside it), a
  * reference back to a group, and a comment or the comments flag, which hide the rest from that
- * check. What's left takes time at worst in proportion to the square of
+ * check. A count like {@code {500}} is walked that many times whether or not the text moves on, so
+ * a large one is refused too, and a list's expressions share {@link #MAX_LIST_TRIES}. What's left
+ * takes time at worst in proportion to the square of
  * the text, and an expression reads no more than {@link #MAX_EXPRESSION_TEXT} of a message. Plain
  * text reads up to Telegram's longest message.
  */
@@ -59,8 +61,15 @@ public final class MessageFilters {
     /**
      * How many ways an expression may try to match at one place in a message: one open-ended
      * repeat with a few optional parts or short counts beside it. Two open-ended repeats are past it.
+     * A count's own repeats come out of the same number.
      */
     static final long MAX_TRIES = MAX_EXPRESSION_TEXT * 16L;
+    /**
+     * How many tries the expressions of one list may add up to: a full list with one open-ended
+     * repeat on every line. A hundred lines each at {@link #MAX_TRIES} would be read one after the
+     * other on every message.
+     */
+    static final long MAX_LIST_TRIES = (long) MAX_FILTERS * MAX_EXPRESSION_TEXT;
     /**
      * How large one list may be once it's written into a settings file, so a saved list always
      * exports to a file the import takes: two lists of this, the switches and the size stay well
@@ -168,7 +177,10 @@ public final class MessageFilters {
         TOO_LONG,
         /** An expression that doesn't compile. */
         BROKEN,
-        /** An expression that can take too long on a long message, by the shapes {@link #slow} refuses. */
+        /**
+         * An expression that can take too long on a long message, by the shapes {@link #slow}
+         * refuses, or one its list has no tries left for.
+         */
         SLOW
     }
 
@@ -196,9 +208,19 @@ public final class MessageFilters {
         return new JSONArray(lines).toString().getBytes(StandardCharsets.UTF_8).length <= MAX_LIST_BYTES;
     }
 
-    /** What's wrong with one line, or null when it can be used. */
+    /** What's wrong with one line on its own, or null when it can be used. */
     @Nullable
     public static Problem problem(String line) {
+        return problem(line, new long[1]);
+    }
+
+    /**
+     * What's wrong with one line of a list, or null when it can be used. {@code spent} holds the
+     * tries of the list's lines before this one and takes this line's when it can be used, so a line
+     * that would carry the list past {@link #MAX_LIST_TRIES} is slow as well.
+     */
+    @Nullable
+    public static Problem problem(String line, long[] spent) {
         if (line.length() > MAX_FILTER_CHARS) return Problem.TOO_LONG;
         String expression = expression(line);
         if (expression == null) return null;
@@ -208,12 +230,16 @@ public final class MessageFilters {
             // PatternSyntaxException, or the odd flag or length refusal, which is one too.
             return Problem.BROKEN;
         }
+        long tries;
         try {
-            return slow(expression) ? Problem.SLOW : null;
+            tries = tries(expression);
         } catch (RuntimeException unread) {
             // An expression the check can't read through isn't one it can vouch for.
             return Problem.SLOW;
         }
+        if (tries > MAX_TRIES || spent[0] + tries > MAX_LIST_TRIES) return Problem.SLOW;
+        spent[0] += tries;
+        return null;
     }
 
     /** The expression inside a line in slashes, or null for a line of plain text. */
@@ -236,19 +262,37 @@ public final class MessageFilters {
      * and a {@code ?} or {@code +} right after a repeat makes it lazy or possessive rather than
      * repeating again. A comment, or the x flag that turns on comments and drops spaces, hides what
      * follows from this reading, so either one is refused too.
+     *
+     * <p>A count is walked as many times as it says, once for each way of getting to it, and an
+     * assertion like {@code (?=x)} or {@code \b} reads no text that could run out first. Those
+     * walks count as tries, so {@code (?:(?=x)){16777215}}, {@code a{50000}} and {@code .*\d{40}}
+     * are refused, and {@code \d{40}.*}, which walks its count once, isn't.
      */
     static boolean slow(String expression) {
+        return tries(expression) > MAX_TRIES;
+    }
+
+    /**
+     * The ways an expression may try to match at one place plus the walks its counts make there, or
+     * more than {@link #MAX_TRIES} for one of the shapes {@link #slow} refuses.
+     */
+    private static long tries(String expression) {
         // For each open group: whether something inside it repeats or is optional, whether it holds a
         // choice, and whether it looks behind.
         List<boolean[]> open = new ArrayList<>();
         // For the whole expression and each open group: the tries of its choices read so far, added
-        // up, of the choice being read, multiplied, and where a plain group's text starts (-1 for
-        // any other group).
+        // up, of the choice being read, multiplied, where a plain group's text starts (-1 for
+        // any other group), and where the group opens.
         List<long[]> cost = new ArrayList<>();
-        cost.add(new long[]{0, 1, -1});
+        cost.add(new long[]{0, 1, -1, -1});
         boolean[] closedJustBefore = null;
         boolean openedJustBefore = false;
         boolean afterRepeat = false;
+        // How much of the expression a count right here would repeat: the group that just closed,
+        // or one character, class or escape.
+        long lengthJustBefore = 1;
+        // What the counts read so far walk at one place.
+        long walks = 0;
         int i = 0;
         int n = expression.length();
         while (i < n) {
@@ -256,11 +300,12 @@ public final class MessageFilters {
             boolean[] closed = null;
             boolean opened = false;
             boolean repeat = false;
+            long length = 1;
             long[] current = cost.get(cost.size() - 1);
             if (c == '\\') {
                 if (i + 1 < n) {
                     char next = expression.charAt(i + 1);
-                    if (next >= '1' && next <= '9' || next == 'k') return true;
+                    if (next >= '1' && next <= '9' || next == 'k') return REFUSED;
                 }
                 i = escapeEnd(expression, i);
             } else if (c == '[') {
@@ -268,11 +313,11 @@ public final class MessageFilters {
             } else if (c == '(') {
                 // A comment, or a flag that turns spaces and # into something else, reads text this
                 // scan can't follow.
-                if (expression.startsWith("(?#", i) || commentsFlag(expression, i)) return true;
+                if (expression.startsWith("(?#", i) || commentsFlag(expression, i)) return REFUSED;
                 boolean behind = expression.startsWith("(?<=", i) || expression.startsWith("(?<!", i);
                 open.add(new boolean[]{false, false, behind});
                 long start = expression.startsWith("(?:", i) ? i + 3 : expression.startsWith("(?", i) ? -1 : i + 1;
-                cost.add(new long[]{0, 1, start});
+                cost.add(new long[]{0, 1, start, i});
                 opened = true;
                 i++;
             } else if (c == ')') {
@@ -291,7 +336,9 @@ public final class MessageFilters {
                     // a list of them is tried once.
                     long tries = group[2] >= 0 && distinctWords(expression.substring((int) group[2], i)) ? 1 : group[0] + group[1];
                     outer[1] = capped(outer[1] * capped(tries));
-                    if (outer[1] > MAX_TRIES) return true;
+                    if (outer[1] > MAX_TRIES) return REFUSED;
+                    // An empty group still takes a step each time around.
+                    length = Math.max(1, i - group[3] - 1);
                 }
                 i++;
             } else if (c == '|') {
@@ -299,7 +346,7 @@ public final class MessageFilters {
                 // Choices are tried one after another, so their tries add up.
                 current[0] = capped(current[0] + current[1]);
                 current[1] = 1;
-                if (current[0] > MAX_TRIES) return true;
+                if (current[0] > MAX_TRIES) return REFUSED;
                 i++;
             } else if (c == '?' && openedJustBefore) {
                 // (?: (?= (?<name> and the like say how a group works; they don't repeat anything.
@@ -311,12 +358,21 @@ public final class MessageFilters {
                 long[] count = c == '{' ? bounds(expression, i) : null;
                 // An optional group is tried once or not at all, so only a repeated one is refused here.
                 boolean optional = c == '?' || count != null && count[1] == 1;
-                if (!optional && closedJustBefore != null && (closedJustBefore[0] || closedJustBefore[1])) return true;
+                if (!optional && closedJustBefore != null && (closedJustBefore[0] || closedJustBefore[1])) return REFUSED;
                 // A look behind is tried from every place its text could start, which a repeat of
                 // more than one length multiplies.
-                if ((count == null || count[0] != count[1]) && behind(open)) return true;
+                if ((count == null || count[0] != count[1]) && behind(open)) return REFUSED;
+                // A count walks what it's on as many times as it says, text or no text to stop it,
+                // and again for each way of getting this far. A spread is tried from its largest
+                // number down, and one with no end has to reach its least.
+                if (count != null && !optional) {
+                    long ways = 1;
+                    for (long[] group : cost) ways = capped(ways * group[1]);
+                    walks = capped(walks + ways * capped(count[1] < 0 ? count[0] : count[1]) * lengthJustBefore);
+                    if (walks > MAX_TRIES) return REFUSED;
+                }
                 current[1] = capped(current[1] * (c == '?' ? 2 : c == '{' ? spread(expression, i) : MAX_EXPRESSION_TEXT));
-                if (current[0] + current[1] > MAX_TRIES) return true;
+                if (current[0] + current[1] > MAX_TRIES) return REFUSED;
                 if (!open.isEmpty()) open.get(open.size() - 1)[0] = true;
                 repeat = true;
                 i = c == '{' ? expression.indexOf('}', i) + 1 : i + 1;
@@ -326,14 +382,18 @@ public final class MessageFilters {
             closedJustBefore = closed;
             openedJustBefore = opened;
             afterRepeat = repeat;
+            lengthJustBefore = length;
         }
         long[] whole = cost.get(0);
-        return whole[0] + whole[1] > MAX_TRIES;
+        return capped(whole[0] + whole[1] + walks);
     }
+
+    /** What {@link #tries} answers for an expression it refuses outright. */
+    private static final long REFUSED = MAX_TRIES + 1;
 
     /** Tries held just past {@link #MAX_TRIES}, so multiplying two never overflows. */
     private static long capped(long tries) {
-        return Math.min(tries, MAX_TRIES + 1);
+        return Math.min(tries, REFUSED);
     }
 
     /**
@@ -464,10 +524,12 @@ public final class MessageFilters {
         Parsed(String source) {
             this.source = source;
             List<Filter> filters = new ArrayList<>();
+            long[] spent = new long[1];
             for (String line : lines(source)) {
                 if (filters.size() == MAX_FILTERS) break;
-                // A line that can't be used, from a file edited by hand, is left out.
-                if (problem(line) != null) continue;
+                // A line that can't be used, from a file edited by hand or a settings file brought
+                // in, is left out, so its expression is never built or run.
+                if (problem(line, spent) != null) continue;
                 String expression = expression(line);
                 filters.add(expression == null
                         ? new Filter(line.toLowerCase(Locale.ROOT), null)
