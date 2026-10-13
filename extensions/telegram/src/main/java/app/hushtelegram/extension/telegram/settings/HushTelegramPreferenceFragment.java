@@ -53,10 +53,14 @@ import androidx.annotation.Nullable;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -994,6 +998,50 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         dialog.setOnDismissListener(shownDialogs::remove);
     }
 
+    /** The dialogs with a save still on its way. Read and written on the main thread only. */
+    private static final Set<Dialog> SAVING = Collections.newSetFromMap(new WeakHashMap<>());
+
+    /**
+     * Runs [write], the save one of [dialog]'s actions asked for, off the main thread and behind
+     * every save asked for before it, then hands [then] whether it was saved. Until the answer is
+     * back the dialog's actions wait dimmed and it can't be closed, so a second tap starts nothing.
+     * A dialog that went with its page in the meantime is told nothing: there's no row left to show
+     * it on. A save the worker has no room for counts as not saved.
+     */
+    static void save(AlertDialog dialog, BooleanSupplier write, Consumer<Boolean> then) {
+        if (!SAVING.add(dialog)) return;
+        reach(dialog, false);
+        Consumer<Boolean> finish = saved -> {
+            SAVING.remove(dialog);
+            if (!dialog.isShowing()) return;
+            reach(dialog, true);
+            then.accept(saved);
+        };
+        boolean queued = Utils.runInOrderOnBackgroundThread(() -> {
+            boolean saved = false;
+            try {
+                saved = write.getAsBoolean();
+            } finally {
+                boolean result = saved;
+                Utils.runOnMainThread(() -> finish.accept(result));
+            }
+        });
+        if (!queued) finish.accept(false);
+    }
+
+    /** Puts [dialog]'s buttons and list, and the way out of it, in or out of reach. */
+    private static void reach(AlertDialog dialog, boolean inReach) {
+        dialog.setCancelable(inReach);
+        for (View control : new View[]{dialog.getButton(AlertDialog.BUTTON_POSITIVE),
+                dialog.getButton(AlertDialog.BUTTON_NEUTRAL), dialog.getButton(AlertDialog.BUTTON_NEGATIVE),
+                dialog.getListView()}) {
+            if (control == null) continue;
+            control.setEnabled(inReach);
+            // A dialog's actions are painted one colour whatever their state, so a waiting one is dimmed.
+            control.setAlpha(inReach ? 1f : 0.5f);
+        }
+    }
+
     /** The section headings on the page, in order. */
     List<Preference> sections() {
         List<Preference> sections = new ArrayList<>();
@@ -1179,7 +1227,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         return row;
     }
 
-    /** The choices with the saved one checked. A tap saves it at once and closes the list. */
+    /**
+     * The choices with the saved one checked. A tap saves it and the list closes once it's saved;
+     * a pick that can't be saved leaves the list open with the saved one checked again.
+     */
     void showStickerSizes(Context context, Preference row) {
         if (SettingsLock.refuses()) return;
         int saved = StickerSize.percent(Settings.STICKER_SIZE.savedValue());
@@ -1192,15 +1243,16 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         final int savedChoice = checked;
         show(new AlertDialog.Builder(context)
                 .setTitle(L10n.t("Sticker size"))
-                .setSingleChoiceItems(labels, checked, (dialog, which) -> {
-                    if (Settings.STICKER_SIZE.save(StickerSize.CHOICES[which])) {
-                        row.setSummary(stickerSizeSummary());
-                        dialog.dismiss();
-                    } else {
-                        ((AlertDialog) dialog).getListView().setItemChecked(savedChoice, true);
-                        Utils.showToastLong(L10n.t("Couldn't save the size. Try again in a moment."));
-                    }
-                })
+                .setSingleChoiceItems(labels, checked, (dialog, which) -> save((AlertDialog) dialog,
+                        () -> Settings.STICKER_SIZE.save(StickerSize.CHOICES[which]), landed -> {
+                            if (landed) {
+                                row.setSummary(stickerSizeSummary());
+                                dialog.dismiss();
+                            } else {
+                                ((AlertDialog) dialog).getListView().setItemChecked(savedChoice, true);
+                                Utils.showToastLong(L10n.t("Couldn't save the size. Try again in a moment."));
+                            }
+                        }))
                 .setNegativeButton(L10n.t("Cancel"), null));
     }
 

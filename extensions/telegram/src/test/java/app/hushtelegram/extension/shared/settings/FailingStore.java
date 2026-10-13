@@ -10,6 +10,8 @@
  */
 package app.hushtelegram.extension.shared.settings;
 
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.SharedPreferences;
 
 import java.lang.reflect.Field;
@@ -54,16 +56,25 @@ public final class FailingStore implements AutoCloseable {
     private final CountDownLatch reached = new CountDownLatch(1);
     private final CountDownLatch released = new CountDownLatch(1);
 
+    /** The thread the held commit waits on. */
+    private volatile Thread holder;
+
+    private final Fault[] faults;
     private final Field field;
     private final Object replaced;
 
     private FailingStore(Fault[] faults, boolean holdFirstCommit) throws ReflectiveOperationException {
+        this.faults = faults;
         holds.set(holdFirstCommit);
         field = SharedPrefCategory.class.getDeclaredField("preferences");
         field.setAccessible(true);
         replaced = field.get(Setting.preferences);
-        SharedPreferences target = (SharedPreferences) replaced;
-        field.set(Setting.preferences, Proxy.newProxyInstance(target.getClass().getClassLoader(),
+        field.set(Setting.preferences, faulty((SharedPreferences) replaced));
+    }
+
+    /** [target] with the faults and the hold in front of it. */
+    private SharedPreferences faulty(SharedPreferences target) {
+        return (SharedPreferences) Proxy.newProxyInstance(target.getClass().getClassLoader(),
                 new Class<?>[]{SharedPreferences.class}, (proxy, method, args) -> {
                     if (!method.getName().equals("edit")) return call(method, target, args);
                     int index = editors.getAndIncrement();
@@ -75,6 +86,7 @@ public final class FailingStore implements AutoCloseable {
                                 String name = edit.getName();
                                 if (name.equals("commit")) {
                                     if (holds.compareAndSet(true, false)) {
+                                        holder = Thread.currentThread();
                                         reached.countDown();
                                         if (!released.await(10, TimeUnit.SECONDS)) {
                                             throw new IllegalStateException("the held commit was never let go");
@@ -88,7 +100,7 @@ public final class FailingStore implements AutoCloseable {
                                 Object result = call(edit, editor, values);
                                 return result instanceof SharedPreferences.Editor ? editorProxy : result;
                             });
-                }));
+                });
     }
 
     /** Puts the faults in, one per editor, until {@link #close()}. */
@@ -115,6 +127,25 @@ public final class FailingStore implements AutoCloseable {
     /** Waits for the held commit to reach the store, and answers whether it did. */
     public boolean awaitHeld() throws InterruptedException {
         return reached.await(5, TimeUnit.SECONDS);
+    }
+
+    /** The thread the held commit is waiting on, or null when none has reached the store. */
+    public Thread heldOn() {
+        return holder;
+    }
+
+    /**
+     * [context] with its preference file [name] behind the same faults and hold, for a store that
+     * isn't Setting's. Its editors count along with Setting's.
+     */
+    public Context over(Context context, String name) {
+        return new ContextWrapper(context) {
+            @Override
+            public SharedPreferences getSharedPreferences(String file, int mode) {
+                SharedPreferences store = super.getSharedPreferences(file, mode);
+                return name.equals(file) ? faulty(store) : store;
+            }
+        };
     }
 
     /** Lets the held commit through. */

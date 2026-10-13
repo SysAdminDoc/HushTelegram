@@ -284,6 +284,24 @@ public class Utils {
             },
             new ThreadPoolExecutor.AbortPolicy());
 
+    /**
+     * One worker for writes that must land in the order they were asked for, such as two saves of
+     * the same setting. The pool above hands its tasks to whichever thread is free.
+     */
+    private static final ThreadPoolExecutor orderedBackgroundThread = new ThreadPoolExecutor(
+            0,
+            1,
+            10,
+            TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(32),
+            r -> { // ThreadFactory
+                Thread t = new Thread(r);
+                t.setPriority(Thread.NORM_PRIORITY);
+                t.setDaemon(true);
+                return t;
+            },
+            new ThreadPoolExecutor.AbortPolicy());
+
     private static final java.util.concurrent.atomic.AtomicInteger backgroundTasksInFlight =
             new java.util.concurrent.atomic.AtomicInteger();
 
@@ -292,9 +310,22 @@ public class Utils {
      *         Stateful callers must unwind any busy state when this returns false.
      */
     public static boolean runOnBackgroundThread(Runnable task) {
+        return runOn(backgroundThreadPool, task);
+    }
+
+    /**
+     * The same, on the one worker that takes its tasks in the order they were handed over.
+     *
+     * @return true when the task was accepted, or false when the bounded worker queue was full.
+     */
+    public static boolean runInOrderOnBackgroundThread(Runnable task) {
+        return runOn(orderedBackgroundThread, task);
+    }
+
+    private static boolean runOn(ThreadPoolExecutor workers, Runnable task) {
         backgroundTasksInFlight.incrementAndGet();
         try {
-            backgroundThreadPool.execute(() -> {
+            workers.execute(() -> {
                 try {
                     runAndLogFailure(task);
                 } finally {
@@ -332,7 +363,9 @@ public class Utils {
             long remaining = deadline - System.nanoTime();
             if (remaining <= 0) throw new TimeoutException("Background tasks did not finish");
             backgroundThreadPool.submit(() -> { }).get(remaining, TimeUnit.NANOSECONDS);
-            if (backgroundTasksInFlight.get() == 0 && backgroundThreadPool.getQueue().isEmpty()) {
+            orderedBackgroundThread.submit(() -> { }).get(remaining, TimeUnit.NANOSECONDS);
+            if (backgroundTasksInFlight.get() == 0 && backgroundThreadPool.getQueue().isEmpty()
+                    && orderedBackgroundThread.getQueue().isEmpty()) {
                 return;
             }
         }

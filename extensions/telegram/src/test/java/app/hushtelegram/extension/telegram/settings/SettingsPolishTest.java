@@ -244,7 +244,7 @@ public class SettingsPolishTest {
         }
     }
 
-    @Test public void failedStickerSaveKeepsThePickerAndRestoresTheSavedSelection() {
+    @Test public void failedStickerSaveKeepsThePickerAndRestoresTheSavedSelection() throws Exception {
         try (ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class).setup()) {
             HushTelegramPreferenceFragment page = page(show(activity.get()));
             Preference row = new Preference(activity.get());
@@ -255,6 +255,9 @@ public class SettingsPolishTest {
             try (FailingStore ignored = FailingStore.install(FailingStore.Fault.COMMIT_FALSE)) {
                 int choice = original == 0 ? 1 : 0;
                 picker.getListView().performItemClick(picker.getListView().getChildAt(choice), choice, choice);
+                // The pick's write is on the worker now, and its answer comes back to the main thread.
+                Utils.awaitBackgroundTasksForTests();
+                ShadowLooper.idleMainLooper();
             }
             try {
                 assertTrue(picker.isShowing());

@@ -24,7 +24,8 @@ import app.hushtelegram.extension.telegram.misc.MessageFilters;
 /**
  * The editor for one list of message filters: the list as text in a dialog, one filter a line.
  * Save checks every line first and keeps the dialog open on the first one that can't be used,
- * saying which and why, so what's saved is always a list the chat can use whole.
+ * saying which and why, so what's saved is always a list the chat can use whole. The write is
+ * done off the main thread, and the dialog closes once it has landed.
  */
 final class FilterEditor {
     static final String GROUPS = "action_message_filters_groups";
@@ -104,16 +105,18 @@ final class FilterEditor {
                 return;
             }
             List<String> lines = MessageFilters.lines(typed);
-            if (!list.save(MessageFilters.join(lines))) {
-                Logger.printInfo(() -> "Message filters not saved: " + list.key);
-                String reason = L10n.t("Couldn't save the filters. Try again in a moment.");
-                form.refuse(field, reason);
-                Utils.showToastLong(reason);
-                return;
-            }
-            row.setSummary(summary(list));
-            Utils.showToastShort(L10n.t("Filters saved."));
-            dialog.dismiss();
+            HushTelegramPreferenceFragment.save(dialog, () -> list.save(MessageFilters.join(lines)), landed -> {
+                if (!landed) {
+                    Logger.printInfo(() -> "Message filters not saved: " + list.key);
+                    String reason = L10n.t("Couldn't save the filters. Try again in a moment.");
+                    form.refuse(field, reason);
+                    Utils.showToastLong(reason);
+                    return;
+                }
+                row.setSummary(summary(list));
+                Utils.showToastShort(L10n.t("Filters saved."));
+                dialog.dismiss();
+            });
         });
         return dialog;
     }

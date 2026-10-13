@@ -179,6 +179,8 @@ public final class OutsideTranslate {
     }
 
     private static final Object LOCK = new Object();
+    /** Held across one save of the service, its write included. Taken before LOCK, never inside it. */
+    private static final Object SERVICE_SAVE = new Object();
     private static final Map<String, GoogleTranslate.Result> CACHE = new LinkedHashMap<String, GoogleTranslate.Result>(64, 0.75f, true) {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, GoogleTranslate.Result> eldest) {
@@ -659,7 +661,10 @@ public final class OutsideTranslate {
      * Going back to Google leaves them saved, for the next time an AI service is set.
      */
     public static boolean saveService(String address, String model, String key, String style) {
-        synchronized (LOCK) {
+        // The write waits on the disk, and LOCK is the one every message takes as it draws. So
+        // saves wait on each other here, and LOCK is taken only to read the saved instructions and
+        // to show the one that landed.
+        synchronized (SERVICE_SAVE) {
             String kept = style == null ? service().style : style.trim();
             AiTranslate.Service next = new AiTranslate.Service(address.trim(), model.trim(), key.trim(), kept);
             try {
@@ -676,12 +681,14 @@ public final class OutsideTranslate {
                 HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "translation service", unsaved);
                 return false;
             }
-            service = next.enabled() ? next : null;
-            // A queued request would otherwise go to the service it wasn't queued for.
-            dropQueued();
-            CACHE.clear();
-            FAILED.clear();
-            TOASTED.clear();
+            synchronized (LOCK) {
+                service = next.enabled() ? next : null;
+                // A queued request would otherwise go to the service it wasn't queued for.
+                dropQueued();
+                CACHE.clear();
+                FAILED.clear();
+                TOASTED.clear();
+            }
         }
         return true;
     }

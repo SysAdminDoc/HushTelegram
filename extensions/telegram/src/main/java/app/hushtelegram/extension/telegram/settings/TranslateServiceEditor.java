@@ -20,6 +20,7 @@ import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
  * The editor for the outside translate's service: Google's web translate, or an AI service with
  * the person's own key, and optionally their own words on how to translate. Save checks the
  * fields first and keeps the dialog open on one that can't be used. Use Google forgets the key.
+ * Either write is done off the main thread, and the dialog closes once it has landed.
  */
 final class TranslateServiceEditor {
     static final String KEY = "action_translate_service";
@@ -78,31 +79,39 @@ final class TranslateServiceEditor {
                 Utils.showToastLong(refused.message);
                 return;
             }
-            if (!OutsideTranslate.saveService(a, m, k, s)) {
-                String reason = L10n.t("Couldn't save the translation service. Try again in a moment.");
-                fields.refuse(key, reason);
-                Utils.showToastLong(reason);
-                return;
-            }
-            row.setSummary(summary(OutsideTranslate.service()));
-            Utils.showToastShort(L10n.t("Translation service saved."));
-            dialog.dismiss();
+            HushTelegramPreferenceFragment.save(dialog, () -> OutsideTranslate.saveService(a, m, k, s), landed -> {
+                if (!landed) {
+                    String reason = L10n.t("Couldn't save the translation service. Try again in a moment.");
+                    fields.refuse(key, reason);
+                    Utils.showToastLong(reason);
+                    return;
+                }
+                row.setSummary(summary(OutsideTranslate.service()));
+                Utils.showToastShort(L10n.t("Translation service saved."));
+                dialog.dismiss();
+            });
         });
         key.setOnEditorActionListener((view, action, event) -> {
             if (action != android.view.inputmethod.EditorInfo.IME_ACTION_DONE) return false;
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            // The keyboard's Done is the Save button, and a Save that's waiting takes no second tap.
+            if (dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled()) {
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            }
             return true;
         });
         dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
-            if (!OutsideTranslate.saveService(address.getText().toString(), model.getText().toString(), "")) {
-                String reason = L10n.t("Couldn't save the translation service. Try again in a moment.");
-                fields.refuse(key, reason);
-                Utils.showToastLong(reason);
-                return;
-            }
-            row.setSummary(summary(OutsideTranslate.service()));
-            Utils.showToastShort(L10n.t("Back to Google's web translate."));
-            dialog.dismiss();
+            String a = address.getText().toString(), m = model.getText().toString();
+            HushTelegramPreferenceFragment.save(dialog, () -> OutsideTranslate.saveService(a, m, ""), landed -> {
+                if (!landed) {
+                    String reason = L10n.t("Couldn't save the translation service. Try again in a moment.");
+                    fields.refuse(key, reason);
+                    Utils.showToastLong(reason);
+                    return;
+                }
+                row.setSummary(summary(OutsideTranslate.service()));
+                Utils.showToastShort(L10n.t("Back to Google's web translate."));
+                dialog.dismiss();
+            });
         });
         return dialog;
     }

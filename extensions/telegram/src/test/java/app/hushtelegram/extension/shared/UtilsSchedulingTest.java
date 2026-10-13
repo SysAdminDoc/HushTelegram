@@ -28,6 +28,11 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @RunWith(RobolectricTestRunner.class)
@@ -55,6 +60,48 @@ public class UtilsSchedulingTest {
 
         assertTrue(laterTaskRan.get());
         assertTrue(LogBufferManager.buildExportText().contains("background sentinel"));
+    }
+
+    /**
+     * The ordered worker runs one task at a time, in the order they were handed over, and refuses
+     * the one its queue has no room for. The first is held here, so a pool with a free thread would
+     * have run the rest ahead of it.
+     */
+    @Test
+    public void orderedTasksRunOneAtATimeInTheOrderHandedOver() throws Exception {
+        List<Integer> ran = Collections.synchronizedList(new ArrayList<>());
+        CountDownLatch started = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        try {
+            assertTrue(Utils.runInOrderOnBackgroundThread(() -> {
+                started.countDown();
+                try {
+                    release.await(10, TimeUnit.SECONDS);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                }
+                ran.add(0);
+            }));
+            assertTrue("the worker never started", started.await(5, TimeUnit.SECONDS));
+            int handed = 1;
+            while (true) {
+                int index = handed;
+                if (!Utils.runInOrderOnBackgroundThread(() -> ran.add(index))) break;
+                assertTrue("the worker never ran out of room", ++handed < 100);
+            }
+            assertEquals("the queue behind the running task holds 32", 33, handed);
+            assertTrue("a later task ran ahead of the one before it", ran.isEmpty());
+
+            release.countDown();
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+            while (ran.size() < handed && System.nanoTime() < deadline) Thread.sleep(5);
+            Utils.awaitBackgroundTasksForTests();
+            List<Integer> inOrder = new ArrayList<>();
+            for (int i = 0; i < handed; i++) inOrder.add(i);
+            assertEquals(inOrder, ran);
+        } finally {
+            release.countDown();
+        }
     }
 
     @Test
