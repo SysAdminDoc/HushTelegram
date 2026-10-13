@@ -175,6 +175,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_hide_phone_number", FALSE);
 
     /**
+     * Adding a contact from their chat, the box that shares your phone number with them starts clear
+     * instead of ticked. Ticking it, and what saving sends, stay Telegram's own.
+     */
+    public static final BooleanSetting SHARE_NUMBER_UNTICKED =
+            new BooleanSetting("hushtelegram_share_number_unticked", FALSE);
+
+    /**
      * The time on each message shows seconds too.
      */
     public static final BooleanSetting MESSAGE_SECONDS =

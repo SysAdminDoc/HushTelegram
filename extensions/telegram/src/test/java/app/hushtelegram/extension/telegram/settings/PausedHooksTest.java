@@ -254,9 +254,10 @@ public class PausedHooksTest {
         // A swipe on a profile's photos goes back.
         probes.put(PatchFamily.SWIPE_BACK_ON_PROFILES, Collections.singletonList(
                 () -> !app.hushtelegram.extension.telegram.misc.SwipeBack.touchBlocks(true)));
-        // Your own number gets covered.
-        probes.put(PatchFamily.HIDE_PHONE_NUMBER, Collections.singletonList(
-                () -> app.hushtelegram.extension.telegram.misc.HidePhoneForTests.covers()));
+        // Your own number gets covered, and a new contact screen's share box starts clear.
+        probes.put(PatchFamily.HIDE_PHONE_NUMBER, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.HidePhoneForTests.covers(),
+                () -> !app.hushtelegram.extension.telegram.misc.ContactShare.startsTicked(new Object(), true, true)));
         // Message times get their seconds.
         probes.put(PatchFamily.MESSAGE_SECONDS, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.MessageTimeForTests.addsSeconds()));

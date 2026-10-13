@@ -47,7 +47,8 @@ final class QuickSetupKeys {
 
     /**
      * Less sent or shown about you: usage reports, call diagnostics, previews of links not sent
-     * yet, tracking in links, the camera before you tap it and your own phone number.
+     * yet, tracking in links, the camera before you tap it, your own phone number on screen and the
+     * box that shares it with a new contact, which you can still tick.
      */
     static final List<BooleanSetting> PRIVACY = Collections.unmodifiableList(Arrays.asList(
             Settings.DISABLE_ANALYTICS,
@@ -55,7 +56,8 @@ final class QuickSetupKeys {
             Settings.DISABLE_DRAFT_PREVIEWS,
             Settings.GALLERY_CAMERA_ON_TAP,
             Settings.STRIP_LINK_TRACKING,
-            Settings.HIDE_PHONE_NUMBER));
+            Settings.HIDE_PHONE_NUMBER,
+            Settings.SHARE_NUMBER_UNTICKED));
 
     /**
      * Every feature switch, the same list a settings file carries: Pause, debug, the release check,

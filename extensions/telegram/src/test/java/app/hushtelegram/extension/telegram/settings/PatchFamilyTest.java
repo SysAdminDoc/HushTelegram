@@ -491,10 +491,13 @@ public class PatchFamilyTest {
     public void hidePhoneNumberHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
         PatchFamily family = PatchFamily.HIDE_PHONE_NUMBER;
         assertEquals("Hide phone number", family.patchName);
-        assertEquals(Collections.singletonList(Settings.HIDE_PHONE_NUMBER), family.switches);
-        assertFalse(Settings.HIDE_PHONE_NUMBER.defaultValue);
-        assertFalse(Settings.HIDE_PHONE_NUMBER.rebootApp);
-        assertTrue(family.expectedCapabilities().isEmpty());
+        // The second switch, for the add contact screen's share box, starts off too.
+        assertEquals(Arrays.asList(Settings.HIDE_PHONE_NUMBER, Settings.SHARE_NUMBER_UNTICKED), family.switches);
+        for (BooleanSetting setting : family.switches) {
+            assertFalse(setting.key, setting.defaultValue);
+            assertFalse(setting.key, setting.rebootApp);
+        }
+        assertEquals(EnumSet.of(PatchFamily.Capability.SHARE_NUMBER_UNTICKED), family.expectedCapabilities());
         assertOnItsPage(family);
     }
 

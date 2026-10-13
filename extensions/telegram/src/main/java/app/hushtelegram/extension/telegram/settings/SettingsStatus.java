@@ -76,6 +76,7 @@ public final class SettingsStatus {
     public static boolean keepVideosMuted() { return false; }
     public static boolean swipeBackOnProfiles() { return false; }
     public static boolean hidePhoneNumber() { return false; }
+    public static boolean shareNumberUnticked() { return false; }
     public static boolean messageSeconds() { return false; }
     public static boolean allowChatBlur() { return false; }
     public static boolean voiceOneAtATime() { return false; }

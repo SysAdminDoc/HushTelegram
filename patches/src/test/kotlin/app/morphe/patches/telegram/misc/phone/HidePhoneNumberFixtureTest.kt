@@ -28,9 +28,10 @@ class HidePhoneNumberFixtureTest {
     @Test fun `every screen asks the extension and exported cards keep the real number`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
-            val hosts = loadHosts(build)
+            val hosts = hidePhoneHosts(build)
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
             val site = context.resolveHidePhoneNumber()
+            val share = context.resolveContactShare()
             val before = site.calls.associate { (m, indices) -> key(m) to indices.map { m.controlBody()[it].namedRegisters() } }
             assertTrue("$name: the side menu and Settings among ${site.calls.size} callers", site.calls.size >= 15)
             val kept = KEPT.filter { context.classDefByOrNull(it) != null }
@@ -52,21 +53,24 @@ class HidePhoneNumberFixtureTest {
             assertTrue("$name: Telegram's formatting", site.format in stub("stockFormat"))
             assertTrue("$name: the account's number", "$TL_USER->phone:Ljava/lang/String;" in stub("ownPhone"))
             assertTrue("$name: every account", "$USER_CONFIG->getMaxAccountCount()I" in stub("accounts"))
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "hidePhoneNumber" }.controlBody()
-            assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
+            assertEquals("$name: the share box asks the runtime once", 1, share.view.controlBody().count { it.controlRef() == STARTS_TICKED })
+            for (flag in listOf("hidePhoneNumber", "shareNumberUnticked")) {
+                val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.controlBody()
+                assertEquals("$name: $flag", 1L, (status.first() as WideLiteralInstruction).wideLiteral)
+            }
         }
     }
 
     private fun key(m: com.android.tools.smali.dexlib2.iface.Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+}
 
-    /** The formatter, everything that calls it, and the account classes the runtime reads. */
-    private fun loadHosts(build: java.io.File): List<ClassDef> {
-        val formatter = FixtureDex.classesWhere(build, { true }) { m ->
-            m.name == "<init>" && m.controlBody().any { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string == PHONE_FORMATS }
-        }.single().type
-        return FixtureDex.classesWhere(build, { true }) { m ->
-            m.definingClass == formatter || m.definingClass == USER_CONFIG || m.definingClass == TL_USER ||
-                m.controlBody().any { it.opcode != Opcode.NOP && it.controlRef()?.startsWith("$formatter->") == true }
-        }.map(ImmutableClassDef::of)
-    }
+/** The formatter, everything that calls it, the account classes the runtime reads, and the add contact screen. */
+internal fun hidePhoneHosts(build: java.io.File): List<ClassDef> {
+    val formatter = FixtureDex.classesWhere(build, { true }) { m ->
+        m.name == "<init>" && m.controlBody().any { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string == PHONE_FORMATS }
+    }.single().type
+    return (FixtureDex.classesWhere(build, { true }) { m ->
+        m.definingClass == formatter || m.definingClass == USER_CONFIG || m.definingClass == TL_USER ||
+            m.controlBody().any { it.opcode != Opcode.NOP && it.controlRef()?.startsWith("$formatter->") == true }
+    }.map(ImmutableClassDef::of) + contactShareHosts(build)).distinctBy { it.type }
 }

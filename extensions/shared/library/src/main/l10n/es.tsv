@@ -300,6 +300,12 @@ Swipe back on profiles	Deslizar para volver en perfiles
 Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.	Deslizar a la derecha en las fotos o en las pestañas de contenido de un perfil vuelve atrás, como en el resto del perfil, en vez de mostrar la foto o pestaña anterior.
 Hide phone number	Ocultar número de teléfono
 Your own phone number shows as dots in the side menu, Settings and your profile, which helps with screenshots. Others' numbers stay visible.	Tu propio número de teléfono aparece como puntos en el menú lateral, en Ajustes y en tu perfil, lo que ayuda con las capturas de pantalla. Los números de otras personas siguen visibles.
+# context: Privacy page switch title, under Hide phone number. When on, the box on Telegram's add contact screen that shares your own phone number with the new contact starts unticked.
+Don't share my number by default	No compartir mi número por defecto
+# context: Summary under that switch. The box is Telegram's own checkbox on the add contact screen, and the person can still tick it.
+When you add someone as a contact from their chat, Telegram ticks the box that shares your phone number with them. With this on, the box starts clear and your number goes only if you tick it.	Cuando agregas a alguien como contacto desde su chat, Telegram marca la casilla que comparte tu número de teléfono con esa persona. Con esto activado, la casilla empieza sin marcar y tu número solo se comparte si la marcas tú.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide phone number that starts the add contact screen's share box unticked.
+number sharing on new contacts	compartir el número con contactos nuevos
 Message times with seconds	Hora de los mensajes con segundos
 Each message's time includes seconds, like 9:41:27 PM, so messages sent close together are easy to tell apart.	La hora de cada mensaje incluye segundos, como 9:41:27 p. m., para distinguir fácilmente los mensajes enviados casi a la vez.
 Allow chat blur on slower phones	Permitir el desenfoque del chat en teléfonos más lentos

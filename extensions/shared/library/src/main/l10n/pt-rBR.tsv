@@ -297,6 +297,12 @@ Swipe back on profiles	Deslizar para voltar em perfis
 Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.	Deslizar para a direita nas fotos ou nas abas de mídia de um perfil volta, como no resto do perfil, em vez de mostrar a foto ou aba anterior.
 Hide phone number	Ocultar número de telefone
 Your own phone number shows as dots in the side menu, Settings and your profile, which helps with screenshots. Others' numbers stay visible.	Seu próprio número de telefone aparece como pontos no menu lateral, nas configurações e no seu perfil, o que ajuda com capturas de tela. Os números de outras pessoas continuam visíveis.
+# context: Privacy page switch title, under Hide phone number. When on, the box on Telegram's add contact screen that shares your own phone number with the new contact starts unticked.
+Don't share my number by default	Não compartilhar meu número por padrão
+# context: Summary under that switch. The box is Telegram's own checkbox on the add contact screen, and the person can still tick it.
+When you add someone as a contact from their chat, Telegram ticks the box that shares your phone number with them. With this on, the box starts clear and your number goes only if you tick it.	Quando você adiciona alguém como contato pelo chat, o Telegram marca a caixa que compartilha seu número de telefone com a pessoa. Com isso ativado, a caixa começa desmarcada e seu número só vai se você marcar.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide phone number that starts the add contact screen's share box unticked.
+number sharing on new contacts	compartilhamento do número com novos contatos
 Message times with seconds	Horário das mensagens com segundos
 Each message's time includes seconds, like 9:41:27 PM, so messages sent close together are easy to tell apart.	O horário de cada mensagem inclui segundos, como 21:41:27, para facilitar a distinção entre mensagens enviadas quase juntas.
 Allow chat blur on slower phones	Permitir desfoque do chat em celulares mais lentos

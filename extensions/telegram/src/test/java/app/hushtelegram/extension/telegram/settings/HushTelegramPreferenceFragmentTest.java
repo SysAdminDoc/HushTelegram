@@ -480,6 +480,14 @@ public class HushTelegramPreferenceFragmentTest {
             // Your number shows until the switch is turned on.
             assertFalse(Settings.HIDE_PHONE_NUMBER.key,
                     ((SwitchPreference) page.findPreference(Settings.HIDE_PHONE_NUMBER.key)).isChecked());
+            assertEquals("Don't share my number by default",
+                    String.valueOf(page.findPreference(Settings.SHARE_NUMBER_UNTICKED.key).getTitle()));
+            assertEquals("When you add someone as a contact from their chat, Telegram ticks the box that shares your phone "
+                    + "number with them. With this on, the box starts clear and your number goes only if you tick it.",
+                    String.valueOf(page.findPreference(Settings.SHARE_NUMBER_UNTICKED.key).getSummary()));
+            // The share box starts ticked the way Telegram's does until someone turns the switch on.
+            assertFalse(Settings.SHARE_NUMBER_UNTICKED.key,
+                    ((SwitchPreference) page.findPreference(Settings.SHARE_NUMBER_UNTICKED.key)).isChecked());
             assertEquals("Message times with seconds", String.valueOf(page.findPreference(Settings.MESSAGE_SECONDS.key).getTitle()));
             assertEquals("Each message's time includes seconds, like 9:41:27 PM, so messages sent close together are "
                     + "easy to tell apart.",

@@ -11,6 +11,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
@@ -50,8 +51,11 @@ val hidePhoneNumberPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.telegram())
     execute {
         val site = resolveHidePhoneNumber()
+        requireStatusMethod("shareNumberUnticked")
+        val share = resolveContactShare()
         // Assembled on copies first, so a refusal leaves the app untouched.
         site.calls.forEach { (method, indices) -> site.replace(MutableMethod(ImmutableMethod.of(method)), indices) }
+        share.rehearse()
         writeStub(HIDE_PHONE, "stockFormat", 2, """
             check-cast p0, ${site.formatter}
             invoke-virtual {p0, p1}, ${site.format}
@@ -79,6 +83,8 @@ val hidePhoneNumberPatch = bytecodePatch(
             return v0
         """)
         site.calls.forEach { (method, indices) -> site.replace(method, indices) }
+        share.apply(share.view)
+        enableCapability("shareNumberUnticked")
         enableStatus("hidePhoneNumber")
     }
 }

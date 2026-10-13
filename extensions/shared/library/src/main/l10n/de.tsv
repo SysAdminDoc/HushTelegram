@@ -300,6 +300,12 @@ Swipe back on profiles	Auf Profilen zurückwischen
 Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.	Wischen nach rechts auf den Fotos oder Medien-Tabs eines Profils geht zurück, wie im Rest des Profils, statt das vorherige Foto oder den vorherigen Tab zu zeigen.
 Hide phone number	Telefonnummer ausblenden
 Your own phone number shows as dots in the side menu, Settings and your profile, which helps with screenshots. Others' numbers stay visible.	Deine eigene Telefonnummer erscheint als Punkte im Seitenmenü, in den Einstellungen und in deinem Profil, was bei Screenshots hilft. Die Nummern anderer bleiben sichtbar.
+# context: Privacy page switch title, under Hide phone number. When on, the box on Telegram's add contact screen that shares your own phone number with the new contact starts unticked.
+Don't share my number by default	Meine Nummer nicht standardmäßig teilen
+# context: Summary under that switch. The box is Telegram's own checkbox on the add contact screen, and the person can still tick it.
+When you add someone as a contact from their chat, Telegram ticks the box that shares your phone number with them. With this on, the box starts clear and your number goes only if you tick it.	Wenn du jemanden aus seinem Chat als Kontakt hinzufügst, setzt Telegram das Häkchen, das deine Telefonnummer mit dieser Person teilt. Wenn das an ist, bleibt das Kästchen leer, und deine Nummer wird nur geteilt, wenn du es selbst ankreuzt.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide phone number that starts the add contact screen's share box unticked.
+number sharing on new contacts	Nummernfreigabe bei neuen Kontakten
 Message times with seconds	Nachrichtenzeit mit Sekunden
 Each message's time includes seconds, like 9:41:27 PM, so messages sent close together are easy to tell apart.	Die Uhrzeit jeder Nachricht enthält Sekunden, etwa 21:41:27, damit sich kurz nacheinander gesendete Nachrichten leicht unterscheiden lassen.
 Allow chat blur on slower phones	Chat-Unschärfe auf langsameren Handys erlauben

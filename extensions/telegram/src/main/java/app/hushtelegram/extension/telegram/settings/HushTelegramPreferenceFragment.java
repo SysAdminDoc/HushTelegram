@@ -750,6 +750,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.HIDE_PHONE_NUMBER).addPreference(toggle(context, Settings.HIDE_PHONE_NUMBER, L10n.t("Hide phone number"),
                     PatchFamily.HIDE_PHONE_NUMBER.coverageSummary(L10n.t("Your own phone number shows as dots in the side menu, Settings and your profile,"
                             + " which helps with screenshots. Others' numbers stay visible."))));
+            if (PatchFamily.Capability.SHARE_NUMBER_UNTICKED.installed()) {
+                on(pages, PatchFamily.HIDE_PHONE_NUMBER).addPreference(toggle(context, Settings.SHARE_NUMBER_UNTICKED,
+                        L10n.t("Don't share my number by default"),
+                        L10n.t("When you add someone as a contact from their chat, Telegram ticks the box that shares your phone "
+                                + "number with them. With this on, the box starts clear and your number goes only if you tick it.")));
+            }
         }
         if (build.contains(PatchFamily.BETA_LOGS_OFF)) {
             on(pages, PatchFamily.BETA_LOGS_OFF).addPreference(toggle(context, Settings.BETA_LOGS_OFF, L10n.t("Turn off beta debug logs"),
@@ -774,11 +780,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             links.addPreference(toggle(context, Settings.STRIP_LINK_TRACKING, L10n.t("Remove link tracking tags"),
                     PatchFamily.STRIP_LINK_TRACKING.coverageSummary(L10n.t("Removes tracking tags like utm_source, gclid and fbclid from links you open or "
                             + "share. A link with any other tag is left unchanged."))));
-        }
-        if (PatchFamily.Capability.SKIP_AUTOLOGIN.installed()) {
-            links.addPreference(toggle(context, Settings.SKIP_AUTOLOGIN, L10n.t("No automatic sign-in on Telegram's sites"),
-                    L10n.t("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, "
-                            + "those links open without it, and you can sign in there yourself.")));
+            if (PatchFamily.Capability.SKIP_AUTOLOGIN.installed()) {
+                links.addPreference(toggle(context, Settings.SKIP_AUTOLOGIN, L10n.t("No automatic sign-in on Telegram's sites"),
+                        L10n.t("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, "
+                                + "those links open without it, and you can sign in there yourself.")));
+            }
         }
         links.addPreference(mark(supportedLinksRow(context), SettingsIcons.LINKS));
         // An explanation, not a control: the info mark says so, as it does for Version on About.

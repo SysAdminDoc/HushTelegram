@@ -113,6 +113,7 @@ public final class SettingsBackup {
             Settings.KEEP_VIDEOS_MUTED,
             Settings.SWIPE_BACK_ON_PROFILES,
             Settings.HIDE_PHONE_NUMBER,
+            Settings.SHARE_NUMBER_UNTICKED,
             Settings.MESSAGE_SECONDS,
             Settings.ALLOW_CHAT_BLUR,
             Settings.VOICE_ONE_AT_A_TIME,
