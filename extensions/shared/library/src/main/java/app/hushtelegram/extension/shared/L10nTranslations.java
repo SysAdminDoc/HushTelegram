@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1074);
+        Map<String, String> table = new HashMap<>(1076);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -978,6 +978,8 @@ public final class L10nTranslations {
                 "Diese gepatchte App \u00e4ndert %1$s nicht.");
         table.put("This phone has no file picker, so you can't choose a file here.",
                 "Dieses Handy hat keine Dateiauswahl, du kannst hier keine Datei w\u00e4hlen.");
+        table.put("Too many to translate at once. Scroll back for the rest.",
+                "Zu viel auf einmal zum \u00dcbersetzen. Scrolle f\u00fcr den Rest zur\u00fcck.");
         table.put("Touch and keyboard",
                 "Ber\u00fchrung und Tastatur");
         table.put("Translate here",
@@ -1040,11 +1042,11 @@ public final class L10nTranslations {
                 "Systemschrift verwenden");
         table.put("User ID %1$s",
                 "Benutzer-ID %1$s");
-        table.put("Version",
-                "Version");
     }
 
     private static void fillDe8(Map<String, String> table) {
+        table.put("Version",
+                "Version");
         table.put("Voice messages in the music player",
                 "Sprachnachrichten im Musikplayer");
         table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
@@ -1162,7 +1164,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(1074);
+        Map<String, String> table = new HashMap<>(1076);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -2093,6 +2095,8 @@ public final class L10nTranslations {
                 "Esta app parcheada no modifica %1$s.");
         table.put("This phone has no file picker, so you can't choose a file here.",
                 "Este tel\u00e9fono no tiene selector de archivos, as\u00ed que no puedes elegir uno.");
+        table.put("Too many to translate at once. Scroll back for the rest.",
+                "Demasiado para traducir a la vez. Vuelve atr\u00e1s para ver el resto.");
         table.put("Touch and keyboard",
                 "Toque y teclado");
         table.put("Translate here",
@@ -2155,11 +2159,11 @@ public final class L10nTranslations {
                 "Usar fuente del sistema");
         table.put("User ID %1$s",
                 "ID de usuario %1$s");
-        table.put("Version",
-                "Versi\u00f3n");
     }
 
     private static void fillEs8(Map<String, String> table) {
+        table.put("Version",
+                "Versi\u00f3n");
         table.put("Voice messages in the music player",
                 "Mensajes de voz en el reproductor de m\u00fasica");
         table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
@@ -2277,7 +2281,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1074);
+        Map<String, String> table = new HashMap<>(1076);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -3208,6 +3212,8 @@ public final class L10nTranslations {
                 "Aplikasi yang ditambal ini tidak mengubah %1$s.");
         table.put("This phone has no file picker, so you can't choose a file here.",
                 "Ponsel ini tidak punya pemilih file, jadi kamu tidak bisa memilih file.");
+        table.put("Too many to translate at once. Scroll back for the rest.",
+                "Terlalu banyak untuk diterjemahkan sekaligus. Gulir kembali untuk sisanya.");
         table.put("Touch and keyboard",
                 "Sentuhan dan keyboard");
         table.put("Translate here",
@@ -3270,11 +3276,11 @@ public final class L10nTranslations {
                 "Gunakan font sistem");
         table.put("User ID %1$s",
                 "ID pengguna %1$s");
-        table.put("Version",
-                "Versi");
     }
 
     private static void fillIn8(Map<String, String> table) {
+        table.put("Version",
+                "Versi");
         table.put("Voice messages in the music player",
                 "Pesan suara di pemutar musik");
         table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
@@ -3392,7 +3398,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(1074);
+        Map<String, String> table = new HashMap<>(1076);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -4323,6 +4329,8 @@ public final class L10nTranslations {
                 "Este app modificado n\u00e3o altera %1$s.");
         table.put("This phone has no file picker, so you can't choose a file here.",
                 "Este celular n\u00e3o tem seletor de arquivos, ent\u00e3o n\u00e3o d\u00e1 para escolher um.");
+        table.put("Too many to translate at once. Scroll back for the rest.",
+                "Muita coisa para traduzir de uma vez. Role de volta para ver o resto.");
         table.put("Touch and keyboard",
                 "Toque e teclado");
         table.put("Translate here",
@@ -4385,11 +4393,11 @@ public final class L10nTranslations {
                 "Usar fonte do sistema");
         table.put("User ID %1$s",
                 "ID de usu\u00e1rio %1$s");
-        table.put("Version",
-                "Vers\u00e3o");
     }
 
     private static void fillPt_rBR8(Map<String, String> table) {
+        table.put("Version",
+                "Vers\u00e3o");
         table.put("Voice messages in the music player",
                 "Mensagens de voz no player de m\u00fasica");
         table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
@@ -4507,7 +4515,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(1074);
+        Map<String, String> table = new HashMap<>(1076);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -5438,6 +5446,8 @@ public final class L10nTranslations {
                 "Yamalanm\u0131\u015f bu uygulamada %1$s de\u011fi\u015fmedi.");
         table.put("This phone has no file picker, so you can't choose a file here.",
                 "Bu telefonda dosya se\u00e7ici yok, o y\u00fczden dosya se\u00e7emezsin.");
+        table.put("Too many to translate at once. Scroll back for the rest.",
+                "Ayn\u0131 anda \u00e7evrilecek \u00e7ok fazla \u015fey var. Geri kalan\u0131 i\u00e7in geri kayd\u0131r.");
         table.put("Touch and keyboard",
                 "Dokunma ve klavye");
         table.put("Translate here",
@@ -5500,11 +5510,11 @@ public final class L10nTranslations {
                 "Sistem yaz\u0131 tipini kullan");
         table.put("User ID %1$s",
                 "Kullan\u0131c\u0131 kimli\u011fi %1$s");
-        table.put("Version",
-                "S\u00fcr\u00fcm");
     }
 
     private static void fillTr8(Map<String, String> table) {
+        table.put("Version",
+                "S\u00fcr\u00fcm");
         table.put("Voice messages in the music player",
                 "Sesli mesajlar m\u00fczik \u00e7alarda");
         table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",

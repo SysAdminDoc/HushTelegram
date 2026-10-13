@@ -6,6 +6,8 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.17.
 
+* **Telegram:** **Translate with an outside service** keeps up with fast scrolling instead of piling up work. At most 24 texts wait for an answer at once. The rest are asked for when you scroll back to them, and a short notice says so (once a minute at most). A message redrawn while it waits doesn't line up a second time, failures while you're offline stop growing a list in memory, and a request still trickling in after 20 seconds (90 for an AI service) is closed so the next one can go.
+
 * **Telegram:** **Save downloaded files** tells files apart by the document they came from instead of their name and size. Two different files that happen to share both now each get a copy, and the same file downloaded again still lands only once. If you delete a copy from Downloads, it comes back the next time that file downloads. Turning the switch off or pausing HushTelegram also stops copies still waiting their turn, and one caught halfway is removed.
 
 * **Telegram:** **Keep deleted messages** doesn't lose track of what it kept anymore. A message only counts as kept once the list naming it is saved, and if that save fails Telegram deletes it as usual. **Clear kept messages** does its work away from the screen, says "Removing" right away and "Removed" once Telegram has actually deleted them. If Telegram closes partway through, the rest goes the next time that account gets a deletion or you tap Clear again. An account slot that now holds a different account never deletes the first one's messages.

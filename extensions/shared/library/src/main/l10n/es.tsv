@@ -345,6 +345,8 @@ Translate this chat	Traducir este chat
 This chat will be translated	Este chat se traducirá
 This chat shows the original messages	Este chat muestra los mensajes originales
 Translation isn't available right now	La traducción no está disponible ahora
+# context: a short toast when messages scroll by faster than the translation service answers; the skipped ones are asked for again when the person scrolls back to them
+Too many to translate at once. Scroll back for the rest.	Demasiado para traducir a la vez. Vuelve atrás para ver el resto.
 # context: Toast shown once after an update clears the translated chats saved before each choice belonged to a Telegram account.
 Turn chat translation on again. It's now set per account.	Vuelve a activar la traducción de chats. Ahora va por cuenta.
 Ask before sending a GIF	Preguntar antes de enviar un GIF

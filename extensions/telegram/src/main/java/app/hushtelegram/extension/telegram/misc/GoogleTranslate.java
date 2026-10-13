@@ -7,12 +7,17 @@ package app.hushtelegram.extension.telegram.misc;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.LongSupplier;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -21,7 +26,10 @@ import org.json.JSONException;
  * in the address and a long one in a form body, since an address can only be so long. The answer
  * is a JSON array: the translated pieces first, then the language it detected in the third slot.
  *
- * <p>The fetch blocks, so it runs on a worker thread only.
+ * <p>The fetch blocks, so it runs on a worker thread only. Each timeout covers one wait, so a
+ * service trickling its answer a byte at a time could hold a worker for good. A whole request
+ * also has a deadline on the monotonic clock: past it the connection is closed, which wakes the
+ * worker, and a read that returns after it stops there.
  */
 final class GoogleTranslate {
     private GoogleTranslate() {}
@@ -31,6 +39,10 @@ final class GoogleTranslate {
     static final int MAX_ADDRESS = 1800;
     static final int CONNECT_MS = 6000;
     static final int READ_MS = 8000;
+    /** The most a whole request may take. Tests shorten it. */
+    static long totalMs = 20_000L;
+    /** The monotonic clock deadlines are read on. Tests move it by hand. */
+    static LongSupplier nanos = System::nanoTime;
     private static final int MAX_ANSWER = 512 * 1024;
 
     /** What came back: the translation and the language Google says the text was in. */
@@ -90,9 +102,11 @@ final class GoogleTranslate {
     }
 
     static Result fetch(String target, String text) throws IOException, JSONException {
+        long deadline = deadline(totalMs);
         boolean body = needsBody(target, text);
         URL url = new URL(body ? ENDPOINT + "?" + query(target) : address(target, text));
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        ScheduledFuture<?> watchdog = closeAt(connection, deadline);
         try {
             connection.setConnectTimeout(CONNECT_MS);
             connection.setReadTimeout(READ_MS);
@@ -109,17 +123,48 @@ final class GoogleTranslate {
             }
             int code = connection.getResponseCode();
             if (code != HttpURLConnection.HTTP_OK) throw new IOException("translate answered " + code);
-            return parse(read(connection.getInputStream(), MAX_ANSWER, "translate answer too large"));
+            return parse(read(connection.getInputStream(), MAX_ANSWER, "translate answer too large", deadline));
         } finally {
+            watchdog.cancel(false);
             connection.disconnect();
         }
     }
 
+    /** Closes connections that run past their deadline. One daemon thread, started on first use. */
+    private static final class Watchdog {
+        static final ScheduledThreadPoolExecutor TIMER = new ScheduledThreadPoolExecutor(1, task -> {
+            Thread thread = new Thread(task, "hushtelegram-translate-deadline");
+            thread.setDaemon(true);
+            return thread;
+        });
+
+        static {
+            // A request that finishes in time takes its timer with it rather than leaving it queued.
+            TIMER.setRemoveOnCancelPolicy(true);
+        }
+    }
+
+    /** When a request starting now has to be done, [totalMs] from now on {@link #nanos}. */
+    static long deadline(long totalMs) {
+        return nanos.getAsLong() + TimeUnit.MILLISECONDS.toNanos(totalMs);
+    }
+
+    /**
+     * Closes [connection] at [deadline], which makes a read or connect blocked on it fail. Cancel
+     * what comes back once the request is done. {@link AiTranslate} uses it too.
+     */
+    static ScheduledFuture<?> closeAt(HttpURLConnection connection, long deadline) {
+        return Watchdog.TIMER.schedule(connection::disconnect,
+                Math.max(0, deadline - nanos.getAsLong()), TimeUnit.NANOSECONDS);
+    }
+
     /**
      * Reads an answer as UTF-8 and closes the stream. Past {@code limit} bytes it stops with
-     * {@code tooLarge}, so a service can't fill the phone's memory. {@link AiTranslate} reads with it too.
+     * {@code tooLarge}, so a service can't fill the phone's memory. Past [deadline] on
+     * {@link #nanos} it stops too, since a trickle keeps every read inside the read timeout.
+     * {@link AiTranslate} reads with it too.
      */
-    static String read(InputStream in, int limit, String tooLarge) throws IOException {
+    static String read(InputStream in, int limit, String tooLarge, long deadline) throws IOException {
         try (InputStream stream = in) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buffer = new byte[8192];
@@ -127,6 +172,7 @@ final class GoogleTranslate {
             while ((n = stream.read(buffer)) > 0) {
                 out.write(buffer, 0, n);
                 if (out.size() > limit) throw new IOException(tooLarge);
+                if (nanos.getAsLong() - deadline > 0) throw new InterruptedIOException("the answer took too long");
             }
             return out.toString("UTF-8");
         }

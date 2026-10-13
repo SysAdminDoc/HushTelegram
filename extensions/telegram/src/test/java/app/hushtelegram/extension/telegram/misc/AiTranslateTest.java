@@ -150,6 +150,42 @@ public class AiTranslateTest {
         }
     }
 
+    /** A service that answers a byte at a time never trips the read timeout, so the whole request has a deadline. */
+    @Test public void aTricklingAnswerStopsAtTheDeadlineAndFreesTheWorker() throws Exception {
+        long kept = AiTranslate.totalMs;
+        AiTranslate.totalMs = 600;
+        try (ServerSocket socket = new ServerSocket(0, 2, InetAddress.getLoopbackAddress())) {
+            Thread server = new Thread(() -> {
+                try (Socket client = socket.accept()) {
+                    LocalService.read(client.getInputStream());
+                    java.io.OutputStream out = client.getOutputStream();
+                    out.write(("HTTP/1.1 200 OK\r\nContent-Length: 100000\r\nConnection: close\r\n\r\n{")
+                            .getBytes(StandardCharsets.UTF_8));
+                    out.flush();
+                    for (int i = 0; i < 2000; i++) {
+                        Thread.sleep(50);
+                        out.write(' ');
+                        out.flush();
+                    }
+                } catch (IOException | InterruptedException closed) {
+                    // The client gave up, which is the point.
+                }
+            }, "trickling-service");
+            server.setDaemon(true);
+            server.start();
+            long started = System.nanoTime();
+            try {
+                AiTranslate.fetch(new AiTranslate.Service("http://127.0.0.1:" + socket.getLocalPort() + "/v1", "m", "sk-1"), "en", "Привет");
+                fail("a trickling answer was read to the end");
+            } catch (IOException expected) {
+                long took = java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started);
+                assertTrue("took " + took + " ms", took < 5000);
+            }
+        } finally {
+            AiTranslate.totalMs = kept;
+        }
+    }
+
     private static String answer(int code, String reason, String headers, String body) {
         byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
         return "HTTP/1.1 " + code + " " + reason + "\r\n" + headers + "Content-Length: " + bytes.length

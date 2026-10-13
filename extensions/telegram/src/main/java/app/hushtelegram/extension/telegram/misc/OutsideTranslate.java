@@ -20,6 +20,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.LongSupplier;
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Utils;
@@ -71,6 +72,15 @@ public final class OutsideTranslate {
 
     private static final int CACHE_SIZE = 400;
     private static final long RETRY_MS = 60_000L;
+    /**
+     * Texts asked for at once, sent or waiting for one of the three workers. Past it a message isn't
+     * asked for and nothing is noted against it, so it asks again the next time it's drawn.
+     */
+    static final int MAX_PENDING = 24;
+    /** Messages waiting on one text. The same message drawn again takes its own place, not a new one. */
+    static final int MAX_WAITERS = 32;
+    /** Texts held back after a failure. Past it the oldest is let go before its minute is up. */
+    static final int MAX_FAILED = 200;
     private static final String PREFS = "hushtelegram_outside_translate";
     /** The chats that are on, each as "owner:chat". */
     private static final String CHATS = "owner_chats";
@@ -171,6 +181,8 @@ public final class OutsideTranslate {
     private static AiTranslate.Service service;
     /** Goes up when the service changes, so an answer from the old one isn't kept. */
     private static int generation;
+    /** When the person was last told some messages weren't asked for, on {@link #clock}. */
+    private static long busySaid = Long.MIN_VALUE;
     private static ExecutorService pool;
 
     static Fetcher fetcher = OutsideTranslate::fetchWith;
@@ -332,19 +344,38 @@ public final class OutsideTranslate {
         int asked;
         AiTranslate.Service provider;
         List<Waiter> waiters;
+        boolean sayBusy = false;
         synchronized (LOCK) {
             asked = generation;
             Long failed = FAILED.get(key);
             if (failed != null && clock.getAsLong() - failed < RETRY_MS) return;
             waiters = PENDING.get(key);
             if (waiters != null) {
-                waiters.add(waiter);
+                join(waiters, waiter);
                 return;
             }
-            waiters = new ArrayList<>();
-            waiters.add(waiter);
-            PENDING.put(key, waiters);
-            provider = service();
+            if (PENDING.size() >= MAX_PENDING) {
+                // Scrolling faster than the service answers: the rest waits for its next draw.
+                long now = clock.getAsLong();
+                if (busySaid == Long.MIN_VALUE || now - busySaid >= RETRY_MS) {
+                    busySaid = now;
+                    sayBusy = true;
+                }
+                waiters = null;
+                provider = null;
+            } else {
+                waiters = new ArrayList<>();
+                waiters.add(waiter);
+                PENDING.put(key, waiters);
+                provider = service();
+            }
+        }
+        if (waiters == null) {
+            HookStatus.counted(FamilyNames.OUTSIDE_TRANSLATE, "translate request held back, too many waiting");
+            if (sayBusy) {
+                Utils.runOnMainThread(() -> Utils.showToastShort(L10n.t("Too many to translate at once. Scroll back for the rest.")));
+            }
+            return;
         }
         try {
             executor.execute(() -> {
@@ -368,6 +399,23 @@ public final class OutsideTranslate {
             }
             HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "translate request", refused);
         }
+    }
+
+    /**
+     * Adds [waiter] to a request already out, or puts it in place of the same message drawn
+     * earlier, so a message redrawn while it waits doesn't pile up. Past {@link #MAX_WAITERS} the
+     * message isn't added: the answer is cached either way, and it shows on its next draw. The list
+     * only grows, since {@link #sendable} reads the ones that joined by position. Run under {@link #LOCK}.
+     */
+    private static void join(List<Waiter> waiters, Waiter waiter) {
+        for (int i = 0; i < waiters.size(); i++) {
+            Waiter other = waiters.get(i);
+            if (other.owner == waiter.owner && other.dialog == waiter.dialog && other.id == waiter.id) {
+                waiters.set(i, waiter);
+                return;
+            }
+        }
+        if (waiters.size() < MAX_WAITERS) waiters.add(waiter);
     }
 
     /**
@@ -415,6 +463,8 @@ public final class OutsideTranslate {
     private static void dropQueued() {
         generation++;
         PENDING.clear();
+        // What's still waiting for a worker can't be sent now, so it leaves the queue instead of waiting its turn.
+        if (pool instanceof ThreadPoolExecutor) ((ThreadPoolExecutor) pool).getQueue().clear();
     }
 
     private static void finish(String key, int asked, GoogleTranslate.Result result, Throwable failure) {
@@ -430,6 +480,10 @@ public final class OutsideTranslate {
                 long now = clock.getAsLong();
                 // A failure past the retry wait holds nothing back, so an offline hour doesn't pile them up.
                 FAILED.values().removeIf(at -> now - at >= RETRY_MS);
+                // Offline while scrolling a long chat, the oldest goes early rather than the list growing.
+                while (FAILED.size() >= MAX_FAILED) {
+                    FAILED.remove(Collections.min(FAILED.entrySet(), Map.Entry.<String, Long>comparingByValue()).getKey());
+                }
                 FAILED.put(key, now);
             }
         }
@@ -865,6 +919,29 @@ public final class OutsideTranslate {
         }
     }
 
+    /** How many texts are asked for, sent or waiting, for tests. */
+    static int pendingForTests() {
+        synchronized (LOCK) {
+            return PENDING.size();
+        }
+    }
+
+    /** How many messages in [owner]'s account wait on [text], for tests. */
+    static int waitersForTests(long owner, String text) {
+        String key = cacheKey(owner, target(), text);
+        synchronized (LOCK) {
+            List<Waiter> waiters = PENDING.get(key);
+            return waiters == null ? 0 : waiters.size();
+        }
+    }
+
+    /** The workers once they've started, for tests. */
+    static ThreadPoolExecutor poolForTests() {
+        synchronized (LOCK) {
+            return (ThreadPoolExecutor) pool;
+        }
+    }
+
     /** Clears what's remembered, for tests. */
     static void resetForTests() {
         synchronized (LOCK) {
@@ -877,6 +954,7 @@ public final class OutsideTranslate {
             chats = null;
             service = null;
             generation++;
+            busySaid = Long.MIN_VALUE;
         }
         APPLIED.clear();
         HEADERS.clear();

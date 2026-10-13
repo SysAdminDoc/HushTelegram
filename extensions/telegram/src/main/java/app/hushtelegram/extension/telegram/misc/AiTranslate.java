@@ -14,6 +14,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.concurrent.ScheduledFuture;
 import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,6 +45,8 @@ public final class AiTranslate {
     static final int CONNECT_MS = 8000;
     /** A model takes longer than Google to answer, more so on a long message. */
     static final int READ_MS = 45000;
+    /** The most a whole request may take, past which its connection is closed. Tests shorten it. */
+    static long totalMs = 90_000L;
     private static final int MAX_ANSWER = 512 * 1024;
     private static final Pattern THINKING = Pattern.compile("(?s)^\\s*<think>.*?</think>\\s*");
 
@@ -179,7 +182,9 @@ public final class AiTranslate {
     }
 
     static GoogleTranslate.Result fetch(Service service, String target, String text) throws IOException, JSONException {
+        long deadline = GoogleTranslate.deadline(totalMs);
         HttpURLConnection connection = (HttpURLConnection) new URL(endpoint(service.address)).openConnection();
+        ScheduledFuture<?> watchdog = GoogleTranslate.closeAt(connection, deadline);
         try {
             connection.setConnectTimeout(CONNECT_MS);
             connection.setReadTimeout(READ_MS);
@@ -196,8 +201,10 @@ public final class AiTranslate {
             int code = connection.getResponseCode();
             if (code == HttpURLConnection.HTTP_UNAUTHORIZED || code == HttpURLConnection.HTTP_FORBIDDEN) throw new KeyRefused(code);
             if (code != HttpURLConnection.HTTP_OK) throw new IOException("AI service answered " + code);
-            return parse(GoogleTranslate.read(connection.getInputStream(), MAX_ANSWER, "AI service answer too large"), target, text);
+            return parse(GoogleTranslate.read(connection.getInputStream(), MAX_ANSWER, "AI service answer too large", deadline),
+                    target, text);
         } finally {
+            watchdog.cancel(false);
             connection.disconnect();
         }
     }

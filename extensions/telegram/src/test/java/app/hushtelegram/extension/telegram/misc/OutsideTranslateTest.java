@@ -847,6 +847,119 @@ public class OutsideTranslateTest {
         assertEquals(1, fetches.get());
     }
 
+    // Rapid scrolling stays within bounds.
+
+    private static Fake text(int n) {
+        Fake message = new Fake();
+        message.id = n;
+        message.original = "Сообщение номер " + n;
+        return message;
+    }
+
+    @Test public void aFastScrollAsksForNoMoreThanTheLimitAndSaysSoOnce() {
+        long[] now = {1_000_000L};
+        OutsideTranslate.clock = () -> now[0];
+        org.robolectric.shadows.ShadowToast.reset();
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        List<Runnable> queued = holdTheWorker();
+        for (int n = 1; n <= 100; n++) OutsideTranslate.showMessage(text(n), text(n));
+        ShadowLooper.idleMainLooper();
+        assertEquals(OutsideTranslate.MAX_PENDING, OutsideTranslate.pendingForTests());
+        assertEquals(OutsideTranslate.MAX_PENDING, queued.size());
+        assertTrue(String.join("\n", HookStatus.report()).contains("translate request held back, too many waiting"));
+        assertEquals("the busy notice repeated while scrolling", 1, org.robolectric.shadows.ShadowToast.shownToastCount());
+        assertEquals("Too many to translate at once. Scroll back for the rest.",
+                org.robolectric.shadows.ShadowToast.getTextOfLatestToast());
+
+        // Nothing was noted against the ones held back, so scrolling back to them asks once there's room.
+        runQueued(queued);
+        assertEquals(OutsideTranslate.MAX_PENDING, fetches.get());
+        assertEquals(0, OutsideTranslate.pendingForTests());
+        Fake later = text(OutsideTranslate.MAX_PENDING + 1);
+        OutsideTranslate.showMessage(later, later);
+        assertEquals(1, queued.size());
+        runQueued(queued);
+        assertTrue(OutsideTranslate.showMessage(later, later));
+
+        // A minute on, a new crowd is told again.
+        now[0] += 60_000L;
+        for (int n = 200; n < 200 + OutsideTranslate.MAX_PENDING + 1; n++) OutsideTranslate.showMessage(text(n), text(n));
+        ShadowLooper.idleMainLooper();
+        assertEquals(2, org.robolectric.shadows.ShadowToast.shownToastCount());
+    }
+
+    @Test public void aMessageDrawnAgainWhileItWaitsKeepsOnePlaceAndTheWaitersAreCapped() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        List<Runnable> queued = holdTheWorker();
+        Fake message = new Fake();
+        for (int i = 0; i < 50; i++) OutsideTranslate.showMessage(message, message);
+        assertEquals(1, OutsideTranslate.waitersForTests(OWNER, message.original));
+        // The same text in many messages, a forwarded post or a repeated greeting.
+        for (int id = 2; id < 100; id++) {
+            Fake copy = new Fake();
+            copy.id = id;
+            OutsideTranslate.showMessage(copy, copy);
+        }
+        assertEquals(OutsideTranslate.MAX_WAITERS, OutsideTranslate.waitersForTests(OWNER, message.original));
+        assertEquals("one text is asked once", 1, queued.size());
+        runQueued(queued);
+        assertEquals(1, message.refreshed);
+        // One past the cap wasn't waiting, but the answer is there the next time it's drawn.
+        Fake past = new Fake();
+        past.id = 99;
+        assertTrue(OutsideTranslate.showMessage(past, past));
+    }
+
+    @Test public void failuresWhileOfflineStayWithinTheirLimit() {
+        // A millisecond a read, so the oldest failure is plain; a minute is far off.
+        long[] now = {1_000_000L};
+        OutsideTranslate.clock = () -> now[0]++;
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        OutsideTranslate.fetcher = (service, target, text) -> {
+            fetches.incrementAndGet();
+            throw new java.io.IOException("offline");
+        };
+        for (int n = 1; n <= OutsideTranslate.MAX_FAILED + 50; n++) OutsideTranslate.showMessage(text(n), text(n));
+        assertEquals(OutsideTranslate.MAX_FAILED + 50, fetches.get());
+        assertEquals(OutsideTranslate.MAX_FAILED, OutsideTranslate.failuresForTests());
+        // The oldest went early, so it's asked again; the newest still waits out its minute.
+        OutsideTranslate.showMessage(text(1), text(1));
+        assertEquals(OutsideTranslate.MAX_FAILED + 51, fetches.get());
+        OutsideTranslate.showMessage(text(OutsideTranslate.MAX_FAILED + 50), text(OutsideTranslate.MAX_FAILED + 50));
+        assertEquals(OutsideTranslate.MAX_FAILED + 51, fetches.get());
+    }
+
+    /** A new service makes everything waiting for a worker obsolete, so it leaves the queue at once. */
+    @Test public void aNewServiceEmptiesTheWorkersQueue() throws Exception {
+        java.util.concurrent.CountDownLatch release = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.CountDownLatch busy = new java.util.concurrent.CountDownLatch(3);
+        OutsideTranslate.fetcher = (service, target, text) -> {
+            busy.countDown();
+            release.await();
+            return new GoogleTranslate.Result("Hello", "ru");
+        };
+        OutsideTranslate.executor = originalExecutor;
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        try {
+            for (int n = 1; n <= 8; n++) OutsideTranslate.showMessage(text(n), text(n));
+            assertTrue("the three workers didn't start", busy.await(5, java.util.concurrent.TimeUnit.SECONDS));
+            java.util.concurrent.ThreadPoolExecutor pool = OutsideTranslate.poolForTests();
+            assertEquals(5, pool.getQueue().size());
+            assertTrue(OutsideTranslate.saveService("https://api.openai.com/v1", "gpt-4o-mini", "sk-1"));
+            assertEquals(0, pool.getQueue().size());
+            assertEquals(0, OutsideTranslate.pendingForTests());
+        } finally {
+            release.countDown();
+        }
+        java.util.concurrent.ThreadPoolExecutor pool = OutsideTranslate.poolForTests();
+        for (int wait = 0; wait < 500 && pool.getActiveCount() > 0; wait++) Thread.sleep(10);
+        assertEquals(0, pool.getActiveCount());
+    }
+
     private static android.content.SharedPreferences prefs() {
         return app.hushtelegram.extension.shared.Utils.getContext().getSharedPreferences("hushtelegram_outside_translate", 0);
     }
