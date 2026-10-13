@@ -562,8 +562,7 @@ public final class OutsideTranslate {
                 }
                 if (cleared) {
                     HookStatus.counted(FamilyNames.OUTSIDE_TRANSLATE, "chats without an account cleared");
-                    Utils.showToastLong(L10n.t("Translated chats now belong to the account that turned them on. "
-                            + "Turn translation back on in the chats you want."));
+                    Utils.showToastLong(L10n.t("Turn chat translation on again. It's now set per account."));
                 }
             }
             return chats;

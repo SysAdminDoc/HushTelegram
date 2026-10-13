@@ -558,7 +558,7 @@ public class OutsideTranslateTest {
         assertFalse(OutsideTranslate.chatOn(OWNER, 10));
         assertFalse(OutsideTranslate.chatOn(OWNER, 42));
         ShadowLooper.idleMainLooper();
-        assertEquals("Translated chats now belong to the account that turned them on. Turn translation back on in the chats you want.",
+        assertEquals("Turn chat translation on again. It's now set per account.",
                 org.robolectric.shadows.ShadowToast.getTextOfLatestToast());
         assertEquals(1, org.robolectric.shadows.ShadowToast.shownToastCount());
         assertFalse(prefs().contains("chats"));

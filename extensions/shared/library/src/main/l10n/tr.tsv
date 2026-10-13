@@ -343,7 +343,7 @@ This chat will be translated	Bu sohbet çevrilecek
 This chat shows the original messages	Bu sohbet orijinal mesajları gösteriyor
 Translation isn't available right now	Çeviri şu anda kullanılamıyor
 # context: Toast shown once after an update clears the translated chats saved before each choice belonged to a Telegram account.
-Translated chats now belong to the account that turned them on. Turn translation back on in the chats you want.	Çevrilen sohbetler artık onları açan hesaba ait. Çeviriyi istediğiniz sohbetlerde yeniden açın.
+Turn chat translation on again. It's now set per account.	Sohbet çevirisini yeniden açın. Artık her hesap için ayrı.
 Ask before sending a GIF	GIF göndermeden önce sor
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Dokunduğunuz bir GIF sohbete girmeden önce Gönder veya İptal sorar. İptal onu atar. Zamanlanmış GIF'ler sormadan gider.
 Ask before sending a voice or video message	Sesli veya görüntülü mesaj göndermeden önce sor

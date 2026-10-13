@@ -982,8 +982,6 @@ public final class L10nTranslations {
                 "Diesen Chat \u00fcbersetzen");
         table.put("Translate with an outside service",
                 "Mit einem externen Dienst \u00fcbersetzen");
-        table.put("Translated chats now belong to the account that turned them on. Turn translation back on in the chats you want.",
-                "\u00dcbersetzte Chats geh\u00f6ren jetzt zu dem Konto, das sie eingeschaltet hat. Schalte die \u00dcbersetzung in den Chats, die du willst, wieder ein.");
         table.put("Translation",
                 "\u00dcbersetzung");
         table.put("Translation isn't available right now",
@@ -998,6 +996,8 @@ public final class L10nTranslations {
                 "Versuch ein anderes Wort oder l\u00f6sche die Suche.");
         table.put("Try again, or go back to Telegram.",
                 "Versuche es noch einmal oder kehre zu Telegram zur\u00fcck.");
+        table.put("Turn chat translation on again. It's now set per account.",
+                "Schalte die Chat-\u00dcbersetzung wieder ein. Sie gilt jetzt pro Konto.");
         table.put("Turn off Telegram's update checks",
                 "Telegrams Update-Pr\u00fcfungen abschalten");
         table.put("Turn off beta debug logs",
@@ -2093,8 +2093,6 @@ public final class L10nTranslations {
                 "Traducir este chat");
         table.put("Translate with an outside service",
                 "Traducir con un servicio externo");
-        table.put("Translated chats now belong to the account that turned them on. Turn translation back on in the chats you want.",
-                "Los chats traducidos ahora pertenecen a la cuenta que los activ\u00f3. Vuelve a activar la traducci\u00f3n en los chats que quieras.");
         table.put("Translation",
                 "Traducci\u00f3n");
         table.put("Translation isn't available right now",
@@ -2109,6 +2107,8 @@ public final class L10nTranslations {
                 "Prueba otra palabra o borra la b\u00fasqueda.");
         table.put("Try again, or go back to Telegram.",
                 "Int\u00e9ntalo de nuevo o vuelve a Telegram.");
+        table.put("Turn chat translation on again. It's now set per account.",
+                "Vuelve a activar la traducci\u00f3n de chats. Ahora va por cuenta.");
         table.put("Turn off Telegram's update checks",
                 "Desactivar las comprobaciones de actualizaci\u00f3n de Telegram");
         table.put("Turn off beta debug logs",
@@ -3204,8 +3204,6 @@ public final class L10nTranslations {
                 "Terjemahkan obrolan ini");
         table.put("Translate with an outside service",
                 "Terjemahkan dengan layanan luar");
-        table.put("Translated chats now belong to the account that turned them on. Turn translation back on in the chats you want.",
-                "Obrolan yang diterjemahkan sekarang milik akun yang menyalakannya. Nyalakan lagi terjemahan di obrolan yang Anda inginkan.");
         table.put("Translation",
                 "Terjemahan");
         table.put("Translation isn't available right now",
@@ -3220,6 +3218,8 @@ public final class L10nTranslations {
                 "Coba kata lain atau hapus pencarian.");
         table.put("Try again, or go back to Telegram.",
                 "Coba lagi, atau kembali ke Telegram.");
+        table.put("Turn chat translation on again. It's now set per account.",
+                "Nyalakan lagi terjemahan obrolan. Sekarang diatur per akun.");
         table.put("Turn off Telegram's update checks",
                 "Matikan pemeriksaan pembaruan Telegram");
         table.put("Turn off beta debug logs",
@@ -4315,8 +4315,6 @@ public final class L10nTranslations {
                 "Traduzir esta conversa");
         table.put("Translate with an outside service",
                 "Traduzir com um servi\u00e7o externo");
-        table.put("Translated chats now belong to the account that turned them on. Turn translation back on in the chats you want.",
-                "As conversas traduzidas agora pertencem \u00e0 conta que as ativou. Ative a tradu\u00e7\u00e3o de novo nas conversas que voc\u00ea quiser.");
         table.put("Translation",
                 "Tradu\u00e7\u00e3o");
         table.put("Translation isn't available right now",
@@ -4331,6 +4329,8 @@ public final class L10nTranslations {
                 "Tente outra palavra ou limpe a busca.");
         table.put("Try again, or go back to Telegram.",
                 "Tente novamente ou volte para o Telegram.");
+        table.put("Turn chat translation on again. It's now set per account.",
+                "Ative de novo a tradu\u00e7\u00e3o das conversas. Agora ela \u00e9 por conta.");
         table.put("Turn off Telegram's update checks",
                 "Desativar as verifica\u00e7\u00f5es de atualiza\u00e7\u00e3o do Telegram");
         table.put("Turn off beta debug logs",
@@ -5426,8 +5426,6 @@ public final class L10nTranslations {
                 "Bu sohbeti \u00e7evir");
         table.put("Translate with an outside service",
                 "Harici bir hizmetle \u00e7evir");
-        table.put("Translated chats now belong to the account that turned them on. Turn translation back on in the chats you want.",
-                "\u00c7evrilen sohbetler art\u0131k onlar\u0131 a\u00e7an hesaba ait. \u00c7eviriyi istedi\u011finiz sohbetlerde yeniden a\u00e7\u0131n.");
         table.put("Translation",
                 "\u00c7eviri");
         table.put("Translation isn't available right now",
@@ -5442,6 +5440,8 @@ public final class L10nTranslations {
                 "Ba\u015fka bir kelime deneyin veya aramay\u0131 temizleyin.");
         table.put("Try again, or go back to Telegram.",
                 "Tekrar dene veya Telegram'a geri d\u00f6n.");
+        table.put("Turn chat translation on again. It's now set per account.",
+                "Sohbet \u00e7evirisini yeniden a\u00e7\u0131n. Art\u0131k her hesap i\u00e7in ayr\u0131.");
         table.put("Turn off Telegram's update checks",
                 "Telegram'\u0131n g\u00fcncelleme kontrollerini kapat");
         table.put("Turn off beta debug logs",
