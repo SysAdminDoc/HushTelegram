@@ -2,9 +2,9 @@
 
 Every HushTelegram release, newest first.
 
-## Unreleased
+## 0.0.17 (2026-10-13)
 
-Working version 0.0.17.
+The eighth release, with 68 patches for telegram.org's Telegram 13.0.2 and the official Telegram beta 13.0.2.
 
 * **Telegram:** Leaving the optional Maps key blank now keeps Telegram's key, as the option says. Spaces around a valid key are ignored. Invalid keys still stop patching without printing the key.
 
