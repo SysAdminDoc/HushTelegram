@@ -318,6 +318,7 @@ public final class SelectionCheck {
         hook(calls, flags, "pollLinkPreviews", "misc/DraftPreviews", "skipPollPreview");
         hook(calls, flags, "storyLinkPreviews", "misc/DraftPreviews", "skipStoryLinkPreview");
         hook(calls, flags, "botSharePreviews", "misc/DraftPreviews", "skipBotSharePreview");
+        hook(calls, flags, "localDrafts", "misc/LocalDrafts", "keepOnPhone");
         hook(calls, flags, "commerceSettingsRows", "misc/Commerce", "addSettingsRow", "showWalletRow");
         hook(calls, flags, "commerceProfileGifts", "misc/Commerce", "addProfileTab", "showGiftsTab");
         hook(calls, flags, "commerceChannelGift", "misc/Commerce", "showChannelGiftButton");
@@ -418,8 +419,9 @@ public final class SelectionCheck {
                 && attach.get(3).getOpcode() == Opcode.RETURN_OBJECT;
         require(attachLinked == Boolean.TRUE.equals(flags.get("saveDownloads")));
         if (attachLinked) method(types, ATTACH_NAME);
-        // Folders by chat type has no hook; its stubs are the patch, so the delete one stands for them.
-        List<Instruction> delete = instructions(method(types, OWN + "telegram/misc/ChatTypeFolders;->deleteFolder(II)V"));
+        // Folders by chat type has no hook; its stubs are the patch, so the one that takes a folder out of
+        // Telegram's list stands for them.
+        List<Instruction> delete = instructions(method(types, OWN + "telegram/misc/ChatTypeFolders;->dropFolder(II)V"));
         long removes = delete.stream().filter(instruction -> instruction.getOpcode() == Opcode.INVOKE_VIRTUAL
                 && instruction instanceof ReferenceInstruction call
                 && call.getReference().toString().equals(REMOVE_FILTER)).count();

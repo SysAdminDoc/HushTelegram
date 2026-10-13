@@ -603,8 +603,8 @@ Made some folders. Telegram turned the rest down.	Einige Ordner erstellt. Den Re
 Telegram turned the folders down. Try again later.	Telegram hat die Ordner abgelehnt. Versuch es später noch mal.
 # context: a short toast (two lines at most) when the folders were made but Telegram's server didn't take the order of the tabs.
 Made the folders. Telegram didn't save their order.	Ordner erstellt. Telegram hat ihre Reihenfolge nicht gespeichert.
-# context: a short toast (two lines at most) after the switch went off, when Telegram's server wouldn't delete some of the folders. Turning the switch on and off asks again.
-Telegram kept some folders. Turn this on and off to retry.	Telegram hat einige Ordner behalten. Zum Wiederholen ein- und ausschalten.
+# context: a short toast (two lines at most) when the switch was turned off but Telegram's server wouldn't delete some of the folders. The switch goes back on, and turning it off again asks only for those.
+Telegram kept some folders. Turn this off again to retry.	Telegram hat einige Ordner behalten. Zum Wiederholen erneut ausschalten.
 # context: a short toast (two lines at most) when Telegram's server wouldn't delete any of the folders, so the switch went back on.
 Telegram didn't remove the folders. Try again in a moment.	Telegram hat die Ordner nicht entfernt. Versuch es gleich noch mal.
 # context: a short toast (two lines at most) when the folder switch is flipped while Telegram still hasn't answered the last flip.

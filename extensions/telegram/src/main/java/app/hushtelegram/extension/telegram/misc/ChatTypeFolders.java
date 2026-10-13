@@ -39,7 +39,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * does. One you renamed, recolored, gave an emoji or added, removed or pinned chats in is yours.
  * Nothing happens at a start, only when the switch is flipped. When nothing can be done (paused,
  * signed out, folders still loading, the last flip still waiting on Telegram) the switch goes back
- * to where it was, and it goes back too when Telegram's server turns down everything asked of it.
+ * to where it was, and it goes back too when Telegram's server turns down everything asked of it,
+ * or keeps any folder it was asked to delete, so turning it off again asks for just those.
  *
  * <p>Which folders it asked for is kept in its own prefs file, by Telegram user and folder id,
  * and written before anything is sent. A record says whether the folder was sent, made or is being
@@ -397,8 +398,13 @@ public final class ChatTypeFolders {
             List<Folder> folders = telegram.folders(account);
             if (folders == null) return switchBack(on, L10n.t("Telegram is still loading your folders. Try again in a moment."));
             long user = telegram.user(account);
-            // A flip by whoever was signed in here before has no one to wait for now. Its records stay theirs.
-            running.removeIf(batch -> batch.account == account && batch.user != user);
+            // A flip by whoever was signed in here before has no one to wait for now. Its records stay theirs, and
+            // answers that still come only settle those records: the switch has moved on since, so nothing is said.
+            running.removeIf(batch -> {
+                if (batch.account != account || batch.user == user) return false;
+                batch.finished = true;
+                return true;
+            });
             for (Batch batch : running) {
                 if (batch.user == user) return switchBack(on, L10n.t("Telegram is still answering. Try again in a moment."));
             }
@@ -558,7 +564,13 @@ public final class ChatTypeFolders {
 
     /** Whoever the flip was for is still signed in on its account, so Telegram's list there is theirs. */
     private static boolean here(Batch batch) {
-        return batch.telegram.signedIn(batch.account) && batch.telegram.user(batch.account) == batch.user;
+        // Answers run on the main thread, where a throw would close Telegram. Not knowing counts as gone.
+        try {
+            return batch.telegram.signedIn(batch.account) && batch.telegram.user(batch.account) == batch.user;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.CHAT_TYPE_FOLDERS, "folder account check", failure);
+            return false;
+        }
     }
 
     private static void created(Batch batch, int id, Record asked, String error) {
@@ -570,12 +582,15 @@ public final class ChatTypeFolders {
             boolean ours = record != null && Record.SENT.equals(record.state);
             if (error == null) {
                 if (ours) save(prefs, key, record.as(Record.MADE));
+                // The server has it, so it counts as made even if putting it in Telegram's list goes wrong.
+                batch.done.add(id);
                 List<Folder> folders = here(batch) ? batch.telegram.folders(batch.account) : null;
                 // Telegram's list can have it already, when the server told this device about it first.
                 if (folders != null && find(folders, id) == null) batch.telegram.add(batch.account, id, asked.name, asked.flags);
-                batch.done.add(id);
             } else {
-                if (ours) forget(prefs, key);
+                // With whoever asked signed out, the error can be Telegram dropping a request it had queued, which
+                // the server may have made anyway. The record stays sent, and the next flip goes by the list.
+                if (ours && here(batch)) forget(prefs, key);
                 if (TOO_MANY.equals(error)) batch.limited++;
                 else batch.refused++;
                 Logger.printInfo(() -> "Folders by chat type: Telegram turned down folder " + id + " (" + error + ")");
@@ -611,7 +626,7 @@ public final class ChatTypeFolders {
 
     /** Every folder is answered for. New folders get their order and the server's colors before anything is said. */
     private static void answered(Batch batch) {
-        if (batch.on && !batch.done.isEmpty() && here(batch)) {
+        if (batch.on && !batch.finished && !batch.done.isEmpty() && here(batch)) {
             batch.ordering = true;
             batch.coloring = true;
             try {
@@ -691,7 +706,8 @@ public final class ChatTypeFolders {
             else said = L10n.t("Made Private, Groups, Channels and Bots folders.");
         } else {
             if (count == 0) said = switchBack(false, L10n.t("Telegram didn't remove the folders. Try again in a moment."));
-            else if (batch.refused > 0) said = L10n.t("Telegram kept some folders. Turn this on and off to retry.");
+            // The switch goes back on, so turning it off again asks only for the folders still there.
+            else if (batch.refused > 0) said = switchBack(false, L10n.t("Telegram kept some folders. Turn this off again to retry."));
             else said = L10n.t("Removed the folders HushTelegram made. Changed ones stay.");
         }
         Utils.showToastLong(said);

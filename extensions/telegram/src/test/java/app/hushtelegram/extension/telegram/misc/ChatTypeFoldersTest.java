@@ -166,7 +166,7 @@ public class ChatTypeFoldersTest {
                 "Telegram is still answering. Try again in a moment.", "Asking Telegram to make your folders.",
                 "Asking Telegram to remove the folders.", "Made some folders. Telegram turned the rest down.",
                 "Telegram turned the folders down. Try again later.", "Made the folders. Telegram didn't save their order.",
-                "Telegram kept some folders. Turn this on and off to retry.",
+                "Telegram kept some folders. Turn this off again to retry.",
                 "Telegram didn't remove the folders. Try again in a moment.")) {
             assertTrue(said, said.length() <= 64);
         }
@@ -385,21 +385,21 @@ public class ChatTypeFoldersTest {
         turn(true);
         telegram.refuse.put(3, "FLOOD_WAIT_5");
 
-        assertEquals("Telegram kept some folders. Turn this on and off to retry.", turn(false));
+        assertEquals("Telegram kept some folders. Turn this off again to retry.", turn(false));
         assertEquals(Arrays.asList(2, 3, 4, 5), sorted(telegram.deleted));
         assertEquals(Collections.singletonList(3), ids(telegram.folders));
         assertEquals(Collections.singleton("1000:3"), records());
         assertEquals("2|made|4||Groups", record(3));
-        assertFalse(Settings.CHAT_TYPE_FOLDERS.savedValue());
+        // Back on, so off asks again for just the one still there, and nothing is made again first.
+        assertTrue(Settings.CHAT_TYPE_FOLDERS.savedValue());
 
-        // On makes nothing new for the type it still has, and off asks again.
         telegram.refuse.clear();
         telegram.deleted.clear();
-        assertEquals(MADE, turn(true));
-        assertEquals(Arrays.asList(2, 3, 4, 5), sorted(ids(telegram.folders)));
         assertEquals(REMOVED, turn(false));
-        assertEquals(Arrays.asList(2, 3, 4, 5), sorted(telegram.deleted));
+        assertEquals(Collections.singletonList(3), telegram.deleted);
+        assertEquals(4, telegram.created.size());
         assertTrue(telegram.folders.isEmpty());
+        assertTrue(records().isEmpty());
     }
 
     @Test public void whenTelegramKeepsEveryFolderTheSwitchGoesBackOn() {
@@ -484,6 +484,74 @@ public class ChatTypeFoldersTest {
         telegram.with(2, 1 | 2, "Private").with(3, 4, "Groups").with(4, 8, "Channels").with(5, 16, "Bots");
         assertEquals(REMOVED, turn(false));
         assertEquals(Arrays.asList(2, 3, 4, 5), sorted(telegram.deleted));
+    }
+
+    @Test public void answersToAFlipLeftBehindSayNothingEvenWithItsUserBack() {
+        telegram.offline = true;
+        assertNull(turn(true));
+        // Someone else flips it off meanwhile, and the first user is back before the answers come.
+        telegram.user = 2;
+        assertEquals(NONE_TO_REMOVE, turn(false));
+        telegram.user = 1000;
+
+        assertNull("the switch moved on since, so nothing is said", reconnect());
+        assertFalse(Settings.CHAT_TYPE_FOLDERS.savedValue());
+        // The server made them, so they're in the list and stay the first user's to remove.
+        assertEquals(Arrays.asList(2, 3, 4, 5), ids(telegram.folders));
+        assertTrue(telegram.orders.isEmpty());
+        assertEquals("2|made|3||Private", record(2));
+        assertEquals(REMOVED, turn(false));
+    }
+
+    @Test public void aRefusalAfterItsUserSignedOutLeavesTheListToDecide() {
+        telegram.offline = true;
+        assertNull(turn(true));
+        // Signed out before the answers: Telegram drops what it had queued, though the server may have made some.
+        telegram.signedIn = false;
+        for (int id = 2; id <= 5; id++) telegram.refuse.put(id, "UNKNOWN");
+        assertNull(reconnect());
+        assertEquals("2|sent|3||Private", record(2));
+        assertEquals(4, records().size());
+
+        // Back, with two of them made after all: off removes those and forgets the rest.
+        telegram.signedIn = true;
+        telegram.refuse.clear();
+        telegram.with(2, 1 | 2, "Private").with(3, 4, "Groups");
+        assertEquals(REMOVED, turn(false));
+        assertEquals(Arrays.asList(2, 3), sorted(telegram.deleted));
+        assertTrue(records().isEmpty());
+    }
+
+    @Test public void aFolderTheServerMadeCountsEvenIfTheListCantTakeIt() {
+        telegram = new ChatTypeFoldersForTests.Recorder() {
+            @Override public void add(int account, int id, String name, int flags) {
+                throw new IllegalStateException("list changed");
+            }
+        };
+        ChatTypeFolders.telegram = telegram;
+
+        assertEquals(MADE, turn(true));
+        assertTrue(Settings.CHAT_TYPE_FOLDERS.savedValue());
+        assertFalse(HookStatus.missing(FamilyNames.CHAT_TYPE_FOLDERS).isEmpty());
+        assertEquals("2|made|3||Private", record(2));
+    }
+
+    @Test public void anAccountCheckThatThrowsDuringAnAnswerDoesntCloseTelegram() {
+        boolean[] broken = {false};
+        telegram = new ChatTypeFoldersForTests.Recorder() {
+            @Override public boolean signedIn(int account) {
+                if (broken[0]) throw new IllegalStateException("account gone");
+                return super.signedIn(account);
+            }
+        };
+        ChatTypeFolders.telegram = telegram;
+        telegram.offline = true;
+        assertNull(turn(true));
+
+        broken[0] = true;
+        assertNull("not knowing who's signed in counts as gone", reconnect());
+        assertEquals("2|made|3||Private", record(2));
+        assertFalse(HookStatus.missing(FamilyNames.CHAT_TYPE_FOLDERS).isEmpty());
     }
 
     @Test public void recordsFromBeforeThisVersionStillWork() {
