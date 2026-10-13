@@ -9,6 +9,10 @@
     an exact model/profile. Existing apps must have the same signer and no newer version.
     The script never uninstalls an app or grants runtime permissions.
 
+    The lease is read from the host's shared pool, the directory HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY
+    names. -LeaseDirectory can name that directory and no other: a lease kept anywhere else doesn't
+    show who holds the phone, and the run is refused before anything is patched.
+
     The signing password comes from HUSHTELEGRAM_SIDELOAD_KEYSTORE_PASSWORD. When it is unset, the
     local test keystore's documented password, sideload, is used. The Morphe arguments travel
     through a temporary Java argument file so the password value is not in the child process
@@ -34,7 +38,7 @@
 param(
     [string]$Serial,
     [switch]$Replace,
-    [string]$LeaseDirectory = $env:HUSHTELEGRAM_DEVICE_LEASE_DIR,
+    [string]$LeaseDirectory = $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY,
     [string]$LeaseToken = $env:HUSHTELEGRAM_DEVICE_LEASE_TOKEN,
     [string]$ChatIdentity = $env:HUSHTELEGRAM_DEVICE_CHAT,
     [string]$ExpectedModel,
@@ -64,8 +68,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 if ($Replace) { throw '-Replace is no longer supported. Keep app data and use the retained signing key for updates.' }
-if ($Serial -and (-not $LeaseDirectory -or -not $LeaseToken -or -not $ChatIdentity -or -not $ExpectedModel)) {
-    throw 'Installation requires the shared lease directory, owned token, chat identity and expected device model.'
+if ($Serial -and (-not $LeaseToken -or -not $ChatIdentity -or -not $ExpectedModel)) {
+    throw 'Installation requires the owned lease token, chat identity and expected device model.'
 }
 # Not a parameter default: Windows PowerShell leaves $PSScriptRoot empty while it evaluates the
 # defaults of an advanced script started with -File. $root below is this same variable.
@@ -79,6 +83,9 @@ $OutDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPat
 . (Join-Path $PSScriptRoot 'Resolve-Java.ps1')
 . (Join-Path $PSScriptRoot 'release-receipt.ps1')
 . (Join-Path $PSScriptRoot 'device-install.ps1')
+# The shared lease pool is settled here, before a tool is looked for or anything is patched. The
+# installer asks again before its first adb command.
+if ($Serial) { $LeaseDirectory = Resolve-DeviceLeaseDirectory -LeaseDirectory $LeaseDirectory }
 $Java = Resolve-Java -Explicit $Java
 $DesktopJar = Resolve-DesktopCli -Explicit $DesktopJar -Root $root -Required
 $catalogPath = Join-Path $root 'patches-list.json'

@@ -12,9 +12,14 @@ if (-not $Root) { $Root = Split-Path -Parent $PSScriptRoot }
 $caseRoot = Join-Path $env:TEMP ('hushtelegram-install-test-' + [guid]::NewGuid().ToString('N'))
 $cases = 0
 New-Item -ItemType Directory -Path $caseRoot | Out-Null
+$savedLeasePool = $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY
+$savedOldLeaseVariable = $env:HUSHTELEGRAM_DEVICE_LEASE_DIR
 try {
     $leaseDir = Join-Path $caseRoot 'device-leases'
     New-Item -ItemType Directory -Path $leaseDir -Force | Out-Null
+    # The fixture's lease directory is this host's shared pool for the length of the suite, the
+    # only directory the installer takes a lease from.
+    $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY = $leaseDir
     $candidate = Join-Path $caseRoot 'candidate.apk'
     [IO.File]::WriteAllText($candidate, 'synthetic APK')
     $fakeAdb = Join-Path $caseRoot 'adb.cmd'
@@ -167,9 +172,9 @@ exit /b 0
     }
     function Write-Lease { [IO.File]::WriteAllText($leasePath, ($script:lease | ConvertTo-Json)) }
     function Run-Install {
-        param([string]$Model = 'FakeModel', [string]$Avd = 'FakeAVD')
+        param([string]$Model = 'FakeModel', [string]$Avd = 'FakeAVD', [string]$LeaseDirectory = $leaseDir)
         Install-AndroidPackage -Adb $fakeAdb -Serial 'emulator-7778' -PackageName 'com.example.app' `
-            -Apk $candidate -Aapt2 'unused' -LeaseDirectory $leaseDir -LeaseToken $token -ChatIdentity $chat `
+            -Apk $candidate -Aapt2 'unused' -LeaseDirectory $LeaseDirectory -LeaseToken $token -ChatIdentity $chat `
             -ExpectedModel $Model -ExpectedAvd $Avd -WorkDirectory $caseRoot
     }
     function Assert-Cleanup {
@@ -184,10 +189,12 @@ exit /b 0
         }
     }
     function Assert-Refusal {
-        param([scriptblock]$Action, [bool]$NoAdb = $false)
+        param([scriptblock]$Action, [bool]$NoAdb = $false, [string]$Pattern)
         $caught = $false
-        try { & $Action } catch { $caught = $true }
+        $said = ''
+        try { & $Action } catch { $caught = $true; $said = "$($_.Exception.Message)" }
         if (-not $caught) { throw 'Unsafe install was accepted.' }
+        if ($Pattern -and $said -notlike $Pattern) { throw "An unsafe install was refused, but not as $Pattern`: $said" }
         $calls = if (Test-Path -LiteralPath $log) { @(Get-Content -LiteralPath $log) } else { @() }
         if ($NoAdb -and $calls.Count) { throw 'ADB ran before lease ownership was proved.' }
         if (@($calls | Where-Object { $_ -match '\s(install|uninstall)\s' }).Count) { throw 'A refused preflight reached mutation.' }
@@ -294,7 +301,153 @@ exit /b 0
     }
     Reset-Case 'present'
     Assert-Refusal { & (Join-Path $Root 'scripts/patch-for-device.ps1') -Replace } -NoAdb $true
+
+    # The shared pool. Every case above ran with the fixture's lease directory configured as the
+    # host's pool. The installer used to take a lease from whatever directory its caller named:
+    # with a valid lease in a directory of its own, a caller reached install -r on a serial another
+    # task held in the shared pool. Here the caller always has that valid lease of its own, and the
+    # record in the pool is another task's, the caller's with one fact moved, or missing. Named by
+    # its own directory the caller is refused as outside the pool, named by the pool it is refused
+    # by the record there, and neither reaches adb for so much as a get-state.
+    $privateDir = Join-Path $caseRoot 'private-leases'
+    New-Item -ItemType Directory -Path $privateDir | Out-Null
+    $privateLease = Join-Path $privateDir 'emulator-7778.json'
+    $sharedOnly = '*require the shared whole-device lease directory*'
+    $unowned = '*needs an owned, unexpired HushTelegram lease*'
+    function Set-PoolCase {
+        param([scriptblock]$Shared)
+        Reset-Case 'present'
+        [IO.File]::WriteAllText($privateLease, ($script:lease | ConvertTo-Json))
+        if ($Shared) { & $Shared; Write-Lease } else { Remove-Item -LiteralPath $leasePath -Force }
+    }
+    $poolRecords = [ordered]@{
+        'held by another task' = { $script:lease.ownershipToken = [guid]::NewGuid().ToString(); $script:lease.chatIdentity = 'another-task' }
+        'held by another task under this chat name' = { $script:lease.ownershipToken = [guid]::NewGuid().ToString() }
+        'held under this token by another chat' = { $script:lease.chatIdentity = 'another-task' }
+        'held by another project' = { $script:lease.project = 'HushFacebook' }
+        'for another serial' = { $script:lease.serial = 'emulator-7780' }
+        'run out' = { $script:lease.expiresUtc = [DateTimeOffset]::UtcNow.AddSeconds(-1).ToString('o') }
+        'not started yet' = { $script:lease.acquiredUtc = [DateTimeOffset]::UtcNow.AddMinutes(1).ToString('o') }
+        'missing' = $null
+    }
+    foreach ($record in $poolRecords.Keys) {
+        Set-PoolCase -Shared $poolRecords[$record]
+        Assert-Refusal { Run-Install -LeaseDirectory $privateDir } -NoAdb $true -Pattern $sharedOnly
+        Set-PoolCase -Shared $poolRecords[$record]
+        Assert-Refusal { Run-Install } -NoAdb $true -Pattern $unowned
+    }
+    # A second directory is not the pool even when the pool's record is the caller's own and valid:
+    # not a copy beside it, not the folder above it and not one inside it.
+    foreach ($elsewhere in @($privateDir, $caseRoot, (Join-Path $leaseDir 'inner'))) {
+        Set-PoolCase -Shared { }
+        Assert-Refusal { Run-Install -LeaseDirectory $elsewhere } -NoAdb $true -Pattern $sharedOnly
+    }
+    # Nor is another name that reaches the pool's files: a relative path, read against wherever the
+    # session or the process happens to be, or a junction to the pool.
+    $savedProcessDirectory = [Environment]::CurrentDirectory
+    Push-Location -LiteralPath $caseRoot
+    try {
+        [Environment]::CurrentDirectory = $caseRoot
+        foreach ($relative in @('device-leases', '.\device-leases', ($leaseDir.Substring(0, 2) + 'device-leases'), $leaseDir.Substring(2))) {
+            Set-PoolCase -Shared { }
+            Assert-Refusal { Run-Install -LeaseDirectory $relative } -NoAdb $true -Pattern $sharedOnly
+        }
+    } finally {
+        [Environment]::CurrentDirectory = $savedProcessDirectory
+        Pop-Location
+    }
+    $junction = Join-Path $caseRoot 'pool-link'
+    & cmd.exe /c mklink /J $junction $leaseDir | Out-Null
+    $linked = $LASTEXITCODE
+    try {
+        Set-PoolCase -Shared { }
+        if ($linked -ne 0 -or -not (Test-Path -LiteralPath (Join-Path $junction 'emulator-7778.json') -PathType Leaf)) {
+            throw 'The junction to the shared pool could not be made, so the alias case would prove nothing.'
+        }
+        Assert-Refusal { Run-Install -LeaseDirectory $junction } -NoAdb $true -Pattern $sharedOnly
+    } finally {
+        # The link alone. Deleting through it would empty the pool.
+        if ([IO.Directory]::Exists($junction)) { [IO.Directory]::Delete($junction) }
+    }
+    # The pool spelled another way is still the pool, read at its configured name, and its owner
+    # installs: letter case, a trailing separator, forward slashes and dot segments.
+    foreach ($spelling in @($leaseDir.ToUpperInvariant(), $leaseDir.ToLowerInvariant(), "$leaseDir\", $leaseDir.Replace('\', '/'),
+            (Join-Path $leaseDir '..\device-leases'), (Join-Path $caseRoot '.\device-leases\.'))) {
+        Reset-Case 'present'
+        if ((Resolve-DeviceLeaseDirectory -LeaseDirectory $spelling) -cne [IO.Path]::GetFullPath($leaseDir)) {
+            throw "The shared pool named as $spelling was not read at its configured name."
+        }
+        Run-Install -LeaseDirectory $spelling
+        if (@(Get-Content -LiteralPath $log | Where-Object { $_ -match '^-s emulator-7778 install -r ' }).Count -ne 1) {
+            throw "The owner of the shared pool's lease did not install when the pool was named as $spelling."
+        }
+        Assert-SafeCalls -Calls @(Get-Content -LiteralPath $log)
+        Assert-Cleanup
+        $cases++
+    }
+    # The pool has to be configured, as the absolute path of a directory that exists. Nothing is
+    # assumed in its place, and the variable patch-for-device.ps1 once read is no substitute.
+    $env:HUSHTELEGRAM_DEVICE_LEASE_DIR = $leaseDir
+    $absentPool = Join-Path $caseRoot 'no-such-pool'
+    foreach ($configured in @(
+            @{ Pool = $null; Named = $leaseDir; Pattern = '*Configure HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY*' },
+            @{ Pool = ' '; Named = $leaseDir; Pattern = '*Configure HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY*' },
+            @{ Pool = 'device-leases'; Named = $leaseDir; Pattern = '*absolute shared pool path*' },
+            @{ Pool = ($leaseDir.Substring(0, 2) + 'device-leases'); Named = $leaseDir; Pattern = '*absolute shared pool path*' },
+            @{ Pool = $leaseDir.Substring(2); Named = $leaseDir; Pattern = '*absolute shared pool path*' },
+            @{ Pool = $absentPool; Named = $leaseDir; Pattern = $sharedOnly },
+            @{ Pool = $absentPool; Named = $absentPool; Pattern = '*HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY names does not exist*' })) {
+        Reset-Case 'present'
+        $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY = $configured.Pool
+        try {
+            Assert-Refusal { Run-Install -LeaseDirectory $configured.Named } -NoAdb $true -Pattern $configured.Pattern
+        } finally {
+            $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY = $leaseDir
+        }
+    }
+    # patch-for-device.ps1 settles the pool itself, before it looks for a tool or patches anything:
+    # with no pool configured, and with a directory of the caller's own while one is.
+    $deviceBuild = Join-Path $Root 'scripts/patch-for-device.ps1'
+    $deviceArguments = @{ Serial = 'emulator-7778'; LeaseToken = $token; ChatIdentity = $chat; ExpectedModel = 'FakeModel'; ExpectedAvd = 'FakeAVD' }
+    Set-PoolCase -Shared { }
+    Assert-Refusal { & $deviceBuild @deviceArguments -LeaseDirectory $privateDir } -NoAdb $true -Pattern $sharedOnly
+    Reset-Case 'present'
+    $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY = $null
+    try {
+        Assert-Refusal { & $deviceBuild @deviceArguments } -NoAdb $true -Pattern '*Configure HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY*'
+    } finally {
+        $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY = $leaseDir
+    }
+    # A directory of the caller's own is for a contract test that injects its stand-in for adb, the
+    # way the navigation harness's host checks do. Neither installer entry point hands one over,
+    # and neither reads the pool from any other variable.
+    foreach ($pool in @($leaseDir, $null)) {
+        $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY = $pool
+        try {
+            if ((Resolve-DeviceLeaseDirectory -LeaseDirectory $privateDir -TestInvoker { }) -cne $privateDir) {
+                throw 'An injected test invoker did not get the lease directory it named.'
+            }
+        } finally {
+            $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY = $leaseDir
+        }
+        $cases++
+    }
+    foreach ($entry in @('device-install.ps1', 'patch-for-device.ps1')) {
+        $entryPath = Join-Path $Root "scripts/$entry"
+        $resolves = @([System.Management.Automation.Language.Parser]::ParseFile($entryPath, [ref]$null, [ref]$null).FindAll({
+                    param($node) $node -is [System.Management.Automation.Language.CommandAst] -and
+                        $node.GetCommandName() -eq 'Resolve-DeviceLeaseDirectory' }, $true))
+        if ($resolves.Count -ne 1 -or $resolves[0].Extent.Text -match '(?i)-TestInvoker') {
+            throw "$entry does not ask for the shared lease pool once, with no test invoker."
+        }
+        if ((Get-Content -LiteralPath $entryPath -Raw) -match 'HUSHTELEGRAM_DEVICE_LEASE_DIR(?!ECTORY)') {
+            throw "$entry reads a lease directory from a variable that is not the shared pool's."
+        }
+        $cases++
+    }
     Write-Host "[scripts] data-preserving device install contracts passed ($cases cases)"
 } finally {
+    $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY = $savedLeasePool
+    $env:HUSHTELEGRAM_DEVICE_LEASE_DIR = $savedOldLeaseVariable
     Remove-GeneratedPath -Root $env:TEMP -Path $caseRoot
 }

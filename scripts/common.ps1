@@ -61,6 +61,54 @@ function Remove-GeneratedPath {
     }
 }
 
+function Resolve-DeviceLeaseDirectory {
+    <#
+    .SYNOPSIS
+        The whole-device lease directory a device run may use, or a throw.
+    .DESCRIPTION
+        Every task on this host takes its phone leases in one directory, the one
+        HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY names. A lease kept anywhere else says nothing about
+        who holds the phone: the installer took a valid lease in a directory the caller chose as
+        leave to install on a serial another task held in the shared one. So the variable has to
+        be set, to the absolute path of a directory that exists, and a directory the caller names
+        has to be that one, by an absolute path. Its spelling may differ (letter case, a trailing
+        separator, forward slashes, dot segments) and the answer is the configured spelling
+        either way. A relative path, a junction to the pool or a short name is not the pool's
+        name and is refused, as any other directory is.
+
+        -TestInvoker is the stand-in a contract test injects in adb's place. Only a caller that
+        hands one over may keep leases in a directory of its own, and the variable is not read for
+        it. No environment variable and no switch does the same for a run that reaches adb.
+    #>
+    param([string]$LeaseDirectory, [scriptblock]$TestInvoker)
+
+    $shared = $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY
+    $isAbsolute = {
+        param([string]$Path)
+        $pathRoot = [System.IO.Path]::GetPathRoot($Path)
+        [System.IO.Path]::IsPathRooted($Path) -and $pathRoot -notmatch '^[A-Za-z]:$' -and $pathRoot -cne '\'
+    }
+    if (-not $TestInvoker) {
+        if ([string]::IsNullOrWhiteSpace($shared)) {
+            throw 'Configure HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY for the shared whole-device lease directory.'
+        }
+        if (-not (& $isAbsolute $shared)) {
+            throw 'HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY must be an absolute shared pool path.'
+        }
+    }
+    if (-not $LeaseDirectory) { $LeaseDirectory = $shared }
+    if ($TestInvoker) { return [System.IO.Path]::GetFullPath($LeaseDirectory).TrimEnd('\', '/') }
+    $sharedRoot = [System.IO.Path]::GetFullPath($shared).TrimEnd('\', '/')
+    if (-not (& $isAbsolute $LeaseDirectory) -or -not [System.IO.Path]::GetFullPath($LeaseDirectory).TrimEnd('\', '/').Equals(
+            $sharedRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Device runs require the shared whole-device lease directory.'
+    }
+    if (-not [System.IO.Directory]::Exists($sharedRoot)) {
+        throw 'The shared whole-device lease directory HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY names does not exist.'
+    }
+    return $sharedRoot
+}
+
 function Get-BundleVersion {
     <#
     .SYNOPSIS

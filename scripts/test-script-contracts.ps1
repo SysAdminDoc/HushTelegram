@@ -5356,7 +5356,10 @@ class AlignmentFixture {
     }
     $savedRaceTemp = $env:TEMP
     $savedRacePath = $env:PATH
+    $savedRacePool = $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY
     try {
+        # The fixture's leases are this host's shared pool, the only place the installer reads one.
+        $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY = $raceLeases
         [System.IO.File]::WriteAllText($raceBarrier, ((@(
             '@echo off',
             'rem Which run this is, by the signing alias in the argument file its own CLI was handed,',
@@ -5481,6 +5484,7 @@ class AlignmentFixture {
     } finally {
         $env:TEMP = $savedRaceTemp
         $env:PATH = $savedRacePath
+        $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY = $savedRacePool
         # A case that failed part way leaves a CLI held. Let it go, and end its run.
         if (Test-Path -LiteralPath $raceSignals -PathType Container) {
             foreach ($alias in @($raceRuns.Keys)) {

@@ -77,21 +77,9 @@ function New-NavigationSession {
     if ($Serial.StartsWith('emulator-', [StringComparison]::Ordinal) -and -not $ExpectedAvd) {
         throw 'An emulator test requires its expected AVD profile.'
     }
-    $sharedLeaseRoot = $env:HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY
-    if (-not $Invoker) {
-        if ([string]::IsNullOrWhiteSpace($sharedLeaseRoot)) {
-            throw 'Configure HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY for the shared whole-device lease directory.'
-        }
-        $pathRoot = [IO.Path]::GetPathRoot($sharedLeaseRoot)
-        if (-not [IO.Path]::IsPathRooted($sharedLeaseRoot) -or $pathRoot -match '^[A-Za-z]:$' -or $pathRoot -ceq '\') {
-            throw 'HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY must be an absolute shared pool path.'
-        }
-    }
-    if (-not $LeaseDirectory) { $LeaseDirectory = $sharedLeaseRoot }
-    $leaseRoot = [IO.Path]::GetFullPath($LeaseDirectory).TrimEnd('\', '/')
-    if (-not $Invoker -and -not $leaseRoot.Equals([IO.Path]::GetFullPath($sharedLeaseRoot).TrimEnd('\', '/'), [StringComparison]::OrdinalIgnoreCase)) {
-        throw 'Device runs require the shared whole-device lease directory.'
-    }
+    # The same answer the installer gets: the host's shared pool, or a directory of the caller's
+    # own only beside an injected invoker.
+    $leaseRoot = Resolve-DeviceLeaseDirectory -LeaseDirectory $LeaseDirectory -TestInvoker $Invoker
     if (-not $Invoker) {
         $Invoker = {
             param($Executable, [string[]]$Arguments)
