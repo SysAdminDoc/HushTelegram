@@ -6,6 +6,8 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.17.
 
+* **Telegram:** **Save downloaded files** tells files apart by the document they came from instead of their name and size. Two different files that happen to share both now each get a copy, and the same file downloaded again still lands only once. If you delete a copy from Downloads, it comes back the next time that file downloads. Turning the switch off or pausing HushTelegram also stops copies still waiting their turn, and one caught halfway is removed.
+
 * **Telegram:** **Keep deleted messages** doesn't lose track of what it kept anymore. A message only counts as kept once the list naming it is saved, and if that save fails Telegram deletes it as usual. **Clear kept messages** does its work away from the screen, says "Removing" right away and "Removed" once Telegram has actually deleted them. If Telegram closes partway through, the rest goes the next time that account gets a deletion or you tap Clear again. An account slot that now holds a different account never deletes the first one's messages.
 
 * **Telegram:** **Translate with an outside service** checks again right before a message's text is sent. If you turned the chat off, turned the feature off (from its row or with a settings file), paused HushTelegram, signed out of that account or changed the translation service while it waited, nothing goes out. Waiting text always goes to the service that was set when the message was opened. Text already on its way can't be called back. Its answer stays hidden while that chat is off or HushTelegram is paused, and if the service fails you won't get a notice for a chat you've turned off.

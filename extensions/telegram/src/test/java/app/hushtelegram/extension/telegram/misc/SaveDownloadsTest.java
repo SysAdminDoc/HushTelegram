@@ -140,7 +140,37 @@ public class SaveDownloadsTest {
         assertTrue(String.join("\n", HookStatus.report()).contains("saving not allowed"));
     }
 
-    @Test public void theSameFileAlreadyThereIsLeftAlone() throws IOException {
+    private static android.content.SharedPreferences receipts() {
+        return context().getSharedPreferences(SaveDownloads.RECEIPTS, Context.MODE_PRIVATE);
+    }
+
+    @Test public void theSameDocumentDownloadedAgainIsCopiedOnce() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        assertEquals(1, downloads.rows.size());
+        // The note is on disk, not in memory, so it holds across a restart.
+        assertEquals(1L, receipts().getLong("2_51.pdf", -1));
+
+        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        assertEquals(1, downloads.rows.size());
+        assertTrue(String.join("\n", HookStatus.report()).contains("file already in Download/Telegram"));
+    }
+
+    @Test public void twoDocumentsWithTheSameNameAndSizeBothGetACopy() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        ByteArrayOutputStream first = bodyOf(1);
+        ByteArrayOutputStream second = bodyOf(2);
+        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "one"), pdf());
+        SaveDownloads.fileLoaded("2_52.pdf", downloaded("2_52.pdf", "two"),
+                new Message(new Document("2_52.pdf", "report.pdf"), true, false));
+        assertEquals("report.pdf", downloads.row(1).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+        assertEquals("report (1).pdf", downloads.row(2).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+        assertEquals("one", first.toString(StandardCharsets.UTF_8.name()));
+        assertEquals("two", second.toString(StandardCharsets.UTF_8.name()));
+    }
+
+    /** A copy from before the list existed only matches by name and size, which another file can share. */
+    @Test public void anEntryWithTheSameNameAndSizeButNoNoteIsntTrusted() throws IOException {
         Settings.SAVE_DOWNLOADS.save(true);
         ContentValues earlier = new ContentValues();
         earlier.put(MediaStore.MediaColumns.DISPLAY_NAME, "report.pdf");
@@ -148,16 +178,67 @@ public class SaveDownloadsTest {
         earlier.put(MediaStore.MediaColumns.SIZE, 3L);
         downloads.rows.put(1L, earlier);
         downloads.nextId = 2;
-
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
-        assertEquals(1, downloads.rows.size());
-        assertTrue(String.join("\n", HookStatus.report()).contains("file already in Download/Telegram"));
-
-        // Another file under that name, a different size, still gets its copy, and MediaStore numbers it.
         ByteArrayOutputStream body = bodyOf(2);
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "a newer report"), pdf());
+        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         assertEquals("report (1).pdf", downloads.row(2).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
-        assertEquals("a newer report", body.toString(StandardCharsets.UTF_8.name()));
+        assertEquals("pdf", body.toString(StandardCharsets.UTF_8.name()));
+    }
+
+    @Test public void aCopyDeletedFromDownloadsIsMadeAgain() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        downloads.rows.clear();
+        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        assertEquals("report.pdf", downloads.row(2).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+        assertEquals(2L, receipts().getLong("2_51.pdf", -1));
+    }
+
+    @Test public void theNotesKeepTheNewestAndDropTheOldest() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        android.content.SharedPreferences.Editor full = receipts().edit();
+        for (int i = 0; i < SaveDownloads.MAX_RECEIPTS; i++) full.putLong("2_" + (1000 + i) + ".pdf", 100 + i);
+        full.commit();
+        downloads.nextId = 5000;
+        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        assertEquals(SaveDownloads.MAX_RECEIPTS, receipts().getAll().size());
+        assertEquals(5000L, receipts().getLong("2_51.pdf", -1));
+        assertFalse("the oldest note stayed", receipts().contains("2_1000.pdf"));
+        assertTrue(receipts().contains("2_1001.pdf"));
+    }
+
+    @Test public void aCopyWaitingWhenTheSwitchGoesOffOrPausesPublishesNothing() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        java.util.List<Runnable> queued = new java.util.ArrayList<>();
+        SaveDownloads.work = queued::add;
+        File file = downloaded("2_51.pdf", "pdf");
+        SaveDownloads.fileLoaded("2_51.pdf", file, pdf());
+        Settings.SAVE_DOWNLOADS.save(false);
+        SaveDownloads.fileLoaded("2_51.pdf", file, pdf());
+        assertEquals(1, queued.size());
+        queued.remove(0).run();
+
+        Settings.SAVE_DOWNLOADS.save(true);
+        SaveDownloads.fileLoaded("2_51.pdf", file, pdf());
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        queued.remove(0).run();
+        assertTrue(downloads.rows.isEmpty());
+        assertEquals("nothing was even started", 0, downloads.pendingInserts);
+        assertTrue(String.join("\n", HookStatus.report()).contains("copy dropped, switched off or paused"));
+        assertFalse(receipts().contains("2_51.pdf"));
+    }
+
+    @Test public void pausingWhileTheCopyIsWrittenRemovesTheHiddenEntry() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        Shadows.shadowOf(context().getContentResolver()).registerOutputStream(downloads.uriFor(1), new OutputStream() {
+            @Override public void write(int b) {
+                PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+            }
+        });
+        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        assertEquals(1, downloads.pendingInserts);
+        assertTrue("the hidden entry stayed behind", downloads.rows.isEmpty());
+        assertTrue(String.join("\n", HookStatus.report()).contains("copy dropped, switched off or paused"));
+        assertFalse(receipts().contains("2_51.pdf"));
     }
 
     @Test public void aFileAlreadyInSharedStorageIsntCopiedAgain() throws IOException {
@@ -281,20 +362,13 @@ public class SaveDownloadsTest {
             return uriFor(id);
         }
 
-        /** The collection, by name, folder and size. */
+        /** One entry, by its own address. */
         @Override public Cursor query(Uri uri, String[] projection, String selection,
                 String[] selectionArgs, String sortOrder) {
-            assertEquals(MediaStore.Downloads.EXTERNAL_CONTENT_URI, uri);
-            assertEquals("_display_name=? AND relative_path=? AND _size=?", selection);
+            assertNull("a copy is found by its noted entry, never by name and size", selection);
+            long id = ContentUris.parseId(uri);
             MatrixCursor cursor = new MatrixCursor(projection);
-            for (Map.Entry<Long, ContentValues> row : rows.entrySet()) {
-                ContentValues values = row.getValue();
-                if (selectionArgs[0].equals(values.getAsString(MediaStore.MediaColumns.DISPLAY_NAME))
-                        && selectionArgs[1].equals(values.getAsString(MediaStore.MediaColumns.RELATIVE_PATH))
-                        && selectionArgs[2].equals(values.getAsString(MediaStore.MediaColumns.SIZE))) {
-                    cursor.addRow(new Object[]{row.getKey()});
-                }
-            }
+            if (rows.containsKey(id)) cursor.addRow(new Object[]{id});
             return cursor;
         }
 
