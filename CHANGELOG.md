@@ -53,7 +53,7 @@ Working version 0.0.17.
 
 * **Telegram:** Moved to Telegram 13.0.2, telegram.org's build (version code 71759) and the official beta (71809). The beta added an audio recorder settings entry, and HushTelegram leaves it alone.
 
-* **Telegram:** The New Year look switch now says what the snow needs. Telegram only draws it while Background rotation is on under Power saving, and it leaves that off on most phones that aren't high end. Refs #14.
+* **Telegram:** The New Year look switch now says what the snow needs. Telegram only draws it while `Wallpaper rotation` is on under Power Saving, in Effects in Chats, and it leaves that off on most phones that aren't high end. Seen on a phone: the snow stops the moment that option goes off and comes back with it. Refs #14.
 
 * **Telegram:** When your UnifiedPush app is uninstalled or ends the sign-up itself, Telegram is told to ask Firebase for a token again, the same way turning the switch off does. Before, Telegram's servers could keep sending to an address nothing answered. A phone without Google services has no Firebase to fall back on, so pick another UnifiedPush app there.
 
