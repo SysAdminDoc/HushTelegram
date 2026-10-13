@@ -418,11 +418,17 @@ public final class OutsideTranslate {
                 finish(key, asked, result, failure);
             });
         } catch (Throwable refused) {
-            // Nothing will run it, so the text isn't left waiting forever: a later look asks again.
+            // Nothing will run it, so the text isn't left waiting forever: a later look asks again,
+            // and the place it held goes to the messages held back, as an answer would.
+            List<Waiter> released = Collections.emptyList();
             synchronized (LOCK) {
-                if (PENDING.get(key) == waiters) PENDING.remove(key);
+                if (PENDING.get(key) == waiters) {
+                    PENDING.remove(key);
+                    released = release(key);
+                }
             }
             HookStatus.threw(FamilyNames.OUTSIDE_TRANSLATE, "translate request", refused);
+            redraw(released);
         }
     }
 

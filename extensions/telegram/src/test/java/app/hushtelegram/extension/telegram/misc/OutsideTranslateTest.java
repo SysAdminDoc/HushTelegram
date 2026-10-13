@@ -852,6 +852,33 @@ public class OutsideTranslateTest {
         assertEquals(1, fetches.get());
     }
 
+    @Test public void aRequestTheWorkerTurnsAwayGivesItsPlaceToAHeldMessage() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        OutsideTranslate.toggleChat(OWNER, 10);
+        List<Runnable> queued = holdTheWorker();
+        for (int n = 1; n <= OutsideTranslate.MAX_PENDING; n++) {
+            Fake message = text(n);
+            OutsideTranslate.showMessage(message, message);
+        }
+        Fake older = text(1001);
+        Fake newer = text(1002);
+        OutsideTranslate.showMessage(older, older);
+        OutsideTranslate.showMessage(newer, newer);
+        assertEquals(2, OutsideTranslate.heldForTests());
+        // An answer lands and its place goes to the newest held message.
+        queued.remove(0).run();
+        ShadowLooper.idleMainLooper();
+        assertEquals(1, newer.refreshed);
+        assertEquals(0, older.refreshed);
+        // A request the worker turns away frees its place the same way.
+        OutsideTranslate.executor = task -> { throw new java.util.concurrent.RejectedExecutionException("shut down"); };
+        Fake turnedAway = text(2000);
+        OutsideTranslate.showMessage(turnedAway, turnedAway);
+        ShadowLooper.idleMainLooper();
+        assertEquals(1, older.refreshed);
+        assertEquals(0, OutsideTranslate.heldForTests());
+    }
+
     // Rapid scrolling stays within bounds.
 
     private static Fake text(int n) {

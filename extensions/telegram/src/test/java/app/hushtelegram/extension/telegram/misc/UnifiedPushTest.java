@@ -15,6 +15,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
@@ -406,6 +407,18 @@ public class UnifiedPushTest {
         UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, token()).putExtra("endpoint", ENDPOINT), () -> {});
         assertEquals(ENDPOINT, UnifiedPush.activeEndpoint());
         assertEquals("Telegram's wake-ups come through io.heckel.ntfy.", UnifiedPush.status(context, true));
+    }
+
+    @Test public void aPlainHttpAddressReplacingAWorkingOneLetsTheOldOneGo() {
+        String token = signedUp();
+        UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, token).putExtra("endpoint", "http://ntfy.example/upAbC"), () -> {});
+        // The app moved to an http server, so nothing answers at the old address and Firebase is let back in.
+        assertEquals(Collections.singletonList(ENDPOINT), released);
+        assertNull(UnifiedPush.activeEndpoint());
+        assertTrue(registered.isEmpty());
+        assertEquals(token, token());
+        assertEquals("io.heckel.ntfy gave an address without https, which Telegram's servers won't call.",
+                UnifiedPush.status(context, true));
     }
 
     @Test public void anOutageKeepsTheSignUpAndItsAddressUntilTheAppIsBack() {

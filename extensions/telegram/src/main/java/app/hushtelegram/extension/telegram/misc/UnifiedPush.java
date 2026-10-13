@@ -61,8 +61,10 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * keeps the sign-up and its address. The next NEW_ENDPOINT says it's back.
  *
  * <p>Everything this keeps is in its own prefs file: which app, the token, and the address.
- * None of it is a setting, so it isn't in settings backups. Nothing goes out to the app or to
- * Telegram until the state it depends on is on disk, so a restart never finds a sign-up it forgot.
+ * None of it is a setting, so it isn't in settings backups. A sign-up goes out to the app only
+ * once its token is on disk, and an address goes to Telegram only once it's saved, so a restart
+ * never finds a sign-up it forgot. An address is acknowledged as it comes in, saved or not: the
+ * next start's sign-up brings it again.
  */
 public final class UnifiedPush {
     static final String PREFS = "hushtelegram_unified_push";
@@ -446,9 +448,14 @@ public final class UnifiedPush {
     private static void endpoint(Context context, SharedPreferences prefs, @Nullable String endpoint) {
         if (!usable(endpoint)) {
             if (endpoint != null && endpoint.regionMatches(true, 0, "http://", 0, 7)) {
-                // Telegram's servers call only https, so the row says why nothing arrives.
-                prefs.edit().putString(PROBLEM, INSECURE).commit();
+                // Telegram's servers call only https, so the row says why nothing arrives. A new
+                // address replaces the old one, so nothing answers there now either.
+                String old = prefs.getString(ENDPOINT, null);
+                if (!prefs.edit().remove(ENDPOINT).putString(PROBLEM, INSECURE).commit()) {
+                    HookStatus.counted(FamilyNames.UNIFIED_PUSH, "insecure address not saved");
+                }
                 Logger.printInfo(() -> "UnifiedPush: turned away a plain http address");
+                if (old != null) telegram.release(old);
             } else {
                 Logger.printInfo(() -> "UnifiedPush: ignored an address that isn't a web address");
             }
