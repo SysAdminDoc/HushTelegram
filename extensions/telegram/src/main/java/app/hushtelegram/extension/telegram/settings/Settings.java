@@ -415,9 +415,12 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting DISABLE_UPDATE_CHECKS =
             new BooleanSetting("hushtelegram_disable_update_checks", TRUE);
 
-    /** The official web certificate for the scoped Firebase Installations header only. */
+    /**
+     * The official web certificate for the scoped Firebase Installations header only. Firebase signs
+     * up once per process, so a change shows the restart row.
+     */
     public static final BooleanSetting REPAIR_FIREBASE_PUSH =
-            new BooleanSetting("hushtelegram_repair_firebase_push", TRUE);
+            new BooleanSetting("hushtelegram_repair_firebase_push", TRUE, true);
 
     /** Telegram signs up a UnifiedPush app's address for its wake-ups instead of Firebase's token. */
     public static final BooleanSetting UNIFIED_PUSH =

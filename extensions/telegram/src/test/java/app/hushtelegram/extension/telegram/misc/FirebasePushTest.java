@@ -61,6 +61,11 @@ public class FirebasePushTest {
     /** Statics outlive a test in Robolectric's shared sandbox, so every class that reads the answer starts from none. */
     public static void forgetAnswer() { FirebasePush.lastAnswer = null; }
 
+    @Test public void theSwitchAsksForARestartSinceFirebaseSignsUpOncePerProcess() {
+        assertTrue(Settings.REPAIR_FIREBASE_PUSH.defaultValue);
+        assertTrue(Settings.REPAIR_FIREBASE_PUSH.rebootApp);
+    }
+
     @Test public void anAcceptedRegistrationIsRecordedAndCounted() {
         FirebasePush.registerDeviceAnswer(new TLRPC.TL_boolTrue(), null);
         assertEquals("accepted", FirebasePush.lastAnswer);

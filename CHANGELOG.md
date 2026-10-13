@@ -6,6 +6,8 @@ Every HushTelegram release, newest first.
 
 Working version 0.0.17.
 
+* **Telegram:** Flipping **Repair Firebase push registration** now shows the restart row right away. Firebase only signs up when Telegram starts, so the change never took effect until the next launch anyway.
+
 * **Telegram:** The settings home page has two new rows. **Quick setups** turns on the Quiet or Privacy switches in one tap, or puts every switch back the way it started, and tells you how many settings changed. **Report a problem**, just above Support, opens a GitHub bug report with your HushTelegram and Telegram versions, your phone and the switches you have on already filled in. It doesn't include anything about your account.
 
 * **Telegram:** Press and hold the Telegram title at the top of your chat list to open HushTelegram settings. Telegram's chat list has no logo, so its title stands in. A tap on the title still scrolls the list back to the top, and it works while HushTelegram is paused.
