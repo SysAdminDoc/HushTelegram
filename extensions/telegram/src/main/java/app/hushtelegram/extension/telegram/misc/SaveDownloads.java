@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -56,8 +57,9 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * <p>Each document is copied once. A private list notes which Downloads entry holds it, under the
  * downloader's name for it (data center and document ID), so another file that only shares its
  * name and size still gets its own copy, and a copy deleted from Downloads is made again the next
- * time the document downloads. A copy waiting its turn checks the switch when it starts and again
- * before it's shown, so turning it off or pausing publishes nothing more.
+ * time the document downloads. Copies made before the list began are taken once by name and size,
+ * the way those versions matched them. A copy waiting its turn checks the switch when it starts
+ * and again before it's shown, so turning it off or pausing publishes nothing more.
  */
 public final class SaveDownloads {
     /** Where the copies go, as MediaStore writes it: the shared Download folder's Telegram folder. */
@@ -184,6 +186,16 @@ public final class SaveDownloads {
     static final String RECEIPTS = "hushtelegram_saved_downloads";
     /** Years of saved files. Past it the oldest notes go, and those documents could be copied again. */
     static final int MAX_RECEIPTS = 2000;
+    /** The list's start, kept beside the notes. No downloader name starts with '#'. */
+    static final String BEGAN = "#began";
+    /**
+     * Versions before the list skipped a copy when an entry of the same name and size was there.
+     * Their copies are matched that way once, only if added before the list began, so updating
+     * doesn't copy every saved file again. Entries added since are found by their notes alone.
+     */
+    static final String OLDER_COPY = MediaStore.MediaColumns.DISPLAY_NAME + "=? AND "
+            + MediaStore.MediaColumns.RELATIVE_PATH + "=? AND " + MediaStore.MediaColumns.SIZE + "=? AND "
+            + MediaStore.MediaColumns.DATE_ADDED + "<?";
 
     /**
      * @param name     the name the copy shows in Downloads
@@ -234,8 +246,9 @@ public final class SaveDownloads {
     }
 
     /**
-     * Copies into MediaStore's Downloads, hidden until it's whole, and says what happened. A copy
-     * from before this list existed isn't matched by name and size, since another file can share both.
+     * Copies into MediaStore's Downloads, hidden until it's whole, and says what happened. An entry
+     * added after the list began is only ever matched by its note, since another file can share its
+     * name and size. One added before it is taken once by name and size, see {@link #OLDER_COPY}.
      */
     @RequiresApi(Build.VERSION_CODES.Q)
     private static String copy(Context context, File file, String name, String document) throws IOException {
@@ -244,6 +257,15 @@ public final class SaveDownloads {
         SharedPreferences receipts = context.getSharedPreferences(RECEIPTS, Context.MODE_PRIVATE);
         long earlier = receipts.getLong(document, -1);
         if (earlier >= 0 && exists(resolver, ContentUris.withAppendedId(downloads, earlier))) return ALREADY_SAVED;
+        long began = began(receipts);
+        // A noted copy that's gone was deleted on purpose, so it's made again rather than matched.
+        if (earlier < 0) {
+            long older = olderCopy(resolver, receipts, name, file.length(), began);
+            if (older >= 0) {
+                remember(receipts, document, older);
+                return ALREADY_SAVED;
+            }
+        }
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
         values.put(MediaStore.MediaColumns.RELATIVE_PATH, FOLDER);
@@ -286,9 +308,43 @@ public final class SaveDownloads {
         }
     }
 
+    /** When the list began, in MediaStore's seconds, written by the first copy that finds none. -1 if it can't be saved. */
+    private static long began(SharedPreferences receipts) {
+        long began = receipts.getLong(BEGAN, -1);
+        if (began >= 0) return began;
+        began = System.currentTimeMillis() / 1000;
+        return receipts.edit().putLong(BEGAN, began).commit() ? began : -1;
+    }
+
+    /**
+     * A copy of this name and size that a version without the list made, and no other document has
+     * taken yet. -1 if there's none, or if the list's start isn't saved and old and new can't be told apart.
+     */
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private static long olderCopy(ContentResolver resolver, SharedPreferences receipts, String name, long size, long began) {
+        if (began < 0) return -1;
+        Map<String, ?> taken = notes(receipts);
+        try (Cursor rows = resolver.query(MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                new String[]{MediaStore.MediaColumns._ID}, OLDER_COPY,
+                new String[]{name, FOLDER, Long.toString(size), Long.toString(began)}, null)) {
+            while (rows != null && rows.moveToNext()) {
+                long entry = rows.getLong(0);
+                if (!taken.containsValue(entry)) return entry;
+            }
+        }
+        return -1;
+    }
+
+    /** The notes alone, without the list's start. */
+    private static Map<String, ?> notes(SharedPreferences receipts) {
+        Map<String, ?> all = new HashMap<>(receipts.getAll());
+        all.remove(BEGAN);
+        return all;
+    }
+
     /** Notes the entry holding [document], and drops the oldest notes past {@link #MAX_RECEIPTS}. */
     private static void remember(SharedPreferences receipts, String document, long entry) {
-        Map<String, ?> all = receipts.getAll();
+        Map<String, ?> all = notes(receipts);
         SharedPreferences.Editor edit = receipts.edit().putLong(document, entry);
         int over = all.size() + (all.containsKey(document) ? 0 : 1) - MAX_RECEIPTS;
         if (over > 0) {

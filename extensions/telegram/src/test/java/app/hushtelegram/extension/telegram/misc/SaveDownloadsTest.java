@@ -146,6 +146,7 @@ public class SaveDownloadsTest {
 
     @Test public void theSameDocumentDownloadedAgainIsCopiedOnce() throws IOException {
         Settings.SAVE_DOWNLOADS.save(true);
+        bodyOf(1);
         SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         assertEquals(1, downloads.rows.size());
         // The note is on disk, not in memory, so it holds across a restart.
@@ -169,23 +170,52 @@ public class SaveDownloadsTest {
         assertEquals("two", second.toString(StandardCharsets.UTF_8.name()));
     }
 
-    /** A copy from before the list existed only matches by name and size, which another file can share. */
-    @Test public void anEntryWithTheSameNameAndSizeButNoNoteIsntTrusted() throws IOException {
-        Settings.SAVE_DOWNLOADS.save(true);
+    /** A report.pdf of three bytes already in Download/Telegram, added at [added] in MediaStore's seconds. */
+    private void anEntryAddedAt(long added) {
         ContentValues earlier = new ContentValues();
         earlier.put(MediaStore.MediaColumns.DISPLAY_NAME, "report.pdf");
         earlier.put(MediaStore.MediaColumns.RELATIVE_PATH, "Download/Telegram/");
         earlier.put(MediaStore.MediaColumns.SIZE, 3L);
+        earlier.put(MediaStore.MediaColumns.DATE_ADDED, added);
         downloads.rows.put(1L, earlier);
         downloads.nextId = 2;
+    }
+
+    /** Since the list began, a name and size match can be another file, so only a note counts. */
+    @Test public void anEntryAddedSinceTheListBeganNeedsItsNote() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        assertTrue(receipts().edit().putLong(SaveDownloads.BEGAN, 1000).commit());
+        anEntryAddedAt(2000);
         ByteArrayOutputStream body = bodyOf(2);
         SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         assertEquals("report (1).pdf", downloads.row(2).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
         assertEquals("pdf", body.toString(StandardCharsets.UTF_8.name()));
     }
 
+    /** Copies from a version without the list are matched the way it matched them, once each. */
+    @Test public void aCopyFromBeforeTheListIsTakenOnceInsteadOfCopiedAgain() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        anEntryAddedAt(1000);
+        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        assertEquals(1, downloads.rows.size());
+        assertEquals(1L, receipts().getLong("2_51.pdf", -1));
+        // The first copy that found no list started it.
+        assertTrue(receipts().getLong(SaveDownloads.BEGAN, -1) > 1000);
+        assertTrue(String.join("\n", HookStatus.report()).contains(SaveDownloads.ALREADY_SAVED));
+
+        // Another document of the same name and size finds the old entry taken.
+        ByteArrayOutputStream body = bodyOf(2);
+        SaveDownloads.fileLoaded("2_52.pdf", downloaded("2_52.pdf", "two"),
+                new Message(new Document("2_52.pdf", "report.pdf"), true, false));
+        assertEquals("report (1).pdf", downloads.row(2).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+        assertEquals("two", body.toString(StandardCharsets.UTF_8.name()));
+        assertEquals(2L, receipts().getLong("2_52.pdf", -1));
+    }
+
     @Test public void aCopyDeletedFromDownloadsIsMadeAgain() throws IOException {
         Settings.SAVE_DOWNLOADS.save(true);
+        bodyOf(1);
+        bodyOf(2);
         SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         downloads.rows.clear();
         SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
@@ -199,8 +229,10 @@ public class SaveDownloadsTest {
         for (int i = 0; i < SaveDownloads.MAX_RECEIPTS; i++) full.putLong("2_" + (1000 + i) + ".pdf", 100 + i);
         full.commit();
         downloads.nextId = 5000;
+        bodyOf(5000);
         SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
-        assertEquals(SaveDownloads.MAX_RECEIPTS, receipts().getAll().size());
+        // The notes, plus when the list began.
+        assertEquals(SaveDownloads.MAX_RECEIPTS + 1, receipts().getAll().size());
         assertEquals(5000L, receipts().getLong("2_51.pdf", -1));
         assertFalse("the oldest note stayed", receipts().contains("2_1000.pdf"));
         assertTrue(receipts().contains("2_1001.pdf"));
@@ -349,6 +381,7 @@ public class SaveDownloadsTest {
 
         @Override public Uri insert(Uri uri, ContentValues values) {
             ContentValues row = new ContentValues(values);
+            row.put(MediaStore.MediaColumns.DATE_ADDED, System.currentTimeMillis() / 1000);
             if (Integer.valueOf(1).equals(row.getAsInteger(MediaStore.MediaColumns.IS_PENDING))) pendingInserts++;
             // MediaStore keeps names in a folder unique by numbering the newcomer.
             String name = row.getAsString(MediaStore.MediaColumns.DISPLAY_NAME);
@@ -362,13 +395,27 @@ public class SaveDownloadsTest {
             return uriFor(id);
         }
 
-        /** One entry, by its own address. */
+        /** One entry by its own address, or the entries a version without the list could have made. */
         @Override public Cursor query(Uri uri, String[] projection, String selection,
                 String[] selectionArgs, String sortOrder) {
-            assertNull("a copy is found by its noted entry, never by name and size", selection);
-            long id = ContentUris.parseId(uri);
             MatrixCursor cursor = new MatrixCursor(projection);
-            if (rows.containsKey(id)) cursor.addRow(new Object[]{id});
+            if (selection == null) {
+                long id = ContentUris.parseId(uri);
+                if (rows.containsKey(id)) cursor.addRow(new Object[]{id});
+                return cursor;
+            }
+            assertEquals("only copies from before the list are found by name and size",
+                    SaveDownloads.OLDER_COPY, selection);
+            for (Map.Entry<Long, ContentValues> entry : rows.entrySet()) {
+                ContentValues row = entry.getValue();
+                Long added = row.getAsLong(MediaStore.MediaColumns.DATE_ADDED);
+                if (selectionArgs[0].equals(row.getAsString(MediaStore.MediaColumns.DISPLAY_NAME))
+                        && selectionArgs[1].equals(row.getAsString(MediaStore.MediaColumns.RELATIVE_PATH))
+                        && selectionArgs[2].equals(String.valueOf(row.getAsLong(MediaStore.MediaColumns.SIZE)))
+                        && added != null && added < Long.parseLong(selectionArgs[3])) {
+                    cursor.addRow(new Object[]{entry.getKey()});
+                }
+            }
             return cursor;
         }
 
