@@ -734,6 +734,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 privacy.addPreference(toggle(context, Settings.DISABLE_DRAFT_PREVIEWS, L10n.t("No previews before sending"),
                         PatchFamily.DISABLE_DRAFT_PREVIEWS.coverageSummary(L10n.t("Telegram doesn't look up link previews for messages you haven't sent yet, "
                                 + "including shares, polls, story links and bots. Sent messages still get one."))));
+                if (PatchFamily.Capability.LOCAL_DRAFTS.installed()) {
+                    privacy.addPreference(toggle(context, Settings.LOCAL_DRAFTS, L10n.t("Keep drafts on this phone"),
+                            L10n.t("A message you start but don't send stays on this phone and stops syncing to your other "
+                                    + "devices. Clearing a draft still clears it there.")));
+                }
             }
             if (build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) {
                 privacy.addPreference(toggle(context, Settings.GALLERY_CAMERA_ON_TAP, L10n.t("Camera only on tap"),

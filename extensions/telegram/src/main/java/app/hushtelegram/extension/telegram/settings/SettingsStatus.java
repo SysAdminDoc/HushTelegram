@@ -126,6 +126,7 @@ public final class SettingsStatus {
     public static boolean pollLinkPreviews() { return false; }
     public static boolean storyLinkPreviews() { return false; }
     public static boolean botSharePreviews() { return false; }
+    public static boolean localDrafts() { return false; }
 
     public static boolean galleryCameraOnTap() { return false; }
 

@@ -248,12 +248,18 @@ Accounts	Konten
 Every switch here applies to all the accounts in this Telegram app, not only the one you have open.	Jeder Schalter hier gilt für alle Konten in dieser Telegram-App, nicht nur für das gerade geöffnete.
 No previews before sending	Keine Vorschau vor dem Senden
 Telegram doesn't look up link previews for messages you haven't sent yet, including shares, polls, story links and bots. Sent messages still get one.	Telegram sucht keine Linkvorschauen für Nachrichten, die du noch nicht gesendet hast, auch nicht beim Teilen, in Umfragen, Story-Links und Bots. Gesendete Nachrichten bekommen weiterhin eine.
+# context: Privacy page switch title. When on, an unsent message stays only on this phone instead of syncing to the account's other devices.
+Keep drafts on this phone	Entwürfe auf diesem Handy behalten
+# context: Summary under that switch. Clearing a draft (emptying the text box) is still sent so other devices drop it too.
+A message you start but don't send stays on this phone and stops syncing to your other devices. Clearing a draft still clears it there.	Eine Nachricht, die du anfängst, aber nicht sendest, bleibt auf diesem Handy und wird nicht mehr mit deinen anderen Geräten synchronisiert. Wenn du einen Entwurf leerst, verschwindet er dort trotzdem.
 Draft link previews	Linkvorschau in Entwürfen
 chat drafts	Chat-Entwürfe
 share sheet comments	Kommentare im Teilen-Menü
 poll links	Umfrage-Links
 story links	Story-Links
 bot shares	von Bots geteilte Nachrichten
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Draft link previews that keeps drafts off the server.
+draft syncing	Synchronisierung von Entwürfen
 Camera only on tap	Kamera erst beim Tippen
 Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it.	Das Öffnen der Anhang-Galerie startet die Kamera nicht und fragt nicht nach Kamerazugriff. Tippe auf die Kamerakachel, um sie zu starten.
 Gallery camera	Galeriekamera

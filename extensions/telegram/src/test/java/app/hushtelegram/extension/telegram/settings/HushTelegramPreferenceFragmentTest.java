@@ -362,6 +362,13 @@ public class HushTelegramPreferenceFragmentTest {
             // Draft previews keep Telegram's behavior until someone turns the switch on.
             assertFalse(Settings.DISABLE_DRAFT_PREVIEWS.key,
                     ((SwitchPreference) page.findPreference(Settings.DISABLE_DRAFT_PREVIEWS.key)).isChecked());
+            assertEquals("Keep drafts on this phone", String.valueOf(page.findPreference(Settings.LOCAL_DRAFTS.key).getTitle()));
+            assertEquals("A message you start but don't send stays on this phone and stops syncing to your other devices. "
+                    + "Clearing a draft still clears it there.",
+                    String.valueOf(page.findPreference(Settings.LOCAL_DRAFTS.key).getSummary()));
+            // Drafts keep syncing the way Telegram's do until someone turns the switch on.
+            assertFalse(Settings.LOCAL_DRAFTS.key,
+                    ((SwitchPreference) page.findPreference(Settings.LOCAL_DRAFTS.key)).isChecked());
             assertEquals("Camera only on tap", String.valueOf(page.findPreference(Settings.GALLERY_CAMERA_ON_TAP.key).getTitle()));
             assertEquals("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the "
                     + "camera tile to start it.",

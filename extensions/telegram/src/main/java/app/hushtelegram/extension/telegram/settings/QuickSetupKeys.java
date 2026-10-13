@@ -23,8 +23,9 @@ import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
  * <p>Quiet and Privacy only turn switches on, and only switches whose effect is plain from their
  * name and takes nothing away that someone would miss. Left out on purpose: Hide folder counters
  * and Hide the translate bar, which hide things people read; Reaction effects off, which some
- * like; Open links in your browser, which changes how every link opens; and Beta logs off, which
- * needs a restart and only matters on the beta. Back to defaults puts every switch a settings file
+ * like; Open links in your browser, which changes how every link opens; Keep drafts on this phone,
+ * which stops drafts following you to your other devices; and Beta logs off, which needs a restart
+ * and only matters on the beta. Back to defaults puts every switch a settings file
  * carries back the way it started.
  */
 final class QuickSetupKeys {

@@ -170,13 +170,15 @@ public class PausedHooksTest {
                 () -> app.hushtelegram.extension.telegram.misc.CallDebug.skipCallDebugUpload(true),
                 app.hushtelegram.extension.telegram.misc.CallDebug::skipCallLogFileUpload,
                 app.hushtelegram.extension.telegram.misc.CallDebug::skipCallLogUpload));
-        // An unsent message's link preview is never asked for, on any compose surface.
+        // An unsent message's link preview is never asked for, on any compose surface, and its
+        // draft stays off Telegram's server.
         probes.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, Arrays.asList(
                 app.hushtelegram.extension.telegram.misc.DraftPreviews::skipChatPreview,
                 app.hushtelegram.extension.telegram.misc.DraftPreviews::skipSharePreview,
                 app.hushtelegram.extension.telegram.misc.DraftPreviews::skipPollPreview,
                 app.hushtelegram.extension.telegram.misc.DraftPreviews::skipStoryLinkPreview,
-                app.hushtelegram.extension.telegram.misc.DraftPreviews::skipBotSharePreview));
+                app.hushtelegram.extension.telegram.misc.DraftPreviews::skipBotSharePreview,
+                () -> app.hushtelegram.extension.telegram.misc.LocalDrafts.keepOnPhone(new Object())));
         // Search's Apps tab neither loads nor draws the Popular apps list.
         probes.put(PatchFamily.HIDE_POPULAR_APPS, Arrays.asList(
                 app.hushtelegram.extension.telegram.misc.PopularApps::skipLoad,

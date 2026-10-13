@@ -396,6 +396,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting DISABLE_DRAFT_PREVIEWS =
             new BooleanSetting("hushtelegram_disable_draft_previews", FALSE);
 
+    /**
+     * The server copy of an unsent draft only; the draft on this phone, an empty clear and drafts
+     * the server sends stay stock ({@link app.hushtelegram.extension.telegram.misc.LocalDrafts}).
+     */
+    public static final BooleanSetting LOCAL_DRAFTS =
+            new BooleanSetting("hushtelegram_local_drafts", FALSE);
+
     /** The attachment gallery's camera tile only; the camera wakes on a tap and every other camera stays stock. */
     public static final BooleanSetting GALLERY_CAMERA_ON_TAP =
             new BooleanSetting("hushtelegram_gallery_camera_on_tap", FALSE);

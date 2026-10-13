@@ -20,6 +20,7 @@ import app.morphe.patches.telegram.misc.extension.requireParameterIntact
 import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -40,6 +41,24 @@ import java.util.BitSet
 private const val PATCH = "Disable draft link previews"
 internal const val WEB_PAGE_PREVIEW = "Lorg/telegram/tgnet/tl/TL_account\$getWebPagePreview;"
 internal const val DRAFT_PREVIEWS = "$EXTENSION_PACKAGE/misc/DraftPreviews;"
+internal const val LOCAL_DRAFTS = "$EXTENSION_PACKAGE/misc/LocalDrafts;"
+internal const val SAVE_DRAFT = "Lorg/telegram/tgnet/TLRPC\$TL_messages_saveDraft;"
+internal const val SEND_REQUEST = "Lorg/telegram/tgnet/ConnectionsManager;->sendRequest(Lorg/telegram/tgnet/TLObject;Lorg/telegram/tgnet/RequestDelegate;)I"
+/** messages.saveDraft's effect:flags.7?long, the one piece of content held in its flags. */
+internal const val DRAFT_EFFECT_FLAG = 0x80
+/** What a saveDraft request holds besides where it goes and how it's shown; each one counts as content. */
+internal val DRAFT_CONTENT = mapOf(
+    "message" to "Ljava/lang/String;",
+    "entities" to "Ljava/util/ArrayList;",
+    "reply_to" to "Lorg/telegram/tgnet/TLRPC\$InputReplyTo;",
+    "suggested_post" to "Lorg/telegram/tgnet/TLRPC\$SuggestedPost;",
+    "rich_message" to "Lorg/telegram/tgnet/tl/TL_iv\$TL_inputRichMessage;",
+    "media" to "Lorg/telegram/tgnet/TLRPC\$InputMedia;",
+)
+/** The rest: the chat, the flags, the effect they flag, and the link preview and media order switches. */
+private val DRAFT_FRAME = mapOf("peer" to "Lorg/telegram/tgnet/TLRPC\$InputPeer;", "flags" to "I", "effect" to "J",
+    "no_webpage" to "Z", "invert_media" to "Z")
+private val MOVE_RESULTS = setOf(Opcode.MOVE_RESULT, Opcode.MOVE_RESULT_WIDE, Opcode.MOVE_RESULT_OBJECT)
 private const val CHAR_SEQUENCE = "Ljava/lang/CharSequence;"
 private const val STRING = "Ljava/lang/String;"
 private const val ARRAY_LIST = "Ljava/util/ArrayList;"
@@ -66,8 +85,15 @@ val disableDraftPreviewsPatch = bytecodePatch(
     execute {
         requireStatusMethod("disableDraftPreviews")
         DraftPreviewTarget.entries.forEach { requireStatusMethod(it.capability) }
+        requireStatusMethod("localDrafts")
         // Every builder, skip target and borrowed register is checked before the first edit.
         val hooks = resolveDraftPreviewHooks()
+        val drafts = resolveLocalDraftHook()
+        shape(hooks.values.none { it.method === drafts.method }, "the draft upload shares a method with a preview builder")
+        drafts.method.addInstructionsAtControlFlowLabel(drafts.index, drafts.code,
+            ExternalLabel("hush_done", drafts.method.getInstruction(drafts.finish)))
+        writeStub(LOCAL_DRAFTS, "carries", 2, drafts.reader)
+        enableCapability("localDrafts")
         for ((target, hook) in hooks) {
             hook.method.addInstructionsAtControlFlowLabel(hook.index, hook.code,
                 ExternalLabel("hush_done", hook.method.getInstruction(hook.finish)))
@@ -378,6 +404,111 @@ private fun requestSite(method: Method): Int {
     shape(body.getOrNull(index + 1)?.call()?.let { it.definingClass == WEB_PAGE_PREVIEW && it.name == "<init>" && it.parameterTypes.isEmpty() } == true &&
         body[index + 1].namedRegisters() == body[index].namedRegisters(), "preview request constructor changed")
     return index
+}
+
+/** The draft upload's send at [index] and the instruction after it, [finish]; [reader] is the body written for LocalDrafts.carries. */
+internal data class LocalDraftHook(val method: MutableMethod, val index: Int, val finish: Int, val code: String, val reader: String)
+
+/**
+ * MediaDataController.saveDraft keeps a draft on the phone and then sends it to Telegram's server
+ * as messages.saveDraft. That send is the only way a draft leaves, so the hook sits on it, after the
+ * request is filled in, and a draft kept back goes on to what Telegram does next, re-sorting the
+ * chat list. Every field of the request is known here: one Telegram adds refuses the patch, since
+ * it could be a new kind of content the reader wouldn't see.
+ */
+internal fun BytecodePatchContext.resolveLocalDraftHook(): LocalDraftHook {
+    val owner = classDefByOrNull(LOCAL_DRAFTS)
+    shape(owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags), "no public local drafts runtime")
+    for (name in listOf("keepOnPhone", "carries")) {
+        shape(owner!!.methods.count { it.name == name && it.hasShape(listOf("Ljava/lang/Object;"), "Z") && it.isStatic() &&
+            AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.NATIVE.isSet(it.accessFlags) &&
+            !AccessFlags.ABSTRACT.isSet(it.accessFlags) && it.implementation != null } == 1,
+            "no callable public static runtime $name")
+    }
+    val request = classDefByOrNull(SAVE_DRAFT)
+    shape(request != null && AccessFlags.PUBLIC.isSet(request.accessFlags), "no public draft request")
+    val fields = request!!.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) }
+    shape(fields.associate { it.name to it.type } == DRAFT_CONTENT + DRAFT_FRAME && fields.size == DRAFT_CONTENT.size + DRAFT_FRAME.size &&
+        fields.all { AccessFlags.PUBLIC.isSet(it.accessFlags) }, "draft request fields changed")
+    val uploads = mutableListOf<Method>()
+    classDefForEach { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+        classDef.methods.filterTo(uploads) { it.constructs(SAVE_DRAFT) }
+    }
+    val found = uploads.one("draft upload", ::refuse)
+    val method = mutableClassDefBy(found.definingClass).methods.single { it.sameSignature(found) }
+    val body = method.instructions()
+    val created = body.indices.filter { body[it].opcode == Opcode.NEW_INSTANCE && body[it].reference() == SAVE_DRAFT }
+        .one("draft request", ::refuse)
+    val held = body[created].namedRegisters().single()
+    shape(body.getOrNull(created + 1)?.call()?.let { it.definingClass == SAVE_DRAFT && it.name == "<init>" && it.parameterTypes.isEmpty() } == true &&
+        body[created + 1].namedRegisters() == listOf(held), "draft request constructor changed")
+    val index = body.indices.filter { body[it].reference() == SEND_REQUEST }.one("draft upload send", ::refuse)
+    shape(body[index].opcode == Opcode.INVOKE_VIRTUAL && body[index].namedRegisters().getOrNull(1) == held && index > created,
+        "draft upload no longer sends the request it built")
+    // Every way to the send passes the constructor, and nothing on the way puts anything else in its register.
+    requireGuarded(method, created, index)
+    shape(keeps(method, created, index, held), "draft request register is written again before the send")
+    // The send's answer is dropped, so a draft kept back leaves nothing unset.
+    val finish = index + 1
+    shape(body.getOrNull(finish) != null && body[finish].opcode !in MOVE_RESULTS, "draft upload reads the send's answer")
+    // An effect goes in with its flag bit, and that bit is what the reader checks.
+    val effect = body.indices.filter { body[it].opcode == Opcode.IPUT_WIDE && body[it].reference() == "$SAVE_DRAFT->effect:J" }
+        .one("draft effect store", ::refuse)
+    val flag = body.getOrNull(effect + 2)
+    shape(body[effect].namedRegisters().getOrNull(1) == held &&
+        body.getOrNull(effect + 1)?.opcode == Opcode.IGET && body[effect + 1].reference() == "$SAVE_DRAFT->flags:I" &&
+        flag?.opcode == Opcode.OR_INT_LIT16 && (flag as NarrowLiteralInstruction).narrowLiteral == DRAFT_EFFECT_FLAG &&
+        body.getOrNull(effect + 3)?.opcode == Opcode.IPUT && body[effect + 3].reference() == "$SAVE_DRAFT->flags:I" &&
+        body[effect + 3].namedRegisters().getOrNull(1) == held, "draft effect no longer sets flag $DRAFT_EFFECT_FLAG")
+    val answer = method.freeLocalsAt(PATCH, index, 1, targets = listOf(finish), highest = 255).single()
+    val code = listOf(
+        "invoke-static/range {v$held .. v$held}, $LOCAL_DRAFTS->keepOnPhone(Ljava/lang/Object;)Z",
+        "move-result v$answer",
+        "if-nez v$answer, :hush_done",
+    ).joinToString("\n")
+    return LocalDraftHook(method, index, finish, code, draftReader())
+}
+
+/** LocalDrafts.carries, with the request in p0 and v0 to work in: true when it holds any [DRAFT_CONTENT] or a flagged effect. */
+private fun draftReader(): String {
+    val lines = mutableListOf("check-cast p0, $SAVE_DRAFT")
+    for ((name, type) in DRAFT_CONTENT) {
+        lines += "iget-object v0, p0, $SAVE_DRAFT->$name:$type"
+        lines += when (name) {
+            "message" -> listOf("invoke-static {v0}, Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z",
+                "move-result v0", "if-eqz v0, :carries")
+            "entities" -> listOf("if-eqz v0, :no_entities", "invoke-virtual {v0}, $type->isEmpty()Z",
+                "move-result v0", "if-eqz v0, :carries", ":no_entities")
+            else -> listOf("if-nez v0, :carries")
+        }
+    }
+    lines += listOf("iget v0, p0, $SAVE_DRAFT->flags:I", "and-int/lit16 v0, v0, 0x${DRAFT_EFFECT_FLAG.toString(16)}",
+        "if-nez v0, :carries", "const/4 v0, 0x0", "return v0", ":carries", "const/4 v0, 0x1", "return v0")
+    return lines.joinToString("\n")
+}
+
+/** No instruction on a path from [created] to [use] writes [register] again. */
+private fun keeps(method: Method, created: Int, use: Int, register: Int): Boolean {
+    val flow = ControlFlow.of(method)
+    val body = method.instructions()
+    val next = body.indices.map { flow.normal[it] + flow.exceptional[it] }
+    val previous = body.indices.map { mutableListOf<Int>() }
+    next.forEachIndexed { from, targets -> targets.forEach { previous[it] += from } }
+    fun reach(start: List<Int>, edges: List<List<Int>>, stop: Int): BitSet {
+        val seen = BitSet()
+        val pending = ArrayDeque(start)
+        while (pending.isNotEmpty()) {
+            val at = pending.removeFirst()
+            if (at == stop || seen[at]) continue
+            seen.set(at)
+            pending += edges[at]
+        }
+        return seen
+    }
+    val after = reach(next[created], next, use)
+    val before = reach(previous[use], previous, created)
+    return body.indices.none { after[it] && before[it] && register in body[it].writes() }
 }
 
 private fun BytecodePatchContext.requireRuntimeHooks() {

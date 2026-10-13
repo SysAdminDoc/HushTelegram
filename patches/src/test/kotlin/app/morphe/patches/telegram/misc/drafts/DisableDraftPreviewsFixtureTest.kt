@@ -12,23 +12,32 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.util.ControlFlow
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.immutable.ImmutableField
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+
+private const val MEDIA_DATA = "Lorg/telegram/messenger/MediaDataController;"
+private val FLAGS = listOf("disableDraftPreviews", "localDrafts") + DraftPreviewTarget.entries.map { it.capability }
 
 /** The builders' classes and the classes they hand work to are the whole context; nothing else is a target. */
 class DisableDraftPreviewsFixtureTest {
@@ -40,7 +49,10 @@ class DisableDraftPreviewsFixtureTest {
             assertEquals("${build.name}: complete compose coverage", DraftPreviewTarget.entries.toSet(), hooks.keys)
             val before = hooks.mapValues { ImmutableMethod.of(it.value.method) }
             val excluded = context.excludedBuilders().associateWith { it.instructions().map(::operation) }
+            val drafts = context.resolveLocalDraftHook()
+            val upload = ImmutableMethod.of(drafts.method)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { disableDraftPreviewsPatch.execute(context) })
+            assertUploadGated(build.name, context, drafts, upload)
 
             for ((target, hook) in hooks) {
                 val original = before.getValue(target)
@@ -103,10 +115,77 @@ class DisableDraftPreviewsFixtureTest {
                 assertEquals("${build.name}: leaves ${method.definingClass}->${method.name} alone", operations,
                     context.mutableClassDefBy(method.definingClass).methods.single { it.sameSignature(method) }.instructions().map(::operation))
             }
-            for (flag in listOf("disableDraftPreviews") + DraftPreviewTarget.entries.map { it.capability }) {
+            for (flag in FLAGS) {
                 val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
                 assertEquals("${build.name}: $flag build fact", 1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
                 assertEquals(Opcode.RETURN, status[1].opcode)
+            }
+        }
+    }
+
+    /**
+     * The draft upload asks the switch with the request it built, right before the send, and a yes
+     * goes past the send only. The draft was saved on the phone before that, and the reader written
+     * for LocalDrafts.carries looks at every content field and the effect's flag.
+     */
+    private fun assertUploadGated(build: String, context: BytecodePatchContext, drafts: LocalDraftHook, upload: Method) {
+        val old = upload.instructions()
+        val now = drafts.method.instructions()
+        val gate = now.subList(drafts.index, drafts.index + 3)
+        assertEquals("$build: draft gate", listOf(Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.IF_NEZ), gate.map { it.opcode })
+        assertEquals("$build: draft gate method", "$LOCAL_DRAFTS->keepOnPhone(Ljava/lang/Object;)Z", gate[0].reference())
+        val send = now[drafts.index + 3]
+        assertEquals("$build: the send follows the gate", SEND_REQUEST, send.reference())
+        assertEquals("$build: the gate reads the request the send takes",
+            (send as FiveRegisterInstruction).registerD, (gate[0] as RegisterRangeInstruction).startRegister)
+        assertEquals("$build: one register for the request", 1, (gate[0] as RegisterRangeInstruction).registerCount)
+        assertEquals("$build: the upload keeps every original operation", old.map(::operation),
+            now.filterIndexed { index, _ -> index !in drafts.index until drafts.index + 3 }.map(::operation))
+        val flow = ControlFlow.of(drafts.method)
+        assertEquals("$build: no sends, yes goes past the send only", setOf(drafts.index + 3, drafts.index + 4),
+            flow.normal[drafts.index + 2].toSet())
+        assertFalse("$build: the send is reached without the gate", drafts.index + 3 in reachable(flow, 0, drafts.index))
+        val local = old.indices.filter { old[it].call()?.let { call -> call.definingClass == upload.definingClass && call.name == "saveDraft" &&
+            call.parameterTypes.map(CharSequence::toString).contains("Lorg/telegram/tgnet/TLRPC\$DraftMessage;") } == true }
+        assertEquals("$build: one save on the phone", 1, local.size)
+        assertFalse("$build: the gate is reached without the save on the phone", drafts.index in reachable(ControlFlow.of(upload), 0, local.single()))
+        val reader = context.mutableClassDefBy(LOCAL_DRAFTS).methods.single { it.name == "carries" }
+        val read = reader.instructions()
+        assertEquals("$build: reader registers", 2, reader.implementation!!.registerCount)
+        assertEquals("$build: reader casts the request", Opcode.CHECK_CAST to SAVE_DRAFT, operation(read[0]))
+        assertEquals("$build: reader looks at every content field, then the flags",
+            DRAFT_CONTENT.keys.toList() + "flags",
+            read.mapNotNull { ((it as? ReferenceInstruction)?.reference as? FieldReference)?.takeIf { field -> field.definingClass == SAVE_DRAFT }?.name })
+        val mask = read.single { it.opcode == Opcode.AND_INT_LIT16 } as NarrowLiteralInstruction
+        assertEquals("$build: reader masks the effect flag", DRAFT_EFFECT_FLAG, mask.narrowLiteral)
+        assertEquals("$build: reader answers no once and yes once", listOf(0, 1),
+            read.filter { it.opcode == Opcode.CONST_4 }.map { (it as NarrowLiteralInstruction).narrowLiteral })
+    }
+
+    @Test
+    fun `changed draft upload geometry refuses before any partial mutation`() {
+        for (build in Fixtures.declaredBuilds()) {
+            for (change in listOf("new request field", "second upload", "request overwritten", "effect flag", "send answer read")) {
+                val context = contextFor(build)
+                val hooks = context.resolveDraftPreviewHooks()
+                val drafts = context.resolveLocalDraftHook()
+                val body = drafts.method.instructions()
+                val held = (body[drafts.index] as FiveRegisterInstruction).registerD
+                when (change) {
+                    // A field Telegram adds could be content the reader doesn't look at.
+                    "new request field" -> context.mutableClassDefBy(SAVE_DRAFT).fields.add(
+                        ImmutableField(SAVE_DRAFT, "todo", "Lorg/telegram/tgnet/TLRPC\$InputMedia;", AccessFlags.PUBLIC.value, null, null, null).toMutable())
+                    "second upload" -> context.mutableClassDefBy(drafts.method.definingClass).methods.single { it.name == "cleanDraft" }
+                        .addInstructions(0, "new-instance v0, $SAVE_DRAFT")
+                    "request overwritten" -> drafts.method.addInstructions(drafts.index, "const/4 v$held, 0x0")
+                    "effect flag" -> {
+                        val flag = body.indexOfFirst { it.opcode == Opcode.OR_INT_LIT16 && (it as NarrowLiteralInstruction).narrowLiteral == DRAFT_EFFECT_FLAG }
+                        val register = (body[flag] as TwoRegisterInstruction).registerA
+                        drafts.method.replaceInstruction(flag, "or-int/lit16 v$register, v$register, 0x40")
+                    }
+                    else -> drafts.method.replaceInstruction(drafts.finish, "move-result v$held")
+                }
+                assertRefusedUntouched(build.name, change, context, hooks)
             }
         }
     }
@@ -167,6 +246,7 @@ class DisableDraftPreviewsFixtureTest {
 
     private fun assertRefusedUntouched(build: String, case: String, context: BytecodePatchContext, hooks: Map<DraftPreviewTarget, DraftPreviewHook>) {
         val before = hooks.mapValues { it.value.method.instructions().map(::operation) }
+        val uploads = listOf(MEDIA_DATA, LOCAL_DRAFTS).associateWith { owner -> methodOperations(context, owner) }
         try {
             disableDraftPreviewsPatch.execute(context)
             fail("$build: $case was accepted")
@@ -175,15 +255,24 @@ class DisableDraftPreviewsFixtureTest {
         }
         for ((target, hook) in hooks) assertEquals("$build: $case doesn't partly mutate $target",
             before.getValue(target), hook.method.instructions().map(::operation))
-        for (flag in listOf("disableDraftPreviews") + DraftPreviewTarget.entries.map { it.capability }) {
+        for ((owner, operations) in uploads) assertEquals("$build: $case doesn't partly mutate $owner",
+            operations, methodOperations(context, owner))
+        for (flag in FLAGS) {
             val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
             assertEquals("$build: $case leaves $flag false", 0, (status[0] as NarrowLiteralInstruction).narrowLiteral)
         }
     }
 
-    /** Builder classes plus every class their builders and URL checks construct or read, so callbacks and runnables resolve. */
+    private fun methodOperations(context: BytecodePatchContext, owner: String) =
+        context.mutableClassDefBy(owner).methods.associate { it.toString() to it.instructions().map(::operation) }
+
+    /**
+     * Builder classes plus every class their builders and URL checks construct or read, so callbacks
+     * and runnables resolve, and the draft upload's class with the request it builds.
+     */
     private fun contextFor(build: java.io.File): BytecodePatchContext {
-        val owners = FixtureDex.classesWhere(build, { true }) { it.constructs(WEB_PAGE_PREVIEW) }
+        val owners = (FixtureDex.classesWhere(build, { true }) { it.constructs(WEB_PAGE_PREVIEW) } +
+            FixtureDex.classesWhere(build, { true }) { it.constructs(SAVE_DRAFT) }).distinctBy(ClassDef::getType)
         val helpers = owners.flatMap { owner -> owner.methods.filter { method -> method.constructs(WEB_PAGE_PREVIEW) ||
             method.instructions().any { it.call()?.name == "cancelRunOnUIThread" } } }
             .flatMap { method -> method.instructions().mapNotNull { instruction -> when {
@@ -192,7 +281,7 @@ class DisableDraftPreviewsFixtureTest {
                 else -> null
             } } }
             .filter { it.startsWith("L") && it !in owners.map(ClassDef::getType) }.toSet()
-        return PatchContexts.of(ExtensionDex.classes() + owners + FixtureDex.classes(build, helpers).values)
+        return PatchContexts.of(ExtensionDex.classes() + owners + FixtureDex.classes(build, helpers + SAVE_DRAFT).values)
     }
 
     private fun BytecodePatchContext.excludedBuilders(): List<Method> {
