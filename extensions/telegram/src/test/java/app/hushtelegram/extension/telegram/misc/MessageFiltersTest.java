@@ -263,7 +263,9 @@ public class MessageFiltersTest {
                 // A character named by its number is that character, not its last digit: these are a+a{1000}.
                 "/\\x61+a{1000}!/", "/\\u0061+a{1000}!/", "/\\0141+a{1000}!/",
                 // Ignoring case, ß matches ss, so a run of s's could stop in more than one place.
-                "/s+ß{40}!/", "/ß+s{40}!/"}) {
+                "/s+ß{40}!/", "/ß+s{40}!/",
+                // Capital ẞ stays one letter both ways, but it lowercases to ß, so it matches ss too.
+                "/s+ẞ{40}!/", "/ẞ+s{40}!/", "/[ẞ]+s{40}!/"}) {
             assertEquals(slow, MessageFilters.Problem.SLOW, MessageFilters.problem(slow));
         }
         List<MessageFilters.Filter> kept = parsed("/airdrop\\s+0x[a-f0-9]{40}/");

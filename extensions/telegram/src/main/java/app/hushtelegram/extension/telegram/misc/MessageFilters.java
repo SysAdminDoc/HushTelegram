@@ -575,10 +575,15 @@ public final class MessageFilters {
         return true;
     }
 
-    /** Whether a character's case folds to more than one, like ß to SS or İ to i and a dot. */
+    /**
+     * Whether a character's case folds to more than one, like ß to SS or İ to i and a dot. Capital
+     * ẞ is one letter upper and lower, but its lower ß is two upper, so the round trip is tried too.
+     */
     private static boolean foldsToMore(char c) {
         String one = String.valueOf(c);
-        return one.toUpperCase(Locale.ROOT).length() > 1 || one.toLowerCase(Locale.ROOT).length() > 1;
+        String lower = one.toLowerCase(Locale.ROOT);
+        return one.toUpperCase(Locale.ROOT).length() > 1 || lower.length() > 1
+                || lower.toUpperCase(Locale.ROOT).length() > 1;
     }
 
     /** What {@link #tries} answers for an expression it refuses outright. */
