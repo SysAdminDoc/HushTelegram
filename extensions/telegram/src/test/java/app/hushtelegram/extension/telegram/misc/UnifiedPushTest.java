@@ -103,6 +103,19 @@ public class UnifiedPushTest {
 
     private String token() { return UnifiedPush.prefs(context).getString(UnifiedPush.TOKEN, null); }
 
+    /** The Web Push token Telegram signs up for {@link #ENDPOINT}. */
+    private String webPush() { return UnifiedPush.webPushToken(context, ENDPOINT, true); }
+
+    /** Whether 65 bytes are an uncompressed point on P-256: y² = x³ - 3x + b, mod p. */
+    private static boolean onP256(byte[] point) {
+        java.math.BigInteger p = new java.math.BigInteger("FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF", 16);
+        java.math.BigInteger b = new java.math.BigInteger("5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B", 16);
+        java.math.BigInteger x = new java.math.BigInteger(1, java.util.Arrays.copyOfRange(point, 1, 33));
+        java.math.BigInteger y = new java.math.BigInteger(1, java.util.Arrays.copyOfRange(point, 33, 65));
+        return point.length == 65 && point[0] == 0x04
+                && y.pow(2).mod(p).equals(x.pow(3).subtract(x.multiply(java.math.BigInteger.valueOf(3))).add(b).mod(p));
+    }
+
     /** Signed up with ntfy, an address in hand, the switch on. */
     private String signedUp() {
         install(UnifiedPush.NTFY);
@@ -138,13 +151,14 @@ public class UnifiedPushTest {
         assertEquals(2, UnifiedPush.type(2));
 
         Settings.UNIFIED_PUSH.save(true);
-        assertEquals(ENDPOINT, UnifiedPush.token(2, "fcm-token"));
-        assertEquals(UnifiedPush.SIMPLE_PUSH, UnifiedPush.type(2));
+        String signUp = UnifiedPush.token(2, "fcm-token");
+        assertEquals(webPush(), signUp);
+        assertEquals(UnifiedPush.WEB_PUSH, UnifiedPush.type(2));
         // A Firebase sign-up that failed asks with no token, and the address goes in all the same.
-        assertEquals(ENDPOINT, UnifiedPush.token(2, null));
-        assertEquals(UnifiedPush.SIMPLE_PUSH, UnifiedPush.type(2));
-        assertEquals(ENDPOINT, UnifiedPush.token(UnifiedPush.SIMPLE_PUSH, ENDPOINT));
-        assertEquals(UnifiedPush.SIMPLE_PUSH, UnifiedPush.type(UnifiedPush.SIMPLE_PUSH));
+        assertEquals(signUp, UnifiedPush.token(2, null));
+        assertEquals(UnifiedPush.WEB_PUSH, UnifiedPush.type(2));
+        assertEquals(signUp, UnifiedPush.token(UnifiedPush.WEB_PUSH, signUp));
+        assertEquals(UnifiedPush.WEB_PUSH, UnifiedPush.type(UnifiedPush.WEB_PUSH));
 
         for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
             if (reason == HushTelegramPause.Reason.NONE) continue;
@@ -157,6 +171,63 @@ public class UnifiedPushTest {
             assertEquals("fcm-token", UnifiedPush.token(2, "fcm-token"));
             assertEquals(2, UnifiedPush.type(2));
         });
+    }
+
+    /**
+     * Seen on the S22 on 2026-10-13: a Simple push (type 4) sign-up was accepted and a bot's
+     * message never reached the address. Ordinary messages go to a Web Push sign-up, type 10, whose
+     * token is the address with a P-256 key and an auth secret Telegram's servers encrypt to.
+     */
+    @Test public void theSignUpIsAWebPushTokenWithAKeyTelegramCanEncryptTo() throws Exception {
+        signedUp();
+        String signUp = UnifiedPush.token(2, "fcm-token");
+        assertEquals(UnifiedPush.WEB_PUSH, UnifiedPush.type(2));
+        org.json.JSONObject json = new org.json.JSONObject(signUp);
+        assertEquals(ENDPOINT, json.getString("endpoint"));
+        org.json.JSONObject keys = json.getJSONObject("keys");
+        assertFalse("base64url without padding", (keys.getString("p256dh") + keys.getString("auth")).matches(".*[+/=].*"));
+        assertTrue("the key is a point on P-256", onP256(java.util.Base64.getUrlDecoder().decode(keys.getString("p256dh"))));
+        assertEquals(16, java.util.Base64.getUrlDecoder().decode(keys.getString("auth")).length);
+
+        // Each start hands Telegram the same token, so it isn't signed up again.
+        assertEquals(signUp, UnifiedPush.token(2, "fcm-token"));
+        UnifiedPush.type(2);
+        // Off keeps the keys, and the next sign-up uses them again.
+        UnifiedPush.sync(context, false);
+        assertEquals(signUp, UnifiedPush.webPushToken(context, ENDPOINT, false));
+    }
+
+    /** A coordinate that comes up short of 32 bytes, or with a sign byte, still makes a 65-byte point. */
+    @Test public void everyNewKeyIsAWholePoint() throws Exception {
+        for (int i = 0; i < 200; i++) assertTrue("key " + i, onP256(UnifiedPush.newPublicKey()));
+    }
+
+    /** With keys that couldn't be saved, Telegram keeps its own token: keys made fresh at each start would sign it up again each time. */
+    @Test public void keysThatWerentSavedSignNothingUp() {
+        signedUp();
+        Flaky flaky = new Flaky(UnifiedPush.prefs(context));
+        UnifiedPush.store = ignored -> flaky;
+        flaky.failWrites = true;
+        assertEquals("fcm-token", UnifiedPush.token(2, "fcm-token"));
+        assertEquals(2, UnifiedPush.type(2));
+        assertTrue(String.join("\n", HookStatus.report()).contains("Web Push keys not saved"));
+        flaky.failWrites = false;
+        assertEquals(webPush(), UnifiedPush.token(2, "fcm-token"));
+        assertEquals(UnifiedPush.WEB_PUSH, UnifiedPush.type(2));
+    }
+
+    /** Switching off hands Telegram back to Firebase whether it holds the Web Push token or the bare address a 0.0.17 sign-up left. */
+    @Test public void telegramHoldsTheAddressAsAWebPushTokenOrAsTheBareOldOne() {
+        signedUp();
+        String signUp = webPush();
+        assertTrue(UnifiedPush.holds(signUp, context, ENDPOINT));
+        assertTrue("a Simple push sign-up from 0.0.17", UnifiedPush.holds(ENDPOINT, context, ENDPOINT));
+        assertFalse(UnifiedPush.holds("fcm-token", context, ENDPOINT));
+        assertFalse(UnifiedPush.holds(null, context, ENDPOINT));
+        assertFalse("another address", UnifiedPush.holds(UnifiedPush.webPushToken(context, ENDPOINT + "2", true), context, ENDPOINT));
+        UnifiedPush.prefs(context).edit().remove(UnifiedPush.WEB_PUSH_KEY).commit();
+        assertFalse("without keys only the bare address counts", UnifiedPush.holds(signUp, context, ENDPOINT));
+        assertNull("checking doesn't make keys", UnifiedPush.prefs(context).getString(UnifiedPush.WEB_PUSH_KEY, null));
     }
 
     @Test public void signingUpPicksNtfyAndSendsWhatTheSpecAsks() {
@@ -314,7 +385,7 @@ public class UnifiedPushTest {
 
     @Test public void anAppThatIsGoneTakesItsAddressWithItSoFirebaseCanComeBack() {
         signedUp();
-        assertEquals(ENDPOINT, UnifiedPush.token(2, "fcm-token"));
+        assertEquals(webPush(), UnifiedPush.token(2, "fcm-token"));
         UnifiedPush.type(2);
         shadowOf(context.getPackageManager()).removeResolveInfosForIntent(new Intent(UnifiedPush.REGISTER), UnifiedPush.NTFY);
         UnifiedPush.sync(context, true);

@@ -20,7 +20,17 @@ import android.os.IBinder;
 
 import androidx.annotation.Nullable;
 
+import org.json.JSONObject;
+
+import java.math.BigInteger;
+import java.security.GeneralSecurityException;
+import java.security.KeyPairGenerator;
+import java.security.SecureRandom;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.ECGenParameterSpec;
+import java.security.spec.ECPoint;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -41,11 +51,15 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * Notifications through a UnifiedPush app such as ntfy, for phones where Firebase can't sign this
  * patched Telegram up.
  *
- * <p>Telegram's API has a token type for a plain web address its servers call when something
- * arrives, type 4, "Simple push", and its documentation names UnifiedPush as one use of it. The
- * call carries no message, only a wake-up. The UnifiedPush app hands out that address and turns
- * each call into a broadcast here; Telegram then connects and fetches what's new the same way it
- * does after a Firebase push it couldn't read.
+ * <p>The address goes to Telegram as a Web Push sign-up, token type 10: the address plus a public
+ * key and auth secret its servers encrypt each message to. Type 4, "Simple push", a plain web
+ * address, is what Telegram's documentation names for UnifiedPush, but its servers only call that
+ * one for events that carry no content. On the S22 on 2026-10-13 a type 4 sign-up was accepted and
+ * a message from a bot never reached the address, while Nagram signs up type 10 for ordinary
+ * messages. The UnifiedPush app hands over only a message's body, without the headers that body
+ * needs to be decrypted, so the private key isn't kept and each message is a wake-up: the app turns
+ * it into a broadcast here, and Telegram then connects and fetches what's new the same way it does
+ * after a Firebase push it couldn't read.
  *
  * <p>Sign-up follows the UnifiedPush Android spec (AND_3): a REGISTER broadcast to the chosen app
  * with a random token, answered by NEW_ENDPOINT with the address. Every broadcast back has to carry
@@ -60,8 +74,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * after this token's address came in is ignored. TEMP_UNAVAILABLE, the app's server being down,
  * keeps the sign-up and its address. The next NEW_ENDPOINT says it's back.
  *
- * <p>Everything this keeps is in its own prefs file: which app, the token, and the address.
- * None of it is a setting, so it isn't in settings backups. A sign-up goes out to the app only
+ * <p>Everything this keeps is in its own prefs file: which app, the token, the address, and the
+ * Web Push public key and auth secret. None of it is a setting, so it isn't in settings backups. A sign-up goes out to the app only
  * once its token is on disk, and an address goes to Telegram only once it's saved, so a restart
  * never finds a sign-up it forgot. An address is acknowledged as it comes in, saved or not: the
  * next start's sign-up brings it again.
@@ -91,8 +105,12 @@ public final class UnifiedPush {
     /** The spec's stand-in package: the PendingIntent only tells the app who's asking. */
     static final String DUMMY_APP = "org.unifiedpush.dummy_app";
     static final String NTFY = "io.heckel.ntfy";
-    /** Telegram's token type for a web address its servers call, "Simple push" in its API. */
-    static final int SIMPLE_PUSH = 4;
+    /** The Web Push public key Telegram's servers encrypt to, an uncompressed P-256 point in base64url. */
+    static final String WEB_PUSH_KEY = "web_push_key";
+    /** The Web Push auth secret, 16 random bytes in base64url. */
+    static final String WEB_PUSH_AUTH = "web_push_auth";
+    /** Telegram's token type for a Web Push address, "Web push" in its API, the one ordinary messages go to. */
+    static final int WEB_PUSH = 10;
     /** The spec's limit on an address. */
     static final int MAX_ENDPOINT = 1000;
 
@@ -117,10 +135,15 @@ public final class UnifiedPush {
         @Override
         public void register(String endpoint) {
             Utils.runOnMainThread(() -> {
-                startTelegram();
-                if (endpoint.equals(telegramToken())) return;
-                sendToTelegram(SIMPLE_PUSH, endpoint);
-                HookStatus.counted(FamilyNames.UNIFIED_PUSH, "addresses handed to Telegram");
+                try {
+                    startTelegram();
+                    String signUp = webPushToken(Utils.getContext(), endpoint, true);
+                    if (signUp == null || signUp.equals(telegramToken())) return;
+                    sendToTelegram(WEB_PUSH, signUp);
+                    HookStatus.counted(FamilyNames.UNIFIED_PUSH, "addresses handed to Telegram");
+                } catch (Throwable failure) {
+                    HookStatus.threw(FamilyNames.UNIFIED_PUSH, "handing the address to Telegram", failure);
+                }
             });
         }
 
@@ -151,7 +174,7 @@ public final class UnifiedPush {
             Utils.runOnMainThread(() -> {
                 try {
                     startTelegram();
-                    if (!endpoint.equals(telegramToken())) return;
+                    if (!holds(telegramToken(), Utils.getContext(), endpoint)) return;
                     // Firebase's next token goes out as it is now that no address is saved. On a
                     // phone without it nothing comes, and the address dies with the app's sign-up.
                     requestPushToken();
@@ -195,22 +218,88 @@ public final class UnifiedPush {
     /**
      * Injected at the top of {@code sendRegistrationToServer}, before {@link #type}. While the
      * switch is on and an address is saved, any sign-up Telegram starts, Firebase's included,
-     * signs up that address instead.
+     * signs up that address instead, as a Web Push token.
      */
     public static String token(int type, String token) {
         HookStatus.invoked(FamilyNames.UNIFIED_PUSH);
         String endpoint = activeEndpoint();
-        SWAPPED.set(endpoint != null);
-        if (endpoint == null) return token;
-        if (type != SIMPLE_PUSH) HookStatus.counted(FamilyNames.UNIFIED_PUSH, "Firebase sign-ups kept on UnifiedPush");
-        return endpoint;
+        String signUp = endpoint == null ? null : webPushToken(Utils.getContext(), endpoint, true);
+        SWAPPED.set(signUp != null);
+        if (signUp == null) return token;
+        if (type != WEB_PUSH) HookStatus.counted(FamilyNames.UNIFIED_PUSH, "Firebase sign-ups kept on UnifiedPush");
+        return signUp;
     }
 
     /** Injected right after {@link #token}: the token type that goes with the answer it gave. */
     public static int type(int type) {
         Boolean swapped = SWAPPED.get();
         SWAPPED.remove();
-        return Boolean.TRUE.equals(swapped) ? SIMPLE_PUSH : type;
+        return Boolean.TRUE.equals(swapped) ? WEB_PUSH : type;
+    }
+
+    /**
+     * The Web Push token Telegram signs up for this address: {@code {"endpoint", "keys": {"p256dh",
+     * "auth"}}}, the shape Telegram's API asks for with type 10. The keys are made the first time
+     * and kept, so each start hands Telegram the same token and doesn't sign it up again. With
+     * {@code make} false, null until they exist. Null too when they can't be made or saved: unsaved
+     * keys would change at every start.
+     */
+    @Nullable
+    static String webPushToken(@Nullable Context context, String endpoint, boolean make) {
+        if (context == null) return null;
+        try {
+            SharedPreferences prefs = prefs(context);
+            String key = prefs.getString(WEB_PUSH_KEY, null);
+            String auth = prefs.getString(WEB_PUSH_AUTH, null);
+            if (key == null || auth == null) {
+                if (!make) return null;
+                Base64.Encoder base64url = Base64.getUrlEncoder().withoutPadding();
+                key = base64url.encodeToString(newPublicKey());
+                byte[] secret = new byte[16];
+                new SecureRandom().nextBytes(secret);
+                auth = base64url.encodeToString(secret);
+                if (!prefs.edit().putString(WEB_PUSH_KEY, key).putString(WEB_PUSH_AUTH, auth).commit()) {
+                    HookStatus.counted(FamilyNames.UNIFIED_PUSH, "Web Push keys not saved, made again at the next start");
+                    return null;
+                }
+            }
+            return new JSONObject().put("endpoint", endpoint)
+                    .put("keys", new JSONObject().put("p256dh", key).put("auth", auth)).toString();
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.UNIFIED_PUSH, "Web Push keys", failure);
+            return null;
+        }
+    }
+
+    /**
+     * A fresh P-256 public key as the 65-byte uncompressed point Web Push uses (0x04, then X and Y,
+     * 32 bytes each). The private half is dropped: nothing here reads a message's content.
+     */
+    static byte[] newPublicKey() throws GeneralSecurityException {
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+        generator.initialize(new ECGenParameterSpec("secp256r1"));
+        ECPoint point = ((ECPublicKey) generator.generateKeyPair().getPublic()).getW();
+        byte[] raw = new byte[65];
+        raw[0] = 0x04;
+        fixed(point.getAffineX(), raw, 1);
+        fixed(point.getAffineY(), raw, 33);
+        return raw;
+    }
+
+    /** A coordinate into 32 bytes, big-endian: toByteArray can add a sign byte or come up short. */
+    private static void fixed(BigInteger value, byte[] into, int at) {
+        byte[] bytes = value.toByteArray();
+        int length = Math.min(bytes.length, 32);
+        System.arraycopy(bytes, bytes.length - length, into, at + 32 - length, length);
+    }
+
+    /**
+     * Whether the token Telegram last signed up is this address: its Web Push token, or the bare
+     * address a Simple push sign-up from 0.0.17 left behind.
+     */
+    static boolean holds(@Nullable String held, @Nullable Context context, String endpoint) {
+        if (held == null) return false;
+        return held.equals(endpoint) || held.equals(webPushToken(context, endpoint, false));
     }
 
     /** The saved address while the switch is on and not paused, or null. */
@@ -473,7 +562,7 @@ public final class UnifiedPush {
 
     /**
      * An https address with a host, no longer than the spec allows. Telegram's push documentation
-     * says its servers PUT to "the specified HTTPS endpoint".
+     * says its servers call "the specified HTTPS endpoint".
      */
     static boolean usable(@Nullable String endpoint) {
         if (endpoint == null || endpoint.isEmpty() || endpoint.length() > MAX_ENDPOINT) return false;

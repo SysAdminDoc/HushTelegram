@@ -5,6 +5,7 @@ Every HushTelegram release, newest first.
 ## Unreleased
 
 * **Telegram:** The Support HushTelegram row at the bottom of HushTelegram settings is just its name now. The line under it is gone.
+* **Telegram:** UnifiedPush notifications now sign up with Telegram as a Web Push address. The old sign-up was accepted, but Telegram's servers only call that kind for a few events, so an ordinary message never woke Telegram through ntfy. Turning the switch off still hands Telegram back to Firebase after an update from 0.0.17. Related to #5 and #16.
 * **Tooling:** The build runs on Gradle 9.8.1 now. 9.7.1 was inside three of Gradle's own high severity advisories, and 9.8.1 is the release that fixes them.
 * **Tooling:** The pre-push hook now stops a push whose ref lines aren't what git sends, instead of reading them as nothing to check.
 * **Tooling:** The advisory gates stop when OSV sends back something that isn't a real answer. An error object used to read as "no advisories", and the gate passed without checking anything.
