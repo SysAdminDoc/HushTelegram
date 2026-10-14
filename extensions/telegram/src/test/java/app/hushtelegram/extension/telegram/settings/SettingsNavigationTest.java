@@ -905,6 +905,10 @@ public class SettingsNavigationTest {
         page.navigation.back();
         layout(dialog.getView());
         assertEquals("Privacy", focusedTitle(a11y));
+        // Someone taps More settings, so it's on screen when they leave home. With the lock row the
+        // home page runs past this window, and a row that's never drawn can't take the focus back.
+        list().setSelection(titles().indexOf("More settings"));
+        layout(dialog.getView());
         page.navigation.navigate("more");
         layout(dialog.getView());
         page.navigation.navigate("About");
@@ -1277,7 +1281,7 @@ public class SettingsNavigationTest {
         String switches = decoded.substring(decoded.indexOf("&additional_context=Switches on: "));
         assertTrue(switches, switches.contains("Hide ads"));
         assertFalse(switches, switches.contains("Hide contacts on Telegram"));
-        assertEquals("the tap left the home page", 13, list().getCount());
+        assertEquals("the tap left the home page", 14, list().getCount());
 
         org.robolectric.shadows.ShadowApplication application =
                 org.robolectric.Shadows.shadowOf(org.robolectric.RuntimeEnvironment.getApplication());
