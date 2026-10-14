@@ -154,6 +154,26 @@ function Test-SelectionAddedResources {
         (@($names | Sort-Object -CaseSensitive) -join "`n") -ceq (@($allowed | Sort-Object -CaseSensitive) -join "`n")
 }
 
+function Test-SelectionRewrittenValues {
+    <#
+    .SYNOPSIS
+        Whether ResourceTableCheck's rewritten values are the ones the selection may rewrite: none,
+        or with the launch logo in, exactly the two in Telegram's dark launch theme. Its splash
+        background turns black and its splash icon names the logo the patch added.
+    #>
+    param([string]$Report, [string[]]$Closure)
+    $match = [regex]::Match($Report, '\[resources\] rewritten values: (\d+)((?:\r?\n  [^\r\n]+)*)')
+    if (-not $match.Success) { return $false }
+    if ($Closure -cnotcontains 'Black and white launch logo') { return [int]$match.Groups[1].Value -eq 0 }
+    $logo = [regex]::Match($Report, '(?m)^  (0x7f[0-9a-f]{6}) drawable/hush_launch_logo\r?$')
+    if ([int]$match.Groups[1].Value -ne 2 -or -not $logo.Success) { return $false }
+    $lines = @($match.Groups[2].Value -split '\r?\n' | Where-Object { $_ })
+    $start = '  0x7f[0-9a-f]{6} style/Theme\.TMessages\.Start \[night-v29\] item '
+    return $lines.Count -eq 2 -and
+        $lines[0] -cmatch "^${start}0x0101062c #[0-9a-f]{8} -> #ff000000$" -and
+        $lines[1] -cmatch "^${start}0x0101062d @0x7f[0-9a-f]{6} -> @$($logo.Groups[1].Value)$"
+}
+
 function New-SelectionOptionsDocument {
     param([object]$Catalog, [object]$Selection, [string]$BundleName, [string]$BundleHash)
     $entries = [ordered]@{}
@@ -404,7 +424,7 @@ function Invoke-PatchSelectionMatrix {
                 $resourceCode = Invoke-SelectionTool -Program $Java -Arguments @('-Xmx2g', '-XX:ActiveProcessorCount=2', '-cp', $classPath,
                     'ResourceTableCheck', $Apk, $output, $resourcePath) -PrivateOutput (Join-Path $caseDir 'resources-console-private.txt')
                 $resourceText = Get-Content $resourcePath -Raw
-                if ($resourceCode -ne 0 -or $resourceText -cnotmatch '\[resources\] rewritten values: 0' -or
+                if ($resourceCode -ne 0 -or -not (Test-SelectionRewrittenValues -Report $resourceText -Closure $expected.closure) -or
                     $resourceText -cnotmatch '\[resources\] renamed by the rebuild[^\r\n]*: 0' -or
                     -not (Test-SelectionAddedResources -Report $resourceText -Closure $expected.closure)) { throw 'RESOURCE_PRESERVATION_FAILED' }
                 $native = Get-NativePackagingEvidence -StockApk $Apk -PatchedApk $output -Java $Java -Aapt2 $Aapt2 `

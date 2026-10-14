@@ -190,4 +190,19 @@ Assert-Selection (-not (Test-SelectionAddedResources -Report $both -Closure $log
 Assert-Selection (-not (Test-SelectionAddedResources -Report ($both -replace 'hush_launcher_monochrome', 'hush_other') -Closure $full)) 'A stray added resource passed as the icon patch''s.'
 Assert-Selection (-not (Test-SelectionAddedResources -Report ($both -replace 'hush_launch_logo_shape', 'hush_other') -Closure $full)) 'A stray added resource passed as the launch logo''s.'
 Assert-Selection (-not (Test-SelectionAddedResources -Report 'no table report' -Closure $default)) 'A report without its added resources line passed.'
+# The launch logo rewrites Telegram's dark launch theme, its splash background to black and its
+# splash icon to the logo it added, and only a case that selects it may.
+$rewritesNone = "[resources] rewritten values: 0`r`n[resources] renamed by the rebuild: 0"
+$rewriteLines = "  0x7f100149 style/Theme.TMessages.Start [night-v29] item 0x0101062c #ff1f2732 -> #ff000000`r`n" +
+    "  0x7f100149 style/Theme.TMessages.Start [night-v29] item 0x0101062d @0x7f0807db -> @0x7f0807f0"
+$rewrites = "[resources] rewritten values: 2`r`n$rewriteLines`r`n[resources] renamed by the rebuild: 0`r`n$logos"
+Assert-Selection (Test-SelectionRewrittenValues -Report $rewritesNone -Closure $default) 'A case without the launch logo was refused for rewriting nothing.'
+Assert-Selection (-not (Test-SelectionRewrittenValues -Report $rewrites -Closure $default)) 'A case without the launch logo was allowed its two rewrites.'
+Assert-Selection (Test-SelectionRewrittenValues -Report $rewrites -Closure $logoOnly) 'The launch logo case was refused its two rewrites.'
+Assert-Selection (-not (Test-SelectionRewrittenValues -Report "$rewritesNone`r`n$logos" -Closure $logoOnly)) 'The launch logo case passed without rewriting the dark launch theme.'
+Assert-Selection (-not (Test-SelectionRewrittenValues -Report ($rewrites -replace '-> #ff000000', '-> #ff111111') -Closure $logoOnly)) 'A dark launch screen that isn''t black passed.'
+Assert-Selection (-not (Test-SelectionRewrittenValues -Report ($rewrites -replace '-> @0x7f0807f0', '-> @0x7f0807f1') -Closure $logoOnly)) 'A splash icon naming another resource passed as the logo.'
+Assert-Selection (-not (Test-SelectionRewrittenValues -Report ($rewrites -replace 'night-v29', 'v31') -Closure $logoOnly)) 'A rewrite of the light launch theme passed.'
+Assert-Selection (-not (Test-SelectionRewrittenValues -Report ($rewrites -replace 'rewritten values: 2', 'rewritten values: 3') -Closure $logoOnly)) 'A third rewrite passed with the logo''s two.'
+Assert-Selection (-not (Test-SelectionRewrittenValues -Report 'no table report' -Closure $default)) 'A report without its rewritten values line passed.'
 Write-Host "[selections] contracts passed ($assertions assertions)"
