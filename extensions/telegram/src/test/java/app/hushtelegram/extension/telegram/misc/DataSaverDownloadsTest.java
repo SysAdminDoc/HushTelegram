@@ -85,6 +85,30 @@ public class DataSaverDownloadsTest {
         assertTrue(String.join("\n", HookStatus.report()).contains(FamilyNames.FASTER_DOWNLOADS));
         // Nothing listens for Android while the switch is off.
         assertTrue(connectivity().getNetworkCallbacks().isEmpty());
+        assertFalse(listensForDataSaver());
+    }
+
+    private static boolean listensForDataSaver() {
+        return shadowOf(RuntimeEnvironment.getApplication())
+                .hasReceiverForIntent(new Intent(ConnectivityManager.ACTION_RESTRICT_BACKGROUND_CHANGED));
+    }
+
+    // A change Android reports while the last answer is being read makes that answer old, so the
+    // next question asks again instead of using it for a second.
+    @Test public void aChangeHeardWhileAndroidIsAskedLeavesThatAnswerUnused() {
+        Settings.DATA_SAVER_DOWNLOADS.save(true);
+        android(RESTRICT_BACKGROUND_STATUS_ENABLED, TYPE_MOBILE);
+        assertTrue(DataSaverDownloads.hold());
+        DataSaverDownloads.forget();
+        Context changing = new ContextWrapper(RuntimeEnvironment.getApplication()) {
+            @Override public Object getSystemService(String name) {
+                if (Context.CONNECTIVITY_SERVICE.equals(name)) DataSaverDownloads.forget();
+                return super.getSystemService(name);
+            }
+        };
+        SettingsContextRule.withContext(changing, () -> assertTrue(DataSaverDownloads.hold()));
+        connectivity().setRestrictBackgroundStatus(RESTRICT_BACKGROUND_STATUS_DISABLED);
+        assertFalse("an answer read across the change was used", DataSaverDownloads.hold());
     }
 
     @Test public void dataSaverOnAMeteredNetworkHoldsAutomaticDownloads() {
@@ -163,10 +187,13 @@ public class DataSaverDownloadsTest {
         assertEquals(6, checked.size());
     }
 
-    @Test public void dataSaverTurningOffIsHeardAtOnce() {
+    // Android 13 and later want a receiver registered at runtime marked as not exported.
+    @Test @Config(sdk = {30, 33, 36})
+    public void dataSaverTurningOffIsHeardAtOnce() {
         Settings.DATA_SAVER_DOWNLOADS.save(true);
         android(RESTRICT_BACKGROUND_STATUS_ENABLED, TYPE_MOBILE);
         assertTrue(DataSaverDownloads.holdMask(controller));
+        assertTrue(listensForDataSaver());
         checked.clear();
         connectivity().setRestrictBackgroundStatus(RESTRICT_BACKGROUND_STATUS_DISABLED);
         RuntimeEnvironment.getApplication().sendBroadcast(new Intent(ConnectivityManager.ACTION_RESTRICT_BACKGROUND_CHANGED));

@@ -9,6 +9,8 @@ import static org.robolectric.Shadows.shadowOf;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import java.util.function.Consumer;
+
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowConnectivityManager;
 import org.robolectric.shadows.ShadowNetworkInfo;
@@ -36,6 +38,22 @@ public final class DataSaverDownloadsForTests {
         } finally {
             DataSaverDownloads.reset();
         }
+    }
+
+    /**
+     * Knows [controller] as an account's DownloadController, and runs Telegram's check on it with
+     * [checker], at once once posted. {@link #reset} puts the real check back.
+     */
+    public static void checkWith(Consumer<Object> checker, Object controller) {
+        DataSaverDownloads.reset();
+        DataSaverDownloads.later = Runnable::run;
+        DataSaverDownloads.checker = checker;
+        DataSaverDownloads.holdMask(controller);
+    }
+
+    /** Forgets the controllers and puts Telegram's real check back. */
+    public static void reset() {
+        DataSaverDownloads.reset();
     }
 
     /** Whether the network's download mask would be held with Data Saver on and a mobile network. */

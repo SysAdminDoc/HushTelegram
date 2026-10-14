@@ -556,8 +556,14 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.FASTER_DOWNLOADS.coverageSummary(L10n.t("Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces"
                             + " 4 at a time. If a big piece fails, Telegram goes back to small ones. The next download picks this up."))));
             if (PatchFamily.Capability.DATA_SAVER_DOWNLOADS.installed()) {
-                on(pages, PatchFamily.FASTER_DOWNLOADS).addPreference(toggle(context, Settings.DATA_SAVER_DOWNLOADS,
-                        L10n.t("Hold automatic downloads on Data Saver"), dataSaverSummary(DataSaverDownloads.status(context))));
+                SwitchPreference dataSaver = toggle(context, Settings.DATA_SAVER_DOWNLOADS,
+                        L10n.t("Hold automatic downloads on Data Saver"), dataSaverSummary(DataSaverDownloads.status(context)));
+                dataSaver.setOnPreferenceChangeListener((row, value) -> {
+                    // Once the switch is saved, so Telegram's queue follows it now rather than at the next network change.
+                    Utils.runOnMainThreadDelayed(DataSaverDownloads::switched, 0);
+                    return true;
+                });
+                on(pages, PatchFamily.FASTER_DOWNLOADS).addPreference(dataSaver);
             }
         }
         if (build.contains(PatchFamily.SAVE_DOWNLOADS)) {
@@ -1387,7 +1393,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 ? L10n.t("Android doesn't say whether this network is metered.")
                 : status.metered ? L10n.t("This network is metered.") : L10n.t("This network isn't metered.");
         return L10n.t("While Android's Data Saver is on and the network is metered, Telegram doesn't start photos, videos,"
-                + " files, voice messages, music or stories downloading on its own, and stops the ones it already started."
+                + " files, voice messages, music or stories downloading on its own, and stops the ones in its download queue."
                 + " What you tap still downloads.") + "\n" + saver + " " + metered;
     }
 

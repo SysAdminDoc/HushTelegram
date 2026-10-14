@@ -102,6 +102,20 @@ public final class SettingsContextRule extends ExternalResource {
     }
 
     /**
+     * Runs [body] with [context] as the one hooks get, settings still ready, for a test that needs a
+     * system service to answer its own way. The context comes back afterwards, whatever [body] does.
+     */
+    public static void withContext(Context context, Runnable body) {
+        Context saved = Utils.context;
+        Utils.context = context;
+        try {
+            body.run();
+        } finally {
+            Utils.context = saved;
+        }
+    }
+
+    /**
      * Runs [body] the way a hook runs inside setContext's window: the context is set, and whether
      * this process runs paused isn't decided yet. The flag comes back afterwards.
      */

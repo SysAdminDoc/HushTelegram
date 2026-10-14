@@ -109,7 +109,7 @@ public class HushTelegramPreferenceFragmentTest {
     /** What the Data Saver switch does, before the line with what Android reports. */
     private static final String DATA_SAVER_SUMMARY = "While Android's Data Saver is on and the network is metered, Telegram"
             + " doesn't start photos, videos, files, voice messages, music or stories downloading on its own, and stops the"
-            + " ones it already started. What you tap still downloads.";
+            + " ones in its download queue. What you tap still downloads.";
 
     /** The row each patch adds, by the title it shows. */
     private static final Map<PatchFamily, String> ROW_TITLES = new LinkedHashMap<>();
@@ -1044,6 +1044,35 @@ public class HushTelegramPreferenceFragmentTest {
         assertEquals(DATA_SAVER_SUMMARY + "\nAndroid doesn't say whether Data Saver is on. Android doesn't say whether this"
                         + " network is metered.",
                 HushTelegramPreferenceFragment.dataSaverSummary(DataSaverDownloads.status(null)));
+    }
+
+    /**
+     * Flipping the Data Saver switch runs Telegram's download check once the switch is saved, so its
+     * queue follows the switch now instead of at the next network change.
+     */
+    @Test
+    public void flippingTheDataSaverSwitchRunsTelegramsCheckOnceItsSaved() {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.FASTER_DOWNLOADS);
+        Object downloads = new Object();
+        List<String> checks = new ArrayList<>();
+        DataSaverDownloadsForTests.checkWith(
+                checked -> checks.add((checked == downloads) + " " + Settings.DATA_SAVER_DOWNLOADS.get()), downloads);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            SwitchPreference row = (SwitchPreference) pageOf(controller).findPreference(Settings.DATA_SAVER_DOWNLOADS.key);
+            assertTrue(row.getOnPreferenceChangeListener().onPreferenceChange(row, Boolean.TRUE));
+            row.setChecked(true);
+            assertEquals("the check waits for the save", Collections.emptyList(), checks);
+            ShadowLooper.idleMainLooper();
+            assertEquals(Collections.singletonList("true true"), checks);
+
+            assertTrue(row.getOnPreferenceChangeListener().onPreferenceChange(row, Boolean.FALSE));
+            row.setChecked(false);
+            ShadowLooper.idleMainLooper();
+            assertEquals(Arrays.asList("true true", "true false"), checks);
+        } finally {
+            Settings.DATA_SAVER_DOWNLOADS.resetToDefault();
+            DataSaverDownloadsForTests.reset();
+        }
     }
 
     /**

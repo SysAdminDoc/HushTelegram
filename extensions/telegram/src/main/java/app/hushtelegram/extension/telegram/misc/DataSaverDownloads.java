@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import app.hushtelegram.extension.shared.Logger;
@@ -43,8 +44,9 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * network. The network's download mask asks {@link #holdMask} and comes back with no media types,
  * so everything that reads it decides the same way. When the answer changes, Telegram's own check
  * from a network change runs again on each controller: it cancels the automatic loads its queue
- * started when the hold begins, and loads the queue again when it lifts. What you tap still
- * downloads, since a tap doesn't ask.
+ * started when the hold begins, and loads the queue again when it lifts. Loads a chat started as it
+ * showed a message, and songs or stories loaded ahead, finish. What you tap still downloads, since
+ * a tap doesn't ask.
  *
  * <p>The hold needs the switch on, HushTelegram not paused, Android reporting Data Saver on for
  * Telegram and the active network metered. Data Saver off or allowing Telegram, an unmetered
@@ -77,18 +79,25 @@ public final class DataSaverDownloads {
         }
     }
 
-    /** The last answer and when it was read, kept together so a reader never mixes two readings. */
+    /**
+     * The last answer, when it was read, and how many changes Android had reported before it was
+     * asked, kept together so a reader never mixes two readings.
+     */
     private static final class Reading {
         final long at;
         final boolean restricts;
+        final int changes;
 
-        Reading(long at, boolean restricts) {
+        Reading(long at, boolean restricts, int changes) {
             this.at = at;
             this.restricts = restricts;
+            this.changes = changes;
         }
     }
 
     @Nullable private static volatile Reading last;
+    /** Changes Android reported. A reading asked before the latest one is never used. */
+    private static final AtomicInteger changes = new AtomicInteger();
 
     /** Each DownloadController whose mask asked, one per account, kept no longer than Telegram keeps it. */
     private static final Map<Object, Boolean> controllers = Collections.synchronizedMap(new WeakHashMap<>());
@@ -212,16 +221,29 @@ public final class DataSaverDownloads {
     /** Whether Android restricts Telegram now, asked at most once every {@link #FRESH_MS}. */
     private static boolean restricted() {
         long now = SystemClock.elapsedRealtime();
+        int heard = changes.get();
         Reading reading = last;
-        if (reading != null && now - reading.at >= 0 && now - reading.at < FRESH_MS) return reading.restricts;
+        if (reading != null && reading.changes == heard && now - reading.at >= 0 && now - reading.at < FRESH_MS) {
+            return reading.restricts;
+        }
         boolean restricts = status(Utils.getContext()).restricts();
-        last = new Reading(now, restricts);
+        // A change heard while Android was asked makes this reading old; the next question asks again.
+        last = new Reading(now, restricts, heard);
         return restricts;
     }
 
     /** Drops the last answer, so the next question asks Android again. */
     static void forget() {
+        changes.incrementAndGet();
         last = null;
+    }
+
+    /**
+     * The settings switch was flipped and saved: Telegram checks its queue against the new answer,
+     * as it does after a network change.
+     */
+    public static void switched() {
+        changed();
     }
 
     /** Forgets the controllers, the mask's last answer and the watch, for tests, where each gets a new app. */

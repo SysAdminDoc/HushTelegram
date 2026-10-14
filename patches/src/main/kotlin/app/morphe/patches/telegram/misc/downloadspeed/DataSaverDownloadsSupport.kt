@@ -51,7 +51,8 @@ internal enum class AutoDownloadCheck(val what: String) {
  * download queue.
  */
 internal enum class AutoDownloadAnswer(val signature: String, val check: AutoDownloadCheck, val ask: String = HOLD) {
-    MASK("getCurrentDownloadMask()I", AutoDownloadCheck.NETWORK, "invoke-static {p0}, $DATA_SAVER->holdMask(Ljava/lang/Object;)Z"),
+    // The range form reaches p0 however many registers the method has; {p0} stops at v15.
+    MASK("getCurrentDownloadMask()I", AutoDownloadCheck.NETWORK, "invoke-static/range {p0 .. p0}, $DATA_SAVER->holdMask(Ljava/lang/Object;)Z"),
     MESSAGE_MEDIA("canDownloadMedia($MESSAGE_OBJECT)Z", AutoDownloadCheck.MESSAGE),
     MESSAGE_MEDIA_TYPE("canDownloadMediaType($MESSAGE_OBJECT)I", AutoDownloadCheck.MESSAGE),
     MESSAGE_MEDIA_TYPE_AT("canDownloadMediaType(${MESSAGE_OBJECT}J)I", AutoDownloadCheck.MESSAGE),

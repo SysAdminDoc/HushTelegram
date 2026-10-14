@@ -196,9 +196,11 @@ class FasterDownloadsFixtureTest {
                 val void = answer.signature.endsWith("V")
                 val gate = if (void) 4 else 5
                 assertEquals(where, before.size + gate, after.size)
-                assertEquals(where, listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ), after.subList(0, 3).map { it.opcode })
+                val call = if (answer == AutoDownloadAnswer.MASK) Opcode.INVOKE_STATIC_RANGE else Opcode.INVOKE_STATIC
+                assertEquals(where, listOf(call, Opcode.MOVE_RESULT, Opcode.IF_EQZ), after.subList(0, 3).map { it.opcode })
                 if (answer == AutoDownloadAnswer.MASK) {
                     // The mask hands over its controller, so the runtime can run Telegram's check on it later.
+                    // A range call, so p0 is reached past v15 too.
                     assertEquals(where, "$DATA_SAVER->holdMask(Ljava/lang/Object;)Z", after[0].controlRef())
                     assertEquals(where, listOf(method.implementation!!.registerCount - 1), after[0].namedRegisters())
                 } else {
