@@ -43,15 +43,28 @@ private const val PATCH = "Hide popular apps"
 internal const val MY_CHATS_SEARCH = "$EXTENSION_PACKAGE/misc/MyChatsSearch;"
 internal const val DROP_PUBLIC_TABS = "$MY_CHATS_SEARCH->dropPublicTabs(Ljava/util/ArrayList;)V"
 internal const val DOWNLOADS_AT = "$MY_CHATS_SEARCH->downloadsAt(Ljava/lang/Object;I)I"
-internal const val SKIP_PUBLIC_POSTS = "$MY_CHATS_SEARCH->skipPublicPosts()Z"
+internal const val KEEP_HASHTAG = "$MY_CHATS_SEARCH->keepHashtag(Ljava/lang/Object;Ljava/lang/String;I)Z"
 internal const val END_PUBLIC_POSTS = "$MY_CHATS_SEARCH->endPublicPosts(Ljava/lang/Object;II)V"
+internal const val DROP_PUBLIC_RESULTS = "$MY_CHATS_SEARCH->dropPublicResults(Ljava/lang/Object;)V"
 /** Telegram's hashtag search, behind the tabs a hashtag opens in a chat. Its names are kept. */
 internal const val HASHTAG_SEARCH = "Lorg/telegram/messenger/HashtagSearchController;"
 internal const val HASHTAG_RESULT = "Lorg/telegram/messenger/HashtagSearchController\$SearchResult;"
+/** What a search for accounts by name answers, wherever it was asked. */
+internal const val CONTACTS_FOUND = "Lorg/telegram/tgnet/TLRPC\$TL_contacts_found;"
+/** Public stories under a hashtag, or in a place a story names. */
+internal const val PUBLIC_STORIES = "Lorg/telegram/tgnet/tl/TL_stories\$TL_stories_searchPosts;"
+internal const val MESSAGES_CONTROLLER = "Lorg/telegram/messenger/MessagesController;"
+internal const val CHAT_OBJECT = "Lorg/telegram/messenger/ChatObject;"
+internal const val TL_USER = "Lorg/telegram/tgnet/TLRPC\$User;"
+internal const val TL_CHAT = "Lorg/telegram/tgnet/TLRPC\$Chat;"
+internal const val TL_PEER = "Lorg/telegram/tgnet/TLRPC\$Peer;"
+private const val TL_OBJECT = "Lorg/telegram/tgnet/TLObject;"
 private const val NOTIFICATIONS = "Lorg/telegram/messenger/NotificationCenter;"
 private const val TITLES = "Lorg/telegram/messenger/R\$string;"
 private const val ARRAY_LIST = "Ljava/util/ArrayList;"
 private const val STRING = "Ljava/lang/String;"
+/** An account search answer's lists, in the order the runtime's foundLists stub hands them over. */
+internal val FOUND_LISTS = listOf("my_results", "results", "users", "chats")
 private val CONSTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST)
 /** Every way out of a method. dexlib2's `Opcode.name` is the smali mnemonic, so these are listed rather than matched by name. */
 private val EXITS = setOf(Opcode.RETURN_VOID, Opcode.RETURN, Opcode.RETURN_WIDE, Opcode.RETURN_OBJECT, Opcode.THROW)
@@ -90,16 +103,32 @@ internal class TabRow(
 internal class DownloadsShortcut(val method: MutableMethod, val call: Int, val pager: Int, val position: Int)
 
 /**
- * A hashtag's searches. [search] starts one, with the screen's number in [guid] and the search's
- * kind in [kind], both registers; [publicPosts] is the kind that asks for public posts.
+ * A hashtag's searches. [search] starts one, with the tag in [hashtag], the screen's number in
+ * [guid] and the search's kind in [kind], all registers; [myMessages] is the kind that looks only
+ * through your own messages.
  */
-internal class HashtagPosts(val search: MutableMethod, val self: Int, val guid: Int, val kind: Int, val publicPosts: Int)
+internal class HashtagPosts(
+    val search: MutableMethod,
+    val self: Int,
+    val hashtag: Int,
+    val guid: Int,
+    val kind: Int,
+    val myMessages: Int,
+)
+
+/** Where an account search's answer has been read: [read] ends at [end], with the answer in [self]. */
+internal class FoundRead(val read: MutableMethod, val end: Int, val self: Int)
+
+/** The public stories search, which answers whether it started loading a page. */
+internal class StoriesSearch(val method: MutableMethod)
 
 internal class MyChatsSearchSites(
     val chat: LocalSearchSite,
     val tabs: TabRow,
     val downloads: DownloadsShortcut,
     val hashtag: HashtagPosts,
+    val found: FoundRead,
+    val stories: StoriesSearch,
 ) {
     /** Every hook, on the methods themselves or on what [into] makes of each. */
     fun apply(into: (MutableMethod) -> MutableMethod = { it }) {
@@ -119,14 +148,25 @@ internal class MyChatsSearchSites(
 
         val search = into(hashtag.search)
         search.addInstructionsWithLabels(0, """
-            const v0, ${hashtag.publicPosts}
-            if-ne v${hashtag.kind}, v0, :hush_keep
-            invoke-static {}, $SKIP_PUBLIC_POSTS
+            const v0, ${hashtag.myMessages}
+            if-eq v${hashtag.kind}, v0, :hush_keep
+            invoke-static {v${hashtag.self}, v${hashtag.hashtag}, v${hashtag.kind}}, $KEEP_HASHTAG
             move-result v0
-            if-eqz v0, :hush_keep
+            if-nez v0, :hush_keep
             invoke-static {v${hashtag.self}, v${hashtag.guid}, v${hashtag.kind}}, $END_PUBLIC_POSTS
             return-void
         """.trimIndent(), ExternalLabel("hush_keep", search.getInstruction(0)))
+
+        into(found.read).addInstructionsAtControlFlowLabel(found.end, "invoke-static {v${found.self}}, $DROP_PUBLIC_RESULTS")
+
+        val stories = into(this.stories.method)
+        stories.addInstructionsWithLabels(0, """
+            invoke-static {}, ${MY_CHATS_HOOKS.keep}
+            move-result v0
+            if-eqz v0, :hush_keep
+            const/4 v0, 0x0
+            return v0
+        """.trimIndent(), ExternalLabel("hush_keep", stories.getInstruction(0)))
     }
 
     /** The same hooks on copies, so a smali or register problem refuses before the app is touched. */
@@ -176,6 +216,82 @@ internal fun BytecodePatchContext.writeMyChatsSearchStubs(sites: MyChatsSearchSi
         invoke-virtual {v0, v1, p2}, $NOTIFICATIONS->postNotificationName(I[Ljava/lang/Object;)V
         return-void
     """.trimIndent())
+    // The tag a hashtag search of that kind last asked for, which Telegram carries on with when it's handed none.
+    writeStub(MY_CHATS_SEARCH, "lastHashtag", 3, """
+        check-cast p0, $HASHTAG_SEARCH
+        invoke-virtual {p0, p1}, $HASHTAG_SEARCH->getSearchResult(I)$HASHTAG_RESULT
+        move-result-object v0
+        iget-object v0, v0, $HASHTAG_RESULT->lastHashtag:$STRING
+        return-object v0
+    """.trimIndent())
+    // Whether a name is an account or a chat you're in that this phone already knows, as the hashtag
+    // search itself looks it up, so a known one never needs a lookup on Telegram's server.
+    writeStub(MY_CHATS_SEARCH, "ownChat", 4, """
+        check-cast p0, $HASHTAG_SEARCH
+        iget v0, p0, $HASHTAG_SEARCH->currentAccount:I
+        invoke-static {v0}, $MESSAGES_CONTROLLER->getInstance(I)$MESSAGES_CONTROLLER
+        move-result-object v0
+        invoke-virtual {v0, p1}, $MESSAGES_CONTROLLER->getUserOrChat($STRING)$TL_OBJECT
+        move-result-object v0
+        instance-of v1, v0, $TL_USER
+        if-nez v1, :hush_yes
+        instance-of v1, v0, $TL_CHAT
+        if-eqz v1, :hush_no
+        check-cast v0, $TL_CHAT
+        invoke-static {v0}, $CHAT_OBJECT->isNotInChat($TL_CHAT)Z
+        move-result v1
+        if-nez v1, :hush_no
+        :hush_yes
+        const/4 v0, 0x1
+        return v0
+        :hush_no
+        const/4 v0, 0x0
+        return v0
+    """.trimIndent())
+    // An account search answer's four lists, in FOUND_LISTS order.
+    writeStub(MY_CHATS_SEARCH, "foundLists", 4, (listOf(
+        "check-cast p0, $CONTACTS_FOUND",
+        "const/4 v0, 0x${FOUND_LISTS.size}",
+        "new-array v0, v0, [$ARRAY_LIST",
+    ) + FOUND_LISTS.flatMapIndexed { at, name -> listOf(
+        "const/4 v1, 0x$at",
+        "iget-object v2, p0, $CONTACTS_FOUND->$name:$ARRAY_LIST",
+        "aput-object v2, v0, v1",
+    ) } + "return-object v0").joinToString("\n"))
+    // One number for an account, a chat or a peer naming either: an account's id, or a chat's id below zero.
+    writeStub(MY_CHATS_SEARCH, "peerKey", 6, """
+        instance-of v0, p0, $TL_USER
+        if-eqz v0, :hush_chat
+        check-cast p0, $TL_USER
+        iget-wide v0, p0, $TL_USER->id:J
+        return-wide v0
+        :hush_chat
+        instance-of v0, p0, $TL_CHAT
+        if-eqz v0, :hush_peer
+        check-cast p0, $TL_CHAT
+        iget-wide v0, p0, $TL_CHAT->id:J
+        neg-long v0, v0
+        return-wide v0
+        :hush_peer
+        instance-of v0, p0, $TL_PEER
+        if-eqz v0, :hush_none
+        check-cast p0, $TL_PEER
+        const-wide/16 v2, 0x0
+        iget-wide v0, p0, $TL_PEER->user_id:J
+        cmp-long v4, v0, v2
+        if-nez v4, :hush_account
+        iget-wide v0, p0, $TL_PEER->chat_id:J
+        cmp-long v4, v0, v2
+        if-nez v4, :hush_group
+        iget-wide v0, p0, $TL_PEER->channel_id:J
+        :hush_group
+        neg-long v0, v0
+        :hush_account
+        return-wide v0
+        :hush_none
+        const-wide/16 v0, 0x0
+        return-wide v0
+    """.trimIndent())
 }
 
 /**
@@ -188,8 +304,11 @@ internal fun BytecodePatchContext.writeMyChatsSearchStubs(sites: MyChatsSearchSi
  *   Telegram reads from it afterwards agrees;
  * - the Downloads shortcut, which opens a fixed place on Telegram's own row and goes where Downloads
  *   now is instead;
- * - a hashtag's public posts search, which ends with nothing found, the way Telegram ends one for a
- *   channel name it can't find.
+ * - a hashtag's searches past your own messages, which end with nothing found, the way Telegram ends
+ *   one for a channel name it can't find, unless the tag names an account or a chat you're in;
+ * - every answer to a search for accounts by name, which keeps only what's yours, whichever screen
+ *   asked: New Message, contact and forward pickers, adding members, gift and giveaway pickers;
+ * - the public stories search, which answers that there's nothing to load.
  */
 internal fun BytecodePatchContext.resolveMyChatsSearch(): MyChatsSearchSites {
     requireRuntime()
@@ -197,10 +316,12 @@ internal fun BytecodePatchContext.resolveMyChatsSearch(): MyChatsSearchSites {
     val tabs = resolveTabRow()
     val downloads = resolveDownloadsShortcut(tabs)
     val hashtag = resolveHashtagPosts()
-    val own = listOf(tabs.update, downloads.method, hashtag.search)
+    val found = resolveFoundRead()
+    val stories = resolveStoriesSearch()
+    val own = listOf(tabs.update, downloads.method, hashtag.search, found.read, stories.method)
     shape(own.indices.all { at -> own.drop(at + 1).none { it === own[at] } } &&
         own.none { method -> chat.edits.any { it.method === method } }, "two search hooks share a method")
-    return MyChatsSearchSites(chat, tabs, downloads, hashtag)
+    return MyChatsSearchSites(chat, tabs, downloads, hashtag, found, stories)
 }
 
 /**
@@ -329,8 +450,9 @@ private fun BytecodePatchContext.resolveDownloadsShortcut(tabs: TabRow): Downloa
 }
 
 /**
- * Telegram's hashtag search picks a list of results by the search's kind first thing, and the kind
- * whose list is the channel posts one asks for public posts.
+ * Telegram's hashtag search picks a list of results by the search's kind first thing. One kind looks
+ * through your own messages; the others ask for public posts, or for the posts of the channel a tag
+ * like `#tag@channel` names, which it looks up on Telegram's server when this phone doesn't know it.
  */
 private fun BytecodePatchContext.resolveHashtagPosts(): HashtagPosts {
     val controller = classDefByOrNull(HASHTAG_SEARCH) ?: refuse("no hashtag search")
@@ -342,26 +464,45 @@ private fun BytecodePatchContext.resolveHashtagPosts(): HashtagPosts {
     val pick = controller.methods.filter { it.name == "getSearchResult" && it.params() == listOf("I") &&
         it.returnType == HASHTAG_RESULT && it.isCallable() }.one("hashtag result picker", ::refuse)
     val picks = pick.instructions()
-    val posts = picks.indices.filter { picks[it].opcode == Opcode.IGET_OBJECT && picks[it].field()?.let { field ->
-        field.definingClass == HASHTAG_SEARCH && field.name == "channelPostsSearch" } == true }.one("channel posts results", ::refuse)
-    // const number; if-ne kind, number; then the channel posts list.
-    val branch = picks.getOrNull(posts - 1)
-    val number = picks.getOrNull(posts - 2)
     val kind = pick.parameterRegisterNumber(0)
-    if (branch == null || number == null || branch.opcode != Opcode.IF_NE || number.opcode !in CONSTS ||
-        number !is NarrowLiteralInstruction || branch.namedRegisters().toSet() != setOf(kind, number.namedRegisters()[0])) {
-        refuse("the hashtag result picker no longer picks channel posts by kind")
+    // const number; if-ne kind, number; then that kind's list.
+    fun kindOf(results: String): Int {
+        val at = picks.indices.filter { picks[it].opcode == Opcode.IGET_OBJECT && picks[it].field()?.let { field ->
+            field.definingClass == HASHTAG_SEARCH && field.name == results } == true }.one("$results results", ::refuse)
+        val branch = picks.getOrNull(at - 1)
+        val number = picks.getOrNull(at - 2)
+        if (branch == null || number == null || branch.opcode != Opcode.IF_NE || number.opcode !in CONSTS ||
+            number !is NarrowLiteralInstruction || branch.namedRegisters().toSet() != setOf(kind, number.namedRegisters()[0])) {
+            refuse("the hashtag result picker no longer picks $results by kind")
+        }
+        return number.narrowLiteral
     }
-    val publicPosts = number.narrowLiteral
+    val myMessages = kindOf("myMessagesSearch")
+    shape(listOf(myMessages, kindOf("channelPostsSearch"), kindOf("localPostsSearch")).toSet().size == 3,
+        "the hashtag result picker no longer keeps your messages apart from posts")
 
     val self = search.localRegisterCount()
+    val hashtag = search.parameterRegisterNumber(0)
     val guid = search.parameterRegisterNumber(1)
     val asked = search.parameterRegisterNumber(2)
     val first = search.instructions().firstOrNull()
     shape(first?.call()?.let { it.definingClass == HASHTAG_SEARCH && it.name == "getSearchResult" } == true &&
         first!!.namedRegisters() == listOf(self, asked), "the hashtag search no longer starts by picking its results by kind")
-    // The hook borrows v0, which holds nothing before the method's first instruction, and passes this, the screen and the kind.
-    shape(self >= 1 && asked <= 15, "the hashtag search keeps its registers where the hook can't use them")
+    // The hook borrows v0, which holds nothing before the method's first instruction, and passes this,
+    // the tag, the screen and the kind.
+    shape(self >= 1 && listOf(hashtag, guid, asked).all { it <= 15 }, "the hashtag search keeps its registers where the hook can't use them")
+
+    // What the runtime's lastHashtag and ownChat stubs read, so each must be public.
+    val messages = classDefByOrNull(MESSAGES_CONTROLLER)
+    val chats = classDefByOrNull(CHAT_OBJECT)
+    shape(classDefByOrNull(HASHTAG_RESULT)?.hasField("lastHashtag", STRING, static = false) == true &&
+        messages != null && messages.isPublic() && chats != null && chats.isPublic() &&
+        messages.methods.any { it.name == "getInstance" && it.params() == listOf("I") && it.returnType == MESSAGES_CONTROLLER &&
+            it.isPublicStatic() } &&
+        messages.methods.any { it.name == "getUserOrChat" && it.params() == listOf(STRING) && it.returnType == TL_OBJECT && it.isCallable() } &&
+        chats.methods.any { it.name == "isNotInChat" && it.params() == listOf(TL_CHAT) && it.returnType == "Z" && it.isPublicStatic() } &&
+        listOf(TL_USER, TL_CHAT).all { classDefByOrNull(it)?.isPublic() == true },
+        "the hashtag search can't tell your own chats from outside it")
 
     // What the finish reads and writes from the extension, so each must be public.
     val result = classDefByOrNull(HASHTAG_RESULT)
@@ -376,7 +517,72 @@ private fun BytecodePatchContext.resolveHashtagPosts(): HashtagPosts {
         notifications.methods.any { it.name == "postNotificationName" && it.params() == listOf("I", "[Ljava/lang/Object;") &&
             it.returnType == "V" && it.isCallable() },
         "the hashtag search can't be finished from outside it")
-    return HashtagPosts(search, self, guid, asked, publicPosts)
+    return HashtagPosts(search, self, hashtag, guid, asked, myMessages)
+}
+
+/**
+ * Every search for accounts by name, from chat search, New Message, a contact, forward, member, gift
+ * or giveaway picker, or a search tab, gets its answer read by the answer's own readParams. That
+ * fills four lists, your own matches and everyone else's plus the accounts and chats both name, and
+ * ends in one place, where the hook hands the answer over before any screen sees it.
+ */
+private fun BytecodePatchContext.resolveFoundRead(): FoundRead {
+    val found = classDefByOrNull(CONTACTS_FOUND) ?: refuse("no account search answer")
+    shape(found.isPublic() && FOUND_LISTS.all { name -> found.hasField(name, ARRAY_LIST, static = false) },
+        "the account search answer's lists can't be read from outside it")
+    val read = mutableClassDefBy(CONTACTS_FOUND).methods.filter { it.name == "readParams" && it.parameterTypes.size == 2 &&
+        it.returnType == "V" && !AccessFlags.STATIC.isSet(it.accessFlags) && it.implementation != null }
+        .one("account search answer reader", ::refuse)
+    val body = read.instructions()
+    val exits = body.indices.filter { body[it].opcode in EXITS }
+    shape(exits.size == 1 && body[exits.single()].opcode == Opcode.RETURN_VOID, "the account search answer reader no longer ends in one place")
+    val end = exits.single()
+    val self = read.localRegisterCount()
+    shape(FOUND_LISTS.all { name -> (0 until end).any { at -> body[at].opcode == Opcode.IPUT_OBJECT &&
+        body[at].field()?.let { it.definingClass == CONTACTS_FOUND && it.name == name } == true &&
+        body[at].namedRegisters().getOrNull(1) == self } },
+        "the account search answer reader no longer fills its four lists")
+    shape(self <= 15, "the account search answer reader keeps itself where the hook can't read it")
+    try {
+        read.requireThisIntact("the account search answer reader", listOf(end))
+    } catch (changed: PatchException) {
+        refuse(changed.message.orEmpty())
+    }
+    // What the runtime's peerKey stub reads, so each must be public.
+    val user = classDefByOrNull(TL_USER)
+    val chat = classDefByOrNull(TL_CHAT)
+    val peer = classDefByOrNull(TL_PEER)
+    shape(user != null && user.isPublic() && user.hasField("id", "J", static = false) &&
+        chat != null && chat.isPublic() && chat.hasField("id", "J", static = false) &&
+        peer != null && peer.isPublic() && listOf("user_id", "chat_id", "channel_id").all { peer.hasField(it, "J", static = false) },
+        "an account search answer's accounts and chats can't be told apart from outside them")
+    return FoundRead(read, end, self)
+}
+
+/**
+ * Public stories under a hashtag load a page at a time through the one method that builds their
+ * request. It answers whether it started loading, and its first lines answer no when there's nothing
+ * more to load, which is the answer the hook gives.
+ */
+private fun BytecodePatchContext.resolveStoriesSearch(): StoriesSearch {
+    val builders = mutableListOf<Method>()
+    classDefForEach { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+        classDef.methods.filterTo(builders) { method -> method.instructions().any {
+            it.opcode == Opcode.NEW_INSTANCE && it.typeRef() == PUBLIC_STORIES } }
+    }
+    val found = builders.one("public stories search", ::refuse)
+    val method = mutableClassDefBy(found.definingClass).methods.single { it.sameSignature(found) }
+    val body = method.instructions()
+    val request = body.indices.first { body[it].opcode == Opcode.NEW_INSTANCE && body[it].typeRef() == PUBLIC_STORIES }
+    // const/4 vX, 0x0; return vX, ahead of the request.
+    val none = (1 until request).any { at -> body[at].opcode == Opcode.RETURN && body[at - 1].opcode in CONSTS &&
+        (body[at - 1] as NarrowLiteralInstruction).narrowLiteral == 0 && body[at - 1].namedRegisters() == body[at].namedRegisters() }
+    shape(method.returnType == "Z" && !AccessFlags.STATIC.isSet(method.accessFlags) && none,
+        "the public stories search no longer answers no when there's nothing to load")
+    // The hook borrows v0, which holds nothing before the method's first instruction.
+    shape(method.localRegisterCount() >= 1, "the public stories search has no register the hook can borrow")
+    return StoriesSearch(method)
 }
 
 private fun BytecodePatchContext.requireRuntime() {
@@ -385,12 +591,17 @@ private fun BytecodePatchContext.requireRuntime() {
     val needed = listOf(
         Triple("dropPublicTabs", listOf(ARRAY_LIST), "V"),
         Triple("downloadsAt", listOf("Ljava/lang/Object;", "I"), "I"),
-        Triple("skipPublicPosts", emptyList(), "Z"),
+        Triple("keepHashtag", listOf("Ljava/lang/Object;", STRING, "I"), "Z"),
         Triple("endPublicPosts", listOf("Ljava/lang/Object;", "I", "I"), "V"),
+        Triple("dropPublicResults", listOf("Ljava/lang/Object;"), "V"),
         Triple("publicTab", listOf("Ljava/lang/Object;"), "Z"),
         Triple("downloadsTab", listOf("Ljava/lang/Object;"), "Z"),
         Triple("tabs", listOf("Ljava/lang/Object;"), ARRAY_LIST),
         Triple("finishPublicPosts", listOf("Ljava/lang/Object;", "I", "[Ljava/lang/Object;"), "V"),
+        Triple("lastHashtag", listOf("Ljava/lang/Object;", "I"), STRING),
+        Triple("ownChat", listOf("Ljava/lang/Object;", STRING), "Z"),
+        Triple("foundLists", listOf("Ljava/lang/Object;"), "[$ARRAY_LIST"),
+        Triple("peerKey", listOf("Ljava/lang/Object;"), "J"),
     )
     for ((name, parameters, result) in needed) {
         shape(owner!!.methods.count { it.name == name && it.params() == parameters && it.returnType == result &&
@@ -429,6 +640,7 @@ private fun shape(valid: Boolean, reason: String) {
 private fun ClassDef.isPublic() = AccessFlags.PUBLIC.isSet(accessFlags)
 private fun Method.isCallable() = AccessFlags.PUBLIC.isSet(accessFlags) && !AccessFlags.STATIC.isSet(accessFlags) &&
     !AccessFlags.ABSTRACT.isSet(accessFlags)
+private fun Method.isPublicStatic() = AccessFlags.PUBLIC.isSet(accessFlags) && AccessFlags.STATIC.isSet(accessFlags)
 private fun ClassDef.hasField(name: String, type: String, static: Boolean) = fields.any { it.name == name && it.type == type &&
     AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static }
 private fun Method.params(): List<String> = parameterTypes.map { it.toString() }

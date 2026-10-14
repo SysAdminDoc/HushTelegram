@@ -22,10 +22,15 @@ import org.robolectric.annotation.Config;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.ToLongFunction;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
@@ -51,6 +56,23 @@ public class MyChatsSearchTest {
     private static final List<Object> PUBLIC = Arrays.asList(PUBLIC_POSTS, CHANNELS, APPS, POSTS);
     private static final Object PAGER = new Object();
     private static final Object CONTROLLER = new Object();
+    // The hashtag searches: your own messages, public posts, then posts in one place.
+    private static final int MY_MESSAGES = 1;
+    private static final int PUBLIC_POSTS_SEARCH = 2;
+    private static final int LOCAL_POSTS = 3;
+    // A name this phone knows as a group you're in, and one as an account you've talked to.
+    private static final List<String> OWN = Arrays.asList("catlovers", "cathy");
+
+    // Stand-ins for what an account search for "cat" answers: your contact Cathy and a group you're
+    // in, then a public channel and a stranger, each named by a peer and listed as an account or chat.
+    private static final Keyed CATHY = new Keyed("Cathy", 7);
+    private static final Keyed STRANGER = new Keyed("Stranger", 9);
+    private static final Keyed CAT_GROUP = new Keyed("Cat lovers", -100);
+    private static final Keyed CAT_CHANNEL = new Keyed("Cat channel", -200);
+    private static final Keyed CATHY_PEER = new Keyed("Cathy's peer", 7);
+    private static final Keyed STRANGER_PEER = new Keyed("Stranger's peer", 9);
+    private static final Keyed CAT_GROUP_PEER = new Keyed("Cat lovers' peer", -100);
+    private static final Keyed CAT_CHANNEL_PEER = new Keyed("Cat channel's peer", -200);
 
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
@@ -59,8 +81,53 @@ public class MyChatsSearchTest {
     private Function<Object, List<?>> tabsOf;
     private MyChatsSearch.PostsFinisher finisher;
     private Executor later;
+    private BiFunction<Object, Integer, String> lastHashtagOf;
+    private BiPredicate<Object, String> isOwnChat;
+    private Function<Object, ArrayList<?>[]> listsOf;
+    private ToLongFunction<Object> keyOf;
     private final List<Runnable> queued = new ArrayList<>();
     private final List<Object[]> finished = new ArrayList<>();
+    private final Map<Integer, String> lastTags = new HashMap<>();
+
+    /** An account, a chat or a peer naming one, keyed the way the patch keys Telegram's. */
+    private static final class Keyed {
+        final String what;
+        final long key;
+
+        Keyed(String what, long key) {
+            this.what = what;
+            this.key = key;
+        }
+
+        @Override public String toString() {
+            return what;
+        }
+    }
+
+    /** A stand-in for an account search answer. */
+    private static final class Found {
+        final ArrayList<Object> mine = new ArrayList<>();
+        final ArrayList<Object> others = new ArrayList<>();
+        final ArrayList<Object> users = new ArrayList<>();
+        final ArrayList<Object> chats = new ArrayList<>();
+
+        ArrayList<?>[] lists() {
+            return new ArrayList<?>[] {mine, others, users, chats};
+        }
+
+        List<List<Object>> all() {
+            return Arrays.asList(mine, others, users, chats);
+        }
+    }
+
+    private static Found catSearch() {
+        Found found = new Found();
+        found.mine.addAll(Arrays.asList(CATHY_PEER, CAT_GROUP_PEER));
+        found.others.addAll(Arrays.asList(CAT_CHANNEL_PEER, STRANGER_PEER));
+        found.users.addAll(Arrays.asList(CATHY, STRANGER));
+        found.chats.addAll(Arrays.asList(CAT_GROUP, CAT_CHANNEL));
+        return found;
+    }
 
     @Before public void setUp() {
         Settings.SEARCH_ONLY_MY_CHATS.resetToDefault();
@@ -70,11 +137,19 @@ public class MyChatsSearchTest {
         tabsOf = MyChatsSearch.tabsOf;
         finisher = MyChatsSearch.finisher;
         later = MyChatsSearch.later;
+        lastHashtagOf = MyChatsSearch.lastHashtagOf;
+        isOwnChat = MyChatsSearch.isOwnChat;
+        listsOf = MyChatsSearch.listsOf;
+        keyOf = MyChatsSearch.keyOf;
         MyChatsSearch.isPublic = PUBLIC::contains;
         MyChatsSearch.isDownloads = tab -> tab == DOWNLOADS;
         MyChatsSearch.tabsOf = pager -> pager == PAGER ? new ArrayList<>(STOCK_TABS) : null;
         MyChatsSearch.finisher = (controller, searchType, update) -> finished.add(new Object[] {controller, searchType, update});
         MyChatsSearch.later = queued::add;
+        MyChatsSearch.lastHashtagOf = (controller, searchType) -> controller == CONTROLLER ? lastTags.get(searchType) : null;
+        MyChatsSearch.isOwnChat = (controller, name) -> controller == CONTROLLER && OWN.contains(name);
+        MyChatsSearch.listsOf = found -> found instanceof Found ? ((Found) found).lists() : null;
+        MyChatsSearch.keyOf = item -> ((Keyed) item).key;
     }
 
     @After public void tearDown() {
@@ -83,6 +158,10 @@ public class MyChatsSearchTest {
         MyChatsSearch.tabsOf = tabsOf;
         MyChatsSearch.finisher = finisher;
         MyChatsSearch.later = later;
+        MyChatsSearch.lastHashtagOf = lastHashtagOf;
+        MyChatsSearch.isOwnChat = isOwnChat;
+        MyChatsSearch.listsOf = listsOf;
+        MyChatsSearch.keyOf = keyOf;
         PauseForTests.resume();
         SettingReadsForTests.mend(Settings.SEARCH_ONLY_MY_CHATS);
         Settings.SEARCH_ONLY_MY_CHATS.resetToDefault();
@@ -97,7 +176,12 @@ public class MyChatsSearchTest {
     private static boolean anyChange() {
         ArrayList<Object> tabs = stockTabs();
         MyChatsSearch.dropPublicTabs(tabs);
-        return MyChatsSearch.keep() || !"cat".equals(MyChatsSearch.sent("cat")) || MyChatsSearch.skipPublicPosts()
+        Found found = catSearch();
+        MyChatsSearch.dropPublicResults(found);
+        return MyChatsSearch.keep() || !"cat".equals(MyChatsSearch.sent("cat"))
+                || !MyChatsSearch.keepHashtag(CONTROLLER, "#cats", PUBLIC_POSTS_SEARCH)
+                || !MyChatsSearch.keepHashtag(CONTROLLER, "#cats@catchannel", LOCAL_POSTS)
+                || !found.all().equals(catSearch().all())
                 || !tabs.equals(STOCK_TABS) || MyChatsSearch.downloadsAt(PAGER, 6) != 6;
     }
 
@@ -105,12 +189,16 @@ public class MyChatsSearchTest {
         assertFalse(Settings.SEARCH_ONLY_MY_CHATS.get());
         assertFalse(MyChatsSearch.keep());
         assertEquals("cat", MyChatsSearch.sent("cat"));
-        assertFalse(MyChatsSearch.skipPublicPosts());
+        assertTrue(MyChatsSearch.keepHashtag(CONTROLLER, "#cats", PUBLIC_POSTS_SEARCH));
+        assertTrue(MyChatsSearch.keepHashtag(CONTROLLER, "#cats@catchannel", LOCAL_POSTS));
+        Found found = catSearch();
+        MyChatsSearch.dropPublicResults(found);
+        assertEquals(catSearch().all(), found.all());
         ArrayList<Object> tabs = stockTabs();
         MyChatsSearch.dropPublicTabs(tabs);
         assertEquals(STOCK_TABS, tabs);
         assertEquals(6, MyChatsSearch.downloadsAt(PAGER, 6));
-        assertEquals(Collections.singletonList("Hide popular apps: invoked 5, 0 found, 0 missing"), HookStatus.report());
+        assertEquals(Collections.singletonList("Hide popular apps: invoked 7, 0 found, 0 missing"), HookStatus.report());
     }
 
     @Test public void switchedOnThePublicTabsLeaveAndYourOwnStayInOrder() {
@@ -130,9 +218,100 @@ public class MyChatsSearchTest {
         assertTrue(MyChatsSearch.keep());
         assertNull(MyChatsSearch.sent("cat"));
         assertNull(MyChatsSearch.sent("#cats"));
-        assertTrue(MyChatsSearch.skipPublicPosts());
+        assertFalse(MyChatsSearch.keepHashtag(CONTROLLER, "#cats", PUBLIC_POSTS_SEARCH));
         assertEquals(Collections.singletonList("Hide popular apps: invoked 4, 0 found, 0 missing. Counted: "
                 + "public search lookup skipped 4"), HookStatus.report());
+    }
+
+    @Test public void switchedOnAnAccountSearchKeepsYourOwnMatchesAndWhatTheyName() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        Found found = catSearch();
+        MyChatsSearch.dropPublicResults(found);
+        assertEquals(Arrays.asList(CATHY_PEER, CAT_GROUP_PEER), found.mine);
+        assertEquals(Collections.emptyList(), found.others);
+        assertEquals(Collections.singletonList(CATHY), found.users);
+        assertEquals(Collections.singletonList(CAT_GROUP), found.chats);
+        // An answer with only your own matches stays as it is and isn't counted.
+        Found own = new Found();
+        own.mine.add(CATHY_PEER);
+        own.users.add(CATHY);
+        MyChatsSearch.dropPublicResults(own);
+        assertEquals(Arrays.asList(Collections.singletonList(CATHY_PEER), Collections.emptyList(),
+                Collections.singletonList(CATHY), Collections.emptyList()), own.all());
+        assertEquals(Collections.singletonList("Hide popular apps: invoked 2, 0 found, 0 missing. Counted: "
+                + "public search results dropped 1"), HookStatus.report());
+    }
+
+    // Someone else's match can name an account you also matched, and that account stays for yours.
+    @Test public void anAccountYouMatchedStaysEvenWhenAnotherMatchNamesIt() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        Found found = new Found();
+        found.mine.add(CATHY_PEER);
+        found.others.addAll(Arrays.asList(CATHY_PEER, STRANGER_PEER));
+        found.users.addAll(Arrays.asList(STRANGER, CATHY));
+        MyChatsSearch.dropPublicResults(found);
+        assertEquals(Collections.singletonList(CATHY), found.users);
+        assertEquals(Collections.emptyList(), found.others);
+    }
+
+    @Test public void anAccountSearchAnswerThatCantBeReadShowsNoneOfTheirsAndSaysSo() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        MyChatsSearch.dropPublicResults(null);
+        MyChatsSearch.dropPublicResults(new Object());
+        MyChatsSearch.listsOf = found -> new ArrayList<?>[] {null, null, null, null};
+        MyChatsSearch.dropPublicResults(new Found());
+        assertEquals(Collections.emptyList(), HookStatus.missing(FamilyNames.HIDE_POPULAR_APPS));
+        // Names that can't be read: everyone else's matches still go, and the lists are left as read.
+        MyChatsSearch.listsOf = found -> ((Found) found).lists();
+        MyChatsSearch.keyOf = item -> {
+            throw new IllegalStateException("renamed");
+        };
+        Found found = catSearch();
+        MyChatsSearch.dropPublicResults(found);
+        assertEquals(Collections.emptyList(), found.others);
+        assertEquals(catSearch().users, found.users);
+        assertEquals(catSearch().chats, found.chats);
+        assertEquals(Collections.singletonList("a working 'public search results' hook (it threw java.lang.IllegalStateException)"),
+                HookStatus.missing(FamilyNames.HIDE_POPULAR_APPS));
+    }
+
+    @Test public void aHashtagSearchesOnlyAChatOfYoursAndNeverPublicPosts() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        assertFalse("public posts", MyChatsSearch.keepHashtag(CONTROLLER, "#cats", PUBLIC_POSTS_SEARCH));
+        assertFalse("public posts in the chat's own search", MyChatsSearch.keepHashtag(CONTROLLER, "#cats", LOCAL_POSTS));
+        assertFalse("a channel you haven't joined", MyChatsSearch.keepHashtag(CONTROLLER, "#cats@catchannel", LOCAL_POSTS));
+        assertFalse("no name after the @", MyChatsSearch.keepHashtag(CONTROLLER, "#cats@", LOCAL_POSTS));
+        assertTrue("a group you're in", MyChatsSearch.keepHashtag(CONTROLLER, "#cats@catlovers", LOCAL_POSTS));
+        assertTrue("an account you know", MyChatsSearch.keepHashtag(CONTROLLER, "$CAT@cathy", PUBLIC_POSTS_SEARCH));
+        assertEquals(Collections.singletonList("Hide popular apps: invoked 6, 0 found, 0 missing. Counted: "
+                + "public search lookup skipped 4"), HookStatus.report());
+    }
+
+    @Test public void aHashtagCarriedOnFromLastTimeIsJudgedTheSameWay() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        lastTags.put(LOCAL_POSTS, "#cats@catlovers");
+        lastTags.put(PUBLIC_POSTS_SEARCH, "#cats");
+        assertTrue(MyChatsSearch.keepHashtag(CONTROLLER, null, LOCAL_POSTS));
+        assertFalse(MyChatsSearch.keepHashtag(CONTROLLER, null, PUBLIC_POSTS_SEARCH));
+        // No tag now or last time, or an empty one: Telegram stops by itself, so there's nothing to end.
+        assertTrue(MyChatsSearch.keepHashtag(CONTROLLER, null, MY_MESSAGES));
+        assertTrue(MyChatsSearch.keepHashtag(CONTROLLER, "", PUBLIC_POSTS_SEARCH));
+        assertEquals(Collections.singletonList("Hide popular apps: invoked 4, 0 found, 0 missing. Counted: "
+                + "public search lookup skipped 1"), HookStatus.report());
+    }
+
+    @Test public void aHashtagThatCantBeCheckedEndsEmptyAndSaysSo() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        MyChatsSearch.isOwnChat = (controller, name) -> {
+            throw new IllegalStateException("renamed");
+        };
+        assertFalse(MyChatsSearch.keepHashtag(CONTROLLER, "#cats@catlovers", LOCAL_POSTS));
+        MyChatsSearch.lastHashtagOf = (controller, searchType) -> {
+            throw new IllegalStateException("renamed");
+        };
+        assertFalse(MyChatsSearch.keepHashtag(CONTROLLER, null, PUBLIC_POSTS_SEARCH));
+        assertEquals(Collections.singletonList("a working 'hashtag search' hook (it threw java.lang.IllegalStateException)"),
+                HookStatus.missing(FamilyNames.HIDE_POPULAR_APPS));
     }
 
     // An empty box is already null in Telegram, and there's nothing to keep back or count.
@@ -167,7 +346,7 @@ public class MyChatsSearchTest {
 
     @Test public void aHashtagsPublicPostsEndEmptyOnceTheCallReturns() {
         Settings.SEARCH_ONLY_MY_CHATS.save(true);
-        assertTrue(MyChatsSearch.skipPublicPosts());
+        assertFalse(MyChatsSearch.keepHashtag(CONTROLLER, "#cats", PUBLIC_POSTS_SEARCH));
         MyChatsSearch.endPublicPosts(CONTROLLER, 41, 2);
         assertTrue("nothing is posted while Telegram's own call is still running", finished.isEmpty());
         assertEquals(1, queued.size());
@@ -234,5 +413,9 @@ public class MyChatsSearchTest {
         assertFalse(MyChatsSearch.publicTab(CHANNELS));
         assertFalse(MyChatsSearch.downloadsTab(DOWNLOADS));
         assertNull(MyChatsSearch.tabs(PAGER));
+        assertNull(MyChatsSearch.lastHashtag(CONTROLLER, PUBLIC_POSTS_SEARCH));
+        assertFalse(MyChatsSearch.ownChat(CONTROLLER, "catlovers"));
+        assertNull(MyChatsSearch.foundLists(catSearch()));
+        assertEquals(0L, MyChatsSearch.peerKey(CATHY_PEER));
     }
 }

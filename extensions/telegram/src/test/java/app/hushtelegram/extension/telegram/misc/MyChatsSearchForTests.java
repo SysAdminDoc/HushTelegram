@@ -6,13 +6,39 @@ package app.hushtelegram.extension.telegram.misc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.ToLongFunction;
 
-/** Asks {@link MyChatsSearch} about its tab hooks with stand-in tabs, since its tab stubs answer no until patched. */
+/**
+ * Asks {@link MyChatsSearch} about its tab and account search hooks with stand-ins, since its stubs
+ * answer no until patched.
+ */
 public final class MyChatsSearchForTests {
     private MyChatsSearchForTests() {}
+
+    /**
+     * Whether an account search answer of one of your own matches and one of everyone else's keeps
+     * only yours, and only the account yours names.
+     */
+    public static boolean dropsPublicResults() {
+        ArrayList<Object> others = new ArrayList<>(Collections.singletonList(2L));
+        ArrayList<Object> users = new ArrayList<>(Arrays.asList(1L, 2L));
+        ArrayList<?>[] lists = {new ArrayList<>(Collections.singletonList(1L)), others, users, new ArrayList<>()};
+        Function<Object, ArrayList<?>[]> was = MyChatsSearch.listsOf;
+        ToLongFunction<Object> keys = MyChatsSearch.keyOf;
+        MyChatsSearch.listsOf = found -> lists;
+        MyChatsSearch.keyOf = item -> (Long) item;
+        try {
+            MyChatsSearch.dropPublicResults(new Object());
+            return others.isEmpty() && users.equals(Collections.singletonList(1L));
+        } finally {
+            MyChatsSearch.listsOf = was;
+            MyChatsSearch.keyOf = keys;
+        }
+    }
 
     /** Whether a public tab leaves a list of one public tab and one of your own. */
     public static boolean dropsPublicTabs() {

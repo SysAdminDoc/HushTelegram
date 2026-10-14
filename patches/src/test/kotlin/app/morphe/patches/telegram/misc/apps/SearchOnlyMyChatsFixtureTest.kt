@@ -46,7 +46,10 @@ private const val TITLES = "Lorg/telegram/messenger/R\$string;"
 private const val NOTIFICATIONS = "Lorg/telegram/messenger/NotificationCenter;"
 private val GOTOS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)
 
-/** Search only my chats on the pinned builds: the tab row, the Downloads shortcut, a hashtag's public posts and the Chats tab's public lookups. */
+/**
+ * Search only my chats on the pinned builds: the tab row, the Downloads shortcut, a hashtag's searches,
+ * the Chats tab's public lookups, every account search answer and the public stories search.
+ */
 class SearchOnlyMyChatsFixtureTest {
     @Test fun `each public part of search takes its own way out and the rest of search stays stock`() {
         for (build in Fixtures.declaredBuilds()) {
@@ -58,10 +61,10 @@ class SearchOnlyMyChatsFixtureTest {
             // Telegram's own numbers for its tabs, as the titles read them.
             assertEquals("$name: tab numbers", mapOf(SearchTab.CHANNELS to 1, SearchTab.APPS to 4, SearchTab.POSTS to 6,
                 SearchTab.PUBLIC_POSTS to 5, SearchTab.DOWNLOADS to 2), sites.tabs.types)
-            assertEquals("$name: the public posts kind of a hashtag search", 2, sites.hashtag.publicPosts)
+            assertEquals("$name: the hashtag search that looks only through your own messages", 1, sites.hashtag.myMessages)
 
-            val methods = (sites.chat.edits.map { it.method } + listOf(sites.tabs.update, sites.downloads.method, sites.hashtag.search))
-                .distinctBy { System.identityHashCode(it) }
+            val methods = (sites.chat.edits.map { it.method } + listOf(sites.tabs.update, sites.downloads.method, sites.hashtag.search,
+                sites.found.read, sites.stories.method)).distinctBy { System.identityHashCode(it) }
             val stock = methods.associate { System.identityHashCode(it) to ImmutableMethod.of(it) }
             sites.rehearse()
             for (method in methods) assertEquals("$name: the rehearsal leaves ${method.name} alone",
@@ -103,24 +106,57 @@ class SearchOnlyMyChatsFixtureTest {
             assertEquals("$name: and the call opens it", listOf("setPosition", listOf(shortcut.pager, shortcut.position)),
                 listOf(opens[call + 2].call()?.name, opens[call + 2].namedRegisters()))
 
-            // A hashtag's search asks first only for the public posts kind, and ends there on yes.
+            // A hashtag's search past your own messages asks first, and ends there on no.
             val search = sites.hashtag.search
             val hashtag = search.body()
             val stockHashtag = stock.getValue(System.identityHashCode(search)).body()
-            assertEquals("$name: hashtag gate", listOf(Opcode.CONST, Opcode.IF_NE, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ,
+            assertEquals("$name: hashtag gate", listOf(Opcode.CONST, Opcode.IF_EQ, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_NEZ,
                 Opcode.INVOKE_STATIC, Opcode.RETURN_VOID), hashtag.take(7).map { it.opcode })
-            assertEquals("$name: the public posts kind", 2, (hashtag[0] as NarrowLiteralInstruction).narrowLiteral)
+            assertEquals("$name: your own messages' kind", 1, (hashtag[0] as NarrowLiteralInstruction).narrowLiteral)
             assertEquals("$name: compared with the kind asked for", setOf(0, sites.hashtag.kind), hashtag[1].namedRegisters().toSet())
-            assertEquals("$name: asks skipPublicPosts", SKIP_PUBLIC_POSTS, hashtag[2].ref())
+            assertEquals("$name: asks keepHashtag", KEEP_HASHTAG, hashtag[2].ref())
+            assertEquals("$name: with the controller, the tag and the kind",
+                listOf(sites.hashtag.self, sites.hashtag.hashtag, sites.hashtag.kind), hashtag[2].namedRegisters())
+            assertEquals("$name: the tag is the first argument", search.implementation!!.registerCount - 4, sites.hashtag.hashtag)
             assertEquals("$name: ends through endPublicPosts", END_PUBLIC_POSTS, hashtag[5].ref())
             assertEquals("$name: with the controller, the screen and the kind",
                 listOf(sites.hashtag.self, sites.hashtag.guid, sites.hashtag.kind), hashtag[5].namedRegisters())
             assertEquals("$name: the stock search follows untouched", stockHashtag.map(::operands), hashtag.drop(7).map(::operands))
             val flow = ControlFlow.of(search)
-            assertEquals("$name: any other kind goes to the stock search", setOf(2, 7), flow.normal[1].toSet())
-            assertEquals("$name: a no goes to the stock search", setOf(5, 7), flow.normal[4].toSet())
+            assertEquals("$name: your own messages go to the stock search", setOf(2, 7), flow.normal[1].toSet())
+            assertEquals("$name: a yes goes to the stock search", setOf(5, 7), flow.normal[4].toSet())
             assertTrue("$name: the public posts request is still the stock search's",
                 hashtag.drop(7).any { it.opcode == Opcode.NEW_INSTANCE && it.ref() == CHANNELS_POSTS })
+
+            // Every account search answer hands itself over once all four lists are read, right before its reader returns.
+            val read = sites.found.read
+            val answer = read.body()
+            val stockAnswer = stock.getValue(System.identityHashCode(read)).body()
+            val found = sites.found.end
+            assertEquals("$name: the answer is the reader's own", read.implementation!!.registerCount - 3, sites.found.self)
+            assertEquals("$name: the reader keeps every instruction it had", stockAnswer.map(::operands),
+                answer.indices.filter { it != found }.map { operands(answer[it]) })
+            assertEquals("$name: the answer goes to dropPublicResults, then the reader returns",
+                listOf(listOf(Opcode.INVOKE_STATIC, listOf(sites.found.self), DROP_PUBLIC_RESULTS), listOf(Opcode.RETURN_VOID, emptyList<Int>(), null)),
+                answer.subList(found, found + 2).map(::operands))
+            assertEquals("$name: the only way out of the reader", listOf(found + 1), answer.indices.filter { answer[it].opcode == Opcode.RETURN_VOID })
+            assertEquals("$name: all four lists are read in first", FOUND_LISTS.toSet(), answer.take(found)
+                .filter { it.opcode == Opcode.IPUT_OBJECT && it.namedRegisters()[1] == sites.found.self }
+                .map { ((it as ReferenceInstruction).reference as FieldReference).name }.toSet())
+
+            // The public stories search answers no, as for nothing more to load, before building its request.
+            val stories = sites.stories.method
+            val page = stories.body()
+            val stockPage = stock.getValue(System.identityHashCode(stories)).body()
+            assertEquals("$name: public stories gate", listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.CONST_4,
+                Opcode.RETURN), page.take(5).map { it.opcode })
+            assertEquals("$name: asks keep", MY_CHATS_HOOKS.keep, page[0].ref())
+            assertEquals("$name: answers no", 0, (page[3] as NarrowLiteralInstruction).narrowLiteral)
+            assertEquals("$name: the answer is the one it returns", page[3].namedRegisters(), page[4].namedRegisters())
+            assertEquals("$name: the stock search follows untouched", stockPage.map(::operands), page.drop(5).map(::operands))
+            assertEquals("$name: a no goes to the stock search", setOf(3, 5), ControlFlow.of(stories).normal[2].toSet())
+            assertTrue("$name: it's the search that asks for public stories",
+                page.drop(5).any { it.opcode == Opcode.NEW_INSTANCE && it.ref() == PUBLIC_STORIES })
 
             // The stubs read what was found.
             val runtime = context.mutableClassDefBy(MY_CHATS_SEARCH)
@@ -141,6 +177,18 @@ class SearchOnlyMyChatsFixtureTest {
                 "$NOTIFICATIONS->postNotificationName(I[Ljava/lang/Object;)V")) {
                 assertTrue("$name: the finish uses $part", part in finish)
             }
+            assertEquals("$name: the last tag of that kind", listOf(HASHTAG_SEARCH, "$HASHTAG_SEARCH->getSearchResult(I)$HASHTAG_RESULT",
+                "$HASHTAG_RESULT->lastHashtag:Ljava/lang/String;"), stub("lastHashtag").mapNotNull { it.ref() })
+            val own = stub("ownChat").mapNotNull { it.ref() }
+            for (part in listOf("$MESSAGES_CONTROLLER->getUserOrChat(Ljava/lang/String;)Lorg/telegram/tgnet/TLObject;", TL_USER, TL_CHAT,
+                "$CHAT_OBJECT->isNotInChat($TL_CHAT)Z")) {
+                assertTrue("$name: a chat of yours is judged with $part", part in own)
+            }
+            assertEquals("$name: the answer's lists, in order", FOUND_LISTS.map { "$CONTACTS_FOUND->$it:Ljava/util/ArrayList;" },
+                stub("foundLists").filter { it.opcode == Opcode.IGET_OBJECT }.map { it.ref() })
+            assertEquals("$name: ids for an account, a chat and a peer", listOf("$TL_USER->id:J", "$TL_CHAT->id:J",
+                "$TL_PEER->user_id:J", "$TL_PEER->chat_id:J", "$TL_PEER->channel_id:J"),
+                stub("peerKey").filter { it.opcode == Opcode.IGET_WIDE }.map { it.ref() })
         }
     }
 
@@ -221,6 +269,23 @@ class SearchOnlyMyChatsFixtureTest {
             Triple("row ends twice", "the tab row update no longer ends in one place") { _, sites ->
                 sites.tabs.update.addInstructions(0, "return-void")
             },
+            Triple("account answer ends twice", "the account search answer reader no longer ends in one place") { _, sites ->
+                sites.found.read.addInstructions(0, "return-void")
+            },
+            Triple("account answer leaves a list unread", "the account search answer reader no longer fills its four lists") { _, sites ->
+                val code = sites.found.read.body()
+                val users = code.indices.single { code[it].opcode == Opcode.IPUT_OBJECT && code[it].ref()?.contains("->users:") == true }
+                sites.found.read.replaceInstruction(users, "nop")
+            },
+            Triple("second public stories search", "public stories search has 2 matches") { _, sites ->
+                sites.found.read.addInstructions(0, "new-instance v0, $PUBLIC_STORIES")
+            },
+            Triple("public stories always load", "the public stories search no longer answers no when there's nothing to load") { _, sites ->
+                val code = sites.stories.method.body()
+                val none = code.indices.first { at -> code[at].opcode == Opcode.CONST_4 &&
+                    (code[at] as NarrowLiteralInstruction).narrowLiteral == 0 && code.getOrNull(at + 1)?.opcode == Opcode.RETURN }
+                sites.stories.method.replaceInstruction(none, "const/4 v${code[none].namedRegisters()[0]}, 0x1")
+            },
         )
         for (build in Fixtures.declaredBuilds()) {
             for ((case, reason, change) in changes) {
@@ -239,7 +304,7 @@ class SearchOnlyMyChatsFixtureTest {
         }
     }
 
-    @Test fun `the census has one tab row, one Downloads shortcut and one hashtag search that asks for public posts`() {
+    @Test fun `the census has one tab row, one Downloads shortcut, one hashtag search, one account answer reader and one public stories search`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val titled = FixtureDex.methodsWhere(build, { true }) { method -> method.body().let { body ->
@@ -253,6 +318,12 @@ class SearchOnlyMyChatsFixtureTest {
                 it.opcode == Opcode.NEW_INSTANCE && it.ref() == CHANNELS_POSTS } }
             assertTrue("$name: the hashtag search asks for public posts: ${posts.map { it.definingClass }}",
                 posts.any { it.definingClass == HASHTAG_SEARCH && it.name == "searchHashtag" })
+            // Every account search answer is read by the one reader, whichever screen asked.
+            val readers = FixtureDex.methodsWhere(build, { true }) { method -> method.definingClass == CONTACTS_FOUND && method.name == "readParams" }
+            assertEquals("$name: one account search answer reader", 1, readers.size)
+            val stories = FixtureDex.methodsWhere(build, { true }) { method -> method.body().any {
+                it.opcode == Opcode.NEW_INSTANCE && it.ref() == PUBLIC_STORIES } }
+            assertEquals("$name: one public stories search: ${stories.map { it.definingClass }}", 1, stories.size)
         }
     }
 
@@ -300,13 +371,15 @@ private fun Method.namesEveryTab() = body().let { body ->
 
 /**
  * Everything Search only my chats reads or edits: chat search and what it builds or calls, the tab
- * row's adapter with its items and pager, the screen that opens Downloads, and Telegram's hashtag
- * search with its results and the notification center it posts to.
+ * row's adapter with its items and pager, the screen that opens Downloads, Telegram's hashtag search
+ * with its results and the notification center it posts to, the account search answer with the
+ * accounts, chats and peers it lists, the lookup that tells your chats apart, and the public stories search.
  */
 internal fun myChatsSearchHosts(build: File): List<ClassDef> = HOSTS.getOrPut(build.path) {
     val found = FixtureDex.classesWhere(build, { true }) { method -> method.namesEveryTab() || method.body().let { body ->
         body.indices.any { at -> at + 2 < body.size && body[at].opcode == Opcode.IGET_BOOLEAN &&
-            body[at + 1].opcode == Opcode.ADD_INT_LIT8 && body[at + 2].call()?.name == "setPosition" } } }
+            body[at + 1].opcode == Opcode.ADD_INT_LIT8 && body[at + 2].call()?.name == "setPosition" } ||
+            body.any { it.opcode == Opcode.NEW_INSTANCE && it.ref() == PUBLIC_STORIES } } }
     // The adapter's tab items and the pager whose flag it reads.
     val adapter = found.single { classDef -> classDef.methods.any { it.namesEveryTab() } }
     val named = adapter.methods.flatMap { method -> method.body().mapNotNull { instruction ->
@@ -315,7 +388,8 @@ internal fun myChatsSearchHosts(build: File): List<ClassDef> = HOSTS.getOrPut(bu
             Opcode.IGET_BOOLEAN -> ((instruction as ReferenceInstruction).reference as FieldReference).definingClass
             else -> null
         } } }
-    val kept = FixtureDex.classes(build, named.toSet() + setOf(HASHTAG_SEARCH, HASHTAG_RESULT, NOTIFICATIONS)).values
+    val kept = FixtureDex.classes(build, named.toSet() + setOf(HASHTAG_SEARCH, HASHTAG_RESULT, NOTIFICATIONS, CONTACTS_FOUND,
+        MESSAGES_CONTROLLER, CHAT_OBJECT, TL_USER, TL_CHAT, TL_PEER)).values
     (localSearchHosts(build) + found + kept).distinctBy { it.type }.map(ImmutableClassDef::of)
 }
 

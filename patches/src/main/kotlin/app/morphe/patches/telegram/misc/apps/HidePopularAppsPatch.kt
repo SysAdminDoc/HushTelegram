@@ -59,7 +59,8 @@ val hidePopularAppsPatch = bytecodePatch(
         val sites = resolvePopularAppsSites()
         val search = resolveMyChatsSearch()
         val popular = listOf(sites.load, sites.section)
-        val searched = search.chat.edits.map { it.method } + listOf(search.tabs.update, search.downloads.method, search.hashtag.search)
+        val searched = search.chat.edits.map { it.method } + listOf(search.tabs.update, search.downloads.method, search.hashtag.search,
+            search.found.read, search.stories.method)
         shape(popular.none { method -> searched.any { it === method } }, "search only my chats shares a method with the Apps tab")
         search.rehearse()
         // The runtime's stubs first: on their own nothing calls them.

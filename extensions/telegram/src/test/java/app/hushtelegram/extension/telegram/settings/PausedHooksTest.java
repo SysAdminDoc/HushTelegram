@@ -183,13 +183,15 @@ public class PausedHooksTest {
                 () -> app.hushtelegram.extension.telegram.misc.LocalSearch.sent("cat") == null,
                 () -> !"none".equals(app.hushtelegram.extension.telegram.misc.LocalSearch.emptyText("none"))));
         // Search's Apps tab neither loads nor draws the Popular apps list, and search keeps to your
-        // own chats: no public tab, lookup or hashtag posts, and Downloads opens where it now sits.
+        // own chats: no public tab, lookup, account match or hashtag posts, and Downloads opens
+        // where it now sits.
         probes.put(PatchFamily.HIDE_POPULAR_APPS, Arrays.asList(
                 app.hushtelegram.extension.telegram.misc.PopularApps::skipLoad,
                 app.hushtelegram.extension.telegram.misc.PopularApps::hideSection,
                 app.hushtelegram.extension.telegram.misc.MyChatsSearch::keep,
                 () -> app.hushtelegram.extension.telegram.misc.MyChatsSearch.sent("cat") == null,
-                app.hushtelegram.extension.telegram.misc.MyChatsSearch::skipPublicPosts,
+                () -> !app.hushtelegram.extension.telegram.misc.MyChatsSearch.keepHashtag(new Object(), "#cats", 2),
+                app.hushtelegram.extension.telegram.misc.MyChatsSearchForTests::dropsPublicResults,
                 app.hushtelegram.extension.telegram.misc.MyChatsSearchForTests::dropsPublicTabs,
                 app.hushtelegram.extension.telegram.misc.MyChatsSearchForTests::movesDownloads));
         // A sideways swipe on a chat row starts nothing.
