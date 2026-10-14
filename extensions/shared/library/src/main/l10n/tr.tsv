@@ -740,7 +740,7 @@ Unlock started. Settings open in 24 hours unless you cancel.	Kilit açma başlad
 Unlock canceled. Settings stay locked.	Kilit açma iptal edildi. Ayarlar kilitli kalıyor.
 Couldn't change the lock. Try again in a moment.	Kilit değiştirilemedi. Birazdan tekrar dene.
 Settings are locked. They unlock in %1$d h %2$d min.	Ayarlar kilitli. Kilit %1$d sa %2$d dk sonra açılır.
-Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.	Ayarlar kilitli. HushTelegram ayarlarının üstündeki Kilidi açmayı başlat'a dokun, sonra 24 saat bekle.
+Settings are locked. Tap Start unlock, then wait 24 hours.	Ayarlar kilitli. Kilidi açmayı başlat'a dokun, sonra 24 saat bekle.
 # context: Export settings row, its first sentence: what a settings file holds. The sentence after it lists what the file leaves out.
 Saves your switches, filter lists, sticker size and chat list emoji to a file, for all the accounts in this Telegram app. Your chats, drafts and kept messages aren't in it.	Anahtarlarınızı, filtre listelerinizi, çıkartma boyutunu ve sohbet listesi emojisini bu Telegram uygulamasındaki tüm hesaplar için bir dosyaya kaydeder. Sohbetleriniz, taslaklarınız ve saklanan mesajlarınız dosyaya girmez.
 # context: Export settings row. %1$s is a list joined the language's own way: row titles as they show (Pause HushTelegram, Debug logging, Check for new HushTelegram releases, Lock HushTelegram settings, Quick setups on the home page, UnifiedPush notifications, Folders by chat type) and the lowercase phrase below it, which ends the list.

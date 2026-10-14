@@ -1463,7 +1463,7 @@ public class SettingsNavigationTest {
         return texts;
     }
 
-    private static final String LOCKED_NOTE = "Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.";
+    private static final String LOCKED_NOTE = "Settings are locked. Tap Start unlock, then wait 24 hours.";
 
     /**
      * The settings lock (#17) sits under Quick setups. Locked, a switch, Quick setups, the status

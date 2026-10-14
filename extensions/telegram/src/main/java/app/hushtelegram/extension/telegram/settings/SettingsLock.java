@@ -158,7 +158,7 @@ public final class SettingsLock {
             long minutes = minutesLeft();
             return L10n.f("Settings are locked. They unlock in %1$d h %2$d min.", minutes / 60, minutes % 60);
         }
-        return L10n.t("Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.");
+        return L10n.t("Settings are locked. Tap Start unlock, then wait 24 hours.");
     }
 
     /** The lock row's title. */

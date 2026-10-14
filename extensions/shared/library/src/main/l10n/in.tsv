@@ -740,7 +740,7 @@ Unlock started. Settings open in 24 hours unless you cancel.	Buka kunci dimulai.
 Unlock canceled. Settings stay locked.	Buka kunci dibatalkan. Pengaturan tetap terkunci.
 Couldn't change the lock. Try again in a moment.	Kunci tidak bisa diubah. Coba lagi dalam beberapa saat.
 Settings are locked. They unlock in %1$d h %2$d min.	Pengaturan terkunci. Terbuka dalam %1$d j %2$d mnt.
-Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.	Pengaturan terkunci. Ketuk Mulai buka kunci di bagian atas pengaturan HushTelegram, lalu tunggu 24 jam.
+Settings are locked. Tap Start unlock, then wait 24 hours.	Pengaturan terkunci. Ketuk Mulai buka kunci, lalu tunggu 24 jam.
 # context: Export settings row, its first sentence: what a settings file holds. The sentence after it lists what the file leaves out.
 Saves your switches, filter lists, sticker size and chat list emoji to a file, for all the accounts in this Telegram app. Your chats, drafts and kept messages aren't in it.	Menyimpan sakelar, daftar filter, ukuran stiker, dan emoji daftar obrolan Anda ke berkas, untuk semua akun di aplikasi Telegram ini. Obrolan, draf, dan pesan terhapus yang disimpan tidak ikut di dalamnya.
 # context: Export settings row. %1$s is a list joined the language's own way: row titles as they show (Pause HushTelegram, Debug logging, Check for new HushTelegram releases, Lock HushTelegram settings, Quick setups on the home page, UnifiedPush notifications, Folders by chat type) and the lowercase phrase below it, which ends the list.

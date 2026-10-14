@@ -42,7 +42,7 @@ public class ToastLengthTest {
     private static final Pattern TOAST_BUILDER = Pattern.compile(
             "\\b(?:static|public|protected|private)\\s+(?:static\\s+)?[\\w<>.\\[\\]]+\\s+"
                     + "(?:refusal|importedMessage|clearedMessage|preferenceChangeRecoveredMessage"
-                    + "|preferenceChangeRecoveryFailedMessage|write)\\s*\\([^)]*\\)[^{;]*\\{");
+                    + "|preferenceChangeRecoveryFailedMessage|write|note)\\s*\\([^)]*\\)[^{;]*\\{");
     private static final Pattern L10N_CALL = Pattern.compile("L10n\\s*\\.\\s*(t|f|quantity)\\s*\\(");
     private static final Pattern LITERAL_RUN = Pattern.compile(
             "\"(?:[^\"\\\\]|\\\\.)*\"(?:\\s*\\+\\s*\"(?:[^\"\\\\]|\\\\.)*\")*");
@@ -108,6 +108,8 @@ public class ToastLengthTest {
         assertTrue(texts.contains("Sign in to Telegram first."));
         assertTrue(texts.contains("Telegram turned the folders down. Try again later."));
         assertTrue(texts.contains("Asking Telegram to make your folders."));
+        // The settings lock's refusal, built by SettingsLock.note and shown by refuses().
+        assertTrue(texts.contains("Settings are locked. Tap Start unlock, then wait 24 hours."));
     }
 
     private static int fixedLength(String text) {

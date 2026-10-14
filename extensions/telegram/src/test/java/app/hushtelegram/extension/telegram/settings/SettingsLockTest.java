@@ -33,7 +33,7 @@ import app.hushtelegram.extension.telegram.settings.SettingsLock.Stored;
 public class SettingsLockTest {
     private static final long START = 1_800_000_000_000L;
     private static final long HOUR = 60 * 60 * 1000L;
-    private static final String LOCKED_NOTE = "Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.";
+    private static final String LOCKED_NOTE = "Settings are locked. Tap Start unlock, then wait 24 hours.";
 
     @Rule public final SettingsContextRule settings = new SettingsContextRule();
 

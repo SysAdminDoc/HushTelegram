@@ -979,8 +979,8 @@ public final class L10nTranslations {
                 "Gesendet: %1$s");
         table.put("Service address",
                 "Adresse des Dienstes");
-        table.put("Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.",
-                "Die Einstellungen sind gesperrt. Tippe oben in den HushTelegram-Einstellungen auf Entsperren starten und warte dann 24 Stunden.");
+        table.put("Settings are locked. Tap Start unlock, then wait 24 hours.",
+                "Einstellungen gesperrt. Tippe auf Entsperren starten und warte 24 Stunden.");
         table.put("Settings are locked. They unlock in %1$d h %2$d min.",
                 "Die Einstellungen sind gesperrt. Sie werden in %1$d Std. %2$d Min. entsperrt.");
         table.put("Settings backup",
@@ -2418,8 +2418,8 @@ public final class L10nTranslations {
                 "Enviado: %1$s");
         table.put("Service address",
                 "Direcci\u00f3n del servicio");
-        table.put("Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.",
-                "La configuraci\u00f3n est\u00e1 bloqueada. Toca Iniciar desbloqueo arriba en la configuraci\u00f3n de HushTelegram y espera 24 horas.");
+        table.put("Settings are locked. Tap Start unlock, then wait 24 hours.",
+                "La configuraci\u00f3n est\u00e1 bloqueada. Toca Iniciar desbloqueo y espera 24 horas.");
         table.put("Settings are locked. They unlock in %1$d h %2$d min.",
                 "La configuraci\u00f3n est\u00e1 bloqueada. Se desbloquea en %1$d h %2$d min.");
         table.put("Settings backup",
@@ -3857,8 +3857,8 @@ public final class L10nTranslations {
                 "Dikirim: %1$s");
         table.put("Service address",
                 "Alamat layanan");
-        table.put("Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.",
-                "Pengaturan terkunci. Ketuk Mulai buka kunci di bagian atas pengaturan HushTelegram, lalu tunggu 24 jam.");
+        table.put("Settings are locked. Tap Start unlock, then wait 24 hours.",
+                "Pengaturan terkunci. Ketuk Mulai buka kunci, lalu tunggu 24 jam.");
         table.put("Settings are locked. They unlock in %1$d h %2$d min.",
                 "Pengaturan terkunci. Terbuka dalam %1$d j %2$d mnt.");
         table.put("Settings backup",
@@ -5296,8 +5296,8 @@ public final class L10nTranslations {
                 "Enviada: %1$s");
         table.put("Service address",
                 "Endere\u00e7o do servi\u00e7o");
-        table.put("Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.",
-                "As configura\u00e7\u00f5es est\u00e3o bloqueadas. Toque em Iniciar desbloqueio no topo das configura\u00e7\u00f5es do HushTelegram e espere 24 horas.");
+        table.put("Settings are locked. Tap Start unlock, then wait 24 hours.",
+                "Configura\u00e7\u00f5es bloqueadas. Toque em Iniciar desbloqueio e espere 24 horas.");
         table.put("Settings are locked. They unlock in %1$d h %2$d min.",
                 "As configura\u00e7\u00f5es est\u00e3o bloqueadas. Elas desbloqueiam em %1$d h %2$d min.");
         table.put("Settings backup",
@@ -6735,8 +6735,8 @@ public final class L10nTranslations {
                 "G\u00f6nderildi: %1$s");
         table.put("Service address",
                 "Hizmet adresi");
-        table.put("Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.",
-                "Ayarlar kilitli. HushTelegram ayarlar\u0131n\u0131n \u00fcst\u00fcndeki Kilidi a\u00e7may\u0131 ba\u015flat'a dokun, sonra 24 saat bekle.");
+        table.put("Settings are locked. Tap Start unlock, then wait 24 hours.",
+                "Ayarlar kilitli. Kilidi a\u00e7may\u0131 ba\u015flat'a dokun, sonra 24 saat bekle.");
         table.put("Settings are locked. They unlock in %1$d h %2$d min.",
                 "Ayarlar kilitli. Kilit %1$d sa %2$d dk sonra a\u00e7\u0131l\u0131r.");
         table.put("Settings backup",
