@@ -17,9 +17,11 @@ import app.morphe.patches.telegram.misc.extension.requireParameterIntact
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -92,8 +94,8 @@ internal fun BytecodePatchContext.resolveChannelBarButtons(): ChannelBarPlan {
     controlHook(CHANNEL_BUTTONS, "sideButtons", emptyList(), "I")
 
     val placers = mutableListOf<Method>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.allReferences(SIDE_LABELS + GIFT_LABEL)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.filterTo(placers) { m ->
             !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" &&
                 m.parameterTypes.map { it.toString() } == listOf("I", "Z", "Z") &&
@@ -108,8 +110,8 @@ internal fun BytecodePatchContext.resolveChannelBarButtons(): ChannelBarPlan {
         buttonNumber(placer, GIFT_LABEL) !in numbers, "the channel bar's side buttons no longer have numbers of their own")
 
     val updates = mutableListOf<Pair<String, Method>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.reference(MUTE_LABEL) and Mention.reference(place)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.filter { m ->
             m.controlBody().let { body -> body.any { it.controlRef() == MUTE_LABEL } && body.any { it.controlRef() == place } }
         }.forEach { updates += cls.type to it }

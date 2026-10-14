@@ -15,11 +15,13 @@ import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -104,8 +106,8 @@ internal fun BytecodePatchContext.resolveVoiceMusicPlayer(): VoiceMusicPlayerSit
     // The bar: a music check followed closely by the full player being created.
     val bar = mutableListOf<Triple<String, String, Int>>()
     val players = mutableSetOf<String>()
-    classDefForEach { cls ->
-        if (cls.type != FRAGMENT_CONTEXT_VIEW && cls.fields.none { it.type == FRAGMENT_CONTEXT_VIEW && !AccessFlags.STATIC.isSet(it.accessFlags) }) return@classDefForEach
+    forEachClassMentioning(Mention.reference(IS_MUSIC)) { cls ->
+        if (cls.type != FRAGMENT_CONTEXT_VIEW && cls.fields.none { it.type == FRAGMENT_CONTEXT_VIEW && !AccessFlags.STATIC.isSet(it.accessFlags) }) return@forEachClassMentioning
         cls.methods.forEach { m ->
             val body = m.controlBody()
             for (i in body.indices) {
@@ -126,9 +128,9 @@ internal fun BytecodePatchContext.resolveVoiceMusicPlayer(): VoiceMusicPlayerSit
     // The player and the classes built around it, each music check they make.
     val found = mutableListOf(Triple(bar.single().first, bar.single().second, listOf(bar.single().third)))
     var inPlayer = 0
-    classDefForEach { cls ->
+    forEachClassMentioning(Mention.reference(IS_MUSIC)) { cls ->
         val holds = cls.type == player || cls.fields.any { it.type == player && !AccessFlags.STATIC.isSet(it.accessFlags) }
-        if (!holds || cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+        if (!holds || cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
             val body = m.controlBody()
             val indices = body.indices.filter { body[it].opcode in VIRTUAL && body[it].controlRef() == IS_MUSIC }

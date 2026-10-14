@@ -21,6 +21,8 @@ import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.returnEarlyWhen
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.classDefsMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -107,8 +109,10 @@ internal fun BytecodePatchContext.resolveStoryHooks(): StoryPlan {
     fun mutable(method: Method) = mutableClassDefBy(method.definingClass).methods.single { it.sameSignature(method) }
     fun body(call: MethodReference): Method = classes[call.definingClass]?.methods?.singleOrNull { it.sameSignature(call) }
         ?: throw PatchException("$PATCH: no body for discovered $call")
+    // Each search below only reads the classes as they were above, among those naming its anchor.
+    fun mentioning(anchor: String) = classDefsMentioning(Mention.reference(anchor)).mapNotNull { classes[it.type] }
     val hooks = mutableMapOf<StoryTarget, StoryHook>()
-    val request = classes.values.flatMap { it.methods.toList() }.filter {
+    val request = mentioning(GET_ALL_STORIES).flatMap { it.methods.toList() }.filter {
         it.hasShape(listOf("Z"), "V") && it.instructions().any { instruction ->
             instruction.opcode == Opcode.NEW_INSTANCE && instruction.reference() == GET_ALL_STORIES
         }
@@ -122,7 +126,7 @@ internal fun BytecodePatchContext.resolveStoryHooks(): StoryPlan {
         hooks[StoryTarget.REQUESTS] = StoryHook(method, 0, "")
     }
 
-    val dialogs = classes.values.filter { classDef -> classDef.methods.any {
+    val dialogs = mentioning(STORY_CAMERA_ICON).filter { classDef -> classDef.methods.any {
         it.name == "createView" && it.hasShape(listOf("Landroid/content/Context;"), "Landroid/view/View;") &&
             it.instructions().any { instruction -> instruction.reference() == STORY_CAMERA_ICON }
     } }.unique("chat list with the Post Story camera")
@@ -146,7 +150,7 @@ internal fun BytecodePatchContext.resolveStoryHooks(): StoryPlan {
         if (bar != null) hooks[StoryTarget.BAR] = barHook(mutable(bar))
     }
 
-    val cell = classes.values.filter { classDef ->
+    val cell = mentioning(CHAT_PREVIEW_ACTION).filter { classDef ->
         classDef.methods.any { it.name == "getDialogId" && it.hasShape(emptyList(), "J") } &&
             classDef.methods.any { it.name == "getCurrentDialogFolderId" && it.hasShape(emptyList(), "I") } &&
             classDef.methods.any { it.instructions().any { i -> i.reference() == CHAT_PREVIEW_ACTION } }

@@ -20,6 +20,7 @@ import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
@@ -27,6 +28,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.controlString
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -240,8 +242,8 @@ internal fun BytecodePatchContext.resolveDisableArchivePull(): ArchivePullSites 
 
     // The chat list's menu hands itself to the app build's own entries after New Group and Saved Messages.
     val menus = mutableListOf<Pair<String, String>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.member(APPLICATION_LOADER, "addItemOptions")) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.filter { m -> m.controlBody().any { it.call()?.let { c -> c.definingClass == APPLICATION_LOADER && c.name == "addItemOptions" } == true } }
             .forEach { menus += cls.type to it.ref() }
     }

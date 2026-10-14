@@ -18,11 +18,13 @@ import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.notifications.NOTIFICATIONS
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
@@ -279,8 +281,8 @@ internal fun BytecodePatchContext.resolveHideBlockedInGroups(): List<Pair<Mutabl
 internal fun BytecodePatchContext.resolveOpenChatTypeReads(): List<Pair<MutableMethod, List<Int>>> {
     val loads = mutableListOf<Triple<String, String, Int>>()
     val adds = mutableListOf<Triple<String, String, Int>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.reference(MIGRATE_TO) or Mention.reference(LISTED)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { method ->
             val body = method.controlBody()
             for ((read, test) in typeTests(body)) {

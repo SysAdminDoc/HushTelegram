@@ -16,6 +16,8 @@ import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -117,7 +119,8 @@ internal fun Method.isChannelPullScroll(): Boolean = returnType == "I" && parame
 internal fun BytecodePatchContext.resolveChannelPullSites(): ChannelPullSites {
     requireRuntimeHooks()
     val candidates = mutableListOf<Method>()
-    classDefForEach { owner ->
+    val calls = Mention.reference("$CHAT_OBJECT->isChannel($CHAT)Z") and Mention.reference("Lorg/telegram/messenger/UserObject;->isBotForum($USER)Z")
+    forEachClassMentioning(calls) { owner ->
         if (!owner.type.startsWith("Lapp/hushtelegram/extension/")) owner.methods.filterTo(candidates) { it.isChannelPullScroll() }
     }
     val found = candidates.one("bottom-pull layout manager", ::refuse)
