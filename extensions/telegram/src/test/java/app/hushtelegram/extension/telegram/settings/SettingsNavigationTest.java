@@ -1365,6 +1365,36 @@ public class SettingsNavigationTest {
         }
     }
 
+    /**
+     * A choice after a clear whose every save failed changed nothing, so the clear, heard late,
+     * still takes the older choice's undo, whose switches it wiped.
+     */
+    @Test @Config(sdk = {28, 30})
+    public void aClearHeardLateStillTakesTheUndoWhenTheChoiceSinceSavedNothing() throws InterruptedException {
+        try {
+            assertEquals(1, page.applyQuickSetup(Collections.singletonMap(Settings.REVEAL_SPOILERS, true)));
+            Thread clearing = new Thread(app.hushtelegram.extension.shared.settings.Setting.preferences::clear);
+            clearing.start();
+            clearing.join();
+            // A row that doesn't save stands in for a choice whose every save failed: it starts
+            // writing and changes nothing. (Rows save through Android's own store, out of FailingStore's reach.)
+            Preference ads = page.findPreference(Settings.HIDE_ADS.key);
+            ads.setPersistent(false);
+            try {
+                assertEquals(0, page.applyQuickSetup(Collections.singletonMap(Settings.HIDE_ADS, false)));
+            } finally {
+                ((android.preference.TwoStatePreference) ads).setChecked(Settings.HIDE_ADS.savedValue());
+                ads.setPersistent(true);
+            }
+            ShadowLooper.idleMainLooper();
+            assertNull("the clear left the undo of switches it wiped",
+                    app.hushtelegram.extension.shared.settings.preference.QuickSetups.last());
+        } finally {
+            Settings.REVEAL_SPOILERS.resetToDefault();
+            Settings.HIDE_ADS.resetToDefault();
+        }
+    }
+
     /** A cleared settings file leaves nothing to undo, also on Android 9 and 10, where clearing tells no listener. */
     @Test @Config(sdk = {28, 29, 30})
     public void aClearedSettingsFileLeavesNothingToUndo() {

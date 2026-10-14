@@ -80,11 +80,16 @@ public final class QuickSetups {
     /** How many of the last choice's switches were written by something else since. */
     private static int writtenSince;
     /**
-     * How many choices have started writing a switch, so a clear heard late can tell whether a
-     * choice's writes all came after it. Counted before the first write, so a clear in the middle of
-     * a choice counts as after it.
+     * How many choices and undos have started writing a switch, so a clear heard late can tell
+     * whether the last choice's writes all came after it. Counted before the first write, so a clear
+     * in the middle of a choice counts as after it.
      */
     private static volatile int choices;
+    /**
+     * {@link #choices} as the last choice started writing. An undo's leftover keeps it, since its
+     * switches are the choice's own writes. Main thread only.
+     */
+    private static int lastStarted;
     /** True while a choice or an undo writes, so the watch below doesn't take its own writes for someone else's. */
     private static boolean writing;
     /** Hears every write to the settings file. Held here: the file keeps only a weak reference to it. */
@@ -111,6 +116,8 @@ public final class QuickSetups {
         Outcome outcome = write(screen, values);
         if (!outcome.changed.isEmpty()) {
             last = outcome;
+            // write() counted this choice and nothing else counts off the main thread.
+            lastStarted = choices;
             writtenSince = 0;
             SharedPreferences store = Setting.preferences.preferences;
             if (watched != store) {
@@ -168,13 +175,14 @@ public final class QuickSetups {
     /**
      * A settings file was cleared, on any thread. Before Android 11 clearing a file tells its
      * listeners nothing, so the file says so itself, and when it's the watched one, nothing is left to
-     * undo. From another thread that's settled later on the main thread, where a choice made since
-     * the clear wrote its switches after it and keeps its undo.
+     * undo. From another thread that's settled later on the main thread, where a choice that started
+     * writing after the clear keeps its undo. One that changed nothing, all its saves failing, leaves
+     * the older choice's undo to go.
      */
     static void cleared(SharedPreferences store) {
         int before = choices;
         Utils.runOnMainThreadNowOrLater(() -> {
-            if (store == watched && choices == before) forget();
+            if (store == watched && lastStarted <= before) forget();
         });
     }
 
