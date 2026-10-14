@@ -237,6 +237,11 @@ exit /b 0
         Write-Lease
         Assert-Refusal { Run-Install } -NoAdb $true
     }
+    # The right number written as text is still someone else's lease format.
+    Reset-Case 'present'
+    $script:lease.schemaVersion = '1'
+    Write-Lease
+    Assert-Refusal { Run-Install } -NoAdb $true
     Reset-Case 'present'
     $script:lease.expiresUtc = [DateTimeOffset]::UtcNow.AddSeconds(-1).ToString('o')
     Write-Lease
