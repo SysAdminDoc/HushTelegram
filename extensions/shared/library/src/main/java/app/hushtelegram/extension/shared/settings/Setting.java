@@ -424,6 +424,53 @@ public abstract class Setting<T> {
         }
     }
 
+    /**
+     * Saves like {@link #save}, except that the value hooks read changes only once the store has
+     * taken it. {@link #save} swaps the running value first and takes it back when the commit
+     * fails, so a thread reading the setting meanwhile runs a value that never landed. A save made
+     * off the main thread while the app reads the setting, such as a settings page's editor, uses
+     * this. It suits a setting with no row of its own: a row's change listener expects the running
+     * value to have changed already.
+     */
+    public final boolean saveCommitted(T newValue) {
+        synchronized (Setting.class) {
+            if (!Utils.isMainProcess()) {
+                Logger.printInfo(() -> "Ignored persistent setting write from a secondary process: " + key);
+                return false;
+            }
+            newValue = coerce(Objects.requireNonNull(newValue));
+            if (value.equals(newValue)) {
+                return true;
+            }
+            boolean committing = false;
+            RuntimeException failure = null;
+            try {
+                var editor = preferences.preferences.edit();
+                stageOne(editor, this, newValue);
+                committing = true;
+                if (editor.commit()) {
+                    value = newValue;
+                    return true;
+                }
+            } catch (RuntimeException thrown) {
+                failure = thrown;
+            }
+            // A commit that failed may still have landed, so the running value is written back.
+            if (committing) {
+                try {
+                    var editor = preferences.preferences.edit();
+                    stageOne(editor, this, value);
+                    editor.commit();
+                } catch (RuntimeException rollbackFailure) {
+                    if (failure != null) failure.addSuppressed(rollbackFailure);
+                }
+            }
+            RuntimeException logged = failure;
+            Logger.printException(() -> "Could not save setting: " + key, logged);
+            return false;
+        }
+    }
+
     private void persistCurrentValue() {
         if (defaultValue.equals(value)) removeFromPreferences();
         else saveToPreferences();
@@ -561,11 +608,17 @@ public abstract class Setting<T> {
             Setting setting = entry.getKey();
             Object next = entry.getValue();
             setting.value = next;
-            if (setting.defaultValue.equals(next)) editor.remove(setting.key);
-            else if (next instanceof Boolean) editor.putBoolean(setting.key, (Boolean) next);
-            else editor.putString(setting.key, next instanceof Enum ? ((Enum) next).name() : next.toString());
+            stageOne(editor, setting, next);
         }
         return editor;
+    }
+
+    /** Puts [next] in [editor] the way the setting stores it, or takes the key out for its default. */
+    @SuppressWarnings("rawtypes")
+    private static void stageOne(android.content.SharedPreferences.Editor editor, Setting<?> setting, Object next) {
+        if (setting.defaultValue.equals(next)) editor.remove(setting.key);
+        else if (next instanceof Boolean) editor.putBoolean(setting.key, (Boolean) next);
+        else editor.putString(setting.key, next instanceof Enum ? ((Enum) next).name() : next.toString());
     }
 
     /**

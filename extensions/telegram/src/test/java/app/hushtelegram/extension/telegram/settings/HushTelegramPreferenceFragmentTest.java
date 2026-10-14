@@ -1489,6 +1489,7 @@ public class HushTelegramPreferenceFragmentTest {
                 save.performClick();
                 assertWaiting("a save that fails: ", store, editor);
                 assertEquals("No filters yet.", String.valueOf(groups.getSummary()));
+                assertEquals("the chat read the list before its write landed", "", Settings.MESSAGE_FILTERS_GROUPS.get());
                 assertNull("something was said before the write was back", ShadowToast.getLatestToast());
                 tap(page, Settings.HIDE_BY_KEYWORD.key);
                 assertTrue("the page behind took no tap while the write was out",
@@ -1513,6 +1514,7 @@ public class HushTelegramPreferenceFragmentTest {
                 assertWaiting("a save that lands: ", store, editor);
                 assertFalse("the list was in the store before its commit was let through",
                         Setting.preferences.preferences.contains(Settings.MESSAGE_FILTERS_GROUPS.key));
+                assertEquals("the chat read the list before its write landed", "", Settings.MESSAGE_FILTERS_GROUPS.get());
                 field.setText("later");
                 save.performClick();
                 store.letGo();
@@ -1675,6 +1677,7 @@ public class HushTelegramPreferenceFragmentTest {
                 assertWaiting("a pick that fails: ", store, picker);
                 assertEquals("the pick shows while it's written", 3, picker.getListView().getCheckedItemPosition());
                 assertEquals("75% of Telegram's size", String.valueOf(size.getSummary()));
+                assertEquals("stickers took the pick before its write landed", 75, (int) Settings.STICKER_SIZE.savedValue());
                 shadowOf(picker).clickOnItem(0);
                 store.letGo();
                 settle();
@@ -1694,6 +1697,7 @@ public class HushTelegramPreferenceFragmentTest {
                 assertWaiting("the first of two picks: ", store, picker);
                 assertFalse("the size was in the store before its commit was let through",
                         Setting.preferences.preferences.contains(Settings.STICKER_SIZE.key));
+                assertEquals("stickers took the pick before its write landed", 75, (int) Settings.STICKER_SIZE.savedValue());
                 shadowOf(otherPicker).clickOnItem(0);
                 ShadowLooper.idleMainLooper();
                 assertTrue("the second pick didn't wait its turn", otherPicker.isShowing());

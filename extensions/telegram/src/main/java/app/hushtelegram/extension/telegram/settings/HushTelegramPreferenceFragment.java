@@ -1244,7 +1244,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         show(new AlertDialog.Builder(context)
                 .setTitle(L10n.t("Sticker size"))
                 .setSingleChoiceItems(labels, checked, (dialog, which) -> save((AlertDialog) dialog,
-                        () -> Settings.STICKER_SIZE.save(StickerSize.CHOICES[which]), landed -> {
+                        () -> Settings.STICKER_SIZE.saveCommitted(StickerSize.CHOICES[which]), landed -> {
                             if (landed) {
                                 row.setSummary(stickerSizeSummary());
                                 dialog.dismiss();

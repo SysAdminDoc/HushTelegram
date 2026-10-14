@@ -105,7 +105,7 @@ final class FilterEditor {
                 return;
             }
             List<String> lines = MessageFilters.lines(typed);
-            HushTelegramPreferenceFragment.save(dialog, () -> list.save(MessageFilters.join(lines)), landed -> {
+            HushTelegramPreferenceFragment.save(dialog, () -> list.saveCommitted(MessageFilters.join(lines)), landed -> {
                 if (!landed) {
                     Logger.printInfo(() -> "Message filters not saved: " + list.key);
                     String reason = L10n.t("Couldn't save the filters. Try again in a moment.");
