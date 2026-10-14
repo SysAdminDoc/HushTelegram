@@ -132,6 +132,44 @@ public class AiTranslateTest {
         }
     }
 
+    /** The person's own words on how to translate go after ours in the system message, and the text stays as it is. */
+    @Test public void thePersonsOwnInstructionsComeAfterOursAndNoneLeavesOursAsTheyWere() throws Exception {
+        String ours = new JSONObject(AiTranslate.body("m", "en", "Hola")).getJSONArray("messages").getJSONObject(0).getString("content");
+        assertEquals(AiTranslate.instructions("en"), ours);
+        assertEquals("blank instructions add nothing", ours, AiTranslate.instructions("en", " \n "));
+        assertEquals(ours, AiTranslate.instructions("en", null));
+
+        JSONArray messages = new JSONObject(AiTranslate.body("m", "en", "Hola", "  Keep it casual.\nLeave names as they are.  "))
+                .getJSONArray("messages");
+        String system = messages.getJSONObject(0).getString("content");
+        assertTrue("ours come first", system.startsWith(ours));
+        assertTrue(system.endsWith("\nKeep it casual.\nLeave names as they are."));
+        assertTrue("the answer still has to be only the translation", system.substring(ours.length()).contains("translation only"));
+        assertEquals("Hola", messages.getJSONObject(1).getString("content"));
+    }
+
+    @Test public void instructionsMayHoldSpacesAndLinesButNotPastTheirLimit() {
+        String address = "https://api.openai.com/v1";
+        assertNull(AiTranslate.validate(address, "m", "k", "Keep it casual.\nNo notes, please."));
+        assertNull(AiTranslate.validate(address, "m", "k", ""));
+        String tooLong = new String(new char[AiTranslate.MAX_STYLE + 1]).replace('\0', 'x');
+        AiTranslate.Validation refused = AiTranslate.validate(address, "m", "k", tooLong);
+        assertEquals("the instructions field is the one pointed at", 3, refused.field);
+        assertEquals("This field is too long. Use 1000 characters or fewer.", refused.message);
+        assertNull("spaces around them don't count", AiTranslate.validate(address, "m", "k",
+                "  " + tooLong.substring(1) + "  "));
+        assertEquals("a missing key is still named first", 2, AiTranslate.validate(address, "m", " ", tooLong).field);
+    }
+
+    @Test public void aServiceWithInstructionsSendsThem() throws Exception {
+        try (LocalService service = new LocalService(path -> answer(200, "OK", "",
+                "{\"choices\":[{\"message\":{\"content\":\"Hey\"}}]}"))) {
+            AiTranslate.fetch(new AiTranslate.Service(service.base(), "m", "sk-secret", "Keep it casual."), "en", "Привет");
+            String system = new JSONObject(service.seen.get(0).body).getJSONArray("messages").getJSONObject(0).getString("content");
+            assertTrue(system.endsWith("\nKeep it casual."));
+        }
+    }
+
     /** A service that answers with a redirect gets a failure, not a second request carrying the key. */
     @Test public void aRedirectIsRefusedSoTheKeyGoesNowhereElse() throws Exception {
         LocalService[] holder = new LocalService[1];

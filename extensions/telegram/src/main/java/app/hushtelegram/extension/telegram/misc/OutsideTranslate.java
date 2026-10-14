@@ -98,6 +98,7 @@ public final class OutsideTranslate {
     private static final String AI_ADDRESS = "ai_address";
     private static final String AI_MODEL = "ai_model";
     private static final String AI_KEY = "ai_key";
+    private static final String AI_STYLE = "ai_style";
     /** Plain text and the kinds of message that carry a caption. */
     private static final int[] TYPES = {0, 1, 3, 9, 14};
 
@@ -629,7 +630,8 @@ public final class OutsideTranslate {
                 try {
                     SharedPreferences saved = prefs();
                     service = new AiTranslate.Service(saved.getString(AI_ADDRESS, AiTranslate.DEFAULT_ADDRESS),
-                            saved.getString(AI_MODEL, AiTranslate.DEFAULT_MODEL), saved.getString(AI_KEY, ""));
+                            saved.getString(AI_MODEL, AiTranslate.DEFAULT_MODEL), saved.getString(AI_KEY, ""),
+                            saved.getString(AI_STYLE, ""));
                 } catch (Throwable unreadable) {
                     return AiTranslate.Service.GOOGLE;
                 }
@@ -649,12 +651,23 @@ public final class OutsideTranslate {
      * @return whether it was saved
      */
     public static boolean saveService(String address, String model, String key) {
-        AiTranslate.Service next = new AiTranslate.Service(address.trim(), model.trim(), key.trim());
+        return saveService(address, model, key, null);
+    }
+
+    /**
+     * As above, with the person's own instructions on how to translate. Null keeps the ones saved.
+     * Going back to Google leaves them saved, for the next time an AI service is set.
+     */
+    public static boolean saveService(String address, String model, String key, String style) {
         synchronized (LOCK) {
+            String kept = style == null ? service().style : style.trim();
+            AiTranslate.Service next = new AiTranslate.Service(address.trim(), model.trim(), key.trim(), kept);
             try {
                 SharedPreferences.Editor edit = prefs().edit();
                 if (next.enabled()) {
                     edit.putString(AI_ADDRESS, next.address).putString(AI_MODEL, next.model).putString(AI_KEY, next.key);
+                    if (next.style.isEmpty()) edit.remove(AI_STYLE);
+                    else edit.putString(AI_STYLE, next.style);
                 } else {
                     edit.remove(AI_KEY);
                 }

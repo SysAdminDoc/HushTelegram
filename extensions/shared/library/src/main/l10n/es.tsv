@@ -569,6 +569,7 @@ Your AI service at %1$s, model %2$s.	Tu servicio de IA en %1$s, modelo %2$s.
 # context: hints in the three fields of that dialog: the web address of the AI service, the model to ask, and the secret key the service gave the person.
 Service address	Dirección del servicio
 Model	Modelo
+How to translate (optional)	Cómo traducir (opcional)
 API key	Clave de API
 # context: the dialog's explanation. OpenAI, OpenRouter, DeepSeek and Groq are company names and stay as they are.
 With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.	Con una clave, el texto que traduces va a este servicio de IA en lugar de a Google. Funciona cualquier servicio que acepte el formato de chat de OpenAI, como OpenAI, OpenRouter, DeepSeek o Groq. La clave se queda en este teléfono y nunca va a un archivo de ajustes.

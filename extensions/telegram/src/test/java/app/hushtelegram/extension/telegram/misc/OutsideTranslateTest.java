@@ -316,6 +316,28 @@ public class OutsideTranslateTest {
                 .getSharedPreferences("hushtelegram_outside_translate", 0).contains("ai_key"));
     }
 
+    @Test public void instructionsAreSavedWithTheServiceAndOutliveATripToGoogle() {
+        assertEquals("", OutsideTranslate.service().style);
+        assertTrue(OutsideTranslate.saveService("https://openrouter.ai/api/v1", "m", "sk-1", "  Keep it casual.\nNo notes.  "));
+        OutsideTranslate.resetForTests();
+        assertEquals("Keep it casual.\nNo notes.", OutsideTranslate.service().style);
+
+        assertTrue("a save without them keeps them", OutsideTranslate.saveService("https://openrouter.ai/api/v1", "m2", "sk-1"));
+        OutsideTranslate.resetForTests();
+        assertEquals("Keep it casual.\nNo notes.", OutsideTranslate.service().style);
+
+        assertTrue(OutsideTranslate.saveService("https://openrouter.ai/api/v1", "m2", "", "ignored by Google"));
+        OutsideTranslate.resetForTests();
+        assertFalse(OutsideTranslate.service().enabled());
+        assertEquals("Google leaves them saved for next time", "Keep it casual.\nNo notes.", OutsideTranslate.service().style);
+
+        assertTrue(OutsideTranslate.saveService("https://openrouter.ai/api/v1", "m2", "sk-1", " "));
+        OutsideTranslate.resetForTests();
+        assertEquals("emptied, they're gone", "", OutsideTranslate.service().style);
+        assertFalse(app.hushtelegram.extension.shared.Utils.getContext()
+                .getSharedPreferences("hushtelegram_outside_translate", 0).contains("ai_style"));
+    }
+
     @Test public void aNewServiceDropsTheOldTranslationsAndAnAnswerStillOut() {
         Settings.OUTSIDE_TRANSLATE.save(true);
         OutsideTranslate.toggleChat(OWNER, 10);

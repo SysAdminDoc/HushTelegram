@@ -27,7 +27,7 @@ import app.hushtelegram.extension.shared.L10n;
  * takes OpenAI's chat completions format works: OpenAI, OpenRouter, DeepSeek, Groq, Google's
  * Gemini through its OpenAI address, or a model server running on the phone.
  *
- * <p>The address, model and key are kept by {@link OutsideTranslate} in its own preferences file,
+ * <p>The address, model, key and the person's own instructions are kept by {@link OutsideTranslate} in its own preferences file,
  * beside the chats that are on, so they never reach a settings file, the diagnostic report or a
  * log. A failure carries only the service's HTTP status, because a service's error text can repeat
  * part of the key.
@@ -42,6 +42,8 @@ public final class AiTranslate {
     /** What the model answers for a message already in the target language. */
     static final String SAME = "[[SAME]]";
     static final int MAX_FIELD = 512;
+    /** The most the person's own instructions may hold. */
+    static final int MAX_STYLE = 1000;
     static final int CONNECT_MS = 8000;
     /** A model takes longer than Google to answer, more so on a long message. */
     static final int READ_MS = 45000;
@@ -52,17 +54,24 @@ public final class AiTranslate {
 
     /** The service as saved. An empty key means Google's web translate is used instead. */
     public static final class Service {
-        static final Service GOOGLE = new Service(DEFAULT_ADDRESS, DEFAULT_MODEL, "");
+        static final Service GOOGLE = new Service(DEFAULT_ADDRESS, DEFAULT_MODEL, "", "");
 
         public final String address;
         public final String model;
         /** Shown only in the editor's masked field. */
         public final String key;
+        /** The person's own words on how to translate, sent after ours. Empty for none. */
+        public final String style;
 
         Service(String address, String model, String key) {
+            this(address, model, key, "");
+        }
+
+        Service(String address, String model, String key, String style) {
             this.address = address;
             this.model = model;
             this.key = key;
+            this.style = style == null ? "" : style;
         }
 
         public boolean enabled() {
@@ -105,6 +114,11 @@ public final class AiTranslate {
     }
 
     public static Validation validate(String address, String model, String key) {
+        return validate(address, model, key, "");
+    }
+
+    /** As above, with the person's own instructions as the fourth field. They may hold spaces and lines. */
+    public static Validation validate(String address, String model, String key, String style) {
         String a = address.trim(), m = model.trim(), k = key.trim();
         if (k.isEmpty()) return new Validation(2, L10n.t("Type your API key, or tap Use Google."));
         if (m.isEmpty()) return new Validation(1, L10n.t("Type a model name."));
@@ -128,6 +142,9 @@ public final class AiTranslate {
         boolean onPhone = host.equals("localhost") || host.equals("127.0.0.1");
         if (host.isEmpty() || !(scheme.equals("https") || (scheme.equals("http") && onPhone))) {
             return new Validation(0, L10n.t("The address has to start with https://."));
+        }
+        if (style != null && style.trim().length() > MAX_STYLE) {
+            return new Validation(3, L10n.f("This field is too long. Use %1$d characters or fewer.", MAX_STYLE));
         }
         return null;
     }
@@ -157,9 +174,25 @@ public final class AiTranslate {
                 + "language, answer with " + SAME + " and nothing else.";
     }
 
+    /**
+     * Ours, then the person's own words on how to translate (a tone, a glossary, slang left as it
+     * is). Theirs come last so they can shape the translation, and the answer still has to be only
+     * the translation, which is all the reader shows.
+     */
+    static String instructions(String target, String style) {
+        String theirs = style == null ? "" : style.trim();
+        if (theirs.isEmpty()) return instructions(target);
+        return instructions(target) + "\n\nThe person reading asked for this too. Follow it, and still answer with "
+                + "the translation only:\n" + theirs;
+    }
+
     static String body(String model, String target, String text) throws JSONException {
+        return body(model, target, text, "");
+    }
+
+    static String body(String model, String target, String text, String style) throws JSONException {
         JSONArray messages = new JSONArray()
-                .put(new JSONObject().put("role", "system").put("content", instructions(target)))
+                .put(new JSONObject().put("role", "system").put("content", instructions(target, style)))
                 .put(new JSONObject().put("role", "user").put("content", text));
         return new JSONObject()
                 .put("model", model)
@@ -196,7 +229,7 @@ public final class AiTranslate {
             connection.setRequestProperty("Authorization", "Bearer " + service.key);
             connection.setRequestProperty("User-Agent", "HushTelegram");
             try (OutputStream out = connection.getOutputStream()) {
-                out.write(body(service.model, target, text).getBytes(StandardCharsets.UTF_8));
+                out.write(body(service.model, target, text, service.style).getBytes(StandardCharsets.UTF_8));
             }
             int code = connection.getResponseCode();
             if (code == HttpURLConnection.HTTP_UNAUTHORIZED || code == HttpURLConnection.HTTP_FORBIDDEN) throw new KeyRefused(code);

@@ -939,6 +939,17 @@ public class HushTelegramPreferenceFragmentTest {
 
             address.setText(" https://openrouter.ai/api/v1 ");
             model.setText("deepseek/deepseek-chat");
+            EditText style = editor.findViewById(android.R.id.summary);
+            assertEquals("", style.getText().toString());
+            assertTrue("instructions can run over several lines",
+                    (style.getInputType() & android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE) != 0);
+            style.setText(new String(new char[1001]).replace('\0', 'x'));
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertTrue("instructions past the limit keep the dialog", editor.isShowing());
+            assertEquals("This field is too long. Use 1000 characters or fewer.", ShadowToast.getTextOfLatestToast());
+            assertNotNull("the refusal points at the instructions field", style.getTag());
+            style.setText("Keep it casual.\nLeave names as they are.");
             editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             ShadowLooper.idleMainLooper();
             assertFalse(editor.isShowing());
@@ -946,6 +957,7 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Your AI service at openrouter.ai, model deepseek/deepseek-chat.", String.valueOf(row.getSummary()));
             assertEquals("sk-test-123", file.getString("ai_key", null));
             assertEquals("https://openrouter.ai/api/v1", file.getString("ai_address", null));
+            assertEquals("Keep it casual.\nLeave names as they are.", file.getString("ai_style", null));
             // Nothing of the service is in the settings a backup or the report reads.
             for (String saved : app.hushtelegram.extension.shared.Utils.getContext()
                     .getSharedPreferences(app.hushtelegram.extension.shared.settings.Setting.PREFERENCES_NAME, 0).getAll().keySet()) {
@@ -957,6 +969,8 @@ public class HushTelegramPreferenceFragmentTest {
             editor = (AlertDialog) ShadowAlertDialog.getLatestDialog();
             assertEquals("the saved key comes back masked", "sk-test-123",
                     ((EditText) editor.findViewById(android.R.id.edit)).getText().toString());
+            assertEquals("Keep it casual.\nLeave names as they are.",
+                    ((EditText) editor.findViewById(android.R.id.summary)).getText().toString());
             editor.getButton(AlertDialog.BUTTON_NEUTRAL).performClick();
             ShadowLooper.idleMainLooper();
             assertFalse(editor.isShowing());

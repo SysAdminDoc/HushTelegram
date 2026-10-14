@@ -569,6 +569,7 @@ Your AI service at %1$s, model %2$s.	%1$s adresindeki yapay zekâ hizmetin, mode
 # context: hints in the three fields of that dialog: the web address of the AI service, the model to ask, and the secret key the service gave the person.
 Service address	Hizmet adresi
 Model	Model
+How to translate (optional)	Nasıl çevrilsin (isteğe bağlı)
 API key	API anahtarı
 # context: the dialog's explanation. OpenAI, OpenRouter, DeepSeek and Groq are company names and stay as they are.
 With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.	Bir anahtarla, çevirdiğin metin Google yerine bu yapay zekâ hizmetine gider. OpenAI'ın sohbet biçimini kabul eden her hizmet çalışır, örneğin OpenAI, OpenRouter, DeepSeek veya Groq. Anahtar bu telefonda kalır ve hiçbir zaman bir ayar dosyasına girmez.

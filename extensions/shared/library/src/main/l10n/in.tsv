@@ -569,6 +569,7 @@ Your AI service at %1$s, model %2$s.	Layanan AI-mu di %1$s, model %2$s.
 # context: hints in the three fields of that dialog: the web address of the AI service, the model to ask, and the secret key the service gave the person.
 Service address	Alamat layanan
 Model	Model
+How to translate (optional)	Cara menerjemahkan (opsional)
 API key	Kunci API
 # context: the dialog's explanation. OpenAI, OpenRouter, DeepSeek and Groq are company names and stay as they are.
 With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.	Dengan kunci, teks yang kamu terjemahkan dikirim ke layanan AI ini, bukan ke Google. Layanan apa pun yang menerima format chat OpenAI bisa dipakai, seperti OpenAI, OpenRouter, DeepSeek, atau Groq. Kunci tetap di ponsel ini dan tidak pernah masuk ke file pengaturan.
