@@ -13,6 +13,8 @@ import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
 import app.morphe.patches.telegram.misc.extension.requireParameterIntact
 import app.morphe.patches.telegram.misc.extension.writeStub
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.classDefsMentioning
 import app.morphe.util.ControlFlow
 import app.morphe.util.call
 import app.morphe.util.namedRegisters
@@ -84,13 +86,17 @@ internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
     val classes = linkedMapOf<String, ClassDef>()
     classDefForEach { if (!it.type.startsWith("Lapp/hushtelegram/extension/")) classes[it.type] = it }
     fun mutable(method: Method) = mutableClassDefBy(method.definingClass).methods.single { it.same(method) }
-    val candidates = classes.values.flatMap { it.methods.toList() }.filter { method ->
+    // Each search reads only the methods of classes that might mention its anchors, in the app's
+    // order, and checks them in full.
+    fun methods(mentioning: Mention) = classDefsMentioning(mentioning).mapNotNull { classes[it.type] }.flatMap { it.methods.toList() }
+    val anchors = listOf("autologin_token", "android.support.customtabs.extra.SESSION", "android.intent.action.VIEW")
+    val candidates = methods(Mention.allOf(anchors.map { Mention.string(it) }) and
+        Mention.reference("$MC->isWebBrowserOpenInApp(Ljava/lang/String;)Z")).filter { method ->
         val parameters = method.parameterTypes.map { it.toString() }
         AccessFlags.STATIC.isSet(method.accessFlags) && method.returnType == "V" && parameters.size == 10 &&
             parameters.take(5) == listOf(CONTEXT, URI, "Z", "Z", "Z") && parameters[5].startsWith("L") &&
             parameters.drop(6) == listOf("Ljava/lang/String;", "Z", "Z", "Z") &&
-            listOf("autologin_token", "android.support.customtabs.extra.SESSION", "android.intent.action.VIEW")
-                .all { anchor -> method.instructions().any { it.string() == anchor } } &&
+            anchors.all { anchor -> method.instructions().any { it.string() == anchor } } &&
             method.instructions().any { it.ref() == "$MC->isWebBrowserOpenInApp(Ljava/lang/String;)Z" }
     }
     checkShape(candidates.size == 1, "expected one structurally anchored HTTP browser dispatcher, found ${candidates.size}")
@@ -163,7 +169,7 @@ internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
     val cleanCode = "invoke-static {v$uriAlias, v$internal, v$flags}, $LINKS->cleanOpenedUri($URI" +
         "Z[Z)$URI\nmove-result-object v$uriAlias\nmove-object/16 v$uriParameter, v$uriAlias\nnop"
 
-    val shares = classes.values.flatMap { it.methods.toList() }.filter { method ->
+    val shares = methods(Mention.reference(TITLE) and Mention.string("android.intent.action.SEND")).filter { method ->
         method.instructions().any { it.ref() == TITLE } && method.instructions().any { it.string() == "android.intent.action.SEND" }
     }.flatMap { method ->
         val body = method.instructions()
