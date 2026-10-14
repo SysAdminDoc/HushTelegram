@@ -81,7 +81,8 @@ public enum PatchFamily {
             Settings.SHARE_NUMBER_UNTICKED),
     MESSAGE_SECONDS(FamilyNames.MESSAGE_SECONDS, "messageSeconds", null, Settings.MESSAGE_SECONDS),
     ALLOW_CHAT_BLUR(FamilyNames.ALLOW_CHAT_BLUR, "allowChatBlur", null, Settings.ALLOW_CHAT_BLUR),
-    VOICE_ONE_AT_A_TIME(FamilyNames.VOICE_ONE_AT_A_TIME, "voiceOneAtATime", null, Settings.VOICE_ONE_AT_A_TIME),
+    VOICE_ONE_AT_A_TIME(FamilyNames.VOICE_ONE_AT_A_TIME, "voiceOneAtATime", null, Settings.VOICE_ONE_AT_A_TIME,
+            Settings.LOCKED_VOICE_GUARD),
     NO_HAPTICS(FamilyNames.NO_HAPTICS, "noHaptics", null, Settings.NO_HAPTICS),
     REACTION_EFFECTS_OFF(FamilyNames.REACTION_EFFECTS_OFF, "reactionEffectsOff", null, Settings.REACTION_EFFECTS_OFF),
     HIDE_FOLDER_COUNTERS(FamilyNames.HIDE_FOLDER_COUNTERS, "hideFolderCounters", null, Settings.HIDE_FOLDER_COUNTERS),
@@ -357,6 +358,7 @@ public enum PatchFamily {
         SKIP_AUTOLOGIN(STRIP_LINK_TRACKING, "skipAutologin", "website sign-in tokens"),
         SHARE_NUMBER_UNTICKED(HIDE_PHONE_NUMBER, "shareNumberUnticked", "number sharing on new contacts"),
         COMPACT_TAB_BAR(HIDE_CONTACTS_TAB, "compactTabBar", "bottom bar size"),
+        LOCKED_VOICE(VOICE_ONE_AT_A_TIME, "lockedVoice", "voice playback while locked"),
         TITLE_EMOJI(HOLIDAY_LOOK, "titleEmoji", "emoji next to the chat list title"),
         FIREBASE_CERTIFICATE_HEADER(REPAIR_FIREBASE_PUSH, "firebaseCertificateHeader", "Firebase certificate header"),
         FIREBASE_LOCAL_STATUS(REPAIR_FIREBASE_PUSH, "firebaseLocalStatus", "local notification status");

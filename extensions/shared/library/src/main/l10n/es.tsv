@@ -348,6 +348,14 @@ Allow chat blur on slower phones	Permitir el desenfoque del chat en teléfonos m
 Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.	Telegram solo desenfoca las cabeceras y los paneles del chat en teléfonos rápidos. Esto permite que cualquier teléfono lo haga, cuando Desenfoque en el chat esté activado en Ahorro de energía.
 Play voice messages one at a time	Reproducir los mensajes de voz de uno en uno
 When a voice or video message ends, the next one doesn't start by itself.	Cuando termina un mensaje de voz o de video, el siguiente no empieza solo.
+# context: Playback page switch title, under Play voice messages one at a time and independent of it. When on, voice and round video messages can't be started while the phone's lock screen shows.
+Keep voice messages quiet while locked	Silenciar mensajes de voz con el teléfono bloqueado
+# context: Summary under that switch. Round video messages are Telegram's circular video notes; the notification is Telegram's music player notification.
+While your phone is locked, voice and round video messages don't start, resume or skip to the next one, whether from headphones, a car, the notification or the lock screen. One that's already playing finishes. Music and other videos play as usual.	Mientras tu teléfono está bloqueado, los mensajes de voz y de video redondo no empiezan, no se reanudan ni saltan al siguiente, ya sea desde los auriculares, un auto, la notificación o la pantalla de bloqueo. El que ya se está reproduciendo termina. La música y los demás videos se reproducen como siempre.
+# context: Short toast when a voice or round video message was asked to play while the phone is locked and the switch is on.
+Unlock your phone to play voice and video messages.	Desbloquea tu teléfono para reproducir mensajes de voz y video.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the locked phone part of Play voice messages one at a time.
+voice playback while locked	reproducción de voz con el teléfono bloqueado
 Stop vibrations on taps	Detener las vibraciones al tocar
 Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.	Los toques, las pulsaciones largas, los deslizamientos y las entradas incorrectas ya no hacen vibrar el teléfono. Las llamadas entrantes siguen vibrando y las notificaciones siguen tus propios ajustes.
 Turn off reaction effects	Desactivar los efectos de las reacciones

@@ -120,6 +120,7 @@ public final class SettingsBackup {
             Settings.MESSAGE_SECONDS,
             Settings.ALLOW_CHAT_BLUR,
             Settings.VOICE_ONE_AT_A_TIME,
+            Settings.LOCKED_VOICE_GUARD,
             Settings.NO_HAPTICS,
             Settings.REACTION_EFFECTS_OFF,
             Settings.HIDE_FOLDER_COUNTERS,

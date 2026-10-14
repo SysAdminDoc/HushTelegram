@@ -348,6 +348,14 @@ Allow chat blur on slower phones	Chat-Unschärfe auf langsameren Handys erlauben
 Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.	Telegram weichzeichnet Chat-Kopfzeilen und Leisten nur auf schnellen Handys. Das erlaubt es jedem Handy, sobald unter Energiesparen die Option Unschärfe im Chat an ist.
 Play voice messages one at a time	Sprachnachrichten einzeln abspielen
 When a voice or video message ends, the next one doesn't start by itself.	Wenn eine Sprach- oder Videonachricht endet, startet die nächste nicht von selbst.
+# context: Playback page switch title, under Play voice messages one at a time and independent of it. When on, voice and round video messages can't be started while the phone's lock screen shows.
+Keep voice messages quiet while locked	Sprachnachrichten bei gesperrtem Handy stumm lassen
+# context: Summary under that switch. Round video messages are Telegram's circular video notes; the notification is Telegram's music player notification.
+While your phone is locked, voice and round video messages don't start, resume or skip to the next one, whether from headphones, a car, the notification or the lock screen. One that's already playing finishes. Music and other videos play as usual.	Solange dein Handy gesperrt ist, starten Sprach- und runde Videonachrichten nicht, laufen nicht weiter und springen nicht zur nächsten, ob über Kopfhörer, ein Auto, die Benachrichtigung oder den Sperrbildschirm. Eine, die schon läuft, spielt zu Ende. Musik und andere Videos laufen wie gewohnt.
+# context: Short toast when a voice or round video message was asked to play while the phone is locked and the switch is on.
+Unlock your phone to play voice and video messages.	Entsperre dein Handy, um Sprach- und Videonachrichten abzuspielen.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the locked phone part of Play voice messages one at a time.
+voice playback while locked	Sprachwiedergabe bei gesperrtem Handy
 Stop vibrations on taps	Vibrationen bei Berührungen stoppen
 Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.	Tippen, langes Drücken, Wischen und falsche Eingaben lassen das Handy nicht mehr vibrieren. Eingehende Anrufe vibrieren weiterhin, und Benachrichtigungen folgen deinen eigenen Einstellungen.
 Turn off reaction effects	Reaktionseffekte ausschalten

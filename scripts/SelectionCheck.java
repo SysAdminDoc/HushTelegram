@@ -369,6 +369,7 @@ public final class SelectionCheck {
         hook(calls, flags, "messageSeconds", "misc/MessageTime", "shown");
         hook(calls, flags, "allowChatBlur", "misc/ChatBlur", "allowed");
         hook(calls, flags, "voiceOneAtATime", "misc/VoicePlaylist", "queue");
+        hook(calls, flags, "lockedVoice", "misc/LockedVoice", "refuse");
         hook(calls, flags, "noHaptics", "misc/Haptics", "tap");
         hook(calls, flags, "reactionEffectsOff", "misc/ReactionEffects", "skipped");
         hook(calls, flags, "hideFolderCounters", "misc/FolderTabs", "countersHidden");

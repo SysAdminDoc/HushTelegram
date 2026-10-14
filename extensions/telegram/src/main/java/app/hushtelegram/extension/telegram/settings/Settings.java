@@ -217,6 +217,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_voice_one_at_a_time", FALSE);
 
     /**
+     * While the lock screen shows, no voice or round video message starts, resumes or skips to
+     * another, whether from a headset, a car, the notification or the lock screen. One already
+     * playing keeps going to its end. Music and ordinary videos play as Telegram plays them.
+     */
+    public static final BooleanSetting LOCKED_VOICE_GUARD =
+            new BooleanSetting("hushtelegram_locked_voice_guard", FALSE);
+
+    /**
      * Telegram stops vibrating for taps, long presses, swipes and wrong entries.
      */
     public static final BooleanSetting NO_HAPTICS =

@@ -541,6 +541,13 @@ public class HushTelegramPreferenceFragmentTest {
             // Telegram plays the next voice message until the switch is turned on.
             assertFalse(Settings.VOICE_ONE_AT_A_TIME.key,
                     ((SwitchPreference) page.findPreference(Settings.VOICE_ONE_AT_A_TIME.key)).isChecked());
+            assertEquals("Keep voice messages quiet while locked", String.valueOf(page.findPreference(Settings.LOCKED_VOICE_GUARD.key).getTitle()));
+            assertEquals("While your phone is locked, voice and round video messages don't start, resume or skip to the next one, "
+                            + "whether from headphones, a car, the notification or the lock screen. One that's already playing "
+                            + "finishes. Music and other videos play as usual.",
+                    String.valueOf(page.findPreference(Settings.LOCKED_VOICE_GUARD.key).getSummary()));
+            // A locked phone plays voice messages as Telegram does until the switch is turned on.
+            assertFalse(((SwitchPreference) page.findPreference(Settings.LOCKED_VOICE_GUARD.key)).isChecked());
             assertEquals("Stop vibrations on taps", String.valueOf(page.findPreference(Settings.NO_HAPTICS.key).getTitle()));
             assertEquals("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls "
                     + "still vibrate, and notifications follow your own settings.",

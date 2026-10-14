@@ -10,7 +10,9 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
+import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
@@ -43,9 +45,21 @@ val voiceOneAtATimePatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.telegram())
     execute {
         val setter = resolveVoiceOneAtATime()
-        // Assembled on a copy first, so a refusal leaves the app untouched.
+        requireStatusMethod("lockedVoice")
+        val guard = resolveLockedVoiceGuard()
+        controlShape(guard.play !== setter, "the voice playlist setter is the play method")
+        // Assembled on copies first, so a refusal leaves the app untouched.
         insertQueue(MutableMethod(ImmutableMethod.of(setter)))
+        if (guard.missing == null) guard.rehearse()
         insertQueue(setter)
+        // The locked phone guard's own target: a build whose player changed keeps the queue switch.
+        if (guard.missing == null) {
+            writeLockedVoiceStub()
+            guard.apply()
+            enableCapability("lockedVoice")
+        } else {
+            patchLog.warning("Play voice messages one at a time: ${guard.missing}. The patch goes on without the locked phone guard.")
+        }
         enableStatus("voiceOneAtATime")
     }
 }

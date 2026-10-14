@@ -172,6 +172,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/MessageTime.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ChatBlur.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/VoicePlaylist.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LockedVoice.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/Haptics.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ReactionEffects.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FolderTabs.java",

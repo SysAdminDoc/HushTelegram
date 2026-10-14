@@ -477,10 +477,14 @@ public class PatchFamilyTest {
     public void voiceOneAtATimeHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
         PatchFamily family = PatchFamily.VOICE_ONE_AT_A_TIME;
         assertEquals("Play voice messages one at a time", family.patchName);
-        assertEquals(Collections.singletonList(Settings.VOICE_ONE_AT_A_TIME), family.switches);
-        assertFalse(Settings.VOICE_ONE_AT_A_TIME.defaultValue);
-        assertFalse(Settings.VOICE_ONE_AT_A_TIME.rebootApp);
-        assertTrue(family.expectedCapabilities().isEmpty());
+        // The second switch, the locked phone guard, starts off too and works with or without the first.
+        assertEquals(Arrays.asList(Settings.VOICE_ONE_AT_A_TIME, Settings.LOCKED_VOICE_GUARD), family.switches);
+        for (BooleanSetting setting : family.switches) {
+            assertFalse(setting.key, setting.defaultValue);
+            // Each play asks again, so both apply at once.
+            assertFalse(setting.key, setting.rebootApp);
+        }
+        assertEquals(EnumSet.of(PatchFamily.Capability.LOCKED_VOICE), family.expectedCapabilities());
         assertOnItsPage(family);
     }
 

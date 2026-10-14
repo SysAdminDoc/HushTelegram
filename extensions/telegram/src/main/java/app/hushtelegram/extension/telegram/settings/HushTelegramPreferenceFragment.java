@@ -533,6 +533,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (build.contains(PatchFamily.VOICE_ONE_AT_A_TIME)) {
             on(pages, PatchFamily.VOICE_ONE_AT_A_TIME).addPreference(toggle(context, Settings.VOICE_ONE_AT_A_TIME, L10n.t("Play voice messages one at a time"),
                     PatchFamily.VOICE_ONE_AT_A_TIME.coverageSummary(L10n.t("When a voice or video message ends, the next one doesn't start by itself."))));
+            if (PatchFamily.Capability.LOCKED_VOICE.installed()) {
+                on(pages, PatchFamily.VOICE_ONE_AT_A_TIME).addPreference(toggle(context, Settings.LOCKED_VOICE_GUARD,
+                        L10n.t("Keep voice messages quiet while locked"),
+                        L10n.t("While your phone is locked, voice and round video messages don't start, resume or skip to the next one, "
+                                + "whether from headphones, a car, the notification or the lock screen. One that's already playing "
+                                + "finishes. Music and other videos play as usual.")));
+            }
         }
         if (build.contains(PatchFamily.VOICE_MUSIC_PLAYER)) {
             on(pages, PatchFamily.VOICE_MUSIC_PLAYER).addPreference(toggle(context, Settings.VOICE_MUSIC_PLAYER, L10n.t("Voice messages in the music player"),

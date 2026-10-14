@@ -82,6 +82,7 @@ public final class SettingsStatus {
     public static boolean messageSeconds() { return false; }
     public static boolean allowChatBlur() { return false; }
     public static boolean voiceOneAtATime() { return false; }
+    public static boolean lockedVoice() { return false; }
     public static boolean noHaptics() { return false; }
     public static boolean reactionEffectsOff() { return false; }
     public static boolean hideFolderCounters() { return false; }

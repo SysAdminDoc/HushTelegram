@@ -5,7 +5,6 @@
 package app.morphe.patches.telegram.misc.voice
 
 import app.morphe.ExtensionDex
-import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
@@ -16,18 +15,16 @@ import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
-import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/** MediaController's voice queue and the runtime. */
+/** MediaController's voice queue and the runtime. The locked phone guard has its own test. */
 class VoiceOneAtATimeFixtureTest {
     @Test fun `the queue passes through the extension before Telegram stores it`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
-            val hosts = FixtureDex.classesWhere(build, { true }) { it.definingClass == MEDIA_CONTROLLER }.map(ImmutableClassDef::of)
-            val context = PatchContexts.of(ExtensionDex.classes() + hosts)
+            val context = PatchContexts.of(ExtensionDex.classes() + lockedVoiceHosts(build))
             val setter = context.resolveVoiceOneAtATime()
             val old = ImmutableMethod.of(setter)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { voiceOneAtATimePatch.execute(context) })
@@ -43,8 +40,10 @@ class VoiceOneAtATimeFixtureTest {
                 assertEquals("$name: stock $i", listOf(before[i].opcode, before[i].namedRegisters(), (before[i] as? ReferenceInstruction)?.reference?.toString()),
                     listOf(after[i + 2].opcode, after[i + 2].namedRegisters(), (after[i + 2] as? ReferenceInstruction)?.reference?.toString()))
             }
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "voiceOneAtATime" }.controlBody()
-            assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
+            for (flag in listOf("voiceOneAtATime", "lockedVoice")) {
+                val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.controlBody()
+                assertEquals("$name: $flag", 1L, (status.first() as WideLiteralInstruction).wideLiteral)
+            }
         }
     }
 }

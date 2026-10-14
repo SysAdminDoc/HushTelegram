@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1200);
+        Map<String, String> table = new HashMap<>(1208);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -58,6 +58,7 @@ public final class L10nTranslations {
         fillDe7(table);
         fillDe8(table);
         fillDe9(table);
+        fillDe10(table);
         return table;
     }
 
@@ -564,6 +565,8 @@ public final class L10nTranslations {
                 "Suchen auf diesem Handy behalten");
         table.put("Keep videos muted on volume keys",
                 "Videos bei Lautst\u00e4rketasten stumm lassen");
+        table.put("Keep voice messages quiet while locked",
+                "Sprachnachrichten bei gesperrtem Handy stumm lassen");
         table.put("Keep-Alive Service and Background Connection on: %1$s",
                 "Keep-Alive-Dienst und Hintergrundverbindung an: %1$s");
         table.put("Less clutter",
@@ -672,11 +675,11 @@ public final class L10nTranslations {
                 "Benachrichtigungseinstellungen \u00f6ffnen");
         table.put("Open the guide",
                 "Anleitung \u00f6ffnen");
-        table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
-                "\u201eUnterst\u00fctzte Links \u00f6ffnen\u201c ist f\u00fcr diese App in den Android-Einstellungen aus. Tippe, um es einzuschalten.");
     }
 
     private static void fillDe5(Map<String, String> table) {
+        table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
+                "\u201eUnterst\u00fctzte Links \u00f6ffnen\u201c ist f\u00fcr diese App in den Android-Einstellungen aus. Tippe, um es einzuschalten.");
         table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it.",
                 "Das \u00d6ffnen der Anhang-Galerie startet die Kamera nicht und fragt nicht nach Kamerazugriff. Tippe auf die Kamerakachel, um sie zu starten.");
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
@@ -795,11 +798,11 @@ public final class L10nTranslations {
                 "Spoiler aufdecken");
         table.put("Save",
                 "Speichern");
-        table.put("Save downloaded files",
-                "Heruntergeladene Dateien speichern");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("Save downloaded files",
+                "Heruntergeladene Dateien speichern");
         table.put("Save full report",
                 "Vollst\u00e4ndigen Bericht speichern");
         table.put("Save the full report to a file. The saved location is shown afterward.",
@@ -918,11 +921,11 @@ public final class L10nTranslations {
                 "Sticker und gro\u00dfe animierte Emojis zeigen in ihrer Ecke keine Uhrzeit und keine Leseh\u00e4kchen mehr. Andere Nachrichten behalten ihre Uhrzeit.");
         table.put("Stickers in chats show at the size you pick below. Animated emoji and dice keep Telegram's size. A chat picks this up the next time you open it.",
                 "Sticker in Chats erscheinen in der Gr\u00f6\u00dfe, die du unten ausw\u00e4hlst. Animierte Emojis und W\u00fcrfel behalten die Gr\u00f6\u00dfe von Telegram. Ein Chat \u00fcbernimmt das, wenn du ihn das n\u00e4chste Mal \u00f6ffnest.");
-        table.put("Stop call diagnostics",
-                "Anrufdiagnosen stoppen");
     }
 
     private static void fillDe7(Map<String, String> table) {
+        table.put("Stop call diagnostics",
+                "Anrufdiagnosen stoppen");
         table.put("Stop pull to next channel",
                 "Ziehen zum n\u00e4chsten Kanal verhindern");
         table.put("Stop pull to next topic",
@@ -1041,11 +1044,11 @@ public final class L10nTranslations {
                 "Die Datei %1$s lie\u00df sich nicht entfernen. L\u00f6sche sie aus %2$s und tippe dann noch einmal auf Fortsetzen.");
         table.put("The keyboard closes when you start scrolling a chat. The emoji and sticker panel stays open.",
                 "Die Tastatur schlie\u00dft sich, sobald du in einem Chat zu scrollen beginnst. Das Emoji- und Sticker-Fenster bleibt offen.");
-        table.put("The newest HushTelegram release is %1$s.",
-                "Die neueste Version von HushTelegram ist %1$s.");
     }
 
     private static void fillDe8(Map<String, String> table) {
+        table.put("The newest HushTelegram release is %1$s.",
+                "Die neueste Version von HushTelegram ist %1$s.");
         table.put("The report couldn't be saved yet. Try again in a moment.",
                 "Der Bericht lie\u00df sich noch nicht speichern. Versuche es gleich noch einmal.");
         table.put("The server behind %1$s is down for now. Wake-ups come back once it's up.",
@@ -1126,6 +1129,8 @@ public final class L10nTranslations {
                 "Entsperren abgebrochen. Die Einstellungen bleiben gesperrt.");
         table.put("Unlock started. Settings open in 24 hours unless you cancel.",
                 "Entsperren gestartet. In 24 Stunden sind die Einstellungen wieder offen, wenn du nicht abbrichst.");
+        table.put("Unlock your phone to play voice and video messages.",
+                "Entsperre dein Handy, um Sprach- und Videonachrichten abzuspielen.");
         table.put("Until you resume, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
                 "Bis du fortsetzt, verh\u00e4lt sich jeder Schalter au\u00dfer der Debug-Protokollierung, als w\u00e4re er aus. Deine Auswahl bleibt gespeichert. \u00c4nderungen, die beim Patchen gemacht wurden, bleiben aktiv.");
         table.put("Update HushTelegram to read that file. Nothing was changed.",
@@ -1162,13 +1167,15 @@ public final class L10nTranslations {
                 "Wenn deine Chatliste kurz ist, zeigt Telegram darunter deine Kontakte. Das blendet diese Liste und ihre \u00dcberschrift aus. Chats, Ordner und Suche bleiben.");
         table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
                 "W\u00e4hrend eine Sprachnachricht l\u00e4uft, \u00f6ffnet ein Tipp auf die Leiste \u00fcber dem Chat den vollen Musikplayer, in dem du vor- und zur\u00fcckspringen kannst, statt zur Nachricht zu springen.");
+    }
+
+    private static void fillDe9(Map<String, String> table) {
+        table.put("While your phone is locked, voice and round video messages don't start, resume or skip to the next one, whether from headphones, a car, the notification or the lock screen. One that's already playing finishes. Music and other videos play as usual.",
+                "Solange dein Handy gesperrt ist, starten Sprach- und runde Videonachrichten nicht, laufen nicht weiter und springen nicht zur n\u00e4chsten, ob \u00fcber Kopfh\u00f6rer, ein Auto, die Benachrichtigung oder den Sperrbildschirm. Eine, die schon l\u00e4uft, spielt zu Ende. Musik und andere Videos laufen wie gewohnt.");
         table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
                 "Mit einem Schl\u00fcssel geht der Text, den du \u00fcbersetzt, an diesen KI-Dienst statt an Google. Jeder Dienst, der OpenAIs Chat-Format versteht, funktioniert, etwa OpenAI, OpenRouter, DeepSeek oder Groq. Der Schl\u00fcssel bleibt auf diesem Telefon und kommt nie in eine Einstellungsdatei.");
         table.put("Without push, turn both on under Settings > Notifications and Sounds to get messages on time.",
                 "Ohne Push schalte beide unter Einstellungen > Benachrichtigungen und T\u00f6ne ein, damit Nachrichten p\u00fcnktlich ankommen.");
-    }
-
-    private static void fillDe9(Map<String, String> table) {
         table.put("Yes",
                 "Ja");
         table.put("You already have a folder for each chat type.",
@@ -1283,16 +1290,21 @@ public final class L10nTranslations {
                 "\u00e4hnliche Kan\u00e4le und Bots");
         table.put("story links",
                 "Story-Links");
+    }
+
+    private static void fillDe10(Map<String, String> table) {
         table.put("story list requests",
                 "Anfragen zur Story-Liste");
         table.put("video ads",
                 "Videowerbung");
+        table.put("voice playback while locked",
+                "Sprachwiedergabe bei gesperrtem Handy");
         table.put("website sign-in tokens",
                 "Anmelde-Tokens f\u00fcr Websites");
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(1200);
+        Map<String, String> table = new HashMap<>(1208);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -1303,6 +1315,7 @@ public final class L10nTranslations {
         fillEs7(table);
         fillEs8(table);
         fillEs9(table);
+        fillEs10(table);
         return table;
     }
 
@@ -1809,6 +1822,8 @@ public final class L10nTranslations {
                 "Mantener las b\u00fasquedas en este tel\u00e9fono");
         table.put("Keep videos muted on volume keys",
                 "Mantener videos sin sonido con las teclas de volumen");
+        table.put("Keep voice messages quiet while locked",
+                "Silenciar mensajes de voz con el tel\u00e9fono bloqueado");
         table.put("Keep-Alive Service and Background Connection on: %1$s",
                 "Servicio activo y Conexi\u00f3n en segundo plano activados: %1$s");
         table.put("Less clutter",
@@ -1917,11 +1932,11 @@ public final class L10nTranslations {
                 "Abrir ajustes de notificaciones");
         table.put("Open the guide",
                 "Abrir la gu\u00eda");
-        table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
-                "\u201cAbrir enlaces compatibles\u201d est\u00e1 desactivado para esta app en los ajustes de Android. Toca para activarlo.");
     }
 
     private static void fillEs5(Map<String, String> table) {
+        table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
+                "\u201cAbrir enlaces compatibles\u201d est\u00e1 desactivado para esta app en los ajustes de Android. Toca para activarlo.");
         table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it.",
                 "Abrir la galer\u00eda de adjuntos no inicia la c\u00e1mara ni pide acceso a ella. Toca el recuadro de la c\u00e1mara para iniciarla.");
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
@@ -2040,11 +2055,11 @@ public final class L10nTranslations {
                 "Mostrar spoilers");
         table.put("Save",
                 "Guardar");
-        table.put("Save downloaded files",
-                "Guardar archivos descargados");
     }
 
     private static void fillEs6(Map<String, String> table) {
+        table.put("Save downloaded files",
+                "Guardar archivos descargados");
         table.put("Save full report",
                 "Guardar informe completo");
         table.put("Save the full report to a file. The saved location is shown afterward.",
@@ -2163,11 +2178,11 @@ public final class L10nTranslations {
                 "Los stickers y los emojis animados grandes ya no muestran la hora ni las marcas de lectura en su esquina. Los dem\u00e1s mensajes conservan su hora.");
         table.put("Stickers in chats show at the size you pick below. Animated emoji and dice keep Telegram's size. A chat picks this up the next time you open it.",
                 "Los stickers en los chats se muestran al tama\u00f1o que elijas abajo. Los emojis animados y los dados mantienen el tama\u00f1o de Telegram. Un chat lo aplica la pr\u00f3xima vez que lo abras.");
-        table.put("Stop call diagnostics",
-                "Detener diagn\u00f3sticos de llamadas");
     }
 
     private static void fillEs7(Map<String, String> table) {
+        table.put("Stop call diagnostics",
+                "Detener diagn\u00f3sticos de llamadas");
         table.put("Stop pull to next channel",
                 "Impedir el salto al siguiente canal al deslizar");
         table.put("Stop pull to next topic",
@@ -2286,11 +2301,11 @@ public final class L10nTranslations {
                 "No se pudo eliminar el archivo %1$s. B\u00f3rralo de %2$s y luego vuelve a tocar Reanudar.");
         table.put("The keyboard closes when you start scrolling a chat. The emoji and sticker panel stays open.",
                 "El teclado se cierra cuando empiezas a desplazarte por un chat. El panel de emojis y stickers sigue abierto.");
-        table.put("The newest HushTelegram release is %1$s.",
-                "La versi\u00f3n m\u00e1s reciente de HushTelegram es la %1$s.");
     }
 
     private static void fillEs8(Map<String, String> table) {
+        table.put("The newest HushTelegram release is %1$s.",
+                "La versi\u00f3n m\u00e1s reciente de HushTelegram es la %1$s.");
         table.put("The report couldn't be saved yet. Try again in a moment.",
                 "El informe a\u00fan no se pudo guardar. Int\u00e9ntalo de nuevo en un momento.");
         table.put("The server behind %1$s is down for now. Wake-ups come back once it's up.",
@@ -2371,6 +2386,8 @@ public final class L10nTranslations {
                 "Desbloqueo cancelado. La configuraci\u00f3n sigue bloqueada.");
         table.put("Unlock started. Settings open in 24 hours unless you cancel.",
                 "Desbloqueo iniciado. La configuraci\u00f3n se abre en 24 horas si no lo cancelas.");
+        table.put("Unlock your phone to play voice and video messages.",
+                "Desbloquea tu tel\u00e9fono para reproducir mensajes de voz y video.");
         table.put("Until you resume, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
                 "Hasta que reanudes, todos los interruptores salvo Registro de depuraci\u00f3n funcionan como si estuvieran desactivados. Tus opciones siguen guardadas. Los cambios hechos al parchear se mantienen.");
         table.put("Update HushTelegram to read that file. Nothing was changed.",
@@ -2407,13 +2424,15 @@ public final class L10nTranslations {
                 "Cuando tu lista de chats es corta, Telegram muestra tus contactos debajo. Esto oculta esa lista y su t\u00edtulo. Los chats, las carpetas y la b\u00fasqueda se mantienen.");
         table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
                 "Mientras suena un mensaje de voz, tocar la barra sobre el chat abre el reproductor de m\u00fasica completo, donde puedes arrastrar para avanzar o retroceder, en vez de saltar al mensaje.");
+    }
+
+    private static void fillEs9(Map<String, String> table) {
+        table.put("While your phone is locked, voice and round video messages don't start, resume or skip to the next one, whether from headphones, a car, the notification or the lock screen. One that's already playing finishes. Music and other videos play as usual.",
+                "Mientras tu tel\u00e9fono est\u00e1 bloqueado, los mensajes de voz y de video redondo no empiezan, no se reanudan ni saltan al siguiente, ya sea desde los auriculares, un auto, la notificaci\u00f3n o la pantalla de bloqueo. El que ya se est\u00e1 reproduciendo termina. La m\u00fasica y los dem\u00e1s videos se reproducen como siempre.");
         table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
                 "Con una clave, el texto que traduces va a este servicio de IA en lugar de a Google. Funciona cualquier servicio que acepte el formato de chat de OpenAI, como OpenAI, OpenRouter, DeepSeek o Groq. La clave se queda en este tel\u00e9fono y nunca va a un archivo de ajustes.");
         table.put("Without push, turn both on under Settings > Notifications and Sounds to get messages on time.",
                 "Sin push, activa los dos en Ajustes > Notificaciones y sonidos para recibir los mensajes a tiempo.");
-    }
-
-    private static void fillEs9(Map<String, String> table) {
         table.put("Yes",
                 "S\u00ed");
         table.put("You already have a folder for each chat type.",
@@ -2528,16 +2547,21 @@ public final class L10nTranslations {
                 "canales y bots similares");
         table.put("story links",
                 "enlaces de historias");
+    }
+
+    private static void fillEs10(Map<String, String> table) {
         table.put("story list requests",
                 "consultas de la lista de historias");
         table.put("video ads",
                 "anuncios en videos");
+        table.put("voice playback while locked",
+                "reproducci\u00f3n de voz con el tel\u00e9fono bloqueado");
         table.put("website sign-in tokens",
                 "tokens de inicio de sesi\u00f3n en sitios web");
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1200);
+        Map<String, String> table = new HashMap<>(1208);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2548,6 +2572,7 @@ public final class L10nTranslations {
         fillIn7(table);
         fillIn8(table);
         fillIn9(table);
+        fillIn10(table);
         return table;
     }
 
@@ -3054,6 +3079,8 @@ public final class L10nTranslations {
                 "Simpan pencarian di ponsel ini");
         table.put("Keep videos muted on volume keys",
                 "Biarkan video tanpa suara saat tombol volume ditekan");
+        table.put("Keep voice messages quiet while locked",
+                "Diamkan pesan suara saat ponsel terkunci");
         table.put("Keep-Alive Service and Background Connection on: %1$s",
                 "Layanan Keep-Alive dan Koneksi Latar Belakang aktif: %1$s");
         table.put("Less clutter",
@@ -3162,11 +3189,11 @@ public final class L10nTranslations {
                 "Buka setelan notifikasi");
         table.put("Open the guide",
                 "Buka panduan");
-        table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
-                "\u201cBuka link yang didukung\u201d nonaktif untuk aplikasi ini di pengaturan Android. Ketuk untuk mengaktifkannya.");
     }
 
     private static void fillIn5(Map<String, String> table) {
+        table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
+                "\u201cBuka link yang didukung\u201d nonaktif untuk aplikasi ini di pengaturan Android. Ketuk untuk mengaktifkannya.");
         table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it.",
                 "Membuka galeri lampiran tidak menyalakan kamera atau meminta akses kamera. Ketuk kotak kamera untuk menyalakannya.");
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
@@ -3285,11 +3312,11 @@ public final class L10nTranslations {
                 "Tampilkan spoiler");
         table.put("Save",
                 "Simpan");
-        table.put("Save downloaded files",
-                "Simpan file yang diunduh");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("Save downloaded files",
+                "Simpan file yang diunduh");
         table.put("Save full report",
                 "Simpan laporan lengkap");
         table.put("Save the full report to a file. The saved location is shown afterward.",
@@ -3408,11 +3435,11 @@ public final class L10nTranslations {
                 "Stiker dan emoji animasi besar tidak lagi menampilkan waktu dan tanda terbaca di sudutnya. Pesan lain tetap menampilkan waktunya.");
         table.put("Stickers in chats show at the size you pick below. Animated emoji and dice keep Telegram's size. A chat picks this up the next time you open it.",
                 "Stiker di obrolan ditampilkan dengan ukuran yang Anda pilih di bawah. Emoji animasi dan dadu tetap memakai ukuran Telegram. Obrolan menerapkannya saat Anda membukanya lagi.");
-        table.put("Stop call diagnostics",
-                "Hentikan diagnostik panggilan");
     }
 
     private static void fillIn7(Map<String, String> table) {
+        table.put("Stop call diagnostics",
+                "Hentikan diagnostik panggilan");
         table.put("Stop pull to next channel",
                 "Hentikan tarikan ke kanal berikutnya");
         table.put("Stop pull to next topic",
@@ -3531,11 +3558,11 @@ public final class L10nTranslations {
                 "File %1$s tidak dapat dihapus. Hapus file itu dari %2$s, lalu ketuk Lanjutkan lagi.");
         table.put("The keyboard closes when you start scrolling a chat. The emoji and sticker panel stays open.",
                 "Keyboard menutup saat Anda mulai menggulir obrolan. Panel emoji dan stiker tetap terbuka.");
-        table.put("The newest HushTelegram release is %1$s.",
-                "Rilis HushTelegram terbaru adalah %1$s.");
     }
 
     private static void fillIn8(Map<String, String> table) {
+        table.put("The newest HushTelegram release is %1$s.",
+                "Rilis HushTelegram terbaru adalah %1$s.");
         table.put("The report couldn't be saved yet. Try again in a moment.",
                 "Laporan belum bisa disimpan. Coba lagi sebentar lagi.");
         table.put("The server behind %1$s is down for now. Wake-ups come back once it's up.",
@@ -3616,6 +3643,8 @@ public final class L10nTranslations {
                 "Buka kunci dibatalkan. Pengaturan tetap terkunci.");
         table.put("Unlock started. Settings open in 24 hours unless you cancel.",
                 "Buka kunci dimulai. Pengaturan terbuka dalam 24 jam kecuali Anda membatalkannya.");
+        table.put("Unlock your phone to play voice and video messages.",
+                "Buka kunci ponselmu untuk memutar pesan suara dan video.");
         table.put("Until you resume, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
                 "Sampai Anda melanjutkan, semua sakelar kecuali Pencatatan debug dianggap mati. Pilihan Anda tetap tersimpan. Perubahan yang dibuat saat menambal tetap berlaku.");
         table.put("Update HushTelegram to read that file. Nothing was changed.",
@@ -3652,13 +3681,15 @@ public final class L10nTranslations {
                 "Saat daftar obrolan Anda pendek, Telegram menampilkan kontak Anda di bawahnya. Ini menyembunyikan daftar itu beserta judulnya. Obrolan, folder, dan pencarian tetap ada.");
         table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
                 "Saat pesan suara diputar, mengetuk bilah di atas obrolan membuka pemutar musik penuh, tempat Anda bisa menggeser untuk melompat, bukan melompat ke pesannya.");
+    }
+
+    private static void fillIn9(Map<String, String> table) {
+        table.put("While your phone is locked, voice and round video messages don't start, resume or skip to the next one, whether from headphones, a car, the notification or the lock screen. One that's already playing finishes. Music and other videos play as usual.",
+                "Selama ponselmu terkunci, pesan suara dan pesan video bulat tidak dimulai, tidak dilanjutkan, dan tidak melompat ke pesan berikutnya, baik dari headphone, mobil, notifikasi, maupun layar kunci. Pesan yang sedang diputar tetap selesai. Musik dan video lain tetap diputar seperti biasa.");
         table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
                 "Dengan kunci, teks yang kamu terjemahkan dikirim ke layanan AI ini, bukan ke Google. Layanan apa pun yang menerima format chat OpenAI bisa dipakai, seperti OpenAI, OpenRouter, DeepSeek, atau Groq. Kunci tetap di ponsel ini dan tidak pernah masuk ke file pengaturan.");
         table.put("Without push, turn both on under Settings > Notifications and Sounds to get messages on time.",
                 "Tanpa push, aktifkan keduanya di Pengaturan > Notifikasi dan Suara agar pesan masuk tepat waktu.");
-    }
-
-    private static void fillIn9(Map<String, String> table) {
         table.put("Yes",
                 "Ya");
         table.put("You already have a folder for each chat type.",
@@ -3773,16 +3804,21 @@ public final class L10nTranslations {
                 "saluran dan bot serupa");
         table.put("story links",
                 "tautan cerita");
+    }
+
+    private static void fillIn10(Map<String, String> table) {
         table.put("story list requests",
                 "permintaan daftar cerita");
         table.put("video ads",
                 "iklan video");
+        table.put("voice playback while locked",
+                "pemutaran suara saat ponsel terkunci");
         table.put("website sign-in tokens",
                 "token masuk situs web");
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(1200);
+        Map<String, String> table = new HashMap<>(1208);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -3793,6 +3829,7 @@ public final class L10nTranslations {
         fillPt_rBR7(table);
         fillPt_rBR8(table);
         fillPt_rBR9(table);
+        fillPt_rBR10(table);
         return table;
     }
 
@@ -4299,6 +4336,8 @@ public final class L10nTranslations {
                 "Manter as buscas neste celular");
         table.put("Keep videos muted on volume keys",
                 "Manter v\u00eddeos mudos nas teclas de volume");
+        table.put("Keep voice messages quiet while locked",
+                "Silenciar mensagens de voz com o celular bloqueado");
         table.put("Keep-Alive Service and Background Connection on: %1$s",
                 "Servi\u00e7o Keep-Alive e Conex\u00e3o em segundo plano ligados: %1$s");
         table.put("Less clutter",
@@ -4407,11 +4446,11 @@ public final class L10nTranslations {
                 "Abrir configura\u00e7\u00f5es de notifica\u00e7\u00f5es");
         table.put("Open the guide",
                 "Abrir o guia");
-        table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
-                "\u201cAbrir links compat\u00edveis\u201d est\u00e1 desativado para este app nas configura\u00e7\u00f5es do Android. Toque para ativar.");
     }
 
     private static void fillPt_rBR5(Map<String, String> table) {
+        table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
+                "\u201cAbrir links compat\u00edveis\u201d est\u00e1 desativado para este app nas configura\u00e7\u00f5es do Android. Toque para ativar.");
         table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it.",
                 "Abrir a galeria de anexos n\u00e3o liga a c\u00e2mera nem pede acesso a ela. Toque no bloco da c\u00e2mera para lig\u00e1-la.");
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
@@ -4530,11 +4569,11 @@ public final class L10nTranslations {
                 "Revelar spoilers");
         table.put("Save",
                 "Salvar");
-        table.put("Save downloaded files",
-                "Salvar arquivos baixados");
     }
 
     private static void fillPt_rBR6(Map<String, String> table) {
+        table.put("Save downloaded files",
+                "Salvar arquivos baixados");
         table.put("Save full report",
                 "Salvar relat\u00f3rio completo");
         table.put("Save the full report to a file. The saved location is shown afterward.",
@@ -4653,11 +4692,11 @@ public final class L10nTranslations {
                 "Figurinhas e emojis animados grandes n\u00e3o mostram mais a hora e as marcas de leitura no canto. As outras mensagens mant\u00eam a hora.");
         table.put("Stickers in chats show at the size you pick below. Animated emoji and dice keep Telegram's size. A chat picks this up the next time you open it.",
                 "As figurinhas nas conversas aparecem no tamanho que voc\u00ea escolher abaixo. Emojis animados e dados mant\u00eam o tamanho do Telegram. Uma conversa aplica isso na pr\u00f3xima vez que voc\u00ea abrir.");
-        table.put("Stop call diagnostics",
-                "Interromper diagn\u00f3sticos de chamadas");
     }
 
     private static void fillPt_rBR7(Map<String, String> table) {
+        table.put("Stop call diagnostics",
+                "Interromper diagn\u00f3sticos de chamadas");
         table.put("Stop pull to next channel",
                 "Impedir o salto para o pr\u00f3ximo canal ao deslizar");
         table.put("Stop pull to next topic",
@@ -4776,11 +4815,11 @@ public final class L10nTranslations {
                 "N\u00e3o foi poss\u00edvel remover o arquivo %1$s. Exclua-o de %2$s e toque em Retomar de novo.");
         table.put("The keyboard closes when you start scrolling a chat. The emoji and sticker panel stays open.",
                 "O teclado fecha quando voc\u00ea come\u00e7a a rolar uma conversa. O painel de emojis e figurinhas continua aberto.");
-        table.put("The newest HushTelegram release is %1$s.",
-                "A vers\u00e3o mais nova do HushTelegram \u00e9 %1$s.");
     }
 
     private static void fillPt_rBR8(Map<String, String> table) {
+        table.put("The newest HushTelegram release is %1$s.",
+                "A vers\u00e3o mais nova do HushTelegram \u00e9 %1$s.");
         table.put("The report couldn't be saved yet. Try again in a moment.",
                 "O relat\u00f3rio ainda n\u00e3o p\u00f4de ser salvo. Tente de novo daqui a pouco.");
         table.put("The server behind %1$s is down for now. Wake-ups come back once it's up.",
@@ -4861,6 +4900,8 @@ public final class L10nTranslations {
                 "Desbloqueio cancelado. As configura\u00e7\u00f5es continuam bloqueadas.");
         table.put("Unlock started. Settings open in 24 hours unless you cancel.",
                 "Desbloqueio iniciado. As configura\u00e7\u00f5es abrem em 24 horas, a menos que voc\u00ea cancele.");
+        table.put("Unlock your phone to play voice and video messages.",
+                "Desbloqueie o celular para ouvir mensagens de voz e v\u00eddeo.");
         table.put("Until you resume, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
                 "At\u00e9 voc\u00ea retomar, todas as op\u00e7\u00f5es, menos Registro de depura\u00e7\u00e3o, funcionam como se estivessem desligadas. Suas escolhas continuam salvas. As altera\u00e7\u00f5es feitas ao aplicar o patch continuam valendo.");
         table.put("Update HushTelegram to read that file. Nothing was changed.",
@@ -4897,13 +4938,15 @@ public final class L10nTranslations {
                 "Quando sua lista de conversas \u00e9 curta, o Telegram mostra seus contatos abaixo dela. Isso oculta essa lista e o t\u00edtulo dela. Conversas, pastas e busca continuam.");
         table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
                 "Enquanto uma mensagem de voz toca, tocar na barra acima da conversa abre o player de m\u00fasica completo, onde voc\u00ea pode arrastar para avan\u00e7ar ou voltar, em vez de ir at\u00e9 a mensagem.");
+    }
+
+    private static void fillPt_rBR9(Map<String, String> table) {
+        table.put("While your phone is locked, voice and round video messages don't start, resume or skip to the next one, whether from headphones, a car, the notification or the lock screen. One that's already playing finishes. Music and other videos play as usual.",
+                "Enquanto o celular est\u00e1 bloqueado, mensagens de voz e de v\u00eddeo redondo n\u00e3o come\u00e7am, n\u00e3o continuam e n\u00e3o pulam para a pr\u00f3xima, seja pelos fones, por um carro, pela notifica\u00e7\u00e3o ou pela tela de bloqueio. A que j\u00e1 est\u00e1 tocando vai at\u00e9 o fim. M\u00fasicas e outros v\u00eddeos tocam normalmente.");
         table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
                 "Com uma chave, o texto que voc\u00ea traduz vai para este servi\u00e7o de IA em vez do Google. Qualquer servi\u00e7o que aceite o formato de chat da OpenAI funciona, como OpenAI, OpenRouter, DeepSeek ou Groq. A chave fica neste celular e nunca vai para um arquivo de configura\u00e7\u00f5es.");
         table.put("Without push, turn both on under Settings > Notifications and Sounds to get messages on time.",
                 "Sem push, ligue os dois em Configura\u00e7\u00f5es > Notifica\u00e7\u00f5es e Sons para receber as mensagens na hora.");
-    }
-
-    private static void fillPt_rBR9(Map<String, String> table) {
         table.put("Yes",
                 "Sim");
         table.put("You already have a folder for each chat type.",
@@ -5018,16 +5061,21 @@ public final class L10nTranslations {
                 "canais e bots semelhantes");
         table.put("story links",
                 "links de Stories");
+    }
+
+    private static void fillPt_rBR10(Map<String, String> table) {
         table.put("story list requests",
                 "solicita\u00e7\u00f5es da lista de stories");
         table.put("video ads",
                 "an\u00fancios em v\u00eddeos");
+        table.put("voice playback while locked",
+                "reprodu\u00e7\u00e3o de voz com o celular bloqueado");
         table.put("website sign-in tokens",
                 "tokens de login em sites");
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(1200);
+        Map<String, String> table = new HashMap<>(1208);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -5038,6 +5086,7 @@ public final class L10nTranslations {
         fillTr7(table);
         fillTr8(table);
         fillTr9(table);
+        fillTr10(table);
         return table;
     }
 
@@ -5544,6 +5593,8 @@ public final class L10nTranslations {
                 "Aramalar\u0131 bu telefonda tut");
         table.put("Keep videos muted on volume keys",
                 "Ses tu\u015flar\u0131nda videolar\u0131 sessiz tut");
+        table.put("Keep voice messages quiet while locked",
+                "Telefon kilitliyken sesli mesajlar\u0131 sessiz tut");
         table.put("Keep-Alive Service and Background Connection on: %1$s",
                 "Canl\u0131 Tutma Servisi ve Arka Plan Ba\u011flant\u0131s\u0131 a\u00e7\u0131k: %1$s");
         table.put("Less clutter",
@@ -5652,11 +5703,11 @@ public final class L10nTranslations {
                 "Bildirim ayarlar\u0131n\u0131 a\u00e7");
         table.put("Open the guide",
                 "Rehberi a\u00e7");
-        table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
-                "\u201cDesteklenen ba\u011flant\u0131lar\u0131 a\u00e7\u201d Android ayarlar\u0131nda bu uygulama i\u00e7in kapal\u0131. A\u00e7mak i\u00e7in dokunun.");
     }
 
     private static void fillTr5(Map<String, String> table) {
+        table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
+                "\u201cDesteklenen ba\u011flant\u0131lar\u0131 a\u00e7\u201d Android ayarlar\u0131nda bu uygulama i\u00e7in kapal\u0131. A\u00e7mak i\u00e7in dokunun.");
         table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it.",
                 "Ek galerisini a\u00e7mak kameray\u0131 ba\u015flatmaz ve kamera eri\u015fimi istemez. Ba\u015flatmak i\u00e7in kamera kutucu\u011funa dokunun.");
         table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
@@ -5775,11 +5826,11 @@ public final class L10nTranslations {
                 "Spoilerlar\u0131 g\u00f6ster");
         table.put("Save",
                 "Kaydet");
-        table.put("Save downloaded files",
-                "\u0130ndirilen dosyalar\u0131 kaydet");
     }
 
     private static void fillTr6(Map<String, String> table) {
+        table.put("Save downloaded files",
+                "\u0130ndirilen dosyalar\u0131 kaydet");
         table.put("Save full report",
                 "Tam raporu kaydet");
         table.put("Save the full report to a file. The saved location is shown afterward.",
@@ -5898,11 +5949,11 @@ public final class L10nTranslations {
                 "\u00c7\u0131kartmalar ve b\u00fcy\u00fck animasyonlu emojiler art\u0131k k\u00f6\u015felerinde saati ve okundu i\u015faretlerini g\u00f6stermez. Di\u011fer mesajlar saatini korur.");
         table.put("Stickers in chats show at the size you pick below. Animated emoji and dice keep Telegram's size. A chat picks this up the next time you open it.",
                 "Sohbetlerdeki \u00e7\u0131kartmalar a\u015fa\u011f\u0131da se\u00e7ti\u011finiz boyutta g\u00f6sterilir. Hareketli emojiler ve zarlar Telegram'\u0131n boyutunu korur. Bir sohbet bunu bir sonraki a\u00e7\u0131\u015f\u0131n\u0131zda uygular.");
-        table.put("Stop call diagnostics",
-                "Arama tan\u0131lamalar\u0131n\u0131 durdur");
     }
 
     private static void fillTr7(Map<String, String> table) {
+        table.put("Stop call diagnostics",
+                "Arama tan\u0131lamalar\u0131n\u0131 durdur");
         table.put("Stop pull to next channel",
                 "Sonraki kanala \u00e7ekmeyi durdur");
         table.put("Stop pull to next topic",
@@ -6021,11 +6072,11 @@ public final class L10nTranslations {
                 "%1$s dosyas\u0131 kald\u0131r\u0131lamad\u0131. Onu %2$s i\u00e7inden sil, sonra yeniden Devam et'e dokun.");
         table.put("The keyboard closes when you start scrolling a chat. The emoji and sticker panel stays open.",
                 "Bir sohbeti kayd\u0131rmaya ba\u015flad\u0131\u011f\u0131n\u0131zda klavye kapan\u0131r. Emoji ve \u00e7\u0131kartma paneli a\u00e7\u0131k kal\u0131r.");
-        table.put("The newest HushTelegram release is %1$s.",
-                "En yeni HushTelegram s\u00fcr\u00fcm\u00fc %1$s.");
     }
 
     private static void fillTr8(Map<String, String> table) {
+        table.put("The newest HushTelegram release is %1$s.",
+                "En yeni HushTelegram s\u00fcr\u00fcm\u00fc %1$s.");
         table.put("The report couldn't be saved yet. Try again in a moment.",
                 "Rapor hen\u00fcz kaydedilemedi. Birazdan tekrar dene.");
         table.put("The server behind %1$s is down for now. Wake-ups come back once it's up.",
@@ -6106,6 +6157,8 @@ public final class L10nTranslations {
                 "Kilit a\u00e7ma iptal edildi. Ayarlar kilitli kal\u0131yor.");
         table.put("Unlock started. Settings open in 24 hours unless you cancel.",
                 "Kilit a\u00e7ma ba\u015flad\u0131. \u0130ptal etmezsen ayarlar 24 saat sonra a\u00e7\u0131l\u0131r.");
+        table.put("Unlock your phone to play voice and video messages.",
+                "Sesli ve g\u00f6r\u00fcnt\u00fcl\u00fc mesajlar\u0131 oynatmak i\u00e7in telefonunun kilidini a\u00e7.");
         table.put("Until you resume, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
                 "Devam edene kadar Hata ay\u0131klama g\u00fcnl\u00fc\u011f\u00fc d\u0131\u015f\u0131ndaki her anahtar kapal\u0131ym\u0131\u015f gibi davran\u0131r. Se\u00e7imleriniz kay\u0131tl\u0131 kal\u0131r. Yamalama s\u0131ras\u0131nda yap\u0131lan de\u011fi\u015fiklikler ge\u00e7erli kal\u0131r.");
         table.put("Update HushTelegram to read that file. Nothing was changed.",
@@ -6142,13 +6195,15 @@ public final class L10nTranslations {
                 "Sohbet listeniz k\u0131sa oldu\u011funda Telegram ki\u015filerinizi alt\u0131nda g\u00f6sterir. Bu, o listeyi ve ba\u015fl\u0131\u011f\u0131n\u0131 gizler. Sohbetler, klas\u00f6rler ve arama kal\u0131r.");
         table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
                 "Bir sesli mesaj \u00e7alarken sohbetin \u00fcst\u00fcndeki \u00e7ubu\u011fa dokunmak, mesaja atlamak yerine, ileri geri sarabilece\u011finiz tam m\u00fczik \u00e7alar\u0131 a\u00e7ar.");
+    }
+
+    private static void fillTr9(Map<String, String> table) {
+        table.put("While your phone is locked, voice and round video messages don't start, resume or skip to the next one, whether from headphones, a car, the notification or the lock screen. One that's already playing finishes. Music and other videos play as usual.",
+                "Telefonun kilitliyken sesli mesajlar ve yuvarlak video mesajlar kulakl\u0131ktan, arabadan, bildirimden ya da kilit ekran\u0131ndan ba\u015flamaz, devam etmez ve bir sonrakine ge\u00e7mez. Zaten \u00e7alan mesaj sonuna kadar \u00e7alar. M\u00fczik ve di\u011fer videolar her zamanki gibi oynar.");
         table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
                 "Bir anahtarla, \u00e7evirdi\u011fin metin Google yerine bu yapay zek\u00e2 hizmetine gider. OpenAI'\u0131n sohbet bi\u00e7imini kabul eden her hizmet \u00e7al\u0131\u015f\u0131r, \u00f6rne\u011fin OpenAI, OpenRouter, DeepSeek veya Groq. Anahtar bu telefonda kal\u0131r ve hi\u00e7bir zaman bir ayar dosyas\u0131na girmez.");
         table.put("Without push, turn both on under Settings > Notifications and Sounds to get messages on time.",
                 "Push olmadan, mesajlar\u0131n zaman\u0131nda gelmesi i\u00e7in ikisini de Ayarlar > Bildirimler ve Sesler alt\u0131nda a\u00e7\u0131n.");
-    }
-
-    private static void fillTr9(Map<String, String> table) {
         table.put("Yes",
                 "Evet");
         table.put("You already have a folder for each chat type.",
@@ -6263,10 +6318,15 @@ public final class L10nTranslations {
                 "benzer kanallar ve botlar");
         table.put("story links",
                 "hik\u00e2ye ba\u011flant\u0131lar\u0131");
+    }
+
+    private static void fillTr10(Map<String, String> table) {
         table.put("story list requests",
                 "hik\u00e2ye listesi istekleri");
         table.put("video ads",
                 "video reklamlar\u0131");
+        table.put("voice playback while locked",
+                "telefon kilitliyken ses oynatma");
         table.put("website sign-in tokens",
                 "web sitesi oturum a\u00e7ma anahtarlar\u0131");
     }
