@@ -17,10 +17,10 @@ import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
-import app.morphe.patches.telegram.misc.forward.FORWARDS
 import app.morphe.patches.telegram.misc.forward.IS_PREMIUM
 import app.morphe.patches.telegram.misc.forward.MESSAGE_TYPE
-import app.morphe.patches.telegram.misc.forward.NAME_HIDE
+import app.morphe.patches.telegram.misc.forward.premiumHideSenderTypes
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
@@ -29,6 +29,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.controlString
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -89,7 +90,6 @@ private const val NAME = "Add Repeat to the message menu"
 
 /** The extension's option numbers, Repeat, Message details, Copy photo and Quick forward, which Telegram's own may never use. */
 internal val MENU_OPTIONS = listOf(0x48544d01, 0x48544d02, 0x48544d03, 0x48544d04)
-private val COMPARES = setOf(Opcode.IF_EQ, Opcode.IF_NE)
 private val MOVES = setOf(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_WIDE, Opcode.MOVE_WIDE_FROM16)
 
 @Suppress("unused")
@@ -171,17 +171,9 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     controlHook(MESSAGE_MENU, "photoFile", listOf(OBJECT), FILE)
     controlHook(MESSAGE_MENU, "uri", listOf(CONTEXT, FILE), URI)
 
-    // One pass over the app: the builder, and the Premium gate on hiding an article's sender.
-    val articles = mutableSetOf<Int>()
-    val builders = messageMenuBuilders { _, body ->
-        val premium = body.indexOfFirst { it.controlRef() == IS_PREMIUM }
-        if (premium < 0 || body.none { it.controlRef() == FORWARDS } || body.none { it.controlRef() == NAME_HIDE }) return@messageMenuBuilders
-        for (i in premium until body.size - 2) {
-            val literal = body[i + 1] as? NarrowLiteralInstruction ?: continue
-            if (body[i].controlRef() == MESSAGE_TYPE && body[i + 2].opcode in COMPARES) articles += literal.narrowLiteral
-        }
-    }
-    val article = articles.toList().controlSingle("the Premium gate on hiding an article's sender")
+    // The builder, and the Premium gate on hiding an article's sender.
+    val builders = messageMenuBuilders()
+    val article = premiumHideSenderTypes().toList().controlSingle("the Premium gate on hiding an article's sender")
     val (chat, chatClass, fill, built) = messageMenuBuilder(builders, NAME)
     controlShape(built.none { (it as? NarrowLiteralInstruction)?.narrowLiteral in MENU_OPTIONS }, "the message menu already uses the extension's numbers")
 
@@ -260,22 +252,18 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
 
 /**
  * The chat screen's message menu builders, as owner type and signature: each method taking a
- * message and three lists that loads Telegram's Forward and Cancel sending labels. One pass over
- * the app, which also hands [visit] every method it reads and its body, for a caller looking for
- * something else on the same walk. Translate with an outside service adds to the same menu.
+ * message and three lists that loads Telegram's Forward and Cancel sending labels. Only classes
+ * naming both labels are read. Translate with an outside service adds to the same menu.
  */
-internal fun BytecodePatchContext.messageMenuBuilders(
-    visit: (Method, List<Instruction>) -> Unit = { _, _ -> },
-): List<Pair<String, String>> {
+internal fun BytecodePatchContext.messageMenuBuilders(): List<Pair<String, String>> {
     val builders = mutableListOf<Pair<String, String>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.reference(FORWARD_LABEL) and Mention.reference(CANCEL_SENDING)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
             val body = m.controlBody()
             if (!AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" &&
                 m.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE, LIST, LIST, LIST) &&
                 body.any { it.controlRef() == FORWARD_LABEL } && body.any { it.controlRef() == CANCEL_SENDING }) builders += cls.type to signature(m)
-            visit(m, body)
         }
     }
     return builders

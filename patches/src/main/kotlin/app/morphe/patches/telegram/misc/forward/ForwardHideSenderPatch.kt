@@ -14,11 +14,13 @@ import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -137,10 +139,19 @@ internal fun BytecodePatchContext.resolveForwardHideSender(): ForwardHideSenderS
         config.methods.any { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) }
     }, "Telegram's Premium check changed")
 
-    // The button's gate: not Premium, then each forwarded message's type compared with one number.
+    val article = premiumHideSenderTypes().toList().controlSingle("the Premium gate on hiding an article's sender")
+    return ForwardHideSenderSite(update, article)
+}
+
+/**
+ * The Hide sender's name button's gate: not Premium, then each forwarded message's type compared
+ * with one number. Every number compared that way, read only from classes that check Premium, name
+ * the forwarded messages and load the button's animation. The message menu reads the same gate.
+ */
+internal fun BytecodePatchContext.premiumHideSenderTypes(): Set<Int> {
     val articles = mutableSetOf<Int>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.reference(IS_PREMIUM) and Mention.reference(FORWARDS) and Mention.reference(NAME_HIDE)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
             val body = m.controlBody()
             val premium = body.indexOfFirst { it.controlRef() == IS_PREMIUM }
@@ -151,6 +162,5 @@ internal fun BytecodePatchContext.resolveForwardHideSender(): ForwardHideSenderS
             }
         }
     }
-    val article = articles.toList().controlSingle("the Premium gate on hiding an article's sender")
-    return ForwardHideSenderSite(update, article)
+    return articles
 }
