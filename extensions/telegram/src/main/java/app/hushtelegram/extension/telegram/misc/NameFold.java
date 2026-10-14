@@ -45,17 +45,32 @@ public final class NameFold {
     @Nullable
     public static String fold(@Nullable String src, boolean ru, boolean onlyEnglish) {
         HookStatus.invoked(FamilyNames.HIDE_POPULAR_APPS);
-        // onlyEnglish is the case-keeping path Passport uses, not search.
-        if (src == null || onlyEnglish || firstStyled(src) < 0) return src;
+        // onlyEnglish is the case-keeping path Passport uses, not search. A name with nothing past
+        // FIRST_STYLED is passed over before the switch is read or the table is built.
+        if (src == null || onlyEnglish || !reachesStyled(src)) return src;
         try {
             if (!Utils.settingsReady() || !Settings.SEARCH_STYLED_NAMES.get()) return src;
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.HIDE_POPULAR_APPS, "styled names switch", failure);
             return src;
         }
-        String plain = plain(src);
-        if (plain != src) HookStatus.counted(FamilyNames.HIDE_POPULAR_APPS, FOLDED);
-        return plain;
+        try {
+            String plain = plain(src);
+            if (plain != src) HookStatus.counted(FamilyNames.HIDE_POPULAR_APPS, FOLDED);
+            return plain;
+        } catch (Throwable failure) {
+            // Search goes on with the name as written rather than failing on it.
+            HookStatus.threw(FamilyNames.HIDE_POPULAR_APPS, "styled names", failure);
+            return src;
+        }
+    }
+
+    /** Whether [src] has any character a styled letter could start at. */
+    private static boolean reachesStyled(String src) {
+        for (int at = 0; at < src.length(); at++) {
+            if (src.charAt(at) >= FIRST_STYLED) return true;
+        }
+        return false;
     }
 
     /** [src] with each styled letter as its plain lowercase letter, or [src] itself when it has none. */

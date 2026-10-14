@@ -108,7 +108,9 @@ class NameFoldFixtureTest {
             val context = PatchContexts.of(ExtensionDex.classes() + nameFoldHosts(build))
             val method = padded(context.full(), 256)
             val stock = method.body().map(::operands)
-            assertThrows(build.name, Exception::class.java) { NameFoldPlan(method, null).rehearse() }
+            val failed = assertThrows(build.name, Exception::class.java) { NameFoldPlan(method, null).rehearse() }
+            // The count catches it, not a register guard or anything else on the way.
+            assertTrue("${build.name}: ${failed.message}", failed.message.orEmpty().contains("didn't compile whole"))
             assertEquals("${build.name}: the rehearsal works on a copy", stock, method.body().map(::operands))
         }
     }
