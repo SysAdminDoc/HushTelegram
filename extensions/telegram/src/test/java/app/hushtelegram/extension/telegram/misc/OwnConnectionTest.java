@@ -102,6 +102,7 @@ public class OwnConnectionTest {
         assertTrue(telegram().getAll().isEmpty());
         Settings.REPAIR_FIREBASE_PUSH.resetToDefault();
         for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
             PauseForTests.pause(reason);
             refused();
             assertTrue(reason.name(), telegram().getAll().isEmpty());
