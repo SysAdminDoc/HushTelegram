@@ -795,3 +795,16 @@ Open app info	App-Info öffnen
 Couldn't open app info. Open Android settings.	App-Info nicht erreichbar. Öffne die Android-Einstellungen.
 # context: Filter editor, under Try a message, when the phone is too busy to check the message against the filters right now
 Couldn't try it now. Try again in a moment.	Das ging gerade nicht. Versuch es gleich noch einmal.
+# context: Second switch under Faster downloads on the Playback page. Data Saver is Android's own setting (use Android's name for it); metered means a network Android counts as paid per use, like mobile data
+Hold automatic downloads on Data Saver	Automatische Downloads im Datensparmodus anhalten
+While Android's Data Saver is on and the network is metered, Telegram doesn't start photos, videos, files, voice messages, music or stories downloading on its own. What you tap still downloads, and downloads already running finish.	Solange der Datensparmodus von Android an ist und das Netzwerk getaktet ist, lädt Telegram Fotos, Videos, Dateien, Sprachnachrichten, Musik und Stories nicht von selbst herunter. Was du antippst, wird trotzdem heruntergeladen, und laufende Downloads werden fertig.
+# context: Under Hold automatic downloads on Data Saver, what Android reports when the page opens. One of these four, then one of the three network lines
+Android's Data Saver is on.	Der Datensparmodus von Android ist an.
+Android's Data Saver is off.	Der Datensparmodus von Android ist aus.
+Android's Data Saver is on, but Telegram may use data freely.	Der Datensparmodus von Android ist an, aber Telegram darf Daten uneingeschränkt nutzen.
+Android doesn't say whether Data Saver is on.	Android sagt nicht, ob der Datensparmodus an ist.
+This network is metered.	Dieses Netzwerk ist getaktet.
+This network isn't metered.	Dieses Netzwerk ist nicht getaktet.
+Android doesn't say whether this network is metered.	Android sagt nicht, ob dieses Netzwerk getaktet ist.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Data Saver part of Faster downloads: holding automatic media downloads while Android's Data Saver is on
+automatic downloads on Data Saver	automatische Downloads im Datensparmodus

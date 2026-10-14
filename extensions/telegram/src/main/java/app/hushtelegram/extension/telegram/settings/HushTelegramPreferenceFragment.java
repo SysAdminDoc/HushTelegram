@@ -79,6 +79,7 @@ import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
 import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
+import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
 import app.hushtelegram.extension.telegram.misc.KeepDeleted;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
@@ -553,6 +554,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.FASTER_DOWNLOADS).addPreference(toggle(context, Settings.FASTER_DOWNLOADS, L10n.t("Faster downloads"),
                     PatchFamily.FASTER_DOWNLOADS.coverageSummary(L10n.t("Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces"
                             + " 4 at a time. If a big piece fails, Telegram goes back to small ones. The next download picks this up."))));
+            if (PatchFamily.Capability.DATA_SAVER_DOWNLOADS.installed()) {
+                on(pages, PatchFamily.FASTER_DOWNLOADS).addPreference(toggle(context, Settings.DATA_SAVER_DOWNLOADS,
+                        L10n.t("Hold automatic downloads on Data Saver"), dataSaverSummary(DataSaverDownloads.status(context))));
+            }
         }
         if (build.contains(PatchFamily.SAVE_DOWNLOADS)) {
             on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(toggle(context, Settings.SAVE_DOWNLOADS, L10n.t("Save downloaded files"),
@@ -1330,6 +1335,31 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
     static String stickerSizeSummary() {
         return L10n.f("%1$s of Telegram's size", percent(StickerSize.percent(Settings.STICKER_SIZE.savedValue())));
+    }
+
+    /** What the Data Saver switch does, then what Android reports right now, read when the page opens. */
+    static String dataSaverSummary(DataSaverDownloads.Status status) {
+        String saver;
+        switch (status.dataSaver) {
+            case ON:
+                saver = L10n.t("Android's Data Saver is on.");
+                break;
+            case OFF:
+                saver = L10n.t("Android's Data Saver is off.");
+                break;
+            case ALLOWED:
+                saver = L10n.t("Android's Data Saver is on, but Telegram may use data freely.");
+                break;
+            default:
+                saver = L10n.t("Android doesn't say whether Data Saver is on.");
+                break;
+        }
+        String metered = status.metered == null
+                ? L10n.t("Android doesn't say whether this network is metered.")
+                : status.metered ? L10n.t("This network is metered.") : L10n.t("This network isn't metered.");
+        return L10n.t("While Android's Data Saver is on and the network is metered, Telegram doesn't start photos, videos,"
+                + " files, voice messages, music or stories downloading on its own. What you tap still downloads, and"
+                + " downloads already running finish.") + "\n" + saver + " " + metered;
     }
 
     /** A percent the way this language writes one. */

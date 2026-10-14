@@ -112,6 +112,7 @@ public class PatchFamilyTest {
         Settings.HIDE_SEND_AS.resetToDefault();
         Settings.HIDE_CONTACTS_TAB.resetToDefault();
         Settings.FASTER_DOWNLOADS.resetToDefault();
+        Settings.DATA_SAVER_DOWNLOADS.resetToDefault();
         Settings.SAVE_DOWNLOADS.resetToDefault();
         Settings.CHAT_TYPE_FOLDERS.resetToDefault();
         Settings.UNIFIED_PUSH.resetToDefault();
@@ -372,15 +373,19 @@ public class PatchFamilyTest {
     }
 
     @Test
-    public void fasterDownloadsHasItsOwnOffByDefaultSwitchOnPlaybackThatAppliesAtOnce() {
+    public void fasterDownloadsHasTwoOffByDefaultSwitchesOnPlaybackThatApplyAtOnce() {
         PatchFamily family = PatchFamily.FASTER_DOWNLOADS;
         assertEquals("Faster downloads", family.patchName);
         assertEquals("fasterDownloads", family.statusMethod);
-        assertEquals(Collections.singletonList(Settings.FASTER_DOWNLOADS), family.switches);
-        assertFalse(Settings.FASTER_DOWNLOADS.defaultValue);
-        // Telegram picks the piece size each time a download starts, so no restart is needed.
-        assertFalse(Settings.FASTER_DOWNLOADS.rebootApp);
-        assertTrue(family.expectedCapabilities().isEmpty());
+        // The second switch, the Data Saver hold, starts off too and works with or without the first.
+        assertEquals(Arrays.asList(Settings.FASTER_DOWNLOADS, Settings.DATA_SAVER_DOWNLOADS), family.switches);
+        for (BooleanSetting setting : family.switches) {
+            assertFalse(setting.key, setting.defaultValue);
+            // Telegram picks the piece size each time a download starts and asks again before each
+            // automatic download, so no restart is needed.
+            assertFalse(setting.key, setting.rebootApp);
+        }
+        assertEquals(EnumSet.of(PatchFamily.Capability.DATA_SAVER_DOWNLOADS), family.expectedCapabilities());
         assertOnItsPage(family);
         assertEquals(PatchFamily.Page.PLAYBACK, PatchFamily.Page.of(family));
     }

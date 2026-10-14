@@ -294,9 +294,11 @@ public class PausedHooksTest {
         // A voice message opens the full player.
         probes.put(PatchFamily.VOICE_MUSIC_PLAYER, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.VoicePlayerForTests.voiceOpensThePlayer()));
-        // A download the server didn't flag keeps Telegram's small pieces.
-        probes.put(PatchFamily.FASTER_DOWNLOADS, Collections.singletonList(
-                () -> app.hushtelegram.extension.telegram.misc.DownloadSpeed.fast(false)));
+        // A download the server didn't flag keeps Telegram's small pieces, and Data Saver on a
+        // metered network doesn't hold automatic downloads.
+        probes.put(PatchFamily.FASTER_DOWNLOADS, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.DownloadSpeed.fast(false),
+                () -> app.hushtelegram.extension.telegram.misc.DataSaverDownloadsForTests.holdsOnMeteredDataSaver()));
         // A finished file from a message is queued for a copy in Download/Telegram.
         probes.put(PatchFamily.SAVE_DOWNLOADS, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.SaveDownloadsForTests.queuesACopy()));

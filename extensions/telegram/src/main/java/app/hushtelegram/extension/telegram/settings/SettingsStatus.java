@@ -108,6 +108,7 @@ public final class SettingsStatus {
     public static boolean hideContactsTab() { return false; }
     public static boolean compactTabBar() { return false; }
     public static boolean fasterDownloads() { return false; }
+    public static boolean dataSaverDownloads() { return false; }
     public static boolean saveDownloads() { return false; }
     public static boolean chatTypeFolders() { return false; }
     public static boolean storyRequests() { return false; }

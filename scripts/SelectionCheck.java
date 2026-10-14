@@ -394,6 +394,7 @@ public final class SelectionCheck {
         hook(calls, flags, "hideContactsTab", "misc/MainTabs", "tabsShown", "blocksSwipe");
         hook(calls, flags, "compactTabBar", "misc/MainTabs", "barPadding", "barCorner", "barHeight", "barMinWidth");
         hook(calls, flags, "fasterDownloads", "misc/DownloadSpeed", "fast");
+        hook(calls, flags, "dataSaverDownloads", "misc/DataSaverDownloads", "hold", "mask");
         hook(calls, flags, "saveDownloads", "misc/SaveDownloads", "fileLoaded");
         hook(calls, flags, "unifiedPush", "misc/UnifiedPush", "token", "type");
         hook(calls, flags, "hideByKeyword", "misc/MessageFilters", "type");

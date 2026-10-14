@@ -9,6 +9,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
@@ -50,9 +51,13 @@ val fasterDownloadsPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.telegram())
     execute {
         val plan = resolveFasterDownloads()
-        // Assembled on a copy first, so a refusal leaves the app untouched.
+        val saver = resolveDataSaverDownloads()
+        // Assembled on copies first, so a refusal leaves the app untouched.
         insertDownloadSpeedGate(MutableMethod(ImmutableMethod.of(plan.method)), plan)
+        saver.rehearse()
         insertDownloadSpeedGate(plan.method, plan)
+        saver.apply()
+        enableCapability("dataSaverDownloads")
         enableStatus("fasterDownloads")
     }
 }

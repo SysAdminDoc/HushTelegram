@@ -795,3 +795,16 @@ Open app info	Uygulama bilgisini aç
 Couldn't open app info. Open Android settings.	Uygulama bilgisi açılamadı. Android ayarlarını aç.
 # context: Filter editor, under Try a message, when the phone is too busy to check the message against the filters right now
 Couldn't try it now. Try again in a moment.	Şu an denenemedi. Birazdan tekrar dene.
+# context: Second switch under Faster downloads on the Playback page. Data Saver is Android's own setting (use Android's name for it); metered means a network Android counts as paid per use, like mobile data
+Hold automatic downloads on Data Saver	Veri Tasarrufu'nda otomatik indirmeleri beklet
+While Android's Data Saver is on and the network is metered, Telegram doesn't start photos, videos, files, voice messages, music or stories downloading on its own. What you tap still downloads, and downloads already running finish.	Android'in Veri Tasarrufu açıkken ve ağ sınırlıyken Telegram fotoğrafları, videoları, dosyaları, sesli mesajları, müzikleri ve hikâyeleri kendiliğinden indirmeye başlamaz. Dokunduğun şeyler yine iner, devam eden indirmeler de tamamlanır.
+# context: Under Hold automatic downloads on Data Saver, what Android reports when the page opens. One of these four, then one of the three network lines
+Android's Data Saver is on.	Android'in Veri Tasarrufu açık.
+Android's Data Saver is off.	Android'in Veri Tasarrufu kapalı.
+Android's Data Saver is on, but Telegram may use data freely.	Android'in Veri Tasarrufu açık, ama Telegram veriyi kısıtlamasız kullanabilir.
+Android doesn't say whether Data Saver is on.	Android, Veri Tasarrufu'nun açık olup olmadığını söylemiyor.
+This network is metered.	Bu ağ sınırlı.
+This network isn't metered.	Bu ağ sınırlı değil.
+Android doesn't say whether this network is metered.	Android bu ağın sınırlı olup olmadığını söylemiyor.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Data Saver part of Faster downloads: holding automatic media downloads while Android's Data Saver is on
+automatic downloads on Data Saver	Veri Tasarrufu açıkken otomatik indirme

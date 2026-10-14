@@ -26,6 +26,7 @@ import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.net.ConnectivityManager;
 import android.os.Looper;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
@@ -53,6 +54,8 @@ import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
+import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
+import app.hushtelegram.extension.telegram.misc.DataSaverDownloadsForTests;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests;
@@ -102,6 +105,11 @@ public class HushTelegramPreferenceFragmentTest {
 
     /** Wording that tells the reader a paused Telegram is an unpatched one, which it isn't. */
     private static final Pattern UNPATCHED = Pattern.compile("(?i)unpatched|n't patched|not patched|as if it weren");
+
+    /** What the Data Saver switch does, before the line with what Android reports. */
+    private static final String DATA_SAVER_SUMMARY = "While Android's Data Saver is on and the network is metered, Telegram"
+            + " doesn't start photos, videos, files, voice messages, music or stories downloading on its own. What you tap"
+            + " still downloads, and downloads already running finish.";
 
     /** The row each patch adds, by the title it shows. */
     private static final Map<PatchFamily, String> ROW_TITLES = new LinkedHashMap<>();
@@ -601,6 +609,13 @@ public class HushTelegramPreferenceFragmentTest {
             // Downloads keep Telegram's piece size until the switch is turned on.
             assertFalse(Settings.FASTER_DOWNLOADS.key,
                     ((SwitchPreference) page.findPreference(Settings.FASTER_DOWNLOADS.key)).isChecked());
+            assertEquals("Hold automatic downloads on Data Saver",
+                    String.valueOf(page.findPreference(Settings.DATA_SAVER_DOWNLOADS.key).getTitle()));
+            assertTrue(String.valueOf(page.findPreference(Settings.DATA_SAVER_DOWNLOADS.key).getSummary())
+                    .startsWith(DATA_SAVER_SUMMARY + "\n"));
+            // Data Saver leaves automatic downloads to Telegram until the switch is turned on.
+            assertFalse(Settings.DATA_SAVER_DOWNLOADS.key,
+                    ((SwitchPreference) page.findPreference(Settings.DATA_SAVER_DOWNLOADS.key)).isChecked());
             assertEquals("Save downloaded files", String.valueOf(page.findPreference(Settings.SAVE_DOWNLOADS.key).getTitle()));
             assertEquals("Each file or song you download also goes to Download/Telegram on your phone, where file "
                     + "managers and other apps can open it. Files from secret chats and chats that don't allow saving "
@@ -1011,6 +1026,24 @@ public class HushTelegramPreferenceFragmentTest {
             file.edit().clear().commit();
             app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.reset();
         }
+    }
+
+    /** The Data Saver row ends with what Android reports when the page opens, each fact on its own. */
+    @Test
+    public void theDataSaverRowSaysWhatAndroidReportsNow() {
+        Context app = RuntimeEnvironment.getApplication();
+        DataSaverDownloadsForTests.android(ConnectivityManager.RESTRICT_BACKGROUND_STATUS_ENABLED, ConnectivityManager.TYPE_MOBILE);
+        assertEquals(DATA_SAVER_SUMMARY + "\nAndroid's Data Saver is on. This network is metered.",
+                HushTelegramPreferenceFragment.dataSaverSummary(DataSaverDownloads.status(app)));
+        DataSaverDownloadsForTests.android(ConnectivityManager.RESTRICT_BACKGROUND_STATUS_WHITELISTED, ConnectivityManager.TYPE_WIFI);
+        assertEquals(DATA_SAVER_SUMMARY + "\nAndroid's Data Saver is on, but Telegram may use data freely. This network isn't metered.",
+                HushTelegramPreferenceFragment.dataSaverSummary(DataSaverDownloads.status(app)));
+        DataSaverDownloadsForTests.android(ConnectivityManager.RESTRICT_BACKGROUND_STATUS_DISABLED, ConnectivityManager.TYPE_WIFI);
+        assertEquals(DATA_SAVER_SUMMARY + "\nAndroid's Data Saver is off. This network isn't metered.",
+                HushTelegramPreferenceFragment.dataSaverSummary(DataSaverDownloads.status(app)));
+        assertEquals(DATA_SAVER_SUMMARY + "\nAndroid doesn't say whether Data Saver is on. Android doesn't say whether this"
+                        + " network is metered.",
+                HushTelegramPreferenceFragment.dataSaverSummary(DataSaverDownloads.status(null)));
     }
 
     /**

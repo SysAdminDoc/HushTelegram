@@ -389,6 +389,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting FASTER_DOWNLOADS =
             new BooleanSetting("hushtelegram_faster_downloads", FALSE);
 
+    /** Automatic media downloads wait while Android's Data Saver restricts Telegram on a metered network. */
+    public static final BooleanSetting DATA_SAVER_DOWNLOADS =
+            new BooleanSetting("hushtelegram_data_saver_downloads", FALSE);
+
     /** A file or song that finishes downloading gets a copy in Download/Telegram, unless saving it isn't allowed. */
     public static final BooleanSetting SAVE_DOWNLOADS =
             new BooleanSetting("hushtelegram_save_downloads", FALSE);

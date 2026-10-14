@@ -107,7 +107,8 @@ public enum PatchFamily {
     HIDE_SEND_AS(FamilyNames.HIDE_SEND_AS, "hideSendAs", null, Settings.HIDE_SEND_AS),
     HIDE_CONTACTS_TAB(FamilyNames.HIDE_CONTACTS_TAB, "hideContactsTab", null, Settings.HIDE_CONTACTS_TAB,
             Settings.COMPACT_TAB_BAR),
-    FASTER_DOWNLOADS(FamilyNames.FASTER_DOWNLOADS, "fasterDownloads", null, Settings.FASTER_DOWNLOADS),
+    FASTER_DOWNLOADS(FamilyNames.FASTER_DOWNLOADS, "fasterDownloads", null, Settings.FASTER_DOWNLOADS,
+            Settings.DATA_SAVER_DOWNLOADS),
     SAVE_DOWNLOADS(FamilyNames.SAVE_DOWNLOADS, "saveDownloads", null, Settings.SAVE_DOWNLOADS),
     CHAT_TYPE_FOLDERS(FamilyNames.CHAT_TYPE_FOLDERS, "chatTypeFolders", null, Settings.CHAT_TYPE_FOLDERS),
     DISABLE_ANALYTICS(FamilyNames.DISABLE_ANALYTICS, "disableAnalytics", null,
@@ -359,6 +360,7 @@ public enum PatchFamily {
         SHARE_NUMBER_UNTICKED(HIDE_PHONE_NUMBER, "shareNumberUnticked", "number sharing on new contacts"),
         COMPACT_TAB_BAR(HIDE_CONTACTS_TAB, "compactTabBar", "bottom bar size"),
         LOCKED_VOICE(VOICE_ONE_AT_A_TIME, "lockedVoice", "voice playback while locked"),
+        DATA_SAVER_DOWNLOADS(FASTER_DOWNLOADS, "dataSaverDownloads", "automatic downloads on Data Saver"),
         TITLE_EMOJI(HOLIDAY_LOOK, "titleEmoji", "emoji next to the chat list title"),
         FIREBASE_CERTIFICATE_HEADER(REPAIR_FIREBASE_PUSH, "firebaseCertificateHeader", "Firebase certificate header"),
         FIREBASE_LOCAL_STATUS(REPAIR_FIREBASE_PUSH, "firebaseLocalStatus", "local notification status");

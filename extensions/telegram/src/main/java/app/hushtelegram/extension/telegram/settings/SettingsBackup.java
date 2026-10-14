@@ -146,6 +146,7 @@ public final class SettingsBackup {
             Settings.HIDE_CONTACTS_TAB,
             Settings.COMPACT_TAB_BAR,
             Settings.FASTER_DOWNLOADS,
+            Settings.DATA_SAVER_DOWNLOADS,
             Settings.SAVE_DOWNLOADS,
             Settings.ASK_BEFORE_GIF,
             Settings.ASK_BEFORE_VOICE_VIDEO,
