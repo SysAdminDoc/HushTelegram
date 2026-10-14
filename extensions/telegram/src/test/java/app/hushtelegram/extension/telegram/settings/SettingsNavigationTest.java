@@ -1063,7 +1063,7 @@ public class SettingsNavigationTest {
     }
 
     /** The flag is the screen's own: no settings file carries it and no Quick setups choice moves it. */
-    @Test public void theHideFlagStaysOutOfSettingsFilesAndQuickSetups() {
+    @Test public void theHideFlagStaysOutOfSettingsFilesAndQuickSetups() throws Exception {
         SettingsNavigation.HIDE_QUICK_SETUPS.save(true);
         assertFalse(SettingsBackup.create().contains(SettingsNavigation.HIDE_QUICK_SETUPS.key));
         for (Map<app.hushtelegram.extension.shared.settings.BooleanSetting, Boolean> preset : Arrays.asList(
