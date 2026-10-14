@@ -17,9 +17,11 @@ import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -83,8 +85,8 @@ internal fun BytecodePatchContext.resolveMessageSeconds(): Pair<MutableMethod, L
         AccessFlags.PUBLIC.isSet(it.accessFlags) } == true, "Telegram's time formatter changed")
 
     val found = mutableListOf<Pair<String, String>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.allReferences(listOf(EDITED_MESSAGE, FORMATTER_DAY, TIME_FORMAT))) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { method ->
             if (method.parameterTypes.map(CharSequence::toString) == listOf("Lorg/telegram/messenger/MessageObject;") && method.returnType == "V" &&
                 !AccessFlags.STATIC.isSet(method.accessFlags)) {

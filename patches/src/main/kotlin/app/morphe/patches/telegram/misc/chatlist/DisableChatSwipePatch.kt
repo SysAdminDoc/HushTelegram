@@ -14,6 +14,8 @@ import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -64,8 +66,8 @@ internal class ChatSwipeSite(val method: MutableMethod, val entry: Int, val slid
 internal fun BytecodePatchContext.resolveChatSwipeSite(): ChatSwipeSite {
     requireRuntimeHook()
     val candidates = mutableListOf<Method>()
-    classDefForEach { classDef ->
-        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+    forEachClassMentioning(Mention.member(SHARED_CONFIG, "getChatSwipeAction") and Mention.member("setSliding")) { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@forEachClassMentioning
         classDef.methods.filterTo(candidates) { method ->
             !AccessFlags.STATIC.isSet(method.accessFlags) && method.returnType == "I" &&
                 method.parameterTypes.size == 2 && method.parameterTypes[0].toString() == RECYCLER_VIEW &&

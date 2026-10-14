@@ -13,6 +13,8 @@ import app.morphe.patcher.patch.stringOption
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.util.ControlFlow
 import app.morphe.util.call
 import app.morphe.util.namedRegisters
@@ -104,7 +106,8 @@ internal fun BytecodePatchContext.applyRegisteredApiCredentials(id: String?, has
 /** All writers, authentication readers and native identity arguments are proved before either edit. */
 internal fun BytecodePatchContext.resolveApiCredentials(): ApiCredentialsPlan {
     val types = linkedSetOf(BUILD_VARS, CONNECTIONS, PASSKEYS)
-    classDefForEach { owner ->
+    val credentials = Mention.member(BUILD_VARS, "APP_ID") or Mention.member(BUILD_VARS, "APP_HASH") or Mention.member(CONNECTIONS, "native_init")
+    forEachClassMentioning(credentials) { owner ->
         if (owner.methods.any { method -> method.instructions().any { instruction ->
             instruction.credentialField() != null || instruction.call()?.let {
                 it.definingClass == CONNECTIONS && it.name == "native_init"

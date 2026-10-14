@@ -17,6 +17,8 @@ import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.branchTarget
@@ -79,8 +81,8 @@ internal class PopularAppsSites(val load: MutableMethod, val section: MutableMet
 internal fun BytecodePatchContext.resolvePopularAppsSites(): PopularAppsSites {
     requireRuntimeHooks()
     val builders = mutableListOf<Method>()
-    classDefForEach { classDef ->
-        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+    forEachClassMentioning(Mention.type(GET_POPULAR_APP_BOTS)) { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@forEachClassMentioning
         classDef.methods.filterTo(builders) { method -> method.instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.type() == GET_POPULAR_APP_BOTS } }
     }
     val builder = builders.one("getPopularAppBots builder", ::refuse)
@@ -104,8 +106,8 @@ internal fun BytecodePatchContext.resolvePopularAppsSites(): PopularAppsSites {
 
     // The Apps tab: the one method that reads the list and names the Popular heading.
     val fills = mutableListOf<Method>()
-    classDefForEach { classDef ->
-        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+    forEachClassMentioning(Mention.member(list.definingClass, list.name) and Mention.member(STRINGS, "SearchAppsPopular")) { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@forEachClassMentioning
         classDef.methods.filterTo(fills) { method -> method.instructions().let { body ->
             body.any { it.opcode == Opcode.IGET_OBJECT && it.field() == list } &&
                 body.any { it.opcode == Opcode.SGET && it.field()?.let { field -> field.definingClass == STRINGS && field.name == "SearchAppsPopular" } == true }

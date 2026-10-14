@@ -16,9 +16,11 @@ import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
@@ -96,8 +98,8 @@ internal fun BytecodePatchContext.resolveStickerSize(): StickerSizePlan {
     controlHook(STICKER_SIZE, "emoji", listOf("Ljava/lang/Object;"), "Z")
 
     val setters = mutableListOf<Pair<String, String>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.reference(CONTENT_LABEL)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.filter { m ->
             m.parameterTypes.map { it.toString() } == listOf(MESSAGE_OBJECT, GROUPED, "Z", "Z", "Z", "Z") && m.returnType == "V" &&
                 m.controlBody().any { it.opcode == Opcode.SGET && it.controlRef() == CONTENT_LABEL }

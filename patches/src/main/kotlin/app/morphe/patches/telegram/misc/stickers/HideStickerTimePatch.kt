@@ -18,9 +18,11 @@ import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -90,11 +92,11 @@ internal fun BytecodePatchContext.resolveHideStickerTime(): Pair<MutableMethod, 
         "Telegram's sticker check changed")
 
     val found = mutableListOf<Pair<String, String>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.reference(MESSAGE_TYPE) and Mention.literal(TYPE_JOINED_CHANNEL)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         val drawers = cls.methods.filter { m -> m.returnType == "V" && m.parameterTypes.map(CharSequence::toString).let { CANVAS in it && STATIC_LAYOUT in it } }
             .map { "${cls.type}->${it.name}(${it.parameterTypes.joinToString("")})V" }.toSet()
-        if (drawers.isEmpty()) return@classDefForEach
+        if (drawers.isEmpty()) return@forEachClassMentioning
         cls.methods.filter { m ->
             !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" &&
                 m.parameterTypes.map(CharSequence::toString).sorted() == listOf("F", CANVAS, "Z").sorted() &&
