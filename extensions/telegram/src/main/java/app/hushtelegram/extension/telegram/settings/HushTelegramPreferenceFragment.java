@@ -885,7 +885,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
      */
     static String exportSummary(Set<PatchFamily> build) {
         List<String> leftOut = new ArrayList<>(Arrays.asList(L10n.t("Pause HushTelegram"), L10n.t("Debug logging"),
-                L10n.t("Check for new HushTelegram releases")));
+                L10n.t("Check for new HushTelegram releases"), L10n.t("Lock HushTelegram settings"),
+                L10n.t("Quick setups on the home page")));
         if (build.contains(PatchFamily.UNIFIED_PUSH)) leftOut.add(L10n.t("UnifiedPush notifications"));
         if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS)) leftOut.add(L10n.t("Folders by chat type"));
         if (build.contains(PatchFamily.OUTSIDE_TRANSLATE)) {

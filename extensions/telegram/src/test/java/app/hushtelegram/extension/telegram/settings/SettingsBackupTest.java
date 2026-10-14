@@ -1241,6 +1241,9 @@ public class SettingsBackupTest {
         String partial = HushTelegramPreferenceFragment.exportSummary(java.util.EnumSet.noneOf(PatchFamily.class));
         assertTrue(partial, partial.contains("Left out of the file: Pause HushTelegram"));
         assertTrue(partial, partial.contains("Check for new HushTelegram releases"));
+        // The lock and the hidden Quick setups row keep their own state, which a file doesn't carry.
+        assertTrue(partial, partial.contains("Lock HushTelegram settings"));
+        assertTrue(partial, partial.contains("Quick setups on the home page"));
         for (String missing : new String[]{"UnifiedPush", "Folders by chat type", "translation service"}) {
             assertFalse("a build without it named " + missing, partial.contains(missing));
         }
