@@ -158,6 +158,17 @@ public class SettingsLockTest {
         assertEquals(State.UNLOCKING, SettingsLock.state());
     }
 
+    /** Locked, a switch goes through only to resume, or for Debug logging, which only changes a report. */
+    @Test public void onlyResumeAndDebugLoggingGoThroughALock() {
+        assertTrue(SettingsLock.exempts(app.hushtelegram.extension.shared.settings.BaseSettings.DEBUG.key, true));
+        assertTrue(SettingsLock.exempts(app.hushtelegram.extension.shared.settings.BaseSettings.DEBUG.key, false));
+        assertTrue(SettingsLock.exempts(app.hushtelegram.extension.shared.settings.BaseSettings.PAUSED.key, false));
+        assertFalse(SettingsLock.exempts(app.hushtelegram.extension.shared.settings.BaseSettings.PAUSED.key, true));
+        assertFalse(SettingsLock.exempts(Settings.HIDE_ADS.key, false));
+        assertFalse(SettingsLock.exempts(Settings.SEARCH_ONLY_MY_CHATS.key, false));
+        assertFalse(SettingsLock.exempts(null, false));
+    }
+
     @Test public void unlockedThereIsNothingToStartOrCancel() {
         assertFalse(SettingsLock.startUnlock());
         assertFalse(SettingsLock.cancelUnlock());

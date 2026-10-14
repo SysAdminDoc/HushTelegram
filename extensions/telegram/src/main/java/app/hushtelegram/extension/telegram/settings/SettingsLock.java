@@ -4,10 +4,13 @@
  */
 package app.hushtelegram.extension.telegram.settings;
 
+import androidx.annotation.Nullable;
+
 import java.util.function.LongSupplier;
 
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Utils;
+import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.settings.LongSetting;
 import app.hushtelegram.extension.shared.settings.Setting;
@@ -20,8 +23,7 @@ import app.hushtelegram.extension.shared.settings.Setting;
  * earlier than that start begins the wait again from now.
  *
  * <p>Nothing here changes what Telegram does. The settings screen asks {@link #refuses()} before
- * any change it would make, and Resume is always let through, since it only puts the switches
- * back to work.
+ * any change it would make. Resume and Debug logging are always let through ({@link #exempts}).
  */
 public final class SettingsLock {
     /** How long an unlock waits. */
@@ -127,6 +129,16 @@ public final class SettingsLock {
             default:
                 return cancelUnlock() ? L10n.t("Unlock canceled. Settings stay locked.") : couldNot();
         }
+    }
+
+    /**
+     * The switch changes a lock lets through: Pause turned off, since resuming only puts the other
+     * switches back to work, and Debug logging either way, since it only changes what a diagnostic
+     * report holds.
+     */
+    static boolean exempts(@Nullable String key, Object newValue) {
+        if (BaseSettings.DEBUG.key.equals(key)) return true;
+        return BaseSettings.PAUSED.key.equals(key) && Boolean.FALSE.equals(newValue);
     }
 
     /**

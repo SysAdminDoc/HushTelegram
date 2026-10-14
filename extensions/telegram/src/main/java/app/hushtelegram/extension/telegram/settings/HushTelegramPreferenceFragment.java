@@ -1547,13 +1547,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
         /**
          * A tap on the row or its switch asks here first. While the settings are locked the switch
-         * stays as it is and a note says why, but Pause can still be turned off: resuming only puts
-         * the other switches back to work.
+         * stays as it is and a note says why, with two exceptions ({@link SettingsLock#exempts}).
          */
         @Override
         protected boolean callChangeListener(Object newValue) {
-            boolean resumes = BaseSettings.PAUSED.key.equals(getKey()) && Boolean.FALSE.equals(newValue);
-            if (!resumes && SettingsLock.refuses()) return false;
+            if (!SettingsLock.exempts(getKey(), newValue) && SettingsLock.refuses()) return false;
             return super.callChangeListener(newValue);
         }
 

@@ -1088,7 +1088,7 @@ public class SettingsNavigationTest {
     /**
      * The settings lock (#17) sits under Quick setups. Locked, a switch, Quick setups, the status
      * card's Pause, the Pause switch, import and every chooser leave their setting as it is and say
-     * why, while Resume, Export and the lock row itself still work.
+     * why, while Resume, Debug logging, Export and the lock row itself still work.
      */
     @Test public void lockedEverySettingStaysAsItIsAndSaysWhy() {
         long[] now = {1_800_000_000_000L};
@@ -1153,6 +1153,15 @@ public class SettingsNavigationTest {
             ShadowLooper.idleMainLooper();
             assertFalse("Undo on a pause was turned down", BaseSettings.PAUSED.savedValue());
 
+            // Debug logging only changes what a report holds, so it flips either way.
+            page.navigation.navigate("Diagnostics");
+            assertFalse(BaseSettings.DEBUG.savedValue());
+            tap(BaseSettings.DEBUG.key);
+            assertTrue("Debug logging was turned down", BaseSettings.DEBUG.savedValue());
+            tap(BaseSettings.DEBUG.key);
+            assertFalse(BaseSettings.DEBUG.savedValue());
+            while (page.navigation.back()) { }
+
             // Import is turned down before a file is picked. Export still saves one.
             page.navigation.navigate("Settings backup");
             org.robolectric.shadows.ShadowActivity activity = org.robolectric.Shadows.shadowOf(controller.get());
@@ -1189,6 +1198,7 @@ public class SettingsNavigationTest {
             SettingsLock.Stored.UNLOCK_STARTED.resetToDefault();
             SettingsLock.clock = System::currentTimeMillis;
             BaseSettings.PAUSED.resetToDefault();
+            BaseSettings.DEBUG.resetToDefault();
         }
     }
 
