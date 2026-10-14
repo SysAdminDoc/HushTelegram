@@ -52,7 +52,7 @@ import app.hushtelegram.extension.shared.diagnostics.DiagnosticCategory;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 
 /**
- * Export diagnostic report's two choices, as inset cards the list measures at the height it shows
+ * Export diagnostic report's three choices, as inset cards the list measures at the height it shows
  * them, on a phone 411 dp wide with native text measuring. Styling Android's own rows after the
  * dialog was shown cut the second choice off, and at twice the text size the buttons covered it;
  * the last test here does that once more to show the check below catches it.
@@ -82,18 +82,18 @@ public class ReportChoicesTest {
     }
 
     @Test
-    public void bothChoicesShowAsInsetCardsAboveTheButtons() {
+    public void everyChoiceShowsAsAnInsetCardAboveTheButtons() {
         assertCardsShowWhole(1f);
     }
 
     @Test
-    public void atTwiceTheTextSizeBothCardsStillShowAboveTheButtons() {
+    public void atTwiceTheTextSizeEveryCardStillShowsAboveTheButtons() {
         assertCardsShowWhole(2f);
     }
 
     @Test
     @Config(qualifiers = "+ar-rXB-ldrtl")
-    public void inRightToLeftAtTwiceTheTextSizeBothCardsStillShow() {
+    public void inRightToLeftAtTwiceTheTextSizeEveryCardStillShows() {
         assertCardsShowWhole(2f);
     }
 
@@ -155,7 +155,8 @@ public class ReportChoicesTest {
         assertEquals(fontScale, activity().getResources().getConfiguration().fontScale, 0f);
         ListView list = dialog.getListView();
         assertTrue("the choices aren't cards: " + list.getAdapter(), list.getAdapter() instanceof ChoiceCards);
-        assertEquals(2, list.getAdapter().getCount());
+        // Copy quick report, Save full report and Preview the report.
+        assertEquals(3, list.getAdapter().getCount());
         assertNull(whyNotWhole(dialog));
 
         int wrapped = 0;
@@ -188,7 +189,7 @@ public class ReportChoicesTest {
     }
 
     /**
-     * Null when both choices show whole: laid out at the height they were measured, inside the
+     * Null when every choice shows whole: laid out at the height they were measured, inside the
      * list, with nothing left to scroll to, and above the dialog's buttons. Otherwise what's wrong.
      */
     private static String whyNotWhole(AlertDialog dialog) {

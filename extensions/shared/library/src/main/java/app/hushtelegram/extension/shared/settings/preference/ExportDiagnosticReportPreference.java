@@ -15,17 +15,38 @@ package app.hushtelegram.extension.shared.settings.preference;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Typeface;
 import android.preference.Preference;
 import android.util.AttributeSet;
+import android.util.TypedValue;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
+import android.widget.ScrollView;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import app.hushtelegram.extension.shared.L10n;
+import java.text.NumberFormat;
+import java.util.Arrays;
+import java.util.List;
 
-/** Offers a compact choice between a quick clipboard report and a full text file. */
+import app.hushtelegram.extension.shared.L10n;
+import app.hushtelegram.extension.shared.Logger;
+import app.hushtelegram.extension.shared.Utils;
+
+/**
+ * Offers a quick clipboard report, a full text file, or a look at the report first, where any
+ * part can be left out before it's copied or saved.
+ */
 @SuppressWarnings({"deprecation", "unused"})
 public class ExportDiagnosticReportPreference extends Preference {
+    /** Tags the preview's content, so a bundle styling the dialog can find it. */
+    public static final String PREVIEW_TAG = "diagnostic_report_preview";
+    /** The most of a report the preview draws. Copy and Save still use every part that's ticked. */
+    static final int PREVIEW_MAX_CHARS = 30_000;
+
     /** The summary to put back once a report is done, while the row says it's busy; null otherwise. */
     @Nullable private CharSequence restingSummary;
     private boolean busy;
@@ -37,13 +58,14 @@ public class ExportDiagnosticReportPreference extends Preference {
         setOnPreferenceClickListener(pref -> {
             if (busy || !canStartExport()) return true;
             DialogInterface.OnClickListener choose = (dialog, which) -> {
-                if (which != 0 && which != 1) return;
+                if (which < 0 || which > 2) return;
                 if (busy || !canStartExport()) return;
                 // Building the report can take a few seconds on a full buffer, so the row says
-                // so and takes no second tap until the copy or the file is done.
+                // so and takes no second tap until the copy, the file or the preview is ready.
                 showBusy();
                 if (which == 0) LogBufferManager.exportToClipboard(this::showResting);
-                else LogBufferManager.exportToFile(this::showResting);
+                else if (which == 1) LogBufferManager.exportToFile(this::showResting);
+                else LogBufferManager.preview(this::previewReady);
             };
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext()).setTitle(dialogTitle());
             ListAdapter drawn = choices(builder.getContext());
@@ -86,6 +108,127 @@ public class ExportDiagnosticReportPreference extends Preference {
         setEnabled(true);
     }
 
+    /** A built preview, on the main thread. A page gone while it was built gets nothing shown. */
+    private void previewReady(@Nullable LogBufferManager.Preview preview, @Nullable String text) {
+        showResting();
+        if (preview == null || text == null || !canStartExport()) return;
+        showPreview(preview, text);
+    }
+
+    /**
+     * The report as it will be shared, one box per part that can be left out, and Copy and Save
+     * for what's ticked. Cancel leaves no file and nothing on the clipboard.
+     */
+    private void showPreview(LogBufferManager.Preview preview, String whole) {
+        Context context = getContext();
+        float density = context.getResources().getDisplayMetrics().density;
+        int side = Math.round(20 * density);
+        int gap = Math.round(8 * density);
+        LinearLayout content = new LinearLayout(context);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(side, gap, side, gap);
+        content.setTag(PREVIEW_TAG);
+
+        TextView hint = new TextView(context);
+        hint.setText(L10n.t(context, "Untick a part to leave it out. Copy and Save use only what's ticked."));
+        hint.setPadding(0, 0, 0, gap);
+        content.addView(hint);
+
+        List<String> parts = preview.parts();
+        boolean[] kept = new boolean[parts.size()];
+        Arrays.fill(kept, true);
+        TextView note = new TextView(context);
+        note.setPadding(0, gap, 0, gap);
+        TextView body = new TextView(context);
+        body.setTypeface(Typeface.MONOSPACE);
+        body.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        // The report is written left to right whatever the phone's language, so it reads that way.
+        body.setTextDirection(View.TEXT_DIRECTION_LTR);
+        body.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+        body.setTextIsSelectable(true);
+        AlertDialog[] shown = new AlertDialog[1];
+        int[] drawn = new int[1];
+        for (int i = 0; i < parts.size(); i++) {
+            int part = i;
+            CheckBox box = new CheckBox(context);
+            box.setText("[" + parts.get(i) + "]");
+            box.setChecked(true);
+            box.setOnCheckedChangeListener((button, checked) -> {
+                kept[part] = checked;
+                redraw(preview, kept, body, note, drawn, shown);
+            });
+            content.addView(box);
+        }
+        content.addView(note);
+        content.addView(body);
+        bind(context, body, note, whole);
+        ScrollView scroll = new ScrollView(context);
+        scroll.addView(content);
+
+        AlertDialog dialog = new AlertDialog.Builder(context)
+                .setTitle(L10n.t(context, "Preview the report"))
+                .setView(scroll)
+                .setPositiveButton(L10n.t(context, "Save"), (d, which) -> {
+                    if (busy || !canStartExport()) return;
+                    showBusy();
+                    LogBufferManager.savePreview(preview, kept, this::showResting);
+                })
+                .setNeutralButton(L10n.t(context, "Copy"), (d, which) -> {
+                    if (busy || !canStartExport()) return;
+                    showBusy();
+                    LogBufferManager.copyPreview(preview, kept, this::showResting);
+                })
+                .setNegativeButton(negativeText(), null)
+                .create();
+        shown[0] = dialog;
+        dialog.create();
+        onDialogCreated(dialog);
+        dialog.show();
+    }
+
+    /**
+     * Works out the report for the boxes ticked now on a worker, and draws it only if it's still
+     * the newest choice and its dialog and page are still there.
+     */
+    private void redraw(LogBufferManager.Preview preview, boolean[] kept, TextView body, TextView note,
+                        int[] drawn, AlertDialog[] shown) {
+        int choice = ++drawn[0];
+        boolean[] ticked = kept.clone();
+        Context context = getContext();
+        boolean started = Utils.runOnBackgroundThread(() -> {
+            String text;
+            try {
+                text = preview.text(ticked);
+            } catch (Throwable failure) {
+                Logger.printException(() -> "Failed to redraw the diagnostic preview", failure);
+                return;
+            }
+            Utils.runOnMainThread(() -> {
+                AlertDialog dialog = shown[0];
+                if (choice != drawn[0] || dialog == null || !dialog.isShowing() || !canStartExport()) return;
+                bind(context, body, note, text);
+            });
+        });
+        if (!started) Logger.printInfo(() -> "The diagnostic preview couldn't redraw; Copy and Save still follow the boxes");
+    }
+
+    /** Shows [text] up to {@link #PREVIEW_MAX_CHARS}, and says so under the boxes when it's cut. */
+    static void bind(Context context, TextView body, TextView note, String text) {
+        int end = Math.min(text.length(), PREVIEW_MAX_CHARS);
+        if (end < text.length() && end > 0 && Character.isHighSurrogate(text.charAt(end - 1))) end--;
+        body.setText(text.substring(0, end));
+        if (end < text.length()) {
+            NumberFormat numbers = NumberFormat.getIntegerInstance();
+            note.setText(String.format(L10n.t(context, "Showing the first %1$s of %2$s characters. Save keeps all of "
+                            + "it, and Copy keeps what fits, leaving out the oldest events first."),
+                    numbers.format(end), numbers.format(text.length())));
+            note.setVisibility(View.VISIBLE);
+        } else {
+            note.setText(null);
+            note.setVisibility(View.GONE);
+        }
+    }
+
     /**
      * The dialog, built and not yet shown: a bundle's place to style it. Anything that changes a
      * size belongs here rather than after show(), where the list has already measured itself.
@@ -98,14 +241,14 @@ public class ExportDiagnosticReportPreference extends Preference {
         return L10n.t(getContext(), "Export diagnostic report");
     }
 
-    /** The two choices, quick copy first, full file second. */
+    /** The three choices: quick copy, full file, and a look at the report first. */
     protected CharSequence[] labels() {
         return new CharSequence[]{L10n.t(getContext(), "Copy quick report"),
-                L10n.t(getContext(), "Save full report")};
+                L10n.t(getContext(), "Save full report"), L10n.t(getContext(), "Preview the report")};
     }
 
     /**
-     * The two choices as the bundle draws them, in the order of {@link #labels()}, or null for
+     * The three choices as the bundle draws them, in the order of {@link #labels()}, or null for
      * Android's own list of those labels. Each row comes from the adapter already styled, padding
      * included, which is what the list measures.
      *

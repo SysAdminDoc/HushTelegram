@@ -4,6 +4,7 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Export diagnostic report has a third choice, **Preview the report**. It shows the report as it would be shared, with a box for each part, such as hook status or the selected events. Untick anything you'd rather keep to yourself and Copy or Save takes only what's still ticked. Cancel leaves nothing on the clipboard and no file behind. A very long report shows its first 30,000 characters and says how much there is.
 * **Telegram:** **Open links externally** has a second switch on the Links page, **Keep your location from Mini Apps**. With it on, a Mini App that asks for your location is told it isn't available, the same answer Telegram gives on a phone without GPS, and Android is never asked. A web page opened inside Telegram is refused your location without the dialog. A page you already allowed keeps it until you close it, and any site can still guess a rough area from your connection. Sending your location in a chat works as before. It's off unless you turn it on, and Mini Apps get your location again while HushTelegram is paused.
 * **Telegram:** Quick setups can be hidden from the settings home with a long press on its row, and its help line now says so. The **Quick setups on the home page** row on Settings backup brings it back. The choice stays out of settings backups and Quick setups, and Pause leaves it alone.
 * **Telegram:** The Support HushTelegram row at the bottom of HushTelegram settings is just its name now. The line under it is gone.

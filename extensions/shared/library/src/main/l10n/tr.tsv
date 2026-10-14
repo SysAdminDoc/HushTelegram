@@ -816,3 +816,11 @@ Keep your location from Mini Apps	Konumunu mini uygulamalardan gizle
 Mini Apps are told your phone's location isn't available, and web pages opened in Telegram are refused it. A page that already had it keeps it until you close it. Sites can still guess a rough area from your connection. Sending your location in a chat works as before.	Mini uygulamalara telefonunun konumunun kullanılamadığı söylenir, Telegram'da açılan web sayfalarına da konum verilmez. Konumu zaten almış bir sayfa, sen kapatana kadar onu tutar. Siteler bağlantından yine de kabaca bir bölge tahmin edebilir. Sohbette konum göndermek eskisi gibi çalışır.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the location part of Open links externally: keeping the phone's location from Mini Apps and web pages opened in Telegram
 Mini App and web page location	mini uygulama ve web sayfası konumu
+# context: Third choice in the Export diagnostic report dialog, after Copy quick report and Save full report, and the title of the preview dialog it opens. Short, like the other two choices
+Preview the report	Önce raporu gör
+# context: Line under the Preview the report choice. The preview shows the report and lets you untick its parts before Copy or Save
+See the report first and leave out any part you'd rather not share, then copy or save it.	Raporu önce gör, paylaşmak istemediğin bölümleri çıkar, sonra kopyala ya da kaydet.
+# context: Line at the top of the report preview, above one checkbox per part of the report. Copy and Save are the dialog's buttons, so use the same words as those buttons
+Untick a part to leave it out. Copy and Save use only what's ticked.	Bir bölümü dışarıda bırakmak için işaretini kaldır. Kopyala ve Kaydet yalnızca işaretli olanları kullanır.
+# context: Note in the report preview when the report is too long to show whole. %1$s and %2$s are numbers already formatted for the phone's language. Save writes the whole report to a file; Copy puts what fits on the clipboard, dropping the oldest log events first
+Showing the first %1$s of %2$s characters. Save keeps all of it, and Copy keeps what fits, leaving out the oldest events first.	%2$s karakterin ilk %1$s karakteri gösteriliyor. Kaydet hepsini tutar, Kopyala ise sığanı tutar ve önce en eski olayları çıkarır.

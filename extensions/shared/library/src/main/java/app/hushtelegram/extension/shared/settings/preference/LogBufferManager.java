@@ -42,6 +42,7 @@ import java.util.Date;
 import java.util.Deque;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.Locale;
 import java.util.Set;
@@ -186,10 +187,24 @@ public final class LogBufferManager {
 
     /** Copy quick report, then [done] on the main thread however it ended, so a row can show it's busy. */
     public static void exportToClipboard(@Nullable Runnable done) {
+        copyBuilt(() -> clipboardText(CLIPBOARD_MAX_CHARS), done);
+    }
+
+    /**
+     * Copy from a preview: the parts [kept] marks of that report, cut to fit the clipboard the way
+     * Copy quick report is. Then [done] on the main thread however it ended.
+     */
+    public static void copyPreview(Preview preview, boolean[] kept, @Nullable Runnable done) {
+        boolean[] choice = kept.clone();
+        copyBuilt(() -> preview.clipboard(choice, CLIPBOARD_MAX_CHARS), done);
+    }
+
+    /** Builds [text] on a worker and copies it on the main thread, then [done] there however it ended. */
+    private static void copyBuilt(Callable<String> text, @Nullable Runnable done) {
         boolean started = Utils.runOnBackgroundThread(() -> {
             String exportText;
             try {
-                exportText = clipboardText(CLIPBOARD_MAX_CHARS);
+                exportText = text.call();
             } catch (Throwable ex) {
                 // An Error too, such as running out of memory on a full buffer: the row waits on done.
                 try {
@@ -240,6 +255,17 @@ public final class LogBufferManager {
 
     /** Save full report, then [done] on the main thread however it ended, so a row can show it's busy. */
     public static void exportToFile(@Nullable Runnable done) {
+        saveBuilt(LogBufferManager::buildExportText, done);
+    }
+
+    /** Save from a preview: the parts [kept] marks of that report, whole. Then [done] on the main thread. */
+    public static void savePreview(Preview preview, boolean[] kept, @Nullable Runnable done) {
+        boolean[] choice = kept.clone();
+        saveBuilt(() -> preview.text(choice), done);
+    }
+
+    /** Builds [text] and writes it to a file on a worker, then [done] on the main thread however it ended. */
+    private static void saveBuilt(Callable<String> text, @Nullable Runnable done) {
         Context context = Utils.getContext();
         if (context == null) {
             Utils.showToastLong(say(noContextMessage, L10n.t("The report couldn't be saved yet. Try again in a moment.")));
@@ -256,7 +282,7 @@ public final class LogBufferManager {
         try {
             Utils.submitOnBackgroundThread(() -> {
                 try {
-                    String saved = writeToFile(app, buildExportText());
+                    String saved = writeToFile(app, text.call());
                     Utils.showToastLong(String.format(say(savedToMessage, L10n.t("Full report saved to %1$s")), L10n.isolate(saved)));
                 } catch (Exception ex) {
                     Utils.showToastLong(say(exportFailedMessage, L10n.t("The diagnostic report couldn't be saved. Try again.")));
@@ -385,8 +411,7 @@ public final class LogBufferManager {
     }
 
     public static String buildExportText() {
-        Export export = buildExport();
-        return export.head + eventsSection(export.events, null);
+        return buildExport().text();
     }
 
     /**
@@ -398,8 +423,12 @@ public final class LogBufferManager {
      * trace, is cut, and then at its end.
      */
     static String clipboardText(int maxChars) {
-        Export export = buildExport();
-        String whole = export.head + eventsSection(export.events, null);
+        return clipboardText(buildExport(), maxChars);
+    }
+
+    /** {@link #clipboardText(int)} for a report already built. */
+    private static String clipboardText(Export export, int maxChars) {
+        String whole = export.text();
         if (whole.length() <= maxChars) return whole;
 
         // Room is kept for the longest the note can be, with every event left out.
@@ -435,10 +464,13 @@ public final class LogBufferManager {
         return "clipboard_note: " + dropped + " older events left out; use Save full report for everything";
     }
 
+    /** The events' heading in a report, without its brackets. */
+    static final String EVENTS_TITLE = "SELECTED EVENTS";
+
     /** The [SELECTED EVENTS] section, with [note] above its column heading, or "" with neither. */
     private static String eventsSection(List<String> events, String note) {
         if (events.isEmpty() && note == null) return "";
-        StringBuilder section = new StringBuilder("\n\n[SELECTED EVENTS]\n");
+        StringBuilder section = new StringBuilder("\n\n[" + EVENTS_TITLE + "]\n");
         if (note != null) section.append(note).append('\n');
         section.append("category | timestamp | thread | source | level | message\n");
         for (int i = 0; i < events.size(); i++) {
@@ -457,14 +489,116 @@ public final class LogBufferManager {
             this.head = head;
             this.events = events;
         }
+
+        /** The whole report, as Save full report writes it. */
+        String text() {
+            return head + eventsSection(events, null);
+        }
     }
 
     /**
-     * The report in its two parts. Every report asked for has the build's facts, even with nothing
+     * A report built once to be looked over before it's shared. The build's facts always stay;
+     * each section after them and the events can be left out. Copy and Save from a preview cut
+     * from this one report, so they carry what the preview showed and nothing logged since.
+     */
+    public static final class Preview {
+        private final String facts;
+        private final List<String> titles;
+        private final List<String> sections;
+        private final List<String> events;
+
+        private Preview(String facts, List<String> titles, List<String> sections, List<String> events) {
+            this.facts = facts;
+            this.titles = titles;
+            this.sections = sections;
+            this.events = events;
+        }
+
+        /** The parts a reader can leave out, by their headings in the report, the events last. */
+        public List<String> parts() {
+            List<String> parts = new ArrayList<>(titles);
+            if (!events.isEmpty()) parts.add(EVENTS_TITLE);
+            return Collections.unmodifiableList(parts);
+        }
+
+        /** The report with the parts [kept] marks, one choice per part in the order of {@link #parts()}. */
+        public String text(boolean[] kept) {
+            return export(kept).text();
+        }
+
+        /** What Copy puts on the clipboard for the parts [kept] marks. */
+        String clipboard(boolean[] kept, int maxChars) {
+            return clipboardText(export(kept), maxChars);
+        }
+
+        private Export export(boolean[] kept) {
+            int parts = titles.size() + (events.isEmpty() ? 0 : 1);
+            if (kept == null || kept.length != parts) {
+                throw new IllegalArgumentException("one choice per part: " + parts);
+            }
+            StringBuilder head = new StringBuilder(facts);
+            for (int i = 0; i < sections.size(); i++) {
+                if (kept[i]) head.append(sections.get(i));
+            }
+            boolean withEvents = !events.isEmpty() && kept[titles.size()];
+            return new Export(head.toString(), withEvents ? events : Collections.<String>emptyList());
+        }
+
+        /** Everything kept, which is the report Save full report writes. */
+        private Export whole() {
+            boolean[] all = new boolean[titles.size() + (events.isEmpty() ? 0 : 1)];
+            java.util.Arrays.fill(all, true);
+            return export(all);
+        }
+    }
+
+    /** Hands a built preview and its whole text to the main thread, or null for both when it failed. */
+    public interface PreviewReady {
+        void ready(@Nullable Preview preview, @Nullable String text);
+    }
+
+    /**
+     * Builds a report to look over on a worker, where redaction runs, then hands it and its whole
+     * text to [ready] on the main thread. A report that couldn't be built or started says so in a
+     * toast and hands over null.
+     */
+    public static void preview(PreviewReady ready) {
+        boolean started = Utils.runOnBackgroundThread(() -> {
+            Preview preview;
+            String text;
+            try {
+                preview = buildPreview();
+                text = preview.whole().text();
+            } catch (Throwable ex) {
+                Logger.printException(() -> "Failed to build the diagnostic preview", ex);
+                Utils.showToastLong(say(couldNotStartMessage, L10n.t("Couldn't start the report export. Try again in a moment.")));
+                Utils.runOnMainThread(() -> ready.ready(null, null));
+                return;
+            }
+            Utils.runOnMainThread(() -> ready.ready(preview, text));
+        });
+        if (!started) {
+            Utils.showToastLong(say(couldNotStartMessage, L10n.t("Couldn't start the report export. Try again in a moment.")));
+            Utils.runOnMainThread(() -> ready.ready(null, null));
+        }
+    }
+
+    private static Export buildExport() {
+        return buildPreview().whole();
+    }
+
+    /** Adds the section [title] with [body] under its bracketed heading. */
+    private static void section(List<String> titles, List<String> sections, String title, String body) {
+        titles.add(title);
+        sections.add("\n[" + title + "]\n" + body);
+    }
+
+    /**
+     * The report in its parts. Every report asked for has the build's facts, even with nothing
      * logged and no hook missing anything: those facts are what a bug report needs first (#16,
      * #18), and a report used to be withheld until Debug logging had caught something.
      */
-    private static Export buildExport() {
+    private static Preview buildPreview() {
         Set<String> selected = LogExportFilterPreference.parse(BaseSettings.DEBUG_LOG_FILTERS.get());
         boolean includeAll = selected.isEmpty() || selected.contains("all");
         String crash = DiagnosticRedactor.redact(readCrashReport(Utils.getContext()));
@@ -516,39 +650,42 @@ public final class LogBufferManager {
         // Most hooks log nothing without Debug logging, so a report with no events says why.
         report.append("debug_logging: ").append(BaseSettings.DEBUG.get() ? "on" : "off").append('\n');
 
+        List<String> titles = new ArrayList<>();
+        List<String> sections = new ArrayList<>();
         if (!crash.isEmpty()) {
-            report.append("\n[LATEST JAVA CRASH]\n").append(crash);
+            section(titles, sections, "LATEST JAVA CRASH", crash);
         }
         if (!npthCrash.isEmpty()) {
-            report.append("\n[LATEST NATIVE CRASH SIGNAL]\n").append(npthCrash);
+            section(titles, sections, "LATEST NATIVE CRASH SIGNAL", npthCrash);
         }
         if (hooks.length() > 0) {
-            report.append("\n[HOOK STATUS]\n").append(hooks).append('\n');
+            section(titles, sections, "HOOK STATUS", hooks + "\n");
         }
         // The same choice as Hook status: what the bundle has been told to do is a fact about
         // the patches, and it is what a report from a phone with an override that changed
         // nothing has been missing.
         if (includeAll || selected.contains(
                 app.hushtelegram.extension.shared.diagnostics.DiagnosticCategory.PATCH_ERRORS.value)) {
-            for (ReportSection section : REPORT_SECTIONS) {
+            for (ReportSection extra : REPORT_SECTIONS) {
                 List<String> lines;
                 try {
-                    lines = section.lines();
+                    lines = extra.lines();
                 } catch (Throwable failure) {
                     lines = Collections.singletonList("could not be read: " + failure);
                 }
                 if (lines == null || lines.isEmpty()) continue;
-                report.append("\n[").append(section.title()).append("]\n");
+                StringBuilder body = new StringBuilder();
                 for (String line : lines) {
-                    report.append(DiagnosticRedactor.redact(line)).append('\n');
+                    body.append(DiagnosticRedactor.redact(line)).append('\n');
                 }
+                section(titles, sections, extra.title(), body.toString());
             }
         }
         String lastExit = lastExitLine(includeAll, selected);
         if (!lastExit.isEmpty()) {
-            report.append("\n[LAST EXIT]\n").append(lastExit).append('\n');
+            section(titles, sections, "LAST EXIT", lastExit + "\n");
         }
-        return new Export(report.toString(), events);
+        return new Preview(report.toString(), titles, sections, events);
     }
 
     /**

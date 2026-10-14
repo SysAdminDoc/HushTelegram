@@ -1868,21 +1868,24 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             return page.getView() != null && activity != null && !activity.isFinishing() && !activity.isDestroyed();
         }
 
-        /** The two choices as cards, each saying what it does under its name. */
+        /** The three choices as cards, each saying what it does under its name. */
         @Override
         protected ListAdapter choices(Context dialogContext) {
             ScreenColors colors = ScreenColors.DEFAULT;
             return new ChoiceCards(colors,
                     new CharSequence[]{L10n.t(getContext(), "Copy quick report"),
-                            L10n.t(getContext(), "Save full report")},
+                            L10n.t(getContext(), "Save full report"), L10n.t(getContext(), "Preview the report")},
                     new CharSequence[]{L10n.t(getContext(), "Copy a short report to the clipboard."),
-                            L10n.t(getContext(), "Save the full report to a file. The saved location is shown afterward.")});
+                            L10n.t(getContext(), "Save the full report to a file. The saved location is shown afterward."),
+                            L10n.t(getContext(), "See the report first and leave out any part you'd rather not share, "
+                                    + "then copy or save it.")});
         }
 
         /**
          * The screen's colours, before the dialog is shown so its first layout measures them. The
          * cards bring their own spacing and press ripple, so the list draws no divider and, under
-         * a finger, no highlight of its own over them. A keyboard's place shows as a ring.
+         * a finger, no highlight of its own over them. A keyboard's place shows as a ring. The
+         * preview's text and boxes take the screen's colours too.
          */
         @Override
         protected void onDialogCreated(AlertDialog dialog) {
@@ -1894,6 +1897,21 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 list.setDrawSelectorOnTop(true);
             }
             ScreenColors.dialog(dialog);
+            View preview = dialog.getWindow() == null ? null
+                    : dialog.getWindow().getDecorView().findViewWithTag(ExportDiagnosticReportPreference.PREVIEW_TAG);
+            if (preview instanceof ViewGroup) paintPreview((ViewGroup) preview, ScreenColors.DEFAULT);
+        }
+
+        private static void paintPreview(ViewGroup preview, ScreenColors colors) {
+            for (int i = 0; i < preview.getChildCount(); i++) {
+                View child = preview.getChildAt(i);
+                if (child instanceof android.widget.CheckBox) {
+                    ((android.widget.CheckBox) child).setTextColor(colors.title);
+                    ((android.widget.CheckBox) child).setButtonTintList(android.content.res.ColorStateList.valueOf(colors.accent));
+                } else if (child instanceof TextView) {
+                    ((TextView) child).setTextColor(colors.summary);
+                }
+            }
         }
 
         @Override
