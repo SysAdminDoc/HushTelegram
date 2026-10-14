@@ -1270,18 +1270,24 @@ public class SettingsNavigationTest {
 
     /**
      * An undo that couldn't put every switch back leaves the rest to undo, without the choice's own
-     * counts of what was already set or couldn't change, which no longer describe what's left.
+     * counts of what was already set, couldn't change or was written since, which no longer describe
+     * what's left.
      */
     @Test public void anUndoThatLeavesASwitchDropsTheChoicesOwnCounts() {
         Map<app.hushtelegram.extension.shared.settings.BooleanSetting, Boolean> choice = new LinkedHashMap<>();
         choice.put(Settings.HIDE_ADS, true);
         choice.put(Settings.REVEAL_SPOILERS, true);
         choice.put(Settings.USE_SYSTEM_FONT, true);
+        choice.put(Settings.HIDE_GREETING_STICKERS, true);
         Preference font = page.findPreference(Settings.USE_SYSTEM_FONT.key);
         Preference.OnPreferenceChangeListener own = font.getOnPreferenceChangeListener();
         try {
-            assertEquals(2, page.applyQuickSetup(choice));
+            assertEquals(3, page.applyQuickSetup(choice));
             assertEquals("Hide ads was already on", 1, app.hushtelegram.extension.shared.settings.preference.QuickSetups.last().already);
+            // Something else writes one of the choice's switches before the undo.
+            Settings.HIDE_GREETING_STICKERS.save(false);
+            ShadowLooper.idleMainLooper();
+            assertEquals(1, app.hushtelegram.extension.shared.settings.preference.QuickSetups.writtenSince());
             font.setOnPreferenceChangeListener((row, value) -> false);
             assertEquals(1, page.undoQuickSetup());
             app.hushtelegram.extension.shared.settings.preference.QuickSetups.Outcome left =
@@ -1289,10 +1295,39 @@ public class SettingsNavigationTest {
             assertEquals(Collections.singleton(Settings.USE_SYSTEM_FONT), left.changed.keySet());
             assertEquals(0, left.already);
             assertEquals(0, left.refused);
+            assertEquals(0, app.hushtelegram.extension.shared.settings.preference.QuickSetups.writtenSince());
             assertFalse(Settings.REVEAL_SPOILERS.savedValue());
         } finally {
             font.setOnPreferenceChangeListener(own);
             Settings.USE_SYSTEM_FONT.resetToDefault();
+            Settings.REVEAL_SPOILERS.resetToDefault();
+            Settings.HIDE_GREETING_STICKERS.resetToDefault();
+        }
+    }
+
+    /**
+     * A clear on another thread is settled later on the main thread. A choice made in between wrote
+     * its switches after the clear, so it keeps its undo, also on Android 11, where the file's own
+     * notice of the clear comes late too.
+     */
+    @Test @Config(sdk = {28, 30})
+    public void aClearHeardLateKeepsAChoiceMadeSince() throws InterruptedException {
+        try {
+            assertEquals(1, page.applyQuickSetup(Collections.singletonMap(Settings.REVEAL_SPOILERS, true)));
+            Thread clearing = new Thread(app.hushtelegram.extension.shared.settings.Setting.preferences::clear);
+            clearing.start();
+            clearing.join();
+            assertEquals(1, page.applyQuickSetup(Collections.singletonMap(Settings.HIDE_ADS, false)));
+            ShadowLooper.idleMainLooper();
+            app.hushtelegram.extension.shared.settings.preference.QuickSetups.Outcome last =
+                    app.hushtelegram.extension.shared.settings.preference.QuickSetups.last();
+            assertNotNull("the clear took the newer choice's undo", last);
+            assertEquals(Collections.singleton(Settings.HIDE_ADS), last.changed.keySet());
+            assertEquals(1, page.undoQuickSetup());
+            assertTrue(Settings.HIDE_ADS.savedValue());
+        } finally {
+            Settings.REVEAL_SPOILERS.resetToDefault();
+            Settings.HIDE_ADS.resetToDefault();
         }
     }
 

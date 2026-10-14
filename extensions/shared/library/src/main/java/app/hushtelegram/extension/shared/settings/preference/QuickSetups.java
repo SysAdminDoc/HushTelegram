@@ -79,16 +79,15 @@ public final class QuickSetups {
     private static Outcome last;
     /** How many of the last choice's switches were written by something else since. */
     private static int writtenSince;
+    /** How many choices have changed something, so a clear heard late can tell whether one came after it. */
+    private static volatile int choices;
     /** True while a choice or an undo writes, so the watch below doesn't take its own writes for someone else's. */
     private static boolean writing;
     /** Hears every write to the settings file. Held here: the file keeps only a weak reference to it. */
     private static final SharedPreferences.OnSharedPreferenceChangeListener WATCH = (preferences, key) -> {
-        if (writing || last == null) return;
-        if (key == null) {
-            // The whole file was cleared.
-            forget();
-            return;
-        }
+        // A null key is the whole file cleared. Android 11 and later say so here, but from another
+        // thread only later, maybe after a newer choice. The file says so itself, through cleared().
+        if (writing || last == null || key == null) return;
         Map<BooleanSetting, Boolean> left = new LinkedHashMap<>(last.changed);
         if (left.keySet().removeIf(setting -> setting.key.equals(key))) {
             writtenSince++;
@@ -109,6 +108,7 @@ public final class QuickSetups {
         if (!outcome.changed.isEmpty()) {
             last = outcome;
             writtenSince = 0;
+            choices++;
             SharedPreferences store = Setting.preferences.preferences;
             if (watched != store) {
                 if (watched != null) watched.unregisterOnSharedPreferenceChangeListener(WATCH);
@@ -149,9 +149,10 @@ public final class QuickSetups {
             // Back the way it was, by this undo or already: nothing left to put back.
             if (!change.getValue().equals(change.getKey().savedValue())) left.remove(change.getKey());
         }
-        // What's left is the undo's leftover, so the choice's own counts of what was already set or
-        // couldn't change no longer describe it.
+        // What's left is the undo's leftover, so the choice's own counts of what was already set,
+        // couldn't change or was written since no longer describe it.
         last = left.isEmpty() ? null : new Outcome(left, 0, 0);
+        writtenSince = 0;
         return outcome.changed.size();
     }
 
@@ -162,13 +163,15 @@ public final class QuickSetups {
     }
 
     /**
-     * A settings file was cleared. Before Android 11 clearing a file tells its listeners nothing, so
-     * {@link #WATCH} can't hear it: the file says so itself, and when it's the watched one, nothing is
-     * left to undo.
+     * A settings file was cleared, on any thread. Before Android 11 clearing a file tells its
+     * listeners nothing, so the file says so itself, and when it's the watched one, nothing is left to
+     * undo. From another thread that's settled later on the main thread, where a choice made since
+     * the clear wrote its switches after it and keeps its undo.
      */
     static void cleared(SharedPreferences store) {
+        int before = choices;
         Utils.runOnMainThreadNowOrLater(() -> {
-            if (store == watched) forget();
+            if (store == watched && choices == before) forget();
         });
     }
 
