@@ -369,7 +369,7 @@ public final class L10nTranslations {
         table.put("Couldn't open app info. Open Android settings.",
                 "App-Info nicht erreichbar. \u00d6ffne die Android-Einstellungen.");
         table.put("Couldn't open battery optimization. Open Android settings.",
-                "Akku-Optimierung nicht erreichbar. \u00d6ffne die Android-Einstellungen.");
+                "Akku-Optimierung konnte nicht ge\u00f6ffnet werden. \u00d6ffne die Android-Einstellungen.");
         table.put("Couldn't open notification settings. Open Android settings.",
                 "Benachrichtigungen nicht erreichbar. \u00d6ffne die Android-Einstellungen.");
         table.put("Couldn't open that file. Nothing was changed.",

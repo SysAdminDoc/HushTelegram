@@ -810,4 +810,4 @@ Android doesn't say whether this network is metered.	Android sagt nicht, ob dies
 automatic downloads on Data Saver	automatische Downloads im Datensparmodus
 # context: Button in the Notification status dialog before Android 12, shown when Android optimizes Telegram's battery but doesn't restrict it in the background. It opens Android's battery optimization list, where Telegram can be set not to be optimized. Then the toast when neither that list nor App info can open
 Open battery optimization	Akku-Optimierung öffnen
-Couldn't open battery optimization. Open Android settings.	Akku-Optimierung nicht erreichbar. Öffne die Android-Einstellungen.
+Couldn't open battery optimization. Open Android settings.	Akku-Optimierung konnte nicht geöffnet werden. Öffne die Android-Einstellungen.

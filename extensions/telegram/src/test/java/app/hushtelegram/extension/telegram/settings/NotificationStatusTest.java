@@ -282,9 +282,9 @@ public class NotificationStatusTest {
     }
 
     /**
-     * Before Android 12, App info has no battery optimization setting, so when that alone holds
-     * Telegram back, the dialog opens Android's battery optimization list instead. From Android 12,
-     * App info holds both.
+     * Before Android 12, App info only reaches battery optimization a few taps in, so when that alone
+     * holds Telegram back, the dialog opens Android's battery optimization list instead. From Android
+     * 12, App info holds both.
      */
     @Test public void batteryOptimizationAloneOpensTheBatteryListBeforeAndroid12() {
         android.os.PowerManager power = context().getSystemService(android.os.PowerManager.class);
@@ -332,6 +332,31 @@ public class NotificationStatusTest {
             assertEquals("Couldn't open battery optimization. Open Android settings.",
                     org.robolectric.shadows.ShadowToast.getTextOfLatestToast());
             assertNull(Shadows.shadowOf(controller.get()).getNextStartedActivity());
+        } finally {
+            Shadows.shadowOf(RuntimeEnvironment.getApplication()).checkActivities(false);
+        }
+    }
+
+    /** A phone whose battery optimization list won't open gets App info instead, with no toast saying neither opened. */
+    @Test public void aBatteryListThatWontOpenFallsBackToAppInfo() {
+        Context app = RuntimeEnvironment.getApplication();
+        android.content.Intent details = new android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                android.net.Uri.parse("package:" + app.getPackageName()));
+        android.content.pm.ResolveInfo appInfo = new android.content.pm.ResolveInfo();
+        appInfo.activityInfo = new android.content.pm.ActivityInfo();
+        appInfo.activityInfo.packageName = "com.android.settings";
+        appInfo.activityInfo.name = "com.android.settings.applications.InstalledAppDetails";
+        Shadows.shadowOf(app.getPackageManager()).addResolveInfoForIntent(details, appInfo);
+        Shadows.shadowOf(RuntimeEnvironment.getApplication()).checkActivities(true);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            org.robolectric.shadows.ShadowToast.reset();
+            HushTelegramPreferenceFragment.openBatteryOptimization(controller.get());
+            ShadowLooper.idleMainLooper();
+            android.content.Intent launched = Shadows.shadowOf(controller.get()).getNextStartedActivity();
+            assertEquals(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, launched.getAction());
+            assertEquals("package:" + app.getPackageName(), launched.getDataString());
+            assertFalse("the toast said nothing opened", "Couldn't open battery optimization. Open Android settings."
+                    .equals(org.robolectric.shadows.ShadowToast.getTextOfLatestToast()));
         } finally {
             Shadows.shadowOf(RuntimeEnvironment.getApplication()).checkActivities(false);
         }

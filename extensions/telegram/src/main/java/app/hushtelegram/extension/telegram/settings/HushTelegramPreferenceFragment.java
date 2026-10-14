@@ -577,8 +577,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
     /**
      * Whether the battery optimization list is where the person can let Telegram run. Before Android
-     * 12, App info holds the background setting but not battery optimization, so when only that
-     * applies, App info has nothing to change.
+     * 12, App info holds the background setting and only reaches battery optimization a few taps in,
+     * so when only that applies, the list itself is the shorter way.
      */
     static boolean batteryListFirst(FirebasePush.LocalStatus status) {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.S && !Boolean.TRUE.equals(status.backgroundRestricted)
