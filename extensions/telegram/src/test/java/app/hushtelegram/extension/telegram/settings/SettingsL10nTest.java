@@ -449,18 +449,18 @@ public class SettingsL10nTest {
             addReleaseCheckText(shown);
 
             // What the diagnostics rows say in a toast, with nothing to export or clear. The quick
-            // report is built on a worker and answers on the main thread.
+            // report is built on a worker and answers on the main thread, and so do Clear and Undo.
             LogBufferManager.exportToClipboard();
             settle();
             addToast(shown);
             Preference clear = find(rows, "action_clear_diagnostic_data");
             clear.getOnPreferenceClickListener().onPreferenceClick(clear);
-            ShadowLooper.idleMainLooper();
+            settle();
             addToast(shown);
             if (LogBufferManager.canUndoClear()) {
                 // Whatever an earlier test left is put back, and the undo says so in a toast too.
                 clear.getOnPreferenceClickListener().onPreferenceClick(clear);
-                ShadowLooper.idleMainLooper();
+                settle();
                 addToast(shown);
             }
             dialog.dismissAllowingStateLoss();

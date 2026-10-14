@@ -99,7 +99,8 @@ public final class LogBufferManager {
     private static final Object CRASH_FILE_LOCK = new Object();
     private static final Object CLEAR_UNDO_LOCK = new Object();
     private static final AtomicBoolean FILE_EXPORT_RUNNING = new AtomicBoolean();
-    private static ClearSnapshot lastClear;
+    /** Written under CLEAR_UNDO_LOCK. Volatile for {@link #canUndoClear()}, which reads it without. */
+    private static volatile ClearSnapshot lastClear;
 
     /** Everything the clear row removes, kept in memory until its next tap. */
     private static final class ClearSnapshot {
@@ -792,11 +793,13 @@ public final class LogBufferManager {
                 : say(nothingToClearMessage, L10n.t("There's no diagnostic data to clear.")));
     }
 
-    /** True while the clear row's next tap can restore what its previous tap removed. */
+    /**
+     * True while the clear row's next tap can restore what its previous tap removed. The row asks
+     * as it's drawn, so this takes no lock: a Clear or an Undo holds it across its work on the
+     * crash files, and the main thread would wait on the disk with it.
+     */
     public static boolean canUndoClear() {
-        synchronized (CLEAR_UNDO_LOCK) {
-            return lastClear != null;
-        }
+        return lastClear != null;
     }
 
     /** Restores the most recent clear while retaining events and hook findings recorded since. */

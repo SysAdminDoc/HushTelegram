@@ -50,6 +50,7 @@ import app.hushtelegram.extension.shared.settings.PauseForTests;
 import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
+import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests;
@@ -1780,6 +1781,50 @@ public class HushTelegramPreferenceFragmentTest {
         } finally {
             release.countDown();
             Settings.MESSAGE_FILTERS_GROUPS.resetToDefault();
+        }
+    }
+
+    /**
+     * Clear diagnostic data hands its work to the same worker and waits out of reach for it. A page
+     * that goes meanwhile leaves a row nothing draws, and that row isn't changed; the page drawn
+     * next offers the Undo.
+     */
+    @Test
+    public void theClearRowOfAPageThatWentIsLeftAsItWas() throws Exception {
+        // Whatever an earlier test cleared is dropped, so the row starts on Clear.
+        LogBufferManager.clearLogBuffer();
+        LogBufferManager.clearLogBuffer();
+        LogBufferManager.appendToLogBuffer("something to clear");
+        CountDownLatch release = new CountDownLatch(1);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            Preference clear = page.findPreference("action_clear_diagnostic_data");
+            assertEquals("Clear diagnostic data", String.valueOf(clear.getTitle()));
+
+            // The worker is kept on something else, so the row's work waits behind it.
+            assertTrue(Utils.runInOrderOnBackgroundThread(() -> {
+                try {
+                    release.await(10, TimeUnit.SECONDS);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                }
+            }));
+            assertTrue(clear.getOnPreferenceClickListener().onPreferenceClick(clear));
+            assertFalse("a row with its work out takes a tap", clear.isEnabled());
+            assertFalse("the work was done inside the tap", LogBufferManager.canUndoClear());
+
+            controller.get().getFragmentManager().beginTransaction().remove(page).commitNow();
+            release.countDown();
+            settle();
+            assertTrue("the Clear a page left behind is lost", LogBufferManager.canUndoClear());
+            assertEquals("a row whose page went was redrawn", "Clear diagnostic data", String.valueOf(clear.getTitle()));
+            assertEquals("Undo", String.valueOf(
+                    pageOf(controller).findPreference("action_clear_diagnostic_data").getTitle()));
+        } finally {
+            release.countDown();
+            settle();
+            LogBufferManager.clearLogBuffer();
+            LogBufferManager.clearLogBuffer();
         }
     }
 

@@ -904,7 +904,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         export.setSummary(L10n.t("Copy a short report or save the full one to a file. The saved location is shown afterward. Links, IDs and sign-in details are "
                 + "left out. Look it over before sharing."));
         diagnostics.addPreference(mark(export, SettingsIcons.LICENSE));
-        ClearLogBufferPreference clear = new ClearRow(context);
+        ClearLogBufferPreference clear = new ClearRow(this, context);
         clear.setTitle(L10n.t("Clear diagnostic data"));
         clear.setClearAndUndoSummaries(L10n.t("Clears the activity log and patch checks that a report would include."),
                 L10n.t("Diagnostic data cleared. Tap again to put it back."));
@@ -1702,8 +1702,17 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     }
 
     static final class ClearRow extends ClearLogBufferPreference {
-        ClearRow(Context context) {
+        private final HushTelegramPreferenceFragment page;
+
+        ClearRow(HushTelegramPreferenceFragment page, Context context) {
             super(context);
+            this.page = page;
+        }
+
+        @Override
+        protected boolean isOwned() {
+            Activity activity = page.getActivity();
+            return page.getView() != null && activity != null && !activity.isFinishing() && !activity.isDestroyed();
         }
 
         @Override

@@ -24,8 +24,12 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowToast;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -49,7 +53,9 @@ public class ClearLogBufferPreferenceTest {
         ShadowToast.reset();
     }
 
-    @After public void tearDown() {
+    @After public void tearDown() throws Exception {
+        // A test that stopped part way can leave a row's work on the worker.
+        settle();
         emptyEverythingAndDropUndo();
         BaseSettings.DEBUG_LOG_FILTERS.resetToDefault();
         // The sentences are static, so a later test class in the same sandbox would read these
@@ -73,8 +79,7 @@ public class ClearLogBufferPreferenceTest {
 
         ClearLogBufferPreference first = row();
         assertEquals("Clear diagnostic data", first.getTitle());
-        assertTrue(first.getOnPreferenceClickListener().onPreferenceClick(first));
-        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        tap(first);
         assertTrue(LogBufferManager.canUndoClear());
         assertEquals("Cleared summary", first.getSummary());
         assertEquals("Undo", first.getTitle());
@@ -98,8 +103,7 @@ public class ClearLogBufferPreferenceTest {
         LogBufferManager.appendEvent(DiagnosticCategory.OTHER,
                 "AfterClear", "INFO", "new buffered event");
         HookStatus.bound("inbox", "item_view");
-        assertTrue(rebuilt.getOnPreferenceClickListener().onPreferenceClick(rebuilt));
-        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        tap(rebuilt);
 
         assertFalse(LogBufferManager.canUndoClear());
         assertEquals("Clear summary", rebuilt.getSummary());
@@ -119,11 +123,10 @@ public class ClearLogBufferPreferenceTest {
         assertEquals("Diagnostic data put back", ShadowToast.getTextOfLatestToast());
     }
 
-    @Test public void clearingNothingDoesNotPromiseAnUndoThatDoesNotExist() {
+    @Test public void clearingNothingDoesNotPromiseAnUndoThatDoesNotExist() throws Exception {
         ClearLogBufferPreference preference = row();
 
-        assertTrue(preference.getOnPreferenceClickListener().onPreferenceClick(preference));
-        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        tap(preference);
 
         assertFalse(LogBufferManager.canUndoClear());
         assertEquals("Clear summary", preference.getSummary());
@@ -132,17 +135,17 @@ public class ClearLogBufferPreferenceTest {
                 ShadowToast.getTextOfLatestToast());
     }
 
-    @Test public void anOlderRowKeepsItsClearTitleAfterAnotherRowUsesUndo() {
+    @Test public void anOlderRowKeepsItsClearTitleAfterAnotherRowUsesUndo() throws Exception {
         LogBufferManager.appendEvent(DiagnosticCategory.OTHER, "BeforeClear", "INFO", "old event");
         ClearLogBufferPreference first = row();
-        first.getOnPreferenceClickListener().onPreferenceClick(first);
+        tap(first);
         ClearLogBufferPreference rebuilt = row();
-        rebuilt.getOnPreferenceClickListener().onPreferenceClick(rebuilt);
+        tap(rebuilt);
         assertEquals("Undo", first.getTitle());
 
-        first.getOnPreferenceClickListener().onPreferenceClick(first);
+        tap(first);
         assertEquals("Undo", first.getTitle());
-        first.getOnPreferenceClickListener().onPreferenceClick(first);
+        tap(first);
         assertEquals("Clear diagnostic data", first.getTitle());
         assertEquals("Clear summary", first.getSummary());
     }
@@ -150,19 +153,19 @@ public class ClearLogBufferPreferenceTest {
     @Test public void aFailedUndoKeepsTheUndoLabelAndCanBeRetried() throws Exception {
         LogBufferManager.persistCrashReport(context, "saved crash");
         ClearLogBufferPreference preference = row();
-        preference.getOnPreferenceClickListener().onPreferenceClick(preference);
+        tap(preference);
         Utils.setContext(new ContextWrapper(context) {
             @Override public File getFilesDir() { throw new SecurityException("files unavailable"); }
         });
         try {
-            preference.getOnPreferenceClickListener().onPreferenceClick(preference);
+            tap(preference);
             assertTrue(LogBufferManager.canUndoClear());
             assertEquals("Undo", preference.getTitle());
             assertEquals("Cleared summary", preference.getSummary());
         } finally {
             Utils.setContext(context);
         }
-        preference.getOnPreferenceClickListener().onPreferenceClick(preference);
+        tap(preference);
         assertEquals("Clear diagnostic data", preference.getTitle());
         assertEquals("saved crash", LogBufferManager.readCrashReport(context));
     }
@@ -225,11 +228,188 @@ public class ClearLogBufferPreferenceTest {
         assertEquals("newer crash", LogBufferManager.readCrashReport(context));
     }
 
+    /**
+     * With both crash reports saved, the row's Clear reads and deletes them and its Undo writes
+     * them back, and every one of those file lookups is made off the main thread. Each used to be
+     * made inside the tap.
+     */
+    @Test public void clearAndUndoReachTheCrashFilesOnlyOffTheMainThread() throws Exception {
+        LogBufferManager.persistCrashReport(context, "old java crash");
+        LogBufferManager.persistNpthCrashReport(context, "old native crash");
+        List<Thread> lookups = Collections.synchronizedList(new ArrayList<>());
+        Utils.setContext(new ContextWrapper(context) {
+            @Override public File getFilesDir() {
+                lookups.add(Thread.currentThread());
+                return super.getFilesDir();
+            }
+        });
+        try {
+            ClearLogBufferPreference preference = row();
+            tap(preference);
+            assertEquals("Undo", preference.getTitle());
+            assertEquals("", LogBufferManager.readCrashReport(context));
+            assertEquals("", LogBufferManager.readNpthCrashReport(context));
+            int cleared = lookups.size();
+            assertTrue("Clear never reached the crash files", cleared > 0);
+
+            tap(preference);
+            assertEquals("Clear diagnostic data", preference.getTitle());
+            assertEquals("old java crash", LogBufferManager.readCrashReport(context));
+            assertEquals("old native crash", LogBufferManager.readNpthCrashReport(context));
+            assertTrue("Undo never reached the crash files", lookups.size() > cleared);
+            assertFalse("a crash file was reached on the main thread",
+                    lookups.contains(Looper.getMainLooper().getThread()));
+        } finally {
+            Utils.setContext(context);
+        }
+    }
+
+    /**
+     * Storage that's slow to answer holds the worker, not the screen. The tap comes straight back
+     * and the row waits out of reach, so a second tap starts nothing. A row built meanwhile, as a
+     * page drawn again builds one, asks what it can do without waiting and waits with the first.
+     * Both show Undo once the Clear is done.
+     */
+    @Test public void slowStorageKeepsTheRowWaitingAndTheScreenFree() throws Exception {
+        LogBufferManager.persistCrashReport(context, "old java crash");
+        BlockingFilesContext blocked = new BlockingFilesContext(context, 1);
+        Utils.setContext(blocked);
+        try {
+            ClearLogBufferPreference preference = row();
+            assertTrue(preference.getOnPreferenceClickListener().onPreferenceClick(preference));
+            assertTrue("Clear never reached the crash files", blocked.blocked.await(2, TimeUnit.SECONDS));
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertTrue("the row doesn't say its work is out", preference.isBusy());
+            assertFalse("a row with its work out takes a tap", preference.isEnabled());
+            assertEquals("Clear diagnostic data", preference.getTitle());
+
+            // Queued behind the Clear, a second tap would find its Undo and put everything back.
+            preference.getOnPreferenceClickListener().onPreferenceClick(preference);
+
+            ClearLogBufferPreference rebuilt = row();
+            assertTrue("a row built while the work is out doesn't wait for it", rebuilt.isBusy());
+            assertFalse(rebuilt.isEnabled());
+            assertEquals("Clear diagnostic data", rebuilt.getTitle());
+
+            blocked.release.countDown();
+            settle();
+            for (ClearLogBufferPreference row : new ClearLogBufferPreference[]{preference, rebuilt}) {
+                assertFalse("the row still says its work is out", row.isBusy());
+                assertTrue("the row stayed out of reach", row.isEnabled());
+                assertEquals("Undo", row.getTitle());
+                assertEquals("Cleared summary", row.getSummary());
+            }
+            assertTrue("the second tap undid the first", LogBufferManager.canUndoClear());
+            assertEquals("", LogBufferManager.readCrashReport(context));
+        } finally {
+            blocked.release.countDown();
+            Utils.setContext(context);
+        }
+    }
+
+    /**
+     * A row whose page went while its work was out isn't redrawn: the Clear still lands, and the
+     * row a new page builds offers the Undo. A tap that reaches the old row afterwards starts
+     * nothing.
+     */
+    @Test public void aRowWhosePageWentIsNotRedrawnAndTakesNoTap() throws Exception {
+        LogBufferManager.appendEvent(DiagnosticCategory.OTHER, "BeforeClear", "INFO", "old event");
+        AtomicBoolean owned = new AtomicBoolean(true);
+        ClearLogBufferPreference preference = new ClearLogBufferPreference(context) {
+            @Override protected boolean isOwned() { return owned.get(); }
+        };
+        preference.setTitle("Clear diagnostic data");
+        preference.setClearAndUndoSummaries("Clear summary", "Cleared summary");
+
+        BlockingFilesContext blocked = new BlockingFilesContext(context, 1);
+        Utils.setContext(blocked);
+        try {
+            preference.getOnPreferenceClickListener().onPreferenceClick(preference);
+            assertTrue("Clear never reached the crash files", blocked.blocked.await(2, TimeUnit.SECONDS));
+            owned.set(false);
+            blocked.release.countDown();
+            settle();
+        } finally {
+            blocked.release.countDown();
+            Utils.setContext(context);
+        }
+        assertTrue("the Clear a page left behind is lost", LogBufferManager.canUndoClear());
+        assertEquals("a row whose page went was redrawn", "Clear diagnostic data", preference.getTitle());
+        assertEquals("Clear summary", preference.getSummary());
+        assertEquals("Undo", row().getTitle());
+
+        tap(preference);
+        assertTrue("a row whose page went took a tap", LogBufferManager.canUndoClear());
+        String report = LogBufferManager.buildExportText();
+        assertFalse(report, report.contains("old event"));
+    }
+
+    /**
+     * The worker takes 32 tasks behind the one it's on. A tap past that starts nothing and says so,
+     * and the row is back in reach at once with what it offered.
+     */
+    @Test public void aTapTheWorkerHasNoRoomForSaysSoAndLeavesTheRowInReach() throws Exception {
+        LogBufferManager.appendEvent(DiagnosticCategory.OTHER, "BeforeClear", "INFO", "old event");
+        ClearLogBufferPreference preference = row();
+        CountDownLatch started = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        AtomicInteger unfinished = new AtomicInteger();
+        Runnable filler = () -> {
+            started.countDown();
+            try {
+                release.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+            } finally {
+                unfinished.decrementAndGet();
+            }
+        };
+        try {
+            // The worker has to be on the first one before the rest can fill everything behind it.
+            unfinished.incrementAndGet();
+            assertTrue(Utils.runInOrderOnBackgroundThread(filler));
+            assertTrue("the worker never started", started.await(5, TimeUnit.SECONDS));
+            while (true) {
+                unfinished.incrementAndGet();
+                if (!Utils.runInOrderOnBackgroundThread(filler)) break;
+                assertTrue("the worker never ran out of room", unfinished.get() < 100);
+            }
+            unfinished.decrementAndGet();
+
+            assertTrue(preference.getOnPreferenceClickListener().onPreferenceClick(preference));
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertEquals("Couldn't start that. Try again in a moment.", ShadowToast.getTextOfLatestToast());
+            assertFalse("a tap that started nothing left the row waiting", preference.isBusy());
+            assertTrue("a tap that started nothing left the row out of reach", preference.isEnabled());
+            assertEquals("Clear diagnostic data", preference.getTitle());
+            assertFalse(LogBufferManager.canUndoClear());
+        } finally {
+            release.countDown();
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+            while (unfinished.get() > 0 && System.nanoTime() < deadline) Thread.sleep(5);
+        }
+        assertEquals("the worker never caught up", 0, unfinished.get());
+
+        tap(preference);
+        assertEquals("Undo", preference.getTitle());
+    }
+
     private ClearLogBufferPreference row() {
         ClearLogBufferPreference preference = new ClearLogBufferPreference(context);
         preference.setTitle("Clear diagnostic data");
         preference.setClearAndUndoSummaries("Clear summary", "Cleared summary");
         return preference;
+    }
+
+    /** Taps [row] and waits for its work: Clear or Undo on the worker, then the row's answer on the main thread. */
+    private static void tap(ClearLogBufferPreference row) throws Exception {
+        assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+        settle();
+    }
+
+    private static void settle() throws Exception {
+        Utils.awaitBackgroundTasksForTests();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
     }
 
     private static void emptyEverythingAndDropUndo() {
