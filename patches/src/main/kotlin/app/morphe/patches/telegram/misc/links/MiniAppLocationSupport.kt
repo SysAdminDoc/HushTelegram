@@ -165,7 +165,9 @@ private fun BytecodePatchContext.gates(): Map<LocationGate, MutableMethod> {
             it.parameterTypes.map(CharSequence::toString) == listOf(LOCATION) }
         need(changed.size == 1 && changed.single().controlBody().any { it.controlRef() == answerRef },
             "${listener.type} hands a later fix on without the bot location manager's answer")
-        need(listener.methods.none { m -> "latitude" in m.strings() || m.controlBody().any { it.controlRef() in COORDINATES } },
+        // A parent Telegram carries runs on the same fix (a super call, say), so it's held to the same rule.
+        need(lineage(listener.type).none { cls -> cls.methods.any { m -> "latitude" in m.strings() ||
+            m.controlBody().any { it.controlRef() in COORDINATES } } },
             "${listener.type} reads coordinates outside the bot location manager's answer")
     }
 
@@ -227,6 +229,20 @@ private fun BytecodePatchContext.isLocationListener(type: String, depth: Int = 0
     if (depth > 8) return false
     val cls = classDefByOrNull(type) ?: return false
     return cls.interfaces.any { isLocationListener(it, depth + 1) } || cls.superclass?.let { isLocationListener(it, depth + 1) } == true
+}
+
+/** [type] and every parent class and interface of it that Telegram carries, up to 8 deep. */
+private fun BytecodePatchContext.lineage(type: String): List<ClassDef> {
+    val found = linkedMapOf<String, ClassDef>()
+    fun walk(at: String, depth: Int) {
+        if (depth > 8 || at in found) return
+        val cls = classDefByOrNull(at) ?: return
+        found[at] = cls
+        cls.superclass?.let { walk(it, depth + 1) }
+        cls.interfaces.forEach { walk(it, depth + 1) }
+    }
+    walk(type, 0)
+    return found.values.toList()
 }
 
 private fun Method.isPrompt() = name == SHOW_PROMPT && returnType == "V" && !static() &&
