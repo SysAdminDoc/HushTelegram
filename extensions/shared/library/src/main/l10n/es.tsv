@@ -797,7 +797,7 @@ Couldn't open app info. Open Android settings.	No se pudo abrir la info de la ap
 Couldn't try it now. Try again in a moment.	No se pudo probar ahora. Inténtalo de nuevo en un momento.
 # context: Second switch under Faster downloads on the Playback page. Data Saver is Android's own setting (use Android's name for it); metered means a network Android counts as paid per use, like mobile data
 Hold automatic downloads on Data Saver	Pausar descargas automáticas con Ahorro de datos
-While Android's Data Saver is on and the network is metered, Telegram doesn't start photos, videos, files, voice messages, music or stories downloading on its own. What you tap still downloads, and downloads already running finish.	Mientras el Ahorro de datos de Android esté activado y la red sea de uso medido, Telegram no empieza a descargar por su cuenta fotos, videos, archivos, mensajes de voz, música ni historias. Lo que tocas se sigue descargando, y las descargas en curso terminan.
+While Android's Data Saver is on and the network is metered, Telegram doesn't start photos, videos, files, voice messages, music or stories downloading on its own, and stops the ones it already started. What you tap still downloads.	Mientras el Ahorro de datos de Android esté activado y la red sea de uso medido, Telegram no empieza a descargar por su cuenta fotos, videos, archivos, mensajes de voz, música ni historias, y detiene las que ya había empezado. Lo que tocas se sigue descargando.
 # context: Under Hold automatic downloads on Data Saver, what Android reports when the page opens. One of these four, then one of the three network lines
 Android's Data Saver is on.	El Ahorro de datos de Android está activado.
 Android's Data Saver is off.	El Ahorro de datos de Android está desactivado.

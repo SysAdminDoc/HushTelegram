@@ -797,7 +797,7 @@ Couldn't open app info. Open Android settings.	Uygulama bilgisi açılamadı. An
 Couldn't try it now. Try again in a moment.	Şu an denenemedi. Birazdan tekrar dene.
 # context: Second switch under Faster downloads on the Playback page. Data Saver is Android's own setting (use Android's name for it); metered means a network Android counts as paid per use, like mobile data
 Hold automatic downloads on Data Saver	Veri Tasarrufu'nda otomatik indirmeleri beklet
-While Android's Data Saver is on and the network is metered, Telegram doesn't start photos, videos, files, voice messages, music or stories downloading on its own. What you tap still downloads, and downloads already running finish.	Android'in Veri Tasarrufu açıkken ve ağ sınırlıyken Telegram fotoğrafları, videoları, dosyaları, sesli mesajları, müzikleri ve hikâyeleri kendiliğinden indirmeye başlamaz. Dokunduğun şeyler yine iner, devam eden indirmeler de tamamlanır.
+While Android's Data Saver is on and the network is metered, Telegram doesn't start photos, videos, files, voice messages, music or stories downloading on its own, and stops the ones it already started. What you tap still downloads.	Android'in Veri Tasarrufu açıkken ve ağ sınırlıyken Telegram fotoğrafları, videoları, dosyaları, sesli mesajları, müzikleri ve hikâyeleri kendiliğinden indirmeye başlamaz, kendiliğinden başlattıklarını da durdurur. Dokunduğun şeyler yine iner.
 # context: Under Hold automatic downloads on Data Saver, what Android reports when the page opens. One of these four, then one of the three network lines
 Android's Data Saver is on.	Android'in Veri Tasarrufu açık.
 Android's Data Saver is off.	Android'in Veri Tasarrufu kapalı.

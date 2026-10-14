@@ -4,11 +4,27 @@
  */
 package app.hushtelegram.extension.telegram.misc;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.os.Build;
 import android.os.SystemClock;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import app.hushtelegram.extension.shared.Logger;
 import app.hushtelegram.extension.shared.Utils;
@@ -24,15 +40,16 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * downloading on its own: when a chat shows it, when a new message is put in the download queue,
  * and when that queue is read back to start. The patch asks {@link #hold} at the start of each
  * answer and answers no on yes, the way Telegram answers when automatic downloads are off for the
- * network. The few places that read the network's download mask themselves get 0 from
- * {@link #mask}. Telegram's own check when the network changes still reads its real mask, so its
- * queue is cancelled or picked up the way it always is, and nothing is restarted from here. A
- * download already running finishes, and what you tap still downloads, since a tap doesn't ask.
+ * network. The network's download mask asks {@link #holdMask} and comes back with no media types,
+ * so everything that reads it decides the same way. When the answer changes, Telegram's own check
+ * from a network change runs again on each controller: it cancels the automatic loads its queue
+ * started when the hold begins, and loads the queue again when it lifts. What you tap still
+ * downloads, since a tap doesn't ask.
  *
  * <p>The hold needs the switch on, HushTelegram not paused, Android reporting Data Saver on for
  * Telegram and the active network metered. Data Saver off or allowing Telegram, an unmetered
- * network, or anything Android won't say leaves Telegram's own rules. Telegram's network type, its
- * data statistics and calls aren't touched.
+ * network, no network, or anything Android won't say leaves Telegram's own rules. Telegram's
+ * network type, its data statistics and calls aren't touched.
  */
 public final class DataSaverDownloads {
     private DataSaverDownloads() {}
@@ -46,7 +63,7 @@ public final class DataSaverDownloads {
     /** Android's two facts, as the settings row shows them. */
     public static final class Status {
         public final DataSaver dataSaver;
-        /** Whether the active network is metered, or null when Android won't say. */
+        /** Whether the active network is metered, or null when Android won't say or there's no network. */
         @Nullable public final Boolean metered;
 
         Status(DataSaver dataSaver, @Nullable Boolean metered) {
@@ -73,6 +90,17 @@ public final class DataSaverDownloads {
 
     @Nullable private static volatile Reading last;
 
+    /** Each DownloadController whose mask asked, one per account, kept no longer than Telegram keeps it. */
+    private static final Map<Object, Boolean> controllers = Collections.synchronizedMap(new WeakHashMap<>());
+    /** What the mask was last told, or null before it first asked. */
+    @Nullable private static volatile Boolean lastMask;
+    private static final AtomicBoolean watching = new AtomicBoolean();
+
+    /** Where Telegram's check runs: the main thread, where its own runs after a network change. */
+    static volatile Executor later = Utils::runOnMainThread;
+    /** Telegram's check on one controller. */
+    static volatile Consumer<Object> checker = DataSaverDownloads::checkAgain;
+
     /**
      * Injected at the start of DownloadController's answers about automatic downloads.
      *
@@ -86,18 +114,99 @@ public final class DataSaverDownloads {
             HookStatus.threw(FamilyNames.FASTER_DOWNLOADS, "Data Saver switch", failure);
             return false;
         }
+        watch();
         if (!restricted()) return false;
         HookStatus.counted(FamilyNames.FASTER_DOWNLOADS, "automatic download held for Data Saver");
         return true;
     }
 
     /**
-     * Injected right after a read of the network's download mask outside DownloadController.
+     * Injected at the start of DownloadController.getCurrentDownloadMask, with the controller.
+     * When the answer differs from the last one, Telegram's check runs again on every controller.
      *
-     * @return no media types while the hold is on, and {@code mask} otherwise
+     * @return true to answer no media types
      */
-    public static int mask(int mask) {
-        return mask != 0 && hold() ? 0 : mask;
+    public static boolean holdMask(@Nullable Object controller) {
+        if (controller != null) controllers.put(controller, Boolean.TRUE);
+        boolean held = hold();
+        Boolean before = lastMask;
+        lastMask = held;
+        if (before != null && before != held) checkAllAgain();
+        return held;
+    }
+
+    /**
+     * Runs Telegram's download check on a DownloadController, the one it runs when the network
+     * changes. The patch writes its body; unpatched, it does nothing.
+     */
+    public static void checkAgain(Object controller) {}
+
+    /** Runs Telegram's check on each controller, later on the main thread, so its queue follows the new answer. */
+    static void checkAllAgain() {
+        List<Object> each;
+        synchronized (controllers) {
+            each = new ArrayList<>(controllers.keySet());
+        }
+        if (each.isEmpty()) return;
+        later.execute(() -> {
+            for (Object controller : each) {
+                try {
+                    checker.accept(controller);
+                } catch (Throwable failure) {
+                    HookStatus.threw(FamilyNames.FASTER_DOWNLOADS, "Data Saver download check", failure);
+                }
+            }
+        });
+    }
+
+    /** Android changed Data Saver or the network: ask it again and let Telegram check its queue. */
+    static void changed() {
+        forget();
+        checkAllAgain();
+    }
+
+    /** Listens, from the first time the switch is found on, for Data Saver and the network's metering to change. */
+    private static void watch() {
+        if (watching.get()) return;
+        Context context = Utils.getContext();
+        if (context == null || !watching.compareAndSet(false, true)) return;
+        try {
+            BroadcastReceiver receiver = new BroadcastReceiver() {
+                @Override public void onReceive(Context ignored, Intent intent) {
+                    changed();
+                }
+            };
+            IntentFilter filter = new IntentFilter(ConnectivityManager.ACTION_RESTRICT_BACKGROUND_CHANGED);
+            if (Build.VERSION.SDK_INT >= 33) {
+                context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                context.registerReceiver(receiver, filter);
+            }
+            ConnectivityManager connectivity = context.getSystemService(ConnectivityManager.class);
+            if (connectivity != null) connectivity.registerDefaultNetworkCallback(new Metering());
+        } catch (RuntimeException failure) {
+            Logger.printDebug(() -> "Data Saver: can't watch for changes: " + failure);
+        }
+    }
+
+    /** Says when the default network's metering changes or the network goes. */
+    private static final class Metering extends ConnectivityManager.NetworkCallback {
+        /** The last metering seen, or -1 with no network. Only Android's callback thread touches it. */
+        private int seen = -1;
+
+        @Override public void onCapabilitiesChanged(@NonNull Network network, @NonNull NetworkCapabilities capabilities) {
+            int now = (capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED) ? 1 : 0)
+                    | (Build.VERSION.SDK_INT >= 30
+                        && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_TEMPORARILY_NOT_METERED) ? 2 : 0);
+            if (now == seen) return;
+            seen = now;
+            changed();
+        }
+
+        @Override public void onLost(@NonNull Network network) {
+            seen = -1;
+            changed();
+        }
     }
 
     /** Whether Android restricts Telegram now, asked at most once every {@link #FRESH_MS}. */
@@ -113,6 +222,16 @@ public final class DataSaverDownloads {
     /** Drops the last answer, so the next question asks Android again. */
     static void forget() {
         last = null;
+    }
+
+    /** Forgets the controllers, the mask's last answer and the watch, for tests, where each gets a new app. */
+    static void reset() {
+        controllers.clear();
+        lastMask = null;
+        watching.set(false);
+        last = null;
+        later = Utils::runOnMainThread;
+        checker = DataSaverDownloads::checkAgain;
     }
 
     /** What Android says now. Each fact it won't give is unknown, which never holds anything. */
@@ -144,7 +263,8 @@ public final class DataSaverDownloads {
             Logger.printDebug(() -> "Data Saver: status unreadable: " + failure);
         }
         try {
-            metered = connectivity.isActiveNetworkMetered();
+            // With no network Android calls it metered, which would hold the first downloads on Wi-Fi.
+            if (connectivity.getActiveNetwork() != null) metered = connectivity.isActiveNetworkMetered();
         } catch (RuntimeException failure) {
             Logger.printDebug(() -> "Data Saver: metered unreadable: " + failure);
         }

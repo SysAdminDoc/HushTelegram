@@ -108,8 +108,8 @@ public class HushTelegramPreferenceFragmentTest {
 
     /** What the Data Saver switch does, before the line with what Android reports. */
     private static final String DATA_SAVER_SUMMARY = "While Android's Data Saver is on and the network is metered, Telegram"
-            + " doesn't start photos, videos, files, voice messages, music or stories downloading on its own. What you tap"
-            + " still downloads, and downloads already running finish.";
+            + " doesn't start photos, videos, files, voice messages, music or stories downloading on its own, and stops the"
+            + " ones it already started. What you tap still downloads.";
 
     /** The row each patch adds, by the title it shows. */
     private static final Map<PatchFamily, String> ROW_TITLES = new LinkedHashMap<>();

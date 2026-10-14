@@ -793,8 +793,8 @@ Couldn't open app info. Open Android settings.	As informações do app não abri
 # context: Filter editor, under Try a message, when the phone is too busy to check the message against the filters right now
 Couldn't try it now. Try again in a moment.	Não deu para testar agora. Tente de novo em instantes.
 # context: Second switch under Faster downloads on the Playback page. Data Saver is Android's own setting (use Android's name for it); metered means a network Android counts as paid per use, like mobile data
-Hold automatic downloads on Data Saver	Segurar downloads automáticos na Economia de dados
-While Android's Data Saver is on and the network is metered, Telegram doesn't start photos, videos, files, voice messages, music or stories downloading on its own. What you tap still downloads, and downloads already running finish.	Enquanto a Economia de dados do Android estiver ativada e a rede for limitada, o Telegram não começa a baixar sozinho fotos, vídeos, arquivos, mensagens de voz, músicas ou Stories. O que você toca continua sendo baixado, e os downloads em andamento terminam.
+Hold automatic downloads on Data Saver	Pausar downloads automáticos com a Economia de dados
+While Android's Data Saver is on and the network is metered, Telegram doesn't start photos, videos, files, voice messages, music or stories downloading on its own, and stops the ones it already started. What you tap still downloads.	Enquanto a Economia de dados do Android estiver ativada e a rede for limitada, o Telegram não começa a baixar sozinho fotos, vídeos, arquivos, mensagens de voz, músicas ou Stories, e interrompe os que ele já tinha começado sozinho. O que você toca continua sendo baixado.
 # context: Under Hold automatic downloads on Data Saver, what Android reports when the page opens. One of these four, then one of the three network lines
 Android's Data Saver is on.	A Economia de dados do Android está ativada.
 Android's Data Saver is off.	A Economia de dados do Android está desativada.
@@ -804,7 +804,7 @@ This network is metered.	Esta rede é limitada.
 This network isn't metered.	Esta rede não é limitada.
 Android doesn't say whether this network is metered.	O Android não informa se esta rede é limitada.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Data Saver part of Faster downloads: holding automatic media downloads while Android's Data Saver is on
-automatic downloads on Data Saver	downloads automáticos na Economia de dados
+automatic downloads on Data Saver	downloads automáticos com a Economia de dados
 # context: Button in the Notification status dialog before Android 12, shown when Android optimizes Telegram's battery but doesn't restrict it in the background. It opens Android's battery optimization list, where Telegram can be set not to be optimized. Then the toast when neither that list nor App info can open
 Open battery optimization	Abrir otimização de bateria
 Couldn't open battery optimization. Open Android settings.	A otimização de bateria não abriu. Abra as configurações do Android.

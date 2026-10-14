@@ -1387,8 +1387,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 ? L10n.t("Android doesn't say whether this network is metered.")
                 : status.metered ? L10n.t("This network is metered.") : L10n.t("This network isn't metered.");
         return L10n.t("While Android's Data Saver is on and the network is metered, Telegram doesn't start photos, videos,"
-                + " files, voice messages, music or stories downloading on its own. What you tap still downloads, and"
-                + " downloads already running finish.") + "\n" + saver + " " + metered;
+                + " files, voice messages, music or stories downloading on its own, and stops the ones it already started."
+                + " What you tap still downloads.") + "\n" + saver + " " + metered;
     }
 
     /** A percent the way this language writes one. */

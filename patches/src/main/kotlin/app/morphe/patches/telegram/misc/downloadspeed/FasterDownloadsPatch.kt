@@ -11,6 +11,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
+import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
@@ -51,13 +52,19 @@ val fasterDownloadsPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.telegram())
     execute {
         val plan = resolveFasterDownloads()
+        requireDataSaverRuntime()
         val saver = resolveDataSaverDownloads()
         // Assembled on copies first, so a refusal leaves the app untouched.
         insertDownloadSpeedGate(MutableMethod(ImmutableMethod.of(plan.method)), plan)
-        saver.rehearse()
+        if (saver.missing == null) saver.rehearse()
         insertDownloadSpeedGate(plan.method, plan)
-        saver.apply()
-        enableCapability("dataSaverDownloads")
+        if (saver.missing == null) {
+            saver.apply()
+            writeCheckAgain()
+            enableCapability("dataSaverDownloads")
+        } else {
+            patchLog.warning("Faster downloads: ${saver.missing}. The patch goes on without holding automatic downloads on Data Saver.")
+        }
         enableStatus("fasterDownloads")
     }
 }

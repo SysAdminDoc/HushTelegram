@@ -12,6 +12,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
@@ -35,20 +36,20 @@ import org.junit.Test
 /** FileLoadOperation.updateParams on both declared builds, where Telegram picks a download's piece size. */
 class FasterDownloadsFixtureTest {
     private fun context(build: File): BytecodePatchContext {
-        val host = FixtureDex.classes(build, setOf(LOAD_OPERATION)).values.map(ImmutableClassDef::of)
-        assertEquals("${build.name}: FileLoadOperation", 1, host.size)
-        // DownloadController and every class that reads its download mask, which only a dex calling it can hold.
-        val downloads = FixtureDex.classesWhere(build, { dex ->
-            dex.methodSection.any { it.definingClass == DOWNLOAD_CONTROLLER && it.name == "getCurrentDownloadMask" }
-        }) { m -> m.definingClass == DOWNLOAD_CONTROLLER || m.implementation != null && m.controlBody().any { it.controlRef() == CURRENT_MASK } }
-        assertEquals("${build.name}: DownloadController", 1, downloads.count { it.type == DOWNLOAD_CONTROLLER })
-        return PatchContexts.of(ExtensionDex.classes() + host + downloads)
+        val host = FixtureDex.classes(build, setOf(LOAD_OPERATION, DOWNLOAD_CONTROLLER)).values.map(ImmutableClassDef::of)
+        assertEquals("${build.name}: FileLoadOperation and DownloadController", 2, host.size)
+        return PatchContexts.of(ExtensionDex.classes() + host)
     }
 
     private fun ClassDef.status(name: String) = methods.single { it.name == name }.controlBody()
 
+    private fun BytecodePatchContext.flag(name: String) =
+        (mutableClassDefBy(SETTINGS_STATUS).status(name).first() as WideLiteralInstruction).wideLiteral
+
     private fun literal(after: List<Instruction>, size: Long) =
         after.indices.single { (after[it] as? WideLiteralInstruction)?.wideLiteral == size }
+
+    private fun Instruction.shape() = listOf(opcode, namedRegisters(), (this as? ReferenceInstruction)?.reference?.toString())
 
     @Test fun `the extension answers for the server's flag and the small-piece fallback still has the last word`() {
         for (build in Fixtures.declaredBuilds()) {
@@ -80,15 +81,13 @@ class FasterDownloadsFixtureTest {
 
             for (i in before.indices) {
                 val j = if (i <= read) i else i + 2
-                assertEquals("$name: stock $i", listOf(before[i].opcode, before[i].namedRegisters(), (before[i] as? ReferenceInstruction)?.reference?.toString()),
-                    listOf(after[j].opcode, after[j].namedRegisters(), (after[j] as? ReferenceInstruction)?.reference?.toString()))
+                assertEquals("$name: stock $i", before[i].shape(), after[j].shape())
             }
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).status("fasterDownloads")
-            assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
+            assertEquals(1L, context.flag("fasterDownloads"))
         }
     }
 
-    @Test fun `a changed piece size choice refuses before anything is edited`() {
+    @Test fun `a changed piece size choice or Data Saver runtime refuses before anything is edited`() {
         val build = Fixtures.declaredBuilds().first()
         val shapes = listOf<Pair<String, (BytecodePatchContext) -> Unit>>(
             "the server's flag no longer picks the piece size" to { context ->
@@ -103,12 +102,12 @@ class FasterDownloadsFixtureTest {
                 val plan = context.resolveFasterDownloads()
                 plan.method.replaceInstruction(plan.read + 3, "nop")
             },
-            // The piece size still resolves, so the Data Saver hold alone stops the patch before any edit.
-            "DownloadController.canPreloadStories()Z no longer reads the network's download settings" to { context ->
-                val method = context.mutableClassDefBy(DOWNLOAD_CONTROLLER).methods.single { it.name == "canPreloadStories" }
-                val body = method.controlBody()
-                method.replaceInstruction(body.indices.single { body[it].controlRef() == NETWORK_TYPE_READ },
-                    "invoke-static {}, Lorg/telegram/messenger/ApplicationLoader;->isNetworkOnline()Z")
+            // The extension's own runtime refuses, since it ships with the patch.
+            "holdMask runtime hook is missing or ambiguous" to { context ->
+                context.mutableClassDefBy(DATA_SAVER).methods.removeAll { it.name == "holdMask" }
+            },
+            "checkAgain runtime hook is missing or ambiguous" to { context ->
+                context.mutableClassDefBy(DATA_SAVER).methods.removeAll { it.name == "checkAgain" }
             },
         )
         for ((why, change) in shapes) {
@@ -122,33 +121,72 @@ class FasterDownloadsFixtureTest {
                 assertTrue("$why: ${refused.message}", refused.message!!.contains(why))
             }
             assertEquals(why, untouched, snapshot(context))
-            assertEquals(why, 0L, (context.mutableClassDefBy(SETTINGS_STATUS).status("fasterDownloads").first() as WideLiteralInstruction).wideLiteral)
-            assertEquals(why, 0L, (context.mutableClassDefBy(SETTINGS_STATUS).status("dataSaverDownloads").first() as WideLiteralInstruction).wideLiteral)
+            assertEquals(why, 0L, context.flag("fasterDownloads"))
+            assertEquals(why, 0L, context.flag("dataSaverDownloads"))
+        }
+    }
+
+    @Test fun `a changed Data Saver answer leaves the hold out and faster downloads goes on`() {
+        val build = Fixtures.declaredBuilds().first()
+        val shapes = listOf<Pair<String, (BytecodePatchContext) -> Unit>>(
+            "DownloadController.canPreloadStories()Z no longer reads the network's download settings" to { context ->
+                val method = context.mutableClassDefBy(DOWNLOAD_CONTROLLER).methods.single { it.name == "canPreloadStories" }
+                val body = method.controlBody()
+                method.replaceInstruction(body.indices.single { body[it].controlRef() == NETWORK_TYPE_READ },
+                    "invoke-static {}, Lorg/telegram/messenger/ApplicationLoader;->isNetworkOnline()Z")
+            },
+            // An answer the hold doesn't know would let automatic downloads around it.
+            "DownloadController has answers the hold doesn't know (canPreloadChannelStories()Z)" to { context ->
+                val controller = context.mutableClassDefBy(DOWNLOAD_CONTROLLER)
+                val stories = controller.methods.single { it.name == "canPreloadStories" }
+                controller.methods.add(ImmutableMethod(stories.definingClass, "canPreloadChannelStories", stories.parameters,
+                    stories.returnType, stories.accessFlags, stories.annotations, stories.hiddenApiRestrictions,
+                    ImmutableMethod.of(stories).implementation).toMutable())
+            },
+            "DownloadController.checkAutodownloadSettings()V no longer reads the download mask" to { context ->
+                val method = context.mutableClassDefBy(DOWNLOAD_CONTROLLER).methods.single { it.name == "checkAutodownloadSettings" }
+                val body = method.controlBody()
+                val at = body.indices.single { body[it].controlRef() == CURRENT_MASK }
+                method.replaceInstruction(at, "invoke-virtual {v${body[at].namedRegisters().single()}}, $DOWNLOAD_CONTROLLER->getAutodownloadMaskAll()I")
+            },
+        )
+        for ((why, change) in shapes) {
+            val context = context(build)
+            change(context)
+            val controller = controllerSnapshot(context)
+            val plan = context.resolveFasterDownloads()
+            assertEquals(why, listOf("Faster downloads: $why. The patch goes on without holding automatic downloads on Data Saver."),
+                PatchLogCapture.warnings { fasterDownloadsPatch.execute(context) })
+            assertEquals(why, controller, controllerSnapshot(context))
+            assertEquals(why, "$DOWNLOAD_SPEED->fast(Z)Z", plan.method.controlBody()[plan.read + 1].controlRef())
+            assertEquals(why, listOf(Opcode.RETURN_VOID), checkAgain(context).map { it.opcode })
+            assertEquals(why, 1L, context.flag("fasterDownloads"))
+            assertEquals(why, 0L, context.flag("dataSaverDownloads"))
         }
     }
 
     /** Every method body the patch may edit, as opcodes and registers. */
-    private fun snapshot(context: BytecodePatchContext) = listOf(LOAD_OPERATION, DOWNLOAD_CONTROLLER, *maskReaders(context))
+    private fun snapshot(context: BytecodePatchContext) = listOf(LOAD_OPERATION, DOWNLOAD_CONTROLLER, DATA_SAVER)
         .flatMap { type -> context.mutableClassDefBy(type).methods.filter { it.implementation != null }
             .map { m -> "$type->${m.name}" to m.controlBody().map { it.opcode to it.namedRegisters() } } }
 
-    private fun maskReaders(context: BytecodePatchContext) = mutableListOf<String>().also { types ->
-        context.classDefForEach { cls ->
-            if (cls.type != DOWNLOAD_CONTROLLER && cls.methods.any { m -> m.implementation != null && m.controlBody().any { it.controlRef() == CURRENT_MASK } }) types += cls.type
-        }
-    }.toTypedArray()
+    /** Each DownloadController method by its signature, as opcodes, registers and references. */
+    private fun controllerSnapshot(context: BytecodePatchContext) = context.mutableClassDefBy(DOWNLOAD_CONTROLLER).methods
+        .filter { it.implementation != null }
+        .associate { m -> "${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}" to m.controlBody().map { it.shape() } }
 
-    @Test fun `automatic downloads ask the Data Saver hold first and the mask reads outside DownloadController pass through it`() {
+    private fun checkAgain(context: BytecodePatchContext) = context.mutableClassDefBy(DATA_SAVER).methods.single { it.name == "checkAgain" }.controlBody()
+
+    @Test fun `automatic downloads and the download mask ask the Data Saver hold first, and its check is Telegram's own`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val context = context(build)
             val saver = context.resolveDataSaverDownloads()
+            assertEquals("$name: nothing missing", null, saver.missing)
             assertEquals("$name: every answer", AutoDownloadAnswer.entries.toSet(), saver.answers.keys)
-            // Two rich message media blocks and one chat cell's layout each read the mask once.
-            assertEquals("$name: the outside mask reads", 3, saver.masks.size)
-            assertEquals("$name: one read per class", 3, saver.masks.map { it.method.definingClass }.toSet().size)
             val stock = saver.answers.mapValues { ImmutableMethod.of(it.value).controlBody() }
-            val stockMasks = saver.masks.map { ImmutableMethod.of(it.method).controlBody() }
+            val signatures = saver.answers.entries.associate { (answer, _) -> answer.signature to answer }
+            val others = controllerSnapshot(context).filterKeys { it !in signatures }
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { fasterDownloadsPatch.execute(context) })
 
             for ((answer, method) in saver.answers) {
@@ -159,7 +197,13 @@ class FasterDownloadsFixtureTest {
                 val gate = if (void) 4 else 5
                 assertEquals(where, before.size + gate, after.size)
                 assertEquals(where, listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ), after.subList(0, 3).map { it.opcode })
-                assertEquals(where, "$DATA_SAVER->hold()Z", after[0].controlRef())
+                if (answer == AutoDownloadAnswer.MASK) {
+                    // The mask hands over its controller, so the runtime can run Telegram's check on it later.
+                    assertEquals(where, "$DATA_SAVER->holdMask(Ljava/lang/Object;)Z", after[0].controlRef())
+                    assertEquals(where, listOf(method.implementation!!.registerCount - 1), after[0].namedRegisters())
+                } else {
+                    assertEquals(where, "$DATA_SAVER->hold()Z", after[0].controlRef())
+                }
                 val held = after[1].namedRegisters()
                 assertEquals(where, held, after[2].namedRegisters())
                 if (void) {
@@ -172,33 +216,17 @@ class FasterDownloadsFixtureTest {
                 }
                 // A no carries on into Telegram's own answer, untouched.
                 assertEquals(where, setOf(3, gate), ControlFlow.of(method).normal[2].toSet())
-                for (i in before.indices) {
-                    assertEquals("$where: stock $i", listOf(before[i].opcode, before[i].namedRegisters(), (before[i] as? ReferenceInstruction)?.reference?.toString()),
-                        listOf(after[i + gate].opcode, after[i + gate].namedRegisters(), (after[i + gate] as? ReferenceInstruction)?.reference?.toString()))
-                }
+                for (i in before.indices) assertEquals("$where: stock $i", before[i].shape(), after[i + gate].shape())
             }
+            // The rest of DownloadController, its network change check among it, stays Telegram's.
+            assertEquals(name, others, controllerSnapshot(context).filterKeys { it !in signatures })
 
-            for ((read, before) in saver.masks.zip(stockMasks)) {
-                val where = "$name: ${read.method.definingClass}->${read.method.name}"
-                val after = read.method.controlBody()
-                assertEquals(where, before.size + 2, after.size)
-                assertEquals(where, CURRENT_MASK, after[read.index - 1].controlRef())
-                assertEquals(where, listOf(Opcode.MOVE_RESULT, Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT),
-                    after.subList(read.index, read.index + 3).map { it.opcode })
-                assertEquals(where, "$DATA_SAVER->mask(I)I", after[read.index + 1].controlRef())
-                for (i in read.index..read.index + 2) assertEquals("$where: $i", listOf(read.register), after[i].namedRegisters())
-                for (i in before.indices) {
-                    val j = if (i <= read.index) i else i + 2
-                    assertEquals("$where: stock $i", listOf(before[i].opcode, before[i].namedRegisters(), (before[i] as? ReferenceInstruction)?.reference?.toString()),
-                        listOf(after[j].opcode, after[j].namedRegisters(), (after[j] as? ReferenceInstruction)?.reference?.toString()))
-                }
-            }
-            // DownloadController's own mask reads, the network change check among them, stay Telegram's.
-            val controller = context.mutableClassDefBy(DOWNLOAD_CONTROLLER)
-            assertTrue(name, controller.methods.filter { it.implementation != null }.none { m ->
-                m.controlBody().any { it.controlRef() == "$DATA_SAVER->mask(I)I" } })
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).status("dataSaverDownloads")
-            assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
+            val stub = checkAgain(context)
+            assertEquals(name, listOf(Opcode.CHECK_CAST, Opcode.INVOKE_VIRTUAL, Opcode.RETURN_VOID), stub.map { it.opcode })
+            assertEquals(name, DOWNLOAD_CONTROLLER, stub[0].controlRef())
+            assertEquals(name, CHECK_SETTINGS, stub[1].controlRef())
+            assertEquals(name, stub[0].namedRegisters(), stub[1].namedRegisters())
+            assertEquals(1L, context.flag("dataSaverDownloads"))
         }
     }
 }

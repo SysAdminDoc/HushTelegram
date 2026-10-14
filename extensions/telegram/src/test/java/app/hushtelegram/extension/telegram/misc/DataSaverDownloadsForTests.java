@@ -34,7 +34,17 @@ public final class DataSaverDownloadsForTests {
         try {
             return DataSaverDownloads.hold();
         } finally {
-            DataSaverDownloads.forget();
+            DataSaverDownloads.reset();
+        }
+    }
+
+    /** Whether the network's download mask would be held with Data Saver on and a mobile network. */
+    public static boolean holdsMaskOnMeteredDataSaver() {
+        android(ConnectivityManager.RESTRICT_BACKGROUND_STATUS_ENABLED, ConnectivityManager.TYPE_MOBILE);
+        try {
+            return DataSaverDownloads.holdMask(null);
+        } finally {
+            DataSaverDownloads.reset();
         }
     }
 }
