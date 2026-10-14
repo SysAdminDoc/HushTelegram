@@ -703,7 +703,7 @@ public final class SelectionCheck {
             if (queries.isEmpty()) before.child(query);
             query.child(new Node("intent").child(new Node("action").attribute("name", "STRING:org.unifiedpush.android.distributor.REGISTER")));
             Node actions = new Node("intent-filter");
-            for (String action : List.of("NEW_ENDPOINT", "MESSAGE", "UNREGISTERED", "REGISTRATION_FAILED")) {
+            for (String action : List.of("NEW_ENDPOINT", "MESSAGE", "UNREGISTERED", "REGISTRATION_FAILED", "TEMP_UNAVAILABLE")) {
                 actions.child(new Node("action").attribute("name", "STRING:org.unifiedpush.android.connector." + action));
             }
             application.child(new Node("receiver").attribute("name", "STRING:" + PUSH_RECEIVER)
