@@ -4861,7 +4861,7 @@ class AlignmentFixture {
     function Invoke-ReceiptBuilder([string[]]$Fixtures, [string]$Bundle,
             [string]$WorkDir = (Join-Path $releaseRoot 'work'), [string]$DesktopJar = $stubJar, [switch]$SkipAdvisoryCheck,
             [string]$AppliedDir) {
-        Remove-Item -LiteralPath $javaLog, $mergeLog -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $javaLog, $mergeLog, (Join-Path $tools 'jvm.log') -Force -ErrorAction SilentlyContinue
         $saved = @{}
         foreach ($variable in @(Get-ChildItem Env: | Where-Object { $_.Name -like 'GIT_*' })) {
             $saved[$variable.Name] = $variable.Value
@@ -4933,6 +4933,11 @@ class AlignmentFixture {
         "patch $($fixturePaths[$_]) merged forced=$(if ($declaredBuilds -contains $_) { 0 } else { 1 })" })
     Assert-True (($patchRuns -join "`n") -eq ($expectedRuns -join "`n")) `
         "The CLI was not run once per fixture, on its merge, with -f for the undeclared build only: $($patchRuns -join '; ')"
+    # Every CLI start was bounded to two processors and a 2 GB heap ahead of -jar, as a device build's is.
+    $builderJvm = @(Get-Content -LiteralPath (Join-Path $tools 'jvm.log') -ErrorAction SilentlyContinue)
+    Assert-True ($builderJvm.Count -eq $builtBuilds.Count -and
+        @($builderJvm | Where-Object { -not $_.StartsWith('-Xmx2g -XX:ActiveProcessorCount=2 -jar ', [System.StringComparison]::Ordinal) }).Count -eq 0) `
+        "build-release-receipt.ps1 started the CLI without its heap and processor bounds: $($builderJvm -join '; ')"
     # The SBOM beside the bundle, recorded by name, hash and count, once OSV had been asked about it.
     Assert-True ($built.sbom.file -eq "patches-$releaseVersionHere.cdx.json" -and
         $built.sbom.sha256 -ceq (Get-Sha256Hex -Path $releaseSbom) -and [int]$built.sbom.components -eq 3) `
@@ -5004,7 +5009,7 @@ class AlignmentFixture {
         '@echo off', "echo Signer #1 certificate SHA-256 digest: $($releaseSigner[0])", 'exit /b 0')
     $verifyAllScript = Join-Path $PSScriptRoot 'verify-all-patches.ps1'
     function Invoke-VerifyAll([string]$Apk, [switch]$Force, [string]$KeepIn) {
-        Remove-Item -LiteralPath $javaLog, $mergeLog, $resourceStock -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $javaLog, $mergeLog, $resourceStock, (Join-Path $tools 'jvm.log') -Force -ErrorAction SilentlyContinue
         $global:LASTEXITCODE = 0
         $keep = @{}
         if ($KeepIn) { $keep = @{ KeepIn = $KeepIn; Root = $releaseRepo } }
@@ -5024,6 +5029,9 @@ class AlignmentFixture {
         (@(Get-Content -LiteralPath $javaLog) -join "`n") -eq "patch $newestFixture merged forced=0") `
         ("verify-all-patches.ps1 did not merge the bundle once and hand the CLI that merge: " +
             "$(@(Get-Content -LiteralPath $javaLog) -join '; ')")
+    $verifyJvm = @(Get-Content -LiteralPath (Join-Path $tools 'jvm.log') -ErrorAction SilentlyContinue)
+    Assert-True ($verifyJvm.Count -eq 1 -and $verifyJvm[0].StartsWith('-Xmx2g -XX:ActiveProcessorCount=2 -jar ', [System.StringComparison]::Ordinal)) `
+        "verify-all-patches.ps1 started the CLI without its heap and processor bounds: $($verifyJvm -join '; ')"
     Assert-True ((Get-Content -LiteralPath $resourceStock -Raw) -ceq (Get-Content -LiteralPath "$newestFixture.merged.txt" -Raw)) `
         'The resource check was not handed the merge as its stock side.'
     Assert-True ($said -like '*binary minSdk: 21 -> 28 (max(stock, 28))*') `

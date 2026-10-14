@@ -163,13 +163,14 @@ try {
     if ($forced) { $arguments += '-f' }
     $arguments = $arguments + $enable + @($patchInput)
 
-    # Continue for the call alone: the CLI logs WARNING and SEVERE on stderr, which Windows
+    # The JVM is bounded as the device build's is: two processors and a 2 GB heap, so a whole-APK patch
+    # can't take the machine. Continue for the call alone: the CLI logs WARNING and SEVERE on stderr, which Windows
     # PowerShell 5.1 turns into a terminating error under Stop. The report and the exit code decide.
     $preference = $ErrorActionPreference
     try {
         $ErrorActionPreference = 'Continue'
         $global:LASTEXITCODE = -1
-        $cliOutput = @(& $Java '-jar' $DesktopJar @arguments 2>&1)
+        $cliOutput = @(& $Java '-Xmx2g' '-XX:ActiveProcessorCount=2' '-jar' $DesktopJar @arguments 2>&1)
         $cliExitCode = $LASTEXITCODE
     } finally {
         $ErrorActionPreference = $preference
