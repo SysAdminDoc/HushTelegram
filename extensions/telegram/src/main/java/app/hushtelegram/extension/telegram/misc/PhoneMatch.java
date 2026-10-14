@@ -23,8 +23,14 @@ final class PhoneMatch {
                  Runnable done);
     }
 
-    /** The helper and search the last match ran for. Weak, so a closed search screen isn't kept. */
+    /**
+     * The helper, search number and text the last match ran for. Telegram counts searches from 1
+     * again once the box is cleared, so the number alone repeats; both hooks read the same step's
+     * text, the very same string, which a later search doesn't share. Weak, so a closed search
+     * screen isn't kept.
+     */
     private static WeakReference<Object> lastHelper = new WeakReference<>(null);
+    private static WeakReference<String> lastQuery = new WeakReference<>(null);
     private static int lastSearch;
 
     /** Whether a match could run for this text at all: a "+" number with no channel, which would send its member search to the server. */
@@ -42,12 +48,13 @@ final class PhoneMatch {
                        boolean self, boolean groupsOnly, long channel, boolean phoneNumbers, int type,
                        int searchId, long except, Runnable done) {
         synchronized (PhoneMatch.class) {
-            if (lastHelper.get() == helper && lastSearch == searchId) return false;
+            if (lastHelper.get() == helper && lastSearch == searchId && lastQuery.get() == query) return false;
         }
         try {
             lookup.run(helper, query, false, chats, bots, self, groupsOnly, channel, phoneNumbers, type, searchId, except, done);
             synchronized (PhoneMatch.class) {
                 lastHelper = new WeakReference<>(helper);
+                lastQuery = new WeakReference<>(query);
                 lastSearch = searchId;
             }
             HookStatus.counted(family, "phone number matched on the phone");

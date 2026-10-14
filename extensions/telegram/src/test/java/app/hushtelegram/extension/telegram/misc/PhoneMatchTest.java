@@ -97,6 +97,24 @@ public class PhoneMatchTest {
                 HookStatus.missing(FamilyNames.DISABLE_DRAFT_PREVIEWS));
     }
 
+    // Telegram counts searches from 1 again once the box is cleared, so a later search can carry a
+    // number already matched. Its text is a new string, so it matches again, with both switches on
+    // and with Keep searches alone.
+    @Test public void aLaterSearchWithARepeatedNumberStillMatches() {
+        String first = new String("+15551234");
+        assertTrue(LocalSearch.phones(helper, first, true, true, true, true, false, 0, true, 0, 1, 0L, null));
+        assertFalse(MyChatsSearch.phones(helper, first, true, true, true, true, false, 0, true, 0, 1, 0L, null));
+        String again = new String("+15551234");
+        assertTrue("the cleared box's next search was skipped",
+                LocalSearch.phones(helper, again, true, true, true, true, false, 0, true, 0, 1, 0L, null));
+        assertFalse(MyChatsSearch.phones(helper, again, true, true, true, true, false, 0, true, 0, 1, 0L, null));
+
+        Settings.SEARCH_ONLY_MY_CHATS.save(false);
+        assertTrue(LocalSearch.phones(helper, new String("+15559876"), true, true, true, true, false, 0, true, 0, 1, 0L, null));
+        assertTrue(LocalSearch.phones(helper, new String("+15559876"), true, true, true, true, false, 0, true, 0, 1, 0L, null));
+        assertEquals(Arrays.asList("local true 1", "local true 1", "local true 1", "local true 1"), lookups);
+    }
+
     // With one switch off, its hook leaves the match to the other, which still makes it.
     @Test public void withOneOffTheOtherMatchesAlone() {
         Settings.LOCAL_SEARCH.save(false);
