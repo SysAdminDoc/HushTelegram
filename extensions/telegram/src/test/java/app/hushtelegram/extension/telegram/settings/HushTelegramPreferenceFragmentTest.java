@@ -1313,6 +1313,13 @@ public class HushTelegramPreferenceFragmentTest {
             TextView answer = editor.getWindow().getDecorView().findViewWithTag(EditorForm.ANSWER);
             Button tryIt = editor.getButton(AlertDialog.BUTTON_NEUTRAL);
 
+            // A click that reaches the button while it waits, as a program or some accessibility paths can, starts nothing.
+            tryIt.setEnabled(false);
+            tryIt.performClick();
+            settle();
+            assertEquals("", answer.getText().toString());
+            tryIt.setEnabled(true);
+
             tryIt.performClick();
             assertFalse("Try waits for the answer", tryIt.isEnabled());
             settle();
@@ -1326,7 +1333,16 @@ public class HushTelegramPreferenceFragmentTest {
                         "Couldn't try it now. Try again in a moment.", answer.getText().toString());
             }
             settle();
+
+            // A check that breaks gives Try back and still answers.
+            answer.setText("");
+            FilterEditor.check = (typed, message) -> { throw new IllegalStateException("broken check"); };
+            tryIt.performClick();
+            settle();
+            assertTrue(tryIt.isEnabled());
+            assertEquals("Couldn't try it now. Try again in a moment.", answer.getText().toString());
         } finally {
+            FilterEditor.check = FilterEditor::verdict;
             Settings.MESSAGE_FILTERS_GROUPS.resetToDefault();
         }
     }

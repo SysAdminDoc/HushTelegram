@@ -20,6 +20,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import app.hushtelegram.extension.shared.L10n;
@@ -41,6 +42,9 @@ import app.hushtelegram.extension.telegram.misc.MessageFilters;
 final class FilterEditor {
     static final String GROUPS = "action_message_filters_groups";
     static final String CHANNELS = "action_message_filters_channels";
+
+    /** What Try runs on the list and the message, {@link #verdict} but for a test that needs it to break. */
+    static volatile BiFunction<String, String, String> check = FilterEditor::verdict;
 
     private FilterEditor() {}
 
@@ -158,6 +162,8 @@ final class FilterEditor {
         // Set after show, so neither one closes the dialog on its own.
         Button tryIt = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
         tryIt.setOnClickListener(v -> {
+            // A click can still reach the button while it waits, from a program or some accessibility paths.
+            if (!tryIt.isEnabled()) return;
             String typed = field.getText().toString();
             String message = sample.getText().toString();
             // Tried off the main thread, since a full list against a long message can take a moment.
@@ -177,12 +183,15 @@ final class FilterEditor {
             boolean queued = Utils.runOnBackgroundThread(() -> {
                 String said = null;
                 try {
-                    said = verdict(typed, message);
+                    said = check.apply(typed, message);
+                } catch (RuntimeException failure) {
+                    Logger.printException(() -> "Could not try the filters", failure);
                 } finally {
-                    String answered = said;
+                    // A check that broke still gives Try back and says so, rather than leaving no answer.
+                    String answered = said != null ? said : L10n.t("Couldn't try it now. Try again in a moment.");
                     Utils.runOnMainThread(() -> {
                         tryIt.setEnabled(true);
-                        if (answered != null) show.accept(answered);
+                        show.accept(answered);
                     });
                 }
             });
