@@ -475,9 +475,9 @@ Notification ID saved on this phone: %1$s	Bu telefonda kayıtlı bildirim kimli�
 Signed-in accounts: %1$s	Oturum açmış hesaplar: %1$s
 Accounts Telegram confirmed for notifications: %1$s	Telegram'ın bildirimler için onayladığı hesaplar: %1$s
 Telegram's reply to notification sign-up: %1$s	Telegram'ın bildirim kaydına yanıtı: %1$s
-# context: Notification status lines about Telegram's own Keep-Alive Service and Background Connection switches, named as Telegram's Notifications and Sounds page names them.
-Keep-Alive Service and Background Connection on: %1$s	Canlı Tutma Servisi ve Arka Plan Bağlantısı açık: %1$s
-Without push, turn both on under Settings > Notifications and Sounds to get messages on time.	Push olmadan, mesajların zamanında gelmesi için ikisini de Ayarlar > Bildirimler ve Sesler altında açın.
+# context: Notification status lines about Telegram's own Keep-Alive Service and Background Connection switches. Use exactly the labels Telegram shows in this language (translations.telegram.org keys NotificationsService, NotificationsServiceConnection, Settings, SettingsNotifications and NotificationsOther).
+Keep-Alive Service and Background Connection on: %1$s	Canlı Tutma Hizmeti ve Arka Plan Bağlantısı açık: %1$s
+Without push, turn both on to get messages on time. They're in Telegram's own Settings > Notifications, under Other.	Push olmadan, mesajların zamanında gelmesi için ikisini de açın. Telegram'ın kendi Ayarlar > Bildirimler sayfasında, Diğer bölümündeler.
 No reply since Telegram started	Telegram açıldığından beri yanıt yok
 Accepted	Kabul edildi
 Refused	Reddedildi

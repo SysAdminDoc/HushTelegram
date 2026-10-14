@@ -473,7 +473,8 @@ public class NotificationStatusTest {
         FirebasePushTest.signUp(place, FirebasePushTest.FIREBASE, null, new TLRPC.TL_error(400, "APP_PUSH_APIKEY_MISSING"));
         summary = FirebasePush.localStatus(context()).summary();
         assertTrue(summary, summary.contains("Keep-Alive Service and Background Connection on: No"));
-        assertTrue(summary, summary.contains("Without push, turn both on under Settings > Notifications and Sounds"));
+        assertTrue(summary, summary.contains("Without push, turn both on to get messages on time. They're in Telegram's own "
+                + "Settings > Notifications, under Other."));
         assertTrue(String.join("\n", FirebasePush.localReportLines()).contains("keep-alive and background connection: off"));
 
         telegram.edit().clear().commit();
@@ -485,6 +486,38 @@ public class NotificationStatusTest {
                 .contains("keep-alive and background connection: on (after a refused sign-up)"));
         telegram.edit().clear().commit();
         context().getSharedPreferences("hushtelegram_own_connection", Context.MODE_PRIVATE).edit().clear().commit();
+    }
+
+    /**
+     * Issue #16: the hint only helps if the reader can find the two switches, so every language
+     * names them, Telegram's Settings row and its Other section the way Telegram shows them there.
+     * These are the applied values on translations.telegram.org for NotificationsService,
+     * NotificationsServiceConnection, Settings, SettingsNotifications and NotificationsOther, read
+     * 2026-10-14. German's "Benachrichtungen" is spelled the way Telegram's own row spells it.
+     */
+    @Test public void theHintNamesTheSwitchesAndThePathAsTelegramShowsThemInEveryLanguage() {
+        android.content.SharedPreferences telegram = context().getSharedPreferences("Notifications", Context.MODE_PRIVATE);
+        telegram.edit().clear().putBoolean("pushService", false).commit();
+        FirebasePushTest.signUp(new FirebasePushTest.Place(ALICE), FirebasePushTest.FIREBASE, null,
+                new TLRPC.TL_error(400, "APP_PUSH_APIKEY_MISSING"));
+        String[][] languages = {
+                {"en-rUS", "Keep-Alive Service", "Background Connection", "Settings > Notifications", "Other"},
+                {"de", "Keep-Alive-Dienst", "Hintergrundverbindung", "Einstellungen > Benachrichtungen", "Sonstiges"},
+                {"es", "Servicio keep-alive", "Conexión en segundo plano", "Ajustes de Telegram > Notificaciones", "Otros"},
+                {"in-rID", "Biarkan Layanan Tetap Menyala", "Koneksi Latar", "Pengaturan Telegram sendiri > Notifikasi", "Lainnya"},
+                {"pt-rBR", "Manter Serviço Ativo", "Conexão em Segundo Plano", "Configurações do Telegram > Notificações", "Outro"},
+                {"tr", "Canlı Tutma Hizmeti", "Arka Plan Bağlantısı", "Ayarlar > Bildirimler", "Diğer"}};
+        try {
+            for (String[] language : languages) {
+                RuntimeEnvironment.setQualifiers("+" + language[0]);
+                String summary = FirebasePush.localStatus(context()).summary();
+                for (int label = 1; label < language.length; label++) {
+                    assertTrue(language[0] + " lacks " + language[label] + ": " + summary, summary.contains(language[label]));
+                }
+            }
+        } finally {
+            telegram.edit().clear().commit();
+        }
     }
 
     @Test public void fiveTranslationsPreserveSeparateLabelsBooleansCountsAndUnknownState() throws Exception {

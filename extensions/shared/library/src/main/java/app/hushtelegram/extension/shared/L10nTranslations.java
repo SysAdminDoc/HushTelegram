@@ -1332,8 +1332,8 @@ public final class L10nTranslations {
                 "Solange dein Handy gesperrt ist, starten Sprach- und runde Videonachrichten nicht, laufen nicht weiter und springen nicht zur n\u00e4chsten, ob \u00fcber Kopfh\u00f6rer, ein Auto, die Benachrichtigung oder den Sperrbildschirm. Eine, die schon l\u00e4uft, spielt zu Ende. Musik und andere Videos laufen wie gewohnt.");
         table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
                 "Mit einem Schl\u00fcssel geht der Text, den du \u00fcbersetzt, an diesen KI-Dienst statt an Google. Jeder Dienst, der OpenAIs Chat-Format versteht, funktioniert, etwa OpenAI, OpenRouter, DeepSeek oder Groq. Der Schl\u00fcssel bleibt auf diesem Telefon und kommt nie in eine Einstellungsdatei.");
-        table.put("Without push, turn both on under Settings > Notifications and Sounds to get messages on time.",
-                "Ohne Push schalte beide unter Einstellungen > Benachrichtigungen und T\u00f6ne ein, damit Nachrichten p\u00fcnktlich ankommen.");
+        table.put("Without push, turn both on to get messages on time. They're in Telegram's own Settings > Notifications, under Other.",
+                "Ohne Push schalte beide ein, damit Nachrichten p\u00fcnktlich ankommen. Sie sind in Telegrams eigenen Einstellungen > Benachrichtungen unter Sonstiges.");
         table.put("Yes",
                 "Ja");
         table.put("You already have a folder for each chat type.",
@@ -2068,7 +2068,7 @@ public final class L10nTranslations {
         table.put("Keep your location from Mini Apps",
                 "Ocultar tu ubicaci\u00f3n a las miniapps");
         table.put("Keep-Alive Service and Background Connection on: %1$s",
-                "Servicio activo y Conexi\u00f3n en segundo plano activados: %1$s");
+                "Servicio keep-alive y Conexi\u00f3n en segundo plano activados: %1$s");
         table.put("Left out of the file: %1$s.",
                 "Fuera del archivo: %1$s.");
         table.put("Less clutter",
@@ -2757,8 +2757,8 @@ public final class L10nTranslations {
                 "Mientras tu tel\u00e9fono est\u00e1 bloqueado, los mensajes de voz y de video redondo no empiezan, no se reanudan ni saltan al siguiente, ya sea desde los auriculares, un auto, la notificaci\u00f3n o la pantalla de bloqueo. El que ya se est\u00e1 reproduciendo termina. La m\u00fasica y los dem\u00e1s videos se reproducen como siempre.");
         table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
                 "Con una clave, el texto que traduces va a este servicio de IA en lugar de a Google. Funciona cualquier servicio que acepte el formato de chat de OpenAI, como OpenAI, OpenRouter, DeepSeek o Groq. La clave se queda en este tel\u00e9fono y nunca va a un archivo de ajustes.");
-        table.put("Without push, turn both on under Settings > Notifications and Sounds to get messages on time.",
-                "Sin push, activa los dos en Ajustes > Notificaciones y sonidos para recibir los mensajes a tiempo.");
+        table.put("Without push, turn both on to get messages on time. They're in Telegram's own Settings > Notifications, under Other.",
+                "Sin push, activa los dos para recibir los mensajes a tiempo. Est\u00e1n en los propios Ajustes de Telegram > Notificaciones, en Otros.");
         table.put("Yes",
                 "S\u00ed");
         table.put("You already have a folder for each chat type.",
@@ -3493,7 +3493,7 @@ public final class L10nTranslations {
         table.put("Keep your location from Mini Apps",
                 "Sembunyikan lokasi Anda dari aplikasi mini");
         table.put("Keep-Alive Service and Background Connection on: %1$s",
-                "Layanan Keep-Alive dan Koneksi Latar Belakang aktif: %1$s");
+                "Biarkan Layanan Tetap Menyala dan Koneksi Latar aktif: %1$s");
         table.put("Left out of the file: %1$s.",
                 "Tidak disertakan dalam berkas: %1$s.");
         table.put("Less clutter",
@@ -4182,8 +4182,8 @@ public final class L10nTranslations {
                 "Selama ponselmu terkunci, pesan suara dan pesan video bulat tidak dimulai, tidak dilanjutkan, dan tidak melompat ke pesan berikutnya, baik dari headphone, mobil, notifikasi, maupun layar kunci. Pesan yang sedang diputar tetap selesai. Musik dan video lain tetap diputar seperti biasa.");
         table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
                 "Dengan kunci, teks yang kamu terjemahkan dikirim ke layanan AI ini, bukan ke Google. Layanan apa pun yang menerima format chat OpenAI bisa dipakai, seperti OpenAI, OpenRouter, DeepSeek, atau Groq. Kunci tetap di ponsel ini dan tidak pernah masuk ke file pengaturan.");
-        table.put("Without push, turn both on under Settings > Notifications and Sounds to get messages on time.",
-                "Tanpa push, aktifkan keduanya di Pengaturan > Notifikasi dan Suara agar pesan masuk tepat waktu.");
+        table.put("Without push, turn both on to get messages on time. They're in Telegram's own Settings > Notifications, under Other.",
+                "Tanpa push, aktifkan keduanya agar pesan masuk tepat waktu. Keduanya ada di Pengaturan Telegram sendiri > Notifikasi, di bagian Lainnya.");
         table.put("Yes",
                 "Ya");
         table.put("You already have a folder for each chat type.",
@@ -4918,7 +4918,7 @@ public final class L10nTranslations {
         table.put("Keep your location from Mini Apps",
                 "Ocultar sua localiza\u00e7\u00e3o dos miniapps");
         table.put("Keep-Alive Service and Background Connection on: %1$s",
-                "Servi\u00e7o Keep-Alive e Conex\u00e3o em segundo plano ligados: %1$s");
+                "Manter Servi\u00e7o Ativo e Conex\u00e3o em Segundo Plano ligados: %1$s");
         table.put("Left out of the file: %1$s.",
                 "Fora do arquivo: %1$s.");
         table.put("Less clutter",
@@ -5607,8 +5607,8 @@ public final class L10nTranslations {
                 "Enquanto o celular est\u00e1 bloqueado, mensagens de voz e de v\u00eddeo redondo n\u00e3o come\u00e7am, n\u00e3o continuam e n\u00e3o pulam para a pr\u00f3xima, seja pelos fones, por um carro, pela notifica\u00e7\u00e3o ou pela tela de bloqueio. A que j\u00e1 est\u00e1 tocando vai at\u00e9 o fim. M\u00fasicas e outros v\u00eddeos tocam normalmente.");
         table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
                 "Com uma chave, o texto que voc\u00ea traduz vai para este servi\u00e7o de IA em vez do Google. Qualquer servi\u00e7o que aceite o formato de chat da OpenAI funciona, como OpenAI, OpenRouter, DeepSeek ou Groq. A chave fica neste celular e nunca vai para um arquivo de configura\u00e7\u00f5es.");
-        table.put("Without push, turn both on under Settings > Notifications and Sounds to get messages on time.",
-                "Sem push, ligue os dois em Configura\u00e7\u00f5es > Notifica\u00e7\u00f5es e Sons para receber as mensagens na hora.");
+        table.put("Without push, turn both on to get messages on time. They're in Telegram's own Settings > Notifications, under Other.",
+                "Sem push, ligue os dois para receber as mensagens na hora. Eles ficam nas pr\u00f3prias Configura\u00e7\u00f5es do Telegram > Notifica\u00e7\u00f5es, em Outro.");
         table.put("Yes",
                 "Sim");
         table.put("You already have a folder for each chat type.",
@@ -6343,7 +6343,7 @@ public final class L10nTranslations {
         table.put("Keep your location from Mini Apps",
                 "Konumunu mini uygulamalardan gizle");
         table.put("Keep-Alive Service and Background Connection on: %1$s",
-                "Canl\u0131 Tutma Servisi ve Arka Plan Ba\u011flant\u0131s\u0131 a\u00e7\u0131k: %1$s");
+                "Canl\u0131 Tutma Hizmeti ve Arka Plan Ba\u011flant\u0131s\u0131 a\u00e7\u0131k: %1$s");
         table.put("Left out of the file: %1$s.",
                 "Dosyaya al\u0131nmayanlar: %1$s.");
         table.put("Less clutter",
@@ -7032,8 +7032,8 @@ public final class L10nTranslations {
                 "Telefonun kilitliyken sesli mesajlar ve yuvarlak video mesajlar kulakl\u0131ktan, arabadan, bildirimden ya da kilit ekran\u0131ndan ba\u015flamaz, devam etmez ve bir sonrakine ge\u00e7mez. Zaten \u00e7alan mesaj sonuna kadar \u00e7alar. M\u00fczik ve di\u011fer videolar her zamanki gibi oynar.");
         table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
                 "Bir anahtarla, \u00e7evirdi\u011fin metin Google yerine bu yapay zek\u00e2 hizmetine gider. OpenAI'\u0131n sohbet bi\u00e7imini kabul eden her hizmet \u00e7al\u0131\u015f\u0131r, \u00f6rne\u011fin OpenAI, OpenRouter, DeepSeek veya Groq. Anahtar bu telefonda kal\u0131r ve hi\u00e7bir zaman bir ayar dosyas\u0131na girmez.");
-        table.put("Without push, turn both on under Settings > Notifications and Sounds to get messages on time.",
-                "Push olmadan, mesajlar\u0131n zaman\u0131nda gelmesi i\u00e7in ikisini de Ayarlar > Bildirimler ve Sesler alt\u0131nda a\u00e7\u0131n.");
+        table.put("Without push, turn both on to get messages on time. They're in Telegram's own Settings > Notifications, under Other.",
+                "Push olmadan, mesajlar\u0131n zaman\u0131nda gelmesi i\u00e7in ikisini de a\u00e7\u0131n. Telegram'\u0131n kendi Ayarlar > Bildirimler sayfas\u0131nda, Di\u011fer b\u00f6l\u00fcm\u00fcndeler.");
         table.put("Yes",
                 "Evet");
         table.put("You already have a folder for each chat type.",

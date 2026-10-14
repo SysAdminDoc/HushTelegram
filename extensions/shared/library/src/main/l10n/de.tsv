@@ -475,9 +475,9 @@ Notification ID saved on this phone: %1$s	Benachrichtigungs-ID auf diesem Handy 
 Signed-in accounts: %1$s	Angemeldete Konten: %1$s
 Accounts Telegram confirmed for notifications: %1$s	Konten, die Telegram für Benachrichtigungen bestätigt hat: %1$s
 Telegram's reply to notification sign-up: %1$s	Telegrams Antwort auf die Anmeldung für Benachrichtigungen: %1$s
-# context: Notification status lines about Telegram's own Keep-Alive Service and Background Connection switches, named as Telegram's Notifications and Sounds page names them.
+# context: Notification status lines about Telegram's own Keep-Alive Service and Background Connection switches. Use exactly the labels Telegram shows in this language (translations.telegram.org keys NotificationsService, NotificationsServiceConnection, Settings, SettingsNotifications and NotificationsOther).
 Keep-Alive Service and Background Connection on: %1$s	Keep-Alive-Dienst und Hintergrundverbindung an: %1$s
-Without push, turn both on under Settings > Notifications and Sounds to get messages on time.	Ohne Push schalte beide unter Einstellungen > Benachrichtigungen und Töne ein, damit Nachrichten pünktlich ankommen.
+Without push, turn both on to get messages on time. They're in Telegram's own Settings > Notifications, under Other.	Ohne Push schalte beide ein, damit Nachrichten pünktlich ankommen. Sie sind in Telegrams eigenen Einstellungen > Benachrichtungen unter Sonstiges.
 No reply since Telegram started	Keine Antwort seit dem Start von Telegram
 Accepted	Angenommen
 Refused	Abgelehnt

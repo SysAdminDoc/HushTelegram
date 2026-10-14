@@ -190,8 +190,10 @@ public final class FirebasePush {
                 telegram += "\n" + L10n.f("Keep-Alive Service and Background Connection on: %1$s",
                         ownConnection == null ? L10n.t("Unknown") : ownConnection ? L10n.t("Yes") : L10n.t("No"));
                 if (firebaseRefused() && Boolean.FALSE.equals(ownConnection)) {
-                    telegram += "\n" + L10n.t("Without push, turn both on under Settings > Notifications and Sounds "
-                            + "to get messages on time.");
+                    // Telegram's own page, named as Telegram shows it: the Settings row is Notifications,
+                    // and the two switches sit under Other. Our own Notifications page is a different one.
+                    telegram += "\n" + L10n.t("Without push, turn both on to get messages on time. They're in "
+                            + "Telegram's own Settings > Notifications, under Other.");
                 }
             }
             return phone + "\n\n" + push + "\n\n" + telegram + "\n\n"
