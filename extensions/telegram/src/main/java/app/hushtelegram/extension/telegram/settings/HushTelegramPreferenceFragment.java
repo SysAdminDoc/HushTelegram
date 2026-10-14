@@ -390,8 +390,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             if (PatchFamily.Capability.LAUNCH_FOLDER.installed()) {
                 folderTabs.addPreference(toggle(context, Settings.LAUNCH_FOLDER, L10n.t("Open a folder at launch"),
                         L10n.t("The chat list opens on the folder you pick below instead of All Chats. Each account keeps its "
-                                + "own pick, and the folder order doesn't change. If that folder is gone or locked, All Chats "
-                                + "opens as usual.")));
+                                + "own pick, and the folder order doesn't change. If that folder is gone, renamed or locked, "
+                                + "All Chats opens as usual.")));
                 folderTabs.addPreference(launchFolderRow(context));
             }
         }
@@ -1416,13 +1416,16 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
      */
     void showLaunchFolders(Context context, Preference row) {
         if (SettingsLock.refuses()) return;
-        int account = LaunchFolder.currentAccount();
-        long user = LaunchFolder.user(account);
-        if (user == 0) {
+        LaunchFolder.Shown shown = LaunchFolder.shown();
+        if (shown == null) {
+            Utils.showToastLong(L10n.t("Couldn't read your folders."));
+            return;
+        }
+        if (shown.user == 0) {
             Utils.showToastLong(L10n.t("Sign in to Telegram first."));
             return;
         }
-        List<LaunchFolder.Folder> folders = LaunchFolder.folders(account);
+        List<LaunchFolder.Folder> folders = shown.folders;
         if (folders.isEmpty()) {
             Utils.showToastLong(L10n.t("You don't have any folders yet."));
             return;
@@ -1432,39 +1435,32 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         for (int i = 0; i < folders.size(); i++) labels[i + 1] = folders.get(i).name;
         show(new AlertDialog.Builder(context)
                 .setTitle(L10n.t("Folder to open"))
-                .setSingleChoiceItems(labels, launchFolderChoice(folders, user), (dialog, which) -> {
-                    int folder = which == 0 ? 0 : folders.get(which - 1).id;
-                    boolean started = save((AlertDialog) dialog, () -> LaunchFolder.pick(user, folder), landed -> {
+                .setSingleChoiceItems(labels, shown.choice(), (dialog, which) -> {
+                    LaunchFolder.Folder folder = which == 0 ? null : folders.get(which - 1);
+                    boolean started = save((AlertDialog) dialog, () -> LaunchFolder.pick(shown.user, folder), landed -> {
                         if (landed) {
                             row.setSummary(launchFolderSummary());
                             dialog.dismiss();
                         } else {
-                            ((AlertDialog) dialog).getListView().setItemChecked(launchFolderChoice(folders, user), true);
+                            ((AlertDialog) dialog).getListView().setItemChecked(savedChoice(shown), true);
                             Utils.showToastLong(L10n.t("Couldn't save the folder. Try again in a moment."));
                         }
                     });
-                    if (!started) ((AlertDialog) dialog).getListView().setItemChecked(launchFolderChoice(folders, user), true);
+                    if (!started) ((AlertDialog) dialog).getListView().setItemChecked(savedChoice(shown), true);
                 })
                 .setNegativeButton(L10n.t("Cancel"), null));
     }
 
-    /** Where [user]'s pick sits in the list: 0 for All Chats, and for a folder that's gone. */
-    static int launchFolderChoice(List<LaunchFolder.Folder> folders, long user) {
-        int picked = LaunchFolder.picked(user);
-        for (int i = 0; i < folders.size(); i++) {
-            if (folders.get(i).id == picked) return i + 1;
-        }
-        return 0;
+    /** Where the saved pick sits in the list [shown] drew, read again after a pick that didn't land. */
+    private static int savedChoice(LaunchFolder.Shown shown) {
+        return shown.choiceOf(LaunchFolder.picked(shown.user));
     }
 
-    /** The picked folder's name for the account shown now, or All Chats. */
+    /** The picked folder's name for the account shown now, or All Chats, for a pick that's gone too. */
     static String launchFolderSummary() {
-        int account = LaunchFolder.currentAccount();
-        int picked = LaunchFolder.picked(LaunchFolder.user(account));
-        for (LaunchFolder.Folder folder : LaunchFolder.folders(account)) {
-            if (folder.id == picked) return folder.name;
-        }
-        return L10n.t("All Chats");
+        LaunchFolder.Shown shown = LaunchFolder.shown();
+        int choice = shown == null ? 0 : shown.choice();
+        return choice == 0 ? L10n.t("All Chats") : shown.folders.get(choice - 1).name;
     }
 
     /** What the Data Saver switch does, then what Android reports right now, read when the page opens. */

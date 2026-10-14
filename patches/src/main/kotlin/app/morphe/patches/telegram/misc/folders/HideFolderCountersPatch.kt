@@ -53,15 +53,21 @@ val hideFolderCountersPatch = bytecodePatch(
         val launch = resolveLaunchFolder()
         // Assembled on a copy first, so a refusal leaves the app untouched.
         insertCounterAnswer(MutableMethod(ImmutableMethod.of(counter)))
+        // The runtime's stubs before anything of Telegram's changes. Nothing calls them until the pick
+        // is in and its flag is on, so one that doesn't build leaves the switch out, not the patch.
+        val missing = launch.missing ?: try {
+            writeLaunchFolderStubs(launch.refs!!)
+            null
+        } catch (failed: Exception) {
+            "the folder pick's stubs don't build (${failed.javaClass.simpleName}: ${failed.message})"
+        }
         insertCounterAnswer(counter)
         enableStatus("hideFolderCounters")
-        if (launch.missing == null) {
-            // The runtime's stubs first: on their own nothing calls them.
-            writeLaunchFolderStubs(launch.refs!!)
+        if (missing == null) {
             launch.apply()
             enableCapability("launchFolder")
         } else {
-            patchLog.warning("Hide folder tab counters: ${launch.missing}. The patch goes on without opening a folder at launch.")
+            patchLog.warning("Hide folder tab counters: $missing. The patch goes on without opening a folder at launch.")
         }
     }
 }

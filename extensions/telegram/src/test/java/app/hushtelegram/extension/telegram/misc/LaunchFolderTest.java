@@ -6,6 +6,7 @@ package app.hushtelegram.extension.telegram.misc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
@@ -40,6 +41,11 @@ import app.hushtelegram.extension.telegram.settings.Settings;
 @Config(sdk = 30)
 public class LaunchFolderTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
+
+    private static final LaunchFolder.Folder WORK = new LaunchFolder.Folder(3, "Work");
+    private static final LaunchFolder.Folder FRIENDS = new LaunchFolder.Folder(7, "Friends");
+    private static final LaunchFolder.Folder OLD = new LaunchFolder.Folder(9, "Old");
+    private static final LaunchFolder.Folder FAMILY = new LaunchFolder.Folder(5, "Family");
 
     private final LaunchFolder.Telegram real = LaunchFolder.telegram;
     private Fake telegram;
@@ -133,7 +139,7 @@ public class LaunchFolderTest {
     }
 
     @Test public void offByDefaultTheListOpensOnAllChats() {
-        LaunchFolder.pick(1000, 7);
+        LaunchFolder.pick(1000, FRIENDS);
         assertFalse(Settings.LAUNCH_FOLDER.get());
         build(new Object());
         assertEquals(new ArrayList<String>(), telegram.picks);
@@ -143,12 +149,12 @@ public class LaunchFolderTest {
 
     @Test public void onTheListOpensOnThePickedFolderOnce() {
         Settings.LAUNCH_FOLDER.save(true);
-        LaunchFolder.pick(1000, 7);
+        LaunchFolder.pick(1000, FRIENDS);
         Object list = new Object();
         build(list);
         // Its index in Telegram's list, All Chats included, which is what the tabs number by.
         assertEquals(Arrays.asList("0/2"), telegram.picks);
-        // Asked again with the tabs emptied, as a rebuild of the same list's view does, it stays put.
+        // Asked again for the same list with its tabs empty, as when its view is built again, it isn't picked a second time.
         telegram.built.remove(list);
         build(list);
         assertEquals(Arrays.asList("0/2"), telegram.picks);
@@ -162,7 +168,7 @@ public class LaunchFolderTest {
         Object list = new Object();
         build(list);
         Settings.LAUNCH_FOLDER.save(true);
-        LaunchFolder.pick(1000, 7);
+        LaunchFolder.pick(1000, FRIENDS);
         telegram.built.remove(list);
         build(list);
         assertEquals(new ArrayList<String>(), telegram.picks);
@@ -170,7 +176,7 @@ public class LaunchFolderTest {
 
     @Test public void onlyTheMainChatListTakesIt() {
         Settings.LAUNCH_FOLDER.save(true);
-        LaunchFolder.pick(1000, 3);
+        LaunchFolder.pick(1000, WORK);
         Bundle share = main();
         share.putBoolean("onlySelect", true);
         Bundle type = main();
@@ -190,11 +196,11 @@ public class LaunchFolderTest {
 
     @Test public void eachAccountKeepsItsOwnPick() {
         Settings.LAUNCH_FOLDER.save(true);
-        LaunchFolder.pick(1000, 7);
+        LaunchFolder.pick(1000, FRIENDS);
         telegram.listAccount = 1;
         build(new Object());
         assertEquals("the second account has no pick", new ArrayList<String>(), telegram.picks);
-        LaunchFolder.pick(2000, 5);
+        LaunchFolder.pick(2000, FAMILY);
         build(new Object());
         telegram.listAccount = 0;
         build(new Object());
@@ -207,21 +213,34 @@ public class LaunchFolderTest {
 
     @Test public void aLockedOrMissingFolderOpensAllChats() {
         Settings.LAUNCH_FOLDER.save(true);
-        LaunchFolder.pick(1000, 9);
+        LaunchFolder.pick(1000, OLD);
         build(new Object());
-        LaunchFolder.pick(1000, 42);
+        LaunchFolder.pick(1000, new LaunchFolder.Folder(42, "Gone"));
         build(new Object());
         assertEquals(new ArrayList<String>(), telegram.picks);
         // A list with no pages takes nothing and isn't counted.
-        LaunchFolder.pick(1000, 3);
+        LaunchFolder.pick(1000, WORK);
         telegram.pages = false;
         build(new Object());
         assertFalse(report(), report().contains(LaunchFolder.OPENED));
     }
 
+    /** Telegram gives a deleted folder's id to the next one made, so a pick needs its name too. */
+    @Test public void aNewFolderThatTookThePickedOnesIdOpensAllChats() {
+        Settings.LAUNCH_FOLDER.save(true);
+        LaunchFolder.pick(1000, FRIENDS);
+        telegram.folders.get(0).set(2, new Object[]{7, "Gym", false, false});
+        build(new Object());
+        assertEquals(new ArrayList<String>(), telegram.picks);
+        // The same folder under its picked name opens again.
+        telegram.folders.get(0).set(2, new Object[]{7, "Friends", false, false});
+        build(new Object());
+        assertEquals(Arrays.asList("0/2"), telegram.picks);
+    }
+
     @Test public void pauseMissingContextAndBrokenReadsOpenAllChats() {
         Settings.LAUNCH_FOLDER.save(true);
-        LaunchFolder.pick(1000, 7);
+        LaunchFolder.pick(1000, FRIENDS);
         for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
             if (reason == HushTelegramPause.Reason.NONE) continue;
             PauseForTests.pause(reason);
@@ -248,27 +267,46 @@ public class LaunchFolderTest {
         telegram.folder(1, 6, null, false);
         assertEquals("", LaunchFolder.folders(1).get(1).name);
         assertEquals(0, LaunchFolder.folders(2).size());
+        // The settings page reads the account shown now, its folders and its pick in one go.
         telegram.selected = 1;
-        assertEquals(1, LaunchFolder.currentAccount());
-        assertEquals(2000L, LaunchFolder.user(1));
+        LaunchFolder.pick(2000, FAMILY);
+        LaunchFolder.Shown shown = LaunchFolder.shown();
+        assertEquals(2000L, shown.user);
+        assertEquals(2, shown.folders.size());
+        assertEquals("Family is first after All Chats", 1, shown.choice());
+        assertEquals(2, shown.choiceOf(new LaunchFolder.Folder(6, "")));
+        assertEquals("a renamed pick isn't there", 0, shown.choiceOf(new LaunchFolder.Folder(5, "Kids")));
+        assertEquals(0, shown.choiceOf(null));
+    }
+
+    @Test public void aFolderListThatCantBeReadIsNoneAndSaysWhy() {
+        telegram.broken = true;
+        assertNull(LaunchFolder.shown());
+        assertTrue(report(), report().contains("folder list"));
     }
 
     @Test public void picksAreSavedByUserAndAllChatsClearsOne() {
-        assertEquals(0, LaunchFolder.picked(1000));
-        assertTrue(LaunchFolder.pick(1000, 7));
-        assertTrue(LaunchFolder.pick(2000, 5));
-        assertEquals(7, LaunchFolder.picked(1000));
-        assertEquals(5, LaunchFolder.picked(2000));
-        assertTrue(LaunchFolder.pick(1000, 0));
-        assertEquals(0, LaunchFolder.picked(1000));
+        assertNull(LaunchFolder.picked(1000));
+        assertTrue(LaunchFolder.pick(1000, FRIENDS));
+        assertTrue(LaunchFolder.pick(2000, FAMILY));
+        assertTrue(FRIENDS.is(LaunchFolder.picked(1000)));
+        assertTrue(FAMILY.is(LaunchFolder.picked(2000)));
+        assertTrue(LaunchFolder.pick(1000, null));
+        assertNull(LaunchFolder.picked(1000));
         assertFalse(LaunchFolder.store.apply(context()).contains("1000"));
+        assertFalse(LaunchFolder.store.apply(context()).contains("1000.name"));
+        // An id saved without its name, or a value of the wrong kind, is no pick.
+        LaunchFolder.store.apply(context()).edit().putInt("3000", 7).putInt("4000.name", 1).putInt("4000", 7).commit();
+        assertNull(LaunchFolder.picked(3000));
+        assertNull(LaunchFolder.picked(4000));
+        assertTrue(report(), report().contains("folder pick"));
         // No one signed in, or no context yet: nothing is saved or read.
-        assertFalse(LaunchFolder.pick(0, 7));
-        assertEquals(0, LaunchFolder.picked(0));
+        assertFalse(LaunchFolder.pick(0, FRIENDS));
+        assertNull(LaunchFolder.picked(0));
         SettingsContextRule.withoutContext(() -> {
-            assertFalse(LaunchFolder.pick(2000, 3));
-            assertEquals(0, LaunchFolder.picked(2000));
+            assertFalse(LaunchFolder.pick(2000, WORK));
+            assertNull(LaunchFolder.picked(2000));
         });
-        assertEquals(5, LaunchFolder.picked(2000));
+        assertTrue(FAMILY.is(LaunchFolder.picked(2000)));
     }
 }

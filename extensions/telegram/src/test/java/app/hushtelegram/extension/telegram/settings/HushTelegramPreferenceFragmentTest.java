@@ -602,7 +602,7 @@ public class HushTelegramPreferenceFragmentTest {
                     ((SwitchPreference) page.findPreference(Settings.HIDE_FOLDER_COUNTERS.key)).isChecked());
             assertEquals("Open a folder at launch", String.valueOf(page.findPreference(Settings.LAUNCH_FOLDER.key).getTitle()));
             assertEquals("The chat list opens on the folder you pick below instead of All Chats. Each account keeps its own "
-                    + "pick, and the folder order doesn't change. If that folder is gone or locked, All Chats opens as usual.",
+                    + "pick, and the folder order doesn't change. If that folder is gone, renamed or locked, All Chats opens as usual.",
                     String.valueOf(page.findPreference(Settings.LAUNCH_FOLDER.key).getSummary()));
             // The chat list opens on All Chats until the switch is turned on.
             assertFalse(Settings.LAUNCH_FOLDER.key,
@@ -1184,7 +1184,9 @@ public class HushTelegramPreferenceFragmentTest {
             shadowOf(list).clickOnItem(2);
             settle();
             assertFalse(list.isShowing());
-            assertEquals(2, LaunchFolder.picked(1000));
+            // Saved with its name, so a folder made later in its place isn't taken for it.
+            assertEquals(2, LaunchFolder.picked(1000).id);
+            assertEquals("Friends", LaunchFolder.picked(1000).name);
             assertEquals("Friends", String.valueOf(folder.getSummary()));
             assertFalse("picking a folder leaves the switch alone", Settings.LAUNCH_FOLDER.savedValue());
 
@@ -1192,12 +1194,14 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("the pick is checked", 2, list.getListView().getCheckedItemPosition());
             shadowOf(list).clickOnItem(0);
             settle();
-            assertEquals(0, LaunchFolder.picked(1000));
+            assertNull(LaunchFolder.picked(1000));
             assertEquals("All Chats", String.valueOf(folder.getSummary()));
 
-            // Signed out, or no folders yet: a note instead of an empty list.
-            for (Object[] state : new Object[][]{{0L, "Sign in to Telegram first."}, {1000L, "You don't have any folders yet."}}) {
-                LaunchFolderForTests.signedIn((Long) state[0]);
+            // Signed out, no folders yet, or folders that can't be read: a note instead of a list.
+            for (Object[] state : new Object[][]{{0L, "Sign in to Telegram first."}, {1000L, "You don't have any folders yet."},
+                    {-1L, "Couldn't read your folders."}}) {
+                if ((Long) state[0] < 0) LaunchFolderForTests.unreadable();
+                else LaunchFolderForTests.signedIn((Long) state[0]);
                 ShadowToast.reset();
                 ShadowAlertDialog.reset();
                 assertTrue(folder.getOnPreferenceClickListener().onPreferenceClick(folder));
@@ -1205,6 +1209,8 @@ public class HushTelegramPreferenceFragmentTest {
                 assertNull(ShadowAlertDialog.getLatestAlertDialog());
                 assertEquals(state[1], ShadowToast.getTextOfLatestToast());
             }
+            // The page still builds, and the row names All Chats.
+            assertEquals("All Chats", HushTelegramPreferenceFragment.launchFolderSummary());
         } finally {
             LaunchFolderForTests.restore();
         }

@@ -32,11 +32,12 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * touched.
  *
  * <p>Each account keeps its own pick on this phone, by the account's user id, so another account
- * signed in to the same slot never gets it. A folder that's gone, or locked by Telegram's folder
- * limit, is passed over and All chats opens as usual. Only the main chat list takes it: the lists
- * that pick a chat to share or forward to, and the archive, open as Telegram has them. It happens
- * once for each chat list Telegram makes, so a list whose view is built again, after a theme
- * change say, stays where you left it.
+ * signed in to the same slot never gets it. A pick is the folder's id and the name it had when
+ * picked, since Telegram gives a deleted folder's id to the next one made. A folder that's gone,
+ * renamed or locked by Telegram's folder limit is passed over and All chats opens as usual. Only
+ * the main chat list takes it: the lists that pick a chat to share or forward to, and the archive,
+ * open as Telegram has them. It happens once for each chat list Telegram makes. A list whose view
+ * is built again, after a theme change say, gets new tabs and opens as Telegram has it then.
  */
 public final class LaunchFolder {
     private LaunchFolder() {}
@@ -45,6 +46,8 @@ public final class LaunchFolder {
     static final String OPENED = "chat list opened on the picked folder";
 
     private static final String PREFS = "hushtelegram_launch_folders";
+    /** Added to a user id for the picked folder's name, beside its id under the user id itself. */
+    private static final String NAME = ".name";
 
     /** The chat lists whose tabs were built once already. Weak, so a list Telegram drops goes too. Main thread only. */
     private static final Map<Object, Boolean> built = new WeakHashMap<>();
@@ -62,6 +65,38 @@ public final class LaunchFolder {
         Folder(int id, String name) {
             this.id = id;
             this.name = name;
+        }
+
+        /** Whether this is [pick]: the same id and the same name, so a new folder that took a deleted one's id isn't. */
+        public boolean is(@Nullable Folder pick) {
+            return pick != null && id == pick.id && name.equals(pick.name);
+        }
+    }
+
+    /** The account Telegram shows now, as the settings page reads it once: who's signed in, their folders and their pick. */
+    public static final class Shown {
+        /** The user id, or 0 when no one is signed in. */
+        public final long user;
+        public final List<Folder> folders;
+        @Nullable public final Folder pick;
+
+        Shown(long user, List<Folder> folders, @Nullable Folder pick) {
+            this.user = user;
+            this.folders = folders;
+            this.pick = pick;
+        }
+
+        /** Where the pick sits in a list of All Chats then [folders]: 0 for All Chats, and for a pick that's gone. */
+        public int choice() {
+            return choiceOf(pick);
+        }
+
+        /** Where [folder] sits in that list, 0 when it isn't there. */
+        public int choiceOf(@Nullable Folder folder) {
+            for (int i = 0; i < folders.size(); i++) {
+                if (folders.get(i).is(folder)) return i + 1;
+            }
+            return 0;
         }
     }
 
@@ -95,58 +130,80 @@ public final class LaunchFolder {
                 && args.getInt("dialogsType", 0) == 0 && args.getInt("folderId", 0) == 0;
     }
 
-    /** Where [folder] sits in [account]'s folder list, or -1 when it's not there or locked. */
-    private static int indexOf(int account, int folder) {
-        if (folder <= 0) return -1;
+    /** Where [pick] sits in [account]'s folder list, or -1 when it's not there, renamed or locked. */
+    private static int indexOf(int account, @Nullable Folder pick) {
+        if (pick == null) return -1;
         int count = telegram.folderCount(account);
         for (int i = 0; i < count; i++) {
-            if (telegram.folderDefault(account, i) || telegram.folderId(account, i) != folder) continue;
+            if (telegram.folderDefault(account, i) || !folderAt(account, i).is(pick)) continue;
             return telegram.folderLocked(account, i) ? -1 : i;
         }
         return -1;
     }
 
-    /** The account Telegram shows now. */
-    public static int currentAccount() {
-        return telegram.selectedAccount();
+    private static Folder folderAt(int account, int index) {
+        String name = telegram.folderName(account, index);
+        return new Folder(telegram.folderId(account, index), name == null ? "" : name);
     }
 
-    /** [account]'s user id, or 0 when no one is signed in there. */
-    public static long user(int account) {
-        return telegram.userId(account);
+    /**
+     * The account Telegram shows now, its folders and its pick, or null when Telegram's side can't
+     * be read, which the settings page says rather than going down with it.
+     */
+    @Nullable
+    public static Shown shown() {
+        try {
+            int account = telegram.selectedAccount();
+            long user = telegram.userId(account);
+            return new Shown(user, folders(account), picked(user));
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "folder list", failure);
+            return null;
+        }
     }
 
     /** The folders [account] can open on, in Telegram's order: every one but All chats and the locked ones. */
-    public static List<Folder> folders(int account) {
+    static List<Folder> folders(int account) {
         List<Folder> folders = new ArrayList<>();
         int count = telegram.folderCount(account);
         for (int i = 0; i < count; i++) {
             if (telegram.folderDefault(account, i) || telegram.folderLocked(account, i)) continue;
-            String name = telegram.folderName(account, i);
-            folders.add(new Folder(telegram.folderId(account, i), name == null ? "" : name));
+            folders.add(folderAt(account, i));
         }
         return Collections.unmodifiableList(folders);
     }
 
-    /** The folder id picked for [user], or 0 for All chats. */
-    public static int picked(long user) {
+    /** The folder picked for [user], or null for All chats and for a pick that can't be read. */
+    @Nullable
+    public static Folder picked(long user) {
         Context context = Utils.getContext();
-        if (user == 0 || context == null) return 0;
-        return store.apply(context).getInt(String.valueOf(user), 0);
+        if (user == 0 || context == null) return null;
+        try {
+            SharedPreferences saved = store.apply(context);
+            int id = saved.getInt(String.valueOf(user), 0);
+            String name = saved.getString(user + NAME, null);
+            return id > 0 && name != null ? new Folder(id, name) : null;
+        } catch (RuntimeException unreadable) {
+            HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "folder pick", unreadable);
+            return null;
+        }
     }
 
     /**
-     * Saves [folder] as [user]'s pick, 0 for All chats. It's written before this returns, so call
+     * Saves [folder] as [user]'s pick, null for All chats. It's written before this returns, so call
      * it off the main thread.
      *
      * @return whether it was written
      */
-    public static boolean pick(long user, int folder) {
+    public static boolean pick(long user, @Nullable Folder folder) {
         Context context = Utils.getContext();
         if (user == 0 || context == null) return false;
         SharedPreferences.Editor edit = store.apply(context).edit();
-        if (folder > 0) edit.putInt(String.valueOf(user), folder);
-        else edit.remove(String.valueOf(user));
+        if (folder != null && folder.id > 0) {
+            edit.putInt(String.valueOf(user), folder.id).putString(user + NAME, folder.name);
+        } else {
+            edit.remove(String.valueOf(user)).remove(user + NAME);
+        }
         return edit.commit();
     }
 

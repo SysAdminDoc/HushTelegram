@@ -837,7 +837,7 @@ Couldn't update the preview. Copy and Save still use only what's ticked.	Önizle
 # context: Switch on the Chat list page under Hide folder tab counters, off by default. With it on, the chat list opens on a folder the user picked instead of All Chats when the app starts
 Open a folder at launch	Açılışta bir klasör aç
 # context: Summary of Open a folder at launch. All Chats is Telegram's own name for the first folder tab: use Telegram's translation of it. Locked means a folder Telegram locks because the account has more folders than its limit allows
-The chat list opens on the folder you pick below instead of All Chats. Each account keeps its own pick, and the folder order doesn't change. If that folder is gone or locked, All Chats opens as usual.	Sohbet listesi Tüm Sohbetler yerine aşağıda seçtiğiniz klasörde açılır. Her hesap kendi seçimini saklar ve klasörlerin sırası değişmez. O klasör silinmiş ya da kilitliyse Tüm Sohbetler her zamanki gibi açılır.
+The chat list opens on the folder you pick below instead of All Chats. Each account keeps its own pick, and the folder order doesn't change. If that folder is gone, renamed or locked, All Chats opens as usual.	Sohbet listesi Tüm Sohbetler yerine aşağıda seçtiğiniz klasörde açılır. Her hesap kendi seçimini saklar ve klasörlerin sırası değişmez. O klasör silinmiş, adı değişmiş ya da kilitliyse Tüm Sohbetler her zamanki gibi açılır.
 # context: Row under Open a folder at launch. Its summary is the picked folder's name, and a tap lists All Chats and the account's folders to pick from
 Folder to open	Açılacak klasör
 # context: Telegram's own name for the folder tab with every chat (FilterAllChats). Use Telegram's translation
@@ -846,5 +846,7 @@ All Chats	Tüm Sohbetler
 You don't have any folders yet.	Henüz hiç klasörünüz yok.
 # context: Toast when the picked folder couldn't be written to the phone's storage
 Couldn't save the folder. Try again in a moment.	Klasör kaydedilemedi. Birazdan tekrar deneyin.
+# context: Toast when Folder to open is tapped and Telegram's folder list can't be read
+Couldn't read your folders.	Klasörleriniz okunamadı.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that opens the chat list on a picked folder
-folder the chat list opens on	sohbet listesinin açıldığı klasör
+which folder the chat list opens on	sohbet listesinin açıldığı klasör

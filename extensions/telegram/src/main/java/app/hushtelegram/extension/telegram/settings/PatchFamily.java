@@ -362,7 +362,7 @@ public enum PatchFamily {
         SKIP_AUTOLOGIN(STRIP_LINK_TRACKING, "skipAutologin", "website sign-in tokens"),
         SHARE_NUMBER_UNTICKED(HIDE_PHONE_NUMBER, "shareNumberUnticked", "number sharing on new contacts"),
         COMPACT_TAB_BAR(HIDE_CONTACTS_TAB, "compactTabBar", "bottom bar size"),
-        LAUNCH_FOLDER(HIDE_FOLDER_COUNTERS, "launchFolder", "folder the chat list opens on"),
+        LAUNCH_FOLDER(HIDE_FOLDER_COUNTERS, "launchFolder", "which folder the chat list opens on"),
         LOCKED_VOICE(VOICE_ONE_AT_A_TIME, "lockedVoice", "voice playback while locked"),
         DATA_SAVER_DOWNLOADS(FASTER_DOWNLOADS, "dataSaverDownloads", "automatic downloads on Data Saver"),
         TITLE_EMOJI(HOLIDAY_LOOK, "titleEmoji", "emoji next to the chat list title"),

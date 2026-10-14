@@ -16,7 +16,7 @@ public final class LaunchFolderForTests {
     private static LaunchFolder.Telegram saved;
 
     /** One account signed in as [user], with All Chats and then [names] as its folders, ids 1 up. */
-    private static final class Folders implements LaunchFolder.Telegram {
+    private static class Folders implements LaunchFolder.Telegram {
         final long user;
         final String[] names;
         int selected = -1;
@@ -56,6 +56,14 @@ public final class LaunchFolderForTests {
         LaunchFolder.telegram = new Folders(user, names);
     }
 
+    /** Telegram signed in with folders that can't be read, as when a stub no longer fits. {@link #restore} undoes it. */
+    public static void unreadable() {
+        if (saved == null) saved = LaunchFolder.telegram;
+        LaunchFolder.telegram = new Folders(1000, "Work") {
+            @Override public int folderCount(int account) { throw new IllegalStateException("Telegram changed"); }
+        };
+    }
+
     /** Back to the stubs, with no picks saved. */
     public static void restore() {
         if (saved != null) LaunchFolder.telegram = saved;
@@ -71,7 +79,7 @@ public final class LaunchFolderForTests {
         LaunchFolder.telegram = telegram;
         // Written straight to the file, so the pick is there even while the extension has no context.
         SharedPreferences picks = LaunchFolder.store.apply(RuntimeEnvironment.getApplication());
-        picks.edit().putInt("1000", 1).commit();
+        picks.edit().putInt("1000", 1).putString("1000.name", "Work").commit();
         try {
             LaunchFolder.firstTabs(new Object());
         } finally {

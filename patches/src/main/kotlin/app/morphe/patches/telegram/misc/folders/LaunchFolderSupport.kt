@@ -138,6 +138,9 @@ internal fun BytecodePatchContext.resolveLaunchFolder(): LaunchFolderPlan = try 
     firstTabs().also { it.rehearse() }
 } catch (unpicked: Unpicked) {
     LaunchFolderPlan(null, 0, 0, null, unpicked.message)
+} catch (failed: RuntimeException) {
+    // Code this build reads in a way nothing here expected, such as a cast the control flow can't follow.
+    LaunchFolderPlan(null, 0, 0, null, "the folder tabs' build can't be read (${failed.javaClass.simpleName}: ${failed.message})")
 }
 
 private fun BytecodePatchContext.firstTabs(): LaunchFolderPlan {
