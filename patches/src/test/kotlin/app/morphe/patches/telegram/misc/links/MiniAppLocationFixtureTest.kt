@@ -11,8 +11,10 @@ import app.morphe.PatchContexts
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
@@ -26,6 +28,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstructio
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
@@ -97,10 +100,27 @@ class MiniAppLocationFixtureTest {
             }),
             // The answer folded into the listener, as R8 could do: a later fix would go round the gate.
             Case("listener reads coordinates", "reads coordinates outside the bot location manager's answer", context = { context ->
-                val listeners = mutableListOf<String>()
-                context.classDefForEach { cls -> if (LISTENER in cls.interfaces && !cls.type.startsWith("Lapp/hushtelegram/")) listeners += cls.type }
-                context.mutableClassDefBy(listeners.single()).methods.single { it.name == "onLocationChanged" }
-                    .addInstructions(0, "invoke-virtual {p1}, Landroid/location/Location;->getLatitude()D")
+                context.changed().addInstructions(0, "invoke-virtual {p1}, Landroid/location/Location;->getLatitude()D")
+            }),
+            Case("listener reads longitude", "reads coordinates outside the bot location manager's answer", context = { context ->
+                context.changed().addInstructions(0, "invoke-virtual {p1}, Landroid/location/Location;->getLongitude()D")
+            }),
+            Case("listener builds coordinates", "reads coordinates outside the bot location manager's answer", context = { context ->
+                context.changed().addInstructions(0, "const-string v0, \"latitude\"")
+            }),
+            // A later fix handed to something other than the answer goes round the gate.
+            Case("listener skips the answer", "hands a later fix on without the bot location manager's answer", context = { context ->
+                val changed = context.changed()
+                val call = changed.instructions().indexOfFirst { it.ref()?.endsWith("(Landroid/location/Location;)Lorg/json/JSONObject;") == true }
+                val registers = changed.instructions()[call].namedRegisters().joinToString { "v$it" }
+                changed.replaceInstruction(call, "invoke-static {$registers}, Lhush/Elsewhere;->h(Landroid/location/Location;)Lorg/json/JSONObject;")
+            }),
+            // move-result-object can't reach the answer's parameter past register 255.
+            Case("answer past register 255", "keeps its parameter past register 255", context = { context ->
+                val answer = context.resolveMiniAppLocation().gates.getValue(LocationGate.ANSWER)
+                val owner = context.mutableClassDefBy(answer.definingClass)
+                owner.methods.remove(answer)
+                owner.methods.add(padded(answer, 256))
             }),
             // A branch back to the GPS check's first instruction would skip the gate, since the label
             // stays on Telegram's first instruction.
@@ -126,6 +146,17 @@ class MiniAppLocationFixtureTest {
             assertFlag(context, "miniAppLocation", false)
             assertFlag(context, "openExternalLinks", true)
             assertFlag(context, "externalBrowserRouting", true)
+        }
+    }
+
+    /** smali drops an instruction it can't build and only logs it; the rehearsal counts what went in. */
+    @Test fun `a gate that can't reach its register is caught by the rehearsal`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hostClasses(build))
+            val answer = padded(context.resolveMiniAppLocation().gates.getValue(LocationGate.ANSWER), 256)
+            val stock = answer.state()
+            assertThrows(build.name, Exception::class.java) { MiniAppLocationPlan(mapOf(LocationGate.ANSWER to answer), null).rehearse() }
+            assertEquals("${build.name}: the rehearsal works on a copy", stock, answer.state())
         }
     }
 
@@ -177,6 +208,22 @@ class MiniAppLocationFixtureTest {
         val body = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }.instructions()
         assertEquals(Opcode.CONST_4, body[0].opcode)
         assertEquals(name, if (enabled) 1 else 0, (body[0] as NarrowLiteralInstruction).narrowLiteral)
+    }
+
+    /** The listener's onLocationChanged, where a later fix comes in. */
+    private fun BytecodePatchContext.changed(): MutableMethod {
+        val listeners = mutableListOf<String>()
+        classDefForEach { cls -> if (LISTENER in cls.interfaces && !cls.type.startsWith("Lapp/hushtelegram/")) listeners += cls.type }
+        return mutableClassDefBy(listeners.single()).methods.single { it.name == "onLocationChanged" }
+    }
+
+    /** [method] with [extra] more registers, so its parameters sit that much higher. */
+    private fun padded(method: Method, extra: Int): MutableMethod {
+        val implementation = method.implementation!!
+        return MutableMethod(ImmutableMethod(method.definingClass, method.name, method.parameters, method.returnType,
+            method.accessFlags, method.annotations, method.hiddenApiRestrictions,
+            ImmutableMethodImplementation(implementation.registerCount + extra, implementation.instructions,
+                implementation.tryBlocks, implementation.debugItems)))
     }
 
     private fun Method.state(): List<Any?> = listOf(accessFlags, implementation?.registerCount, instructions().map(::operands))

@@ -33,14 +33,16 @@ internal const val GEO_INVOKE = "$GEO_CALLBACK->invoke(Ljava/lang/String;ZZ)V"
 internal const val SHOW_PROMPT = "onGeolocationPermissionsShowPrompt"
 private const val LOCATION = "Landroid/location/Location;"
 private const val LOCATION_LISTENER = "Landroid/location/LocationListener;"
-private const val GET_LATITUDE = "$LOCATION->getLatitude()D"
+/** What a location's coordinates and how sure they are can be read through. */
+private val COORDINATES = setOf("getLatitude()D", "getLongitude()D", "getAltitude()D", "getAccuracy()F")
+    .map { "$LOCATION->$it" }.toSet()
 private const val JSON = "Lorg/json/JSONObject;"
 private const val BOT_LOCATION_PREFS = "botlocation_"
 private const val GPS_FEATURE = "android.hardware.location.gps"
 private const val HAS_FEATURE = "Landroid/content/pm/PackageManager;->hasSystemFeature(Ljava/lang/String;)Z"
 
-/** Where the location switch asks, and what a yes does there. */
-internal enum class LocationGate(val code: String, val labeled: Boolean) {
+/** Where the location switch asks, and what a yes does there, in [size] instructions. */
+internal enum class LocationGate(val code: String, val labeled: Boolean, val size: Int) {
     /** The bot location manager's GPS check answers no, so no location is asked for. */
     GPS("""
         invoke-static {}, $MINI_APP_LOCATION->refuse()Z
@@ -48,13 +50,13 @@ internal enum class LocationGate(val code: String, val labeled: Boolean) {
         if-eqz v0, :hush_stock
         const/4 v0, 0x0
         return v0
-    """, true),
+    """, true, 5),
 
     /** The manager's answer for a Mini App gets no location, so it says location isn't available. */
     ANSWER("""
         invoke-static/range {p0 .. p0}, $MINI_APP_LOCATION->location($LOCATION)$LOCATION
         move-result-object p0
-    """, false),
+    """, false, 2),
 
     /** The web view's geolocation prompt refuses the page itself and shows no dialog. */
     PROMPT("""
@@ -62,13 +64,13 @@ internal enum class LocationGate(val code: String, val labeled: Boolean) {
         move-result v0
         if-eqz v0, :hush_stock
         return-void
-    """, true),
+    """, true, 4),
 
     /** Telegram's geolocation dialog, once answered, answers no. */
     DIALOG("""
         invoke-static/range {p1 .. p1}, $MINI_APP_LOCATION->answer(Ljava/lang/Object;)Ljava/lang/Object;
         move-result-object p1
-    """, false),
+    """, false, 2),
 }
 
 /** Each gate's method, found and checked before anything is edited, or [missing], why this build can't keep location. */
@@ -77,13 +79,23 @@ internal class MiniAppLocationPlan(val gates: Map<LocationGate, MutableMethod>, 
     fun apply(into: (MutableMethod) -> MutableMethod = { it }) {
         for ((gate, method) in gates) {
             val target = into(method)
+            val before = target.implementation!!.instructions.size
             if (gate.labeled) target.addInstructionsWithLabels(0, gate.code, ExternalLabel("hush_stock", target.getInstruction(0)))
             else target.addInstructions(0, gate.code)
+            // smali drops an instruction it can't build, a register out of reach among them, and only logs it.
+            need(target.implementation!!.instructions.size - before == gate.size,
+                "the $gate gate didn't compile whole in ${method.definingClass}->${method.name}")
         }
     }
 
     /** The same edits on copies, so a smali or register problem shows before the app is touched. */
-    fun rehearse() = apply { MutableMethod(ImmutableMethod.of(it)) }
+    fun rehearse() = try {
+        apply { MutableMethod(ImmutableMethod.of(it)) }
+    } catch (failed: IllegalStateException) {
+        throw Ungated("the location gates don't compile (${failed.message})")
+    } catch (failed: IllegalArgumentException) {
+        throw Ungated("the location gates don't compile (${failed.message})")
+    }
 
     companion object {
         fun missing(why: String) = MiniAppLocationPlan(emptyMap(), why)
@@ -119,12 +131,6 @@ internal fun BytecodePatchContext.resolveMiniAppLocation(): MiniAppLocationPlan 
     MiniAppLocationPlan(gates(), null).also { it.rehearse() }
 } catch (ungated: Ungated) {
     MiniAppLocationPlan.missing(ungated.why)
-} catch (failed: PatchException) {
-    MiniAppLocationPlan.missing("the location gates don't fit this build (${failed.message})")
-} catch (failed: IllegalArgumentException) {
-    MiniAppLocationPlan.missing("the location gates don't fit this build (${failed.message})")
-} catch (failed: IllegalStateException) {
-    MiniAppLocationPlan.missing("the location gates don't fit this build (${failed.message})")
 }
 
 private fun ClassDef.isOwn() = type.startsWith("Lapp/hushtelegram/")
@@ -152,12 +158,14 @@ private fun BytecodePatchContext.gates(): Map<LocationGate, MutableMethod> {
     // go through the answer too: with the answer folded into it, the gate there would never run.
     val answerRef = answers.single().let { "${it.definingClass}->${it.name}($LOCATION)$JSON" }
     val listeners = manager.methods.flatMap { m -> m.controlBody().filter { it.opcode == Opcode.NEW_INSTANCE }.mapNotNull { it.controlRef() } }
-        .distinct().mapNotNull { classDefByOrNull(it) }.filter { LOCATION_LISTENER in it.interfaces }
+        .distinct().mapNotNull { classDefByOrNull(it) }.filter { isLocationListener(it.type) }
     need(listeners.isNotEmpty(), "the bot location manager's listener for later fixes is missing")
     for (listener in listeners) {
-        need(listener.methods.any { m -> m.controlBody().any { it.controlRef() == answerRef } },
+        val changed = listener.methods.filter { it.name == "onLocationChanged" && it.returnType == "V" &&
+            it.parameterTypes.map(CharSequence::toString) == listOf(LOCATION) }
+        need(changed.size == 1 && changed.single().controlBody().any { it.controlRef() == answerRef },
             "${listener.type} hands a later fix on without the bot location manager's answer")
-        need(listener.methods.none { m -> "latitude" in m.strings() || m.controlBody().any { it.controlRef() == GET_LATITUDE } },
+        need(listener.methods.none { m -> "latitude" in m.strings() || m.controlBody().any { it.controlRef() in COORDINATES } },
             "${listener.type} reads coordinates outside the bot location manager's answer")
     }
 
@@ -193,15 +201,32 @@ private fun BytecodePatchContext.gates(): Map<LocationGate, MutableMethod> {
     for ((gate, method) in gates) {
         val where = "${method.definingClass}->${method.name}"
         if (gate.labeled) {
-            need(method.localRegisterCount() >= 1, "$where has no local to answer in")
+            val locals = try {
+                method.localRegisterCount()
+            } catch (failed: PatchException) {
+                throw Ungated("$where's registers can't be read (${failed.message})")
+            }
+            need(locals >= 1, "$where has no local to answer in")
         } else {
             // The others write their answer back to the last parameter, which move-result reaches only below 256.
             need(method.implementation!!.registerCount <= 256, "$where keeps its parameter past register 255")
         }
-        val flow = ControlFlow.of(method)
+        val flow = try {
+            ControlFlow.of(method)
+        } catch (failed: IllegalArgumentException) {
+            throw Ungated("$where's control flow can't be read (${failed.message})")
+        }
         need(flow.normal.none { 0 in it } && flow.exceptional.none { 0 in it }, "something jumps back to the start of $where")
     }
     return gates
+}
+
+/** Whether [type] is a LocationListener, itself or through a parent class or interface Telegram carries. */
+private fun BytecodePatchContext.isLocationListener(type: String, depth: Int = 0): Boolean {
+    if (type == LOCATION_LISTENER) return true
+    if (depth > 8) return false
+    val cls = classDefByOrNull(type) ?: return false
+    return cls.interfaces.any { isLocationListener(it, depth + 1) } || cls.superclass?.let { isLocationListener(it, depth + 1) } == true
 }
 
 private fun Method.isPrompt() = name == SHOW_PROMPT && returnType == "V" && !static() &&
