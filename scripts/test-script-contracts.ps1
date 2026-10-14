@@ -4067,6 +4067,24 @@ try {
         Assert-True (-not (Test-Path -LiteralPath $concurrent)) 'A run folder whose process had ended was kept.'
         Assert-True ((Test-Path -LiteralPath $mine) -and (Test-Path -LiteralPath $justMade)) 'The sweep removed this run''s folder, or one just made.'
         Assert-True (@(Remove-StaleRunFolders -OutDir (Join-Path $commonRoot 'no-such-out')).Count -eq 0) 'A missing output folder was not an empty sweep.'
+
+        # An owner whose start can't be read is settled by HasExited, and one that denies that read
+        # too (an elevated process read from Windows PowerShell 5.1) counts as live. The denied read
+        # used to throw out of the sweep and stop the run.
+        function New-OwnerStandIn($Start, $Exited) {
+            $standIn = New-Object psobject
+            $standIn | Add-Member -MemberType ScriptProperty -Name StartTime -Value ([scriptblock]::Create($Start))
+            $standIn | Add-Member -MemberType ScriptProperty -Name HasExited -Value ([scriptblock]::Create($Exited))
+            return $standIn
+        }
+        $denied = 'throw (New-Object System.ComponentModel.Win32Exception 5)'
+        $startedAt = [DateTime]::UtcNow
+        $startedRead = "[DateTime]::new($($startedAt.Ticks), 'Utc')"
+        Assert-True (-not (Test-RunOwnerGone -Process (New-OwnerStandIn $denied $denied) -OwnerTicks $startedAt.Ticks)) 'An owner that denies every read was counted as gone.'
+        Assert-True (Test-RunOwnerGone -Process (New-OwnerStandIn $denied '$true') -OwnerTicks $startedAt.Ticks) 'An owner that had exited was counted as live.'
+        Assert-True (-not (Test-RunOwnerGone -Process (New-OwnerStandIn $denied '$false') -OwnerTicks $startedAt.Ticks)) 'A running owner whose start was denied was counted as gone.'
+        Assert-True (-not (Test-RunOwnerGone -Process (New-OwnerStandIn $startedRead $denied) -OwnerTicks $startedAt.Ticks)) 'The owner that started when its file says was counted as gone.'
+        Assert-True (Test-RunOwnerGone -Process (New-OwnerStandIn $startedRead $denied) -OwnerTicks $startedAt.AddMinutes(-1).Ticks) 'A process that reused the owner''s id was counted as the owner.'
     } finally {
         if (-not $liveOther.HasExited) { Stop-Process -Id $liveOther.Id -Force -ErrorAction SilentlyContinue }
     }

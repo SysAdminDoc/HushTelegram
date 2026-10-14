@@ -109,14 +109,26 @@ function Test-RunFolderStale {
     try { $process = [System.Diagnostics.Process]::GetProcessById($ownerId) }
     catch [System.ArgumentException] { return $true }
     catch { return $false }
+    try { return Test-RunOwnerGone -Process $process -OwnerTicks $ownerTicks } finally { $process.Dispose() }
+}
+
+function Test-RunOwnerGone {
+    <#
+    .SYNOPSIS
+        Whether -Process, found under a run owner's id, is a different process or one that ended.
+    .DESCRIPTION
+        A process this can't read the start of is an elevated one or one that just exited, so
+        HasExited settles it. An elevated one can deny that read too, and the denial used to throw
+        out of the sweep and stop the run; it counts as live, like anything else this can't read.
+    #>
+    param([Parameter(Mandatory = $true)]$Process, [Parameter(Mandatory = $true)][long]$OwnerTicks)
+
     try {
-        $started = $process.StartTime.ToUniversalTime().Ticks
-        return [Math]::Abs($started - $ownerTicks) -gt ([TimeSpan]::TicksPerSecond * 2)
+        $started = $Process.StartTime.ToUniversalTime().Ticks
+        return [Math]::Abs($started - $OwnerTicks) -gt ([TimeSpan]::TicksPerSecond * 2)
     } catch {
-        # A process this can't read the start of (an elevated one, or one that just exited).
-        if ($process.HasExited) { return $true }
-        return $false
-    } finally { $process.Dispose() }
+        try { return [bool]$Process.HasExited } catch { return $false }
+    }
 }
 
 function Remove-StaleRunFolders {
