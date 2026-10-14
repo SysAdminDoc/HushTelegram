@@ -9,6 +9,8 @@ $ErrorActionPreference = 'Stop'
 if (-not $Root) { $Root = Split-Path -Parent $PSScriptRoot }
 $Root = [IO.Path]::GetFullPath($Root)
 . (Join-Path $Root 'scripts/build-advisories.ps1') -Root $Root
+. (Join-Path $Root 'scripts/common.ps1')
+Import-UserEnvironment -Name @('HUSHTELEGRAM_BUILD_WRAPPER')
 $reportPath = Join-Path $Root 'patches/build/dependency-reports/build-dependencies.json'
 $temp = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\', '/')
 $work = [IO.Path]::GetFullPath((Join-Path $temp ('hushtelegram-host-alignment-' + [guid]::NewGuid().ToString('N'))))
@@ -16,16 +18,33 @@ if ([IO.Path]::GetDirectoryName($work) -ine $temp) { throw 'The host alignment f
 New-Item -ItemType Directory -Path $work | Out-Null
 
 function Invoke-Report([string]$InitScript) {
-    $arguments = @('-p', $Root, ':patches:buildDependencyReport', '--console=plain',
-        '--dependency-verification=strict', '--rerun-tasks')
-    if ($InitScript) { $arguments += @('--init-script', $InitScript) }
+    # Through the machine's build wrapper, which queues and bounds Gradle itself, or gradlew.bat
+    # inside a queue slot when no wrapper is set, as the pre-push gate and the release stages start it.
+    $tasks = @(':patches:buildDependencyReport', '--console=plain', '--dependency-verification=strict', '--rerun-tasks')
+    if ($InitScript) { $tasks += @('--init-script', $InitScript) }
+    $wrapper = $env:HUSHTELEGRAM_BUILD_WRAPPER
+    if ($wrapper -and -not (Test-Path -LiteralPath $wrapper -PathType Leaf)) {
+        throw "HUSHTELEGRAM_BUILD_WRAPPER names $wrapper, which is not there."
+    }
     $savedPreference = $ErrorActionPreference
+    $global:LASTEXITCODE = 0
     try {
         $ErrorActionPreference = 'Continue'
-        $output = @(& (Join-Path $Root 'gradlew.bat') @arguments 2>&1)
-        $code = $LASTEXITCODE
+        Push-Location -LiteralPath $Root
+        try {
+            if ($wrapper) {
+                & $wrapper -ProjectDir $Root -Tasks $tasks | Out-Host
+                $code = $LASTEXITCODE
+            } else {
+                # Names the queue's own functions don't use (see Invoke-InHushTelegramQueue).
+                $gradlew = Join-Path $Root 'gradlew.bat'
+                $gradleRoot = $Root
+                $gradleTasks = $tasks
+                $code = Invoke-InHushTelegramQueue -Job 'host advisory alignment' -ScriptBlock { & $gradlew -p $gradleRoot @gradleTasks }
+            }
+        } finally { Pop-Location }
     } finally { $ErrorActionPreference = $savedPreference }
-    if ($code -ne 0) { throw "The host alignment graph could not be generated (exit $code).`n$($output -join "`n")" }
+    if ($code -ne 0) { throw "The host alignment graph could not be generated (exit $code). Read the Gradle output above." }
 }
 function Assert-Version($Report, [string]$Configuration, [string]$Group, [string]$Name, [string]$Version) {
     $libraries = @($Report.Libraries | Where-Object {
