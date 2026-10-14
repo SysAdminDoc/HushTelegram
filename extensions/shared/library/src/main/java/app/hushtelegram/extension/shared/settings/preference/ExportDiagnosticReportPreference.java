@@ -47,6 +47,9 @@ public class ExportDiagnosticReportPreference extends Preference {
     /** The most of a report the preview draws. Copy and Save still use every part that's ticked. */
     static final int PREVIEW_MAX_CHARS = 30_000;
 
+    /** Thrown by the next redraw's worker and then cleared: how a test reaches the note it leaves. */
+    static volatile RuntimeException failNextRedraw;
+
     /** The summary to put back once a report is done, while the row says it's busy; null otherwise. */
     @Nullable private CharSequence restingSummary;
     private boolean busy;
@@ -198,6 +201,11 @@ public class ExportDiagnosticReportPreference extends Preference {
         boolean started = Utils.runOnBackgroundThread(() -> {
             String text;
             try {
+                RuntimeException failing = failNextRedraw;
+                if (failing != null) {
+                    failNextRedraw = null;
+                    throw failing;
+                }
                 text = preview.text(ticked);
             } catch (Throwable failure) {
                 Logger.printException(() -> "Failed to redraw the diagnostic preview", failure);

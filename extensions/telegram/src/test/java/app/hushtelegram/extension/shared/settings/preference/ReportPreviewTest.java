@@ -42,6 +42,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.Utils;
@@ -230,6 +231,35 @@ public class ReportPreviewTest {
         }
     }
 
+    /** A redraw whose worker fails says so, but only while it's the newest choice. */
+    @Test public void aRedrawThatFailsSaysSoOnlyWhileItsTheNewest() throws Exception {
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            ExportDiagnosticReportPreference row = new ExportDiagnosticReportPreference(controller.get());
+            ViewGroup content = openPreview(row);
+            TextView body = body(content);
+            TextView note = note(content);
+            ExportDiagnosticReportPreference.failNextRedraw = new IllegalStateException("probe");
+            boxes(content).get(1).setChecked(false);
+            settle();
+            assertEquals(View.VISIBLE, note.getVisibility());
+            assertEquals("Couldn't update the preview. Copy and Save still use only what's ticked.", note.getText().toString());
+            assertTrue("the old text stays", body.getText().toString().contains(SECRET_PART));
+
+            // A failure overtaken by a newer choice says nothing; the newer one draws.
+            ExportDiagnosticReportPreference.failNextRedraw = new IllegalStateException("probe");
+            boxes(content).get(2).setChecked(false);
+            // Its worker fails and posts back, but the main thread hasn't run that yet when the next box changes.
+            Utils.awaitBackgroundTasksForTests();
+            boxes(content).get(0).setChecked(false);
+            settle();
+            assertEquals(View.GONE, note.getVisibility());
+            assertFalse(body.getText().toString(), body.getText().toString().contains(SECRET_PART));
+            assertFalse(body.getText().toString(), body.getText().toString().contains(EVENT));
+        } finally {
+            ExportDiagnosticReportPreference.failNextRedraw = null;
+        }
+    }
+
     /** A file with a part left out isn't called the full report. */
     @Test public void saveFromTheRowLeavesOutWhatsUntickedAndSaysSo() throws Exception {
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
@@ -265,12 +295,20 @@ public class ReportPreviewTest {
 
     /** The counts read the way the phone's language writes numbers. */
     @Test @Config(qualifiers = "de") public void theCountsUseThePhonesNumbers() {
-        StringBuilder text = new StringBuilder();
-        for (int i = 0; i < ExportDiagnosticReportPreference.PREVIEW_MAX_CHARS + 10; i++) text.append('a');
-        TextView note = new TextView(context);
-        ExportDiagnosticReportPreference.bind(context, new TextView(context), note, text.toString());
-        assertTrue(note.getText().toString(), note.getText().toString().contains("30.000")
-                && note.getText().toString().contains("30.010"));
+        // Robolectric sets the JVM default from the qualifiers too; with it English, only the phone's
+        // language can give German grouping.
+        Locale jvm = Locale.getDefault();
+        Locale.setDefault(Locale.US);
+        try {
+            StringBuilder text = new StringBuilder();
+            for (int i = 0; i < ExportDiagnosticReportPreference.PREVIEW_MAX_CHARS + 10; i++) text.append('a');
+            TextView note = new TextView(context);
+            ExportDiagnosticReportPreference.bind(context, new TextView(context), note, text.toString());
+            assertTrue(note.getText().toString(), note.getText().toString().contains("30.000")
+                    && note.getText().toString().contains("30.010"));
+        } finally {
+            Locale.setDefault(jvm);
+        }
     }
 
     /** A page gone while the report was built gets no preview. */
