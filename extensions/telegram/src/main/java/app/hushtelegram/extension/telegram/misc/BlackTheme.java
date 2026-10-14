@@ -32,7 +32,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * restart. Its accent colors are worked out from these, and they leave black as it is.
  *
  * <p>The launch screen Android shows before Telegram runs follows too, on Android 13 and up, with
- * Telegram's logo in white when Black and white launch logo is in the build: see {@link #launchScreen}.
+ * Telegram's logo in white when Black and white launch logo is in the build, which also shows it when
+ * Android restarts a Telegram it closed: see {@link #launchScreen}.
  */
 public final class BlackTheme {
     private BlackTheme() {}
@@ -45,8 +46,11 @@ public final class BlackTheme {
      */
     static final int LAUNCH_SCREEN = android.R.style.Theme_Black_NoTitleBar;
 
-    /** The launch theme Black and white launch logo adds: black with Telegram's logo in white, when it's in the build. */
-    static final String LOGO_THEME = "HushTelegramLaunchBlack";
+    /**
+     * The launch theme Black and white launch logo adds with Telegram's original look, when it's in
+     * the build. The patch puts the white logo on black in Telegram's own dark launch theme instead.
+     */
+    static final String STOCK_THEME = "HushTelegramLaunchStock";
     private static final String LAUNCH_PREFS = "hushtelegram_launch_screen";
     private static final String LAUNCH_THEME = "theme";
 
@@ -54,9 +58,9 @@ public final class BlackTheme {
     interface LaunchScreens {
         void use(Activity activity, int theme);
 
-        /** The logo patch's theme in Telegram's resources, or 0 when the build doesn't have it. */
-        default int logo(Activity activity) {
-            return activity.getResources().getIdentifier(LOGO_THEME, "style", activity.getPackageName());
+        /** The logo patch's theme with Telegram's look in Telegram's resources, or 0 when the build doesn't have it. */
+        default int stock(Activity activity) {
+            return activity.getResources().getIdentifier(STOCK_THEME, "style", activity.getPackageName());
         }
     }
 
@@ -125,25 +129,34 @@ public final class BlackTheme {
      * background. Android draws the launch screen from a theme before Telegram runs, and Telegram's
      * is dark blue while the phone is in dark mode. From Android 13 an app can name another theme
      * for its next start, so while this patch is in, its switch is on and the phone is in dark mode,
-     * that's {@link #LAUNCH_SCREEN}, or {@link #LOGO_THEME} when the build has it, and otherwise
-     * Telegram's own again. Android keeps the choice and rewrites a file each time it's asked, so
-     * it's asked only when the choice changes.
+     * that's {@link #LAUNCH_SCREEN}, and otherwise Telegram's own again.
+     *
+     * <p>With Black and white launch logo in the build, Telegram's own dark launch theme already is
+     * the white logo on black, so the switch on asks for Telegram's own and the switch off asks for
+     * {@link #STOCK_THEME}. That way the logo also shows when Android restarts a Telegram it closed in
+     * the background, where it draws Telegram's own theme whatever was named here.
+     *
+     * <p>Android keeps the choice and rewrites a file each time it's asked, so it's asked only when
+     * the choice changes. The saved choice is the theme's id, like the one Android keeps, so an id
+     * saved by an older build still matches what Android has.
      */
     public static void launchScreen(Activity activity) {
         if (activity == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return;
         try {
             if (!Utils.settingsReady()) return;
-            boolean black = PatchFamily.AMOLED_BLACK.inBuild() && Settings.AMOLED_BLACK.get() && darkMode();
-            int logo = black ? launchScreens.logo(activity) : 0;
-            int theme = logo != 0 ? logo : black ? LAUNCH_SCREEN : 0;
+            boolean amoled = PatchFamily.AMOLED_BLACK.inBuild() && Settings.AMOLED_BLACK.get();
+            boolean dark = darkMode();
+            int stock = launchScreens.stock(activity);
+            int theme = stock != 0 ? (amoled ? 0 : stock) : (amoled && dark ? LAUNCH_SCREEN : 0);
             SharedPreferences saved = activity.getSharedPreferences(LAUNCH_PREFS, Context.MODE_PRIVATE);
             // With nothing saved it asks once anyway, so a black launch screen left from before
             // Telegram's data was cleared goes too.
             if (saved.contains(LAUNCH_THEME) && saved.getInt(LAUNCH_THEME, 0) == theme) return;
             launchScreens.use(activity, theme);
             saved.edit().putInt(LAUNCH_THEME, theme).apply();
-            if (logo != 0) HookStatus.counted(FamilyNames.AMOLED_BLACK, "launch screen turned black with the white logo");
-            else if (black) HookStatus.counted(FamilyNames.AMOLED_BLACK, "launch screen turned black");
+            if (stock != 0 && amoled && dark) HookStatus.counted(FamilyNames.AMOLED_BLACK, "launch screen turned black with the white logo");
+            else if (stock != 0 && !amoled) HookStatus.counted(FamilyNames.AMOLED_BLACK, "launch screen kept Telegram's look");
+            else if (theme == LAUNCH_SCREEN) HookStatus.counted(FamilyNames.AMOLED_BLACK, "launch screen turned black");
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.AMOLED_BLACK, "black launch screen", failure);
         }

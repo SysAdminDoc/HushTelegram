@@ -235,7 +235,7 @@
     },
     {
       "name": "Black and white launch logo",
-      "description": "With AMOLED black on and your phone in dark mode, the launch screen shows Telegram's logo in white on black instead of the app icon, on Android 13 and up. It isn't selected by default, since it has Morphe rebuild Telegram's resources. Turn on Expert mode in Morphe Manager to pick it.",
+      "description": "With AMOLED black on and your phone in dark mode, the launch screen shows Telegram's logo in white on black instead of the blue one. It follows the switch on Android 13 and up. When Android reopens a Telegram it closed in the background, it shows the black screen in dark mode even with the switch off, since nothing can run that early. It isn't selected by default, since it has Morphe rebuild Telegram's resources. Turn on Expert mode in Morphe Manager to pick it.",
       "category": "Theme",
       "use": false,
       "dependencies": [

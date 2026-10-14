@@ -171,7 +171,7 @@ try {
 # only a case that selects one may add its own.
 $none = "[resources] added resources: 0`r`n[resources] files named by the patched table: 7115, moved 0"
 $iconLines = "  0x7f0d0021 mipmap/hush_launcher`r`n  0x7f0d0022 mipmap/hush_launcher_foreground`r`n  0x7f0d0023 mipmap/hush_launcher_monochrome"
-$logoLines = "  0x7f0807f0 drawable/hush_launch_logo`r`n  0x7f0807f1 drawable/hush_launch_logo_shape`r`n  0x7f1003a0 style/HushTelegramLaunchBlack"
+$logoLines = "  0x7f0807f0 drawable/hush_launch_logo`r`n  0x7f0807f1 drawable/hush_launch_logo_shape`r`n  0x7f1003a0 style/HushTelegramLaunchStock"
 $tail = "`r`n[resources] files named by the patched table: 7117, moved 0"
 $icons = "[resources] added resources: 3`r`n$iconLines$tail"
 $logos = "[resources] added resources: 3`r`n$logoLines$tail"

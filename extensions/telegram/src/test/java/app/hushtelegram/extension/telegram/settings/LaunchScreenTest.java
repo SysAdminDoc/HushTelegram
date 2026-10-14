@@ -90,20 +90,28 @@ public class LaunchScreenTest {
         assertEquals(Collections.singletonList(TELEGRAMS), asked);
     }
 
-    @Test public void withTheLogoPatchInTheBuildItsThemeIsAskedForInstead() {
-        int logo = 0x7f1009a0;
-        BlackThemeForTests.watchLaunchScreens(asked, logo);
+    @Test public void withTheLogoPatchTheSwitchOnKeepsTelegramsOwnAndOffAsksForTheStockLook() {
+        // The patch put the logo in Telegram's own dark launch theme, which Android also draws when
+        // it restarts a Telegram it closed, so the switch on names Telegram's own in either mode.
+        int stock = 0x7f1009a0;
+        BlackThemeForTests.watchLaunchScreens(asked, stock);
         Settings.AMOLED_BLACK.save(true);
         SettingsEntry.onActivityCreate(activity);
         stopped();
         Settings.AMOLED_BLACK.save(false);
         stopped();
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
         Settings.AMOLED_BLACK.save(true);
+        stopped();
+        PauseForTests.resume();
         RuntimeEnvironment.setQualifiers("+notnight");
         stopped();
-        assertEquals(Arrays.asList(logo, TELEGRAMS), asked);
+        RuntimeEnvironment.setQualifiers("+night");
+        stopped();
+        assertEquals(Arrays.asList(TELEGRAMS, stock, TELEGRAMS), asked);
         String report = String.join("\n", HookStatus.report());
         assertTrue(report, report.contains("launch screen turned black with the white logo 1"));
+        assertTrue(report, report.contains("launch screen kept Telegram's look 1"));
         assertTrue(report, !report.contains("launch screen turned black 1"));
     }
 

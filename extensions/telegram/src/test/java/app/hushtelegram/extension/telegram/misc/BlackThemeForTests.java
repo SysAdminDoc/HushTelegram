@@ -22,11 +22,14 @@ public final class BlackThemeForTests {
         BlackTheme.launchScreens = (activity, theme) -> asked.add(theme);
     }
 
-    /** {@link #watchLaunchScreens(List)} on a build where Black and white launch logo's theme has the id {@code logo}. */
-    public static void watchLaunchScreens(List<Integer> asked, int logo) {
+    /**
+     * {@link #watchLaunchScreens(List)} on a build with Black and white launch logo, where the theme
+     * it adds with Telegram's look has the id {@code stock}.
+     */
+    public static void watchLaunchScreens(List<Integer> asked, int stock) {
         BlackTheme.launchScreens = new BlackTheme.LaunchScreens() {
             @Override public void use(Activity activity, int theme) { asked.add(theme); }
-            @Override public int logo(Activity activity) { return logo; }
+            @Override public int stock(Activity activity) { return stock; }
         };
     }
 

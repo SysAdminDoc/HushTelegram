@@ -148,7 +148,7 @@ function Test-SelectionAddedResources {
         $allowed += @('mipmap/hush_launcher', 'mipmap/hush_launcher_foreground', 'mipmap/hush_launcher_monochrome')
     }
     if ($Closure -ccontains 'Black and white launch logo') {
-        $allowed += @('drawable/hush_launch_logo', 'drawable/hush_launch_logo_shape', 'style/HushTelegramLaunchBlack')
+        $allowed += @('drawable/hush_launch_logo', 'drawable/hush_launch_logo_shape', 'style/HushTelegramLaunchStock')
     }
     return [int]$match.Groups[1].Value -eq $allowed.Count -and $names.Count -eq $allowed.Count -and
         (@($names | Sort-Object -CaseSensitive) -join "`n") -ceq (@($allowed | Sort-Object -CaseSensitive) -join "`n")
