@@ -115,8 +115,9 @@ function New-ReviewedBuildReport {
         'org.bouncycastle:bcprov-jdk18on' = '1.86'; 'org.bouncycastle:bcpkix-jdk18on' = '1.86'
         'org.bouncycastle:bcutil-jdk18on' = '1.86'
     }
+    # The Gradle this repo builds with, outside every recorded advisory, so these cases are about the libraries.
     return [ordered]@{
-        schemaVersion = 1; gradleVersion = '9.7.1'; configurations = @('settings:classpath', $core, $emulator)
+        schemaVersion = 1; gradleVersion = '9.8.1'; configurations = @('settings:classpath', $core, $emulator)
         components = @(foreach ($package in $modules.Keys) {
             $parts = $package.Split(':')
             [ordered]@{
