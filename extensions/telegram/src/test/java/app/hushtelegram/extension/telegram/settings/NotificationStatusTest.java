@@ -212,6 +212,26 @@ public class NotificationStatusTest {
         }
     }
 
+    @Test public void theStatusSaysWhetherTelegramsOwnConnectionIsOnAndHowToTurnItOn() {
+        android.content.SharedPreferences telegram = context().getSharedPreferences("Notifications", Context.MODE_PRIVATE);
+        telegram.edit().clear().putBoolean("pushService", false).commit();
+        FirebasePush.registerDeviceAnswer(null, new TLRPC.TL_error(400, "APP_PUSH_APIKEY_MISSING"));
+        String summary = FirebasePush.localStatus(context()).summary();
+        assertTrue(summary, summary.contains("Keep-Alive Service and Background Connection on: No"));
+        assertTrue(summary, summary.contains("Without push, turn both on under Settings > Notifications and Sounds"));
+        assertTrue(String.join("\n", FirebasePush.localReportLines()).contains("keep-alive and background connection: off"));
+
+        telegram.edit().clear().commit();
+        FirebasePush.registerDeviceAnswer(null, new TLRPC.TL_error(400, "APP_PUSH_APIKEY_MISSING"));
+        summary = FirebasePush.localStatus(context()).summary();
+        assertTrue(summary, summary.contains("Keep-Alive Service and Background Connection on: Yes"));
+        assertFalse(summary, summary.contains("Without push"));
+        assertTrue(String.join("\n", FirebasePush.localReportLines())
+                .contains("keep-alive and background connection: on (after a refused sign-up)"));
+        telegram.edit().clear().commit();
+        context().getSharedPreferences("hushtelegram_own_connection", Context.MODE_PRIVATE).edit().clear().commit();
+    }
+
     @Test public void fiveTranslationsPreserveSeparateLabelsBooleansCountsAndUnknownState() throws Exception {
         String[][] languages = {{"de", "de"}, {"es", "es"}, {"in-rID", "in"}, {"pt-rBR", "pt-rbr"}, {"tr", "tr"}};
         for (String[] language : languages) {

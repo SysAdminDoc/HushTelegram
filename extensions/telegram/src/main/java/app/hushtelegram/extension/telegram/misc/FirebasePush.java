@@ -51,26 +51,40 @@ public final class FirebasePush {
         public final int acknowledgedAccounts;
         /** accepted, refused, "refused NAME CODE", none since start, or null when the answer hook isn't installed. */
         public final String pushAnswer;
+        /** Telegram's Keep-Alive Service and Background Connection both on, or null when unread. */
+        public final Boolean ownConnection;
+        /** Whether a refused sign-up turned them on, rather than the user. */
+        public final boolean ownConnectionTurnedOnHere;
 
         private LocalStatus(Boolean notificationPermission, Boolean tokenPresent, int activeAccounts, int acknowledgedAccounts,
-                            String pushAnswer) {
+                            String pushAnswer, Boolean ownConnection, boolean ownConnectionTurnedOnHere) {
             this.notificationPermission = notificationPermission;
             this.tokenPresent = tokenPresent;
             this.activeAccounts = activeAccounts;
             this.acknowledgedAccounts = acknowledgedAccounts;
             this.pushAnswer = pushAnswer;
+            this.ownConnection = ownConnection;
+            this.ownConnectionTurnedOnHere = ownConnectionTurnedOnHere;
         }
 
         public String summary() {
-            return L10n.f("Notification permission: %1$s", notificationPermission == null ? L10n.t("Unknown")
+            String summary = L10n.f("Notification permission: %1$s", notificationPermission == null ? L10n.t("Unknown")
                     : notificationPermission ? L10n.t("Allowed") : L10n.t("Blocked"))
                     + "\n" + L10n.f("Notification ID saved on this phone: %1$s", tokenPresent == null ? L10n.t("Unknown")
                     : tokenPresent ? L10n.t("Yes") : L10n.t("No"))
                     + "\n" + L10n.f("Signed-in accounts: %1$s", count(activeAccounts))
                     + "\n" + L10n.f("Accounts Telegram confirmed for notifications: %1$s", count(acknowledgedAccounts))
-                    + "\n" + L10n.f("Telegram's reply to notification sign-up: %1$s", answer())
-                    + "\n" + L10n.t("This only shows what's saved on this phone. It doesn't prove notifications will "
-                            + "arrive.");
+                    + "\n" + L10n.f("Telegram's reply to notification sign-up: %1$s", answer());
+            if (pushAnswer != null) {
+                summary += "\n" + L10n.f("Keep-Alive Service and Background Connection on: %1$s",
+                        ownConnection == null ? L10n.t("Unknown") : ownConnection ? L10n.t("Yes") : L10n.t("No"));
+                if (pushAnswer.startsWith(REFUSED) && Boolean.FALSE.equals(ownConnection)) {
+                    summary += "\n" + L10n.t("Without push, turn both on under Settings > Notifications and Sounds "
+                            + "to get messages on time.");
+                }
+            }
+            return summary + "\n" + L10n.t("This only shows what's saved on this phone. It doesn't prove notifications will "
+                    + "arrive.");
         }
 
         private static String count(int value) { return value < 0 ? L10n.t("Unknown") : Integer.toString(value); }
@@ -90,26 +104,35 @@ public final class FirebasePush {
                     "active accounts: " + (activeAccounts < 0 ? "unknown" : activeAccounts),
                     "acknowledged accounts: " + (acknowledgedAccounts < 0 ? "unknown" : acknowledgedAccounts),
                     "push registration answer: " + (pushAnswer == null ? "unknown" : pushAnswer),
+                    "keep-alive and background connection: " + (ownConnection == null ? "unknown"
+                            : ownConnection ? "on" + (ownConnectionTurnedOnHere ? " (after a refused sign-up)" : "")
+                            : "off"),
                     "local state only; notification delivery is unverified");
         }
     }
 
     /**
      * Injected in front of Telegram's own boolTrue test in its account.registerDevice callback, which
-     * otherwise drops a refusal without a trace. Reads both parameters and changes neither, so it runs
-     * whatever the switch and Pause say. Only the error's upper-case name and number are kept.
+     * otherwise drops a refusal without a trace. Reads both parameters and changes neither. The
+     * answer is recorded whatever the switch and Pause say, and {@link OwnConnection} then acts on it
+     * only while the switch is on and nothing's paused. Only the error's upper-case name and number
+     * are kept.
      */
     public static void registerDeviceAnswer(Object response, Object error) {
+        boolean accepted;
         try {
             String answer = response != null && BOOL_TRUE.equals(response.getClass().getName()) ? ACCEPTED
                     : error == null ? REFUSED : REFUSED + " " + errorName(error);
             lastAnswer = answer;
+            accepted = ACCEPTED.equals(answer);
             HookStatus.counted(FamilyNames.REPAIR_FIREBASE_PUSH,
-                    ACCEPTED.equals(answer) ? "push registrations accepted" : "push registrations refused");
+                    accepted ? "push registrations accepted" : "push registrations refused");
             Logger.printInfo(() -> "Telegram answered the push registration: " + answer);
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.REPAIR_FIREBASE_PUSH, "push registration answer", failure);
+            return;
         }
+        OwnConnection.answered(accepted);
     }
 
     /** TL_error's public text and code fields. Text that isn't an upper-case error name never leaves. */
@@ -143,10 +166,14 @@ public final class FirebasePush {
         int active = -1;
         int acknowledged = -1;
         String answer = null;
+        Boolean ownConnection = null;
+        boolean ownConnectionHere = false;
         if (Utils.settingsReady() && PatchFamily.REPAIR_FIREBASE_PUSH.inBuild()
                 && PatchFamily.Capability.FIREBASE_LOCAL_STATUS.installed()) {
             String last = lastAnswer;
             answer = last == null ? NO_ANSWER : last;
+            ownConnection = OwnConnection.bothOn(context);
+            ownConnectionHere = OwnConnection.turnedOnHere(context);
             try {
                 int presence = nativeTokenPresence();
                 if (presence == 0 || presence == 1) token = presence == 1;
@@ -161,7 +188,7 @@ public final class FirebasePush {
                 }
             } catch (Throwable unreadable) { }
         }
-        return new LocalStatus(permission, token, active, acknowledged, answer);
+        return new LocalStatus(permission, token, active, acknowledged, answer, ownConnection, ownConnectionHere);
     }
 
     /** Replaced only after the patch verifies the retained native fields and their local readers. */

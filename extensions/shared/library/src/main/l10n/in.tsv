@@ -438,6 +438,9 @@ Notification ID saved on this phone: %1$s	ID notifikasi tersimpan di ponsel ini:
 Signed-in accounts: %1$s	Akun yang masuk: %1$s
 Accounts Telegram confirmed for notifications: %1$s	Akun yang dikonfirmasi Telegram untuk notifikasi: %1$s
 Telegram's reply to notification sign-up: %1$s	Balasan Telegram atas pendaftaran notifikasi: %1$s
+# context: Notification status lines about Telegram's own Keep-Alive Service and Background Connection switches, named as Telegram's Notifications and Sounds page names them.
+Keep-Alive Service and Background Connection on: %1$s	Layanan Keep-Alive dan Koneksi Latar Belakang aktif: %1$s
+Without push, turn both on under Settings > Notifications and Sounds to get messages on time.	Tanpa push, aktifkan keduanya di Pengaturan > Notifikasi dan Suara agar pesan masuk tepat waktu.
 No reply since Telegram started	Belum ada balasan sejak Telegram dibuka
 Accepted	Diterima
 Refused	Ditolak
