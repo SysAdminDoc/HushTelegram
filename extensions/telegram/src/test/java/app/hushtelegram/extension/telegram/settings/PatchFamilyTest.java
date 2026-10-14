@@ -530,16 +530,21 @@ public class PatchFamilyTest {
     }
 
     @Test
-    public void hidePopularAppsCarriesSearchOnlyMyChatsOffByDefault() {
+    public void hidePopularAppsCarriesItsSearchSwitchesOffByDefault() {
         PatchFamily family = PatchFamily.HIDE_POPULAR_APPS;
         assertEquals("Hide popular apps", family.patchName);
-        // Popular apps stay hidden as shipped; search keeps its public parts until someone turns the second switch on.
-        assertEquals(Arrays.asList(Settings.HIDE_POPULAR_APPS, Settings.SEARCH_ONLY_MY_CHATS), family.switches);
+        // Popular apps stay hidden as shipped; search keeps its public parts, and matches names as Telegram
+        // does, until someone turns the other switches on.
+        assertEquals(Arrays.asList(Settings.HIDE_POPULAR_APPS, Settings.SEARCH_ONLY_MY_CHATS, Settings.SEARCH_STYLED_NAMES),
+                family.switches);
         assertTrue(Settings.HIDE_POPULAR_APPS.defaultValue);
         assertFalse(Settings.SEARCH_ONLY_MY_CHATS.defaultValue);
+        assertFalse(Settings.SEARCH_STYLED_NAMES.defaultValue);
         for (BooleanSetting setting : family.switches) assertFalse(setting.key, setting.rebootApp);
-        assertEquals(EnumSet.of(PatchFamily.Capability.MY_CHATS_SEARCH), family.expectedCapabilities());
+        assertEquals(EnumSet.of(PatchFamily.Capability.MY_CHATS_SEARCH, PatchFamily.Capability.NAME_FOLD),
+                family.expectedCapabilities());
         assertEquals("myChatsSearch", PatchFamily.Capability.MY_CHATS_SEARCH.statusMethod);
+        assertEquals("nameFold", PatchFamily.Capability.NAME_FOLD.statusMethod);
         assertOnItsPage(family);
     }
 

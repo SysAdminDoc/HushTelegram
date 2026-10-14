@@ -15,6 +15,7 @@ import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
+import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.localcontrols.Mention
@@ -55,6 +56,7 @@ val hidePopularAppsPatch = bytecodePatch(
     execute {
         requireStatusMethod("hidePopularApps")
         requireStatusMethod("myChatsSearch")
+        requireNameFoldRuntime()
         // Every target, borrowed register and runtime call of both switches is checked before the first edit.
         val sites = resolvePopularAppsSites()
         val search = resolveMyChatsSearch()
@@ -63,11 +65,20 @@ val hidePopularAppsPatch = bytecodePatch(
             search.found.read, search.stories.method)
         shape(popular.none { method -> searched.any { it === method } }, "search only my chats shares a method with the Apps tab")
         search.rehearse()
+        // The styled names switch rides along while the catalog is held. A build without its shape keeps
+        // the rest of the patch and leaves the switch out.
+        val fold = resolveNameFold()
         // The runtime's stubs first: on their own nothing calls them.
         writeMyChatsSearchStubs(search)
         sites.apply()
         search.apply()
         enableCapability("myChatsSearch")
+        if (fold.missing == null) {
+            fold.apply()
+            enableCapability("nameFold")
+        } else {
+            patchLog.warning("$PATCH: ${fold.missing}. The patch goes on without finding names in styled letters.")
+        }
         enableStatus("hidePopularApps")
     }
 }

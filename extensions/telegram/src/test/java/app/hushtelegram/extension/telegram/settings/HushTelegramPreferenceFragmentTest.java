@@ -441,6 +441,14 @@ public class HushTelegramPreferenceFragmentTest {
             // Search keeps its public tabs and lookups until someone turns the switch on.
             assertFalse(Settings.SEARCH_ONLY_MY_CHATS.key,
                     ((SwitchPreference) page.findPreference(Settings.SEARCH_ONLY_MY_CHATS.key)).isChecked());
+            assertEquals("Find names in styled letters", String.valueOf(page.findPreference(Settings.SEARCH_STYLED_NAMES.key).getTitle()));
+            assertEquals("Searching your chats and contacts also finds names written in letters like 𝐁𝐨𝐥𝐝, 𝘐𝘵𝘢𝘭𝘪𝘤 or "
+                    + "Ｗｉｄｅ when you type plain ones. Names still show as they're written and numbers aren't changed. "
+                    + "A name found this way isn't highlighted.",
+                    String.valueOf(page.findPreference(Settings.SEARCH_STYLED_NAMES.key).getSummary()));
+            // Search matches names as Telegram does until someone turns the switch on.
+            assertFalse(Settings.SEARCH_STYLED_NAMES.key,
+                    ((SwitchPreference) page.findPreference(Settings.SEARCH_STYLED_NAMES.key)).isChecked());
             assertEquals("When your chat list is short, Telegram lists your contacts below it. This hides that list "
                     + "and its heading. Chats, folders and search stay.",
                     String.valueOf(page.findPreference(Settings.HIDE_CONTACTS_BLOCK.key).getSummary()));

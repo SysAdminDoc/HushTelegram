@@ -198,7 +198,8 @@ public class PausedHooksTest {
                 () -> !app.hushtelegram.extension.telegram.misc.MyChatsSearch.keepHashtag(new Object(), "#cats", 2),
                 app.hushtelegram.extension.telegram.misc.MyChatsSearchForTests::dropsPublicResults,
                 app.hushtelegram.extension.telegram.misc.MyChatsSearchForTests::dropsPublicTabs,
-                app.hushtelegram.extension.telegram.misc.MyChatsSearchForTests::movesDownloads));
+                app.hushtelegram.extension.telegram.misc.MyChatsSearchForTests::movesDownloads,
+                () -> "ann".equals(app.hushtelegram.extension.telegram.misc.NameFold.fold("𝐀𝐧𝐧", true, false))));
         // A sideways swipe on a chat row starts nothing.
         probes.put(PatchFamily.DISABLE_CHAT_SWIPE, Collections.singletonList(
                 app.hushtelegram.extension.telegram.misc.ChatSwipe::keepRowStill));

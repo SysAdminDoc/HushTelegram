@@ -352,6 +352,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Search finds your chats, contacts and messages from chats you're in, and nothing public. The "
                                 + "Channels, Apps and Posts tabs go away, and a hashtag's public posts don't load.")));
             }
+            if (PatchFamily.Capability.NAME_FOLD.installed()) {
+                on(pages, PatchFamily.HIDE_POPULAR_APPS).addPreference(toggle(context, Settings.SEARCH_STYLED_NAMES,
+                        L10n.t("Find names in styled letters"),
+                        L10n.t("Searching your chats and contacts also finds names written in letters like 𝐁𝐨𝐥𝐝, 𝘐𝘵𝘢𝘭𝘪𝘤 or "
+                                + "Ｗｉｄｅ when you type plain ones. Names still show as they're written and numbers aren't "
+                                + "changed. A name found this way isn't highlighted.")));
+            }
         }
     }
 

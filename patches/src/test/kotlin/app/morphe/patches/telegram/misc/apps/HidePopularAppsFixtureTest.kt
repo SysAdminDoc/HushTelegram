@@ -172,7 +172,7 @@ class HidePopularAppsFixtureTest {
         val owners = owners(build)
         assertEquals("${build.name}: the loader and the Apps tab", 2, owners.size)
         val extension = ExtensionDex.classes().filter { runtime || it.type != POPULAR_APPS }
-        return PatchContexts.of((extension + owners + myChatsSearchHosts(build)).distinctBy { it.type })
+        return PatchContexts.of((extension + owners + myChatsSearchHosts(build) + nameFoldHosts(build)).distinctBy { it.type })
     }
 
     private fun reachable(flow: ControlFlow, from: Int, blocked: Int): Set<Int> {

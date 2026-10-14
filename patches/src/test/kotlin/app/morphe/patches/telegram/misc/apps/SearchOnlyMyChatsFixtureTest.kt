@@ -222,7 +222,7 @@ class SearchOnlyMyChatsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val context = contextFor(build)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { hidePopularAppsPatch.execute(context) })
-            for (flag in listOf("hidePopularApps", "myChatsSearch")) {
+            for (flag in listOf("hidePopularApps", "myChatsSearch", "nameFold")) {
                 assertEquals("${build.name}: $flag", 1, statusOf(context, flag))
             }
         }
@@ -390,7 +390,8 @@ class SearchOnlyMyChatsFixtureTest {
 
     private fun contextFor(build: File, runtime: Boolean = true): BytecodePatchContext {
         val extension = ExtensionDex.classes().filter { runtime || it.type != MY_CHATS_SEARCH }
-        return PatchContexts.of((extension + popularAppsOwners(build) + myChatsSearchHosts(build)).distinctBy { it.type })
+        return PatchContexts.of((extension + popularAppsOwners(build) + myChatsSearchHosts(build) + nameFoldHosts(build))
+            .distinctBy { it.type })
     }
 }
 
@@ -398,7 +399,7 @@ private val HOSTS = ConcurrentHashMap<String, List<ClassDef>>()
 private val OWNERS = ConcurrentHashMap<String, List<ClassDef>>()
 
 /** Hide popular apps' own loader and Apps tab. */
-private fun popularAppsOwners(build: File): List<ClassDef> = OWNERS.getOrPut(build.path) {
+internal fun popularAppsOwners(build: File): List<ClassDef> = OWNERS.getOrPut(build.path) {
     FixtureDex.classesWhere(build, { true }) { method ->
         method.body().any { (it.opcode == Opcode.NEW_INSTANCE && it.ref() == GET_POPULAR_APP_BOTS) ||
             (it.opcode == Opcode.SGET && it.ref() == "$TITLES->SearchAppsPopular:I") }

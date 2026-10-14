@@ -74,6 +74,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_search_only_my_chats", FALSE);
 
     /**
+     * Search on this phone finds names in styled letters from plain ones; the names shown and
+     * digits stay as they are ({@link app.hushtelegram.extension.telegram.misc.NameFold}).
+     */
+    public static final BooleanSetting SEARCH_STYLED_NAMES =
+            new BooleanSetting("hushtelegram_search_styled_names", FALSE);
+
+    /**
      * The chat list's Your contacts on Telegram heading, rows and loading rows only; chats, folders,
      * contact sync and search stay stock.
      */

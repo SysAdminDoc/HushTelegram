@@ -292,6 +292,8 @@
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/links/MiniAppLocationSupport.kt",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/MyChatsSearch.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/apps/MyChatsSearchSupport.kt",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/NameFold.java",
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/apps/NameFoldSupport.kt",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/OwnConnection.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TitleEmoji.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/TitleEmojiEditor.java",
