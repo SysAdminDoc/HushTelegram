@@ -369,8 +369,10 @@ private fun BytecodePatchContext.usernameCall(
  *
  * The helper tells chat search nothing about a phone match, and chat search's own update for the
  * phone's results came before this step, so when the runtime matched, the step's chat search is told
- * its list changed. That's the list's plain redraw, not the helper's answer, so the count of answers
- * chat search waits for stays as it was.
+ * its list changed. That's RecyclerView's redraw, which the pager's chat search overrides to scroll
+ * back up once per search and settle its progress line. Neither is the helper's answer, and neither
+ * writes the count of answers chat search waits for, so that count stays as it was. The owner and
+ * text registers must differ, or reading the text back would leave nothing to read chat search from.
  */
 private fun BytecodePatchContext.phonesEdit(hooks: ChatSearchHooks, found: HelperCall, adapter: String): SearchEdit {
     val step = found.step
@@ -389,7 +391,7 @@ private fun BytecodePatchContext.phonesEdit(hooks: ChatSearchHooks, found: Helpe
         "the username lookup isn't passed one run of registers")
     val flow = ControlFlow.of(step)
     hooks.shape(body.getOrNull(after) != null && body[after].opcode !in MOVE_RESULTS && flow.into(after) == listOf(found.call) &&
-        found.owner <= 15 && (found.loaded + 1..found.call).none { found.owner in body[it].writes() },
+        found.owner <= 15 && found.owner != found.text && (found.loaded + 1..found.call).none { found.owner in body[it].writes() },
         "the username lookup's text can't be read back after it")
     // The text came from the step's own field, and the step holds chat search beside it.
     val held = classDefByOrNull(step.definingClass)?.fields

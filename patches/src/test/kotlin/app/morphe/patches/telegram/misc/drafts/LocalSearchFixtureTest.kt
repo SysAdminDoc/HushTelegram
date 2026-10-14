@@ -70,6 +70,8 @@ class LocalSearchFixtureTest {
             assertEquals("$name: the lookUp stub calls the helper on what it's handed",
                 "check-cast p0, ${helper.definingClass}\ninvoke-virtual/range {p0 .. p14}, $helper\nreturn-void", site.lookUp)
             val stock = methods.associate { System.identityHashCode(it) to ImmutableMethod.of(it) }
+            // The count of answers chat search waits for, read first on global message search's way past.
+            val waiting = site.edits.single { it.lookup == SearchLookup.MESSAGES }.let { it.method.body()[it.jump!!].ref() }
 
             site.rehearse()
             for (method in methods) assertEquals("$name: the rehearsal leaves ${method.name} alone",
@@ -129,6 +131,12 @@ class LocalSearchFixtureTest {
                             searchOperands(after[at + 5]).take(2))
                         assertEquals(listOf(adapterTop, emptyList<String>(), "V"),
                             listOf(redraw.definingClass, redraw.parameterTypes.map(CharSequence::toString), redraw.returnType))
+                        // The pager's chat search overrides the redraw to scroll back up and settle its progress line.
+                        // No override, there or in any other subclass, changes the count chat search waits for.
+                        val overrides = redrawOverrides(build, adapter, redraw.name)
+                        assertTrue("$what: the pager's chat search overrides the redraw", overrides.isNotEmpty())
+                        for (override in overrides) assertTrue("$what: ${override.definingClass} leaves the waiting count alone",
+                            override.body().none { it.opcode == Opcode.IPUT && it.ref() == waiting })
                         assertEquals(Opcode.NOP, after[at + 6].opcode)
                         assertEquals("$what goes on to Telegram's next instruction", searchOperands(before[edit.index]), searchOperands(after[at + 7]))
                         assertFalse("$what reads the text into a register nothing reads afterwards", text in live.liveInto(edit.index))
@@ -299,6 +307,7 @@ internal val SEARCH_CHANGES = listOf(
     "app tab keeps its list" to "the Apps tab lost its empty box path",
     "third filtered search" to "the pager no longer starts the filtered search twice",
     "phone text's owner reused" to "the username lookup's text can't be read back after it",
+    "phone text read over its owner" to "the username lookup's text can't be read back after it",
 )
 
 /** Makes one of [SEARCH_CHANGES] in the methods [site] found. */
@@ -347,6 +356,13 @@ internal fun changeSearch(change: String, site: LocalSearchSite) {
             val text = body[hook.index - 1].namedRegisters()[1]
             val load = (hook.index - 2 downTo 0).first { body[it].opcode == Opcode.IGET_OBJECT && body[it].namedRegisters()[0] == text }
             hook.method.addInstructions(load + 1, "const/4 v${body[load].namedRegisters()[1]}, 0x0")
+        }
+        // The step reads the text over the object it read it from, so nothing holds that object afterwards.
+        "phone text read over its owner" -> edit(SearchLookup.PHONES).let { hook ->
+            val body = hook.method.body()
+            val text = body[hook.index - 1].namedRegisters()[1]
+            val load = (hook.index - 2 downTo 0).first { body[it].opcode == Opcode.IGET_OBJECT && body[it].namedRegisters()[0] == text }
+            hook.method.replaceInstruction(load, "iget-object v$text, v$text, ${body[load].ref()}")
         }
         else -> error("unknown search change $change")
     }
@@ -435,3 +451,12 @@ private fun Method.runs(owner: String, method: Method) = body().any { it.call()?
 /** An instruction's opcode, registers and reference; a goto that grew to reach past a hook still counts as that goto. */
 private fun searchOperands(instruction: Instruction): List<Any?> =
     listOf(if (instruction.opcode in GOTOS) Opcode.GOTO else instruction.opcode, instruction.namedRegisters(), instruction.ref())
+
+/** Every method of chat search's subclasses, at any depth, that overrides the list redraw [name]. */
+private fun redrawOverrides(build: File, adapter: String, name: String): List<Method> {
+    val parents = mutableMapOf<String, String?>()
+    FixtureDex.forEach(build) { dex -> for (c in dex.classes) parents[c.type] = c.superclass }
+    val below = parents.keys.filter { type -> generateSequence(parents[type]) { parents[it] }.any { it == adapter } }
+    return FixtureDex.classes(build, below.toSet()).values.flatMap { it.methods }
+        .filter { it.name == name && it.parameterTypes.isEmpty() && it.returnType == "V" && it.implementation != null }
+}
