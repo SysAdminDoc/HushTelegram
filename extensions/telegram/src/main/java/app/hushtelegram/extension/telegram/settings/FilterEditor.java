@@ -7,13 +7,18 @@ package app.hushtelegram.extension.telegram.settings;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.preference.Preference;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.view.Gravity;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Logger;
@@ -26,6 +31,10 @@ import app.hushtelegram.extension.telegram.misc.MessageFilters;
  * Save checks every line first and keeps the dialog open on the first one that can't be used,
  * saying which and why, so what's saved is always a list the chat can use whole. The write is
  * done off the main thread, and the dialog closes once it has landed.
+ *
+ * <p>Below the list, Try runs a message the person types against the lines as they stand, saved or
+ * not, and names the first line that would hide it. The message is never saved, logged or sent,
+ * and closing the editor drops it.
  */
 final class FilterEditor {
     static final String GROUPS = "action_message_filters_groups";
@@ -72,6 +81,32 @@ final class FilterEditor {
         return null;
     }
 
+    /**
+     * What the lines typed so far would do to {@code sample} in a chat: the first one that would
+     * hide it, read with the chat's own parser, flags and cut-offs, or why the list can't be tried,
+     * in the words Save would use.
+     */
+    static String verdict(String typed, String sample) {
+        if (sample.trim().isEmpty()) return L10n.t("Type a message to try the filters on.");
+        String refused = refusal(typed);
+        if (refused != null) return refused;
+        List<String> lines = MessageFilters.lines(typed);
+        if (lines.isEmpty()) return L10n.t("There are no filters to try yet.");
+        int hit = MessageFilters.firstHiding(lines, sample);
+        if (hit < 0) return L10n.t("No filter here would hide this message.");
+        return L10n.f("Line %1$d would hide this message: %2$s", shownLine(typed, hit), L10n.isolate(lines.get(hit)));
+    }
+
+    /** The number the person sees beside the filter at {@code index}, blank lines counted. */
+    private static int shownLine(String typed, int index) {
+        String[] all = typed.split("\r\n|\r|\n", -1);
+        for (int i = 0, filters = 0; i < all.length; i++) {
+            if (all[i].trim().isEmpty()) continue;
+            if (filters++ == index) return i + 1;
+        }
+        return index + 1;
+    }
+
     /** Opens the editor over the settings page. The row's summary follows what's saved. */
     static AlertDialog open(Activity activity, Preference row, StringSetting list, String title) {
         EditText field = new EditText(HushTelegramPreferenceFragment.themed(activity));
@@ -85,17 +120,55 @@ final class FilterEditor {
         field.setHint(L10n.t("One filter a line"));
         field.setText(list.savedValue());
         EditorForm form = new EditorForm(field.getContext(), L10n.t("Text on a line matches wherever it appears in a message. A line in slashes, like "
-                + "/crypto|airdrop/, is a regular expression. Case doesn't matter."));
+                + "/crypto|airdrop/, is a regular expression. Case doesn't matter.") + " "
+                + L10n.t("Try a message below to see which line would hide it. It isn't saved anywhere."));
         form.add(field, L10n.t("One filter a line"));
+
+        // The sample stays out of the keyboard's learning and out of the screen's saved state, so
+        // nothing of it outlives the dialog.
+        EditText sample = new EditText(field.getContext());
+        sample.setId(android.R.id.input);
+        sample.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        sample.setImeOptions(EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING);
+        sample.setSaveEnabled(false);
+        sample.setFilters(new InputFilter[]{new InputFilter.LengthFilter(MessageFilters.MAX_TEXT)});
+        sample.setSingleLine(false);
+        sample.setMinLines(2);
+        sample.setMaxLines(6);
+        sample.setGravity(Gravity.TOP | Gravity.START);
+        sample.setHint(L10n.t("Paste or type a message"));
+        form.add(sample, L10n.t("Try a message"));
+        TextView answer = form.answer();
 
         AlertDialog dialog = new AlertDialog.Builder(HushTelegramPreferenceFragment.themed(activity))
                 .setTitle(title)
                 .setView(form)
                 .setPositiveButton(L10n.t("Save"), null)
+                .setNeutralButton(L10n.t("Try"), null)
                 .setNegativeButton(L10n.t("Cancel"), null)
                 .show();
         ScreenColors.dialog(dialog);
-        // Set after show, so a list that can't be saved keeps the dialog and what was typed.
+        // Set after show, so neither one closes the dialog on its own.
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
+            String typed = field.getText().toString();
+            String message = sample.getText().toString();
+            // Tried off the main thread, since a full list against a long message can take a moment.
+            // An answer for texts that have changed since, or for a dialog that's gone, isn't shown.
+            Consumer<String> show = said -> {
+                if (!dialog.isShowing() || !typed.equals(field.getText().toString())
+                        || !message.equals(sample.getText().toString())) {
+                    return;
+                }
+                answer.setText(said);
+                answer.setVisibility(View.VISIBLE);
+            };
+            boolean queued = Utils.runOnBackgroundThread(() -> {
+                String said = verdict(typed, message);
+                Utils.runOnMainThread(() -> show.accept(said));
+            });
+            if (!queued) show.accept(verdict(typed, message));
+        });
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
             String typed = field.getText().toString();
             String refused = refusal(typed);

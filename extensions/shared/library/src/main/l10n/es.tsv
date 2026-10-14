@@ -738,3 +738,12 @@ Both work on the account you have open.	Ambas cosas se aplican a la cuenta que t
 A chat or message you turn on stays on only in the account you turned it on in.	Un chat o mensaje que activas sigue activado solo en la cuenta donde lo activaste.
 This covers every account in this Telegram app.	Esto abarca todas las cuentas de esta app de Telegram.
 A few things belong to the account you have open instead, and their descriptions say so.	Algunas cosas pertenecen solo a la cuenta que tienes abierta, y su descripción lo dice.
+# context: The message filter editor's tester. The person types a message under the list and taps Try; the answer names the first line that would hide it. %1$d is that line's number, %2$s the line itself. The message is never saved.
+Try a message below to see which line would hide it. It isn't saved anywhere.	Prueba un mensaje abajo para ver qué línea lo ocultaría. No se guarda en ningún sitio.
+Try a message	Probar un mensaje
+Paste or type a message	Pega o escribe un mensaje
+Try	Probar
+Type a message to try the filters on.	Escribe un mensaje para probar los filtros.
+There are no filters to try yet.	Todavía no hay filtros que probar.
+No filter here would hide this message.	Ningún filtro de aquí ocultaría este mensaje.
+Line %1$d would hide this message: %2$s	La línea %1$d ocultaría este mensaje: %2$s

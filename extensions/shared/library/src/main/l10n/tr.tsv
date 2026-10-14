@@ -738,3 +738,12 @@ Both work on the account you have open.	İkisi de şu an açık olan hesapta ge�
 A chat or message you turn on stays on only in the account you turned it on in.	Açtığınız bir sohbet ya da mesaj yalnızca onu açtığınız hesapta açık kalır.
 This covers every account in this Telegram app.	Bu, bu Telegram uygulamasındaki tüm hesapları kapsar.
 A few things belong to the account you have open instead, and their descriptions say so.	Bazı şeyler ise yalnızca şu an açık olan hesaba aittir ve açıklamalarında bu belirtilir.
+# context: The message filter editor's tester. The person types a message under the list and taps Try; the answer names the first line that would hide it. %1$d is that line's number, %2$s the line itself. The message is never saved.
+Try a message below to see which line would hide it. It isn't saved anywhere.	Hangi satırın onu gizleyeceğini görmek için aşağıda bir mesaj dene. Hiçbir yere kaydedilmez.
+Try a message	Bir mesaj dene
+Paste or type a message	Bir mesaj yapıştır veya yaz
+Try	Dene
+Type a message to try the filters on.	Filtreleri denemek için bir mesaj yaz.
+There are no filters to try yet.	Henüz denenecek filtre yok.
+No filter here would hide this message.	Buradaki hiçbir filtre bu mesajı gizlemez.
+Line %1$d would hide this message: %2$s	%1$d. satır bu mesajı gizler: %2$s

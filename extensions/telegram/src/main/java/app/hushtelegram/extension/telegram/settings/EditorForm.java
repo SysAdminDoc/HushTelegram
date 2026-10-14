@@ -17,9 +17,11 @@ import android.widget.TextView;
 final class EditorForm extends ScrollView {
     static final String ERROR = "hushtelegram_editor_error";
     static final String INVALID = "hushtelegram_editor_invalid";
+    static final String ANSWER = "hushtelegram_editor_answer";
     private final LinearLayout fields;
     private final TextView error;
     private EditText invalid;
+    private TextView answer;
 
     EditorForm(Context context, String instructions) {
         super(context);
@@ -69,6 +71,8 @@ final class EditorForm extends ScrollView {
         field.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // An answer about what the fields held no longer speaks for what they hold.
+                if (answer != null) answer.setVisibility(GONE);
                 if (invalid != field) return;
                 field.setTag(null);
                 invalid = null;
@@ -101,6 +105,22 @@ final class EditorForm extends ScrollView {
                 }
             }
         });
+    }
+
+    /**
+     * A line under the fields for what trying them found, read out when it changes. It's hidden
+     * until there's something to say, and hides again as soon as any field changes.
+     */
+    TextView answer() {
+        answer = new TextView(getContext());
+        answer.setTag(ANSWER);
+        answer.setTextColor(ScreenColors.DEFAULT.summary);
+        answer.setTextSize(14);
+        answer.setPadding(0, dp(8), 0, 0);
+        answer.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
+        answer.setVisibility(GONE);
+        fields.addView(answer, fields.getChildCount() - 1);
+        return answer;
     }
 
     private int dp(int value) {

@@ -33,10 +33,12 @@ import android.preference.PreferenceGroup;
 import android.preference.SwitchPreference;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.SettingsContextRule;
@@ -1175,6 +1177,84 @@ public class HushTelegramPreferenceFragmentTest {
             assertTrue("a list past what its expressions may add up to keeps the dialog", editor.isShowing());
             assertEquals("Line 8 may be slow on long messages. Try a simpler pattern.", ShadowToast.getTextOfLatestToast());
             assertEquals("", Settings.MESSAGE_FILTERS_GROUPS.savedValue());
+        } finally {
+            Settings.MESSAGE_FILTERS_GROUPS.resetToDefault();
+            Settings.MESSAGE_FILTERS_CHANNELS.resetToDefault();
+        }
+    }
+
+    /**
+     * Try runs a typed message against the lines as they stand, saved or not, and names the first
+     * one that would hide it, or says why the list can't be tried in Save's words. None of it is
+     * saved or toasted: the answer goes once either text changes, and the message is gone when the
+     * editor opens again.
+     */
+    @Test
+    public void theFilterEditorTriesAMessageWithoutKeepingIt() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_BY_KEYWORD);
+        ShadowToast.reset();
+        Settings.MESSAGE_FILTERS_GROUPS.save("saved line");
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Preference groups = pageOf(controller).findPreference(FilterEditor.GROUPS);
+            assertTrue(groups.getOnPreferenceClickListener().onPreferenceClick(groups));
+            ShadowLooper.idleMainLooper();
+            AlertDialog editor = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            EditText field = editor.findViewById(android.R.id.edit);
+            EditText sample = editor.findViewById(android.R.id.input);
+            TextView answer = editor.getWindow().getDecorView().findViewWithTag(EditorForm.ANSWER);
+            Button tryIt = editor.getButton(AlertDialog.BUTTON_NEUTRAL);
+            assertEquals("Try", tryIt.getText().toString());
+            assertEquals(View.GONE, answer.getVisibility());
+            assertFalse("the message stays out of the screen's saved state", sample.isSaveEnabled());
+            assertTrue("and out of the keyboard's learning", (sample.getImeOptions() & EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING) != 0);
+
+            field.setText("airdrop\n\n/free\\s+crypto/\ncrypto");
+            tryIt.performClick();
+            settle();
+            assertEquals(View.VISIBLE, answer.getVisibility());
+            assertEquals("Type a message to try the filters on.", answer.getText().toString());
+
+            sample.setText("Get FREE   crypto now");
+            assertEquals("a changed text takes the answer away", View.GONE, answer.getVisibility());
+            tryIt.performClick();
+            settle();
+            assertEquals("the first line that matches, numbered as shown",
+                    "Line 3 would hide this message: ⁨/free\\s+crypto/⁩", answer.getText().toString());
+
+            sample.setText("nothing to see");
+            tryIt.performClick();
+            settle();
+            assertEquals("No filter here would hide this message.", answer.getText().toString());
+
+            sample.setText("crypto");
+            tryIt.performClick();
+            sample.setText("crypto, changed before the answer came");
+            settle();
+            assertEquals("an answer for a message that has changed since isn't shown", View.GONE, answer.getVisibility());
+
+            field.setText("spam\n/(a+)+/");
+            sample.setText("aaaa");
+            tryIt.performClick();
+            settle();
+            assertEquals("Line 2 may be slow on long messages. Try a simpler pattern.", answer.getText().toString());
+
+            field.setText("\n\n");
+            tryIt.performClick();
+            settle();
+            assertEquals("There are no filters to try yet.", answer.getText().toString());
+
+            assertTrue("Try leaves the editor open", editor.isShowing());
+            assertEquals("nothing tried is saved", "saved line", Settings.MESSAGE_FILTERS_GROUPS.savedValue());
+            assertEquals("nor toasted", 0, ShadowToast.shownToastCount());
+
+            editor.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertTrue(groups.getOnPreferenceClickListener().onPreferenceClick(groups));
+            ShadowLooper.idleMainLooper();
+            AlertDialog again = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertNotSame(editor, again);
+            assertEquals("", ((EditText) again.findViewById(android.R.id.input)).getText().toString());
+            assertEquals("saved line", ((EditText) again.findViewById(android.R.id.edit)).getText().toString());
         } finally {
             Settings.MESSAGE_FILTERS_GROUPS.resetToDefault();
             Settings.MESSAGE_FILTERS_CHANNELS.resetToDefault();

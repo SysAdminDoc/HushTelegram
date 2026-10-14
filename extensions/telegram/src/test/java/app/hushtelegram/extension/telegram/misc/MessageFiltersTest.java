@@ -105,6 +105,30 @@ public class MessageFiltersTest {
         assertFalse("a word that goes on past the cut", MessageFilters.matches(parsed("/\\bspam\\b/"), padding + "spammy"));
     }
 
+    /**
+     * The editor's tester asks which line would hide a message. It gets the chat's answer: the first
+     * line that matches, with a line that can't be used passed over but still counted, case set
+     * aside in every script, and the same cut-offs.
+     */
+    @Test public void theFirstLineThatWouldHideAMessageIsNamed() {
+        List<String> lines = Arrays.asList("airdrop", "/(a+)+$/", "/free\\s+crypto/", "crypto");
+        assertEquals(MessageFilters.Problem.SLOW, MessageFilters.problem(lines.get(1)));
+        assertEquals("the first that matches wins", 0, MessageFilters.firstHiding(lines, "crypto AIRDROP"));
+        assertEquals("the lines after an unusable one keep their places", 2, MessageFilters.firstHiding(lines, "Get FREE   crypto"));
+        assertEquals(3, MessageFilters.firstHiding(lines, "crypto news"));
+        assertEquals("the unusable line is never run", -1, MessageFilters.firstHiding(lines, "aaaa"));
+        assertEquals(-1, MessageFilters.firstHiding(lines, ""));
+        assertEquals(-1, MessageFilters.firstHiding(Collections.emptyList(), "crypto"));
+
+        assertEquals(0, MessageFilters.firstHiding(Collections.singletonList("über"), "ÜBER alles"));
+        assertEquals(0, MessageFilters.firstHiding(Collections.singletonList("/привет\\s+мир/"), "ПРИВЕТ МИР"));
+
+        String padding = repeat(' ', MessageFilters.MAX_EXPRESSION_TEXT);
+        List<String> both = Arrays.asList("/spam/", "spam");
+        assertEquals("an expression stops reading at its cut, plain text reads on", 1, MessageFilters.firstHiding(both, padding + "spam"));
+        assertEquals(-1, MessageFilters.firstHiding(both, repeat(' ', MessageFilters.MAX_TEXT) + "spam"));
+    }
+
     @Test public void aLineThatCantBeUsedIsSaidAndLeftOutOfTheChat() {
         assertNull(MessageFilters.problem("plain words"));
         assertNull(MessageFilters.problem("/(ab)+c/"));

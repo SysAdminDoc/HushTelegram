@@ -52,7 +52,7 @@ public final class MessageFilters {
     /** How long one filter can be. */
     public static final int MAX_FILTER_CHARS = 200;
     /** How much of a message plain text reads: Telegram's longest message. */
-    static final int MAX_TEXT = 4096;
+    public static final int MAX_TEXT = 4096;
     /**
      * How much of a message an expression reads. With {@link #MAX_TRIES} that holds its worst case
      * under about seventy million steps, on a message written against that one filter.
@@ -147,13 +147,29 @@ public final class MessageFilters {
      * an expression in the first {@link #MAX_EXPRESSION_TEXT}.
      */
     static boolean matches(List<Filter> filters, @Nullable String text) {
-        if (text == null || text.isEmpty()) return false;
+        return firstMatch(filters, text) != null;
+    }
+
+    /** The first filter that matches the text, read the way {@link #matches} reads it, or null. */
+    @Nullable
+    static Filter firstMatch(List<Filter> filters, @Nullable String text) {
+        if (text == null || text.isEmpty()) return null;
         String read = text.length() > MAX_TEXT ? text.substring(0, MAX_TEXT) : text;
         String lower = read.toLowerCase(Locale.ROOT);
         for (Filter filter : filters) {
-            if (filter.pattern != null ? found(filter.pattern, read) : lower.contains(filter.words)) return true;
+            if (filter.pattern != null ? found(filter.pattern, read) : lower.contains(filter.words)) return filter;
         }
-        return false;
+        return null;
+    }
+
+    /**
+     * Which of {@code lines}, as {@link #lines} gives them, would hide a message saying {@code text},
+     * counted from zero, or -1 for none. The list is read the way a chat reads it, so the first line
+     * that matches wins and a line that can't be used is passed over without being run.
+     */
+    public static int firstHiding(List<String> lines, String text) {
+        Filter hit = firstMatch(new Parsed(join(lines)).filters, text);
+        return hit == null ? -1 : hit.line;
     }
 
     /**
@@ -173,10 +189,13 @@ public final class MessageFilters {
     static final class Filter {
         @Nullable final String words;
         @Nullable final Pattern pattern;
+        /** Which of its list's lines it is, counted from zero, lines that can't be used included. */
+        final int line;
 
-        private Filter(@Nullable String words, @Nullable Pattern pattern) {
+        private Filter(@Nullable String words, @Nullable Pattern pattern, int line) {
             this.words = words;
             this.pattern = pattern;
+            this.line = line;
         }
     }
 
@@ -689,15 +708,17 @@ public final class MessageFilters {
             this.source = source;
             List<Filter> filters = new ArrayList<>();
             long[] spent = new long[1];
-            for (String line : lines(source)) {
+            List<String> lines = lines(source);
+            for (int index = 0; index < lines.size(); index++) {
                 if (filters.size() == MAX_FILTERS) break;
+                String line = lines.get(index);
                 // A line that can't be used, from a file edited by hand or a settings file brought
                 // in, is left out, so its expression is never built or run.
                 if (problem(line, spent) != null) continue;
                 String expression = expression(line);
                 filters.add(expression == null
-                        ? new Filter(line.toLowerCase(Locale.ROOT), null)
-                        : new Filter(null, Pattern.compile(expression, FLAGS)));
+                        ? new Filter(line.toLowerCase(Locale.ROOT), null, index)
+                        : new Filter(null, Pattern.compile(expression, FLAGS), index));
             }
             this.filters = Collections.unmodifiableList(filters);
         }
