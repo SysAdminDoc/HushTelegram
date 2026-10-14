@@ -275,6 +275,27 @@ public class MessageFiltersTest {
     }
 
     /**
+     * A hundred wallet lines ask whether a space can be a 0 a hundred times, and the list is read on
+     * the thread that reads a message's type. The answer is worked out once and kept, and the list
+     * still keeps every line its tries allow. What's kept stays bounded however many pairs a list asks.
+     */
+    @Test public void aHundredWalletLinesReadTheirPairOnce() {
+        MessageFilters.forgetPairs();
+        List<String> lines = new ArrayList<>();
+        for (int i = 0; i < 100; i++) lines.add("/w" + i + "\\s+0x[a-f0-9]{40}/");
+        List<MessageFilters.Filter> kept = parsed(String.join("\n", lines));
+        // Each line's 2,089 tries leave room for 98 in the list's share.
+        assertEquals(98, kept.size());
+        assertEquals("the pair was read more than once", 1, MessageFilters.pairsKnown());
+        assertTrue(MessageFilters.matches(kept, "w97 0x" + repeat('a', 40)));
+
+        for (char c = '\u4E00'; c < '\u4E00' + MessageFilters.NEVER_BOTH_KEPT + 20; c++) {
+            assertNull(MessageFilters.problem("/\\s+" + c + "{40}/"));
+        }
+        assertEquals(MessageFilters.NEVER_BOTH_KEPT, MessageFilters.pairsKnown());
+    }
+
+    /**
      * Each of a hundred lines with a count just under the limit passed alone, and together they
      * were a hundred times the work on every message. A list's expressions share one number, and a
      * line past it is left out like any other that can't be used.

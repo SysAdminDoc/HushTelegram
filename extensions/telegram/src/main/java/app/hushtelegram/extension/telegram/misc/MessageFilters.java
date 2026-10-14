@@ -8,9 +8,12 @@ import androidx.annotation.Nullable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -537,6 +540,21 @@ public final class MessageFilters {
     /** Code points past the first plane that a class could take in without naming them. */
     private static final int[] PAST_FIRST_PLANE = {0x10000, 0x1D400, 0x1F3FB, 0x1F600, 0x20000, 0xE0041, 0x10FFFD};
 
+    /** How many pairs {@link #NEVER_BOTH} keeps: more than a full list's repeats, and a few kilobytes at most. */
+    static final int NEVER_BOTH_KEPT = 256;
+
+    /**
+     * Answers {@link #neverBoth} already worked out, by the two atoms, the least recently asked
+     * dropped first. A list of wallet lines asks the same pair a hundred times, and a list is read
+     * again on each change, so each pair is read once.
+     */
+    private static final Map<String, Boolean> NEVER_BOTH = Collections.synchronizedMap(
+            new LinkedHashMap<String, Boolean>(16, 0.75f, true) {
+                @Override protected boolean removeEldestEntry(Map.Entry<String, Boolean> eldest) {
+                    return size() > NEVER_BOTH_KEPT;
+                }
+            });
+
     /**
      * Whether no character matches both {@code first} and {@code second}, each one character,
      * class or escape, the way a filter matches them. Every character of the first plane is tried,
@@ -555,24 +573,52 @@ public final class MessageFilters {
                 return false;
             }
         }
-        Matcher one;
-        Matcher other;
+        String key = first.length() + ":" + first + second;
+        Boolean known = NEVER_BOTH.get(key);
+        if (known != null) return known;
+        boolean answer;
         try {
-            one = Pattern.compile(first, FLAGS).matcher("");
-            other = Pattern.compile(second, FLAGS).matcher("");
+            BitSet one = matched(Pattern.compile(first, FLAGS));
+            BitSet other = one == null ? null : matched(Pattern.compile(second, FLAGS));
+            answer = other != null && !one.intersects(other);
         } catch (RuntimeException unread) {
-            return false;
+            answer = false;
         }
+        NEVER_BOTH.put(key, answer);
+        return answer;
+    }
+
+    /** How many pairs {@link #neverBoth} has kept answers for. */
+    static int pairsKnown() {
+        return NEVER_BOTH.size();
+    }
+
+    /** Forgets every kept pair, so a test starts from none. */
+    static void forgetPairs() {
+        NEVER_BOTH.clear();
+    }
+
+    /**
+     * The first-plane characters {@code atom} matches on its own, or null when it takes in one past
+     * that plane or matches anything but a single character. One find over every character reads
+     * them all, where matching each alone took tens of thousands of calls into Android's regex.
+     */
+    @Nullable
+    private static BitSet matched(Pattern atom) {
         for (int codePoint : PAST_FIRST_PLANE) {
-            String text = new String(Character.toChars(codePoint));
-            if (one.reset(text).matches() || other.reset(text).matches()) return false;
+            if (atom.matcher(new String(Character.toChars(codePoint))).matches()) return null;
         }
+        StringBuilder plane = new StringBuilder(0x10000);
         for (int k = 0; k <= 0xFFFF; k++) {
-            if (k >= Character.MIN_SURROGATE && k <= Character.MAX_SURROGATE) continue;
-            String text = String.valueOf((char) k);
-            if (other.reset(text).matches() && one.reset(text).matches()) return false;
+            if (k < Character.MIN_SURROGATE || k > Character.MAX_SURROGATE) plane.append((char) k);
         }
-        return true;
+        BitSet chars = new BitSet(0x10000);
+        Matcher each = atom.matcher(plane);
+        while (each.find()) {
+            if (each.end() != each.start() + 1) return null;
+            chars.set(plane.charAt(each.start()));
+        }
+        return chars;
     }
 
     /**
