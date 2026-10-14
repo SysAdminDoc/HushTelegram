@@ -400,6 +400,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting COMPACT_TAB_BAR =
             new BooleanSetting("hushtelegram_compact_tab_bar", FALSE, true);
 
+    /**
+     * A swipe right on the chat list's first folder slides in a menu like the one Telegram 13 took
+     * away. Each swipe reads the switch, so it works the moment it's flipped. The key says drawer
+     * because the diagnostic report hides the value of any name holding "sid".
+     */
+    public static final BooleanSetting SIDE_MENU =
+            new BooleanSetting("hushtelegram_drawer_menu", FALSE);
+
     /** Downloads take 512 KB pieces, 8 at a time, unless Telegram drops back to small ones itself. */
     public static final BooleanSetting FASTER_DOWNLOADS =
             new BooleanSetting("hushtelegram_faster_downloads", FALSE);

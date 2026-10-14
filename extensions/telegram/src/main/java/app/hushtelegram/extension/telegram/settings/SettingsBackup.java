@@ -148,6 +148,7 @@ public final class SettingsBackup {
             Settings.HIDE_SEND_AS,
             Settings.HIDE_CONTACTS_TAB,
             Settings.COMPACT_TAB_BAR,
+            Settings.SIDE_MENU,
             Settings.FASTER_DOWNLOADS,
             Settings.DATA_SAVER_DOWNLOADS,
             Settings.SAVE_DOWNLOADS,

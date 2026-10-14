@@ -74,8 +74,9 @@ val hideContactsTabPatch = bytecodePatch(
     name = PATCH,
     description = "Removes the Contacts tab from the bar at the bottom of the main screen, and swiping doesn't open its page " +
         "either. The Calls or Settings tab stays as Telegram has it, and the chat list's new message button still opens your " +
-        "contacts. A second switch, Compact bottom bar, makes that bar shorter and only as wide as its tabs need. Both " +
-        "start off. Turn them on in HushTelegram settings > Chat list.",
+        "contacts. A second switch, Compact bottom bar, makes that bar shorter and only as wide as its tabs need. A third, " +
+        "Side menu, brings back a menu that slides in when you swipe right on the chat list. All three start off. Turn them " +
+        "on in HushTelegram settings > Chat list.",
     default = true,
 ) {
     category("Chats")
@@ -84,18 +85,27 @@ val hideContactsTabPatch = bytecodePatch(
     execute {
         val plan = resolveMainTabs()
         requireStatusMethod("compactTabBar")
+        requireStatusMethod("sideMenu")
         val compact = resolveCompactBar(plan)
+        val side = resolveSideMenu(plan)
         // Assembled on copies first, so a refusal leaves the app untouched.
         plan.insert { target, apply -> apply(MutableMethod(ImmutableMethod.of(target))) }
         compact.rehearse()
+        side.rehearse()
         writeMainTabsStubs(plan)
         plan.insert { target, apply -> apply(target) }
-        // The compact switch's own target: a build whose bar changed keeps the Contacts switch.
+        // Each extra switch's own targets: a build where one changed keeps the Contacts switch.
         if (compact.missing == null) {
             compact.apply()
             enableCapability("compactTabBar")
         } else {
             patchLog.warning("$PATCH: ${compact.missing}. The patch goes on without the compact bar.")
+        }
+        if (side.missing == null) {
+            side.apply(this)
+            enableCapability("sideMenu")
+        } else {
+            patchLog.warning("$PATCH: ${side.missing}. The patch goes on without the side menu.")
         }
         enableStatus("hideContactsTab")
     }
@@ -122,6 +132,7 @@ internal class SwipeGate(val method: MutableMethod, val forward: Boolean, val po
  * @property slide the pager's animated turn to a page
  * @property set the pager's plain setter of the page, which the screen uses while it builds
  * @property mark the screen's marking of the selected tab
+ * @property swipeStart the pager's start of a swipe, which takes the event and whether it goes forward
  */
 internal class MainTabsPlan(
     val screen: String,
@@ -136,6 +147,7 @@ internal class MainTabsPlan(
     val set: String,
     val mark: String,
     val gates: List<SwipeGate>,
+    val swipeStart: String,
 ) {
     /** Hands each method that gets code to [change] with the edit that does it, copy or real. */
     fun insert(change: (MutableMethod, (MutableMethod) -> Unit) -> Unit) {
@@ -364,7 +376,7 @@ internal fun BytecodePatchContext.resolveMainTabs(): MainTabsPlan {
     listOf(setTab, slide, set, mark).forEach { requireReachable(it, static = false) }
     shape(classDefByOrNull(tabType)?.let { AccessFlags.PUBLIC.isSet(it.accessFlags) } == true, "the tab views are inaccessible")
 
-    return MainTabsPlan(screenType, tabs, bar, setTab, shown, shownReturn, pager, turn.position, slide, set, mark, gates)
+    return MainTabsPlan(screenType, tabs, bar, setTab, shown, shownReturn, pager, turn.position, slide, set, mark, gates, turn.start)
 }
 
 /** The stubs' bodies: hide the Contacts tab, read the page showing, and turn the screen to Chats. */
@@ -415,8 +427,11 @@ internal fun BytecodePatchContext.writeMainTabsStubs(plan: MainTabsPlan) {
     """)
 }
 
-/** The two swipe questions Telegram's pager asks before a swipe moves a page, and where it keeps the page showing. */
-internal class SwipeTurn(val forward: String, val backward: String, val position: String)
+/**
+ * The two swipe questions Telegram's pager asks before a swipe moves a page, where it keeps the page
+ * showing, and [start], the method that asks them.
+ */
+internal class SwipeTurn(val forward: String, val backward: String, val position: String, val start: String)
 
 /**
  * The pager's start of a swipe takes the event and whether it goes forward. It refuses at either
@@ -453,7 +468,7 @@ private fun swipeTurn(base: ClassDef): SwipeTurn? {
             if (read?.opcode == Opcode.IGET && field?.definingClass == base.type && field.type == "I" && lessOne) field.toString() else null
         }.distinct()
         val position = positions.singleOrNull() ?: return@mapNotNull null
-        SwipeTurn(body[forward].call()!!.name, body[backward].call()!!.name, position)
+        SwipeTurn(body[forward].call()!!.name, body[backward].call()!!.name, position, signature(start))
     }
     return found.singleOrNull()
 }
@@ -462,8 +477,14 @@ private fun swipeTurn(base: ClassDef): SwipeTurn? {
 private fun gateShape(m: Method, name: String) = m.name == name && !AccessFlags.STATIC.isSet(m.accessFlags) &&
     m.returnType == "Z" && m.parameterTypes.map(CharSequence::toString) == listOf(MOTION_EVENT) && m.controlBody().isNotEmpty()
 
-/** The number of the page the screen builds Contacts for: the constant its page builder compares the page with first. */
-private fun contactsPage(screen: ClassDef): Int? {
+/** The number of the page the screen builds Contacts for. */
+private fun contactsPage(screen: ClassDef): Int? = pageBuilt(screen, CONTACTS_SCREEN)
+
+/**
+ * The number of the page the screen builds a [type] screen for: the constant its page builder
+ * compares the page with last before making it, or null when that isn't plain.
+ */
+internal fun pageBuilt(screen: ClassDef, type: String): Int? {
     val builders = screen.methods.filter { m ->
         !AccessFlags.STATIC.isSet(m.accessFlags) && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
             m.returnType.startsWith("L") && m.controlBody().any { it.opcode == Opcode.NEW_INSTANCE && it.controlRef() == CONTACTS_SCREEN }
@@ -473,7 +494,9 @@ private fun contactsPage(screen: ClassDef): Int? {
     val body = builder.controlBody()
     val flow = ControlFlow.of(builder)
     val page = builder.parameterRegisterNumber(0)
-    val made = body.indexOfFirst { it.opcode == Opcode.NEW_INSTANCE && it.controlRef() == CONTACTS_SCREEN }
+    val makes = body.indices.filter { body[it].opcode == Opcode.NEW_INSTANCE && body[it].controlRef() == type }
+    if (makes.size != 1) return null
+    val made = makes.single()
     // The test that leads there: the page against a constant, jumping past the Contacts page when they differ.
     val test = (made - 1 downTo 0).firstOrNull { body[it].opcode == Opcode.IF_NE && page in body[it].namedRegisters() } ?: return null
     try {

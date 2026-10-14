@@ -1032,7 +1032,7 @@
     },
     {
       "name": "Hide Contacts tab",
-      "description": "Removes the Contacts tab from the bar at the bottom of the main screen, and swiping doesn't open its page either. The Calls or Settings tab stays as Telegram has it, and the chat list's new message button still opens your contacts. A second switch, Compact bottom bar, makes that bar shorter and only as wide as its tabs need. Both start off. Turn them on in HushTelegram settings > Chat list.",
+      "description": "Removes the Contacts tab from the bar at the bottom of the main screen, and swiping doesn't open its page either. The Calls or Settings tab stays as Telegram has it, and the chat list's new message button still opens your contacts. A second switch, Compact bottom bar, makes that bar shorter and only as wide as its tabs need. A third, Side menu, brings back a menu that slides in when you swipe right on the chat list. All three start off. Turn them on in HushTelegram settings > Chat list.",
       "category": "Chats",
       "use": true,
       "dependencies": [

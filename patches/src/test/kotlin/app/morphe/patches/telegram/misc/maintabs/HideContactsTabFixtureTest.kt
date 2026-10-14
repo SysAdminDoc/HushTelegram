@@ -226,10 +226,90 @@ class HideContactsTabFixtureTest {
                     PatchLogCapture.warnings { hideContactsTabPatch.execute(context) })
                 assertEquals("$what: the bar's sizes stay Telegram's", before, sized.map { method -> method.controlBody().map(::operands) })
                 assertEquals("$what: the Contacts tab is still hidden each time the bar is set", shown + 1, plan.shown.controlBody().size)
-                for ((flag, value) in listOf("hideContactsTab" to 1L, "compactTabBar" to 0L)) {
+                for ((flag, value) in listOf("hideContactsTab" to 1L, "compactTabBar" to 0L, "sideMenu" to 1L)) {
                     val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.controlBody()
                     assertEquals("$what: $flag", value, (status.first() as WideLiteralInstruction).wideLiteral)
                 }
+            }
+        }
+    }
+
+    @Test fun `a swipe back from the first page reaches the side menu, and Back asks it first`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val plan = context.resolveMainTabs()
+            val side = context.resolveSideMenu(plan)
+            assertNull("$name: ${side.missing}", side.missing)
+            val start = side.start!!
+            val back = side.back!!
+            assertEquals("$name: the swipe starts in the pager's base class", plan.swipeStart.substringBefore("->"), start.definingClass)
+            assertEquals(name, "onBackPressed", back.name)
+            val oldStart = ImmutableMethod.of(start)
+            val oldBack = ImmutableMethod.of(back)
+            val startBefore = oldStart.controlBody()
+            val backBefore = oldBack.controlBody()
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { hideContactsTabPatch.execute(context) })
+
+            // The swipe start: the pager, the event and the way, before anything else.
+            val startAfter = start.controlBody()
+            assertEquals(name, startBefore.size + 1, startAfter.size)
+            assertEquals(Opcode.INVOKE_STATIC, startAfter[0].opcode)
+            assertEquals(SWIPE_STARTS, startAfter[0].controlRef())
+            val self = oldStart.localRegisterCount()
+            assertEquals("$name: this, the event and the way", listOf(self, self + 1, self + 2), startAfter[0].namedRegisters())
+            assertStock("$name swipe start", startBefore, startAfter) { it + 1 }
+
+            // Back: the menu's answer first, Telegram's "handled" when it took Back, Telegram's own answer otherwise.
+            val backAfter = back.controlBody()
+            assertEquals(name, backBefore.size + 5, backAfter.size)
+            assertEquals(name, listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.CONST_4, Opcode.RETURN),
+                backAfter.take(5).map { it.opcode })
+            val screen = oldBack.localRegisterCount()
+            assertEquals(MENU_BACK, backAfter[0].controlRef())
+            assertEquals("$name: the screen and whether Back happened", listOf(screen, screen + 1), backAfter[0].namedRegisters())
+            for (at in 1..4) assertEquals("$name back $at", listOf(side.borrowed), backAfter[at].namedRegisters())
+            assertTrue("$name: a local", side.borrowed < screen)
+            assertEquals("$name: false goes on to Telegram's Back", 5, backAfter.branchTarget(2) { throw AssertionError(it) })
+            assertEquals(name, 0, (backAfter[3] as NarrowLiteralInstruction).narrowLiteral)
+            assertStock("$name back", backBefore, backAfter) { it + 5 }
+
+            // The stubs reach the pager's screen, its backward question, the page turn, the switcher and Telegram's words.
+            val runtime = context.mutableClassDefBy(SIDE_MENU).methods
+            fun stub(method: String) = runtime.single { it.name == method }.controlBody()
+            val pagerType = plan.pager.substringAfter(":")
+            val screenStub = stub("screen")
+            assertEquals(listOf(pagerType, plan.screen), screenStub.filter { it.opcode == Opcode.INSTANCE_OF }.map { it.controlRef() })
+            assertEquals(listOf(side.screenField), screenStub.filter { it.opcode == Opcode.IGET_OBJECT }.map { it.controlRef() })
+            assertEquals(listOf(side.backward), stub("mayOpen").filter { it.opcode == Opcode.INVOKE_VIRTUAL }.map { it.controlRef() })
+            assertEquals(plan.gates.single { !it.forward }.method.name, side.backward.substringAfter("->").substringBefore("("))
+            assertEquals(listOf(plan.slide, plan.mark), stub("turnTo").filter { it.opcode == Opcode.INVOKE_VIRTUAL }.map { it.controlRef() })
+            assertEquals(listOf(side.accounts), stub("accounts").filter { it.opcode == Opcode.INVOKE_VIRTUAL }.map { it.controlRef() })
+            assertEquals("$name: Telegram's word for each row, in order", LABELS.map { "Lorg/telegram/messenger/R\$string;->$it:I" },
+                stub("labels").filter { it.opcode == Opcode.SGET }.map { it.controlRef() })
+            assertEquals(side.currentAccount, stub("selfId").first { it.opcode == Opcode.INVOKE_VIRTUAL }.controlRef())
+            assertEquals(Opcode.RETURN_WIDE, stub("selfId").last().opcode)
+            assertTrue(name, stub("selfName").any { it.controlRef()?.startsWith("Lorg/telegram/messenger/UserObject;->getUserName(") == true })
+
+            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "sideMenu" }.controlBody()
+            assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
+        }
+    }
+
+    @Test fun `a build without what the side menu needs keeps the other two switches`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build, leaveOut = setOf(LAUNCHER)))
+            val plan = context.resolveMainTabs()
+            val start = context.mutableClassDefBy(plan.swipeStart.substringBefore("->")).methods
+                .single { "${it.definingClass}->${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == plan.swipeStart }
+            val before = start.controlBody().map(::operands)
+            assertEquals(name, listOf("Hide Contacts tab: Telegram's main activity is gone. The patch goes on without the side menu."),
+                PatchLogCapture.warnings { hideContactsTabPatch.execute(context) })
+            assertEquals("$name: the swipe start stays Telegram's", before, start.controlBody().map(::operands))
+            for ((flag, value) in listOf("hideContactsTab" to 1L, "compactTabBar" to 1L, "sideMenu" to 0L)) {
+                val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.controlBody()
+                assertEquals("$name: $flag", value, (status.first() as WideLiteralInstruction).wideLiteral)
             }
         }
     }
@@ -250,13 +330,13 @@ class HideContactsTabFixtureTest {
      * The main screen, found the way the patch finds it, with the classes it names that the patch
      * reads: its superclass, the types of their fields, the tab views, and each one's superclasses.
      */
-    private fun hosts(build: File): Collection<ClassDef> {
+    private fun hosts(build: File, leaveOut: Set<String> = emptySet()): Collection<ClassDef> {
         val screens = FixtureDex.classesWhere(build, { true }, ::isMainBuild)
         assertEquals("${build.name}: one main screen", 1, screens.size)
         val loaded = LinkedHashMap<String, ClassDef>()
         screens.forEach { loaded[it.type] = it }
-        val asked = HashSet<String>()
-        var wanted = setOfNotNull(screens.single().superclass)
+        val asked = HashSet<String>(leaveOut)
+        var wanted = setOfNotNull(screens.single().superclass) + (SIDE_MENU_HOSTS - leaveOut)
         while (wanted.isNotEmpty()) {
             asked += wanted
             loaded.putAll(FixtureDex.classes(build, wanted))
@@ -267,6 +347,10 @@ class HideContactsTabFixtureTest {
         }
         return loaded.values
     }
+
+    /** What the side menu reads beyond the main screen: the activity its links go to, and Telegram's account, name and words. */
+    private val SIDE_MENU_HOSTS = setOf(LAUNCHER, "Lorg/telegram/messenger/UserConfig;", "Lorg/telegram/messenger/UserObject;",
+        "Lorg/telegram/messenger/LocaleController;", "Lorg/telegram/messenger/R\$string;")
 
     private fun isAppType(type: String) = !type.startsWith("Landroid") && !type.startsWith("Ljava") && !type.startsWith("Lkotlin")
 

@@ -427,6 +427,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. "
                                 + "The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.")));
             }
+            if (PatchFamily.Capability.SIDE_MENU.installed()) {
+                on(pages, PatchFamily.HIDE_CONTACTS_TAB).addPreference(toggle(context, Settings.SIDE_MENU,
+                        L10n.t("Side menu"),
+                        L10n.t("Swipe right on your first chat folder and a menu slides in, like the one older Telegram had. It has "
+                                + "your profile, new message, contacts, calls, saved messages and settings, plus a way to switch "
+                                + "accounts. Back or a tap beside it closes it.")));
+            }
         }
     }
 

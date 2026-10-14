@@ -791,6 +791,13 @@ public class HushTelegramPreferenceFragmentTest {
                     String.valueOf(page.findPreference(Settings.COMPACT_TAB_BAR.key).getSummary()));
             // The bar keeps Telegram's size until the switch is turned on.
             assertFalse(((SwitchPreference) page.findPreference(Settings.COMPACT_TAB_BAR.key)).isChecked());
+            assertEquals("Side menu", String.valueOf(page.findPreference(Settings.SIDE_MENU.key).getTitle()));
+            assertEquals("Swipe right on your first chat folder and a menu slides in, like the one older Telegram had. It has "
+                            + "your profile, new message, contacts, calls, saved messages and settings, plus a way to switch "
+                            + "accounts. Back or a tap beside it closes it.",
+                    String.valueOf(page.findPreference(Settings.SIDE_MENU.key).getSummary()));
+            // A swipe on the chat list stays Telegram's until the switch is turned on.
+            assertFalse(((SwitchPreference) page.findPreference(Settings.SIDE_MENU.key)).isChecked());
             assertEquals("Ask before sending a GIF", String.valueOf(page.findPreference(Settings.ASK_BEFORE_GIF.key).getTitle()));
             assertEquals("Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs "
                     + "go out without asking.",
