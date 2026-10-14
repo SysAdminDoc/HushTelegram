@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -540,7 +541,10 @@ public final class MessageFilters {
     /** Code points past the first plane that a class could take in without naming them. */
     private static final int[] PAST_FIRST_PLANE = {0x10000, 0x1D400, 0x1F3FB, 0x1F600, 0x20000, 0xE0041, 0x10FFFD};
 
-    /** How many pairs {@link #NEVER_BOTH} keeps: more than a full list's repeats, and a few kilobytes at most. */
+    /**
+     * How many pairs {@link #NEVER_BOTH} keeps: more than a full list's repeats. Both atoms come from
+     * one line, so a key is no longer than a line, and the whole map about 100 KB at worst.
+     */
     static final int NEVER_BOTH_KEPT = 256;
 
     /**
@@ -576,6 +580,7 @@ public final class MessageFilters {
         String key = first.length() + ":" + first + second;
         Boolean known = NEVER_BOTH.get(key);
         if (known != null) return known;
+        PAIRS_READ.incrementAndGet();
         boolean answer;
         try {
             BitSet one = matched(Pattern.compile(first, FLAGS));
@@ -588,14 +593,23 @@ public final class MessageFilters {
         return answer;
     }
 
+    /** How many times {@link #neverBoth} worked a pair out rather than answering from what it kept. */
+    private static final AtomicInteger PAIRS_READ = new AtomicInteger();
+
     /** How many pairs {@link #neverBoth} has kept answers for. */
     static int pairsKnown() {
         return NEVER_BOTH.size();
     }
 
+    /** How many pairs {@link #neverBoth} has worked out since the last {@link #forgetPairs}. */
+    static int pairsRead() {
+        return PAIRS_READ.get();
+    }
+
     /** Forgets every kept pair, so a test starts from none. */
     static void forgetPairs() {
         NEVER_BOTH.clear();
+        PAIRS_READ.set(0);
     }
 
     /**

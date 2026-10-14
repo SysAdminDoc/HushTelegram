@@ -286,13 +286,15 @@ public class MessageFiltersTest {
         List<MessageFilters.Filter> kept = parsed(String.join("\n", lines));
         // Each line's 2,089 tries leave room for 98 in the list's share.
         assertEquals(98, kept.size());
-        assertEquals("the pair was read more than once", 1, MessageFilters.pairsKnown());
+        assertEquals("the pair was read more than once", 1, MessageFilters.pairsRead());
+        assertEquals(1, MessageFilters.pairsKnown());
         assertTrue(MessageFilters.matches(kept, "w97 0x" + repeat('a', 40)));
 
         for (char c = '\u4E00'; c < '\u4E00' + MessageFilters.NEVER_BOTH_KEPT + 20; c++) {
             assertNull(MessageFilters.problem("/\\s+" + c + "{40}/"));
         }
         assertEquals(MessageFilters.NEVER_BOTH_KEPT, MessageFilters.pairsKnown());
+        assertEquals(1 + MessageFilters.NEVER_BOTH_KEPT + 20, MessageFilters.pairsRead());
     }
 
     /**
