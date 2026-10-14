@@ -4,10 +4,12 @@
  */
 package app.hushtelegram.extension.telegram.misc;
 
+import android.app.ActivityManager;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.PowerManager;
 import android.os.SystemClock;
 
 import java.net.URL;
@@ -45,6 +47,8 @@ public final class FirebasePush {
     static final String ACCEPTED = "accepted";
     static final String REFUSED = "refused";
     static final String NO_ANSWER = "none since start";
+    /** Telegram's servers have no push key for the app: set up on their side, not on the phone. */
+    static final String API_KEY_MISSING = "APP_PUSH_APIKEY_MISSING";
     /** Telegram's token type for a Firebase token. A UnifiedPush address goes out as {@link UnifiedPush#WEB_PUSH}. */
     static final int FIREBASE = 2;
     /** How many sign-ups waiting for a reply, and how many replies, are kept: four accounts on two transports. */
@@ -130,6 +134,12 @@ public final class FirebasePush {
     /** Only scalar local facts leave the native readers. A null or -1 means unreadable. */
     public static final class LocalStatus {
         public final Boolean notificationPermission;
+        /** Android's Restricted setting for this app, which keeps it from running in the background, or null when unread. */
+        public final Boolean backgroundRestricted;
+        /** Whether Android's battery optimization applies to this app, or null when unread. */
+        public final Boolean batteryOptimized;
+        /** What the UnifiedPush app row says, or null when UnifiedPush isn't in this build. */
+        public final String unifiedPush;
         public final Boolean tokenPresent;
         public final int activeAccounts;
         public final int acknowledgedAccounts;
@@ -140,9 +150,13 @@ public final class FirebasePush {
         /** Whether a refused sign-up turned them on, rather than the user. */
         public final boolean ownConnectionTurnedOnHere;
 
-        private LocalStatus(Boolean notificationPermission, Boolean tokenPresent, int activeAccounts, int acknowledgedAccounts,
+        private LocalStatus(Boolean notificationPermission, Boolean backgroundRestricted, Boolean batteryOptimized,
+                            String unifiedPush, Boolean tokenPresent, int activeAccounts, int acknowledgedAccounts,
                             List<Reply> pushReplies, Boolean ownConnection, boolean ownConnectionTurnedOnHere) {
             this.notificationPermission = notificationPermission;
+            this.backgroundRestricted = backgroundRestricted;
+            this.batteryOptimized = batteryOptimized;
+            this.unifiedPush = unifiedPush;
             this.tokenPresent = tokenPresent;
             this.activeAccounts = activeAccounts;
             this.acknowledgedAccounts = acknowledgedAccounts;
@@ -151,24 +165,60 @@ public final class FirebasePush {
             this.ownConnectionTurnedOnHere = ownConnectionTurnedOnHere;
         }
 
+        /**
+         * The facts in three parts, each with its own fix: what Android allows on this phone, the push
+         * service Telegram signs up with, and what Telegram answered each account.
+         */
         public String summary() {
-            String summary = L10n.f("Notification permission: %1$s", notificationPermission == null ? L10n.t("Unknown")
-                    : notificationPermission ? L10n.t("Allowed") : L10n.t("Blocked"))
+            String phone = L10n.t("On this phone") + "\n" + permissionLine() + "\n" + backgroundLine()
+                    + "\n" + L10n.f("Battery optimization: %1$s", batteryOptimized == null ? L10n.t("Unknown")
+                    : batteryOptimized ? L10n.t("On") : L10n.t("Off"));
+            String push = L10n.t("Push service")
                     + "\n" + L10n.f("Notification ID saved on this phone: %1$s", tokenPresent == null ? L10n.t("Unknown")
-                    : tokenPresent ? L10n.t("Yes") : L10n.t("No"))
+                    : tokenPresent ? L10n.t("Yes") : L10n.t("No"));
+            if (unifiedPush != null) push += "\n" + L10n.f("UnifiedPush: %1$s", unifiedPush);
+            String telegram = L10n.t("Telegram accounts")
                     + "\n" + L10n.f("Signed-in accounts: %1$s", count(activeAccounts))
                     + "\n" + L10n.f("Accounts Telegram confirmed for notifications: %1$s", count(acknowledgedAccounts))
                     + "\n" + replyLines();
+            if (refusedWith(API_KEY_MISSING)) {
+                telegram += "\n" + L10n.t("APP_PUSH_APIKEY_MISSING means Telegram's servers have no push key set up for "
+                        + "this app. That's configured on Telegram's side, so no setting on this phone fixes it.");
+            }
             if (pushReplies != null) {
-                summary += "\n" + L10n.f("Keep-Alive Service and Background Connection on: %1$s",
+                telegram += "\n" + L10n.f("Keep-Alive Service and Background Connection on: %1$s",
                         ownConnection == null ? L10n.t("Unknown") : ownConnection ? L10n.t("Yes") : L10n.t("No"));
                 if (firebaseRefused() && Boolean.FALSE.equals(ownConnection)) {
-                    summary += "\n" + L10n.t("Without push, turn both on under Settings > Notifications and Sounds "
+                    telegram += "\n" + L10n.t("Without push, turn both on under Settings > Notifications and Sounds "
                             + "to get messages on time.");
                 }
             }
-            return summary + "\n" + L10n.t("This only shows what's saved on this phone. It doesn't prove notifications will "
-                    + "arrive.");
+            return phone + "\n\n" + push + "\n\n" + telegram + "\n\n"
+                    + L10n.t("This only shows what's saved on this phone. It doesn't prove notifications will arrive.");
+        }
+
+        public String permissionLine() {
+            return L10n.f("Notification permission: %1$s", notificationPermission == null ? L10n.t("Unknown")
+                    : notificationPermission ? L10n.t("Allowed") : L10n.t("Blocked"));
+        }
+
+        public String backgroundLine() {
+            return L10n.f("Background use: %1$s", backgroundRestricted == null ? L10n.t("Unknown")
+                    : backgroundRestricted ? L10n.t("Restricted") : L10n.t("Allowed"));
+        }
+
+        /** Whether Android holds Telegram back in the background, so App info, where both settings live, is worth a link. */
+        public boolean androidLimitsBackground() {
+            return Boolean.TRUE.equals(backgroundRestricted) || Boolean.TRUE.equals(batteryOptimized);
+        }
+
+        /** Whether an account's latest reply on either transport was a refusal naming [error]. */
+        private boolean refusedWith(String error) {
+            if (pushReplies == null) return false;
+            for (Reply reply : pushReplies) {
+                if (reply.answer.startsWith(REFUSED + " " + error + " ") || reply.answer.equals(REFUSED + " " + error)) return true;
+            }
+            return false;
         }
 
         private static String count(int value) { return value < 0 ? L10n.t("Unknown") : Integer.toString(value); }
@@ -195,6 +245,8 @@ public final class FirebasePush {
         private List<String> reportLines() {
             List<String> lines = new ArrayList<>(Arrays.asList("notification permission: " + (notificationPermission == null ? "unknown"
                             : notificationPermission ? "allowed" : "blocked"),
+                    "background restricted: " + (backgroundRestricted == null ? "unknown" : backgroundRestricted.toString()),
+                    "battery optimized: " + (batteryOptimized == null ? "unknown" : batteryOptimized.toString()),
                     "token present: " + (tokenPresent == null ? "unknown" : tokenPresent.toString()),
                     "active accounts: " + (activeAccounts < 0 ? "unknown" : activeAccounts),
                     "acknowledged accounts: " + (acknowledgedAccounts < 0 ? "unknown" : acknowledgedAccounts)));
@@ -383,6 +435,27 @@ public final class FirebasePush {
         } catch (Throwable unreadable) {
             // Native exception messages can contain private data. Unknown is the only exported result.
         }
+        // Read, never changed: the page links to App info and leaves the choice to the person.
+        Boolean restricted = null;
+        try {
+            if (context != null) {
+                ActivityManager activities = context.getSystemService(ActivityManager.class);
+                if (activities != null) restricted = activities.isBackgroundRestricted();
+            }
+        } catch (Throwable unreadable) { }
+        Boolean optimized = null;
+        try {
+            if (context != null) {
+                PowerManager power = context.getSystemService(PowerManager.class);
+                if (power != null) optimized = !power.isIgnoringBatteryOptimizations(context.getPackageName());
+            }
+        } catch (Throwable unreadable) { }
+        String unifiedPush = null;
+        if (context != null && Utils.settingsReady() && PatchFamily.UNIFIED_PUSH.inBuild()) {
+            try {
+                unifiedPush = UnifiedPush.status(context, Settings.UNIFIED_PUSH.savedValue());
+            } catch (Throwable unreadable) { }
+        }
         Boolean token = null;
         int active = -1;
         int acknowledged = -1;
@@ -410,7 +483,8 @@ public final class FirebasePush {
                 }
             } catch (Throwable unreadable) { }
         }
-        return new LocalStatus(permission, token, active, acknowledged, replies, ownConnection, ownConnectionHere);
+        return new LocalStatus(permission, restricted, optimized, unifiedPush, token, active, acknowledged, replies,
+                ownConnection, ownConnectionHere);
     }
 
     /** Replaced only after the patch verifies the retained native fields and their local readers. */

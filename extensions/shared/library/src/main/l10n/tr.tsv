@@ -776,3 +776,20 @@ Turned off: %1$s.	Kapatılanlar: %1$s.
 %1$d switch you changed since stays as you set it.	Sonradan değiştirdiğin %1$d anahtar bıraktığın gibi kalır.
 %1$d switches you changed since stay as you set them.	Sonradan değiştirdiğin %1$d anahtar bıraktığın gibi kalır.
 Only switches go back. Anything a switch already cleared, like chats' translate choices, stays cleared.	Yalnızca anahtarlar geri alınır. Bir anahtarın sildiği şeyler, sohbetlerin çeviri seçimleri gibi, silinmiş kalır.
+# context: Headings that split the Notification status on this phone dialog into three parts: what Android allows on this phone, the push service Telegram signs up with, and what Telegram's servers answered for each signed-in account
+On this phone	Bu telefonda
+Push service	Push hizmeti
+Telegram accounts	Telegram hesapları
+# context: Notification status lines read from Android. Background use is Android's own Restricted setting for the app (Allowed, Restricted or Unknown); battery optimization is Android's battery saving for the app, On or Off (or Unknown). %1$s is that value
+Background use: %1$s	Arka plan kullanımı: %1$s
+Restricted	Kısıtlı
+Battery optimization: %1$s	Pil optimizasyonu: %1$s
+On	Açık
+Off	Kapalı
+# context: Notification status line naming the UnifiedPush app's state; %1$s is a whole sentence such as "Telegram's wake-ups come through ntfy."
+UnifiedPush: %1$s	UnifiedPush: %1$s
+# context: Notification status, under a reply from Telegram that carries the error name APP_PUSH_APIKEY_MISSING. Keep the error name as it is
+APP_PUSH_APIKEY_MISSING means Telegram's servers have no push key set up for this app. That's configured on Telegram's side, so no setting on this phone fixes it.	APP_PUSH_APIKEY_MISSING, Telegram sunucularında bu uygulama için ayarlanmış bir push anahtarı olmadığı anlamına gelir. Bu Telegram tarafında ayarlanır, bu yüzden bu telefondaki hiçbir ayar bunu düzeltmez.
+# context: Button in the Notification status dialog, shown when Android restricts Telegram in the background or optimizes its battery; it opens Android's App info page for Telegram, where both are set. Then the toast when that page can't open
+Open app info	Uygulama bilgisini aç
+Couldn't open app info. Open Android settings.	Uygulama bilgisi açılamadı. Android ayarlarını aç.

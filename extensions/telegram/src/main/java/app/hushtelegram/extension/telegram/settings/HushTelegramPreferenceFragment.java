@@ -564,10 +564,20 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
     /** The Notifications page: the status on this phone and the two push switches lead. */
     static String notificationSummary(FirebasePush.LocalStatus status) {
-        return L10n.f("Notification permission: %1$s", status.notificationPermission == null ? L10n.t("Unknown")
-                : status.notificationPermission ? L10n.t("Allowed") : L10n.t("Blocked"))
+        return status.permissionLine() + "\n" + status.backgroundLine()
                 + "\n" + L10n.f("Signed-in accounts: %1$s", status.activeAccounts < 0 ? L10n.t("Unknown") : status.activeAccounts)
                 + "\n" + L10n.t("Tap for details and Android settings.");
+    }
+
+    /** App info, where Android keeps an app's background and battery settings. Opening it changes nothing. */
+    static void openAppInfo(Context context) {
+        try {
+            context.startActivity(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:" + context.getPackageName())));
+        } catch (ActivityNotFoundException | SecurityException exception) {
+            Logger.printException(() -> "Could not open app info", exception);
+            Utils.showToastLong(L10n.t("Couldn't open app info. Open Android settings."));
+        }
     }
 
     void openNotificationSettings(Context context) {
@@ -596,11 +606,17 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             localNotificationStatus.setKey("local_notification_status");
             localNotificationStatus.setIcon(SettingsIcons.icon(context, SettingsIcons.ABOUT, ScreenColors.DEFAULT.heading));
             localNotificationStatus.setOnPreferenceClickListener(row -> {
-                show(new AlertDialog.Builder(themed(context))
+                FirebasePush.LocalStatus status = FirebasePush.localStatus(context);
+                AlertDialog.Builder details = new AlertDialog.Builder(themed(context))
                         .setTitle(L10n.t("Notification status on this phone"))
-                        .setMessage(FirebasePush.localStatus(context).summary())
+                        .setMessage(status.summary())
                         .setPositiveButton(L10n.t("Open notification settings"), (dialog, which) -> openNotificationSettings(context))
-                        .setNegativeButton(L10n.t("Close"), null));
+                        .setNegativeButton(L10n.t("Close"), null);
+                // Only when Android holds Telegram back: App info is where the person can change that.
+                if (status.androidLimitsBackground()) {
+                    details.setNeutralButton(L10n.t("Open app info"), (dialog, which) -> openAppInfo(context));
+                }
+                show(details);
                 return true;
             });
             notifications.addPreference(localNotificationStatus);
@@ -622,7 +638,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 UnifiedPush.switched(context, on);
                 // The app answers in a moment, so the row reads its state again after.
                 app.setSummary(UnifiedPush.status(context, on));
-                Utils.runOnMainThreadDelayed(() -> app.setSummary(UnifiedPush.status(context, Settings.UNIFIED_PUSH.savedValue())), 2000);
+                Utils.runOnMainThreadDelayed(() -> {
+                    // A page closed in the meantime has nothing to show it on.
+                    if (isAdded()) app.setSummary(UnifiedPush.status(context, Settings.UNIFIED_PUSH.savedValue()));
+                }, 2000);
                 return true;
             });
             on(pages, PatchFamily.UNIFIED_PUSH).addPreference(push);

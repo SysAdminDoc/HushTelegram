@@ -162,9 +162,12 @@ public class NotificationStatusTest {
                 + "\nTelegram's reply to account 1 on UnifiedPush: Refused, 7 min ago"
                 + "\nTelegram's reply to account 2 on Firebase: Refused (APP_PUSH_APIKEY_MISSING 400), 7 min ago"
                 + "\nTelegram's reply to account Unknown on Unknown: Accepted, 7 min ago"
+                // The refused key is the server's to fix, and the line under the replies says so.
+                + "\nAPP_PUSH_APIKEY_MISSING means Telegram's servers have no push key set up for this app. That's "
+                + "configured on Telegram's side, so no setting on this phone fixes it."
                 // The second account's Firebase refusal turned Telegram's own connection on.
                 + "\nKeep-Alive Service and Background Connection on: Yes"
-                + "\nThis only shows what's saved on this phone. It doesn't prove notifications will arrive."));
+                + "\n\nThis only shows what's saved on this phone. It doesn't prove notifications will arrive."));
         assertFalse(summary, summary.contains(Long.toString(ALICE)));
         assertFalse(summary, summary.contains(Long.toString(BOB)));
         for (String report : bothExports()) {
@@ -182,6 +185,100 @@ public class NotificationStatusTest {
         summary = FirebasePush.localStatus(context()).summary();
         assertTrue(summary, summary.contains("Telegram's reply to account 1 on UnifiedPush: Refused, 7 min ago"));
         assertFalse(summary, summary.contains("account 2"));
+    }
+
+    /**
+     * The details come in three parts, each with its own fix: what Android allows on this phone
+     * (permission, background use, battery optimization), the push service, and Telegram's answers
+     * for each account. Android's two background facts are read and never changed, and stay Unknown
+     * when they can't be read.
+     */
+    @Test public void theDetailsSplitIntoThisPhoneThePushServiceAndTheAccounts() throws Exception {
+        PatchFamily.registerDiagnostics();
+        android.app.ActivityManager activities = context().getSystemService(android.app.ActivityManager.class);
+        android.os.PowerManager power = context().getSystemService(android.os.PowerManager.class);
+        String app = context().getPackageName();
+        Shadows.shadowOf(activities).setBackgroundRestricted(true);
+        Shadows.shadowOf(power).setIgnoringBatteryOptimizations(app, false);
+        FirebasePush.LocalStatus status = FirebasePush.localStatus(context());
+        assertEquals(Boolean.TRUE, status.backgroundRestricted);
+        assertEquals(Boolean.TRUE, status.batteryOptimized);
+        assertTrue(status.androidLimitsBackground());
+        String summary = status.summary();
+        assertTrue(summary, summary.startsWith("On this phone\nNotification permission: Allowed\nBackground use: Restricted"
+                + "\nBattery optimization: On\n\nPush service\nNotification ID saved on this phone: Yes\n\nTelegram accounts"
+                + "\nSigned-in accounts: 2\nAccounts Telegram confirmed for notifications: 1\n"));
+        assertFalse("UnifiedPush isn't in this build", summary.contains("UnifiedPush:"));
+        assertFalse("no reply named the missing key", summary.contains("APP_PUSH_APIKEY_MISSING"));
+        assertTrue(summary, summary.endsWith("\n\nThis only shows what's saved on this phone. It doesn't prove notifications will arrive."));
+        for (String report : bothExports()) {
+            assertTrue(report, report.contains("background restricted: true"));
+            assertTrue(report, report.contains("battery optimized: true"));
+        }
+        assertTrue("reading the status changed Android's setting", activities.isBackgroundRestricted());
+        assertFalse(power.isIgnoringBatteryOptimizations(app));
+        assertNull(Shadows.shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivity());
+
+        Shadows.shadowOf(activities).setBackgroundRestricted(false);
+        Shadows.shadowOf(power).setIgnoringBatteryOptimizations(app, true);
+        status = FirebasePush.localStatus(context());
+        assertFalse(status.androidLimitsBackground());
+        assertTrue(status.summary(), status.summary().contains("\nBackground use: Allowed\nBattery optimization: Off\n\n"));
+
+        for (Context unreadable : new Context[]{null, new ContextWrapper(context()) {
+            @Override public Object getSystemService(String name) { throw new SecurityException(PRIVATE_CANARY); }
+        }}) {
+            status = FirebasePush.localStatus(unreadable);
+            assertNull(status.backgroundRestricted);
+            assertNull(status.batteryOptimized);
+            assertFalse(status.androidLimitsBackground());
+            assertTrue(status.summary(), status.summary().contains("\nBackground use: Unknown\nBattery optimization: Unknown\n\n"));
+            assertFalse(status.summary().contains(PRIVATE_CANARY));
+        }
+    }
+
+    /** With UnifiedPush in the build, the push service part says what the UnifiedPush app row says. */
+    @Test public void theUnifiedPushAppsStateSitsWithThePushService() {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.REPAIR_FIREBASE_PUSH, PatchFamily.UNIFIED_PUSH);
+        String summary = FirebasePush.localStatus(context()).summary();
+        assertTrue(summary, summary.contains("\nNotification ID saved on this phone: Yes"
+                + "\nUnifiedPush: Install a UnifiedPush app like ntfy, then come back here.\n\nTelegram accounts\n"));
+    }
+
+    /**
+     * App info, where Android keeps an app's background and battery settings, is offered only while
+     * Android holds Telegram back, and the row reads the facts again when the page comes back.
+     */
+    @Test public void appInfoIsOfferedOnlyWhileAndroidHoldsTelegramBack() {
+        android.app.ActivityManager activities = context().getSystemService(android.app.ActivityManager.class);
+        android.os.PowerManager power = context().getSystemService(android.os.PowerManager.class);
+        Shadows.shadowOf(activities).setBackgroundRestricted(false);
+        Shadows.shadowOf(power).setIgnoringBatteryOptimizations(context().getPackageName(), true);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = new HushTelegramPreferenceFragment();
+            controller.get().getFragmentManager().beginTransaction().add(android.R.id.content, page).commitNow();
+            Preference status = page.findPreference("local_notification_status");
+            assertTrue(status.getSummary().toString(), status.getSummary().toString().contains("\nBackground use: Allowed\n"));
+            status.getOnPreferenceClickListener().onPreferenceClick(status);
+            android.app.AlertDialog details = org.robolectric.shadows.ShadowAlertDialog.getLatestAlertDialog();
+            assertEquals(android.view.View.GONE, details.getButton(android.app.AlertDialog.BUTTON_NEUTRAL).getVisibility());
+            details.dismiss();
+
+            Shadows.shadowOf(activities).setBackgroundRestricted(true);
+            page.onResume();
+            assertTrue(status.getSummary().toString(), status.getSummary().toString().contains("\nBackground use: Restricted\n"));
+            status.getOnPreferenceClickListener().onPreferenceClick(status);
+            details = org.robolectric.shadows.ShadowAlertDialog.getLatestAlertDialog();
+            android.widget.Button appInfo = details.getButton(android.app.AlertDialog.BUTTON_NEUTRAL);
+            assertEquals(android.view.View.VISIBLE, appInfo.getVisibility());
+            assertEquals("Open app info", appInfo.getText().toString());
+            appInfo.performClick();
+            ShadowLooper.idleMainLooper();
+            android.content.Intent launched = Shadows.shadowOf(controller.get()).getNextStartedActivity();
+            assertEquals(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, launched.getAction());
+            assertEquals("package:" + controller.get().getPackageName(), launched.getDataString());
+            assertTrue("opening App info changed Android's setting", activities.isBackgroundRestricted());
+        }
     }
 
     @Test public void missingInvalidAndUnreadableFactsStayIndependentAndUnknown() {
