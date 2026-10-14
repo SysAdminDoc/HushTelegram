@@ -472,6 +472,8 @@ public class SettingsBackupPreference extends Preference {
         Set<Setting<?>> named = new HashSet<>(snapshot.values.keySet());
         named.addAll(snapshot.lists.keySet());
         named.addAll(snapshot.numbers.keySet());
+        // The title emoji is text, and it waits for a restart like a switch does.
+        named.addAll(snapshot.texts.keySet());
         // What each is saved as now. A switch that waits for a restart is running that, unless a
         // change before this one already put its running value on record.
         Map<Setting<?>, Object> before = new HashMap<>();

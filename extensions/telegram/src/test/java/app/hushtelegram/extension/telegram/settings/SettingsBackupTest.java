@@ -1050,6 +1050,8 @@ public class SettingsBackupTest {
             assertEquals(tree, Settings.TITLE_EMOJI.savedValue());
             assertTrue("the row shows the imported text",
                     String.valueOf(page.findPreference(TitleEmojiEditor.KEY).getSummary()).contains(tree));
+            assertEquals(Collections.singleton(Settings.TITLE_EMOJI.key), new TreeSet<>(AbstractPreferenceFragment.restartPending));
+            assertEquals("Restart Telegram to apply this change", restartRow(page));
         }
     }
 
