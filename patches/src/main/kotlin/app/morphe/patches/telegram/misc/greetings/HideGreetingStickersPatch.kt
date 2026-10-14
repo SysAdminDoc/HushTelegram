@@ -15,12 +15,14 @@ import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.localRegisterCount
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.call
@@ -168,8 +170,8 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
     var loweredOrElsewhere = false
     var measuresAlone = false
     val ownMeasure = "${owner.type}->onMeasure(II)V"
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.reference(introductionKey)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
             val b = m.controlBody()
             b.indices.filter { b[it].opcode == Opcode.IPUT_BOOLEAN && b[it].controlRef() == introductionKey }.forEach { i ->
@@ -180,8 +182,15 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
                     raisers += "${m.name}(${m.parameterTypes.joinToString("")})"
                 } else loweredOrElsewhere = true
             }
-            if (cls.superclass == owner.type && m.name == "onMeasure" && m.parameterTypes.map(CharSequence::toString) == listOf("I", "I") &&
-                b.none { it.opcode == Opcode.INVOKE_SUPER && it.controlRef() == ownMeasure }) measuresAlone = true
+        }
+    }
+    // A subclass that skips the greeting's pass names nothing to search for, so every class is
+    // checked by its superclass and only the subclasses' code is read.
+    classDefForEach { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.superclass != owner.type) return@classDefForEach
+        cls.methods.forEach { m ->
+            if (m.name == "onMeasure" && m.parameterTypes.map(CharSequence::toString) == listOf("I", "I") &&
+                m.controlBody().none { it.opcode == Opcode.INVOKE_SUPER && it.controlRef() == ownMeasure }) measuresAlone = true
         }
     }
     controlShape(!loweredOrElsewhere && raisers.size == 1, "the introduction flag is set somewhere new or to another value")
@@ -197,8 +206,8 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
 
 private fun BytecodePatchContext.readers(key: String): Map<Method, List<Int>> {
     val found = linkedMapOf<Method, List<Int>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.reference(key)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
             val body = m.controlBody()
             val reads = body.indices.filter { body[it].opcode in FIELD_READS && body[it].controlRef() == key }

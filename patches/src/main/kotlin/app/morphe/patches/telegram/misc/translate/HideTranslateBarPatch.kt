@@ -15,10 +15,12 @@ import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -97,8 +99,8 @@ internal fun BytecodePatchContext.resolveTranslateBar(): List<TranslateBarSite> 
     }
 
     val found = mutableListOf<Pair<String, Pair<String, Int>>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.type == TRANSLATE_CONTROLLER || cls.type == MESSAGE_OBJECT) return@classDefForEach
+    forEachClassMentioning(Mention.reference(BAR_HIDDEN)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.type == TRANSLATE_CONTROLLER || cls.type == MESSAGE_OBJECT) return@forEachClassMentioning
         cls.methods.forEach { method ->
             method.controlBody().forEachIndexed { index, instruction ->
                 if (instruction.controlRef() == BAR_HIDDEN) found += cls.type to ("${method.name}${method.parameterTypes.joinToString("", "(", ")")}${method.returnType}" to index)
