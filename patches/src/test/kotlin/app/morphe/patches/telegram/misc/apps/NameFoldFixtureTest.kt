@@ -115,6 +115,18 @@ class NameFoldFixtureTest {
         }
     }
 
+    /** Past the last register a range call can name, smali refuses the snippet outright: a reason, not a crash of the patch. */
+    @Test fun `a fold smali refuses outright is caught by the rehearsal`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = PatchContexts.of(ExtensionDex.classes() + nameFoldHosts(build))
+            val method = padded(context.full(), 70_000)
+            val stock = method.body().map(::operands)
+            val failed = assertThrows(build.name, Exception::class.java) { NameFoldPlan(method, null).rehearse() }
+            assertTrue("${build.name}: ${failed.message}", failed.message.orEmpty().startsWith("the name fold doesn't compile"))
+            assertEquals("${build.name}: the rehearsal works on a copy", stock, method.body().map(::operands))
+        }
+    }
+
     @Test fun `without the shape the rest of Hide popular apps goes in with a warning`() {
         for (build in Fixtures.declaredBuilds()) {
             val hosts = popularAppsOwners(build) + myChatsSearchHosts(build)

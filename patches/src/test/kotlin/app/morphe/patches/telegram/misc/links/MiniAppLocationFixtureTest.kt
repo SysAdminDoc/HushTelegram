@@ -174,6 +174,20 @@ class MiniAppLocationFixtureTest {
         }
     }
 
+    /** Past the last register a range call can name, smali refuses the snippet outright: a reason, not a crash of the patch. */
+    @Test fun `a gate smali refuses outright is caught by the rehearsal`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = PatchContexts.of(ExtensionDex.classes() + hostClasses(build))
+            val answer = padded(context.resolveMiniAppLocation().gates.getValue(LocationGate.ANSWER), 70_000)
+            val stock = answer.state()
+            val failed = assertThrows(build.name, Exception::class.java) {
+                MiniAppLocationPlan(mapOf(LocationGate.ANSWER to answer), null).rehearse()
+            }
+            assertTrue("${build.name}: ${failed.message}", failed.message.orEmpty().startsWith("the location gates don't compile"))
+            assertEquals("${build.name}: the rehearsal works on a copy", stock, answer.state())
+        }
+    }
+
     /** A listener that's a LocationListener through an interface of its own is still found and held to the answer. */
     @Test fun `a listener behind a parent interface is still found`() {
         for (build in Fixtures.declaredBuilds()) {

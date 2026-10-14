@@ -92,16 +92,13 @@ internal class LaunchFolderPlan(val tabs: MutableMethod?, val at: Int, val self:
 
     /**
      * The same edit on a copy, so a smali problem shows before the app is touched. A snippet smali
-     * refuses outright comes back as no class at all, which the patcher reports as an empty collection.
+     * refuses outright comes back as no class, which the patcher trips over as an empty collection
+     * or a null, so any failure on the copy is a reason to leave the switch out.
      */
     fun rehearse() = try {
         apply { MutableMethod(ImmutableMethod.of(it)) }
-    } catch (failed: IllegalStateException) {
-        throw Unpicked("the folder pick doesn't compile (${failed.message})")
-    } catch (failed: IllegalArgumentException) {
-        throw Unpicked("the folder pick doesn't compile (${failed.message})")
-    } catch (failed: NoSuchElementException) {
-        throw Unpicked("the folder pick doesn't compile (${failed.message})")
+    } catch (failed: RuntimeException) {
+        throw Unpicked("the folder pick doesn't compile (${failed.javaClass.simpleName}: ${failed.message})")
     }
 }
 

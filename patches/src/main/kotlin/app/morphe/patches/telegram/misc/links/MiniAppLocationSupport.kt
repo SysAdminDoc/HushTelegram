@@ -88,13 +88,15 @@ internal class MiniAppLocationPlan(val gates: Map<LocationGate, MutableMethod>, 
         }
     }
 
-    /** The same edits on copies, so a smali or register problem shows before the app is touched. */
+    /**
+     * The same edits on copies, so a smali or register problem shows before the app is touched. A
+     * snippet smali refuses outright comes back as no class, which the patcher trips over as an
+     * empty collection or a null, so any failure on the copies is a reason to leave the switch out.
+     */
     fun rehearse() = try {
         apply { MutableMethod(ImmutableMethod.of(it)) }
-    } catch (failed: IllegalStateException) {
-        throw Ungated("the location gates don't compile (${failed.message})")
-    } catch (failed: IllegalArgumentException) {
-        throw Ungated("the location gates don't compile (${failed.message})")
+    } catch (failed: RuntimeException) {
+        throw Ungated("the location gates don't compile (${failed.javaClass.simpleName}: ${failed.message})")
     }
 
     companion object {

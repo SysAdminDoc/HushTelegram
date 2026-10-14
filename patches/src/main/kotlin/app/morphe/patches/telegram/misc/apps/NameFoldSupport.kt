@@ -42,13 +42,15 @@ internal class NameFoldPlan(val translit: MutableMethod?, val missing: String?) 
         fits(method.implementation!!.instructions.size - before == NAME_FOLD_SIZE, "the name fold didn't compile whole")
     }
 
-    /** The same edit on a copy, so a smali or register problem shows before the app is touched. */
+    /**
+     * The same edit on a copy, so a smali or register problem shows before the app is touched. A
+     * snippet smali refuses outright comes back as no class, which the patcher trips over as an
+     * empty collection or a null, so any failure on the copy is a reason to leave the switch out.
+     */
     fun rehearse() = try {
         apply { MutableMethod(ImmutableMethod.of(it)) }
-    } catch (failed: IllegalStateException) {
-        throw Unfit("the name fold doesn't compile (${failed.message})")
-    } catch (failed: IllegalArgumentException) {
-        throw Unfit("the name fold doesn't compile (${failed.message})")
+    } catch (failed: RuntimeException) {
+        throw Unfit("the name fold doesn't compile (${failed.javaClass.simpleName}: ${failed.message})")
     }
 }
 
