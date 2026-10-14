@@ -695,3 +695,16 @@ Couldn't open notification settings. Open Android settings.	Setelan notifikasi t
 Search only my chats	Cari hanya di obrolan saya
 Search finds your chats, contacts and messages from chats you're in, and nothing public. The Channels, Apps and Posts tabs go away, and a hashtag's public posts don't load.	Pencarian menemukan obrolan, kontak, dan pesan Anda dari obrolan yang Anda ikuti, tanpa hasil publik. Tab Saluran, Aplikasi, dan Postingan hilang, dan postingan publik sebuah tagar tidak dimuat.
 public search lookups	pencarian publik
+# context: Settings lock row under Quick setups on the home page, its notes, and what a refused change says (#17).
+Lock HushTelegram settings	Kunci pengaturan HushTelegram
+Makes every setting here read-only. To change one again, start an unlock here and wait 24 hours.	Membuat setiap pengaturan di sini hanya-baca. Untuk mengubahnya lagi, mulai buka kunci di sini lalu tunggu 24 jam.
+Start unlock	Mulai buka kunci
+Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.	Pengaturan Anda terkunci. Ketuk untuk memulai masa tunggu 24 jam. Anda bisa membatalkannya selama masih berjalan.
+Cancel unlock	Batalkan buka kunci
+Settings unlock in %1$d h %2$d min. Tap to cancel and keep them locked.	Pengaturan terbuka dalam %1$d j %2$d mnt. Ketuk untuk membatalkan dan tetap mengunci.
+Settings locked. Unlocking takes 24 hours.	Pengaturan dikunci. Membuka kunci memakan waktu 24 jam.
+Unlock started. Settings open in 24 hours unless you cancel.	Buka kunci dimulai. Pengaturan terbuka dalam 24 jam kecuali Anda membatalkannya.
+Unlock canceled. Settings stay locked.	Buka kunci dibatalkan. Pengaturan tetap terkunci.
+Couldn't change the lock. Try again in a moment.	Kunci tidak bisa diubah. Coba lagi dalam beberapa saat.
+Settings are locked. They unlock in %1$d h %2$d min.	Pengaturan terkunci. Terbuka dalam %1$d j %2$d mnt.
+Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.	Pengaturan terkunci. Ketuk Mulai buka kunci di bagian atas pengaturan HushTelegram, lalu tunggu 24 jam.

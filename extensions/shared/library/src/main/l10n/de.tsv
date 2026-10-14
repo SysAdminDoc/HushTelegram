@@ -695,3 +695,16 @@ Couldn't open notification settings. Open Android settings.	Benachrichtigungen n
 Search only my chats	Nur in meinen Chats suchen
 Search finds your chats, contacts and messages from chats you're in, and nothing public. The Channels, Apps and Posts tabs go away, and a hashtag's public posts don't load.	Die Suche findet deine Chats, Kontakte und Nachrichten aus Chats, in denen du bist, und nichts Öffentliches. Die Tabs Kanäle, Apps und Beiträge verschwinden, und die öffentlichen Beiträge zu einem Hashtag werden nicht geladen.
 public search lookups	öffentliche Suchanfragen
+# context: Settings lock row under Quick setups on the home page, its notes, and what a refused change says (#17).
+Lock HushTelegram settings	HushTelegram-Einstellungen sperren
+Makes every setting here read-only. To change one again, start an unlock here and wait 24 hours.	Macht jede Einstellung hier schreibgeschützt. Um wieder etwas zu ändern, starte hier das Entsperren und warte 24 Stunden.
+Start unlock	Entsperren starten
+Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.	Deine Einstellungen sind gesperrt. Tippe, um die Wartezeit von 24 Stunden zu starten. Du kannst sie abbrechen, solange sie läuft.
+Cancel unlock	Entsperren abbrechen
+Settings unlock in %1$d h %2$d min. Tap to cancel and keep them locked.	Die Einstellungen werden in %1$d Std. %2$d Min. entsperrt. Tippe, um abzubrechen und sie gesperrt zu lassen.
+Settings locked. Unlocking takes 24 hours.	Einstellungen gesperrt. Das Entsperren dauert 24 Stunden.
+Unlock started. Settings open in 24 hours unless you cancel.	Entsperren gestartet. In 24 Stunden sind die Einstellungen wieder offen, wenn du nicht abbrichst.
+Unlock canceled. Settings stay locked.	Entsperren abgebrochen. Die Einstellungen bleiben gesperrt.
+Couldn't change the lock. Try again in a moment.	Die Sperre ließ sich nicht ändern. Versuche es gleich noch einmal.
+Settings are locked. They unlock in %1$d h %2$d min.	Die Einstellungen sind gesperrt. Sie werden in %1$d Std. %2$d Min. entsperrt.
+Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.	Die Einstellungen sind gesperrt. Tippe oben in den HushTelegram-Einstellungen auf Entsperren starten und warte dann 24 Stunden.

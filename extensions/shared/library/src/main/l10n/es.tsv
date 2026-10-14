@@ -695,3 +695,16 @@ Couldn't open notification settings. Open Android settings.	No se pudieron abrir
 Search only my chats	Buscar solo en mis chats
 Search finds your chats, contacts and messages from chats you're in, and nothing public. The Channels, Apps and Posts tabs go away, and a hashtag's public posts don't load.	La búsqueda encuentra tus chats, contactos y mensajes de los chats en los que estás, y nada público. Las pestañas Canales, Apps y Publicaciones desaparecen, y las publicaciones públicas de un hashtag no se cargan.
 public search lookups	búsquedas públicas
+# context: Settings lock row under Quick setups on the home page, its notes, and what a refused change says (#17).
+Lock HushTelegram settings	Bloquear la configuración de HushTelegram
+Makes every setting here read-only. To change one again, start an unlock here and wait 24 hours.	Hace que cada ajuste de aquí sea de solo lectura. Para volver a cambiar uno, inicia aquí el desbloqueo y espera 24 horas.
+Start unlock	Iniciar desbloqueo
+Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.	Tu configuración está bloqueada. Toca para iniciar la espera de 24 horas. Puedes cancelarla mientras dura.
+Cancel unlock	Cancelar desbloqueo
+Settings unlock in %1$d h %2$d min. Tap to cancel and keep them locked.	La configuración se desbloquea en %1$d h %2$d min. Toca para cancelar y mantenerla bloqueada.
+Settings locked. Unlocking takes 24 hours.	Configuración bloqueada. Desbloquearla lleva 24 horas.
+Unlock started. Settings open in 24 hours unless you cancel.	Desbloqueo iniciado. La configuración se abre en 24 horas si no lo cancelas.
+Unlock canceled. Settings stay locked.	Desbloqueo cancelado. La configuración sigue bloqueada.
+Couldn't change the lock. Try again in a moment.	No se pudo cambiar el bloqueo. Inténtalo de nuevo en un momento.
+Settings are locked. They unlock in %1$d h %2$d min.	La configuración está bloqueada. Se desbloquea en %1$d h %2$d min.
+Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.	La configuración está bloqueada. Toca Iniciar desbloqueo arriba en la configuración de HushTelegram y espera 24 horas.

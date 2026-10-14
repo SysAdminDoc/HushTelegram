@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 
 import app.hushtelegram.extension.shared.L10n;
+import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.Setting;
@@ -60,6 +61,8 @@ final class SettingsNavigation extends BaseAdapter {
     /** The restart row's key. Like the other rows only this view draws, it stores nothing. */
     static final String RESTART = "action_restart_to_apply";
     static final String QUICK_SETUPS = "action_quick_setups";
+    /** The settings lock's row, under Quick setups. The lock keeps its own state ({@link SettingsLock}). */
+    static final String LOCK = "action_settings_lock";
     static final String REPORT = "action_report_problem";
     private final HushTelegramPreferenceFragment page;
     private final SettingsDialog host;
@@ -77,6 +80,8 @@ final class SettingsNavigation extends BaseAdapter {
     private final Preference report;
     /** Under the home page's status card: a set of switches in one tap. */
     private final Preference quickSetups;
+    /** Under Quick setups: locks the settings, starts the unlock's wait or cancels it, saying which. */
+    private final HushTelegramPreferenceFragment.Row lock;
     /**
      * Shown on every page while a change waits for a restart: a tap restarts Telegram and the
      * screen comes back on the same page ({@link ReopenSettingsAfterRestart}).
@@ -151,6 +156,16 @@ final class SettingsNavigation extends BaseAdapter {
                 L10n.t("Turn on a set of switches in one tap, or put every switch back the way it started."), SettingsIcons.TOOLS);
         quickSetups.setKey(QUICK_SETUPS);
         quickSetups.setOnPreferenceClickListener(ignored -> { page.showQuickSetups(); return true; });
+        lock = (HushTelegramPreferenceFragment.Row) link(context, SettingsLock.title(SettingsLock.State.OFF),
+                SettingsLock.summary(SettingsLock.State.OFF), SettingsIcons.PRIVACY);
+        lock.setKey(LOCK);
+        // A tap does what the title says at once, and the row and a note say what happened.
+        lock.actsAtOnce = true;
+        lock.setOnPreferenceClickListener(ignored -> {
+            Utils.showToastLong(SettingsLock.advance());
+            rebuild();
+            return true;
+        });
         restart =new HushTelegramPreferenceFragment.Row(context);
         restart.setKey(RESTART);
         restart.setPersistent(false);
@@ -466,6 +481,8 @@ final class SettingsNavigation extends BaseAdapter {
         } else {
             visible.add(screen.getPreference(0));
             visible.add(quickSetups);
+            showLock();
+            visible.add(lock);
             visible.add(browse);
             for (Section section : sections) if (section.primary) visible.add(section.link);
             visible.add(more);
@@ -482,6 +499,13 @@ final class SettingsNavigation extends BaseAdapter {
         }
         notifyDataSetChanged();
         keepPlace(restartWas, pageStatusWas);
+    }
+
+    /** The lock row says where the lock stands as the home page is drawn, time left included. */
+    private void showLock() {
+        SettingsLock.State state = SettingsLock.state();
+        lock.setTitle(SettingsLock.title(state));
+        lock.setSummary(SettingsLock.summary(state));
     }
 
     /**
@@ -754,6 +778,8 @@ final class SettingsNavigation extends BaseAdapter {
         action.setPadding(dp(14), 0, dp(14), 0);
         action.setTag(STATUS_ACTION);
         action.setOnClickListener(ignored -> {
+            // Resume always goes through. Pause, or Undo on a resume, waits for the settings lock.
+            if (!nextPaused && SettingsLock.refuses()) return;
             if (pageStatusAction) pageStatusHeight = Math.max(pageStatusHeight, row.getHeight());
             if (nextPaused) {
                 page.resumeFromOverview();
@@ -794,7 +820,7 @@ final class SettingsNavigation extends BaseAdapter {
         Object card = cards.get(item);
         if (card != null) return card;
         if (item == more || item == support || item == browse || item == screen.getPreference(0)
-                || item == restart || item == quickSetups || item == report) return item;
+                || item == restart || item == quickSetups || item == lock || item == report) return item;
         if (item.getParent() != null) return item.getParent();
         return sections;
     }

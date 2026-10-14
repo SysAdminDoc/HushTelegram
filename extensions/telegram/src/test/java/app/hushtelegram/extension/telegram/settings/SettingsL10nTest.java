@@ -382,7 +382,7 @@ public class SettingsL10nTest {
             collect(page.getPreferenceScreen(), rows, shown);
             shown.add(String.valueOf(backOf(dialog).getContentDescription()));
 
-            // The rows only the navigation draws: Quick setups, Browse settings, the section links,
+            // The rows only the navigation draws: Quick setups, the settings lock, Browse settings, the section links,
             // Report a problem and Support, then the restart row with one change and two waiting.
             addListed(dialog, shown);
             app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending

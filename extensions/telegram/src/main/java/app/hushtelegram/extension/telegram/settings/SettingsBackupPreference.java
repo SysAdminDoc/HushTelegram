@@ -159,6 +159,8 @@ public class SettingsBackupPreference extends Preference {
         setTitle(title);
         setSummary(summary);
         setOnPreferenceClickListener(preference -> {
+            // Locked settings can still be saved to a file, but not loaded from one.
+            if (action == IMPORT && SettingsLock.refuses()) return true;
             // Rows are out of reach while a run is going, so this is only the race between a tap
             // and that.
             if (OWNER.get() == null && !stillStalled()) pickFile(page, action);
@@ -454,7 +456,8 @@ public class SettingsBackupPreference extends Preference {
 
     private static void apply(HushTelegramPreferenceFragment page, @Nullable Bundle chosen) {
         SettingsBackup.Snapshot snapshot = SettingsBackup.Snapshot.fromBundle(chosen);
-        if (snapshot == null) return;
+        // A preview read before the lock went on is answered by the lock too.
+        if (snapshot == null || SettingsLock.refuses()) return;
         Run run = start(IMPORT, L10n.t("Importing settings"));
         if (run == null) return;
         // The page shows what the store now holds rather than reading its own switches back into it.

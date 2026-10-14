@@ -1156,6 +1156,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
     /** The choices with the saved one checked. A tap saves it at once and closes the list. */
     void showStickerSizes(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
         int saved = StickerSize.percent(Settings.STICKER_SIZE.savedValue());
         CharSequence[] labels = new CharSequence[StickerSize.CHOICES.length];
         int checked = -1;
@@ -1196,6 +1197,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         row.setSummary(FilterEditor.summary(list));
         row.setOnPreferenceClickListener(p -> {
             Activity activity = getActivity();
+            if (SettingsLock.refuses()) return true;
             if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) own(FilterEditor.open(activity, p, list, title));
             return true;
         });
@@ -1234,6 +1236,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         row.setSummary(TranslateServiceEditor.summary(OutsideTranslate.service()));
         row.setOnPreferenceClickListener(p -> {
             Activity activity = getActivity();
+            if (SettingsLock.refuses()) return true;
             if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) own(TranslateServiceEditor.open(activity, p));
             return true;
         });
@@ -1259,6 +1262,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         row.setSummary(UnifiedPush.status(context, Settings.UNIFIED_PUSH.savedValue()));
         row.setOnPreferenceClickListener(p -> {
             Activity activity = getActivity();
+            if (SettingsLock.refuses()) return true;
             if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
                 AlertDialog picker = UnifiedPushPicker.open(activity, p);
                 if (picker != null) own(picker);
@@ -1343,7 +1347,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
      */
     void showQuickSetups() {
         Context context = getContext();
-        if (context == null) return;
+        if (context == null || SettingsLock.refuses()) return;
         List<Map<BooleanSetting, Boolean>> choices = Arrays.asList(
                 QuickSetupKeys.quiet(), QuickSetupKeys.privacy(), QuickSetupKeys.defaults());
         CharSequence[] names = {L10n.t("Quiet"), L10n.t("Privacy"), L10n.t("Back to defaults")};
@@ -1368,7 +1372,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     /** Applies one Quick setups choice to the switches on this page and says how many changed. */
     int applyQuickSetup(Map<BooleanSetting, Boolean> values) {
         PreferenceScreen screen = getPreferenceScreen();
-        if (screen == null) return 0;
+        if (screen == null || SettingsLock.refuses()) return 0;
         int changed = QuickSetups.apply(screen, values);
         Utils.showToastLong(L10n.quantity(changed, "Changed %1$d setting", "Changed %1$d settings", changed));
         return changed;
@@ -1539,6 +1543,18 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         @Override
         protected View onCreateView(ViewGroup parent) {
             return ScreenColors.switchRow(getContext());
+        }
+
+        /**
+         * A tap on the row or its switch asks here first. While the settings are locked the switch
+         * stays as it is and a note says why, but Pause can still be turned off: resuming only puts
+         * the other switches back to work.
+         */
+        @Override
+        protected boolean callChangeListener(Object newValue) {
+            boolean resumes = BaseSettings.PAUSED.key.equals(getKey()) && Boolean.FALSE.equals(newValue);
+            if (!resumes && SettingsLock.refuses()) return false;
+            return super.callChangeListener(newValue);
         }
 
         @Override

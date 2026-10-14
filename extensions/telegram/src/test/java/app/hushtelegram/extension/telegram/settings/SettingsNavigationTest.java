@@ -91,9 +91,9 @@ public class SettingsNavigationTest {
     @Test @Config(sdk = {28, 30, 33, 36})
     public void homeAndEveryCategoryAreReachableWithoutRemovingTheModel() {
         assertNotNull(page.navigation);
-        // The status card, Quick setups, Browse settings, the seven switch pages, More settings,
+        // The status card, Quick setups, the settings lock, Browse settings, the seven switch pages, More settings,
         // Report a problem and Support HushTelegram.
-        assertEquals(13, list().getCount());
+        assertEquals(14, list().getCount());
         assertEquals(13, page.sections().size());
         int total = page.getPreferenceScreen().getRootAdapter().getCount();
         for (Preference section : page.sections()) {
@@ -113,7 +113,7 @@ public class SettingsNavigationTest {
             assertTrue(page.navigation.back());
             while (page.navigation.back()) { }
         }
-        assertEquals(13, list().getCount());
+        assertEquals(14, list().getCount());
     }
 
     @Test public void categoryClickChangesOnlyTheSettingWhoseRowWasTapped() {
@@ -659,7 +659,7 @@ public class SettingsNavigationTest {
         assertEquals(categoryCount("Privacy") + 1, list().getCount());
         while (page.navigation.back()) { }
         assertEquals(SettingsNavigation.RESTART, ((Preference) list().getItemAtPosition(1)).getKey());
-        assertEquals(14, list().getCount());
+        assertEquals(15, list().getCount());
 
         // Two changes are counted, and the row goes once neither is owed.
         app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.add(
@@ -670,7 +670,7 @@ public class SettingsNavigationTest {
         app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.clear();
         page.navigation.restartChanged();
         assertFalse(contains(SettingsNavigation.RESTART));
-        assertEquals(13, list().getCount());
+        assertEquals(14, list().getCount());
     }
 
     /** A switch that needs a restart brings the row up the moment it's flipped, and flipping it back takes it away. */
@@ -731,7 +731,7 @@ public class SettingsNavigationTest {
         controller.get().getFragmentManager().executePendingTransactions();
         ShadowLooper.idleMainLooper();
         page = page(dialog);
-        assertEquals(13, list().getCount());
+        assertEquals(14, list().getCount());
     }
 
     /** The paused line on real pages, dark and light, for a look before the phone does. */
@@ -852,7 +852,7 @@ public class SettingsNavigationTest {
         assertEquals("No matching settings", ((Preference) list().getItemAtPosition(0)).getTitle());
         assertTrue(page.navigation.back());
         assertEquals("", search.getText().toString());
-        assertEquals(13, list().getCount());
+        assertEquals(14, list().getCount());
     }
 
     /**
@@ -958,13 +958,13 @@ public class SettingsNavigationTest {
         page.navigation.open(page.findPreference(Settings.HIDE_ADS.key));
         SettingsL10nTest.backOf(dialog).performClick();
         assertTrue(dialog.getDialog().isShowing());
-        assertEquals(13, list().getCount());
+        assertEquals(14, list().getCount());
         page.navigation.navigate("About");
         dialog.getDialog().onBackPressed();
         // More settings: Links, Updates, Pause, Settings backup, Diagnostics and About.
         assertEquals(6, list().getCount());
         dialog.getDialog().onBackPressed();
-        assertEquals(13, list().getCount());
+        assertEquals(14, list().getCount());
         dialog.getDialog().onBackPressed();
         ShadowLooper.idleMainLooper();
         assertFalse(controller.get().isFinishing());
@@ -1008,7 +1008,7 @@ public class SettingsNavigationTest {
             application.checkActivities(false);
         }
         assertEquals(before, savedValues());
-        assertEquals(13, list().getCount());
+        assertEquals(14, list().getCount());
     }
 
     /** Each Quick setups choice changes its switches through their rows and says how many changed. */
@@ -1080,6 +1080,164 @@ public class SettingsNavigationTest {
         } finally {
             Settings.HIDE_CONTACTS_BLOCK.resetToDefault();
             Settings.HIDE_GREETING_STICKERS.resetToDefault();
+        }
+    }
+
+    private static final String LOCKED_NOTE = "Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.";
+
+    /**
+     * The settings lock (#17) sits under Quick setups. Locked, a switch, Quick setups, the status
+     * card's Pause, the Pause switch, import and every chooser leave their setting as it is and say
+     * why, while Resume, Export and the lock row itself still work.
+     */
+    @Test public void lockedEverySettingStaysAsItIsAndSaysWhy() {
+        long[] now = {1_800_000_000_000L};
+        SettingsLock.clock = () -> now[0];
+        try {
+            int lockAt = position(SettingsNavigation.LOCK);
+            assertEquals("the lock sits right under Quick setups", position(SettingsNavigation.QUICK_SETUPS) + 1, lockAt);
+            Preference lock = (Preference) list().getItemAtPosition(lockAt);
+            assertEquals("Lock HushTelegram settings", String.valueOf(lock.getTitle()));
+            assertEquals("Makes every setting here read-only. To change one again, start an unlock here and wait 24 hours.",
+                    String.valueOf(lock.getSummary()));
+            assertTrue("the lock row acts at once", ((HushTelegramPreferenceFragment.Row) lock).actsOnTap());
+            tap(SettingsNavigation.LOCK);
+            assertEquals("Settings locked. Unlocking takes 24 hours.", ShadowToast.getTextOfLatestToast());
+            assertTrue(SettingsLock.locked());
+            assertEquals("Start unlock", String.valueOf(((Preference) list().getItemAtPosition(position(SettingsNavigation.LOCK))).getTitle()));
+            Map<String, Object> before = savedValues();
+
+            // A switch, tapped on its page.
+            assertTrue(page.navigation.open(page.findPreference(Settings.DISABLE_UPDATE_CHECKS.key)));
+            ShadowToast.reset();
+            tap(Settings.DISABLE_UPDATE_CHECKS.key);
+            assertTrue(Settings.DISABLE_UPDATE_CHECKS.savedValue());
+            assertTrue(((SwitchPreference) page.findPreference(Settings.DISABLE_UPDATE_CHECKS.key)).isChecked());
+            assertEquals(LOCKED_NOTE, ShadowToast.getTextOfLatestToast());
+            while (page.navigation.back()) { }
+
+            // Quick setups, Back to defaults among them, neither opens nor changes anything.
+            android.app.Dialog shown = org.robolectric.shadows.ShadowDialog.getLatestDialog();
+            ShadowToast.reset();
+            tap(SettingsNavigation.QUICK_SETUPS);
+            assertSame("Quick setups opened while locked", shown, org.robolectric.shadows.ShadowDialog.getLatestDialog());
+            assertEquals(LOCKED_NOTE, ShadowToast.getTextOfLatestToast());
+            assertEquals(0, page.applyQuickSetup(QuickSetupKeys.quiet()));
+            assertEquals(0, page.applyQuickSetup(QuickSetupKeys.defaults()));
+
+            // The status card's Pause, and the Pause switch turned on.
+            layout(dialog.getView());
+            assertEquals("Pause", statusAction().getText().toString());
+            ShadowToast.reset();
+            statusAction().performClick();
+            ShadowLooper.idleMainLooper();
+            assertFalse(BaseSettings.PAUSED.savedValue());
+            assertEquals(LOCKED_NOTE, ShadowToast.getTextOfLatestToast());
+            page.navigation.navigate("Pause");
+            tap(BaseSettings.PAUSED.key);
+            assertFalse(BaseSettings.PAUSED.savedValue());
+            assertFalse(((SwitchPreference) page.findPreference(BaseSettings.PAUSED.key)).isChecked());
+
+            // A pause set before the lock can still be taken back, by the switch or by Undo on the card.
+            BaseSettings.PAUSED.save(true);
+            page.refreshSwitches();
+            tap(BaseSettings.PAUSED.key);
+            assertFalse("Resume was turned down", BaseSettings.PAUSED.savedValue());
+            BaseSettings.PAUSED.save(true);
+            page.refreshSwitches();
+            while (page.navigation.back()) { }
+            page.navigation.restartChanged();
+            layout(dialog.getView());
+            assertEquals("Undo", statusAction().getText().toString());
+            statusAction().performClick();
+            ShadowLooper.idleMainLooper();
+            assertFalse("Undo on a pause was turned down", BaseSettings.PAUSED.savedValue());
+
+            // Import is turned down before a file is picked. Export still saves one.
+            page.navigation.navigate("Settings backup");
+            org.robolectric.shadows.ShadowActivity activity = org.robolectric.Shadows.shadowOf(controller.get());
+            ShadowToast.reset();
+            tap("action_import_settings");
+            assertNull("import opened a file picker", activity.getNextStartedActivityForResult());
+            assertEquals(LOCKED_NOTE, ShadowToast.getTextOfLatestToast());
+            tap("action_export_settings");
+            org.robolectric.shadows.ShadowActivity.IntentForResult export = activity.getNextStartedActivityForResult();
+            assertNotNull("export didn't open a file picker", export);
+            assertEquals(android.content.Intent.ACTION_CREATE_DOCUMENT, export.intent.getAction());
+            while (page.navigation.back()) { }
+
+            // Every chooser: sticker size, both filter lists, the translation service and the push app.
+            for (String key : Arrays.asList(HushTelegramPreferenceFragment.STICKER_SIZE_ROW, FilterEditor.GROUPS,
+                    FilterEditor.CHANNELS, TranslateServiceEditor.KEY, UnifiedPushPicker.KEY)) {
+                Preference row = page.findPreference(key);
+                assertNotNull(key, row);
+                shown = org.robolectric.shadows.ShadowDialog.getLatestDialog();
+                ShadowToast.reset();
+                assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+                ShadowLooper.idleMainLooper();
+                assertSame(key + " opened while locked", shown, org.robolectric.shadows.ShadowDialog.getLatestDialog());
+                assertEquals(key, LOCKED_NOTE, ShadowToast.getTextOfLatestToast());
+            }
+            page.showStickerSizes(controller.get(), page.findPreference(HushTelegramPreferenceFragment.STICKER_SIZE_ROW));
+            assertSame("sticker sizes opened while locked", shown, org.robolectric.shadows.ShadowDialog.getLatestDialog());
+            // Every setting that was loaded when the lock went on holds what it held then.
+            Map<String, Object> after = savedValues();
+            after.keySet().retainAll(before.keySet());
+            assertEquals(before, after);
+        } finally {
+            SettingsLock.Stored.LOCKED.resetToDefault();
+            SettingsLock.Stored.UNLOCK_STARTED.resetToDefault();
+            SettingsLock.clock = System::currentTimeMillis;
+            BaseSettings.PAUSED.resetToDefault();
+        }
+    }
+
+    /**
+     * Start unlock waits 24 hours, which the row counts down and can cancel. Once the wait has run
+     * the lock is off and a switch flips again.
+     */
+    @Test public void anUnlockWaitsADayCanBeCanceledAndThenLetsSwitchesChange() {
+        long[] now = {1_800_000_000_000L};
+        SettingsLock.clock = () -> now[0];
+        try {
+            tap(SettingsNavigation.LOCK);
+            tap(SettingsNavigation.LOCK);
+            assertEquals("Unlock started. Settings open in 24 hours unless you cancel.", ShadowToast.getTextOfLatestToast());
+            Preference lock = (Preference) list().getItemAtPosition(position(SettingsNavigation.LOCK));
+            assertEquals("Cancel unlock", String.valueOf(lock.getTitle()));
+            assertEquals("Settings unlock in 24 h 0 min. Tap to cancel and keep them locked.", String.valueOf(lock.getSummary()));
+
+            // An hour on, the row and a turned-down switch both say how long is left.
+            now[0] += 60 * 60 * 1000L;
+            page.navigation.restartChanged();
+            assertEquals("Settings unlock in 23 h 0 min. Tap to cancel and keep them locked.",
+                    String.valueOf(((Preference) list().getItemAtPosition(position(SettingsNavigation.LOCK))).getSummary()));
+            assertTrue(page.navigation.open(page.findPreference(Settings.DISABLE_UPDATE_CHECKS.key)));
+            tap(Settings.DISABLE_UPDATE_CHECKS.key);
+            assertTrue(Settings.DISABLE_UPDATE_CHECKS.savedValue());
+            assertEquals("Settings are locked. They unlock in 23 h 0 min.", ShadowToast.getTextOfLatestToast());
+            while (page.navigation.back()) { }
+
+            // Canceled, the settings stay locked however long passes.
+            tap(SettingsNavigation.LOCK);
+            assertEquals("Unlock canceled. Settings stay locked.", ShadowToast.getTextOfLatestToast());
+            now[0] += 3 * SettingsLock.WAIT_MILLIS;
+            page.navigation.restartChanged();
+            assertEquals("Start unlock", String.valueOf(((Preference) list().getItemAtPosition(position(SettingsNavigation.LOCK))).getTitle()));
+
+            // Started again and left to run, the lock comes off and the switch flips.
+            tap(SettingsNavigation.LOCK);
+            now[0] += SettingsLock.WAIT_MILLIS;
+            page.navigation.restartChanged();
+            assertEquals("Lock HushTelegram settings",
+                    String.valueOf(((Preference) list().getItemAtPosition(position(SettingsNavigation.LOCK))).getTitle()));
+            assertTrue(page.navigation.open(page.findPreference(Settings.DISABLE_UPDATE_CHECKS.key)));
+            tap(Settings.DISABLE_UPDATE_CHECKS.key);
+            assertFalse(Settings.DISABLE_UPDATE_CHECKS.savedValue());
+        } finally {
+            SettingsLock.Stored.LOCKED.resetToDefault();
+            SettingsLock.Stored.UNLOCK_STARTED.resetToDefault();
+            SettingsLock.clock = System::currentTimeMillis;
         }
     }
 

@@ -695,3 +695,16 @@ Couldn't open notification settings. Open Android settings.	Bildirim ayarları a
 Search only my chats	Yalnızca sohbetlerimde ara
 Search finds your chats, contacts and messages from chats you're in, and nothing public. The Channels, Apps and Posts tabs go away, and a hashtag's public posts don't load.	Arama sohbetlerinizi, kişilerinizi ve içinde bulunduğunuz sohbetlerdeki mesajları bulur, herkese açık hiçbir şeyi bulmaz. Kanallar, Uygulamalar ve Gönderiler sekmeleri kaybolur, bir etiketin herkese açık gönderileri yüklenmez.
 public search lookups	herkese açık arama sorguları
+# context: Settings lock row under Quick setups on the home page, its notes, and what a refused change says (#17).
+Lock HushTelegram settings	HushTelegram ayarlarını kilitle
+Makes every setting here read-only. To change one again, start an unlock here and wait 24 hours.	Buradaki her ayarı salt okunur yapar. Birini yeniden değiştirmek için kilidi açmayı buradan başlat ve 24 saat bekle.
+Start unlock	Kilidi açmayı başlat
+Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.	Ayarların kilitli. 24 saatlik beklemeyi başlatmak için dokun. Sürerken iptal edebilirsin.
+Cancel unlock	Kilit açmayı iptal et
+Settings unlock in %1$d h %2$d min. Tap to cancel and keep them locked.	Ayarların kilidi %1$d sa %2$d dk sonra açılır. İptal edip kilitli tutmak için dokun.
+Settings locked. Unlocking takes 24 hours.	Ayarlar kilitlendi. Kilidi açmak 24 saat sürer.
+Unlock started. Settings open in 24 hours unless you cancel.	Kilit açma başladı. İptal etmezsen ayarlar 24 saat sonra açılır.
+Unlock canceled. Settings stay locked.	Kilit açma iptal edildi. Ayarlar kilitli kalıyor.
+Couldn't change the lock. Try again in a moment.	Kilit değiştirilemedi. Birazdan tekrar dene.
+Settings are locked. They unlock in %1$d h %2$d min.	Ayarlar kilitli. Kilit %1$d sa %2$d dk sonra açılır.
+Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.	Ayarlar kilitli. HushTelegram ayarlarının üstündeki Kilidi açmayı başlat'a dokun, sonra 24 saat bekle.
