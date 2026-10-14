@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
@@ -574,7 +575,33 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 + "\n" + L10n.t("Tap for details and Android settings.");
     }
 
-    /** App info, where Android keeps an app's background and battery settings. Opening it changes nothing. */
+    /**
+     * Whether the battery optimization list is where the person can let Telegram run. Before Android
+     * 12, App info holds the background setting but not battery optimization, so when only that
+     * applies, App info has nothing to change.
+     */
+    static boolean batteryListFirst(FirebasePush.LocalStatus status) {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.S && !Boolean.TRUE.equals(status.backgroundRestricted)
+                && Boolean.TRUE.equals(status.batteryOptimized);
+    }
+
+    /** Android's battery optimization list, or App info when the list won't open. Opening either changes nothing. */
+    static void openBatteryOptimization(Context context) {
+        Intent list = new Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+        Intent details = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:" + context.getPackageName()));
+        for (Intent intent : new Intent[]{list, details}) {
+            try {
+                context.startActivity(intent);
+                return;
+            } catch (ActivityNotFoundException | SecurityException exception) {
+                Logger.printException(() -> "Could not open battery optimization", exception);
+            }
+        }
+        Utils.showToastLong(L10n.t("Couldn't open battery optimization. Open Android settings."));
+    }
+
+    /** App info, where Android keeps an app's background setting, and from Android 12 its battery one. Opening it changes nothing. */
     static void openAppInfo(Context context) {
         try {
             context.startActivity(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
@@ -617,8 +644,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         .setMessage(status.summary())
                         .setPositiveButton(L10n.t("Open notification settings"), (dialog, which) -> openNotificationSettings(context))
                         .setNegativeButton(L10n.t("Close"), null);
-                // Only when Android holds Telegram back: App info is where the person can change that.
-                if (status.androidLimitsBackground()) {
+                // Only when Android holds Telegram back, and to the page where the person can change that.
+                if (batteryListFirst(status)) {
+                    details.setNeutralButton(L10n.t("Open battery optimization"), (dialog, which) -> openBatteryOptimization(context));
+                } else if (status.androidLimitsBackground()) {
                     details.setNeutralButton(L10n.t("Open app info"), (dialog, which) -> openAppInfo(context));
                 }
                 show(details);

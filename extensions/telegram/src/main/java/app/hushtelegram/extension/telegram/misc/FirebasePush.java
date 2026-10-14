@@ -171,8 +171,9 @@ public final class FirebasePush {
          */
         public String summary() {
             String phone = L10n.t("On this phone") + "\n" + permissionLine() + "\n" + backgroundLine()
-                    + "\n" + L10n.f("Battery optimization: %1$s", batteryOptimized == null ? L10n.t("Unknown")
-                    : batteryOptimized ? L10n.t("On") : L10n.t("Off"));
+                    // Whole lines, so a language can make the value agree with the setting's name.
+                    + "\n" + (batteryOptimized == null ? L10n.t("Battery optimization: Unknown")
+                    : batteryOptimized ? L10n.t("Battery optimization: On") : L10n.t("Battery optimization: Off"));
             String push = L10n.t("Push service")
                     + "\n" + L10n.f("Notification ID saved on this phone: %1$s", tokenPresent == null ? L10n.t("Unknown")
                     : tokenPresent ? L10n.t("Yes") : L10n.t("No"));
@@ -207,7 +208,7 @@ public final class FirebasePush {
                     : backgroundRestricted ? L10n.t("Restricted") : L10n.t("Allowed"));
         }
 
-        /** Whether Android holds Telegram back in the background, so App info, where both settings live, is worth a link. */
+        /** Whether Android holds Telegram back in the background, so a link to where that's changed is worth showing. */
         public boolean androidLimitsBackground() {
             return Boolean.TRUE.equals(backgroundRestricted) || Boolean.TRUE.equals(batteryOptimized);
         }

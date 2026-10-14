@@ -281,6 +281,62 @@ public class NotificationStatusTest {
         }
     }
 
+    /**
+     * Before Android 12, App info has no battery optimization setting, so when that alone holds
+     * Telegram back, the dialog opens Android's battery optimization list instead. From Android 12,
+     * App info holds both.
+     */
+    @Test public void batteryOptimizationAloneOpensTheBatteryListBeforeAndroid12() {
+        android.os.PowerManager power = context().getSystemService(android.os.PowerManager.class);
+        Shadows.shadowOf(context().getSystemService(android.app.ActivityManager.class)).setBackgroundRestricted(false);
+        Shadows.shadowOf(power).setIgnoringBatteryOptimizations(context().getPackageName(), false);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = new HushTelegramPreferenceFragment();
+            controller.get().getFragmentManager().beginTransaction().add(android.R.id.content, page).commitNow();
+            Preference status = page.findPreference("local_notification_status");
+            status.getOnPreferenceClickListener().onPreferenceClick(status);
+            android.app.AlertDialog details = org.robolectric.shadows.ShadowAlertDialog.getLatestAlertDialog();
+            android.widget.Button battery = details.getButton(android.app.AlertDialog.BUTTON_NEUTRAL);
+            assertEquals(android.view.View.VISIBLE, battery.getVisibility());
+            assertEquals("Open battery optimization", battery.getText().toString());
+            battery.performClick();
+            ShadowLooper.idleMainLooper();
+            android.content.Intent launched = Shadows.shadowOf(controller.get()).getNextStartedActivity();
+            assertEquals(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS, launched.getAction());
+            assertFalse("opening the list changed Android's setting", power.isIgnoringBatteryOptimizations(context().getPackageName()));
+        }
+
+        FirebasePush.LocalStatus optimized = FirebasePush.localStatus(context());
+        assertTrue(HushTelegramPreferenceFragment.batteryListFirst(optimized));
+        int sdk = android.os.Build.VERSION.SDK_INT;
+        try {
+            org.robolectric.util.ReflectionHelpers.setStaticField(android.os.Build.VERSION.class, "SDK_INT", 31);
+            assertFalse("Android 12 keeps battery optimization in App info", HushTelegramPreferenceFragment.batteryListFirst(optimized));
+        } finally {
+            org.robolectric.util.ReflectionHelpers.setStaticField(android.os.Build.VERSION.class, "SDK_INT", sdk);
+        }
+        // A restricted background is changed in App info on every version.
+        Shadows.shadowOf(context().getSystemService(android.app.ActivityManager.class)).setBackgroundRestricted(true);
+        assertFalse(HushTelegramPreferenceFragment.batteryListFirst(FirebasePush.localStatus(context())));
+    }
+
+    /** When Android won't open the page, a toast says so and nothing breaks. */
+    @Test public void settingsPagesThatWontOpenSaySoInAToast() {
+        Shadows.shadowOf(RuntimeEnvironment.getApplication()).checkActivities(true);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment.openAppInfo(controller.get());
+            ShadowLooper.idleMainLooper();
+            assertEquals("Couldn't open app info. Open Android settings.", org.robolectric.shadows.ShadowToast.getTextOfLatestToast());
+            HushTelegramPreferenceFragment.openBatteryOptimization(controller.get());
+            ShadowLooper.idleMainLooper();
+            assertEquals("Couldn't open battery optimization. Open Android settings.",
+                    org.robolectric.shadows.ShadowToast.getTextOfLatestToast());
+            assertNull(Shadows.shadowOf(controller.get()).getNextStartedActivity());
+        } finally {
+            Shadows.shadowOf(RuntimeEnvironment.getApplication()).checkActivities(false);
+        }
+    }
+
     @Test public void missingInvalidAndUnreadableFactsStayIndependentAndUnknown() {
         for (int token : new int[]{-1, 2, Integer.MAX_VALUE}) {
             LocalReaders.token = token;
