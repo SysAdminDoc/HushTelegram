@@ -10,9 +10,11 @@ import app.morphe.patches.shared.misc.extension.EXTENSION_CLASS_DESCRIPTOR
 import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlString
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.util.call
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -52,15 +54,17 @@ internal fun asksCurrentThemeDark(method: Method, isDark: Method): Boolean {
 /** Telegram's Theme.isCurrentThemeDark as a method reference the extension can call, or null. */
 internal fun BytecodePatchContext.currentThemeDark(): String? {
     val infos = mutableListOf<Method>()
-    val candidates = mutableListOf<Pair<ClassDef, Method>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
-        for (method in cls.methods) {
-            if (isThemeInfoDark(method)) infos += method
-            else if (method.controlBody().size == 4) candidates += cls to method
-        }
+    forEachClassMentioning(Mention.allOf(BUILT_IN_THEME_NAMES.map { Mention.string(it) })) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        for (method in cls.methods) if (isThemeInfoDark(method)) infos += method
     }
     val isDark = infos.singleOrNull() ?: return null
+    // The check calls isDark, so only a class that names that call can hold it.
+    val candidates = mutableListOf<Pair<ClassDef, Method>>()
+    forEachClassMentioning(Mention.member(isDark.definingClass, isDark.name)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        for (method in cls.methods) if (!isThemeInfoDark(method) && method.controlBody().size == 4) candidates += cls to method
+    }
     val (owner, check) = candidates.filter { (_, method) -> asksCurrentThemeDark(method, isDark) }.singleOrNull() ?: return null
     if (!AccessFlags.PUBLIC.isSet(owner.accessFlags) || !AccessFlags.PUBLIC.isSet(check.accessFlags)) return null
     return "${check.definingClass}->${check.name}()Z"
