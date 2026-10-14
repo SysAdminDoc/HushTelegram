@@ -13,12 +13,14 @@ import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
@@ -83,8 +85,8 @@ internal fun BytecodePatchContext.resolveContactsBlock(): List<ContactsBlockMeth
     controlHook(CONTACTS_BLOCK, "placeholder", listOf("Z"), "Z")
 
     val builders = mutableListOf<Method>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.reference(FOLDERS_DIALOG_COUNT) and Mention.reference(TELEGRAM_CONTACTS)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.filterTo(builders) { method -> method.controlBody().let { body ->
             body.any { it.controlRef() == FOLDERS_DIALOG_COUNT } && body.any { it.controlRef() == TELEGRAM_CONTACTS }
         } }
@@ -166,8 +168,8 @@ internal fun BytecodePatchContext.resolveContactsBlock(): List<ContactsBlockMeth
 private fun BytecodePatchContext.fieldReads(field: FieldReference, opcode: Opcode): Map<Method, List<Int>> {
     val found = linkedMapOf<Method, List<Int>>()
     val key = field.toString()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.reference(key)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { method ->
             val body = method.controlBody()
             val reads = body.indices.filter { body[it].controlRef() == key && body[it].opcode in FIELD_READS }
