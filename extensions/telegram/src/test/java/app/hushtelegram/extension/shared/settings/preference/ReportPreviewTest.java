@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.Utils;
@@ -245,18 +246,35 @@ public class ReportPreviewTest {
             assertEquals("Couldn't update the preview. Copy and Save still use only what's ticked.", note.getText().toString());
             assertTrue("the old text stays", body.getText().toString().contains(SECRET_PART));
 
+            // A redraw that works clears the note. Box 0 goes back on, so the ticks are as they were.
+            boxes(content).get(0).setChecked(false);
+            settle();
+            assertEquals(View.GONE, note.getVisibility());
+            boxes(content).get(0).setChecked(true);
+            settle();
+
             // A failure overtaken by a newer choice says nothing; the newer one draws.
             ExportDiagnosticReportPreference.failNextRedraw = new IllegalStateException("probe");
             boxes(content).get(2).setChecked(false);
             // Its worker fails and posts back, but the main thread hasn't run that yet when the next box changes.
             Utils.awaitBackgroundTasksForTests();
+            CountDownLatch newer = new CountDownLatch(1);
+            ExportDiagnosticReportPreference.holdNextRedraw = newer;
             boxes(content).get(0).setChecked(false);
+            // The overtaken failure's post runs while the newer choice is still working, so nothing
+            // drawn since can hide a note it shouldn't have left.
+            ShadowLooper.idleMainLooper();
+            assertEquals(View.GONE, note.getVisibility());
+            newer.countDown();
             settle();
             assertEquals(View.GONE, note.getVisibility());
             assertFalse(body.getText().toString(), body.getText().toString().contains(SECRET_PART));
             assertFalse(body.getText().toString(), body.getText().toString().contains(EVENT));
         } finally {
             ExportDiagnosticReportPreference.failNextRedraw = null;
+            CountDownLatch held = ExportDiagnosticReportPreference.holdNextRedraw;
+            ExportDiagnosticReportPreference.holdNextRedraw = null;
+            if (held != null) held.countDown();
         }
     }
 

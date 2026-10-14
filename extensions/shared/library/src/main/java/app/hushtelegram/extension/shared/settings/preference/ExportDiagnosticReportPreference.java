@@ -31,6 +31,7 @@ import androidx.annotation.Nullable;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Logger;
@@ -49,6 +50,8 @@ public class ExportDiagnosticReportPreference extends Preference {
 
     /** Thrown by the next redraw's worker and then cleared: how a test reaches the note it leaves. */
     static volatile RuntimeException failNextRedraw;
+    /** Waited on by the next redraw's worker and then cleared, so a test can run what's posted before it. */
+    static volatile CountDownLatch holdNextRedraw;
 
     /** The summary to put back once a report is done, while the row says it's busy; null otherwise. */
     @Nullable private CharSequence restingSummary;
@@ -205,6 +208,11 @@ public class ExportDiagnosticReportPreference extends Preference {
                 if (failing != null) {
                     failNextRedraw = null;
                     throw failing;
+                }
+                CountDownLatch hold = holdNextRedraw;
+                if (hold != null) {
+                    holdNextRedraw = null;
+                    hold.await();
                 }
                 text = preview.text(ticked);
             } catch (Throwable failure) {
