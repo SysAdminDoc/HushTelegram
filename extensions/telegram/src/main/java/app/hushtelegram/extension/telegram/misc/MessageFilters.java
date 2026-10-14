@@ -540,14 +540,18 @@ public final class MessageFilters {
     /**
      * Whether no character matches both {@code first} and {@code second}, each one character,
      * class or escape, the way a filter matches them. Every character of the first plane is tried,
-     * and either one taking in a character past it counts as sharing one.
+     * and either one taking in a character past it counts as sharing one. A character named by its
+     * number, or one whose case folds to more than one letter, like ß to ss, isn't read this way:
+     * ignoring case, ß matches the two letters ss, so a single character can't stand for it.
      */
     private static boolean neverBoth(String first, String second) {
         for (String atom : new String[]{first, second}) {
-            for (int k = 0; k < atom.length(); k++) if (Character.isSurrogate(atom.charAt(k))) return false;
-            if (atom.contains("\\x{") || atom.contains("\\u") || atom.contains("\\U") || atom.contains("\\p")
-                    || atom.contains("\\P") || atom.contains("\\N") || atom.contains("&&") || atom.contains("--")
-                    || atom.indexOf('[', 1) >= 0) {
+            for (int k = 0; k < atom.length(); k++) {
+                if (Character.isSurrogate(atom.charAt(k)) || foldsToMore(atom.charAt(k))) return false;
+            }
+            if (atom.contains("\\x") || atom.contains("\\u") || atom.contains("\\U") || atom.contains("\\0")
+                    || atom.contains("\\p") || atom.contains("\\P") || atom.contains("\\N") || atom.contains("&&")
+                    || atom.contains("--") || atom.indexOf('[', 1) >= 0) {
                 return false;
             }
         }
@@ -569,6 +573,12 @@ public final class MessageFilters {
             if (other.reset(text).matches() && one.reset(text).matches()) return false;
         }
         return true;
+    }
+
+    /** Whether a character's case folds to more than one, like ß to SS or İ to i and a dot. */
+    private static boolean foldsToMore(char c) {
+        String one = String.valueOf(c);
+        return one.toUpperCase(Locale.ROOT).length() > 1 || one.toLowerCase(Locale.ROOT).length() > 1;
     }
 
     /** What {@link #tries} answers for an expression it refuses outright. */
@@ -598,7 +608,19 @@ public final class MessageFilters {
             int close = expression.indexOf('}', at + 3);
             return close < 0 ? n : close + 1;
         }
+        // A backslash then x, u, U or 0 names one character with the 2, 4, 8 or 3 digits after it.
+        if (next == 'x') return digitsEnd(expression, at + 2, 2, 16);
+        if (next == 'u') return digitsEnd(expression, at + 2, 4, 16);
+        if (next == 'U') return digitsEnd(expression, at + 2, 8, 16);
+        if (next == '0') return digitsEnd(expression, at + 2, 3, 8);
         return at + 2;
+    }
+
+    /** Where a run of at most {@code most} digits in {@code radix} that starts at {@code from} ends. */
+    private static int digitsEnd(String expression, int from, int most, int radix) {
+        int end = from;
+        while (end < expression.length() && end - from < most && Character.digit(expression.charAt(end), radix) >= 0) end++;
+        return end;
     }
 
     /**

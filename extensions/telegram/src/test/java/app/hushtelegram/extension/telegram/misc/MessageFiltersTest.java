@@ -259,7 +259,11 @@ public class MessageFiltersTest {
                 // What comes next may not be there at all.
                 "/\\s+0?x{40}/", "/\\s+0*x{40}/", "/\\s+0{0,2}x{40}/",
                 // A class that could take in a character past the first plane counts as sharing one.
-                "/[^a]+[\\x{1D400}]{40}/"}) {
+                "/[^a]+[\\x{1D400}]{40}/",
+                // A character named by its number is that character, not its last digit: these are a+a{1000}.
+                "/\\x61+a{1000}!/", "/\\u0061+a{1000}!/", "/\\0141+a{1000}!/",
+                // Ignoring case, ß matches ss, so a run of s's could stop in more than one place.
+                "/s+ß{40}!/", "/ß+s{40}!/"}) {
             assertEquals(slow, MessageFilters.Problem.SLOW, MessageFilters.problem(slow));
         }
         List<MessageFilters.Filter> kept = parsed("/airdrop\\s+0x[a-f0-9]{40}/");
