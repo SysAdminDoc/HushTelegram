@@ -755,3 +755,24 @@ A switch you turn on or off shows up here until you put it back.	Un interruptor 
 Every switch is the way it started.	Todos los interruptores están como al principio.
 %1$d switch differs from how it started. Open to flip it back.	%1$d interruptor no está como al principio. Ábrelo para devolverlo.
 %1$d switches differ from how they started. Open to flip any of them back.	%1$d interruptores no están como al principio. Ábrelo para devolver cualquiera.
+# context: Quick setups dialog, the last card. It shows after a choice changed switches and puts those switches back the way they were
+Undo the last setup	Deshacer la última configuración
+# context: toast after a Quick setups choice changed switches, pointing at the undo card in the Quick setups dialog; %1$d is how many, first for exactly one and then for any other count
+Changed %1$d setting. Undo it from Quick setups.	Se cambió %1$d ajuste. Deshazlo desde Configuración rápida.
+Changed %1$d settings. Undo them from Quick setups.	Se cambiaron %1$d ajustes. Deshazlos desde Configuración rápida.
+# context: toast after a Quick setups choice changed nothing because some switches couldn't take the change just then, for example while a settings import writes; %1$d is how many
+Nothing changed. %1$d switch couldn't change now.	No cambió nada. %1$d interruptor no se pudo cambiar ahora.
+Nothing changed. %1$d switches couldn't change now.	No cambió nada. %1$d interruptores no se pudieron cambiar ahora.
+# context: toast after Undo the last setup; %1$d is how many switches went back the way they were
+Put back %1$d switch	Se devolvió %1$d interruptor
+Put back %1$d switches	Se devolvieron %1$d interruptores
+# context: Undo the last setup card, under its name: what the last Quick setups choice did. %1$s is a list of switch titles joined the language's own way; %1$d counts switches. The last sentence says Undo turns switches back but can't bring back what a switch deleted as it changed
+Turned on: %1$s.	Activados: %1$s.
+Turned off: %1$s.	Desactivados: %1$s.
+%1$d other switch was already set.	%1$d interruptor más ya estaba así.
+%1$d other switches were already set.	%1$d interruptores más ya estaban así.
+%1$d switch couldn't change.	%1$d interruptor no se pudo cambiar.
+%1$d switches couldn't change.	%1$d interruptores no se pudieron cambiar.
+%1$d switch you changed since stays as you set it.	%1$d interruptor que cambiaste después se queda como lo dejaste.
+%1$d switches you changed since stay as you set them.	%1$d interruptores que cambiaste después se quedan como los dejaste.
+Only switches go back. Anything a switch already cleared, like chats' translate choices, stays cleared.	Solo vuelven los interruptores. Lo que un interruptor ya borró, como las opciones de traducción de los chats, sigue borrado.

@@ -755,3 +755,24 @@ A switch you turn on or off shows up here until you put it back.	Sakelar yang An
 Every switch is the way it started.	Semua sakelar masih seperti semula.
 %1$d switch differs from how it started. Open to flip it back.	%1$d sakelar berbeda dari semula. Buka untuk mengembalikannya.
 %1$d switches differ from how they started. Open to flip any of them back.	%1$d sakelar berbeda dari semula. Buka untuk mengembalikan salah satunya.
+# context: Quick setups dialog, the last card. It shows after a choice changed switches and puts those switches back the way they were
+Undo the last setup	Urungkan penyiapan terakhir
+# context: toast after a Quick setups choice changed switches, pointing at the undo card in the Quick setups dialog; %1$d is how many, first for exactly one and then for any other count
+Changed %1$d setting. Undo it from Quick setups.	%1$d pengaturan diubah. Urungkan dari Penyiapan cepat.
+Changed %1$d settings. Undo them from Quick setups.	%1$d pengaturan diubah. Urungkan dari Penyiapan cepat.
+# context: toast after a Quick setups choice changed nothing because some switches couldn't take the change just then, for example while a settings import writes; %1$d is how many
+Nothing changed. %1$d switch couldn't change now.	Tidak ada yang berubah. %1$d sakelar tidak bisa diubah sekarang.
+Nothing changed. %1$d switches couldn't change now.	Tidak ada yang berubah. %1$d sakelar tidak bisa diubah sekarang.
+# context: toast after Undo the last setup; %1$d is how many switches went back the way they were
+Put back %1$d switch	%1$d sakelar dikembalikan
+Put back %1$d switches	%1$d sakelar dikembalikan
+# context: Undo the last setup card, under its name: what the last Quick setups choice did. %1$s is a list of switch titles joined the language's own way; %1$d counts switches. The last sentence says Undo turns switches back but can't bring back what a switch deleted as it changed
+Turned on: %1$s.	Dinyalakan: %1$s.
+Turned off: %1$s.	Dimatikan: %1$s.
+%1$d other switch was already set.	%1$d sakelar lain sudah seperti itu.
+%1$d other switches were already set.	%1$d sakelar lain sudah seperti itu.
+%1$d switch couldn't change.	%1$d sakelar tidak bisa diubah.
+%1$d switches couldn't change.	%1$d sakelar tidak bisa diubah.
+%1$d switch you changed since stays as you set it.	%1$d sakelar yang Anda ubah setelahnya tetap seperti yang Anda atur.
+%1$d switches you changed since stay as you set them.	%1$d sakelar yang Anda ubah setelahnya tetap seperti yang Anda atur.
+Only switches go back. Anything a switch already cleared, like chats' translate choices, stays cleared.	Hanya sakelar yang dikembalikan. Apa pun yang sudah dihapus sakelar, seperti pilihan terjemahan chat, tetap terhapus.

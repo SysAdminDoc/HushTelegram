@@ -417,6 +417,41 @@ public class SettingsL10nTest {
             page.applyQuickSetup(java.util.Collections.emptyMap());
             addToast(shown);
 
+            // The undo card with every line it can carry: switches turned on and off, one already
+            // set, one an import held, and one changed again since. Then Undo's toast, and the toast
+            // for a choice an import held entirely.
+            java.util.Map<app.hushtelegram.extension.shared.settings.BooleanSetting, Boolean> mixed =
+                    new java.util.LinkedHashMap<>();
+            mixed.put(Settings.HIDE_CONTACTS_BLOCK, true);
+            mixed.put(Settings.HIDE_GREETING_STICKERS, true);
+            mixed.put(Settings.HIDE_ADS, false);
+            mixed.put(Settings.HIDE_STORIES, Settings.HIDE_STORIES.savedValue());
+            mixed.put(Settings.REVEAL_SPOILERS, !Settings.REVEAL_SPOILERS.savedValue());
+            app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.settingImportKeys = java.util.Collections.singleton(Settings.REVEAL_SPOILERS.key);
+            app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.settingImportInProgress = true;
+            try {
+                page.applyQuickSetup(mixed);
+                page.applyQuickSetup(java.util.Collections.singletonMap(Settings.REVEAL_SPOILERS,
+                        !Settings.REVEAL_SPOILERS.savedValue()));
+                addToast(shown);
+            } finally {
+                app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.settingImportInProgress = false;
+                app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.settingImportKeys = java.util.Collections.emptySet();
+            }
+            Settings.HIDE_GREETING_STICKERS.save(false);
+            page.showQuickSetups();
+            ShadowLooper.idleMainLooper();
+            AlertDialog undo = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            android.widget.ListAdapter undoCards = undo.getListView().getAdapter();
+            assertEquals("no undo card after a choice that changed switches", 4, undoCards.getCount());
+            shown.addAll(Arrays.asList(String.valueOf(undoCards.getItem(3)).split("\n")));
+            undo.dismiss();
+            page.undoQuickSetup();
+            addToast(shown);
+            Settings.HIDE_CONTACTS_BLOCK.resetToDefault();
+            Settings.HIDE_ADS.resetToDefault();
+            app.hushtelegram.extension.shared.settings.preference.QuickSetups.forget();
+
             // The export row's dialog.
             Preference export = find(rows, "action_export_diagnostic_report");
             export.getOnPreferenceClickListener().onPreferenceClick(export);

@@ -89,6 +89,7 @@ import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
+import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
 import app.hushtelegram.extension.shared.settings.preference.SharedPrefCategory;
 
 /**
@@ -989,6 +990,31 @@ public class SettingsBackupTest {
                     ((SwitchPreference) page.findPreference(Settings.HIDE_ADS.key)).isChecked());
             assertNull(page.pendingImport);
             assertFalse(AbstractPreferenceFragment.settingImportInProgress);
+        }
+    }
+
+    /**
+     * An import can write a switch to the value a Quick setups choice left there, which no write
+     * listener hears, so it ends that choice's undo rather than let Undo take back what was imported.
+     */
+    @Test
+    public void anImportEndsTheLastQuickSetupsUndo() throws Exception {
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            assertEquals(1, page.applyQuickSetup(Collections.singletonMap(Settings.REVEAL_SPOILERS, true)));
+            assertNotNull(QuickSetups.last());
+            // The file keeps spoilers revealed, as the choice left them, and turns Hide ads off.
+            deliver(activity, tap(activity, page, IMPORT_ROW),
+                    fileWith(Settings.REVEAL_SPOILERS, true, Settings.HIDE_ADS, false));
+            shownPreview().getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertFalse(Settings.HIDE_ADS.savedValue());
+            assertNull("Undo would take back the imported spoiler switch", QuickSetups.last());
+            assertEquals(0, page.undoQuickSetup());
+            assertTrue(Settings.REVEAL_SPOILERS.savedValue());
+        } finally {
+            QuickSetups.forget();
         }
     }
 

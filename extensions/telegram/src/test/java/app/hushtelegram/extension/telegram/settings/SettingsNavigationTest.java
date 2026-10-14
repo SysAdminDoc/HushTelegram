@@ -85,6 +85,7 @@ public class SettingsNavigationTest {
         Settings.DISABLE_UPDATE_CHECKS.resetToDefault();
         SettingsNavigation.HIDE_QUICK_SETUPS.resetToDefault();
         BaseSettings.PAUSED.resetToDefault();
+        app.hushtelegram.extension.shared.settings.preference.QuickSetups.forget();
         app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.remove(
                 Settings.HIDE_ADS.key);
         app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.remove(
@@ -1148,7 +1149,7 @@ public class SettingsNavigationTest {
         both.put(Settings.HIDE_GREETING_STICKERS, true);
         try {
             assertEquals(1, page.applyQuickSetup(both));
-            assertEquals("Changed 1 setting", ShadowToast.getTextOfLatestToast());
+            assertEquals(changed(1), ShadowToast.getTextOfLatestToast());
             assertFalse("a change its row turned down went through", contacts.isChecked());
             assertFalse(Settings.HIDE_CONTACTS_BLOCK.savedValue());
             assertTrue(greeting.isChecked());
@@ -1158,6 +1159,122 @@ public class SettingsNavigationTest {
             Settings.HIDE_CONTACTS_BLOCK.resetToDefault();
             Settings.HIDE_GREETING_STICKERS.resetToDefault();
         }
+    }
+
+    private static final String ONLY_SWITCHES =
+            "Only switches go back. Anything a switch already cleared, like chats' translate choices, stays cleared.";
+
+    /**
+     * After a choice that changed switches, the Quick setups dialog's last card names what it turned
+     * on and how many it found set already, and Undo puts back only the switches nothing has written
+     * since, through their rows. A switch turned off and on again in between is the person's own
+     * now, even though it holds the value the choice put there. A choice that changes nothing keeps
+     * the undo.
+     */
+    @Test public void undoTheLastSetupPutsBackOnlyWhatItChanged() {
+        List<app.hushtelegram.extension.shared.settings.BooleanSetting> off = new ArrayList<>();
+        List<String> titles = new ArrayList<>();
+        int onRows = 0;
+        for (app.hushtelegram.extension.shared.settings.BooleanSetting setting : QuickSetupKeys.PRIVACY) {
+            Preference row = page.findPreference(setting.key);
+            if (!(row instanceof SwitchPreference)) continue;
+            if (((SwitchPreference) row).isChecked()) {
+                onRows++;
+            } else {
+                off.add(setting);
+                titles.add(String.valueOf(row.getTitle()));
+            }
+        }
+        assertTrue("Privacy has too little to change on a fresh install", off.size() >= 2);
+        String alreadySet = onRows == 0 ? "" : onRows == 1 ? " 1 other switch was already set."
+                : " " + onRows + " other switches were already set.";
+        try {
+            assertEquals("an undo card before any choice", 3, setupCards().size());
+            assertEquals(off.size(), page.applyQuickSetup(QuickSetupKeys.privacy()));
+            assertEquals(changed(off.size()), ShadowToast.getTextOfLatestToast());
+            assertEquals(0, page.applyQuickSetup(QuickSetupKeys.privacy()));
+            assertEquals("Changed 0 settings", ShadowToast.getTextOfLatestToast());
+            List<String> cards = setupCards();
+            assertEquals(4, cards.size());
+            assertEquals("Undo the last setup\nTurned on: " + L10n.join(titles) + "." + alreadySet + " " + ONLY_SWITCHES,
+                    cards.get(3));
+
+            // Turned off and back on from its own page.
+            app.hushtelegram.extension.shared.settings.BooleanSetting mine = off.get(0);
+            ((AlertDialog) org.robolectric.shadows.ShadowDialog.getLatestDialog()).dismiss();
+            assertTrue(page.navigation.open(page.findPreference(mine.key)));
+            tap(mine.key);
+            tap(mine.key);
+            assertTrue(mine.savedValue());
+            while (page.navigation.back()) { }
+            List<String> rest = titles.subList(1, titles.size());
+            assertEquals("Undo the last setup\nTurned on: " + L10n.join(rest) + "." + alreadySet
+                    + " 1 switch you changed since stays as you set it. " + ONLY_SWITCHES, setupCards().get(3));
+
+            AlertDialog choices = (AlertDialog) org.robolectric.shadows.ShadowDialog.getLatestDialog();
+            choices.getListView().performItemClick(null, 3, 3);
+            ShadowLooper.idleMainLooper();
+            int back = off.size() - 1;
+            assertEquals(back == 1 ? "Put back 1 switch" : "Put back " + back + " switches", ShadowToast.getTextOfLatestToast());
+            for (app.hushtelegram.extension.shared.settings.BooleanSetting setting : off.subList(1, off.size())) {
+                assertFalse(setting.key, setting.savedValue());
+                assertFalse(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
+            }
+            assertTrue("Undo took back a switch the person set since", mine.savedValue());
+            assertEquals("the undo card stayed after its undo", 3, setupCards().size());
+        } finally {
+            for (app.hushtelegram.extension.shared.settings.BooleanSetting setting : QuickSetupKeys.PRIVACY) {
+                setting.resetToDefault();
+            }
+        }
+    }
+
+    /**
+     * Undo goes through the rows like a tap: a switch that needs a restart owes one after the choice
+     * and owes nothing once it's back. Only the latest choice that changed something undoes, and the
+     * settings lock turns Undo down like any other change.
+     */
+    @Test public void undoOwesWhatATapOwesAndOnlyTheLatestChoiceUndoes() {
+        long[] now = {1_800_000_000_000L};
+        SettingsLock.clock = () -> now[0];
+        try {
+            assertEquals(1, page.applyQuickSetup(Collections.singletonMap(Settings.USE_SYSTEM_FONT, true)));
+            assertTrue(contains(SettingsNavigation.RESTART));
+            assertEquals(1, page.undoQuickSetup());
+            assertEquals("Put back 1 switch", ShadowToast.getTextOfLatestToast());
+            assertFalse(Settings.USE_SYSTEM_FONT.savedValue());
+            assertFalse("the font owes a restart after it went back", contains(SettingsNavigation.RESTART));
+            assertEquals("nothing left to undo", 0, page.undoQuickSetup());
+
+            assertEquals(1, page.applyQuickSetup(Collections.singletonMap(Settings.REVEAL_SPOILERS, true)));
+            assertEquals(1, page.applyQuickSetup(Collections.singletonMap(Settings.HIDE_ADS, false)));
+            assertEquals(1, page.undoQuickSetup());
+            assertTrue(Settings.HIDE_ADS.savedValue());
+            assertTrue("Undo reached past the latest choice", Settings.REVEAL_SPOILERS.savedValue());
+
+            assertEquals(1, page.applyQuickSetup(Collections.singletonMap(Settings.HIDE_ADS, false)));
+            tap(SettingsNavigation.LOCK);
+            assertTrue(SettingsLock.locked());
+            ShadowToast.reset();
+            assertEquals(0, page.undoQuickSetup());
+            assertEquals(LOCKED_NOTE, ShadowToast.getTextOfLatestToast());
+            assertFalse(Settings.HIDE_ADS.savedValue());
+        } finally {
+            SettingsLock.Stored.LOCKED.resetToDefault();
+            SettingsLock.Stored.UNLOCK_STARTED.resetToDefault();
+            SettingsLock.clock = System::currentTimeMillis;
+            Settings.USE_SYSTEM_FONT.resetToDefault();
+        }
+    }
+
+    /** Opens Quick setups and gives each card's text, its name and what it does on the next line. */
+    private List<String> setupCards() {
+        tap(SettingsNavigation.QUICK_SETUPS);
+        AlertDialog choices = (AlertDialog) org.robolectric.shadows.ShadowDialog.getLatestDialog();
+        android.widget.ListAdapter cards = choices.getListView().getAdapter();
+        List<String> texts = new ArrayList<>();
+        for (int i = 0; i < cards.getCount(); i++) texts.add(String.valueOf(cards.getItem(i)));
+        return texts;
     }
 
     private static final String LOCKED_NOTE = "Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.";
@@ -1451,8 +1568,10 @@ public class SettingsNavigationTest {
         return off;
     }
 
+    /** The toast after a choice that changed [count] switches, which points at the undo card. */
     private static String changed(int count) {
-        return count == 1 ? "Changed 1 setting" : "Changed " + count + " settings";
+        return count == 1 ? "Changed 1 setting. Undo it from Quick setups."
+                : "Changed " + count + " settings. Undo them from Quick setups.";
     }
 
     // A window as short as the layouts below, 400 px, so the window's own layout leaves both the

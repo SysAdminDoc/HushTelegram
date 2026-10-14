@@ -23,6 +23,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
+import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.preference.SwitchPreference;
 import android.preference.TwoStatePreference;
@@ -1464,22 +1465,34 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     /**
      * Quick setups: Quiet, Privacy or Back to defaults, each changing its switches at once
      * ({@link QuickSetupKeys}), then a toast saying how many changed. A switch that needs a restart
-     * brings up the restart row the way a tap on it would.
+     * brings up the restart row the way a tap on it would. After a choice that changed something,
+     * a last card names those switches and puts them back ({@link QuickSetups#undo}).
      */
     void showQuickSetups() {
         Context context = getContext();
         if (context == null || SettingsLock.refuses()) return;
         List<Map<BooleanSetting, Boolean>> choices = Arrays.asList(
                 QuickSetupKeys.quiet(), QuickSetupKeys.privacy(), QuickSetupKeys.defaults());
-        CharSequence[] names = {L10n.t("Quiet"), L10n.t("Privacy"), L10n.t("Back to defaults")};
-        CharSequence[] details = {
+        List<CharSequence> names = new ArrayList<>(Arrays.asList(
+                L10n.t("Quiet"), L10n.t("Privacy"), L10n.t("Back to defaults")));
+        List<CharSequence> details = new ArrayList<>(Arrays.asList(
                 L10n.t("Hides ads, suggestions, stories, promotions and nags."),
                 L10n.t("Stops usage reports, strips tracking from links and covers your own phone number on screen."),
-                L10n.t("Puts every feature switch back the way it started.")};
+                L10n.t("Puts every feature switch back the way it started.")));
+        QuickSetups.Outcome last = QuickSetups.last();
+        PreferenceScreen screen = getPreferenceScreen();
+        if (last != null && screen != null) {
+            names.add(L10n.t("Undo the last setup"));
+            details.add(undoDetail(screen, last, QuickSetups.writtenSince()));
+        }
         AlertDialog dialog = show(new AlertDialog.Builder(themed(context))
                 .setTitle(L10n.t("Quick setups"))
-                .setAdapter(new ChoiceCards(ScreenColors.DEFAULT, names, details),
-                        (shown, which) -> applyQuickSetup(choices.get(which)))
+                .setAdapter(new ChoiceCards(ScreenColors.DEFAULT, names.toArray(new CharSequence[0]),
+                                details.toArray(new CharSequence[0])),
+                        (shown, which) -> {
+                            if (which < choices.size()) applyQuickSetup(choices.get(which));
+                            else undoQuickSetup();
+                        })
                 .setNegativeButton(L10n.t("Cancel"), null));
         ListView list = dialog == null ? null : dialog.getListView();
         if (list != null) {
@@ -1490,13 +1503,67 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         }
     }
 
-    /** Applies one Quick setups choice to the switches on this page and says how many changed. */
+    /**
+     * Applies one Quick setups choice to the switches on this page and says how many changed,
+     * pointing at the undo when something did, or how many couldn't change when nothing did.
+     */
     int applyQuickSetup(Map<BooleanSetting, Boolean> values) {
         PreferenceScreen screen = getPreferenceScreen();
         if (screen == null || SettingsLock.refuses()) return 0;
-        int changed = QuickSetups.apply(screen, values);
-        Utils.showToastLong(L10n.quantity(changed, "Changed %1$d setting", "Changed %1$d settings", changed));
+        QuickSetups.Outcome outcome = QuickSetups.apply(screen, values);
+        int changed = outcome.changed.size();
+        if (changed > 0) {
+            Utils.showToastLong(L10n.quantity(changed, "Changed %1$d setting. Undo it from Quick setups.",
+                    "Changed %1$d settings. Undo them from Quick setups.", changed));
+        } else if (outcome.refused > 0) {
+            Utils.showToastLong(L10n.quantity(outcome.refused, "Nothing changed. %1$d switch couldn't change now.",
+                    "Nothing changed. %1$d switches couldn't change now.", outcome.refused));
+        } else {
+            Utils.showToastLong(L10n.quantity(changed, "Changed %1$d setting", "Changed %1$d settings", changed));
+        }
         return changed;
+    }
+
+    /** Puts back what the last Quick setups choice changed, through the rows, and says how many went back. */
+    int undoQuickSetup() {
+        PreferenceScreen screen = getPreferenceScreen();
+        if (screen == null || SettingsLock.refuses()) return 0;
+        int back = QuickSetups.undo(screen);
+        Utils.showToastLong(L10n.quantity(back, "Put back %1$d switch", "Put back %1$d switches", back));
+        return back;
+    }
+
+    /**
+     * The undo card's text: what the last choice turned on and off, by the rows' titles, how many it
+     * found set already or couldn't change, how many were changed again since, and that only switches
+     * go back.
+     */
+    static String undoDetail(PreferenceGroup screen, QuickSetups.Outcome last, int writtenSince) {
+        List<String> on = new ArrayList<>();
+        List<String> off = new ArrayList<>();
+        for (Map.Entry<BooleanSetting, Boolean> change : last.changed.entrySet()) {
+            Preference row = screen.findPreference(change.getKey().key);
+            if (row == null || row.getTitle() == null) continue;
+            (change.getValue() ? on : off).add(String.valueOf(row.getTitle()));
+        }
+        List<String> parts = new ArrayList<>();
+        if (!on.isEmpty()) parts.add(L10n.f("Turned on: %1$s.", L10n.join(on)));
+        if (!off.isEmpty()) parts.add(L10n.f("Turned off: %1$s.", L10n.join(off)));
+        if (last.already > 0) {
+            parts.add(L10n.quantity(last.already, "%1$d other switch was already set.",
+                    "%1$d other switches were already set.", last.already));
+        }
+        if (last.refused > 0) {
+            parts.add(L10n.quantity(last.refused, "%1$d switch couldn't change.",
+                    "%1$d switches couldn't change.", last.refused));
+        }
+        if (writtenSince > 0) {
+            parts.add(L10n.quantity(writtenSince, "%1$d switch you changed since stays as you set it.",
+                    "%1$d switches you changed since stay as you set them.", writtenSince));
+        }
+        parts.add(L10n.t("Only switches go back. Anything a switch already cleared, like chats' translate "
+                + "choices, stays cleared."));
+        return String.join(" ", parts);
     }
 
     /**

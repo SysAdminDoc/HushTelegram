@@ -57,6 +57,7 @@ import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
+import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
 
@@ -520,6 +521,9 @@ public class SettingsBackupPreference extends Preference {
      * what was written; when it ends every row shows what its switch is saved as.
      */
     private static void importing(@Nullable Set<Setting<?>> owned) {
+        // An import may write a switch to the value Quick setups left there, which no write
+        // listener hears, and Undo would then take back the import's choice.
+        if (owned != null) QuickSetups.forget();
         Set<String> keys = new HashSet<>();
         if (owned != null) for (Setting<?> setting : owned) keys.add(setting.key);
         AbstractPreferenceFragment.settingImportKeys = keys;
