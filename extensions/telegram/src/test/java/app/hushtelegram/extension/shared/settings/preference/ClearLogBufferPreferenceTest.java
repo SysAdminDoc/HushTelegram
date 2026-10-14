@@ -199,6 +199,58 @@ public class ClearLogBufferPreferenceTest {
         assertTrue(restored, restored.contains("new event"));
     }
 
+    /**
+     * Recording an event never waits on Clear or Undo. Both hold their lock while they reach the
+     * crash files, and an event used to wait on that lock, so whatever thread logged it, the main
+     * thread included, stood still for as long as the disk took.
+     */
+    @Test public void anEventIsRecordedWithoutWaitingOnClearOrUndo() throws Exception {
+        LogBufferManager.appendEvent(DiagnosticCategory.OTHER, "BeforeClear", "INFO", "old event");
+        LogBufferManager.persistCrashReport(context, "old java crash");
+        AtomicReference<Throwable> failure = new AtomicReference<>();
+        try {
+            BlockingFilesContext clearing = new BlockingFilesContext(context, 1);
+            Utils.setContext(clearing);
+            Thread clear = thread("clear diagnostics", failure, LogBufferManager::clearLogBuffer);
+            clear.start();
+            assertTrue("clear never reached the crash files", clearing.blocked.await(2, TimeUnit.SECONDS));
+            boolean waited = recordedLate(failure, "event during clear");
+            clearing.release.countDown();
+            join(clear);
+            assertFalse("an event waited on Clear's disk work", waited);
+            assertTrue(LogBufferManager.canUndoClear());
+
+            BlockingFilesContext undoing = new BlockingFilesContext(context, 1);
+            Utils.setContext(undoing);
+            Thread undo = thread("restore diagnostics", failure, LogBufferManager::undoClear);
+            undo.start();
+            assertTrue("undo never reached the crash files", undoing.blocked.await(2, TimeUnit.SECONDS));
+            waited = recordedLate(failure, "event during undo");
+            undoing.release.countDown();
+            join(undo);
+            assertFalse("an event waited on Undo's disk work", waited);
+        } finally {
+            Utils.setContext(context);
+        }
+        if (failure.get() != null) throw new AssertionError(failure.get());
+
+        assertFalse(LogBufferManager.canUndoClear());
+        assertEquals("old java crash", LogBufferManager.readCrashReport(context));
+        String report = LogBufferManager.buildExportText();
+        for (String event : new String[]{"old event", "event during clear", "event during undo"}) {
+            assertTrue(event, report.contains(event));
+        }
+    }
+
+    /** Records [message] on a thread of its own, and says whether it was still waiting two seconds on. */
+    private static boolean recordedLate(AtomicReference<Throwable> failure, String message) throws Exception {
+        Thread producer = thread("record " + message, failure, () ->
+                LogBufferManager.appendEvent(DiagnosticCategory.OTHER, "During", "INFO", message));
+        producer.start();
+        producer.join(TimeUnit.SECONDS.toMillis(2));
+        return producer.isAlive();
+    }
+
     @Test public void undoDoesNotOverwriteACrashSavedWhileItRestores() throws Exception {
         LogBufferManager.persistCrashReport(context, "cleared crash");
         LogBufferManager.clearLogBuffer();

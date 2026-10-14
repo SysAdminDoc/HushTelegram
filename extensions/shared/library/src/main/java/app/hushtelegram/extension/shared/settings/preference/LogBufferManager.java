@@ -98,6 +98,13 @@ public final class LogBufferManager {
     private static final AtomicInteger logBufferCharSize = new AtomicInteger();
     private static final Object CRASH_FILE_LOCK = new Object();
     private static final Object CLEAR_UNDO_LOCK = new Object();
+    /**
+     * Guards the buffer alone, and nothing reaches the disk while it's held. An event used to wait
+     * on CLEAR_UNDO_LOCK, which Clear and Undo hold across their crash file work, so whatever
+     * thread logged it, the main thread included, waited on the disk. Taken after CLEAR_UNDO_LOCK,
+     * never before it.
+     */
+    private static final Object BUFFER_LOCK = new Object();
     private static final AtomicBoolean FILE_EXPORT_RUNNING = new AtomicBoolean();
     /** Written under CLEAR_UNDO_LOCK. Volatile for {@link #canUndoClear()}, which reads it without. */
     private static volatile ClearSnapshot lastClear;
@@ -156,7 +163,7 @@ public final class LogBufferManager {
                 safe(message)
         );
         int eventSize = event.format().length();
-        synchronized (CLEAR_UNDO_LOCK) {
+        synchronized (BUFFER_LOCK) {
             logBuffer.addLast(event);
             int newSize = logBufferCharSize.addAndGet(eventSize);
 
@@ -777,14 +784,27 @@ public final class LogBufferManager {
         boolean restorable;
         synchronized (CLEAR_UNDO_LOCK) {
             Context context = Utils.getContext();
-            ClearSnapshot removed = new ClearSnapshot(
-                    new ArrayList<>(logBuffer),
-                    app.hushtelegram.extension.shared.diagnostics.HookStatus.snapshotAndClear(),
-                    readCrashReport(context),
-                    readNpthCrashReport(context)
-            );
-            clearLogBufferData();
-            clearCrashReports(context);
+            // The buffer is taken first and let go before the disk, so an event recorded while the
+            // crash files are read starts the next generation and its thread doesn't wait.
+            List<DiagnosticEvent> events;
+            synchronized (BUFFER_LOCK) {
+                events = new ArrayList<>(logBuffer);
+                clearLogBufferData();
+            }
+            app.hushtelegram.extension.shared.diagnostics.HookStatus.Snapshot hooks =
+                    app.hushtelegram.extension.shared.diagnostics.HookStatus.snapshotAndClear();
+            ClearSnapshot removed;
+            try {
+                removed = new ClearSnapshot(events, hooks, readCrashReport(context), readNpthCrashReport(context));
+                clearCrashReports(context);
+            } catch (RuntimeException | Error failure) {
+                // Nothing is cleared that Undo couldn't put back.
+                synchronized (BUFFER_LOCK) {
+                    restoreLogBufferData(events);
+                }
+                app.hushtelegram.extension.shared.diagnostics.HookStatus.restore(hooks);
+                throw failure;
+            }
             lastClear = removed.isEmpty() ? null : removed;
             restorable = lastClear != null;
         }
@@ -814,7 +834,9 @@ public final class LogBufferManager {
                     Context context = Utils.getContext();
                     restoreCrashReportIfMissing(context, CRASH_FILE, saved.javaCrash);
                     restoreCrashReportIfMissing(context, NPTH_CRASH_FILE, saved.nativeCrash);
-                    restoreLogBufferData(saved.events);
+                    synchronized (BUFFER_LOCK) {
+                        restoreLogBufferData(saved.events);
+                    }
                     app.hushtelegram.extension.shared.diagnostics.HookStatus.restore(saved.hooks);
                     lastClear = null;
                     result = UndoResult.RESTORED;
