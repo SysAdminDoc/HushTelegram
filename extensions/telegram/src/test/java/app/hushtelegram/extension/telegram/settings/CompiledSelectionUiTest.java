@@ -150,7 +150,8 @@ public class CompiledSelectionUiTest {
             }
         }
         String evidencePath = System.getenv("HUSHTELEGRAM_SELECTION_FACTS");
-        assertEquals(evidencePath == null || evidencePath.isEmpty() ? 1 : 138, screens);
+        // Per target: 86 cases less 10 refused and 6 that carry no extension.
+        assertEquals(evidencePath == null || evidencePath.isEmpty() ? 1 : 140, screens);
     }
 
     @Test
