@@ -39,7 +39,7 @@ private const val VIDEO_ADS = "Lorg/telegram/messenger/video/VideoAds;"
 private const val SEARCH_ADS = "Lapp/hushtelegram/extension/telegram/ads/Ads;->skipSearchAds()Z"
 private val GOTOS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)
 private val LOWERS = setOf(Opcode.SUB_INT_2ADDR, Opcode.SUB_INT, Opcode.ADD_INT_LIT8)
-private const val SEARCH_PHONES = "$LOCAL_SEARCH->phones(Ljava/lang/Object;Ljava/lang/String;ZZZZZJZIIJLjava/lang/Runnable;)V"
+private const val SEARCH_PHONES = "$LOCAL_SEARCH->phones(Ljava/lang/Object;Ljava/lang/String;ZZZZZJZIIJLjava/lang/Runnable;)Z"
 private const val POST = "Lorg/telegram/messenger/AndroidUtilities;->runOnUIThread(Ljava/lang/Runnable;J)V"
 /** The filtered search view's search: a chat, three more numbers, a filter, a switch, the text and whether to clear. */
 private val FILTERED = listOf("J", "J", "J", "J", "Z", "Ljava/lang/String;", "Z")
@@ -61,6 +61,11 @@ class LocalSearchFixtureTest {
                 site.edits.filter { it.lookup in TABS.keys + FILTERS }.all { it.method === pager })
             val usernames = site.edits.single { it.lookup == SearchLookup.USERNAMES }
             assertTrue("$name: the phone match is the second step's", site.edits.single { it.lookup == SearchLookup.PHONES }.method === usernames.method)
+            // Chat search's list redraw is RecyclerView's adapter's, the last of its superclasses before Object.
+            val adapter = site.edits.single { it.lookup == SearchLookup.SPONSORED }.method.definingClass
+            val hosts = localSearchHosts(build).associateBy { it.type }
+            val adapterTop = generateSequence(adapter) { type -> hosts[type]?.superclass?.takeIf { it != "Ljava/lang/Object;" } }.last()
+            assertTrue("$name: chat search is RecyclerView's adapter's subclass", adapterTop != adapter)
             val helper = usernames.method.body()[usernames.index].call()!!
             assertEquals("$name: the lookUp stub calls the helper on what it's handed",
                 "check-cast p0, ${helper.definingClass}\ninvoke-virtual/range {p0 .. p14}, $helper\nreturn-void", site.lookUp)
@@ -76,7 +81,11 @@ class LocalSearchFixtureTest {
                 val old = stock.getValue(System.identityHashCode(method))
                 val before = old.body()
                 val after = method.body()
-                fun size(edit: SearchEdit) = if (edit.jump == null) 2 else 3
+                fun size(edit: SearchEdit) = when {
+                    edit.lookup == SearchLookup.PHONES -> 7
+                    edit.jump == null -> 2
+                    else -> 3
+                }
                 fun moved(index: Int) = index + own.filter { it.index <= index }.sumOf { size(it) }
                 fun hookAt(edit: SearchEdit) = edit.index + own.filter { it.index < edit.index }.sumOf { size(it) }
                 val hooks = own.flatMap { edit -> hookAt(edit) until hookAt(edit) + size(edit) }.toSet()
@@ -105,7 +114,23 @@ class LocalSearchFixtureTest {
                             listOf(Opcode.IGET_OBJECT, before[load].namedRegisters(), before[load].ref()), searchOperands(after[at]))
                         assertEquals("$what hands the runtime what the lookup got",
                             listOf(Opcode.INVOKE_STATIC_RANGE, passed, SEARCH_PHONES), searchOperands(after[at + 1]))
-                        assertEquals("$what goes on to Telegram's next instruction", searchOperands(before[edit.index]), searchOperands(after[at + 2]))
+                        assertEquals("$what takes the runtime's answer into the text register",
+                            listOf(Opcode.MOVE_RESULT, listOf(text), null), searchOperands(after[at + 2]))
+                        assertEquals("$what goes past the redraw when nothing matched", Opcode.IF_EQZ, after[at + 3].opcode)
+                        assertEquals(listOf(text), after[at + 3].namedRegisters())
+                        assertEquals(setOf(at + 4, at + 6), flow.normal[at + 3].toSet())
+                        val held = (after[at + 4] as ReferenceInstruction).reference as FieldReference
+                        assertEquals("$what reads chat search from the object the step read",
+                            listOf(Opcode.IGET_OBJECT, listOf(text, before[load].namedRegisters()[1])), searchOperands(after[at + 4]).take(2))
+                        assertEquals("$what reads the step's own chat search", listOf(before[load].ref()!!.substringBefore("->"), adapter),
+                            listOf(held.definingClass, held.type))
+                        val redraw = after[at + 5].call()!!
+                        assertEquals("$what has chat search's list redraw", listOf(Opcode.INVOKE_VIRTUAL, listOf(text)),
+                            searchOperands(after[at + 5]).take(2))
+                        assertEquals(listOf(adapterTop, emptyList<String>(), "V"),
+                            listOf(redraw.definingClass, redraw.parameterTypes.map(CharSequence::toString), redraw.returnType))
+                        assertEquals(Opcode.NOP, after[at + 6].opcode)
+                        assertEquals("$what goes on to Telegram's next instruction", searchOperands(before[edit.index]), searchOperands(after[at + 7]))
                         assertFalse("$what reads the text into a register nothing reads afterwards", text in live.liveInto(edit.index))
                         assertEquals("$what reads from the object the step read", before[load].namedRegisters()[1],
                             after[at].namedRegisters()[1])
@@ -355,7 +380,17 @@ internal fun localSearchHosts(build: File): List<ClassDef> = HOSTS.getOrPut(buil
     val named = search.body().filter { it.opcode == Opcode.NEW_INSTANCE }.mapNotNull { it.ref() } +
         users.flatMap { it.methods }.flatMap { it.body() }.mapNotNull { it.call() }.filter { it.parameterTypes.size == 12 }.map { it.definingClass } +
         texts + posted
-    (listOf(adapter) + users + views + FixtureDex.classes(build, named.toSet()).values).distinctBy { it.type }.map(ImmutableClassDef::of)
+    // Chat search's superclasses up to RecyclerView's adapter, whose redraw the phone match calls, and the observable it keeps.
+    val supers = mutableListOf<ClassDef>()
+    var above = adapter.superclass
+    while (above != null && above != "Ljava/lang/Object;") {
+        val next = FixtureDex.classes(build, setOf(above)).values.singleOrNull() ?: break
+        supers += next
+        above = next.superclass
+    }
+    val observed = FixtureDex.classes(build, supers.lastOrNull()?.fields?.map { it.type }?.toSet().orEmpty()).values
+    (listOf(adapter) + users + views + supers + observed + FixtureDex.classes(build, named.toSet()).values)
+        .distinctBy { it.type }.map(ImmutableClassDef::of)
 }
 
 /**

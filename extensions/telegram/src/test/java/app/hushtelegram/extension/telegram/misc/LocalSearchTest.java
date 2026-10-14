@@ -61,14 +61,14 @@ public class LocalSearchTest {
     }
 
     /** The Chats tab's second step handing the helper's lookup on, as it does right after the username lookup. */
-    private void phones(String query, long channel) {
-        LocalSearch.phones(helper, query, true, true, true, true, false, channel, true, 0, 7, 42L, done);
+    private boolean phones(String query, long channel) {
+        return LocalSearch.phones(helper, query, true, true, true, true, false, channel, true, 0, 7, 42L, done);
     }
 
     @Test public void offTheFilteredTabsAndThePhoneMatchAreTelegramsOwn() {
         watchLookups();
         assertFalse(LocalSearch.keepsText("cat"));
-        phones("+15551234", 0);
+        assertFalse("nothing new for the tab to show", phones("+15551234", 0));
         assertEquals(Collections.emptyList(), lookups);
         assertEquals(Collections.singletonList("Disable draft link previews: invoked 2, 0 found, 0 missing"), HookStatus.report());
     }
@@ -91,7 +91,7 @@ public class LocalSearchTest {
     @Test public void switchedOnAPhoneNumberIsMatchedAgainWithTheTextAndNoUsernameLookup() {
         Settings.LOCAL_SEARCH.save(true);
         watchLookups();
-        phones("+15551234", 0);
+        assertTrue("the tab is told to show the match", phones("+15551234", 0));
         assertEquals(Collections.singletonList("true +15551234 false true true true false 0 true 0 7 42 true"), lookups);
         assertEquals(Collections.singletonList("Disable draft link previews: invoked 1, 0 found, 0 missing. Counted: "
                 + "phone number matched on the phone 1"), HookStatus.report());
@@ -101,11 +101,11 @@ public class LocalSearchTest {
     @Test public void onlyAPhoneNumberWithNoChannelIsMatchedAgain() {
         Settings.LOCAL_SEARCH.save(true);
         watchLookups();
-        phones("cat", 0);
-        phones("", 0);
-        phones(null, 0);
-        phones("+15551234", 1L);
-        LocalSearch.phones(null, "+15551234", true, true, true, true, false, 0, true, 0, 7, 42L, done);
+        assertFalse(phones("cat", 0));
+        assertFalse(phones("", 0));
+        assertFalse(phones(null, 0));
+        assertFalse(phones("+15551234", 1L));
+        assertFalse(LocalSearch.phones(null, "+15551234", true, true, true, true, false, 0, true, 0, 7, 42L, done));
         assertEquals(Collections.emptyList(), lookups);
         assertEquals(Collections.emptyList(), HookStatus.report());
     }
@@ -115,7 +115,7 @@ public class LocalSearchTest {
         LocalSearch.lookup = (on, query, usernames, chats, bots, self, groupsOnly, channel, phoneNumbers, type, searchId, except, end) -> {
             throw new ClassCastException("not the helper");
         };
-        phones("+15551234", 0);
+        assertFalse("a match that threw has nothing to show", phones("+15551234", 0));
         assertEquals(Collections.singletonList("a working 'search phone match' hook (it threw java.lang.ClassCastException)"),
                 HookStatus.missing(FamilyNames.DISABLE_DRAFT_PREVIEWS));
     }

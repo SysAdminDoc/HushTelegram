@@ -51,6 +51,8 @@ private const val ARRAY_LIST = "Ljava/util/ArrayList;"
 private const val CONNECTIONS = "Lorg/telegram/tgnet/ConnectionsManager;"
 private const val LOCALE = "Lorg/telegram/messenger/LocaleController;"
 private const val RUNNABLE = "Ljava/lang/Runnable;"
+private const val OBJECT = "Ljava/lang/Object;"
+private const val OBSERVABLE = "Landroid/database/Observable;"
 private const val UTILITIES = "Lorg/telegram/messenger/AndroidUtilities;"
 private const val TEXT_UTILS = "Landroid/text/TextUtils;"
 /** What chat search's own methods take: the search's number and the text. */
@@ -116,7 +118,7 @@ internal class ChatSearchHooks(val patch: String, val runtime: String) {
     val sent = "$runtime->sent($STRING)$STRING"
     val emptyText = "$runtime->emptyText($STRING)$STRING"
     val keepsText = "$runtime->keepsText($STRING)Z"
-    val phones = "$runtime->phones(${PHONE_MATCH.joinToString("")})V"
+    val phones = "$runtime->phones(${PHONE_MATCH.joinToString("")})Z"
 
     fun refuse(reason: String): Nothing =
         throw PatchException("$patch: $reason; refuses changed search geometry before editing")
@@ -189,7 +191,7 @@ internal fun BytecodePatchContext.resolveChatSearch(hooks: ChatSearchHooks, look
             SearchLookup.FORUM -> forumEdit(hooks, forum)
             SearchLookup.USERNAMES -> SearchEdit(lookup, helperCall.step, helperCall.call,
                 "invoke-static {v${helperCall.text}}, ${hooks.sent}\nmove-result-object v${helperCall.text}")
-            SearchLookup.PHONES -> phonesEdit(hooks, helperCall)
+            SearchLookup.PHONES -> phonesEdit(hooks, helperCall, adapter.type)
             SearchLookup.EMPTY_LINE -> emptyLineEdit(hooks, pager)
             SearchLookup.CHANNELS -> tabEdit(hooks, pager, lookup, "broadcasts")
             SearchLookup.APPS -> tabEdit(hooks, pager, lookup, "bots")
@@ -364,8 +366,13 @@ private fun BytecodePatchContext.usernameCall(
  * helper again with the text read back from where the step got it. Its phone match needs no server,
  * and the runtime turns the username lookup off for that call. The text register is free there, as
  * the swap already needs, so reading the text back into it costs nothing.
+ *
+ * The helper tells chat search nothing about a phone match, and chat search's own update for the
+ * phone's results came before this step, so when the runtime matched, the step's chat search is told
+ * its list changed. That's the list's plain redraw, not the helper's answer, so the count of answers
+ * chat search waits for stays as it was.
  */
-private fun BytecodePatchContext.phonesEdit(hooks: ChatSearchHooks, found: HelperCall): SearchEdit {
+private fun BytecodePatchContext.phonesEdit(hooks: ChatSearchHooks, found: HelperCall, adapter: String): SearchEdit {
     val step = found.step
     val body = step.instructions()
     val after = found.call + 1
@@ -384,10 +391,51 @@ private fun BytecodePatchContext.phonesEdit(hooks: ChatSearchHooks, found: Helpe
     hooks.shape(body.getOrNull(after) != null && body[after].opcode !in MOVE_RESULTS && flow.into(after) == listOf(found.call) &&
         found.owner <= 15 && (found.loaded + 1..found.call).none { found.owner in body[it].writes() },
         "the username lookup's text can't be read back after it")
+    // The text came from the step's own field, and the step holds chat search beside it.
+    val held = classDefByOrNull(step.definingClass)?.fields
+        ?.filter { it.type == adapter && !AccessFlags.STATIC.isSet(it.accessFlags) }.orEmpty()
+    hooks.shape(found.field.definingClass == step.definingClass && held.size == 1,
+        "the username lookup's step no longer holds chat search")
+    val shown = listChanged(hooks, adapter)
     return SearchEdit(SearchLookup.PHONES, step, after, listOf(
         "iget-object v${found.text}, v${found.owner}, ${found.field}",
         "invoke-static/range {v$first .. v${first + PHONE_MATCH_REGISTERS - 1}}, ${hooks.phones}",
+        "move-result v${found.text}",
+        "if-eqz v${found.text}, :hush_phones_shown",
+        "iget-object v${found.text}, v${found.owner}, ${step.definingClass}->${held.single().name}:$adapter",
+        "invoke-virtual {v${found.text}}, $shown",
+        ":hush_phones_shown",
+        "nop",
     ).joinToString("\n"))
+}
+
+/**
+ * RecyclerView's adapter, the first of chat search's superclasses past Object, tells its list that
+ * everything changed with its one method that takes nothing: it hands the change to the observable
+ * it keeps. Telegram renames both, so they're found by that shape.
+ */
+private fun BytecodePatchContext.listChanged(hooks: ChatSearchHooks, adapter: String): String {
+    var type = adapter
+    val seen = mutableSetOf<String>()
+    while (seen.add(type)) {
+        val superclass = classDefByOrNull(type)?.superclass ?: hooks.refuse("chat search's list adapter is missing")
+        if (superclass == OBJECT) break
+        type = superclass
+    }
+    val top = classDefByOrNull(type)
+    hooks.shape(top != null && type != adapter && AccessFlags.PUBLIC.isSet(top.accessFlags), "chat search's list adapter is missing")
+    val observable = top!!.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && classDefByOrNull(it.type)?.superclass == OBSERVABLE }
+        .one("the list adapter's observable", hooks::refuse)
+    val notify = top.methods.filter { it.name != "<init>" && it.parameterTypes.isEmpty() && it.returnType == "V" &&
+        !AccessFlags.STATIC.isSet(it.accessFlags) }.one("the list adapter's redraw", hooks::refuse)
+    val body = notify.instructions()
+    val told = body.getOrNull(1)?.call()
+    hooks.shape(AccessFlags.PUBLIC.isSet(notify.accessFlags) && body.size == 3 && body[0].opcode == Opcode.IGET_OBJECT &&
+        body[0].field()?.let { it.definingClass == top.type && it.name == observable.name && it.type == observable.type } == true &&
+        body[1].opcode == Opcode.INVOKE_VIRTUAL && told?.definingClass == observable.type && told.parameterTypes.isEmpty() &&
+        told.returnType == "V" && body[2].opcode == Opcode.RETURN_VOID,
+        "the list adapter's redraw no longer just tells its observable")
+    return "${top.type}->${notify.name}()V"
 }
 
 /** The pager starts each tab's search for the page on screen, the Chats tab's chat search among them, and sets the line under "No results". */
@@ -514,7 +562,7 @@ private fun BytecodePatchContext.requireSearchRuntime(hooks: ChatSearchHooks, lo
         Triple("sent", listOf(STRING), STRING).takeIf { SearchLookup.USERNAMES in lookups },
         Triple("emptyText", listOf(STRING), STRING).takeIf { SearchLookup.EMPTY_LINE in lookups },
         Triple("keepsText", listOf(STRING), "Z").takeIf { lookups.any { it in TEXT_SKIPS } },
-        Triple("phones", PHONE_MATCH, "V").takeIf { SearchLookup.PHONES in lookups },
+        Triple("phones", PHONE_MATCH, "Z").takeIf { SearchLookup.PHONES in lookups },
         Triple("lookUp", PHONE_MATCH, "V").takeIf { SearchLookup.PHONES in lookups },
     )
     for ((name, parameters, result) in needed) {

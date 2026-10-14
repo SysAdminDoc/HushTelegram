@@ -79,19 +79,24 @@ public final class LocalSearch {
      * Right after the Chats tab's call to the username helper, with what that call was handed and
      * the text it would have had. The helper matches a "+" phone number against your contacts on the
      * phone, which the empty box it got skipped, so the match runs again here with the text and no
-     * username lookup. It sends nothing and leaves the waiting count alone, and the rows it finds show
-     * with the tab's next update.
+     * username lookup. It sends nothing and leaves the waiting count alone. The helper doesn't tell
+     * the tab about a phone match, and the tab's own update came before it, so on true the hook has
+     * the tab show its rows again.
+     *
+     * @return true when the match ran, so the tab has rows to show
      */
-    public static void phones(Object helper, String query, boolean usernames, boolean chats, boolean bots,
-                              boolean self, boolean groupsOnly, long channel, boolean phoneNumbers, int type,
-                              int searchId, long except, Runnable done) {
+    public static boolean phones(Object helper, String query, boolean usernames, boolean chats, boolean bots,
+                                 boolean self, boolean groupsOnly, long channel, boolean phoneNumbers, int type,
+                                 int searchId, long except, Runnable done) {
         // A channel would make the helper look its members up on the server.
-        if (helper == null || query == null || channel != 0 || !query.startsWith("+") || !on()) return;
+        if (helper == null || query == null || channel != 0 || !query.startsWith("+") || !on()) return false;
         try {
             lookup.run(helper, query, false, chats, bots, self, groupsOnly, channel, phoneNumbers, type, searchId, except, done);
             HookStatus.counted(FamilyNames.DISABLE_DRAFT_PREVIEWS, "phone number matched on the phone");
+            return true;
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.DISABLE_DRAFT_PREVIEWS, "search phone match", failure);
+            return false;
         }
     }
 
