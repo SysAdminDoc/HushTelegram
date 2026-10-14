@@ -362,6 +362,26 @@ public class NotificationStatusTest {
         }
     }
 
+    /** The battery list is tried first, and App info only once the list won't open. */
+    @Test public void theBatteryListIsTriedBeforeAppInfo() {
+        List<String> tried = new java.util.ArrayList<>();
+        Context phone = new ContextWrapper(RuntimeEnvironment.getApplication()) {
+            @Override public void startActivity(android.content.Intent intent) {
+                tried.add(intent.getAction());
+                if (android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS.equals(intent.getAction())) {
+                    throw new android.content.ActivityNotFoundException("no battery list");
+                }
+            }
+        };
+        org.robolectric.shadows.ShadowToast.reset();
+        HushTelegramPreferenceFragment.openBatteryOptimization(phone);
+        ShadowLooper.idleMainLooper();
+        assertEquals(java.util.Arrays.asList(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS,
+                android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS), tried);
+        assertFalse("the toast said nothing opened", "Couldn't open battery optimization. Open Android settings."
+                .equals(org.robolectric.shadows.ShadowToast.getTextOfLatestToast()));
+    }
+
     @Test public void missingInvalidAndUnreadableFactsStayIndependentAndUnknown() {
         for (int token : new int[]{-1, 2, Integer.MAX_VALUE}) {
             LocalReaders.token = token;
