@@ -164,11 +164,14 @@ public class PatchFamilyTest {
         PatchFamily family = PatchFamily.HIDE_CONTACTS_TAB;
         assertEquals("Hide Contacts tab", family.patchName);
         assertEquals("hideContactsTab", family.statusMethod);
-        assertEquals(Collections.singletonList(Settings.HIDE_CONTACTS_TAB), family.switches);
-        assertFalse(Settings.HIDE_CONTACTS_TAB.defaultValue);
-        // Telegram builds the bar with the main screen, so the change shows after a restart.
-        assertTrue(Settings.HIDE_CONTACTS_TAB.rebootApp);
-        assertTrue(family.expectedCapabilities().isEmpty());
+        // The second switch, the compact bar, starts off too and works with or without the first.
+        assertEquals(Arrays.asList(Settings.HIDE_CONTACTS_TAB, Settings.COMPACT_TAB_BAR), family.switches);
+        for (BooleanSetting setting : family.switches) {
+            assertFalse(setting.key, setting.defaultValue);
+            // Telegram builds the bar with the main screen, so either change shows after a restart.
+            assertTrue(setting.key, setting.rebootApp);
+        }
+        assertEquals(EnumSet.of(PatchFamily.Capability.COMPACT_TAB_BAR), family.expectedCapabilities());
         assertOnItsPage(family);
         // The bar sits under the chat list, beside its folder switches.
         assertEquals(PatchFamily.Page.CHAT_LIST, PatchFamily.Page.of(family));

@@ -352,6 +352,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_CONTACTS_TAB =
             new BooleanSetting("hushtelegram_hide_contacts_tab", FALSE, true);
 
+    /**
+     * The bar at the bottom of the main screen is shorter and only as wide as its tabs need. Each tab
+     * keeps Telegram's 48 dp height. The bar is sized when the main screen is built, so a restart
+     * shows the change.
+     */
+    public static final BooleanSetting COMPACT_TAB_BAR =
+            new BooleanSetting("hushtelegram_compact_tab_bar", FALSE, true);
+
     /** Downloads take 512 KB pieces, 8 at a time, unless Telegram drops back to small ones itself. */
     public static final BooleanSetting FASTER_DOWNLOADS =
             new BooleanSetting("hushtelegram_faster_downloads", FALSE);

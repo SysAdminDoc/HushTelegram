@@ -31,6 +31,8 @@ public class MainTabsTest {
         PauseForTests.resume();
         SettingReadsForTests.mend(Settings.HIDE_CONTACTS_TAB);
         Settings.HIDE_CONTACTS_TAB.resetToDefault();
+        SettingReadsForTests.mend(Settings.COMPACT_TAB_BAR);
+        Settings.COMPACT_TAB_BAR.resetToDefault();
         HookStatus.clear();
     }
 
@@ -95,6 +97,67 @@ public class MainTabsTest {
         SettingReadsForTests.breakReads(Settings.HIDE_CONTACTS_TAB);
         assertFalse(MainTabs.on());
         assertFalse(MainTabs.blocksSwipe(0, true));
+        assertFalse(HookStatus.missing(FamilyNames.HIDE_CONTACTS_TAB).isEmpty());
+    }
+
+    /** Telegram's own sizes, the ones the patched code hands in. */
+    private static void assertStockBar(String why) {
+        assertEquals(why, 12f, MainTabs.barPadding(12f), 0f);
+        assertEquals(why, 28f, MainTabs.barCorner(28f), 0f);
+        assertEquals(why, 72, MainTabs.barHeight(72));
+        assertEquals(why, 320f, MainTabs.barMinWidth(320f), 0f);
+    }
+
+    @Test public void offByDefaultTheBarKeepsTelegramsSizes() {
+        assertFalse(Settings.COMPACT_TAB_BAR.get());
+        assertStockBar("off");
+        assertTrue(report().contains(FamilyNames.HIDE_CONTACTS_TAB));
+        assertFalse(report().contains("bar built compact"));
+    }
+
+    @Test public void compactTrimsTheBarButNotItsTabs() {
+        Settings.COMPACT_TAB_BAR.save(true);
+        assertEquals(8f, MainTabs.barPadding(12f), 0f);
+        assertEquals(24f, MainTabs.barCorner(28f), 0f);
+        assertEquals(64, MainTabs.barHeight(72));
+        assertEquals(192f, MainTabs.barMinWidth(320f), 0f);
+        assertTrue(report().contains("bar built compact"));
+        // The tabs get the bar's height less its padding: 48 dp either way, Android's touch target.
+        assertEquals(72 - 2 * 12, MainTabs.barHeight(72) - 2 * (int) MainTabs.barPadding(12f));
+        assertEquals(48, MainTabs.COMPACT_HEIGHT - 2 * (int) MainTabs.COMPACT_PADDING);
+        // Four tabs stretched to the least width get 48 dp each, and the padding stays outside the
+        // glass background's 7.67 dp inset, so the tabs sit inside it.
+        assertEquals(4 * 48f, MainTabs.COMPACT_MIN_WIDTH, 0f);
+        assertTrue(MainTabs.COMPACT_PADDING > 8f - 0.334f);
+        // The corner is half the glass's height, the way Telegram's 28 dp is.
+        assertEquals((MainTabs.COMPACT_HEIGHT - 2 * (8f - 0.334f)) / 2f, MainTabs.COMPACT_CORNER, 0.5f);
+        assertEquals((72 - 2 * (8f - 0.334f)) / 2f, 28f, 0.5f);
+    }
+
+    @Test public void theTwoSwitchesWorkApart() {
+        Settings.COMPACT_TAB_BAR.save(true);
+        assertFalse(MainTabs.on());
+        assertFalse(MainTabs.blocksSwipe(0, true));
+        assertEquals(64, MainTabs.barHeight(72));
+
+        Settings.COMPACT_TAB_BAR.save(false);
+        Settings.HIDE_CONTACTS_TAB.save(true);
+        assertTrue(MainTabs.blocksSwipe(0, true));
+        assertStockBar("Contacts hidden, bar not compact");
+    }
+
+    @Test public void pausingAnEarlyStartOrAnUnreadableSwitchKeepsTelegramsSizes() {
+        Settings.COMPACT_TAB_BAR.save(true);
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
+            PauseForTests.pause(reason);
+            assertStockBar(reason.name());
+            PauseForTests.resume();
+        }
+        SettingsContextRule.withoutContext(() -> assertStockBar("before the settings are ready"));
+        assertEquals(64, MainTabs.barHeight(72));
+        SettingReadsForTests.breakReads(Settings.COMPACT_TAB_BAR);
+        assertStockBar("unreadable");
         assertFalse(HookStatus.missing(FamilyNames.HIDE_CONTACTS_TAB).isEmpty());
     }
 }

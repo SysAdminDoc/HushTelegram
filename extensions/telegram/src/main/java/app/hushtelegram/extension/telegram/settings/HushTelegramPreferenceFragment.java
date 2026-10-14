@@ -383,6 +383,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.HIDE_CONTACTS_TAB.coverageSummary(L10n.t("The Contacts tab leaves the bar at the bottom of the main screen, and "
                             + "swiping doesn't open its page either. The Calls or Settings tab stays as Telegram has it, and the chat "
                             + "list's new message button still opens your contacts. Restart Telegram to see the change."))));
+            if (PatchFamily.Capability.COMPACT_TAB_BAR.installed()) {
+                on(pages, PatchFamily.HIDE_CONTACTS_TAB).addPreference(toggle(context, Settings.COMPACT_TAB_BAR,
+                        L10n.t("Compact bottom bar"),
+                        L10n.t("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. "
+                                + "The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.")));
+            }
         }
     }
 

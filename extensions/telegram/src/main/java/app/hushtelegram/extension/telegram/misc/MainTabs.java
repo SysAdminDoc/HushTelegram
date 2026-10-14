@@ -15,12 +15,75 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * of the bar and a swipe doesn't stop on its page. Telegram sets up the bar when it builds the main
  * screen and again whenever Calls and Settings trade places, and the tab is hidden each time, so
  * that choice keeps working. The chat list's new message button still opens the contact list.
+ *
+ * <p>The compact switch, independent of that one, trims the bar itself. Telegram makes it 72 dp
+ * tall with 12 dp around 48 dp tabs, rounds its glass background to 28 dp and stretches the tabs to
+ * at least 320 dp across. Compact makes it 64 dp with 8 dp around the same 48 dp tabs, a 24 dp
+ * round to match, and lets the tabs stay as narrow as 192 dp all told, 48 dp each for four.
  */
 public final class MainTabs {
     /** The Contacts page, second of the main screen's pages; its tab is the second in the bar too. */
     static final int CONTACTS = 1;
 
+    /** The compact bar's height in dp, so its tabs keep Telegram's 48 dp inside {@link #COMPACT_PADDING}. */
+    static final int COMPACT_HEIGHT = 64;
+    /** Room in dp around the compact bar's tabs, just outside the glass background's 7.67 dp inset. */
+    static final float COMPACT_PADDING = 8f;
+    /** The compact glass background's corner in dp, half its height the way Telegram's 28 dp is. */
+    static final float COMPACT_CORNER = 24f;
+    /** The least the compact bar's tabs stretch to across, in dp: four 48 dp tabs. */
+    static final float COMPACT_MIN_WIDTH = 192f;
+
     private MainTabs() {}
+
+    /**
+     * The room around the bar's tabs, in dp, as the main screen builds the bar.
+     *
+     * @param stock Telegram's 12 dp
+     */
+    public static float barPadding(float stock) {
+        return compact("padding") ? COMPACT_PADDING : stock;
+    }
+
+    /**
+     * The corner of the bar's glass background, in dp, as the main screen builds the bar.
+     *
+     * @param stock Telegram's 28 dp
+     */
+    public static float barCorner(float stock) {
+        return compact("corner") ? COMPACT_CORNER : stock;
+    }
+
+    /**
+     * The bar's height in dp, as the main screen lays it out.
+     *
+     * @param stock Telegram's 72 dp
+     */
+    public static int barHeight(int stock) {
+        if (!compact("height")) return stock;
+        HookStatus.counted(FamilyNames.HIDE_CONTACTS_TAB, "bar built compact");
+        return COMPACT_HEIGHT;
+    }
+
+    /**
+     * The least the bar's tabs stretch to across, in dp, each time the bar measures itself.
+     *
+     * @param stock Telegram's 320 dp
+     */
+    public static float barMinWidth(float stock) {
+        return compact("width") ? COMPACT_MIN_WIDTH : stock;
+    }
+
+    /** Whether the compact switch is on and HushTelegram isn't paused, asked for one of the bar's sizes. */
+    static boolean compact(String size) {
+        HookStatus.invoked(FamilyNames.HIDE_CONTACTS_TAB);
+        try {
+            return Utils.settingsReady() && Settings.COMPACT_TAB_BAR.get();
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_CONTACTS_TAB, "compact bar " + size, failure);
+            return false;
+        }
+    }
 
     /**
      * Called each time Telegram has set which tabs the bar shows: when the main screen is built,

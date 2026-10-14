@@ -13,10 +13,12 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.localRegisterCount
 import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
+import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.requireParameterIntact
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.requireThisIntact
@@ -63,7 +65,7 @@ internal const val CONTACTS = 1
 /** How far past Telegram's own Calls switch it turns the pager away from a page it hid. */
 private const val LEAVE_WITHIN = 12
 
-private val CONSTANTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST, Opcode.CONST_HIGH16)
+internal val CONSTANTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST, Opcode.CONST_HIGH16)
 
 @Suppress("unused")
 val hideContactsTabPatch = bytecodePatch(
@@ -78,10 +80,20 @@ val hideContactsTabPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.telegram())
     execute {
         val plan = resolveMainTabs()
+        requireStatusMethod("compactTabBar")
+        val compact = resolveCompactBar(plan)
         // Assembled on copies first, so a refusal leaves the app untouched.
         plan.insert { target, apply -> apply(MutableMethod(ImmutableMethod.of(target))) }
+        compact.rehearse()
         writeMainTabsStubs(plan)
         plan.insert { target, apply -> apply(target) }
+        // The compact switch's own target: a build whose bar changed keeps the Contacts switch.
+        if (compact.missing == null) {
+            compact.apply()
+            enableCapability("compactTabBar")
+        } else {
+            patchLog.warning("$PATCH: ${compact.missing}. The patch goes on without the compact bar.")
+        }
         enableStatus("hideContactsTab")
     }
 }
@@ -472,18 +484,18 @@ private fun contactsPage(screen: ClassDef): Int? {
 }
 
 /** Whether [m] is a view's build: an instance `createView` taking a context. */
-private fun isBuild(m: Method) = m.name == "createView" && !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == VIEW &&
+internal fun isBuild(m: Method) = m.name == "createView" && !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == VIEW &&
     m.parameterTypes.map(CharSequence::toString) == listOf(CONTEXT) && m.controlBody().isNotEmpty()
 
 /** The one instruction before [use] whose write of [register] reaches it on every path, or null. */
-private fun defined(flow: ControlFlow, use: Int, register: Int): Int? = (use - 1 downTo 0).firstOrNull { at ->
+internal fun defined(flow: ControlFlow, use: Int, register: Int): Int? = (use - 1 downTo 0).firstOrNull { at ->
     val instruction = flow.instructions[at]
     val destination = instruction.namedRegisters().firstOrNull()
     instruction.opcode.setsRegister() && (destination == register || instruction.opcode.setsWideRegister() && destination?.plus(1) == register)
 }?.takeIf { flow.definitionReaches(it, use, register) }
 
 /** The constant [register] holds at [use], when one plain constant is all that reaches it. */
-private fun constant(body: List<Instruction>, flow: ControlFlow, use: Int, register: Int): Int? {
+internal fun constant(body: List<Instruction>, flow: ControlFlow, use: Int, register: Int): Int? {
     val at = defined(flow, use, register) ?: return null
     return if (body[at].opcode in CONSTANTS) (body[at] as NarrowLiteralInstruction).narrowLiteral else null
 }

@@ -8,6 +8,9 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.extension.localRegisterCount
@@ -15,6 +18,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.util.ControlFlow
 import app.morphe.util.branchTarget
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -24,6 +28,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstructio
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -122,6 +127,115 @@ class HideContactsTabFixtureTest {
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }
     }
+
+    @Test fun `each of the bar's sizes goes through the runtime right after Telegram sets it`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val compact = context.resolveCompactBar(context.resolveMainTabs())
+            assertNull("$name: ${compact.missing}", compact.missing)
+            assertEquals("$name: padding, corner and height as the main screen builds, then the width as the bar measures",
+                listOf(BAR_PADDING, BAR_CORNER, BAR_HEIGHT, BAR_MIN_WIDTH), compact.sizes.map { it.hook })
+            assertEquals(name, listOf("createView", "createView", "createView", "onMeasure"), compact.sizes.map { it.method.name })
+            val before = compact.sizes.map { it.method }.distinct().associateWith { ImmutableMethod.of(it).controlBody() }
+            assertEquals("$name: Telegram's own 12 dp, 28 dp, 72 dp and 320 dp", listOf(STOCK_PADDING, STOCK_CORNER, STOCK_HEIGHT, STOCK_MIN_WIDTH),
+                compact.sizes.map { (before.getValue(it.method)[it.at - 1] as NarrowLiteralInstruction).narrowLiteral })
+            for (size in compact.sizes) {
+                val stock = before.getValue(size.method)
+                assertEquals("$name ${size.hook}", listOf(size.register), stock[size.at - 1].namedRegisters())
+                // The next thing to name the register is the call Telegram hands the size to.
+                val read = (size.at until stock.size).first { size.register in stock[it].namedRegisters() }
+                assertEquals("$name ${size.hook}", Opcode.INVOKE_STATIC, stock[read].opcode)
+            }
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { hideContactsTabPatch.execute(context) })
+
+            for ((method, stock) in before) {
+                val what = "$name ${method.name}"
+                val own = compact.sizes.filter { it.method === method }.sortedBy { it.at }
+                val after = method.controlBody()
+                assertEquals("$what: two instructions a size", stock.size + 2 * own.size, after.size)
+                val flow = ControlFlow.of(method)
+                own.forEachIndexed { earlier, size ->
+                    val hook = size.at + 2 * earlier
+                    assertEquals(what, listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT), listOf(after[hook].opcode, after[hook + 1].opcode))
+                    assertEquals(what, size.hook, after[hook].controlRef())
+                    assertEquals(what, listOf(size.register), after[hook].namedRegisters())
+                    assertEquals(what, listOf(size.register), after[hook + 1].namedRegisters())
+                    // Only Telegram's constant leads into the hook.
+                    assertEquals(what, listOf(hook - 1), after.indices.filter { hook in flow.normal[it] || hook in flow.exceptional[it] })
+                }
+                assertStock(what, stock, after) { i -> i + 2 * own.count { it.at <= i } }
+            }
+            for (flag in listOf("hideContactsTab", "compactTabBar")) {
+                val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.controlBody()
+                assertEquals("$name: $flag", 1L, (status.first() as WideLiteralInstruction).wideLiteral)
+            }
+        }
+    }
+
+    @Test fun `a changed bar leaves the compact switch out and the Contacts tab switch in`() {
+        val cases = listOf<Triple<String, String, (BytecodePatchContext, CompactBar) -> Unit>>(
+            Triple("padding", "the bar's padding is no longer Telegram's own size") { _, bar ->
+                bar.sizes[0].let { it.method.replaceInstruction(it.at - 1, "const/high16 v${it.register}, 0x41800000") }
+            },
+            Triple("padding read twice", "the bar's padding is read by something else too") { _, bar ->
+                bar.sizes[0].let { it.method.addInstruction(it.at, "invoke-static {v${it.register}}, Ljava/lang/Float;->isNaN(F)Z") }
+            },
+            Triple("corner", "the bar's corner is no longer Telegram's own size") { _, bar ->
+                bar.sizes[1].let { it.method.replaceInstruction(it.at - 1, "const/high16 v${it.register}, 0x41a00000") }
+            },
+            Triple("inset", "the bar's background no longer starts 7.67 dp inside the bar") { _, bar ->
+                val build = bar.sizes[0].method
+                val body = build.controlBody()
+                val inset = body.indices.single { body[it].opcode == Opcode.CONST && (body[it] as NarrowLiteralInstruction).narrowLiteral == 0x40f54fdf }
+                build.replaceInstruction(inset, "const v${body[inset].namedRegisters()[0]}, 0x41000000")
+            },
+            Triple("gravity", "the bar no longer sits at the bottom in the middle") { _, bar ->
+                bar.sizes[2].let {
+                    val gravity = it.method.controlBody()[it.at]
+                    assertEquals(0x51, (gravity as NarrowLiteralInstruction).narrowLiteral)
+                    it.method.replaceInstruction(it.at, "const/16 v${gravity.namedRegisters()[0]}, 0x50")
+                }
+            },
+            Triple("height", "the bar's height is no longer Telegram's own size") { _, bar ->
+                bar.sizes[2].let { it.method.replaceInstruction(it.at - 1, "const/16 v${it.register}, 0x40") }
+            },
+            Triple("width", "the bar's tab width is no longer Telegram's own size") { _, bar ->
+                bar.sizes[3].let { it.method.replaceInstruction(it.at - 1, "const/high16 v${it.register}, 0x43800000") }
+            },
+            Triple("tab height", "the bar no longer fits its tabs inside its padding") { _, bar ->
+                val measure = bar.sizes[3].method
+                val bottom = measure.controlBody().indexOfFirst { it.call()?.name == "getPaddingBottom" }
+                val self = measure.controlBody()[bottom].namedRegisters().single()
+                measure.replaceInstruction(bottom, "invoke-virtual {v$self}, Landroid/view/View;->getPaddingRight()I")
+            },
+        )
+        for (build in Fixtures.declaredBuilds()) {
+            val hosts = hosts(build)
+            for ((name, reason, change) in cases) {
+                val what = "${build.name}: $name"
+                val context = PatchContexts.of(ExtensionDex.classes() + hosts)
+                val plan = context.resolveMainTabs()
+                val found = context.resolveCompactBar(plan)
+                assertNull("$what: ${found.missing}", found.missing)
+                change(context, found)
+                val sized = found.sizes.map { it.method }.distinct()
+                val before = sized.map { method -> method.controlBody().map(::operands) }
+                val shown = plan.shown.controlBody().size
+                assertEquals(what, listOf("Hide Contacts tab: $reason. The patch goes on without the compact bar."),
+                    PatchLogCapture.warnings { hideContactsTabPatch.execute(context) })
+                assertEquals("$what: the bar's sizes stay Telegram's", before, sized.map { method -> method.controlBody().map(::operands) })
+                assertEquals("$what: the Contacts tab is still hidden each time the bar is set", shown + 1, plan.shown.controlBody().size)
+                for ((flag, value) in listOf("hideContactsTab" to 1L, "compactTabBar" to 0L)) {
+                    val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.controlBody()
+                    assertEquals("$what: $flag", value, (status.first() as WideLiteralInstruction).wideLiteral)
+                }
+            }
+        }
+    }
+
+    private fun operands(instruction: Instruction): List<Any?> = listOf(instruction.opcode, instruction.namedRegisters(),
+        instruction.controlRef(), (instruction as? NarrowLiteralInstruction)?.narrowLiteral)
 
     /** Every stock instruction is still there, at [moved] of its old index, unchanged. */
     private fun assertStock(what: String, before: List<Instruction>, after: List<Instruction>, moved: (Int) -> Int) {

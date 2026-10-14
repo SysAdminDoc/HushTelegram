@@ -104,7 +104,8 @@ public enum PatchFamily {
     OUTSIDE_TRANSLATE(FamilyNames.OUTSIDE_TRANSLATE, "outsideTranslate", null, Settings.OUTSIDE_TRANSLATE),
     HIDE_CHANNEL_BUTTONS(FamilyNames.HIDE_CHANNEL_BUTTONS, "hideChannelButtons", null, Settings.HIDE_CHANNEL_BUTTONS),
     HIDE_SEND_AS(FamilyNames.HIDE_SEND_AS, "hideSendAs", null, Settings.HIDE_SEND_AS),
-    HIDE_CONTACTS_TAB(FamilyNames.HIDE_CONTACTS_TAB, "hideContactsTab", null, Settings.HIDE_CONTACTS_TAB),
+    HIDE_CONTACTS_TAB(FamilyNames.HIDE_CONTACTS_TAB, "hideContactsTab", null, Settings.HIDE_CONTACTS_TAB,
+            Settings.COMPACT_TAB_BAR),
     FASTER_DOWNLOADS(FamilyNames.FASTER_DOWNLOADS, "fasterDownloads", null, Settings.FASTER_DOWNLOADS),
     SAVE_DOWNLOADS(FamilyNames.SAVE_DOWNLOADS, "saveDownloads", null, Settings.SAVE_DOWNLOADS),
     CHAT_TYPE_FOLDERS(FamilyNames.CHAT_TYPE_FOLDERS, "chatTypeFolders", null, Settings.CHAT_TYPE_FOLDERS),
@@ -354,6 +355,7 @@ public enum PatchFamily {
         SHARED_LINK_TRACKING(STRIP_LINK_TRACKING, "sharedLinkTracking", "shared link tracking"),
         SKIP_AUTOLOGIN(STRIP_LINK_TRACKING, "skipAutologin", "website sign-in tokens"),
         SHARE_NUMBER_UNTICKED(HIDE_PHONE_NUMBER, "shareNumberUnticked", "number sharing on new contacts"),
+        COMPACT_TAB_BAR(HIDE_CONTACTS_TAB, "compactTabBar", "bottom bar size"),
         FIREBASE_CERTIFICATE_HEADER(REPAIR_FIREBASE_PUSH, "firebaseCertificateHeader", "Firebase certificate header"),
         FIREBASE_LOCAL_STATUS(REPAIR_FIREBASE_PUSH, "firebaseLocalStatus", "local notification status");
 
