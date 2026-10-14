@@ -856,6 +856,17 @@ public class SettingsNavigationTest {
         assertEquals(14, list().getCount());
     }
 
+    /** A row with no summary used to carry the word "null" into its search text. */
+    @Test public void aRowWithNoSummaryIsNotFoundByTheWordNull() {
+        Preference row = page.findPreference(Settings.DISABLE_UPDATE_CHECKS.key);
+        row.setSummary(null);
+        page.navigation.search("update checks null");
+        assertEquals(1, list().getCount());
+        assertEquals("No matching settings", ((Preference) list().getItemAtPosition(0)).getTitle());
+        page.navigation.search("update checks");
+        assertTrue("the row is still found by its title", contains(Settings.DISABLE_UPDATE_CHECKS.key));
+    }
+
     /**
      * On the S22 with TalkBack, typing a search said only "Edit box": the list changed without a
      * word. The count now sits in a polite live region, written once the typing settles.

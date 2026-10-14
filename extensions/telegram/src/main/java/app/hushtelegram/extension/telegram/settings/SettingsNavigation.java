@@ -485,7 +485,8 @@ final class SettingsNavigation extends BaseAdapter {
                 boolean headingAdded = false;
                 for (int i = 0; i < section.category.getPreferenceCount(); i++) {
                     Preference row = section.category.getPreference(i);
-                    String text = normalized(section.category.getTitle() + " " + row.getTitle() + " " + row.getSummary());
+                    String text = normalized(searchable(section.category.getTitle()) + " " + searchable(row.getTitle())
+                            + " " + searchable(row.getSummary()));
                     boolean matches = true;
                     for (String term : terms.split("\\s+")) if (!text.contains(term)) matches = false;
                     if (!matches) continue;
@@ -660,6 +661,11 @@ final class SettingsNavigation extends BaseAdapter {
             if (setting != null && (!setting.isKeptWhenPaused() || setting == BaseSettings.PAUSED)) return true;
         }
         return false;
+    }
+
+    /** A title or summary as search text. A row without one adds nothing, not the word "null". */
+    private static String searchable(CharSequence value) {
+        return value == null ? "" : value.toString();
     }
 
     private static String normalized(String value) {
