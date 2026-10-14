@@ -796,10 +796,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 }
                 if (PatchFamily.Capability.LOCAL_SEARCH.installed()) {
                     privacy.addPreference(toggle(context, Settings.LOCAL_SEARCH, L10n.t("Keep searches on this phone"),
-                            L10n.t("What you type in search isn't sent to Telegram, except in the Posts tab. The Chats tab "
-                                    + "finds your chats and contacts on this phone, plus recent searches, but not messages or "
-                                    + "public accounts. Channels, Apps, the media tabs and chat or date filters don't search "
-                                    + "for typed text.")));
+                            L10n.t("What you type in the main search isn't sent to Telegram, except in the Posts tab. The "
+                                    + "Chats tab finds your chats and contacts on this phone, plus recent searches, but not "
+                                    + "messages or public accounts. Channels, Apps, the media tabs and chat or date filters "
+                                    + "don't search for typed text. Search inside a chat still goes to Telegram.")));
                 }
             }
             if (build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) {

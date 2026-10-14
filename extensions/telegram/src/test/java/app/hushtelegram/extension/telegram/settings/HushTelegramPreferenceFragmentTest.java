@@ -398,9 +398,10 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse(Settings.LOCAL_DRAFTS.key,
                     ((SwitchPreference) page.findPreference(Settings.LOCAL_DRAFTS.key)).isChecked());
             assertEquals("Keep searches on this phone", String.valueOf(page.findPreference(Settings.LOCAL_SEARCH.key).getTitle()));
-            assertEquals("What you type in search isn't sent to Telegram, except in the Posts tab. The Chats tab finds "
-                    + "your chats and contacts on this phone, plus recent searches, but not messages or public accounts. "
-                    + "Channels, Apps, the media tabs and chat or date filters don't search for typed text.",
+            assertEquals("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab "
+                    + "finds your chats and contacts on this phone, plus recent searches, but not messages or public "
+                    + "accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. "
+                    + "Search inside a chat still goes to Telegram.",
                     String.valueOf(page.findPreference(Settings.LOCAL_SEARCH.key).getSummary()));
             // Search keeps asking Telegram's server until someone turns the switch on.
             assertFalse(Settings.LOCAL_SEARCH.key,
