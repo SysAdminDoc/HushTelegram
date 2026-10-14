@@ -281,7 +281,7 @@ internal fun BytecodePatchContext.resolveHideBlockedInGroups(): List<Pair<Mutabl
 internal fun BytecodePatchContext.resolveOpenChatTypeReads(): List<Pair<MutableMethod, List<Int>>> {
     val loads = mutableListOf<Triple<String, String, Int>>()
     val adds = mutableListOf<Triple<String, String, Int>>()
-    forEachClassMentioning(Mention.reference(MIGRATE_TO) or Mention.reference(LISTED)) { cls ->
+    forEachClassMentioning(Mention.reference(MESSAGE_TYPE) and (Mention.reference(MIGRATE_TO) or Mention.reference(LISTED))) { cls ->
         if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { method ->
             val body = method.controlBody()
