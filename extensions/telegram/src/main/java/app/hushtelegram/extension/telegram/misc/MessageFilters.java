@@ -71,6 +71,15 @@ public final class MessageFilters {
      */
     static final long MAX_LIST_TRIES = (long) MAX_FILTERS * MAX_EXPRESSION_TEXT;
     /**
+     * What one pass of a count weighs when what it repeats reads no text, like {@code (?=x)},
+     * {@code \b} or an empty group. Text never runs out under it, so it runs in full at every place
+     * of every message rather than only on one written against it: {@code (){32000}} would be
+     * sixty-five million passes on any long message.
+     */
+    static final long ZERO_WIDTH_PASS = MAX_EXPRESSION_TEXT / 16;
+    /** How a filter's expression is built: case set aside, in every script. */
+    static final int FLAGS = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+    /**
      * How large one list may be once it's written into a settings file, so a saved list always
      * exports to a file the import takes: two lists of this, the switches and the size stay well
      * under {@code SettingsBackup.MAX_BYTES}.
@@ -232,7 +241,9 @@ public final class MessageFilters {
         }
         long tries;
         try {
-            tries = tries(expression);
+            tries = tries(expression, false);
+            // The closer reading tries every character, so only a line the first one refuses gets it.
+            if (tries > MAX_TRIES || spent[0] + tries > MAX_LIST_TRIES) tries = tries(expression, true);
         } catch (RuntimeException unread) {
             // An expression the check can't read through isn't one it can vouch for.
             return Problem.SLOW;
@@ -263,34 +274,44 @@ public final class MessageFilters {
      * repeating again. A comment, or the x flag that turns on comments and drops spaces, hides what
      * follows from this reading, so either one is refused too.
      *
-     * <p>A count is walked as many times as it says, once for each way of getting to it, and an
-     * assertion like {@code (?=x)} or {@code \b} reads no text that could run out first. Those
-     * walks count as tries, so {@code (?:(?=x)){16777215}}, {@code a{50000}} and {@code .*\d{40}}
-     * are refused, and {@code \d{40}.*}, which walks its count once, isn't.
+     * <p>A count is walked as many times as it says, once for each way of getting to it. Those
+     * walks count as tries, so {@code a{50000}} and {@code .*\d{40}} are refused, and
+     * {@code \d{40}.*}, which walks its count once, isn't. An assertion like {@code (?=x)} or
+     * {@code \b}, or an empty group, reads no text that could run out first, so each of its passes
+     * weighs {@link #ZERO_WIDTH_PASS}. An empty {@code \Q\E} is nothing, so it doesn't part a group
+     * from the count after it. A repeat whose character can't be the one after it, like the spaces
+     * in {@code \s+0x[a-f0-9]{40}}, can only stop in one place, so it isn't another way of getting
+     * to that count. It still walks its run once for each way of getting to it.
      */
     static boolean slow(String expression) {
-        return tries(expression) > MAX_TRIES;
+        return tries(expression, false) > MAX_TRIES && tries(expression, true) > MAX_TRIES;
     }
 
     /**
      * The ways an expression may try to match at one place plus the walks its counts make there, or
-     * more than {@link #MAX_TRIES} for one of the shapes {@link #slow} refuses.
+     * more than {@link #MAX_TRIES} for one of the shapes {@link #slow} refuses. With {@code exact},
+     * a repeat whose character can't be the next one counts as one way rather than many.
      */
-    private static long tries(String expression) {
+    private static long tries(String expression, boolean exact) {
         // For each open group: whether something inside it repeats or is optional, whether it holds a
-        // choice, and whether it looks behind.
+        // choice, whether it looks behind, whether it reads text, and whether it only looks.
         List<boolean[]> open = new ArrayList<>();
         // For the whole expression and each open group: the tries of its choices read so far, added
         // up, of the choice being read, multiplied, where a plain group's text starts (-1 for
         // any other group), and where the group opens.
         List<long[]> cost = new ArrayList<>();
         cost.add(new long[]{0, 1, -1, -1});
+        // A flag set inside the expression can change what a character matches, so the closer
+        // reading leaves those alone.
+        boolean closer = exact && !setsFlags(expression);
         boolean[] closedJustBefore = null;
-        boolean openedJustBefore = false;
         boolean afterRepeat = false;
         // How much of the expression a count right here would repeat: the group that just closed,
         // or one character, class or escape.
         long lengthJustBefore = 1;
+        // Whether that reads no text, and the one character, class or escape it is, if it is one.
+        boolean zeroWidthJustBefore = false;
+        String atomJustBefore = null;
         // What the counts read so far walk at one place.
         long walks = 0;
         int i = 0;
@@ -298,28 +319,45 @@ public final class MessageFilters {
         while (i < n) {
             char c = expression.charAt(i);
             boolean[] closed = null;
-            boolean opened = false;
             boolean repeat = false;
+            boolean zeroWidth = false;
+            String atom = null;
             long length = 1;
             long[] current = cost.get(cost.size() - 1);
             if (c == '\\') {
-                if (i + 1 < n) {
-                    char next = expression.charAt(i + 1);
-                    if (next >= '1' && next <= '9' || next == 'k') return REFUSED;
+                char next = i + 1 < n ? expression.charAt(i + 1) : 0;
+                if (next >= '1' && next <= '9' || next == 'k') return REFUSED;
+                int end = escapeEnd(expression, i);
+                // ICU drops an empty \Q\E, and a lone \E, before it reads the rest, so a count after
+                // one is on whatever came before it.
+                if (next == 'E' || next == 'Q' && (end >= n ? i + 2 >= n : end == i + 4)) {
+                    i = end;
+                    continue;
                 }
-                i = escapeEnd(expression, i);
+                if ("bBAzZG".indexOf(next) >= 0) {
+                    zeroWidth = true;
+                } else {
+                    reads(open);
+                    if ("QRX".indexOf(next) < 0) atom = expression.substring(i, end);
+                }
+                i = end;
             } else if (c == '[') {
-                i = classEnd(expression, i);
+                int end = classEnd(expression, i);
+                reads(open);
+                atom = expression.substring(i, end);
+                i = end;
             } else if (c == '(') {
                 // A comment, or a flag that turns spaces and # into something else, reads text this
                 // scan can't follow.
                 if (expression.startsWith("(?#", i) || commentsFlag(expression, i)) return REFUSED;
                 boolean behind = expression.startsWith("(?<=", i) || expression.startsWith("(?<!", i);
-                open.add(new boolean[]{false, false, behind});
+                boolean looks = behind || expression.startsWith("(?=", i) || expression.startsWith("(?!", i);
+                open.add(new boolean[]{false, false, behind, false, looks});
                 long start = expression.startsWith("(?:", i) ? i + 3 : expression.startsWith("(?", i) ? -1 : i + 1;
                 cost.add(new long[]{0, 1, start, i});
-                opened = true;
-                i++;
+                // Past (?: (?= (?<name> (?i: and the like, which say how the group works. Read one
+                // character at a time, their : or = counted as text the group reads.
+                i = expression.startsWith("(?", i) ? groupBody(expression, i) : i + 1;
             } else if (c == ')') {
                 if (!open.isEmpty()) {
                     closed = open.remove(open.size() - 1);
@@ -327,7 +365,10 @@ public final class MessageFilters {
                         boolean[] outer = open.get(open.size() - 1);
                         outer[0] |= closed[0];
                         outer[1] |= closed[1];
+                        // A look puts back what it read, so the group around it hasn't read it.
+                        if (!closed[4]) outer[3] |= closed[3];
                     }
+                    zeroWidth = closed[4] || !closed[3];
                 }
                 if (cost.size() > 1) {
                     long[] group = cost.remove(cost.size() - 1);
@@ -337,7 +378,6 @@ public final class MessageFilters {
                     long tries = group[2] >= 0 && distinctWords(expression.substring((int) group[2], i)) ? 1 : group[0] + group[1];
                     outer[1] = capped(outer[1] * capped(tries));
                     if (outer[1] > MAX_TRIES) return REFUSED;
-                    // An empty group still takes a step each time around.
                     length = Math.max(1, i - group[3] - 1);
                 }
                 i++;
@@ -347,9 +387,6 @@ public final class MessageFilters {
                 current[0] = capped(current[0] + current[1]);
                 current[1] = 1;
                 if (current[0] > MAX_TRIES) return REFUSED;
-                i++;
-            } else if (c == '?' && openedJustBefore) {
-                // (?: (?= (?<name> and the like say how a group works; they don't repeat anything.
                 i++;
             } else if ((c == '?' || c == '+') && afterRepeat) {
                 // Lazy or possessive: the same repeat, not another one.
@@ -368,24 +405,151 @@ public final class MessageFilters {
                 if (count != null && !optional) {
                     long ways = 1;
                     for (long[] group : cost) ways = capped(ways * group[1]);
-                    walks = capped(walks + ways * capped(count[1] < 0 ? count[0] : count[1]) * lengthJustBefore);
+                    long pass = zeroWidthJustBefore ? Math.max(lengthJustBefore, ZERO_WIDTH_PASS) : lengthJustBefore;
+                    walks = capped(walks + ways * capped(count[1] < 0 ? count[0] : count[1]) * pass);
                     if (walks > MAX_TRIES) return REFUSED;
                 }
-                current[1] = capped(current[1] * (c == '?' ? 2 : c == '{' ? spread(expression, i) : MAX_EXPRESSION_TEXT));
+                int after = c == '{' ? expression.indexOf('}', i) + 1 : i + 1;
+                long ways = c == '?' ? 2 : c == '{' ? spread(expression, i) : MAX_EXPRESSION_TEXT;
+                // A repeat of a character that can't be the next one stops in one place only: any
+                // shorter run leaves one of its own characters where the next one has to match. It
+                // still walks its run once for each way of getting to it, so \w+\s*\w+! is refused.
+                if (closer && c != '?' && ways > 1 && atomJustBefore != null && stopsBefore(expression, after, atomJustBefore)) {
+                    long reached = 1;
+                    for (long[] group : cost) reached = capped(reached * group[1]);
+                    walks = capped(walks + reached * ways);
+                    if (walks > MAX_TRIES) return REFUSED;
+                    ways = 1;
+                }
+                current[1] = capped(current[1] * ways);
                 if (current[0] + current[1] > MAX_TRIES) return REFUSED;
                 if (!open.isEmpty()) open.get(open.size() - 1)[0] = true;
                 repeat = true;
-                i = c == '{' ? expression.indexOf('}', i) + 1 : i + 1;
+                i = after;
             } else {
+                if (c == '^' || c == '$') {
+                    zeroWidth = true;
+                } else {
+                    reads(open);
+                    if (!Character.isSurrogate(c)) atom = String.valueOf(c);
+                }
                 i++;
             }
             closedJustBefore = closed;
-            openedJustBefore = opened;
             afterRepeat = repeat;
             lengthJustBefore = length;
+            zeroWidthJustBefore = zeroWidth;
+            atomJustBefore = atom;
         }
         long[] whole = cost.get(0);
         return capped(whole[0] + whole[1] + walks);
+    }
+
+    /**
+     * Where the text of a group opened at {@code at} with {@code (?} starts: past {@code (?:},
+     * {@code (?=}, {@code (?!}, {@code (?>}, {@code (?<=}, {@code (?<!}, {@code (?<name>}, or flags up
+     * to the colon that opens their text. Flags alone, like {@code (?i)}, end at their bracket.
+     */
+    private static int groupBody(String expression, int at) {
+        int n = expression.length();
+        int k = at + 2;
+        if (k >= n) return n;
+        char c = expression.charAt(k);
+        if (c == ':' || c == '=' || c == '!' || c == '>') return k + 1;
+        if (c == '<') {
+            if (k + 1 < n && (expression.charAt(k + 1) == '=' || expression.charAt(k + 1) == '!')) return k + 2;
+            int close = expression.indexOf('>', k);
+            return close < 0 ? n : close + 1;
+        }
+        while (k < n && expression.charAt(k) != ':' && expression.charAt(k) != ')') k++;
+        return k < n && expression.charAt(k) == ':' ? k + 1 : k;
+    }
+
+    /** The innermost open group reads text. */
+    private static void reads(List<boolean[]> open) {
+        if (!open.isEmpty()) open.get(open.size() - 1)[3] = true;
+    }
+
+    /** Whether a group sets flags anywhere, like {@code (?i)} or {@code (?u:...)}. */
+    private static boolean setsFlags(String expression) {
+        for (int at = expression.indexOf("(?"); at >= 0; at = expression.indexOf("(?", at + 1)) {
+            if (at + 2 < expression.length()) {
+                char c = expression.charAt(at + 2);
+                if (Character.isLetter(c) || c == '-') return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Whether a repeat of {@code atom} that ends at {@code at} can only stop in one place: what
+     * comes next is one character, class or escape that has to match, and no character is both.
+     */
+    private static boolean stopsBefore(String expression, int at, String atom) {
+        int n = expression.length();
+        // Lazy or possessive.
+        if (at < n && (expression.charAt(at) == '?' || expression.charAt(at) == '+')) at++;
+        if (at >= n) return false;
+        char c = expression.charAt(at);
+        int end;
+        if (c == '\\') {
+            char next = at + 1 < n ? expression.charAt(at + 1) : 0;
+            if ("QEbBAzZGRXk123456789".indexOf(next) >= 0) return false;
+            end = escapeEnd(expression, at);
+        } else if (c == '[') {
+            end = classEnd(expression, at);
+        } else if ("()|^$*+?{}".indexOf(c) >= 0 || Character.isSurrogate(c)) {
+            return false;
+        } else {
+            end = at + 1;
+        }
+        // What comes next has to match at least once.
+        if (end < n) {
+            char after = expression.charAt(end);
+            if (after == '?' || after == '*') return false;
+            if (after == '{') {
+                long[] count = bounds(expression, end);
+                if (count != null && count[0] == 0) return false;
+            }
+        }
+        return neverBoth(atom, expression.substring(at, end));
+    }
+
+    /** Code points past the first plane that a class could take in without naming them. */
+    private static final int[] PAST_FIRST_PLANE = {0x10000, 0x1D400, 0x1F3FB, 0x1F600, 0x20000, 0xE0041, 0x10FFFD};
+
+    /**
+     * Whether no character matches both {@code first} and {@code second}, each one character,
+     * class or escape, the way a filter matches them. Every character of the first plane is tried,
+     * and either one taking in a character past it counts as sharing one.
+     */
+    private static boolean neverBoth(String first, String second) {
+        for (String atom : new String[]{first, second}) {
+            for (int k = 0; k < atom.length(); k++) if (Character.isSurrogate(atom.charAt(k))) return false;
+            if (atom.contains("\\x{") || atom.contains("\\u") || atom.contains("\\U") || atom.contains("\\p")
+                    || atom.contains("\\P") || atom.contains("\\N") || atom.contains("&&") || atom.contains("--")
+                    || atom.indexOf('[', 1) >= 0) {
+                return false;
+            }
+        }
+        Matcher one;
+        Matcher other;
+        try {
+            one = Pattern.compile(first, FLAGS).matcher("");
+            other = Pattern.compile(second, FLAGS).matcher("");
+        } catch (RuntimeException unread) {
+            return false;
+        }
+        for (int codePoint : PAST_FIRST_PLANE) {
+            String text = new String(Character.toChars(codePoint));
+            if (one.reset(text).matches() || other.reset(text).matches()) return false;
+        }
+        for (int k = 0; k <= 0xFFFF; k++) {
+            if (k >= Character.MIN_SURROGATE && k <= Character.MAX_SURROGATE) continue;
+            String text = String.valueOf((char) k);
+            if (other.reset(text).matches() && one.reset(text).matches()) return false;
+        }
+        return true;
     }
 
     /** What {@link #tries} answers for an expression it refuses outright. */
@@ -533,7 +697,7 @@ public final class MessageFilters {
                 String expression = expression(line);
                 filters.add(expression == null
                         ? new Filter(line.toLowerCase(Locale.ROOT), null)
-                        : new Filter(null, Pattern.compile(expression, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)));
+                        : new Filter(null, Pattern.compile(expression, FLAGS)));
             }
             this.filters = Collections.unmodifiableList(filters);
         }

@@ -118,7 +118,7 @@ public class MessageFiltersTest {
                 // A repeated choice, or a repeated group with an optional part, splits a run of text many ways.
                 "/(.|\\s)*x/", "/(a|aa)+b/", "/(?:foo|bar)+/", "/(a?a)+/", "/((a|b)c)*/",
                 // Two open-ended repeats, lazy or not, or one with too many optional parts beside it.
-                "/.*.*x/", "/\\w+\\s*\\w+!/", "/.*?x.*?y/", "/a+b{1,}/", "/x+y{1,99}/", "/.{0,99}.{0,99}.{0,99}/",
+                "/.*.*x/", "/\\w+\\s*\\w+!/", "/.*?x.*?y/", "/a+a{1,}/", "/x+\\w{1,99}/", "/.{0,99}.{0,99}.{0,99}/",
                 "/a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?/",
                 // What's quoted in a class, a control character and a code point hide no bracket or count.
                 "/[\\Q[\\E](a|aa)+b/", "/\\c[(a|aa)+b/", "/\\x{61}+\\x{61}+\\x{61}+b/",
@@ -162,7 +162,7 @@ public class MessageFiltersTest {
     @Test public void aCountIsWalkedAsOftenAsItSaysSoALargeOneIsRefused() {
         for (String slow : new String[]{"/(?:(?=x)){16777215}(?!x)/", "/a{16777215}/", "/a{50000}/", "/(?:ab){20000}/",
                 // After a repeat, a count is walked again for each length the repeat tries.
-                "/.*a{1000}y/", "/.*\\d{40}/", "/\\w+ x{17}/"}) {
+                "/.*a{1000}y/", "/.*\\d{40}/", "/\\w+x{17}/"}) {
             assertEquals(slow, MessageFilters.Problem.SLOW, MessageFilters.problem(slow));
         }
         // An assertion or an empty group reads no text, so the text never ends its count early. A
@@ -181,7 +181,67 @@ public class MessageFiltersTest {
             assertNull(fine, MessageFilters.problem(fine));
         }
         assertFalse("a small count on an assertion", MessageFilters.slow("(?=x){3}x"));
-        assertFalse(MessageFilters.slow("(?:(?=x)){2048}(?!x)"));
+        assertFalse(MessageFilters.slow("(?:(?=x)){200}(?!x)"));
+        assertTrue("an assertion's count runs at every place of every message", MessageFilters.slow("(?:(?=x)){2048}(?!x)"));
+    }
+
+    /**
+     * ICU drops an empty \Q\E before it reads the expression, so {@code (a+)\Q\E{2}b} runs as
+     * {@code (a+){2}b}. The check read the quote as a character of its own and let the count
+     * through as if it were on that.
+     */
+    @Test public void anEmptyQuoteDoesntPartAGroupFromItsCount() {
+        for (String slow : new String[]{"/(a+)\\Q\\E{2}b/", "/(a+)\\Q\\E{3}b/", "/(?:a|aa)\\Q\\E{30}x/",
+                "/" + times("(?=x)", 10) + "\\Q\\E{32000}/", "/(?:(?=x))\\Q\\E\\Q\\E{32000}/"}) {
+            assertEquals(slow, MessageFilters.Problem.SLOW, MessageFilters.problem(slow));
+        }
+        // A quote with something in it is that text, and a count after it is on its last character.
+        assertNull(MessageFilters.problem("/(ab)\\Qc\\E{2}/"));
+        assertNull(MessageFilters.problem("/\\Qa+\\E{2}b/"));
+    }
+
+    /**
+     * An empty group weighed one pass, so {@code (){32000}x} fit a line, and six of them a list:
+     * about sixty-five million empty passes a line on any long message, since nothing reading text
+     * can run out and end the count early.
+     */
+    @Test public void aCountOnSomethingThatReadsNoTextWeighsMore() {
+        for (String slow : new String[]{"/(){32000}x/", "/(?:){300}x/", "/(?:\\b){300}x/", "/(?:^){300}x/", "/(?:\\b(?=a)){300}a/",
+                "/(?:(?<=a)){300}b/"}) {
+            assertEquals(slow, MessageFilters.Problem.SLOW, MessageFilters.problem(slow));
+        }
+        for (String fine : new String[]{"/(){2}x/", "/(?:\\b){3}x/", "/(?=x){3}x/", "/(?:a(?=b)){300}/", "/(?:(?=a)a){300}/"}) {
+            assertNull(fine, MessageFilters.problem(fine));
+        }
+    }
+
+    /**
+     * {@code \s+} before {@code 0x} can only stop where the spaces do, since a shorter run leaves a
+     * space where the 0 has to be. Reading it as two thousand ways of reaching the count after it
+     * refused ordinary filters for wallet addresses, and a list saved before quietly stopped using them.
+     */
+    @Test public void aRepeatThatCanOnlyStopInOnePlaceIsOneWayToTheCountAfterIt() {
+        for (String fine : new String[]{"/airdrop\\s+0x[a-f0-9]{40}/", "/wallet\\s+[13][a-km-zA-HJ-NP-Z1-9]{25,34}/",
+                "/\\w+ x{17}/", "/\\d+[a-z]{30}/", "/[a-f]+-\\d{40}/", "/\\s+?0x{40}/", "/\\s++0x{40}/",
+                // A run of a's ends where the b's start, so this walks no more than .*x does.
+                "/a+b{1,}/", "/x+y{1,99}/"}) {
+            assertNull(fine, MessageFilters.problem(fine));
+        }
+        for (String slow : new String[]{
+                // The next character could be one of the repeat's own.
+                "/\\w+x{17}/", "/\\s+\\s[a-f]{40}/", "/.+0x{40}/", "/\\S+0x{40}/",
+                // Case is set aside, so these two classes share every letter.
+                "/[a-z]+[A-Z]{40}/",
+                // What comes next may not be there at all.
+                "/\\s+0?x{40}/", "/\\s+0*x{40}/", "/\\s+0{0,2}x{40}/",
+                // A class that could take in a character past the first plane counts as sharing one.
+                "/[^a]+[\\x{1D400}]{40}/"}) {
+            assertEquals(slow, MessageFilters.Problem.SLOW, MessageFilters.problem(slow));
+        }
+        List<MessageFilters.Filter> kept = parsed("/airdrop\\s+0x[a-f0-9]{40}/");
+        assertEquals("a saved filter for an address is used again", 1, kept.size());
+        assertTrue(MessageFilters.matches(kept, "Claim your AIRDROP   0x" + repeat('a', 40)));
+        assertFalse(MessageFilters.matches(kept, "airdrop 0x" + repeat('a', 39)));
     }
 
     /**
