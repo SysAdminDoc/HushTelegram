@@ -127,7 +127,11 @@ final class SideMenuPanel extends FrameLayout {
         accounts.setPadding(dp(24), 0, dp(24), dp(8));
         accounts.setOnClickListener(v -> {
             HookStatus.counted(FamilyNames.HIDE_CONTACTS_TAB, "side menu opened accounts");
-            SideMenu.opener.accounts(this.screen, v);
+            try {
+                SideMenu.opener.accounts(this.screen, v);
+            } catch (Throwable failure) {
+                HookStatus.threw(FamilyNames.HIDE_CONTACTS_TAB, "side menu accounts", failure);
+            }
         });
         menu.addView(accounts);
         menu.addView(divider());
@@ -376,8 +380,10 @@ final class SideMenuPanel extends FrameLayout {
 
     @Override
     protected void onDetachedFromWindow() {
+        // A screen a row opens without sliding takes the main screen off mid-close. It comes back closed.
         stopSettling();
         endDrag();
+        setProgress(0f);
         super.onDetachedFromWindow();
     }
 
@@ -403,7 +409,11 @@ final class SideMenuPanel extends FrameLayout {
                 if (activity == null) return;
                 // A page of the main screen slides in as the menu slides out; a screen of its own opens over both.
                 settle(false);
-                SideMenu.open(action, screen, activity);
+                try {
+                    SideMenu.open(action, screen, activity);
+                } catch (Throwable failure) {
+                    HookStatus.threw(FamilyNames.HIDE_CONTACTS_TAB, "side menu row", failure);
+                }
             });
         }
         return row;
@@ -571,6 +581,11 @@ final class SideMenuPanel extends FrameLayout {
         @Override
         public boolean dispatchTouchEvent(MotionEvent event) {
             SideMenuPanel drag = dragging == null ? null : dragging.get();
+            if (drag != null && !drag.isAttachedToWindow()) {
+                // Its screen went while the finger was down, so the rest of the swipe goes on to the window.
+                dragging = null;
+                drag = null;
+            }
             if (drag != null) {
                 drag.drag(event);
                 int action = event.getActionMasked();

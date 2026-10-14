@@ -8,6 +8,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
@@ -167,7 +168,12 @@ internal fun BytecodePatchContext.resolveSideMenu(plan: MainTabsPlan): SideMenu 
     val back = backs.single()
     if (back.localRegisterCount() + 1 > 15) return missing("the main screen's Back keeps its parameters out of a call's reach")
     if (ControlFlow.of(back).normal.any { 0 in it }) return missing("something jumps back to the start of the main screen's Back")
-    val borrowed = back.freeLocalsAt("Hide Contacts tab", 0, 1).single()
+    // A Back with no local to spare leaves the menu out, never the rest of the patch.
+    val borrowed = try {
+        back.freeLocalsAt("Hide Contacts tab", 0, 1).single()
+    } catch (full: PatchException) {
+        return missing("the main screen's Back has no local to spare")
+    }
 
     // The screen's account number, from the fragment class every screen extends.
     val accountGetters = superclassChain(plan.screen).mapNotNull { type -> classDefByOrNull(type) }.flatMap { cls ->

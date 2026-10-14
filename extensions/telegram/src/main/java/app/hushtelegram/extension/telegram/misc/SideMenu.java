@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.view.MotionEvent;
 import android.view.View;
 
+import app.hushtelegram.extension.shared.Logger;
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
@@ -59,23 +60,58 @@ public final class SideMenu {
 
     static volatile Opener opener = Activity::startActivity;
 
+    /** What a swipe has to get past before it opens the menu; a test swaps it to steer each answer. */
+    interface Gates {
+        default Object screen(Object pager) { return SideMenu.screen(pager); }
+
+        default int page(Object screen) { return MainTabs.page(screen); }
+
+        default boolean mayOpen(Object pager, MotionEvent event) { return SideMenu.mayOpen(pager, event); }
+
+        default void arm(Object screen, View pager, MotionEvent event) { SideMenuPanel.arm(screen, pager, event); }
+    }
+
+    static volatile Gates gates = new Gates() {};
+
+    /** The swipe last written to the debug log, by the time its finger went down, so each swipe is logged once. */
+    private static long loggedSwipe = Long.MIN_VALUE;
+
     /**
      * Called as Telegram's pager, any of them, starts a swipe.
      *
      * @param pager the pager
-     * @param event the move that started it
+     * @param event the event that started it, a move while the finger's down
      * @param forward whether it goes to the next page rather than the one before
      */
     public static void swipeStarts(Object pager, MotionEvent event, boolean forward) {
-        if (forward || pager == null || event == null || !on()) return;
+        // Telegram also asks on a lift or a second finger; only a moving finger can drag the menu in.
+        if (forward || pager == null || event == null || event.getActionMasked() != MotionEvent.ACTION_MOVE) return;
         try {
-            Object screen = screen(pager);
-            if (screen == null || !(pager instanceof View) || MainTabs.page(screen) != 0) return;
-            if (!mayOpen(pager, event)) return;
-            SideMenuPanel.arm(screen, (View) pager, event);
+            Gates gate = gates;
+            Object screen = gate.screen(pager);
+            if (screen == null || !(pager instanceof View) || !on()) return;
+            int page = gate.page(screen);
+            if (page != 0) {
+                turnedDown(event, "the main screen shows page " + page);
+                return;
+            }
+            if (!gate.mayOpen(pager, event)) {
+                turnedDown(event, "the chat list keeps this swipe");
+                return;
+            }
+            turnedDown(event, null);
+            gate.arm(screen, (View) pager, event);
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.HIDE_CONTACTS_TAB, "side menu swipe", failure);
         }
+    }
+
+    /** Writes once per swipe, with debug logging on, why the menu didn't open, or that it's opening when [why] is null. */
+    private static void turnedDown(MotionEvent event, String why) {
+        long down = event.getDownTime();
+        if (down == loggedSwipe) return;
+        loggedSwipe = down;
+        Logger.printDebug(() -> why == null ? "Side menu: a swipe back on the first page opens it" : "Side menu: not opening, " + why);
     }
 
     /**

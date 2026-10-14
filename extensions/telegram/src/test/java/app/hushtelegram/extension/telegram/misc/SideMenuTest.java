@@ -70,6 +70,7 @@ public class SideMenuTest {
         Settings.SIDE_MENU.resetToDefault();
         Settings.HIDE_CONTACTS_TAB.resetToDefault();
         SideMenu.opener = Activity::startActivity;
+        SideMenu.gates = new SideMenu.Gates() {};
         SideMenuPanel.Registry.panel = new java.lang.ref.WeakReference<>(null);
         HookStatus.clear();
         if (controller != null) controller.pause().stop().destroy();
@@ -126,6 +127,55 @@ public class SideMenuTest {
         SideMenu.swipeStarts(null, touch(MotionEvent.ACTION_MOVE, 40f), false);
         assertNull(parent.findViewWithTag(SideMenuPanel.TAG));
         assertFalse(SideMenu.back(new Object(), true));
+    }
+
+    /** Gates that answer as told and write down each arm. */
+    private final class Steered implements SideMenu.Gates {
+        Object screen = new Object();
+        int page;
+        boolean mayOpen = true;
+
+        @Override public Object screen(Object pager) { return screen; }
+
+        @Override public int page(Object screen) { return page; }
+
+        @Override public boolean mayOpen(Object pager, MotionEvent event) { return mayOpen; }
+
+        @Override public void arm(Object screen, View pager, MotionEvent event) { asked.add("arm " + event.getActionMasked()); }
+    }
+
+    @Test public void onlyAMovingSwipeBackOnTheFirstPageTheChatListLetsGoArmsIt() {
+        Steered gates = new Steered();
+        SideMenu.gates = gates;
+        View pager = new View(activity());
+
+        // Switch off: the screen is found, the switch says no.
+        SideMenu.swipeStarts(pager, touch(MotionEvent.ACTION_MOVE, 40f), false);
+        assertTrue(asked.isEmpty());
+
+        Settings.SIDE_MENU.save(true);
+        SideMenu.swipeStarts(pager, touch(MotionEvent.ACTION_MOVE, 40f), false);
+        assertEquals(List.of("arm " + MotionEvent.ACTION_MOVE), asked);
+
+        // Telegram asks again on a lift or a second finger, which can't drag anything in.
+        SideMenu.swipeStarts(pager, touch(MotionEvent.ACTION_UP, 40f), false);
+        SideMenu.swipeStarts(pager, touch(MotionEvent.ACTION_POINTER_UP, 40f), false);
+        gates.page = 2;
+        SideMenu.swipeStarts(pager, touch(MotionEvent.ACTION_MOVE, 40f), false);
+        gates.page = 0;
+        gates.mayOpen = false;
+        SideMenu.swipeStarts(pager, touch(MotionEvent.ACTION_MOVE, 40f), false);
+        assertEquals(1, asked.size());
+    }
+
+    @Test public void anotherPagersSwipeIsntCountedAsTheMenus() {
+        Steered gates = new Steered();
+        gates.screen = null;
+        SideMenu.gates = gates;
+        Settings.SIDE_MENU.save(true);
+        SideMenu.swipeStarts(new View(activity()), touch(MotionEvent.ACTION_MOVE, 40f), false);
+        assertTrue(asked.isEmpty());
+        assertFalse(report().contains("Hide Contacts tab"));
     }
 
     @Test public void eachRowOpensTelegramsOwnScreen() {
@@ -262,6 +312,49 @@ public class SideMenuTest {
         assertEquals(0f, panel.progress(), 0f);
         assertEquals(View.GONE, panel.getVisibility());
         assertFalse(SideMenu.back(screen, false));
+    }
+
+    @Test public void aScreenThatGoesMidCloseComesBackClosed() {
+        Activity activity = activity();
+        FrameLayout parent = new FrameLayout(activity);
+        View pager = new View(activity);
+        parent.addView(pager);
+        activity.setContentView(parent);
+        ShadowLooper.idleMainLooper();
+        Object screen = new Object();
+        SideMenuPanel.arm(screen, pager, touch(MotionEvent.ACTION_MOVE, 20f));
+        Window.Callback gestures = activity.getWindow().getCallback();
+        gestures.dispatchTouchEvent(touch(MotionEvent.ACTION_MOVE, 2000f));
+        gestures.dispatchTouchEvent(touch(MotionEvent.ACTION_UP, 2000f));
+        ShadowLooper.idleMainLooper(1, TimeUnit.SECONDS);
+        SideMenuPanel panel = (SideMenuPanel) parent.findViewWithTag(SideMenuPanel.TAG);
+        assertEquals(1f, panel.progress(), 0f);
+
+        // A row starts the close, and the screen it opens takes the main one off before the slide ends.
+        panel.settle(false);
+        activity.setContentView(new FrameLayout(activity));
+        ShadowLooper.idleMainLooper(1, TimeUnit.SECONDS);
+        assertEquals(0f, panel.progress(), 0f);
+        assertEquals(View.GONE, panel.getVisibility());
+        activity.setContentView(parent);
+        ShadowLooper.idleMainLooper();
+        assertFalse(SideMenu.back(screen, false));
+    }
+
+    @Test public void aRowThatFailsIsReportedNotThrown() {
+        SideMenu.opener = new SideMenu.Opener() {
+            @Override public void start(Activity activity, Intent intent) { throw new IllegalStateException("no screen"); }
+
+            @Override public void accounts(Object screen, View anchor) { throw new IllegalStateException("no switcher"); }
+        };
+        Activity activity = activity();
+        FrameLayout parent = new FrameLayout(activity);
+        activity.setContentView(parent);
+        SideMenuPanel panel = SideMenuPanel.in(parent, new Object());
+        panel.menu.getChildAt(1).performClick();
+        panel.menu.getChildAt(4).performClick();
+        // The report names the first of the two.
+        assertTrue(report(), report().contains("2 missing. First missing: a working 'side menu accounts' hook"));
     }
 
     @Test public void textIsDarkOnALightMenuAndLightOnADarkOne() {
