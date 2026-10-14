@@ -351,14 +351,21 @@ $dualTargets = @(Get-PatchTargets -PatchList $catalog)
 Assert-True ($dualTargets.Count -eq 2 -and $dualTargets[0].PackageName -ceq 'org.telegram.messenger.web') `
     'The complete package inventory is not default web followed by beta.'
 $betaTarget = Get-PatchTarget -PatchList $catalog -PackageName 'org.telegram.messenger.beta'
+# The beta build the catalog declares, read straight from its JSON rather than written here, so a
+# release that moves the targets moves these checks with it instead of failing in its full suite.
+$betaDeclared = @($catalog.patches[0].compatibility | Where-Object { $_.packageName -ceq 'org.telegram.messenger.beta' })
+Assert-True ($betaDeclared.Count -eq 1 -and @($betaDeclared[0].targets).Count -eq 1) 'The catalog does not declare one beta build.'
+$betaVersion = [string]$betaDeclared[0].targets[0].version
+$betaCode = [string]$betaDeclared[0].targets[0].versionCodes.ARM64_V8A
+Assert-True ($betaVersion -match '^\d+\.\d+(\.\d+)?$' -and $betaCode -match '^\d+$') 'The catalog beta build has no version or code.'
 Assert-True ((Get-PatchTarget -PatchList $catalog).PackageName -ceq 'org.telegram.messenger.web' -and
-    $betaTarget.PackageVersion -ceq '13.0.2' -and $betaTarget.PackageVersionCodes['13.0.2'][0] -eq '71809') `
+    $betaTarget.PackageVersion -ceq $betaVersion -and $betaTarget.PackageVersionCodes[$betaVersion][0] -eq $betaCode) `
     'An explicit beta selector changed the default web target or lost its exact code.'
-Assert-True ((Get-VendorFixtureName -Target $betaTarget -VersionName '13.0.2' -VersionCode '71809') -ceq
-    'telegram-beta-13.0.2-71809.apk') 'The beta fixture naming rule lost its package or build code.'
+Assert-True ((Get-VendorFixtureName -Target $betaTarget -VersionName $betaVersion -VersionCode $betaCode) -ceq
+    "telegram-beta-$betaVersion-$betaCode.apk") 'The beta fixture naming rule lost its package or build code.'
 Assert-Throws { Get-PatchTarget -PatchList $catalog -PackageName 'org.telegram.messenger' } '*does not declare package*' `
     'Store was credited with beta or web support.'
-Assert-Throws { Get-VendorFixtureName -Target $betaTarget -VersionName '13.0.2' -VersionCode '71808' } '*not a declared build*' `
+Assert-Throws { Get-VendorFixtureName -Target $betaTarget -VersionName $betaVersion -VersionCode ([string]([long]$betaCode - 1)) } '*not a declared build*' `
     'Another beta code was treated as the retained fixture.'
 $missingTarget = [pscustomobject]@{ patches = @([pscustomobject]@{ name = 'missing target' }) }
 Assert-Throws { Get-PatchTarget -PatchList $missingTarget } '*has no compatible package*' `
@@ -4568,7 +4575,9 @@ try {
         "The release check did not hold the index's Manager floor to the release tag: $said"
 
     Save-ReleaseReceipt -Builds $releaseTarget.PackageVersions -WithoutOtherPackages
-    Assert-Throws { Invoke-ReleaseCheck } '*declared org.telegram.messenger.beta 13.0.2 (71809)*patched without -f*' `
+    $releaseBeta = @($releaseTargets | Where-Object { $_.PackageName -ceq 'org.telegram.messenger.beta' })[0]
+    $releaseBetaBuild = "$($releaseBeta.PackageVersion) ($($releaseBeta.PackageVersionCodes[$releaseBeta.PackageVersion][0]))"
+    Assert-Throws { Invoke-ReleaseCheck } "*declared org.telegram.messenger.beta $releaseBetaBuild*patched without -f*" `
         'Web evidence proved beta without any beta run.'
     Save-ReleaseReceipt -Builds $releaseTarget.PackageVersions
 
