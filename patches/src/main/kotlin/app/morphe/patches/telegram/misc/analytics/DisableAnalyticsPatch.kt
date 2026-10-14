@@ -22,6 +22,8 @@ import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
 import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.ControlFlow
@@ -233,8 +235,8 @@ internal data class AppLogHook(val method: MutableMethod, val index: Int, val co
 /** Exact payload literals select these builders; operational and unknown app-log events aren't selected. */
 internal fun BytecodePatchContext.resolveAppLogHooks(): Map<AppLogEvent, AppLogHook> {
     val candidates = AppLogEvent.entries.associateWith { mutableListOf<Method>() }
-    classDefForEach { classDef ->
-        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+    forEachClassMentioning(Mention.reference(SAVE_APP_LOG)) { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@forEachClassMentioning
         for (method in classDef.methods) {
             val instructions = method.appLogInstructions()
             if (instructions.none { it.opcode == Opcode.NEW_INSTANCE && it.appLogReference() == SAVE_APP_LOG }) continue

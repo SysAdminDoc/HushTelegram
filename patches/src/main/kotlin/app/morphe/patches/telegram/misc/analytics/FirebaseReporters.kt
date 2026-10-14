@@ -10,6 +10,8 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.localRegisterCount
 import app.morphe.patches.telegram.misc.extension.returnEarlyWhen
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -76,8 +78,8 @@ private fun ClassDef.isOwn() = type.startsWith("Lapp/hushtelegram/")
  */
 internal fun BytecodePatchContext.resolveCrashReporter(): Carried<CrashReporterHooks> {
     val readers = mutableListOf<Method>()
-    classDefForEach { cls ->
-        if (cls.isOwn()) return@classDefForEach
+    forEachClassMentioning(Mention.string(CRASHLYTICS_COLLECTION)) { cls ->
+        if (cls.isOwn()) return@forEachClassMentioning
         cls.methods.filter { m -> m.reporterBody().any { it.reporterString() == CRASHLYTICS_COLLECTION } }.forEach { readers += it }
     }
     if (readers.isEmpty()) return Carried.Absent
@@ -135,8 +137,8 @@ internal fun CrashReporterHooks.apply() {
  */
 internal fun BytecodePatchContext.resolveSessions(): Carried<SessionsHook> {
     val named = mutableListOf<Method>()
-    classDefForEach { cls ->
-        if (cls.isOwn()) return@classDefForEach
+    forEachClassMentioning(Mention.string(SESSIONS_OVERRIDE)) { cls ->
+        if (cls.isOwn()) return@forEachClassMentioning
         cls.methods.filter { m -> m.reporterBody().any { it.reporterString() == SESSIONS_OVERRIDE } }.forEach { named += it }
     }
     if (named.isEmpty()) return Carried.Absent
