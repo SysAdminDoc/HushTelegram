@@ -13,6 +13,8 @@ import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patcher.util.smali.toInstructions
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.call
@@ -417,7 +419,7 @@ internal fun BytecodePatchContext.resolveHolidayLogoSites(holiday: HolidayLookSi
     """.trimIndent(), "String gate and holiday placement math")
 
     val screens = mutableListOf<Method>()
-    classDefForEach { owner -> if (!owner.type.startsWith("Lapp/hushtelegram/extension/")) {
+    forEachClassMentioning(Mention.member(bar.definingClass, "setSupportsHolidayImage")) { owner -> if (!owner.type.startsWith("Lapp/hushtelegram/extension/")) {
         owner.methods.filterTo(screens) { method -> method.body().any { it.call()?.let { call ->
             call.definingClass == bar.definingClass && call.name == "setSupportsHolidayImage" &&
                 call.parameterTypes.map(CharSequence::toString) == listOf("Z") && call.returnType == "V" } == true } }

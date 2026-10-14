@@ -53,7 +53,7 @@ internal fun BytecodePatchContext.resolveNormalPaste(): List<NormalPasteSite> {
     listOf("normalPaste", "composePlainPaste", "captionPlainPaste").forEach(::requireStatusMethod)
     controlHook(NORMAL_PASTE, "contextMenuAction", listOf("Landroid/view/View;", "I"), "I")
     val found = mutableListOf<Method>()
-    classDefForEach { cls -> cls.methods.filterTo(found) { method ->
+    forEachClassMentioning(Mention.reference(HTML)) { cls -> cls.methods.filterTo(found) { method ->
         method.name == "onTextContextMenuItem" && method.controlBody().any { it.controlRef() == HTML }
     } }
     controlShape(found.size == 2, "plain paste editor census changed")

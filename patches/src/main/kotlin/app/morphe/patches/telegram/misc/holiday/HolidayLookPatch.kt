@@ -17,6 +17,8 @@ import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -89,8 +91,8 @@ internal fun BytecodePatchContext.resolveHolidayLookSites(): HolidayLookSites {
 
     // The holiday check: the one method that reads the New Year hat's drawable.
     val users = mutableListOf<Method>()
-    classDefForEach { classDef ->
-        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+    forEachClassMentioning(Mention.reference(NEW_YEAR_HAT)) { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@forEachClassMentioning
         classDef.methods.filterTo(users) { method -> method.instructions().any { it.field()?.toString() == NEW_YEAR_HAT } }
     }
     val user = users.one("reader of the New Year hat", ::refuse)
@@ -140,8 +142,8 @@ internal fun BytecodePatchContext.resolveHolidayLookSites(): HolidayLookSites {
 
     // Who reads the snow flag: the top bar's draw, which also draws the hat, and the chat background.
     val readers = mutableListOf<Method>()
-    classDefForEach { classDef ->
-        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+    forEachClassMentioning(Mention.member(snow.definingClass, snow.name)) { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@forEachClassMentioning
         classDef.methods.filterTo(readers) { method -> method.instructions().any { it.opcode == Opcode.SGET_BOOLEAN && it.field()?.immutable() == snow } }
     }
     val bar = readers.filter { reader -> reader.name == "drawChild" && reader.instructions().any { it.call()?.let { call ->

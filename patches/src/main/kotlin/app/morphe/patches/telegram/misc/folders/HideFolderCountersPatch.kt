@@ -15,11 +15,13 @@ import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -69,8 +71,8 @@ internal fun BytecodePatchContext.resolveHideFolderCounters(): MutableMethod {
     requireStatusMethod("hideFolderCounters")
     controlHook(FOLDER_TABS, "countersHidden", listOf(), "Z")
     val found = mutableListOf<Pair<String, String>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.allReferences(listOf(MAIN_UNREAD, FILTERS, FILTER_UNREAD))) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.filter { m ->
             !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "I" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
                 m.controlBody().map { it.controlRef() }.let { refs -> MAIN_UNREAD in refs && FILTERS in refs && FILTER_UNREAD in refs }

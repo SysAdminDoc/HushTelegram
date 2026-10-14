@@ -14,10 +14,12 @@ import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
@@ -88,8 +90,8 @@ internal fun BytecodePatchContext.resolveNoHaptics(): NoHapticsSite {
     }
 
     val found = mutableListOf<Triple<String, String, List<Int>>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.type.startsWith(VOIP)) return@classDefForEach
+    forEachClassMentioning(Mention.anyReference(HAPTIC_CALLS.keys)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.type.startsWith(VOIP)) return@forEachClassMentioning
         cls.methods.forEach { method ->
             val body = method.controlBody()
             // A super call inside an override stays, since the override itself is what gets asked.
