@@ -834,3 +834,17 @@ styled names in search	nombres con letras decoradas en la búsqueda
 Report saved to %1$s	Informe guardado en %1$s
 # context: Note in the report preview when the text couldn't be redrawn after a box was ticked or unticked. Copy and Save are the dialog's buttons, so use the same words as those buttons
 Couldn't update the preview. Copy and Save still use only what's ticked.	No se pudo actualizar la vista previa. Copiar y Guardar siguen usando solo lo que está marcado.
+# context: Switch on the Chat list page under Hide folder tab counters, off by default. With it on, the chat list opens on a folder the user picked instead of All Chats when the app starts
+Open a folder at launch	Abrir una carpeta al iniciar
+# context: Summary of Open a folder at launch. All Chats is Telegram's own name for the first folder tab: use Telegram's translation of it. Locked means a folder Telegram locks because the account has more folders than its limit allows
+The chat list opens on the folder you pick below instead of All Chats. Each account keeps its own pick, and the folder order doesn't change. If that folder is gone or locked, All Chats opens as usual.	La lista de chats se abre en la carpeta que elijas abajo en lugar de Todos los chats. Cada cuenta guarda su propia elección y el orden de las carpetas no cambia. Si esa carpeta ya no está o está bloqueada, se abre Todos los chats como siempre.
+# context: Row under Open a folder at launch. Its summary is the picked folder's name, and a tap lists All Chats and the account's folders to pick from
+Folder to open	Carpeta que se abre
+# context: Telegram's own name for the folder tab with every chat (FilterAllChats). Use Telegram's translation
+All Chats	Todos los chats
+# context: Toast when Folder to open is tapped and the account has no chat folders
+You don't have any folders yet.	Todavía no tienes carpetas.
+# context: Toast when the picked folder couldn't be written to the phone's storage
+Couldn't save the folder. Try again in a moment.	No se pudo guardar la carpeta. Inténtalo de nuevo en un momento.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that opens the chat list on a picked folder
+folder the chat list opens on	carpeta en la que se abre la lista de chats

@@ -87,6 +87,7 @@ public final class SettingsStatus {
     public static boolean noHaptics() { return false; }
     public static boolean reactionEffectsOff() { return false; }
     public static boolean hideFolderCounters() { return false; }
+    public static boolean launchFolder() { return false; }
     public static boolean forwardHideSender() { return false; }
     public static boolean voiceMusicPlayer() { return false; }
     public static boolean silenceNonContacts() { return false; }

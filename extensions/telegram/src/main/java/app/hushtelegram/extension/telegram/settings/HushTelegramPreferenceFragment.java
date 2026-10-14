@@ -83,6 +83,7 @@ import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
 import app.hushtelegram.extension.telegram.misc.KeepDeleted;
+import app.hushtelegram.extension.telegram.misc.LaunchFolder;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
 import app.hushtelegram.extension.telegram.misc.UnifiedPush;
@@ -117,6 +118,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String CLEAR_KEPT = "action_clear_kept_messages";
     /** The Sticker size row's key. The size itself is saved under {@link Settings#STICKER_SIZE}. */
     static final String STICKER_SIZE_ROW = "action_sticker_size";
+    /** The Folder to open row's key. The picks are kept by {@link LaunchFolder}, one for each account. */
+    static final String LAUNCH_FOLDER_ROW = "action_launch_folder";
 
     /** Thrown by the next initialize() and then cleared: how a test reaches the recovery page. */
     static volatile RuntimeException failNextInitialization;
@@ -380,9 +383,17 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             + " read. Press and hold still offers every action."))));
         }
         if (build.contains(PatchFamily.HIDE_FOLDER_COUNTERS)) {
-            on(pages, PatchFamily.HIDE_FOLDER_COUNTERS).addPreference(toggle(context, Settings.HIDE_FOLDER_COUNTERS, L10n.t("Hide folder tab counters"),
+            PreferenceCategory folderTabs = on(pages, PatchFamily.HIDE_FOLDER_COUNTERS);
+            folderTabs.addPreference(toggle(context, Settings.HIDE_FOLDER_COUNTERS, L10n.t("Hide folder tab counters"),
                     PatchFamily.HIDE_FOLDER_COUNTERS.coverageSummary(L10n.t("Folder tabs above the chat list show just their names, without unread counts. "
                             + "Chats stay unread and the app icon badge doesn't change."))));
+            if (PatchFamily.Capability.LAUNCH_FOLDER.installed()) {
+                folderTabs.addPreference(toggle(context, Settings.LAUNCH_FOLDER, L10n.t("Open a folder at launch"),
+                        L10n.t("The chat list opens on the folder you pick below instead of All Chats. Each account keeps its "
+                                + "own pick, and the folder order doesn't change. If that folder is gone or locked, All Chats "
+                                + "opens as usual.")));
+                folderTabs.addPreference(launchFolderRow(context));
+            }
         }
         if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS)) {
             SwitchPreference folders = toggle(context, Settings.CHAT_TYPE_FOLDERS, L10n.t("Folders by chat type"),
@@ -1383,6 +1394,77 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
     static String stickerSizeSummary() {
         return L10n.f("%1$s of Telegram's size", percent(StickerSize.percent(Settings.STICKER_SIZE.savedValue())));
+    }
+
+    /** The folder the chat list opens on for the account shown now: the row says which, and a tap lists the others. */
+    private Preference launchFolderRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(LAUNCH_FOLDER_ROW);
+        row.setTitle(L10n.t("Folder to open"));
+        row.setPersistent(false);
+        row.setSummary(launchFolderSummary());
+        row.setOnPreferenceClickListener(p -> {
+            showLaunchFolders(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    /**
+     * All Chats and the account's folders, with its pick checked. A tap saves it and the list closes
+     * once it's saved; a pick that can't be saved leaves the list open with the saved one checked.
+     */
+    void showLaunchFolders(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
+        int account = LaunchFolder.currentAccount();
+        long user = LaunchFolder.user(account);
+        if (user == 0) {
+            Utils.showToastLong(L10n.t("Sign in to Telegram first."));
+            return;
+        }
+        List<LaunchFolder.Folder> folders = LaunchFolder.folders(account);
+        if (folders.isEmpty()) {
+            Utils.showToastLong(L10n.t("You don't have any folders yet."));
+            return;
+        }
+        CharSequence[] labels = new CharSequence[folders.size() + 1];
+        labels[0] = L10n.t("All Chats");
+        for (int i = 0; i < folders.size(); i++) labels[i + 1] = folders.get(i).name;
+        show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Folder to open"))
+                .setSingleChoiceItems(labels, launchFolderChoice(folders, user), (dialog, which) -> {
+                    int folder = which == 0 ? 0 : folders.get(which - 1).id;
+                    boolean started = save((AlertDialog) dialog, () -> LaunchFolder.pick(user, folder), landed -> {
+                        if (landed) {
+                            row.setSummary(launchFolderSummary());
+                            dialog.dismiss();
+                        } else {
+                            ((AlertDialog) dialog).getListView().setItemChecked(launchFolderChoice(folders, user), true);
+                            Utils.showToastLong(L10n.t("Couldn't save the folder. Try again in a moment."));
+                        }
+                    });
+                    if (!started) ((AlertDialog) dialog).getListView().setItemChecked(launchFolderChoice(folders, user), true);
+                })
+                .setNegativeButton(L10n.t("Cancel"), null));
+    }
+
+    /** Where [user]'s pick sits in the list: 0 for All Chats, and for a folder that's gone. */
+    static int launchFolderChoice(List<LaunchFolder.Folder> folders, long user) {
+        int picked = LaunchFolder.picked(user);
+        for (int i = 0; i < folders.size(); i++) {
+            if (folders.get(i).id == picked) return i + 1;
+        }
+        return 0;
+    }
+
+    /** The picked folder's name for the account shown now, or All Chats. */
+    static String launchFolderSummary() {
+        int account = LaunchFolder.currentAccount();
+        int picked = LaunchFolder.picked(LaunchFolder.user(account));
+        for (LaunchFolder.Folder folder : LaunchFolder.folders(account)) {
+            if (folder.id == picked) return folder.name;
+        }
+        return L10n.t("All Chats");
     }
 
     /** What the Data Saver switch does, then what Android reports right now, read when the page opens. */

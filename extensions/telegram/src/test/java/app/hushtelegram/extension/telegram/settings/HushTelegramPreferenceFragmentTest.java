@@ -15,6 +15,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -56,6 +57,8 @@ import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloadsForTests;
+import app.hushtelegram.extension.telegram.misc.LaunchFolder;
+import app.hushtelegram.extension.telegram.misc.LaunchFolderForTests;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests;
@@ -597,6 +600,14 @@ public class HushTelegramPreferenceFragmentTest {
             // Folder tabs show their counts until the switch is turned on.
             assertFalse(Settings.HIDE_FOLDER_COUNTERS.key,
                     ((SwitchPreference) page.findPreference(Settings.HIDE_FOLDER_COUNTERS.key)).isChecked());
+            assertEquals("Open a folder at launch", String.valueOf(page.findPreference(Settings.LAUNCH_FOLDER.key).getTitle()));
+            assertEquals("The chat list opens on the folder you pick below instead of All Chats. Each account keeps its own "
+                    + "pick, and the folder order doesn't change. If that folder is gone or locked, All Chats opens as usual.",
+                    String.valueOf(page.findPreference(Settings.LAUNCH_FOLDER.key).getSummary()));
+            // The chat list opens on All Chats until the switch is turned on.
+            assertFalse(Settings.LAUNCH_FOLDER.key,
+                    ((SwitchPreference) page.findPreference(Settings.LAUNCH_FOLDER.key)).isChecked());
+            assertEquals("Folder to open", String.valueOf(page.findPreference(HushTelegramPreferenceFragment.LAUNCH_FOLDER_ROW).getTitle()));
             assertEquals("Folders by chat type", String.valueOf(page.findPreference(Settings.CHAT_TYPE_FOLDERS.key).getTitle()));
             assertEquals("Turning this on makes Private, Groups, Channels and Bots folders, as tabs above the chat list "
                     + "and on your other devices. Turning it off removes the ones it made, unless you renamed or changed them. "
@@ -1133,6 +1144,69 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse("picking a size leaves the switch alone", Settings.CHANGE_STICKER_SIZE.savedValue());
         } finally {
             Settings.STICKER_SIZE.resetToDefault();
+        }
+    }
+
+    /**
+     * Hide folder tab counters brings the folder at launch switch and, under it, a row that lists
+     * All Chats and the account's folders and saves the pick for the account shown.
+     */
+    @Test
+    public void theFolderToOpenRowListsTheFoldersAndSavesThePick() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_FOLDER_COUNTERS);
+        PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            assertNull("a build without the target has no switch", page.findPreference(Settings.LAUNCH_FOLDER.key));
+            assertNull("or row", page.findPreference(HushTelegramPreferenceFragment.LAUNCH_FOLDER_ROW));
+        }
+        PatchFamily.capabilitiesForTests = null;
+        LaunchFolderForTests.signedIn(1000, "Work", "Friends");
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            int toggle = indexOfKey(rows, Settings.LAUNCH_FOLDER.key);
+            Preference folder = rows.get(toggle + 1);
+            assertEquals(HushTelegramPreferenceFragment.LAUNCH_FOLDER_ROW, folder.getKey());
+            assertSame(rows.get(toggle).getParent(), folder.getParent());
+            assertFalse("it stores nothing itself", folder.isPersistent());
+            assertEquals("All Chats", String.valueOf(folder.getSummary()));
+
+            AlertDialog list = dialogOf(folder);
+            assertTrue(list.isShowing());
+            assertEquals("Folder to open", String.valueOf(shadowOf(list).getTitle()));
+            ListView choices = list.getListView();
+            List<String> labels = new ArrayList<>();
+            for (int i = 0; i < choices.getCount(); i++) labels.add(String.valueOf(choices.getAdapter().getItem(i)));
+            assertEquals(Arrays.asList("All Chats", "Work", "Friends"), labels);
+            assertEquals("nothing picked yet", 0, choices.getCheckedItemPosition());
+
+            shadowOf(list).clickOnItem(2);
+            settle();
+            assertFalse(list.isShowing());
+            assertEquals(2, LaunchFolder.picked(1000));
+            assertEquals("Friends", String.valueOf(folder.getSummary()));
+            assertFalse("picking a folder leaves the switch alone", Settings.LAUNCH_FOLDER.savedValue());
+
+            list = dialogOf(folder);
+            assertEquals("the pick is checked", 2, list.getListView().getCheckedItemPosition());
+            shadowOf(list).clickOnItem(0);
+            settle();
+            assertEquals(0, LaunchFolder.picked(1000));
+            assertEquals("All Chats", String.valueOf(folder.getSummary()));
+
+            // Signed out, or no folders yet: a note instead of an empty list.
+            for (Object[] state : new Object[][]{{0L, "Sign in to Telegram first."}, {1000L, "You don't have any folders yet."}}) {
+                LaunchFolderForTests.signedIn((Long) state[0]);
+                ShadowToast.reset();
+                ShadowAlertDialog.reset();
+                assertTrue(folder.getOnPreferenceClickListener().onPreferenceClick(folder));
+                ShadowLooper.idleMainLooper();
+                assertNull(ShadowAlertDialog.getLatestAlertDialog());
+                assertEquals(state[1], ShadowToast.getTextOfLatestToast());
+            }
+        } finally {
+            LaunchFolderForTests.restore();
         }
     }
 

@@ -375,6 +375,7 @@ public final class SelectionCheck {
         hook(calls, flags, "noHaptics", "misc/Haptics", "tap");
         hook(calls, flags, "reactionEffectsOff", "misc/ReactionEffects", "skipped");
         hook(calls, flags, "hideFolderCounters", "misc/FolderTabs", "countersHidden");
+        hook(calls, flags, "launchFolder", "misc/LaunchFolder", "firstTabs");
         hook(calls, flags, "forwardHideSender", "misc/ForwardSender", "starts");
         hook(calls, flags, "voiceMusicPlayer", "misc/VoicePlayer", "music");
         hook(calls, flags, "silenceNonContacts", "misc/NonContacts", "silenced");

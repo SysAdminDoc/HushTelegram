@@ -90,6 +90,7 @@ public class PatchFamilyTest {
         Settings.NO_HAPTICS.resetToDefault();
         Settings.REACTION_EFFECTS_OFF.resetToDefault();
         Settings.HIDE_FOLDER_COUNTERS.resetToDefault();
+        Settings.LAUNCH_FOLDER.resetToDefault();
         Settings.FORWARD_HIDE_SENDER.resetToDefault();
         Settings.VOICE_MUSIC_PLAYER.resetToDefault();
         Settings.SILENCE_NON_CONTACTS.resetToDefault();
@@ -449,10 +450,15 @@ public class PatchFamilyTest {
     public void hideFolderCountersHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
         PatchFamily family = PatchFamily.HIDE_FOLDER_COUNTERS;
         assertEquals("Hide folder tab counters", family.patchName);
-        assertEquals(Collections.singletonList(Settings.HIDE_FOLDER_COUNTERS), family.switches);
-        assertFalse(Settings.HIDE_FOLDER_COUNTERS.defaultValue);
-        assertFalse(Settings.HIDE_FOLDER_COUNTERS.rebootApp);
-        assertTrue(family.expectedCapabilities().isEmpty());
+        // The second switch, the folder the chat list opens on, starts off too and works with or without the first.
+        assertEquals(Arrays.asList(Settings.HIDE_FOLDER_COUNTERS, Settings.LAUNCH_FOLDER), family.switches);
+        for (BooleanSetting setting : family.switches) {
+            assertFalse(setting.key, setting.defaultValue);
+            // The counters change at once, and the folder pick is for the next chat list, so neither needs a restart.
+            assertFalse(setting.key, setting.rebootApp);
+        }
+        assertEquals(EnumSet.of(PatchFamily.Capability.LAUNCH_FOLDER), family.expectedCapabilities());
+        assertEquals("launchFolder", PatchFamily.Capability.LAUNCH_FOLDER.statusMethod);
         assertOnItsPage(family);
     }
 

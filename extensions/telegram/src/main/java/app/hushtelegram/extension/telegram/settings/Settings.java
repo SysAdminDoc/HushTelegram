@@ -250,6 +250,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_hide_folder_counters", FALSE);
 
     /**
+     * The chat list opens on the folder picked for each account instead of All chats
+     * ({@link app.hushtelegram.extension.telegram.misc.LaunchFolder}). The picks themselves stay on
+     * this phone, outside the settings.
+     */
+    public static final BooleanSetting LAUNCH_FOLDER =
+            new BooleanSetting("hushtelegram_launch_folder", FALSE);
+
+    /**
      * Forwards start with Telegram's Hide sender's name option turned on.
      */
     public static final BooleanSetting FORWARD_HIDE_SENDER =

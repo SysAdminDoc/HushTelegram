@@ -12,7 +12,9 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
+import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.localcontrols.Mention
@@ -45,10 +47,22 @@ val hideFolderCountersPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.telegram())
     execute {
         val counter = resolveHideFolderCounters()
+        requireLaunchFolderRuntime()
+        // The folder at launch switch rides along while the catalog is held. A build without its shape
+        // keeps the counters and leaves the switch out.
+        val launch = resolveLaunchFolder()
         // Assembled on a copy first, so a refusal leaves the app untouched.
         insertCounterAnswer(MutableMethod(ImmutableMethod.of(counter)))
         insertCounterAnswer(counter)
         enableStatus("hideFolderCounters")
+        if (launch.missing == null) {
+            // The runtime's stubs first: on their own nothing calls them.
+            writeLaunchFolderStubs(launch.refs!!)
+            launch.apply()
+            enableCapability("launchFolder")
+        } else {
+            patchLog.warning("Hide folder tab counters: ${launch.missing}. The patch goes on without opening a folder at launch.")
+        }
     }
 }
 

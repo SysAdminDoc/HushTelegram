@@ -297,7 +297,9 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/OwnConnection.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TitleEmoji.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/TitleEmojiEditor.java",
-        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/SettingsLock.java"
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/SettingsLock.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LaunchFolder.java",
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/folders/LaunchFolderSupport.kt"
       ],
       "origin": "original",
       "upstream": "https://github.com/SysAdminDoc/HushTelegram",
