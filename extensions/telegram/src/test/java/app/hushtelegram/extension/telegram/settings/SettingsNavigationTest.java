@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1265,6 +1266,45 @@ public class SettingsNavigationTest {
             SettingsLock.clock = System::currentTimeMillis;
             Settings.USE_SYSTEM_FONT.resetToDefault();
         }
+    }
+
+    /**
+     * An undo that couldn't put every switch back leaves the rest to undo, without the choice's own
+     * counts of what was already set or couldn't change, which no longer describe what's left.
+     */
+    @Test public void anUndoThatLeavesASwitchDropsTheChoicesOwnCounts() {
+        Map<app.hushtelegram.extension.shared.settings.BooleanSetting, Boolean> choice = new LinkedHashMap<>();
+        choice.put(Settings.HIDE_ADS, true);
+        choice.put(Settings.REVEAL_SPOILERS, true);
+        choice.put(Settings.USE_SYSTEM_FONT, true);
+        Preference font = page.findPreference(Settings.USE_SYSTEM_FONT.key);
+        Preference.OnPreferenceChangeListener own = font.getOnPreferenceChangeListener();
+        try {
+            assertEquals(2, page.applyQuickSetup(choice));
+            assertEquals("Hide ads was already on", 1, app.hushtelegram.extension.shared.settings.preference.QuickSetups.last().already);
+            font.setOnPreferenceChangeListener((row, value) -> false);
+            assertEquals(1, page.undoQuickSetup());
+            app.hushtelegram.extension.shared.settings.preference.QuickSetups.Outcome left =
+                    app.hushtelegram.extension.shared.settings.preference.QuickSetups.last();
+            assertEquals(Collections.singleton(Settings.USE_SYSTEM_FONT), left.changed.keySet());
+            assertEquals(0, left.already);
+            assertEquals(0, left.refused);
+            assertFalse(Settings.REVEAL_SPOILERS.savedValue());
+        } finally {
+            font.setOnPreferenceChangeListener(own);
+            Settings.USE_SYSTEM_FONT.resetToDefault();
+        }
+    }
+
+    /** A cleared settings file leaves nothing to undo, also on Android 9 and 10, where clearing tells no listener. */
+    @Test @Config(sdk = {28, 29, 30})
+    public void aClearedSettingsFileLeavesNothingToUndo() {
+        assertEquals(1, page.applyQuickSetup(Collections.singletonMap(Settings.REVEAL_SPOILERS, true)));
+        assertNotNull(app.hushtelegram.extension.shared.settings.preference.QuickSetups.last());
+        app.hushtelegram.extension.shared.settings.Setting.preferences.clear();
+        ShadowLooper.idleMainLooper();
+        assertNull(app.hushtelegram.extension.shared.settings.preference.QuickSetups.last());
+        assertEquals(0, page.undoQuickSetup());
     }
 
     /** Opens Quick setups and gives each card's text, its name and what it does on the next line. */

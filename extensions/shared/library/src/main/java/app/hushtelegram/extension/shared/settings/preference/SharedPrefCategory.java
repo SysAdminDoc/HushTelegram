@@ -73,6 +73,7 @@ public class SharedPrefCategory {
     public void clear() {
         if (!canWrite()) return;
         requireCommit("all values", preferences.edit().clear().commit());
+        QuickSetups.cleared(preferences);
     }
 
     /**

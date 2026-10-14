@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.settings.Setting;
 
@@ -148,7 +149,9 @@ public final class QuickSetups {
             // Back the way it was, by this undo or already: nothing left to put back.
             if (!change.getValue().equals(change.getKey().savedValue())) left.remove(change.getKey());
         }
-        last = left.isEmpty() ? null : new Outcome(left, undoing.already, undoing.refused);
+        // What's left is the undo's leftover, so the choice's own counts of what was already set or
+        // couldn't change no longer describe it.
+        last = left.isEmpty() ? null : new Outcome(left, 0, 0);
         return outcome.changed.size();
     }
 
@@ -156,6 +159,17 @@ public final class QuickSetups {
     public static void forget() {
         last = null;
         writtenSince = 0;
+    }
+
+    /**
+     * A settings file was cleared. Before Android 11 clearing a file tells its listeners nothing, so
+     * {@link #WATCH} can't hear it: the file says so itself, and when it's the watched one, nothing is
+     * left to undo.
+     */
+    static void cleared(SharedPreferences store) {
+        Utils.runOnMainThreadNowOrLater(() -> {
+            if (store == watched) forget();
+        });
     }
 
     private static Outcome write(PreferenceGroup screen, Map<BooleanSetting, Boolean> values) {
