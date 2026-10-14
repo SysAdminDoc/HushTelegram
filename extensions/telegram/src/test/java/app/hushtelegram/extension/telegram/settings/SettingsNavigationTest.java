@@ -1331,6 +1331,40 @@ public class SettingsNavigationTest {
         }
     }
 
+    /**
+     * A clear heard late that came in the middle of a choice, after its first switch was written,
+     * leaves nothing to undo, as a clear after the whole choice does.
+     */
+    @Test @Config(sdk = {28, 30})
+    public void aClearInTheMiddleOfAChoiceLeavesNothingToUndo() {
+        Map<app.hushtelegram.extension.shared.settings.BooleanSetting, Boolean> choice = new LinkedHashMap<>();
+        choice.put(Settings.REVEAL_SPOILERS, true);
+        choice.put(Settings.USE_SYSTEM_FONT, true);
+        Preference font = page.findPreference(Settings.USE_SYSTEM_FONT.key);
+        Preference.OnPreferenceChangeListener own = font.getOnPreferenceChangeListener();
+        try {
+            // Another thread clears the file after the first switch is written, before the second.
+            font.setOnPreferenceChangeListener((row, value) -> {
+                Thread clearing = new Thread(app.hushtelegram.extension.shared.settings.Setting.preferences::clear);
+                clearing.start();
+                try {
+                    clearing.join();
+                } catch (InterruptedException interrupted) {
+                    throw new AssertionError(interrupted);
+                }
+                return true;
+            });
+            page.applyQuickSetup(choice);
+            ShadowLooper.idleMainLooper();
+            assertNull("a choice cut by a clear kept its undo",
+                    app.hushtelegram.extension.shared.settings.preference.QuickSetups.last());
+        } finally {
+            font.setOnPreferenceChangeListener(own);
+            Settings.USE_SYSTEM_FONT.resetToDefault();
+            Settings.REVEAL_SPOILERS.resetToDefault();
+        }
+    }
+
     /** A cleared settings file leaves nothing to undo, also on Android 9 and 10, where clearing tells no listener. */
     @Test @Config(sdk = {28, 29, 30})
     public void aClearedSettingsFileLeavesNothingToUndo() {

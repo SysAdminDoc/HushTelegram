@@ -79,7 +79,11 @@ public final class QuickSetups {
     private static Outcome last;
     /** How many of the last choice's switches were written by something else since. */
     private static int writtenSince;
-    /** How many choices have changed something, so a clear heard late can tell whether one came after it. */
+    /**
+     * How many choices have started writing a switch, so a clear heard late can tell whether a
+     * choice's writes all came after it. Counted before the first write, so a clear in the middle of
+     * a choice counts as after it.
+     */
     private static volatile int choices;
     /** True while a choice or an undo writes, so the watch below doesn't take its own writes for someone else's. */
     private static boolean writing;
@@ -108,7 +112,6 @@ public final class QuickSetups {
         if (!outcome.changed.isEmpty()) {
             last = outcome;
             writtenSince = 0;
-            choices++;
             SharedPreferences store = Setting.preferences.preferences;
             if (watched != store) {
                 if (watched != null) watched.unregisterOnSharedPreferenceChangeListener(WATCH);
@@ -179,6 +182,7 @@ public final class QuickSetups {
         Map<BooleanSetting, Boolean> changed = new LinkedHashMap<>();
         int already = 0;
         int refused = 0;
+        boolean started = false;
         writing = true;
         try {
             for (Map.Entry<BooleanSetting, Boolean> value : values.entrySet()) {
@@ -201,6 +205,10 @@ public final class QuickSetups {
                 if (listener != null && !listener.onPreferenceChange(toggle, wanted)) {
                     refused++;
                     continue;
+                }
+                if (!started) {
+                    started = true;
+                    choices++;
                 }
                 toggle.setChecked(wanted);
                 // The page saves the switch as the row changes. A save that failed put the row back.
