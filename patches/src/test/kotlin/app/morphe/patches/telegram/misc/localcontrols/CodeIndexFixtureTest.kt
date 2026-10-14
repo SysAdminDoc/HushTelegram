@@ -56,7 +56,7 @@ class CodeIndexFixtureTest {
         val types = mutableSetOf<String>()
         val members = mutableSetOf<String>()
         val literals = mutableSetOf<Long>()
-        for (instruction in method.implementation?.instructions.orEmpty()) {
+        for (instruction in method.implementation?.instructions ?: emptyList()) {
             if (instruction is WideLiteralInstruction) literals += instruction.wideLiteral
             val reference = (instruction as? ReferenceInstruction)?.reference ?: continue
             references += reference.toString()
@@ -111,7 +111,7 @@ class CodeIndexFixtureTest {
     private fun samples(classes: List<ClassDef>): List<Probe> {
         val probes = mutableListOf<Probe>()
         for (at in classes.indices step 701) {
-            val instructions = classes[at].methods.flatMap { it.implementation?.instructions.orEmpty() }
+            val instructions = classes[at].methods.flatMap { it.implementation?.instructions ?: emptyList() }
             val references = instructions.mapNotNull { (it as? ReferenceInstruction)?.reference }
             references.filterIsInstance<StringReference>().map { it.string }.firstOrNull { it.length >= 4 }?.let { text ->
                 probes += Probe("string $text", Mention.string(text)) { text in it.strings }
