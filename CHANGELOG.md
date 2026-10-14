@@ -28,6 +28,7 @@ Every HushTelegram release, newest first.
 * **Tooling:** A device install only goes ahead under a lease in the machine's shared lease folder. A lease kept somewhere else doesn't count anymore.
 * **Tooling:** A device build now waits its turn in the machine's build queue before it starts patching, and the patcher runs with a capped heap and two processors so it doesn't crowd out builds already running.
 * **Tooling:** A release can't skip the build advisory scan anymore. Release preflight and the build stage both generate the dependency report under strict checksum verification, run the scan, and stop on a build tool or library it refuses. The release gate also reads the Gradle version recorded in an SBOM and holds it to the same advisory list, even when the OSV check is skipped.
+* **Tooling:** A device build now clears out what a killed one left behind. When `patch-for-device.ps1` starts, it deletes any `run-` folder in the output folder that no running build owns, the argument file with the signing password included. Each build records its process and start time in its folder, so a build that's still running is never touched.
 
 ## 0.0.17 (2026-10-13)
 

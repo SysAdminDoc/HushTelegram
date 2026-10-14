@@ -4001,6 +4001,69 @@ try {
     # A path that is simply not there is nothing to do, not a failure.
     Remove-GeneratedPath -Path (Join-Path $work 'never-existed') -Root $work
 
+    # Run folders a killed device build left behind. The argument file in one holds the signing
+    # password, so the next run sweeps every run-<guid> folder in the output folder that no live
+    # run owns, and never one a concurrent run is working in. Owned means the process in owner.json
+    # is running and started when the file says; the id alone could belong to another process by now.
+    $sweepOut = Join-Path $commonRoot 'sweep-out'
+    New-Item -ItemType Directory -Path $sweepOut -Force | Out-Null
+    $liveOther = Start-Process -FilePath 'ping.exe' -ArgumentList @('-n', '120', '127.0.0.1') -WindowStyle Hidden -PassThru
+    try {
+        $deadRun = Start-Process -FilePath 'ping.exe' -ArgumentList @('-n', '1', '127.0.0.1') -WindowStyle Hidden -PassThru
+        $deadRun.WaitForExit()
+        $deadId = $deadRun.Id
+        $liveTicks = $liveOther.StartTime.ToUniversalTime().Ticks
+        $nowTicks = [DateTime]::UtcNow.Ticks
+        function New-SweepRun([string]$Name, $Owner, [switch]$Aged) {
+            $folder = Join-Path $sweepOut $Name
+            New-Item -ItemType Directory -Path $folder -Force | Out-Null
+            Set-Content -LiteralPath (Join-Path $folder 'morphe-patch.args') -Value '"--keystore-password" "secret"' -Encoding ASCII
+            if ($null -ne $Owner) {
+                [IO.File]::WriteAllText((Join-Path $folder 'owner.json'), $Owner, (New-Object Text.UTF8Encoding($false)))
+            }
+            if ($Aged) { (Get-Item -LiteralPath $folder).LastWriteTimeUtc = [DateTime]::UtcNow.AddHours(-1) }
+            return $folder
+        }
+        function New-OwnerJson($ProcessId, $Ticks) { return (@{ processId = $ProcessId; startedUtcTicks = $Ticks } | ConvertTo-Json -Compress) }
+        $guid = { [guid]::NewGuid().ToString('N') }
+        $killed = New-SweepRun ('run-' + (& $guid)) (New-OwnerJson $deadId ($nowTicks - 600000000))
+        $concurrent = New-SweepRun ('run-' + (& $guid)) (New-OwnerJson $liveOther.Id $liveTicks)
+        $reused = New-SweepRun ('run-' + (& $guid)) (New-OwnerJson $liveOther.Id ($liveTicks - 36000000000))
+        $mine = New-SweepRun ('run-' + (& $guid)) $null
+        Write-RunOwner -RunDir $mine
+        $justMade = New-SweepRun ('run-' + (& $guid)) $null
+        $brokenFresh = New-SweepRun ('run-' + (& $guid)) 'not json'
+        $ownerless = New-SweepRun ('run-' + (& $guid)) $null -Aged
+        $brokenOld = New-SweepRun ('run-' + (& $guid)) '{"processId":"x"}' -Aged
+        $notARun = New-SweepRun 'run-notaguid' $null -Aged
+        $plainFile = Join-Path $sweepOut 'hushtelegram-9.9.9-signed.apk'
+        Set-Content -LiteralPath $plainFile -Value 'apk' -Encoding ASCII
+
+        $mineRead = Get-Content -LiteralPath (Join-Path $mine 'owner.json') -Raw | ConvertFrom-Json
+        Assert-True ($mineRead.processId -eq $PID) "Write-RunOwner recorded process $($mineRead.processId), not this one ($PID)."
+        $swept = @(Remove-StaleRunFolders -OutDir $sweepOut)
+        foreach ($gone in @($killed, $reused, $ownerless, $brokenOld)) {
+            Assert-True (-not (Test-Path -LiteralPath $gone)) "A run folder no live run owns was not swept: $(Split-Path -Leaf $gone)"
+        }
+        foreach ($kept in @($concurrent, $mine, $justMade, $brokenFresh, $notARun)) {
+            Assert-True (Test-Path -LiteralPath $kept) "A folder that is not a dead run's was swept: $(Split-Path -Leaf $kept)"
+        }
+        Assert-True (Test-Path -LiteralPath (Join-Path $concurrent 'morphe-patch.args')) 'The live run lost its argument file to the sweep.'
+        Assert-True (Test-Path -LiteralPath $plainFile) 'The sweep deleted a file that is not a run folder.'
+        Assert-True ($swept.Count -eq 4 -and ($swept -ccontains (Split-Path -Leaf $killed))) "The sweep named what it removed wrongly: $($swept -join ', ')"
+        # The owner, once it is gone, is swept on the next run, and -Keep spares a folder whatever its owner.
+        Stop-Process -Id $liveOther.Id -Force
+        $liveOther.WaitForExit()
+        $spared = @(Remove-StaleRunFolders -OutDir $sweepOut -Keep $concurrent)
+        Assert-True ((Test-Path -LiteralPath $concurrent) -and $spared.Count -eq 0) '-Keep did not spare the named folder.'
+        $swept = @(Remove-StaleRunFolders -OutDir $sweepOut)
+        Assert-True (-not (Test-Path -LiteralPath $concurrent)) 'A run folder whose process had ended was kept.'
+        Assert-True ((Test-Path -LiteralPath $mine) -and (Test-Path -LiteralPath $justMade)) 'The sweep removed this run''s folder, or one just made.'
+        Assert-True (@(Remove-StaleRunFolders -OutDir (Join-Path $commonRoot 'no-such-out')).Count -eq 0) 'A missing output folder was not an empty sweep.'
+    } finally {
+        if (-not $liveOther.HasExited) { Stop-Process -Id $liveOther.Id -Force -ErrorAction SilentlyContinue }
+    }
+
     # The version read. -LiteralPath is the difference that had already drifted, so the fixture
     # directory carries the bracket that makes a wildcard read find nothing.
     $bracketRoot = Join-Path $commonRoot 'repo [1]'
@@ -5232,6 +5295,23 @@ class AlignmentFixture {
         Assert-True (-not (Test-Path -LiteralPath (Join-Path $deviceOut 'stock-base.apk'))) `
             "patch-for-device.ps1 left the base APK it read for $build behind."
     }
+    # A run folder a killed build left, with the signing password in its argument file, is swept as
+    # the next build starts; one a live run owns (this process, as its owner file says) is kept.
+    $sweepDeviceOut = Join-Path $releaseRoot 'device-sweep'
+    $staleRun = Join-Path $sweepDeviceOut ('run-' + [guid]::NewGuid().ToString('N'))
+    $liveRun = Join-Path $sweepDeviceOut ('run-' + [guid]::NewGuid().ToString('N'))
+    foreach ($folder in @($staleRun, $liveRun)) {
+        New-Item -ItemType Directory -Path $folder -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $folder 'morphe-patch.args') -Value '"--keystore-password" "secret"' -Encoding ASCII
+    }
+    [IO.File]::WriteAllText((Join-Path $staleRun 'owner.json'),
+        (@{ processId = $PID; startedUtcTicks = [DateTime]::UtcNow.AddDays(-2).Ticks } | ConvertTo-Json -Compress))
+    Write-RunOwner -RunDir $liveRun
+    Invoke-DeviceBuild -Apk $fixturePaths[$declaredBuilds[0]] -OutDir $sweepDeviceOut
+    Assert-True (-not (Test-Path -LiteralPath $staleRun)) 'patch-for-device.ps1 left a killed run''s folder, argument file and all.'
+    Assert-True (Test-Path -LiteralPath (Join-Path $liveRun 'morphe-patch.args')) 'patch-for-device.ps1 swept the folder of a run that is alive.'
+    Assert-True (@(Get-ChildItem -LiteralPath $sweepDeviceOut -Directory).Count -eq 1) `
+        'patch-for-device.ps1 left a run folder of its own behind.'
     $savedFixtureDir = $env:HUSHTELEGRAM_FIXTURE_DIR
     try {
         $defaultFixtures = @{}

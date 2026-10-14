@@ -125,9 +125,13 @@ $Aapt2 = Resolve-Aapt2 -Explicit $Aapt2 -Root $root
 # and the public summary, each put under its usual name whole. The folder goes when the run ends,
 # however it ends, and the run removes nothing else.
 New-Item -ItemType Directory -Force $OutDir | Out-Null
+# A run killed outright never reached its cleanup, and its argument file still holds the signing
+# password. Folders of this kind that no live run owns go first; a live run's own is never touched.
+foreach ($swept in @(Remove-StaleRunFolders -OutDir $OutDir)) { Write-Host "[device] removed $swept, left by a run that was killed" }
 $runDir = Resolve-WithinRoot -Root $OutDir -Path (Join-Path $OutDir ('run-' + [guid]::NewGuid().ToString('N')))
 # Without -Force: a folder that is already there belongs to somebody else, and that stops the run.
 New-Item -ItemType Directory -Path $runDir | Out-Null
+Write-RunOwner -RunDir $runDir
 
 function Publish-RunFile {
     <#
