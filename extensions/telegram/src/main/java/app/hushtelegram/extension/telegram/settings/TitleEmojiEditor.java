@@ -11,14 +11,20 @@ import android.text.InputType;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 
+import java.util.Collections;
+import java.util.Map;
+
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Utils;
+import app.hushtelegram.extension.shared.settings.Setting;
+import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.telegram.misc.TitleEmoji;
 
 /**
  * The editor for the text beside the chat list's title ({@link TitleEmoji}). Save cleans what was
  * typed the way the title shows it and keeps the dialog open on text that's too long. Empty saves
- * as nothing at all.
+ * as nothing at all. The write is done off the main thread, and the dialog closes once it has
+ * landed.
  */
 final class TitleEmojiEditor {
     static final String KEY = "action_title_emoji";
@@ -74,20 +80,33 @@ final class TitleEmojiEditor {
                 Utils.showToastLong(refused);
                 return;
             }
-            String before = Settings.TITLE_EMOJI.savedValue();
-            if (!Settings.TITLE_EMOJI.save(value)) {
-                String refused = L10n.t("Couldn't save the emoji. Try again in a moment.");
-                form.refuse(field, refused);
-                Utils.showToastLong(refused);
-                return;
-            }
-            row.setSummary(summary(value));
-            dialog.dismiss();
-            saved.saved(before);
+            String[] before = new String[1];
+            HushTelegramPreferenceFragment.save(dialog, () -> {
+                // Read on the worker, behind any save asked for first, so it's the value this one replaces.
+                before[0] = Settings.TITLE_EMOJI.savedValue();
+                if (!Settings.TITLE_EMOJI.saveCommitted(value)) return false;
+                // The restart it owes is on record even when the page went before the answer came back.
+                Map<Setting<?>, Object> replaced = Collections.<Setting<?>, Object>singletonMap(Settings.TITLE_EMOJI, before[0]);
+                AbstractPreferenceFragment.noteRestartPending(replaced);
+                return true;
+            }, landed -> {
+                if (!landed) {
+                    String refused = L10n.t("Couldn't save the emoji. Try again in a moment.");
+                    form.refuse(field, refused);
+                    Utils.showToastLong(refused);
+                    return;
+                }
+                row.setSummary(summary(value));
+                dialog.dismiss();
+                saved.saved(before[0]);
+            });
         });
         field.setOnEditorActionListener((view, action, event) -> {
             if (action != EditorInfo.IME_ACTION_DONE) return false;
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            // The keyboard's Done is the Save button, and a Save that's waiting takes no second tap.
+            if (dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled()) {
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            }
             return true;
         });
         return dialog;

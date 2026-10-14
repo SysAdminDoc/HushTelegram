@@ -1051,7 +1051,7 @@ public class HushTelegramPreferenceFragmentTest {
      * is owed only while the saved text isn't the one running.
      */
     @Test
-    public void theTitleEmojiRowSavesCleanTextAndSaysWhenARestartIsOwed() {
+    public void theTitleEmojiRowSavesCleanTextAndSaysWhenARestartIsOwed() throws Exception {
         PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HOLIDAY_LOOK);
         PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
@@ -1089,7 +1089,8 @@ public class HushTelegramPreferenceFragmentTest {
 
             field.setText("  " + tree + "\n");
             editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
-            ShadowLooper.idleMainLooper();
+            // The write is on the worker, and the dialog closes once its answer is back.
+            settle();
             assertFalse(editor.isShowing());
             assertEquals("saved cleaned", tree, Settings.TITLE_EMOJI.savedValue());
             assertTrue("the chat list shows it after a restart",
@@ -1106,7 +1107,7 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals(tree, field.getText().toString());
             field.setText("");
             editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
-            ShadowLooper.idleMainLooper();
+            settle();
             assertFalse(editor.isShowing());
             assertEquals("", Settings.TITLE_EMOJI.savedValue());
             assertEquals("Saved.", ShadowToast.getTextOfLatestToast());
