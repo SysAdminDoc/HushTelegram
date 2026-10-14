@@ -104,6 +104,20 @@ function Assert-ReviewedBuildGraph($Report) {
             throw "Settings $package did not resolve exactly at $($settingsVersions[$package])."
         }
     }
+    # Guava up to 33.7.1 has CVE-2026-102554. Every graph this build owns resolves the fixed
+    # release. The patcher's own Guava is the Morphe patcher's contract, the one Manager and the
+    # CLI run with, so its provided classpath keeps what the patcher asks for and is never rewritten.
+    $provided = ':patches:patcherProvidedClasspath'
+    $guava = @($Report.Libraries | Where-Object { $_.Group -ceq 'com.google.guava' -and $_.Name -ceq 'guava' })
+    if (@($guava | Where-Object { $_.Configurations -contains 'settings:classpath' }).Count -eq 0) {
+        throw 'The resolved settings classpath is missing Guava.'
+    }
+    foreach ($library in $guava) {
+        $owned = @($library.Configurations | Where-Object { $_ -cne $provided })
+        if ($owned.Count -and $library.Version -notin @('33.7.2-jre', '33.7.2-android')) {
+            throw "Guava is not at the reviewed 33.7.2 on $($owned[0]): $($library.Purl)"
+        }
+    }
 }
 function New-ReviewedBuildReport {
     $core = ':extensions:telegram:_internal-unified-test-platform-core'
@@ -114,6 +128,7 @@ function New-ReviewedBuildReport {
         'org.jdom:jdom2' = '2.0.6.1'; 'org.jetbrains.kotlin:kotlin-gradle-plugin' = '2.4.20'
         'org.bouncycastle:bcprov-jdk18on' = '1.86'; 'org.bouncycastle:bcpkix-jdk18on' = '1.86'
         'org.bouncycastle:bcutil-jdk18on' = '1.86'
+        'com.google.guava:guava' = '33.7.2-jre'
     }
     # The Gradle this repo builds with, outside every recorded advisory, so these cases are about the libraries.
     return [ordered]@{
@@ -398,6 +413,35 @@ try {
     foreach ($component in $fixture.components) { $component.configurations = @('settings:classpath') }
     Write-Report $fixture
     Assert-Fails { Assert-ReviewedBuildGraph (Read-BuildDependencyReport $reportPath) } '*missing the Android host test configuration*'
+
+    # Guava: the patcher's provided copy keeps the patcher's version, every owned graph the fixed one.
+    function Add-Guava($Fixture, [string]$Version, [string[]]$Configurations) {
+        $Fixture.components += [ordered]@{ group = 'com.google.guava'; name = 'guava'; version = $Version
+            purl = "pkg:maven/com.google.guava/guava@$Version"; configurations = $Configurations }
+        $Fixture.configurations = @($Fixture.configurations + $Configurations | Select-Object -Unique)
+    }
+    $fixture = New-ReviewedBuildReport
+    Add-Guava $fixture '33.5.0-jre' @(':patches:patcherProvidedClasspath')
+    Add-Guava $fixture '33.7.2-android' @(':extensions:telegram:debugUnitTestRuntimeClasspath')
+    Write-Report $fixture
+    Assert-ReviewedBuildGraph (Read-BuildDependencyReport $reportPath)
+    $cases++
+    foreach ($owned in @('settings:classpath', ':extensions:telegram:debugUnitTestRuntimeClasspath', ':patches:testRuntimeClasspath',
+            ':extensions:telegram:_internal-unified-test-platform-core')) {
+        $fixture = New-ReviewedBuildReport
+        Add-Guava $fixture '33.7.1-jre' @($owned)
+        Write-Report $fixture
+        Assert-Fails { Assert-ReviewedBuildGraph (Read-BuildDependencyReport $reportPath) } "*Guava is not at the reviewed 33.7.2 on $owned*"
+    }
+    # A version shared by the provided classpath and an owned one is still the owned graph's.
+    $fixture = New-ReviewedBuildReport
+    Add-Guava $fixture '33.5.0-jre' @(':patches:patcherProvidedClasspath', 'settings:classpath')
+    Write-Report $fixture
+    Assert-Fails { Assert-ReviewedBuildGraph (Read-BuildDependencyReport $reportPath) } '*Guava is not at the reviewed 33.7.2 on settings:classpath*'
+    $fixture = New-ReviewedBuildReport
+    $fixture.components = @($fixture.components | Where-Object { $_.name -ne 'guava' })
+    Write-Report $fixture
+    Assert-Fails { Assert-ReviewedBuildGraph (Read-BuildDependencyReport $reportPath) } '*settings classpath is missing Guava*'
 
     # Script-only policy changes resolve and scan dependencies without requiring vendor APKs.
     $repo = Join-Path $testRoot 'repo'

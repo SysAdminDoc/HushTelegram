@@ -29,11 +29,23 @@ val nettyTestPlatformConfigurations = setOf(
 val resultListenerConfiguration = "_internal-unified-test-platform-android-test-plugin-result-listener-gradle"
 val reviewedHostCommonsLang = "3.20.0"
 val reviewedHostHttpClient = "4.5.14"
+// Guava 4.0 to 33.7.1 has CVE-2026-102554 (unbounded allocation while deserializing). Robolectric,
+// AGP's host test platform and the patcher each ask for an older one, so every graph this build
+// owns moves to the fixed release, on the variant line (jre or android) it asked for. The patcher's
+// provided classpath is left alone: it records what Morphe Manager and the CLI run with, and
+// rewriting it here would only relabel their Guava, not change it.
+val reviewedGuava = libs.versions.guava.get().removeSuffix("-jre")
+val patcherProvidedConfiguration = "patcherProvidedClasspath"
 allprojects {
     configurations.configureEach {
         val isNettyTestPlatform = name in nettyTestPlatformConfigurations
         val isResultListener = name == resultListenerConfiguration
+        val isPatcherProvided = name == patcherProvidedConfiguration
         resolutionStrategy.eachDependency {
+            if (!isPatcherProvided && requested.group == "com.google.guava" && requested.name == "guava") {
+                useVersion(reviewedGuava + if (requested.version?.endsWith("-android") == true) "-android" else "-jre")
+                because("Every graph this build owns must use the Guava release with the CVE-2026-102554 fix.")
+            }
             if (requested.group == "org.bouncycastle") {
                 useVersion(reviewedBouncyCastle)
                 because("The build classpath must use the reviewed Bouncy Castle release.")
@@ -49,6 +61,24 @@ allprojects {
             if (isResultListener && requested.group == "org.apache.httpcomponents" && requested.name == "httpclient") {
                 useVersion(reviewedHostHttpClient)
                 because("The Android Gradle result listener must use the reviewed HttpClient 4.5 release.")
+            }
+        }
+    }
+}
+// AGP resolves its lint and annotation tools through detached configurations, which configureEach
+// never sees, and those tools ask for Guava 33.3.1. A component metadata rule reaches every
+// resolution in a module, detached ones included, so the extension modules move each component's
+// Guava request there as well. :patches is left out, since it holds the patcher-provided record.
+subprojects {
+    if (path.startsWith(":extensions")) {
+        dependencies.components.all {
+            allVariants {
+                withDependencies {
+                    filter { it.group == "com.google.guava" && it.name == "guava" }.forEach { guava ->
+                        val line = if (guava.versionConstraint.requiredVersion.endsWith("-android")) "-android" else "-jre"
+                        guava.version { require(reviewedGuava + line) }
+                    }
+                }
             }
         }
     }
