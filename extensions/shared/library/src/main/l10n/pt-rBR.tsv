@@ -158,7 +158,13 @@ Opens a GitHub report with your versions and settings filled in. Add what happen
 # context: home page row under the status card, and the title of the dialog it opens
 Quick setups	Configurações rápidas
 # context: that row's summary
-Turn on a set of switches in one tap, or put every switch back the way it started.	Ative um conjunto de opções com um toque ou volte todas as opções ao estado inicial.
+Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.	Ative um conjunto de opções com um toque ou volte todas as opções ao estado inicial. Toque e segure para ocultar esta linha.
+# context: row on Settings backup that hides or shows the Quick setups row on the home page, and its two summaries
+Quick setups on the home page	Configurações rápidas na página inicial
+Shown. Tap to hide it.	Visível. Toque para ocultar.
+Hidden. Tap to show it again.	Oculta. Toque para mostrar de novo.
+# context: toast after a long press hides Quick setups; the page named is Settings backup
+Quick setups hidden. Bring it back from %1$s.	Configurações rápidas ocultas. Traga de volta em %1$s.
 # context: Quick setups choice that turns on the switches that hide ads, suggestions and nags
 Quiet	Tranquilo
 # context: what Quiet does, under its name

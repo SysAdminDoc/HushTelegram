@@ -161,7 +161,13 @@ Opens a GitHub report with your versions and settings filled in. Add what happen
 # context: home page row under the status card, and the title of the dialog it opens
 Quick setups	Penyiapan cepat
 # context: that row's summary
-Turn on a set of switches in one tap, or put every switch back the way it started.	Nyalakan sekumpulan sakelar dengan sekali ketuk, atau kembalikan semua sakelar seperti semula.
+Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.	Nyalakan sekumpulan sakelar dengan sekali ketuk, atau kembalikan semua sakelar seperti semula. Tekan dan tahan untuk menyembunyikan baris ini.
+# context: row on Settings backup that hides or shows the Quick setups row on the home page, and its two summaries
+Quick setups on the home page	Penyiapan cepat di beranda
+Shown. Tap to hide it.	Ditampilkan. Ketuk untuk menyembunyikannya.
+Hidden. Tap to show it again.	Disembunyikan. Ketuk untuk menampilkannya lagi.
+# context: toast after a long press hides Quick setups; the page named is Settings backup
+Quick setups hidden. Bring it back from %1$s.	Penyiapan cepat disembunyikan. Tampilkan lagi dari %1$s.
 # context: Quick setups choice that turns on the switches that hide ads, suggestions and nags
 Quiet	Tenang
 # context: what Quiet does, under its name

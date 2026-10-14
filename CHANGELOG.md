@@ -4,6 +4,7 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** Quick setups can be hidden from the settings home with a long press on its row, and its help line now says so. The **Quick setups on the home page** row on Settings backup brings it back. The choice stays out of settings backups and Quick setups, and Pause leaves it alone.
 * **Telegram:** The Support HushTelegram row at the bottom of HushTelegram settings is just its name now. The line under it is gone.
 * **Telegram:** When Telegram's server turns down the push sign-up, which is what happens with your own API ID, `Repair Firebase push registration` now turns on Telegram's own `Keep-Alive Service` and `Background Connection`, the same thing Telegram does on phones without Google Play. Messages then come in over Telegram's own connection instead of whenever Android lets it wake up. It only does this when you've never set either switch yourself, and it hands them back if push starts working later. The notification status shows whether both are on and where to turn them on. Related to #5 and #16.
 * **Telegram:** UnifiedPush notifications now sign up with Telegram as a Web Push address. The old sign-up was accepted, but Telegram's servers only call that kind for a few events, so an ordinary message never woke Telegram through ntfy. Turning the switch off still hands Telegram back to Firebase after an update from 0.0.17. Related to #5 and #16.

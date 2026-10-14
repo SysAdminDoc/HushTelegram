@@ -859,6 +859,27 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 L10n.t("Import settings"),
                 L10n.t("Loads your switches, filter lists and sticker size from a saved file. You see what will "
                         + "change before anything is applied. It applies to all accounts.")), SettingsIcons.DOWNLOADS));
+        backup.addPreference(mark(restoreQuickSetupsRow(context), SettingsIcons.TOOLS));
+    }
+
+    /** Hides the Quick setups row on the home page, or shows it again. The home page follows the next time it's drawn. */
+    private static Preference restoreQuickSetupsRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(SettingsNavigation.RESTORE_QUICK_SETUPS);
+        row.setTitle(L10n.t("Quick setups on the home page"));
+        row.setSummary(restoreQuickSetupsSummary());
+        row.setPersistent(false);
+        row.actsAtOnce = true;
+        row.setOnPreferenceClickListener(p -> {
+            SettingsNavigation.HIDE_QUICK_SETUPS.save(!SettingsNavigation.HIDE_QUICK_SETUPS.get());
+            p.setSummary(restoreQuickSetupsSummary());
+            return true;
+        });
+        return row;
+    }
+
+    static String restoreQuickSetupsSummary() {
+        return SettingsNavigation.HIDE_QUICK_SETUPS.get() ? L10n.t("Hidden. Tap to show it again.") : L10n.t("Shown. Tap to hide it.");
     }
 
     /** Diagnostics: Debug logging, the report, and clearing what a report would hold. */
