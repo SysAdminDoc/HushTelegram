@@ -6,6 +6,12 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** The Support HushTelegram row at the bottom of HushTelegram settings is just its name now. The line under it is gone.
 * **Tooling:** The build runs on Gradle 9.8.1 now. 9.7.1 was inside three of Gradle's own high severity advisories, and 9.8.1 is the release that fixes them.
+* **Tooling:** The pre-push hook now stops a push whose ref lines aren't what git sends, instead of reading them as nothing to check.
+* **Tooling:** The advisory gates stop when OSV sends back something that isn't a real answer. An error object used to read as "no advisories", and the gate passed without checking anything.
+* **Tooling:** The build advisory scan now holds the Gradle version to Gradle's own published advisories, so a wrapper inside a known high severity range is refused. OSV doesn't cover the build tool, which is why a clean library scan said nothing about it.
+* **Tooling:** Two device builds can run at once without stepping on each other. Each works in its own folder, so a second run can't overwrite or delete the first one's files.
+* **Tooling:** A device install only goes ahead under a lease in the machine's shared lease folder. A lease kept somewhere else doesn't count anymore.
+* **Tooling:** A device build now waits its turn in the machine's build queue before it starts patching, and the patcher runs with a capped heap and two processors so it doesn't crowd out builds already running.
 
 ## 0.0.17 (2026-10-13)
 
