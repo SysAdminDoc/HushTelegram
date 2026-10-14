@@ -17,7 +17,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
@@ -43,7 +45,87 @@ public class LocalSearchTest {
         PauseForTests.resume();
         SettingReadsForTests.mend(Settings.LOCAL_SEARCH);
         Settings.LOCAL_SEARCH.resetToDefault();
+        LocalSearch.lookup = LocalSearch::lookUp;
         HookStatus.clear();
+    }
+
+    /** What the helper's lookup was handed, one line per call. */
+    private final List<String> lookups = new ArrayList<>();
+    private final Object helper = new Object();
+    private final Runnable done = () -> {};
+
+    private void watchLookups() {
+        LocalSearch.lookup = (on, query, usernames, chats, bots, self, groupsOnly, channel, phoneNumbers, type, searchId, except, end) ->
+                lookups.add((on == helper) + " " + query + " " + usernames + " " + chats + " " + bots + " " + self + " " + groupsOnly
+                        + " " + channel + " " + phoneNumbers + " " + type + " " + searchId + " " + except + " " + (end == done));
+    }
+
+    /** The Chats tab's second step handing the helper's lookup on, as it does right after the username lookup. */
+    private void phones(String query, long channel) {
+        LocalSearch.phones(helper, query, true, true, true, true, false, channel, true, 0, 7, 42L, done);
+    }
+
+    @Test public void offTheFilteredTabsAndThePhoneMatchAreTelegramsOwn() {
+        watchLookups();
+        assertFalse(LocalSearch.keepsText("cat"));
+        phones("+15551234", 0);
+        assertEquals(Collections.emptyList(), lookups);
+        assertEquals(Collections.singletonList("Disable draft link previews: invoked 2, 0 found, 0 missing"), HookStatus.report());
+    }
+
+    @Test public void switchedOnAFilteredSearchOfTypedTextIsSkippedAndCounted() {
+        Settings.LOCAL_SEARCH.save(true);
+        assertTrue(LocalSearch.keepsText("cat"));
+        assertEquals(Collections.singletonList("Disable draft link previews: invoked 1, 0 found, 0 missing. Counted: "
+                + "search lookup kept on the phone 1"), HookStatus.report());
+    }
+
+    // An empty box sends no text, so a media tab or a filtered Chats tab still lists what it finds.
+    @Test public void anEmptyFilteredSearchGoesAsTelegramSendsIt() {
+        Settings.LOCAL_SEARCH.save(true);
+        assertFalse(LocalSearch.keepsText(""));
+        assertFalse(LocalSearch.keepsText(null));
+        assertEquals(Collections.emptyList(), HookStatus.report());
+    }
+
+    @Test public void switchedOnAPhoneNumberIsMatchedAgainWithTheTextAndNoUsernameLookup() {
+        Settings.LOCAL_SEARCH.save(true);
+        watchLookups();
+        phones("+15551234", 0);
+        assertEquals(Collections.singletonList("true +15551234 false true true true false 0 true 0 7 42 true"), lookups);
+        assertEquals(Collections.singletonList("Disable draft link previews: invoked 1, 0 found, 0 missing. Counted: "
+                + "phone number matched on the phone 1"), HookStatus.report());
+    }
+
+    // Only a "+" number has a match on the phone, and a channel would send its member search to the server.
+    @Test public void onlyAPhoneNumberWithNoChannelIsMatchedAgain() {
+        Settings.LOCAL_SEARCH.save(true);
+        watchLookups();
+        phones("cat", 0);
+        phones("", 0);
+        phones(null, 0);
+        phones("+15551234", 1L);
+        LocalSearch.phones(null, "+15551234", true, true, true, true, false, 0, true, 0, 7, 42L, done);
+        assertEquals(Collections.emptyList(), lookups);
+        assertEquals(Collections.emptyList(), HookStatus.report());
+    }
+
+    @Test public void aPhoneMatchThatThrowsIsReportedAndSearchGoesOn() {
+        Settings.LOCAL_SEARCH.save(true);
+        LocalSearch.lookup = (on, query, usernames, chats, bots, self, groupsOnly, channel, phoneNumbers, type, searchId, except, end) -> {
+            throw new ClassCastException("not the helper");
+        };
+        phones("+15551234", 0);
+        assertEquals(Collections.singletonList("a working 'search phone match' hook (it threw java.lang.ClassCastException)"),
+                HookStatus.missing(FamilyNames.DISABLE_DRAFT_PREVIEWS));
+    }
+
+    // Unpatched, the stub does nothing, so the runtime can't call anything it doesn't know.
+    @Test public void theUnpatchedLookUpStubDoesNothing() {
+        Settings.LOCAL_SEARCH.save(true);
+        phones("+15551234", 0);
+        assertEquals(Collections.singletonList("Disable draft link previews: invoked 1, 0 found, 0 missing. Counted: "
+                + "phone number matched on the phone 1"), HookStatus.report());
     }
 
     @Test public void offByDefaultSoEveryLookupGoesAsTelegramSendsIt() {
@@ -78,28 +160,39 @@ public class LocalSearchTest {
 
     @Test public void everyPauseReasonSearchesAsTelegramDoes() {
         Settings.LOCAL_SEARCH.save(true);
+        watchLookups();
         for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
             if (reason == HushTelegramPause.Reason.NONE) continue;
             PauseForTests.pause(reason);
             assertFalse(reason.name(), LocalSearch.keep());
             assertEquals(reason.name(), "cat", LocalSearch.sent("cat"));
             assertEquals(reason.name(), STOCK, LocalSearch.emptyText(STOCK));
+            assertFalse(reason.name(), LocalSearch.keepsText("cat"));
+            phones("+15551234", 0);
+            assertEquals(reason.name(), Collections.emptyList(), lookups);
             PauseForTests.resume();
         }
         assertTrue(LocalSearch.keep());
+        assertTrue(LocalSearch.keepsText("cat"));
     }
 
     @Test public void unavailableOrUnreadableSettingsSearchAsTelegramDoesAndSaySo() {
         Settings.LOCAL_SEARCH.save(true);
+        watchLookups();
         SettingsContextRule.withoutContext(() -> {
             assertFalse(LocalSearch.keep());
             assertEquals("cat", LocalSearch.sent("cat"));
             assertEquals(STOCK, LocalSearch.emptyText(STOCK));
+            assertFalse(LocalSearch.keepsText("cat"));
+            phones("+15551234", 0);
         });
         SettingReadsForTests.breakReads(Settings.LOCAL_SEARCH);
         assertFalse(LocalSearch.keep());
         assertEquals("cat", LocalSearch.sent("cat"));
         assertEquals(STOCK, LocalSearch.emptyText(STOCK));
+        assertFalse(LocalSearch.keepsText("cat"));
+        phones("+15551234", 0);
+        assertEquals(Collections.emptyList(), lookups);
         assertEquals(Collections.singletonList("a working 'local search switch read' hook (it threw java.lang.NullPointerException)"),
                 HookStatus.missing(FamilyNames.DISABLE_DRAFT_PREVIEWS));
     }

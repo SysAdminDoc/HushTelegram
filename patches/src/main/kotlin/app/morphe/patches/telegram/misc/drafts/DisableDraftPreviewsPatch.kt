@@ -106,6 +106,7 @@ val disableDraftPreviewsPatch = bytecodePatch(
         // The runtime's stubs first: on their own nothing calls them.
         writeStub(LOCAL_DRAFTS, "carries", 2, drafts.reader)
         writeStub(LOCAL_DRAFTS, "clear", 3, drafts.emptier)
+        search.lookUp?.let { writeStub(LOCAL_SEARCH, "lookUp", PHONE_MATCH_REGISTERS, it) }
         drafts.method.addInstructionsAtControlFlowLabel(drafts.index, drafts.code,
             ExternalLabel("hush_done", drafts.method.getInstruction(drafts.finish)))
         enableCapability("localDrafts")

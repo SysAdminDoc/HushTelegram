@@ -34,6 +34,7 @@ internal const val LOCAL_SEARCH = "$EXTENSION_PACKAGE/misc/LocalSearch;"
 internal const val SEARCH_KEEP = "$LOCAL_SEARCH->keep()Z"
 internal const val SEARCH_SENT = "$LOCAL_SEARCH->sent(Ljava/lang/String;)Ljava/lang/String;"
 internal const val SEARCH_EMPTY_TEXT = "$LOCAL_SEARCH->emptyText(Ljava/lang/String;)Ljava/lang/String;"
+internal const val SEARCH_KEEPS_TEXT = "$LOCAL_SEARCH->keepsText(Ljava/lang/String;)Z"
 /** Messages matching the text in every chat. */
 internal const val GLOBAL_MESSAGES = "Lorg/telegram/tgnet/TLRPC\$TL_messages_searchGlobal;"
 /** Messages matching the text in one chat; chat search asks it of a forum opened beside the chat list. */
@@ -49,22 +50,42 @@ private const val CHAR_SEQUENCE = "Ljava/lang/CharSequence;"
 private const val ARRAY_LIST = "Ljava/util/ArrayList;"
 private const val CONNECTIONS = "Lorg/telegram/tgnet/ConnectionsManager;"
 private const val LOCALE = "Lorg/telegram/messenger/LocaleController;"
+private const val RUNNABLE = "Ljava/lang/Runnable;"
+private const val UTILITIES = "Lorg/telegram/messenger/AndroidUtilities;"
+private const val TEXT_UTILS = "Landroid/text/TextUtils;"
 /** What chat search's own methods take: the search's number and the text. */
 private val QUERY = listOf("I", STRING)
 /** The username helper's lookup: the text, five switches, a channel, the phone switch, a type, the search's number, a chat to leave out and a callback. */
-private val HELPER = listOf(STRING, "Z", "Z", "Z", "Z", "Z", "J", "Z", "I", "I", "J", "Ljava/lang/Runnable;")
+private val HELPER = listOf(STRING, "Z", "Z", "Z", "Z", "Z", "J", "Z", "I", "I", "J", RUNNABLE)
+/** The runtime's phone match and its lookUp stub: the helper, then what its lookup takes. */
+internal val PHONE_MATCH = listOf("Ljava/lang/Object;") + HELPER
+/** The registers [PHONE_MATCH] fills, two for each long. */
+internal val PHONE_MATCH_REGISTERS = PHONE_MATCH.sumOf { if (it == "J" || it == "D") 2 else 1 }
+/** The filtered search view's search: a chat, three more numbers, a filter, a switch, the text and whether to clear what it showed. */
+private const val FILTERED_TEXT = 6
 private val LOWERS = setOf(Opcode.SUB_INT_2ADDR, Opcode.SUB_INT, Opcode.ADD_INT_LIT8)
+private val MOVE_RESULTS = setOf(Opcode.MOVE_RESULT, Opcode.MOVE_RESULT_WIDE, Opcode.MOVE_RESULT_OBJECT)
 
-/** The places the Chats tab sends its text, and the line it shows when nothing matched. */
-internal enum class SearchLookup { SPONSORED, POSTS, MESSAGES, FORUM, USERNAMES, EMPTY_LINE }
+/**
+ * The places main search sends its text, and the line it shows when nothing matched. The first five
+ * are the Chats tab's lookups, PHONES its "+" phone number match run again on the phone, and the
+ * last four the other tabs' searches: Channels, Apps, the Chats tab with a chat or date filter, and
+ * the media tabs.
+ */
+internal enum class SearchLookup { SPONSORED, POSTS, MESSAGES, FORUM, USERNAMES, PHONES, EMPTY_LINE, CHANNELS, APPS, CHAT_FILTERS, MEDIA_TABS }
 
 /** The lookups whose hook asks keep() and takes Telegram's way past on yes. */
-private val SKIPS = setOf(SearchLookup.SPONSORED, SearchLookup.POSTS, SearchLookup.MESSAGES, SearchLookup.FORUM)
+private val SKIPS = setOf(SearchLookup.SPONSORED, SearchLookup.POSTS, SearchLookup.MESSAGES, SearchLookup.FORUM,
+    SearchLookup.CHANNELS, SearchLookup.APPS)
+
+/** The lookups whose hook hands keepsText() the text and skips the search on yes. */
+private val TEXT_SKIPS = setOf(SearchLookup.CHAT_FILTERS, SearchLookup.MEDIA_TABS)
 
 /** [code] goes in front of instruction [index] of [method]; [jump], when it has one, is where its `:hush_local` lands. */
 internal class SearchEdit(val lookup: SearchLookup, val method: MutableMethod, val index: Int, val code: String, val jump: Int? = null)
 
-internal class LocalSearchSite(val edits: List<SearchEdit>) {
+/** [edits], and [lookUp], the body the runtime's lookUp stub gets when the phone match is hooked. */
+internal class LocalSearchSite(val edits: List<SearchEdit>, val lookUp: String? = null) {
     /** Every edit, on the methods themselves or on what [into] makes of each. */
     fun apply(into: (MutableMethod) -> MutableMethod = { it }) {
         for (method in edits.map { it.method }.distinctBy { System.identityHashCode(it) }) {
@@ -86,13 +107,16 @@ internal class LocalSearchSite(val edits: List<SearchEdit>) {
 
 /**
  * Who is hooking chat search: [patch] is the name a refusal gives, and [runtime] the extension class
- * whose `keep()Z`, `sent(String)String` and `emptyText(String)String` the hooks call. Two patches can
- * hook the same lookups, each with its own runtime, and either can go first.
+ * whose `keep()Z`, `sent(String)String`, `emptyText(String)String`, `keepsText(String)Z` and
+ * `phones(...)V` the hooks call. Two patches can hook the same lookups, each with its own runtime,
+ * and either can go first.
  */
 internal class ChatSearchHooks(val patch: String, val runtime: String) {
     val keep = "$runtime->keep()Z"
     val sent = "$runtime->sent($STRING)$STRING"
     val emptyText = "$runtime->emptyText($STRING)$STRING"
+    val keepsText = "$runtime->keepsText($STRING)Z"
+    val phones = "$runtime->phones(${PHONE_MATCH.joinToString("")})V"
 
     fun refuse(reason: String): Nothing =
         throw PatchException("$patch: $reason; refuses changed search geometry before editing")
@@ -100,6 +124,8 @@ internal class ChatSearchHooks(val patch: String, val runtime: String) {
         if (!valid) refuse(reason)
     }
     fun gate(answer: Int) = "invoke-static {}, $keep\nmove-result v$answer\nif-nez v$answer, :hush_local"
+    fun textGate(text: Int, answer: Int) =
+        "invoke-static/range {v$text .. v$text}, $keepsText\nmove-result v$answer\nif-nez v$answer, :hush_local"
 }
 
 private val LOCAL = ChatSearchHooks(PATCH, LOCAL_SEARCH)
@@ -119,13 +145,23 @@ private val LOCAL = ChatSearchHooks(PATCH, LOCAL_SEARCH)
  *   pending requests and server results and answers at once, so the count runs down the same.
  *
  * The helper is shared with contact pickers and other screens, so only chat search's call to it is
- * touched. The line under "No results" is the pager's, set as each search starts.
+ * touched. An empty box also skips the helper's match of a "+" phone number against your contacts,
+ * which happens on the phone, so a second hook right after the call runs that match with the text
+ * and no username lookup.
+ *
+ * The pager starts every tab's search for the page on screen. The line under "No results" is set as
+ * each search starts. The Channels and Apps tabs each have Telegram's empty box path, which clears the
+ * tab and posts nothing, and a typed text takes it too. The Chats tab with a chat or date filter and
+ * the media tabs ask the filtered search view, and that call is skipped for typed text, so the tab
+ * keeps what it showed. The Posts tab searches only when you tap its button and stays Telegram's.
  */
 internal fun BytecodePatchContext.resolveLocalSearch(): LocalSearchSite = resolveChatSearch(LOCAL, SearchLookup.entries.toSet())
 
 /** [resolveLocalSearch]'s finding for any patch, with only the [lookups] it hooks, in [SearchLookup] order. */
 internal fun BytecodePatchContext.resolveChatSearch(hooks: ChatSearchHooks, lookups: Set<SearchLookup>): LocalSearchSite {
     hooks.shape(lookups.isNotEmpty(), "no search lookup to hook")
+    hooks.shape(SearchLookup.PHONES !in lookups || SearchLookup.USERNAMES in lookups,
+        "the phone match runs again only where the username lookup lost its text")
     requireSearchRuntime(hooks, lookups)
     val builders = mutableListOf<Method>()
     classDefForEach { classDef ->
@@ -143,19 +179,31 @@ internal fun BytecodePatchContext.resolveChatSearch(hooks: ChatSearchHooks, look
     val messages = own(GLOBAL_MESSAGES, "global message search")
     val forum = own(CHAT_MESSAGES, "forum message search")
     hooks.shape(setOf(search.name, messages.name, forum.name).size == 3, "chat search builds two of its requests in one method")
+    val helperCall by lazy { usernameCall(hooks, adapter.type, search, messages, forum) }
+    val pager by lazy { searchPager(hooks, adapter.type, search) }
     val edits = SearchLookup.entries.filter { it in lookups }.map { lookup ->
         when (lookup) {
             SearchLookup.SPONSORED -> sponsoredEdit(hooks, search)
             SearchLookup.POSTS -> postsEdit(hooks, search)
             SearchLookup.MESSAGES -> messagesEdit(hooks, search, messages)
             SearchLookup.FORUM -> forumEdit(hooks, forum)
-            SearchLookup.USERNAMES -> usernamesEdit(hooks, adapter.type, search, messages, forum)
-            SearchLookup.EMPTY_LINE -> emptyLineEdit(hooks, adapter.type, search)
+            SearchLookup.USERNAMES -> SearchEdit(lookup, helperCall.step, helperCall.call,
+                "invoke-static {v${helperCall.text}}, ${hooks.sent}\nmove-result-object v${helperCall.text}")
+            SearchLookup.PHONES -> phonesEdit(hooks, helperCall)
+            SearchLookup.EMPTY_LINE -> emptyLineEdit(hooks, pager)
+            SearchLookup.CHANNELS -> tabEdit(hooks, pager, lookup, "broadcasts")
+            SearchLookup.APPS -> tabEdit(hooks, pager, lookup, "bots")
+            SearchLookup.CHAT_FILTERS, SearchLookup.MEDIA_TABS -> filteredEdit(hooks, pager, lookup)
         }
     }
     hooks.shape(edits.none { edit -> edit.jump != null && edits.any { it.method === edit.method && it.index == edit.jump } },
         "a search skip lands on another search hook")
-    return LocalSearchSite(edits)
+    hooks.shape(edits.none { edit -> edits.any { it !== edit && it.method === edit.method && it.index == edit.index } },
+        "two search hooks share a place")
+    // The helper's own lookup, called on it from the runtime: the same parameters, its text and no usernames.
+    val lookUp = if (SearchLookup.PHONES in lookups) "check-cast p0, ${helperCall.helper.definingClass}\n" +
+        "invoke-virtual/range {p0 .. p${PHONE_MATCH_REGISTERS - 1}}, ${helperCall.helper}\nreturn-void" else null
+    return LocalSearchSite(edits, lookUp)
 }
 
 /**
@@ -258,17 +306,24 @@ private fun clearsAndReturns(body: List<Instruction>, flow: ControlFlow, at: Int
 }
 
 /**
+ * Chat search's second step [step] and its call to the username helper [helper] at [call], which
+ * passes the text in [text]. The step read that text at [loaded] from [field] of the object in [owner].
+ */
+private class HelperCall(val step: MutableMethod, val call: Int, val helper: MethodReference, val text: Int, val loaded: Int,
+                         val owner: Int, val field: FieldReference)
+
+/**
  * Chat search's second step, a runnable, is the one method outside the adapter that starts both
  * message searches, and it asks the helper for usernames first. The hook swaps the text it passes.
  * Chat search itself passes the helper no text for an empty box, so that's a call Telegram makes.
  */
-private fun BytecodePatchContext.usernamesEdit(
+private fun BytecodePatchContext.usernameCall(
     hooks: ChatSearchHooks,
     adapter: String,
     search: Method,
     messages: Method,
     forum: Method,
-): SearchEdit {
+): HelperCall {
     val steps = mutableListOf<Method>()
     classDefForEach { classDef ->
         if (classDef.type == adapter || classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
@@ -301,12 +356,42 @@ private fun BytecodePatchContext.usernamesEdit(
     hooks.shape(text != null && text <= 15 && loaded != null && body[loaded].opcode == Opcode.IGET_OBJECT &&
         body[loaded].field()?.type == STRING && (loaded + 1..call).all { flow.into(it) == listOf(it - 1) } &&
         text !in RegisterLiveness.of(step).liveInto(call + 1), "the username lookup's text can't be swapped where it's passed")
-    val passed = text!!
-    return SearchEdit(SearchLookup.USERNAMES, step, call, "invoke-static {v$passed}, ${hooks.sent}\nmove-result-object v$passed")
+    return HelperCall(step, call, helper, text!!, loaded!!, body[loaded].namedRegisters()[1], body[loaded].field()!!)
 }
 
-/** The pager starts each chat search and, first, formats the line under "No results" and sets it; the hook rewrites it in between. */
-private fun BytecodePatchContext.emptyLineEdit(hooks: ChatSearchHooks, adapter: String, search: Method): SearchEdit {
+/**
+ * Right after the username lookup, which got no text, the runtime hands the same registers to the
+ * helper again with the text read back from where the step got it. Its phone match needs no server,
+ * and the runtime turns the username lookup off for that call. The text register is free there, as
+ * the swap already needs, so reading the text back into it costs nothing.
+ */
+private fun BytecodePatchContext.phonesEdit(hooks: ChatSearchHooks, found: HelperCall): SearchEdit {
+    val step = found.step
+    val body = step.instructions()
+    val after = found.call + 1
+    val passed = body[found.call].namedRegisters()
+    val first = passed.firstOrNull() ?: hooks.refuse("the username lookup passes nothing")
+    val owner = classDefByOrNull(found.helper.definingClass)
+    val lookup = owner?.methods?.singleOrNull { it.name == found.helper.name && it.params() == HELPER && it.returnType == "V" }
+    // The runtime's lookUp stub calls it from another package.
+    hooks.shape(owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags) && !AccessFlags.INTERFACE.isSet(owner.accessFlags) &&
+        lookup != null && AccessFlags.PUBLIC.isSet(lookup.accessFlags) && !AccessFlags.STATIC.isSet(lookup.accessFlags),
+        "the username helper's lookup can't be called from the runtime")
+    hooks.shape(body[found.call].opcode == Opcode.INVOKE_VIRTUAL_RANGE &&
+        passed == (first until first + PHONE_MATCH_REGISTERS).toList() && passed[1] == found.text,
+        "the username lookup isn't passed one run of registers")
+    val flow = ControlFlow.of(step)
+    hooks.shape(body.getOrNull(after) != null && body[after].opcode !in MOVE_RESULTS && flow.into(after) == listOf(found.call) &&
+        found.owner <= 15 && (found.loaded + 1..found.call).none { found.owner in body[it].writes() },
+        "the username lookup's text can't be read back after it")
+    return SearchEdit(SearchLookup.PHONES, step, after, listOf(
+        "iget-object v${found.text}, v${found.owner}, ${found.field}",
+        "invoke-static/range {v$first .. v${first + PHONE_MATCH_REGISTERS - 1}}, ${hooks.phones}",
+    ).joinToString("\n"))
+}
+
+/** The pager starts each tab's search for the page on screen, the Chats tab's chat search among them, and sets the line under "No results". */
+private fun BytecodePatchContext.searchPager(hooks: ChatSearchHooks, adapter: String, search: Method): MutableMethod {
     val pagers = mutableListOf<Method>()
     classDefForEach { classDef ->
         if (classDef.type == adapter || classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
@@ -314,7 +399,11 @@ private fun BytecodePatchContext.emptyLineEdit(hooks: ChatSearchHooks, adapter: 
             body.any { it.runs(adapter, search) } && body.any { it.opcode == Opcode.SGET && it.reference() == NO_RESULT_LINE } } }
     }
     val found = pagers.one("search pager", hooks::refuse)
-    val pager = mutableClassDefBy(found.definingClass).methods.single { it.sameSignature(found) }
+    return mutableClassDefBy(found.definingClass).methods.single { it.sameSignature(found) }
+}
+
+/** The pager formats the line under "No results" and sets it; the hook rewrites it in between. */
+private fun emptyLineEdit(hooks: ChatSearchHooks, pager: MutableMethod): SearchEdit {
     val body = pager.instructions()
     val line = body.indices.filter { body[it].opcode == Opcode.SGET && body[it].reference() == NO_RESULT_LINE }
         .one("no results line", hooks::refuse)
@@ -329,7 +418,94 @@ private fun BytecodePatchContext.emptyLineEdit(hooks: ChatSearchHooks, adapter: 
     return SearchEdit(SearchLookup.EMPTY_LINE, pager, set, "invoke-static {v$text}, ${hooks.emptyText}\nmove-result-object v$text")
 }
 
-/** The runtime's calls [lookups] need: keep() for every skip, sent() for usernames and emptyText() for the empty line. */
+/**
+ * The Channels and Apps tabs are pages the pager searches itself. It puts the text in the tab's own
+ * field, reads it back and asks whether it's empty: `if-eqz` either falls into Telegram's empty box
+ * path, which clears the tab's lists, marks nothing as loading, has no more to load and shows the
+ * tab's empty view, or goes on to post the tab's delayed search. Each tab is told apart by the
+ * account search its class builds from that field, for channels or for bots. The hook sits where a
+ * typed text lands and takes the empty box path, so the search is never posted.
+ */
+private fun BytecodePatchContext.tabEdit(hooks: ChatSearchHooks, pager: MutableMethod, lookup: SearchLookup, flag: String): SearchEdit {
+    val what = if (lookup == SearchLookup.CHANNELS) "the Channels tab" else "the Apps tab"
+    val body = pager.instructions()
+    val branch = body.indices.filter { at -> emptyCheck(body, at)?.let { field -> searches(field, flag) } == true }
+        .one("$what's empty box check", hooks::refuse)
+    val tab = emptyCheck(body, branch)!!.definingClass
+    val flow = ControlFlow.of(pager)
+    val empty = branch + 1
+    val on = flow.normal[branch].filter { it != empty }.one("$what's way to its search", hooks::refuse)
+    val post = (on until body.size).firstOrNull { body[it].call()?.let { call ->
+        call.definingClass == UTILITIES && call.name == "runOnUIThread" && call.params() == listOf(RUNNABLE, "J") } == true }
+    hooks.shape(on > empty && flow.into(on) == listOf(branch) && post != null && !reaches(pager, post, on),
+        "$what posts its search another way")
+    // Telegram's empty box path: it clears the tab and marks it as having nothing to load, and starts nothing.
+    hooks.shape((empty until on).none { body[it].call()?.let { call -> call.definingClass == UTILITIES ||
+        call.definingClass == CONNECTIONS } == true } &&
+        (empty until on).any { body[it].opcode == Opcode.IPUT_BOOLEAN && body[it].field()?.definingClass == tab } &&
+        (empty until on).any { body[it].call()?.let { call -> call.definingClass == ARRAY_LIST && call.name == "clear" } == true },
+        "$what lost its empty box path")
+    val answer = pager.freeLocalsAt(hooks.patch, on, 1, targets = listOf(empty), highest = 255).single()
+    return SearchEdit(lookup, pager, on, hooks.gate(answer), empty)
+}
+
+/** The String field that's read and tested by `iget-object`, `TextUtils.isEmpty`, `move-result` and the `if-eqz` at [at]. */
+private fun emptyCheck(body: List<Instruction>, at: Int): FieldReference? {
+    if (at < 3 || body[at].opcode != Opcode.IF_EQZ) return null
+    val (load, test, result) = Triple(body[at - 3], body[at - 2], body[at - 1])
+    val field = load.field()?.takeIf { load.opcode == Opcode.IGET_OBJECT && it.type == STRING } ?: return null
+    val read = load.namedRegisters()[0]
+    return field.takeIf { test.opcode == Opcode.INVOKE_STATIC && test.namedRegisters() == listOf(read) &&
+        test.call()?.let { call -> call.definingClass == TEXT_UTILS && call.name == "isEmpty" } == true &&
+        result.opcode == Opcode.MOVE_RESULT && result.namedRegisters() == body[at].namedRegisters() }
+}
+
+/** Whether [field]'s class has a search that puts it in a global message search and a [flag] account search. */
+private fun BytecodePatchContext.searches(field: FieldReference, flag: String): Boolean =
+    classDefByOrNull(field.definingClass)?.methods?.any { method -> method.instructions().let { body ->
+        fun carries(target: String) = body.indices.any { at -> body[at].opcode == Opcode.IPUT_OBJECT && body[at].reference() == target &&
+            (at - 1 downTo 0).firstOrNull { body[at].namedRegisters()[0] in body[it].writes() }?.let { load ->
+                body[load].opcode == Opcode.IGET_OBJECT && body[load].reference() == field.toString() } == true }
+        body.any { it.opcode == Opcode.IPUT_BOOLEAN && it.reference() == "$USERNAMES->$flag:Z" } &&
+            carries("$GLOBAL_MESSAGES->q:$STRING") && carries("$USERNAMES->q:$STRING")
+    } } == true
+
+/**
+ * The Chats tab with a chat or date filter and each media tab show the filtered search view, a list
+ * of messages its delayed runnable asks Telegram for, and the pager starts its search with the text.
+ * The Chats tab's view is a field of the pager and a media tab's is the page itself, cast. The hook
+ * skips the call for typed text, so the view keeps what it showed; nothing in it spins until a search starts.
+ */
+private fun BytecodePatchContext.filteredEdit(hooks: ChatSearchHooks, pager: MutableMethod, lookup: SearchLookup): SearchEdit {
+    val body = pager.instructions()
+    val calls = body.indices.filter { at -> body[at].call()?.let { call -> call.returnType == "V" && call.params().let { taken ->
+        taken.size == 8 && taken.take(4).all { it == "J" } && taken.drop(5) == listOf("Z", STRING, "Z") } } == true }
+    hooks.shape(calls.size == 2 && calls.map { body[it].call().toString() }.distinct().size == 1,
+        "the pager no longer starts the filtered search twice")
+    val filtered = body[calls.first()].call()!!
+    val search = classDefByOrNull(filtered.definingClass)?.methods?.singleOrNull { it.name == filtered.name &&
+        it.params() == filtered.params() && it.returnType == "V" }
+    hooks.shape(search != null && search.instructions().let { own -> own.indices.any { at -> own[at].opcode == Opcode.NEW_INSTANCE &&
+        own[at].reference()?.let { type -> classDefByOrNull(type)?.methods?.any { it.name == "run" && it.parameterTypes.isEmpty() &&
+            it.constructs(GLOBAL_MESSAGES) } } == true && own.drop(at + 1).any { post -> post.call()?.let { call ->
+                call.definingClass == UTILITIES && call.name == "runOnUIThread" } == true } } },
+        "the filtered search no longer posts a message search")
+    val kind = if (lookup == SearchLookup.CHAT_FILTERS) Opcode.IGET_OBJECT else Opcode.CHECK_CAST
+    val call = calls.filter { at -> body[at].namedRegisters().firstOrNull()?.let { view ->
+        (at - 1 downTo 0).firstOrNull { view in body[it].writes() }?.let { body[it].opcode == kind &&
+            (body[it].field()?.type ?: body[it].reference()) == filtered.definingClass } } == true }
+        .one("${lookup.name.lowercase()} filtered search", hooks::refuse)
+    val passed = body[call].namedRegisters()
+    val text = passed.getOrNull(1 + filtered.params().take(FILTERED_TEXT).sumOf { if (it == "J" || it == "D") 2 else 1 })
+    val after = call + 1
+    hooks.shape(body[call].opcode == Opcode.INVOKE_VIRTUAL_RANGE && text != null && filtered.params()[FILTERED_TEXT] == STRING &&
+        body.getOrNull(after) != null && body[after].opcode !in MOVE_RESULTS && ControlFlow.of(pager).normal[call] == listOf(after),
+        "the filtered search's text can't be read where it's passed")
+    val answer = pager.freeLocalsAt(hooks.patch, call, 1, targets = listOf(after), highest = 255).single()
+    return SearchEdit(lookup, pager, call, hooks.textGate(text!!, answer), after)
+}
+
+/** The runtime's calls [lookups] need: keep() for every skip, sent() for usernames, emptyText() for the empty line, keepsText() for filtered searches and phones() with its lookUp stub for the phone match. */
 private fun BytecodePatchContext.requireSearchRuntime(hooks: ChatSearchHooks, lookups: Set<SearchLookup>) {
     val owner = classDefByOrNull(hooks.runtime)
     hooks.shape(owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags), "no public search runtime")
@@ -337,6 +513,9 @@ private fun BytecodePatchContext.requireSearchRuntime(hooks: ChatSearchHooks, lo
         Triple("keep", emptyList<String>(), "Z").takeIf { lookups.any { it in SKIPS } },
         Triple("sent", listOf(STRING), STRING).takeIf { SearchLookup.USERNAMES in lookups },
         Triple("emptyText", listOf(STRING), STRING).takeIf { SearchLookup.EMPTY_LINE in lookups },
+        Triple("keepsText", listOf(STRING), "Z").takeIf { lookups.any { it in TEXT_SKIPS } },
+        Triple("phones", PHONE_MATCH, "V").takeIf { SearchLookup.PHONES in lookups },
+        Triple("lookUp", PHONE_MATCH, "V").takeIf { SearchLookup.PHONES in lookups },
     )
     for ((name, parameters, result) in needed) {
         hooks.shape(owner!!.methods.count { it.name == name && it.params() == parameters && it.returnType == result &&
@@ -344,6 +523,8 @@ private fun BytecodePatchContext.requireSearchRuntime(hooks: ChatSearchHooks, lo
             !AccessFlags.NATIVE.isSet(it.accessFlags) && !AccessFlags.ABSTRACT.isSet(it.accessFlags) && it.implementation != null } == 1,
             "no callable public static runtime $name")
     }
+    // The stub is written over by name, so no other method may share it.
+    hooks.shape(SearchLookup.PHONES !in lookups || owner!!.methods.count { it.name == "lookUp" } == 1, "the runtime's lookUp stub is overloaded")
 }
 
 /** Whether [target] can be reached from the method's start, thrown or not, without running [avoiding]. */
