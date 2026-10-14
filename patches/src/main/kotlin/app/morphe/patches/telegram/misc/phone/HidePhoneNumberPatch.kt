@@ -16,11 +16,13 @@ import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -117,7 +119,7 @@ internal fun BytecodePatchContext.resolveHidePhoneNumber(): HidePhoneSite {
     controlHook(HIDE_PHONE, "accounts", listOf(), "I")
 
     val formatters = mutableListOf<String>()
-    classDefForEach { cls ->
+    forEachClassMentioning(Mention.string(PHONE_FORMATS)) { cls ->
         if (cls.methods.any { it.name == "<init>" && it.controlBody().any { i -> ((i as? ReferenceInstruction)?.reference as? StringReference)?.string == PHONE_FORMATS } }) {
             formatters += cls.type
         }
@@ -129,8 +131,8 @@ internal fun BytecodePatchContext.resolveHidePhoneNumber(): HidePhoneSite {
     }.controlSingle("phone format method").let { "${it.definingClass}->${it.name}(Ljava/lang/String;)Ljava/lang/String;" }
 
     val found = mutableListOf<Triple<String, String, List<Int>>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.type in KEPT) return@classDefForEach
+    forEachClassMentioning(Mention.reference(format)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.type in KEPT) return@forEachClassMentioning
         cls.methods.forEach { method ->
             val body = method.controlBody()
             val indices = body.indices.filter { body[it].controlRef() == format }

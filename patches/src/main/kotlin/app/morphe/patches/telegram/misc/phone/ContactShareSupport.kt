@@ -9,6 +9,7 @@ import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
@@ -16,6 +17,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.controlString
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.namedRegisters
@@ -59,8 +61,8 @@ internal class ContactShareSite(val offer: String, val box: String, val view: Mu
 internal fun BytecodePatchContext.resolveContactShare(): ContactShareSite {
     controlHook(CONTACT_SHARE, "startsTicked", listOf("Ljava/lang/Object;", "Z", "Z"), "Z")
     val saves = mutableListOf<Pair<FieldReference, FieldReference>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.reference(ADD_CONTACT)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         for (method in cls.methods) {
             val body = method.controlBody()
             body.indices.filter { body[it].controlRef() == ADD_CONTACT }.forEach { at -> shareOperand(method, at)?.let(saves::add) }
