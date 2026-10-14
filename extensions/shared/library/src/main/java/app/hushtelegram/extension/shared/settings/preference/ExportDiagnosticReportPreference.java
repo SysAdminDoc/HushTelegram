@@ -201,15 +201,31 @@ public class ExportDiagnosticReportPreference extends Preference {
                 text = preview.text(ticked);
             } catch (Throwable failure) {
                 Logger.printException(() -> "Failed to redraw the diagnostic preview", failure);
+                Utils.runOnMainThread(() -> {
+                    if (current(choice, drawn, shown)) stale(context, note);
+                });
                 return;
             }
             Utils.runOnMainThread(() -> {
-                AlertDialog dialog = shown[0];
-                if (choice != drawn[0] || dialog == null || !dialog.isShowing() || !canStartExport()) return;
-                bind(context, body, note, text);
+                if (current(choice, drawn, shown)) bind(context, body, note, text);
             });
         });
-        if (!started) Logger.printInfo(() -> "The diagnostic preview couldn't redraw; Copy and Save still follow the boxes");
+        if (!started) {
+            Logger.printInfo(() -> "The diagnostic preview couldn't redraw; Copy and Save still follow the boxes");
+            if (current(choice, drawn, shown)) stale(context, note);
+        }
+    }
+
+    /** Whether [choice] is still the newest and its dialog and page are still there. */
+    private boolean current(int choice, int[] drawn, AlertDialog[] shown) {
+        AlertDialog dialog = shown[0];
+        return choice == drawn[0] && dialog != null && dialog.isShowing() && canStartExport();
+    }
+
+    /** The text above no longer matches the boxes; the buttons still do. */
+    private static void stale(Context context, TextView note) {
+        note.setText(L10n.t(context, "Couldn't update the preview. Copy and Save still use only what's ticked."));
+        note.setVisibility(View.VISIBLE);
     }
 
     /** Shows [text] up to {@link #PREVIEW_MAX_CHARS}, and says so under the boxes when it's cut. */
@@ -218,7 +234,7 @@ public class ExportDiagnosticReportPreference extends Preference {
         if (end < text.length() && end > 0 && Character.isHighSurrogate(text.charAt(end - 1))) end--;
         body.setText(text.substring(0, end));
         if (end < text.length()) {
-            NumberFormat numbers = NumberFormat.getIntegerInstance();
+            NumberFormat numbers = NumberFormat.getIntegerInstance(L10n.locale(context));
             note.setText(String.format(L10n.t(context, "Showing the first %1$s of %2$s characters. Save keeps all of "
                             + "it, and Copy keeps what fits, leaving out the oldest events first."),
                     numbers.format(end), numbers.format(text.length())));

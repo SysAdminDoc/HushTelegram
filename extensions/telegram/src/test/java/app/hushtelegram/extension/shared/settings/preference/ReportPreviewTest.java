@@ -34,6 +34,7 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAlertDialog;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowToast;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -44,6 +45,7 @@ import java.util.List;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.Utils;
+import app.hushtelegram.extension.shared.WorkerPoolForTests;
 import app.hushtelegram.extension.shared.diagnostics.DiagnosticCategory;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
@@ -187,6 +189,90 @@ public class ReportPreviewTest {
         }
     }
 
+    /** A redraw that comes back after the page went draws nothing. */
+    @Test public void aRedrawForAPageThatWentIsDropped() throws Exception {
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            boolean[] owned = {true};
+            ExportDiagnosticReportPreference row = new ExportDiagnosticReportPreference(controller.get()) {
+                @Override protected boolean canStartExport() {
+                    return owned[0];
+                }
+            };
+            ViewGroup content = openPreview(row);
+            TextView body = body(content);
+            boxes(content).get(1).setChecked(false);
+            owned[0] = false;
+            settle();
+            assertTrue(body.getText().toString().contains(SECRET_PART));
+        }
+    }
+
+    /** With no worker free, the preview says it couldn't follow the box, and Save still does. */
+    @Test public void aRedrawThatCantStartSaysSoAndSaveStillFollowsTheBoxes() throws Exception {
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            ExportDiagnosticReportPreference row = new ExportDiagnosticReportPreference(controller.get());
+            ViewGroup content = openPreview(row);
+            TextView body = body(content);
+            TextView note = note(content);
+            assertEquals(View.GONE, note.getVisibility());
+            try (WorkerPoolForTests full = WorkerPoolForTests.fill()) {
+                boxes(content).get(1).setChecked(false);
+            }
+            assertEquals(View.VISIBLE, note.getVisibility());
+            assertEquals("Couldn't update the preview. Copy and Save still use only what's ticked.", note.getText().toString());
+            assertTrue("the old text stays", body.getText().toString().contains(SECRET_PART));
+
+            ((AlertDialog) ShadowAlertDialog.getLatestAlertDialog()).getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            String saved = savedReport();
+            assertFalse(saved, saved.contains(SECRET_PART));
+            assertTrue(saved, saved.contains(EVENT));
+        }
+    }
+
+    /** A file with a part left out isn't called the full report. */
+    @Test public void saveFromTheRowLeavesOutWhatsUntickedAndSaysSo() throws Exception {
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            ExportDiagnosticReportPreference row = new ExportDiagnosticReportPreference(controller.get());
+            ViewGroup content = openPreview(row);
+            boxes(content).get(1).setChecked(false);
+            settle();
+            ((AlertDialog) ShadowAlertDialog.getLatestAlertDialog()).getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertFalse(row.isBusy());
+            String saved = savedReport();
+            assertFalse(saved, saved.contains(SECRET_PART));
+            assertFalse(saved, saved.contains("[PROBE]"));
+            assertTrue(saved, saved.contains(EVENT));
+            String toast = String.valueOf(ShadowToast.getTextOfLatestToast());
+            assertTrue(toast, toast.startsWith("Report saved to "));
+            assertNull("Save copied something", clipboard());
+        }
+    }
+
+    /** A letter written as two chars is never cut in half at the end of what's shown. */
+    @Test public void thePreviewNeverEndsHalfwayThroughALetter() {
+        StringBuilder text = new StringBuilder();
+        for (int i = 1; i < ExportDiagnosticReportPreference.PREVIEW_MAX_CHARS; i++) text.append('a');
+        text.append("😀tail");
+        TextView body = new TextView(context);
+        TextView note = new TextView(context);
+        ExportDiagnosticReportPreference.bind(context, body, note, text.toString());
+        assertEquals(ExportDiagnosticReportPreference.PREVIEW_MAX_CHARS - 1, body.getText().length());
+        assertFalse(Character.isHighSurrogate(body.getText().charAt(body.getText().length() - 1)));
+        assertTrue(note.getText().toString(), note.getText().toString().startsWith("Showing the first 29,999 of 30,005 "));
+    }
+
+    /** The counts read the way the phone's language writes numbers. */
+    @Test @Config(qualifiers = "de") public void theCountsUseThePhonesNumbers() {
+        StringBuilder text = new StringBuilder();
+        for (int i = 0; i < ExportDiagnosticReportPreference.PREVIEW_MAX_CHARS + 10; i++) text.append('a');
+        TextView note = new TextView(context);
+        ExportDiagnosticReportPreference.bind(context, new TextView(context), note, text.toString());
+        assertTrue(note.getText().toString(), note.getText().toString().contains("30.000")
+                && note.getText().toString().contains("30.010"));
+    }
+
     /** A page gone while the report was built gets no preview. */
     @Test public void aPreviewForAPageThatWentIsNotShown() throws Exception {
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
@@ -215,14 +301,16 @@ public class ReportPreviewTest {
             ViewGroup content = openPreview(row);
             TextView body = body(content);
             assertEquals(ExportDiagnosticReportPreference.PREVIEW_MAX_CHARS, body.getText().length());
-            TextView note = (TextView) content.getChildAt(content.getChildCount() - 2);
+            TextView note = note(content);
             assertEquals(View.VISIBLE, note.getVisibility());
             assertTrue(note.getText().toString(), note.getText().toString().startsWith("Showing the first 30,000 of "));
 
-            // Save still writes all of it.
+            // Save still writes all of it, and with every part ticked it's the full report.
             ((AlertDialog) ShadowAlertDialog.getLatestAlertDialog()).getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             settle();
             assertTrue(savedReport(), savedReport().contains(line + " 999"));
+            String toast = String.valueOf(ShadowToast.getTextOfLatestToast());
+            assertTrue(toast, toast.startsWith("Full report saved to "));
         }
     }
 
@@ -266,6 +354,10 @@ public class ReportPreviewTest {
 
     private static TextView body(ViewGroup content) {
         return (TextView) content.getChildAt(content.getChildCount() - 1);
+    }
+
+    private static TextView note(ViewGroup content) {
+        return (TextView) content.getChildAt(content.getChildCount() - 2);
     }
 
     /** Worker, then the main thread, twice over, for a worker that hands back to the main thread. */

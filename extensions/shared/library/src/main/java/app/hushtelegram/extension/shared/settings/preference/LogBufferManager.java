@@ -74,14 +74,15 @@ public final class LogBufferManager {
 
     /**
      * The other sentences the export path says. Each is null until a bundle sets it, and until
-     * then the text below is read from {@link L10n}. The saved-file sentence carries the path as
-     * %1$s.
+     * then the text below is read from {@link L10n}. The saved-file sentences carry the path as
+     * %1$s, the second for a preview saved with parts left out.
      */
     public static CharSequence copiedMessage;
     public static CharSequence exportFailedMessage;
     public static CharSequence noContextMessage;
     public static CharSequence alreadySavingMessage;
     public static CharSequence savedToMessage;
+    public static CharSequence savedPartsToMessage;
     public static CharSequence couldNotStartMessage;
 
     private static String say(CharSequence set, String fallback) {
@@ -255,17 +256,25 @@ public final class LogBufferManager {
 
     /** Save full report, then [done] on the main thread however it ended, so a row can show it's busy. */
     public static void exportToFile(@Nullable Runnable done) {
-        saveBuilt(LogBufferManager::buildExportText, done);
+        saveBuilt(LogBufferManager::buildExportText, true, done);
     }
 
-    /** Save from a preview: the parts [kept] marks of that report, whole. Then [done] on the main thread. */
+    /**
+     * Save from a preview: the parts [kept] marks of that report, whole. Then [done] on the main
+     * thread. With a part left out, the toast doesn't call it the full report.
+     */
     public static void savePreview(Preview preview, boolean[] kept, @Nullable Runnable done) {
         boolean[] choice = kept.clone();
-        saveBuilt(() -> preview.text(choice), done);
+        boolean whole = true;
+        for (boolean part : choice) whole &= part;
+        saveBuilt(() -> preview.text(choice), whole, done);
     }
 
-    /** Builds [text] and writes it to a file on a worker, then [done] on the main thread however it ended. */
-    private static void saveBuilt(Callable<String> text, @Nullable Runnable done) {
+    /**
+     * Builds [text] and writes it to a file on a worker, then [done] on the main thread however it
+     * ended. [whole] says whether the file is the full report.
+     */
+    private static void saveBuilt(Callable<String> text, boolean whole, @Nullable Runnable done) {
         Context context = Utils.getContext();
         if (context == null) {
             Utils.showToastLong(say(noContextMessage, L10n.t("The report couldn't be saved yet. Try again in a moment.")));
@@ -283,7 +292,9 @@ public final class LogBufferManager {
             Utils.submitOnBackgroundThread(() -> {
                 try {
                     String saved = writeToFile(app, text.call());
-                    Utils.showToastLong(String.format(say(savedToMessage, L10n.t("Full report saved to %1$s")), L10n.isolate(saved)));
+                    String sentence = whole ? say(savedToMessage, L10n.t("Full report saved to %1$s"))
+                            : say(savedPartsToMessage, L10n.t("Report saved to %1$s"));
+                    Utils.showToastLong(String.format(sentence, L10n.isolate(saved)));
                 } catch (Exception ex) {
                     Utils.showToastLong(say(exportFailedMessage, L10n.t("The diagnostic report couldn't be saved. Try again.")));
                     Logger.printException(() -> "Failed to save diagnostics", ex);
