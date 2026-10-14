@@ -3,8 +3,9 @@
     The checks that say whether a morphe-desktop run actually patched anything.
 
 .DESCRIPTION
-    Dot-sourced by verify-all-patches.ps1, patch-for-device.ps1 and measure-patch-heap.ps1. They
-    ask the same question of the same CLI, and two used to carry their own copy of these functions. The
+    Dot-sourced by verify-all-patches.ps1, patch-for-device.ps1, verify-patch-selections.ps1 and
+    build-release-receipt.ps1. They ask the same question of the same CLI, and two used to carry their
+    own copy of these functions (the second was a heap measuring script since removed). The
     copies drifted: the verification script learned on 2026-09-08 that morphe-desktop 1.15.0
     omits the top-level success field when it is true, and the heap script did not, so every
     successful run it measured came back invalid. One copy is why that cannot happen again.
