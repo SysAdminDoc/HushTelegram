@@ -178,6 +178,22 @@ public class PatchFamilyTest {
     }
 
     @Test
+    public void holidayLookCarriesTheTitleEmojiBesideItsOneSwitch() {
+        PatchFamily family = PatchFamily.HOLIDAY_LOOK;
+        assertEquals("Holiday look all year", family.patchName);
+        assertEquals("holidayLook", family.statusMethod);
+        // The emoji is text, not a switch: Pause reaches it through its own empty paused value.
+        assertEquals(Collections.singletonList(Settings.HOLIDAY_LOOK), family.switches);
+        assertEquals(EnumSet.of(PatchFamily.Capability.TITLE_EMOJI), family.expectedCapabilities());
+        assertEquals("titleEmoji", PatchFamily.Capability.TITLE_EMOJI.statusMethod);
+        assertEquals("", Settings.TITLE_EMOJI.defaultValue);
+        // The chat list builds its title once, so new text shows after a restart.
+        assertTrue(Settings.TITLE_EMOJI.rebootApp);
+        assertOnItsPage(family);
+        assertEquals(PatchFamily.Page.LOOK, PatchFamily.Page.of(family));
+    }
+
+    @Test
     public void turnOffBetaLogsHasItsOwnOffByDefaultSwitchThatAppliesAfterARestart() {
         PatchFamily family = PatchFamily.BETA_LOGS_OFF;
         assertEquals("Turn off beta debug logs", family.patchName);

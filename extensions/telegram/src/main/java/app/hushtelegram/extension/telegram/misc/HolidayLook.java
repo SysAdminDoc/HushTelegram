@@ -104,6 +104,7 @@ public final class HolidayLook {
         }
     }
 
+    /** The logo spans the whole title Telegram built, which ends before any text TitleEmoji added. */
     private static ImageSpan logoSpan(CharSequence title) {
         if (!(title instanceof Spanned) || title.length() == 0) return null;
         Spanned text = (Spanned) title;
@@ -111,7 +112,7 @@ public final class HolidayLook {
         if (spans.length != 1) return null;
         ImageSpan span = spans[0];
         if (span.getVerticalAlignment() != ImageSpan.ALIGN_BOTTOM || text.getSpanStart(span) != 0
-                || text.getSpanEnd(span) != text.length() || span.getDrawable() == null) return null;
+                || text.getSpanEnd(span) != TitleEmoji.titleEnd(text) || span.getDrawable() == null) return null;
         synchronized (logoSpans) { return logoSpans.containsKey(span) ? span : null; }
     }
 

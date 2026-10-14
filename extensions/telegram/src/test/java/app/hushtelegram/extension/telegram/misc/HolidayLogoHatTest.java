@@ -40,6 +40,7 @@ public class HolidayLogoHatTest {
     @After public void tearDown() {
         PauseForTests.resume();
         Settings.HOLIDAY_LOOK.resetToDefault();
+        Settings.TITLE_EMOJI.resetToDefault();
     }
 
     @Test public void registeredBottomAlignedLogoUsesItsOwnBoundsAtBothTextSizesAndThemeColors() throws Exception {
@@ -90,6 +91,32 @@ public class HolidayLogoHatTest {
         valid = new SpannableStringBuilder("Telegram");
         valid.setSpan(baseline, 0, valid.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         assertFalse(eligible(valid));
+    }
+
+    /** The emoji beside the title follows the logo, and the hat still sits over the logo alone. */
+    @Test public void theTitleEmojiAfterTheLogoKeepsTheHat() throws Exception {
+        RecordingDrawable logo = new RecordingDrawable(28, 24);
+        logo.setBounds(0, 2, 28, 26);
+        SpannableStringBuilder title = title("Telegram", logo, true);
+        Settings.TITLE_EMOJI.save(new String(Character.toChars(0x1F384)));
+        TitleEmoji.decorate(title);
+        assertTrue(title.length() > "Telegram".length());
+        ImageSpan span = title.getSpans(0, title.length(), ImageSpan.class)[0];
+        assertEquals("Telegram".length(), title.getSpanEnd(span));
+        assertTrue(eligible(title));
+        assertTrue(eligible(new SpannableStringBuilder(title)));
+        RecordingDrawable hat = new RecordingDrawable(20, 14);
+        draw(title, hat, 100, 20, 32, 6, -2, 3, 127);
+        assertEquals(1, hat.draws);
+        assertEquals(new Rect(100 + 6 + (28 - 20 - 6) / 2, 20 + 32 - 26 + 2 - 2 + 3 - 14,
+                100 + 6 + (28 - 20 - 6) / 2 + 20, 20 + 32 - 26 + 2 - 2 + 3), hat.getBounds());
+        // With the switch off the emoji stays, and the hat goes as it always did.
+        Settings.HOLIDAY_LOOK.save(false);
+        assertFalse(eligible(title));
+        Settings.HOLIDAY_LOOK.save(true);
+        // Anything else after the logo still turns the hat away.
+        title.append(" other text");
+        assertFalse(eligible(title));
     }
 
     @Test public void offEveryPauseReasonAndUnavailableSettingsLeaveTheStockHatUntouched() throws Exception {

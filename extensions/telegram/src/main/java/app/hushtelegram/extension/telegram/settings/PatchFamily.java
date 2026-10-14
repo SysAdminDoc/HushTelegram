@@ -356,6 +356,7 @@ public enum PatchFamily {
         SKIP_AUTOLOGIN(STRIP_LINK_TRACKING, "skipAutologin", "website sign-in tokens"),
         SHARE_NUMBER_UNTICKED(HIDE_PHONE_NUMBER, "shareNumberUnticked", "number sharing on new contacts"),
         COMPACT_TAB_BAR(HIDE_CONTACTS_TAB, "compactTabBar", "bottom bar size"),
+        TITLE_EMOJI(HOLIDAY_LOOK, "titleEmoji", "emoji next to the chat list title"),
         FIREBASE_CERTIFICATE_HEADER(REPAIR_FIREBASE_PUSH, "firebaseCertificateHeader", "Firebase certificate header"),
         FIREBASE_LOCAL_STATUS(REPAIR_FIREBASE_PUSH, "firebaseLocalStatus", "local notification status");
 

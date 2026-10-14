@@ -144,6 +144,7 @@ public class SettingsBackupTest {
         for (BooleanSetting setting : SettingsBackup.ALLOWLIST) setting.resetToDefault();
         for (StringSetting list : SettingsBackup.FILTER_LISTS) list.resetToDefault();
         for (IntegerSetting number : SettingsBackup.NUMBERS) number.resetToDefault();
+        for (StringSetting text : SettingsBackup.TEXTS) text.resetToDefault();
         PatchFamily.inBuildForTests = java.util.EnumSet.allOf(PatchFamily.class);
         ShadowToast.reset();
         ShadowAlertDialog.reset();
@@ -162,6 +163,7 @@ public class SettingsBackupTest {
         for (BooleanSetting setting : SettingsBackup.ALLOWLIST) setting.resetToDefault();
         for (StringSetting list : SettingsBackup.FILTER_LISTS) list.resetToDefault();
         for (IntegerSetting number : SettingsBackup.NUMBERS) number.resetToDefault();
+        for (StringSetting text : SettingsBackup.TEXTS) text.resetToDefault();
         // The release check stays out of every file, so the list above doesn't reach it.
         Settings.CHECK_FOR_RELEASES.resetToDefault();
         BaseSettings.PAUSED.resetToDefault();
@@ -191,18 +193,19 @@ public class SettingsBackupTest {
         assertTrue("STAYS_OUT names a switch Settings no longer has", switches.containsAll(STAYS_OUT.keySet()));
         assertEquals("the list names a switch twice", SettingsBackup.ALLOWLIST.size(),
                 new HashSet<>(SettingsBackup.ALLOWLIST).size());
-        // A file carries true or false, the message filters as lists of lines and the sticker size
-        // as one of its choices. Any other setting in Settings that isn't a switch needs a format
-        // that can carry it before it can be decided on.
+        // A file carries true or false, the message filters as lists of lines, the sticker size
+        // as one of its choices and the title emoji as short text. Any other setting in Settings
+        // that isn't a switch needs a format that can carry it before it can be decided on.
         List<String> notSwitches = new ArrayList<>();
         for (Setting<?> setting : declaredSettings(Settings.class)) {
             if (!(setting instanceof BooleanSetting) && !SettingsBackup.FILTER_LISTS.contains(setting)
-                    && !SettingsBackup.NUMBERS.contains(setting)) notSwitches.add(setting.key);
+                    && !SettingsBackup.NUMBERS.contains(setting) && !SettingsBackup.TEXTS.contains(setting)) notSwitches.add(setting.key);
         }
         assertEquals("a setting in Settings isn't a switch, and a settings file has no format for it",
                 Collections.emptyList(), notSwitches);
         assertEquals(Arrays.asList(Settings.MESSAGE_FILTERS_GROUPS, Settings.MESSAGE_FILTERS_CHANNELS), SettingsBackup.FILTER_LISTS);
         assertEquals(Collections.singletonList(Settings.STICKER_SIZE), SettingsBackup.NUMBERS);
+        assertEquals(Collections.singletonList(Settings.TITLE_EMOJI), SettingsBackup.TEXTS);
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES,
                         Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_COMMERCE,
                         Settings.HIDE_PROMOTIONAL_BANNERS,
@@ -257,7 +260,9 @@ public class SettingsBackupTest {
         Set<String> carried = keys(SettingsBackup.ALLOWLIST);
         carried.addAll(keys(SettingsBackup.FILTER_LISTS));
         carried.addAll(keys(SettingsBackup.NUMBERS));
+        carried.addAll(keys(SettingsBackup.TEXTS));
         assertEquals(carried, names(switches));
+        assertEquals("", switches.get(Settings.TITLE_EMOJI.key));
         for (StringSetting list : SettingsBackup.FILTER_LISTS) {
             assertEquals(list.key, 0, switches.getJSONArray(list.key).length());
         }
@@ -271,7 +276,7 @@ public class SettingsBackupTest {
         assertEquals(true, switches.get(Settings.DISABLE_ANALYTICS.key));
         for (Setting<?> setting : Setting.allLoadedSettings()) {
             if (SettingsBackup.ALLOWLIST.contains(setting) || SettingsBackup.FILTER_LISTS.contains(setting)
-                    || SettingsBackup.NUMBERS.contains(setting)) continue;
+                    || SettingsBackup.NUMBERS.contains(setting) || SettingsBackup.TEXTS.contains(setting)) continue;
             assertFalse(setting.key + " is in the file", text.contains(setting.key));
         }
         for (String leak : new String[]{"sentinel", "sessionid", "ds_user_id", "100012345678901", "secret-session",
@@ -596,6 +601,56 @@ public class SettingsBackupTest {
         assertTrue(SettingsBackup.Snapshot.fromBundle(state).numbers.isEmpty());
         state.getBundle("numbers").putString(Settings.STICKER_SIZE.key, "150");
         assertTrue(SettingsBackup.Snapshot.fromBundle(state).numbers.isEmpty());
+    }
+
+    /**
+     * The title emoji goes out as the text it is and comes back only as text the editor would have
+     * saved, and a file from before it leaves the text alone.
+     */
+    @Test
+    public void theTitleEmojiRoundTripsAsTextTheTitleCanShow() throws Exception {
+        String tree = new String(Character.toChars(0x1F384));
+        Settings.TITLE_EMOJI.save(tree);
+        String file = SettingsBackup.create();
+        assertEquals(tree, new JSONObject(file).getJSONObject("settings").get(Settings.TITLE_EMOJI.key));
+
+        Settings.TITLE_EMOJI.save("");
+        SettingsBackup.Snapshot snapshot = SettingsBackup.parse(file);
+        assertEquals(0, snapshot.switchChanges());
+        assertEquals("it isn't a filter list", 0, snapshot.listChanges());
+        assertFalse(snapshot.sizeChanges());
+        assertTrue(snapshot.titleEmojiChanges());
+        SettingsBackup.Snapshot kept = SettingsBackup.Snapshot.fromBundle(snapshot.toBundle());
+        assertEquals(snapshot.texts, kept.texts);
+        assertEquals(1, SettingsBackup.apply(kept));
+        assertEquals(tree, Settings.TITLE_EMOJI.savedValue());
+        assertEquals("a file read back is the file", file, SettingsBackup.create());
+        assertFalse(SettingsBackup.parse(file).titleEmojiChanges());
+
+        SettingsBackup.Snapshot older = SettingsBackup.parse(fileWith(Settings.HIDE_ADS, false));
+        assertTrue(older.texts.isEmpty());
+        SettingsBackup.apply(older);
+        assertEquals("a file without the text left it alone", tree, Settings.TITLE_EMOJI.savedValue());
+
+        StringBuilder tooLong = new StringBuilder();
+        for (int i = 0; i <= app.hushtelegram.extension.telegram.misc.TitleEmoji.MAX_CODE_POINTS; i++) tooLong.append(tree);
+        String turned = new String(Character.toChars(0x202E)) + tree;
+        for (Object bad : new Object[]{tooLong.toString(), " " + tree, "a\nb", turned, 1, true, JSONObject.NULL, new org.json.JSONArray()}) {
+            JSONObject wrong = new JSONObject(file);
+            wrong.getJSONObject("settings").put(Settings.TITLE_EMOJI.key, bad);
+            assertEquals(String.valueOf(bad), SettingsBackup.Reason.VALUE, reasonFor(wrong.toString()));
+        }
+        // Empty is a choice: it clears the text.
+        JSONObject cleared = new JSONObject(file);
+        cleared.getJSONObject("settings").put(Settings.TITLE_EMOJI.key, "");
+        assertEquals("", SettingsBackup.parse(cleared.toString()).texts.get(Settings.TITLE_EMOJI));
+
+        // A saved state is read back as strictly: text the title can't show is left out.
+        Bundle state = snapshot.toBundle();
+        state.getBundle("texts").putString(Settings.TITLE_EMOJI.key, tooLong.toString());
+        assertTrue(SettingsBackup.Snapshot.fromBundle(state).texts.isEmpty());
+        state.getBundle("texts").putInt(Settings.TITLE_EMOJI.key, 1);
+        assertTrue(SettingsBackup.Snapshot.fromBundle(state).texts.isEmpty());
     }
 
     // ---- Refusals ------------------------------------------------------------------------------
@@ -935,6 +990,29 @@ public class SettingsBackupTest {
             assertEquals(125, (int) Settings.STICKER_SIZE.savedValue());
             assertEquals("the row shows the imported size", "125% of Telegram's size",
                     String.valueOf(page.findPreference(HushTelegramPreferenceFragment.STICKER_SIZE_ROW).getSummary()));
+        }
+    }
+
+    @Test
+    public void aFileThatChangesOnlyTheTitleEmojiSaysSoAndImportsIt() throws Exception {
+        String tree = new String(Character.toChars(0x1F384));
+        Settings.TITLE_EMOJI.save(tree);
+        String file = SettingsBackup.create();
+        Settings.TITLE_EMOJI.resetToDefault();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            deliver(activity, tap(activity, page, IMPORT_ROW), file);
+            AlertDialog preview = shownPreview();
+            assertEquals("The emoji next to the chat list title will change.\n\nEmoji next to the chat list title: none to "
+                    + app.hushtelegram.extension.shared.L10n.isolate(tree), String.valueOf(shadowOf(preview).getMessage()));
+            assertEquals("Import", String.valueOf(preview.getButton(AlertDialog.BUTTON_POSITIVE).getText()));
+            preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertEquals("Settings imported.", ShadowToast.getTextOfLatestToast());
+            assertEquals(tree, Settings.TITLE_EMOJI.savedValue());
+            assertTrue("the row shows the imported text",
+                    String.valueOf(page.findPreference(TitleEmojiEditor.KEY).getSummary()).contains(tree));
         }
     }
 

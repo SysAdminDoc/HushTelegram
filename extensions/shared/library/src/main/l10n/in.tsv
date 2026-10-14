@@ -290,6 +290,28 @@ After you say no to contacts access, the Contacts tab stops asking again and its
 
 New Year look all year	Tampilan Tahun Baru sepanjang tahun
 Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow falls on the chat list's top bar and on chat backgrounds once Wallpaper rotation is on under Power Saving, in Effects in Chats.	Menampilkan topi Santa Telegram dan salju Tahun Baru sepanjang tahun, bukan hanya saat Tahun Baru. Salju turun di bilah atas daftar obrolan dan di latar obrolan setelah Rotasi latar aktif di Penghematan Daya, pada Efek dalam Obrolan.
+# context: Look and feel page row title, and the title of its editor dialog. The person picks an emoji or a few letters shown after Telegram's name (its logo) at the top of the chat list.
+Emoji next to the chat list title	Emoji di samping judul daftar obrolan
+# context: Summary under that row while nothing is set. Premium emoji status is Telegram's own paid status emoji next to the name, which this doesn't change.
+Add an emoji or a few letters after Telegram's name at the top of the chat list. It stays on this phone, and your Premium emoji status is left alone.	Tambahkan emoji atau beberapa huruf setelah nama Telegram di bagian atas daftar obrolan. Ini hanya ada di ponsel ini, dan status emoji Premium Anda tidak diubah.
+# context: Summary under that row once something is set. %1$s is the emoji or letters the person saved.
+%1$s shows after Telegram's name at the top of the chat list, on this phone only. Tap to change it.	%1$s tampil setelah nama Telegram di bagian atas daftar obrolan, hanya di ponsel ini. Ketuk untuk mengubahnya.
+# context: Lowercase word for an empty value in the import preview line "%1$s: %2$s to %3$s", for example "Emoji next to the chat list title: none to X".
+none	tidak ada
+# context: Label and hint of the one text field in the editor dialog.
+Emoji or a few letters	Emoji atau beberapa huruf
+# context: Instructions at the top of the editor dialog.
+Shown after Telegram's name at the top of the chat list. It stays on this phone, so nothing goes to Telegram and your Premium emoji status is left alone. Leave it empty to show nothing, and restart Telegram to see a change.	Tampil setelah nama Telegram di bagian atas daftar obrolan. Ini tetap di ponsel ini, jadi tidak ada yang dikirim ke Telegram dan status emoji Premium Anda tidak diubah. Kosongkan untuk tidak menampilkan apa pun, lalu mulai ulang Telegram untuk melihat perubahannya.
+# context: Error under the field and toast when the text is too long to save. Keep it under about 64 characters.
+That's too long. Try an emoji or two, or a short word.	Terlalu panjang. Coba satu atau dua emoji, atau satu kata pendek.
+# context: Error under the field and toast when saving failed. Keep it under about 64 characters.
+Couldn't save the emoji. Try again in a moment.	Emoji tidak dapat disimpan. Coba lagi sebentar lagi.
+# context: Short toast after the editor saved text that needs no restart, such as clearing it again before restarting.
+Saved.	Tersimpan.
+# context: Sentence in the settings import preview when the imported file changes that text.
+The emoji next to the chat list title will change.	Emoji di samping judul daftar obrolan akan berubah.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Holiday look all year that draws the emoji after the chat list title.
+emoji next to the chat list title	emoji di samping judul daftar obrolan
 Use system font	Gunakan font sistem
 Bold, italic and code text use your phone's font instead of Telegram's built-in one. Restart Telegram to see the change.	Teks tebal, miring, dan kode memakai font ponsel Anda, bukan font bawaan Telegram. Mulai ulang Telegram untuk melihat perubahannya.
 AMOLED black	Hitam AMOLED

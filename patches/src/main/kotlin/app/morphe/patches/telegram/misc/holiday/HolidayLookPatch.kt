@@ -12,6 +12,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
@@ -51,6 +52,7 @@ val holidayLookPatch = bytecodePatch(
 
     execute {
         requireStatusMethod("holidayLook")
+        requireStatusMethod("titleEmoji")
         val sites = resolveHolidayLookSites()
         val logo = resolveHolidayLogoSites(sites)
         // Assemble and check every insertion on copies before changing any host or build fact.
@@ -58,6 +60,8 @@ val holidayLookPatch = bytecodePatch(
         logo.prepare()
         sites.apply(sites.check)
         logo.apply(this)
+        // The title emoji goes in with the logo's span registration, inside the same pinned window.
+        enableCapability("titleEmoji")
         enableStatus("holidayLook")
     }
 }

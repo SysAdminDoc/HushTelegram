@@ -1006,6 +1006,81 @@ public class HushTelegramPreferenceFragmentTest {
         }
     }
 
+    /**
+     * Holiday look brings a row for the text beside the chat list's title, under its switch. A tap
+     * opens an editor that saves the text cleaned and refuses text that's too long, and a restart
+     * is owed only while the saved text isn't the one running.
+     */
+    @Test
+    public void theTitleEmojiRowSavesCleanTextAndSaysWhenARestartIsOwed() {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HOLIDAY_LOOK);
+        PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            assertNull("a build without the title target has no row", pageOf(controller).findPreference(TitleEmojiEditor.KEY));
+        }
+        PatchFamily.capabilitiesForTests = null;
+        String tree = new String(Character.toChars(0x1F384));
+        String invitation = "Add an emoji or a few letters after Telegram's name at the top of the chat list. It stays on "
+                + "this phone, and your Premium emoji status is left alone.";
+        ShadowToast.reset();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            Preference row = rows.get(indexOfKey(rows, Settings.HOLIDAY_LOOK.key) + 1);
+            assertEquals(TitleEmojiEditor.KEY, row.getKey());
+            assertEquals("Emoji next to the chat list title", String.valueOf(row.getTitle()));
+            assertEquals(invitation, String.valueOf(row.getSummary()));
+            assertFalse("it stores nothing itself", row.isPersistent());
+
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowLooper.idleMainLooper();
+            AlertDialog editor = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertTrue(editor.isShowing());
+            assertEquals("Emoji next to the chat list title", String.valueOf(shadowOf(editor).getTitle()));
+            EditText field = editor.findViewById(android.R.id.edit);
+            assertEquals("", field.getText().toString());
+            StringBuilder tooLong = new StringBuilder();
+            for (int i = 0; i <= app.hushtelegram.extension.telegram.misc.TitleEmoji.MAX_CODE_POINTS; i++) tooLong.append(tree);
+            field.setText(tooLong);
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertTrue("too long keeps the dialog", editor.isShowing());
+            assertEquals("That's too long. Try an emoji or two, or a short word.", ShadowToast.getTextOfLatestToast());
+            assertEquals("", Settings.TITLE_EMOJI.savedValue());
+
+            field.setText("  " + tree + "\n");
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertFalse(editor.isShowing());
+            assertEquals("saved cleaned", tree, Settings.TITLE_EMOJI.savedValue());
+            assertTrue("the chat list shows it after a restart",
+                    app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
+                            .contains(Settings.TITLE_EMOJI.key));
+            assertEquals(app.hushtelegram.extension.shared.L10n.isolate(tree) + " shows after Telegram's name at the top "
+                    + "of the chat list, on this phone only. Tap to change it.", String.valueOf(row.getSummary()));
+
+            // Cleared again, it's what Telegram runs with, so nothing waits for a restart.
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowLooper.idleMainLooper();
+            editor = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            field = editor.findViewById(android.R.id.edit);
+            assertEquals(tree, field.getText().toString());
+            field.setText("");
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertFalse(editor.isShowing());
+            assertEquals("", Settings.TITLE_EMOJI.savedValue());
+            assertEquals("Saved.", ShadowToast.getTextOfLatestToast());
+            assertFalse(app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
+                    .contains(Settings.TITLE_EMOJI.key));
+            assertEquals(invitation, String.valueOf(row.getSummary()));
+        } finally {
+            Settings.TITLE_EMOJI.resetToDefault();
+            app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
+                    .remove(Settings.TITLE_EMOJI.key);
+        }
+    }
+
     @Test
     public void aListThatIsTooLongOrHasALongLineIsSaid() {
         StringBuilder many = new StringBuilder();

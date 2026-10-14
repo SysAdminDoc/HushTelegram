@@ -353,6 +353,7 @@ public final class SelectionCheck {
         hook(calls, flags, "disableChannelPull", "misc/ForumTopicPull", "stopTopicPull", "keepTopicStill");
         hook(calls, flags, "quietContactsNag", "misc/ContactsNag", "skipAsk", "hideBadge");
         hook(calls, flags, "holidayLook", "misc/HolidayLook", "mode");
+        hook(calls, flags, "titleEmoji", "misc/TitleEmoji", "decorate");
         hook(calls, flags, "useSystemFont", "misc/SystemFont", "typeface", "built");
         hook(calls, flags, "amoledBlack", "misc/BlackTheme", "loaded");
         hook(calls, flags, "hideTranslateBar", "misc/TranslateBar", "hidden");

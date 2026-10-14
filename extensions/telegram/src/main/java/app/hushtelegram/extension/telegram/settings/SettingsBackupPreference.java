@@ -355,7 +355,8 @@ public class SettingsBackupPreference extends Preference {
         int switches = snapshot.switchChanges();
         int lists = snapshot.listChanges();
         boolean size = snapshot.sizeChanges();
-        boolean nothing = switches == 0 && lists == 0 && !size;
+        boolean emoji = snapshot.titleEmojiChanges();
+        boolean nothing = switches == 0 && lists == 0 && !size && !emoji;
         String message = nothing
                 ? L10n.t("Your switches already match that file, so nothing will change.")
                 : switches == 0 ? "" : L10n.quantity(switches, "%1$d switch will change.", "%1$d switches will change.", switches);
@@ -365,6 +366,9 @@ public class SettingsBackupPreference extends Preference {
         }
         if (size) {
             message += (message.isEmpty() ? "" : " ") + L10n.t("The sticker size will change.");
+        }
+        if (emoji) {
+            message += (message.isEmpty() ? "" : " ") + L10n.t("The emoji next to the chat list title will change.");
         }
         // Each switch by name, so a file someone shared can't turn Open links externally or Disable
         // analytics around without it showing here.
@@ -406,11 +410,17 @@ public class SettingsBackupPreference extends Preference {
         return lines;
     }
 
-    /** Name the affected lists without showing their private filters, and show the actual size change. */
+    /**
+     * Name the affected lists without showing their private filters, and show the actual size and
+     * title emoji changes.
+     */
     static List<String> changeLines(HushTelegramPreferenceFragment page, SettingsBackup.Snapshot snapshot) {
         List<String> lines = switchLines(page, snapshot);
         for (Map.Entry<Setting<?>, Object> change : snapshot.changes().entrySet()) {
-            if (change.getKey() instanceof StringSetting) {
+            if (change.getKey() == Settings.TITLE_EMOJI) {
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Emoji next to the chat list title"),
+                        TitleEmojiEditor.shown(Settings.TITLE_EMOJI.savedValue()), TitleEmojiEditor.shown((String) change.getValue())));
+            } else if (change.getKey() instanceof StringSetting) {
                 String title = L10n.t(change.getKey() == Settings.MESSAGE_FILTERS_GROUPS ? "Filters for groups" : "Filters for channels");
                 int count = MessageFilters.lines((String) change.getValue()).size();
                 lines.add(title + ": " + L10n.quantity(count, "%1$d filter", "%1$d filters", count));

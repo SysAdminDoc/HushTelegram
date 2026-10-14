@@ -11,6 +11,7 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patcher.util.smali.toInstructions
+import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -40,14 +41,21 @@ private const val REGISTER = "$HOLIDAY_LOOK->registerLogoSpan($SPAN)V"
 private const val GATE = "$HOLIDAY_LOOK->isLogoTitle($TEXT)Z"
 private const val BRIDGE = "$HOLIDAY_LOOK->drawLogoHat($CANVAS$VIEW$DRAWABLE$VIEW)V"
 private const val DRAW = "$HOLIDAY_LOOK->drawLogoHatAt($CANVAS$TEXT${DRAWABLE}IIIIIII)V"
+internal const val TITLE_EMOJI = "$EXTENSION_PACKAGE/misc/TitleEmoji;"
+private const val DECORATE = "$TITLE_EMOJI->decorate($BUILDER)V"
 
-/** The additive logo path. Its stock String block, span ownership and caller are all preflighted. */
+/**
+ * The additive logo path. Its stock String block, span ownership and caller are all preflighted.
+ * [emojiAt] is the chat list title's next instruction after Telegram spans its logo, where the
+ * title's builder, still in v3, goes to TitleEmoji before the action bar gets it.
+ */
 internal class HolidayLogoSites(
     val bar: MutableMethod,
     val gate: Int,
     val afterHat: Int,
     val create: MutableMethod,
     val registerAt: Int,
+    val emojiAt: Int,
     private val overlay: FieldReference,
     private val titleType: String,
     private val themeType: String,
@@ -58,7 +66,7 @@ internal class HolidayLogoSites(
     fun prepare() {
         try {
             insertBar(MutableMethod(ImmutableMethod.of(bar)))
-            insertRegistration(MutableMethod(ImmutableMethod.of(create)))
+            insertTitle(MutableMethod(ImmutableMethod.of(create)))
             bridge = MutableMethod(ImmutableMethod(stub.definingClass, stub.name, stub.parameters,
                 stub.returnType, stub.accessFlags, stub.annotations, stub.hiddenApiRestrictions, MutableMethodImplementation(16)))
             bridge.addInstructions(0, """
@@ -103,7 +111,7 @@ internal class HolidayLogoSites(
 
     fun apply(context: BytecodePatchContext) {
         insertBar(bar)
-        insertRegistration(create)
+        insertTitle(create)
         val runtime = context.mutableClassDefBy(HOLIDAY_LOOK)
         runtime.methods.remove(stub)
         runtime.methods.add(bridge)
@@ -125,7 +133,9 @@ internal class HolidayLogoSites(
         """.trimIndent(), ExternalLabel("hush_after_hat", method.getInstruction(afterHat)))
     }
 
-    private fun insertRegistration(method: MutableMethod) {
+    /** The emoji first: it sits after the registration, so inserting it first leaves [registerAt] in place. */
+    private fun insertTitle(method: MutableMethod) {
+        method.addInstructionsAtControlFlowLabel(emojiAt, "invoke-static {v3}, $DECORATE")
         method.addInstructionsAtControlFlowLabel(registerAt, "invoke-static {v5}, $REGISTER")
     }
 }
@@ -135,6 +145,7 @@ internal fun BytecodePatchContext.resolveHolidayLogoSites(holiday: HolidayLookSi
     runtimeMethod("registerLogoSpan", listOf(SPAN), "V")
     runtimeMethod("isLogoTitle", listOf(TEXT), "Z")
     runtimeMethod("drawLogoHatAt", listOf(CANVAS, TEXT, DRAWABLE) + List(7) { "I" }, "V")
+    runtimeMethod("decorate", listOf(BUILDER), "V", TITLE_EMOJI)
 
     val originalBar = holiday.readers.single { it.name == "drawChild" }
     val bar = mutableClassDefBy(originalBar.definingClass).methods.single { it.name == "drawChild" &&
@@ -502,7 +513,7 @@ internal fun BytecodePatchContext.resolveHolidayLogoSites(holiday: HolidayLookSi
         flow.normal[modeRead + 1].toSet() == setOf(modeRead + 2, modeRead + 8) &&
         flow.normal[modeRead + 7] == listOf(support - 3) && flow.dominates(modeRead + 1, start),
         "the logo is no longer confined to chat list mode zero")
-    return HolidayLogoSites(bar, at + 6, at + 79, create, logo + 33, overlay, titleType, theme, stub)
+    return HolidayLogoSites(bar, at + 6, at + 79, create, logo + 33, logo + 36, overlay, titleType, theme, stub)
 }
 
 /** The owned ImageSpan must reach the exact field getText reads, without a String conversion. */
@@ -622,8 +633,9 @@ private fun BytecodePatchContext.requireTitleStorage(setter: MethodReference, ti
     """.trimIndent(), "owned logo text getter")
 }
 
-private fun BytecodePatchContext.runtimeMethod(name: String, parameters: List<String>, result: String): MutableMethod {
-    val owner = mutableClassDefBy(HOLIDAY_LOOK)
+private fun BytecodePatchContext.runtimeMethod(name: String, parameters: List<String>, result: String,
+                                               type: String = HOLIDAY_LOOK): MutableMethod {
+    val owner = mutableClassDefByOrNull(type) ?: refuse("no logo runtime $type")
     val methods = owner.methods.filter { it.name == name }
     shape(AccessFlags.PUBLIC.isSet(owner.accessFlags) && methods.size == 1, "no unique public logo runtime $name")
     val method = methods.single()

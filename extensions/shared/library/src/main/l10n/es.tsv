@@ -290,6 +290,28 @@ After you say no to contacts access, the Contacts tab stops asking again and its
 
 New Year look all year	Aspecto de Año Nuevo todo el año
 Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow falls on the chat list's top bar and on chat backgrounds once Wallpaper rotation is on under Power Saving, in Effects in Chats.	Muestra el gorro de Papá Noel de Telegram y la nieve de Año Nuevo todo el año, no solo en esas fechas. La nieve cae sobre la barra superior de la lista de chats y sobre los fondos de chat cuando Rotación del fondo esté activada en Ahorro de energía, dentro de Efectos en chats.
+# context: Look and feel page row title, and the title of its editor dialog. The person picks an emoji or a few letters shown after Telegram's name (its logo) at the top of the chat list.
+Emoji next to the chat list title	Emoji junto al título de la lista de chats
+# context: Summary under that row while nothing is set. Premium emoji status is Telegram's own paid status emoji next to the name, which this doesn't change.
+Add an emoji or a few letters after Telegram's name at the top of the chat list. It stays on this phone, and your Premium emoji status is left alone.	Añade un emoji o unas letras después del nombre de Telegram, arriba en la lista de chats. Se queda en este teléfono, y tu estado de emoji Premium no cambia.
+# context: Summary under that row once something is set. %1$s is the emoji or letters the person saved.
+%1$s shows after Telegram's name at the top of the chat list, on this phone only. Tap to change it.	%1$s aparece después del nombre de Telegram, arriba en la lista de chats, solo en este teléfono. Toca para cambiarlo.
+# context: Lowercase word for an empty value in the import preview line "%1$s: %2$s to %3$s", for example "Emoji next to the chat list title: none to X".
+none	ninguno
+# context: Label and hint of the one text field in the editor dialog.
+Emoji or a few letters	Emoji o unas letras
+# context: Instructions at the top of the editor dialog.
+Shown after Telegram's name at the top of the chat list. It stays on this phone, so nothing goes to Telegram and your Premium emoji status is left alone. Leave it empty to show nothing, and restart Telegram to see a change.	Aparece después del nombre de Telegram, arriba en la lista de chats. Se queda en este teléfono, así que nada va a Telegram y tu estado de emoji Premium no cambia. Déjalo vacío para no mostrar nada y reinicia Telegram para ver el cambio.
+# context: Error under the field and toast when the text is too long to save. Keep it under about 64 characters.
+That's too long. Try an emoji or two, or a short word.	Es demasiado largo. Prueba con uno o dos emojis o una palabra corta.
+# context: Error under the field and toast when saving failed. Keep it under about 64 characters.
+Couldn't save the emoji. Try again in a moment.	No se pudo guardar el emoji. Inténtalo de nuevo en un momento.
+# context: Short toast after the editor saved text that needs no restart, such as clearing it again before restarting.
+Saved.	Guardado.
+# context: Sentence in the settings import preview when the imported file changes that text.
+The emoji next to the chat list title will change.	El emoji junto al título de la lista de chats va a cambiar.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Holiday look all year that draws the emoji after the chat list title.
+emoji next to the chat list title	el emoji junto al título de la lista de chats
 Use system font	Usar fuente del sistema
 Bold, italic and code text use your phone's font instead of Telegram's built-in one. Restart Telegram to see the change.	El texto en negrita, cursiva y de código usa la fuente de tu teléfono en lugar de la integrada en Telegram. Reinicia Telegram para ver el cambio.
 AMOLED black	Negro AMOLED

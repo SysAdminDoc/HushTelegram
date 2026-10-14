@@ -19,13 +19,16 @@ public final class SettingReadsForTests {
     private SettingReadsForTests() {
     }
 
-    /** Every read of [setting] answers null until {@link #mend} runs, so a hook unboxing it throws. */
-    public static void breakReads(BooleanSetting setting) {
+    /**
+     * Every read of [setting] answers null until {@link #mend} runs, so a hook unboxing a switch
+     * throws and one reading text gets none.
+     */
+    public static void breakReads(Setting<?> setting) {
         setting.value = null;
     }
 
     /** Reads [setting] back from its store. */
-    public static void mend(BooleanSetting setting) {
+    public static void mend(Setting<?> setting) {
         setting.load();
     }
 }

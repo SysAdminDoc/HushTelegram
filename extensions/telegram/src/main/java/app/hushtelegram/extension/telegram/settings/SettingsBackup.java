@@ -47,6 +47,7 @@ import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
+import app.hushtelegram.extension.telegram.misc.TitleEmoji;
 
 /**
  * HushTelegram's switches as a file, and back.
@@ -58,8 +59,9 @@ import app.hushtelegram.extension.telegram.misc.StickerSize;
  * <p>Only the switches in {@link #ALLOWLIST} go out or come in. Pause, safe mode, the debug
  * settings, the app language and the counters HushTelegram keeps for itself stay out, and so do
  * the log, the diagnostic data and anything about the person or the phone: a file is a format
- * name, a version number, one true or false per switch, the sticker size the person picked and
- * the message filters they wrote, one list of lines for groups and one for channels. An import applies what it read in one
+ * name, a version number, one true or false per switch, the sticker size the person picked, the
+ * text they put beside the chat list's title and the message filters they wrote, one list of lines
+ * for groups and one for channels. An import applies what it read in one
  * preference commit. A file that is too large, isn't JSON, names something twice, holds a value of
  * the wrong type or comes from a newer version changes nothing.
  * <p>The release check stays out of the file: it puts the phone online, so it's switched on
@@ -176,6 +178,12 @@ public final class SettingsBackup {
     static final List<IntegerSetting> NUMBERS = Collections.singletonList(Settings.STICKER_SIZE);
 
     /**
+     * The short texts a file carries as they're saved: today the emoji beside the chat list's
+     * title. A build from before them counts the name as unknown and leaves it out.
+     */
+    static final List<StringSetting> TEXTS = Collections.singletonList(Settings.TITLE_EMOJI);
+
+    /**
      * Bounds for the parser, well past anything this class writes, so a file built to be
      * expensive to read is refused before it is.
      */
@@ -206,8 +214,8 @@ public final class SettingsBackup {
         /** A settings file from a newer HushTelegram, in a shape this build doesn't know. */
         SCHEMA,
         /**
-         * A switch whose value isn't true or false, a size that isn't one of its choices, or a
-         * filter list that isn't a short list of short lines.
+         * A switch whose value isn't true or false, a size that isn't one of its choices, a
+         * filter list that isn't a short list of short lines, or title text the title can't show.
          */
         VALUE,
         /** The file couldn't be opened or read to the end. */
@@ -239,6 +247,7 @@ public final class SettingsBackup {
         private static final String SWITCHES = "switches";
         private static final String LISTS = "lists";
         private static final String NUMBER_VALUES = "numbers";
+        private static final String TEXT_VALUES = "texts";
         private static final String UNKNOWN = "unknown";
 
         /** In {@link #ALLOWLIST} order, and only the switches the file named. */
@@ -247,14 +256,17 @@ public final class SettingsBackup {
         final Map<StringSetting, String> lists;
         /** In {@link #NUMBERS} order, and only the numbers the file named. */
         final Map<IntegerSetting, Integer> numbers;
+        /** In {@link #TEXTS} order, and only the texts the file named. */
+        final Map<StringSetting, String> texts;
         /** Names the file holds that aren't settings this build knows. They're left out. */
         final int unknown;
 
         Snapshot(Map<BooleanSetting, Boolean> values, Map<StringSetting, String> lists,
-                 Map<IntegerSetting, Integer> numbers, int unknown) {
+                 Map<IntegerSetting, Integer> numbers, Map<StringSetting, String> texts, int unknown) {
             this.values = Collections.unmodifiableMap(values);
             this.lists = Collections.unmodifiableMap(lists);
             this.numbers = Collections.unmodifiableMap(numbers);
+            this.texts = Collections.unmodifiableMap(texts);
             this.unknown = unknown;
         }
 
@@ -279,6 +291,11 @@ public final class SettingsBackup {
                     changes.put(entry.getKey(), entry.getValue());
                 }
             }
+            for (Map.Entry<StringSetting, String> entry : texts.entrySet()) {
+                if (!entry.getValue().equals(entry.getKey().savedValue())) {
+                    changes.put(entry.getKey(), entry.getValue());
+                }
+            }
             return changes;
         }
 
@@ -292,13 +309,18 @@ public final class SettingsBackup {
         /** How many filter lists this file changes. */
         int listChanges() {
             int count = 0;
-            for (Setting<?> setting : changes().keySet()) if (setting instanceof StringSetting) count++;
+            for (Setting<?> setting : changes().keySet()) if (FILTER_LISTS.contains(setting)) count++;
             return count;
         }
 
         /** Whether this file changes the sticker size. */
         boolean sizeChanges() {
             return changes().containsKey(Settings.STICKER_SIZE);
+        }
+
+        /** Whether this file changes the text beside the chat list's title. */
+        boolean titleEmojiChanges() {
+            return changes().containsKey(Settings.TITLE_EMOJI);
         }
 
         /** For the settings page's saved state, so a preview outlives the page being rebuilt. */
@@ -315,10 +337,15 @@ public final class SettingsBackup {
             for (Map.Entry<IntegerSetting, Integer> entry : numbers.entrySet()) {
                 sizes.putInt(entry.getKey().key, entry.getValue());
             }
+            Bundle shortTexts = new Bundle();
+            for (Map.Entry<StringSetting, String> entry : this.texts.entrySet()) {
+                shortTexts.putString(entry.getKey().key, entry.getValue());
+            }
             Bundle state = new Bundle();
             state.putBundle(SWITCHES, switches);
             state.putBundle(LISTS, texts);
             state.putBundle(NUMBER_VALUES, sizes);
+            state.putBundle(TEXT_VALUES, shortTexts);
             state.putInt(UNKNOWN, unknown);
             return state;
         }
@@ -357,7 +384,15 @@ public final class SettingsBackup {
                     if (value instanceof Integer && allowed(setting, (Integer) value)) numbers.put(setting, (Integer) value);
                 }
             }
-            return new Snapshot(values, lists, numbers, unknown);
+            Map<StringSetting, String> written = new LinkedHashMap<>();
+            Bundle shortTexts = state.getBundle(TEXT_VALUES);
+            if (shortTexts != null) {
+                for (StringSetting setting : TEXTS) {
+                    Object value = shortTexts.get(setting.key);
+                    if (value instanceof String && allowed(setting, (String) value)) written.put(setting, (String) value);
+                }
+            }
+            return new Snapshot(values, lists, numbers, written, unknown);
         }
     }
 
@@ -373,6 +408,9 @@ public final class SettingsBackup {
         }
         for (IntegerSetting setting : NUMBERS) {
             switches.put(setting.key, setting.savedValue().intValue());
+        }
+        for (StringSetting setting : TEXTS) {
+            if (allowed(setting, setting.savedValue())) switches.put(setting.key, setting.savedValue());
         }
         for (StringSetting setting : FILTER_LISTS) {
             List<String> lines = MessageFilters.lines(setting.savedValue());
@@ -465,9 +503,12 @@ public final class SettingsBackup {
         for (StringSetting setting : FILTER_LISTS) knownLists.put(setting.key, setting);
         Map<String, IntegerSetting> knownNumbers = new HashMap<>();
         for (IntegerSetting setting : NUMBERS) knownNumbers.put(setting.key, setting);
+        Map<String, StringSetting> knownTexts = new HashMap<>();
+        for (StringSetting setting : TEXTS) knownTexts.put(setting.key, setting);
         Map<BooleanSetting, Boolean> found = new HashMap<>();
         Map<StringSetting, String> foundLists = new HashMap<>();
         Map<IntegerSetting, Integer> foundNumbers = new HashMap<>();
+        Map<StringSetting, String> foundTexts = new HashMap<>();
         JSONObject values = (JSONObject) settings;
         for (Iterator<String> names = values.keys(); names.hasNext(); ) {
             String name = names.next();
@@ -483,6 +524,15 @@ public final class SettingsBackup {
                     throw new Rejected(Reason.VALUE, "Not one of its choices: " + name);
                 }
                 foundNumbers.put(number, (Integer) value);
+                continue;
+            }
+            StringSetting shortText = knownTexts.get(name);
+            if (shortText != null) {
+                Object value = values.opt(name);
+                if (!(value instanceof String) || !allowed(shortText, (String) value)) {
+                    throw new Rejected(Reason.VALUE, "Not text the title can show: " + name);
+                }
+                foundTexts.put(shortText, (String) value);
                 continue;
             }
             BooleanSetting setting = known.get(name);
@@ -513,12 +563,22 @@ public final class SettingsBackup {
             Integer value = foundNumbers.get(setting);
             if (value != null) orderedNumbers.put(setting, value);
         }
-        return new Snapshot(ordered, orderedLists, orderedNumbers, unknown);
+        Map<StringSetting, String> orderedTexts = new LinkedHashMap<>();
+        for (StringSetting setting : TEXTS) {
+            String value = foundTexts.get(setting);
+            if (value != null) orderedTexts.put(setting, value);
+        }
+        return new Snapshot(ordered, orderedLists, orderedNumbers, orderedTexts, unknown);
     }
 
     /** Whether a number is one of its setting's choices. */
     static boolean allowed(IntegerSetting setting, int value) {
         return setting == Settings.STICKER_SIZE && StickerSize.percent(value) == value;
+    }
+
+    /** Whether a short text is one its setting's editor would save: clean, and short enough. */
+    static boolean allowed(StringSetting setting, String value) {
+        return setting == Settings.TITLE_EMOJI && TitleEmoji.allowed(value);
     }
 
     /**

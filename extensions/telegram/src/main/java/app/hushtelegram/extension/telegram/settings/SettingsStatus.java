@@ -67,6 +67,7 @@ public final class SettingsStatus {
     public static boolean previewDoubleTapReaction() { return false; }
     public static boolean quietContactsNag() { return false; }
     public static boolean holidayLook() { return false; }
+    public static boolean titleEmoji() { return false; }
     public static boolean useSystemFont() { return false; }
     public static boolean amoledBlack() { return false; }
     public static boolean hideTranslateBar() { return false; }

@@ -269,6 +269,7 @@ public class SettingsNavigationTest {
         page.navigation.back();
         page.navigation.navigate(PatchFamily.Page.LOOK.title);
         assertEquals(position(Settings.CHANGE_STICKER_SIZE.key) + 1, position(HushTelegramPreferenceFragment.STICKER_SIZE_ROW));
+        assertEquals(position(Settings.HOLIDAY_LOOK.key) + 1, position(TitleEmojiEditor.KEY));
         assertEquals(position(Settings.AMOLED_BLACK.key) - 1, titles().indexOf("Theme"));
         page.navigation.back();
         assertTrue(page.navigation.open(page.findPreference(Settings.HIDE_TRANSLATE_BAR.key)));

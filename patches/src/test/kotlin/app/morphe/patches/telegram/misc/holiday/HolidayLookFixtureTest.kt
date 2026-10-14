@@ -77,6 +77,7 @@ class HolidayLookFixtureTest {
 
             val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "holidayLook" }.instructions()
             assertEquals("$name: build fact", 1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
+            assertEquals("$name: title emoji build fact", 1, flag(context, "titleEmoji"))
         }
     }
 
@@ -147,7 +148,19 @@ class HolidayLookFixtureTest {
             assertEquals("${build.name}: no String conversion", 0, after.count {
                 it.reference() == "Ljava/lang/CharSequence;->toString()Ljava/lang/String;" })
             assertKeepsStock("${build.name}: plain title and snow", stockBar, logo.bar, logo.gate, 9)
-            assertKeepsStock("${build.name}: original logo and title actions", stockTitle, logo.create, logo.registerAt, 1)
+            // The registration goes in before length(), and the emoji, one further on after it, before the bar's load.
+            assertKeepsStock("${build.name}: original logo and title actions", stockTitle, logo.create,
+                listOf(logo.registerAt..logo.registerAt, logo.emojiAt + 1..logo.emojiAt + 1))
+            val emoji = create.indices.single { create[it].reference() == DECORATE }
+            assertTrue("${build.name}: the emoji follows the logo's span",
+                create[emoji - 1].reference()!!.endsWith("->setSpan(Ljava/lang/Object;III)V"))
+            assertEquals("${build.name}: it's handed the spanned builder", listOf(create[emoji - 1].namedRegisters()[0]),
+                create[emoji].namedRegisters())
+            assertTrue("${build.name}: before the action bar's load", create[emoji + 1].reference()!!.contains("->actionBar:"))
+            assertEquals("${build.name}: the same builder becomes the title", create[emoji].namedRegisters()[0],
+                create[emoji + 3].namedRegisters()[1])
+            assertEquals("${build.name}: the title setter follows", stockTitle.instructions()[logo.emojiAt + 2].reference(),
+                create[emoji + 3].reference())
             val bridge = context.mutableClassDefBy(HOLIDAY_LOOK).methods.single { it.name == "drawLogoHat" }.instructions()
             assertEquals("${build.name}: bounded getter bridge", 1, bridge.count {
                 it.reference() == "$HOLIDAY_LOOK->drawLogoHatAt(Landroid/graphics/Canvas;Ljava/lang/CharSequence;Landroid/graphics/drawable/Drawable;IIIIIII)V" })
@@ -271,10 +284,12 @@ class HolidayLookFixtureTest {
                 change(context, sites, logo)
                 assertRefusedUntouched(build, case, context)
             }
-            for (hook in listOf("registerLogoSpan", "isLogoTitle", "drawLogoHat", "drawLogoHatAt")) {
+            val hooks = listOf("registerLogoSpan", "isLogoTitle", "drawLogoHat", "drawLogoHatAt").map { HOLIDAY_LOOK to it } +
+                (TITLE_EMOJI to "decorate")
+            for ((runtime, hook) in hooks) {
                 for (kind in 0..4) {
                     val context = contextFor(build)
-                    val method = context.mutableClassDefBy(HOLIDAY_LOOK).methods.single { it.name == hook }
+                    val method = context.mutableClassDefBy(runtime).methods.single { it.name == hook }
                     method.accessFlags = when (kind) {
                         0 -> method.accessFlags and AccessFlags.PUBLIC.value.inv()
                         1 -> method.accessFlags and AccessFlags.STATIC.value.inv()
@@ -283,7 +298,7 @@ class HolidayLookFixtureTest {
                         else -> method.accessFlags
                     }
                     if (kind == 4) {
-                        val owner = context.mutableClassDefBy(HOLIDAY_LOOK)
+                        val owner = context.mutableClassDefBy(runtime)
                         owner.methods.add(MutableMethod(ImmutableMethod(method.definingClass, method.name,
                             method.parameters + ImmutableMethodParameter("I", null, null), method.returnType,
                             method.accessFlags, null, null, method.implementation)))
@@ -389,7 +404,11 @@ class HolidayLookFixtureTest {
             snapshot(context, types))
         val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "holidayLook" }.instructions()
         assertEquals("$build: $case leaves the build fact false", 0, (status[0] as NarrowLiteralInstruction).narrowLiteral)
+        assertEquals("$build: $case leaves the title emoji fact false", 0, flag(context, "titleEmoji"))
     }
+
+    private fun flag(context: BytecodePatchContext, name: String) =
+        (context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }.instructions()[0] as NarrowLiteralInstruction).narrowLiteral
 
     private fun snapshot(context: BytecodePatchContext, types: List<String>) = types.associateWith { type ->
         val owner = context.mutableClassDefBy(type)
@@ -405,17 +424,23 @@ class HolidayLookFixtureTest {
      * at [at], and every stock jump still goes where it went, a jump to the hooked instruction now
      * landing on the hook. Returns where each stock index moved.
      */
-    private fun assertKeepsStock(what: String, original: Method, after: Method, at: Int, size: Int): Map<Int, Int> {
+    private fun assertKeepsStock(what: String, original: Method, after: Method, at: Int, size: Int): Map<Int, Int> =
+        assertKeepsStock(what, original, after, listOf(at until at + size))
+
+    /** As above, with a hook at each of [inserted], given as indexes in [after]. */
+    private fun assertKeepsStock(what: String, original: Method, after: Method, inserted: List<IntRange>): Map<Int, Int> {
         val old = original.instructions()
         val now = after.instructions()
         val kept = old.indices.toList()
-        val moved = now.indices.filterNot { it in at until at + size }
+        val moved = now.indices.filterNot { index -> inserted.any { index in it } }
         assertEquals("$what keeps every stock operation", kept.map { operation(old[it]) }, moved.map { operation(now[it]) })
         val to = kept.zip(moved).toMap()
+        // A stock jump to an instruction that now has a hook just before it lands on the hook.
+        val landing = to.mapValues { (_, at) -> inserted.singleOrNull { it.last + 1 == at }?.first ?: at }
         val oldFlow = ControlFlow.of(original)
         val newFlow = ControlFlow.of(after)
         for (index in kept) {
-            assertEquals("$what keeps stock flow from $index", oldFlow.normal[index].map { if (it == at) at else to.getValue(it) },
+            assertEquals("$what keeps stock flow from $index", oldFlow.normal[index].map { landing.getValue(it) },
                 newFlow.normal[to.getValue(index)])
         }
         return to
@@ -441,6 +466,7 @@ class HolidayLookFixtureTest {
     private companion object {
         val HAT_CENSUS = FixtureDex.ClassCensus()
         val SNOW_CENSUS = FixtureDex.ClassCensus()
+        const val DECORATE = "$TITLE_EMOJI->decorate(Landroid/text/SpannableStringBuilder;)V"
         val HOOK = listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.CONST_4, Opcode.IF_NE, Opcode.SPUT_BOOLEAN,
             Opcode.SGET_OBJECT, Opcode.IF_NEZ, Opcode.GOTO, Opcode.CONST_4, Opcode.SPUT_OBJECT, Opcode.SPUT_BOOLEAN,
             Opcode.CONST_WIDE_16, Opcode.SPUT_WIDE, Opcode.NOP)

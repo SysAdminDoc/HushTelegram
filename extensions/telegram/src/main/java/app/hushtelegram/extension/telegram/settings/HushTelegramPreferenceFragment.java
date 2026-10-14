@@ -245,7 +245,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     /** Shows what the switches are saved as, after an import wrote them. */
     void refreshSwitches() {
         updateUIToSettingValues();
-        // An import can change the filter lists too, and their rows say how many each holds.
+        // An import can change the filter lists, the sticker size and the title emoji too, and their rows say so.
         if (getPreferenceScreen() == null) return;
         Preference groups = findPreference(FilterEditor.GROUPS);
         if (groups != null) groups.setSummary(FilterEditor.summary(Settings.MESSAGE_FILTERS_GROUPS));
@@ -253,6 +253,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (channels != null) channels.setSummary(FilterEditor.summary(Settings.MESSAGE_FILTERS_CHANNELS));
         Preference size = findPreference(STICKER_SIZE_ROW);
         if (size != null) size.setSummary(stickerSizeSummary());
+        Preference emoji = findPreference(TitleEmojiEditor.KEY);
+        if (emoji != null) emoji.setSummary(TitleEmojiEditor.summary(Settings.TITLE_EMOJI.savedValue()));
     }
 
     @Override
@@ -638,6 +640,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.HOLIDAY_LOOK).addPreference(toggle(context, Settings.HOLIDAY_LOOK, L10n.t("New Year look all year"),
                     PatchFamily.HOLIDAY_LOOK.coverageSummary(L10n.t("Shows Telegram's Santa hat and New Year snow all year, not only around New Year."
                             + " Snow falls on the chat list's top bar and on chat backgrounds once Wallpaper rotation is on under Power Saving, in Effects in Chats."))));
+            if (PatchFamily.Capability.TITLE_EMOJI.installed()) {
+                on(pages, PatchFamily.HOLIDAY_LOOK).addPreference(titleEmojiRow(context));
+            }
         }
         if (build.contains(PatchFamily.USE_SYSTEM_FONT)) {
             on(pages, PatchFamily.USE_SYSTEM_FONT).addPreference(toggle(context, Settings.USE_SYSTEM_FONT, L10n.t("Use system font"),
@@ -1189,6 +1194,29 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             return true;
         });
         return row;
+    }
+
+    /** The text beside the chat list's title: the row shows it, and a tap opens its editor. */
+    private Preference titleEmojiRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(TitleEmojiEditor.KEY);
+        row.setTitle(L10n.t("Emoji next to the chat list title"));
+        row.setPersistent(false);
+        row.setSummary(TitleEmojiEditor.summary(Settings.TITLE_EMOJI.savedValue()));
+        row.setOnPreferenceClickListener(p -> {
+            Activity activity = getActivity();
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                own(TitleEmojiEditor.open(activity, p, before -> titleEmojiSaved(activity, before)));
+            }
+            return true;
+        });
+        return row;
+    }
+
+    /** The chat list builds its title once, so a new text waits for a restart unless it's the one running. */
+    private void titleEmojiSaved(Context context, String before) {
+        if (noteRestartPending(Settings.TITLE_EMOJI, before)) showRestartDialog(context);
+        else Utils.showToastShort(L10n.t("Saved."));
     }
 
     /** Where the outside translate sends text: the row names the service, and a tap opens its editor. */

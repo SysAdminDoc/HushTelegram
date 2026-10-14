@@ -13,6 +13,7 @@ import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.holiday.HOLIDAY_LOOK
 import app.morphe.patches.telegram.misc.holiday.NEW_YEAR_HAT
+import app.morphe.patches.telegram.misc.holiday.TITLE_EMOJI
 import app.morphe.patches.telegram.misc.holiday.holidayLookPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
@@ -91,6 +92,8 @@ class ChatListTitlePressFixtureTest {
             assertEquals("$name: one title hook", 1, create.count { it.callName() == WATCH_TITLE })
             assertEquals("$name: one logo span registration", 1, create.count {
                 it.callName() == "$HOLIDAY_LOOK->registerLogoSpan(Landroid/text/style/ImageSpan;)V" })
+            assertEquals("$name: one title emoji", 1, create.count {
+                it.callName() == "$TITLE_EMOJI->decorate(Landroid/text/SpannableStringBuilder;)V" })
         }
     }
 

@@ -118,6 +118,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_holiday_look", FALSE);
 
     /**
+     * A few characters, usually an emoji, drawn after the chat list's title on this phone only
+     * ({@link app.hushtelegram.extension.telegram.misc.TitleEmoji}). Empty shows nothing. The chat
+     * list builds its title once, so a change waits for a restart.
+     */
+    public static final StringSetting TITLE_EMOJI =
+            new StringSetting("hushtelegram_title_emoji", "", true);
+
+    /**
      * Medium, italic, extra bold, condensed and monospace text in the phone's own font instead of
      * Telegram's bundled Roboto files. Telegram keeps the faces it loaded, so a change waits for a restart.
      */
