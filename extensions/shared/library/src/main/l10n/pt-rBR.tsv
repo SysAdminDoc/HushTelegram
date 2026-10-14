@@ -29,6 +29,8 @@ Couldn't open the file picker. Try again.	Não foi possível abrir o seletor de 
 Couldn't put back the diagnostic data. Try again.	Não foi possível restaurar os dados de diagnóstico. Tente de novo.
 Couldn't save the settings file. Try again.	Não foi possível salvar o arquivo de configurações. Tente de novo.
 Couldn't start that. Try again in a moment.	Não foi possível iniciar isso. Tente de novo em instantes.
+# context: Toast when the person saves a filter list, translation service, sticker size or chat list emoji while a settings import is still being written. The dialog stays open with what they typed.
+Wait for the settings import to finish, then save again.	Espere a importação das configurações terminar e salve de novo.
 Couldn't start the report export. Try again in a moment.	Não foi possível iniciar a exportação do relatório. Tente de novo em instantes.
 Couldn't turn HushTelegram back on. Try again.	Não foi possível reativar o HushTelegram. Tente novamente.
 Debug logging	Registro de depuração

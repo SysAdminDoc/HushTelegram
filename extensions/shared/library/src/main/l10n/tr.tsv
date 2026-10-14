@@ -29,6 +29,8 @@ Couldn't open the file picker. Try again.	Dosya seçici açılamadı. Tekrar den
 Couldn't put back the diagnostic data. Try again.	Tanılama verileri geri getirilemedi. Tekrar dene.
 Couldn't save the settings file. Try again.	Ayar dosyası kaydedilemedi. Tekrar dene.
 Couldn't start that. Try again in a moment.	Bu işlem başlatılamadı. Birazdan tekrar dene.
+# context: Toast when the person saves a filter list, translation service, sticker size or chat list emoji while a settings import is still being written. The dialog stays open with what they typed.
+Wait for the settings import to finish, then save again.	Ayarların içe aktarılması bitene kadar bekle, sonra yeniden kaydet.
 Couldn't start the report export. Try again in a moment.	Rapor dışa aktarımı başlatılamadı. Birazdan tekrar dene.
 Couldn't turn HushTelegram back on. Try again.	HushTelegram yeniden açılamadı. Tekrar dene.
 Debug logging	Hata ayıklama günlüğü

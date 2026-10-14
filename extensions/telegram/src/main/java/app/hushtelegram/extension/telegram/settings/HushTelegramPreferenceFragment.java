@@ -1014,8 +1014,16 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
      * back the dialog's actions wait dimmed and it can't be closed, so a second tap starts nothing.
      * A dialog that went with its page in the meantime is told nothing: there's no row left to show
      * it on. A save the worker has no room for counts as not saved.
+     *
+     * <p>While a settings import is writing, nothing is saved and the dialog stays as it is: the
+     * import runs on another worker, so a save in between could be written over after it said it
+     * was saved.
      */
     static void save(AlertDialog dialog, BooleanSupplier write, Consumer<Boolean> then) {
+        if (AbstractPreferenceFragment.settingImportInProgress) {
+            Utils.showToastLong(L10n.t("Wait for the settings import to finish, then save again."));
+            return;
+        }
         if (!SAVING.add(dialog)) return;
         reach(dialog, false);
         Consumer<Boolean> finish = saved -> {

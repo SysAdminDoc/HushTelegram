@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1208);
+        Map<String, String> table = new HashMap<>(1210);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -1155,6 +1155,8 @@ public final class L10nTranslations {
                 "Sprachnachrichten im Musikplayer");
         table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
                 "Die Lautst\u00e4rketasten \u00e4ndern nur die Lautst\u00e4rke. Sie starten das Video oder Rundvideo auf dem Bildschirm nicht mehr mit Ton. Tippe ein Video an, um es zu h\u00f6ren.");
+        table.put("Wait for the settings import to finish, then save again.",
+                "Warte, bis der Einstellungsimport fertig ist, und speichere dann erneut.");
         table.put("What you type in search's Chats tab isn't sent to Telegram. It finds the chats, contacts and recent searches on this phone, but not messages, public accounts or posts. The other tabs search as usual.",
                 "Was du im Tab \u201eChats\u201c der Suche eingibst, wird nicht an Telegram gesendet. Gefunden werden die Chats, Kontakte und letzten Suchen auf diesem Handy, aber keine Nachrichten, \u00f6ffentlichen Konten oder Beitr\u00e4ge. Die anderen Tabs suchen wie gewohnt.");
         table.put("When a voice or video message ends, the next one doesn't start by itself.",
@@ -1165,11 +1167,11 @@ public final class L10nTranslations {
                 "Wenn du jemanden aus seinem Chat als Kontakt hinzuf\u00fcgst, setzt Telegram das H\u00e4kchen, das deine Telefonnummer mit dieser Person teilt. Wenn das an ist, bleibt das K\u00e4stchen leer, und deine Nummer wird nur geteilt, wenn du es selbst ankreuzt.");
         table.put("When your chat list is short, Telegram lists your contacts below it. This hides that list and its heading. Chats, folders and search stay.",
                 "Wenn deine Chatliste kurz ist, zeigt Telegram darunter deine Kontakte. Das blendet diese Liste und ihre \u00dcberschrift aus. Chats, Ordner und Suche bleiben.");
-        table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
-                "W\u00e4hrend eine Sprachnachricht l\u00e4uft, \u00f6ffnet ein Tipp auf die Leiste \u00fcber dem Chat den vollen Musikplayer, in dem du vor- und zur\u00fcckspringen kannst, statt zur Nachricht zu springen.");
     }
 
     private static void fillDe9(Map<String, String> table) {
+        table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
+                "W\u00e4hrend eine Sprachnachricht l\u00e4uft, \u00f6ffnet ein Tipp auf die Leiste \u00fcber dem Chat den vollen Musikplayer, in dem du vor- und zur\u00fcckspringen kannst, statt zur Nachricht zu springen.");
         table.put("While your phone is locked, voice and round video messages don't start, resume or skip to the next one, whether from headphones, a car, the notification or the lock screen. One that's already playing finishes. Music and other videos play as usual.",
                 "Solange dein Handy gesperrt ist, starten Sprach- und runde Videonachrichten nicht, laufen nicht weiter und springen nicht zur n\u00e4chsten, ob \u00fcber Kopfh\u00f6rer, ein Auto, die Benachrichtigung oder den Sperrbildschirm. Eine, die schon l\u00e4uft, spielt zu Ende. Musik und andere Videos laufen wie gewohnt.");
         table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
@@ -1288,11 +1290,11 @@ public final class L10nTranslations {
                 "Tracking bei geteilten Links");
         table.put("similar channels and bots",
                 "\u00e4hnliche Kan\u00e4le und Bots");
-        table.put("story links",
-                "Story-Links");
     }
 
     private static void fillDe10(Map<String, String> table) {
+        table.put("story links",
+                "Story-Links");
         table.put("story list requests",
                 "Anfragen zur Story-Liste");
         table.put("video ads",
@@ -1304,7 +1306,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(1208);
+        Map<String, String> table = new HashMap<>(1210);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -2412,6 +2414,8 @@ public final class L10nTranslations {
                 "Mensajes de voz en el reproductor de m\u00fasica");
         table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
                 "Las teclas de volumen solo cambian el volumen. Ya no inician con sonido el video o video redondo que se ve en pantalla. Toca un video para o\u00edrlo.");
+        table.put("Wait for the settings import to finish, then save again.",
+                "Espera a que termine la importaci\u00f3n de la configuraci\u00f3n y vuelve a guardar.");
         table.put("What you type in search's Chats tab isn't sent to Telegram. It finds the chats, contacts and recent searches on this phone, but not messages, public accounts or posts. The other tabs search as usual.",
                 "Lo que escribes en la pesta\u00f1a Chats de la b\u00fasqueda no se env\u00eda a Telegram. Encuentra los chats, contactos y b\u00fasquedas recientes de este tel\u00e9fono, pero no mensajes, cuentas p\u00fablicas ni publicaciones. Las dem\u00e1s pesta\u00f1as buscan como siempre.");
         table.put("When a voice or video message ends, the next one doesn't start by itself.",
@@ -2422,11 +2426,11 @@ public final class L10nTranslations {
                 "Cuando agregas a alguien como contacto desde su chat, Telegram marca la casilla que comparte tu n\u00famero de tel\u00e9fono con esa persona. Con esto activado, la casilla empieza sin marcar y tu n\u00famero solo se comparte si la marcas t\u00fa.");
         table.put("When your chat list is short, Telegram lists your contacts below it. This hides that list and its heading. Chats, folders and search stay.",
                 "Cuando tu lista de chats es corta, Telegram muestra tus contactos debajo. Esto oculta esa lista y su t\u00edtulo. Los chats, las carpetas y la b\u00fasqueda se mantienen.");
-        table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
-                "Mientras suena un mensaje de voz, tocar la barra sobre el chat abre el reproductor de m\u00fasica completo, donde puedes arrastrar para avanzar o retroceder, en vez de saltar al mensaje.");
     }
 
     private static void fillEs9(Map<String, String> table) {
+        table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
+                "Mientras suena un mensaje de voz, tocar la barra sobre el chat abre el reproductor de m\u00fasica completo, donde puedes arrastrar para avanzar o retroceder, en vez de saltar al mensaje.");
         table.put("While your phone is locked, voice and round video messages don't start, resume or skip to the next one, whether from headphones, a car, the notification or the lock screen. One that's already playing finishes. Music and other videos play as usual.",
                 "Mientras tu tel\u00e9fono est\u00e1 bloqueado, los mensajes de voz y de video redondo no empiezan, no se reanudan ni saltan al siguiente, ya sea desde los auriculares, un auto, la notificaci\u00f3n o la pantalla de bloqueo. El que ya se est\u00e1 reproduciendo termina. La m\u00fasica y los dem\u00e1s videos se reproducen como siempre.");
         table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
@@ -2545,11 +2549,11 @@ public final class L10nTranslations {
                 "seguimiento de enlaces compartidos");
         table.put("similar channels and bots",
                 "canales y bots similares");
-        table.put("story links",
-                "enlaces de historias");
     }
 
     private static void fillEs10(Map<String, String> table) {
+        table.put("story links",
+                "enlaces de historias");
         table.put("story list requests",
                 "consultas de la lista de historias");
         table.put("video ads",
@@ -2561,7 +2565,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1208);
+        Map<String, String> table = new HashMap<>(1210);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -3669,6 +3673,8 @@ public final class L10nTranslations {
                 "Pesan suara di pemutar musik");
         table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
                 "Tombol volume hanya mengubah volume. Tombol ini tidak lagi memutar video atau video bulat di layar dengan suara. Ketuk video untuk mendengarnya.");
+        table.put("Wait for the settings import to finish, then save again.",
+                "Tunggu sampai impor pengaturan selesai, lalu simpan lagi.");
         table.put("What you type in search's Chats tab isn't sent to Telegram. It finds the chats, contacts and recent searches on this phone, but not messages, public accounts or posts. The other tabs search as usual.",
                 "Yang kamu ketik di tab Obrolan pada pencarian tidak dikirim ke Telegram. Pencarian menemukan obrolan, kontak, dan pencarian terbaru di ponsel ini, tetapi tidak menemukan pesan, akun publik, atau postingan. Tab lain mencari seperti biasa.");
         table.put("When a voice or video message ends, the next one doesn't start by itself.",
@@ -3679,11 +3685,11 @@ public final class L10nTranslations {
                 "Saat kamu menambahkan seseorang sebagai kontak dari obrolannya, Telegram mencentang kotak yang membagikan nomor teleponmu kepadanya. Jika ini aktif, kotak itu mulai kosong dan nomormu hanya dibagikan jika kamu mencentangnya sendiri.");
         table.put("When your chat list is short, Telegram lists your contacts below it. This hides that list and its heading. Chats, folders and search stay.",
                 "Saat daftar obrolan Anda pendek, Telegram menampilkan kontak Anda di bawahnya. Ini menyembunyikan daftar itu beserta judulnya. Obrolan, folder, dan pencarian tetap ada.");
-        table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
-                "Saat pesan suara diputar, mengetuk bilah di atas obrolan membuka pemutar musik penuh, tempat Anda bisa menggeser untuk melompat, bukan melompat ke pesannya.");
     }
 
     private static void fillIn9(Map<String, String> table) {
+        table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
+                "Saat pesan suara diputar, mengetuk bilah di atas obrolan membuka pemutar musik penuh, tempat Anda bisa menggeser untuk melompat, bukan melompat ke pesannya.");
         table.put("While your phone is locked, voice and round video messages don't start, resume or skip to the next one, whether from headphones, a car, the notification or the lock screen. One that's already playing finishes. Music and other videos play as usual.",
                 "Selama ponselmu terkunci, pesan suara dan pesan video bulat tidak dimulai, tidak dilanjutkan, dan tidak melompat ke pesan berikutnya, baik dari headphone, mobil, notifikasi, maupun layar kunci. Pesan yang sedang diputar tetap selesai. Musik dan video lain tetap diputar seperti biasa.");
         table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
@@ -3802,11 +3808,11 @@ public final class L10nTranslations {
                 "pelacakan tautan yang dibagikan");
         table.put("similar channels and bots",
                 "saluran dan bot serupa");
-        table.put("story links",
-                "tautan cerita");
     }
 
     private static void fillIn10(Map<String, String> table) {
+        table.put("story links",
+                "tautan cerita");
         table.put("story list requests",
                 "permintaan daftar cerita");
         table.put("video ads",
@@ -3818,7 +3824,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(1208);
+        Map<String, String> table = new HashMap<>(1210);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -4926,6 +4932,8 @@ public final class L10nTranslations {
                 "Mensagens de voz no player de m\u00fasica");
         table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
                 "As teclas de volume s\u00f3 mudam o volume. Elas n\u00e3o iniciam mais com som o v\u00eddeo ou v\u00eddeo redondo que est\u00e1 na tela. Toque em um v\u00eddeo para ouvi-lo.");
+        table.put("Wait for the settings import to finish, then save again.",
+                "Espere a importa\u00e7\u00e3o das configura\u00e7\u00f5es terminar e salve de novo.");
         table.put("What you type in search's Chats tab isn't sent to Telegram. It finds the chats, contacts and recent searches on this phone, but not messages, public accounts or posts. The other tabs search as usual.",
                 "O que voc\u00ea digita na aba Chats da busca n\u00e3o \u00e9 enviado ao Telegram. Ela encontra os chats, contatos e buscas recentes deste celular, mas n\u00e3o mensagens, contas p\u00fablicas ou posts. As outras abas buscam como sempre.");
         table.put("When a voice or video message ends, the next one doesn't start by itself.",
@@ -4936,11 +4944,11 @@ public final class L10nTranslations {
                 "Quando voc\u00ea adiciona algu\u00e9m como contato pelo chat, o Telegram marca a caixa que compartilha seu n\u00famero de telefone com a pessoa. Com isso ativado, a caixa come\u00e7a desmarcada e seu n\u00famero s\u00f3 vai se voc\u00ea marcar.");
         table.put("When your chat list is short, Telegram lists your contacts below it. This hides that list and its heading. Chats, folders and search stay.",
                 "Quando sua lista de conversas \u00e9 curta, o Telegram mostra seus contatos abaixo dela. Isso oculta essa lista e o t\u00edtulo dela. Conversas, pastas e busca continuam.");
-        table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
-                "Enquanto uma mensagem de voz toca, tocar na barra acima da conversa abre o player de m\u00fasica completo, onde voc\u00ea pode arrastar para avan\u00e7ar ou voltar, em vez de ir at\u00e9 a mensagem.");
     }
 
     private static void fillPt_rBR9(Map<String, String> table) {
+        table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
+                "Enquanto uma mensagem de voz toca, tocar na barra acima da conversa abre o player de m\u00fasica completo, onde voc\u00ea pode arrastar para avan\u00e7ar ou voltar, em vez de ir at\u00e9 a mensagem.");
         table.put("While your phone is locked, voice and round video messages don't start, resume or skip to the next one, whether from headphones, a car, the notification or the lock screen. One that's already playing finishes. Music and other videos play as usual.",
                 "Enquanto o celular est\u00e1 bloqueado, mensagens de voz e de v\u00eddeo redondo n\u00e3o come\u00e7am, n\u00e3o continuam e n\u00e3o pulam para a pr\u00f3xima, seja pelos fones, por um carro, pela notifica\u00e7\u00e3o ou pela tela de bloqueio. A que j\u00e1 est\u00e1 tocando vai at\u00e9 o fim. M\u00fasicas e outros v\u00eddeos tocam normalmente.");
         table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
@@ -5059,11 +5067,11 @@ public final class L10nTranslations {
                 "rastreamento de links compartilhados");
         table.put("similar channels and bots",
                 "canais e bots semelhantes");
-        table.put("story links",
-                "links de Stories");
     }
 
     private static void fillPt_rBR10(Map<String, String> table) {
+        table.put("story links",
+                "links de Stories");
         table.put("story list requests",
                 "solicita\u00e7\u00f5es da lista de stories");
         table.put("video ads",
@@ -5075,7 +5083,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(1208);
+        Map<String, String> table = new HashMap<>(1210);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -6183,6 +6191,8 @@ public final class L10nTranslations {
                 "Sesli mesajlar m\u00fczik \u00e7alarda");
         table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
                 "Ses tu\u015flar\u0131 yaln\u0131zca sesi de\u011fi\u015ftirir. Ekrandaki videoyu veya yuvarlak videoyu art\u0131k sesle ba\u015flatmaz. Duymak i\u00e7in bir videoya dokunun.");
+        table.put("Wait for the settings import to finish, then save again.",
+                "Ayarlar\u0131n i\u00e7e aktar\u0131lmas\u0131 bitene kadar bekle, sonra yeniden kaydet.");
         table.put("What you type in search's Chats tab isn't sent to Telegram. It finds the chats, contacts and recent searches on this phone, but not messages, public accounts or posts. The other tabs search as usual.",
                 "Araman\u0131n Sohbetler sekmesine yazd\u0131klar\u0131n Telegram'a g\u00f6nderilmez. Bu telefondaki sohbetleri, ki\u015fileri ve son aramalar\u0131 bulur ama mesajlar\u0131, herkese a\u00e7\u0131k hesaplar\u0131 ve g\u00f6nderileri bulmaz. Di\u011fer sekmeler her zamanki gibi arar.");
         table.put("When a voice or video message ends, the next one doesn't start by itself.",
@@ -6193,11 +6203,11 @@ public final class L10nTranslations {
                 "Birini sohbetinden ki\u015fi olarak ekledi\u011finde Telegram, telefon numaran\u0131 onunla payla\u015fan kutuyu i\u015faretler. Bu a\u00e7\u0131kken kutu bo\u015f ba\u015flar ve numaran yaln\u0131zca sen i\u015faretlersen payla\u015f\u0131l\u0131r.");
         table.put("When your chat list is short, Telegram lists your contacts below it. This hides that list and its heading. Chats, folders and search stay.",
                 "Sohbet listeniz k\u0131sa oldu\u011funda Telegram ki\u015filerinizi alt\u0131nda g\u00f6sterir. Bu, o listeyi ve ba\u015fl\u0131\u011f\u0131n\u0131 gizler. Sohbetler, klas\u00f6rler ve arama kal\u0131r.");
-        table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
-                "Bir sesli mesaj \u00e7alarken sohbetin \u00fcst\u00fcndeki \u00e7ubu\u011fa dokunmak, mesaja atlamak yerine, ileri geri sarabilece\u011finiz tam m\u00fczik \u00e7alar\u0131 a\u00e7ar.");
     }
 
     private static void fillTr9(Map<String, String> table) {
+        table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
+                "Bir sesli mesaj \u00e7alarken sohbetin \u00fcst\u00fcndeki \u00e7ubu\u011fa dokunmak, mesaja atlamak yerine, ileri geri sarabilece\u011finiz tam m\u00fczik \u00e7alar\u0131 a\u00e7ar.");
         table.put("While your phone is locked, voice and round video messages don't start, resume or skip to the next one, whether from headphones, a car, the notification or the lock screen. One that's already playing finishes. Music and other videos play as usual.",
                 "Telefonun kilitliyken sesli mesajlar ve yuvarlak video mesajlar kulakl\u0131ktan, arabadan, bildirimden ya da kilit ekran\u0131ndan ba\u015flamaz, devam etmez ve bir sonrakine ge\u00e7mez. Zaten \u00e7alan mesaj sonuna kadar \u00e7alar. M\u00fczik ve di\u011fer videolar her zamanki gibi oynar.");
         table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
@@ -6316,11 +6326,11 @@ public final class L10nTranslations {
                 "payla\u015f\u0131lan ba\u011flant\u0131lar\u0131n takibi");
         table.put("similar channels and bots",
                 "benzer kanallar ve botlar");
-        table.put("story links",
-                "hik\u00e2ye ba\u011flant\u0131lar\u0131");
     }
 
     private static void fillTr10(Map<String, String> table) {
+        table.put("story links",
+                "hik\u00e2ye ba\u011flant\u0131lar\u0131");
         table.put("story list requests",
                 "hik\u00e2ye listesi istekleri");
         table.put("video ads",

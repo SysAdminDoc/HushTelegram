@@ -29,6 +29,8 @@ Couldn't open the file picker. Try again.	Pemilih file tidak dapat dibuka. Coba 
 Couldn't put back the diagnostic data. Try again.	Data diagnostik tidak dapat dikembalikan. Coba lagi.
 Couldn't save the settings file. Try again.	File pengaturan tidak dapat disimpan. Coba lagi.
 Couldn't start that. Try again in a moment.	Tidak dapat dimulai. Coba lagi dalam beberapa saat.
+# context: Toast when the person saves a filter list, translation service, sticker size or chat list emoji while a settings import is still being written. The dialog stays open with what they typed.
+Wait for the settings import to finish, then save again.	Tunggu sampai impor pengaturan selesai, lalu simpan lagi.
 Couldn't start the report export. Try again in a moment.	Ekspor laporan tidak dapat dimulai. Coba lagi dalam beberapa saat.
 Couldn't turn HushTelegram back on. Try again.	HushTelegram tidak dapat diaktifkan lagi. Coba lagi.
 Debug logging	Pencatatan debug

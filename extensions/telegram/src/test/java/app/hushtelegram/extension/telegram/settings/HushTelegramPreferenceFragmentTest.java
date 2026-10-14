@@ -1556,6 +1556,45 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
+     * A Save made while a settings import is writing is held back with a note. Nothing is written
+     * and the dialog keeps what was typed, so the import can't land over the save or under it, and
+     * a Save once the import is done goes through.
+     */
+    @Test
+    public void aFilterSaveWaitsForASettingsImportToFinish() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_BY_KEYWORD);
+        ShadowToast.reset();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Preference groups = pageOf(controller).findPreference(FilterEditor.GROUPS);
+            AlertDialog editor = dialogOf(groups);
+            EditText field = editor.findViewById(android.R.id.edit);
+            Button save = editor.getButton(AlertDialog.BUTTON_POSITIVE);
+
+            field.setText("spam");
+            AbstractPreferenceFragment.settingImportInProgress = true;
+            save.performClick();
+            settle();
+            assertEquals("Wait for the settings import to finish, then save again.", ShadowToast.getTextOfLatestToast());
+            assertTrue("a save held back closed the dialog", editor.isShowing());
+            assertTrue("a save held back left the actions out of reach", save.isEnabled());
+            assertEquals("what was typed is kept", "spam", field.getText().toString());
+            assertEquals("a save held back wrote", "", Settings.MESSAGE_FILTERS_GROUPS.savedValue());
+            assertEquals("No filters yet.", String.valueOf(groups.getSummary()));
+
+            AbstractPreferenceFragment.settingImportInProgress = false;
+            save.performClick();
+            settle();
+            assertFalse("a save after the import left the dialog up", editor.isShowing());
+            assertEquals("Filters saved.", ShadowToast.getTextOfLatestToast());
+            assertEquals("spam", Settings.MESSAGE_FILTERS_GROUPS.savedValue());
+        } finally {
+            AbstractPreferenceFragment.settingImportInProgress = false;
+            Settings.MESSAGE_FILTERS_GROUPS.resetToDefault();
+            Settings.HIDE_BY_KEYWORD.resetToDefault();
+        }
+    }
+
+    /**
      * The translation service's Save and Use Google write on the worker the same way, and the
      * service a message reads as it draws stays the saved one, read without a wait, until the write
      * has landed.
