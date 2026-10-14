@@ -1288,7 +1288,7 @@ public final class L10nTranslations {
         table.put("When your chat list is short, Telegram lists your contacts below it. This hides that list and its heading. Chats, folders and search stay.",
                 "Wenn deine Chatliste kurz ist, zeigt Telegram darunter deine Kontakte. Das blendet diese Liste und ihre \u00dcberschrift aus. Chats, Ordner und Suche bleiben.");
         table.put("While Android's Data Saver is on and the network is metered, Telegram doesn't start photos, videos, files, voice messages, music or stories downloading on its own, and stops the ones in its download queue. What you tap still downloads.",
-                "Solange der Datensparmodus von Android an ist und das Netzwerk getaktet ist, l\u00e4dt Telegram Fotos, Videos, Dateien, Sprachnachrichten, Musik und Stories nicht von selbst herunter und stoppt die, die in seiner Download-Warteschlange stehen. Was du antippst, wird trotzdem heruntergeladen.");
+                "Solange der Datensparmodus von Android an ist und das Netzwerk getaktet ist, l\u00e4dt Telegram Fotos, Videos, Dateien, Sprachnachrichten, Musik und Stories nicht von selbst herunter und stoppt die Downloads in seiner Warteschlange. Was du antippst, wird trotzdem heruntergeladen.");
         table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
                 "W\u00e4hrend eine Sprachnachricht l\u00e4uft, \u00f6ffnet ein Tipp auf die Leiste \u00fcber dem Chat den vollen Musikplayer, in dem du vor- und zur\u00fcckspringen kannst, statt zur Nachricht zu springen.");
     }
@@ -5443,7 +5443,7 @@ public final class L10nTranslations {
         table.put("When your chat list is short, Telegram lists your contacts below it. This hides that list and its heading. Chats, folders and search stay.",
                 "Quando sua lista de conversas \u00e9 curta, o Telegram mostra seus contatos abaixo dela. Isso oculta essa lista e o t\u00edtulo dela. Conversas, pastas e busca continuam.");
         table.put("While Android's Data Saver is on and the network is metered, Telegram doesn't start photos, videos, files, voice messages, music or stories downloading on its own, and stops the ones in its download queue. What you tap still downloads.",
-                "Enquanto a Economia de dados do Android estiver ativada e a rede for limitada, o Telegram n\u00e3o come\u00e7a a baixar sozinho fotos, v\u00eddeos, arquivos, mensagens de voz, m\u00fasicas ou Stories, e interrompe os downloads que est\u00e3o na fila dele. O que voc\u00ea toca continua sendo baixado.");
+                "Enquanto a Economia de dados do Android estiver ativada e a rede for limitada, o Telegram n\u00e3o come\u00e7a a baixar sozinho fotos, v\u00eddeos, arquivos, mensagens de voz, m\u00fasicas ou Stories, e interrompe os que est\u00e3o na fila de downloads. O que voc\u00ea toca continua sendo baixado.");
         table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
                 "Enquanto uma mensagem de voz toca, tocar na barra acima da conversa abre o player de m\u00fasica completo, onde voc\u00ea pode arrastar para avan\u00e7ar ou voltar, em vez de ir at\u00e9 a mensagem.");
     }

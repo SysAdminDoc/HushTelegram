@@ -44,6 +44,7 @@ import app.hushtelegram.extension.shared.settings.IntegerSetting;
 import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.SettingsJson;
 import app.hushtelegram.extension.shared.settings.StringSetting;
+import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
@@ -639,6 +640,8 @@ public final class SettingsBackup {
             // would otherwise only notice at the next message drawn, after a second file might
             // have turned it back on.
             if (Boolean.FALSE.equals(changes.get(Settings.OUTSIDE_TRANSLATE))) OutsideTranslate.forgetChats();
+            // What the Data Saver row does once saved, so Telegram's download queue follows now.
+            if (changes.containsKey(Settings.DATA_SAVER_DOWNLOADS)) DataSaverDownloads.switched();
             return changes.size();
         } catch (Setting.BatchFailed failed) {
             throw new ApplyFailed(failed.restored, failed);

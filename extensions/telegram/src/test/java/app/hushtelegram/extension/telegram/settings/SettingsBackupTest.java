@@ -371,6 +371,28 @@ public class SettingsBackupTest {
         }
     }
 
+    /** A file that changes the Data Saver switch runs Telegram's download check, as the row does. */
+    @Test
+    public void aFileThatChangesTheDataSaverSwitchRunsTelegramsCheck() throws Exception {
+        Object downloads = new Object();
+        List<String> checks = new ArrayList<>();
+        app.hushtelegram.extension.telegram.misc.DataSaverDownloadsForTests.checkWith(
+                checked -> checks.add((checked == downloads) + " " + Settings.DATA_SAVER_DOWNLOADS.get()), downloads);
+        try {
+            assertEquals(1, SettingsBackup.apply(SettingsBackup.parse(fileWith(Settings.DATA_SAVER_DOWNLOADS, true))));
+            ShadowLooper.idleMainLooper();
+            assertEquals(Collections.singletonList("true true"), checks);
+            // A file that leaves the switch as it is doesn't run it.
+            assertEquals(1, SettingsBackup.apply(SettingsBackup.parse(fileWith(Settings.HIDE_ADS, false))));
+            ShadowLooper.idleMainLooper();
+            assertEquals(Collections.singletonList("true true"), checks);
+        } finally {
+            Settings.DATA_SAVER_DOWNLOADS.resetToDefault();
+            Settings.HIDE_ADS.resetToDefault();
+            app.hushtelegram.extension.telegram.misc.DataSaverDownloadsForTests.reset();
+        }
+    }
+
     @Test
     public void aFailedCommitIsPutBackAndSaysSo() throws Exception {
         String file = fileWith(Settings.HIDE_ADS, false, Settings.DISABLE_UPDATE_CHECKS, false);
