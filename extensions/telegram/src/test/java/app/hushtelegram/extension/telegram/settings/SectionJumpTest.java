@@ -74,7 +74,9 @@ public class SectionJumpTest {
         // More settings, then Report a problem and Support HushTelegram, which open web pages rather than sections.
         assertEquals(HushTelegramPreferenceFragment.SUPPORT, ((Preference) list.getItemAtPosition(list.getCount() - 1)).getKey());
         assertEquals(SettingsNavigation.REPORT, ((Preference) list.getItemAtPosition(list.getCount() - 2)).getKey());
-        for (int i = 4; i < list.getCount() - 3; i++) titles.add(((Preference) list.getItemAtPosition(i)).getTitle().toString());
+        // Changed switches sits just above More settings and opens a page of its own, not a section.
+        assertEquals(SettingsNavigation.CHANGED, ((Preference) list.getItemAtPosition(list.getCount() - 4)).getKey());
+        for (int i = 4; i < list.getCount() - 4; i++) titles.add(((Preference) list.getItemAtPosition(i)).getTitle().toString());
         Preference more = (Preference) list.getItemAtPosition(list.getCount() - 3);
         assertEquals("More settings", more.getTitle());
         assertTrue(more.getOnPreferenceClickListener().onPreferenceClick(more));
