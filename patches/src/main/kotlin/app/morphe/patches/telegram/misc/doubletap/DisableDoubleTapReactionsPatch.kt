@@ -49,7 +49,7 @@ internal fun BytecodePatchContext.resolveDoubleTapReactions(): List<DoubleTapSit
     listOf("disableDoubleTapReactions", "chatDoubleTapReaction", "previewDoubleTapReaction").forEach(::requireStatusMethod)
     controlHook(DOUBLE_TAP_REACTIONS, "stopReaction", emptyList(), "Z")
     val found = mutableListOf<Method>()
-    classDefForEach { cls -> cls.methods.filterTo(found) { method ->
+    forEachClassMentioning(Mention.reference(DOUBLE_TAP_CHOICE)) { cls -> cls.methods.filterTo(found) { method ->
         (method.controlShape(listOf("Landroid/view/View;", "F", "F"), "V") ||
             (method.name == "onDoubleTap" && method.controlShape(listOf("Landroid/view/MotionEvent;"), "Z"))) &&
             method.controlBody().any { it.controlRef() == DOUBLE_TAP_CHOICE }
@@ -68,7 +68,8 @@ internal fun BytecodePatchContext.resolveDoubleTapReactions(): List<DoubleTapSit
             val delegate = interfaces.filter { cls -> cls.methods.any { it.name == method.name && it.controlShape(listOf("Landroid/view/View;", "F", "F"), "V") } &&
                 cls.methods.any { it.controlShape(listOf("Landroid/view/View;"), "Z") } }.controlSingle("chat double-tap delegate")
             val callers = mutableListOf<Method>()
-            classDefForEach { cls -> cls.methods.filterTo(callers) { caller -> caller.controlBody().any { instruction ->
+            val calls = Mention.member(method.name) and (Mention.type(delegate.type) or Mention.type(owner.type))
+            forEachClassMentioning(calls) { cls -> cls.methods.filterTo(callers) { caller -> caller.controlBody().any { instruction ->
                 instruction.call()?.let { call -> call.definingClass in listOf(delegate.type, owner.type) && call.name == method.name &&
                     call.controlShape(listOf("Landroid/view/View;", "F", "F"), "V") } == true
             } } }

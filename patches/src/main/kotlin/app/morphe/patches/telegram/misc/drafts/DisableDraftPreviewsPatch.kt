@@ -21,6 +21,8 @@ import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -143,8 +145,8 @@ internal data class DraftPreviewHook(val method: MutableMethod, val index: Int, 
 internal fun BytecodePatchContext.resolveDraftPreviewHooks(): Map<DraftPreviewTarget, DraftPreviewHook> {
     requireRuntimeHooks()
     val builders = mutableListOf<Method>()
-    classDefForEach { classDef ->
-        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+    forEachClassMentioning(Mention.reference(WEB_PAGE_PREVIEW)) { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@forEachClassMentioning
         classDef.methods.filterTo(builders) { it.constructs(WEB_PAGE_PREVIEW) }
     }
     val found = DraftPreviewTarget.entries.associateWith { mutableListOf<Method>() }
@@ -464,8 +466,8 @@ internal fun BytecodePatchContext.resolveLocalDraftHook(): LocalDraftHook {
         direct.methods.any { it.name == "<init>" && it.parameterTypes.isEmpty() && AccessFlags.PUBLIC.isSet(it.accessFlags) },
         "direct messages draft target changed")
     val uploads = mutableListOf<Method>()
-    classDefForEach { classDef ->
-        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+    forEachClassMentioning(Mention.reference(SAVE_DRAFT)) { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@forEachClassMentioning
         classDef.methods.filterTo(uploads) { it.constructs(SAVE_DRAFT) }
     }
     val found = uploads.one("draft upload", ::refuse)

@@ -17,6 +17,8 @@ import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.classDefsMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.RegisterKind
@@ -317,17 +319,18 @@ internal fun BytecodePatchContext.resolveLocalNotificationReaders(): LocalNotifi
 internal fun BytecodePatchContext.resolveFirebaseHeader(): FirebaseHeaderPlan {
     val classes = linkedMapOf<String, ClassDef>()
     classDefForEach { if (!it.type.startsWith("Lapp/hushtelegram/extension/")) classes[it.type] = it }
-    val methods = classes.values.flatMap { it.methods.toList() }
-    val header = methods.filter { it.hasShape(listOf(URL, STRING), HTTP) &&
-        listOf("X-Android-Cert", "X-Android-Package", "x-goog-api-key", "SHA1",
-            "Could not get fingerprint hash for package: ").all { anchor -> anchor in it.strings() }
+    // Each search reads the classes as they were above, among those naming what it looks for.
+    fun methods(mentioning: Mention) = classDefsMentioning(mentioning).mapNotNull { classes[it.type] }.flatMap { it.methods.toList() }
+    val anchors = listOf("X-Android-Cert", "X-Android-Package", "x-goog-api-key", "SHA1", "Could not get fingerprint hash for package: ")
+    val header = methods(Mention.allOf(anchors.map { Mention.string(it) })).filter { it.hasShape(listOf(URL, STRING), HTTP) &&
+        anchors.all { anchor -> anchor in it.strings() }
     }.unique("Firebase certificate header method")
     shape(!AccessFlags.STATIC.isSet(header.accessFlags), "header method lost its receiver")
     val owner = classes.getValue(header.definingClass)
     val uri = owner.methods.filter { it.hasShape(listOf(STRING), URL) &&
         "https://firebaseinstallations.googleapis.com/v1/" in it.strings()
     }.unique("Firebase request URL factory")
-    val callers = methods.filter { method -> method.instructions().any { it.call()?.same(header) == true } }
+    val callers = methods(Mention.member(header.definingClass, header.name)).filter { method -> method.instructions().any { it.call()?.same(header) == true } }
     val requests = linkedMapOf<FirebaseRequest, Method>()
     for (caller in callers) {
         val strings = caller.strings()

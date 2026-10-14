@@ -19,12 +19,14 @@ import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.controlString
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.patches.telegram.misc.time.EDITED_MESSAGE
 import app.morphe.patches.telegram.misc.time.MESSAGE_TIME_SHOWN
@@ -297,8 +299,8 @@ internal fun BytecodePatchContext.resolveKeepDeleted(): KeepDeletedPlan {
 
     // The bubble's time measuring, found by what Message times with seconds left in it.
     val measures = mutableListOf<Pair<String, String>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.allReferences(listOf(EDITED_MESSAGE, MESSAGE_TIME_SHOWN))) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
             if (m.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE_OBJECT) && m.returnType == "V" &&
                 !AccessFlags.STATIC.isSet(m.accessFlags)) {
