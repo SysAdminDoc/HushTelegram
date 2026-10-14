@@ -53,6 +53,8 @@ private const val TITLES = "Lorg/telegram/messenger/R\$string;"
 private const val ARRAY_LIST = "Ljava/util/ArrayList;"
 private const val STRING = "Ljava/lang/String;"
 private val CONSTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST)
+/** Every way out of a method. dexlib2's `Opcode.name` is the smali mnemonic, so these are listed rather than matched by name. */
+private val EXITS = setOf(Opcode.RETURN_VOID, Opcode.RETURN, Opcode.RETURN_WIDE, Opcode.RETURN_OBJECT, Opcode.THROW)
 
 /** The chat search lookups this patch hooks: the public ones. Messages in your chats are left to Telegram. */
 internal val MY_CHATS_LOOKUPS = setOf(SearchLookup.SPONSORED, SearchLookup.POSTS, SearchLookup.USERNAMES)
@@ -257,7 +259,7 @@ private fun BytecodePatchContext.resolveTabRow(): TabRow {
     val built = code.indices.mapNotNull { at -> code.builtTab(at, item)?.let { it to at } }
     val at = types.mapValues { (tab, number) -> built.filter { it.first == number }.map { it.second }
         .one("${tab.title} tab in the row", ::refuse) }
-    val returns = code.indices.filter { code[it].opcode.name.startsWith("RETURN") || code[it].opcode == Opcode.THROW }
+    val returns = code.indices.filter { code[it].opcode in EXITS }
     shape(returns.size == 1 && code[returns.single()].opcode == Opcode.RETURN_VOID, "the tab row update no longer ends in one place")
     val end = returns.single()
     shape(at.values.all { it < end }, "a tab is added after the tab row update ends")
