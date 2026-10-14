@@ -167,6 +167,10 @@ Turn on a set of switches in one tap, or put every switch back the way it starte
 Quick setups on the home page	Ana sayfada hızlı kurulumlar
 Shown. Tap to hide it.	Gösteriliyor. Gizlemek için dokun.
 Hidden. Tap to show it again.	Gizli. Yeniden göstermek için dokun.
+# context: Row on the Look and feel page that switches how the HushTelegram settings pages are drawn: each group of rows on a rounded card with an outline, or plain rows with a thin line between them. Its line says which look is on and what a tap changes it to.
+Settings look	Ayarların görünümü
+Cards. Tap for plain rows.	Kartlar. Düz satırlar için dokun.
+Plain rows. Tap for cards.	Düz satırlar. Kartlar için dokun.
 # context: toast after a long press hides Quick setups; the page named is Settings backup
 Quick setups hidden. Bring it back from %1$s.	Hızlı kurulumlar gizlendi. %1$s sayfasından geri getirebilirsin.
 # context: Quick setups choice that turns on the switches that hide ads, suggestions and nags

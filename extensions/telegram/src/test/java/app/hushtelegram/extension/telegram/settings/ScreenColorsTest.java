@@ -335,6 +335,76 @@ public class ScreenColorsTest {
         assertEquals("the large-text row's text starts somewhere else", textStart[0], textStart[1]);
     }
 
+    /**
+     * The plain look (#18): no card behind a row, a thin line under it from where its text starts,
+     * none under a group's last row, the text 20 dp from the edge and still a 48 dp target. The
+     * status and restart rows stay cards, section titles take the accent, and a dialog's choices
+     * lose their cards too.
+     */
+    @Test
+    public void thePlainLookDrawsRowsWithAThinLineInsteadOfCards() {
+        android.content.Context context = RuntimeEnvironment.getApplication();
+        int dp = Math.round(context.getResources().getDisplayMetrics().density);
+        android.preference.Preference preference = new android.preference.Preference(context);
+        preference.setTitle("Hide ads");
+        preference.setSummary("Removes sponsored messages.");
+        View row = new android.widget.LinearLayout(context);
+        ScreenColors colors = ScreenColors.DEFAULT;
+        SettingsNavigation.PLAIN_ROWS.save(true);
+        try {
+            colors.paintSurface(row, preference, true, false);
+            ScreenColors.Divider line = divider(row);
+            assertNotNull("no line under a row inside its group", line);
+            assertEquals(colors.outline, line.color);
+            assertEquals(20 * dp, line.start);
+            line.setBounds(0, 0, 1080, 200);
+            assertEquals(new android.graphics.Rect(20 * dp, 200 - dp, 1080, 200), line.line());
+            assertEquals(20 * dp, row.getPaddingStart());
+            assertTrue(row.getMinimumHeight() >= 48 * dp);
+
+            preference.setIcon(new ColorDrawable(Color.WHITE));
+            colors.paintSurface(row, preference, false, false);
+            assertEquals("the line starts at the text past the icon", 74 * dp, divider(row).start);
+
+            colors.paintSurface(row, preference, false, true);
+            assertEquals("a group's last row has a line under it", null, divider(row));
+
+            colors.paintSurface(row, preference, true, true, true, false);
+            assertEquals("the status row isn't a card", 36 * dp, row.getPaddingStart());
+
+            android.widget.LinearLayout heading = new android.widget.LinearLayout(context);
+            TextView title = new TextView(context);
+            title.setId(android.R.id.title);
+            heading.addView(title);
+            colors.paintHeading(heading);
+            assertEquals(colors.heading, title.getCurrentTextColor());
+            assertEquals(20 * dp, heading.getPaddingStart());
+
+            ChoiceCards choices = new ChoiceCards(colors, new CharSequence[]{"Quiet", "Privacy"}, new CharSequence[]{"a", "b"});
+            android.widget.ListView list = new android.widget.ListView(context);
+            View first = choices.getView(0, null, list);
+            assertTrue(((RippleDrawable) first.getBackground()).getDrawable(0) instanceof ScreenColors.Divider);
+            assertEquals(24 * dp, first.getPaddingStart());
+            View last = choices.getView(1, null, list);
+            assertTrue(((RippleDrawable) last.getBackground()).getDrawable(0) instanceof ColorDrawable);
+        } finally {
+            SettingsNavigation.PLAIN_ROWS.resetToDefault();
+        }
+        preference.setIcon(null);
+        colors.paintSurface(row, preference, true, false);
+        assertEquals("the cards came back without the switch", 36 * dp, row.getPaddingStart());
+        assertEquals(null, divider(row));
+    }
+
+    /** The plain look's line under a row, or null when its background has none. */
+    private static ScreenColors.Divider divider(View row) {
+        android.graphics.drawable.Drawable background = row.getBackground();
+        if (background instanceof RippleDrawable) background = ((RippleDrawable) background).getDrawable(0);
+        if (!(background instanceof android.graphics.drawable.LayerDrawable)) return null;
+        android.graphics.drawable.Drawable first = ((android.graphics.drawable.LayerDrawable) background).getDrawable(0);
+        return first instanceof ScreenColors.Divider ? (ScreenColors.Divider) first : null;
+    }
+
     private static SettingsDialog show(Activity activity) {
         SettingsDialog dialog = new SettingsDialog();
         dialog.show(activity.getFragmentManager(), "hushtelegram_settings");

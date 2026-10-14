@@ -717,8 +717,14 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         }
     }
 
-    /** The Look and feel page: theme, messages and stickers, profiles, touch, less clutter. */
+    /**
+     * The Look and feel page: theme, messages and stickers, profiles, touch, less clutter. Its first
+     * row is the look of these settings themselves, which sits on Settings backup instead in a build
+     * without the page.
+     */
     private void addLookPage(Context context, Map<PatchFamily.Page, PreferenceCategory> pages, Set<PatchFamily> build) {
+        PreferenceCategory look = pages.get(PatchFamily.Page.LOOK);
+        if (look != null) look.addPreference(settingsLookRow(context));
         if (build.contains(PatchFamily.HIDE_RECOMMENDATIONS)) {
             on(pages, PatchFamily.HIDE_RECOMMENDATIONS).addPreference(toggle(context, Settings.HIDE_RECOMMENDATIONS, L10n.t("Hide recommendations"),
                     PatchFamily.HIDE_RECOMMENDATIONS.coverageSummary(L10n.t("Hides suggested similar channels and bots, including ones already saved, and "
@@ -960,6 +966,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 L10n.t("Loads your switches, filter lists and sticker size from a saved file. You see what will "
                         + "change before anything is applied. It applies to all accounts.")), SettingsIcons.DOWNLOADS));
         backup.addPreference(mark(restoreQuickSetupsRow(context), SettingsIcons.TOOLS));
+        if (!PatchFamily.Page.LOOK.inBuild(build)) backup.addPreference(settingsLookRow(context));
     }
 
     /**
@@ -970,7 +977,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static String exportSummary(Set<PatchFamily> build) {
         List<String> leftOut = new ArrayList<>(Arrays.asList(L10n.t("Pause HushTelegram"), L10n.t("Debug logging"),
                 L10n.t("Check for new HushTelegram releases"), L10n.t("Lock HushTelegram settings"),
-                L10n.t("Quick setups on the home page")));
+                L10n.t("Quick setups on the home page"), L10n.t("Settings look")));
         if (build.contains(PatchFamily.UNIFIED_PUSH)) leftOut.add(L10n.t("UnifiedPush notifications"));
         if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS)) leftOut.add(L10n.t("Folders by chat type"));
         if (build.contains(PatchFamily.OUTSIDE_TRANSLATE)) {
@@ -999,6 +1006,29 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
     static String restoreQuickSetupsSummary() {
         return SettingsNavigation.HIDE_QUICK_SETUPS.get() ? L10n.t("Hidden. Tap to show it again.") : L10n.t("Shown. Tap to hide it.");
+    }
+
+    /**
+     * Switches these pages between cards and plain rows with a thin line between them (#18). The
+     * new summary redraws the list, and every row is painted again as it's drawn.
+     */
+    private static Preference settingsLookRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(SettingsNavigation.SETTINGS_LOOK);
+        row.setTitle(L10n.t("Settings look"));
+        row.setSummary(settingsLookSummary());
+        row.setPersistent(false);
+        row.actsAtOnce = true;
+        row.setOnPreferenceClickListener(p -> {
+            SettingsNavigation.PLAIN_ROWS.save(!SettingsNavigation.PLAIN_ROWS.get());
+            p.setSummary(settingsLookSummary());
+            return true;
+        });
+        return row;
+    }
+
+    static String settingsLookSummary() {
+        return SettingsNavigation.PLAIN_ROWS.get() ? L10n.t("Plain rows. Tap for cards.") : L10n.t("Cards. Tap for plain rows.");
     }
 
     /** Diagnostics: Debug logging, the report, and clearing what a report would hold. */

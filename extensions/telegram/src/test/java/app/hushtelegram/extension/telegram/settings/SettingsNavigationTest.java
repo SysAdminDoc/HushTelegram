@@ -85,6 +85,7 @@ public class SettingsNavigationTest {
         Settings.REVEAL_SPOILERS.resetToDefault();
         Settings.DISABLE_UPDATE_CHECKS.resetToDefault();
         SettingsNavigation.HIDE_QUICK_SETUPS.resetToDefault();
+        SettingsNavigation.PLAIN_ROWS.resetToDefault();
         BaseSettings.PAUSED.resetToDefault();
         app.hushtelegram.extension.shared.settings.preference.QuickSetups.forget();
         app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.remove(
@@ -260,6 +261,8 @@ public class SettingsNavigationTest {
                     }
                     continue;
                 }
+                // Settings look is about the settings screen, not a patch, so it heads Look and feel on its own.
+                if (i == 0 && split == PatchFamily.Page.LOOK && SettingsNavigation.SETTINGS_LOOK.equals(item.getKey())) continue;
                 assertNotNull(item.getTitle() + " comes before any heading", current);
                 PatchFamily owner = item.hasKey() ? PatchFamily.Group.owner(item.getKey()) : null;
                 if (owner != null) assertSame(item.getTitle() + " is under " + current, current, PatchFamily.Group.of(owner));
@@ -1088,6 +1091,50 @@ public class SettingsNavigationTest {
             page.applyQuickSetup(preset);
             assertTrue(SettingsNavigation.HIDE_QUICK_SETUPS.savedValue());
         }
+    }
+
+    /**
+     * Settings look heads Look and feel, says which look is on, and a tap redraws every page in the
+     * other one (#18). Like the Quick setups flag, the choice is the screen's own.
+     */
+    @Test public void theSettingsLookRowSwitchesThePagesBetweenCardsAndPlainRows() throws Exception {
+        int dp = Math.round(list().getResources().getDisplayMetrics().density);
+        page.navigation.navigate("Look and feel");
+        int at = position(SettingsNavigation.SETTINGS_LOOK);
+        assertTrue("no Settings look row on Look and feel", at >= 0);
+        for (int i = 0; i < at; i++) {
+            Preference before = (Preference) list().getItemAtPosition(i);
+            assertFalse("a switch came before Settings look", before instanceof android.preference.TwoStatePreference);
+        }
+        Preference look = (Preference) list().getItemAtPosition(at);
+        assertEquals("Settings look", String.valueOf(look.getTitle()));
+        assertEquals("Cards. Tap for plain rows.", String.valueOf(look.getSummary()));
+        assertEquals(36 * dp, list().getAdapter().getView(position(Settings.AMOLED_BLACK.key), null, list()).getPaddingStart());
+
+        tap(SettingsNavigation.SETTINGS_LOOK);
+        assertTrue(SettingsNavigation.PLAIN_ROWS.savedValue());
+        assertEquals("Plain rows. Tap for cards.", String.valueOf(look.getSummary()));
+        assertTrue("the page left Look and feel", contains(Settings.AMOLED_BLACK.key));
+        View plain = list().getAdapter().getView(position(Settings.AMOLED_BLACK.key), null, list());
+        assertEquals(20 * dp, plain.getPaddingStart());
+        assertTrue(plain.getBackground() instanceof android.graphics.drawable.RippleDrawable);
+
+        page.navigation.search("plain rows");
+        assertTrue("search lost the look row", contains(SettingsNavigation.SETTINGS_LOOK));
+        page.navigation.search("");
+
+        assertTrue("the look has to hold while paused", SettingsNavigation.PLAIN_ROWS.isKeptWhenPaused());
+        assertFalse(SettingsBackup.create().contains(SettingsNavigation.PLAIN_ROWS.key));
+        for (Map<app.hushtelegram.extension.shared.settings.BooleanSetting, Boolean> preset : Arrays.asList(
+                QuickSetupKeys.quiet(), QuickSetupKeys.privacy(), QuickSetupKeys.defaults())) {
+            assertFalse(preset.containsKey(SettingsNavigation.PLAIN_ROWS));
+        }
+
+        page.navigation.navigate("Look and feel");
+        tap(SettingsNavigation.SETTINGS_LOOK);
+        assertFalse(SettingsNavigation.PLAIN_ROWS.savedValue());
+        assertEquals("Cards. Tap for plain rows.", String.valueOf(look.getSummary()));
+        assertEquals(36 * dp, list().getAdapter().getView(position(Settings.AMOLED_BLACK.key), null, list()).getPaddingStart());
     }
 
     /** Each Quick setups choice changes its switches through their rows and says how many changed. */

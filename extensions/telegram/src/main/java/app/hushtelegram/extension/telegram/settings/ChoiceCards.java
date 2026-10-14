@@ -76,6 +76,7 @@ final class ChoiceCards extends BaseAdapter {
         Card card = convertView instanceof Card ? (Card) convertView : new Card(parent.getContext(), colors);
         card.name.setText(names[position]);
         card.detail.setText(details[position]);
+        if (card.plain) card.plainBackground(colors, position + 1 == getCount());
         return card;
     }
 
@@ -87,6 +88,8 @@ final class ChoiceCards extends BaseAdapter {
 
         final TextView name;
         final TextView detail;
+        /** Drawn in the plain look (#18): no card, a thin line between choices. */
+        final boolean plain = ScreenColors.plainRows();
 
         Card(Context context, ScreenColors colors) {
             super(context);
@@ -94,18 +97,22 @@ final class ChoiceCards extends BaseAdapter {
             setGravity(Gravity.CENTER_VERTICAL);
             int side = dp(context, SIDE_INSET_DP);
             int gap = dp(context, GAP_INSET_DP);
-            GradientDrawable surface = new GradientDrawable();
-            // The shared row surface, with its outline separating it from the dialog.
-            surface.setColor(colors.card);
-            surface.setStroke(dp(context, 1), colors.outline);
-            surface.setCornerRadius(dp(context, ScreenColors.CARD_RADIUS));
-            setBackground(new RippleDrawable(ColorStateList.valueOf(ScreenColors.half(colors.accent)),
-                    new InsetDrawable(surface, side, gap, side, gap), null));
-            // Set after the background, which puts its insets in as the padding.
-            setPaddingRelative(side + dp(context, 16), gap + dp(context, 12),
-                    side + dp(context, 16), gap + dp(context, 12));
-            // 48 dp of card to tap at the least, at any text size.
-            setMinimumHeight(2 * gap + dp(context, 48));
+            if (plain) {
+                plainBackground(colors, true);
+            } else {
+                GradientDrawable surface = new GradientDrawable();
+                // The shared row surface, with its outline separating it from the dialog.
+                surface.setColor(colors.card);
+                surface.setStroke(dp(context, 1), colors.outline);
+                surface.setCornerRadius(dp(context, ScreenColors.CARD_RADIUS));
+                setBackground(new RippleDrawable(ColorStateList.valueOf(ScreenColors.half(colors.accent)),
+                        new InsetDrawable(surface, side, gap, side, gap), null));
+                // Set after the background, which puts its insets in as the padding.
+                setPaddingRelative(side + dp(context, 16), gap + dp(context, 12),
+                        side + dp(context, 16), gap + dp(context, 12));
+                // 48 dp of card to tap at the least, at any text size.
+                setMinimumHeight(2 * gap + dp(context, 48));
+            }
 
             LinearLayout text = new LinearLayout(context);
             text.setOrientation(VERTICAL);
@@ -142,17 +149,33 @@ final class ChoiceCards extends BaseAdapter {
          * since the card's surface is opaque.
          */
         static Drawable focusRing(Context context, ScreenColors colors) {
+            boolean plain = ScreenColors.plainRows();
             GradientDrawable ring = new GradientDrawable();
             ring.setColor(android.graphics.Color.TRANSPARENT);
             ring.setStroke(dp(context, 2), colors.accent);
-            ring.setCornerRadius(dp(context, ScreenColors.CARD_RADIUS));
-            int side = dp(context, SIDE_INSET_DP);
-            int gap = dp(context, GAP_INSET_DP);
+            ring.setCornerRadius(plain ? 0 : dp(context, ScreenColors.CARD_RADIUS));
+            int side = dp(context, plain ? 2 : SIDE_INSET_DP);
+            int gap = dp(context, plain ? 2 : GAP_INSET_DP);
             StateListDrawable selector = new StateListDrawable();
             selector.addState(new int[]{android.R.attr.state_pressed}, new ColorDrawable(android.graphics.Color.TRANSPARENT));
             selector.addState(new int[]{android.R.attr.state_focused}, new InsetDrawable(ring, side, gap, side, gap));
             selector.addState(new int[]{}, new ColorDrawable(android.graphics.Color.TRANSPARENT));
             return selector;
+        }
+
+        /**
+         * The plain look's background: the ripple over the whole choice, and a thin line under it
+         * from where its text starts, unless it's the last one.
+         */
+        void plainBackground(ScreenColors colors, boolean last) {
+            Context context = getContext();
+            Drawable line = last ? new ColorDrawable(android.graphics.Color.TRANSPARENT)
+                    : new ScreenColors.Divider(colors.outline, dp(context, 1), dp(context, 24));
+            setBackground(new RippleDrawable(ColorStateList.valueOf(ScreenColors.half(colors.accent)), line,
+                    new ColorDrawable(android.graphics.Color.WHITE)));
+            // Set after the background, so a background's padding can't move the text.
+            setPaddingRelative(dp(context, 24), dp(context, 14), dp(context, 24), dp(context, 14));
+            setMinimumHeight(dp(context, 56));
         }
 
         private static int dp(Context context, int value) {

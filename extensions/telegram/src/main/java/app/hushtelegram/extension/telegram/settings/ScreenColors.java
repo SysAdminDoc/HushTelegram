@@ -21,6 +21,7 @@ import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
@@ -224,6 +225,11 @@ final class ScreenColors {
 
     void paintSurface(View row, Preference preference, boolean first, boolean last,
                       boolean emphasized, boolean transparent) {
+        // The status and restart rows stay cards in either look, as panels apart from the rows.
+        if (plainRows() && !emphasized) {
+            paintPlain(row, preference, last);
+            return;
+        }
         float radius = dp(row, CARD_RADIUS);
         float[] corners = {
                 first ? radius : 0, first ? radius : 0,
@@ -260,16 +266,108 @@ final class ScreenColors {
         row.setMinimumHeight(dp(row, 64));
     }
 
-    /** A section title. */
+    /**
+     * Whether the pages draw plain rows with a thin line between them instead of cards (#18). It's
+     * read each time a row is drawn, so the next draw follows a change. The recovery page, drawn
+     * when settings can't be read, gets the cards.
+     */
+    static boolean plainRows() {
+        return app.hushtelegram.extension.shared.Utils.settingsReady() && SettingsNavigation.PLAIN_ROWS.get();
+    }
+
+    /** How far a row's text sits in from the screen's sides: inside the card, or from the edge in the plain look. */
+    int rowSide(View row) {
+        return dp(row, plainRows() ? 20 : 36);
+    }
+
+    /**
+     * A row in the plain look: the page's black behind it and a thin line under it, from where its
+     * text starts to the screen's end, unless it ends its group. It keeps the keyboard ring, the
+     * ripple and a 48 dp target.
+     */
+    private void paintPlain(View row, Preference preference, boolean last) {
+        int side = rowSide(row);
+        // A row with an icon has its text past the icon's 54 dp, and the line starts there too.
+        Drawable line = last ? new ColorDrawable(Color.TRANSPARENT)
+                : new Divider(outline, dp(row, 1), side + (preference.getIcon() != null ? dp(row, 54) : 0));
+        GradientDrawable ring = new GradientDrawable();
+        ring.setColor(Color.TRANSPARENT);
+        ring.setStroke(dp(row, 2), accent);
+        StateListDrawable keyboard = new StateListDrawable();
+        keyboard.addState(new int[]{android.R.attr.state_focused}, new InsetDrawable(ring, dp(row, 2)));
+        keyboard.addState(new int[]{android.R.attr.state_selected}, new InsetDrawable(ring, dp(row, 2)));
+        android.graphics.drawable.LayerDrawable layers =
+                new android.graphics.drawable.LayerDrawable(new Drawable[]{line, keyboard});
+        layers.setPaddingMode(android.graphics.drawable.LayerDrawable.PADDING_MODE_STACK);
+        // Nothing here is opaque, so the ripple gets the whole row as its mask.
+        row.setBackground(preference.isSelectable()
+                ? new RippleDrawable(ColorStateList.valueOf(ripple), layers, new ColorDrawable(Color.WHITE)) : layers);
+        int vertical = preference.getSummary() == null ? 12 : 14;
+        row.setPaddingRelative(side, dp(row, vertical), side, dp(row, vertical));
+        row.setMinimumHeight(dp(row, 56));
+    }
+
+    /** The plain look's line along a row's bottom edge, starting a given distance in from the side the row reads from. */
+    static final class Divider extends Drawable {
+        final int color;
+        final int start;
+        private final int thickness;
+        private final Paint paint = new Paint();
+
+        Divider(int color, int thickness, int start) {
+            this.color = color;
+            this.thickness = thickness;
+            this.start = start;
+            paint.setColor(color);
+        }
+
+        /** Left, top, right and bottom of the line inside the bounds. */
+        Rect line() {
+            Rect bounds = getBounds();
+            boolean rtl = getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
+            return new Rect(rtl ? bounds.left : bounds.left + start, bounds.bottom - thickness,
+                    rtl ? bounds.right - start : bounds.right, bounds.bottom);
+        }
+
+        @Override
+        public void draw(Canvas canvas) {
+            canvas.drawRect(line(), paint);
+        }
+
+        @Override
+        public boolean onLayoutDirectionChanged(int layoutDirection) {
+            invalidateSelf();
+            return true;
+        }
+
+        @Override
+        public void setAlpha(int alpha) {
+            paint.setAlpha(alpha);
+        }
+
+        @Override
+        public void setColorFilter(@Nullable ColorFilter filter) {
+            paint.setColorFilter(filter);
+        }
+
+        @Override
+        public int getOpacity() {
+            return PixelFormat.TRANSLUCENT;
+        }
+    }
+
+    /** A section title: muted in the cards, in the accent colour in the plain look, where nothing else marks a group. */
     void paintHeading(View row) {
+        boolean plain = plainRows();
         TextView title = row.findViewById(android.R.id.title);
         if (title != null) {
-            title.setTextColor(summary);
+            title.setTextColor(plain ? heading : summary);
             title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
             title.setLetterSpacing(0.06f);
             title.setAllCaps(true);
         }
-        row.setPaddingRelative(dp(row, 22), dp(row, 16), dp(row, 22), dp(row, 8));
+        int side = dp(row, plain ? 20 : 22);
+        row.setPaddingRelative(side, dp(row, plain ? 20 : 16), side, dp(row, plain ? 4 : 8));
     }
 
     static GradientDrawable rounded(int color, float radius) {

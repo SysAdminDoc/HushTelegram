@@ -167,6 +167,10 @@ Turn on a set of switches in one tap, or put every switch back the way it starte
 Quick setups on the home page	Schnelleinstellungen auf der Startseite
 Shown. Tap to hide it.	Angezeigt. Tippe, um sie auszublenden.
 Hidden. Tap to show it again.	Ausgeblendet. Tippe, um sie wieder einzublenden.
+# context: Row on the Look and feel page that switches how the HushTelegram settings pages are drawn: each group of rows on a rounded card with an outline, or plain rows with a thin line between them. Its line says which look is on and what a tap changes it to.
+Settings look	Aussehen der Einstellungen
+Cards. Tap for plain rows.	Karten. Tippe für schlichte Zeilen.
+Plain rows. Tap for cards.	Schlichte Zeilen. Tippe für Karten.
 # context: toast after a long press hides Quick setups; the page named is Settings backup
 Quick setups hidden. Bring it back from %1$s.	Schnelleinstellungen ausgeblendet. Du findest sie wieder unter „%1$s“.
 # context: Quick setups choice that turns on the switches that hide ads, suggestions and nags

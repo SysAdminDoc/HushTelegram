@@ -77,9 +77,19 @@ final class SettingsNavigation extends BaseAdapter {
      */
     static final BooleanSetting HIDE_QUICK_SETUPS =
             new BooleanSetting("hushtelegram_hide_quick_setups", Boolean.FALSE, false, false);
+    /** The row that switches these pages between cards and plain rows. Like the other rows only this view draws, it stores nothing. */
+    static final String SETTINGS_LOOK = "action_settings_look";
+    /**
+     * Whether these pages draw plain rows with a thin line between them instead of cards (#18). The
+     * screen's own choice, like {@link #HIDE_QUICK_SETUPS}: settings files and Quick setups leave
+     * it out, and a pause leaves it alone.
+     */
+    static final BooleanSetting PLAIN_ROWS =
+            new BooleanSetting("hushtelegram_plain_rows", Boolean.FALSE, false, false);
 
     static {
         Setting.keepWhenPaused(HIDE_QUICK_SETUPS);
+        Setting.keepWhenPaused(PLAIN_ROWS);
     }
 
     static final String REPORT = "action_report_problem";
@@ -786,7 +796,9 @@ final class SettingsNavigation extends BaseAdapter {
                 TextView summary = row.findViewById(android.R.id.summary);
                 if (summary != null) summary.setVisibility(View.GONE);
                 row.setMinimumHeight(dp(56));
-                row.setPaddingRelative(dp(36), dp(first ? 12 : 8), dp(36), dp(last ? 12 : 8));
+                int side = palette().rowSide(row);
+                boolean plain = ScreenColors.plainRows();
+                row.setPaddingRelative(side, dp(first && !plain ? 12 : 8), side, dp(last && !plain ? 12 : 8));
                 ImageView icon = row.findViewById(android.R.id.icon);
                 if (icon != null) {
                     icon.setPadding(dp(7), dp(7), dp(7), dp(7));
@@ -803,6 +815,7 @@ final class SettingsNavigation extends BaseAdapter {
             }
         }
         if (item == screen.getPreference(0)) {
+            // The status card stays a card in either look, as a panel apart from the rows.
             row.setPaddingRelative(dp(36), dp(16), dp(36), dp(16));
             TextView title = row.findViewById(android.R.id.title);
             if (title != null) title.setTypeface(android.graphics.Typeface.create("sans-serif-medium", 0));
