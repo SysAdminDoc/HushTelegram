@@ -18,6 +18,10 @@
     through a temporary Java argument file so the password value is not in the child process
     command line. The file is deleted when patching exits.
 
+    The CLI run is as heavy as a build, so it waits for a slot in the machine-wide build queue
+    BUILD_QUEUE_SCRIPT names and runs there with two processors and a 2 GB heap. Started from a
+    job that already holds a slot, it runs at once.
+
     Each run works in a folder of its own under -OutDir and removes it as it ends, so runs that
     share -OutDir, the default one included, never read or delete each other's files. The signed
     APK and public-summary.json are left in -OutDir under the names they always had, each written
@@ -219,25 +223,40 @@ try {
         }
         '"' + $value.Replace('\', '\\').Replace('"', '\"') + '"'
     })
-    [System.IO.File]::WriteAllLines(
-        $argumentFile,
-        $argumentFileLines,
-        (New-Object System.Text.UTF8Encoding($false)))
-    try {
-        # Continue for the call alone: the CLI logs WARNING and SEVERE on stderr, which Windows
-        # PowerShell 5.1 turns into a terminating error under Stop. The exit code decides.
-        $preference = $ErrorActionPreference
-        try {
-            $ErrorActionPreference = 'Continue'
-            $global:LASTEXITCODE = -1
-            & $Java -jar $DesktopJar "@$argumentFile" 2>&1 | ForEach-Object {
-                $line = [string]$_
-                if ($ShowPatchLog) { Write-Host "[device] $line" }
-            }
-            $cliExitCode = $LASTEXITCODE
-        } finally {
-            $ErrorActionPreference = $preference
+    # The CLI unpacks and rewrites the whole Telegram APK, as heavy as a build, and it used to start
+    # the moment this script was run, beside whatever the machine was already building. It waits for
+    # a slot in the machine-wide build queue now and runs there, at the queue's low priority on the
+    # slot's cores, and the JVM is told its bounds itself: two processors and a 2 GB heap, what the
+    # selection matrix patches this same APK under. Only the CLI holds the slot. The report check,
+    # the signer check and the install come after it, and they're light. A job that is already in a
+    # slot is marked, and from one the CLI starts at once instead of asking for a second.
+    $cliRun = @{ ExitCode = -1 }
+    $patchStage = {
+        # Written in the slot and not before: a run can wait in line a long while, and the password
+        # is on disk only from here until the CLI has read it.
+        [System.IO.File]::WriteAllLines(
+            $argumentFile,
+            $argumentFileLines,
+            (New-Object System.Text.UTF8Encoding($false)))
+        # Continue for the call alone, which this block's own scope makes it: the CLI logs WARNING
+        # and SEVERE on stderr, which Windows PowerShell 5.1 turns into a terminating error under
+        # Stop. The exit code decides.
+        $ErrorActionPreference = 'Continue'
+        $global:LASTEXITCODE = -1
+        & $Java '-Xmx2g' '-XX:ActiveProcessorCount=2' -jar $DesktopJar "@$argumentFile" 2>&1 | ForEach-Object {
+            $line = [string]$_
+            if ($ShowPatchLog) { Write-Host "[device] $line" }
         }
+        $cliRun.ExitCode = $LASTEXITCODE
+    }
+    try {
+        if ($env:HUSHTELEGRAM_QUEUED_JOB) {
+            & $patchStage
+        } else {
+            $null = Invoke-InHushTelegramQueue -Job 'patch-for-device' -ScriptBlock $patchStage
+        }
+        # Still -1 when the CLI never ran, which the summary and the check below read as a failure.
+        $cliExitCode = $cliRun.ExitCode
         $public = Export-PublicPatchSummary -ReportPath $result -SummaryPath $summaryPath -PatchList $catalog `
             -RequestedNames $names -BundleVersion $version -OutputPath $out -CliExitCode $cliExitCode `
             -ExpectedPackageName $target.PackageName -ExpectedPackageVersion $stock.versionName

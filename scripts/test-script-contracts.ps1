@@ -4541,6 +4541,15 @@ try {
         'if /i "%~nx4"=="DexDiff.java" goto dexdiff',
         'if /i "%~nx1"=="NativeLibraryCheck.java" goto native',
         'set "OUT=" & set "RESULT=" & set "LAST=" & set "PREV=" & set "FORCED=0"',
+        'rem What the JVM itself is told comes ahead of -jar <jar>. The line is kept as it arrived for',
+        'rem the case that asks: an option with = in it reaches %1 and on as two.',
+        'if not "%~1"=="-jar" >>"!HERE!jvm.log" echo %*',
+        ':jvm',
+        'if "%~1"=="-jar" goto jar',
+        'if "%~1"=="" goto jar',
+        'shift',
+        'goto jvm',
+        ':jar',
         'shift',
         'shift',
         'rem patch-for-device.ps1 hands the CLI one argument file, a quoted value a line with',
@@ -5498,6 +5507,207 @@ class AlignmentFixture {
             $shell.Dispose()
         }
         Remove-Item -LiteralPath $raceBarrier -Force -ErrorAction SilentlyContinue
+    }
+
+    # A device build's CLI in the machine-wide build queue. patch-for-device.ps1 read in the queue
+    # helper and never called it: with a queue script configured nothing asked it for a slot, and
+    # the JVM was handed -jar, the CLI and the argument file, with no bound on its heap or its
+    # processors. The CLI run asks for one slot now and starts inside it with both bounds. The
+    # stand-in queue here has a line a run can be kept in, and writes down each step with the job
+    # marked and the number of CLI starts on record at that moment, so the order is on file: asked,
+    # admitted, the CLI, released. Every case starts with a file and another run's folder in the
+    # output folder, and both have to be there unchanged when it ends.
+    $slotSignals = Join-Path $tools 'slot'
+    $slotQueue = Join-Path $slotSignals 'build-queue.ps1'
+    $slotEvents = Join-Path $slotSignals 'events.log'
+    $slotBarrier = Join-Path $tools 'during-patch.cmd'
+    $slotRoot = Join-Path $releaseRoot 'slot'
+    $slotApk = $fixturePaths[$releaseTarget.PackageVersion]
+    $slotOwn = 'hushtelegram patch-for-device|normal|patch-for-device'
+    $slotForeign = 'run-' + ('0' * 32)
+    $jvmLog = Join-Path $tools 'jvm.log'
+    function Get-SlotEvents {
+        if (-not (Test-Path -LiteralPath $slotEvents -PathType Leaf)) { return @() }
+        return @(Get-Content -LiteralPath $slotEvents)
+    }
+    # A new output folder with the two things in it that no run owns, and nothing on record.
+    function New-SlotCase([string]$Name) {
+        Remove-Item -LiteralPath $slotEvents, $javaLog, $jvmLog -Force -ErrorAction SilentlyContinue
+        Get-ChildItem -LiteralPath $slotSignals -Filter '*.txt' | Remove-Item -Force
+        $folder = Join-Path $slotRoot $Name
+        New-Item -ItemType Directory -Path (Join-Path $folder $slotForeign) -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $folder 'keep.txt') -Value 'kept' -Encoding ASCII -NoNewline
+        Set-Content -LiteralPath (Join-Path $folder "$slotForeign\morphe-patch.args") -Value 'another run' -Encoding ASCII -NoNewline
+        return $folder
+    }
+    # A run in a runspace of its own, for the cases that hold one in line or in its CLI.
+    function Start-SlotBuild([string]$OutDir) {
+        $shell = [powershell]::Create()
+        [void]$shell.AddCommand((Join-Path $PSScriptRoot 'patch-for-device.ps1')).AddParameters(@{
+                Root = $releaseRepo; DesktopJar = $stubJar; Java = $stubJava; Aapt2 = $stubAapt2; Apk = $slotApk; OutDir = $OutDir })
+        return @{ Shell = $shell; Handle = $shell.BeginInvoke() }
+    }
+    function Wait-SlotBuild($Build, [scriptblock]$Until, [string]$What) {
+        $clock = [System.Diagnostics.Stopwatch]::StartNew()
+        while (-not (& $Until)) {
+            if ($Build.Handle.IsCompleted) {
+                $ended = Complete-SlotBuild $Build
+                throw "A device build ended before ${What}$(if ($ended) { ": $ended" } else { ', with no error.' })"
+            }
+            if ($clock.Elapsed.TotalSeconds -gt 90) { throw "A device build never got as far as $What." }
+            Start-Sleep -Milliseconds 50
+        }
+    }
+    # What a run ended with: nothing, or its error.
+    function Complete-SlotBuild($Build) {
+        if (-not $Build.Handle.AsyncWaitHandle.WaitOne(120000)) { throw 'A device build did not end within two minutes.' }
+        try {
+            $null = $Build.Shell.EndInvoke($Build.Handle)
+            return ''
+        } catch {
+            return "$($_.Exception.Message)"
+        } finally {
+            $Build.Shell.Dispose()
+            $Build.Shell = $null
+        }
+    }
+    function Stop-SlotBuild($Build) {
+        $stopping = $Build.Shell.BeginStop($null, $null)
+        Assert-True ($stopping.AsyncWaitHandle.WaitOne(60000)) 'A held device build did not stop within a minute.'
+        $Build.Shell.EndStop($stopping)
+        return (Complete-SlotBuild $Build)
+    }
+    # The CLI started once, on the build it was given, and its JVM was told both bounds first.
+    function Assert-SlotCli([string]$Case) {
+        $started = @(Get-Content -LiteralPath $javaLog -ErrorAction SilentlyContinue)
+        Assert-True ($started.Count -eq 1 -and $started[0] -eq "patch $slotApk forced=0") `
+            "A device build that $Case did not start its CLI once: $($started -join '; ')"
+        $told = @(Get-Content -LiteralPath $jvmLog -ErrorAction SilentlyContinue)
+        Assert-True ($told.Count -eq 1 -and
+            $told[0].StartsWith('-Xmx2g -XX:ActiveProcessorCount=2 -jar ', [System.StringComparison]::Ordinal)) `
+            "The JVM of a device build that $Case was not given its heap and processor bounds ahead of -jar: $($told -join '; ')"
+    }
+    # How a case has to end: no job left marked, the queue's steps as given, and in the output
+    # folder what was there before, untouched, beside what the run itself puts there.
+    function Assert-SlotEnd([string]$Folder, [string]$Case, [string[]]$Steps, [string[]]$Published = @()) {
+        Assert-True (-not $env:HUSHTELEGRAM_QUEUED_JOB) "A device build that $Case left a queued job marked."
+        Assert-True ((@(Get-SlotEvents) -join '; ') -ceq ($Steps -join '; ')) `
+            "A device build that $Case went through the queue as: $(@(Get-SlotEvents) -join '; ')"
+        $expected = @(@('keep.txt', $slotForeign) + $Published | Sort-Object)
+        Assert-True ((@(Get-RaceOutput $Folder) -join ', ') -ceq ($expected -join ', ') -and
+            [System.IO.File]::ReadAllText((Join-Path $Folder 'keep.txt')) -ceq 'kept' -and
+            (@(Get-RaceOutput (Join-Path $Folder $slotForeign)) -join ', ') -ceq 'morphe-patch.args' -and
+            [System.IO.File]::ReadAllText((Join-Path $Folder "$slotForeign\morphe-patch.args")) -ceq 'another run') `
+            "A device build that $Case removed or left files that aren't its own: $(@(Get-RaceOutput $Folder) -join ', ')"
+    }
+    $savedSlotQueue = $env:BUILD_QUEUE_SCRIPT
+    $slotBuild = $null
+    try {
+        New-Item -ItemType Directory -Path $slotSignals, $slotRoot -Force | Out-Null
+        Set-Content -LiteralPath $slotQueue -Encoding ASCII -Value @'
+[CmdletBinding()]
+param([switch]$Status, [string]$Label, [ValidateSet('release', 'normal')][string]$Priority, [string]$Run)
+function Add-SlotEvent {
+    param([string]$Stage, [string]$Slot)
+    $cliLog = Join-Path (Split-Path -Parent $PSScriptRoot) 'java.log'
+    $cliStarts = if (Test-Path -LiteralPath $cliLog) { @(Get-Content -LiteralPath $cliLog).Count } else { 0 }
+    [System.IO.File]::AppendAllText((Join-Path $PSScriptRoot 'events.log'),
+        "$Stage|$Slot|$env:HUSHTELEGRAM_QUEUED_JOB|$cliStarts`r`n")
+}
+function Invoke-InBuildQueue {
+    param([string]$Label = 'build', [string]$Priority, [Parameter(Mandatory)][scriptblock]$ScriptBlock)
+    Add-SlotEvent -Stage 'asked' -Slot "$Label|$Priority"
+    while (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'full.txt')) { Start-Sleep -Milliseconds 50 }
+    Add-SlotEvent -Stage 'admitted' -Slot "$Label|$Priority"
+    $global:LASTEXITCODE = 0
+    try {
+        & $ScriptBlock | Out-Host
+        return $LASTEXITCODE
+    } finally {
+        Add-SlotEvent -Stage 'released' -Slot "$Label|$Priority"
+    }
+}
+'@
+        [System.IO.File]::WriteAllText($slotBarrier, ((@(
+            '@echo off',
+            'rem A CLI that dies with no report and no APK, or one that is held until it is let go.',
+            'if exist "!HERE!slot\fail.txt" exit 6',
+            'if not exist "!HERE!slot\hold.txt" exit /b 0',
+            '>"!HERE!slot\entered.txt" echo held',
+            ':held',
+            'if exist "!HERE!slot\go.txt" exit /b 0',
+            'ping -n 2 127.0.0.1 >nul',
+            'goto held') -join "`r`n") + "`r`n"), [System.Text.Encoding]::ASCII)
+        $env:BUILD_QUEUE_SCRIPT = $slotQueue
+
+        # The line is full. The run asks once and waits there: no CLI, and no argument file with
+        # the signing password in it lying on disk for as long as the wait lasts. Let in, it
+        # starts the CLI once, with its bounds, and gives the slot back.
+        $slotOut = New-SlotCase 'waits'
+        Set-Content -LiteralPath (Join-Path $slotSignals 'full.txt') -Value 'full' -Encoding ASCII
+        $slotBuild = Start-SlotBuild $slotOut
+        Wait-SlotBuild $slotBuild { @(Get-SlotEvents).Count -ge 1 } 'asking the queue for a slot'
+        Assert-True ((@(Get-SlotEvents) -join '; ') -ceq "asked|$slotOwn|0" -and -not (Test-Path -LiteralPath $javaLog)) `
+            "A device build did not wait for its slot before starting the CLI: $(@(Get-SlotEvents) -join '; ')"
+        Assert-True (@(Get-ChildItem -LiteralPath $slotOut -Recurse -File -Filter 'morphe-patch.args' |
+                    Where-Object { $_.Directory.Name -cne $slotForeign }).Count -eq 0) `
+            'A device build waiting in line had its argument file, signing password included, on disk already.'
+        Remove-Item -LiteralPath (Join-Path $slotSignals 'full.txt') -Force
+        $ended = Complete-SlotBuild $slotBuild
+        Assert-True ($ended -eq '') "A device build let into its slot did not finish: $ended"
+        Assert-SlotCli 'waited in line'
+        Assert-SlotEnd $slotOut 'waited in line' @("asked|$slotOwn|0", "admitted|$slotOwn|0", "released|$slotOwn|1") `
+            @("hushtelegram-$releaseVersionHere-signed.apk", 'public-summary.json')
+
+        # From a job that already holds a slot, the way a queued script would start it: the CLI
+        # runs in that slot, bounds and all, and nothing asks for a second.
+        $slotOut = New-SlotCase 'nested'
+        $null = Invoke-InHushTelegramQueue -Job 'contract' -ScriptBlock { Invoke-DeviceBuild -Apk $slotApk -OutDir $slotOut }
+        $slotOuter = 'hushtelegram contract|normal|contract'
+        Assert-SlotCli 'started inside a slot'
+        Assert-SlotEnd $slotOut 'started inside a slot' @("asked|$slotOuter|0", "admitted|$slotOuter|0", "released|$slotOuter|1") `
+            @("hushtelegram-$releaseVersionHere-signed.apk", 'public-summary.json')
+
+        # The CLI dies in its slot. The run ends with that failure, as it did before there was a
+        # queue, after one start, and the slot is given back.
+        $slotOut = New-SlotCase 'fails'
+        Set-Content -LiteralPath (Join-Path $slotSignals 'fail.txt') -Value 'fail' -Encoding ASCII
+        Assert-Throws { Invoke-DeviceBuild -Apk $slotApk -OutDir $slotOut } '*Patching failed:*CLI_FAILED*' `
+            'A device build whose CLI died in its slot did not end with the CLI''s failure.'
+        Assert-SlotCli 'failed in its slot'
+        Assert-SlotEnd $slotOut 'failed in its slot' @("asked|$slotOwn|0", "admitted|$slotOwn|0", "released|$slotOwn|1") `
+            @('public-summary.json')
+
+        # Stopped with the CLI running in its slot: the slot is given back and the run's folder goes.
+        $slotOut = New-SlotCase 'stopped-in-slot'
+        Set-Content -LiteralPath (Join-Path $slotSignals 'hold.txt') -Value 'hold' -Encoding ASCII
+        $slotBuild = Start-SlotBuild $slotOut
+        Wait-SlotBuild $slotBuild { Test-Path -LiteralPath (Join-Path $slotSignals 'entered.txt') -PathType Leaf } 'starting its CLI'
+        $ended = Stop-SlotBuild $slotBuild
+        Assert-True ($ended -like '*stopped*') "A device build stopped in its slot ended with: $ended"
+        Assert-SlotEnd $slotOut 'was stopped in its slot' @("asked|$slotOwn|0", "admitted|$slotOwn|0", "released|$slotOwn|1")
+
+        # Stopped while still in line: it never held a slot and never started the CLI.
+        $slotOut = New-SlotCase 'stopped-in-line'
+        Set-Content -LiteralPath (Join-Path $slotSignals 'full.txt') -Value 'full' -Encoding ASCII
+        $slotBuild = Start-SlotBuild $slotOut
+        Wait-SlotBuild $slotBuild { @(Get-SlotEvents).Count -ge 1 } 'asking the queue for a slot'
+        $ended = Stop-SlotBuild $slotBuild
+        Assert-True ($ended -like '*stopped*') "A device build stopped while in line ended with: $ended"
+        Assert-True (-not (Test-Path -LiteralPath $javaLog)) 'A device build stopped while in line started its CLI.'
+        Assert-SlotEnd $slotOut 'was stopped while in line' @("asked|$slotOwn|0")
+    } finally {
+        $env:BUILD_QUEUE_SCRIPT = $savedSlotQueue
+        # A case that failed part way leaves a run in line or a CLI held. Let it go, and end its run.
+        if (Test-Path -LiteralPath $slotSignals -PathType Container) {
+            Remove-Item -LiteralPath (Join-Path $slotSignals 'full.txt') -Force -ErrorAction SilentlyContinue
+            Set-Content -LiteralPath (Join-Path $slotSignals 'go.txt') -Value 'go' -Encoding ASCII
+        }
+        if ($slotBuild -and $slotBuild.Shell) {
+            $null = $slotBuild.Shell.BeginStop($null, $null).AsyncWaitHandle.WaitOne(30000)
+            $slotBuild.Shell.Dispose()
+        }
+        Remove-Item -LiteralPath $slotBarrier -Force -ErrorAction SilentlyContinue
     }
 
     # The builder, the release check and the device build given relative paths, from a location
