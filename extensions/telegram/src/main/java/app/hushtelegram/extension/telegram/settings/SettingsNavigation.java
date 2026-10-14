@@ -28,6 +28,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.preference.SwitchPreference;
+import android.preference.TwoStatePreference;
 
 import androidx.annotation.Nullable;
 
@@ -57,6 +58,10 @@ import app.hushtelegram.extension.shared.settings.preference.ReopenSettingsAfter
 final class SettingsNavigation extends BaseAdapter {
     private static final String STATE = "hushtelegram_navigation";
     private static final String MORE = "more";
+    /** The page of switches that aren't the way they started. */
+    private static final String CHANGED_PAGE = "changed";
+    /** The home page row that opens it. Like the other rows only this view draws, it stores nothing. */
+    static final String CHANGED = "action_changed_switches";
     /** Marks the Pause, Resume or Undo button placed under a status row's text, so a rebind replaces it. */
     private static final String STATUS_ACTION = "hushtelegram_status_action";
     /** The restart row's key. Like the other rows only this view draws, it stores nothing. */
@@ -87,6 +92,10 @@ final class SettingsNavigation extends BaseAdapter {
     private final List<Section> sections = new ArrayList<>();
     private final List<Preference> visible = new ArrayList<>();
     private final Preference browse;
+    /** Under the switch pages: every switch that isn't the way it started, on one page. */
+    private final Preference changed;
+    /** What that page shows when every switch is the way it started. */
+    private final Preference noneChanged;
     private final Preference more;
     /** The home page's last row, which opens HushTelegram's Ko-fi page in a browser. */
     private final Preference support;
@@ -157,6 +166,14 @@ final class SettingsNavigation extends BaseAdapter {
         section("About", L10n.t("About"), null, SettingsIcons.ABOUT, false);
         browse = new HushTelegramPreferenceFragment.Heading(context);
         browse.setTitle(L10n.t("Browse settings"));
+        changed = link(context, L10n.t("Changed switches"), null, SettingsIcons.LIST);
+        changed.setKey(CHANGED);
+        changed.setOnPreferenceClickListener(ignored -> { navigate(CHANGED_PAGE); return true; });
+        noneChanged = new HushTelegramPreferenceFragment.Row(context);
+        noneChanged.setTitle(L10n.t("No changed switches"));
+        noneChanged.setSummary(L10n.t("A switch you turn on or off shows up here until you put it back."));
+        noneChanged.setSelectable(false);
+        noneChanged.setPersistent(false);
         more = link(context, L10n.t("More settings"), L10n.t("Links, updates, backup and more"), SettingsIcons.SETTINGS);
         more.setOnPreferenceClickListener(ignored -> { navigate(MORE); return true; });
         support = link(context, L10n.t("Support HushTelegram"), null, SettingsIcons.OPENING);
@@ -211,12 +228,12 @@ final class SettingsNavigation extends BaseAdapter {
             homeOffset = state.getInt("homeOffset");
             morePosition = state.getInt("morePosition");
             moreOffset = state.getInt("moreOffset");
-            if (!MORE.equals(route) && selected() == null) route = "";
+            if (!known(route)) route = "";
         } else {
             // Nothing saved: the page the screen was asked to open on, such as the one a restart
             // from the restart row left.
             route = host.startPage();
-            if (!MORE.equals(route) && selected() == null) route = "";
+            if (!known(route)) route = "";
         }
         source.registerDataSetObserver(changes);
         list.setAdapter(this);
@@ -351,8 +368,16 @@ final class SettingsNavigation extends BaseAdapter {
         return null;
     }
 
+    /** Whether a route names a page this screen draws: More settings, Changed switches or a section. */
+    private boolean known(String destination) {
+        if (MORE.equals(destination) || CHANGED_PAGE.equals(destination)) return true;
+        for (Section section : sections) if (section.id.equals(destination)) return true;
+        return false;
+    }
+
     private CharSequence title() {
         if (MORE.equals(route)) return more.getTitle();
+        if (CHANGED_PAGE.equals(route)) return changed.getTitle();
         Section section = selected();
         return section == null ? "HushTelegram" : section.category.getTitle();
     }
@@ -362,8 +387,7 @@ final class SettingsNavigation extends BaseAdapter {
         rememberIndex();
         pageStatusHeight = 0;
         query = "";
-        route = destination;
-        if (!MORE.equals(route) && selected() == null) route = "";
+        route = known(destination) ? destination : "";
         rebuild();
         host.showPage(title(), route.isEmpty(), query);
         showAt(0, 0);
@@ -404,7 +428,7 @@ final class SettingsNavigation extends BaseAdapter {
         }
         if (route.isEmpty()) return false;
         Section section = selected();
-        Preference left = section != null ? section.link : more;
+        Preference left = section != null ? section.link : CHANGED_PAGE.equals(route) ? changed : more;
         pageStatusHeight = 0;
         route = section != null && !section.primary ? MORE : "";
         rebuild();
@@ -501,6 +525,10 @@ final class SettingsNavigation extends BaseAdapter {
         } else if (selected != null) {
             addPageRows(selected.category);
             addPageStatus();
+        } else if (CHANGED_PAGE.equals(route)) {
+            addChangedRows();
+            if (visible.isEmpty()) visible.add(noneChanged);
+            else addPageStatus();
         } else if (MORE.equals(route)) {
             for (Section section : sections) if (!section.primary) visible.add(section.link);
         } else {
@@ -510,6 +538,8 @@ final class SettingsNavigation extends BaseAdapter {
             visible.add(lock);
             visible.add(browse);
             for (Section section : sections) if (section.primary) visible.add(section.link);
+            changed.setSummary(changedSummary());
+            visible.add(changed);
             visible.add(more);
             visible.add(report);
             visible.add(support);
@@ -524,6 +554,44 @@ final class SettingsNavigation extends BaseAdapter {
         }
         notifyDataSetChanged();
         keepPlace(restartWas, pageStatusWas);
+    }
+
+    /**
+     * Every switch whose saved value isn't the one it starts with, under its page's title the way
+     * search shows rows. Each is the page's own row, so flipping it back goes through the same save,
+     * refusal and restart as anywhere else, and the page drops it once the change is saved.
+     */
+    private void addChangedRows() {
+        for (Section section : sections) {
+            boolean headed = false;
+            for (int i = 0; i < section.category.getPreferenceCount(); i++) {
+                Preference row = section.category.getPreference(i);
+                if (!isChanged(row)) continue;
+                if (!headed) visible.add(section.category);
+                headed = true;
+                visible.add(row);
+            }
+        }
+    }
+
+    /** The Changed switches row's line: how many switches aren't the way they started. */
+    private String changedSummary() {
+        int count = 0;
+        for (Section section : sections) {
+            for (int i = 0; i < section.category.getPreferenceCount(); i++) {
+                if (isChanged(section.category.getPreference(i))) count++;
+            }
+        }
+        return count == 0 ? L10n.t("Every switch is the way it started.")
+                : L10n.quantity(screen.getContext(), count, "%1$d switch differs from how it started. Open to flip it back.",
+                        "%1$d switches differ from how they started. Open to flip any of them back.", count);
+    }
+
+    /** Whether a row is a switch whose saved value isn't the one it starts with. */
+    private static boolean isChanged(Preference row) {
+        if (!(row instanceof TwoStatePreference) || !row.hasKey()) return false;
+        Setting<?> setting = Setting.getSettingFromPath(row.getKey());
+        return setting instanceof BooleanSetting && !setting.isSetToDefault();
     }
 
     /** The lock row says where the lock stands as the home page is drawn, time left included. */

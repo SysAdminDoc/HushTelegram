@@ -748,3 +748,10 @@ Type a message to try the filters on.	Ketik pesan untuk mencoba filter.
 There are no filters to try yet.	Belum ada filter untuk dicoba.
 No filter here would hide this message.	Tidak ada filter di sini yang akan menyembunyikan pesan ini.
 Line %1$d would hide this message: %2$s	Baris %1$d akan menyembunyikan pesan ini: %2$s
+# context: The settings home page's Changed switches row and the page it opens, which lists every switch whose saved value isn't the one it starts with; flipping one there puts it back and takes it off the page. %1$d is how many switches.
+Changed switches	Sakelar yang diubah
+No changed switches	Tidak ada sakelar yang diubah
+A switch you turn on or off shows up here until you put it back.	Sakelar yang Anda nyalakan atau matikan muncul di sini sampai Anda mengembalikannya.
+Every switch is the way it started.	Semua sakelar masih seperti semula.
+%1$d switch differs from how it started. Open to flip it back.	%1$d sakelar berbeda dari semula. Buka untuk mengembalikannya.
+%1$d switches differ from how they started. Open to flip any of them back.	%1$d sakelar berbeda dari semula. Buka untuk mengembalikan salah satunya.

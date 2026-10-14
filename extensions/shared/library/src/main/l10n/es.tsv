@@ -748,3 +748,10 @@ Type a message to try the filters on.	Escribe un mensaje para probar los filtros
 There are no filters to try yet.	Todavía no hay filtros que probar.
 No filter here would hide this message.	Ningún filtro de aquí ocultaría este mensaje.
 Line %1$d would hide this message: %2$s	La línea %1$d ocultaría este mensaje: %2$s
+# context: The settings home page's Changed switches row and the page it opens, which lists every switch whose saved value isn't the one it starts with; flipping one there puts it back and takes it off the page. %1$d is how many switches.
+Changed switches	Interruptores cambiados
+No changed switches	No hay interruptores cambiados
+A switch you turn on or off shows up here until you put it back.	Un interruptor que actives o desactives aparece aquí hasta que lo devuelvas a como estaba.
+Every switch is the way it started.	Todos los interruptores están como al principio.
+%1$d switch differs from how it started. Open to flip it back.	%1$d interruptor no está como al principio. Ábrelo para devolverlo.
+%1$d switches differ from how they started. Open to flip any of them back.	%1$d interruptores no están como al principio. Ábrelo para devolver cualquiera.

@@ -29,9 +29,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import app.hushtelegram.extension.shared.L10n;
@@ -92,9 +95,9 @@ public class SettingsNavigationTest {
     @Test @Config(sdk = {28, 30, 33, 36})
     public void homeAndEveryCategoryAreReachableWithoutRemovingTheModel() {
         assertNotNull(page.navigation);
-        // The status card, Quick setups, the settings lock, Browse settings, the seven switch pages, More settings,
-        // Report a problem and Support HushTelegram.
-        assertEquals(14, list().getCount());
+        // The status card, Quick setups, the settings lock, Browse settings, the seven switch pages, Changed switches,
+        // More settings, Report a problem and Support HushTelegram.
+        assertEquals(15, list().getCount());
         assertEquals(13, page.sections().size());
         int total = page.getPreferenceScreen().getRootAdapter().getCount();
         for (Preference section : page.sections()) {
@@ -114,7 +117,7 @@ public class SettingsNavigationTest {
             assertTrue(page.navigation.back());
             while (page.navigation.back()) { }
         }
-        assertEquals(14, list().getCount());
+        assertEquals(15, list().getCount());
     }
 
     @Test public void categoryClickChangesOnlyTheSettingWhoseRowWasTapped() {
@@ -660,7 +663,7 @@ public class SettingsNavigationTest {
         assertEquals(categoryCount("Privacy") + 1, list().getCount());
         while (page.navigation.back()) { }
         assertEquals(SettingsNavigation.RESTART, ((Preference) list().getItemAtPosition(1)).getKey());
-        assertEquals(15, list().getCount());
+        assertEquals(16, list().getCount());
 
         // Two changes are counted, and the row goes once neither is owed.
         app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.add(
@@ -671,7 +674,7 @@ public class SettingsNavigationTest {
         app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.clear();
         page.navigation.restartChanged();
         assertFalse(contains(SettingsNavigation.RESTART));
-        assertEquals(14, list().getCount());
+        assertEquals(15, list().getCount());
     }
 
     /** A switch that needs a restart brings the row up the moment it's flipped, and flipping it back takes it away. */
@@ -732,7 +735,7 @@ public class SettingsNavigationTest {
         controller.get().getFragmentManager().executePendingTransactions();
         ShadowLooper.idleMainLooper();
         page = page(dialog);
-        assertEquals(14, list().getCount());
+        assertEquals(15, list().getCount());
     }
 
     /** The paused line on real pages, dark and light, for a look before the phone does. */
@@ -853,7 +856,7 @@ public class SettingsNavigationTest {
         assertEquals("No matching settings", ((Preference) list().getItemAtPosition(0)).getTitle());
         assertTrue(page.navigation.back());
         assertEquals("", search.getText().toString());
-        assertEquals(14, list().getCount());
+        assertEquals(15, list().getCount());
     }
 
     /** A row with no summary used to carry the word "null" into its search text. */
@@ -974,13 +977,13 @@ public class SettingsNavigationTest {
         page.navigation.open(page.findPreference(Settings.HIDE_ADS.key));
         SettingsL10nTest.backOf(dialog).performClick();
         assertTrue(dialog.getDialog().isShowing());
-        assertEquals(14, list().getCount());
+        assertEquals(15, list().getCount());
         page.navigation.navigate("About");
         dialog.getDialog().onBackPressed();
         // More settings: Links, Updates, Pause, Settings backup, Diagnostics and About.
         assertEquals(6, list().getCount());
         dialog.getDialog().onBackPressed();
-        assertEquals(14, list().getCount());
+        assertEquals(15, list().getCount());
         dialog.getDialog().onBackPressed();
         ShadowLooper.idleMainLooper();
         assertFalse(controller.get().isFinishing());
@@ -1024,7 +1027,7 @@ public class SettingsNavigationTest {
             application.checkActivities(false);
         }
         assertEquals(before, savedValues());
-        assertEquals(14, list().getCount());
+        assertEquals(15, list().getCount());
     }
 
     /** A long press on Quick setups takes it off the home page for good, says where it went, and leaves other rows alone. */
@@ -1035,12 +1038,12 @@ public class SettingsNavigationTest {
         assertTrue("the flag has to answer while paused", SettingsNavigation.HIDE_QUICK_SETUPS.isKeptWhenPaused());
         assertFalse("another row took the long press", longPress(SettingsNavigation.LOCK));
         assertFalse(SettingsNavigation.HIDE_QUICK_SETUPS.savedValue());
-        assertEquals(14, list().getCount());
+        assertEquals(15, list().getCount());
 
         assertTrue(longPress(SettingsNavigation.QUICK_SETUPS));
         assertTrue(SettingsNavigation.HIDE_QUICK_SETUPS.savedValue());
         assertFalse(contains(SettingsNavigation.QUICK_SETUPS));
-        assertEquals(13, list().getCount());
+        assertEquals(14, list().getCount());
         assertEquals("Quick setups hidden. Bring it back from Settings backup.", ShadowToast.getTextOfLatestToast());
     }
 
@@ -1063,7 +1066,7 @@ public class SettingsNavigationTest {
         assertFalse(SettingsNavigation.HIDE_QUICK_SETUPS.savedValue());
         while (page.navigation.back()) { }
         assertTrue(contains(SettingsNavigation.QUICK_SETUPS));
-        assertEquals(14, list().getCount());
+        assertEquals(15, list().getCount());
 
         page.navigation.navigate("Settings backup");
         tap(SettingsNavigation.RESTORE_QUICK_SETUPS);
@@ -1325,6 +1328,77 @@ public class SettingsNavigationTest {
         }
     }
 
+    /**
+     * Changed switches lists the switches that aren't the way they started, a default-on one turned
+     * off among them, each under its page's title. Flipping one there goes through its own row and
+     * takes it off the page, a flip the lock turns down keeps it there, and the page comes back as it
+     * was when the screen is recreated.
+     */
+    @Test public void changedSwitchesShowsWhatDiffersAndFlipsItBack() {
+        List<String> home = titles();
+        assertEquals("it sits just above More settings", home.indexOf("More settings") - 1, home.indexOf("Changed switches"));
+        assertEquals("Every switch is the way it started.", changedLine());
+        tap(SettingsNavigation.CHANGED);
+        assertEquals("Changed switches", pageTitle().getText().toString());
+        assertEquals(Collections.singletonList("No changed switches"), titles());
+        assertTrue(page.navigation.back());
+
+        Settings.HIDE_ADS.save(false);
+        Settings.REVEAL_SPOILERS.save(true);
+        page.refreshSwitches();
+        assertEquals("2 switches differ from how they started. Open to flip any of them back.", changedLine());
+        tap(SettingsNavigation.CHANGED);
+        assertEquals(new HashSet<>(Arrays.asList(Settings.HIDE_ADS.key, Settings.REVEAL_SPOILERS.key)), switchesShown());
+        for (String key : switchesShown()) {
+            int at = position(key);
+            while (!(list().getItemAtPosition(at) instanceof PreferenceCategory)) at--;
+            assertSame(key + " isn't under its page's title", page.findPreference(key).getParent(), list().getItemAtPosition(at));
+        }
+
+        tap(Settings.REVEAL_SPOILERS.key);
+        assertFalse("the flip went through the row", Settings.REVEAL_SPOILERS.savedValue());
+        assertEquals("a switch put back leaves the page", Collections.singleton(Settings.HIDE_ADS.key), switchesShown());
+
+        recreate();
+        assertEquals("Changed switches", pageTitle().getText().toString());
+        assertEquals(Collections.singleton(Settings.HIDE_ADS.key), switchesShown());
+        assertTrue(page.navigation.back());
+        assertEquals("1 switch differs from how it started. Open to flip it back.", changedLine());
+
+        long[] now = {1_800_000_000_000L};
+        SettingsLock.clock = () -> now[0];
+        try {
+            tap(SettingsNavigation.LOCK);
+            tap(SettingsNavigation.CHANGED);
+            ShadowToast.reset();
+            tap(Settings.HIDE_ADS.key);
+            assertEquals(LOCKED_NOTE, ShadowToast.getTextOfLatestToast());
+            assertFalse(Settings.HIDE_ADS.savedValue());
+            assertEquals("a flip turned down keeps the row", Collections.singleton(Settings.HIDE_ADS.key), switchesShown());
+        } finally {
+            SettingsLock.Stored.LOCKED.resetToDefault();
+            SettingsLock.Stored.UNLOCK_STARTED.resetToDefault();
+            SettingsLock.clock = System::currentTimeMillis;
+        }
+        assertTrue(page.navigation.back());
+        assertTrue(contains(SettingsNavigation.CHANGED));
+    }
+
+    /** The line under the home page's Changed switches row. */
+    private String changedLine() {
+        return String.valueOf(((Preference) list().getItemAtPosition(position(SettingsNavigation.CHANGED))).getSummary());
+    }
+
+    /** The keys of the switch rows the list shows now. */
+    private Set<String> switchesShown() {
+        Set<String> keys = new HashSet<>();
+        for (int i = 0; i < list().getCount(); i++) {
+            Object item = list().getItemAtPosition(i);
+            if (item instanceof SwitchPreference) keys.add(((Preference) item).getKey());
+        }
+        return keys;
+    }
+
     /** Report a problem opens GitHub's bug form in a browser with the versions and switches filled in. */
     @Test public void reportAProblemOpensAFilledInGitHubForm() throws Exception {
         Map<String, Object> before = savedValues();
@@ -1351,7 +1425,7 @@ public class SettingsNavigationTest {
         String switches = decoded.substring(decoded.indexOf("&additional_context=Switches on: "));
         assertTrue(switches, switches.contains("Hide ads"));
         assertFalse(switches, switches.contains("Hide contacts on Telegram"));
-        assertEquals("the tap left the home page", 14, list().getCount());
+        assertEquals("the tap left the home page", 15, list().getCount());
 
         org.robolectric.shadows.ShadowApplication application =
                 org.robolectric.Shadows.shadowOf(org.robolectric.RuntimeEnvironment.getApplication());

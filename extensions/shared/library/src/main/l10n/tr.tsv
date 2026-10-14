@@ -748,3 +748,10 @@ Type a message to try the filters on.	Filtreleri denemek için bir mesaj yaz.
 There are no filters to try yet.	Henüz denenecek filtre yok.
 No filter here would hide this message.	Buradaki hiçbir filtre bu mesajı gizlemez.
 Line %1$d would hide this message: %2$s	%1$d. satır bu mesajı gizler: %2$s
+# context: The settings home page's Changed switches row and the page it opens, which lists every switch whose saved value isn't the one it starts with; flipping one there puts it back and takes it off the page. %1$d is how many switches.
+Changed switches	Değişen anahtarlar
+No changed switches	Değişen anahtar yok
+A switch you turn on or off shows up here until you put it back.	Açıp kapattığın bir anahtar, başlangıçtaki hâline döndürene kadar burada görünür.
+Every switch is the way it started.	Tüm anahtarlar başlangıçtaki hâlinde.
+%1$d switch differs from how it started. Open to flip it back.	%1$d anahtar başlangıçtaki hâlinden farklı. Geri döndürmek için aç.
+%1$d switches differ from how they started. Open to flip any of them back.	%1$d anahtar başlangıçtaki hâlinden farklı. Herhangi birini geri döndürmek için aç.
