@@ -1729,6 +1729,19 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("the saved size is checked again", 1, picker.getListView().getCheckedItemPosition());
             assertEquals("a pick held back wrote", 75, (int) Settings.STICKER_SIZE.savedValue());
             assertEquals("75% of Telegram's size", String.valueOf(size.getSummary()));
+
+            // The import writes a size of its own while the list is open.
+            Settings.STICKER_SIZE.save(125);
+            shadowOf(picker).clickOnItem(0);
+            settle();
+            assertEquals("what the import saved is checked, not what the list opened with",
+                    2, picker.getListView().getCheckedItemPosition());
+            Settings.STICKER_SIZE.save(100);
+            shadowOf(picker).clickOnItem(0);
+            settle();
+            assertEquals("a saved size that's none of the choices checks the default, as stickers read it",
+                    1, picker.getListView().getCheckedItemPosition());
+            assertEquals(100, (int) Settings.STICKER_SIZE.savedValue());
         } finally {
             AbstractPreferenceFragment.settingImportInProgress = false;
             Settings.STICKER_SIZE.resetToDefault();

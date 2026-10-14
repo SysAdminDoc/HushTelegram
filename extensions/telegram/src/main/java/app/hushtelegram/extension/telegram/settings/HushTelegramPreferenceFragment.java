@@ -1290,34 +1290,42 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     /**
      * The choices with the saved one checked. A tap saves it and the list closes once it's saved;
      * a pick that can't be saved, or is held back while a settings import writes, leaves the list
-     * open with the saved one checked again.
+     * open with what's saved by then checked again, which an import may have changed.
      */
     void showStickerSizes(Context context, Preference row) {
         if (SettingsLock.refuses()) return;
-        int saved = StickerSize.percent(Settings.STICKER_SIZE.savedValue());
         CharSequence[] labels = new CharSequence[StickerSize.CHOICES.length];
-        int checked = -1;
-        for (int i = 0; i < labels.length; i++) {
-            labels[i] = percent(StickerSize.CHOICES[i]);
-            if (StickerSize.CHOICES[i] == saved) checked = i;
-        }
-        final int savedChoice = checked;
+        for (int i = 0; i < labels.length; i++) labels[i] = percent(StickerSize.CHOICES[i]);
         show(new AlertDialog.Builder(context)
                 .setTitle(L10n.t("Sticker size"))
-                .setSingleChoiceItems(labels, checked, (dialog, which) -> {
+                .setSingleChoiceItems(labels, savedStickerChoice(), (dialog, which) -> {
                     boolean started = save((AlertDialog) dialog,
                             () -> Settings.STICKER_SIZE.saveCommitted(StickerSize.CHOICES[which]), landed -> {
                                 if (landed) {
                                     row.setSummary(stickerSizeSummary());
                                     dialog.dismiss();
                                 } else {
-                                    ((AlertDialog) dialog).getListView().setItemChecked(savedChoice, true);
+                                    checkSavedStickerSize((AlertDialog) dialog);
                                     Utils.showToastLong(L10n.t("Couldn't save the size. Try again in a moment."));
                                 }
                             });
-                    if (!started) ((AlertDialog) dialog).getListView().setItemChecked(savedChoice, true);
+                    if (!started) checkSavedStickerSize((AlertDialog) dialog);
                 })
                 .setNegativeButton(L10n.t("Cancel"), null));
+    }
+
+    /** Where the saved sticker size sits among the choices. One that's none of them reads as the default. */
+    static int savedStickerChoice() {
+        int saved = StickerSize.percent(Settings.STICKER_SIZE.savedValue());
+        for (int i = 0; i < StickerSize.CHOICES.length; i++) {
+            if (StickerSize.CHOICES[i] == saved) return i;
+        }
+        return -1;
+    }
+
+    /** Checks the size saved now, read at the moment a pick is refused rather than when the list opened. */
+    private static void checkSavedStickerSize(AlertDialog dialog) {
+        dialog.getListView().setItemChecked(savedStickerChoice(), true);
     }
 
     static String stickerSizeSummary() {
