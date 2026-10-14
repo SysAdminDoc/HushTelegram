@@ -21,6 +21,8 @@ import app.morphe.patches.telegram.misc.extension.requireParameterIntact
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.classDefsMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -181,7 +183,9 @@ internal data class CommercePlan(
 internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
     val classes = mutableMapOf<String, ClassDef>()
     classDefForEach { if (!it.type.startsWith("Lapp/hushtelegram/extension/")) classes[it.type] = it }
-    val methods = classes.values.flatMap { it.methods.toList() }
+    // Each search below reads only the methods of classes that might mention what it looks for,
+    // still in the app's order and still checked in full.
+    fun methods(mentioning: Mention) = classDefsMentioning(mentioning).mapNotNull { classes[it.type] }.flatMap { it.methods.toList() }
     fun mutable(method: Method) = mutableClassDefBy(method.definingClass).methods.single { it.sameSignature(method) }
     for (stub in listOf("giftTabId", "giftButtonIndex")) {
         shape(mutableClassDefBy(COMMERCE).methods.count { it.name == stub && it.hasShape(emptyList(), "I") &&
@@ -189,7 +193,7 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
     }
     val hooks = mutableMapOf<CommerceTarget, List<CommerceEdit>>()
 
-    val settings = methods.filter { method ->
+    val settings = methods(Mention.anyReference(SETTINGS_SALES)).filter { method ->
         method.returnType == "V" && AccessFlags.STATIC.isSet(method.accessFlags) &&
             method.parameterTypes.map { it.toString() } == listOf(method.definingClass, ARRAY_LIST) &&
             SETTINGS_SALES.any { resource -> method.instructions().any { it.reference() == resource } }
@@ -201,7 +205,7 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
     }
 
     var giftTabId: Int? = null
-    val profile = methods.filter { method -> method.hasShape(listOf("Z"), "V") &&
+    val profile = methods(Mention.reference(PROFILE_GIFTS)).filter { method -> method.hasShape(listOf("Z"), "V") &&
         method.instructions().any { it.reference() == PROFILE_GIFTS } }.unique("profile Gifts tab builder")
     if (profile != null) {
         val mapper = classes.getValue(profile.definingClass).methods.filter { method ->
@@ -233,7 +237,7 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
     }
 
     var giftButtonIndex: Int? = null
-    val footer = methods.filter { method -> method.hasShape(listOf("I", "Z", "Z"), "V") &&
+    val footer = methods(Mention.anyReference(FOOTER_LABELS)).filter { method -> method.hasShape(listOf("I", "Z", "Z"), "V") &&
         FOOTER_LABELS.any { resource -> method.instructions().any { it.reference() == resource } }
     }.unique("channel footer button visibility")
     if (footer != null) {
@@ -250,14 +254,15 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
 
     // Telegram 13.0's attach menu: the button binder is the one bound by position that labels a
     // button Wallet.
-    val binder = methods.filter { method -> method.returnType == "V" && !AccessFlags.STATIC.isSet(method.accessFlags) &&
+    val binder = methods(Mention.reference(WALLET_LABEL)).filter { method -> method.returnType == "V" && !AccessFlags.STATIC.isSet(method.accessFlags) &&
         method.parameterTypes.size == 2 && method.parameterTypes[1].toString() == "I" &&
         method.instructions().any { it.reference() == WALLET_LABEL }
     }.unique("attach menu button binder")
-    if (binder != null) hooks[CommerceTarget.ATTACH_WALLET] = attachWalletEdits(mutable(binder), methods, ::mutable)
+    if (binder != null) hooks[CommerceTarget.ATTACH_WALLET] = attachWalletEdits(mutable(binder), ::methods, ::mutable)
 
     // The chat list's menu adds Wallet after New Group and Saved Messages.
-    val menu = methods.filter { method -> method.hasShape(emptyList(), "V") && !AccessFlags.STATIC.isSet(method.accessFlags) &&
+    val menu = methods(Mention.reference(WALLET_LABEL) and Mention.allReferences(MENU_NEIGHBORS)).filter { method ->
+        method.hasShape(emptyList(), "V") && !AccessFlags.STATIC.isSet(method.accessFlags) &&
         method.instructions().let { body -> body.any { it.reference() == WALLET_LABEL } &&
             MENU_NEIGHBORS.all { label -> body.any { it.reference() == label } } }
     }.unique("chat list menu with Wallet")
@@ -265,7 +270,7 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
 
     // Send Gram, found by the kept types around it: the profile's menu builder, the static popup a
     // TON address link's style opens, and the message menu builder that fills three lists.
-    val sendGram = methods.filter { method -> method.instructions().any { it.reference() == SEND_GRAM } }
+    val sendGram = methods(Mention.reference(SEND_GRAM)).filter { method -> method.instructions().any { it.reference() == SEND_GRAM } }
     val profileGram = sendGram.filter { it.definingClass == PROFILE_ACTIVITY && it.hasShape(listOf("Z"), "V") }
         .unique("profile menu with Send Gram")
     if (profileGram != null) hooks[CommerceTarget.PROFILE_SEND_GRAM] = listOf(sendGramEdit(mutable(profileGram), PROFILE_GRAM))
@@ -335,7 +340,7 @@ private fun sendGramEdit(method: MutableMethod, site: SendGramSite): CommerceEdi
  * button leaves the numbering exactly as an account without Wallet gets it, every other button
  * (Gallery and File included) still bound to its own number.
  */
-private fun attachWalletEdits(binder: MutableMethod, methods: List<Method>, mutable: (Method) -> MutableMethod): List<CommerceEdit> {
+private fun attachWalletEdits(binder: MutableMethod, methods: (Mention) -> List<Method>, mutable: (Method) -> MutableMethod): List<CommerceEdit> {
     val bound = binder.instructions()
     val label = bound.indices.filter { bound[it].reference() == WALLET_LABEL }.singleOrNull()
         ?: throw PatchException("$PATCH: attach menu labels more than one button Wallet (before editing)")
@@ -352,9 +357,11 @@ private fun attachWalletEdits(binder: MutableMethod, methods: List<Method>, muta
     } catch (overwritten: PatchException) {
         shape(false, "attach menu button position is overwritten before Wallet's label")
     }
-    shape(methods.sumOf { method -> method.instructions().count { it.opcode == Opcode.IGET && it.reference() == field } } == 1,
+    // Only a class that mentions the field can read or write it.
+    val touching = methods(Mention.reference(field!!))
+    shape(touching.sumOf { method -> method.instructions().count { it.opcode == Opcode.IGET && it.reference() == field } } == 1,
         "attach menu Wallet number is read outside its binder")
-    val writers = methods.filter { method -> method.instructions().any { it.opcode == Opcode.IPUT && it.reference() == field } }
+    val writers = touching.filter { method -> method.instructions().any { it.opcode == Opcode.IPUT && it.reference() == field } }
     shape(writers.size == 1 && writers.single().definingClass == binder.definingClass &&
         writers.single().hasShape(emptyList(), "V"), "attach menu Wallet number has no single numbering pass")
     val rows = mutable(writers.single())
