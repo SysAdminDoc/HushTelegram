@@ -393,7 +393,14 @@ public class PausedHooksTest {
                 () -> Analytics.skipCrashReporterStart(),
                 () -> Analytics.skipErrorReport(),
                 () -> Boolean.FALSE.equals(Analytics.sessionsEnabled(null))));
-        probes.put(PatchFamily.OPEN_EXTERNAL_LINKS, Collections.singletonList(PausedHooksTest::externalBrowserOpened));
+        // Links open in the browser, and Mini Apps and web pages inside Telegram get no location.
+        probes.put(PatchFamily.OPEN_EXTERNAL_LINKS, Arrays.asList(
+                PausedHooksTest::externalBrowserOpened,
+                app.hushtelegram.extension.telegram.misc.MiniAppLocation::refuse,
+                () -> app.hushtelegram.extension.telegram.misc.MiniAppLocation.location(new android.location.Location("gps")) == null,
+                () -> app.hushtelegram.extension.telegram.misc.MiniAppLocation.refusePrompt("https://example.com",
+                        (android.webkit.GeolocationPermissions.Callback) (origin, allow, retain) -> { }),
+                () -> Boolean.FALSE.equals(app.hushtelegram.extension.telegram.misc.MiniAppLocation.answer(Boolean.TRUE))));
         probes.put(PatchFamily.STRIP_LINK_TRACKING, Arrays.asList(
                 () -> PROBE_URL.equals(LinkRouting.cleanOpenedUri(Uri.parse(TRACKED_URL), false, new boolean[1]).toString()),
                 () -> PROBE_URL.equals(LinkRouting.cleanShareIntent(new Intent(Intent.ACTION_SEND).setType("text/plain")

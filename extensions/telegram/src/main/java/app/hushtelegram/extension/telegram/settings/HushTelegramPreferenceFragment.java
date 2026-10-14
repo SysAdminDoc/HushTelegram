@@ -877,6 +877,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             links.addPreference(mark(toggle(context, Settings.OPEN_EXTERNAL_LINKS, L10n.t("Open links externally"),
                     PatchFamily.OPEN_EXTERNAL_LINKS.coverageSummary(L10n.t("Opens normal web links in your browser. Telegram links, sign-in and payment pages "
                             + "keep working the way they did."))), SettingsIcons.LINKS));
+            if (PatchFamily.Capability.MINI_APP_LOCATION.installed()) {
+                links.addPreference(toggle(context, Settings.MINI_APP_LOCATION_OFF, L10n.t("Keep your location from Mini Apps"),
+                        L10n.t("Mini Apps are told your phone's location isn't available, and web pages opened in Telegram are "
+                                + "refused it. A page that already had it keeps it until you close it. Sites can still guess a "
+                                + "rough area from your connection. Sending your location in a chat works as before.")));
+            }
         }
         if (build.contains(PatchFamily.STRIP_LINK_TRACKING)) {
             links.addPreference(toggle(context, Settings.STRIP_LINK_TRACKING, L10n.t("Remove link tracking tags"),

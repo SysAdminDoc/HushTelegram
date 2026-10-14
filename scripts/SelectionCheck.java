@@ -341,6 +341,7 @@ public final class SelectionCheck {
         hook(calls, flags, "cachedProxyDialog", "ads/ProxyPromotions", "hideCachedProxyDialog");
         hook(calls, flags, "cachedProxyFilters", "ads/ProxyPromotions", "showSelectedDialog");
         hook(calls, flags, "externalBrowserRouting", "misc/LinkRouting", "tryOpenExternal");
+        hook(calls, flags, "miniAppLocation", "misc/MiniAppLocation", "refuse", "location", "refusePrompt", "answer");
         hook(calls, flags, "openedLinkTracking", "misc/LinkRouting", "cleanOpenedUri");
         hook(calls, flags, "sharedLinkTracking", "misc/LinkRouting", "cleanShareIntent");
         hook(calls, flags, "firebaseCertificateHeader", "misc/FirebasePush", "certificateHeader");

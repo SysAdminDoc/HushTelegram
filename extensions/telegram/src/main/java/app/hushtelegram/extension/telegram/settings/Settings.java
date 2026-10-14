@@ -463,6 +463,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting OPEN_EXTERNAL_LINKS =
             new BooleanSetting("hushtelegram_open_external_links", TRUE);
 
+    /**
+     * Mini Apps hear that location isn't available and web pages inside Telegram are refused it.
+     * Location sharing in chats, maps and live locations stay stock.
+     */
+    public static final BooleanSetting MINI_APP_LOCATION_OFF =
+            new BooleanSetting("hushtelegram_mini_app_location_off", FALSE);
+
     /** Optional local URL cleaning at verified open/share sinks; unknown query keys preserve the URL. */
     public static final BooleanSetting STRIP_LINK_TRACKING =
             new BooleanSetting("hushtelegram_strip_link_tracking", FALSE);

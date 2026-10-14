@@ -162,6 +162,7 @@ public final class SettingsBackup {
             Settings.LOCAL_SEARCH,
             Settings.GALLERY_CAMERA_ON_TAP,
             Settings.OPEN_EXTERNAL_LINKS,
+            Settings.MINI_APP_LOCATION_OFF,
             Settings.STRIP_LINK_TRACKING,
             Settings.SKIP_AUTOLOGIN,
             Settings.DISABLE_UPDATE_CHECKS,

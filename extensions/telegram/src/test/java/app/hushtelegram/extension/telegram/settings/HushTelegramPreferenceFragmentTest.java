@@ -391,6 +391,15 @@ public class HushTelegramPreferenceFragmentTest {
             // Telegram's sites keep signing you in until someone turns the switch on.
             assertFalse(Settings.SKIP_AUTOLOGIN.key,
                     ((SwitchPreference) page.findPreference(Settings.SKIP_AUTOLOGIN.key)).isChecked());
+            assertEquals("Keep your location from Mini Apps",
+                    String.valueOf(page.findPreference(Settings.MINI_APP_LOCATION_OFF.key).getTitle()));
+            assertEquals("Mini Apps are told your phone's location isn't available, and web pages opened in Telegram "
+                    + "are refused it. A page that already had it keeps it until you close it. Sites can still guess "
+                    + "a rough area from your connection. Sending your location in a chat works as before.",
+                    String.valueOf(page.findPreference(Settings.MINI_APP_LOCATION_OFF.key).getSummary()));
+            // Mini Apps keep getting the location Telegram gives them until someone turns the switch on.
+            assertFalse(Settings.MINI_APP_LOCATION_OFF.key,
+                    ((SwitchPreference) page.findPreference(Settings.MINI_APP_LOCATION_OFF.key)).isChecked());
             assertEquals("No previews before sending", String.valueOf(page.findPreference(Settings.DISABLE_DRAFT_PREVIEWS.key).getTitle()));
             assertEquals("Telegram doesn't look up link previews for messages you haven't sent yet, including shares, "
                     + "polls, story links and bots. Sent messages still get one.",
