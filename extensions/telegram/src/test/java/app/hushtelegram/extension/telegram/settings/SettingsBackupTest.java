@@ -1050,6 +1050,8 @@ public class SettingsBackupTest {
             assertEquals(tree, Settings.TITLE_EMOJI.savedValue());
             assertTrue("the row shows the imported text",
                     String.valueOf(page.findPreference(TitleEmojiEditor.KEY).getSummary()).contains(tree));
+            // The title only changes at the next start, like a switch that waits for one, and an
+            // import used to leave it off the restart row.
             assertEquals(Collections.singleton(Settings.TITLE_EMOJI.key), new TreeSet<>(AbstractPreferenceFragment.restartPending));
             assertEquals("Restart Telegram to apply this change", restartRow(page));
         }
@@ -1211,6 +1213,36 @@ public class SettingsBackupTest {
                 assertTrue(page.findPreference(IMPORT_ROW).isEnabled());
             }
             assertTrue(Settings.HIDE_ADS.savedValue());
+        }
+    }
+
+    /**
+     * Export settings names what a file leaves out, from the same decisions this class checks:
+     * every switch STAYS_OUT names, by the title its row shows, along with Pause and Debug logging.
+     * A build without a feature doesn't name it, and the row never promises a backup of Telegram
+     * itself.
+     */
+    @Test
+    public void theExportRowNamesWhatAFileLeavesOut() throws Exception {
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(controller.get()));
+            String summary = String.valueOf(page.findPreference(EXPORT_ROW).getSummary());
+            List<String> named = new ArrayList<>(STAYS_OUT.keySet());
+            named.add(BaseSettings.PAUSED.key);
+            named.add(BaseSettings.DEBUG.key);
+            for (String key : named) {
+                Preference row = page.findPreference(key);
+                assertNotNull(key, row);
+                assertTrue(key + " isn't named: " + summary, summary.contains(String.valueOf(row.getTitle())));
+            }
+            assertTrue(summary, summary.contains("the translation service, its key and the chats you turned translation on for"));
+            assertTrue(summary, summary.contains("Your chats, drafts and kept messages aren't in it."));
+        }
+        String partial = HushTelegramPreferenceFragment.exportSummary(java.util.EnumSet.noneOf(PatchFamily.class));
+        assertTrue(partial, partial.contains("Left out of the file: Pause HushTelegram"));
+        assertTrue(partial, partial.contains("Check for new HushTelegram releases"));
+        for (String missing : new String[]{"UnifiedPush", "Folders by chat type", "translation service"}) {
+            assertFalse("a build without it named " + missing, partial.contains(missing));
         }
     }
 

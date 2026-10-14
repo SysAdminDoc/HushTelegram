@@ -45,7 +45,6 @@ After Telegram restarts, every switch except Debug logging acts as if it were of
 Hide ads	Reklamları gizle
 Links, updates, backup and more	Bağlantılar, güncellemeler, yedekleme ve daha fazlası
 Privacy	Gizlilik
-Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram app. Pause, Debug logging, the HushTelegram release check, UnifiedPush and Folders by chat type stay out.	Anahtarlarınızı, filtre listelerinizi ve çıkartma boyutunu bir dosyaya kaydeder; bu Telegram uygulamasındaki tüm hesaplar için geçerlidir. Duraklat, Hata ayıklama günlüğü, HushTelegram sürüm denetimi, UnifiedPush ve Sohbet türüne göre klasörler dahil edilmez.
 Settings exported but not checked. Open the file to make sure.	Ayarlar dışa aktarıldı ama kontrol edilmedi. Dosyayı açıp kontrol et.
 That app is slow to answer. Nothing was changed. Try again.	Bu uygulama geç yanıt veriyor. Hiçbir şey değiştirilmedi. Tekrar dene.
 That file's app still hasn't answered. Try again later.	O dosyanın uygulaması hâlâ yanıt vermedi. Sonra tekrar dene.
@@ -730,3 +729,12 @@ Unlock canceled. Settings stay locked.	Kilit açma iptal edildi. Ayarlar kilitli
 Couldn't change the lock. Try again in a moment.	Kilit değiştirilemedi. Birazdan tekrar dene.
 Settings are locked. They unlock in %1$d h %2$d min.	Ayarlar kilitli. Kilit %1$d sa %2$d dk sonra açılır.
 Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.	Ayarlar kilitli. HushTelegram ayarlarının üstündeki Kilidi açmayı başlat'a dokun, sonra 24 saat bekle.
+# context: Export settings row. %1$s is a list joined the language's own way: switch titles as they show (Pause HushTelegram, Debug logging, Check for new HushTelegram releases, UnifiedPush notifications, Folders by chat type) and the lowercase phrase below it, which ends the list.
+Saves your switches, filter lists, sticker size and chat list emoji to a file, for all the accounts in this Telegram app. Your chats, drafts and kept messages aren't in it.	Anahtarlarınızı, filtre listelerinizi, çıkartma boyutunu ve sohbet listesi emojisini bu Telegram uygulamasındaki tüm hesaplar için bir dosyaya kaydeder. Sohbetleriniz, taslaklarınız ve saklanan mesajlarınız dosyaya girmez.
+Left out of the file: %1$s.	Dosyaya alınmayanlar: %1$s.
+the translation service, its key and the chats you turned translation on for	çeviri hizmeti, anahtarı ve çeviriyi açtığınız sohbetler
+# context: Sentences added after a description to say which account it works on. "Both" is turning Folders by chat type on and turning it off. The last one closes the About page's Accounts row.
+Both work on the account you have open.	İkisi de şu an açık olan hesapta geçerlidir.
+A chat or message you turn on stays on only in the account you turned it on in.	Açtığınız bir sohbet ya da mesaj yalnızca onu açtığınız hesapta açık kalır.
+This covers every account in this Telegram app.	Bu, bu Telegram uygulamasındaki tüm hesapları kapsar.
+A few things belong to the account you have open instead, and their descriptions say so.	Bazı şeyler ise yalnızca şu an açık olan hesaba aittir ve açıklamalarında bu belirtilir.

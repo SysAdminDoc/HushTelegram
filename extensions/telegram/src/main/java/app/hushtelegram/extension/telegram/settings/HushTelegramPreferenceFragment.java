@@ -311,7 +311,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         addLinksPage(context, screen, build);
         addUpdatesPage(context, screen, build);
         addPausePage(context, screen, build);
-        addBackupPage(context, screen);
+        addBackupPage(context, screen, build);
         addDiagnosticsPage(context, screen);
         addAboutPage(context, screen);
     }
@@ -378,7 +378,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             SwitchPreference folders = toggle(context, Settings.CHAT_TYPE_FOLDERS, L10n.t("Folders by chat type"),
                     PatchFamily.CHAT_TYPE_FOLDERS.coverageSummary(L10n.t("Turning this on makes Private, Groups, Channels and Bots "
                             + "folders, as tabs above the chat list and on your other devices. Turning it off removes the ones it "
-                            + "made, unless you renamed or changed them.")));
+                            + "made, unless you renamed or changed them.") + " "
+                            + L10n.t("Both work on the account you have open.")));
             folders.setOnPreferenceChangeListener((row, value) -> {
                 // Once the switch is saved, so the folders follow what it says.
                 Utils.runOnMainThreadDelayed(() -> {
@@ -512,7 +513,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.OUTSIDE_TRANSLATE.coverageSummary(L10n.t("Adds Translate here to a message's menu and Translate this chat to a chat's menu, "
                             + "using the translation service you choose. The text you ask to translate is sent to that service, "
                             + "one message at a time. Nothing leaves your "
-                            + "phone until you turn a chat or message on.")));
+                            + "phone until you turn a chat or message on.") + " "
+                            + L10n.t("A chat or message you turn on stays on only in the account you turned it on in.")));
             // Off means off: switching back on later starts with no chat or message turned on.
             outside.setOnPreferenceChangeListener((row, value) -> {
                 if (Boolean.FALSE.equals(value)) OutsideTranslate.forgetChats();
@@ -769,7 +771,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 if (PatchFamily.Capability.LOCAL_DRAFTS.installed()) {
                     privacy.addPreference(toggle(context, Settings.LOCAL_DRAFTS, L10n.t("Keep drafts on this phone"),
                             L10n.t("A message you start but don't send stays on this phone and stops syncing to your other "
-                                    + "devices. Clearing a draft still clears it there.")));
+                                    + "devices. Clearing a draft still clears it there.") + " "
+                                    + L10n.t("This covers every account in this Telegram app.")));
                 }
                 if (PatchFamily.Capability.LOCAL_SEARCH.installed()) {
                     privacy.addPreference(toggle(context, Settings.LOCAL_SEARCH, L10n.t("Keep searches on this phone"),
@@ -860,14 +863,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     }
 
     /** Settings backup: the switches to a file and back. */
-    private void addBackupPage(Context context, PreferenceScreen screen) {
+    private void addBackupPage(Context context, PreferenceScreen screen, Set<PatchFamily> build) {
         PreferenceCategory backup = category(screen, L10n.t("Settings backup"));
         // Morphe Manager can export the patch choices and the signing key, not these switches.
         backup.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.EXPORT,
-                L10n.t("Export settings"),
-                L10n.t("Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram"
-                        + " app. Pause, Debug logging, the HushTelegram release check, UnifiedPush and Folders by chat type"
-                        + " stay out.")),
+                L10n.t("Export settings"), exportSummary(build)),
                 SettingsIcons.EXPORT));
         // The preview gives the count of the switches and each one by name.
         backup.addPreference(mark(new BackupRow(this, context, SettingsBackupPreference.IMPORT,
@@ -875,6 +875,24 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 L10n.t("Loads your switches, filter lists and sticker size from a saved file. You see what will "
                         + "change before anything is applied. It applies to all accounts.")), SettingsIcons.DOWNLOADS));
         backup.addPreference(mark(restoreQuickSetupsRow(context), SettingsIcons.TOOLS));
+    }
+
+    /**
+     * What Export settings says it saves and what it leaves out. The left-out list follows
+     * SettingsBackup's own decisions and names only what this build has, so the row never promises
+     * a backup of Telegram itself or names a switch that isn't there.
+     */
+    static String exportSummary(Set<PatchFamily> build) {
+        List<String> leftOut = new ArrayList<>(Arrays.asList(L10n.t("Pause HushTelegram"), L10n.t("Debug logging"),
+                L10n.t("Check for new HushTelegram releases")));
+        if (build.contains(PatchFamily.UNIFIED_PUSH)) leftOut.add(L10n.t("UnifiedPush notifications"));
+        if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS)) leftOut.add(L10n.t("Folders by chat type"));
+        if (build.contains(PatchFamily.OUTSIDE_TRANSLATE)) {
+            leftOut.add(L10n.t("the translation service, its key and the chats you turned translation on for"));
+        }
+        return L10n.t("Saves your switches, filter lists, sticker size and chat list emoji to a file, for all the accounts "
+                + "in this Telegram app. Your chats, drafts and kept messages aren't in it.") + " "
+                + L10n.f("Left out of the file: %1$s.", L10n.join(leftOut));
     }
 
     /** Hides the Quick setups row on the home page, or shows it again. The home page follows the next time it's drawn. */
@@ -925,7 +943,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 L10n.isolate(Utils.getPatchesReleaseVersion()), L10n.isolate(Utils.getAppVersionName()))), SettingsIcons.ABOUT));
         // Switches live in one application-wide store, while Telegram can hold several accounts.
         about.addPreference(mark(info(context, L10n.t("Accounts"), L10n.t("Every switch here applies to all the "
-                + "accounts in this Telegram app, not only the one you have open.")), SettingsIcons.ABOUT));
+                + "accounts in this Telegram app, not only the one you have open.") + " "
+                + L10n.t("A few things belong to the account you have open instead, and their descriptions say so.")),
+                SettingsIcons.ABOUT));
 
         Preference source = new Row(context);
         source.setTitle(L10n.t("Source code and issues"));

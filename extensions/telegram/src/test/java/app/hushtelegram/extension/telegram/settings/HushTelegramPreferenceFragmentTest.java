@@ -390,7 +390,7 @@ public class HushTelegramPreferenceFragmentTest {
                     ((SwitchPreference) page.findPreference(Settings.DISABLE_DRAFT_PREVIEWS.key)).isChecked());
             assertEquals("Keep drafts on this phone", String.valueOf(page.findPreference(Settings.LOCAL_DRAFTS.key).getTitle()));
             assertEquals("A message you start but don't send stays on this phone and stops syncing to your other devices. "
-                    + "Clearing a draft still clears it there.",
+                    + "Clearing a draft still clears it there. This covers every account in this Telegram app.",
                     String.valueOf(page.findPreference(Settings.LOCAL_DRAFTS.key).getSummary()));
             // Drafts keep syncing the way Telegram's do until someone turns the switch on.
             assertFalse(Settings.LOCAL_DRAFTS.key,
@@ -571,7 +571,8 @@ public class HushTelegramPreferenceFragmentTest {
                     ((SwitchPreference) page.findPreference(Settings.HIDE_FOLDER_COUNTERS.key)).isChecked());
             assertEquals("Folders by chat type", String.valueOf(page.findPreference(Settings.CHAT_TYPE_FOLDERS.key).getTitle()));
             assertEquals("Turning this on makes Private, Groups, Channels and Bots folders, as tabs above the chat list "
-                    + "and on your other devices. Turning it off removes the ones it made, unless you renamed or changed them.",
+                    + "and on your other devices. Turning it off removes the ones it made, unless you renamed or changed them. "
+                    + "Both work on the account you have open.",
                     String.valueOf(page.findPreference(Settings.CHAT_TYPE_FOLDERS.key).getSummary()));
             // No folders are made until the switch is turned on.
             assertFalse(Settings.CHAT_TYPE_FOLDERS.key,
@@ -713,7 +714,8 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Adds Translate here to a message's menu and Translate this chat to a chat's menu, using "
                             + "the translation service you choose. The text you ask to translate is sent to that service, "
                             + "one message at a time. Nothing leaves your phone until "
-                            + "you turn a chat or message on.",
+                            + "you turn a chat or message on. A chat or message you turn on stays on only in the "
+                            + "account you turned it on in.",
                     String.valueOf(page.findPreference(Settings.OUTSIDE_TRANSLATE.key).getSummary()));
             // Messages stay as sent until a chat or message is turned on.
             assertFalse(Settings.OUTSIDE_TRANSLATE.key,

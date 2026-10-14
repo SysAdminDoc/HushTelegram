@@ -45,7 +45,6 @@ After Telegram restarts, every switch except Debug logging acts as if it were of
 Hide ads	Werbung ausblenden
 Links, updates, backup and more	Links, Updates, Sicherung und mehr
 Privacy	Datenschutz
-Saves your switches, filter lists and sticker size to a file, for all accounts in this Telegram app. Pause, Debug logging, the HushTelegram release check, UnifiedPush and Folders by chat type stay out.	Speichert deine Schalter, Filterlisten und die Stickergröße in einer Datei, für alle Konten in dieser Telegram-App. Pause, Debug-Protokollierung, die Suche nach HushTelegram-Versionen, UnifiedPush und Ordner nach Chat-Typ bleiben außen vor.
 Settings exported but not checked. Open the file to make sure.	Einstellungen exportiert, aber nicht geprüft. Öffne die Datei zur Kontrolle.
 That app is slow to answer. Nothing was changed. Try again.	Die App antwortet langsam. Es wurde nichts geändert. Versuche es noch einmal.
 That file's app still hasn't answered. Try again later.	Die App dieser Datei hat noch nicht geantwortet. Versuche es später noch einmal.
@@ -730,3 +729,12 @@ Unlock canceled. Settings stay locked.	Entsperren abgebrochen. Die Einstellungen
 Couldn't change the lock. Try again in a moment.	Die Sperre ließ sich nicht ändern. Versuche es gleich noch einmal.
 Settings are locked. They unlock in %1$d h %2$d min.	Die Einstellungen sind gesperrt. Sie werden in %1$d Std. %2$d Min. entsperrt.
 Settings are locked. Tap Start unlock at the top of HushTelegram settings, then wait 24 hours.	Die Einstellungen sind gesperrt. Tippe oben in den HushTelegram-Einstellungen auf Entsperren starten und warte dann 24 Stunden.
+# context: Export settings row. %1$s is a list joined the language's own way: switch titles as they show (Pause HushTelegram, Debug logging, Check for new HushTelegram releases, UnifiedPush notifications, Folders by chat type) and the lowercase phrase below it, which ends the list.
+Saves your switches, filter lists, sticker size and chat list emoji to a file, for all the accounts in this Telegram app. Your chats, drafts and kept messages aren't in it.	Speichert deine Schalter, Filterlisten, die Stickergröße und das Emoji der Chatliste in einer Datei, für alle Konten in dieser Telegram-App. Deine Chats, Entwürfe und behaltenen Nachrichten sind nicht darin.
+Left out of the file: %1$s.	Nicht in der Datei: %1$s.
+the translation service, its key and the chats you turned translation on for	der Übersetzungsdienst, sein Schlüssel und die Chats, für die du die Übersetzung eingeschaltet hast
+# context: Sentences added after a description to say which account it works on. "Both" is turning Folders by chat type on and turning it off. The last one closes the About page's Accounts row.
+Both work on the account you have open.	Beides gilt für das gerade geöffnete Konto.
+A chat or message you turn on stays on only in the account you turned it on in.	Ein Chat oder eine Nachricht, die du einschaltest, bleibt nur in dem Konto eingeschaltet, in dem du sie eingeschaltet hast.
+This covers every account in this Telegram app.	Das gilt für alle Konten in dieser Telegram-App.
+A few things belong to the account you have open instead, and their descriptions say so.	Ein paar Dinge gehören stattdessen zum gerade geöffneten Konto, und ihre Beschreibungen sagen das.
