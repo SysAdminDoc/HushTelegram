@@ -45,7 +45,8 @@ private const val APP_CONTEXT = "Lorg/telegram/messenger/ApplicationLoader;->app
 val holidayLookPatch = bytecodePatch(
     name = PATCH,
     description = "Shows Telegram's Santa hat and New Year snow all year, not just around New Year. Starts off. Turn it" +
-        " on in HushTelegram settings > Look and feel.",
+        " on in HushTelegram settings > Look and feel. The same page has Emoji next to the chat list title, which puts" +
+        " an emoji or a few letters of your choice after Telegram's name, on this phone only.",
     default = true,
 ) {
     category("Theme")

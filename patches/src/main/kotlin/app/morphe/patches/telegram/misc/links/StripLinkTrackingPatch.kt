@@ -17,8 +17,9 @@ import app.morphe.util.addInstructionsAtControlFlowLabel
 val stripLinkTrackingPatch = bytecodePatch(
     name = "Strip link tracking",
     description = "Removes tracking tags like utm_source, gclid and fbclid from links you open or share. Links with any" +
-        " other extra part stay unchanged. Starts off. Turn it on in HushTelegram settings > More settings > " +
-        "Links.",
+        " other extra part stay unchanged. A second switch, No automatic sign-in on Telegram's sites, opens links to " +
+        "Telegram's own websites without the sign-in token Telegram adds for your account. Both start off. Turn them " +
+        "on in HushTelegram settings > More settings > Links.",
     default = true,
 ) {
     category("Privacy")

@@ -19,7 +19,8 @@ val openExternalLinksPatch = bytecodePatch(
     name = "Open links externally",
     description = "Opens ordinary web links in your browser instead of inside Telegram. Telegram links, sign-in and " +
         "payment pages work as before. On by default. Turn it off in HushTelegram settings > More settings > " +
-        "Links.",
+        "Links. A second switch there, Keep your location from Mini Apps, starts off. With it on, Mini Apps and web " +
+        "pages opened in Telegram are told your location isn't available.",
     default = true,
 ) {
     category("Privacy")

@@ -76,7 +76,8 @@ val outsideTranslatePatch = bytecodePatch(
     name = NAME,
     description = "Adds Translate here to a message's menu and Translate this chat to a chat's menu. Text you turn on goes " +
         "to Google's web translate, or to an AI service with your own key if you set one, one message at a time, and " +
-        "nothing is sent before that. Telegram's own translation and its Premium checks stay as they are. Starts off. " +
+        "nothing is sent before that. With an AI service, a How to translate box lets you say how you want it done. " +
+        "Telegram's own translation and its Premium checks stay as they are. Starts off. " +
         "Turn it on in HushTelegram settings > Conversations.",
     default = true,
 ) {

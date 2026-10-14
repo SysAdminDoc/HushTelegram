@@ -44,7 +44,9 @@ val fasterDownloadsPatch = bytecodePatch(
     name = "Faster downloads",
     description = "Downloads files in 512 KB pieces, 8 at a time, the way Telegram already does for accounts its servers " +
         "pick, instead of 128 KB pieces 4 at a time. If a big piece fails, Telegram still drops back to small ones. " +
-        "Starts off. Turn it on in HushTelegram settings > Playback.",
+        "A second switch, Hold automatic downloads on Data Saver, keeps Telegram from downloading media on its own " +
+        "while Android's Data Saver is on and the network is metered. Both start off. Turn them on in HushTelegram " +
+        "settings > Playback.",
     default = true,
 ) {
     category("Playback")

@@ -83,7 +83,9 @@ private val GOTOS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)
 val disableDraftPreviewsPatch = bytecodePatch(
     name = PATCH,
     description = "Keeps Telegram from looking up a link's preview before you send the message. Sent messages still get" +
-        " a preview. Starts off. Turn it on in HushTelegram settings > Privacy.",
+        " a preview. The same page has Keep drafts on this phone, so unsent drafts stop syncing to your other devices," +
+        " and Keep searches on this phone, so what you type in the main search isn't sent to Telegram. Each starts" +
+        " off. Turn them on in HushTelegram settings > Privacy.",
     default = true,
 ) {
     category("Privacy")

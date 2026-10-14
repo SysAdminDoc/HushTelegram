@@ -46,7 +46,9 @@ private const val STRINGS = "Lorg/telegram/messenger/R\$string;"
 val hidePopularAppsPatch = bytecodePatch(
     name = PATCH,
     description = "Hides the Popular apps list on the Apps tab of search and stops Telegram from loading it. On by " +
-        "default. Turn it off in HushTelegram settings > Ads.",
+        "default. Turn it off in HushTelegram settings > Ads. Two more switches there start off. Search only my " +
+        "chats keeps search to your own chats and contacts, with nothing public. Find names in styled letters finds " +
+        "names written in decorative letters when you type plain ones.",
     default = true,
 ) {
     category("Search")

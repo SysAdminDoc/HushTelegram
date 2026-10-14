@@ -44,8 +44,10 @@ internal val KEPT = setOf("Lorg/telegram/messenger/AndroidUtilities\$VcardItem;"
 @Suppress("unused")
 val hidePhoneNumberPatch = bytecodePatch(
     name = "Hide phone number",
-    description = "Covers your own phone number with dots in the side menu, Settings and your profile, which helps when" +
-        " you share your screen. Starts off. Turn it on in HushTelegram settings > Privacy.",
+    description = "Covers your own phone number with dots in Settings and your profile, which helps when you share" +
+        " your screen. A second switch, Don't share my number by default, leaves the share-my-number box clear when" +
+        " you add someone as a contact from their chat. Both start off. Turn them on in HushTelegram settings >" +
+        " Privacy.",
     default = true,
 ) {
     category("Privacy")

@@ -74,7 +74,8 @@ val hideContactsTabPatch = bytecodePatch(
     name = PATCH,
     description = "Removes the Contacts tab from the bar at the bottom of the main screen, and swiping doesn't open its page " +
         "either. The Calls or Settings tab stays as Telegram has it, and the chat list's new message button still opens your " +
-        "contacts. Starts off. Turn it on in HushTelegram settings > Chat list.",
+        "contacts. A second switch, Compact bottom bar, makes that bar shorter and only as wide as its tabs need. Both " +
+        "start off. Turn them on in HushTelegram settings > Chat list.",
     default = true,
 ) {
     category("Chats")
