@@ -336,7 +336,7 @@ Volume keys only change the volume. They no longer start the video or round vide
 Swipe back on profiles	Deslizar para volver en perfiles
 Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.	Deslizar a la derecha en las fotos o en las pestañas de contenido de un perfil vuelve atrás, como en el resto del perfil, en vez de mostrar la foto o pestaña anterior.
 Hide phone number	Ocultar número de teléfono
-Your own phone number shows as dots in the side menu, Settings and your profile, which helps with screenshots. Others' numbers stay visible.	Tu propio número de teléfono aparece como puntos en el menú lateral, en Ajustes y en tu perfil, lo que ayuda con las capturas de pantalla. Los números de otras personas siguen visibles.
+Your own phone number shows as dots in Settings and your profile, which helps with screenshots. Others' numbers stay visible.	Tu propio número de teléfono aparece como puntos en Ajustes y en tu perfil, lo que ayuda con las capturas de pantalla. Los números de otras personas siguen visibles.
 # context: Privacy page switch title, under Hide phone number. When on, the box on Telegram's add contact screen that shares your own phone number with the new contact starts unticked.
 Don't share my number by default	No compartir mi número por defecto
 # context: Summary under that switch. The box is Telegram's own checkbox on the add contact screen, and the person can still tick it.

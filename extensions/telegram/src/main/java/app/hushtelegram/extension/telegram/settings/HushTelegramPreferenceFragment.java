@@ -868,7 +868,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         }
         if (build.contains(PatchFamily.HIDE_PHONE_NUMBER)) {
             on(pages, PatchFamily.HIDE_PHONE_NUMBER).addPreference(toggle(context, Settings.HIDE_PHONE_NUMBER, L10n.t("Hide phone number"),
-                    PatchFamily.HIDE_PHONE_NUMBER.coverageSummary(L10n.t("Your own phone number shows as dots in the side menu, Settings and your profile,"
+                    PatchFamily.HIDE_PHONE_NUMBER.coverageSummary(L10n.t("Your own phone number shows as dots in Settings and your profile,"
                             + " which helps with screenshots. Others' numbers stay visible."))));
             if (PatchFamily.Capability.SHARE_NUMBER_UNTICKED.installed()) {
                 on(pages, PatchFamily.HIDE_PHONE_NUMBER).addPreference(toggle(context, Settings.SHARE_NUMBER_UNTICKED,

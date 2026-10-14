@@ -538,7 +538,7 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse(Settings.SWIPE_BACK_ON_PROFILES.key,
                     ((SwitchPreference) page.findPreference(Settings.SWIPE_BACK_ON_PROFILES.key)).isChecked());
             assertEquals("Hide phone number", String.valueOf(page.findPreference(Settings.HIDE_PHONE_NUMBER.key).getTitle()));
-            assertEquals("Your own phone number shows as dots in the side menu, Settings and your profile, which helps"
+            assertEquals("Your own phone number shows as dots in Settings and your profile, which helps"
                     + " with screenshots. Others' numbers stay visible.",
                     String.valueOf(page.findPreference(Settings.HIDE_PHONE_NUMBER.key).getSummary()));
             // Your number shows until the switch is turned on.
