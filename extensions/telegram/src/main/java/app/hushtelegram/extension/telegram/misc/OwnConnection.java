@@ -54,7 +54,10 @@ public final class OwnConnection {
     /** Puts the change into effect in the running process. Tests count calls instead. */
     static Runnable apply = OwnConnection::applyInTelegram;
 
-    /** Called with every answer to account.registerDevice, after it's recorded. */
+    /**
+     * Called with each answer to a Firebase account.registerDevice, after it's recorded, while the
+     * account that asked is still the one signed in. UnifiedPush answers never come here.
+     */
     static void answered(boolean accepted) {
         try {
             if (!Utils.settingsReady() || HushTelegramPause.isPaused() || !Settings.REPAIR_FIREBASE_PUSH.get()) return;

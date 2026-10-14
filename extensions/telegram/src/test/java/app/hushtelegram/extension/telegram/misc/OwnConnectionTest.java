@@ -67,9 +67,18 @@ public class OwnConnectionTest {
 
     private SharedPreferences telegram() { return realTelegram.apply(context); }
 
-    private void refused() { FirebasePush.registerDeviceAnswer(null, new TLRPC.TL_error(400, "APP_PUSH_APIKEY_MISSING")); }
+    /** One account's place, signed in throughout unless a test signs it out. */
+    private final FirebasePushTest.Place place = new FirebasePushTest.Place(918337771L);
 
-    private void accepted() { FirebasePush.registerDeviceAnswer(new TLRPC.TL_boolTrue(), null); }
+    private void refused() { refused(FirebasePushTest.FIREBASE); }
+
+    private void refused(int transport) {
+        FirebasePushTest.signUp(place, transport, null, new TLRPC.TL_error(400, "APP_PUSH_APIKEY_MISSING"));
+    }
+
+    private void accepted() { accepted(FirebasePushTest.FIREBASE); }
+
+    private void accepted(int transport) { FirebasePushTest.signUp(place, transport, new TLRPC.TL_boolTrue(), null); }
 
     private boolean report(String line) { return HookStatus.report().toString().contains(line); }
 
@@ -142,9 +151,61 @@ public class OwnConnectionTest {
         refused();
         UnifiedPush.prefs(context).edit().putString(UnifiedPush.ENDPOINT, "https://ntfy.sh/upAbCdEf12?up=1").commit();
         Settings.UNIFIED_PUSH.save(true);
-        accepted();
+        accepted(FirebasePushTest.UNIFIED_PUSH);
         assertEquals(Boolean.TRUE, OwnConnection.bothOn(context));
         assertTrue(OwnConnection.turnedOnHere(context));
+        assertEquals(1, applied);
+    }
+
+    /**
+     * Each answer comes with the transport its sign-up went out on, and only a Firebase one acts.
+     * With no UnifiedPush address in use, nothing but the transport keeps these from acting.
+     */
+    @Test public void aUnifiedPushAnswerNeitherTurnsItOnNorHandsItBack() {
+        refused(FirebasePushTest.UNIFIED_PUSH);
+        assertTrue("a UnifiedPush refusal turned them on", telegram().getAll().isEmpty());
+        assertFalse(OwnConnection.turnedOnHere(context));
+        assertEquals(0, applied);
+
+        refused();
+        assertTrue(OwnConnection.turnedOnHere(context));
+        accepted(FirebasePushTest.UNIFIED_PUSH);
+        assertEquals("a UnifiedPush yes handed them back", Boolean.TRUE, OwnConnection.bothOn(context));
+        assertTrue(OwnConnection.turnedOnHere(context));
+        assertEquals(1, applied);
+        assertFalse(report("own connection handed back"));
+
+        // A token type nothing here sends says nothing about Firebase either.
+        accepted(7);
+        assertTrue(OwnConnection.turnedOnHere(context));
+        accepted();
+        assertFalse(OwnConnection.turnedOnHere(context));
+        assertEquals(2, applied);
+    }
+
+    /**
+     * Telegram ends a waiting sign-up with an error as its account signs out. That's no refusal, and
+     * nor is a reply nobody can say is whose.
+     */
+    @Test public void aReplyForAnAccountThatLeftOrIsUnclearLeavesEverythingAlone() {
+        FirebasePush.registerDeviceSent(place, FirebasePushTest.FIREBASE);
+        place.user = 0;
+        FirebasePush.registerDeviceAnswer(place, FirebasePushTest.FIREBASE, null, new TLRPC.TL_error(-1000, ""));
+        assertTrue(telegram().getAll().isEmpty());
+
+        // Two accounts' sign-ups wait at one place, so neither reply can be told apart.
+        place.user = 918337771L;
+        FirebasePush.registerDeviceSent(place, FirebasePushTest.FIREBASE);
+        place.user = 918337772L;
+        FirebasePush.registerDeviceSent(place, FirebasePushTest.FIREBASE);
+        FirebasePush.registerDeviceAnswer(place, FirebasePushTest.FIREBASE, null, new TLRPC.TL_error(400, "APP_PUSH_APIKEY_MISSING"));
+        FirebasePush.registerDeviceAnswer(place, FirebasePushTest.FIREBASE, null, new TLRPC.TL_error(400, "APP_PUSH_APIKEY_MISSING"));
+        assertTrue(telegram().getAll().isEmpty());
+        assertFalse(OwnConnection.turnedOnHere(context));
+        assertEquals(0, applied);
+
+        refused();
+        assertTrue("the account now there still gets its own refusal acted on", OwnConnection.turnedOnHere(context));
         assertEquals(1, applied);
     }
 

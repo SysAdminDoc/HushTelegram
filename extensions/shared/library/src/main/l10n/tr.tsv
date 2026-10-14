@@ -473,6 +473,11 @@ No reply since Telegram started	Telegram açıldığından beri yanıt yok
 Accepted	Kabul edildi
 Refused	Reddedildi
 Refused (%1$s)	Reddedildi (%1$s)
+# context: One line per account and push service in the notification status. %1$s is the account number, %2$s is Firebase or UnifiedPush, %3$s is Accepted or Refused, %4$s is how long ago.
+Telegram's reply to account %1$s on %2$s: %3$s, %4$s	Telegram'ın %2$s üzerinden hesap %1$s için yanıtı: %3$s, %4$s
+less than a minute ago	bir dakikadan kısa süre önce
+%1$s min ago	%1$s dk önce
+%1$s h ago	%1$s sa önce
 This only shows what's saved on this phone. It doesn't prove notifications will arrive.	Bu yalnızca bu telefonda nelerin kayıtlı olduğunu gösterir. Bildirimlerin ulaşacağını kanıtlamaz.
 Unknown	Bilinmiyor
 Allowed	İzin verildi

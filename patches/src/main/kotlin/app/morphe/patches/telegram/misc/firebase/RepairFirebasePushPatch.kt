@@ -15,7 +15,11 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
+import app.morphe.patches.telegram.misc.extension.localRegisterCount
+import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
+import app.morphe.patches.telegram.misc.extension.requireParameterIntact
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
+import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.classDefsMentioning
@@ -53,7 +57,12 @@ internal const val USER_CONFIG = "Lorg/telegram/messenger/UserConfig;"
 internal const val TOKEN_READER = "hushTelegramTokenPresence"
 internal const val ACCOUNT_READER = "hushTelegramAccountCounts"
 internal const val PUSH_CONTROLLER = "Lorg/telegram/messenger/MessagesController;"
-internal const val ANSWER_HOOK = "$FIREBASE_PUSH->registerDeviceAnswer(Ljava/lang/Object;Ljava/lang/Object;)V"
+internal const val BASE_CONTROLLER = "Lorg/telegram/messenger/BaseController;"
+internal const val ANSWER_HOOK = "$FIREBASE_PUSH->registerDeviceAnswer(Ljava/lang/Object;ILjava/lang/Object;Ljava/lang/Object;)V"
+internal const val SENT_HOOK = "$FIREBASE_PUSH->registerDeviceSent(Ljava/lang/Object;I)V"
+private const val OBJECT = "Ljava/lang/Object;"
+private const val REGISTER_DEVICE = "Lorg/telegram/tgnet/tl/TL_account\$registerDevice;"
+private const val SEND_REQUEST = "Lorg/telegram/tgnet/ConnectionsManager;->sendRequest(Lorg/telegram/tgnet/TLObject;Lorg/telegram/tgnet/RequestDelegate;)I"
 private const val TL_OBJECT = "Lorg/telegram/tgnet/TLObject;"
 private const val TL_ERROR = "Lorg/telegram/tgnet/TLRPC\$TL_error;"
 private const val BOOL_TRUE = "Lorg/telegram/tgnet/TLRPC\$TL_boolTrue;"
@@ -87,7 +96,11 @@ val repairFirebasePushPatch = bytecodePatch(
             move-result-object v${plan.value}
         """)
         answer.method.addInstructionsAtControlFlowLabel(0, """
-            invoke-static {v${answer.response}, v${answer.error}}, $ANSWER_HOOK
+            invoke-static {v${answer.self}, v${answer.type}, v${answer.response}, v${answer.error}}, $ANSWER_HOOK
+        """)
+        // this and the push type sit side by side past registerForPush's locals, so a range reaches them however many there are.
+        answer.sender.addInstructionsAtControlFlowLabel(answer.send, """
+            invoke-static/range {v${answer.senderSelf} .. v${answer.senderType}}, $SENT_HOOK
         """)
         for ((owner, original, replacement) in local.methods) {
             if (original != null) owner.methods.remove(original)
@@ -107,19 +120,26 @@ internal enum class FirebaseRequest { CREATE, TOKEN, DELETE }
 
 internal data class LocalNotificationPlan(val methods: List<Triple<MutableClass, MutableMethod?, MutableMethod>>)
 
-internal data class PushAnswerPlan(val method: MutableMethod, val response: Int, val error: Int)
+/** The callback's registers, then registerForPush with its request's index and the registers it keeps this and the push type in. */
+internal data class PushAnswerPlan(
+    val method: MutableMethod, val self: Int, val type: Int, val response: Int, val error: Int,
+    val sender: MutableMethod, val send: Int, val senderSelf: Int, val senderType: Int,
+)
 
 /**
  * Telegram's account.registerDevice callback keeps its lambda$registerForPush$N name and is the only place the
  * server's answer arrives. Telegram drops a refusal without a trace, so "confirmed for push: 0" couldn't say why.
- * The hook goes in front of the boolTrue test and only reads the response and error parameters.
+ * The hook goes in front of the boolTrue test and only reads the callback's own controller, push type, response
+ * and error. A second hook just ahead of the request in registerForPush reads the controller and push type, so
+ * an answer goes to the account that asked rather than to whoever holds its place when it's back.
  */
 internal fun BytecodePatchContext.resolvePushAnswer(): PushAnswerPlan {
     val owners = mutableListOf<String>()
     classDefForEach { if (it.type == PUSH_CONTROLLER) owners += it.type }
     shape(owners.size == 1, "push registration owner is missing or ambiguous")
+    val controller = mutableClassDefBy(PUSH_CONTROLLER)
     // registerForPush also owns a no-argument lambda that clears its in-flight flag, so the name alone isn't enough.
-    val callback = mutableClassDefBy(PUSH_CONTROLLER).methods.filter {
+    val callback = controller.methods.filter {
         it.name.startsWith("lambda\$registerForPush\$") && it.hasShape(listOf("I", STRING, TL_OBJECT, TL_ERROR), "V")
     }.unique("push registration answer callback")
     shape(!AccessFlags.STATIC.isSet(callback.accessFlags) && callback.implementation != null,
@@ -128,6 +148,7 @@ internal fun BytecodePatchContext.resolvePushAnswer(): PushAnswerPlan {
     val registers = callback.implementation!!.registerCount
     val response = registers - 2
     val error = registers - 1
+    shape(error <= 15, "push registration answer parameters are out of a hook's reach")
     val body = callback.instructions()
     val test = body.firstOrNull()
     shape(test?.opcode == Opcode.INSTANCE_OF && (test as ReferenceInstruction).reference.toString() == BOOL_TRUE &&
@@ -135,10 +156,38 @@ internal fun BytecodePatchContext.resolvePushAnswer(): PushAnswerPlan {
         "push registration answer is no longer tested for boolTrue first")
     shape(body.count { it.opcode == Opcode.IPUT_BOOLEAN && it.field()?.toString() == "$USER_CONFIG->registeredForPush:Z" } == 1,
         "push registration answer no longer records an accepted registration")
-    val hook = mutableClassDefBy(FIREBASE_PUSH).methods.filter { it.name == "registerDeviceAnswer" }.unique("extension push answer hook")
-    shape(hook.hasShape(listOf("Ljava/lang/Object;", "Ljava/lang/Object;"), "V") &&
-        hook.accessFlags == (AccessFlags.PUBLIC.value or AccessFlags.STATIC.value), "extension push answer hook is not callable")
-    return PushAnswerPlan(callback, response, error)
+
+    val sender = controller.methods.filter { it.name == "registerForPush" && it.hasShape(listOf("I", STRING), "V") }
+        .unique("push registration request method")
+    shape(!AccessFlags.STATIC.isSet(sender.accessFlags) && sender.implementation != null,
+        "push registration request method is static or has no body")
+    val sending = sender.instructions()
+    val send = sending.indices.filter { sending[it].call()?.toString() == SEND_REQUEST }.unique("push registration request")
+    val senderSelf = sender.localRegisterCount()
+    val senderType = sender.parameterRegisterNumber(0)
+    shape(senderType == senderSelf + 1 &&
+        sending.count { it.opcode == Opcode.NEW_INSTANCE && (it as ReferenceInstruction).reference.toString() == REGISTER_DEVICE } == 1 &&
+        sending.count { it.opcode == Opcode.IPUT && it.field()?.toString() == "$REGISTER_DEVICE->token_type:I" &&
+            (it as TwoRegisterInstruction).registerA == senderType } == 1,
+        "push registration no longer sends one account.registerDevice with its push type")
+    sender.requireThisIntact(PATCH, listOf(send))
+    sender.requireParameterIntact(PATCH, 0, listOf(send))
+
+    // The hooks ask the controller who's signed in by these two names, and can only reach public ones.
+    fun reader(owner: String, name: String, result: String) = classDefByOrNull(owner)?.let { host ->
+        AccessFlags.PUBLIC.isSet(host.accessFlags) && host.methods.any {
+            it.name == name && it.hasShape(emptyList(), result) && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
+                !AccessFlags.STATIC.isSet(it.accessFlags)
+        }
+    } == true
+    shape(controller.superclass == BASE_CONTROLLER && reader(BASE_CONTROLLER, "getUserConfig", USER_CONFIG) &&
+        reader(USER_CONFIG, "getClientUserId", "J"), "push registration owner can no longer say who's signed in")
+    for ((name, parameters) in listOf("registerDeviceAnswer" to listOf(OBJECT, "I", OBJECT, OBJECT), "registerDeviceSent" to listOf(OBJECT, "I"))) {
+        val hook = mutableClassDefBy(FIREBASE_PUSH).methods.filter { it.name == name }.unique("extension $name hook")
+        shape(hook.hasShape(parameters, "V") && hook.accessFlags == (AccessFlags.PUBLIC.value or AccessFlags.STATIC.value),
+            "extension $name hook is not callable")
+    }
+    return PushAnswerPlan(callback, registers - 5, registers - 4, response, error, sender, send, senderSelf, senderType)
 }
 
 /** The bridges read existing loaded memory. No account creation, configuration loading or registration. */

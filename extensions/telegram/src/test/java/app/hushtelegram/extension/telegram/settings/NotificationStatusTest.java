@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.After;
@@ -56,6 +57,8 @@ import app.hushtelegram.extension.telegram.misc.FirebasePushTest;
 public class NotificationStatusTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
     private static final String PRIVATE_CANARY = "synthetic-private-token-apiHash-account-id-983771";
+    private static final long ALICE = 918337771L;
+    private static final long BOB = 918337772L;
 
     @Before public void setUp() {
         PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.REPAIR_FIREBASE_PUSH);
@@ -95,7 +98,7 @@ public class NotificationStatusTest {
             assertEquals(Boolean.TRUE, status.tokenPresent);
             assertEquals(2, status.activeAccounts);
             assertEquals(1, status.acknowledgedAccounts);
-            assertEquals("none since start", status.pushAnswer);
+            assertEquals(Collections.emptyList(), status.pushReplies);
             assertTrue(status.summary().contains("It doesn't prove notifications will arrive."));
             assertFalse(Settings.REPAIR_FIREBASE_PUSH.savedValue());
             assertNull(Shadows.shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivity());
@@ -110,27 +113,75 @@ public class NotificationStatusTest {
         assertNull(status.tokenPresent);
         assertEquals(-1, status.activeAccounts);
         assertEquals(-1, status.acknowledgedAccounts);
-        FirebasePush.registerDeviceAnswer(new TLRPC.TL_boolTrue(), null);
-        assertNull(FirebasePush.localStatus(context()).pushAnswer);
+        FirebasePushTest.signUp(new FirebasePushTest.Place(ALICE), FirebasePushTest.FIREBASE, new TLRPC.TL_boolTrue(), null);
+        assertNull(FirebasePush.localStatus(context()).pushReplies);
         assertTrue(FirebasePush.localStatus(context()).summary().contains("Telegram's reply to notification sign-up: Unknown"));
         assertEquals(0, LocalReaders.reads);
     }
 
     @Test public void theSummaryNamesTelegramsLastAnswerToThePushRegistration() {
+        FirebasePushTest.Place place = new FirebasePushTest.Place(ALICE);
         assertTrue(FirebasePush.localStatus(context()).summary().contains("Telegram's reply to notification sign-up: No reply since Telegram started"));
-        FirebasePush.registerDeviceAnswer(new TLRPC.TL_boolTrue(), null);
-        assertTrue(FirebasePush.localStatus(context()).summary().contains("Telegram's reply to notification sign-up: Accepted"));
-        FirebasePush.registerDeviceAnswer(new TLRPC.TL_boolFalse(), null);
-        assertTrue(FirebasePush.localStatus(context()).summary().contains("Telegram's reply to notification sign-up: Refused\n"));
-        FirebasePush.registerDeviceAnswer(null, new TLRPC.TL_error(400, "APP_PUSH_ERROR"));
+        FirebasePushTest.signUp(place, FirebasePushTest.FIREBASE, new TLRPC.TL_boolTrue(), null);
         String summary = FirebasePush.localStatus(context()).summary();
-        assertTrue(summary, summary.contains("Telegram's reply to notification sign-up: Refused (APP_PUSH_ERROR 400)"));
-        FirebasePush.registerDeviceAnswer(null, new TLRPC.TL_error(-1000, PRIVATE_CANARY));
+        assertTrue(summary, summary.contains("Telegram's reply to account 1 on Firebase: Accepted, less than a minute ago\n"));
+        assertFalse(summary, summary.contains("Telegram's reply to notification sign-up"));
+        FirebasePushTest.signUp(place, FirebasePushTest.FIREBASE, new TLRPC.TL_boolFalse(), null);
         summary = FirebasePush.localStatus(context()).summary();
-        assertTrue(summary, summary.contains("Telegram's reply to notification sign-up: Refused (unreadable -1000)"));
+        assertTrue(summary, summary.contains("Telegram's reply to account 1 on Firebase: Refused, less than a minute ago\n"));
+        FirebasePushTest.signUp(place, FirebasePushTest.FIREBASE, null, new TLRPC.TL_error(400, "APP_PUSH_ERROR"));
+        summary = FirebasePush.localStatus(context()).summary();
+        assertTrue(summary, summary.contains("Telegram's reply to account 1 on Firebase: Refused (APP_PUSH_ERROR 400), less than a minute ago\n"));
+        FirebasePushTest.signUp(place, FirebasePushTest.FIREBASE, null, new TLRPC.TL_error(-1000, PRIVATE_CANARY));
+        summary = FirebasePush.localStatus(context()).summary();
+        assertTrue(summary, summary.contains("Telegram's reply to account 1 on Firebase: Refused (unreadable -1000), less than a minute ago\n"));
         assertFalse(summary, summary.contains(PRIVATE_CANARY));
         LocalReaders.brokenToken = LocalReaders.brokenCounts = true;
-        assertEquals("refused unreadable -1000", FirebasePush.localStatus(null).pushAnswer);
+        List<FirebasePush.Reply> replies = FirebasePush.localStatus(null).pushReplies;
+        assertEquals(1, replies.size());
+        assertEquals("refused unreadable -1000", replies.get(0).answer);
+    }
+
+    /**
+     * Two accounts, one of them on both push services, and a reply nothing is known about. Each
+     * gets its own line, in the dialog and in both exports, and no line says who an account is.
+     */
+    @Test public void everyAccountAndTransportKeepsItsOwnLineAndNoneSaysWhoItIs() throws Exception {
+        PatchFamily.registerDiagnostics();
+        FirebasePushTest.Place first = new FirebasePushTest.Place(ALICE);
+        FirebasePushTest.Place second = new FirebasePushTest.Place(BOB);
+        FirebasePushTest.signUp(first, FirebasePushTest.FIREBASE, new TLRPC.TL_boolTrue(), null);
+        FirebasePushTest.signUp(second, FirebasePushTest.FIREBASE, null, new TLRPC.TL_error(400, "APP_PUSH_APIKEY_MISSING"));
+        FirebasePushTest.signUp(first, FirebasePushTest.UNIFIED_PUSH, new TLRPC.TL_boolFalse(), null);
+        // No sign-up on record, from something that isn't a controller, on a token type nothing here sends.
+        FirebasePush.registerDeviceAnswer(new Object(), 13, new TLRPC.TL_boolTrue(), null);
+        FirebasePushTest.age(7 * 60_000L);
+
+        String summary = FirebasePush.localStatus(context()).summary();
+        assertTrue(summary, summary.contains("\nTelegram's reply to account 1 on Firebase: Accepted, 7 min ago"
+                + "\nTelegram's reply to account 1 on UnifiedPush: Refused, 7 min ago"
+                + "\nTelegram's reply to account 2 on Firebase: Refused (APP_PUSH_APIKEY_MISSING 400), 7 min ago"
+                + "\nTelegram's reply to account Unknown on Unknown: Accepted, 7 min ago"
+                // The second account's Firebase refusal turned Telegram's own connection on.
+                + "\nKeep-Alive Service and Background Connection on: Yes"
+                + "\nThis only shows what's saved on this phone. It doesn't prove notifications will arrive."));
+        assertFalse(summary, summary.contains(Long.toString(ALICE)));
+        assertFalse(summary, summary.contains(Long.toString(BOB)));
+        for (String report : bothExports()) {
+            assertTrue(report, report.contains("push registration answer: account 1, firebase, accepted, 420 s ago"));
+            assertTrue(report, report.contains("push registration answer: account 1, unifiedpush, refused, 420 s ago"));
+            assertTrue(report, report.contains("push registration answer: account 2, firebase, refused APP_PUSH_APIKEY_MISSING 400, 420 s ago"));
+            assertTrue(report, report.contains("push registration answer: account unknown, unknown, accepted, 420 s ago"));
+            assertTrue(report, report.contains("local state only; notification delivery is unverified"));
+            assertFalse(report, report.contains(Long.toString(ALICE)));
+            assertFalse(report, report.contains(Long.toString(BOB)));
+        }
+
+        // The second account signs out. Its line goes, and the first account's stay as they were.
+        second.user = 0;
+        summary = FirebasePush.localStatus(context()).summary();
+        assertTrue(summary, summary.contains("Telegram's reply to account 1 on UnifiedPush: Refused, 7 min ago"));
+        assertFalse(summary, summary.contains("account 2"));
     }
 
     @Test public void missingInvalidAndUnreadableFactsStayIndependentAndUnknown() {
@@ -194,7 +245,7 @@ public class NotificationStatusTest {
             page.onResume();
             assertTrue(status.getSummary().toString().contains("Notification permission: Blocked"));
             assertTrue(status.getSummary().toString().contains("Signed-in accounts: 0"));
-            FirebasePush.registerDeviceAnswer(new TLRPC.TL_boolTrue(), null);
+            FirebasePushTest.signUp(new FirebasePushTest.Place(ALICE), FirebasePushTest.FIREBASE, new TLRPC.TL_boolTrue(), null);
             page.onResume();
             assertTrue(status.isSelectable());
             assertNull(status.getIntent());
@@ -202,7 +253,7 @@ public class NotificationStatusTest {
             android.app.AlertDialog details = org.robolectric.shadows.ShadowAlertDialog.getLatestAlertDialog();
             String message = org.robolectric.Shadows.shadowOf(details).getMessage().toString();
             assertTrue(message.contains("Notification ID saved on this phone: No"));
-            assertTrue(message.contains("Telegram's reply to notification sign-up: Accepted"));
+            assertTrue(message, message.contains("Telegram's reply to account 1 on Firebase: Accepted, less than a minute ago"));
             assertTrue(message.contains("It doesn't prove notifications will arrive."));
             details.getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick();
             org.robolectric.shadows.ShadowLooper.idleMainLooper();
@@ -215,14 +266,20 @@ public class NotificationStatusTest {
     @Test public void theStatusSaysWhetherTelegramsOwnConnectionIsOnAndHowToTurnItOn() {
         android.content.SharedPreferences telegram = context().getSharedPreferences("Notifications", Context.MODE_PRIVATE);
         telegram.edit().clear().putBoolean("pushService", false).commit();
-        FirebasePush.registerDeviceAnswer(null, new TLRPC.TL_error(400, "APP_PUSH_APIKEY_MISSING"));
+        FirebasePushTest.Place place = new FirebasePushTest.Place(ALICE);
+        // A UnifiedPush refusal says nothing about Firebase, so it brings no hint.
+        FirebasePushTest.signUp(place, FirebasePushTest.UNIFIED_PUSH, null, new TLRPC.TL_error(400, "APP_PUSH_ERROR"));
         String summary = FirebasePush.localStatus(context()).summary();
+        assertTrue(summary, summary.contains("Keep-Alive Service and Background Connection on: No"));
+        assertFalse(summary, summary.contains("Without push"));
+        FirebasePushTest.signUp(place, FirebasePushTest.FIREBASE, null, new TLRPC.TL_error(400, "APP_PUSH_APIKEY_MISSING"));
+        summary = FirebasePush.localStatus(context()).summary();
         assertTrue(summary, summary.contains("Keep-Alive Service and Background Connection on: No"));
         assertTrue(summary, summary.contains("Without push, turn both on under Settings > Notifications and Sounds"));
         assertTrue(String.join("\n", FirebasePush.localReportLines()).contains("keep-alive and background connection: off"));
 
         telegram.edit().clear().commit();
-        FirebasePush.registerDeviceAnswer(null, new TLRPC.TL_error(400, "APP_PUSH_APIKEY_MISSING"));
+        FirebasePushTest.signUp(place, FirebasePushTest.FIREBASE, null, new TLRPC.TL_error(400, "APP_PUSH_APIKEY_MISSING"));
         summary = FirebasePush.localStatus(context()).summary();
         assertTrue(summary, summary.contains("Keep-Alive Service and Background Connection on: Yes"));
         assertFalse(summary, summary.contains("Without push"));
@@ -237,36 +294,53 @@ public class NotificationStatusTest {
         for (String[] language : languages) {
             RuntimeEnvironment.setQualifiers("+" + language[0]);
             Map<String, String> table = SettingsL10nTest.TranslationsForTests.of(language[1]);
-            String[] labels = {"Notification permission: %1$s", "Notification ID saved on this phone: %1$s", "Signed-in accounts: %1$s", "Accounts Telegram confirmed for notifications: %1$s",
-                    "Telegram's reply to notification sign-up: %1$s"};
+            String[] labels = {"Notification permission: %1$s", "Notification ID saved on this phone: %1$s", "Signed-in accounts: %1$s", "Accounts Telegram confirmed for notifications: %1$s"};
+            String replyLine = table.get("Telegram's reply to account %1$s on %2$s: %3$s, %4$s");
+            FirebasePushTest.Place place = new FirebasePushTest.Place(ALICE);
             for (int state = 0; state < 3; state++) {
                 LocalReaders.token = state == 0 ? -1 : state == 1 ? 1 : 0;
                 LocalReaders.counts = state == 0 ? -1 : state == 1 ? 2 | (1 << 8) : 0;
                 Shadows.shadowOf(manager()).setNotificationsEnabled(state == 1);
                 FirebasePushTest.forgetAnswer();
-                if (state == 1) FirebasePush.registerDeviceAnswer(new TLRPC.TL_boolTrue(), null);
-                if (state == 2) FirebasePush.registerDeviceAnswer(null, new TLRPC.TL_error(400, "APP_PUSH_ERROR"));
-                String[] values = state == 0 ? new String[]{table.get("Unknown"), table.get("Unknown"), table.get("Unknown"), table.get("Unknown"),
-                        table.get("No reply since Telegram started")}
-                        : state == 1 ? new String[]{table.get("Allowed"), table.get("Yes"), "2", "1", table.get("Accepted")}
-                        : new String[]{table.get("Blocked"), table.get("No"), "0", "0",
-                        String.format(table.get("Refused (%1$s)"), "APP_PUSH_ERROR 400")};
+                if (state == 1) FirebasePushTest.signUp(place, FirebasePushTest.FIREBASE, new TLRPC.TL_boolTrue(), null);
+                if (state == 2) FirebasePushTest.signUp(place, FirebasePushTest.UNIFIED_PUSH, null, new TLRPC.TL_error(400, "APP_PUSH_ERROR"));
+                String[] values = state == 0 ? new String[]{table.get("Unknown"), table.get("Unknown"), table.get("Unknown"), table.get("Unknown")}
+                        : state == 1 ? new String[]{table.get("Allowed"), table.get("Yes"), "2", "1"}
+                        : new String[]{table.get("Blocked"), table.get("No"), "0", "0"};
+                String reply = state == 0 ? String.format(table.get("Telegram's reply to notification sign-up: %1$s"), table.get("No reply since Telegram started"))
+                        : state == 1 ? String.format(replyLine, "1", "Firebase", table.get("Accepted"), table.get("less than a minute ago"))
+                        : String.format(replyLine, "1", "UnifiedPush", String.format(table.get("Refused (%1$s)"), "APP_PUSH_ERROR 400"),
+                        table.get("less than a minute ago"));
                 String summary = FirebasePush.localStatus(state == 0 ? null : context()).summary();
                 for (int label = 0; label < labels.length; label++) {
                     assertTrue(language[0] + ": " + summary, summary.contains(String.format(table.get(labels[label]), values[label])));
                 }
+                assertTrue(language[0] + ": " + summary, summary.contains(reply));
                 assertTrue(summary.contains(table.get("This only shows what's saved on this phone. It doesn't prove notifications will arrive.")));
             }
-            FirebasePush.registerDeviceAnswer(new TLRPC.TL_boolFalse(), null);
+            FirebasePushTest.signUp(place, FirebasePushTest.FIREBASE, new TLRPC.TL_boolFalse(), null);
+            FirebasePushTest.age(7 * 60_000L);
             String summary = FirebasePush.localStatus(context()).summary();
-            assertTrue(language[0] + ": " + summary,
-                    summary.contains(String.format(table.get("Telegram's reply to notification sign-up: %1$s"), table.get("Refused"))));
+            assertTrue(language[0] + ": " + summary, summary.contains(String.format(replyLine, "1", "Firebase", table.get("Refused"),
+                    String.format(table.get("%1$s min ago"), 7))));
+            FirebasePushTest.age(3 * 3_600_000L);
+            summary = FirebasePush.localStatus(context()).summary();
+            assertTrue(language[0] + ": " + summary, summary.contains(String.format(replyLine, "1", "Firebase", table.get("Refused"),
+                    String.format(table.get("%1$s h ago"), 3))));
+            // A reply nothing is known about says so in the phone's language too.
+            FirebasePushTest.forgetAnswer();
+            FirebasePush.registerDeviceAnswer(new Object(), 13, new TLRPC.TL_boolTrue(), null);
+            summary = FirebasePush.localStatus(context()).summary();
+            assertTrue(language[0] + ": " + summary, summary.contains(String.format(replyLine, table.get("Unknown"), table.get("Unknown"),
+                    table.get("Accepted"), table.get("less than a minute ago"))));
         }
     }
 
     @Test public void bothExportsCarryOnlyTheBooleanAndAggregateCountsEvenAfterReaderFailures() throws Exception {
         PatchFamily.registerDiagnostics();
-        FirebasePush.registerDeviceAnswer(new TLRPC.TL_boolFalse(), new TLRPC.TL_error(400, PRIVATE_CANARY));
+        FirebasePushTest.signUp(new FirebasePushTest.Place(ALICE), FirebasePushTest.FIREBASE, new TLRPC.TL_boolFalse(),
+                new TLRPC.TL_error(400, PRIVATE_CANARY));
+        FirebasePushTest.age(7 * 60_000L);
         for (boolean unreadable : new boolean[]{false, true}) {
             LocalReaders.brokenToken = LocalReaders.brokenCounts = unreadable;
             for (String report : bothExports()) {
@@ -274,7 +348,7 @@ public class NotificationStatusTest {
                 assertTrue(report, report.contains("token present: " + (unreadable ? "unknown" : "true")));
                 assertTrue(report, report.contains("active accounts: " + (unreadable ? "unknown" : "2")));
                 assertTrue(report, report.contains("acknowledged accounts: " + (unreadable ? "unknown" : "1")));
-                assertTrue(report, report.contains("push registration answer: refused unreadable 400"));
+                assertTrue(report, report.contains("push registration answer: account 1, firebase, refused unreadable 400, 420 s ago"));
                 assertTrue(report, report.contains("push registrations refused 1"));
                 assertTrue(report, report.contains("local state only; notification delivery is unverified"));
                 assertFalse(report, report.contains(PRIVATE_CANARY));

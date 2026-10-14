@@ -48,10 +48,16 @@ import java.security.MessageDigest
 
 private const val ANSWER_CALLBACK = "lambda\$registerForPush\$"
 private val ANSWER_PARAMETERS = listOf("I", "Ljava/lang/String;", "Lorg/telegram/tgnet/TLObject;", "Lorg/telegram/tgnet/TLRPC\$TL_error;")
+private const val SEND_REQUEST = "Lorg/telegram/tgnet/ConnectionsManager;->sendRequest(Lorg/telegram/tgnet/TLObject;Lorg/telegram/tgnet/RequestDelegate;)I"
+private const val TOKEN_TYPE = "Lorg/telegram/tgnet/tl/TL_account\$registerDevice;->token_type:I"
 
 /** The account.registerDevice answer, not registerForPush's no-argument lambda that clears its in-flight flag. */
 private fun Method.isAnswerCallback() =
     name.startsWith(ANSWER_CALLBACK) && parameterTypes.map(CharSequence::toString) == ANSWER_PARAMETERS && returnType == "V"
+
+/** registerForPush itself, which sends the account.registerDevice request. */
+private fun Method.isPushRequest() =
+    name == "registerForPush" && parameterTypes.map(CharSequence::toString) == listOf("I", "Ljava/lang/String;") && returnType == "V"
 
 /** Independent signer and request census, with complete pre-mutation refusal snapshots. */
 class RepairFirebasePushFixtureTest {
@@ -118,7 +124,7 @@ class RepairFirebasePushFixtureTest {
                     oldFlow.exceptional[index].map(::destination), newFlow.exceptional[moved(index)])
             }
             for (owner in hosts) for (method in owner.methods) {
-                if (method.signature() == original.signature() || method.isAnswerCallback()) continue
+                if (method.signature() == original.signature() || method.isAnswerCallback() || method.isPushRequest()) continue
                 assertEquals("${build.name}: untouched ${method.signature()}", snapshot(method),
                     snapshot(context.mutableClassDefBy(owner.type).methods.single { it.signature() == method.signature() }))
             }
@@ -129,7 +135,7 @@ class RepairFirebasePushFixtureTest {
     }
 
     @Test
-    fun `push answer hook reads the response and error ahead of the stock boolTrue test and changes nothing else`() {
+    fun `push answer hook reads its controller push type response and error ahead of the stock boolTrue test and changes nothing else`() {
         for (build in Fixtures.declaredBuilds()) {
             val hosts = hosts(build)
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
@@ -152,7 +158,8 @@ class RepairFirebasePushFixtureTest {
             assertEquals(before.size + 1, after.size)
             assertEquals(Opcode.INVOKE_STATIC, after[0].opcode)
             assertEquals(ANSWER_HOOK, after[0].reference())
-            assertEquals("${build.name}: the response and error parameters", listOf(registers - 2, registers - 1), after[0].namedRegisters())
+            assertEquals("${build.name}: this, then the push type, response and error parameters",
+                listOf(registers - 5, registers - 4, registers - 2, registers - 1), after[0].namedRegisters())
             assertEquals("${build.name}: every stock instruction follows unchanged", before.map(::operation), after.drop(1).map(::operation))
             assertEquals(registers, patched.implementation!!.registerCount)
             val oldFlow = ControlFlow.of(original)
@@ -166,12 +173,55 @@ class RepairFirebasePushFixtureTest {
                     oldFlow.exceptional[index].map(::destination), newFlow.exceptional[index + 1])
             }
             for (method in controller.methods) {
-                if (method.signature() == original.signature()) continue
+                if (method.signature() == original.signature() || method.isPushRequest()) continue
                 assertEquals("${build.name}: untouched ${method.signature()}", snapshot(method),
                     snapshot(context.mutableClassDefBy(PUSH_CONTROLLER).methods.single { it.signature() == method.signature() }))
             }
             val hook = context.mutableClassDefBy(FIREBASE_PUSH).methods.single { it.name == "registerDeviceAnswer" }
             assertEquals(ANSWER_HOOK, "${hook.definingClass}->${hook.name}(${hook.parameterTypes.joinToString("")})${hook.returnType}")
+            assertFlag(context, "repairFirebasePush", true)
+        }
+    }
+
+    @Test
+    fun `push request hook reads its controller and push type just ahead of the one registerDevice request and changes nothing else`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val hosts = hosts(build)
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts)
+            val original = hosts.single { it.type == PUSH_CONTROLLER }.methods.single { it.isPushRequest() }
+            assertTrue("${build.name}: instance method", !AccessFlags.STATIC.isSet(original.accessFlags))
+            val registers = original.implementation!!.registerCount
+            val before = original.instructions()
+            assertEquals("${build.name}: one request", 1, before.count { it.reference() == SEND_REQUEST })
+            val at = before.indexOfFirst { it.reference() == SEND_REQUEST }
+            // Parameters fill the last registers: this, push type, token.
+            assertEquals("${build.name}: the request carries the push type parameter", listOf(registers - 2),
+                before.filter { it.reference() == TOKEN_TYPE }.map { (it as TwoRegisterInstruction).registerA })
+            repairFirebasePushPatch.execute(context)
+            val patched = context.mutableClassDefBy(PUSH_CONTROLLER).methods.single { it.signature() == original.signature() }
+            val after = patched.instructions()
+            assertEquals(before.size + 1, after.size)
+            // A range, since this and the push type sit past every local and may be out of a plain invoke's reach.
+            assertEquals(Opcode.INVOKE_STATIC_RANGE, after[at].opcode)
+            assertEquals(SENT_HOOK, after[at].reference())
+            assertEquals("${build.name}: this and the push type parameter", listOf(registers - 3, registers - 2), after[at].namedRegisters())
+            assertEquals("${build.name}: the request follows at once", SEND_REQUEST, after[at + 1].reference())
+            assertEquals("${build.name}: every stock instruction is unchanged", before.map(::operation),
+                (after.take(at) + after.drop(at + 1)).map(::operation))
+            assertEquals(registers, patched.implementation!!.registerCount)
+            val oldFlow = ControlFlow.of(original)
+            val newFlow = ControlFlow.of(patched)
+            assertEquals(listOf(at + 1), newFlow.normal[at])
+            fun moved(index: Int) = index + if (index >= at) 1 else 0
+            fun destination(index: Int) = if (index == at) at else moved(index)
+            for (index in before.indices) {
+                assertEquals("${build.name}: stock normal successors at $index",
+                    oldFlow.normal[index].map(::destination), newFlow.normal[moved(index)])
+                assertEquals("${build.name}: stock exceptional successors at $index",
+                    oldFlow.exceptional[index].map(::destination), newFlow.exceptional[moved(index)])
+            }
+            val hook = context.mutableClassDefBy(FIREBASE_PUSH).methods.single { it.name == "registerDeviceSent" }
+            assertEquals(SENT_HOOK, "${hook.definingClass}->${hook.name}(${hook.parameterTypes.joinToString("")})${hook.returnType}")
             assertFlag(context, "repairFirebasePush", true)
         }
     }
@@ -341,12 +391,56 @@ class RepairFirebasePushFixtureTest {
             val method = callback(context)
             method.replaceInstruction(method.instructions().indexOfFirst { it.field()?.name == "registeredForPush" }, "nop")
         }
-        mutations["missing push answer hook"] = { context ->
-            context.mutableClassDefBy(FIREBASE_PUSH).methods.removeAll { it.name == "registerDeviceAnswer" }
+        fun request(context: BytecodePatchContext) =
+            context.mutableClassDefBy(PUSH_CONTROLLER).methods.single { it.isPushRequest() }
+        mutations["missing push request method"] = { context ->
+            context.mutableClassDefBy(PUSH_CONTROLLER).methods.removeAll { it.isPushRequest() }
         }
-        mutations["private push answer hook"] = { context ->
-            val hook = context.mutableClassDefBy(FIREBASE_PUSH).methods.single { it.name == "registerDeviceAnswer" }
-            hook.accessFlags = (hook.accessFlags and AccessFlags.PUBLIC.value.inv()) or AccessFlags.PRIVATE.value
+        mutations["static push request method"] = { context ->
+            val method = request(context)
+            method.accessFlags = method.accessFlags or AccessFlags.STATIC.value
+        }
+        mutations["second push request"] = { context ->
+            val method = request(context)
+            val at = method.instructions().indexOfFirst { it.reference() == SEND_REQUEST }
+            method.addInstructionsWithLabels(at, "invoke-virtual {${method.instructions()[at].namedRegisters().joinToString { "v$it" }}}, $SEND_REQUEST")
+        }
+        mutations["push request no longer carries its push type"] = { context ->
+            val method = request(context)
+            method.replaceInstruction(method.instructions().indexOfFirst { it.reference() == TOKEN_TYPE }, "nop")
+        }
+        // Each is written over before the request, so the hook would read something else there. const/16
+        // reaches a register past v15, where registerForPush's this and push type may sit.
+        for ((what, parameter) in listOf("controller" to 3, "push type" to 2)) {
+            mutations["push request $what written over"] = { context ->
+                val method = request(context)
+                method.addInstructionsWithLabels(0, "const/16 v${method.implementation!!.registerCount - parameter}, 0x0")
+            }
+        }
+        for ((what, name) in listOf("answer" to "registerDeviceAnswer", "request" to "registerDeviceSent")) {
+            mutations["missing push $what hook"] = { context ->
+                context.mutableClassDefBy(FIREBASE_PUSH).methods.removeAll { it.name == name }
+            }
+            mutations["private push $what hook"] = { context ->
+                val hook = context.mutableClassDefBy(FIREBASE_PUSH).methods.single { it.name == name }
+                hook.accessFlags = (hook.accessFlags and AccessFlags.PUBLIC.value.inv()) or AccessFlags.PRIVATE.value
+            }
+            // An extension whose hook doesn't take the controller can't say which account asked.
+            mutations["push $what hook without its controller"] = { context ->
+                val owner = context.mutableClassDefBy(FIREBASE_PUSH)
+                val hook = owner.methods.single { it.name == name }
+                owner.methods.remove(hook)
+                owner.methods.add(ImmutableMethod(FIREBASE_PUSH, name, hook.parameters.drop(1), hook.returnType, hook.accessFlags,
+                    hook.annotations, hook.hiddenApiRestrictions, hook.implementation).toMutable())
+            }
+        }
+        // The hooks ask the controller who's signed in by these two names.
+        mutations["missing user id reader"] = { context ->
+            context.mutableClassDefBy(USER_CONFIG).methods.removeAll { it.name == "getClientUserId" }
+        }
+        mutations["hidden account reader"] = { context ->
+            val reader = context.mutableClassDefBy(BASE_CONTROLLER).methods.single { it.name == "getUserConfig" }
+            reader.accessFlags = (reader.accessFlags and AccessFlags.PUBLIC.value.inv()) or AccessFlags.PROTECTED.value
         }
         for (build in Fixtures.declaredBuilds()) {
             val nativeHosts = hosts(build)
@@ -360,7 +454,7 @@ class RepairFirebasePushFixtureTest {
                 assertFlag(context, "firebaseCertificateHeader", false)
                 assertFlag(context, "firebaseLocalStatus", false)
             }
-            for (owner in listOf(SHARED_CONFIG, USER_CONFIG, PUSH_CONTROLLER)) {
+            for (owner in listOf(SHARED_CONFIG, USER_CONFIG, PUSH_CONTROLLER, BASE_CONTROLLER)) {
                 val context = PatchContexts.of(ExtensionDex.classes() + nativeHosts.filter { it.type != owner })
                 val before = snapshot(context)
                 assertThrows(PatchException::class.java) { repairFirebasePushPatch.execute(context) }
@@ -462,16 +556,16 @@ class RepairFirebasePushFixtureTest {
     private fun hosts(build: File): List<ClassDef> = FixtureDex.classesWhere(build, { dex ->
         dex.stringSection.any { it in setOf("X-Android-Cert", "/authTokens:generate") }
     }) { method -> method.strings().any { it in setOf("X-Android-Cert", "/authTokens:generate") } } +
-        FixtureDex.classes(build, setOf(SHARED_CONFIG, USER_CONFIG)).values + pushController(build)
+        FixtureDex.classes(build, setOf(SHARED_CONFIG, USER_CONFIG, BASE_CONTROLLER)).values + pushController(build)
 
     /**
-     * MessagesController cut down to every method the patch's name filter can match there, so the
-     * whole-context snapshots stay cheap without hiding a second candidate callback.
+     * MessagesController cut down to every method the patch's name filters can match there, so the
+     * whole-context snapshots stay cheap without hiding a second candidate callback or request.
      */
     private fun pushController(build: File): ClassDef {
         val owner = FixtureDex.classes(build, setOf(PUSH_CONTROLLER)).getValue(PUSH_CONTROLLER)
         return ImmutableClassDef(owner.type, owner.accessFlags, owner.superclass, owner.interfaces, owner.sourceFile,
-            owner.annotations, owner.fields, owner.methods.filter { it.name.startsWith(ANSWER_CALLBACK) })
+            owner.annotations, owner.fields, owner.methods.filter { it.name.startsWith(ANSWER_CALLBACK) || it.name == "registerForPush" })
     }
     private fun snapshot(context: BytecodePatchContext): Map<String, List<String>> {
         val result = linkedMapOf<String, List<String>>()

@@ -473,6 +473,11 @@ No reply since Telegram started	Belum ada balasan sejak Telegram dibuka
 Accepted	Diterima
 Refused	Ditolak
 Refused (%1$s)	Ditolak (%1$s)
+# context: One line per account and push service in the notification status. %1$s is the account number, %2$s is Firebase or UnifiedPush, %3$s is Accepted or Refused, %4$s is how long ago.
+Telegram's reply to account %1$s on %2$s: %3$s, %4$s	Balasan Telegram untuk akun %1$s lewat %2$s: %3$s, %4$s
+less than a minute ago	kurang dari semenit lalu
+%1$s min ago	%1$s mnt lalu
+%1$s h ago	%1$s jam lalu
 This only shows what's saved on this phone. It doesn't prove notifications will arrive.	Ini hanya menunjukkan apa yang tersimpan di ponsel ini. Ini tidak membuktikan bahwa notifikasi akan sampai.
 Unknown	Tidak diketahui
 Allowed	Diizinkan

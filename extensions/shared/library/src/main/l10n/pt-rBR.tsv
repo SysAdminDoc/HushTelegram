@@ -470,6 +470,11 @@ No reply since Telegram started	Sem resposta desde que o Telegram abriu
 Accepted	Aceito
 Refused	Recusado
 Refused (%1$s)	Recusado (%1$s)
+# context: One line per account and push service in the notification status. %1$s is the account number, %2$s is Firebase or UnifiedPush, %3$s is Accepted or Refused, %4$s is how long ago.
+Telegram's reply to account %1$s on %2$s: %3$s, %4$s	Resposta do Telegram para a conta %1$s pelo %2$s: %3$s, %4$s
+less than a minute ago	há menos de um minuto
+%1$s min ago	há %1$s min
+%1$s h ago	há %1$s h
 This only shows what's saved on this phone. It doesn't prove notifications will arrive.	Isto só mostra o que está salvo neste celular. Não prova que as notificações vão chegar.
 Unknown	Desconhecido
 Allowed	Permitido
