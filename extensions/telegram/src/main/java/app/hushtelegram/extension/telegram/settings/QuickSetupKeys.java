@@ -24,7 +24,8 @@ import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
  * name and takes nothing away that someone would miss. Left out on purpose: Hide folder counters
  * and Hide the translate bar, which hide things people read; Reaction effects off, which some
  * like; Open links in your browser, which changes how every link opens; Keep drafts on this phone,
- * which stops drafts following you to your other devices; No automatic sign-in on Telegram's sites,
+ * which stops drafts following you to your other devices; Search only my chats, which takes the
+ * public tabs out of search; No automatic sign-in on Telegram's sites,
  * which has you sign in there yourself; and Beta logs off, which needs a restart
  * and only matters on the beta. Back to defaults puts every switch a settings file
  * carries back the way it started.

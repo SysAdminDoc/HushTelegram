@@ -396,6 +396,13 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Hides the Popular apps list on the Apps tab of search, and doesn't ask Telegram for it. Apps"
                     + " you've opened and other results stay.",
                     String.valueOf(page.findPreference(Settings.HIDE_POPULAR_APPS.key).getSummary()));
+            assertEquals("Search only my chats", String.valueOf(page.findPreference(Settings.SEARCH_ONLY_MY_CHATS.key).getTitle()));
+            assertEquals("Search finds your chats, contacts and messages from chats you're in, and nothing public. The "
+                    + "Channels, Apps and Posts tabs go away, and a hashtag's public posts don't load.",
+                    String.valueOf(page.findPreference(Settings.SEARCH_ONLY_MY_CHATS.key).getSummary()));
+            // Search keeps its public tabs and lookups until someone turns the switch on.
+            assertFalse(Settings.SEARCH_ONLY_MY_CHATS.key,
+                    ((SwitchPreference) page.findPreference(Settings.SEARCH_ONLY_MY_CHATS.key)).isChecked());
             assertEquals("When your chat list is short, Telegram lists your contacts below it. This hides that list "
                     + "and its heading. Chats, folders and search stay.",
                     String.valueOf(page.findPreference(Settings.HIDE_CONTACTS_BLOCK.key).getSummary()));

@@ -335,6 +335,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.HIDE_POPULAR_APPS).addPreference(toggle(context, Settings.HIDE_POPULAR_APPS, L10n.t("Hide popular apps"),
                     PatchFamily.HIDE_POPULAR_APPS.coverageSummary(L10n.t("Hides the Popular apps list on the Apps tab of search, and doesn't ask Telegram "
                             + "for it. Apps you've opened and other results stay."))));
+            if (PatchFamily.Capability.MY_CHATS_SEARCH.installed()) {
+                on(pages, PatchFamily.HIDE_POPULAR_APPS).addPreference(toggle(context, Settings.SEARCH_ONLY_MY_CHATS,
+                        L10n.t("Search only my chats"),
+                        L10n.t("Search finds your chats, contacts and messages from chats you're in, and nothing public. The "
+                                + "Channels, Apps and Posts tabs go away, and a hashtag's public posts don't load.")));
+            }
         }
     }
 

@@ -346,6 +346,8 @@ public final class SelectionCheck {
         hook(calls, flags, "firebaseCertificateHeader", "misc/FirebasePush", "certificateHeader");
         hook(calls, flags, "repairFirebasePush", "misc/FirebasePush", "registerDeviceAnswer");
         hook(calls, flags, "hidePopularApps", "misc/PopularApps", "skipLoad", "hideSection");
+        hook(calls, flags, "myChatsSearch", "misc/MyChatsSearch", "keep", "sent", "dropPublicTabs", "downloadsAt",
+                "skipPublicPosts", "endPublicPosts");
         hook(calls, flags, "hideContactsBlock", "misc/ContactsBlock", "rows", "placeholder");
         hook(calls, flags, "hideGreetingStickers", "misc/GreetingStickers", "measure");
         hook(calls, flags, "disableChatSwipe", "misc/ChatSwipe", "keepRowStill");

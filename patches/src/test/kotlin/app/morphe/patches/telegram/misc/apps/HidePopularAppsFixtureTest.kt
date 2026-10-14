@@ -30,7 +30,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 
-/** The loader's class, the Apps tab's class and the runtime are the whole context. */
+/** The loader's class, the Apps tab's class, what Search only my chats reads or edits and the runtime are the whole context. */
 class HidePopularAppsFixtureTest {
     @Test
     fun `the loader and the Apps tab are gated and keep their stock flow`() {
@@ -78,8 +78,10 @@ class HidePopularAppsFixtureTest {
             assertTrue("$name: the heading is inside the gated section", heading in sites.read until sites.empty)
             assertFalse("$name: the heading is reached around the gate", moved.getValue(heading) in reachable(sectionFlow, 0, gate))
 
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "hidePopularApps" }.instructions()
-            assertEquals("$name: build fact", 1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
+            for (flag in listOf("hidePopularApps", "myChatsSearch")) {
+                val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
+                assertEquals("$name: $flag build fact", 1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
+            }
         }
     }
 
@@ -134,8 +136,10 @@ class HidePopularAppsFixtureTest {
         }
         assertEquals("$build: $case doesn't partly mutate the loader or the Apps tab", before,
             owners.associateWith { type -> context.mutableClassDefBy(type).methods.map { it.instructions().map(::operation) } })
-        val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "hidePopularApps" }.instructions()
-        assertEquals("$build: $case leaves the build fact false", 0, (status[0] as NarrowLiteralInstruction).narrowLiteral)
+        for (flag in listOf("hidePopularApps", "myChatsSearch")) {
+            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
+            assertEquals("$build: $case leaves $flag false", 0, (status[0] as NarrowLiteralInstruction).narrowLiteral)
+        }
     }
 
     /**
@@ -168,7 +172,7 @@ class HidePopularAppsFixtureTest {
         val owners = owners(build)
         assertEquals("${build.name}: the loader and the Apps tab", 2, owners.size)
         val extension = ExtensionDex.classes().filter { runtime || it.type != POPULAR_APPS }
-        return PatchContexts.of(extension + owners)
+        return PatchContexts.of((extension + owners + myChatsSearchHosts(build)).distinctBy { it.type })
     }
 
     private fun reachable(flow: ControlFlow, from: Int, blocked: Int): Set<Int> {

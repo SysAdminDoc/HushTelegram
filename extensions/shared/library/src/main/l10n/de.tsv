@@ -691,3 +691,7 @@ Loads your switches, filter lists and sticker size from a saved file. You see wh
 # context: Readable actions, validation, import details and notification recovery.
 Close	Schließen
 Couldn't open notification settings. Open Android settings.	Benachrichtigungen nicht erreichbar. Öffne die Android-Einstellungen.
+# context: Search only my chats, the second switch under Hide popular apps on the Ads page.
+Search only my chats	Nur in meinen Chats suchen
+Search finds your chats, contacts and messages from chats you're in, and nothing public. The Channels, Apps and Posts tabs go away, and a hashtag's public posts don't load.	Die Suche findet deine Chats, Kontakte und Nachrichten aus Chats, in denen du bist, und nichts Öffentliches. Die Tabs Kanäle, Apps und Beiträge verschwinden, und die öffentlichen Beiträge zu einem Hashtag werden nicht geladen.
+public search lookups	öffentliche Suchanfragen

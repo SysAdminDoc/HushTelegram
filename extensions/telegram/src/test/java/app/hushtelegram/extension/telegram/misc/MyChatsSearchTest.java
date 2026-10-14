@@ -1,0 +1,238 @@
+/*
+ * Copyright 2026 HushTelegram contributors
+ * https://github.com/SysAdminDoc/HushTelegram
+ */
+package app.hushtelegram.extension.telegram.misc;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import app.hushtelegram.extension.shared.SettingsContextRule;
+import app.hushtelegram.extension.shared.diagnostics.HookStatus;
+import app.hushtelegram.extension.shared.settings.HushTelegramPause;
+import app.hushtelegram.extension.shared.settings.PauseForTests;
+import app.hushtelegram.extension.shared.settings.SettingReadsForTests;
+import app.hushtelegram.extension.telegram.settings.FamilyNames;
+import app.hushtelegram.extension.telegram.settings.Settings;
+
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = 30)
+public class MyChatsSearchTest {
+    // Stand-ins for the pager's tabs, in Telegram's order with the public posts tab open.
+    private static final Object CHATS = "Chats";
+    private static final Object PUBLIC_POSTS = "Public posts";
+    private static final Object CHANNELS = "Channels";
+    private static final Object APPS = "Apps";
+    private static final Object POSTS = "Posts";
+    private static final Object MEDIA = "Media";
+    private static final Object DOWNLOADS = "Downloads";
+    private static final Object LINKS = "Links";
+    private static final List<Object> STOCK_TABS = Arrays.asList(CHATS, PUBLIC_POSTS, CHANNELS, APPS, POSTS, MEDIA, DOWNLOADS, LINKS);
+    private static final List<Object> PUBLIC = Arrays.asList(PUBLIC_POSTS, CHANNELS, APPS, POSTS);
+    private static final Object PAGER = new Object();
+    private static final Object CONTROLLER = new Object();
+
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
+
+    private Predicate<Object> isPublic;
+    private Predicate<Object> isDownloads;
+    private Function<Object, List<?>> tabsOf;
+    private MyChatsSearch.PostsFinisher finisher;
+    private Executor later;
+    private final List<Runnable> queued = new ArrayList<>();
+    private final List<Object[]> finished = new ArrayList<>();
+
+    @Before public void setUp() {
+        Settings.SEARCH_ONLY_MY_CHATS.resetToDefault();
+        HookStatus.clear();
+        isPublic = MyChatsSearch.isPublic;
+        isDownloads = MyChatsSearch.isDownloads;
+        tabsOf = MyChatsSearch.tabsOf;
+        finisher = MyChatsSearch.finisher;
+        later = MyChatsSearch.later;
+        MyChatsSearch.isPublic = PUBLIC::contains;
+        MyChatsSearch.isDownloads = tab -> tab == DOWNLOADS;
+        MyChatsSearch.tabsOf = pager -> pager == PAGER ? new ArrayList<>(STOCK_TABS) : null;
+        MyChatsSearch.finisher = (controller, searchType, update) -> finished.add(new Object[] {controller, searchType, update});
+        MyChatsSearch.later = queued::add;
+    }
+
+    @After public void tearDown() {
+        MyChatsSearch.isPublic = isPublic;
+        MyChatsSearch.isDownloads = isDownloads;
+        MyChatsSearch.tabsOf = tabsOf;
+        MyChatsSearch.finisher = finisher;
+        MyChatsSearch.later = later;
+        PauseForTests.resume();
+        SettingReadsForTests.mend(Settings.SEARCH_ONLY_MY_CHATS);
+        Settings.SEARCH_ONLY_MY_CHATS.resetToDefault();
+        HookStatus.clear();
+    }
+
+    private static ArrayList<Object> stockTabs() {
+        return new ArrayList<>(STOCK_TABS);
+    }
+
+    /** Every hook with the switch where it is, and whether any of them changed what Telegram does. */
+    private static boolean anyChange() {
+        ArrayList<Object> tabs = stockTabs();
+        MyChatsSearch.dropPublicTabs(tabs);
+        return MyChatsSearch.keep() || !"cat".equals(MyChatsSearch.sent("cat")) || MyChatsSearch.skipPublicPosts()
+                || !tabs.equals(STOCK_TABS) || MyChatsSearch.downloadsAt(PAGER, 6) != 6;
+    }
+
+    @Test public void offByDefaultSoSearchIsTelegramsOwn() {
+        assertFalse(Settings.SEARCH_ONLY_MY_CHATS.get());
+        assertFalse(MyChatsSearch.keep());
+        assertEquals("cat", MyChatsSearch.sent("cat"));
+        assertFalse(MyChatsSearch.skipPublicPosts());
+        ArrayList<Object> tabs = stockTabs();
+        MyChatsSearch.dropPublicTabs(tabs);
+        assertEquals(STOCK_TABS, tabs);
+        assertEquals(6, MyChatsSearch.downloadsAt(PAGER, 6));
+        assertEquals(Collections.singletonList("Hide popular apps: invoked 5, 0 found, 0 missing"), HookStatus.report());
+    }
+
+    @Test public void switchedOnThePublicTabsLeaveAndYourOwnStayInOrder() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        ArrayList<Object> tabs = stockTabs();
+        MyChatsSearch.dropPublicTabs(tabs);
+        assertEquals(Arrays.asList(CHATS, MEDIA, DOWNLOADS, LINKS), tabs);
+        // A list already without them, as after a second update, stays as it is and isn't counted again.
+        MyChatsSearch.dropPublicTabs(tabs);
+        assertEquals(Arrays.asList(CHATS, MEDIA, DOWNLOADS, LINKS), tabs);
+        assertEquals(Collections.singletonList("Hide popular apps: invoked 2, 0 found, 0 missing. Counted: "
+                + "public search tabs hidden 1"), HookStatus.report());
+    }
+
+    @Test public void switchedOnNoPublicLookupLeavesAndEachIsCounted() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        assertTrue(MyChatsSearch.keep());
+        assertNull(MyChatsSearch.sent("cat"));
+        assertNull(MyChatsSearch.sent("#cats"));
+        assertTrue(MyChatsSearch.skipPublicPosts());
+        assertEquals(Collections.singletonList("Hide popular apps: invoked 4, 0 found, 0 missing. Counted: "
+                + "public search lookup skipped 4"), HookStatus.report());
+    }
+
+    // An empty box is already null in Telegram, and there's nothing to keep back or count.
+    @Test public void anEmptyBoxStaysNullAndIsntCounted() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        assertNull(MyChatsSearch.sent(null));
+        MyChatsSearch.dropPublicTabs(null);
+        assertEquals(Collections.emptyList(), HookStatus.report());
+    }
+
+    @Test public void theDownloadsShortcutFindsDownloadsWhereverItNowSits() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        // Telegram counts six tabs in front of Downloads with public posts open; four of them are gone.
+        MyChatsSearch.tabsOf = pager -> {
+            ArrayList<Object> tabs = stockTabs();
+            MyChatsSearch.dropPublicTabs(tabs);
+            return tabs;
+        };
+        assertEquals(2, MyChatsSearch.downloadsAt(PAGER, 6));
+        // Switched on after the row was built, the stock row still has Downloads where Telegram counted.
+        MyChatsSearch.tabsOf = pager -> stockTabs();
+        assertEquals(6, MyChatsSearch.downloadsAt(PAGER, 6));
+    }
+
+    @Test public void aRowWithoutDownloadsOrWithoutAListGoesWhereTelegramPicked() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        MyChatsSearch.tabsOf = pager -> Arrays.asList(CHATS, MEDIA, LINKS);
+        assertEquals(5, MyChatsSearch.downloadsAt(PAGER, 5));
+        MyChatsSearch.tabsOf = pager -> null;
+        assertEquals(5, MyChatsSearch.downloadsAt(PAGER, 5));
+    }
+
+    @Test public void aHashtagsPublicPostsEndEmptyOnceTheCallReturns() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        assertTrue(MyChatsSearch.skipPublicPosts());
+        MyChatsSearch.endPublicPosts(CONTROLLER, 41, 2);
+        assertTrue("nothing is posted while Telegram's own call is still running", finished.isEmpty());
+        assertEquals(1, queued.size());
+        queued.get(0).run();
+        assertEquals(1, finished.size());
+        assertSame(CONTROLLER, finished.get(0)[0]);
+        assertEquals(2, finished.get(0)[1]);
+        // The screen, no results, nothing more to load, no arrows, the first result and no message to jump to.
+        assertArrayEquals(new Object[] {41, 0, Boolean.TRUE, 0, 0, 0}, (Object[]) finished.get(0)[2]);
+    }
+
+    @Test public void aFinishThatFailsIsReportedNotThrown() {
+        MyChatsSearch.finisher = (controller, searchType, update) -> {
+            throw new IllegalStateException("renamed");
+        };
+        MyChatsSearch.endPublicPosts(CONTROLLER, 41, 2);
+        queued.get(0).run();
+        MyChatsSearch.later = command -> {
+            throw new IllegalStateException("no main thread");
+        };
+        MyChatsSearch.endPublicPosts(CONTROLLER, 41, 2);
+        assertEquals(Collections.singletonList("a working 'public posts finish' hook (it threw java.lang.IllegalStateException)"),
+                HookStatus.missing(FamilyNames.HIDE_POPULAR_APPS));
+    }
+
+    @Test public void tabHooksThatFailKeepTelegramsRowAndSaySo() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        MyChatsSearch.isPublic = tab -> {
+            throw new IllegalStateException("renamed");
+        };
+        ArrayList<Object> tabs = stockTabs();
+        MyChatsSearch.dropPublicTabs(tabs);
+        assertEquals(STOCK_TABS, tabs);
+        MyChatsSearch.tabsOf = pager -> {
+            throw new IllegalStateException("renamed");
+        };
+        assertEquals(6, MyChatsSearch.downloadsAt(PAGER, 6));
+        assertEquals(Arrays.asList("a working 'public search tabs' hook (it threw java.lang.IllegalStateException)",
+                "a working 'downloads tab' hook (it threw java.lang.IllegalStateException)"),
+                HookStatus.missing(FamilyNames.HIDE_POPULAR_APPS));
+    }
+
+    @Test public void everyPauseReasonSearchesAsTelegramDoes() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
+            PauseForTests.pause(reason);
+            assertFalse(reason.name(), anyChange());
+            PauseForTests.resume();
+        }
+        assertTrue(anyChange());
+    }
+
+    @Test public void unavailableOrUnreadableSettingsSearchAsTelegramDoesAndSaySo() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        SettingsContextRule.withoutContext(() -> assertFalse(anyChange()));
+        SettingReadsForTests.breakReads(Settings.SEARCH_ONLY_MY_CHATS);
+        assertFalse(anyChange());
+        assertEquals(Collections.singletonList("a working 'search only my chats switch read' hook (it threw java.lang.NullPointerException)"),
+                HookStatus.missing(FamilyNames.HIDE_POPULAR_APPS));
+    }
+
+    @Test public void untilPatchedTheStubsChangeNothing() {
+        assertFalse(MyChatsSearch.publicTab(CHANNELS));
+        assertFalse(MyChatsSearch.downloadsTab(DOWNLOADS));
+        assertNull(MyChatsSearch.tabs(PAGER));
+    }
+}

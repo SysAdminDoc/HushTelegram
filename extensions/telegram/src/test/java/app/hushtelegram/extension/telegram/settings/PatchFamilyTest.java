@@ -521,6 +521,20 @@ public class PatchFamilyTest {
     }
 
     @Test
+    public void hidePopularAppsCarriesSearchOnlyMyChatsOffByDefault() {
+        PatchFamily family = PatchFamily.HIDE_POPULAR_APPS;
+        assertEquals("Hide popular apps", family.patchName);
+        // Popular apps stay hidden as shipped; search keeps its public parts until someone turns the second switch on.
+        assertEquals(Arrays.asList(Settings.HIDE_POPULAR_APPS, Settings.SEARCH_ONLY_MY_CHATS), family.switches);
+        assertTrue(Settings.HIDE_POPULAR_APPS.defaultValue);
+        assertFalse(Settings.SEARCH_ONLY_MY_CHATS.defaultValue);
+        for (BooleanSetting setting : family.switches) assertFalse(setting.key, setting.rebootApp);
+        assertEquals(EnumSet.of(PatchFamily.Capability.MY_CHATS_SEARCH), family.expectedCapabilities());
+        assertEquals("myChatsSearch", PatchFamily.Capability.MY_CHATS_SEARCH.statusMethod);
+        assertOnItsPage(family);
+    }
+
+    @Test
     public void swipeBackOnProfilesHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
         PatchFamily family = PatchFamily.SWIPE_BACK_ON_PROFILES;
         assertEquals("Swipe back on profiles", family.patchName);

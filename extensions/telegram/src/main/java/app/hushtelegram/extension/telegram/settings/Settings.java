@@ -65,6 +65,15 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_hide_popular_apps", TRUE);
 
     /**
+     * Search's public parts only: the Channels, Apps, Posts and public posts tabs, public accounts,
+     * sponsored accounts and public posts in the Chats tab, and a hashtag's public posts. Your chats,
+     * contacts and messages from chats you're in still show
+     * ({@link app.hushtelegram.extension.telegram.misc.MyChatsSearch}).
+     */
+    public static final BooleanSetting SEARCH_ONLY_MY_CHATS =
+            new BooleanSetting("hushtelegram_search_only_my_chats", FALSE);
+
+    /**
      * The chat list's Your contacts on Telegram heading, rows and loading rows only; chats, folders,
      * contact sync and search stay stock.
      */

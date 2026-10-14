@@ -691,3 +691,7 @@ Loads your switches, filter lists and sticker size from a saved file. You see wh
 # context: Readable actions, validation, import details and notification recovery.
 Close	Kapat
 Couldn't open notification settings. Open Android settings.	Bildirim ayarları açılamadı. Android ayarlarını aç.
+# context: Search only my chats, the second switch under Hide popular apps on the Ads page.
+Search only my chats	Yalnızca sohbetlerimde ara
+Search finds your chats, contacts and messages from chats you're in, and nothing public. The Channels, Apps and Posts tabs go away, and a hashtag's public posts don't load.	Arama sohbetlerinizi, kişilerinizi ve içinde bulunduğunuz sohbetlerdeki mesajları bulur, herkese açık hiçbir şeyi bulmaz. Kanallar, Uygulamalar ve Gönderiler sekmeleri kaybolur, bir etiketin herkese açık gönderileri yüklenmez.
+public search lookups	herkese açık arama sorguları

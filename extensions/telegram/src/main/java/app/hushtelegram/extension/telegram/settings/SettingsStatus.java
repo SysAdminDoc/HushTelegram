@@ -53,6 +53,7 @@ public final class SettingsStatus {
     public static boolean cachedProxyDialog() { return false; }
     public static boolean cachedProxyFilters() { return false; }
     public static boolean hidePopularApps() { return false; }
+    public static boolean myChatsSearch() { return false; }
     public static boolean hideContactsBlock() { return false; }
     public static boolean hideGreetingStickers() { return false; }
     public static boolean disableChatSwipe() { return false; }

@@ -12,6 +12,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
@@ -51,8 +52,19 @@ val hidePopularAppsPatch = bytecodePatch(
 
     execute {
         requireStatusMethod("hidePopularApps")
+        requireStatusMethod("myChatsSearch")
+        // Every target, borrowed register and runtime call of both switches is checked before the first edit.
         val sites = resolvePopularAppsSites()
+        val search = resolveMyChatsSearch()
+        val popular = listOf(sites.load, sites.section)
+        val searched = search.chat.edits.map { it.method } + listOf(search.tabs.update, search.downloads.method, search.hashtag.search)
+        shape(popular.none { method -> searched.any { it === method } }, "search only my chats shares a method with the Apps tab")
+        search.rehearse()
+        // The runtime's stubs first: on their own nothing calls them.
+        writeMyChatsSearchStubs(search)
         sites.apply()
+        search.apply()
+        enableCapability("myChatsSearch")
         enableStatus("hidePopularApps")
     }
 }
