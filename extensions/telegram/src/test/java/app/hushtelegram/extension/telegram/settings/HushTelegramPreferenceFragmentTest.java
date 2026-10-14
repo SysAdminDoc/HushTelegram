@@ -1676,6 +1676,28 @@ public class HushTelegramPreferenceFragmentTest {
         }
     }
 
+    /** A size picked while a settings import is writing is held back like a Save, with the saved size checked again. */
+    @Test
+    public void aStickerSizePickHeldForAnImportChecksTheSavedSizeAgain() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.CHANGE_STICKER_SIZE);
+        ShadowToast.reset();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Preference size = pageOf(controller).findPreference(HushTelegramPreferenceFragment.STICKER_SIZE_ROW);
+            AlertDialog picker = dialogOf(size);
+            AbstractPreferenceFragment.settingImportInProgress = true;
+            shadowOf(picker).clickOnItem(3);
+            settle();
+            assertEquals("Wait for the settings import to finish, then save again.", ShadowToast.getTextOfLatestToast());
+            assertTrue("a pick held back closed the list", picker.isShowing());
+            assertEquals("the saved size is checked again", 1, picker.getListView().getCheckedItemPosition());
+            assertEquals("a pick held back wrote", 75, (int) Settings.STICKER_SIZE.savedValue());
+            assertEquals("75% of Telegram's size", String.valueOf(size.getSummary()));
+        } finally {
+            AbstractPreferenceFragment.settingImportInProgress = false;
+            Settings.STICKER_SIZE.resetToDefault();
+        }
+    }
+
     /**
      * The translation service's Save and Use Google write on the worker the same way, and the
      * service a message reads as it draws stays the saved one, read without a wait, until the write

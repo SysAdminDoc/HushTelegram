@@ -1039,13 +1039,15 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
      * <p>While a settings import is writing, nothing is saved and the dialog stays as it is: the
      * import runs on another worker, so a save in between could be written over after it said it
      * was saved.
+     *
+     * @return whether the save started; false when it was held back for an import or one is already on its way
      */
-    static void save(AlertDialog dialog, BooleanSupplier write, Consumer<Boolean> then) {
+    static boolean save(AlertDialog dialog, BooleanSupplier write, Consumer<Boolean> then) {
         if (AbstractPreferenceFragment.settingImportInProgress) {
             Utils.showToastLong(L10n.t("Wait for the settings import to finish, then save again."));
-            return;
+            return false;
         }
-        if (!SAVING.add(dialog)) return;
+        if (!SAVING.add(dialog)) return false;
         reach(dialog, false);
         Consumer<Boolean> finish = saved -> {
             SAVING.remove(dialog);
@@ -1063,6 +1065,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             }
         });
         if (!queued) finish.accept(false);
+        return true;
     }
 
     /** Puts [dialog]'s buttons and list, and the way out of it, in or out of reach. */
@@ -1265,7 +1268,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
     /**
      * The choices with the saved one checked. A tap saves it and the list closes once it's saved;
-     * a pick that can't be saved leaves the list open with the saved one checked again.
+     * a pick that can't be saved, or is held back while a settings import writes, leaves the list
+     * open with the saved one checked again.
      */
     void showStickerSizes(Context context, Preference row) {
         if (SettingsLock.refuses()) return;
@@ -1279,16 +1283,19 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         final int savedChoice = checked;
         show(new AlertDialog.Builder(context)
                 .setTitle(L10n.t("Sticker size"))
-                .setSingleChoiceItems(labels, checked, (dialog, which) -> save((AlertDialog) dialog,
-                        () -> Settings.STICKER_SIZE.saveCommitted(StickerSize.CHOICES[which]), landed -> {
-                            if (landed) {
-                                row.setSummary(stickerSizeSummary());
-                                dialog.dismiss();
-                            } else {
-                                ((AlertDialog) dialog).getListView().setItemChecked(savedChoice, true);
-                                Utils.showToastLong(L10n.t("Couldn't save the size. Try again in a moment."));
-                            }
-                        }))
+                .setSingleChoiceItems(labels, checked, (dialog, which) -> {
+                    boolean started = save((AlertDialog) dialog,
+                            () -> Settings.STICKER_SIZE.saveCommitted(StickerSize.CHOICES[which]), landed -> {
+                                if (landed) {
+                                    row.setSummary(stickerSizeSummary());
+                                    dialog.dismiss();
+                                } else {
+                                    ((AlertDialog) dialog).getListView().setItemChecked(savedChoice, true);
+                                    Utils.showToastLong(L10n.t("Couldn't save the size. Try again in a moment."));
+                                }
+                            });
+                    if (!started) ((AlertDialog) dialog).getListView().setItemChecked(savedChoice, true);
+                })
                 .setNegativeButton(L10n.t("Cancel"), null));
     }
 
