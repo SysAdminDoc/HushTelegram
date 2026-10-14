@@ -16,6 +16,8 @@ import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -85,8 +87,8 @@ internal fun BytecodePatchContext.resolveContactsNagSites(): ContactsNagSites {
 
     // The badge: the one method that reads the Contacts tab's prompt flag back.
     val readers = mutableListOf<Method>()
-    classDefForEach { classDef ->
-        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+    forEachClassMentioning(Mention.string(ASKED_IN_CONTACTS)) { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@forEachClassMentioning
         classDef.methods.filterTo(readers) { method -> method.instructions().let { body ->
             body.any { it.string() == ASKED_IN_CONTACTS } && body.any { it.isGetBoolean() }
         } }
@@ -123,10 +125,10 @@ internal fun BytecodePatchContext.resolveContactsNagSites(): ContactsNagSites {
     // The Contacts tab: the one onBecomeFullyVisible that checks contacts permission, in the class
     // that writes both prompt flags.
     val visibles = mutableListOf<Method>()
-    classDefForEach { classDef ->
-        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+    forEachClassMentioning(Mention.string(ASKED_ANYWHERE) and Mention.string(ASKED_IN_CONTACTS) and Mention.string(READ_CONTACTS)) { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@forEachClassMentioning
         val strings = classDef.methods.flatMap { it.instructions() }.mapNotNullTo(mutableSetOf()) { it.string() }
-        if (ASKED_ANYWHERE !in strings || ASKED_IN_CONTACTS !in strings) return@classDefForEach
+        if (ASKED_ANYWHERE !in strings || ASKED_IN_CONTACTS !in strings) return@forEachClassMentioning
         classDef.methods.filterTo(visibles) { method -> method.name == "onBecomeFullyVisible" && method.parameterTypes.isEmpty() &&
             method.instructions().any { it.string() == READ_CONTACTS } }
     }

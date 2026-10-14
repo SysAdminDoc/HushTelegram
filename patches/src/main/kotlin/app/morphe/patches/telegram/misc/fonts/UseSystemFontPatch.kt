@@ -18,12 +18,14 @@ import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.localRegisterCount
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.controlString
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.call
@@ -136,8 +138,8 @@ internal fun BytecodePatchContext.resolveSystemFont(): SystemFontSite {
 
     // Every screen that names one of the Roboto files hands it to this loader.
     val strays = mutableListOf<String>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.anyOf(ROBOTO_ASSETS.map { Mention.string(it) })) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { method ->
             val methodBody = method.controlBody()
             if (methodBody.any { it.controlString() in ROBOTO_ASSETS } && methodBody.none { it.controlRef() == GET_TYPEFACE }) {
@@ -152,8 +154,8 @@ internal fun BytecodePatchContext.resolveSystemFont(): SystemFontSite {
     controlHook(SYSTEM_FONT, "built", listOf(STRING, TYPEFACE), TYPEFACE)
     val chains = mutableMapOf<String, List<BuiltChain>>()
     val unbuilt = mutableListOf<String>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    forEachClassMentioning(Mention.anyOf(BUILT_ASSETS.map { Mention.string(it) })) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { method ->
             val methodBody = method.controlBody()
             if (methodBody.none { it.controlString() in BUILT_ASSETS }) return@forEach

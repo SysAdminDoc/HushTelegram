@@ -19,6 +19,8 @@ import app.morphe.patches.telegram.misc.extension.localRegisterCount
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -143,8 +145,8 @@ internal fun BytecodePatchContext.resolveGalleryCameraSites(): GalleryCameraSite
     // show() runs first on each open, on whatever tab, so that's where the gallery goes to sleep.
     // The gallery's own open animation only ends when it's the tab the menu opened on.
     val menus = mutableListOf<String>()
-    classDefForEach { classDef ->
-        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+    forEachClassMentioning(Mention.type(PHOTO_LAYOUT)) { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@forEachClassMentioning
         if (classDef.methods.any { method -> method.name == "<init>" &&
                 method.instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.type() == PHOTO_LAYOUT } }) menus += classDef.type
     }
@@ -183,8 +185,8 @@ private fun BytecodePatchContext.permissionAsks(check: Method, tap: Method): Lis
     // camera-only request that reads the missing flag (the tile) or leads to the tile's tap (the
     // camera button).
     val found = mutableListOf<Pair<String, Method>>()
-    classDefForEach { classDef ->
-        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+    forEachClassMentioning(Mention.member(ACTIVITY, "requestPermissions") and Mention.string(CAMERA_PERMISSION)) { classDef ->
+        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@forEachClassMentioning
         for (method in classDef.methods) {
             val body = method.instructions()
             if (body.none { it.call()?.name == "requestPermissions" } || method.cameraOnlyRequests().isEmpty()) continue
