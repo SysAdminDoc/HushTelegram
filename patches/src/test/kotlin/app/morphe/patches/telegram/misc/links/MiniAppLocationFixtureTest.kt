@@ -8,6 +8,7 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -91,7 +92,18 @@ class MiniAppLocationFixtureTest {
             Case("no dialog", "the geolocation dialog's answer is missing or ambiguous", hosts = { hosts ->
                 hosts.removeAll { cls -> cls.methods.any { it.name == "accept" && it.calls(GEO_INVOKE) } }
             }),
-            // A branch back to the GPS check's first instruction would run the gate twice.
+            Case("no listener", "the bot location manager's listener for later fixes is missing", hosts = { hosts ->
+                hosts.removeAll { LISTENER in it.interfaces }
+            }),
+            // The answer folded into the listener, as R8 could do: a later fix would go round the gate.
+            Case("listener reads coordinates", "reads coordinates outside the bot location manager's answer", context = { context ->
+                val listeners = mutableListOf<String>()
+                context.classDefForEach { cls -> if (LISTENER in cls.interfaces && !cls.type.startsWith("Lapp/hushtelegram/")) listeners += cls.type }
+                context.mutableClassDefBy(listeners.single()).methods.single { it.name == "onLocationChanged" }
+                    .addInstructions(0, "invoke-virtual {p1}, Landroid/location/Location;->getLatitude()D")
+            }),
+            // A branch back to the GPS check's first instruction would skip the gate, since the label
+            // stays on Telegram's first instruction.
             Case("jump to the start", "something jumps back to the start of", context = { context ->
                 val gps = context.resolveMiniAppLocation().gates.getValue(LocationGate.GPS)
                 gps.addInstructionsWithLabels(gps.instructions().size, "goto :hush_back", ExternalLabel("hush_back", gps.getInstruction(0)))
@@ -141,16 +153,21 @@ class MiniAppLocationFixtureTest {
                 method.instructions().any { it.ref() == "autologin_token" }) ||
                 (method.instructions().any { it.ref() == "Lorg/telegram/messenger/R\$string;->ShareLink:I" } &&
                     method.instructions().any { it.ref() == "android.intent.action.SEND" }) ||
-                isLocationHost(method)
+                isLocationHost(method) || isLaterFixListener(method)
         }
         val kept = FixtureDex.classes(build, setOf(MC, UC))
         assertEquals("account protection definitions", setOf(MC, UC), kept.keys)
         assertEquals("${build.name}: the manager, the prompt and its dialog", 3, hosts.count { cls -> cls.methods.any(::isLocationHost) })
+        assertEquals("${build.name}: the listener for later fixes", 1, hosts.count { cls -> LISTENER in cls.interfaces })
         return hosts + kept.values
     }
 
     private fun isLocationHost(method: Method) = "botlocation_" in method.strings() || method.name == SHOW_PROMPT ||
         (method.name == "accept" && method.calls(GEO_INVOKE))
+
+    /** The bot location manager's listener, which hands a later fix to the Mini App through the manager's answer. */
+    private fun isLaterFixListener(method: Method) = method.name == "onLocationChanged" &&
+        method.instructions().any { it.ref()?.endsWith("(Landroid/location/Location;)Lorg/json/JSONObject;") == true }
 
     private fun operands(instruction: Instruction): List<Any?> = listOf(
         instruction.opcode, instruction.namedRegisters(), instruction.ref(), (instruction as? WideLiteralInstruction)?.wideLiteral,
@@ -175,6 +192,7 @@ class MiniAppLocationFixtureTest {
         val HOST_CENSUS = FixtureDex.ClassCensus()
         const val MC = "Lorg/telegram/messenger/MessagesController;"
         const val UC = "Lorg/telegram/messenger/UserConfig;"
+        const val LISTENER = "Landroid/location/LocationListener;"
         val GATE_SIZES = mapOf(LocationGate.GPS to 5, LocationGate.ANSWER to 2, LocationGate.PROMPT to 4, LocationGate.DIALOG to 2)
     }
 }

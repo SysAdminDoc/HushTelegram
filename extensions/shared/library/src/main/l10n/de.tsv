@@ -815,7 +815,7 @@ Couldn't open battery optimization. Open Android settings.	Akku-Optimierung konn
 Keep your location from Mini Apps	Standort vor Mini-Apps verbergen
 Mini Apps are told your phone's location isn't available, and web pages opened in Telegram are refused it. A page that already had it keeps it until you close it. Sites can still guess a rough area from your connection. Sending your location in a chat works as before.	Mini-Apps erfahren, dass der Standort deines Handys nicht verfügbar ist, und Webseiten, die in Telegram geöffnet werden, bekommen ihn nicht. Eine Seite, die ihn schon hatte, behält ihn, bis du sie schließt. Websites können anhand deiner Verbindung trotzdem ungefähr erraten, wo du bist. Deinen Standort in einem Chat zu senden funktioniert wie bisher.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the location part of Open links externally: keeping the phone's location from Mini Apps and web pages opened in Telegram
-Mini App and web page location	Standort für Mini-Apps und Webseiten
+Mini App and web page location	Standortzugriff von Mini-Apps und Webseiten
 # context: Third choice in the Export diagnostic report dialog, after Copy quick report and Save full report, and the title of the preview dialog it opens. Short, like the other two choices
 Preview the report	Bericht vorher ansehen
 # context: Line under the Preview the report choice. The preview shows the report and lets you untick its parts before Copy or Save

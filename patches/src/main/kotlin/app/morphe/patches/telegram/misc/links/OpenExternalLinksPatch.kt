@@ -33,7 +33,6 @@ val openExternalLinksPatch = bytecodePatch(
         // The location switch rides along while the catalog is held. A build without its shape keeps
         // the link routing and leaves the switch out.
         val location = resolveMiniAppLocation()
-        if (location.missing == null) location.rehearse()
         writeProtection(plan)
         plan.browser.addInstructionsAtControlFlowLabel(plan.routingIndex, plan.routingCode)
         if (location.missing == null) {

@@ -386,6 +386,11 @@ public class SettingsBackupTest {
             assertEquals(1, SettingsBackup.apply(SettingsBackup.parse(fileWith(Settings.HIDE_ADS, false))));
             ShadowLooper.idleMainLooper();
             assertEquals(Collections.singletonList("true true"), checks);
+            // Nor does one that names it at the value it already has.
+            assertEquals(1, SettingsBackup.apply(SettingsBackup.parse(
+                    fileWith(Settings.DATA_SAVER_DOWNLOADS, true, Settings.HIDE_ADS, true))));
+            ShadowLooper.idleMainLooper();
+            assertEquals(Collections.singletonList("true true"), checks);
         } finally {
             Settings.DATA_SAVER_DOWNLOADS.resetToDefault();
             Settings.HIDE_ADS.resetToDefault();

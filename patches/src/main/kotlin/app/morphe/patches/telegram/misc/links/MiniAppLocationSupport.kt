@@ -8,6 +8,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
@@ -31,6 +32,8 @@ internal const val GEO_CALLBACK = "Landroid/webkit/GeolocationPermissions\$Callb
 internal const val GEO_INVOKE = "$GEO_CALLBACK->invoke(Ljava/lang/String;ZZ)V"
 internal const val SHOW_PROMPT = "onGeolocationPermissionsShowPrompt"
 private const val LOCATION = "Landroid/location/Location;"
+private const val LOCATION_LISTENER = "Landroid/location/LocationListener;"
+private const val GET_LATITUDE = "$LOCATION->getLatitude()D"
 private const val JSON = "Lorg/json/JSONObject;"
 private const val BOT_LOCATION_PREFS = "botlocation_"
 private const val GPS_FEATURE = "android.hardware.location.gps"
@@ -79,7 +82,7 @@ internal class MiniAppLocationPlan(val gates: Map<LocationGate, MutableMethod>, 
         }
     }
 
-    /** The same edits on copies, so a smali or register problem refuses before the app is touched. */
+    /** The same edits on copies, so a smali or register problem shows before the app is touched. */
     fun rehearse() = apply { MutableMethod(ImmutableMethod.of(it)) }
 
     companion object {
@@ -112,9 +115,16 @@ private fun need(ok: Boolean, why: String) {
  * prompts. Each must still be that shape, or the switch is left out.
  */
 internal fun BytecodePatchContext.resolveMiniAppLocation(): MiniAppLocationPlan = try {
-    MiniAppLocationPlan(gates(), null)
+    // Rehearsed here, so edits that don't fit this build leave the switch out rather than the patch.
+    MiniAppLocationPlan(gates(), null).also { it.rehearse() }
 } catch (ungated: Ungated) {
     MiniAppLocationPlan.missing(ungated.why)
+} catch (failed: PatchException) {
+    MiniAppLocationPlan.missing("the location gates don't fit this build (${failed.message})")
+} catch (failed: IllegalArgumentException) {
+    MiniAppLocationPlan.missing("the location gates don't fit this build (${failed.message})")
+} catch (failed: IllegalStateException) {
+    MiniAppLocationPlan.missing("the location gates don't fit this build (${failed.message})")
 }
 
 private fun ClassDef.isOwn() = type.startsWith("Lapp/hushtelegram/")
@@ -138,6 +148,18 @@ private fun BytecodePatchContext.gates(): Map<LocationGate, MutableMethod> {
     need(answers.size == 1 && "latitude" in answers.single().strings(), "the bot location manager's answer is missing or ambiguous")
     // Another method building coordinates would hand them out around the answer.
     need(manager.methods.count { "latitude" in it.strings() } == 1, "the bot location manager builds coordinates outside its answer")
+    // A fix that comes in later reaches the Mini App through a listener the manager makes. It has to
+    // go through the answer too: with the answer folded into it, the gate there would never run.
+    val answerRef = answers.single().let { "${it.definingClass}->${it.name}($LOCATION)$JSON" }
+    val listeners = manager.methods.flatMap { m -> m.controlBody().filter { it.opcode == Opcode.NEW_INSTANCE }.mapNotNull { it.controlRef() } }
+        .distinct().mapNotNull { classDefByOrNull(it) }.filter { LOCATION_LISTENER in it.interfaces }
+    need(listeners.isNotEmpty(), "the bot location manager's listener for later fixes is missing")
+    for (listener in listeners) {
+        need(listener.methods.any { m -> m.controlBody().any { it.controlRef() == answerRef } },
+            "${listener.type} hands a later fix on without the bot location manager's answer")
+        need(listener.methods.none { m -> "latitude" in m.strings() || m.controlBody().any { it.controlRef() == GET_LATITUDE } },
+            "${listener.type} reads coordinates outside the bot location manager's answer")
+    }
 
     val callers = mutableListOf<String>()
     forEachClassMentioning(Mention.reference(GEO_INVOKE)) { cls ->
@@ -170,7 +192,12 @@ private fun BytecodePatchContext.gates(): Map<LocationGate, MutableMethod> {
     )
     for ((gate, method) in gates) {
         val where = "${method.definingClass}->${method.name}"
-        if (gate.labeled) need(method.localRegisterCount() >= 1, "$where has no local to answer in")
+        if (gate.labeled) {
+            need(method.localRegisterCount() >= 1, "$where has no local to answer in")
+        } else {
+            // The others write their answer back to the last parameter, which move-result reaches only below 256.
+            need(method.implementation!!.registerCount <= 256, "$where keeps its parameter past register 255")
+        }
         val flow = ControlFlow.of(method)
         need(flow.normal.none { 0 in it } && flow.exceptional.none { 0 in it }, "something jumps back to the start of $where")
     }
