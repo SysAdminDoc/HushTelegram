@@ -1207,6 +1207,7 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals(View.GONE, answer.getVisibility());
             assertFalse("the message stays out of the screen's saved state", sample.isSaveEnabled());
             assertTrue("and out of the keyboard's learning", (sample.getImeOptions() & EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING) != 0);
+            assertEquals("and out of autofill", View.IMPORTANT_FOR_AUTOFILL_NO, sample.getImportantForAutofill());
 
             field.setText("airdrop\n\n/free\\s+crypto/\ncrypto");
             tryIt.performClick();
@@ -1258,6 +1259,41 @@ public class HushTelegramPreferenceFragmentTest {
         } finally {
             Settings.MESSAGE_FILTERS_GROUPS.resetToDefault();
             Settings.MESSAGE_FILTERS_CHANNELS.resetToDefault();
+        }
+    }
+
+    /**
+     * Try waits for its answer before it takes another tap, so taps can't stack checks on the
+     * shared workers, and with no worker free it says so rather than checking on the main thread.
+     */
+    @Test
+    public void theFilterEditorTriesOneMessageAtATimeAndNeverOnTheMainThread() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_BY_KEYWORD);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Preference groups = pageOf(controller).findPreference(FilterEditor.GROUPS);
+            assertTrue(groups.getOnPreferenceClickListener().onPreferenceClick(groups));
+            ShadowLooper.idleMainLooper();
+            AlertDialog editor = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            ((EditText) editor.findViewById(android.R.id.edit)).setText("crypto");
+            ((EditText) editor.findViewById(android.R.id.input)).setText("crypto");
+            TextView answer = editor.getWindow().getDecorView().findViewWithTag(EditorForm.ANSWER);
+            Button tryIt = editor.getButton(AlertDialog.BUTTON_NEUTRAL);
+
+            tryIt.performClick();
+            assertFalse("Try waits for the answer", tryIt.isEnabled());
+            settle();
+            assertTrue(tryIt.isEnabled());
+            assertEquals("Line 1 would hide this message: ⁨crypto⁩", answer.getText().toString());
+
+            try (app.hushtelegram.extension.shared.WorkerPoolForTests full = app.hushtelegram.extension.shared.WorkerPoolForTests.fill()) {
+                tryIt.performClick();
+                assertTrue("a refused check gives Try back", tryIt.isEnabled());
+                assertEquals("and isn't checked on the main thread instead",
+                        "Couldn't try it now. Try again in a moment.", answer.getText().toString());
+            }
+            settle();
+        } finally {
+            Settings.MESSAGE_FILTERS_GROUPS.resetToDefault();
         }
     }
 

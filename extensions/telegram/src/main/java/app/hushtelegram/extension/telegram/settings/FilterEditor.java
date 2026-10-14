@@ -6,12 +6,14 @@ package app.hushtelegram.extension.telegram.settings;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.os.Build;
 import android.preference.Preference;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -124,13 +126,17 @@ final class FilterEditor {
                 + L10n.t("Try a message below to see which line would hide it. It isn't saved anywhere."));
         form.add(field, L10n.t("One filter a line"));
 
-        // The sample stays out of the keyboard's learning and out of the screen's saved state, so
-        // nothing of it outlives the dialog.
+        // The sample stays out of the keyboard's learning, autofill, content capture and the screen's
+        // saved state, so nothing of it outlives the dialog.
         EditText sample = new EditText(field.getContext());
         sample.setId(android.R.id.input);
         sample.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE
                 | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         sample.setImeOptions(EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING);
+        sample.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            sample.setImportantForContentCapture(View.IMPORTANT_FOR_CONTENT_CAPTURE_NO);
+        }
         sample.setSaveEnabled(false);
         sample.setFilters(new InputFilter[]{new InputFilter.LengthFilter(MessageFilters.MAX_TEXT)});
         sample.setSingleLine(false);
@@ -150,7 +156,8 @@ final class FilterEditor {
                 .show();
         ScreenColors.dialog(dialog);
         // Set after show, so neither one closes the dialog on its own.
-        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
+        Button tryIt = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+        tryIt.setOnClickListener(v -> {
             String typed = field.getText().toString();
             String message = sample.getText().toString();
             // Tried off the main thread, since a full list against a long message can take a moment.
@@ -163,11 +170,26 @@ final class FilterEditor {
                 answer.setText(said);
                 answer.setVisibility(View.VISIBLE);
             };
+            // One try at a time, so taps can't stack heavy checks on the shared workers. When they
+            // have no room, the check isn't run here instead: on the main thread it could freeze
+            // the screen.
+            tryIt.setEnabled(false);
             boolean queued = Utils.runOnBackgroundThread(() -> {
-                String said = verdict(typed, message);
-                Utils.runOnMainThread(() -> show.accept(said));
+                String said = null;
+                try {
+                    said = verdict(typed, message);
+                } finally {
+                    String answered = said;
+                    Utils.runOnMainThread(() -> {
+                        tryIt.setEnabled(true);
+                        if (answered != null) show.accept(answered);
+                    });
+                }
             });
-            if (!queued) show.accept(verdict(typed, message));
+            if (!queued) {
+                tryIt.setEnabled(true);
+                show.accept(L10n.t("Couldn't try it now. Try again in a moment."));
+            }
         });
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
             String typed = field.getText().toString();

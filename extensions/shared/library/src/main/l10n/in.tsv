@@ -793,3 +793,5 @@ APP_PUSH_APIKEY_MISSING means Telegram's servers have no push key set up for thi
 # context: Button in the Notification status dialog, shown when Android restricts Telegram in the background or optimizes its battery; it opens Android's App info page for Telegram, where both are set. Then the toast when that page can't open
 Open app info	Buka info aplikasi
 Couldn't open app info. Open Android settings.	Info aplikasi tidak bisa dibuka. Buka setelan Android.
+# context: Filter editor, under Try a message, when the phone is too busy to check the message against the filters right now
+Couldn't try it now. Try again in a moment.	Tidak dapat dicoba sekarang. Coba lagi sebentar lagi.
