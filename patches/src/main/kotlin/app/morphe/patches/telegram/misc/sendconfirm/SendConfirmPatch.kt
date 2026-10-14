@@ -18,6 +18,7 @@ import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
@@ -25,6 +26,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.controlString
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -202,13 +204,17 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
         controlHook(SEND_CONFIRM, shape.resume, listOf(OBJECT).plus(shape.target), "V")
     }
 
-    // The first pass finds Telegram's start of a call, the one static method taking these six.
+    // The first pass reads only method headers. It finds Telegram's start of a call, the one static
+    // method taking these six, and the GIF panel's listener, which is known by its parameters alone.
     val starts = mutableListOf<Pair<String, String>>()
+    val gifs = mutableListOf<Pair<String, String>>()
     classDefForEach { cls ->
         if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
-        cls.methods.filter { m ->
-            AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" && m.parameterTypes.map(CharSequence::toString) == CALL_TARGET
-        }.forEach { starts += cls.type to signature(it) }
+        cls.methods.forEach { m ->
+            val params = m.parameterTypes.map(CharSequence::toString)
+            if (AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" && params == CALL_TARGET) starts += cls.type to signature(m)
+            if (!AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" && params == GIF_TARGET) gifs += cls.type to signature(m)
+        }
     }
     val (startType, startWanted) = starts.controlSingle("Telegram's start of a call")
     val startOwner = mutableClassDefBy(startType)
@@ -216,17 +222,18 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     controlShape(AccessFlags.PUBLIC.isSet(startOwner.accessFlags) && AccessFlags.PUBLIC.isSet(startMethod.accessFlags), "the start of a call is inaccessible")
     val startRef = startWanted
 
-    val gifs = mutableListOf<Pair<String, String>>()
+    // The rest each call something: the strip's sticker send and its text clear, the camera
+    // check, or the start of a call. Only classes naming one of those are read.
     val videos = mutableListOf<Triple<String, String, VideoShape>>()
     val headers = mutableListOf<Triple<String, String, List<Int>>>()
     val profiles = mutableListOf<Triple<String, String, List<Int>>>()
     val strips = mutableListOf<Triple<String, String, Int>>()
-    classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+    val stripMention = Mention.member(SEND_HELPER, "sendSticker") and Mention.reference(SET_FIELD_TEXT)
+    forEachClassMentioning(stripMention or Mention.reference(CAMERA_ALLOWED) or Mention.reference(startRef)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
             val params = m.parameterTypes.map(CharSequence::toString)
             val instance = !AccessFlags.STATIC.isSet(m.accessFlags)
-            if (instance && m.returnType == "V" && params == GIF_TARGET) gifs += cls.type to signature(m)
             if (m.implementation == null) return@forEach
             val body = m.controlBody()
             if (instance && m.name == "run" && m.returnType == "V" && params == listOf(OBJECT) && CALLBACK in cls.interfaces) {
