@@ -668,7 +668,8 @@ try {
     # the document before it's written.
     function New-TestSbom {
         param([string]$Path, [string]$Bundle,
-            [string[]]$Libraries = @('pkg:maven/com.google.code.gson/gson@2.14.0'), [scriptblock]$Mutate)
+            [string[]]$Libraries = @('pkg:maven/com.google.code.gson/gson@2.14.0'), [scriptblock]$Mutate,
+            [string]$GradleVersion = '9.8.1')
         $bundleName = Split-Path -Leaf $Bundle
         $facts = Get-BundleManifestFacts -BundlePath $Bundle
         $components = New-Object System.Collections.Generic.List[object]
@@ -696,6 +697,7 @@ try {
             metadata = [ordered]@{
                 timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($facts.timestamp).UtcDateTime.ToString(
                     "yyyy-MM-dd'T'HH:mm:ss'Z'", [Globalization.CultureInfo]::InvariantCulture)
+                tools = [ordered]@{ components = @([ordered]@{ type = 'application'; name = 'Gradle'; version = $GradleVersion }) }
                 component = [ordered]@{ type = 'file'; 'bom-ref' = $bundleName; name = $bundleName; version = $facts.version
                     hashes = @([ordered]@{ alg = 'SHA-256'; content = (Get-Sha256Hex -Path $Bundle).ToLowerInvariant() }) }
             }
@@ -1093,6 +1095,8 @@ try {
         @($sbomRead.Payloads).Count -eq 1 -and $sbomRead.Payloads[0].Ref -eq 'extensions/telegram.mpe' -and
         $sbomRead.Sha256 -eq (Get-Sha256Hex -Path $sbomFile)) `
         "The SBOM was misread: $($sbomRead.BundleName) $($sbomRead.BundleVersion) $($sbomRead.Timestamp), $(@($sbomRead.Components).Count) components"
+    Assert-True (@($sbomRead.Tools).Count -eq 1 -and $sbomRead.Tools[0].Name -ceq 'gradle' -and $sbomRead.Tools[0].Version -ceq '9.8.1') `
+        "The SBOM's recorded Gradle was misread: $(@($sbomRead.Tools | ForEach-Object { "$($_.Name) $($_.Version)" }) -join ', ')"
     $bound = Test-ReleaseSbom -Sbom $sbomRead -BundlePath $bundle -BundleName 'patches-9.9.9.mpp'
     Assert-True $bound.Valid "An SBOM of the bundle was refused: $($bound.Reason)"
 
@@ -1611,13 +1615,13 @@ New-Item -ItemType Directory -Path $advisoryRoot -Force | Out-Null
 try {
     $today = [datetime]'2026-09-25'
     # What Read-ReleaseSbom hands the gate, for the libraries named.
-    function New-GateSbom([string[]]$Purls) {
+    function New-GateSbom([string[]]$Purls, [object[]]$Tools = @([pscustomobject]@{ Name = 'gradle'; Version = '9.8.1' })) {
         $libraries = @(foreach ($purl in @($Purls | Where-Object { $_ })) {
             $parts = [regex]::Match($purl, '^pkg:maven/([^/]+)/([^@]+)@(.+)$')
             [pscustomobject]@{ Ref = $purl; Type = 'library'; Group = $parts.Groups[1].Value; Name = $parts.Groups[2].Value
                 Version = $parts.Groups[3].Value; Purl = $purl }
         })
-        return [pscustomobject]@{ Path = (Join-Path $advisoryRoot 'patches-9.9.9.cdx.json'); Libraries = $libraries }
+        return [pscustomobject]@{ Path = (Join-Path $advisoryRoot 'patches-9.9.9.cdx.json'); Libraries = $libraries; Tools = $Tools }
     }
     # The gate on an SBOM of these libraries with these exception lines, and everything it said,
     # warnings included.
@@ -1827,6 +1831,31 @@ try {
     $said = Invoke-Gate @()
     Assert-True ($said -like '*lists no library to ask OSV about*' -and $osvAsked.Count -eq 0) `
         "An SBOM with no library was not passed as one: $said"
+
+    # The Gradle the SBOM records is held to scripts/build-tool-advisories.txt, offline, so a skipped
+    # OSV check doesn't skip it. A version in a high or critical range, one that can't be placed and
+    # an SBOM that names no Gradle all stop the gate.
+    $toolList = Join-Path $advisoryRoot 'build-tool-advisories.txt'
+    Set-Content -LiteralPath $toolList -Encoding ASCII -Value @('# a high advisory for this case',
+        'GHSA-2222-3333-4444 gradle HIGH <9.8.0 9.8.0 2026-09-01')
+    Set-Content -LiteralPath (Join-Path $advisoryRoot 'advisory-exceptions.txt') -Encoding ASCII -Value '# none'
+    function Invoke-ToolGate($Tools, [switch]$Skip) {
+        . $osvStandIn
+        return (@(Invoke-ReleaseAdvisoryGate -Sbom (New-GateSbom @() -Tools $Tools) `
+            -ExceptionsPath (Join-Path $advisoryRoot 'advisory-exceptions.txt') -Today $today -ToolAdvisoriesPath $toolList `
+            -SkipAdvisoryCheck:$Skip 3>&1 6>&1 | ForEach-Object { "$_" }) -join "`n")
+    }
+    $said = Invoke-ToolGate @([pscustomobject]@{ Name = 'gradle'; Version = '9.8.1' })
+    Assert-True ($said -like '*built with gradle 9.8.1, outside the high and critical ranges*') "A clean Gradle was not reported: $said"
+    Assert-Throws { Invoke-ToolGate @([pscustomobject]@{ Name = 'gradle'; Version = '9.7.1' }) } '*patches-9.9.9.cdx.json records it*GHSA-2222-3333-4444*' `
+        'An SBOM built on a Gradle inside a high advisory range passed the gate.'
+    Assert-Throws { Invoke-ToolGate @([pscustomobject]@{ Name = 'gradle'; Version = '9.7.1' }) -Skip } '*GHSA-2222-3333-4444*' `
+        '-SkipAdvisoryCheck skipped the offline build tool check.'
+    Assert-Throws { Invoke-ToolGate @([pscustomobject]@{ Name = 'gradle'; Version = '9.9-rc-1' }) } '*not a released version*' `
+        'A Gradle version that cannot be placed passed the gate.'
+    Assert-Throws { Invoke-ToolGate @() } '*names no Gradle under metadata.tools*' 'An SBOM that names no Gradle passed the gate.'
+    Assert-Throws { Invoke-ToolGate @([pscustomobject]@{ Name = 'agp'; Version = '9.1.1' }) } '*names no Gradle under metadata.tools*' `
+        'An SBOM that names only another tool passed the gate.'
 } finally {
     Remove-Item -LiteralPath $advisoryRoot -Recurse -Force -ErrorAction SilentlyContinue
 }

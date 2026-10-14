@@ -27,6 +27,7 @@ Every HushTelegram release, newest first.
 * **Tooling:** Two device builds can run at once without stepping on each other. Each works in its own folder, so a second run can't overwrite or delete the first one's files.
 * **Tooling:** A device install only goes ahead under a lease in the machine's shared lease folder. A lease kept somewhere else doesn't count anymore.
 * **Tooling:** A device build now waits its turn in the machine's build queue before it starts patching, and the patcher runs with a capped heap and two processors so it doesn't crowd out builds already running.
+* **Tooling:** A release can't skip the build advisory scan anymore. Release preflight and the build stage both generate the dependency report under strict checksum verification, run the scan, and stop on a build tool or library it refuses. The release gate also reads the Gradle version recorded in an SBOM and holds it to the same advisory list, even when the OSV check is skipped.
 
 ## 0.0.17 (2026-10-13)
 

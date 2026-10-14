@@ -123,7 +123,8 @@ function Read-ReleaseSbom {
         and the advisory gate need.
     .DESCRIPTION
         Answers @{ Path; Sha256; BundleName; BundleVersion; BundleSha256; Timestamp; Components;
-        Libraries; Payloads }. Libraries are the components with a package URL, the ones OSV is
+        Libraries; Payloads; Tools }. Tools are the name (lower case) and version of each tool
+        under metadata.tools, which Invoke-ReleaseAdvisoryGate holds to the build tool list. Libraries are the components with a package URL, the ones OSV is
         asked about, and Payloads the extension payload files with their SHA-256.
 
         Held to the shape the task writes, and refused where it differs rather than read around.
@@ -190,6 +191,13 @@ function Read-ReleaseSbom {
     }
     if ($components.Count -eq 0) { throw "$name lists no component." }
 
+    # The tools that wrote the SBOM, Gradle among them, which the advisory gate holds to the build
+    # tool list. Names are lower case here; the task writes "Gradle".
+    $tools = New-Object System.Collections.Generic.List[object]
+    foreach ($tool in @(@($document.metadata.tools.components) | Where-Object { $null -ne $_ })) {
+        $tools.Add([pscustomobject]@{ Name = ([string]$tool.name).ToLowerInvariant(); Version = [string]$tool.version })
+    }
+
     return [pscustomobject]@{
         Path          = $Path
         Sha256        = Get-Sha256Hex -Path $Path
@@ -200,6 +208,7 @@ function Read-ReleaseSbom {
         Components    = $components.ToArray()
         Libraries     = @($components | Where-Object { $_.Type -eq 'library' -and $_.Purl })
         Payloads      = @($components | Where-Object { $_.Type -eq 'file' })
+        Tools         = $tools.ToArray()
     }
 }
 

@@ -379,13 +379,30 @@ function Invoke-ReleaseAdvisoryGate {
         [Parameter(Mandatory = $true)]$Sbom,
         [Parameter(Mandatory = $true)][string]$ExceptionsPath,
         [switch]$SkipAdvisoryCheck,
-        [datetime]$Today = [datetime]::Today
+        [datetime]$Today = [datetime]::Today,
+        [string]$ToolAdvisoriesPath
     )
 
     $libraries = @($Sbom.Libraries)
     $sbomName = Split-Path -Leaf $Sbom.Path
     # Read even when OSV isn't asked: a malformed or overlong exception is wrong offline too.
     $exceptions = @(Read-AdvisoryExceptions -Path $ExceptionsPath -Today $Today)
+    # The Gradle that built the release, held to the maintainer advisories recorded for it. It needs
+    # no network, so -SkipAdvisoryCheck doesn't skip it, and an SBOM that names no Gradle can't be
+    # held to the list at all.
+    if (-not $ToolAdvisoriesPath) { $ToolAdvisoriesPath = Join-Path $PSScriptRoot 'build-tool-advisories.txt' }
+    $toolRecords = @(Read-BuildToolAdvisories -Path $ToolAdvisoriesPath)
+    $gradles = @(@($Sbom.Tools) | Where-Object { $null -ne $_ -and $_.Name -ceq 'gradle' })
+    if ($gradles.Count -eq 0) {
+        throw "$sbomName names no Gradle under metadata.tools, so the build tool it was built with can't be held to the build tool advisory list."
+    }
+    foreach ($gradle in $gradles) {
+        $toolVerdict = Test-BuildToolAdvisories -Tool $gradle.Name -Version $gradle.Version -Records $toolRecords
+        foreach ($line in @($toolVerdict.Minor)) { Write-Host "[advisories] build tool, below high, let through: $line" }
+        if (-not $toolVerdict.Valid) { throw "$sbomName records it: $($toolVerdict.Reason)" }
+        Write-Host ("[advisories] $sbomName was built with $($gradle.Name) $($gradle.Version), outside the high and " +
+            "critical ranges of the $($toolVerdict.Recorded) maintainer advisories recorded for it")
+    }
     if ($SkipAdvisoryCheck) {
         Write-Warning ("-SkipAdvisoryCheck: OSV was not asked about the libraries $sbomName lists, so nothing " +
             'here says they have no serious advisory. The index push asks OSV again.')

@@ -17,11 +17,12 @@
                  "chore(release): prepare X.Y.Z for publication".
       preflight  What a release gate would otherwise only reach late, in about five minutes: every
                  tracked PowerShell script parses, the release text and stage order tests, the facts
-                 check, the patch tests without the fixture suite, and the translation tests. Then
+                 check, the build advisory scan (the dependency report under strict verification,
+                 held to OSV and to the Gradle list), the patch tests without the fixture suite, and the translation tests. Then
                  push with HUSHTELEGRAM_SKIP_PRE_PUSH=1: the build stage runs the same full suite
                  and applies every patch to every fixture on the pushed commit, so the pre-push gate
                  would only run it all twice.
-      build      From the pushed, clean release commit: the full test and lint run with every fixture
+      build      From the pushed, clean release commit: the build advisory scan again, the full test and lint run with every fixture
                  required, the patch list and bundle (classes.dex in it, its Timestamp the commit's
                  time), verify-all-patches.ps1 on every declared Telegram build (one target per
                  channel, telegram.org's web build and the beta) with each clean run kept, and the
@@ -198,6 +199,17 @@ function Invoke-ReleaseGradle {
     if ($code -ne 0) { throw "Gradle $($Tasks -join ' ') failed (exit $code)." }
 }
 
+function Invoke-ReleaseBuildAdvisories {
+    # The resolved build, test and provided dependency report, generated under strict checksum
+    # verification, then held to OSV and to the build tool list in scripts/build-tool-advisories.txt
+    # by build-advisories.ps1, which throws on a refused tool or library. A report left from an
+    # earlier run goes first, so a stale one can't stand in for this one.
+    $report = Join-Path $Root 'patches/build/dependency-reports/build-dependencies.json'
+    if (Test-Path -LiteralPath $report) { Remove-Item -LiteralPath $report -Force }
+    Invoke-ReleaseGradle @(':patches:buildDependencyReport', '--dependency-verification=strict')
+    Invoke-Step 'The build advisory scan' { & (Join-Path $scripts 'build-advisories.ps1') -Root $Root }
+}
+
 function Get-UnparsedScripts {
     # Every tracked .ps1 that doesn't parse, read as UTF-8 so both editions see the same text.
     foreach ($name in @(Invoke-Git @('ls-files', '--', '*.ps1'))) {
@@ -354,6 +366,7 @@ switch ($Stage) {
         Invoke-Step 'The release facts precheck' {
             & (Join-Path $scripts 'validate-release-facts.ps1') -Root $Root -SkipDescriptionTestCount -AllowPublishedIndexLag -SkipTestResults
         }
+        Invoke-ReleaseBuildAdvisories
         # --tests binds to the task before it, and --continue keeps one task's failure from hiding the other's.
         Invoke-ReleaseGradle @(':patches:test', '-x', ':patches:fixtureTest',
             ':extensions:telegram:testDebugUnitTest', '--tests', '*L10n*', '--continue')
@@ -378,6 +391,7 @@ switch ($Stage) {
         }
         $fixtures = @(Get-DeclaredFixtures)
         $desktopJar = Resolve-DesktopCli -Root $Root -Required
+        Invoke-ReleaseBuildAdvisories
         $requireFixtures = $env:HUSHTELEGRAM_REQUIRE_FIXTURES
         $env:HUSHTELEGRAM_REQUIRE_FIXTURES = '1'
         try {

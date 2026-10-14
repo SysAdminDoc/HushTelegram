@@ -270,6 +270,51 @@ Assert-True (@(Get-TreeChanges).Count -eq 1) 'A dirty tree git reported no longe
 $script:fakeText = ''
 Assert-True (@(Get-TreeChanges).Count -eq 0) 'A clean tree no longer reads as clean.'
 
+# The build advisory scan preflight and build both run: the dependency report under strict
+# verification, any older report gone first, then build-advisories.ps1, whose failure stops the stage.
+foreach ($name in @('Invoke-Step', 'Invoke-ReleaseBuildAdvisories')) {
+    $found = @($releaseAst.FindAll({ param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $node.Name -eq $name }, $true))
+    Assert-True ($found.Count -eq 1) "release.ps1 no longer defines $name once."
+    Invoke-Expression $found[0].Extent.Text
+}
+$advisoryScratch = Join-Path ([IO.Path]::GetTempPath()) ('hushtelegram-release-advisories-' + [guid]::NewGuid().ToString('N'))
+try {
+    $Root = Join-Path $advisoryScratch 'repo'
+    $scripts = Join-Path $advisoryScratch 'scripts'
+    $reportDir = Join-Path $Root 'patches/build/dependency-reports'
+    New-Item -ItemType Directory -Force -Path $reportDir, $scripts | Out-Null
+    $staleReport = Join-Path $reportDir 'build-dependencies.json'
+    $scanLog = Join-Path $advisoryScratch 'scan.log'
+    $script:gradleCalls = New-Object System.Collections.Generic.List[string]
+    $script:reportAtGradle = $null
+    function Invoke-ReleaseGradle {
+        param([string[]]$Tasks)
+        $script:gradleCalls.Add($Tasks -join ' ')
+        $script:reportAtGradle = Test-Path -LiteralPath $staleReport
+    }
+    $stubBody = 'param([string]$Root)', "Add-Content -LiteralPath '$scanLog' -Value `$Root"
+    Set-Content -LiteralPath $staleReport -Value '{}'
+    Set-Content -LiteralPath (Join-Path $scripts 'build-advisories.ps1') -Value $stubBody
+    Invoke-ReleaseBuildAdvisories
+    Assert-True ($script:gradleCalls.Count -eq 1 -and
+        $script:gradleCalls[0] -ceq ':patches:buildDependencyReport --dependency-verification=strict') `
+        "The dependency report was not generated under strict verification: $($script:gradleCalls -join ' | ')"
+    Assert-True ($script:reportAtGradle -eq $false) 'A dependency report from an earlier run was left for the scan to read.'
+    Assert-True ((Test-Path -LiteralPath $scanLog) -and ((Get-Content -LiteralPath $scanLog -Raw).Trim() -ceq $Root)) `
+        'build-advisories.ps1 did not run on the release checkout.'
+    Set-Content -LiteralPath (Join-Path $scripts 'build-advisories.ps1') -Value 'throw ''Gradle 9.7.1 is refused.'''
+    Assert-Throws { Invoke-ReleaseBuildAdvisories } '*Gradle 9.7.1 is refused*' 'A refused build tool or library did not stop the stage.'
+    # Both stages call it, so neither can be released past the scan.
+    $releaseText = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'release.ps1') -Raw
+    foreach ($stage in @('preflight', 'build')) {
+        $block = [regex]::Match($releaseText, "(?s)'$stage' \{(.*?)\r?\n    \}\r?\n").Groups[1].Value
+        Assert-True ($block -match '(?m)^\s+Invoke-ReleaseBuildAdvisories\s*$') "-Stage $stage no longer runs the build advisory scan."
+    }
+} finally {
+    Remove-Item -LiteralPath $advisoryScratch -Recurse -Force -ErrorAction SilentlyContinue
+}
+
 Write-Host "[release] release text and stage order contracts passed ($cases cases)"
 # The stage order cases end on release.ps1 runs that refuse, and a caller reads their exit code
 # as this script's own unless it says otherwise.
