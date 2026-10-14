@@ -182,7 +182,9 @@ public class PausedHooksTest {
                 app.hushtelegram.extension.telegram.misc.LocalSearch::keep,
                 () -> app.hushtelegram.extension.telegram.misc.LocalSearch.sent("cat") == null,
                 () -> !"none".equals(app.hushtelegram.extension.telegram.misc.LocalSearch.emptyText("none")),
-                () -> app.hushtelegram.extension.telegram.misc.LocalSearch.keepsText("cat")));
+                () -> app.hushtelegram.extension.telegram.misc.LocalSearch.keepsText("cat"),
+                () -> app.hushtelegram.extension.telegram.misc.LocalSearch.phones(new Object(), "+15551234",
+                        true, true, true, true, false, 0, true, 0, 7, 0L, null)));
         // Search's Apps tab neither loads nor draws the Popular apps list, and search keeps to your
         // own chats: no public tab, lookup, account match or hashtag posts, and Downloads opens
         // where it now sits.
@@ -191,6 +193,8 @@ public class PausedHooksTest {
                 app.hushtelegram.extension.telegram.misc.PopularApps::hideSection,
                 app.hushtelegram.extension.telegram.misc.MyChatsSearch::keep,
                 () -> app.hushtelegram.extension.telegram.misc.MyChatsSearch.sent("cat") == null,
+                () -> app.hushtelegram.extension.telegram.misc.MyChatsSearch.phones(new Object(), "+15551234",
+                        true, true, true, true, false, 0, true, 0, 7, 0L, null),
                 () -> !app.hushtelegram.extension.telegram.misc.MyChatsSearch.keepHashtag(new Object(), "#cats", 2),
                 app.hushtelegram.extension.telegram.misc.MyChatsSearchForTests::dropsPublicResults,
                 app.hushtelegram.extension.telegram.misc.MyChatsSearchForTests::dropsPublicTabs,

@@ -12,6 +12,8 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patches.telegram.misc.drafts.ChatSearchHooks
+import app.morphe.patches.telegram.misc.drafts.LOCAL_SEARCH
 import app.morphe.patches.telegram.misc.drafts.SEARCH_CHANGES
 import app.morphe.patches.telegram.misc.drafts.SEARCH_KEEP
 import app.morphe.patches.telegram.misc.drafts.SEARCH_SENT
@@ -45,6 +47,7 @@ private const val CHANNELS_POSTS = "Lorg/telegram/tgnet/TLRPC\$TL_channels_searc
 private const val TITLES = "Lorg/telegram/messenger/R\$string;"
 private const val NOTIFICATIONS = "Lorg/telegram/messenger/NotificationCenter;"
 private val GOTOS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)
+private val LOCAL_PHONES = ChatSearchHooks("Disable draft link previews", LOCAL_SEARCH).phones
 
 /**
  * Search only my chats on the pinned builds: the tab row, the Downloads shortcut, a hashtag's searches,
@@ -56,8 +59,8 @@ class SearchOnlyMyChatsFixtureTest {
             val name = build.name
             val context = PatchContexts.of((ExtensionDex.classes() + myChatsSearchHosts(build)).distinctBy { it.type })
             val sites = context.resolveMyChatsSearch()
-            assertEquals("$name: the Chats tab's public lookups and none of its message searches",
-                listOf(SearchLookup.SPONSORED, SearchLookup.POSTS, SearchLookup.USERNAMES), sites.chat.edits.map { it.lookup })
+            assertEquals("$name: the Chats tab's public lookups, the phone match and none of its message searches",
+                listOf(SearchLookup.SPONSORED, SearchLookup.POSTS, SearchLookup.USERNAMES, SearchLookup.PHONES), sites.chat.edits.map { it.lookup })
             // Telegram's own numbers for its tabs, as the titles read them.
             assertEquals("$name: tab numbers", mapOf(SearchTab.CHANNELS to 1, SearchTab.APPS to 4, SearchTab.POSTS to 6,
                 SearchTab.PUBLIC_POSTS to 5, SearchTab.DOWNLOADS to 2), sites.tabs.types)
@@ -71,6 +74,29 @@ class SearchOnlyMyChatsFixtureTest {
                 stock.getValue(System.identityHashCode(method)).body().map(::operands), method.body().map(::operands))
             context.writeMyChatsSearchStubs(sites)
             sites.apply()
+
+            // Right after the username lookup, which got no text, the runtime's phone match gets what it got with the text read back.
+            val phones = sites.chat.edits.single { it.lookup == SearchLookup.PHONES }
+            assertTrue("$name: the phone match is the second step's",
+                phones.method === sites.chat.edits.single { it.lookup == SearchLookup.USERNAMES }.method)
+            val step = phones.method.body()
+            val helper = step.indices.single { step[it].call()?.parameterTypes?.size == 12 }
+            val passed = step[helper].namedRegisters()
+            val text = passed[1]
+            val readBack = step[helper + 1]
+            assertEquals("$name: the text is read back into its register", listOf(Opcode.IGET_OBJECT, text),
+                listOf(readBack.opcode, readBack.namedRegisters()[0]))
+            val loaded = (helper - 1 downTo 0).first { step[it].opcode == Opcode.IGET_OBJECT && step[it].namedRegisters()[0] == text }
+            assertEquals("$name: from where the step got it", operands(step[loaded]), operands(readBack))
+            assertEquals("$name: the runtime gets what the lookup got", listOf(Opcode.INVOKE_STATIC_RANGE, passed, MY_CHATS_HOOKS.phones),
+                operands(step[helper + 2]))
+            assertEquals("$name: and on a match has the tab redraw", listOf(Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.IGET_OBJECT,
+                Opcode.INVOKE_VIRTUAL, Opcode.NOP), step.subList(helper + 3, helper + 8).map { it.opcode })
+            assertEquals("$name: the lookUp stub calls the helper on what it's handed",
+                listOf(Opcode.CHECK_CAST, Opcode.INVOKE_VIRTUAL_RANGE, Opcode.RETURN_VOID),
+                context.mutableClassDefBy(MY_CHATS_SEARCH).methods.single { it.name == "lookUp" }.body().map { it.opcode })
+            assertEquals("$name: the stub's call is the helper's lookup", step[helper].ref(),
+                context.mutableClassDefBy(MY_CHATS_SEARCH).methods.single { it.name == "lookUp" }.body()[1].ref())
 
             // The tab row: every way to its end now passes the runtime its list first.
             val update = sites.tabs.update
@@ -236,6 +262,18 @@ class SearchOnlyMyChatsFixtureTest {
                 }
                 val loaded = (helper - 5 downTo 0).first { code[it].opcode.setsRegister() && code[it].namedRegisters().firstOrNull() == text }
                 assertEquals("$where: the text is the runnable's own", Opcode.IGET_OBJECT, code[loaded].opcode)
+
+                // After it, each runtime's phone match, either of which reads the text back and runs it again.
+                val matches = code.indices.filter { code[it].ref() in setOf(LOCAL_PHONES, MY_CHATS_HOOKS.phones) }
+                assertEquals("$where: both phone matches follow the helper, one after the other", listOf(helper + 2, helper + 9), matches)
+                assertEquals(setOf(LOCAL_PHONES, MY_CHATS_HOOKS.phones), matches.map { code[it].ref() }.toSet())
+                for (at in matches) {
+                    assertEquals("$where: a match reads the text back first", operands(code[loaded]), operands(code[at - 1]))
+                    assertEquals("$where: and is handed the lookup's registers", code[helper].namedRegisters(), code[at].namedRegisters())
+                    assertEquals("$where: then redraws on a match", listOf(Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.IGET_OBJECT,
+                        Opcode.INVOKE_VIRTUAL, Opcode.NOP), code.subList(at + 1, at + 6).map { it.opcode })
+                    assertEquals("$where: a miss goes past the redraw", setOf(at + 3, at + 5), ControlFlow.of(step).normal[at + 2].toSet())
+                }
             }
         }
     }
@@ -294,7 +332,8 @@ class SearchOnlyMyChatsFixtureTest {
                 assertRefusedUntouched(build, case, reason, context)
             }
             // The Chats tab's own checks, shared with Keep searches on this phone, refuse this patch too.
-            val shared = setOf("sponsored check gone", "posts check gone", "text read again", "second chat search", "helper never cleared")
+            val shared = setOf("sponsored check gone", "posts check gone", "text read again", "second chat search", "helper never cleared",
+                "phone text's owner reused", "phone text read over its owner")
             for ((case, reason) in SEARCH_CHANGES.filter { it.first in shared }) {
                 val context = contextFor(build)
                 changeSearch(case, context.resolveLocalSearch())

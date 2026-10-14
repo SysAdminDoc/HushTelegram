@@ -85,6 +85,11 @@ public class MyChatsSearchTest {
     private BiPredicate<Object, String> isOwnChat;
     private Function<Object, ArrayList<?>[]> listsOf;
     private ToLongFunction<Object> keyOf;
+    private PhoneMatch.Lookup lookup;
+    /** What the username helper's lookup was handed, one line per call. */
+    private final List<String> lookups = new ArrayList<>();
+    private final Object helper = new Object();
+    private final Runnable done = () -> {};
     private final List<Runnable> queued = new ArrayList<>();
     private final List<Object[]> finished = new ArrayList<>();
     private final Map<Integer, String> lastTags = new HashMap<>();
@@ -141,6 +146,7 @@ public class MyChatsSearchTest {
         isOwnChat = MyChatsSearch.isOwnChat;
         listsOf = MyChatsSearch.listsOf;
         keyOf = MyChatsSearch.keyOf;
+        lookup = MyChatsSearch.lookup;
         MyChatsSearch.isPublic = PUBLIC::contains;
         MyChatsSearch.isDownloads = tab -> tab == DOWNLOADS;
         MyChatsSearch.tabsOf = pager -> pager == PAGER ? new ArrayList<>(STOCK_TABS) : null;
@@ -150,6 +156,9 @@ public class MyChatsSearchTest {
         MyChatsSearch.isOwnChat = (controller, name) -> controller == CONTROLLER && OWN.contains(name);
         MyChatsSearch.listsOf = found -> found instanceof Found ? ((Found) found).lists() : null;
         MyChatsSearch.keyOf = item -> ((Keyed) item).key;
+        MyChatsSearch.lookup = (on, query, usernames, chats, bots, self, groupsOnly, channel, phoneNumbers, type, searchId, except, end) ->
+                lookups.add((on == helper) + " " + query + " " + usernames + " " + chats + " " + bots + " " + self + " " + groupsOnly
+                        + " " + channel + " " + phoneNumbers + " " + type + " " + searchId + " " + except + " " + (end == done));
     }
 
     @After public void tearDown() {
@@ -162,6 +171,7 @@ public class MyChatsSearchTest {
         MyChatsSearch.isOwnChat = isOwnChat;
         MyChatsSearch.listsOf = listsOf;
         MyChatsSearch.keyOf = keyOf;
+        MyChatsSearch.lookup = lookup;
         PauseForTests.resume();
         SettingReadsForTests.mend(Settings.SEARCH_ONLY_MY_CHATS);
         Settings.SEARCH_ONLY_MY_CHATS.resetToDefault();
@@ -182,7 +192,13 @@ public class MyChatsSearchTest {
                 || !MyChatsSearch.keepHashtag(CONTROLLER, "#cats", PUBLIC_POSTS_SEARCH)
                 || !MyChatsSearch.keepHashtag(CONTROLLER, "#cats@catchannel", LOCAL_POSTS)
                 || !found.all().equals(catSearch().all())
-                || !tabs.equals(STOCK_TABS) || MyChatsSearch.downloadsAt(PAGER, 6) != 6;
+                || !tabs.equals(STOCK_TABS) || MyChatsSearch.downloadsAt(PAGER, 6) != 6
+                || MyChatsSearch.phones(new Object(), "+15551234", true, true, true, true, false, 0, true, 0, 7, 42L, null);
+    }
+
+    /** The Chats tab's second step handing the helper's lookup on, as it does right after the username lookup. */
+    private boolean phones(String query, long channel, int searchId) {
+        return MyChatsSearch.phones(helper, query, true, true, true, true, false, channel, true, 0, searchId, 42L, done);
     }
 
     @Test public void offByDefaultSoSearchIsTelegramsOwn() {
@@ -221,6 +237,43 @@ public class MyChatsSearchTest {
         assertFalse(MyChatsSearch.keepHashtag(CONTROLLER, "#cats", PUBLIC_POSTS_SEARCH));
         assertEquals(Collections.singletonList("Hide popular apps: invoked 4, 0 found, 0 missing. Counted: "
                 + "public search lookup skipped 4"), HookStatus.report());
+    }
+
+    // The username helper got no text, so its "+" number match against your contacts runs again here.
+    @Test public void switchedOnAPhoneNumberIsMatchedAgainWithTheTextAndNoUsernameLookup() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        assertTrue("the tab is told to show the match", phones("+15551234", 0, 7));
+        assertEquals(Collections.singletonList("true +15551234 false true true true false 0 true 0 7 42 true"), lookups);
+        assertEquals(Collections.singletonList("Hide popular apps: invoked 1, 0 found, 0 missing. Counted: "
+                + "phone number matched on the phone 1"), HookStatus.report());
+    }
+
+    @Test public void offThePhoneMatchIsTelegramsOwn() {
+        assertFalse("nothing new for the tab to show", phones("+15551234", 0, 7));
+        assertEquals(Collections.emptyList(), lookups);
+        assertEquals(Collections.singletonList("Hide popular apps: invoked 1, 0 found, 0 missing"), HookStatus.report());
+    }
+
+    // Only a "+" number has a match on the phone, and a channel would send its member search to the server.
+    @Test public void onlyAPhoneNumberWithNoChannelIsMatchedAgain() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        assertFalse(phones("cat", 0, 7));
+        assertFalse(phones("", 0, 7));
+        assertFalse(phones(null, 0, 7));
+        assertFalse(phones("+15551234", 1L, 7));
+        assertFalse(MyChatsSearch.phones(null, "+15551234", true, true, true, true, false, 0, true, 0, 7, 42L, done));
+        assertEquals(Collections.emptyList(), lookups);
+        assertEquals(Collections.emptyList(), HookStatus.report());
+    }
+
+    @Test public void aPhoneMatchThatThrowsIsReportedAndSearchGoesOn() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        MyChatsSearch.lookup = (on, query, usernames, chats, bots, self, groupsOnly, channel, phoneNumbers, type, searchId, except, end) -> {
+            throw new ClassCastException("not the helper");
+        };
+        assertFalse("a match that threw has nothing to show", phones("+15551234", 0, 7));
+        assertEquals(Collections.singletonList("a working 'search phone match' hook (it threw java.lang.ClassCastException)"),
+                HookStatus.missing(FamilyNames.HIDE_POPULAR_APPS));
     }
 
     @Test public void switchedOnAnAccountSearchKeepsYourOwnMatchesAndWhatTheyName() {
@@ -417,5 +470,14 @@ public class MyChatsSearchTest {
         assertFalse(MyChatsSearch.ownChat(CONTROLLER, "catlovers"));
         assertNull(MyChatsSearch.foundLists(catSearch()));
         assertEquals(0L, MyChatsSearch.peerKey(CATHY_PEER));
+    }
+
+    // Unpatched, the lookUp stub does nothing, so the runtime can't call anything it doesn't know.
+    @Test public void theUnpatchedLookUpStubDoesNothing() {
+        Settings.SEARCH_ONLY_MY_CHATS.save(true);
+        MyChatsSearch.lookup = lookup;
+        assertTrue(phones("+15551234", 0, 7));
+        assertEquals(Collections.singletonList("Hide popular apps: invoked 1, 0 found, 0 missing. Counted: "
+                + "phone number matched on the phone 1"), HookStatus.report());
     }
 }

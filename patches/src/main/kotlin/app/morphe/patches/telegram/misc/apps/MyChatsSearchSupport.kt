@@ -12,6 +12,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.telegram.misc.drafts.ChatSearchHooks
 import app.morphe.patches.telegram.misc.drafts.LocalSearchSite
+import app.morphe.patches.telegram.misc.drafts.PHONE_MATCH_REGISTERS
 import app.morphe.patches.telegram.misc.drafts.PUBLIC_POSTS as PUBLIC_POSTS_REQUEST
 import app.morphe.patches.telegram.misc.drafts.SearchLookup
 import app.morphe.patches.telegram.misc.drafts.resolveChatSearch
@@ -69,8 +70,11 @@ private val CONSTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST)
 /** Every way out of a method. dexlib2's `Opcode.name` is the smali mnemonic, so these are listed rather than matched by name. */
 private val EXITS = setOf(Opcode.RETURN_VOID, Opcode.RETURN, Opcode.RETURN_WIDE, Opcode.RETURN_OBJECT, Opcode.THROW)
 
-/** The chat search lookups this patch hooks: the public ones. Messages in your chats are left to Telegram. */
-internal val MY_CHATS_LOOKUPS = setOf(SearchLookup.SPONSORED, SearchLookup.POSTS, SearchLookup.USERNAMES)
+/**
+ * The chat search lookups this patch hooks: the public ones, and the phone number match the username
+ * lookup's empty box skips. Messages in your chats are left to Telegram.
+ */
+internal val MY_CHATS_LOOKUPS = setOf(SearchLookup.SPONSORED, SearchLookup.POSTS, SearchLookup.USERNAMES, SearchLookup.PHONES)
 internal val MY_CHATS_HOOKS = ChatSearchHooks(PATCH, MY_CHATS_SEARCH)
 
 /** Search's tabs that matter here, by the string each one's title reads. */
@@ -190,6 +194,7 @@ internal fun BytecodePatchContext.writeMyChatsSearchStubs(sites: MyChatsSearchSi
         "const/4 v0, 0x1",
         "return v0",
     )).joinToString("\n")
+    sites.chat.lookUp?.let { writeStub(MY_CHATS_SEARCH, "lookUp", PHONE_MATCH_REGISTERS, it) }
     writeStub(MY_CHATS_SEARCH, "publicTab", 3, predicate(SearchTab.entries.filter { it.publicTab }))
     writeStub(MY_CHATS_SEARCH, "downloadsTab", 3, predicate(listOf(SearchTab.DOWNLOADS)))
     writeStub(MY_CHATS_SEARCH, "tabs", 2, """
@@ -299,7 +304,8 @@ internal fun BytecodePatchContext.writeMyChatsSearchStubs(sites: MyChatsSearchSi
  *
  * - the Chats tab's public lookups, the same places Keep searches on this phone hooks: sponsored
  *   accounts and public posts take the skip Telegram has for text that doesn't need them, and the
- *   username helper gets no text, as for an empty box;
+ *   username helper gets no text, as for an empty box, then runs its "+" phone number match again
+ *   with the text and no username lookup;
  * - the tab row, which drops its public tabs right after it's built, so every count, title and page
  *   Telegram reads from it afterwards agrees;
  * - the Downloads shortcut, which opens a fixed place on Telegram's own row and goes where Downloads

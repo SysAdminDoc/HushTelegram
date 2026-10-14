@@ -319,7 +319,7 @@ public final class SelectionCheck {
         hook(calls, flags, "storyLinkPreviews", "misc/DraftPreviews", "skipStoryLinkPreview");
         hook(calls, flags, "botSharePreviews", "misc/DraftPreviews", "skipBotSharePreview");
         hook(calls, flags, "localDrafts", "misc/LocalDrafts", "keepOnPhone");
-        hook(calls, flags, "localSearch", "misc/LocalSearch", "keep", "sent", "emptyText");
+        hook(calls, flags, "localSearch", "misc/LocalSearch", "keep", "sent", "emptyText", "phones");
         hook(calls, flags, "skipAutologin", "misc/LinkRouting", "addAutologinToken");
         hook(calls, flags, "commerceSettingsRows", "misc/Commerce", "addSettingsRow", "showWalletRow");
         hook(calls, flags, "commerceProfileGifts", "misc/Commerce", "addProfileTab", "showGiftsTab");
@@ -346,7 +346,7 @@ public final class SelectionCheck {
         hook(calls, flags, "firebaseCertificateHeader", "misc/FirebasePush", "certificateHeader");
         hook(calls, flags, "repairFirebasePush", "misc/FirebasePush", "registerDeviceAnswer");
         hook(calls, flags, "hidePopularApps", "misc/PopularApps", "skipLoad", "hideSection");
-        hook(calls, flags, "myChatsSearch", "misc/MyChatsSearch", "keep", "sent", "dropPublicTabs", "downloadsAt",
+        hook(calls, flags, "myChatsSearch", "misc/MyChatsSearch", "keep", "sent", "phones", "dropPublicTabs", "downloadsAt",
                 "keepHashtag", "endPublicPosts", "dropPublicResults");
         hook(calls, flags, "hideContactsBlock", "misc/ContactsBlock", "rows", "placeholder");
         hook(calls, flags, "hideGreetingStickers", "misc/GreetingStickers", "measure");

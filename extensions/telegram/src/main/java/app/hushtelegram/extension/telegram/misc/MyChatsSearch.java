@@ -25,7 +25,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * a hashtag opens there, leave the tab row, and the Downloads shortcut finds its tab where it now
  * sits. In the Chats tab, public accounts, sponsored accounts and public posts under a hashtag are
  * never asked for, each taking a way past its request Telegram already has. Your chats, contacts and
- * messages from chats you're in still show, and the media tabs stay.
+ * messages from chats you're in still show, contacts found by a "+" phone number among them, and the
+ * media tabs stay.
  *
  * <p>Everywhere else too: whichever screen looks up accounts by name (New Message, the contact,
  * forward, member, gift and giveaway pickers), the answer keeps only your own contacts and chats.
@@ -63,6 +64,9 @@ public final class MyChatsSearch {
     /** One number per account or chat, from either or from a peer naming it. Tests swap in their own, as for {@link #isPublic}. */
     static volatile ToLongFunction<Object> keyOf = MyChatsSearch::peerKey;
 
+    /** The username helper's lookup {@link #phones} runs. Tests swap in their own, as for {@link #isPublic}. */
+    static volatile PhoneMatch.Lookup lookup = MyChatsSearch::lookUp;
+
     interface PostsFinisher {
         void finish(Object controller, int searchType, Object[] update);
     }
@@ -88,6 +92,32 @@ public final class MyChatsSearch {
         HookStatus.counted(FamilyNames.HIDE_POPULAR_APPS, "public search lookup skipped");
         return null;
     }
+
+    /**
+     * Right after the Chats tab's call to the username helper, with what that call was handed and the
+     * text it would have had. The empty box {@link #sent} handed the helper also skipped its match of
+     * a "+" phone number against your contacts, which needs no server, so the match runs again here
+     * with the text and no username lookup. On true the hook has the tab show its rows again, since
+     * the helper doesn't tell it about a phone match. With Keep searches on this phone also on,
+     * whichever hook comes second finds the match made and leaves it.
+     *
+     * @return true when the match ran, so the tab has rows to show
+     */
+    public static boolean phones(Object helper, String query, boolean usernames, boolean chats, boolean bots,
+                                 boolean self, boolean groupsOnly, long channel, boolean phoneNumbers, int type,
+                                 int searchId, long except, Runnable done) {
+        if (!PhoneMatch.wanted(helper, query, channel) || !on()) return false;
+        return PhoneMatch.run(lookup, FamilyNames.HIDE_POPULAR_APPS, helper, query, chats, bots, self, groupsOnly,
+                channel, phoneNumbers, type, searchId, except, done);
+    }
+
+    /**
+     * The username helper's lookup on {@code helper}, written in when the patch is applied, since
+     * Telegram renames the helper in each build. Until then it does nothing.
+     */
+    public static void lookUp(Object helper, String query, boolean usernames, boolean chats, boolean bots,
+                              boolean self, boolean groupsOnly, long channel, boolean phoneNumbers, int type,
+                              int searchId, long except, Runnable done) {}
 
     /** At the end of the pager's tab list update: the public tabs leave the list it just built. */
     public static void dropPublicTabs(ArrayList<Object> tabs) {

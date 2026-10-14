@@ -150,6 +150,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ContactShare.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LocalDrafts.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LocalSearch.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/PhoneMatch.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GalleryCamera.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ChatSwipe.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ChannelPull.java",
