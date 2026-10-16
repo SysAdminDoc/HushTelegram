@@ -2084,11 +2084,12 @@ try {
     } finally {
         Reset-FactsFile 'patches-bundle.json'
     }
+    # At the front, since a published description already ends with its own What's new list.
     Set-FactsFile 'patches-bundle.json' {
-        param($text) $text -replace '("description":\s*"(?:[^"\\]|\\.)*)"', ('$1 ' + $otherFacts + '"')
+        param($text) $text -replace '("description":\s*")', ('$1' + $otherFacts + ' ')
     }
     try {
-        Assert-Throws { Invoke-Facts } '*names * and 3 patches*' `
+        Assert-Throws { Invoke-Facts } '*names 3 and * patches*' `
             'The release facts check took a description whose facts name a second build and count.'
     } finally {
         Reset-FactsFile 'patches-bundle.json'
@@ -2257,7 +2258,9 @@ try {
             @{ Name = 'a stale count beside the catalog''s'; Pattern = "*names 3 and $indexCount patches, and it has to name one count*"
                 Edit = { param($text) ([regex]'(?<!\d)\d+ patches\b').Replace($text, '3 patches', 1) } },
             @{ Name = 'another build beside the target'; Pattern = "*names Telegram $factsTarget and Telegram 9.9.9.9.9, and it has to name one build*"
-                Edit = { param($text) $at = $text.LastIndexOf("Telegram $factsTarget")
+                # The last one above the What's new list, since the facts check reads nothing under it.
+                Edit = { param($text) $end = $text.IndexOf('### '); if ($end -lt 0) { $end = $text.Length }
+                    $at = $text.LastIndexOf("Telegram $factsTarget", $end - 1)
                     $text.Substring(0, $at) + 'Telegram 9.9.9.9.9' + $text.Substring($at + "Telegram $factsTarget".Length) } })) {
         Set-FactsFile 'patches-bundle.json' $case.Edit
         try {
@@ -4868,7 +4871,9 @@ class AlignmentFixture {
         $package = $packageTarget.PackageName
         $stockMinSdk = if ($build -eq $newerBuild) { 36 } else { 21 }
         $versionCode = if ($build -eq $newerBuild) { 512008382 } else { [long]@($packageTarget.PackageVersionCodes[$build])[0] }
-        $apkm = Join-Path $fixtures "telegram-$build-$versionCode.xapk"
+        # The beta's named for its package too, as 13.0.3 shares the web build's version code (71839).
+        $suffix = if ($package -ceq $releaseTarget.PackageName) { '' } else { '-' + ($package -split '\.')[-1] }
+        $apkm = Join-Path $fixtures "telegram-$build-$versionCode$suffix.xapk"
         New-TestBundleArchive -Path $apkm -Entries ([ordered]@{
             "$package.apk" = Get-FixtureManifest -Build $build -Code "$versionCode" -MinSdk $stockMinSdk -Package $package
             'icon.png' = 'icon'
