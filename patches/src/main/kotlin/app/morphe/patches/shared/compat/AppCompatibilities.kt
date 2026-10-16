@@ -26,11 +26,11 @@ internal object AppCompatibilities {
     /** Telegram's icon blue. */
     private const val TELEGRAM_COLOR = 0x2AABEE
 
+    /** The Google Play build, the one APKMirror and Uptodown mirror. */
+    const val TELEGRAM_PACKAGE = "org.telegram.messenger"
+
     /** The build telegram.org hands out as a single APK, with its own updater. */
     const val TELEGRAM_WEB_PACKAGE = "org.telegram.messenger.web"
-
-    /** The separately installed universal beta APK Telegram distributes. */
-    const val TELEGRAM_BETA_PACKAGE = "org.telegram.messenger.beta"
 
     /**
      * SHA-256 of Telegram's signing certificate (CN=Nikolay Kudashov, OU=VK, O=VK): the
@@ -40,17 +40,17 @@ internal object AppCompatibilities {
      */
     const val TELEGRAM_SIGNER_SHA256 = "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
 
-    /** The default web build every patch here was applied to and read against. */
+    /** The Telegram release every patch here was applied to and read against, in both builds. */
     const val TELEGRAM_TARGET_VERSION = "13.0.3"
 
     /**
-     * The version code of telegram.org's [TELEGRAM_TARGET_VERSION] APK. It carries every ABI, so
-     * the one code stands for arm64-v8a too.
+     * The version code of the Play build's universal [TELEGRAM_TARGET_VERSION] APK on APKMirror.
+     * It carries every ABI, so the one code stands for arm64-v8a too.
      */
-    const val TELEGRAM_TARGET_VERSION_CODE = 71839
+    const val TELEGRAM_PLAY_TARGET_VERSION_CODE = 71831
 
-    const val TELEGRAM_BETA_TARGET_VERSION = "13.0.3"
-    const val TELEGRAM_BETA_TARGET_VERSION_CODE = 71839
+    /** The version code of telegram.org's [TELEGRAM_TARGET_VERSION] APK, also universal. */
+    const val TELEGRAM_TARGET_VERSION_CODE = 71839
 
     /**
      * HushTelegram's floor, Android 9. Telegram itself runs from Android 5, but the extension's
@@ -61,6 +61,20 @@ internal object AppCompatibilities {
     fun telegram(): Array<Compatibility> = arrayOf(
         Compatibility(
             name = "Telegram",
+            packageName = TELEGRAM_PACKAGE,
+            apkFileType = ApkFileType.APK,
+            appIconColor = TELEGRAM_COLOR,
+            signatures = setOf(TELEGRAM_SIGNER_SHA256),
+            targets = listOf(
+                AppTarget(
+                    version = TELEGRAM_TARGET_VERSION,
+                    versionCodes = mapOf(SupportedAbi.ARM64_V8A to TELEGRAM_PLAY_TARGET_VERSION_CODE),
+                    minSdk = TELEGRAM_TARGET_MIN_SDK,
+                ),
+            ),
+        ),
+        Compatibility(
+            name = "Telegram (telegram.org)",
             packageName = TELEGRAM_WEB_PACKAGE,
             apkFileType = ApkFileType.APK,
             appIconColor = TELEGRAM_COLOR,
@@ -69,20 +83,6 @@ internal object AppCompatibilities {
                 AppTarget(
                     version = TELEGRAM_TARGET_VERSION,
                     versionCodes = mapOf(SupportedAbi.ARM64_V8A to TELEGRAM_TARGET_VERSION_CODE),
-                    minSdk = TELEGRAM_TARGET_MIN_SDK,
-                ),
-            ),
-        ),
-        Compatibility(
-            name = "Telegram Beta",
-            packageName = TELEGRAM_BETA_PACKAGE,
-            apkFileType = ApkFileType.APK,
-            appIconColor = TELEGRAM_COLOR,
-            signatures = setOf(TELEGRAM_SIGNER_SHA256),
-            targets = listOf(
-                AppTarget(
-                    version = TELEGRAM_BETA_TARGET_VERSION,
-                    versionCodes = mapOf(SupportedAbi.ARM64_V8A to TELEGRAM_BETA_TARGET_VERSION_CODE),
                     minSdk = TELEGRAM_TARGET_MIN_SDK,
                 ),
             ),

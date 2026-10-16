@@ -55,7 +55,7 @@ internal object Fixtures {
 
     /**
      * The exact universal APK of every declared package, version and code. A web fixture cannot
-     * stand in for beta, and a different code of the same version cannot prove either build.
+     * stand in for the Play build, and a different code of the same version cannot prove either build.
      */
     fun declaredBuilds(): List<File> =
         AppCompatibilities.telegram().flatMap { compatibility ->
@@ -68,8 +68,8 @@ internal object Fixtures {
         }
 
     fun prefix(packageName: String?): String = when (packageName) {
+        AppCompatibilities.TELEGRAM_PACKAGE -> "telegram-play"
         AppCompatibilities.TELEGRAM_WEB_PACKAGE -> "telegram-web"
-        AppCompatibilities.TELEGRAM_BETA_PACKAGE -> "telegram-beta"
         else -> error("No vendor fixture naming rule for $packageName")
     }
 }
