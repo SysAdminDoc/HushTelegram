@@ -365,3 +365,90 @@ class RegisterKinds private constructor(private val entry: Array<Array<RegisterK
         }
     }
 }
+
+/**
+ * What in [method] ART's verifier would refuse, for code a patch writes whole, like an extension
+ * stub's body: a read whose register holds the wrong kind, and a reference handed to a return, a
+ * call or a field that names its class when the register holds another class. A register two paths
+ * leave holding references of different classes counts as the wrong class: ART types it as their
+ * nearest common superclass, which is often Object, and a class that fails that way fails on every
+ * run. Code written whole can always keep one class per register, so this is stricter than ART
+ * there and refuses the merge outright. An interface is taken on trust, as ART takes it.
+ *
+ * @param superclass a class's superclass, or null when it isn't known here
+ * @param isInterface whether a class is an interface, or null when it isn't known here
+ */
+fun refusedByVerifier(method: Method, superclass: (String) -> String?, isInterface: (String) -> Boolean?): List<String> {
+    val kinds = RegisterKinds.of(method)
+    val instructions = ControlFlow.of(method).instructions
+    val refusals = mutableListOf<String>()
+    fun supers(type: String): String? = KNOWN_SUPERS[type] ?: superclass(type)
+    fun interfaceOrNull(type: String): Boolean? = if (type in KNOWN_SUPERS) false else isInterface(type)
+    fun fitsClass(held: String, wanted: String): Boolean {
+        var at: String? = held
+        val seen = mutableSetOf<String>()
+        while (at != null && seen.add(at)) {
+            if (at == wanted) return true
+            if (at == OBJECT) return interfaceOrNull(wanted) != false
+            at = supers(at)
+        }
+        // A chain that runs out before Object passes through a class not known here.
+        return true
+    }
+    instructions.forEachIndexed { index, instruction ->
+        val state = kinds.at(index) ?: return@forEachIndexed
+        for ((register, use) in method.registerReads(instruction)) {
+            if (use != RegisterUse.OTHER && !use.fits(state, register)) {
+                refusals += "instruction $index reads v$register as ${use.name.lowercase()} holding ${state[register]}"
+            }
+        }
+        for ((register, wanted) in classedReads(method, instruction)) {
+            if (wanted == OBJECT || wanted.startsWith("[") || interfaceOrNull(wanted) == true) continue
+            val held = state[register]
+            if (held.tag != RegisterKind.Tag.REF) continue
+            val type = held.type
+            if (type == null) {
+                refusals += "instruction $index hands v$register, a reference whose class differs between paths, where $wanted is read"
+            } else if (!type.startsWith("[") && !fitsClass(type, wanted)) {
+                refusals += "instruction $index hands v$register, a $type, where $wanted is read"
+            }
+        }
+    }
+    return refusals
+}
+
+private const val OBJECT = "Ljava/lang/Object;"
+
+/** Framework classes a check may need the place of without the app's classes carrying them. */
+private val KNOWN_SUPERS = mapOf("Ljava/lang/String;" to OBJECT)
+
+/** The registers [instruction] reads as a reference of a named class, with that class. */
+private fun classedReads(method: Method, instruction: Instruction): List<Pair<Int, String>> {
+    val registers = instruction.namedRegisters()
+    val name = instruction.opcode.name
+    fun isReference(type: String) = type.startsWith("L") || type.startsWith("[")
+    return when {
+        name == "return-object" -> listOf(registers[0] to method.returnType)
+        name == "iput-object" -> (instruction as ReferenceInstruction).reference.let { it as FieldReference }
+            .let { listOf(registers[0] to it.type, registers[1] to it.definingClass) }
+        name.startsWith("iput") || name.startsWith("iget") ->
+            listOf(registers[1] to ((instruction as ReferenceInstruction).reference as FieldReference).definingClass)
+        name == "sput-object" -> listOf(registers[0] to ((instruction as ReferenceInstruction).reference as FieldReference).type)
+        name.startsWith("invoke-polymorphic") || name.startsWith("invoke-custom") -> emptyList()
+        name.startsWith("invoke") -> {
+            val called = (instruction as ReferenceInstruction).reference as MethodReference
+            val slots = mutableListOf<String?>()
+            if (!name.startsWith("invoke-static")) {
+                // A constructor's receiver is unconstructed, which the kind check covers, and an
+                // interface call's receiver is checked when it runs.
+                slots += if (called.name == "<init>" || name.startsWith("invoke-interface")) null else called.definingClass
+            }
+            called.parameterTypes.forEach { type ->
+                slots += type.toString().takeIf(::isReference)
+                if (type == "J" || type == "D") slots += null
+            }
+            registers.indices.mapNotNull { slot -> slots.getOrNull(slot)?.let { registers[slot] to it } }
+        }
+        else -> emptyList()
+    }
+}

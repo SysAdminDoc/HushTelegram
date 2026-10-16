@@ -21,6 +21,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMuta
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.util.ControlFlow
 import app.morphe.util.RegisterLiveness
+import app.morphe.util.refusedByVerifier
 import app.morphe.util.returnEarly
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
@@ -99,6 +100,14 @@ internal fun BytecodePatchContext.writeStub(type: String, name: String, register
         stub.hiddenApiRestrictions,
         MutableMethodImplementation(registers),
     ).toMutable().apply { addInstructionsWithLabels(0, smali) }
+    // ART verifies the whole class when it loads, so one stub it refuses takes every method of
+    // the extension class down with it, on whatever screen first calls into that class.
+    val refusals = try {
+        refusedByVerifier(body, { classDefByOrNull(it)?.superclass }, { classDefByOrNull(it)?.let { found -> AccessFlags.INTERFACE.isSet(found.accessFlags) } })
+    } catch (unreadable: IllegalArgumentException) {
+        listOf("its body can't be checked: ${unreadable.message}")
+    }
+    if (refusals.isNotEmpty()) throw PatchException("$type->$name would fail Android's verifier: ${refusals.joinToString("; ")}")
     classDef.methods.remove(stub)
     classDef.methods.add(body)
 }
