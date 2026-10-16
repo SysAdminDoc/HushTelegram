@@ -34,7 +34,7 @@ import app.hushtelegram.extension.telegram.settings.Settings;
 
 /** Scoped certificate repair and read-only local notification facts. */
 public final class FirebasePush {
-    // Independently verified from both pinned official web and beta APK signing certificates.
+    // Independently verified from both pinned official Play and telegram.org APK signing certificates.
     private static final String OFFICIAL_CERTIFICATE_SHA1 = "9723E5838612E9C7C08CA2C6573B6026D7A51F8F";
     private static final Pattern INSTALLATION_PATH = Pattern.compile(
             "/v1/projects/[A-Za-z0-9_-]+/installations(?:/[A-Za-z0-9_-]+(?:/authTokens:generate)?)?");
@@ -530,8 +530,8 @@ public final class FirebasePush {
                 return original;
             }
             String nativePackage = connection.getRequestProperty("X-Android-Package");
-            if (!"org.telegram.messenger.web".equals(nativePackage)
-                    && !"org.telegram.messenger.beta".equals(nativePackage)) return original;
+            if (!"org.telegram.messenger".equals(nativePackage)
+                    && !"org.telegram.messenger.web".equals(nativePackage)) return original;
             if (OFFICIAL_CERTIFICATE_SHA1.equalsIgnoreCase(original)) return original;
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.REPAIR_FIREBASE_PUSH, "certificate header", failure);

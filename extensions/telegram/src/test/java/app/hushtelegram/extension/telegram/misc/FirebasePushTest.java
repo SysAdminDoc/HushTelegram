@@ -532,7 +532,7 @@ public class FirebasePushTest {
     }
 
     @Test public void foreignPackagesAndMissingNativePackageHeadersKeepStock() throws Exception {
-        for (String packageName : Arrays.asList("org.telegram.messenger", "org.telegram.messenger.beta.other",
+        for (String packageName : Arrays.asList("org.telegram.messenger.beta", "org.telegram.messenger.other",
                 "other.client", "org.telegram.messenger.web.other")) {
             ProbeConnection connection = connection(CREATE);
             connection.setRequestProperty("X-Android-Package", packageName);
@@ -544,11 +544,11 @@ public class FirebasePushTest {
         assertFalse(HookStatus.report().get(0).contains("Counted:"));
     }
 
-    @Test public void betaUsesTheIndependentlyVerifiedSharedCertificateAndKeepsAllOtherHeaders() throws Exception {
+    @Test public void playBuildUsesTheIndependentlyVerifiedSharedCertificateAndKeepsAllOtherHeaders() throws Exception {
         for (String url : Arrays.asList(CREATE, CREATE + "/test-fid/authTokens:generate", CREATE + "/test-fid")) {
             ProbeConnection connection = connection(url);
-            connection.setRequestProperty("X-Android-Package", "org.telegram.messenger.beta");
-            connection.setRequestProperty("x-goog-api-key", "test-beta-api-key");
+            connection.setRequestProperty("X-Android-Package", "org.telegram.messenger");
+            connection.setRequestProperty("x-goog-api-key", "test-play-api-key");
             Map<String, List<String>> before = new LinkedHashMap<>(connection.getRequestProperties());
             assertEquals(OFFICIAL_SHA1, FirebasePush.certificateHeader(connection, ORIGINAL));
             assertEquals(before, connection.getRequestProperties());
