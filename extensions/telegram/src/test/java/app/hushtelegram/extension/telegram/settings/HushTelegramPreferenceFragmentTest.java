@@ -167,7 +167,6 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.MESSAGE_MENU_REPEAT, "Add Repeat to the message menu");
         ROW_TITLES.put(PatchFamily.KEEP_DELETED_MESSAGES, "Keep deleted messages");
         ROW_TITLES.put(PatchFamily.ASK_BEFORE_STICKER, "Ask before sending a sticker");
-        ROW_TITLES.put(PatchFamily.BETA_LOGS_OFF, "Turn off beta debug logs");
         ROW_TITLES.put(PatchFamily.OUTSIDE_TRANSLATE, "Translate with an outside service");
         ROW_TITLES.put(PatchFamily.HIDE_CHANNEL_BUTTONS, "Hide channel bar buttons");
         ROW_TITLES.put(PatchFamily.HIDE_SEND_AS, "Hide Send as button");
@@ -747,15 +746,6 @@ public class HushTelegramPreferenceFragmentTest {
             // Stickers, GIFs, recordings and calls go out without a question until the switch is turned on.
             assertFalse(Settings.ASK_BEFORE_STICKER.key,
                     ((SwitchPreference) page.findPreference(Settings.ASK_BEFORE_STICKER.key)).isChecked());
-            assertEquals("Turn off beta debug logs", String.valueOf(page.findPreference(Settings.BETA_LOGS_OFF.key).getTitle()));
-            assertEquals("Telegram Beta keeps debug logs on your phone all the time, its connection log included, "
-                            + "and its own debug menu can't stop that. This stops them. Logs already saved stay until you "
-                            + "clear them, and the regular build doesn't keep them, so nothing changes there. Restart "
-                            + "Telegram to see the change.",
-                    String.valueOf(page.findPreference(Settings.BETA_LOGS_OFF.key).getSummary()));
-            // The beta keeps writing its logs until the switch is turned on.
-            assertFalse(Settings.BETA_LOGS_OFF.key,
-                    ((SwitchPreference) page.findPreference(Settings.BETA_LOGS_OFF.key)).isChecked());
             assertEquals("Translate with an outside service", String.valueOf(page.findPreference(Settings.OUTSIDE_TRANSLATE.key).getTitle()));
             assertEquals("Adds Translate here to a message's menu and Translate this chat to a chat's menu, using "
                             + "the translation service you choose. The text you ask to translate is sent to that service, "

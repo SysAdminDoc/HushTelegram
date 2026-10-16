@@ -103,7 +103,6 @@ public final class SettingsStatus {
     public static boolean messageMenuRepeat() { return false; }
     public static boolean keepDeleted() { return false; }
     public static boolean askBeforeSending() { return false; }
-    public static boolean betaLogsOff() { return false; }
     public static boolean outsideTranslate() { return false; }
     public static boolean hideChannelButtons() { return false; }
     public static boolean hideSendAs() { return false; }

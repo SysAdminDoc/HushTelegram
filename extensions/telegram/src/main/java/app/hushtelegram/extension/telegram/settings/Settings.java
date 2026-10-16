@@ -363,14 +363,6 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_ask_before_sticker", FALSE);
 
     /**
-     * Telegram Beta stops writing the debug logs its DEBUG_VERSION build forces on, in Java and in
-     * native code. Off by default, since a beta's logs are what Telegram asks testers for in a bug
-     * report.
-     */
-    public static final BooleanSetting BETA_LOGS_OFF =
-            new BooleanSetting("hushtelegram_beta_logs_off", FALSE, true);
-
-    /**
      * Translate a message or a whole chat with Google's web translate, beside Telegram's own Premium
      * translation. Off by default, and nothing leaves the phone until a chat or message is turned on.
      */

@@ -142,7 +142,6 @@ public final class SettingsBackup {
             Settings.MESSAGE_MENU_REPEAT,
             Settings.KEEP_DELETED_MESSAGES,
             Settings.ASK_BEFORE_STICKER,
-            Settings.BETA_LOGS_OFF,
             Settings.OUTSIDE_TRANSLATE,
             Settings.HIDE_CHANNEL_BUTTONS,
             Settings.HIDE_SEND_AS,

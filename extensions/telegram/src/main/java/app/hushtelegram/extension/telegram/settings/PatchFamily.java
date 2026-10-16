@@ -102,7 +102,6 @@ public enum PatchFamily {
     MESSAGE_MENU_REPEAT(FamilyNames.MESSAGE_MENU_REPEAT, "messageMenuRepeat", null, Settings.MESSAGE_MENU_REPEAT, Settings.MESSAGE_MENU_COPY_PHOTO, Settings.MESSAGE_MENU_DETAILS, Settings.MESSAGE_MENU_QUICK_FORWARD),
     KEEP_DELETED_MESSAGES(FamilyNames.KEEP_DELETED_MESSAGES, "keepDeleted", null, Settings.KEEP_DELETED_MESSAGES),
     ASK_BEFORE_STICKER(FamilyNames.ASK_BEFORE_STICKER, "askBeforeSending", null, Settings.ASK_BEFORE_STICKER, Settings.ASK_BEFORE_GIF, Settings.ASK_BEFORE_VOICE_VIDEO, Settings.ASK_BEFORE_CALL),
-    BETA_LOGS_OFF(FamilyNames.BETA_LOGS_OFF, "betaLogsOff", null, Settings.BETA_LOGS_OFF),
     OUTSIDE_TRANSLATE(FamilyNames.OUTSIDE_TRANSLATE, "outsideTranslate", null, Settings.OUTSIDE_TRANSLATE),
     HIDE_CHANNEL_BUTTONS(FamilyNames.HIDE_CHANNEL_BUTTONS, "hideChannelButtons", null, Settings.HIDE_CHANNEL_BUTTONS),
     HIDE_SEND_AS(FamilyNames.HIDE_SEND_AS, "hideSendAs", null, Settings.HIDE_SEND_AS),
@@ -196,7 +195,7 @@ public enum PatchFamily {
                 ALLOW_CHAT_BLUR, NO_HAPTICS, REACTION_EFFECTS_OFF, HIDE_STICKER_TIME, CHANGE_STICKER_SIZE, HIDE_FEATURES_AND_INVITE,
                 HIDE_CHANNEL_BUTTONS, HIDE_SEND_AS),
         PRIVACY("Privacy", DISABLE_ANALYTICS, DISABLE_CALL_DEBUG, DISABLE_DRAFT_PREVIEWS, GALLERY_CAMERA_ON_TAP,
-                HIDE_PHONE_NUMBER, BETA_LOGS_OFF);
+                HIDE_PHONE_NUMBER);
 
         /** The English title, which is also the page's route and its translation key. */
         final String title;

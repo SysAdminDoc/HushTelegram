@@ -119,7 +119,7 @@ try {
     $desktop = Resolve-DesktopCli -Root $Root -Required
     $fixtureDir = $env:HUSHTELEGRAM_FIXTURE_DIR
     if (-not $fixtureDir) { $fixtureDir = Join-Path $Root 'fixtures' }
-    $fixtures = @('telegram-web-13.0.3-71839.apk', 'telegram-beta-13.0.3-71839.apk') |
+    $fixtures = @('telegram-web-13.0.3-71839.apk', 'telegram-play-13.0.3-71831.apk') |
         ForEach-Object { Join-Path $fixtureDir $_ }
     foreach ($fixture in $fixtures) {
         Assert-Selection (Test-Path -LiteralPath $fixture -PathType Leaf) 'A native-version control fixture is missing.'
@@ -139,8 +139,8 @@ try {
     $fixtureOutput = Join-Path $scratch 'fixture-private.txt'
     $fixtureCode = Invoke-SelectionTool -Program $java -Arguments (@('-Xmx512m', '-XX:ActiveProcessorCount=2', '-cp',
         ($classes + [IO.Path]::PathSeparator + $desktop), 'SelectionCheckFixtureTest') + $fixtures) -PrivateOutput $fixtureOutput
-    Assert-Selection ($fixtureCode -eq 0 -and (Get-Content $fixtureOutput -Raw).Contains('FIXTURE_CHECKS_PASSED checks=41')) `
-        'The checker lost its beta-logs gate, its refusal controls, its Firebase markers or its launcher icon control.'
+    Assert-Selection ($fixtureCode -eq 0 -and (Get-Content $fixtureOutput -Raw).Contains('FIXTURE_CHECKS_PASSED checks=17')) `
+        'The checker lost its BuildVars refusal control, its Firebase markers or its launcher icon control.'
     # A matrix run keeps one checker, which decodes the clean fixture once and answers each case.
     $checker = Start-SelectionChecker -Java $java -ClassPath ($classes + [IO.Path]::PathSeparator + $desktop) -Apk $fixtures[0] `
         -PrivateOutput (Join-Path $scratch 'checker-private.txt')

@@ -603,14 +603,14 @@ public class SettingsNavigationTest {
         PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.DISABLE_CALL_DEBUG, PatchFamily.GALLERY_CAMERA_ON_TAP);
         recreate();
         assertEquals("Call diagnostics, and more", homeLine("Privacy"));
-        // The phone number and beta log switches moved here from Chats: they add "and more", and alone name nothing.
+        // The phone number switch moved here from Chats: it adds "and more", and alone names nothing.
         PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.DISABLE_ANALYTICS, PatchFamily.HIDE_PHONE_NUMBER);
         recreate();
         assertEquals("Usage reports, and more", homeLine("Privacy"));
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.GALLERY_CAMERA_ON_TAP, PatchFamily.BETA_LOGS_OFF);
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.GALLERY_CAMERA_ON_TAP, PatchFamily.HIDE_PHONE_NUMBER);
         recreate();
         assertEquals("Gallery camera, and more", homeLine("Privacy"));
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_PHONE_NUMBER, PatchFamily.BETA_LOGS_OFF);
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_PHONE_NUMBER);
         recreate();
         assertTrue(contains("section_Privacy"));
         assertNull(homeLine("Privacy"));

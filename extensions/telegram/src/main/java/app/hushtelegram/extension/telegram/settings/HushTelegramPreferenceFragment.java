@@ -890,13 +890,6 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "number with them. With this on, the box starts clear and your number goes only if you tick it.")));
             }
         }
-        if (build.contains(PatchFamily.BETA_LOGS_OFF)) {
-            on(pages, PatchFamily.BETA_LOGS_OFF).addPreference(toggle(context, Settings.BETA_LOGS_OFF, L10n.t("Turn off beta debug logs"),
-                    PatchFamily.BETA_LOGS_OFF.coverageSummary(L10n.t("Telegram Beta keeps debug logs on your phone all the time, its connection log "
-                            + "included, and its own debug menu can't stop that. This stops them. Logs already saved "
-                            + "stay until you clear them, and the regular build doesn't keep them, so nothing changes "
-                            + "there. Restart Telegram to see the change."))));
-        }
     }
 
     /** Links, in every build: the link switches, Supported links and how t.me links get here. */

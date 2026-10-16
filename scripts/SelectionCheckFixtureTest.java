@@ -3,17 +3,10 @@ import com.android.tools.smali.dexlib2.Opcode;
 import com.android.tools.smali.dexlib2.Opcodes;
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation;
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction10x;
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction11x;
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction35c;
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction3rc;
 import com.android.tools.smali.dexlib2.iface.ClassDef;
 import com.android.tools.smali.dexlib2.iface.Method;
 import com.android.tools.smali.dexlib2.iface.MethodImplementation;
-import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction;
-import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction;
-import com.android.tools.smali.dexlib2.iface.reference.MethodReference;
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod;
-import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference;
 import com.reandroid.json.JSONArray;
 import com.reandroid.json.JSONObject;
 
@@ -23,12 +16,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Runs the checker's parts on the real fixtures: the beta-logs gate put into each BuildVars
- * initializer, which Firebase reporters each build carries, and a launcher icon expected where
- * the table has none.
+ * Runs the checker's parts on the real fixtures: each BuildVars initializer read against itself
+ * and against a changed copy, which Firebase reporters each build carries, and a launcher icon
+ * expected where the table has none.
  */
 public final class SelectionCheckFixtureTest {
-    private static final String BETA_LOGS = "Lapp/hushtelegram/extension/telegram/misc/BetaLogs;";
     private static int checks;
 
     private static Method copy(Method source, MethodImplementation body) {
@@ -36,72 +28,16 @@ public final class SelectionCheckFixtureTest {
                 source.getReturnType(), source.getAccessFlags(), source.getAnnotations(), source.getHiddenApiRestrictions(), body);
     }
 
-    private static void verify(Method source, Method candidate, boolean gate, boolean accept) {
-        try {
-            int count = SelectionCheck.buildVarsChanges(source, candidate, false, 0, "", gate);
-            if (!accept || count != 0) throw new AssertionError("BUILD_VARS_FALSE_ACCEPT");
-        } catch (IllegalStateException refusal) {
-            if (accept) throw new AssertionError("BUILD_VARS_FALSE_REFUSAL", refusal);
-        }
-        checks++;
-    }
-
-    private static int call(MutableMethodImplementation body) {
-        int at = -1;
-        for (int i = 0; i < body.getInstructions().size(); i++) {
-            if (body.getInstructions().get(i) instanceof ReferenceInstruction reference
-                    && reference.getReference() instanceof MethodReference method
-                    && method.getDefiningClass().equals(BETA_LOGS)) {
-                if (at != -1) throw new AssertionError("GATE_TWICE");
-                at = i;
-            }
-        }
-        if (at < 1) throw new AssertionError("GATE_MISSING");
-        return at;
-    }
-
+    /** The initializer against itself has nothing changed, and one extra instruction is refused. */
     private static void exercise(Method source) {
-        verify(source, source, false, true);
-        verify(source, source, true, false);
-        var gated = SelectionCheck.withBetaLogsGate(source.getImplementation());
-        verify(source, copy(source, gated), true, true);
-        verify(source, copy(source, gated), false, false);
-        // The call now sits where the if-nez was, so a second gate has nothing to go in front of.
+        if (SelectionCheck.buildVarsChanges(source, source, false, 0, "") != 0) throw new AssertionError("BUILD_VARS_FALSE_CHANGE");
+        checks++;
+        var body = new MutableMethodImplementation(source.getImplementation());
+        body.addInstruction(0, new BuilderInstruction10x(Opcode.NOP));
         try {
-            SelectionCheck.withBetaLogsGate(copy(source, gated).getImplementation());
-            throw new AssertionError("GATE_ON_GATE_ACCEPTED");
-        } catch (IllegalStateException expected) { checks++; }
-        var forceLogs = new ImmutableMethodReference(BETA_LOGS, "forceLogs", List.of("Z"), "Z");
-        for (String mutation : new String[]{"register", "result", "missing", "plain", "method", "duplicate",
-                "before", "order", "extra"}) {
-            var body = SelectionCheck.withBetaLogsGate(source.getImplementation());
-            int at = call(body);
-            int register = ((OneRegisterInstruction) body.getInstructions().get(at + 1)).getRegisterA();
-            switch (mutation) {
-                case "register" -> body.replaceInstruction(at,
-                        new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, register + 1, 1, forceLogs));
-                case "result" -> body.replaceInstruction(at + 1, new BuilderInstruction11x(Opcode.MOVE_RESULT, register + 1));
-                case "missing" -> body.removeInstruction(at + 1);
-                case "plain" -> body.replaceInstruction(at,
-                        new BuilderInstruction35c(Opcode.INVOKE_STATIC, 1, register, 0, 0, 0, 0, forceLogs));
-                case "method" -> body.replaceInstruction(at, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, register, 1,
-                        new ImmutableMethodReference(BETA_LOGS, "keepLogs", List.of("Z"), "Z")));
-                case "duplicate" -> {
-                    body.addInstruction(at + 2, new BuilderInstruction11x(Opcode.MOVE_RESULT, register));
-                    body.addInstruction(at + 2, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, register, 1, forceLogs));
-                }
-                case "before" -> {
-                    body.removeInstruction(at + 1);
-                    body.removeInstruction(at);
-                    body.addInstruction(at - 1, new BuilderInstruction11x(Opcode.MOVE_RESULT, register));
-                    body.addInstruction(at - 1, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, register, 1, forceLogs));
-                }
-                case "order" -> body.swapInstructions(at, at + 1);
-                case "extra" -> body.addInstruction(0, new BuilderInstruction10x(Opcode.NOP));
-                default -> throw new AssertionError(mutation);
-            }
-            verify(source, copy(source, body), true, false);
-        }
+            SelectionCheck.buildVarsChanges(source, copy(source, body), false, 0, "");
+            throw new AssertionError("BUILD_VARS_FALSE_ACCEPT");
+        } catch (IllegalStateException refusal) { checks++; }
     }
 
     private static SelectionCheck.Expected expected(JSONObject flags, List<String> optional) {

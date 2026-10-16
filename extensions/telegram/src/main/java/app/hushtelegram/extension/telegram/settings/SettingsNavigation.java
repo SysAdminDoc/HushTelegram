@@ -343,9 +343,9 @@ final class SettingsNavigation extends BaseAdapter {
 
     /**
      * The Privacy row's line, naming only the switches this build put on that page. The draft
-     * preview, gallery camera, phone number and beta log switches are off as shipped, so they add
-     * "and more" rather than names of their own. A page holding only the draft or camera switch
-     * still names it; one holding only the last two has no line.
+     * preview, gallery camera and phone number switches are off as shipped, so they add "and more"
+     * rather than names of their own. A page holding only the draft or camera switch still names
+     * it; one holding only the phone number switch has no line.
      */
     @Nullable
     static String privacySummary(Set<PatchFamily> build) {
@@ -353,7 +353,7 @@ final class SettingsNavigation extends BaseAdapter {
         boolean calls = build.contains(PatchFamily.DISABLE_CALL_DEBUG);
         boolean drafts = build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS);
         boolean camera = build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP);
-        boolean others = build.contains(PatchFamily.HIDE_PHONE_NUMBER) || build.contains(PatchFamily.BETA_LOGS_OFF);
+        boolean others = build.contains(PatchFamily.HIDE_PHONE_NUMBER);
         String named = reports && calls ? L10n.t("Usage reports and call diagnostics")
                 : reports ? L10n.t("Usage reports") : calls ? L10n.t("Call diagnostics") : null;
         if (named == null) {

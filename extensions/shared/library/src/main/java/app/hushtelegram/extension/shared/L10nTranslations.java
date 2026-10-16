@@ -47,7 +47,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1386);
+        Map<String, String> table = new HashMap<>(1382);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -1100,8 +1100,6 @@ public final class L10nTranslations {
                 "Zum Wiedereinschalten tippen.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
                 "Tippen, langes Dr\u00fccken, Wischen und falsche Eingaben lassen das Handy nicht mehr vibrieren. Eingehende Anrufe vibrieren weiterhin, und Benachrichtigungen folgen deinen eigenen Einstellungen.");
-        table.put("Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.",
-                "Telegram Beta speichert st\u00e4ndig Debug-Protokolle auf deinem Handy, auch das Verbindungsprotokoll, und sein eigenes Debug-Men\u00fc kann das nicht abstellen. Das hier stellt sie ab. Bereits gespeicherte Protokolle bleiben, bis du sie l\u00f6schst, und die normale Version speichert keine, dort \u00e4ndert sich also nichts. Starte Telegram neu, um die \u00c4nderung zu sehen.");
         table.put("Telegram accounts",
                 "Telegram-Konten");
         table.put("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, those links open without it, and you can sign in there yourself.",
@@ -1168,11 +1166,11 @@ public final class L10nTranslations {
                 "Die Adresse muss mit https:// beginnen.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "Das Fotoraster im Anhangmen\u00fc beginnt mit deinen Fotos statt mit einer Live-Kamerakachel. Ein Chat \u00fcbernimmt das beim n\u00e4chsten \u00d6ffnen.");
+        table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
+                "Die Leiste unten auf dem Hauptbildschirm wird niedriger und nur so breit, wie ihre Tabs es brauchen. Die Tabs behalten ihre volle H\u00f6he, du triffst sie also genauso leicht. Starte Telegram neu, um die \u00c4nderung zu sehen.");
     }
 
     private static void fillDe9(Map<String, String> table) {
-        table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
-                "Die Leiste unten auf dem Hauptbildschirm wird niedriger und nur so breit, wie ihre Tabs es brauchen. Die Tabs behalten ihre volle H\u00f6he, du triffst sie also genauso leicht. Starte Telegram neu, um die \u00c4nderung zu sehen.");
         table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
                 "Die Kamera im Anhangmen\u00fc \u00f6ffnet sich immer mit der R\u00fcckkamera, nicht mit der zuletzt genutzten. Du kannst sie trotzdem umschalten.");
         table.put("The chat list opens on the folder you pick below instead of All Chats. Each account keeps its own pick, and the folder order doesn't change. If that folder is gone, renamed or locked, All Chats opens as usual.",
@@ -1261,8 +1259,6 @@ public final class L10nTranslations {
                 "Schalte die Chat-\u00dcbersetzung wieder ein. Sie gilt jetzt pro Konto.");
         table.put("Turn off Telegram's update checks",
                 "Telegrams Update-Pr\u00fcfungen abschalten");
-        table.put("Turn off beta debug logs",
-                "Beta-Debug-Protokolle ausschalten");
         table.put("Turn off reaction effects",
                 "Reaktionseffekte ausschalten");
         table.put("Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.",
@@ -1291,13 +1287,13 @@ public final class L10nTranslations {
                 "Unbekannt");
         table.put("Unlock canceled. Settings stay locked.",
                 "Entsperren abgebrochen. Die Einstellungen bleiben gesperrt.");
-    }
-
-    private static void fillDe10(Map<String, String> table) {
         table.put("Unlock started. Settings open in 24 hours unless you cancel.",
                 "Entsperren gestartet. In 24 Stunden sind die Einstellungen wieder offen, wenn du nicht abbrichst.");
         table.put("Unlock your phone to play voice and video messages.",
                 "Entsperre dein Handy, um Sprach- und Videonachrichten abzuspielen.");
+    }
+
+    private static void fillDe10(Map<String, String> table) {
         table.put("Untick a part to leave it out. Copy and Save use only what's ticked.",
                 "Entferne das H\u00e4kchen bei einem Teil, um ihn wegzulassen. Kopieren und Speichern nehmen nur, was angehakt ist.");
         table.put("Until you resume, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
@@ -1414,13 +1410,13 @@ public final class L10nTranslations {
                 "Chat-Entw\u00fcrfe");
         table.put("chat list menu Wallet item",
                 "Wallet-Eintrag im Chatlisten-Men\u00fc");
-    }
-
-    private static void fillDe11(Map<String, String> table) {
         table.put("chat-list story bar",
                 "Story-Leiste der Chatliste");
         table.put("compose text paste",
                 "Texteinf\u00fcgen im Nachrichtenfeld");
+    }
+
+    private static void fillDe11(Map<String, String> table) {
         table.put("deleted",
                 "gel\u00f6scht");
         table.put("draft syncing",
@@ -1486,7 +1482,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(1386);
+        Map<String, String> table = new HashMap<>(1382);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -2539,8 +2535,6 @@ public final class L10nTranslations {
                 "Toca para volver a activarlo.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
                 "Los toques, las pulsaciones largas, los deslizamientos y las entradas incorrectas ya no hacen vibrar el tel\u00e9fono. Las llamadas entrantes siguen vibrando y las notificaciones siguen tus propios ajustes.");
-        table.put("Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.",
-                "Telegram Beta guarda registros de depuraci\u00f3n en tu tel\u00e9fono todo el tiempo, incluido el registro de conexi\u00f3n, y su propio men\u00fa de depuraci\u00f3n no puede detenerlo. Esto los detiene. Los registros ya guardados se quedan hasta que los borres, y la versi\u00f3n normal no los guarda, as\u00ed que ah\u00ed no cambia nada. Reinicia Telegram para ver el cambio.");
         table.put("Telegram accounts",
                 "Cuentas de Telegram");
         table.put("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, those links open without it, and you can sign in there yourself.",
@@ -2607,11 +2601,11 @@ public final class L10nTranslations {
                 "La direcci\u00f3n tiene que empezar por https://.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "La cuadr\u00edcula de fotos del men\u00fa de adjuntos empieza con tus fotos en lugar de un recuadro de c\u00e1mara en vivo. Un chat lo aplica la pr\u00f3xima vez que lo abras.");
+        table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
+                "La barra inferior de la pantalla principal se vuelve m\u00e1s baja y solo tan ancha como necesitan sus pesta\u00f1as. Las pesta\u00f1as conservan toda su altura, as\u00ed que son igual de f\u00e1ciles de tocar. Reinicia Telegram para ver el cambio.");
     }
 
     private static void fillEs9(Map<String, String> table) {
-        table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
-                "La barra inferior de la pantalla principal se vuelve m\u00e1s baja y solo tan ancha como necesitan sus pesta\u00f1as. Las pesta\u00f1as conservan toda su altura, as\u00ed que son igual de f\u00e1ciles de tocar. Reinicia Telegram para ver el cambio.");
         table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
                 "La c\u00e1mara del men\u00fa de adjuntos siempre se abre con la lente trasera, no con la que usaste por \u00faltima vez. A\u00fan puedes cambiarla.");
         table.put("The chat list opens on the folder you pick below instead of All Chats. Each account keeps its own pick, and the folder order doesn't change. If that folder is gone, renamed or locked, All Chats opens as usual.",
@@ -2700,8 +2694,6 @@ public final class L10nTranslations {
                 "Vuelve a activar la traducci\u00f3n de chats. Ahora va por cuenta.");
         table.put("Turn off Telegram's update checks",
                 "Desactivar las comprobaciones de actualizaci\u00f3n de Telegram");
-        table.put("Turn off beta debug logs",
-                "Desactivar los registros de depuraci\u00f3n de la beta");
         table.put("Turn off reaction effects",
                 "Desactivar los efectos de las reacciones");
         table.put("Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.",
@@ -2730,13 +2722,13 @@ public final class L10nTranslations {
                 "Desconocido");
         table.put("Unlock canceled. Settings stay locked.",
                 "Desbloqueo cancelado. La configuraci\u00f3n sigue bloqueada.");
-    }
-
-    private static void fillEs10(Map<String, String> table) {
         table.put("Unlock started. Settings open in 24 hours unless you cancel.",
                 "Desbloqueo iniciado. La configuraci\u00f3n se abre en 24 horas si no lo cancelas.");
         table.put("Unlock your phone to play voice and video messages.",
                 "Desbloquea tu tel\u00e9fono para reproducir mensajes de voz y video.");
+    }
+
+    private static void fillEs10(Map<String, String> table) {
         table.put("Untick a part to leave it out. Copy and Save use only what's ticked.",
                 "Desmarca una parte para dejarla fuera. Copiar y Guardar usan solo lo que est\u00e1 marcado.");
         table.put("Until you resume, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
@@ -2853,13 +2845,13 @@ public final class L10nTranslations {
                 "borradores de chat");
         table.put("chat list menu Wallet item",
                 "opci\u00f3n de Billetera del men\u00fa de la lista de chats");
-    }
-
-    private static void fillEs11(Map<String, String> table) {
         table.put("chat-list story bar",
                 "barra de historias de la lista de chats");
         table.put("compose text paste",
                 "pegado de texto al escribir");
+    }
+
+    private static void fillEs11(Map<String, String> table) {
         table.put("deleted",
                 "eliminado");
         table.put("draft syncing",
@@ -2925,7 +2917,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1386);
+        Map<String, String> table = new HashMap<>(1382);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -3978,8 +3970,6 @@ public final class L10nTranslations {
                 "Ketuk untuk mengaktifkan HushTelegram lagi.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
                 "Ketukan, tekan lama, geseran, dan input yang salah tidak lagi membuat ponsel bergetar. Panggilan masuk tetap bergetar, dan notifikasi mengikuti pengaturan Anda sendiri.");
-        table.put("Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.",
-                "Telegram Beta selalu menyimpan log debug di ponsel Anda, termasuk log koneksinya, dan menu debug miliknya sendiri tidak bisa menghentikannya. Ini menghentikannya. Log yang sudah tersimpan tetap ada sampai Anda menghapusnya, dan versi biasa tidak menyimpannya, jadi di sana tidak ada yang berubah. Mulai ulang Telegram untuk melihat perubahannya.");
         table.put("Telegram accounts",
                 "Akun Telegram");
         table.put("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, those links open without it, and you can sign in there yourself.",
@@ -4046,11 +4036,11 @@ public final class L10nTranslations {
                 "Alamat harus diawali dengan https://.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "Kisi foto di menu lampiran dimulai dengan foto Anda, bukan kotak kamera langsung. Obrolan akan menerapkannya saat Anda membukanya lagi.");
+        table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
+                "Bilah di bagian bawah layar utama jadi lebih pendek dan hanya selebar yang dibutuhkan tabnya. Tab tetap setinggi semula, jadi tetap mudah diketuk. Mulai ulang Telegram untuk melihat perubahannya.");
     }
 
     private static void fillIn9(Map<String, String> table) {
-        table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
-                "Bilah di bagian bawah layar utama jadi lebih pendek dan hanya selebar yang dibutuhkan tabnya. Tab tetap setinggi semula, jadi tetap mudah diketuk. Mulai ulang Telegram untuk melihat perubahannya.");
         table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
                 "Kamera di menu lampiran selalu terbuka dengan lensa belakang, bukan lensa yang terakhir Anda pakai. Anda tetap bisa menggantinya.");
         table.put("The chat list opens on the folder you pick below instead of All Chats. Each account keeps its own pick, and the folder order doesn't change. If that folder is gone, renamed or locked, All Chats opens as usual.",
@@ -4139,8 +4129,6 @@ public final class L10nTranslations {
                 "Nyalakan lagi terjemahan obrolan. Sekarang diatur per akun.");
         table.put("Turn off Telegram's update checks",
                 "Matikan pemeriksaan pembaruan Telegram");
-        table.put("Turn off beta debug logs",
-                "Matikan log debug beta");
         table.put("Turn off reaction effects",
                 "Matikan efek reaksi");
         table.put("Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.",
@@ -4169,13 +4157,13 @@ public final class L10nTranslations {
                 "Tidak diketahui");
         table.put("Unlock canceled. Settings stay locked.",
                 "Buka kunci dibatalkan. Pengaturan tetap terkunci.");
-    }
-
-    private static void fillIn10(Map<String, String> table) {
         table.put("Unlock started. Settings open in 24 hours unless you cancel.",
                 "Buka kunci dimulai. Pengaturan terbuka dalam 24 jam kecuali Anda membatalkannya.");
         table.put("Unlock your phone to play voice and video messages.",
                 "Buka kunci ponselmu untuk memutar pesan suara dan video.");
+    }
+
+    private static void fillIn10(Map<String, String> table) {
         table.put("Untick a part to leave it out. Copy and Save use only what's ticked.",
                 "Hapus centang pada bagian untuk menghilangkannya. Salin dan Simpan hanya memakai yang dicentang.");
         table.put("Until you resume, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
@@ -4292,13 +4280,13 @@ public final class L10nTranslations {
                 "draf chat");
         table.put("chat list menu Wallet item",
                 "item Dompet di menu daftar chat");
-    }
-
-    private static void fillIn11(Map<String, String> table) {
         table.put("chat-list story bar",
                 "bilah cerita di daftar chat");
         table.put("compose text paste",
                 "tempel teks saat menulis");
+    }
+
+    private static void fillIn11(Map<String, String> table) {
         table.put("deleted",
                 "dihapus");
         table.put("draft syncing",
@@ -4364,7 +4352,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(1386);
+        Map<String, String> table = new HashMap<>(1382);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -5417,8 +5405,6 @@ public final class L10nTranslations {
                 "Toque para reativar.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
                 "Toques, press\u00f5es longas, deslizes e entradas erradas n\u00e3o fazem mais o celular vibrar. Chamadas recebidas continuam vibrando e as notifica\u00e7\u00f5es seguem as suas configura\u00e7\u00f5es.");
-        table.put("Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.",
-                "O Telegram Beta grava registros de depura\u00e7\u00e3o no seu celular o tempo todo, incluindo o registro de conex\u00e3o, e o pr\u00f3prio menu de depura\u00e7\u00e3o dele n\u00e3o consegue impedir isso. Isto os desliga. Os registros j\u00e1 salvos ficam at\u00e9 voc\u00ea apag\u00e1-los, e a vers\u00e3o normal n\u00e3o os grava, ent\u00e3o nada muda nela. Reinicie o Telegram para ver a mudan\u00e7a.");
         table.put("Telegram accounts",
                 "Contas do Telegram");
         table.put("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, those links open without it, and you can sign in there yourself.",
@@ -5485,11 +5471,11 @@ public final class L10nTranslations {
                 "O endere\u00e7o precisa come\u00e7ar com https://.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "A grade de fotos do menu de anexos come\u00e7a com suas fotos em vez de um bloco de c\u00e2mera ao vivo. Uma conversa aplica isso na pr\u00f3xima vez que voc\u00ea abri-la.");
+        table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
+                "A barra na parte de baixo da tela principal fica mais baixa e s\u00f3 t\u00e3o larga quanto as abas precisam. As abas mant\u00eam a altura inteira, ent\u00e3o continuam f\u00e1ceis de tocar. Reinicie o Telegram para ver a mudan\u00e7a.");
     }
 
     private static void fillPt_rBR9(Map<String, String> table) {
-        table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
-                "A barra na parte de baixo da tela principal fica mais baixa e s\u00f3 t\u00e3o larga quanto as abas precisam. As abas mant\u00eam a altura inteira, ent\u00e3o continuam f\u00e1ceis de tocar. Reinicie o Telegram para ver a mudan\u00e7a.");
         table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
                 "A c\u00e2mera do menu de anexos sempre abre na lente traseira, e n\u00e3o na que voc\u00ea usou por \u00faltimo. Voc\u00ea ainda pode alternar.");
         table.put("The chat list opens on the folder you pick below instead of All Chats. Each account keeps its own pick, and the folder order doesn't change. If that folder is gone, renamed or locked, All Chats opens as usual.",
@@ -5578,8 +5564,6 @@ public final class L10nTranslations {
                 "Ative de novo a tradu\u00e7\u00e3o das conversas. Agora ela \u00e9 por conta.");
         table.put("Turn off Telegram's update checks",
                 "Desativar as verifica\u00e7\u00f5es de atualiza\u00e7\u00e3o do Telegram");
-        table.put("Turn off beta debug logs",
-                "Desligar os registros de depura\u00e7\u00e3o da beta");
         table.put("Turn off reaction effects",
                 "Desativar os efeitos das rea\u00e7\u00f5es");
         table.put("Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.",
@@ -5608,13 +5592,13 @@ public final class L10nTranslations {
                 "Desconhecido");
         table.put("Unlock canceled. Settings stay locked.",
                 "Desbloqueio cancelado. As configura\u00e7\u00f5es continuam bloqueadas.");
-    }
-
-    private static void fillPt_rBR10(Map<String, String> table) {
         table.put("Unlock started. Settings open in 24 hours unless you cancel.",
                 "Desbloqueio iniciado. As configura\u00e7\u00f5es abrem em 24 horas, a menos que voc\u00ea cancele.");
         table.put("Unlock your phone to play voice and video messages.",
                 "Desbloqueie o celular para ouvir mensagens de voz e v\u00eddeo.");
+    }
+
+    private static void fillPt_rBR10(Map<String, String> table) {
         table.put("Untick a part to leave it out. Copy and Save use only what's ticked.",
                 "Desmarque uma parte para deix\u00e1-la de fora. Copiar e Salvar usam s\u00f3 o que est\u00e1 marcado.");
         table.put("Until you resume, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
@@ -5731,13 +5715,13 @@ public final class L10nTranslations {
                 "rascunhos de chat");
         table.put("chat list menu Wallet item",
                 "item Carteira do menu da lista de conversas");
-    }
-
-    private static void fillPt_rBR11(Map<String, String> table) {
         table.put("chat-list story bar",
                 "barra de stories da lista de conversas");
         table.put("compose text paste",
                 "colagem de texto ao escrever");
+    }
+
+    private static void fillPt_rBR11(Map<String, String> table) {
         table.put("deleted",
                 "apagada");
         table.put("draft syncing",
@@ -5803,7 +5787,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(1386);
+        Map<String, String> table = new HashMap<>(1382);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -6856,8 +6840,6 @@ public final class L10nTranslations {
                 "Yeniden a\u00e7mak i\u00e7in dokun.");
         table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
                 "Dokunmalar, uzun basmalar, kayd\u0131rmalar ve hatal\u0131 giri\u015fler art\u0131k telefonu titre\u015ftirmez. Gelen aramalar titre\u015fmeye devam eder ve bildirimler kendi ayarlar\u0131n\u0131z\u0131 izler.");
-        table.put("Telegram Beta keeps debug logs on your phone all the time, its connection log included, and its own debug menu can't stop that. This stops them. Logs already saved stay until you clear them, and the regular build doesn't keep them, so nothing changes there. Restart Telegram to see the change.",
-                "Telegram Beta, ba\u011flant\u0131 g\u00fcnl\u00fc\u011f\u00fc dahil, telefonunuza s\u00fcrekli hata ay\u0131klama g\u00fcnl\u00fckleri yazar ve kendi hata ay\u0131klama men\u00fcs\u00fc bunu durduramaz. Bu ayar onlar\u0131 durdurur. \u00d6nceden kaydedilmi\u015f g\u00fcnl\u00fckler siz silene kadar kal\u0131r, normal s\u00fcr\u00fcm ise bu g\u00fcnl\u00fckleri tutmaz, yani orada hi\u00e7bir \u015fey de\u011fi\u015fmez. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Telegram'\u0131 yeniden ba\u015flat\u0131n.");
         table.put("Telegram accounts",
                 "Telegram hesaplar\u0131");
         table.put("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, those links open without it, and you can sign in there yourself.",
@@ -6924,11 +6906,11 @@ public final class L10nTranslations {
                 "Adres https:// ile ba\u015flamal\u0131.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "Ek men\u00fcs\u00fcndeki foto\u011fraf \u0131zgaras\u0131, canl\u0131 kamera kutucu\u011fu yerine foto\u011fraflar\u0131n\u0131zla ba\u015flar. Bir sohbet bunu bir sonraki a\u00e7\u0131\u015f\u0131n\u0131zda uygular.");
+        table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
+                "Ana ekran\u0131n alt\u0131ndaki \u00e7ubuk k\u0131sal\u0131r ve yaln\u0131zca sekmelerinin ihtiya\u00e7 duydu\u011fu kadar geni\u015f olur. Sekmeler tam y\u00fcksekliklerini korur, bu y\u00fczden onlara dokunmak yine ayn\u0131 kolayl\u0131ktad\u0131r. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Telegram'\u0131 yeniden ba\u015flat\u0131n.");
     }
 
     private static void fillTr9(Map<String, String> table) {
-        table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
-                "Ana ekran\u0131n alt\u0131ndaki \u00e7ubuk k\u0131sal\u0131r ve yaln\u0131zca sekmelerinin ihtiya\u00e7 duydu\u011fu kadar geni\u015f olur. Sekmeler tam y\u00fcksekliklerini korur, bu y\u00fczden onlara dokunmak yine ayn\u0131 kolayl\u0131ktad\u0131r. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Telegram'\u0131 yeniden ba\u015flat\u0131n.");
         table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
                 "Ek men\u00fcs\u00fcndeki kamera, en son kulland\u0131\u011f\u0131n\u0131z lens yerine her zaman arka lensle a\u00e7\u0131l\u0131r. Yine de de\u011fi\u015ftirebilirsiniz.");
         table.put("The chat list opens on the folder you pick below instead of All Chats. Each account keeps its own pick, and the folder order doesn't change. If that folder is gone, renamed or locked, All Chats opens as usual.",
@@ -7017,8 +6999,6 @@ public final class L10nTranslations {
                 "Sohbet \u00e7evirisini yeniden a\u00e7\u0131n. Art\u0131k her hesap i\u00e7in ayr\u0131.");
         table.put("Turn off Telegram's update checks",
                 "Telegram'\u0131n g\u00fcncelleme kontrollerini kapat");
-        table.put("Turn off beta debug logs",
-                "Beta hata ay\u0131klama g\u00fcnl\u00fcklerini kapat");
         table.put("Turn off reaction effects",
                 "Tepki efektlerini kapat");
         table.put("Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.",
@@ -7047,13 +7027,13 @@ public final class L10nTranslations {
                 "Bilinmiyor");
         table.put("Unlock canceled. Settings stay locked.",
                 "Kilit a\u00e7ma iptal edildi. Ayarlar kilitli kal\u0131yor.");
-    }
-
-    private static void fillTr10(Map<String, String> table) {
         table.put("Unlock started. Settings open in 24 hours unless you cancel.",
                 "Kilit a\u00e7ma ba\u015flad\u0131. \u0130ptal etmezsen ayarlar 24 saat sonra a\u00e7\u0131l\u0131r.");
         table.put("Unlock your phone to play voice and video messages.",
                 "Sesli ve g\u00f6r\u00fcnt\u00fcl\u00fc mesajlar\u0131 oynatmak i\u00e7in telefonunun kilidini a\u00e7.");
+    }
+
+    private static void fillTr10(Map<String, String> table) {
         table.put("Untick a part to leave it out. Copy and Save use only what's ticked.",
                 "Bir b\u00f6l\u00fcm\u00fc d\u0131\u015far\u0131da b\u0131rakmak i\u00e7in i\u015faretini kald\u0131r. Kopyala ve Kaydet yaln\u0131zca i\u015faretli olanlar\u0131 kullan\u0131r.");
         table.put("Until you resume, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
@@ -7170,13 +7150,13 @@ public final class L10nTranslations {
                 "sohbet taslaklar\u0131");
         table.put("chat list menu Wallet item",
                 "sohbet listesi men\u00fcs\u00fcndeki C\u00fczdan \u00f6\u011fesi");
-    }
-
-    private static void fillTr11(Map<String, String> table) {
         table.put("chat-list story bar",
                 "sohbet listesindeki hik\u00e2ye \u00e7ubu\u011fu");
         table.put("compose text paste",
                 "mesaj yazarken metin yap\u0131\u015ft\u0131rma");
+    }
+
+    private static void fillTr11(Map<String, String> table) {
         table.put("deleted",
                 "silindi");
         table.put("draft syncing",
