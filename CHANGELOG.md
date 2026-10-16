@@ -2,7 +2,9 @@
 
 Every HushTelegram release, newest first.
 
-## Unreleased
+## 0.0.18 (2026-10-16)
+
+The ninth release, with 68 patches for telegram.org's Telegram 13.0.3 and the official Telegram beta 13.0.3.
 
 * **Telegram:** Moved to Telegram 13.0.3, telegram.org's build and the official beta (both version code 71839). Every patch carried over without a change.
 * **Telegram:** The descriptions in Morphe Manager now mention the switches that were added inside existing patches, so you can see what **Hide popular apps**, **Faster downloads**, **Repair Firebase push registration** and nine others also bring before you patch. The patch names didn't change, so your saved selection carries over.
@@ -53,6 +55,7 @@ Every HushTelegram release, newest first.
 * **Tooling:** A release can't skip the build advisory scan anymore. Release preflight and the build stage both generate the dependency report under strict checksum verification, run the scan, and stop on a build tool or library it refuses. The release gate also reads the Gradle version recorded in an SBOM and holds it to the same advisory list, even when the OSV check is skipped.
 * **Tooling:** Patching now checks each extension stub it writes the way Android's verifier will, and stops with the stub's name if one would be turned down. The side menu's name stub was: one register held your user on one path and your name on the other, so Android refused the whole side menu and Telegram closed on the first swipe.
 * **Tooling:** Morphe Manager now lists what changed in the release your Telegram was patched with, the way it does for older ones. The release's index stage puts every bullet but the Tooling ones under What's new in the bundle description, and the release facts check reads only the text above that list.
+* **Tooling:** A release no longer stops when the GitHub description names no version, patch count or Telegram build. That description is left as written, and one that names any of them is still kept current.
 * **Tooling:** A device build now clears out what a killed one left behind. When `patch-for-device.ps1` starts, it deletes any `run-` folder in the output folder that no running build owns, the argument file with the signing password included. Each build records its process and start time in its folder, so a build that's still running is never touched. One whose process can't be read, such as a build started as administrator, is left alone too.
 
 ## 0.0.17 (2026-10-13)
