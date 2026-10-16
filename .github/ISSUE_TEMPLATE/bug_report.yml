@@ -26,7 +26,7 @@ body:
     attributes:
       label: Which Telegram file did you patch?
       description: Where it came from, such as telegram.org's APK, and its version code if you know it. Most bugs on a build that should work come from a different build of the same version.
-      placeholder: telegram.org's APK, 13.0.2
+      placeholder: telegram.org's APK, 13.0.3
   - type: dropdown
     id: manager
     attributes:
