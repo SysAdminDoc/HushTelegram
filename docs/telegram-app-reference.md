@@ -40,9 +40,9 @@ No phone number or login code was entered during this emulator flow. `READ_PHONE
 | Manifest SDK | minimum 21, target 36, compiled with SDK 36 |
 | Native ABIs | `arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64` |
 
-The package and signer rows are the ones AppCompatibilities.kt still declares. The version and SDK rows belong to 12.10.6. The official beta, `org.telegram.messenger.beta`, has the same vendor signer and gets its own fixture checks. It was at 12.10.7, code 71239, when this page was first written. That Telegram APK declared Android 5 as its minimum, and HushTelegram's extension raises the patched app floor to Android 9, API 28.
+The package and signer rows are the ones AppCompatibilities.kt still declares. The version and SDK rows belong to 12.10.6. The Play Store build, `org.telegram.messenger`, has the same vendor signer and gets its own fixture checks. APKMirror carries it as one universal APK, with its own version code (71831 at 13.0.3, where the web build is 71839). That Telegram APK declared Android 5 as its minimum, and HushTelegram's extension raises the patched app floor to Android 9, API 28.
 
-AppCompatibilities.kt declares the telegram.org web APK and the beta APK. It doesn't declare the Play Store package `org.telegram.messenger` as a target.
+AppCompatibilities.kt declares the telegram.org web APK and the Play Store APK. The official beta, `org.telegram.messenger.beta`, isn't a target anymore.
 
 ## App entry points and component families
 
@@ -95,11 +95,11 @@ Patch status and runtime behavior are separate. The status fields say which code
 
 ## Updating a Telegram build
 
-1. Put the exact official web or beta APK in the private fixture folder. Verify its package, version name, version code, signer and SHA-256. The web and beta APKs need separate checks.
+1. Put the exact official web or Play APK in the private fixture folder. Verify its package, version name, version code, signer and SHA-256. The web and Play APKs need separate checks.
 2. Run `scripts/verify-all-patches.ps1 -Apk <apk> -Force -DesktopJar <jar> -WorkDir <private scratch>`. `-Force` lets the patcher inspect a build before it is declared compatible. The report names patch failures and approved resource changes.
 3. For a failed target, compare the method in the old and new APK with `scripts/fingerprint-candidates.ps1`. It ranks possible matches by strings, literals, calls, opcodes, signature, owner and callers. Verify the candidate in the APK. The script reports ambiguity instead of selecting between close matches.
 4. Update the patch to recognize both the new build and every retained build. Add the package, version, version code and minimum SDK to `AppCompatibilities.kt`. Keep version-specific obfuscated names out of patch source.
-5. Add or update a fixture test beside the patch. Run the patch checks against every declared web and beta fixture with `HUSHTELEGRAM_FIXTURE_DIR` set. Missing fixtures must remain a failure in the required push gate.
+5. Add or update a fixture test beside the patch. Run the patch checks against every declared web and Play fixture with `HUSHTELEGRAM_FIXTURE_DIR` set. Missing fixtures must remain a failure in the required push gate.
 6. Regenerate the catalog with `:patches:generatePatchesList` before building the Android bundle with `:patches:buildAndroid`. Release receipts and provenance checks cover the published bundle separately.
 
 The README covers the build commands. Release scripts enforce the fixture, source and receipt checks. This reference covers app discovery and patch targeting.
