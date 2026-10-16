@@ -546,6 +546,8 @@ switch ($Stage) {
         if ($updated -cne $current) {
             Invoke-Step 'Updating the repository description' { gh repo edit $Repository --description $updated }
             Write-Step "the repository description reads: $updated"
+        } elseif (-not (Test-RepoDescriptionNamesFacts -Description $current)) {
+            Write-Step 'the repository description names no version, count or build, so it stays as written'
         }
         Invoke-Step 'The published asset check' { & (Join-Path $scripts 'validate-release-facts.ps1') -Root $Root -VerifyPublishedAsset }
         Save-StageRecord 'index' @{ createdAt = $created }

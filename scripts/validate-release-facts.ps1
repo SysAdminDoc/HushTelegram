@@ -78,6 +78,7 @@ if (-not $Root) { $Root = Split-Path -Parent $PSScriptRoot }
 . (Join-Path $PSScriptRoot 'release-advisories.ps1')
 . (Join-Path $PSScriptRoot 'common.ps1')
 . (Join-Path $PSScriptRoot 'telegram-sources.ps1')
+. (Join-Path $PSScriptRoot 'release/release-text.ps1')
 
 function Read-JsonFile {
     param([string]$Path)
@@ -358,20 +359,26 @@ if ($SkipUrlCheck) {
     }
     $description = $description.Trim()
 
-    # Its count and build are read the way the index description's are, all of them at once.
-    $githubFacts = Get-DescriptionFacts -Text $description -Source "The GitHub description of $slug"
-    $missing = @()
-    if ($description -notmatch "\b$([regex]::Escape($descriptionVersion))\b") { $missing += $descriptionVersion }
-    if ($githubFacts.PatchCount -ne $descriptionPatchCount) { $missing += "$descriptionPatchCount patches" }
-    if ($githubFacts.TargetVersion -ne $descriptionTargetVersion) { $missing += "Telegram $descriptionTargetVersion" }
-    if ($missing.Count -gt 0) {
-        throw ("The GitHub description of $slug does not say " + ($missing -join ', ') + '. It reads: ' +
-            $description + [Environment]::NewLine +
-            'Set it with: gh repo edit ' + $slug + ' --description "HushTelegram ' + $descriptionVersion +
-            ': ... ' + $descriptionPatchCount + ' patches for Telegram ' + $descriptionTargetVersion + '."')
+    # A description written with no version, count or build in it can't go stale, and the
+    # release's index stage leaves it as it is (2026-10-16, after the Hush repos dropped theirs).
+    if (-not (Test-RepoDescriptionNamesFacts -Description $description)) {
+        Write-Host "[release] the GitHub description of $slug names no version, patch count or Telegram build"
+    } else {
+        # Its count and build are read the way the index description's are, all of them at once.
+        $githubFacts = Get-DescriptionFacts -Text $description -Source "The GitHub description of $slug"
+        $missing = @()
+        if ($description -notmatch "\b$([regex]::Escape($descriptionVersion))\b") { $missing += $descriptionVersion }
+        if ($githubFacts.PatchCount -ne $descriptionPatchCount) { $missing += "$descriptionPatchCount patches" }
+        if ($githubFacts.TargetVersion -ne $descriptionTargetVersion) { $missing += "Telegram $descriptionTargetVersion" }
+        if ($missing.Count -gt 0) {
+            throw ("The GitHub description of $slug does not say " + ($missing -join ', ') + '. It reads: ' +
+                $description + [Environment]::NewLine +
+                'Set it with: gh repo edit ' + $slug + ' --description "HushTelegram ' + $descriptionVersion +
+                ': ... ' + $descriptionPatchCount + ' patches for Telegram ' + $descriptionTargetVersion + '."')
+        }
+        Write-Host ("[release] the GitHub description of " + $slug + " names " + $descriptionVersion +
+            ", " + $descriptionPatchCount + " patches and Telegram " + $descriptionTargetVersion)
     }
-    Write-Host ("[release] the GitHub description of " + $slug + " names " + $descriptionVersion +
-        ", " + $descriptionPatchCount + " patches and Telegram " + $descriptionTargetVersion)
 }
 
 $testRoot = Join-Path $rootPath 'extensions/telegram/build/test-results/testDebugUnitTest'

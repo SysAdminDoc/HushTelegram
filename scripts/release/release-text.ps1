@@ -260,11 +260,24 @@ function Set-BugFormVersion {
         { param($match) "$($match.Groups[1].Value)HushTelegram $Version on Telegram $TelegramVersion" }))
 }
 
+function Test-RepoDescriptionNamesFacts {
+    <#
+    .SYNOPSIS
+        Whether the repository description names a release version, a patch count or a Telegram
+        build. One that names none of them has nothing a release can leave stale, so a release
+        neither holds it to the catalog nor rewrites it.
+    #>
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Description)
+    return ($Description -match '\bv\d+\.\d+\.\d+\b' -or $Description -match '(?<![\d.])\d+ patches\b' -or
+        $Description -match 'Telegram\s+\d+(?:\.\d+)+(?!\d)')
+}
+
 function Get-UpdatedRepoDescription {
     <#
     .SYNOPSIS
         The repository description with this release's version, patch count and Telegram version:
-        "HushTelegram vX ... N patches for Telegram Y." Throws when it doesn't have that shape.
+        "HushTelegram vX ... N patches for Telegram Y." One that names none of those comes back as it
+        is. Throws when it names some of them without that shape.
     #>
     param(
         [Parameter(Mandatory = $true)][string]$Description,
@@ -272,6 +285,7 @@ function Get-UpdatedRepoDescription {
         [Parameter(Mandatory = $true)][int]$Count,
         [Parameter(Mandatory = $true)][string]$TelegramVersion
     )
+    if (-not (Test-RepoDescriptionNamesFacts -Description $Description)) { return $Description }
     if ($Description -notmatch 'HushTelegram v\d+\.\d+\.\d+' -or $Description -notmatch '\b\d+ patches for Telegram \d+(?:\.\d+)*') {
         throw "The repository description doesn't name ""HushTelegram vX"" and ""N patches for Telegram Y"": $Description"
     }

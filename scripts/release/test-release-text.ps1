@@ -154,8 +154,16 @@ try {
     $updated = Get-UpdatedRepoDescription -Description $description -Version '0.0.12' -Count 57 -TelegramVersion '12.10.7'
     Assert-True ($updated -ceq 'HushTelegram v0.0.12: Morphe patches for Telegram. 57 patches for Telegram 12.10.7.') `
         "The description did not take the version, count and Telegram version: $updated"
-    Assert-Throws { Get-UpdatedRepoDescription -Description 'Patches for Telegram.' -Version '0.0.12' -Count 57 -TelegramVersion '12.10.7' } `
+    Assert-Throws { Get-UpdatedRepoDescription -Description 'HushTelegram v0.0.11: patches for Telegram.' -Version '0.0.12' -Count 57 -TelegramVersion '12.10.7' } `
         '*doesn''t name*' 'A description of another shape was rewritten anyway.'
+    # One that names no version, count or build has nothing to go stale, and stays as it was written.
+    $versionFree = 'HushTelegram Morphe patches that take sponsored messages out of Telegram and keep its usage reports on your phone.'
+    Assert-True (-not (Test-RepoDescriptionNamesFacts -Description $versionFree)) 'A version-free description was read as naming facts.'
+    $kept = Get-UpdatedRepoDescription -Description $versionFree -Version '0.0.12' -Count 57 -TelegramVersion '12.10.7'
+    Assert-True ($kept -ceq $versionFree) "A version-free description was rewritten: $kept"
+    foreach ($named in 'Patches for Telegram 13.0.3.', 'HushTelegram, 68 patches.', 'Patches, v0.0.17.') {
+        Assert-True (Test-RepoDescriptionNamesFacts -Description $named) "A description naming a fact was read as version-free: $named"
+    }
 
     # --- release.ps1's stage order --------------------------------------------------------------
     # A scratch repository with one commit, so HEAD is real, and records written by hand. git and
