@@ -2066,6 +2066,34 @@ try {
     Assert-True ($LASTEXITCODE -eq 0 -or $null -eq $LASTEXITCODE) `
         'The release facts check refused an unmodified copy of this checkout.'
 
+    # The release's CHANGELOG bullets follow the facts under ### What's new, for Morphe Manager, and
+    # a bullet there may name an older build or another count. The facts are read above the first
+    # ### line, so the bullet passes there and the same sentence in the facts is refused.
+    $otherFacts = 'On Telegram 9.9.9, 3 patches took 9 seconds.'
+    Set-FactsFile 'patches-bundle.json' {
+        param($text) $text -replace '("description":\s*"(?:[^"\\]|\\.)*)"', ('$1\n\n### What''s new\n\n* **Telegram:** ' + $otherFacts + '"')
+    }
+    try {
+        Assert-True ((Get-Content -LiteralPath (Join-Path $factsRoot 'patches-bundle.json') -Raw | ConvertFrom-Json).description -match
+            '(?m)^### What''s new$') 'The description edit added no ### line, so the bullets case would prove nothing.'
+        try {
+            Invoke-Facts
+        } catch {
+            throw "The release facts check read a CHANGELOG bullet under the description's facts as one: $($_.Exception.Message)"
+        }
+    } finally {
+        Reset-FactsFile 'patches-bundle.json'
+    }
+    Set-FactsFile 'patches-bundle.json' {
+        param($text) $text -replace '("description":\s*"(?:[^"\\]|\\.)*)"', ('$1 ' + $otherFacts + '"')
+    }
+    try {
+        Assert-Throws { Invoke-Facts } '*names * and 3 patches*' `
+            'The release facts check took a description whose facts name a second build and count.'
+    } finally {
+        Reset-FactsFile 'patches-bundle.json'
+    }
+
     $catalogVersion = ((Get-Content -LiteralPath (Join-Path $factsRoot 'gradle.properties')) `
         -match '^version\s*=' | Select-Object -First 1) -replace '^version\s*=\s*', ''
 

@@ -159,6 +159,32 @@ function Get-MissingChangelogBullets {
     return @(Get-ChangelogBullets -Body $section.Body | Where-Object { -not $lines.Contains($_) })
 }
 
+function Get-ManagerChanges {
+    <#
+    .SYNOPSIS
+        The part of the Manager description that lists the release's changes: "### What's new"
+        and every bullet of the version's CHANGELOG section but the Tooling ones, word for word.
+        Empty when the section has only Tooling bullets.
+    .DESCRIPTION
+        Morphe Manager shows the bundle description, not the CHANGELOG, for the release a phone
+        was patched with, and reads a "### " heading and "* **Scope:** text" bullets in it as a
+        list of changes. Without them the newest release read as one paragraph while every older
+        one listed its changes. validate-release-facts.ps1 reads the description only above its
+        first "### " line, since a bullet may name an older build or another patch count.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Changelog,
+        [Parameter(Mandatory = $true)][string]$Version
+    )
+    $section = Get-ChangelogSection -Text ($Changelog -replace "`r`n", "`n") -Name $Version
+    if (-not $section -or -not $section.Date) {
+        throw "The CHANGELOG has no dated $Version section. Run -Stage prepare first."
+    }
+    $app = @(Get-ChangelogBullets -Body $section.Body | Where-Object { -not $_.StartsWith('* **Tooling:**') })
+    if ($app.Count -eq 0) { return '' }
+    return "### What's new`n`n" + ($app -join "`n")
+}
+
 function ConvertTo-JsonText {
     <# One JSON string literal, escaped the way pwsh writes patches-bundle.json: quotes,
        backslashes and control characters, and nothing else. #>

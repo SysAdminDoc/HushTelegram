@@ -32,7 +32,9 @@
                  version's CHANGELOG section, a lightweight tag on the release commit, the GitHub
                  release with the four assets, each downloaded back and compared, and the published
                  notes held to the section.
-      index      patches-bundle.json from -Description and the release's publish time, the bug form's
+      index      patches-bundle.json from -Description, the version's CHANGELOG bullets less the
+                 Tooling ones under "### What's new" (Manager lists them for the release a phone
+                 is on) and the release's publish time, the bug form's
                  version placeholder and the repository description, then validate-release-facts
                  -VerifyPublishedAsset. Then commit "chore(release): point Manager to the verified
                  X.Y.Z bundle" and push.
@@ -528,8 +530,13 @@ switch ($Stage) {
         if (-not $publishedAt) { throw "$tag isn't published on GitHub. Run -Stage publish first." }
         $invariant = [Globalization.CultureInfo]::InvariantCulture
         $created = [DateTimeOffset]::Parse($publishedAt, $invariant).UtcDateTime.ToString('yyyy-MM-ddTHH:mm:ss', $invariant)
+        # The facts from -Description, then the release's changes, which Manager lists under them.
+        $managerText = (Read-ReleaseText -Path $Description).Trim()
+        $changes = Get-ManagerChanges -Changelog (Read-ReleaseText -Path (Join-Path $Root 'CHANGELOG.md')) -Version $Version
+        if ($managerText -match '(?m)^### ') { throw "-Description holds a ### line, and the release's changes go there." }
+        if ($changes) { $managerText += "`n`n$changes" }
         Set-ManagerIndex -Path (Join-Path $Root 'patches-bundle.json') -Version $Version -CreatedAt $created `
-            -Description (Read-ReleaseText -Path $Description) -Repository $Repository
+            -Description $managerText -Repository $Repository
         $telegram = Get-WebTelegramVersion
         Set-BugFormVersion -Path (Join-Path $Root '.github/ISSUE_TEMPLATE/bug_report.yml') -Version $Version -TelegramVersion $telegram
         Write-Step "patches-bundle.json points at $tag (created_at $created), and the bug form reads HushTelegram $Version on Telegram $telegram"

@@ -100,6 +100,15 @@ try {
     Assert-Throws { New-ReleaseNotes -Changelog "## 0.0.12`n`n* **Telegram:** Undated.`n" -Version '0.0.12' -Intro $intro `
             -Install $install -Validation $validation } '*no dated 0.0.12 section*' 'Notes were built from an undated section.'
 
+    # --- The changes Morphe Manager lists under the description -------------------------------
+    $changes = Get-ManagerChanges -Changelog $expected -Version '0.0.12'
+    Assert-True ($changes -ceq "### What's new`n`n* **Telegram:** A new switch.`n* **Telegram:** Another fix.") `
+        "The Manager changes are not every non-Tooling bullet under ### What's new:`n$changes"
+    Assert-True ((Get-ManagerChanges -Changelog "## 0.0.13 (2026-10-21)`n`n* **Tooling:** Only a gate.`n" -Version '0.0.13') -ceq '') `
+        'A Tooling-only release gave Manager a What''s new heading with nothing under it.'
+    Assert-Throws { Get-ManagerChanges -Changelog "## 0.0.12`n`n* **Telegram:** Undated.`n" -Version '0.0.12' } `
+        '*no dated 0.0.12 section*' 'Manager changes were taken from an undated section.'
+
     # --- The Manager index, rebuilt byte for byte from the checkout's own ---------------------
     $indexPath = Join-Path $Root 'patches-bundle.json'
     $indexText = [IO.File]::ReadAllText($indexPath)
