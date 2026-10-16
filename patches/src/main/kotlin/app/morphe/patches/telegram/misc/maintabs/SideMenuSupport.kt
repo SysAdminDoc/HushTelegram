@@ -258,18 +258,23 @@ internal fun BytecodePatchContext.writeSideMenuStubs(menu: SideMenu) {
         move-result-wide v0
         return-wide v0
     """)
-    writeStub(SIDE_MENU, "selfName", 2, """
+    // The user and the name stay in separate registers: one register holding the user on the
+    // null path and the name on the other merges to Object, which ART refuses to return as a
+    // String, and that failed the whole SideMenu class on the first swipe.
+    writeStub(SIDE_MENU, "selfName", 3, """
         check-cast p0, ${plan.screen}
         invoke-virtual {p0}, ${menu.currentAccount}
         move-result v0
         invoke-static {v0}, $GET_INSTANCE
         move-result-object v0
         invoke-virtual {v0}, $CURRENT_USER
+        move-result-object v1
+        if-eqz v1, :hush_none
+        invoke-static {v1}, $USER_NAME
         move-result-object v0
-        if-eqz v0, :hush_none
-        invoke-static {v0}, $USER_NAME
-        move-result-object v0
+        return-object v0
         :hush_none
+        const/4 v0, 0x0
         return-object v0
     """)
 }
