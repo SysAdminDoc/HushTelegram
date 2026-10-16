@@ -66,7 +66,7 @@ class SendConfirmFixtureTest {
             assertEquals("$name: the chat bar's sticker send", "Lorg/telegram/ui/Components/ChatActivityEnterView;", site.sticker.definingClass)
             assertEquals("$name: Telegram's end of a recording", "stopRecording", site.voice.name)
             assertEquals("$name: the round video recorder's order of arguments",
-                if ("telegram-beta" in name) VideoShape.SOUND_LAST else VideoShape.SOUND_SECOND, site.shape)
+                VideoShape.SOUND_SECOND, site.shape)
             val before = mapOf(
                 "sticker" to ImmutableMethod.of(site.sticker), "gif" to ImmutableMethod.of(site.gif), "voice" to ImmutableMethod.of(site.voice),
                 "video" to ImmutableMethod.of(site.video), "header" to ImmutableMethod.of(site.header), "profile" to ImmutableMethod.of(site.profile),

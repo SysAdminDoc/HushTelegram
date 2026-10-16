@@ -41,7 +41,7 @@ function Invoke-FixtureGit([string[]]$Arguments) {
     return $result
 }
 function Write-Catalog([string]$Package = 'org.telegram.messenger.web', [switch]$NewestOnly,
-        [switch]$MultipleCodes, [switch]$Unpinned, [switch]$Beta) {
+        [switch]$MultipleCodes, [switch]$Unpinned, [switch]$Play) {
     $targets = @([ordered]@{ version = '12.10.6'; versionCodes = [ordered]@{ ARM64_V8A = 71129 } })
     if ($MultipleCodes) { $targets[0].versionCodes['ARMEABI_V7A'] = 71128 }
     if ($Unpinned) { $targets[0].Remove('versionCodes') }
@@ -49,9 +49,9 @@ function Write-Catalog([string]$Package = 'org.telegram.messenger.web', [switch]
     $packages = [ordered]@{}
     $packages[$Package] = @($targets | ForEach-Object { $_.version })
     $compatibility = @([ordered]@{ packageName = $Package; targets = $targets })
-    if ($Beta) {
-        $packages['org.telegram.messenger.beta'] = @('12.10.7')
-        $compatibility += [ordered]@{ packageName = 'org.telegram.messenger.beta'; targets = @(
+    if ($Play) {
+        $packages['org.telegram.messenger'] = @('12.10.7')
+        $compatibility += [ordered]@{ packageName = 'org.telegram.messenger'; targets = @(
             [ordered]@{ version = '12.10.7'; versionCodes = [ordered]@{ ARM64_V8A = 71159 } }) }
     }
     [ordered]@{ patches = @([ordered]@{
@@ -138,14 +138,14 @@ try {
     Assert-True ($env:HUSHTELEGRAM_REQUIRE_FIXTURES -eq 'prior-value') 'A successful gate did not restore the strict fixture environment.'
     $cases++
 
-    Write-Catalog -Beta
-    Assert-HookFails '*telegram-beta-12.10.7-71159.apk*'
+    Write-Catalog -Play
+    Assert-HookFails '*telegram-play-12.10.7-71159.apk*'
     Write-Fixture 'telegram-web-12.10.7-71159.apk'
-    Write-Fixture 'telegram-beta-12.10.7-71158.apk'
-    Assert-HookFails '*telegram-beta-12.10.7-71159.apk*'
-    Write-Fixture 'telegram-beta-12.10.7-71159.apk'
+    Write-Fixture 'telegram-play-12.10.7-71158.apk'
+    Assert-HookFails '*telegram-play-12.10.7-71159.apk*'
+    Write-Fixture 'telegram-play-12.10.7-71159.apk'
     Invoke-FixtureHook
-    Assert-True (Test-Path -LiteralPath $marker) 'The complete web and beta fixture set did not start strict verification.'
+    Assert-True (Test-Path -LiteralPath $marker) 'The complete web and Play fixture set did not start strict verification.'
     $cases++
 
     Write-Catalog -MultipleCodes
@@ -156,8 +156,8 @@ try {
     $cases++
     Write-Catalog -Unpinned
     Assert-HookFails '*requires exact version codes*12.10.6*'
-    Write-Catalog -Package 'org.telegram.messenger'
-    Assert-HookFails '*no retained fixture naming rule for org.telegram.messenger*'
+    Write-Catalog -Package 'org.telegram.messenger.beta'
+    Assert-HookFails '*no retained fixture naming rule for org.telegram.messenger.beta*'
     Write-Catalog
     $catalogPath = Join-Path $repo 'patches-list.json'
     Move-Item -LiteralPath $catalogPath -Destination "$catalogPath.saved"

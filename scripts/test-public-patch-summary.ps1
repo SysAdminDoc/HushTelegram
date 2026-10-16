@@ -18,8 +18,8 @@ $bundleVersion = $catalog.version -creplace '^v', ''
 # test reporting one the catalog dropped (12.10.6 did, on the move to 13.0.1).
 $declaredTargets = @(Get-PatchTargets -PatchList $catalog)
 $webVersion = @($declaredTargets | Where-Object { $_.PackageName -ceq 'org.telegram.messenger.web' })[0].PackageVersion
-$betaVersion = @($declaredTargets | Where-Object { $_.PackageName -ceq 'org.telegram.messenger.beta' })[0].PackageVersion
-if (-not $webVersion -or -not $betaVersion) { throw 'The catalog declares no telegram.org build or no beta, so the summary cases would test nothing.' }
+$playVersion = @($declaredTargets | Where-Object { $_.PackageName -ceq 'org.telegram.messenger' })[0].PackageVersion
+if (-not $webVersion -or -not $playVersion) { throw 'The catalog declares no telegram.org build or no Play build, so the summary cases would test nothing.' }
 $requestedNames = @('Use registered Telegram API credentials', 'Use registered Maps API key')
 $canaries = @('987654321', '00112233445566778899aabbccddeeff',
     'AIza_SYNTHETIC_PRIVATE_MAPS_CANARY', 'synthetic-private-keystore-password',
@@ -144,10 +144,10 @@ try {
     $explicitSuccess = Copy-Json $baseReport
     Add-Member -InputObject $explicitSuccess -NotePropertyName success -NotePropertyValue $true
     Assert-True (@((Invoke-Summary $explicitSuccess).failureCodes).Count -eq 0) 'An explicit true success was rejected.'
-    $beta = Copy-Json $baseReport
-    $beta.packageName = 'org.telegram.messenger.beta'; $beta.packageVersion = $betaVersion
-    Assert-True (@((Invoke-Summary $beta).failureCodes).Count -eq 0) 'The catalog-declared beta was rejected.'
-    $wrongNative = Invoke-Summary $beta -ExpectedPackage 'org.telegram.messenger.web' -ExpectedVersion $webVersion
+    $play = Copy-Json $baseReport
+    $play.packageName = 'org.telegram.messenger'; $play.packageVersion = $playVersion
+    Assert-True (@((Invoke-Summary $play).failureCodes).Count -eq 0) 'The catalog-declared Play build was rejected.'
+    $wrongNative = Invoke-Summary $play -ExpectedPackage 'org.telegram.messenger.web' -ExpectedVersion $webVersion
     Assert-True ($wrongNative.failureCodes -ccontains 'TARGET_UNSUPPORTED' -and $null -eq $wrongNative.packageName) `
         'A report claiming the other supported target bypassed the native preflight.'
 

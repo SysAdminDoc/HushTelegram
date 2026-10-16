@@ -142,7 +142,7 @@ function Get-PatchTarget {
     )
     $targets = @(Get-PatchTargets -PatchList $PatchList)
     if ([string]::IsNullOrWhiteSpace($PackageName)) {
-        # Adding beta must not switch existing device and release commands to a different app.
+        # Adding the Play build must not switch existing device and release commands to a different app.
         if (@($targets | Where-Object { $_.PackageName -ceq 'org.telegram.messenger.web' }).Count -eq 1) {
             $PackageName = 'org.telegram.messenger.web'
         } elseif ($targets.Count -eq 1) {
@@ -166,7 +166,7 @@ function Get-VendorFixtureName {
     )
     $prefix = switch -CaseSensitive ($Target.PackageName) {
         'org.telegram.messenger.web' { 'telegram-web' }
-        'org.telegram.messenger.beta' { 'telegram-beta' }
+        'org.telegram.messenger' { 'telegram-play' }
         default { throw "Patch verification has no retained fixture naming rule for $($Target.PackageName)." }
     }
     if (-not (Test-DeclaredBuild -Target $Target -VersionName $VersionName -VersionCode $VersionCode)) {

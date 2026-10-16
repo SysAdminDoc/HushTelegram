@@ -291,7 +291,7 @@ Assert-True ((Test-DeclaredBuild -Target $three -VersionName '99.1.0.0.1' -Versi
 # doesn't list.
 $telegramSigners = @('49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1')
 foreach ($patch in @($catalog.patches)) {
-    foreach ($package in @('org.telegram.messenger.web', 'org.telegram.messenger.beta')) {
+    foreach ($package in @('org.telegram.messenger.web', 'org.telegram.messenger')) {
     $declaredSigners = @($patch.compatibility | Where-Object { $_.packageName -ceq $package } |
         ForEach-Object { @($_.signatures) } | Sort-Object -Unique)
     Assert-True (($declaredSigners -join ',') -eq ($telegramSigners -join ',')) `
@@ -349,24 +349,24 @@ Assert-Throws { Get-PatchTarget -PatchList $twoPackages } '*same packages*' `
     'A catalog with disjoint patch package sets was accepted.'
 $dualTargets = @(Get-PatchTargets -PatchList $catalog)
 Assert-True ($dualTargets.Count -eq 2 -and $dualTargets[0].PackageName -ceq 'org.telegram.messenger.web') `
-    'The complete package inventory is not default web followed by beta.'
-$betaTarget = Get-PatchTarget -PatchList $catalog -PackageName 'org.telegram.messenger.beta'
-# The beta build the catalog declares, read straight from its JSON rather than written here, so a
+    'The complete package inventory is not default web followed by Play.'
+$playTarget = Get-PatchTarget -PatchList $catalog -PackageName 'org.telegram.messenger'
+# The Play build the catalog declares, read straight from its JSON rather than written here, so a
 # release that moves the targets moves these checks with it instead of failing in its full suite.
-$betaDeclared = @($catalog.patches[0].compatibility | Where-Object { $_.packageName -ceq 'org.telegram.messenger.beta' })
-Assert-True ($betaDeclared.Count -eq 1 -and @($betaDeclared[0].targets).Count -eq 1) 'The catalog does not declare one beta build.'
-$betaVersion = [string]$betaDeclared[0].targets[0].version
-$betaCode = [string]$betaDeclared[0].targets[0].versionCodes.ARM64_V8A
-Assert-True ($betaVersion -match '^\d+\.\d+(\.\d+)?$' -and $betaCode -match '^\d+$') 'The catalog beta build has no version or code.'
+$playDeclared = @($catalog.patches[0].compatibility | Where-Object { $_.packageName -ceq 'org.telegram.messenger' })
+Assert-True ($playDeclared.Count -eq 1 -and @($playDeclared[0].targets).Count -eq 1) 'The catalog does not declare one Play build.'
+$playVersion = [string]$playDeclared[0].targets[0].version
+$playCode = [string]$playDeclared[0].targets[0].versionCodes.ARM64_V8A
+Assert-True ($playVersion -match '^\d+\.\d+(\.\d+)?$' -and $playCode -match '^\d+$') 'The catalog Play build has no version or code.'
 Assert-True ((Get-PatchTarget -PatchList $catalog).PackageName -ceq 'org.telegram.messenger.web' -and
-    $betaTarget.PackageVersion -ceq $betaVersion -and $betaTarget.PackageVersionCodes[$betaVersion][0] -eq $betaCode) `
-    'An explicit beta selector changed the default web target or lost its exact code.'
-Assert-True ((Get-VendorFixtureName -Target $betaTarget -VersionName $betaVersion -VersionCode $betaCode) -ceq
-    "telegram-beta-$betaVersion-$betaCode.apk") 'The beta fixture naming rule lost its package or build code.'
-Assert-Throws { Get-PatchTarget -PatchList $catalog -PackageName 'org.telegram.messenger' } '*does not declare package*' `
-    'Store was credited with beta or web support.'
-Assert-Throws { Get-VendorFixtureName -Target $betaTarget -VersionName $betaVersion -VersionCode ([string]([long]$betaCode - 1)) } '*not a declared build*' `
-    'Another beta code was treated as the retained fixture.'
+    $playTarget.PackageVersion -ceq $playVersion -and $playTarget.PackageVersionCodes[$playVersion][0] -eq $playCode) `
+    'An explicit Play selector changed the default web target or lost its exact code.'
+Assert-True ((Get-VendorFixtureName -Target $playTarget -VersionName $playVersion -VersionCode $playCode) -ceq
+    "telegram-play-$playVersion-$playCode.apk") 'The Play fixture naming rule lost its package or build code.'
+Assert-Throws { Get-PatchTarget -PatchList $catalog -PackageName 'org.telegram.messenger.beta' } '*does not declare package*' `
+    'The beta was credited with Play or web support.'
+Assert-Throws { Get-VendorFixtureName -Target $playTarget -VersionName $playVersion -VersionCode ([string]([long]$playCode - 1)) } '*not a declared build*' `
+    'Another Play code was treated as the retained fixture.'
 $missingTarget = [pscustomobject]@{ patches = @([pscustomobject]@{ name = 'missing target' }) }
 Assert-Throws { Get-PatchTarget -PatchList $missingTarget } '*has no compatible package*' `
     'A patch without compatibility metadata was accepted.'
@@ -4624,10 +4624,10 @@ try {
         "The release check did not hold the index's Manager floor to the release tag: $said"
 
     Save-ReleaseReceipt -Builds $releaseTarget.PackageVersions -WithoutOtherPackages
-    $releaseBeta = @($releaseTargets | Where-Object { $_.PackageName -ceq 'org.telegram.messenger.beta' })[0]
-    $releaseBetaBuild = "$($releaseBeta.PackageVersion) ($($releaseBeta.PackageVersionCodes[$releaseBeta.PackageVersion][0]))"
-    Assert-Throws { Invoke-ReleaseCheck } "*declared org.telegram.messenger.beta $releaseBetaBuild*patched without -f*" `
-        'Web evidence proved beta without any beta run.'
+    $releasePlay = @($releaseTargets | Where-Object { $_.PackageName -ceq 'org.telegram.messenger' })[0]
+    $releasePlayBuild = "$($releasePlay.PackageVersion) ($($releasePlay.PackageVersionCodes[$releasePlay.PackageVersion][0]))"
+    Assert-Throws { Invoke-ReleaseCheck } "*declared org.telegram.messenger $releasePlayBuild*patched without -f*" `
+        'Web evidence proved the Play build without any Play run.'
     Save-ReleaseReceipt -Builds $releaseTarget.PackageVersions
 
     # An index still naming the floor of the release before it, which is what reusing its text
@@ -4847,8 +4847,8 @@ class AlignmentFixture {
         return ($lines -join "`n") + "`n"
     }
     $dependencyNamesHere = @(Get-PatchDependencyNames -PatchList $releaseCatalog -RequestedNames $releaseNames)
-    # A fixture is found by its package and version, as telegram.org's build and the beta can declare
-    # the same version (13.0.1 both): keyed by the version alone, the beta's took the web build's
+    # A fixture is found by its package and version, as telegram.org's build and the Play build
+    # declare the same version (13.0.3 both): keyed by the version alone, one took the other's
     # place and the web build had no fixture. The release target's keep the bare version, which
     # every lookup below by $releaseTarget.PackageVersion or $newerBuild reads.
     function Get-FixtureKey([string]$Package, [string]$Version) {
@@ -4871,7 +4871,7 @@ class AlignmentFixture {
         $package = $packageTarget.PackageName
         $stockMinSdk = if ($build -eq $newerBuild) { 36 } else { 21 }
         $versionCode = if ($build -eq $newerBuild) { 512008382 } else { [long]@($packageTarget.PackageVersionCodes[$build])[0] }
-        # The beta's named for its package too, as 13.0.3 shares the web build's version code (71839).
+        # The Play build's named for its package too, so two builds of one version never share a name.
         $suffix = if ($package -ceq $releaseTarget.PackageName) { '' } else { '-' + ($package -split '\.')[-1] }
         $apkm = Join-Path $fixtures "telegram-$build-$versionCode$suffix.xapk"
         New-TestBundleArchive -Path $apkm -Entries ([ordered]@{
@@ -5399,10 +5399,10 @@ class AlignmentFixture {
         Invoke-DeviceBuild
         Assert-True ((@(Get-Content -LiteralPath $javaLog) -join '; ') -eq
             "patch $($defaultFixtures[$releaseTarget.PackageName]) forced=0") `
-            'Adding a beta fixture changed the default web device build.'
-        Invoke-DeviceBuild -PackageName 'org.telegram.messenger.beta'
+            'Adding a Play fixture changed the default web device build.'
+        Invoke-DeviceBuild -PackageName 'org.telegram.messenger'
         Assert-True ((@(Get-Content -LiteralPath $javaLog) -join '; ') -eq
-            "patch $($defaultFixtures['org.telegram.messenger.beta']) forced=0") 'An explicit beta default selected another package.'
+            "patch $($defaultFixtures['org.telegram.messenger']) forced=0") 'An explicit Play default selected another package.'
     } finally {
         $env:HUSHTELEGRAM_FIXTURE_DIR = $savedFixtureDir
     }
@@ -5413,12 +5413,12 @@ class AlignmentFixture {
         'patch-for-device.ps1 took another build of a declared version.'
     Assert-True (-not (Test-Path -LiteralPath $javaLog)) 'patch-for-device.ps1 started the CLI on another build of a declared version.'
 
-    # Telegram's own phone-number build, at a version the catalog declares for telegram.org's
-    # standalone one. Neither script may hand it to the CLI: each refuses it by name before anything
-    # is patched. The builder gets it beside the newest declared build, so every declared build has
-    # a fixture and only the package check stands in the way.
-    $otherPackage = 'org.telegram.messenger'
-    $otherApkm = Join-Path $fixtures "messenger-$($unproved[0])-arm64-v8a.apkm"
+    # Telegram's beta, at a version the catalog declares for telegram.org's standalone build. The
+    # bundle no longer targets it, so neither script may hand it to the CLI: each refuses it by name
+    # before anything is patched. The builder gets it beside the newest declared build, so every
+    # declared build has a fixture and only the package check stands in the way.
+    $otherPackage = 'org.telegram.messenger.beta'
+    $otherApkm = Join-Path $fixtures "beta-$($unproved[0])-arm64-v8a.apkm"
     New-TestBundleArchive -Path $otherApkm -Entries ([ordered]@{
         'info.json' = "{`"versioncode`":`"$versionCode`"}"
         'base.apk' = Get-FixtureManifest -Build $unproved[0] -Code "$versionCode" -Package $otherPackage })
@@ -5462,13 +5462,13 @@ class AlignmentFixture {
         'if "%3"=="install" if not exist "%~5" exit /b 20',
         'if "%3"=="install" echo Success',
         'exit /b 0') -join "`r`n") + "`r`n"), [System.Text.Encoding]::ASCII)
-    $betaTarget = @($releaseTargets | Where-Object { $_.PackageName -ceq 'org.telegram.messenger.beta' })[0]
-    Assert-True ($null -ne $betaTarget) 'The catalog declares no beta build, so the two runs below would patch one package.'
+    $playTarget = @($releaseTargets | Where-Object { $_.PackageName -ceq 'org.telegram.messenger' })[0]
+    Assert-True ($null -ne $playTarget) 'The catalog declares no Play build, so the two runs below would patch one package.'
     $raceRuns = [ordered]@{
         alpha = @{ Apk = $fixturePaths[$releaseTarget.PackageVersion]; Package = $releaseTarget.PackageName
             Serial = 'contract-phone-a' }
-        beta = @{ Apk = $fixturePaths[(Get-FixtureKey -Package $betaTarget.PackageName -Version $betaTarget.PackageVersion)]
-            Package = $betaTarget.PackageName; Serial = 'contract-phone-b' }
+        beta = @{ Apk = $fixturePaths[(Get-FixtureKey -Package $playTarget.PackageName -Version $playTarget.PackageVersion)]
+            Package = $playTarget.PackageName; Serial = 'contract-phone-b' }
     }
     # A whole-device lease for each stand-in phone, owned by the run that installs on it.
     function Save-RaceLeases {

@@ -23,7 +23,7 @@ private const val PATCH = "Disable update checks"
 
 /**
  * The launcher activity's update check, `checkAppUpdate(boolean force)` in Telegram's source and
- * renamed in the APK. Only telegram.org's build and the beta run it: it asks
+ * renamed in the APK. telegram.org's build runs it: it asks
  * `ApplicationLoader.isStandaloneBuild()`, waits out `SharedConfig.lastUpdateCheckTime` and then
  * sends `help.getAppUpdate`. Each of those keeps its name.
  */

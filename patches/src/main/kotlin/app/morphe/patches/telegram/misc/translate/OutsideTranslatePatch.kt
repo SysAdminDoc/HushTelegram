@@ -305,7 +305,7 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
     controlShape(AccessFlags.PUBLIC.isSet(outer.accessFlags), "the delegate's chat field is inaccessible")
 
     // The account the chat screen is in, from the public getter on Telegram's base screen class,
-    // which R8 renames on its own (s2 on the web build, m2 on the beta) but leaves this name on.
+    // which R8 renames per build (s2 on the web build) but leaves this name on.
     val accountGetter = superclassChain(chat).mapNotNull { classDefByOrNull(it) }
         .flatMap { it.methods.asSequence() }
         .firstOrNull { it.name == "getCurrentAccount" && it.parameterTypes.isEmpty() && it.returnType == "I" && !AccessFlags.STATIC.isSet(it.accessFlags) }

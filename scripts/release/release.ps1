@@ -25,7 +25,7 @@
       build      From the pushed, clean release commit: the build advisory scan again, the full test and lint run with every fixture
                  required, the patch list and bundle (classes.dex in it, its Timestamp the commit's
                  time), verify-all-patches.ps1 on every declared Telegram build (one target per
-                 channel, telegram.org's web build and the beta) with each clean run kept, and the
+                 channel, telegram.org's web build and the Play build) with each clean run kept, and the
                  receipt, which reads those kept runs instead of patching each build again. The
                  bundle, SBOM, receipt and SHA256SUMS.txt go to build/release-assets/<version>.
       publish    Release notes from -Intro, -Install and -Validation around every bullet of the

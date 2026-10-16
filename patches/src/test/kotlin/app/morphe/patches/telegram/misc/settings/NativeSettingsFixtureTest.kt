@@ -191,7 +191,7 @@ class NativeSettingsFixtureTest {
         }
     }
 
-    // The account row's empty value is const/4 on the web build and const/16 on the beta; any other value refuses.
+    // The account row's empty value is const/4 or const/16, depending on the build; any other value refuses.
     @Test fun changedAccountRowValueRefusesAtomically() {
         for (build in Fixtures.declaredBuilds()) {
             val context = context(build)

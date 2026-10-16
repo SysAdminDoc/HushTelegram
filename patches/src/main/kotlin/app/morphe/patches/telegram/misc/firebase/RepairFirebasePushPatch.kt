@@ -414,7 +414,7 @@ internal fun BytecodePatchContext.resolveFirebaseHeader(): FirebaseHeaderPlan {
         kinds.getOrNull(operands[1]) == RegisterKind.ref(STRING) &&
         kinds.getOrNull(operands[2]) in setOf(RegisterKind.ref(STRING), RegisterKind.ZERO),
         "certificate operands are not a verified HTTP connection and nullable string")
-    // R8 reuses a different scratch register in beta. Bind that literal to its own header write,
+    // R8 picks the scratch register per build. Bind that literal to its own header write,
     // while requiring the original API-key parameter and the same returned connection.
     val apiKey = instructions.getOrNull(sink + 1)
     val apiOperands = instructions.getOrNull(sink + 2)?.namedRegisters().orEmpty()
