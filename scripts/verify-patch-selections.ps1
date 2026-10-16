@@ -42,11 +42,9 @@ function Get-SelectionStatusModel {
         }
         [pscustomobject]@{ Enum = $match.Groups[1].Value; Name = $names[$match.Groups[1].Value]; Status = $match.Groups[3].Value }
     })
-    # A trailing true marks a target only some builds carry; the checker then wants the host to carry it.
     $capabilities = @(foreach ($match in [regex]::Matches($familyText,
-        '(?m)^\s+([A-Z_]+)\(([A-Z_]+), "([^"]+)", "[^"]*"(, true)?\)[,;]')) {
-        [pscustomobject]@{ Enum = $match.Groups[1].Value; Family = $match.Groups[2].Value; Status = $match.Groups[3].Value
-            Optional = $match.Groups[4].Success }
+        '(?m)^\s+([A-Z_]+)\(([A-Z_]+), "([^"]+)", "[^"]*"\)[,;]')) {
+        [pscustomobject]@{ Enum = $match.Groups[1].Value; Family = $match.Groups[2].Value; Status = $match.Groups[3].Value }
     })
     $all = @($families.Status) + @($capabilities.Status)
     $declared = @([regex]::Matches((Get-Content (Join-Path $source 'SettingsStatus.java') -Raw),
@@ -128,8 +126,7 @@ function Get-SelectionExpectation {
         api = $Selection.ApiConfigured; maps = $Selection.MapsConfigured; icon = $closure -ccontains 'HushTelegram icon and name'
         push = $closure -ccontains 'UnifiedPush notifications'
         apiId = [int]$Selection.ApiId; apiHash = $Selection.ApiHash; mapsKey = $Selection.MapsKey
-        flags = $flags; optional = @($StatusModel.Capabilities | Where-Object Optional | ForEach-Object Status)
-        closure = $closure; dependencies = $dependencies }
+        flags = $flags; closure = $closure; dependencies = $dependencies }
 }
 
 function Test-SelectionAddedResources {

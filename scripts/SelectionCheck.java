@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.zip.ZipFile;
@@ -60,20 +59,12 @@ public final class SelectionCheck {
     private static final String PUSH_SIGN_UP = "Lorg/telegram/messenger/PushListenerController;->sendRegistrationToServer(ILjava/lang/String;)V";
     private static final String ATTACH_NAME = "Lorg/telegram/messenger/FileLoader;->getAttachFileName(Lorg/telegram/tgnet/TLObject;)Ljava/lang/String;";
     private static final String REMOVE_FILTER = "Lorg/telegram/messenger/MessagesController;->removeFilter(Lorg/telegram/messenger/MessagesController$DialogFilter;)V";
-    /**
-     * Flags of targets only some builds carry, and the string that shows the host carries one: the
-     * patch hooks it when anything outside the extension names that string, and says nothing otherwise.
-     */
-    static final Map<String, String> OPTIONAL_MARKERS = Map.of(
-            "crashReports", "firebase_crashlytics_collection_enabled",
-            "sessionReports", "firebase_sessions_enabled");
 
     static final class Expected {
         boolean settings, links, api, maps, icon, push;
         int apiId;
         String apiHash, mapsKey;
         Map<String, Boolean> flags;
-        Set<String> optional;
 
         Expected(JSONObject input) {
             settings = input.getBoolean("settings");
@@ -88,12 +79,6 @@ public final class SelectionCheck {
             flags = new TreeMap<>();
             JSONObject values = input.getJSONObject("flags");
             for (String key : values.keySet()) flags.put(key, values.getBoolean(key));
-            optional = new TreeSet<>();
-            JSONArray names = input.optJSONArray("optional");
-            for (int i = 0; names != null && i < names.length(); i++) {
-                String name = names.getString(i);
-                require(OPTIONAL_MARKERS.containsKey(name) && flags.containsKey(name) && optional.add(name));
-            }
         }
     }
 
@@ -128,7 +113,6 @@ public final class SelectionCheck {
         final TreeSet<String> dexEntries;
         final Map<String, String> bodies;
         final Map<String, ClassDef> classes;
-        private final Map<String, Boolean> carried = new HashMap<>();
 
         Side(File apk) throws Exception {
             this.apk = apk;
@@ -138,24 +122,6 @@ public final class SelectionCheck {
             classes = classes(dex);
             decodes++;
         }
-
-        boolean carries(String marker) { return carried.computeIfAbsent(marker, m -> SelectionCheck.carries(classes, m)); }
-    }
-
-    /** Whether code outside the extension names this string, the way the patch decides a build carries a target. */
-    static boolean carries(Map<String, ClassDef> classes, String marker) {
-        for (ClassDef type : classes.values()) {
-            if (type.getType().startsWith(OWN)) continue;
-            for (Method method : type.getMethods()) {
-                if (method.getImplementation() == null) continue;
-                for (Instruction instruction : method.getImplementation().getInstructions()) {
-                    if (instruction instanceof ReferenceInstruction reference
-                            && reference.getReference() instanceof StringReference string
-                            && string.getString().equals(marker)) return true;
-                }
-            }
-        }
-        return false;
     }
 
     static Map<String, ClassDef> classes(MultiDexContainer<? extends DexFile> dex) throws Exception {
@@ -292,8 +258,6 @@ public final class SelectionCheck {
         hook(calls, flags, "channelRecommendations", "misc/Recommendations", "skipRecommendations");
         hook(calls, flags, "cachedRecommendations", "misc/Recommendations", "skipCachedRecommendations");
         hook(calls, flags, "readMetrics", "misc/Analytics", "skipReadMetrics");
-        hook(calls, flags, "crashReports", "misc/Analytics", "skipCrashReporterStart", "skipErrorReport");
-        hook(calls, flags, "sessionReports", "misc/Analytics", "sessionsEnabled");
         int promo = calls.getOrDefault(OWN + "telegram/misc/Analytics;->skipPremiumAppLog", 0);
         int promoFlags = 0;
         for (String status : List.of("premiumPromoShow", "premiumPromoTap", "premiumPromoAccept", "premiumPromoFail")) {
@@ -735,12 +699,7 @@ public final class SelectionCheck {
                 if (!method.getReturnType().equals("Z") || !method.getParameterTypes().isEmpty()) continue;
                 require(expected.flags.containsKey(method.getName()));
                 boolean value = flag(method);
-                boolean wanted = expected.flags.get(method.getName());
-                // A target the host doesn't carry leaves its flag off however the family was picked.
-                if (expected.optional.contains(method.getName())) {
-                    wanted &= clean.carries(OPTIONAL_MARKERS.get(method.getName()));
-                }
-                require(value == wanted);
+                require(value == expected.flags.get(method.getName()));
                 result.flags.put(method.getName(), value);
             }
             require(result.flags.keySet().equals(expected.flags.keySet()));

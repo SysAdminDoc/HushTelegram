@@ -19,7 +19,6 @@ import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.handleTargets
 import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
-import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.localcontrols.Mention
@@ -77,21 +76,16 @@ internal object SendReadMetricsFingerprint : Fingerprint(
  * Each successful hook also sets its
  * own build flag, so settings and diagnostic reports show which targets remain covered.
  *
- * Telegram Beta also carries Firebase Crashlytics and Sessions (see [resolveCrashReporter] and
- * [resolveSessions]). Firebase app init, Installations, Messaging and DataTransport stay as they
- * are, so push registration doesn't change. Crashlytics is stopped through the switch the SDK
- * itself saves and reads first: Telegram's startAppCenterInternal, which would hand it the user
- * and turn collection back on at every launch, is skipped, and the extension saves collection off
- * instead. The SDK reads that at the next start. Sessions' local override answers false. The
- * regular build has neither SDK, so neither part applies there and neither is counted missing.
+ * Neither the Play nor the telegram.org build carries Firebase Crashlytics or Sessions, so there's
+ * no crash or session reporter to stop. Firebase app init, Installations, Messaging and
+ * DataTransport stay as they are, so push registration doesn't change.
  */
 @Suppress("unused")
 val disableAnalyticsPatch = bytecodePatch(
     name = PATCH,
     description = "Stops Telegram from reporting how you use the app, like how long you read channel posts and what you" +
-        " tap on Premium screens, and keeps the camera from reporting your phone's maker and model. On Telegram Beta" +
-        " it also turns off Firebase's crash and session reports from the " +
-        "next start. Messages, calls and notifications work as before. On by default. Turn it off in " +
+        " tap on Premium screens, and keeps the camera from reporting your phone's maker and model. " +
+        "Messages, calls and notifications work as before. On by default. Turn it off in " +
         "HushTelegram settings > Privacy.",
     default = true,
 ) {
@@ -103,15 +97,10 @@ val disableAnalyticsPatch = bytecodePatch(
         requireStatusMethod("disableAnalytics")
         requireStatusMethod("readMetrics")
         AppLogEvent.entries.forEach { requireStatusMethod(it.capability) }
-        requireStatusMethod("crashReports")
-        requireStatusMethod("sessionReports")
 
         val metrics = SendReadMetricsFingerprint.methodOrNull
         val metricsMissing = metrics?.skipReadMetricsWhen("$ANALYTICS->skipReadMetrics(Ljava/util/List;)Z", dryRun = true)
         val premium = resolveAppLogHooks()
-        // Proven before anything changes. Telegram's regular build has neither SDK, so it skips both quietly.
-        val crashReports = resolveCrashReporter()
-        val sessionReports = resolveSessions()
 
         handleTargets(PATCH, "usage reports", Report.entries) { report ->
             when (report) {
@@ -141,23 +130,6 @@ val disableAnalyticsPatch = bytecodePatch(
                     }
                 }
             }
-        }
-
-        when (crashReports) {
-            is Carried.Hookable -> {
-                crashReports.hook.apply()
-                enableCapability("crashReports")
-            }
-            is Carried.Unproven -> patchLog.warning("$PATCH: ${crashReports.why}. The patch goes on without them.")
-            Carried.Absent -> Unit
-        }
-        when (sessionReports) {
-            is Carried.Hookable -> {
-                sessionReports.hook.apply()
-                enableCapability("sessionReports")
-            }
-            is Carried.Unproven -> patchLog.warning("$PATCH: ${sessionReports.why}. The patch goes on without them.")
-            Carried.Absent -> Unit
         }
 
         enableStatus("disableAnalytics")

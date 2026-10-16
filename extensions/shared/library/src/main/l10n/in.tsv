@@ -253,14 +253,11 @@ shared link tracking	pelacakan tautan yang dibagikan
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Strip link tracking that leaves the account's sign-in token off links to Telegram's websites.
 website sign-in tokens	token masuk situs web
 Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.	Menghentikan laporan penggunaan ke Telegram, seperti berapa lama Anda membaca tiap kiriman kanal dan apa yang Anda ketuk di layar Premium. Pesan dan panggilan berfungsi seperti biasa.
-Firebase crash and session reports stop too, from the next time Telegram starts.	Laporan crash dan sesi Firebase juga berhenti, mulai saat Telegram dibuka berikutnya.
 Premium promo views	tampilan promosi Premium
 Premium promo taps	ketukan promosi Premium
 Premium promo accepts	persetujuan promosi Premium
 Premium promo failures	kegagalan promosi Premium
 dual camera reports	laporan kamera ganda
-Firebase crash reports	laporan crash Firebase
-Firebase session reports	laporan sesi Firebase
 Accounts	Akun
 Every switch here applies to all the accounts in this Telegram app, not only the one you have open.	Setiap sakelar di sini berlaku untuk semua akun di aplikasi Telegram ini, bukan hanya akun yang sedang Anda buka.
 No previews before sending	Tanpa pratinjau sebelum mengirim
