@@ -33,9 +33,11 @@ The latest release is [v0.0.18](https://github.com/SysAdminDoc/HushTelegram/rele
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 1.34.0 or newer.
 2. Open the [add-source link](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) on your phone to add HushTelegram as a patch source.
-3. Get Telegram 13.0.3 from telegram.org or the [official beta](https://telegram.org/dl/android/apk-public-beta) 13.0.3. Both have version code 71839. telegram.org's [Download button](https://telegram.org/android) hands out whatever is newest, so check the [checksum](#supported-telegram-builds) before you patch. The Google Play version is a different package and won't work.
+3. Get Telegram 13.0.3. The [Google Play](https://play.google.com/store/apps/details?id=org.telegram.messenger) build (version code 71831) works, and so does telegram.org's build (version code 71839) from its [Download button](https://telegram.org/android) or a mirror such as [APKMirror](https://www.apkmirror.com/apk/telegram-fz-llc/telegram/). telegram.org hands out whatever is newest, so check the [checksum](#supported-telegram-builds) before you patch.
 4. Pick the file in Morphe Manager, keep the default selection and patch. It has every patch that comes with a switch.
 5. Four patches start unselected: Use registered Telegram API credentials, Use registered Maps API key, HushTelegram icon and name, and Black and white launch logo. To add one, turn on **Settings > Advanced > Expert mode** in Morphe Manager and fill in its options before you patch.
+
+The first time you sign in, Telegram turns down the API ID that ships with any patched build, so no code arrives and you see `API_ID_PUBLISHED_FLOOD`. This happens on every patched Telegram, not just this one. The one-time fix is in [Your Telegram account](#your-telegram-account): register a free app at my.telegram.org, then patch with Use registered Telegram API credentials so the app signs in as your own.
 
 **Coming from stock Telegram?** The keys differ, so you'll have to uninstall stock Telegram before the patched copy goes on. That deletes this phone's secret chats for good, though cloud chats come back when you sign in. Stay signed in on another device until the patched app is in, because that's usually where the login code shows up.
 
@@ -168,13 +170,13 @@ The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.o
 
 ## Supported Telegram builds
 
-The current release patches Telegram 13.0.3 in two builds, and the patched app needs Android 9 or newer. telegram.org's build is `org.telegram.messenger.web` with version code 71839, and its APK carries every phone architecture. The [official beta](https://telegram.org/dl/android/apk-public-beta) is `org.telegram.messenger.beta`, with the same version code 71839 this time. Morphe Manager warns about any other build, and Google Play's `org.telegram.messenger` isn't supported.
+The current release patches Telegram 13.0.3 in two builds, and the patched app needs Android 9 or newer. telegram.org's build is `org.telegram.messenger.web` with version code 71839, and its APK carries every phone architecture. The Google Play build is `org.telegram.messenger` with version code 71831, the one most people already have on their phone. Morphe Manager warns about any other build, the public beta included.
 
 SHA-256 of the stock APKs the release was checked against:
 
 ```text
-web   8f8c6cd824eb47cd23b30e97468ed2a2ab2134130f50362f548bf0da0faf4d0a
-beta  b4fdc757aa09497c5b7fa1c6a6396a7a0d75a7c3f2b3e341f69f5a741382aabc
+web    8f8c6cd824eb47cd23b30e97468ed2a2ab2134130f50362f548bf0da0faf4d0a
+play   f874b02ee8b40cc989aca90b78accd158666f3c0596c2958fa2a77f0c14e4f20
 ```
 
 On Windows, check yours with `Get-FileHash -Algorithm SHA256 .\Telegram.apk`. Each [release](https://github.com/SysAdminDoc/HushTelegram/releases) also ships `SHA256SUMS.txt` for its `.mpp` bundle, which is a patch bundle and not a Telegram APK.
