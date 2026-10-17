@@ -1394,9 +1394,13 @@ function Test-ReleaseReceipt {
         }
         if ($declaredTargets.Count -gt 1) {
             $signers = @($target.source.signerSha256 | Where-Object { $_ })
-            if ($signers.Count -eq 0 -or @($signers | Where-Object {
-                    [string]$_ -cnotmatch '^[0-9a-f]{64}$' -or $declaredTarget.PackageSignatures -cnotcontains [string]$_
-                }).Count -gt 0) {
+            # Every recorded signer has to be a certificate digest, and at least one has to be a
+            # certificate the catalog declares for the package. A store build also records its store's
+            # extra certificate (Google Play App Signing adds one to org.telegram.messenger), which is
+            # allowed. A receipt whose signers include none of the declared certificates proves nothing.
+            $malformed = @($signers | Where-Object { [string]$_ -cnotmatch '^[0-9a-f]{64}$' })
+            $declaredPresent = @($declaredTarget.PackageSignatures | Where-Object { $signers -ccontains [string]$_ })
+            if ($signers.Count -eq 0 -or $malformed.Count -gt 0 -or $declaredPresent.Count -eq 0) {
                 return Fail "The receipt records no verified declared vendor certificate for $label."
             }
         }

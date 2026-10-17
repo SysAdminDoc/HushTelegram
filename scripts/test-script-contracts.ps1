@@ -808,6 +808,13 @@ try {
     }
     $dualProof = Test-DualTestReceipt (New-DualTestReceipt)
     Assert-True $dualProof.Valid "Both packages' complete receipt was refused: $($dualProof.Reason)"
+    # A store build records its store's extra signing certificate next to the vendor's declared one,
+    # the way Google Play App Signing adds one to org.telegram.messenger. The declared certificate
+    # being present is what proves the build, so the extra one is allowed.
+    $storeResigned = New-DualTestReceipt
+    $storeResigned.targets[2].source.signerSha256 = @($telegramSigners) + @('b' * 64)
+    Assert-True (Test-DualTestReceipt $storeResigned).Valid `
+        'A store build carrying the declared certificate plus an extra store certificate was refused.'
     foreach ($mutation in @(
             { param($r) $r.targets = @($r.targets | Select-Object -First 2) },
             { param($r) $r.targets[2].source.package = 'com.example.host' },

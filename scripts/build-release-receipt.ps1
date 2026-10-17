@@ -296,9 +296,13 @@ foreach ($apk in $Fixture) {
         $stock = Get-ApkManifestFacts -Apk $stockApk -Aapt2 $Aapt2
         $expectedTarget = Get-PatchTarget -PatchList $catalog -PackageName ([string]$stock.package)
         $signers = @(Get-VendorSignerDigests -Apk $stockApk -Aapt2 $Aapt2)
+        # The clean fixture has to carry the vendor certificate the catalog declares for its package.
+        # A store build carries an extra one too: Google Play App Signing re-signs org.telegram.messenger,
+        # so its APK holds Google's certificate alongside Telegram's. That is expected and allowed. A
+        # fixture carrying none of the declared certificates was re-signed or patched, and it is refused.
         if (@($expectedTarget.PackageSignatures).Count -eq 0 -or
-                @($signers | Where-Object { $expectedTarget.PackageSignatures -cnotcontains $_ }).Count -gt 0) {
-            throw "$label is not signed by the declared vendor certificate for $($stock.package). Nothing was patched."
+                @($expectedTarget.PackageSignatures | Where-Object { $signers -ccontains $_ }).Count -eq 0) {
+            throw "$label carries none of the declared vendor certificates for $($stock.package). Nothing was patched."
         }
         $stockSigners[$apk] = $signers
     } finally {
