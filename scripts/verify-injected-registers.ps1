@@ -208,8 +208,14 @@ $metaSigners = @($catalog.patches | ForEach-Object { $_.compatibility } |
     ForEach-Object { $_.signatures } | Sort-Object -Unique)
 if ($metaSigners.Count -eq 0) { throw "patches-list.json declares no signer for $package to hold the clean APK to." }
 $cleanSigners = @(Get-SignerDigests -Apk $cleanBase)
-if ($cleanSigners.Count -eq 0 -or @($cleanSigners | Where-Object { $_ -cnotin $metaSigners }).Count -gt 0) {
-    throw "The clean APK at $CleanApk is signed by $($cleanSigners -join ', '), not by telegram.org; it is not a vendor build."
+# A genuine vendor build carries the vendor's own signing certificate, so at least one of the signers
+# the catalog declares for the package has to be on the clean APK. A store build carries an extra
+# certificate as well: Google Play App Signing re-signs org.telegram.messenger, so its APK holds
+# Google's certificate alongside Telegram's. That is expected and allowed. A re-signed or patched
+# baseline carries none of the declared certificates, and it is still refused.
+if ($cleanSigners.Count -eq 0 -or @($metaSigners | Where-Object { $_ -cin $cleanSigners }).Count -eq 0) {
+    throw ("The clean APK at $CleanApk is signed by $($cleanSigners -join ', '), which carries none of the " +
+        "signing certificates $package declares ($($metaSigners -join ', ')); it is not a vendor build.")
 }
 # The dex comparison's clean side: the whole bundle, merged as the CLI merged it before patching,
 # so a split's dex (the Facebook sibling's 580 in-app browser shipped one) is on both sides. DexDiff
