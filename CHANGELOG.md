@@ -2,7 +2,9 @@
 
 Every HushTelegram release, newest first.
 
-## Unreleased
+## 0.0.19 (2026-10-17)
+
+The tenth release, with 67 patches. It clears up the last release's confusion for anyone who downloaded Telegram from Google Play, and it drops the beta as a target.
 
 * **Telegram:** The Google Play version of Telegram 13.0.3 (`org.telegram.messenger`, version code 71831) can be patched now. That's the APK APKMirror and Uptodown carry, and Morphe Manager used to turn it away with "Wrong package selected" because it only knew telegram.org's build. telegram.org's build still works the same way.
 * **Telegram:** **Repair Firebase push registration** also covers the Play build, so its notifications sign up with Google like they do on telegram.org's build.
