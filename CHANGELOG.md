@@ -2,6 +2,10 @@
 
 Every HushTelegram release, newest first.
 
+## Unreleased
+
+* **Tooling:** A release can't go public until the whole app has been walked with that exact bundle on a release phone or an emulator. The publish stage now takes the walk's receipt as `-Walk` and stops before the notes, the tag or GitHub if the walk wasn't a full pass, saw a Telegram crash, ran on some other device, or patched with a different bundle.
+
 ## 0.0.19 (2026-10-17)
 
 The tenth release, with 67 patches. It clears up the last release's confusion for anyone who downloaded Telegram from Google Play, and it drops the beta as a target.
