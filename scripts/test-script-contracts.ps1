@@ -2027,15 +2027,24 @@ try {
         Set-FactsFile 'patches-bundle.json' { param($text) $synced }
     }
 
-    # The bug form names the published version, which the synced index above now names too.
+    # The bug form names the published version, which the synced index above now names too, and
+    # the catalog's build. A retarget moves the form's build to the new Telegram first (b9f5d0b8)
+    # while the catalog waits for the release that regenerates it, so the control met a form one
+    # build ahead of its catalog on every tree in that window (13.1.0 over 13.0.3, 2026-10-22).
     function Sync-FixtureBugForm {
         $fixtureVersion = ((Get-Content -LiteralPath (Join-Path $factsRoot 'gradle.properties')) `
             -match '^version\s*=' | Select-Object -First 1) -replace '^version\s*=\s*', ''
         $publishedHere = Get-ReleaseIndexVersion
-        if ($publishedHere -eq $fixtureVersion) { return }
-        Set-FactsFile $bugFormRelative {
-            param($text) $text -replace ('HushTelegram ' + [regex]::Escape($publishedHere) + ' on Telegram'), "HushTelegram $fixtureVersion on Telegram"
+        $fixtureBuild = (Get-PatchTarget -PatchList (Get-Content -LiteralPath (Join-Path $factsRoot 'patches-list.json') -Raw |
+            ConvertFrom-Json)).PackageVersion
+        $text = Get-Content -LiteralPath (Join-Path $factsRoot $bugFormRelative) -Raw
+        $synced = $text
+        if ($publishedHere -ne $fixtureVersion) {
+            $synced = $synced -replace ('HushTelegram ' + [regex]::Escape($publishedHere) + ' on Telegram'), "HushTelegram $fixtureVersion on Telegram"
         }
+        $synced = $synced -replace '(placeholder:\s*HushTelegram \S+ on Telegram )\d+(?:\.\d+)+', "`${1}$fixtureBuild"
+        if ($synced -ceq $text) { return }
+        Set-FactsFile $bugFormRelative { param($unused) $synced }
     }
 
     # And the README's version badge and the sentence naming the latest release, which a release
@@ -2146,8 +2155,9 @@ try {
             param($text) $text -replace '(latest (?:published )?release is (?:still )?\[?v)\d+(?:\.\d+)+', "`${1}$publishedHere" `
                 -replace '(latest release is \[v[^\]]*\]\([^)\s]*/tag/v)\d+(?:\.\d+)+', "`${1}$publishedHere"
         }
+        # Whatever build the checkout's form names: a retarget moves it ahead of the catalog.
         Set-FactsFile $bugFormRelative {
-            param($text) $text -replace ('(placeholder:\s*HushTelegram \S+ on Telegram )' + [regex]::Escape($newestBuild)), "`${1}$movedBuild"
+            param($text) $text -replace '(placeholder:\s*HushTelegram \S+ on Telegram )\d+(?:\.\d+)+', "`${1}$movedBuild"
         }
         $global:LASTEXITCODE = 0
         & $factsScript -Root $factsRoot -SkipDescriptionTestCount -AllowPublishedIndexLag -SkipUrlCheck 6> $null
