@@ -273,7 +273,8 @@ public class SettingsNavigationTest {
         assertEquals(position(Settings.HIDE_TRANSLATE_BAR.key) + 1, position(Settings.OUTSIDE_TRANSLATE.key));
         assertEquals(position(Settings.HIDE_BY_KEYWORD.key) + 1, position(FilterEditor.GROUPS));
         assertEquals(position(FilterEditor.GROUPS) + 1, position(FilterEditor.CHANNELS));
-        assertEquals(position(Settings.KEEP_DELETED_MESSAGES.key) + 1, position(HushTelegramPreferenceFragment.CLEAR_KEPT));
+        assertEquals(position(Settings.KEEP_DELETED_MESSAGES.key) + 1, position(Settings.RED_DELETED_LABEL.key));
+        assertEquals(position(Settings.RED_DELETED_LABEL.key) + 1, position(HushTelegramPreferenceFragment.CLEAR_KEPT));
         page.navigation.back();
         page.navigation.navigate(PatchFamily.Page.LOOK.title);
         assertEquals(position(Settings.CHANGE_STICKER_SIZE.key) + 1, position(HushTelegramPreferenceFragment.STICKER_SIZE_ROW));
