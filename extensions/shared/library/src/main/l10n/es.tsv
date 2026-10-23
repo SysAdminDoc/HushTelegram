@@ -159,20 +159,14 @@ Telegram closes and reopens on this page.	Telegram se cierra y se vuelve a abrir
 Report a problem	Informar de un problema
 # context: that row's summary
 Opens a GitHub report with your versions and settings filled in. Add what happened.	Abre un informe en GitHub con tus versiones y ajustes ya puestos. Añade qué pasó.
-# context: home page row under the status card, and the title of the dialog it opens
+# context: row on the Settings backup page, and the title of the dialog it opens
 Quick setups	Configuración rápida
 # context: that row's summary
-Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row.	Activa varios interruptores con un toque o devuelve todos los interruptores a como estaban al principio. Mantén pulsada esta fila para ocultarla.
-# context: row on Settings backup that hides or shows the Quick setups row on the home page, and its two summaries
-Quick setups on the home page	Configuración rápida en la página de inicio
-Shown. Tap to hide it.	Visible. Toca para ocultarla.
-Hidden. Tap to show it again.	Oculta. Toca para mostrarla de nuevo.
+Turn on a set of switches in one tap, or put every switch back the way it started.	Activa varios interruptores con un toque o devuelve todos los interruptores a como estaban al principio.
 # context: Row on the Look and feel page that switches how the HushTelegram settings pages are drawn: each group of rows on a rounded card with an outline, or plain rows with a thin line between them. Its line says which look is on and what a tap changes it to.
 Settings look	Aspecto de la configuración
 Cards. Tap for plain rows.	Tarjetas. Toca para usar filas simples.
 Plain rows. Tap for cards.	Filas simples. Toca para usar tarjetas.
-# context: toast after a long press hides Quick setups; the page named is Settings backup
-Quick setups hidden. Bring it back from %1$s.	Configuración rápida oculta. Vuelve a mostrarla desde %1$s.
 # context: Quick setups choice that turns on the switches that hide ads, suggestions and nags
 Quiet	Tranquilo
 # context: what Quiet does, under its name
@@ -723,7 +717,7 @@ Couldn't open notification settings. Open Android settings.	No se pudieron abrir
 Search only my chats	Buscar solo en mis chats
 Search finds your chats, contacts and messages from chats you're in, and nothing public. The Channels, Apps and Posts tabs go away, and a hashtag's public posts don't load.	La búsqueda encuentra tus chats, contactos y mensajes de los chats en los que estás, y nada público. Las pestañas Canales, Apps y Publicaciones desaparecen, y las publicaciones públicas de un hashtag no se cargan.
 public search lookups	búsquedas públicas
-# context: Settings lock row under Quick setups on the home page, its notes, and what a refused change says (#17).
+# context: Settings lock row on the Pause page, its notes, and what a refused change says (#17).
 Lock HushTelegram settings	Bloquear la configuración de HushTelegram
 Makes every setting here read-only. To change one again, start an unlock here and wait 24 hours.	Hace que cada ajuste de aquí sea de solo lectura. Para volver a cambiar uno, inicia aquí el desbloqueo y espera 24 horas.
 Start unlock	Iniciar desbloqueo
@@ -738,7 +732,7 @@ Settings are locked. They unlock in %1$d h %2$d min.	La configuración está blo
 Settings are locked. Tap Start unlock, then wait 24 hours.	La configuración está bloqueada. Toca Iniciar desbloqueo y espera 24 horas.
 # context: Export settings row, its first sentence: what a settings file holds. The sentence after it lists what the file leaves out.
 Saves your switches, filter lists, sticker size and chat list emoji to a file, for all the accounts in this Telegram app. Your chats, drafts and kept messages aren't in it.	Guarda en un archivo tus interruptores, listas de filtros, tamaño de stickers y emoji de la lista de chats, para todas las cuentas de esta app de Telegram. Tus chats, borradores y mensajes conservados no van en él.
-# context: Export settings row. %1$s is a list joined the language's own way: row titles as they show (Pause HushTelegram, Debug logging, Check for new HushTelegram releases, Lock HushTelegram settings, Quick setups on the home page, UnifiedPush notifications, Folders by chat type) and the lowercase phrase below it, which ends the list.
+# context: Export settings row. %1$s is a list joined the language's own way: row titles as they show (Pause HushTelegram, Debug logging, Check for new HushTelegram releases, Lock HushTelegram settings, Settings look, UnifiedPush notifications, Folders by chat type) and the lowercase phrase below it, which ends the list.
 Left out of the file: %1$s.	Fuera del archivo: %1$s.
 the translation service, its key and the chats you turned translation on for	el servicio de traducción, su clave y los chats en los que activaste la traducción
 # context: Sentences added after a description to say which account it works on. "Both" is turning Folders by chat type on and turning it off. The last one closes the About page's Accounts row.

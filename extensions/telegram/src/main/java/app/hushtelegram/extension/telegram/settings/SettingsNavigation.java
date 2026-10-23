@@ -42,7 +42,6 @@ import java.util.Map;
 import java.util.Set;
 
 import app.hushtelegram.extension.shared.L10n;
-import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
@@ -66,29 +65,20 @@ final class SettingsNavigation extends BaseAdapter {
     private static final String STATUS_ACTION = "hushtelegram_status_action";
     /** The restart row's key. Like the other rows only this view draws, it stores nothing. */
     static final String RESTART = "action_restart_to_apply";
+    /** The Quick setups row, on the Settings backup page. It stores nothing. */
     static final String QUICK_SETUPS = "action_quick_setups";
-    /** The settings lock's row, under Quick setups. The lock keeps its own state ({@link SettingsLock}). */
+    /** The settings lock's row, on the Pause page. The lock keeps its own state ({@link SettingsLock}). */
     static final String LOCK = "action_settings_lock";
-    /** The row on Settings backup that hides or shows the Quick setups row again. Like the other rows only this view draws, it stores nothing. */
-    static final String RESTORE_QUICK_SETUPS = "action_restore_quick_setups";
-    /**
-     * Whether a long press has taken the Quick setups row off the home page. The screen's own
-     * choice: it stays out of settings files and a Quick setups preset, and a pause leaves it alone.
-     */
-    static final BooleanSetting HIDE_QUICK_SETUPS =
-            new BooleanSetting("hushtelegram_hide_quick_setups", Boolean.FALSE, false, false);
     /** The row that switches these pages between cards and plain rows. Like the other rows only this view draws, it stores nothing. */
     static final String SETTINGS_LOOK = "action_settings_look";
     /**
      * Whether these pages draw plain rows with a thin line between them instead of cards (#18). The
-     * screen's own choice, like {@link #HIDE_QUICK_SETUPS}: settings files and Quick setups leave
-     * it out, and a pause leaves it alone.
+     * screen's own choice: settings files and Quick setups leave it out, and a pause leaves it alone.
      */
     static final BooleanSetting PLAIN_ROWS =
             new BooleanSetting("hushtelegram_plain_rows", Boolean.FALSE, false, false);
 
     static {
-        Setting.keepWhenPaused(HIDE_QUICK_SETUPS);
         Setting.keepWhenPaused(PLAIN_ROWS);
     }
 
@@ -111,10 +101,6 @@ final class SettingsNavigation extends BaseAdapter {
     private final Preference support;
     /** Just above Support: a new GitHub bug report with this install's versions filled in. */
     private final Preference report;
-    /** Under the home page's status card: a set of switches in one tap. */
-    private final Preference quickSetups;
-    /** Under Quick setups: locks the settings, starts the unlock's wait or cancels it, saying which. */
-    private final HushTelegramPreferenceFragment.Row lock;
     /**
      * Shown on every page while a change waits for a restart: a tap restarts Telegram and the
      * screen comes back on the same page ({@link ReopenSettingsAfterRestart}).
@@ -193,20 +179,6 @@ final class SettingsNavigation extends BaseAdapter {
                 L10n.t("Opens a GitHub report with your versions and settings filled in. Add what happened."), SettingsIcons.BUG);
         report.setKey(REPORT);
         report.setOnPreferenceClickListener(row -> { ReportProblemForm.open(row.getContext(), screen); return true; });
-        quickSetups = link(context, L10n.t("Quick setups"),
-                L10n.t("Turn on a set of switches in one tap, or put every switch back the way it started. Press and hold to hide this row."), SettingsIcons.TOOLS);
-        quickSetups.setKey(QUICK_SETUPS);
-        quickSetups.setOnPreferenceClickListener(ignored -> { page.showQuickSetups(); return true; });
-        lock = (HushTelegramPreferenceFragment.Row) link(context, SettingsLock.title(SettingsLock.State.OFF),
-                SettingsLock.summary(SettingsLock.State.OFF), SettingsIcons.PRIVACY);
-        lock.setKey(LOCK);
-        // A tap does what the title says at once, and the row and a note say what happened.
-        lock.actsAtOnce = true;
-        lock.setOnPreferenceClickListener(ignored -> {
-            Utils.showToastLong(SettingsLock.advance());
-            rebuild();
-            return true;
-        });
         restart =new HushTelegramPreferenceFragment.Row(context);
         restart.setKey(RESTART);
         restart.setPersistent(false);
@@ -258,16 +230,6 @@ final class SettingsNavigation extends BaseAdapter {
             View action = row == null ? null : row.findViewWithTag(STATUS_ACTION);
             if (action == null) return false;
             if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) action.performClick();
-            return true;
-        });
-        // A long press on Quick setups takes it off the home page, and Settings backup brings it back.
-        list.setOnItemLongClickListener((parent, view, position, id) -> {
-            if (getItem(position) != quickSetups) return false;
-            HIDE_QUICK_SETUPS.save(true);
-            Preference restore = page.findPreference(RESTORE_QUICK_SETUPS);
-            if (restore != null) restore.setSummary(HushTelegramPreferenceFragment.restoreQuickSetupsSummary());
-            Utils.showToastLong(L10n.f("Quick setups hidden. Bring it back from %1$s.", L10n.t("Settings backup")));
-            rebuild();
             return true;
         });
         list.setOnItemClickListener((parent, view, position, id) -> {
@@ -543,9 +505,6 @@ final class SettingsNavigation extends BaseAdapter {
             for (Section section : sections) if (!section.primary) visible.add(section.link);
         } else {
             visible.add(screen.getPreference(0));
-            if (!HIDE_QUICK_SETUPS.get()) visible.add(quickSetups);
-            showLock();
-            visible.add(lock);
             visible.add(browse);
             for (Section section : sections) if (section.primary) visible.add(section.link);
             changed.setSummary(changedSummary());
@@ -602,13 +561,6 @@ final class SettingsNavigation extends BaseAdapter {
         if (!(row instanceof TwoStatePreference) || !row.hasKey()) return false;
         Setting<?> setting = Setting.getSettingFromPath(row.getKey());
         return setting instanceof BooleanSetting && !setting.isSetToDefault();
-    }
-
-    /** The lock row says where the lock stands as the home page is drawn, time left included. */
-    private void showLock() {
-        SettingsLock.State state = SettingsLock.state();
-        lock.setTitle(SettingsLock.title(state));
-        lock.setSummary(SettingsLock.summary(state));
     }
 
     /**
@@ -795,10 +747,10 @@ final class SettingsNavigation extends BaseAdapter {
                 // stays compact enough to scan all seven destinations at a glance.
                 TextView summary = row.findViewById(android.R.id.summary);
                 if (summary != null) summary.setVisibility(View.GONE);
-                row.setMinimumHeight(dp(56));
+                row.setMinimumHeight(dp(52));
                 int side = palette().rowSide(row);
                 boolean plain = ScreenColors.plainRows();
-                row.setPaddingRelative(side, dp(first && !plain ? 12 : 8), side, dp(last && !plain ? 12 : 8));
+                row.setPaddingRelative(side, dp(first && !plain ? 10 : 6), side, dp(last && !plain ? 10 : 6));
                 ImageView icon = row.findViewById(android.R.id.icon);
                 if (icon != null) {
                     icon.setPadding(dp(7), dp(7), dp(7), dp(7));
@@ -816,7 +768,7 @@ final class SettingsNavigation extends BaseAdapter {
         }
         if (item == screen.getPreference(0)) {
             // The status card stays a card in either look, as a panel apart from the rows.
-            row.setPaddingRelative(dp(36), dp(16), dp(36), dp(16));
+            row.setPaddingRelative(dp(36), dp(14), dp(36), dp(14));
             TextView title = row.findViewById(android.R.id.title);
             if (title != null) title.setTypeface(android.graphics.Typeface.create("sans-serif-medium", 0));
         }
@@ -931,7 +883,7 @@ final class SettingsNavigation extends BaseAdapter {
         Object card = cards.get(item);
         if (card != null) return card;
         if (item == more || item == support || item == browse || item == screen.getPreference(0)
-                || item == restart || item == quickSetups || item == lock || item == report) return item;
+                || item == restart || item == report) return item;
         if (item.getParent() != null) return item.getParent();
         return sections;
     }

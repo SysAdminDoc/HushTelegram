@@ -5,6 +5,7 @@ Every HushTelegram release, newest first.
 ## Unreleased
 
 * **Tooling:** A release can't go public until the whole app has been walked with that exact bundle on a release phone or an emulator. The publish stage now takes the walk's receipt as `-Walk` and stops before the notes, the tag or GitHub if the walk wasn't a full pass, saw a Telegram crash, ran on some other device, or patched with a different bundle.
+* **Telegram:** The HushTelegram settings home page gets to the settings sooner. The seven pages of switches now come right after the status card, and the header, the gaps between cards, the section titles and the page rows all take less room. **Quick setups** moved to the Settings backup page and **Lock HushTelegram settings** to the Pause page under More settings. Search finds both, and they work the same as before. The long press that hid Quick setups is gone, along with its **Quick setups on the home page** row.
 
 ## 0.0.19 (2026-10-17)
 

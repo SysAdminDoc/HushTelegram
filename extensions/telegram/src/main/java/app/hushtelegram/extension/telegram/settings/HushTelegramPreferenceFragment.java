@@ -938,7 +938,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         ReleaseCheck.watch(this);
     }
 
-    /** Pause, and what it can't reach in this build. */
+    /** Pause, what it can't reach in this build, and the settings lock, which holds Pause too. */
     private void addPausePage(Context context, PreferenceScreen screen, Set<PatchFamily> build) {
         PreferenceCategory pause = category(screen, L10n.t("Pause"));
         pause.addPreference(mark(toggle(context, BaseSettings.PAUSED, L10n.t("Pause HushTelegram"),
@@ -946,6 +946,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         + "choices stay saved. Edits made when you patched stay in.")), SettingsIcons.PATCHED));
         String stays = PatchFamily.staysWhilePausedSummary(build);
         if (stays != null) pause.addPreference(mark(info(context, L10n.t(STAYS_WHILE_PAUSED), stays), SettingsIcons.ABOUT));
+        pause.addPreference(mark(new LockRow(context), SettingsIcons.PRIVACY));
     }
 
     /** Settings backup: the switches to a file and back. */
@@ -960,7 +961,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 L10n.t("Import settings"),
                 L10n.t("Loads your switches, filter lists and sticker size from a saved file. You see what will "
                         + "change before anything is applied. It applies to all accounts.")), SettingsIcons.DOWNLOADS));
-        backup.addPreference(mark(restoreQuickSetupsRow(context), SettingsIcons.TOOLS));
+        backup.addPreference(mark(quickSetupsRow(context), SettingsIcons.TOOLS));
         if (!PatchFamily.Page.LOOK.inBuild(build)) backup.addPreference(settingsLookRow(context));
     }
 
@@ -972,7 +973,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static String exportSummary(Set<PatchFamily> build) {
         List<String> leftOut = new ArrayList<>(Arrays.asList(L10n.t("Pause HushTelegram"), L10n.t("Debug logging"),
                 L10n.t("Check for new HushTelegram releases"), L10n.t("Lock HushTelegram settings"),
-                L10n.t("Quick setups on the home page"), L10n.t("Settings look")));
+                L10n.t("Settings look")));
         if (build.contains(PatchFamily.UNIFIED_PUSH)) leftOut.add(L10n.t("UnifiedPush notifications"));
         if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS)) leftOut.add(L10n.t("Folders by chat type"));
         if (build.contains(PatchFamily.OUTSIDE_TRANSLATE)) {
@@ -983,24 +984,15 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 + L10n.f("Left out of the file: %1$s.", L10n.join(leftOut));
     }
 
-    /** Hides the Quick setups row on the home page, or shows it again. The home page follows the next time it's drawn. */
-    private static Preference restoreQuickSetupsRow(Context context) {
+    /** Opens Quick setups: a set of switches in one tap, or every switch back the way it started. */
+    private Preference quickSetupsRow(Context context) {
         Row row = new Row(context);
-        row.setKey(SettingsNavigation.RESTORE_QUICK_SETUPS);
-        row.setTitle(L10n.t("Quick setups on the home page"));
-        row.setSummary(restoreQuickSetupsSummary());
+        row.setKey(SettingsNavigation.QUICK_SETUPS);
+        row.setTitle(L10n.t("Quick setups"));
+        row.setSummary(L10n.t("Turn on a set of switches in one tap, or put every switch back the way it started."));
         row.setPersistent(false);
-        row.actsAtOnce = true;
-        row.setOnPreferenceClickListener(p -> {
-            SettingsNavigation.HIDE_QUICK_SETUPS.save(!SettingsNavigation.HIDE_QUICK_SETUPS.get());
-            p.setSummary(restoreQuickSetupsSummary());
-            return true;
-        });
+        row.setOnPreferenceClickListener(ignored -> { showQuickSetups(); return true; });
         return row;
-    }
-
-    static String restoreQuickSetupsSummary() {
-        return SettingsNavigation.HIDE_QUICK_SETUPS.get() ? L10n.t("Hidden. Tap to show it again.") : L10n.t("Shown. Tap to hide it.");
     }
 
     /**
@@ -1908,7 +1900,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     }
 
     /** A row of text, which a screen reader calls a button when a tap does something. */
-    static final class Row extends Preference implements ImmediateAction {
+    static class Row extends Preference implements ImmediateAction {
         /** Set on a row whose tap does what it says at once, which then goes without a chevron. */
         boolean actsAtOnce;
 
@@ -1927,6 +1919,37 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             showAllText(view);
             ScreenColors.row(view, this);
             view.setAccessibilityDelegate(isSelectable() ? new RowSemantics(this, Button.class) : null);
+        }
+    }
+
+    /**
+     * The settings lock's row on the Pause page (#17). Its title and line are read from the lock
+     * each time they're asked for, so the page, search and the time left always say where it
+     * stands. A tap locks, starts the unlock's wait or cancels it, and a note says which.
+     */
+    static final class LockRow extends Row {
+        LockRow(Context context) {
+            super(context);
+            setKey(SettingsNavigation.LOCK);
+            setPersistent(false);
+            // A tap does what the title says at once, so the row goes without a chevron.
+            actsAtOnce = true;
+            setOnPreferenceClickListener(ignored -> {
+                Utils.showToastLong(SettingsLock.advance());
+                // The page draws again, with the new title and line.
+                notifyChanged();
+                return true;
+            });
+        }
+
+        @Override
+        public CharSequence getTitle() {
+            return SettingsLock.title(SettingsLock.state());
+        }
+
+        @Override
+        public CharSequence getSummary() {
+            return SettingsLock.summary(SettingsLock.state());
         }
     }
 

@@ -66,17 +66,15 @@ public class SectionJumpTest {
         HushTelegramPreferenceFragment page = page(dialog);
         ListView list = laidOut(dialog);
 
-        // Quick setups and the settings lock sit between the status card and the sections.
-        assertEquals(SettingsNavigation.QUICK_SETUPS, ((Preference) list.getItemAtPosition(1)).getKey());
-        assertEquals(SettingsNavigation.LOCK, ((Preference) list.getItemAtPosition(2)).getKey());
-        assertEquals("Browse settings", ((Preference) list.getItemAtPosition(3)).getTitle());
+        // The sections follow the status card straight away.
+        assertEquals("Browse settings", ((Preference) list.getItemAtPosition(1)).getTitle());
         List<String> titles = new ArrayList<>();
         // More settings, then Report a problem and Support HushTelegram, which open web pages rather than sections.
         assertEquals(HushTelegramPreferenceFragment.SUPPORT, ((Preference) list.getItemAtPosition(list.getCount() - 1)).getKey());
         assertEquals(SettingsNavigation.REPORT, ((Preference) list.getItemAtPosition(list.getCount() - 2)).getKey());
         // Changed switches sits just above More settings and opens a page of its own, not a section.
         assertEquals(SettingsNavigation.CHANGED, ((Preference) list.getItemAtPosition(list.getCount() - 4)).getKey());
-        for (int i = 4; i < list.getCount() - 4; i++) titles.add(((Preference) list.getItemAtPosition(i)).getTitle().toString());
+        for (int i = 2; i < list.getCount() - 4; i++) titles.add(((Preference) list.getItemAtPosition(i)).getTitle().toString());
         Preference more = (Preference) list.getItemAtPosition(list.getCount() - 3);
         assertEquals("More settings", more.getTitle());
         assertTrue(more.getOnPreferenceClickListener().onPreferenceClick(more));

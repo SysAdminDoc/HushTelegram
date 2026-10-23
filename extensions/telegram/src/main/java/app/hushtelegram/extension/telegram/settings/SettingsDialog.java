@@ -207,13 +207,13 @@ public final class SettingsDialog extends DialogFragment {
         pageTitle.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
         pageTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
         pageTitle.setAccessibilityHeading(true);
-        pageTitle.setPaddingRelative(dp(22), dp(4), dp(20), dp(16));
+        pageTitle.setPaddingRelative(dp(22), 0, dp(20), dp(10));
         root.addView(pageTitle);
         introduction = new TextView(getContext());
         introduction.setText(L10n.t("A quieter space, your way."));
         introduction.setTextColor(ScreenColors.DEFAULT.summary);
         introduction.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        introduction.setPaddingRelative(dp(22), 0, dp(20), dp(14));
+        introduction.setPaddingRelative(dp(22), 0, dp(20), dp(10));
         introduction.setVisibility(View.GONE);
         root.addView(introduction);
         buildSearch(root);
@@ -293,7 +293,8 @@ public final class SettingsDialog extends DialogFragment {
         });
         LinearLayout.LayoutParams layout = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        layout.setMargins(dp(20), 0, dp(20), dp(8));
+        // The first card's own 4 dp inset adds to this, so the list starts 8 dp under the box.
+        layout.setMargins(dp(20), 0, dp(20), dp(4));
         root.addView(searchBox, layout);
         // Typed letters alone tell a screen reader nothing about the list below, so the count is
         // spoken from a polite live region, once the typing has settled.
@@ -350,7 +351,7 @@ public final class SettingsDialog extends DialogFragment {
     private void showHeading(CharSequence title, boolean home, String query) {
         pageTitle.setText(home ? L10n.t(query.isEmpty() ? "Your Telegram." : "Search settings") : title);
         introduction.setVisibility(home && query.isEmpty() ? View.VISIBLE : View.GONE);
-        pageTitle.setPaddingRelative(dp(22), dp(4), dp(20), dp(home && query.isEmpty() ? 6 : 16));
+        pageTitle.setPaddingRelative(dp(22), 0, dp(20), dp(home && query.isEmpty() ? 2 : 10));
     }
 
     /** How many settings the search shows, or -1 when there is no search. */

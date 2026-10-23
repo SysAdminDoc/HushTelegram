@@ -240,8 +240,9 @@ final class ScreenColors {
         surface.setColor(transparent ? Color.TRANSPARENT : card);
         surface.setStroke(transparent ? 0 : dp(row, 1), emphasized ? heading : outline);
         surface.setCornerRadii(corners);
-        int top = first ? dp(row, 6) : -dp(row, 1);
-        int bottom = last ? dp(row, 6) : 0;
+        // 4 dp above a group and below it, so two cards in a row sit 8 dp apart.
+        int top = first ? dp(row, 4) : -dp(row, 1);
+        int bottom = last ? dp(row, 4) : 0;
         // Outside touch mode the list marks the row a keyboard is on as selected. Its selector
         // draws under this opaque surface, so the row shows the ring itself.
         GradientDrawable ring = new GradientDrawable();
@@ -261,8 +262,8 @@ final class ScreenColors {
                 ? new RippleDrawable(ColorStateList.valueOf(ripple), layers, null) : layers);
         // Explicit padding after the inset background prevents its padding from moving the text.
         int vertical = preference.getSummary() == null ? 12 : 14;
-        row.setPaddingRelative(dp(row, 36), dp(row, vertical + (first ? 6 : 0)),
-                dp(row, 36), dp(row, vertical + (last ? 6 : 0)));
+        row.setPaddingRelative(dp(row, 36), dp(row, vertical + (first ? 4 : 0)),
+                dp(row, 36), dp(row, vertical + (last ? 4 : 0)));
         row.setMinimumHeight(dp(row, 64));
     }
 
@@ -367,7 +368,7 @@ final class ScreenColors {
             title.setAllCaps(true);
         }
         int side = dp(row, plain ? 20 : 22);
-        row.setPaddingRelative(side, dp(row, plain ? 20 : 16), side, dp(row, plain ? 4 : 8));
+        row.setPaddingRelative(side, dp(row, plain ? 14 : 10), side, dp(row, plain ? 4 : 6));
     }
 
     static GradientDrawable rounded(int color, float radius) {
