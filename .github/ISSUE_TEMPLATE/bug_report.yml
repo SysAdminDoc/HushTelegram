@@ -18,7 +18,7 @@ body:
     attributes:
       label: HushTelegram and Telegram versions
       description: Long-press the Telegram icon and tap HushTelegram, or open Telegram's App info page and tap Additional settings in the app. Then open More settings, then About, and copy the Version line.
-      placeholder: HushTelegram 0.0.19 on Telegram 13.0.3
+      placeholder: HushTelegram 0.0.19 on Telegram 13.1.0
     validations:
       required: true
   - type: input
@@ -26,7 +26,7 @@ body:
     attributes:
       label: Which Telegram file did you patch?
       description: Where it came from, such as telegram.org's APK, and its version code if you know it. Most bugs on a build that should work come from a different build of the same version.
-      placeholder: telegram.org's APK, 13.0.3
+      placeholder: telegram.org's APK, 13.1.0
   - type: dropdown
     id: manager
     attributes:
