@@ -145,6 +145,21 @@ private fun BytecodePatchContext.writeSaveDownloadsStubs() {
         const/4 v0, 0x1
         return v0
     """)
+    // A secret chat keeps its files in Telegram even with the switch for chats that don't allow saving on.
+    // A message that can't say which chat it's in counts as one.
+    writeStub(SAVE_DOWNLOADS, "secretChat", 3, """
+        check-cast p0, $MESSAGE_OBJECT
+        iget-object v0, p0, $MESSAGE_OWNER
+        if-eqz v0, :hush_secret
+        invoke-virtual {p0}, $GET_DIALOG_ID
+        move-result-wide v0
+        invoke-static {v0, v1}, $IS_ENCRYPTED
+        move-result v0
+        return v0
+        :hush_secret
+        const/4 v0, 0x1
+        return v0
+    """)
     writeStub(SAVE_DOWNLOADS, "attachName", 1, """
         check-cast p0, $DOCUMENT
         invoke-static {p0}, $ATTACH_NAME
@@ -177,6 +192,7 @@ internal fun BytecodePatchContext.resolveSaveDownloads(): MutableMethod {
     controlHook(SAVE_DOWNLOADS, "messageDocument", listOf(OBJECT), OBJECT)
     controlHook(SAVE_DOWNLOADS, "fileOrSong", listOf(OBJECT), "Z")
     controlHook(SAVE_DOWNLOADS, "savingForbidden", listOf(OBJECT), "Z")
+    controlHook(SAVE_DOWNLOADS, "secretChat", listOf(OBJECT), "Z")
     controlHook(SAVE_DOWNLOADS, "attachName", listOf(OBJECT), STRING)
     controlHook(SAVE_DOWNLOADS, "documentName", listOf(OBJECT), STRING)
 

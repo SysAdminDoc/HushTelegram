@@ -50,7 +50,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  *
  * <p>Only what Telegram would let you save by hand: a document or a song from a message. Photos and
  * videos have Telegram's own Save to gallery, and GIFs, voice and round videos stay put. Nothing
- * from a secret chat, self-destructing media, or a chat or message that doesn't allow saving. On
+ * from a secret chat, self-destructing media, or a chat or message that doesn't allow saving. A
+ * second switch, off until turned on, lets that last kind through (#29), never the first two. On
  * Android 9 and 10 with storage access, Telegram's folder is already shared, so there's nothing to
  * copy.
  *
@@ -78,6 +79,9 @@ public final class SaveDownloads {
         /** Whether the message, a secret chat or the chat's own setting keeps it from being saved. */
         boolean savingForbidden(Object message);
 
+        /** Whether the message is in a secret chat, or can't tell which chat it's in. */
+        boolean secretChat(Object message);
+
         /** The name Telegram's downloader knows the document by. */
         String attachName(Object document);
 
@@ -99,6 +103,11 @@ public final class SaveDownloads {
         @Override
         public boolean savingForbidden(Object message) {
             return SaveDownloads.savingForbidden(message);
+        }
+
+        @Override
+        public boolean secretChat(Object message) {
+            return SaveDownloads.secretChat(message);
         }
 
         @Override
@@ -133,12 +142,14 @@ public final class SaveDownloads {
             Object document = telegram.document(parent);
             // A message's thumbnail or cover loads with the message as its parent too; only the document itself counts.
             if (document == null || !name.equals(telegram.attachName(document)) || !telegram.fileOrSong(parent)) return;
-            if (telegram.savingForbidden(parent)) {
+            boolean restricted = telegram.savingForbidden(parent);
+            if (restricted && (!Settings.SAVE_RESTRICTED_DOWNLOADS.get() || telegram.secretChat(parent))) {
                 HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, "file kept in Telegram, saving not allowed");
                 return;
             }
+            if (restricted) HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, RESTRICTED);
             String display = displayName(telegram.documentName(document), file.getName());
-            work.execute(() -> save(file, display, name));
+            work.execute(() -> save(file, display, name, restricted));
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.SAVE_DOWNLOADS, "download", failure);
         }
@@ -181,6 +192,7 @@ public final class SaveDownloads {
     static final String SAVED = "file saved to Download/Telegram";
     static final String ALREADY_SAVED = "file already in Download/Telegram";
     static final String DROPPED = "copy dropped, switched off or paused";
+    static final String RESTRICTED = "file from a chat that doesn't allow saving, copied as switched on";
 
     /** The private list of copies: the downloader's name for a document, to the Downloads entry holding it. */
     static final String RECEIPTS = "hushtelegram_saved_downloads";
@@ -199,12 +211,13 @@ public final class SaveDownloads {
 
     /**
      * @param name     the name the copy shows in Downloads
-     * @param document the downloader's name for the document, which no other document has
+     * @param document   the downloader's name for the document, which no other document has
+     * @param restricted whether its chat doesn't allow saving, so the second switch has to stay on too
      */
-    static void save(File file, String name, String document) {
+    static void save(File file, String name, String document, boolean restricted) {
         try {
             // Turned off or paused while it waited behind other copies.
-            if (!wanted()) {
+            if (!wanted(restricted)) {
                 HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, DROPPED);
                 return;
             }
@@ -218,14 +231,15 @@ public final class SaveDownloads {
                 HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, "file already in shared storage");
                 return;
             }
-            HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, copy(context, file, name, document));
+            HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, copy(context, file, name, document, restricted));
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.SAVE_DOWNLOADS, "copy", failure);
         }
     }
 
-    private static boolean wanted() {
-        return Utils.settingsReady() && Settings.SAVE_DOWNLOADS.get();
+    private static boolean wanted(boolean restricted) {
+        return Utils.settingsReady() && Settings.SAVE_DOWNLOADS.get()
+                && (!restricted || Settings.SAVE_RESTRICTED_DOWNLOADS.get());
     }
 
     /**
@@ -251,7 +265,8 @@ public final class SaveDownloads {
      * name and size. One added before it is taken once by name and size, see {@link #OLDER_COPY}.
      */
     @RequiresApi(Build.VERSION_CODES.Q)
-    private static String copy(Context context, File file, String name, String document) throws IOException {
+    private static String copy(Context context, File file, String name, String document, boolean restricted)
+            throws IOException {
         ContentResolver resolver = context.getContentResolver();
         Uri downloads = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
         SharedPreferences receipts = context.getSharedPreferences(RECEIPTS, Context.MODE_PRIVATE);
@@ -282,7 +297,7 @@ public final class SaveDownloads {
                 for (int read; (read = in.read(buffer)) != -1; ) out.write(buffer, 0, read);
             }
             // Turned off or paused while it was written: the hidden entry goes and nothing shows up.
-            if (!wanted()) {
+            if (!wanted(restricted)) {
                 resolver.delete(pending, null, null);
                 return DROPPED;
             }
@@ -370,6 +385,9 @@ public final class SaveDownloads {
 
     /** {@code messageOwner.noforwards}, a secret chat, or {@code MessagesController.isPeerNoForwards} for the chat. */
     public static boolean savingForbidden(Object message) { return true; }
+
+    /** {@code messageOwner} missing, or {@code DialogObject.isEncryptedDialog(getDialogId())}. */
+    public static boolean secretChat(Object message) { return true; }
 
     /** {@code FileLoader.getAttachFileName(document)}. */
     public static String attachName(Object document) { return null; }

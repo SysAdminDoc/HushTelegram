@@ -632,6 +632,10 @@ Tap to pick which UnifiedPush app to use.	Ketuk untuk memilih aplikasi UnifiedPu
 Save downloaded files	Simpan file yang diunduh
 # context: that switch's summary. "Download/Telegram" is a folder path and stays as it is. Chats that don't allow saving are ones whose owner turned on Telegram's content protection.
 Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.	Setiap file atau lagu yang kamu unduh juga masuk ke Download/Telegram di ponselmu, tempat pengelola file dan aplikasi lain bisa membukanya. File dari obrolan rahasia dan obrolan yang tidak mengizinkan penyimpanan tetap di Telegram.
+# context: a second switch under Save downloaded files (#29). Turned on, it also copies files from chats whose owner turned on Telegram's content protection. Secret chats stay excluded.
+Also save from chats that don't allow saving	Simpan juga dari obrolan yang tidak mengizinkan penyimpanan
+# context: that switch's summary, a warning that it goes past the chat owner's choice. "Save downloaded files" is the name of the switch above it.
+With Save downloaded files on, files from chats whose owner turned off saving get copied too. Only use it where the owner is fine with you keeping a copy, since it goes past their setting. Secret chats still stay in Telegram.	Saat Simpan file yang diunduh aktif, file dari obrolan yang pemiliknya mematikan penyimpanan juga ikut disalin. Pakai hanya jika pemiliknya tidak keberatan kamu menyimpan salinan, karena ini melewati pengaturannya. Obrolan rahasia tetap di Telegram.
 # context: Folders by chat type, a switch on the Chat list page. Turning it on makes Telegram chat folders for each kind of chat.
 Folders by chat type	Folder menurut jenis obrolan
 # context: that switch's summary. Private, Groups, Channels and Bots are the folder names, use the same words as their own entries.

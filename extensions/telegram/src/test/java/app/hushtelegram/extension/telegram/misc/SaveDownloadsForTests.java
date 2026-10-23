@@ -28,11 +28,17 @@ public final class SaveDownloadsForTests {
         final Document document;
         final boolean fileOrSong;
         final boolean forbidden;
+        final boolean secret;
 
         Message(Document document, boolean fileOrSong, boolean forbidden) {
+            this(document, fileOrSong, forbidden, false);
+        }
+
+        Message(Document document, boolean fileOrSong, boolean forbidden, boolean secret) {
             this.document = document;
             this.fileOrSong = fileOrSong;
             this.forbidden = forbidden;
+            this.secret = secret;
         }
     }
 
@@ -51,6 +57,11 @@ public final class SaveDownloadsForTests {
         @Override
         public boolean savingForbidden(Object message) {
             return ((Message) message).forbidden;
+        }
+
+        @Override
+        public boolean secretChat(Object message) {
+            return ((Message) message).secret;
         }
 
         @Override
@@ -74,6 +85,23 @@ public final class SaveDownloadsForTests {
         try {
             SaveDownloads.fileLoaded("2_51.pdf", new File("2_51.pdf"),
                     new Message(new Document("2_51.pdf", "report.pdf"), true, false));
+        } finally {
+            SaveDownloads.telegram = telegram;
+            SaveDownloads.work = work;
+        }
+        return queued.get();
+    }
+
+    /** Whether a PDF from a chat that doesn't allow saving, once downloaded, would be queued for a copy. */
+    public static boolean queuesARestrictedCopy() {
+        SaveDownloads.Telegram telegram = SaveDownloads.telegram;
+        Executor work = SaveDownloads.work;
+        AtomicBoolean queued = new AtomicBoolean();
+        SaveDownloads.telegram = TELEGRAM;
+        SaveDownloads.work = task -> queued.set(true);
+        try {
+            SaveDownloads.fileLoaded("2_51.pdf", new File("2_51.pdf"),
+                    new Message(new Document("2_51.pdf", "report.pdf"), true, true));
         } finally {
             SaveDownloads.telegram = telegram;
             SaveDownloads.work = work;

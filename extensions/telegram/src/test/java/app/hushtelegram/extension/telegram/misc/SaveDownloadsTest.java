@@ -69,6 +69,8 @@ public class SaveDownloadsTest {
         PauseForTests.resume();
         SettingReadsForTests.mend(Settings.SAVE_DOWNLOADS);
         Settings.SAVE_DOWNLOADS.resetToDefault();
+        SettingReadsForTests.mend(Settings.SAVE_RESTRICTED_DOWNLOADS);
+        Settings.SAVE_RESTRICTED_DOWNLOADS.resetToDefault();
         HookStatus.clear();
     }
 
@@ -138,6 +140,74 @@ public class SaveDownloadsTest {
                 new Message(new Document("2_51.pdf", "report.pdf"), true, true));
         assertTrue(downloads.rows.isEmpty());
         assertTrue(String.join("\n", HookStatus.report()).contains("saving not allowed"));
+    }
+
+    private static Message restrictedPdf() {
+        return new Message(new Document("2_51.pdf", "report.pdf"), true, true);
+    }
+
+    @Test public void theSecondSwitchLetsAChatThatDoesntAllowSavingThrough() throws IOException {
+        // Off until someone turns it on, since it goes past the owner's setting.
+        assertFalse(Settings.SAVE_RESTRICTED_DOWNLOADS.get());
+        Settings.SAVE_DOWNLOADS.save(true);
+        Settings.SAVE_RESTRICTED_DOWNLOADS.save(true);
+        ByteArrayOutputStream body = bodyOf(1);
+        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "kept by permission"), restrictedPdf());
+        assertEquals("report.pdf", downloads.row(1).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+        assertEquals("kept by permission", body.toString(StandardCharsets.UTF_8.name()));
+        String report = String.join("\n", HookStatus.report());
+        assertTrue(report.contains(SaveDownloads.RESTRICTED));
+        assertTrue(report.contains(SaveDownloads.SAVED));
+    }
+
+    @Test public void theSecondSwitchAloneCopiesNothing() throws IOException {
+        Settings.SAVE_RESTRICTED_DOWNLOADS.save(true);
+        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), restrictedPdf());
+        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        assertTrue(downloads.rows.isEmpty());
+    }
+
+    @Test public void aSecretChatStaysInTelegramWithTheSecondSwitchOn() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        Settings.SAVE_RESTRICTED_DOWNLOADS.save(true);
+        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"),
+                new Message(new Document("2_51.pdf", "report.pdf"), true, true, true));
+        assertTrue(downloads.rows.isEmpty());
+        String report = String.join("\n", HookStatus.report());
+        assertTrue(report.contains("saving not allowed"));
+        assertFalse(report.contains(SaveDownloads.RESTRICTED));
+    }
+
+    @Test public void turningTheSecondSwitchOffDropsOnlyTheWaitingCopiesItLetThrough() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        Settings.SAVE_RESTRICTED_DOWNLOADS.save(true);
+        java.util.List<Runnable> queued = new java.util.ArrayList<>();
+        SaveDownloads.work = queued::add;
+        bodyOf(1);
+        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), restrictedPdf());
+        SaveDownloads.fileLoaded("2_52.pdf", downloaded("2_52.pdf", "two"),
+                new Message(new Document("2_52.pdf", "notes.pdf"), true, false));
+        assertEquals(2, queued.size());
+        Settings.SAVE_RESTRICTED_DOWNLOADS.save(false);
+        for (Runnable copy : queued) copy.run();
+        assertEquals(1, downloads.rows.size());
+        assertEquals("notes.pdf", downloads.row(1).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+        assertFalse(receipts().contains("2_51.pdf"));
+        assertTrue(String.join("\n", HookStatus.report()).contains(SaveDownloads.DROPPED));
+    }
+
+    @Test public void turningTheSecondSwitchOffWhileACopyIsWrittenRemovesTheHiddenEntry() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        Settings.SAVE_RESTRICTED_DOWNLOADS.save(true);
+        Shadows.shadowOf(context().getContentResolver()).registerOutputStream(downloads.uriFor(1), new OutputStream() {
+            @Override public void write(int b) {
+                Settings.SAVE_RESTRICTED_DOWNLOADS.save(false);
+            }
+        });
+        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), restrictedPdf());
+        assertEquals(1, downloads.pendingInserts);
+        assertTrue("the hidden entry stayed behind", downloads.rows.isEmpty());
+        assertFalse(receipts().contains("2_51.pdf"));
     }
 
     private static android.content.SharedPreferences receipts() {

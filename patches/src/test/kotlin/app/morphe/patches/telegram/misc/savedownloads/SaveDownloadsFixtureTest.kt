@@ -72,9 +72,11 @@ class SaveDownloadsFixtureTest {
                 context.stub("fileOrSong").refs())
             assertEquals(listOf(MESSAGE_OBJECT, MESSAGE_OWNER, NO_FORWARDS, GET_DIALOG_ID, IS_ENCRYPTED, CURRENT_ACCOUNT,
                 CONTROLLER_INSTANCE, PEER_NO_FORWARDS), context.stub("savingForbidden").refs())
+            // The switch for chats that don't allow saving never reaches a secret chat.
+            assertEquals(listOf(MESSAGE_OBJECT, MESSAGE_OWNER, GET_DIALOG_ID, IS_ENCRYPTED), context.stub("secretChat").refs())
             assertEquals(listOf(DOCUMENT, ATTACH_NAME), context.stub("attachName").refs())
             assertEquals(listOf(DOCUMENT, DOCUMENT_NAME), context.stub("documentName").refs())
-            for (stub in listOf("messageDocument", "fileOrSong", "savingForbidden", "attachName", "documentName")) {
+            for (stub in listOf("messageDocument", "fileOrSong", "savingForbidden", "secretChat", "attachName", "documentName")) {
                 val method = context.mutableClassDefBy(SAVE_DOWNLOADS).method(stub)
                 assertTrue("$name: $stub", AccessFlags.PUBLIC.isSet(method.accessFlags) && AccessFlags.STATIC.isSet(method.accessFlags))
             }

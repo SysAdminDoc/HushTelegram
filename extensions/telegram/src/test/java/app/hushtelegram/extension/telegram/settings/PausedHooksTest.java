@@ -306,9 +306,11 @@ public class PausedHooksTest {
                 () -> app.hushtelegram.extension.telegram.misc.DownloadSpeed.fast(false),
                 () -> app.hushtelegram.extension.telegram.misc.DataSaverDownloadsForTests.holdsOnMeteredDataSaver(),
                 () -> app.hushtelegram.extension.telegram.misc.DataSaverDownloadsForTests.holdsMaskOnMeteredDataSaver()));
-        // A finished file from a message is queued for a copy in Download/Telegram.
-        probes.put(PatchFamily.SAVE_DOWNLOADS, Collections.singletonList(
-                () -> app.hushtelegram.extension.telegram.misc.SaveDownloadsForTests.queuesACopy()));
+        // A finished file from a message is queued for a copy in Download/Telegram, and so is one from
+        // a chat that doesn't allow saving.
+        probes.put(PatchFamily.SAVE_DOWNLOADS, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.SaveDownloadsForTests.queuesACopy(),
+                () -> app.hushtelegram.extension.telegram.misc.SaveDownloadsForTests.queuesARestrictedCopy()));
         // Flipping the switch on asks Telegram for the folders.
         probes.put(PatchFamily.CHAT_TYPE_FOLDERS, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.ChatTypeFoldersForTests.asksForFolders()));

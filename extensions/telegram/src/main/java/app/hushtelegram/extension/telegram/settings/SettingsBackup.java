@@ -151,6 +151,7 @@ public final class SettingsBackup {
             Settings.FASTER_DOWNLOADS,
             Settings.DATA_SAVER_DOWNLOADS,
             Settings.SAVE_DOWNLOADS,
+            Settings.SAVE_RESTRICTED_DOWNLOADS,
             Settings.ASK_BEFORE_GIF,
             Settings.ASK_BEFORE_VOICE_VIDEO,
             Settings.ASK_BEFORE_CALL,

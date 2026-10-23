@@ -650,6 +650,15 @@ public class HushTelegramPreferenceFragmentTest {
             // Downloads stay in Telegram's own folder until the switch is turned on.
             assertFalse(Settings.SAVE_DOWNLOADS.key,
                     ((SwitchPreference) page.findPreference(Settings.SAVE_DOWNLOADS.key)).isChecked());
+            assertEquals("Also save from chats that don't allow saving",
+                    String.valueOf(page.findPreference(Settings.SAVE_RESTRICTED_DOWNLOADS.key).getTitle()));
+            assertEquals("With Save downloaded files on, files from chats whose owner turned off saving get copied too. "
+                    + "Only use it where the owner is fine with you keeping a copy, since it goes past their setting. "
+                    + "Secret chats still stay in Telegram.",
+                    String.valueOf(page.findPreference(Settings.SAVE_RESTRICTED_DOWNLOADS.key).getSummary()));
+            // The owner's setting holds until this one is turned on as well.
+            assertFalse(Settings.SAVE_RESTRICTED_DOWNLOADS.key,
+                    ((SwitchPreference) page.findPreference(Settings.SAVE_RESTRICTED_DOWNLOADS.key)).isChecked());
             assertEquals("Silence people outside your contacts", String.valueOf(page.findPreference(Settings.SILENCE_NON_CONTACTS.key).getTitle()));
             assertEquals("Private messages from people not in your contacts still show a notification, but without "
                     + "sound or vibration. Bots, reminders and login codes keep their sound.",

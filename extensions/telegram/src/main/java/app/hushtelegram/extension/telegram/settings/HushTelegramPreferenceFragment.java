@@ -596,6 +596,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.SAVE_DOWNLOADS.coverageSummary(L10n.t("Each file or song you download also goes to Download/Telegram on your"
                             + " phone, where file managers and other apps can open it. Files from secret chats and chats that don't"
                             + " allow saving stay in Telegram."))));
+            on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(toggle(context, Settings.SAVE_RESTRICTED_DOWNLOADS,
+                    L10n.t("Also save from chats that don't allow saving"),
+                    L10n.t("With Save downloaded files on, files from chats whose owner turned off saving get copied too. Only use"
+                            + " it where the owner is fine with you keeping a copy, since it goes past their setting. Secret chats"
+                            + " still stay in Telegram.")));
         }
     }
 

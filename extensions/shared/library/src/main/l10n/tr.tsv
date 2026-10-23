@@ -632,6 +632,10 @@ Tap to pick which UnifiedPush app to use.	Hangi UnifiedPush uygulamasının kull
 Save downloaded files	İndirilen dosyaları kaydet
 # context: that switch's summary. "Download/Telegram" is a folder path and stays as it is. Chats that don't allow saving are ones whose owner turned on Telegram's content protection.
 Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.	İndirdiğin her dosya ve şarkı telefonundaki Download/Telegram klasörüne de kopyalanır. Dosya yöneticileri ve diğer uygulamalar onu orada açabilir. Gizli sohbetlerden ve kaydetmeye izin vermeyen sohbetlerden gelen dosyalar Telegram'da kalır.
+# context: a second switch under Save downloaded files (#29). Turned on, it also copies files from chats whose owner turned on Telegram's content protection. Secret chats stay excluded.
+Also save from chats that don't allow saving	Kaydetmeye izin vermeyen sohbetlerden de kaydet
+# context: that switch's summary, a warning that it goes past the chat owner's choice. "Save downloaded files" is the name of the switch above it.
+With Save downloaded files on, files from chats whose owner turned off saving get copied too. Only use it where the owner is fine with you keeping a copy, since it goes past their setting. Secret chats still stay in Telegram.	İndirilen dosyaları kaydet açıkken, sahibi kaydetmeyi kapatmış sohbetlerdeki dosyalar da kopyalanır. Bunu yalnızca sahibinin bir kopya saklamana itiraz etmediği yerlerde kullan, çünkü onun ayarını aşar. Gizli sohbetler yine Telegram'da kalır.
 # context: Folders by chat type, a switch on the Chat list page. Turning it on makes Telegram chat folders for each kind of chat.
 Folders by chat type	Sohbet türüne göre klasörler
 # context: that switch's summary. Private, Groups, Channels and Bots are the folder names, use the same words as their own entries.

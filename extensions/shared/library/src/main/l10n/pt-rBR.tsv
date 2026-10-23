@@ -629,6 +629,10 @@ Tap to pick which UnifiedPush app to use.	Toque para escolher qual app de Unifie
 Save downloaded files	Salvar arquivos baixados
 # context: that switch's summary. "Download/Telegram" is a folder path and stays as it is. Chats that don't allow saving are ones whose owner turned on Telegram's content protection.
 Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.	Cada arquivo ou música que você baixar também vai para Download/Telegram no seu celular, onde gerenciadores de arquivos e outros apps podem abri-lo. Arquivos de chats secretos e de chats que não permitem salvar ficam no Telegram.
+# context: a second switch under Save downloaded files (#29). Turned on, it also copies files from chats whose owner turned on Telegram's content protection. Secret chats stay excluded.
+Also save from chats that don't allow saving	Salvar também de chats que não permitem salvar
+# context: that switch's summary, a warning that it goes past the chat owner's choice. "Save downloaded files" is the name of the switch above it.
+With Save downloaded files on, files from chats whose owner turned off saving get copied too. Only use it where the owner is fine with you keeping a copy, since it goes past their setting. Secret chats still stay in Telegram.	Com Salvar arquivos baixados ligado, arquivos de chats cujo dono desativou o salvamento também são copiados. Use só onde o dono não se importa que você guarde uma cópia, porque isso passa por cima da configuração dele. Chats secretos continuam ficando no Telegram.
 # context: Folders by chat type, a switch on the Chat list page. Turning it on makes Telegram chat folders for each kind of chat.
 Folders by chat type	Pastas por tipo de chat
 # context: that switch's summary. Private, Groups, Channels and Bots are the folder names, use the same words as their own entries.

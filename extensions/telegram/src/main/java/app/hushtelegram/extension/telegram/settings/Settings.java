@@ -412,6 +412,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting SAVE_DOWNLOADS =
             new BooleanSetting("hushtelegram_save_downloads", FALSE);
 
+    /**
+     * With {@link #SAVE_DOWNLOADS} on, a file from a chat or message whose owner turned off saving
+     * gets its copy too. Secret chats and self-destructing media still stay in Telegram. Starts off,
+     * since it goes past the owner's setting (#29).
+     */
+    public static final BooleanSetting SAVE_RESTRICTED_DOWNLOADS =
+            new BooleanSetting("hushtelegram_save_restricted_downloads", FALSE);
+
     /** Turned on, makes Private, Groups, Channels and Bots folders; turned off, removes the untouched ones it made. */
     public static final BooleanSetting CHAT_TYPE_FOLDERS =
             new BooleanSetting("hushtelegram_chat_type_folders", FALSE);

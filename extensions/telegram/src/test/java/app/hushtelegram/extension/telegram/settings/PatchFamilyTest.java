@@ -114,6 +114,7 @@ public class PatchFamilyTest {
         Settings.FASTER_DOWNLOADS.resetToDefault();
         Settings.DATA_SAVER_DOWNLOADS.resetToDefault();
         Settings.SAVE_DOWNLOADS.resetToDefault();
+        Settings.SAVE_RESTRICTED_DOWNLOADS.resetToDefault();
         Settings.CHAT_TYPE_FOLDERS.resetToDefault();
         Settings.UNIFIED_PUSH.resetToDefault();
         Settings.ASK_BEFORE_GIF.resetToDefault();
@@ -385,10 +386,13 @@ public class PatchFamilyTest {
         PatchFamily family = PatchFamily.SAVE_DOWNLOADS;
         assertEquals("Save downloaded files", family.patchName);
         assertEquals("saveDownloads", family.statusMethod);
-        assertEquals(Collections.singletonList(Settings.SAVE_DOWNLOADS), family.switches);
-        assertFalse(Settings.SAVE_DOWNLOADS.defaultValue);
-        // Each finished download reads the switch, so no restart is needed.
-        assertFalse(Settings.SAVE_DOWNLOADS.rebootApp);
+        // The second switch lets chats that don't allow saving through, so it starts off like the first.
+        assertEquals(Arrays.asList(Settings.SAVE_DOWNLOADS, Settings.SAVE_RESTRICTED_DOWNLOADS), family.switches);
+        for (BooleanSetting setting : family.switches) {
+            assertFalse(setting.key, setting.defaultValue);
+            // Each finished download reads the switches, so no restart is needed.
+            assertFalse(setting.key, setting.rebootApp);
+        }
         assertTrue(family.expectedCapabilities().isEmpty());
         assertOnItsPage(family);
         assertEquals(PatchFamily.Page.PLAYBACK, PatchFamily.Page.of(family));
