@@ -570,6 +570,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.KEEP_VIDEOS_MUTED).addPreference(toggle(context, Settings.KEEP_VIDEOS_MUTED, L10n.t("Keep videos muted on volume keys"),
                     PatchFamily.KEEP_VIDEOS_MUTED.coverageSummary(L10n.t("Volume keys only change the volume. They no longer start the video or round "
                             + "video on screen with sound. Tap a video to hear it."))));
+            if (PatchFamily.Capability.VIDEO_EITHER_LANDSCAPE.installed()) {
+                on(pages, PatchFamily.KEEP_VIDEOS_MUTED).addPreference(toggle(context, Settings.VIDEO_EITHER_LANDSCAPE,
+                        L10n.t("Full screen videos turn either way"), L10n.t("After you tap full screen, a video follows"
+                                + " your phone to either landscape side, even with auto-rotate off.")));
+            }
         }
         if (build.contains(PatchFamily.VOICE_ONE_AT_A_TIME)) {
             on(pages, PatchFamily.VOICE_ONE_AT_A_TIME).addPreference(toggle(context, Settings.VOICE_ONE_AT_A_TIME, L10n.t("Play voice messages one at a time"),

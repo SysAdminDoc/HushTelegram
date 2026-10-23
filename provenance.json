@@ -168,6 +168,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/Spoilers.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ScrollKeyboard.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/VolumeKeys.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/VideoTurn.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SwipeBack.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/HidePhone.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/MessageTime.java",

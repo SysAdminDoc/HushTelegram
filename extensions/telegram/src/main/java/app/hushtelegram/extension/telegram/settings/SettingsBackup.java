@@ -116,6 +116,7 @@ public final class SettingsBackup {
             Settings.REVEAL_SPOILERS,
             Settings.HIDE_KEYBOARD_ON_SCROLL,
             Settings.KEEP_VIDEOS_MUTED,
+            Settings.VIDEO_EITHER_LANDSCAPE,
             Settings.SWIPE_BACK_ON_PROFILES,
             Settings.HIDE_PHONE_NUMBER,
             Settings.SHARE_NUMBER_UNTICKED,

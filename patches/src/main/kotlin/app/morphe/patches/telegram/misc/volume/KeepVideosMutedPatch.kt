@@ -11,7 +11,9 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
+import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
@@ -49,8 +51,10 @@ val keepVideosMutedPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.telegram())
     execute {
         val site = resolveKeepVideosMuted()
+        val turn = resolveFullScreenTurn()
         // Assembled on a copy first, so a refusal leaves the app untouched.
         site.replace(MutableMethod(ImmutableMethod.of(site.dispatch)))
+        turn.rehearse()
         writeStub(VOLUME_KEYS, "stockChatTakesKey", 1, """
             check-cast p0, ${site.handler.definingClass}
             invoke-virtual {p0}, ${site.handler}
@@ -59,6 +63,12 @@ val keepVideosMutedPatch = bytecodePatch(
         """)
         site.replace(site.dispatch)
         enableStatus("keepVideosMuted")
+        if (turn.missing == null) {
+            turn.apply()
+            enableCapability("videoEitherLandscape")
+        } else {
+            patchLog.warning("Keep videos muted on volume keys: ${turn.missing}. The patch goes on without the full screen turning switch.")
+        }
     }
 }
 

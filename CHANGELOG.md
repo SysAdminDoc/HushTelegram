@@ -10,6 +10,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** Save downloaded files has a second switch, **Also save from chats that don't allow saving**. It starts off. Turned on, files and songs from chats whose owner turned off saving get their copy in Download/Telegram too, so you can keep what an owner is fine with you keeping. Secret chats and self-destructing media still stay in Telegram. (#29)
 * **Telegram:** Keep deleted messages has a second switch, **Show deleted in red**. It starts off. Turned on, the word "deleted" next to a kept message's time is drawn in red so you can spot those messages while scrolling. The time itself keeps its usual color, and nothing about the bubble's size changes. (#25)
 * **Telegram:** **Hide Contacts tab** has one more switch on the Chat list page, **Hide new message button**. With it on, the round pencil button on the chat list is gone. The story camera button, the archive, your folders and search work as before, and you start a chat from the menu or search instead. It's off unless you turn it on, and a restart shows the change. (#22)
+* **Telegram:** **Keep videos muted on volume keys** has a second switch on the Playback page, **Full screen videos turn either way**. Telegram puts a full screen video on one landscape side and keeps it there, so turning the phone the other way leaves the picture upside down. With this switch on, the video follows your phone to either side, even with auto-rotate off. It's off unless you turn it on. (#27)
 
 ## 0.0.19 (2026-10-17)
 

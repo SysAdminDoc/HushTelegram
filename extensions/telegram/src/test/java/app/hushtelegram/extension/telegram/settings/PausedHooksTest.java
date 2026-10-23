@@ -266,8 +266,9 @@ public class PausedHooksTest {
         probes.put(PatchFamily.HIDE_KEYBOARD_ON_SCROLL, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.ScrollKeyboardForTests.dragCloses()));
         // A volume key in a chat goes to the volume.
-        probes.put(PatchFamily.KEEP_VIDEOS_MUTED, Collections.singletonList(
-                () -> app.hushtelegram.extension.telegram.misc.VolumeKeysForTests.keyGoesToTheVolume()));
+        probes.put(PatchFamily.KEEP_VIDEOS_MUTED, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.VolumeKeysForTests.keyGoesToTheVolume(),
+                () -> app.hushtelegram.extension.telegram.misc.VideoTurnForTests.turnsEitherWay()));
         // A swipe on a profile's photos goes back.
         probes.put(PatchFamily.SWIPE_BACK_ON_PROFILES, Collections.singletonList(
                 () -> !app.hushtelegram.extension.telegram.misc.SwipeBack.touchBlocks(true)));

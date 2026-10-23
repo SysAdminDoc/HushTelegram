@@ -186,6 +186,12 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_keep_videos_muted", FALSE);
 
     /**
+     * A video put in full screen follows the phone to either landscape side (#27).
+     */
+    public static final BooleanSetting VIDEO_EITHER_LANDSCAPE =
+            new BooleanSetting("hushtelegram_video_either_landscape", FALSE);
+
+    /**
      * A swipe to the right on a profile's photos or media tabs goes back instead of to the previous
      * photo or tab.
      */

@@ -328,6 +328,12 @@ Hide keyboard on scroll	Tastatur beim Scrollen ausblenden
 The keyboard closes when you start scrolling a chat. The emoji and sticker panel stays open.	Die Tastatur schließt sich, sobald du in einem Chat zu scrollen beginnst. Das Emoji- und Sticker-Fenster bleibt offen.
 Keep videos muted on volume keys	Videos bei Lautstärketasten stumm lassen
 Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.	Die Lautstärketasten ändern nur die Lautstärke. Sie starten das Video oder Rundvideo auf dem Bildschirm nicht mehr mit Ton. Tippe ein Video an, um es zu hören.
+# context: a second switch under Keep videos muted on volume keys (#27). Telegram turns a video put in full screen to one fixed landscape side; with this on it follows the phone to either side.
+Full screen videos turn either way	Vollbildvideos drehen sich in beide Richtungen
+# context: that switch's summary. "full screen" is Telegram's full screen button on a video; "auto-rotate" is Android's own screen rotation setting, use the phone's name for it.
+After you tap full screen, a video follows your phone to either landscape side, even with auto-rotate off.	Nachdem du auf Vollbild getippt hast, folgt ein Video deinem Handy auf beide Seiten im Querformat, auch wenn Automatisch drehen aus ist.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that lets a full screen video turn to either landscape side.
+full screen video turning either way	Drehen von Vollbildvideos in beide Richtungen
 Swipe back on profiles	Auf Profilen zurückwischen
 Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.	Wischen nach rechts auf den Fotos oder Medien-Tabs eines Profils geht zurück, wie im Rest des Profils, statt das vorherige Foto oder den vorherigen Tab zu zeigen.
 Hide phone number	Telefonnummer ausblenden

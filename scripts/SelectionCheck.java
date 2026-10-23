@@ -320,6 +320,7 @@ public final class SelectionCheck {
         hook(calls, flags, "revealSpoilers", "misc/Spoilers", "mediaCovered");
         hook(calls, flags, "hideKeyboardOnScroll", "misc/ScrollKeyboard", "chatScrolled");
         hook(calls, flags, "keepVideosMuted", "misc/VolumeKeys", "chatTakesKey");
+        hook(calls, flags, "videoEitherLandscape", "misc/VideoTurn", "fullScreen");
         hook(calls, flags, "swipeBackOnProfiles", "misc/SwipeBack", "touchBlocks");
         hook(calls, flags, "hidePhoneNumber", "misc/HidePhone", "shown");
         hook(calls, flags, "shareNumberUnticked", "misc/ContactShare", "startsTicked");
