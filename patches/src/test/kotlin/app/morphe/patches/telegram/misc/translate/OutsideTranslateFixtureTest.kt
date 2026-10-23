@@ -98,8 +98,9 @@ class OutsideTranslateFixtureTest {
             val name = build.name
             val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
             val site = context.resolveOutsideTranslate()
-            val itemType = "Lorg/telegram/ui/ActionBar/${if (name.startsWith("telegram-web-")) "w0" else "v0"};"
-            val menuType = "Lorg/telegram/ui/ActionBar/${if (name.startsWith("telegram-web-")) "y0" else "x0"};"
+            // 13.1.0's R8 gave both builds the same wrapper and menu names (13.0.3's web build had w0 and y0).
+            val itemType = "Lorg/telegram/ui/ActionBar/v0;"
+            val menuType = "Lorg/telegram/ui/ActionBar/x0;"
             assertEquals("$name: the stock lazy item adder", "$menuType->u(IILjava/lang/String;)$itemType", site.lazyAdd.toString())
             assertEquals("$name: the wrapper's renamed text setter", "$itemType->d(Ljava/lang/CharSequence;)V", site.setHeaderText.toString())
             assertEquals("$name: the stock Translate item uses the same wrapper", itemType, site.translateItem.type)
