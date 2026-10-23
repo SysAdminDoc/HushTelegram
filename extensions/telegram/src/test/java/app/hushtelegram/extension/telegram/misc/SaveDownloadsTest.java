@@ -72,6 +72,8 @@ public class SaveDownloadsTest {
         SettingReadsForTests.mend(Settings.SAVE_RESTRICTED_DOWNLOADS);
         Settings.SAVE_RESTRICTED_DOWNLOADS.resetToDefault();
         HookStatus.clear();
+        SaveDownloadsForTests.STORED.clear();
+        SaveDownloadsForTests.LOOKUPS.clear();
     }
 
     private static Context context() {
@@ -99,7 +101,7 @@ public class SaveDownloadsTest {
 
     @Test public void offByDefaultNothingIsCopied() throws IOException {
         assertFalse(Settings.SAVE_DOWNLOADS.get());
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         assertTrue(downloads.rows.isEmpty());
         assertTrue(String.join("\n", HookStatus.report()).contains(FamilyNames.SAVE_DOWNLOADS));
     }
@@ -107,7 +109,7 @@ public class SaveDownloadsTest {
     @Test public void onAFileFromAMessageGoesToDownloadTelegramUnderItsOwnName() throws IOException {
         Settings.SAVE_DOWNLOADS.save(true);
         ByteArrayOutputStream body = bodyOf(1);
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "the whole report"), pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "the whole report"), pdf());
 
         ContentValues row = downloads.row(1);
         assertEquals("report.pdf", row.getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
@@ -123,20 +125,20 @@ public class SaveDownloadsTest {
         Settings.SAVE_DOWNLOADS.save(true);
         File file = downloaded("2_51.pdf", "pdf");
         // The document's thumbnail finishes under its own name, with the same message as its parent.
-        SaveDownloads.fileLoaded("2_77.jpg", file, pdf());
+        SaveDownloads.fileLoaded(0, "2_77.jpg", file, pdf());
         // A GIF, voice or round video, as Telegram's checks call it.
-        SaveDownloads.fileLoaded("2_51.pdf", file, new Message(new Document("2_51.pdf", "clip.mp4"), false, false));
+        SaveDownloads.fileLoaded(0, "2_51.pdf", file, new Message(new Document("2_51.pdf", "clip.mp4"), false, false));
         // A sticker set, a profile photo or a wallpaper isn't a message.
-        SaveDownloads.fileLoaded("2_51.pdf", file, "a sticker set");
-        SaveDownloads.fileLoaded("2_51.pdf", file, null);
-        SaveDownloads.fileLoaded(null, file, pdf());
-        SaveDownloads.fileLoaded("2_51.pdf", null, pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", file, "a sticker set");
+        SaveDownloads.fileLoaded(0, "2_51.pdf", file, null);
+        SaveDownloads.fileLoaded(0, null, file, pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", null, pdf());
         assertTrue(downloads.rows.isEmpty());
     }
 
     @Test public void aFileTheChatDoesntAllowSavingStaysInTelegram() throws IOException {
         Settings.SAVE_DOWNLOADS.save(true);
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"),
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"),
                 new Message(new Document("2_51.pdf", "report.pdf"), true, true));
         assertTrue(downloads.rows.isEmpty());
         assertTrue(String.join("\n", HookStatus.report()).contains("saving not allowed"));
@@ -146,13 +148,108 @@ public class SaveDownloadsTest {
         return new Message(new Document("2_51.pdf", "report.pdf"), true, true);
     }
 
+    /**
+     * What Telegram's background queue hands over for a file it auto-downloads while its chat is
+     * closed: "sent_", the channel, the message, the chat, the message type and the size.
+     */
+    private static String queuedKey(int messageId, long dialogId, int type) {
+        return "sent_" + (dialogId < 0 ? -dialogId - 1000000000000L : 0) + "_" + messageId + "_" + dialogId + "_" + type + "_4096";
+    }
+
+    @Test public void aFileTelegramDownloadsWithItsChatClosedIsCopiedUnderItsOwnName() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        SaveDownloadsForTests.STORED.put("1:-1002233445566:51", pdf());
+        ByteArrayOutputStream body = bodyOf(1);
+        SaveDownloads.fileLoaded(1, "2_51.pdf", downloaded("2_51.pdf", "came in overnight"),
+                queuedKey(51, -1002233445566L, SaveDownloads.FILE_TYPE));
+
+        // Looked up on the account the download belongs to, in the chat the key names.
+        assertEquals(java.util.Collections.singletonList("1:-1002233445566:51"), SaveDownloadsForTests.LOOKUPS);
+        assertEquals("report.pdf", downloads.row(1).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+        assertEquals("came in overnight", body.toString(StandardCharsets.UTF_8.name()));
+        assertTrue(String.join("\n", HookStatus.report()).contains(SaveDownloads.SAVED));
+    }
+
+    @Test public void aSongFromAPrivateChatIsLookedUpToo() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        SaveDownloadsForTests.STORED.put("0:777000:9", new Message(new Document("2_51.pdf", "song.mp3"), true, false));
+        bodyOf(1);
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "la"), queuedKey(9, 777000L, SaveDownloads.SONG_TYPE));
+        assertEquals("song.mp3", downloads.row(1).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+    }
+
+    @Test public void photosVideosAndOtherKeysAreNeverLookedUp() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        File file = downloaded("2_51.pdf", "pdf");
+        SaveDownloadsForTests.STORED.put("0:-1002233445566:51", pdf());
+        // A photo, a video, a voice message and a GIF auto-download the same way.
+        for (int type : new int[] {1, 3, 2, 8}) {
+            SaveDownloads.fileLoaded(0, "2_51.pdf", file, queuedKey(51, -1002233445566L, type));
+        }
+        SaveDownloads.fileLoaded(0, "2_51.pdf", file, "sent_");
+        SaveDownloads.fileLoaded(0, "2_51.pdf", file, "sent_0_51_-100_x_4096");
+        SaveDownloads.fileLoaded(0, "2_51.pdf", file, "sent_0_99999999999_-100_9_4096");
+        assertTrue(SaveDownloadsForTests.LOOKUPS.isEmpty());
+        assertTrue(downloads.rows.isEmpty());
+    }
+
+    @Test public void aQueuedFileWhoseMessageIsGoneStaysInTelegram() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), queuedKey(51, -1002233445566L, SaveDownloads.FILE_TYPE));
+        assertTrue(downloads.rows.isEmpty());
+        assertTrue(String.join("\n", HookStatus.report()).contains(SaveDownloads.NOT_STORED));
+    }
+
+    @Test public void aQueuedFileFromAChatThatDoesntAllowSavingFollowsTheSecondSwitch() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        SaveDownloadsForTests.STORED.put("0:-1002233445566:51", restrictedPdf());
+        String key = queuedKey(51, -1002233445566L, SaveDownloads.FILE_TYPE);
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), key);
+        assertTrue(downloads.rows.isEmpty());
+        assertTrue(String.join("\n", HookStatus.report()).contains(SaveDownloads.KEPT));
+
+        Settings.SAVE_RESTRICTED_DOWNLOADS.save(true);
+        bodyOf(1);
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), key);
+        assertEquals("report.pdf", downloads.row(1).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+    }
+
+    @Test public void aQueuedThumbnailIsNotCopiedAsItsDocument() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        SaveDownloadsForTests.STORED.put("0:-1002233445566:51", pdf());
+        SaveDownloads.fileLoaded(0, "2_77.jpg", downloaded("2_77.jpg", "thumb"), queuedKey(51, -1002233445566L, SaveDownloads.FILE_TYPE));
+        assertTrue(downloads.rows.isEmpty());
+    }
+
+    @Test public void aLookupThatFailsIsCountedAndNothingIsCopied() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        SaveDownloads.telegram = new ThrowingLookup();
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), queuedKey(51, -1002233445566L, SaveDownloads.FILE_TYPE));
+        assertTrue(downloads.rows.isEmpty());
+        assertTrue(String.join("\n", HookStatus.report()).contains("background download"));
+    }
+
+    /** Telegram's database refusing a read, as it does while an account is being removed. */
+    private static final class ThrowingLookup implements SaveDownloads.Telegram {
+        private final SaveDownloads.Telegram inner = SaveDownloadsForTests.TELEGRAM;
+        @Override public Object document(Object parent) { return inner.document(parent); }
+        @Override public boolean fileOrSong(Object message) { return inner.fileOrSong(message); }
+        @Override public boolean savingForbidden(Object message) { return inner.savingForbidden(message); }
+        @Override public boolean secretChat(Object message) { return inner.secretChat(message); }
+        @Override public String attachName(Object document) { return inner.attachName(document); }
+        @Override public String documentName(Object document) { return inner.documentName(document); }
+        @Override public Object storedMessage(int account, long dialogId, int messageId) {
+            throw new IllegalStateException("database closed");
+        }
+    }
+
     @Test public void theSecondSwitchLetsAChatThatDoesntAllowSavingThrough() throws IOException {
         // Off until someone turns it on, since it goes past the owner's setting.
         assertFalse(Settings.SAVE_RESTRICTED_DOWNLOADS.get());
         Settings.SAVE_DOWNLOADS.save(true);
         Settings.SAVE_RESTRICTED_DOWNLOADS.save(true);
         ByteArrayOutputStream body = bodyOf(1);
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "kept by permission"), restrictedPdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "kept by permission"), restrictedPdf());
         assertEquals("report.pdf", downloads.row(1).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
         assertEquals("kept by permission", body.toString(StandardCharsets.UTF_8.name()));
         String report = String.join("\n", HookStatus.report());
@@ -162,15 +259,15 @@ public class SaveDownloadsTest {
 
     @Test public void theSecondSwitchAloneCopiesNothing() throws IOException {
         Settings.SAVE_RESTRICTED_DOWNLOADS.save(true);
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), restrictedPdf());
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), restrictedPdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         assertTrue(downloads.rows.isEmpty());
     }
 
     @Test public void aSecretChatStaysInTelegramWithTheSecondSwitchOn() throws IOException {
         Settings.SAVE_DOWNLOADS.save(true);
         Settings.SAVE_RESTRICTED_DOWNLOADS.save(true);
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"),
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"),
                 new Message(new Document("2_51.pdf", "report.pdf"), true, true, true));
         assertTrue(downloads.rows.isEmpty());
         String report = String.join("\n", HookStatus.report());
@@ -184,8 +281,8 @@ public class SaveDownloadsTest {
         java.util.List<Runnable> queued = new java.util.ArrayList<>();
         SaveDownloads.work = queued::add;
         bodyOf(1);
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), restrictedPdf());
-        SaveDownloads.fileLoaded("2_52.pdf", downloaded("2_52.pdf", "two"),
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), restrictedPdf());
+        SaveDownloads.fileLoaded(0, "2_52.pdf", downloaded("2_52.pdf", "two"),
                 new Message(new Document("2_52.pdf", "notes.pdf"), true, false));
         assertEquals(2, queued.size());
         Settings.SAVE_RESTRICTED_DOWNLOADS.save(false);
@@ -204,7 +301,7 @@ public class SaveDownloadsTest {
                 Settings.SAVE_RESTRICTED_DOWNLOADS.save(false);
             }
         });
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), restrictedPdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), restrictedPdf());
         assertEquals(1, downloads.pendingInserts);
         assertTrue("the hidden entry stayed behind", downloads.rows.isEmpty());
         assertFalse(receipts().contains("2_51.pdf"));
@@ -217,12 +314,12 @@ public class SaveDownloadsTest {
     @Test public void theSameDocumentDownloadedAgainIsCopiedOnce() throws IOException {
         Settings.SAVE_DOWNLOADS.save(true);
         bodyOf(1);
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         assertEquals(1, downloads.rows.size());
         // The note is on disk, not in memory, so it holds across a restart.
         assertEquals(1L, receipts().getLong("2_51.pdf", -1));
 
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         assertEquals(1, downloads.rows.size());
         assertTrue(String.join("\n", HookStatus.report()).contains("file already in Download/Telegram"));
     }
@@ -231,8 +328,8 @@ public class SaveDownloadsTest {
         Settings.SAVE_DOWNLOADS.save(true);
         ByteArrayOutputStream first = bodyOf(1);
         ByteArrayOutputStream second = bodyOf(2);
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "one"), pdf());
-        SaveDownloads.fileLoaded("2_52.pdf", downloaded("2_52.pdf", "two"),
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "one"), pdf());
+        SaveDownloads.fileLoaded(0, "2_52.pdf", downloaded("2_52.pdf", "two"),
                 new Message(new Document("2_52.pdf", "report.pdf"), true, false));
         assertEquals("report.pdf", downloads.row(1).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
         assertEquals("report (1).pdf", downloads.row(2).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
@@ -257,7 +354,7 @@ public class SaveDownloadsTest {
         assertTrue(receipts().edit().putLong(SaveDownloads.BEGAN, 1000).commit());
         anEntryAddedAt(2000);
         ByteArrayOutputStream body = bodyOf(2);
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         assertEquals("report (1).pdf", downloads.row(2).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
         assertEquals("pdf", body.toString(StandardCharsets.UTF_8.name()));
     }
@@ -266,7 +363,7 @@ public class SaveDownloadsTest {
     @Test public void aCopyFromBeforeTheListIsTakenOnceInsteadOfCopiedAgain() throws IOException {
         Settings.SAVE_DOWNLOADS.save(true);
         anEntryAddedAt(1000);
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         assertEquals(1, downloads.rows.size());
         assertEquals(1L, receipts().getLong("2_51.pdf", -1));
         // The first copy that found no list started it.
@@ -275,7 +372,7 @@ public class SaveDownloadsTest {
 
         // Another document of the same name and size finds the old entry taken.
         ByteArrayOutputStream body = bodyOf(2);
-        SaveDownloads.fileLoaded("2_52.pdf", downloaded("2_52.pdf", "two"),
+        SaveDownloads.fileLoaded(0, "2_52.pdf", downloaded("2_52.pdf", "two"),
                 new Message(new Document("2_52.pdf", "report.pdf"), true, false));
         assertEquals("report (1).pdf", downloads.row(2).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
         assertEquals("two", body.toString(StandardCharsets.UTF_8.name()));
@@ -286,9 +383,9 @@ public class SaveDownloadsTest {
         Settings.SAVE_DOWNLOADS.save(true);
         bodyOf(1);
         bodyOf(2);
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         downloads.rows.clear();
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         assertEquals("report.pdf", downloads.row(2).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
         assertEquals(2L, receipts().getLong("2_51.pdf", -1));
     }
@@ -300,7 +397,7 @@ public class SaveDownloadsTest {
         full.commit();
         downloads.nextId = 5000;
         bodyOf(5000);
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         // The notes, plus when the list began.
         assertEquals(SaveDownloads.MAX_RECEIPTS + 1, receipts().getAll().size());
         assertEquals(5000L, receipts().getLong("2_51.pdf", -1));
@@ -313,14 +410,14 @@ public class SaveDownloadsTest {
         java.util.List<Runnable> queued = new java.util.ArrayList<>();
         SaveDownloads.work = queued::add;
         File file = downloaded("2_51.pdf", "pdf");
-        SaveDownloads.fileLoaded("2_51.pdf", file, pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", file, pdf());
         Settings.SAVE_DOWNLOADS.save(false);
-        SaveDownloads.fileLoaded("2_51.pdf", file, pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", file, pdf());
         assertEquals(1, queued.size());
         queued.remove(0).run();
 
         Settings.SAVE_DOWNLOADS.save(true);
-        SaveDownloads.fileLoaded("2_51.pdf", file, pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", file, pdf());
         PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
         queued.remove(0).run();
         assertTrue(downloads.rows.isEmpty());
@@ -336,7 +433,7 @@ public class SaveDownloadsTest {
                 PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
             }
         });
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         assertEquals(1, downloads.pendingInserts);
         assertTrue("the hidden entry stayed behind", downloads.rows.isEmpty());
         assertTrue(String.join("\n", HookStatus.report()).contains("copy dropped, switched off or paused"));
@@ -348,7 +445,7 @@ public class SaveDownloadsTest {
         // Android 10 with storage access keeps Telegram's folder on shared storage.
         File shared = elsewhere.newFile("2_51.pdf");
         assertFalse(SaveDownloads.insideApp(context(), shared));
-        SaveDownloads.fileLoaded("2_51.pdf", shared, pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", shared, pdf());
         assertTrue(downloads.rows.isEmpty());
         assertTrue(String.join("\n", HookStatus.report()).contains("file already in shared storage"));
         assertTrue(SaveDownloads.insideApp(context(), downloaded("2_51.pdf", "pdf")));
@@ -359,7 +456,7 @@ public class SaveDownloadsTest {
     @Config(sdk = 28)
     @Test public void android9KeepsTelegramsSharedFolder() throws IOException {
         Settings.SAVE_DOWNLOADS.save(true);
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         assertTrue(downloads.rows.isEmpty());
         assertTrue(String.join("\n", HookStatus.report()).contains("Android 9"));
     }
@@ -371,7 +468,7 @@ public class SaveDownloadsTest {
                 throw new IOException("storage full");
             }
         });
-        SaveDownloads.fileLoaded("2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
         assertEquals(1, downloads.pendingInserts);
         assertTrue("the half-written entry is removed", downloads.rows.isEmpty());
         assertFalse(HookStatus.missing(FamilyNames.SAVE_DOWNLOADS).isEmpty());
@@ -383,12 +480,12 @@ public class SaveDownloadsTest {
         for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
             if (reason == HushTelegramPause.Reason.NONE) continue;
             PauseForTests.pause(reason);
-            SaveDownloads.fileLoaded("2_51.pdf", file, pdf());
+            SaveDownloads.fileLoaded(0, "2_51.pdf", file, pdf());
             PauseForTests.resume();
         }
-        SettingsContextRule.withoutContext(() -> SaveDownloads.fileLoaded("2_51.pdf", file, pdf()));
+        SettingsContextRule.withoutContext(() -> SaveDownloads.fileLoaded(0, "2_51.pdf", file, pdf()));
         SettingReadsForTests.breakReads(Settings.SAVE_DOWNLOADS);
-        SaveDownloads.fileLoaded("2_51.pdf", file, pdf());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", file, pdf());
         assertTrue(downloads.rows.isEmpty());
         assertFalse(HookStatus.missing(FamilyNames.SAVE_DOWNLOADS).isEmpty());
     }

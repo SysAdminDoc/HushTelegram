@@ -15,11 +15,13 @@ import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
@@ -31,7 +33,8 @@ import org.junit.Test
 
 /** ImageLoader's finished-download callback on both declared builds, and the checks the stubs borrow. */
 class SaveDownloadsFixtureTest {
-    private val hosts = setOf(IMAGE_LOADER, FILE_LOADER, MESSAGE_OBJECT, TL_MESSAGE, DOCUMENT, DIALOG_OBJECT, MESSAGES_CONTROLLER)
+    private val hosts = setOf(IMAGE_LOADER, FILE_LOADER, MESSAGE_OBJECT, TL_MESSAGE, DOCUMENT, DIALOG_OBJECT, MESSAGES_CONTROLLER,
+        MESSAGES_STORAGE)
 
     private fun context(build: File): BytecodePatchContext {
         // The callback is an anonymous class; ImageLoader names it where it hands FileLoader its delegate.
@@ -56,17 +59,23 @@ class SaveDownloadsFixtureTest {
 
             val before = old.controlBody()
             val after = callback.controlBody()
-            assertEquals("$name: one instruction in front", before.size + 1, after.size)
-            assertEquals(Opcode.INVOKE_STATIC_RANGE, after[0].opcode)
-            assertEquals("$SAVE_DOWNLOADS->fileLoaded(Ljava/lang/String;Ljava/io/File;Ljava/lang/Object;)V", after[0].controlRef())
-            // The name, the file and the parent: the three parameters after this.
-            val first = callback.implementation!!.registerCount - 5 + 1
-            assertEquals(listOf(first, first + 1, first + 2), after[0].namedRegisters())
+            assertEquals("$name: two instructions in front", before.size + 2, after.size)
+            // The delegate's own account, read into the first local.
+            val self = callback.implementation!!.registerCount - 5
+            assertEquals(Opcode.IGET, after[0].opcode)
+            assertEquals("${callback.definingClass}->val\$currentAccount:I", after[0].controlRef())
+            assertEquals(listOf(0, self), after[0].namedRegisters())
+            assertEquals(Opcode.INVOKE_STATIC, after[1].opcode)
+            assertEquals("$SAVE_DOWNLOADS->fileLoaded(ILjava/lang/String;Ljava/io/File;Ljava/lang/Object;)V", after[1].controlRef())
+            // The account, then the name, the file and the parent: the three parameters after this.
+            assertEquals(listOf(0, self + 1, self + 2, self + 3), after[1].namedRegisters())
             for (i in before.indices) {
                 assertEquals("$name: stock $i", listOf(before[i].opcode, before[i].namedRegisters(), before[i].controlRef()),
-                    listOf(after[i + 1].opcode, after[i + 1].namedRegisters(), after[i + 1].controlRef()))
+                    listOf(after[i + 2].opcode, after[i + 2].namedRegisters(), after[i + 2].controlRef()))
             }
 
+            // A background download's message, read back the way MessagesStorage wraps one.
+            assertEquals(listOf(STORAGE_INSTANCE, STORED_MESSAGE, MESSAGE_OBJECT, NEW_MESSAGE_OBJECT), context.stub("storedMessage").refs())
             assertEquals(listOf(MESSAGE_OBJECT, MESSAGE_OBJECT, GET_DOCUMENT), context.stub("messageDocument").refs())
             assertEquals(listOf(MESSAGE_OBJECT, IS_SECRET_MEDIA, IS_MUSIC, IS_DOCUMENT, IS_GIF, IS_ROUND_VIDEO, IS_VOICE),
                 context.stub("fileOrSong").refs())
@@ -76,7 +85,8 @@ class SaveDownloadsFixtureTest {
             assertEquals(listOf(MESSAGE_OBJECT, MESSAGE_OWNER, GET_DIALOG_ID, IS_ENCRYPTED), context.stub("secretChat").refs())
             assertEquals(listOf(DOCUMENT, ATTACH_NAME), context.stub("attachName").refs())
             assertEquals(listOf(DOCUMENT, DOCUMENT_NAME), context.stub("documentName").refs())
-            for (stub in listOf("messageDocument", "fileOrSong", "savingForbidden", "secretChat", "attachName", "documentName")) {
+            for (stub in listOf("messageDocument", "fileOrSong", "savingForbidden", "secretChat", "attachName", "documentName",
+                "storedMessage")) {
                 val method = context.mutableClassDefBy(SAVE_DOWNLOADS).method(stub)
                 assertTrue("$name: $stub", AccessFlags.PUBLIC.isSet(method.accessFlags) && AccessFlags.STATIC.isSet(method.accessFlags))
             }
@@ -104,6 +114,18 @@ class SaveDownloadsFixtureTest {
                 val controller = context.mutableClassDefBy(MESSAGES_CONTROLLER)
                 val check = controller.methods.single { it.toString() == PEER_NO_FORWARDS }
                 check.accessFlags = check.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value
+            },
+            "the background download key changed" to { context ->
+                val loader = context.mutableClassDefBy(FILE_LOADER)
+                val parser = loader.methods.single { method -> method.controlBody().any { it.controlString() == SENT_KEY } }
+                val at = parser.controlBody().indexOfFirst { it.controlString() == SENT_KEY }
+                val register = (parser.controlBody()[at] as OneRegisterInstruction).registerA
+                parser.replaceInstruction(at, "const-string v$register, \"sent_.*_([0-9]+)_([0-9]+)_([0-9]+)\"")
+            },
+            "$STORED_MESSAGE isn't reachable from the extension" to { context ->
+                val storage = context.mutableClassDefBy(MESSAGES_STORAGE)
+                val read = storage.methods.single { it.toString() == STORED_MESSAGE }
+                read.accessFlags = read.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value
             },
         )
         for ((why, change) in shapes) {

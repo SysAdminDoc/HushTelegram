@@ -19,11 +19,13 @@ import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
+import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.patches.telegram.misc.localcontrols.requireReachable
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.value.IntEncodedValue
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 
 internal const val SAVE_DOWNLOADS = "$EXTENSION_PACKAGE/misc/SaveDownloads;"
@@ -56,6 +58,12 @@ internal const val CONTROLLER_INSTANCE = "$MESSAGES_CONTROLLER->getInstance(I)$M
 internal const val PEER_NO_FORWARDS = "$MESSAGES_CONTROLLER->isPeerNoForwards(J)Z"
 internal const val ATTACH_NAME = "$FILE_LOADER->getAttachFileName(Lorg/telegram/tgnet/TLObject;)$STRING"
 internal const val DOCUMENT_NAME = "$FILE_LOADER->getDocumentFileName($DOCUMENT)$STRING"
+internal const val MESSAGES_STORAGE = "Lorg/telegram/messenger/MessagesStorage;"
+internal const val STORAGE_INSTANCE = "$MESSAGES_STORAGE->getInstance(I)$MESSAGES_STORAGE"
+internal const val STORED_MESSAGE = "$MESSAGES_STORAGE->getMessage(JJ)$TL_MESSAGE"
+internal const val NEW_MESSAGE_OBJECT = "$MESSAGE_OBJECT-><init>(I${TL_MESSAGE}ZZ)V"
+/** FileLoader's parser for the key the background download queue hands over instead of the message. */
+internal const val SENT_KEY = "sent_.*_([0-9]+)_([0-9]+)_([0-9]+)_([0-9]+)"
 
 @Suppress("unused")
 val saveDownloadsPatch = bytecodePatch(
@@ -70,17 +78,31 @@ val saveDownloadsPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.telegram())
     execute {
         val callback = resolveSaveDownloads()
+        val account = delegateAccount(callback)
         // Assembled on a copy first, so a refusal leaves the app untouched.
-        insertSaveDownloadsHook(MutableMethod(ImmutableMethod.of(callback)))
-        insertSaveDownloadsHook(callback)
+        insertSaveDownloadsHook(MutableMethod(ImmutableMethod.of(callback)), account)
+        insertSaveDownloadsHook(callback, account)
         writeSaveDownloadsStubs()
         enableStatus("saveDownloads")
     }
 }
 
-/** Ahead of anything in the callback, the extension sees the downloader's name for the file, the file and its parent. */
-internal fun insertSaveDownloadsHook(method: MutableMethod) {
-    method.addInstructions(0, "invoke-static/range {p1 .. p3}, $SAVE_DOWNLOADS->fileLoaded($STRING$FILE$OBJECT)V")
+/**
+ * Ahead of anything in the callback, the extension sees the delegate's account, the downloader's
+ * name for the file, the file and its parent. v0 is a local the callback writes before it reads.
+ */
+internal fun insertSaveDownloadsHook(method: MutableMethod, account: String) {
+    method.addInstructions(0, """
+        iget v0, p0, $account
+        invoke-static {v0, p1, p2, p3}, $SAVE_DOWNLOADS->fileLoaded(I$STRING$FILE$OBJECT)V
+    """)
+}
+
+/** ImageLoader makes one delegate per account and keeps that account in its one int field. */
+internal fun BytecodePatchContext.delegateAccount(callback: MutableMethod): String {
+    val delegate = mutableClassDefBy(callback.definingClass)
+    val field = delegate.instanceFields.filter { it.type == "I" }.controlSingle("the download callback's account")
+    return "${field.definingClass}->${field.name}:I"
 }
 
 private fun BytecodePatchContext.writeSaveDownloadsStubs() {
@@ -172,6 +194,22 @@ private fun BytecodePatchContext.writeSaveDownloadsStubs() {
         move-result-object p0
         return-object p0
     """)
+    // The way MessagesStorage wraps a stored message itself: no layout, no media check.
+    writeStub(SAVE_DOWNLOADS, "storedMessage", 8, """
+        invoke-static {p0}, $STORAGE_INSTANCE
+        move-result-object v0
+        int-to-long v2, p3
+        invoke-virtual {v0, p1, p2, v2, v3}, $STORED_MESSAGE
+        move-result-object v1
+        if-eqz v1, :hush_none
+        new-instance v0, $MESSAGE_OBJECT
+        const/4 v2, 0x0
+        invoke-direct {v0, p0, v1, v2, v2}, $NEW_MESSAGE_OBJECT
+        return-object v0
+        :hush_none
+        const/4 v0, 0x0
+        return-object v0
+    """)
 }
 
 /** The types ImageLoader creates in the method that hands FileLoader its delegate. */
@@ -184,11 +222,15 @@ internal fun ClassDef.delegateCandidates(): List<String> =
  * ImageLoader gives each account's FileLoader a delegate, and FileLoader calls its fileDidLoaded
  * with the downloader's name for the file, the finished file, what it was downloaded for and its
  * type, on FileLoader's own queue, once a download is done and before Telegram's UI hears of it.
- * The stubs call Telegram's own checks from the extension's package, so each one has to be public.
+ * A file Telegram auto-downloads while its chat is closed comes from the background queue, whose
+ * parent is only a "sent_" key naming the chat, the message and its type, so the extension reads
+ * that message back from MessagesStorage. The stubs call Telegram's own checks from the
+ * extension's package, so each one has to be public.
  */
 internal fun BytecodePatchContext.resolveSaveDownloads(): MutableMethod {
     requireStatusMethod("saveDownloads")
-    controlHook(SAVE_DOWNLOADS, "fileLoaded", listOf(STRING, FILE, OBJECT), "V")
+    controlHook(SAVE_DOWNLOADS, "fileLoaded", listOf("I", STRING, FILE, OBJECT), "V")
+    controlHook(SAVE_DOWNLOADS, "storedMessage", listOf("I", "J", "I"), OBJECT)
     controlHook(SAVE_DOWNLOADS, "messageDocument", listOf(OBJECT), OBJECT)
     controlHook(SAVE_DOWNLOADS, "fileOrSong", listOf(OBJECT), "Z")
     controlHook(SAVE_DOWNLOADS, "savingForbidden", listOf(OBJECT), "Z")
@@ -206,6 +248,9 @@ internal fun BytecodePatchContext.resolveSaveDownloads(): MutableMethod {
         .controlSingle("the finished-download callback")
     controlShape(!AccessFlags.STATIC.isSet(callback.accessFlags) && callback.controlBody().isNotEmpty(),
         "the finished-download callback has no body of its own")
+    // The hook borrows v0 ahead of the callback's own code and passes four registers by number.
+    val locals = callback.implementation!!.registerCount - 5
+    controlShape(locals >= 1 && locals + 4 <= 16, "the finished-download callback's registers changed")
 
     // Telegram's own Save to Downloads rules read the same three facts the stubs do.
     val loader = mutableClassDefByOrNull(FILE_LOADER)
@@ -213,11 +258,18 @@ internal fun BytecodePatchContext.resolveSaveDownloads(): MutableMethod {
         val refs = method.controlBody().mapNotNull { it.controlRef() }
         PEER_NO_FORWARDS in refs && IS_ENCRYPTED in refs && NO_FORWARDS in refs
     }, "Telegram's rules for saving a file outside the app changed")
+    // The extension reads the background queue's key the way FileLoader does, and knows a file and a song by type.
+    controlShape(loader!!.methods.any { method -> method.controlBody().any { it.controlString() == SENT_KEY } },
+        "the background download key changed")
+    val types = mutableClassDefByOrNull(MESSAGE_OBJECT)?.staticFields
+        ?.associate { it.name to (it.initialValue as? IntEncodedValue)?.value }.orEmpty()
+    controlShape(types["TYPE_FILE"] == 9 && types["TYPE_MUSIC"] == 14, "Telegram's message types changed")
 
     for ((reference, static) in listOf(GET_DOCUMENT to false, IS_SECRET_MEDIA to false, IS_MUSIC to false,
         IS_DOCUMENT to false, IS_GIF to false, IS_ROUND_VIDEO to false, IS_VOICE to false, MESSAGE_OWNER to false,
         NO_FORWARDS to false, GET_DIALOG_ID to false, CURRENT_ACCOUNT to false, IS_ENCRYPTED to true,
-        CONTROLLER_INSTANCE to true, PEER_NO_FORWARDS to false, ATTACH_NAME to true, DOCUMENT_NAME to true)) {
+        CONTROLLER_INSTANCE to true, PEER_NO_FORWARDS to false, ATTACH_NAME to true, DOCUMENT_NAME to true,
+        STORAGE_INSTANCE to true, STORED_MESSAGE to false, NEW_MESSAGE_OBJECT to false)) {
         requireReachable(reference, static)
     }
     return callback
