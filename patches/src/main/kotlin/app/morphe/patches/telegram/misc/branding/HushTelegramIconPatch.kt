@@ -110,15 +110,23 @@ internal fun ResourcePatchContext.applyHushTelegramIcon(rawName: String?) {
     val pictures = bundledIconPictures()
     // Checked on a read-only copy first, so a refusal leaves the manifest's bytes alone.
     resolveLaunchers(readResourceXml(this["AndroidManifest.xml"], PATCH))
-    addIconFiles(this["res"], pictures)
+    // Patcher 2.0 decodes only the files a patch asks for, and an undecoded file doesn't exist yet,
+    // so each path is asked for before the check that Telegram has nothing there.
+    addIconFiles(get("res", false), pictures) { decode("res/$it") }
     document("AndroidManifest.xml").use { showIcon(it, name) }
 }
 
-/** Writes the pictures and the adaptive icon under [res], refusing before the first write when it can't. */
-internal fun addIconFiles(res: File, pictures: Map<String, ByteArray>) {
+/**
+ * Writes the pictures and the adaptive icon under [res], refusing before the first write when it
+ * can't. [decode] gets each path first, so a file Telegram already ships there is found.
+ */
+internal fun addIconFiles(res: File, pictures: Map<String, ByteArray>, decode: (String) -> Unit = {}) {
     if (!res.isDirectory) throw PatchException("$PATCH: Telegram's resources weren't decoded. Nothing was changed.")
-    val adaptive = res.resolve("mipmap-anydpi-v26/$ICON.xml")
-    (pictures.keys.map { res.resolve(it) } + adaptive).firstOrNull { it.exists() }?.let {
+    val adaptivePath = "mipmap-anydpi-v26/$ICON.xml"
+    val paths = pictures.keys + adaptivePath
+    paths.forEach(decode)
+    val adaptive = res.resolve(adaptivePath)
+    paths.map { res.resolve(it) }.firstOrNull { it.exists() }?.let {
         throw PatchException("$PATCH: this Telegram already has ${it.relativeTo(res).invariantSeparatorsPath}. Nothing was changed.")
     }
     for ((path, bytes) in pictures) res.resolve(path).apply { parentFile.mkdirs() }.writeBytes(bytes)

@@ -23,10 +23,10 @@ import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
 
 /**
- * The optional launch logo patch on both builds' own logo files. Morphe decodes the resources
- * before a resource patch runs, which a unit test can't do, so the logo and its picture are read
- * out of each fixture into a folder laid out the way Morphe decodes; the CLI run on the real APKs
- * covers the decode and the rebuild around it.
+ * The optional launch logo patch on both builds' own logo files. Morphe decodes the files a resource
+ * patch asks for, which a unit test can't do, so the logo and its picture are read out of each
+ * fixture into a folder laid out the way Morphe decodes; the CLI run on the real APKs covers the
+ * decode and the rebuild around it.
  */
 class BlackAndWhiteLaunchLogoFixtureTest {
     @Rule
@@ -90,6 +90,39 @@ class BlackAndWhiteLaunchLogoFixtureTest {
             assertEquals(listOf(SPLASH_BACKGROUND to NAVY, SPLASH_ICON to "@drawable/tg_splash_320"), items(nightStock))
             assertEquals(3, night.size)
             assertEquals("Telegram's other dark style is untouched", listOf("android:windowBackground" to NAVY), items(night[1]))
+        }
+    }
+
+    /**
+     * Patcher 2.0 leaves a file undecoded until a patch asks for it, so here a file reaches res only
+     * when it's asked for. The logo has to ask for each file it reads, and for the two it checks
+     * aren't there yet, or it reads nothing and refuses.
+     */
+    @Test
+    fun `every file it reads or checks is asked for first`() = withAndroidResourceXmlFactory {
+        for (build in Fixtures.declaredBuilds()) {
+            val apk = stockRes(build)
+            val picture = pictureOf(apk).relativeTo(apk).invariantSeparatorsPath
+            val asked = mutableListOf<String>()
+            val res = temporary.newFolder()
+            addLaunchLogo(res) { path ->
+                asked += path
+                apk.resolve(path).takeIf { it.isFile }?.copyTo(res.resolve(path))
+            }
+            assertEquals("${build.name}: asked for in the order it reads them",
+                listOf(SPLASH, picture, LOGO_STYLES, "drawable/$LOGO.xml", "drawable/$LOGO_SHAPE.xml", NIGHT_STYLES), asked)
+            assertTrue(res.resolve("drawable/$LOGO.xml").isFile)
+            assertTrue(res.resolve("drawable/$LOGO_SHAPE.xml").isFile)
+        }
+
+        // A logo file Telegram already has is found once it's asked for, and refused.
+        val apk = stockRes(Fixtures.declaredBuilds().first()).apply { resolve("drawable/$LOGO_SHAPE.xml").writeText("<vector />") }
+        val res = temporary.newFolder()
+        try {
+            addLaunchLogo(res) { path -> apk.resolve(path).takeIf { it.isFile }?.copyTo(res.resolve(path)) }
+            fail("accepted")
+        } catch (expected: PatchException) {
+            assertTrue(expected.message.orEmpty(), expected.message.orEmpty().contains("already has drawable/$LOGO_SHAPE.xml"))
         }
     }
 

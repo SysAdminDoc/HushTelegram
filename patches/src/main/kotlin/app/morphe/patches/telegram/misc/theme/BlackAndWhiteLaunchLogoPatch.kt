@@ -52,7 +52,9 @@ val blackAndWhiteLaunchLogoPatch = resourcePatch(
     category("Theme")
     dependsOn(amoledBlackPatch)
     compatibleWith(*AppCompatibilities.telegram())
-    execute { addLaunchLogo(this["res"]) }
+    // Patcher 2.0 decodes only the files a patch asks for, and an undecoded file doesn't exist yet,
+    // so each file the logo reads or checks is asked for first.
+    execute { addLaunchLogo(get("res", false)) { decode("res/$it") } }
 }
 
 /**
@@ -61,11 +63,16 @@ val blackAndWhiteLaunchLogoPatch = resourcePatch(
  * draws when it restarts a task whose process it killed, where a theme named through
  * setSplashScreenTheme isn't used, so the logo has to live there to show every time. A second theme
  * keeps Telegram's original look, light and dark, for BlackTheme to name while AMOLED black is off.
- * Everything is checked before the first write.
+ * Everything is checked before the first write. [decode] gets each path under [res] before it's read
+ * or checked, including the picture the logo names, which isn't known until the logo is read.
  */
-internal fun addLaunchLogo(res: File) {
+internal fun addLaunchLogo(res: File, decode: (String) -> Unit = {}) {
     if (!res.isDirectory) refuse("Telegram's resources weren't decoded")
-    val splashFile = res.resolve(SPLASH)
+    fun decoded(path: String): File {
+        decode(path)
+        return res.resolve(path)
+    }
+    val splashFile = decoded(SPLASH)
     if (!splashFile.isFile) refuse("Telegram's launch logo $SPLASH is missing")
     val splash = readResourceXml(splashFile, PATCH)
     val animated = splash.documentElement
@@ -74,21 +81,21 @@ internal fun addLaunchLogo(res: File) {
     val shapeName = reference.removePrefix("@drawable/")
     requireShape(reference.startsWith("@drawable/") && shapeName.isNotEmpty() && '/' !in shapeName && ':' !in shapeName,
         "Telegram's launch logo doesn't name its picture")
-    val shapeFile = res.resolve("drawable/$shapeName.xml")
+    val shapeFile = decoded("drawable/$shapeName.xml")
     if (!shapeFile.isFile) refuse("Telegram's launch logo picture drawable/$shapeName.xml is missing")
     val shape = readResourceXml(shapeFile, PATCH)
     requireShape(shape.documentElement.tagName == "vector", "Telegram's launch logo picture is no longer a vector")
     val circle = namedPath(shape, "circle")
     val plane = namedPath(shape, "plane")
-    val stylesFile = res.resolve(LOGO_STYLES)
+    val stylesFile = decoded(LOGO_STYLES)
     if (!stylesFile.isFile) refuse("Telegram's $LOGO_STYLES is missing")
     val styles = readResourceXml(stylesFile, PATCH)
     requireShape(styles.documentElement.tagName == "resources", "Telegram's $LOGO_STYLES has another shape")
-    listOf(LOGO, LOGO_SHAPE).map { res.resolve("drawable/$it.xml") }.firstOrNull { it.exists() }?.let {
+    listOf(LOGO, LOGO_SHAPE).map { decoded("drawable/$it.xml") }.firstOrNull { it.exists() }?.let {
         refuse("this Telegram already has ${it.relativeTo(res).invariantSeparatorsPath}")
     }
     requireShape(styleNamed(styles, START_THEME) != null, "Telegram's $LOGO_STYLES has no $START_THEME")
-    val nightFile = res.resolve(NIGHT_STYLES)
+    val nightFile = decoded(NIGHT_STYLES)
     if (!nightFile.isFile) refuse("Telegram's $NIGHT_STYLES is missing")
     val night = readResourceXml(nightFile, PATCH)
     requireShape(night.documentElement.tagName == "resources", "Telegram's $NIGHT_STYLES has another shape")

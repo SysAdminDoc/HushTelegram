@@ -144,6 +144,32 @@ class HushTelegramIconFixtureTest {
         }
     }
 
+    /**
+     * Patcher 2.0 leaves a file undecoded until a patch asks for it, so here a file Telegram ships
+     * reaches res only when it's asked for. Every path the icon writes is asked for before the
+     * check, so one already there is found.
+     */
+    @Test
+    fun `every icon path is asked for before the check that nothing is there`() {
+        val pictures = bundledIconPictures()
+        val asked = mutableListOf<String>()
+        addIconFiles(temporary.newFolder(), pictures) { asked += it }
+        assertEquals(pictures.keys + "mipmap-anydpi-v26/$ICON.xml", asked.toSet())
+        assertEquals("each once", asked.size, asked.toSet().size)
+
+        for (existing in listOf("mipmap-xxhdpi/${ICON}_foreground.png", "mipmap-anydpi-v26/$ICON.xml")) {
+            val apk = temporary.newFolder().apply { resolve(existing).apply { parentFile.mkdirs() }.writeText("stock") }
+            val res = temporary.newFolder()
+            try {
+                addIconFiles(res, pictures) { path -> apk.resolve(path).takeIf { it.isFile }?.copyTo(res.resolve(path)) }
+                fail("accepted")
+            } catch (expected: PatchException) {
+                assertTrue(expected.message.orEmpty(), expected.message.orEmpty().contains("already has $existing"))
+            }
+            assertEquals(listOf(existing), res.walkTopDown().filter { it.isFile }.map { it.relativeTo(res).invariantSeparatorsPath }.toList())
+        }
+    }
+
     @Test
     fun `a name that can't be used refuses before anything is read`() {
         for (name in listOf("x".repeat(MAX_APP_NAME + 1), "@string/app_name", "?attr/name", "Hush \"TG\"", "Hush's", "a\\b", "line\nbreak")) {
