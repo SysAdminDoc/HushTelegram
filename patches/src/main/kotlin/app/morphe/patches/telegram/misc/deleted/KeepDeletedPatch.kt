@@ -6,21 +6,25 @@ package app.morphe.patches.telegram.misc.deleted
 
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.liveAcrossInjection
 import app.morphe.patches.telegram.misc.extension.localRegisterCount
 import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
+import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
+import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
@@ -61,9 +65,13 @@ internal const val POST_NOTIFICATION = "$NOTIFICATION_CENTER->postNotificationNa
 internal const val FORCE_UPDATE = "$MESSAGE_OBJECT->forceUpdate:Z"
 internal const val REPLACE_IF_EXISTS = "lambda\$replaceMessageIfExists\$"
 private const val PATCH = "Keep deleted messages"
+private const val CHAR_SEQUENCE = "Ljava/lang/CharSequence;"
+internal const val PAINTED = "$KEEP_DELETED->painted($CHAR_SEQUENCE)$CHAR_SEQUENCE"
+private const val STATIC_LAYOUT = "Landroid/text/StaticLayout;-><init>($CHAR_SEQUENCE"
 
 private val GOTOS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)
 private val MOVE_OBJECTS = setOf(Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16)
+private val INVOKE_DIRECTS = setOf(Opcode.INVOKE_DIRECT, Opcode.INVOKE_DIRECT_RANGE)
 
 @Suppress("unused")
 val keepDeletedPatch = bytecodePatch(
@@ -81,6 +89,11 @@ val keepDeletedPatch = bytecodePatch(
         plan.applyTo(MutableMethod(ImmutableMethod.of(plan.updates)), MutableMethod(ImmutableMethod.of(plan.push)),
             MutableMethod(ImmutableMethod.of(plan.measure)))
         plan.applyTo(plan.updates, plan.push, plan.measure)
+        if (plan.red != null) {
+            enableCapability("redDeletedLabel")
+        } else {
+            patchLog.warning("Keep deleted messages: ${plan.redMissing}. The patch goes on with the deleted label in the time's own color.")
+        }
         enableStatus("keepDeleted")
     }
 }
@@ -109,6 +122,9 @@ internal class KeepDeletedPlan(
     val measuredMessage: Int,
     /** The bubble's own layout, which measures the time again when a message is marked. Not edited. */
     val layout: Method,
+    /** Where the label goes red, or null with [redMissing] saying why this build can't. */
+    val red: RedLabel?,
+    val redMissing: String?,
 ) {
     /** Each hook goes in the method it was found for, the later one in the update loop first. */
     fun applyTo(updates: MutableMethod, push: MutableMethod, measure: MutableMethod) {
@@ -142,10 +158,78 @@ internal class KeepDeletedPlan(
                 nop
             """.trimIndent(),
         )
+        if (red != null) {
+            val self = measure.localRegisterCount()
+            for (at in red.returns.sortedByDescending { it.index }) {
+                measure.addInstructionsAtControlFlowLabel(
+                    at.index,
+                    """
+                        move-object/from16 v${at.bubble}, v$self
+                        iget-object v${at.text}, v${at.bubble}, ${red.field}
+                        invoke-static {v${at.text}}, $PAINTED
+                        move-result-object v${at.text}
+                        iput-object v${at.text}, v${at.bubble}, ${red.field}
+                    """.trimIndent(),
+                )
+            }
+        }
         measure.addInstructionsAtControlFlowLabel(
             0, "invoke-static/range {v$measuredMessage .. v$measuredMessage}, $KEEP_DELETED->measuring($OBJECT)V",
         )
     }
+}
+
+/** One return of the measuring, and two registers in v0 to v15 that nothing reads past it. */
+internal class RedReturn(val index: Int, val bubble: Int, val text: Int)
+
+/** The bubble's time text field, and each return of the measuring the label is painted in front of. */
+internal class RedLabel(val field: String, val returns: List<RedReturn>)
+
+/** Why this build's label can't go red. */
+private class Unpainted(why: String) : Exception(why)
+
+private fun need(ok: Boolean, why: String) {
+    if (!ok) throw Unpainted(why)
+}
+
+/**
+ * The bubble keeps its finished time text in one CharSequence field of its own, which the measuring
+ * builds and the bubble's layout draws, spans and all. The text goes to the extension right before
+ * each return of the measuring, once nothing changes it again, and comes back with the label red.
+ * Color leaves the measured width alone. A build where that can't be found keeps the label in the
+ * time's own color, and the rest of the patch goes ahead.
+ *
+ * @return the plan, and null; or null and why there's none
+ */
+internal fun resolveRedLabel(bubble: ClassDef, measure: Method): Pair<RedLabel?, String?> = try {
+    Pair(redLabel(bubble, measure), null)
+} catch (missing: Unpainted) {
+    Pair(null, missing.message)
+} catch (missing: PatchException) {
+    Pair(null, missing.message)
+}
+
+private fun redLabel(bubble: ClassDef, measure: Method): RedLabel {
+    val body = measure.controlBody()
+    val written = body.filter { it.opcode == Opcode.IPUT_OBJECT }.mapNotNull { it.controlField() }
+        .filter { it.definingClass == bubble.type && it.type == CHAR_SEQUENCE }.map { it.toString() }.distinct()
+    need(written.size == 1, "the message time measuring no longer keeps its time text in one field")
+    val field = written.single()
+    need(bubble.fields.any { it.toString() == field && !AccessFlags.STATIC.isSet(it.accessFlags) },
+        "the time text isn't a field of the bubble itself")
+    need(bubble.methods.any { m ->
+        m.controlBody().let { code ->
+            code.any { it.opcode == Opcode.IGET_OBJECT && it.controlRef() == field } &&
+                code.any { it.opcode in INVOKE_DIRECTS && it.controlRef()?.startsWith(STATIC_LAYOUT) == true }
+        }
+    }, "the bubble no longer lays its time text out with its spans")
+    val returns = body.indices.filter { body[it].opcode == Opcode.RETURN_VOID }
+    need(returns.isNotEmpty(), "the message time measuring has no return")
+    measure.requireThisIntact(PATCH, returns)
+    return RedLabel(field, returns.map { at ->
+        val (bubbleRegister, text) = measure.freeLocalsAt(PATCH, at, 2)
+        RedReturn(at, bubbleRegister, text)
+    })
 }
 
 /** What the extension reaches by name, with the class and member each one lives on. */
@@ -263,6 +347,8 @@ internal fun BytecodePatchContext.resolveKeepDeleted(): KeepDeletedPlan {
     controlHook(KEEP_DELETED, "push", listOf(OBJECT, "J", LIST, "J"), "Z")
     controlHook(KEEP_DELETED, "measuring", listOf(OBJECT), "V")
     controlHook(KEEP_DELETED, "labelled", listOf("Ljava/lang/String;"), "Ljava/lang/String;")
+    controlHook(KEEP_DELETED, "painted", listOf(CHAR_SEQUENCE), CHAR_SEQUENCE)
+    requireStatusMethod("redDeletedLabel")
     requireTelegramNames()
 
     val controller = mutableClassDefByOrNull(MESSAGES_CONTROLLER)
@@ -315,7 +401,8 @@ internal fun BytecodePatchContext.resolveKeepDeleted(): KeepDeletedPlan {
         it.parameterTypes[0].toString() == MESSAGE_OBJECT && it.returnType == "V" }
     controlShape(ControlFlow.of(measure).normal.none { 0 in it }, "something jumps back to the start of the message time measuring")
     val layout = requireRedraw(bubble, measure)
-    return KeepDeletedPlan(updates, branches, push, pushResult, measure, measure.parameterRegisterNumber(0), layout)
+    val (red, redMissing) = resolveRedLabel(bubble, measure)
+    return KeepDeletedPlan(updates, branches, push, pushResult, measure, measure.parameterRegisterNumber(0), layout, red, redMissing)
 }
 
 /**

@@ -381,6 +381,12 @@ Removes the Telegram Features row from Settings and Invite Friends from Contacts
 Add Repeat to the message menu	Tambahkan Ulangi ke menu pesan
 Keep deleted messages	Simpan pesan yang dihapus
 Messages others delete stay in your chat on this phone, marked deleted next to the time. Your own deletes and disappearing messages work as usual.	Pesan yang dihapus orang lain tetap ada di obrolan Anda di ponsel ini, ditandai terhapus di samping waktu. Penghapusan oleh Anda dan pesan yang menghilang berfungsi seperti biasa.
+# context: a second switch under Keep deleted messages (#25). Turned on, the word "deleted" that marks a kept message next to its time is drawn in red.
+Show deleted in red	Tampilkan dihapus dengan warna merah
+# context: that switch's summary. "deleted" is the label shown next to the time, "Keep deleted messages" the name of the switch above it.
+The deleted label next to a kept message's time turns red, so it stands out in the chat. Works with Keep deleted messages on.	Label dihapus di samping waktu pesan yang disimpan berubah merah, jadi lebih mudah terlihat di obrolan. Berfungsi saat Simpan pesan yang dihapus aktif.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep deleted messages that draws the deleted label in red.
+red deleted label	label dihapus berwarna merah
 # context: an action row under Keep deleted messages; a tap deletes every message that switch kept
 Clear kept messages	Hapus pesan yang disimpan
 Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.	Menghapus pesan yang disimpan ponsel ini setelah orang lain menghapusnya, di setiap akun, seperti yang akan dilakukan Telegram.

@@ -747,6 +747,13 @@ public class HushTelegramPreferenceFragmentTest {
             // Telegram removes a message another person deletes until the switch is turned on.
             assertFalse(Settings.KEEP_DELETED_MESSAGES.key,
                     ((SwitchPreference) page.findPreference(Settings.KEEP_DELETED_MESSAGES.key)).isChecked());
+            assertEquals("Show deleted in red", String.valueOf(page.findPreference(Settings.RED_DELETED_LABEL.key).getTitle()));
+            assertEquals("The deleted label next to a kept message's time turns red, so it stands out in the chat. "
+                    + "Works with Keep deleted messages on.",
+                    String.valueOf(page.findPreference(Settings.RED_DELETED_LABEL.key).getSummary()));
+            // The label keeps the time's color until the switch is turned on.
+            assertFalse(Settings.RED_DELETED_LABEL.key,
+                    ((SwitchPreference) page.findPreference(Settings.RED_DELETED_LABEL.key)).isChecked());
             assertEquals("Ask before sending a sticker", String.valueOf(page.findPreference(Settings.ASK_BEFORE_STICKER.key).getTitle()));
             assertEquals("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled "
                     + "stickers go out without asking.",
@@ -855,11 +862,22 @@ public class HushTelegramPreferenceFragmentTest {
             assertNull(pageOf(controller).findPreference(HushTelegramPreferenceFragment.CLEAR_KEPT));
         }
         PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.KEEP_DELETED_MESSAGES);
+        // A build whose label can't go red has no switch for it, and Clear sits right under Keep deleted messages.
+        PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            assertEquals(-1, indexOfKey(rows, Settings.RED_DELETED_LABEL.key));
+            assertEquals(HushTelegramPreferenceFragment.CLEAR_KEPT, rows.get(indexOfKey(rows, Settings.KEEP_DELETED_MESSAGES.key) + 1).getKey());
+        }
+        PatchFamily.capabilitiesForTests = null;
         ShadowToast.reset();
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             List<Preference> rows = new ArrayList<>();
             collect(pageOf(controller).getPreferenceScreen(), rows);
-            Preference clear = rows.get(indexOfKey(rows, Settings.KEEP_DELETED_MESSAGES.key) + 1);
+            int keep = indexOfKey(rows, Settings.KEEP_DELETED_MESSAGES.key);
+            assertEquals("the red switch sits under its family's", Settings.RED_DELETED_LABEL.key, rows.get(keep + 1).getKey());
+            Preference clear = rows.get(keep + 2);
             assertEquals(HushTelegramPreferenceFragment.CLEAR_KEPT, clear.getKey());
             assertEquals("Clear kept messages", String.valueOf(clear.getTitle()));
             assertEquals("Deletes the messages this phone kept after others deleted them, in every account, the way "

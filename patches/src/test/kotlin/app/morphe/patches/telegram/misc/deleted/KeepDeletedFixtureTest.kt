@@ -8,6 +8,7 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
@@ -103,14 +104,72 @@ class KeepDeletedFixtureTest {
 
             // The bubble's time measuring is told the message first, and still formats through the time hook.
             val measure = plan.measure.controlBody()
-            assertEquals("$name: one instruction", measureBefore.size + 1, measure.size)
+            val red = plan.red!!
+            assertEquals("$name: ${plan.redMissing}", null, plan.redMissing)
+            val returns = measureBefore.indices.filter { measureBefore[it][0] == Opcode.RETURN_VOID }
+            assertEquals("$name: every return of the measuring paints", returns, red.returns.map { it.index })
+            assertEquals("$name: one instruction, and five in front of each return", measureBefore.size + 1 + 5 * returns.size, measure.size)
             assertEquals("$KEEP_DELETED->measuring(Ljava/lang/Object;)V", measure[0].controlRef())
             assertEquals(listOf(plan.measuredMessage), measure[0].namedRegisters())
-            assertEquals("$name: the time measuring is unchanged", measureBefore, without(measure, listOf(0), 1))
+            // Read independently: the one CharSequence field of the bubble the measuring writes.
+            val field = measureBefore.filter { it[0] == Opcode.IPUT_OBJECT }.map { it[2] as String }
+                .filter { it.startsWith("${plan.measure.definingClass}->") && it.endsWith(":Ljava/lang/CharSequence;") }.distinct()
+            assertEquals("$name: the time text", listOf(red.field), field)
+            val paints = measure.indices.filter { measure[it].controlRef() == PAINTED }
+            assertEquals("$name: one paint per return", returns.size, paints.size)
+            val self = plan.measure.localRegisterCount()
+            val inserted = mutableListOf(0)
+            for ((call, at) in paints.zip(red.returns.sortedBy { it.index })) {
+                val start = call - 2
+                inserted += start
+                assertEquals("$name: paint at ${at.index}", listOf(Opcode.MOVE_OBJECT_FROM16, Opcode.IGET_OBJECT, Opcode.INVOKE_STATIC,
+                    Opcode.MOVE_RESULT_OBJECT, Opcode.IPUT_OBJECT, Opcode.RETURN_VOID), (start..start + 5).map { measure[it].opcode })
+                assertEquals("this, copied low", listOf(at.bubble, self), measure[start].namedRegisters())
+                assertEquals(listOf(at.text, at.bubble), measure[start + 1].namedRegisters())
+                assertEquals(red.field, measure[start + 1].controlRef())
+                assertEquals(listOf(at.text), measure[call].namedRegisters())
+                assertEquals(listOf(at.text, at.bubble), measure[start + 4].namedRegisters())
+                assertEquals(red.field, measure[start + 4].controlRef())
+                assertTrue("$name: v0 to v15", at.bubble <= 15 && at.text <= 15 && at.bubble != at.text)
+            }
+            val sizes = inserted.associateWith { if (it == 0) 1 else 5 }
+            assertEquals("$name: the time measuring is unchanged", measureBefore,
+                measure.indices.filter { i -> sizes.none { (start, size) -> i >= start && i < start + size } }.map { shape(measure[it]) })
+            val flow = ControlFlow.of(plan.measure)
+            for (start in inserted.drop(1)) {
+                assertTrue("$name: whatever reached the return reaches the paint", flow.normal.indices.none { from ->
+                    from !in start..start + 5 && start + 5 in flow.normal[from]
+                })
+            }
             assertTrue("$name: its times still go through the extension", measure.any { it.controlRef() == MESSAGE_TIME_SHOWN })
 
             val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "keepDeleted" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
+            val painted = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "redDeletedLabel" }.controlBody()
+            assertEquals(1L, (painted.first() as WideLiteralInstruction).wideLiteral)
+        }
+    }
+
+    @Test fun `a time text that can't be found leaves the label in the time's own color and keeps the rest`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = context(build)
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { messageSecondsPatch.execute(context) })
+            val known = context.resolveKeepDeleted()
+            val field = known.red!!.field
+            // Built in a local instead of the field, so the measuring writes no time text of its own.
+            known.measure.controlBody().indices.filter { known.measure.controlBody()[it].let { i -> i.opcode == Opcode.IPUT_OBJECT && i.controlRef() == field } }
+                .forEach { known.measure.replaceInstruction(it, "nop") }
+            val before = known.measure.controlBody().map(::shape)
+            val warnings = PatchLogCapture.warnings { keepDeletedPatch.execute(context) }
+            assertEquals("$name: $warnings", 1, warnings.size)
+            assertTrue(warnings.single(), "no longer keeps its time text in one field" in warnings.single() && "own color" in warnings.single())
+            val measure = known.measure.controlBody()
+            assertEquals("$name: only the measuring call", before.size + 1, measure.size)
+            assertTrue(measure.none { it.controlRef() == PAINTED })
+            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods
+            assertEquals(1L, (status.single { it.name == "keepDeleted" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
+            assertEquals(0L, (status.single { it.name == "redDeletedLabel" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
         }
     }
 

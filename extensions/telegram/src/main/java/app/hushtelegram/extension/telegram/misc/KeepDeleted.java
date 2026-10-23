@@ -6,6 +6,9 @@ package app.hushtelegram.extension.telegram.misc;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
@@ -25,7 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * When someone else deletes a message, the server tells the app and Telegram removes it from the
  * phone. With the switch on, that one kind of deletion is held back: the message stays in the local
- * database and in the open chat, and the time under it reads "deleted 9:41 PM".
+ * database and in the open chat, and the time under it reads "deleted 9:41 PM". A second switch
+ * shows that word in red (#25).
  *
  * Only deletions that arrive as a server update or a push come here. Your own deletes, clearing a
  * history, scheduled and quick-reply messages never do, so they stay exactly as Telegram does them.
@@ -119,7 +123,23 @@ public final class KeepDeleted {
     /** The saved lists' format. 1 had only the kept list; 2 adds the messages being handed back and this number. */
     static final int VERSION = 2;
 
+    /** The red of the deleted label, readable on light and dark bubbles alike. */
+    static final int RED = 0xFFE53935;
+
+    /** The label a measuring put in front of the time, and how long its word is. */
+    private static final class Label {
+        final String text;
+        final int word;
+
+        Label(String text, int word) {
+            this.text = text;
+            this.word = word;
+        }
+    }
+
     private static final ThreadLocal<Object> MEASURING = new ThreadLocal<>();
+    /** Set while a bubble's measuring has put the label in, until its time text is handed to {@link #painted}. */
+    private static final ThreadLocal<Label> LABELLED = new ThreadLocal<>();
     // A set in these two is never changed once it's in the map, only replaced, so a bubble can read
     // it without waiting on a save.
     private static final Map<Long, LinkedHashSet<String>> KEPT = new ConcurrentHashMap<>();
@@ -179,6 +199,7 @@ public final class KeepDeleted {
 
     /** Told which message the bubble is measuring, so the next time it formats can carry the label. */
     public static void measuring(Object message) {
+        LABELLED.remove();
         try {
             MEASURING.set(on() ? message : null);
         } catch (Throwable failure) {
@@ -197,10 +218,37 @@ public final class KeepDeleted {
                 return time;
             }
             HookStatus.counted(FamilyNames.KEEP_DELETED_MESSAGES, "label shown");
-            return L10n.t("deleted") + " " + time;
+            String word = L10n.t("deleted");
+            String text = word + " " + time;
+            LABELLED.set(new Label(text, word.length()));
+            return text;
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "label", failure);
             return time;
+        }
+    }
+
+    /**
+     * The bubble's finished time text, handed over right before its measuring returns. With the red
+     * label switch on, and a label put in by this measuring, the word comes back red; the text and its
+     * width stay the same. Anything else comes back as it was.
+     */
+    public static CharSequence painted(CharSequence text) {
+        Label label = LABELLED.get();
+        if (label == null) return text;
+        LABELLED.remove();
+        try {
+            if (text == null || !Utils.settingsReady() || !Settings.RED_DELETED_LABEL.get()) return text;
+            // Telegram builds the time text around the label: an edited mark, views, a signature.
+            int at = text.toString().indexOf(label.text);
+            if (at < 0) return text;
+            SpannableString red = new SpannableString(text);
+            red.setSpan(new ForegroundColorSpan(RED), at, at + label.word, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            HookStatus.counted(FamilyNames.KEEP_DELETED_MESSAGES, "label shown in red");
+            return red;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "red label", failure);
+            return text;
         }
     }
 

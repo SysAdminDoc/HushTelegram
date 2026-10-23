@@ -381,6 +381,12 @@ Removes the Telegram Features row from Settings and Invite Friends from Contacts
 Add Repeat to the message menu	Añadir Repetir al menú de mensajes
 Keep deleted messages	Conservar los mensajes eliminados
 Messages others delete stay in your chat on this phone, marked deleted next to the time. Your own deletes and disappearing messages work as usual.	Los mensajes que otros eliminan se quedan en tu chat en este teléfono, marcados como eliminados junto a la hora. Tus propias eliminaciones y los mensajes que desaparecen funcionan como siempre.
+# context: a second switch under Keep deleted messages (#25). Turned on, the word "deleted" that marks a kept message next to its time is drawn in red.
+Show deleted in red	Mostrar eliminado en rojo
+# context: that switch's summary. "deleted" is the label shown next to the time, "Keep deleted messages" the name of the switch above it.
+The deleted label next to a kept message's time turns red, so it stands out in the chat. Works with Keep deleted messages on.	La etiqueta eliminado junto a la hora de un mensaje conservado se pone roja, para que destaque en el chat. Funciona con Conservar los mensajes eliminados activado.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep deleted messages that draws the deleted label in red.
+red deleted label	la etiqueta eliminado en rojo
 # context: an action row under Keep deleted messages; a tap deletes every message that switch kept
 Clear kept messages	Borrar los mensajes conservados
 Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.	Elimina los mensajes que este teléfono conservó después de que otros los eliminaran, en todas las cuentas, como lo habría hecho Telegram.

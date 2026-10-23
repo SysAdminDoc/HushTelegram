@@ -106,6 +106,7 @@ public class PatchFamilyTest {
         Settings.HIDE_FEATURES_AND_INVITE.resetToDefault();
         Settings.MESSAGE_MENU_REPEAT.resetToDefault();
         Settings.KEEP_DELETED_MESSAGES.resetToDefault();
+        Settings.RED_DELETED_LABEL.resetToDefault();
         Settings.ASK_BEFORE_STICKER.resetToDefault();
         Settings.OUTSIDE_TRANSLATE.resetToDefault();
         Settings.HIDE_CHANNEL_BUTTONS.resetToDefault();
@@ -213,10 +214,14 @@ public class PatchFamilyTest {
     public void keepDeletedMessagesHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
         PatchFamily family = PatchFamily.KEEP_DELETED_MESSAGES;
         assertEquals("Keep deleted messages", family.patchName);
-        assertEquals(Collections.singletonList(Settings.KEEP_DELETED_MESSAGES), family.switches);
-        assertFalse(Settings.KEEP_DELETED_MESSAGES.defaultValue);
-        assertFalse(Settings.KEEP_DELETED_MESSAGES.rebootApp);
-        assertTrue(family.expectedCapabilities().isEmpty());
+        // The second switch, the red label, starts off too and shows at the next measuring.
+        assertEquals(Arrays.asList(Settings.KEEP_DELETED_MESSAGES, Settings.RED_DELETED_LABEL), family.switches);
+        for (BooleanSetting setting : family.switches) {
+            assertFalse(setting.key, setting.defaultValue);
+            assertFalse(setting.key, setting.rebootApp);
+        }
+        assertEquals(EnumSet.of(PatchFamily.Capability.RED_DELETED_LABEL), family.expectedCapabilities());
+        assertEquals("redDeletedLabel", PatchFamily.Capability.RED_DELETED_LABEL.statusMethod);
         assertOnItsPage(family);
     }
 

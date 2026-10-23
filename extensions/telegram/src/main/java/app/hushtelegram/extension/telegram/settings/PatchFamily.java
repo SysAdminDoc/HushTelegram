@@ -100,7 +100,7 @@ public enum PatchFamily {
     HIDE_BY_KEYWORD(FamilyNames.HIDE_BY_KEYWORD, "hideByKeyword", null, Settings.HIDE_BY_KEYWORD),
     HIDE_FEATURES_AND_INVITE(FamilyNames.HIDE_FEATURES_AND_INVITE, "hideFeaturesAndInvite", null, Settings.HIDE_FEATURES_AND_INVITE),
     MESSAGE_MENU_REPEAT(FamilyNames.MESSAGE_MENU_REPEAT, "messageMenuRepeat", null, Settings.MESSAGE_MENU_REPEAT, Settings.MESSAGE_MENU_COPY_PHOTO, Settings.MESSAGE_MENU_DETAILS, Settings.MESSAGE_MENU_QUICK_FORWARD),
-    KEEP_DELETED_MESSAGES(FamilyNames.KEEP_DELETED_MESSAGES, "keepDeleted", null, Settings.KEEP_DELETED_MESSAGES),
+    KEEP_DELETED_MESSAGES(FamilyNames.KEEP_DELETED_MESSAGES, "keepDeleted", null, Settings.KEEP_DELETED_MESSAGES, Settings.RED_DELETED_LABEL),
     ASK_BEFORE_STICKER(FamilyNames.ASK_BEFORE_STICKER, "askBeforeSending", null, Settings.ASK_BEFORE_STICKER, Settings.ASK_BEFORE_GIF, Settings.ASK_BEFORE_VOICE_VIDEO, Settings.ASK_BEFORE_CALL),
     OUTSIDE_TRANSLATE(FamilyNames.OUTSIDE_TRANSLATE, "outsideTranslate", null, Settings.OUTSIDE_TRANSLATE),
     HIDE_CHANNEL_BUTTONS(FamilyNames.HIDE_CHANNEL_BUTTONS, "hideChannelButtons", null, Settings.HIDE_CHANNEL_BUTTONS),
@@ -364,6 +364,7 @@ public enum PatchFamily {
         LOCKED_VOICE(VOICE_ONE_AT_A_TIME, "lockedVoice", "voice playback while locked"),
         DATA_SAVER_DOWNLOADS(FASTER_DOWNLOADS, "dataSaverDownloads", "automatic downloads on Data Saver"),
         TITLE_EMOJI(HOLIDAY_LOOK, "titleEmoji", "emoji next to the chat list title"),
+        RED_DELETED_LABEL(KEEP_DELETED_MESSAGES, "redDeletedLabel", "red deleted label"),
         FIREBASE_CERTIFICATE_HEADER(REPAIR_FIREBASE_PUSH, "firebaseCertificateHeader", "Firebase certificate header"),
         FIREBASE_LOCAL_STATUS(REPAIR_FIREBASE_PUSH, "firebaseLocalStatus", "local notification status");
 

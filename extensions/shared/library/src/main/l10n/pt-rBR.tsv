@@ -378,6 +378,12 @@ Removes the Telegram Features row from Settings and Invite Friends from Contacts
 Add Repeat to the message menu	Adicionar Repetir ao menu de mensagens
 Keep deleted messages	Manter mensagens apagadas
 Messages others delete stay in your chat on this phone, marked deleted next to the time. Your own deletes and disappearing messages work as usual.	Mensagens que outras pessoas apagam ficam na sua conversa neste celular, marcadas como apagadas ao lado da hora. Suas próprias exclusões e as mensagens temporárias funcionam como sempre.
+# context: a second switch under Keep deleted messages (#25). Turned on, the word "deleted" that marks a kept message next to its time is drawn in red.
+Show deleted in red	Mostrar apagada em vermelho
+# context: that switch's summary. "deleted" is the label shown next to the time, "Keep deleted messages" the name of the switch above it.
+The deleted label next to a kept message's time turns red, so it stands out in the chat. Works with Keep deleted messages on.	O rótulo apagada ao lado da hora de uma mensagem mantida fica vermelho, para se destacar na conversa. Funciona com Manter mensagens apagadas ligado.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep deleted messages that draws the deleted label in red.
+red deleted label	o rótulo apagada em vermelho
 # context: an action row under Keep deleted messages; a tap deletes every message that switch kept
 Clear kept messages	Limpar mensagens mantidas
 Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.	Apaga as mensagens que este celular manteve depois que outras pessoas as apagaram, em todas as contas, como o Telegram teria feito.

@@ -344,6 +344,7 @@ public final class SelectionCheck {
         hook(calls, flags, "hideFeaturesAndInvite", "misc/FeaturesInvite", "addFeaturesRow");
         hook(calls, flags, "messageMenuRepeat", "misc/MessageMenu", "fill");
         hook(calls, flags, "keepDeleted", "misc/KeepDeleted", "userUpdate", "channelUpdate", "push", "measuring");
+        hook(calls, flags, "redDeletedLabel", "misc/KeepDeleted", "painted");
         hook(calls, flags, "askBeforeSending", "misc/SendConfirm", "sticker", "gif", "voice", "call");
         hook(calls, flags, "outsideTranslate", "misc/OutsideTranslate", "show", "fill", "chosen", "headerMenu", "headerClick");
         hook(calls, flags, "hideChannelButtons", "misc/ChannelButtons", "set");

@@ -350,9 +350,10 @@ public class PausedHooksTest {
                 () -> app.hushtelegram.extension.telegram.misc.MessageMenuForTests.copyPhotoOn(),
                 () -> app.hushtelegram.extension.telegram.misc.MessageMenuForTests.detailsOn(),
                 () -> app.hushtelegram.extension.telegram.misc.MessageMenuForTests.quickForwardOn()));
-        // A message another person deletes stays on the phone.
-        probes.put(PatchFamily.KEEP_DELETED_MESSAGES, Collections.singletonList(
-                () -> app.hushtelegram.extension.telegram.misc.KeepDeleted.on()));
+        // A message another person deletes stays on the phone, and its deleted label can be red.
+        probes.put(PatchFamily.KEEP_DELETED_MESSAGES, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.KeepDeleted.on(),
+                () -> app.hushtelegram.extension.telegram.misc.KeepDeletedForTests.paintsRed()));
         // A sticker, a GIF, a voice or video message and a call each ask first, under their own switches.
         probes.put(PatchFamily.ASK_BEFORE_STICKER, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.SendConfirmForTests.stickerOn(),

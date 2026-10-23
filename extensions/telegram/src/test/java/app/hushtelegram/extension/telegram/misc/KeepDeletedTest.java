@@ -13,6 +13,11 @@ import app.hushtelegram.extension.shared.settings.PauseForTests;
 import app.hushtelegram.extension.shared.settings.SettingReadsForTests;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,6 +60,9 @@ public class KeepDeletedTest {
         PauseForTests.resume();
         SettingReadsForTests.mend(Settings.KEEP_DELETED_MESSAGES);
         Settings.KEEP_DELETED_MESSAGES.resetToDefault();
+        SettingReadsForTests.mend(Settings.RED_DELETED_LABEL);
+        Settings.RED_DELETED_LABEL.resetToDefault();
+        KeepDeleted.measuring(null);
         KeepDeleted.persist = REAL_PERSIST;
         KeepDeleted.keys = REAL_KEYS;
         KeepDeleted.accounts = REAL_ACCOUNTS;
@@ -146,6 +154,88 @@ public class KeepDeletedTest {
         shown[2] = 1;
         assertEquals("off shows no label, and keeps what was saved", "9:41 PM", KeepDeleted.labelled("9:41 PM"));
         assertTrue(KeepDeleted.isKept(SELF, 10, 1));
+    }
+
+    /** The bubble's measuring puts the label in, then hands over its finished time text right before it returns. */
+    private CharSequence measured(CharSequence around) {
+        KeepDeleted.measuring(new Object());
+        String label = KeepDeleted.labelled("9:41 PM");
+        // Telegram joins the parts with TextUtils.concat, which keeps their spans.
+        return KeepDeleted.painted(around == null ? label : TextUtils.concat(around, label));
+    }
+
+    @Test public void theRedSwitchPaintsOnlyTheWordAndLeavesTheTextAsItWas() {
+        Settings.KEEP_DELETED_MESSAGES.save(true);
+        assertFalse("starts off", Settings.RED_DELETED_LABEL.get());
+        KeepDeleted.remember(SELF, Arrays.asList(new long[] {10, 1}));
+        KeepDeleted.keys = message -> new long[] {SELF, 10, 1};
+        CharSequence plain = measured("1.2K  edited ");
+        assertEquals("1.2K  edited deleted 9:41 PM", plain.toString());
+        assertFalse("off leaves it plain", plain instanceof Spanned);
+
+        Settings.RED_DELETED_LABEL.save(true);
+        // Telegram builds the rest of the time text around the label, here views and an edited mark it styled.
+        SpannableString around = new SpannableString("1.2K  edited ");
+        StyleSpan bold = new StyleSpan(1);
+        around.setSpan(bold, 0, 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        CharSequence red = measured(around);
+        assertEquals("the same text, so the same width", "1.2K  edited deleted 9:41 PM", red.toString());
+        Spanned spans = (Spanned) red;
+        ForegroundColorSpan[] colors = spans.getSpans(0, red.length(), ForegroundColorSpan.class);
+        assertEquals(1, colors.length);
+        assertEquals(KeepDeleted.RED, colors[0].getForegroundColor());
+        assertEquals("only the word", "deleted", red.subSequence(spans.getSpanStart(colors[0]), spans.getSpanEnd(colors[0])).toString());
+        assertEquals("Telegram's own spans stay", 0, spans.getSpanStart(spans.getSpans(0, red.length(), StyleSpan.class)[0]));
+        String report = String.join(System.lineSeparator(), HookStatus.report());
+        assertTrue(report, report.contains("label shown in red"));
+    }
+
+    @Test public void onlyAMeasuringThatPutTheLabelInGetsPainted() {
+        Settings.KEEP_DELETED_MESSAGES.save(true);
+        Settings.RED_DELETED_LABEL.save(true);
+        KeepDeleted.remember(SELF, Arrays.asList(new long[] {10, 1}));
+        long[] shown = {SELF, 10, 2};
+        KeepDeleted.keys = message -> shown;
+        CharSequence text = "9:41 PM";
+        KeepDeleted.measuring(new Object());
+        assertEquals("9:41 PM", KeepDeleted.labelled("9:41 PM"));
+        assertSame("a message that isn't kept", text, KeepDeleted.painted(text));
+
+        shown[2] = 1;
+        assertTrue(measured(null) instanceof Spanned);
+        CharSequence again = "deleted 9:41 PM";
+        assertSame("the label is painted once, at the return its measuring reached", again, KeepDeleted.painted(again));
+        KeepDeleted.measuring(new Object());
+        KeepDeleted.labelled("9:41 PM");
+        KeepDeleted.measuring(new Object());
+        assertSame("a new measuring starts clean", again, KeepDeleted.painted(again));
+
+        KeepDeleted.measuring(new Object());
+        KeepDeleted.labelled("9:41 PM");
+        CharSequence changed = "9:41 PM";
+        assertSame("a time text Telegram built without the label", changed, KeepDeleted.painted(changed));
+        KeepDeleted.measuring(new Object());
+        KeepDeleted.labelled("9:41 PM");
+        assertNull(KeepDeleted.painted(null));
+    }
+
+    @Test public void pausedOrUnreadableTheLabelKeepsTheTimesColor() {
+        Settings.KEEP_DELETED_MESSAGES.save(true);
+        Settings.RED_DELETED_LABEL.save(true);
+        KeepDeleted.remember(SELF, Arrays.asList(new long[] {10, 1}));
+        KeepDeleted.keys = message -> new long[] {SELF, 10, 1};
+        KeepDeleted.measuring(new Object());
+        String label = KeepDeleted.labelled("9:41 PM");
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        assertSame(label, KeepDeleted.painted(label));
+        PauseForTests.resume();
+
+        KeepDeleted.measuring(new Object());
+        label = KeepDeleted.labelled("9:41 PM");
+        SettingReadsForTests.breakReads(Settings.RED_DELETED_LABEL);
+        assertSame(label, KeepDeleted.painted(label));
+        assertTrue(HookStatus.missing(FamilyNames.KEEP_DELETED_MESSAGES).toString(),
+                HookStatus.missing(FamilyNames.KEEP_DELETED_MESSAGES).toString().contains("red label"));
     }
 
     @Test public void aMessageThatStillGoesHasItsNotificationClearedUnderTelegramsOwnKey() {

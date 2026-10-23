@@ -520,6 +520,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(toggle(context, Settings.KEEP_DELETED_MESSAGES, L10n.t("Keep deleted messages"),
                     PatchFamily.KEEP_DELETED_MESSAGES.coverageSummary(L10n.t("Messages others delete stay in your chat on this phone, marked deleted next to "
                             + "the time. Your own deletes and disappearing messages work as usual."))));
+            if (PatchFamily.Capability.RED_DELETED_LABEL.installed()) {
+                on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(toggle(context, Settings.RED_DELETED_LABEL,
+                        L10n.t("Show deleted in red"), L10n.t("The deleted label next to a kept message's time turns red, so"
+                                + " it stands out in the chat. Works with Keep deleted messages on.")));
+            }
             on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(clearKeptRow(context));
         }
         if (build.contains(PatchFamily.ASK_BEFORE_STICKER)) {

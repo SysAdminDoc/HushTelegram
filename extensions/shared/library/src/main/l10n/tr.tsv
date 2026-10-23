@@ -381,6 +381,12 @@ Removes the Telegram Features row from Settings and Invite Friends from Contacts
 Add Repeat to the message menu	Mesaj menüsüne Tekrarla ekle
 Keep deleted messages	Silinen mesajları sakla
 Messages others delete stay in your chat on this phone, marked deleted next to the time. Your own deletes and disappearing messages work as usual.	Başkalarının sildiği mesajlar bu telefonda sohbetinizde kalır ve saatin yanında silindi olarak işaretlenir. Kendi sildikleriniz ve kaybolan mesajlar her zamanki gibi çalışır.
+# context: a second switch under Keep deleted messages (#25). Turned on, the word "deleted" that marks a kept message next to its time is drawn in red.
+Show deleted in red	Silindi etiketini kırmızı göster
+# context: that switch's summary. "deleted" is the label shown next to the time, "Keep deleted messages" the name of the switch above it.
+The deleted label next to a kept message's time turns red, so it stands out in the chat. Works with Keep deleted messages on.	Saklanan bir mesajın saatinin yanındaki silindi etiketi kırmızı olur, böylece sohbette göze çarpar. Silinen mesajları sakla açıkken çalışır.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep deleted messages that draws the deleted label in red.
+red deleted label	kırmızı silindi etiketi
 # context: an action row under Keep deleted messages; a tap deletes every message that switch kept
 Clear kept messages	Saklanan mesajları temizle
 Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.	Başkaları sildikten sonra bu telefonun sakladığı mesajları her hesapta, Telegram'ın yapacağı şekilde siler.
