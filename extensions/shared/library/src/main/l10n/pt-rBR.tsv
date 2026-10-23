@@ -714,19 +714,23 @@ Couldn't open notification settings. Open Android settings.	Não foi possível a
 Search only my chats	Buscar só nas minhas conversas
 Search finds your chats, contacts and messages from chats you're in, and nothing public. The Channels, Apps and Posts tabs go away, and a hashtag's public posts don't load.	A busca encontra suas conversas, contatos e mensagens das conversas em que você está, e nada público. As abas Canais, Apps e Publicações somem, e as publicações públicas de uma hashtag não carregam.
 public search lookups	buscas públicas
-# context: Settings lock row on the Pause page, its notes, and what a refused change says (#17).
+# context: Settings lock row on the Pause page, its notes, and what a refused change says (#17). For the first minutes after locking the row reads Unlock now and one tap takes the lock off (#23); %1$d is minutes.
 Lock HushTelegram settings	Bloquear as configurações do HushTelegram
-Makes every setting here read-only. To change one again, start an unlock here and wait 24 hours.	Deixa cada configuração daqui somente leitura. Para mudar uma de novo, inicie aqui o desbloqueio e espere 24 horas.
+Makes every setting here read-only. A tap within %1$d min unlocks them again. After that, unlocking takes 24 hours.	Deixa cada configuração aqui somente leitura. Um toque em até %1$d min desbloqueia de novo. Depois disso, o desbloqueio leva 24 horas.
+Unlock now	Desbloquear agora
+Locked just now. Tap within %1$d min to unlock right away. After that, unlocking takes 24 hours.	Bloqueadas agora há pouco. Toque em até %1$d min para desbloquear na hora. Depois disso, o desbloqueio leva 24 horas.
 Start unlock	Iniciar desbloqueio
 Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.	Suas configurações estão bloqueadas. Toque para iniciar a espera de 24 horas. Você pode cancelar enquanto ela corre.
 Cancel unlock	Cancelar desbloqueio
 Settings unlock in %1$d h %2$d min. Tap to cancel and keep them locked.	As configurações desbloqueiam em %1$d h %2$d min. Toque para cancelar e mantê-las bloqueadas.
-Settings locked. Unlocking takes 24 hours.	Configurações bloqueadas. O desbloqueio leva 24 horas.
+Settings locked. Changed your mind? Tap again within %1$d min.	Configurações bloqueadas. Mudou de ideia? Toque de novo em até %1$d min.
+Settings unlocked. They change as usual again.	Configurações desbloqueadas. Você pode mudá-las normalmente de novo.
 Unlock started. Settings open in 24 hours unless you cancel.	Desbloqueio iniciado. As configurações abrem em 24 horas, a menos que você cancele.
 Unlock canceled. Settings stay locked.	Desbloqueio cancelado. As configurações continuam bloqueadas.
 Couldn't change the lock. Try again in a moment.	Não foi possível mudar o bloqueio. Tente de novo em instantes.
 Settings are locked. They unlock in %1$d h %2$d min.	As configurações estão bloqueadas. Elas desbloqueiam em %1$d h %2$d min.
 Settings are locked. Tap Start unlock, then wait 24 hours.	Configurações bloqueadas. Toque em Iniciar desbloqueio e espere 24 horas.
+Settings are locked. Tap Unlock now within %1$d min.	Configurações bloqueadas. Toque em Desbloquear agora em até %1$d min.
 # context: Export settings row, its first sentence: what a settings file holds. The sentence after it lists what the file leaves out.
 Saves your switches, filter lists, sticker size and chat list emoji to a file, for all the accounts in this Telegram app. Your chats, drafts and kept messages aren't in it.	Salva suas opções, listas de filtros, tamanho dos stickers e emoji da lista de conversas em um arquivo, para todas as contas deste app do Telegram. Suas conversas, rascunhos e mensagens apagadas mantidas não vão nele.
 # context: Export settings row. %1$s is a list joined the language's own way: row titles as they show (Pause HushTelegram, Debug logging, Check for new HushTelegram releases, Lock HushTelegram settings, Settings look, UnifiedPush notifications, Folders by chat type) and the lowercase phrase below it, which ends the list.

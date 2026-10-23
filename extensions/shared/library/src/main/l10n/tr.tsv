@@ -717,19 +717,23 @@ Couldn't open notification settings. Open Android settings.	Bildirim ayarları a
 Search only my chats	Yalnızca sohbetlerimde ara
 Search finds your chats, contacts and messages from chats you're in, and nothing public. The Channels, Apps and Posts tabs go away, and a hashtag's public posts don't load.	Arama sohbetlerinizi, kişilerinizi ve içinde bulunduğunuz sohbetlerdeki mesajları bulur, herkese açık hiçbir şeyi bulmaz. Kanallar, Uygulamalar ve Gönderiler sekmeleri kaybolur, bir etiketin herkese açık gönderileri yüklenmez.
 public search lookups	herkese açık arama sorguları
-# context: Settings lock row on the Pause page, its notes, and what a refused change says (#17).
+# context: Settings lock row on the Pause page, its notes, and what a refused change says (#17). For the first minutes after locking the row reads Unlock now and one tap takes the lock off (#23); %1$d is minutes.
 Lock HushTelegram settings	HushTelegram ayarlarını kilitle
-Makes every setting here read-only. To change one again, start an unlock here and wait 24 hours.	Buradaki her ayarı salt okunur yapar. Birini yeniden değiştirmek için kilidi açmayı buradan başlat ve 24 saat bekle.
+Makes every setting here read-only. A tap within %1$d min unlocks them again. After that, unlocking takes 24 hours.	Buradaki her ayarı salt okunur yapar. %1$d dk içinde bir dokunuş kilidi yeniden açar. Sonrasında kilidi açmak 24 saat sürer.
+Unlock now	Kilidi şimdi aç
+Locked just now. Tap within %1$d min to unlock right away. After that, unlocking takes 24 hours.	Az önce kilitlendi. Kilidi hemen açmak için %1$d dk içinde dokun. Sonrasında kilidi açmak 24 saat sürer.
 Start unlock	Kilidi açmayı başlat
 Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.	Ayarların kilitli. 24 saatlik beklemeyi başlatmak için dokun. Sürerken iptal edebilirsin.
 Cancel unlock	Kilit açmayı iptal et
 Settings unlock in %1$d h %2$d min. Tap to cancel and keep them locked.	Ayarların kilidi %1$d sa %2$d dk sonra açılır. İptal edip kilitli tutmak için dokun.
-Settings locked. Unlocking takes 24 hours.	Ayarlar kilitlendi. Kilidi açmak 24 saat sürer.
+Settings locked. Changed your mind? Tap again within %1$d min.	Ayarlar kilitlendi. Fikrini mi değiştirdin? %1$d dk içinde yeniden dokun.
+Settings unlocked. They change as usual again.	Ayarların kilidi açıldı. Yine her zamanki gibi değiştirilebilir.
 Unlock started. Settings open in 24 hours unless you cancel.	Kilit açma başladı. İptal etmezsen ayarlar 24 saat sonra açılır.
 Unlock canceled. Settings stay locked.	Kilit açma iptal edildi. Ayarlar kilitli kalıyor.
 Couldn't change the lock. Try again in a moment.	Kilit değiştirilemedi. Birazdan tekrar dene.
 Settings are locked. They unlock in %1$d h %2$d min.	Ayarlar kilitli. Kilit %1$d sa %2$d dk sonra açılır.
 Settings are locked. Tap Start unlock, then wait 24 hours.	Ayarlar kilitli. Kilidi açmayı başlat'a dokun, sonra 24 saat bekle.
+Settings are locked. Tap Unlock now within %1$d min.	Ayarlar kilitli. %1$d dk içinde Kilidi şimdi aç'a dokun.
 # context: Export settings row, its first sentence: what a settings file holds. The sentence after it lists what the file leaves out.
 Saves your switches, filter lists, sticker size and chat list emoji to a file, for all the accounts in this Telegram app. Your chats, drafts and kept messages aren't in it.	Anahtarlarınızı, filtre listelerinizi, çıkartma boyutunu ve sohbet listesi emojisini bu Telegram uygulamasındaki tüm hesaplar için bir dosyaya kaydeder. Sohbetleriniz, taslaklarınız ve saklanan mesajlarınız dosyaya girmez.
 # context: Export settings row. %1$s is a list joined the language's own way: row titles as they show (Pause HushTelegram, Debug logging, Check for new HushTelegram releases, Lock HushTelegram settings, Settings look, UnifiedPush notifications, Folders by chat type) and the lowercase phrase below it, which ends the list.

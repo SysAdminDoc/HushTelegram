@@ -27,33 +27,46 @@ import app.hushtelegram.extension.shared.settings.PauseForTests;
 import app.hushtelegram.extension.telegram.settings.SettingsLock.State;
 import app.hushtelegram.extension.telegram.settings.SettingsLock.Stored;
 
-/** The settings lock's states, on a clock the test moves by hand. */
+/** The settings lock's states, on clocks the test moves by hand. */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 30)
 public class SettingsLockTest {
     private static final long START = 1_800_000_000_000L;
+    private static final long UP_START = 5_000_000L;
     private static final long HOUR = 60 * 60 * 1000L;
+    private static final long MINUTE = 60 * 1000L;
     private static final String LOCKED_NOTE = "Settings are locked. Tap Start unlock, then wait 24 hours.";
+    private static final String LOCKED_TOAST = "Settings locked. Changed your mind? Tap again within 10 min.";
 
     @Rule public final SettingsContextRule settings = new SettingsContextRule();
 
     private final long[] now = {START};
+    /** The time since the phone started, which the wall clock's changes leave alone. */
+    private final long[] up = {UP_START};
 
-    @Before public void handClock() {
+    @Before public void handClocks() {
         forget();
         SettingsLock.clock = () -> now[0];
+        SettingsLock.uptime = () -> up[0];
         ShadowToast.reset();
     }
 
-    @After public void realClock() {
-        forget();
-        SettingsLock.clock = System::currentTimeMillis;
+    @After public void realClocks() {
+        SettingsLockForTests.forget();
         PauseForTests.resume();
     }
 
     private static void forget() {
         Stored.LOCKED.resetToDefault();
         Stored.UNLOCK_STARTED.resetToDefault();
+        Stored.LOCKED_AT.resetToDefault();
+        Stored.LOCKED_AT_UPTIME.resetToDefault();
+    }
+
+    /** Both clocks on by the same amount, as they go when nobody touches the clock. */
+    private void pass(long millis) {
+        now[0] += millis;
+        up[0] += millis;
     }
 
     @Test public void offUntilLockedAndOffChangesNothing() {
@@ -67,11 +80,15 @@ public class SettingsLockTest {
 
     @Test public void lockedStaysLockedHoweverLongPassesUntilAnUnlockStarts() {
         assertTrue(SettingsLock.lock());
-        assertEquals(State.LOCKED, SettingsLock.state());
+        assertEquals(State.JUST_LOCKED, SettingsLock.state());
         assertTrue(Stored.LOCKED.savedValue());
         assertEquals(0L, (long) Stored.UNLOCK_STARTED.savedValue());
-        now[0] += 400 * SettingsLock.WAIT_MILLIS;
+        assertEquals(START, (long) Stored.LOCKED_AT.savedValue());
+        assertEquals(UP_START, (long) Stored.LOCKED_AT_UPTIME.savedValue());
+        pass(400 * SettingsLock.WAIT_MILLIS);
         assertEquals(State.LOCKED, SettingsLock.state());
+        assertEquals("a closed window is forgotten", 0L, (long) Stored.LOCKED_AT.savedValue());
+        assertEquals(0L, (long) Stored.LOCKED_AT_UPTIME.savedValue());
         assertEquals(0L, SettingsLock.remaining());
         assertTrue(SettingsLock.refuses());
         assertEquals(LOCKED_NOTE, ShadowToast.getTextOfLatestToast());
@@ -183,7 +200,12 @@ public class SettingsLockTest {
     }
 
     @Test public void theRowStepsThroughLockStartAndCancelAndSaysWhich() {
-        assertEquals("Settings locked. Unlocking takes 24 hours.", SettingsLock.advance());
+        assertEquals("Makes every setting here read-only. A tap within 10 min unlocks them again. After that, unlocking takes 24 hours.",
+                SettingsLock.summary(State.OFF));
+        assertEquals(LOCKED_TOAST, SettingsLock.advance());
+        assertEquals(State.JUST_LOCKED, SettingsLock.state());
+        assertEquals("Unlock now", SettingsLock.title(State.JUST_LOCKED));
+        pass(SettingsLock.QUICK_UNLOCK_MILLIS);
         assertEquals(State.LOCKED, SettingsLock.state());
         assertEquals("Start unlock", SettingsLock.title(State.LOCKED));
         assertEquals("Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.",
@@ -202,8 +224,103 @@ public class SettingsLockTest {
         SettingsLock.lock();
         SettingsLock.startUnlock();
         now[0] += SettingsLock.WAIT_MILLIS;
-        assertEquals("Settings locked. Unlocking takes 24 hours.", SettingsLock.advance());
+        assertEquals(LOCKED_TOAST, SettingsLock.advance());
+        assertEquals(State.JUST_LOCKED, SettingsLock.state());
+    }
+
+    /** A lock tapped in a hurry (#23) comes off with the next tap, as long as it comes within ten minutes. */
+    @Test public void aTapWithinTenMinutesUnlocksAtOnce() {
+        assertEquals(LOCKED_TOAST, SettingsLock.advance());
+        pass(4 * MINUTE);
+        assertEquals(State.JUST_LOCKED, SettingsLock.state());
+        assertTrue(SettingsLock.locked());
+        assertEquals("Locked just now. Tap within 6 min to unlock right away. After that, unlocking takes 24 hours.",
+                SettingsLock.summary(State.JUST_LOCKED));
+        assertTrue("the window still turns changes down", SettingsLock.refuses());
+        assertEquals("Settings are locked. Tap Unlock now within 6 min.", ShadowToast.getTextOfLatestToast());
+        assertEquals(0L, SettingsLock.remaining());
+
+        assertEquals("Settings unlocked. They change as usual again.", SettingsLock.advance());
+        assertEquals(State.OFF, SettingsLock.state());
+        assertFalse(Stored.LOCKED.savedValue());
+        assertEquals(0L, (long) Stored.LOCKED_AT.savedValue());
+        assertEquals(0L, (long) Stored.LOCKED_AT_UPTIME.savedValue());
+        // Unlocked, there's nothing left for a second Unlock now to do.
+        assertTrue(SettingsLock.unlockNow());
+    }
+
+    /** The window closes after ten minutes on either clock, whichever gets there first. */
+    @Test public void theWindowClosesAfterTenMinutesByEitherClock() {
+        SettingsLock.lock();
+        pass(SettingsLock.QUICK_UNLOCK_MILLIS - 1);
+        assertEquals(State.JUST_LOCKED, SettingsLock.state());
+        assertEquals("the last of it reads as a minute",
+                "Settings are locked. Tap Unlock now within 1 min.", SettingsLock.note(State.JUST_LOCKED));
+        pass(1);
         assertEquals(State.LOCKED, SettingsLock.state());
+        assertFalse(SettingsLock.unlockNow());
+
+        // The wall clock set ten minutes on, a minute after locking.
+        forget();
+        SettingsLock.lock();
+        now[0] += SettingsLock.QUICK_UNLOCK_MILLIS;
+        up[0] += MINUTE;
+        assertEquals(State.LOCKED, SettingsLock.state());
+
+        // Ten minutes since the phone started counting, with the wall clock held back.
+        forget();
+        SettingsLock.lock();
+        now[0] += MINUTE;
+        up[0] += SettingsLock.QUICK_UNLOCK_MILLIS;
+        assertEquals(State.LOCKED, SettingsLock.state());
+        assertEquals("Start unlock", SettingsLock.title(SettingsLock.state()));
+    }
+
+    /** A clock set back, or a restart, closes the window, and putting the clock right doesn't open it again. */
+    @Test public void aClockSetBackOrARestartClosesTheWindowForGood() {
+        SettingsLock.lock();
+        now[0] = START - MINUTE;
+        assertEquals(State.LOCKED, SettingsLock.state());
+        now[0] = START + MINUTE;
+        assertEquals(State.LOCKED, SettingsLock.state());
+
+        forget();
+        now[0] = START;
+        up[0] = UP_START;
+        SettingsLock.lock();
+        // A restart starts the count again from about zero.
+        up[0] = 30_000L;
+        now[0] += MINUTE;
+        assertEquals(State.LOCKED, SettingsLock.state());
+        up[0] = UP_START + MINUTE;
+        assertEquals(State.LOCKED, SettingsLock.state());
+    }
+
+    /** Start unlock inside the window closes it, so a cancel later lands on a plain lock. */
+    @Test public void startingTheWaitInsideTheWindowClosesIt() {
+        SettingsLock.lock();
+        pass(MINUTE);
+        assertTrue(SettingsLock.startUnlock());
+        assertEquals(State.UNLOCKING, SettingsLock.state());
+        assertEquals(0L, (long) Stored.LOCKED_AT.savedValue());
+        assertTrue(SettingsLock.cancelUnlock());
+        assertEquals(State.LOCKED, SettingsLock.state());
+    }
+
+    /** Inside the window, a cancel finds nothing under way and leaves the window open. */
+    @Test public void aCancelInsideTheWindowChangesNothing() {
+        SettingsLock.lock();
+        assertTrue(SettingsLock.cancelUnlock());
+        assertEquals(State.JUST_LOCKED, SettingsLock.state());
+    }
+
+    @Test public void anUnlockNowTheStoreCanNotKeepStaysLockedAndSaysSo() {
+        SettingsLock.lock();
+        try (FailingStore ignored = FailingStore.install(FailingStore.Fault.COMMIT_THROWS)) {
+            assertEquals("Couldn't change the lock. Try again in a moment.", SettingsLock.advance());
+        }
+        assertEquals(State.JUST_LOCKED, SettingsLock.state());
+        assertTrue(Stored.LOCKED.savedValue());
     }
 
     @Test public void aLockTheStoreCanNotKeepStaysOffAndSaysSo() {
@@ -222,6 +339,8 @@ public class SettingsLockTest {
             PauseForTests.pause(reason);
             assertTrue(reason.name(), Stored.LOCKED.isKeptWhenPaused());
             assertTrue(reason.name(), Stored.UNLOCK_STARTED.isKeptWhenPaused());
+            assertTrue(reason.name(), Stored.LOCKED_AT.isKeptWhenPaused());
+            assertTrue(reason.name(), Stored.LOCKED_AT_UPTIME.isKeptWhenPaused());
             assertEquals(reason.name(), State.UNLOCKING, SettingsLock.state());
             assertTrue(reason.name(), Stored.LOCKED.get());
             PauseForTests.resume();
@@ -230,13 +349,19 @@ public class SettingsLockTest {
 
     @Test public void theLockStaysOutOfSettingsFiles() throws Exception {
         SettingsLock.lock();
-        SettingsLock.startUnlock();
-        assertFalse(Stored.LOCKED.includeWithImportExport);
-        assertFalse(Stored.UNLOCK_STARTED.includeWithImportExport);
-        assertFalse(SettingsBackup.ALLOWLIST.contains(Stored.LOCKED));
+        for (app.hushtelegram.extension.shared.settings.Setting<?> stored : java.util.Arrays.asList(
+                Stored.LOCKED, Stored.UNLOCK_STARTED, Stored.LOCKED_AT, Stored.LOCKED_AT_UPTIME)) {
+            assertFalse(stored.key, stored.includeWithImportExport);
+            assertFalse(stored.key, SettingsBackup.ALLOWLIST.contains(stored));
+        }
+        assertEquals(State.JUST_LOCKED, SettingsLock.state());
         String file = SettingsBackup.create();
-        assertFalse(file, file.contains(Stored.LOCKED.key));
-        assertFalse(file, file.contains(Stored.UNLOCK_STARTED.key));
+        SettingsLock.startUnlock();
+        file += SettingsBackup.create();
+        for (String key : new String[] {Stored.LOCKED.key, Stored.UNLOCK_STARTED.key, Stored.LOCKED_AT.key,
+                Stored.LOCKED_AT_UPTIME.key}) {
+            assertFalse(file, file.contains(key));
+        }
     }
 
     /** Nothing the lock says promises it can't be taken off: it always can, after the wait. */
@@ -248,9 +373,13 @@ public class SettingsLockTest {
             all.append(SettingsLock.title(state)).append('\n').append(SettingsLock.summary(state)).append('\n')
                     .append(SettingsLock.note(state)).append('\n');
         }
-        // And what each tap on the row says, from off through a canceled unlock.
+        // And what each tap on the row says: off, an unlock at once, and then past the window
+        // through a canceled unlock.
         forget();
-        for (int tap = 0; tap < 3; tap++) all.append(SettingsLock.advance()).append('\n');
+        for (int tap = 0; tap < 2; tap++) all.append(SettingsLock.advance()).append('\n');
+        all.append(SettingsLock.advance()).append('\n');
+        pass(SettingsLock.QUICK_UNLOCK_MILLIS);
+        for (int tap = 0; tap < 2; tap++) all.append(SettingsLock.advance()).append('\n');
         String text = all.toString().toLowerCase(Locale.ROOT);
         for (String promise : new String[] {"undone", "undo", "forever", "permanent", "can't", "cannot", "never", "irreversible"}) {
             assertFalse(promise + " in:\n" + text, text.contains(promise));

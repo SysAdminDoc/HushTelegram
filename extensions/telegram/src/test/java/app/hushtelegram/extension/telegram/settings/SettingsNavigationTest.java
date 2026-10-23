@@ -1070,8 +1070,13 @@ public class SettingsNavigationTest {
         assertTrue("the lock comes after Pause", position(BaseSettings.PAUSED.key) < position(SettingsNavigation.LOCK));
         Preference lock = page.findPreference(SettingsNavigation.LOCK);
         assertEquals("Lock HushTelegram settings", String.valueOf(lock.getTitle()));
+        long[] now = {1_800_000_000_000L};
+        SettingsLockForTests.handClocks(now);
         try {
             tap(SettingsNavigation.LOCK);
+            assertEquals(SettingsLock.State.JUST_LOCKED, SettingsLock.state());
+            assertEquals("Unlock now", String.valueOf(lock.getTitle()));
+            now[0] += SettingsLock.QUICK_UNLOCK_MILLIS;
             assertEquals(SettingsLock.State.LOCKED, SettingsLock.state());
             assertEquals("Start unlock", String.valueOf(lock.getTitle()));
             View drawn = list().getAdapter().getView(position(SettingsNavigation.LOCK), null, list());
@@ -1080,9 +1085,7 @@ public class SettingsNavigationTest {
             page.navigation.search("start unlock");
             assertTrue("search lost the lock", contains(SettingsNavigation.LOCK));
         } finally {
-            SettingsLock.Stored.LOCKED.resetToDefault();
-            SettingsLock.Stored.UNLOCK_STARTED.resetToDefault();
-            SettingsLock.clock = System::currentTimeMillis;
+            SettingsLockForTests.forget();
         }
     }
 
@@ -1277,7 +1280,7 @@ public class SettingsNavigationTest {
      */
     @Test public void undoOwesWhatATapOwesAndOnlyTheLatestChoiceUndoes() {
         long[] now = {1_800_000_000_000L};
-        SettingsLock.clock = () -> now[0];
+        SettingsLockForTests.handClocks(now);
         try {
             assertEquals(1, page.applyQuickSetup(Collections.singletonMap(Settings.USE_SYSTEM_FONT, true)));
             assertTrue(contains(SettingsNavigation.RESTART));
@@ -1297,14 +1300,13 @@ public class SettingsNavigationTest {
             page.navigation.navigate("Pause");
             tap(SettingsNavigation.LOCK);
             assertTrue(SettingsLock.locked());
+            now[0] += SettingsLock.QUICK_UNLOCK_MILLIS;
             ShadowToast.reset();
             assertEquals(0, page.undoQuickSetup());
             assertEquals(LOCKED_NOTE, ShadowToast.getTextOfLatestToast());
             assertFalse(Settings.HIDE_ADS.savedValue());
         } finally {
-            SettingsLock.Stored.LOCKED.resetToDefault();
-            SettingsLock.Stored.UNLOCK_STARTED.resetToDefault();
-            SettingsLock.clock = System::currentTimeMillis;
+            SettingsLockForTests.forget();
             Settings.USE_SYSTEM_FONT.resetToDefault();
         }
     }
@@ -1467,17 +1469,19 @@ public class SettingsNavigationTest {
      */
     @Test public void lockedEverySettingStaysAsItIsAndSaysWhy() {
         long[] now = {1_800_000_000_000L};
-        SettingsLock.clock = () -> now[0];
+        SettingsLockForTests.handClocks(now);
         try {
             page.navigation.navigate("Pause");
             Preference lock = (Preference) list().getItemAtPosition(position(SettingsNavigation.LOCK));
             assertEquals("Lock HushTelegram settings", String.valueOf(lock.getTitle()));
-            assertEquals("Makes every setting here read-only. To change one again, start an unlock here and wait 24 hours.",
+            assertEquals("Makes every setting here read-only. A tap within 10 min unlocks them again. After that, unlocking takes 24 hours.",
                     String.valueOf(lock.getSummary()));
             assertTrue("the lock row acts at once", ((HushTelegramPreferenceFragment.Row) lock).actsOnTap());
             tap(SettingsNavigation.LOCK);
-            assertEquals("Settings locked. Unlocking takes 24 hours.", ShadowToast.getTextOfLatestToast());
+            assertEquals("Settings locked. Changed your mind? Tap again within 10 min.", ShadowToast.getTextOfLatestToast());
             assertTrue(SettingsLock.locked());
+            assertEquals("Unlock now", String.valueOf(((Preference) list().getItemAtPosition(position(SettingsNavigation.LOCK))).getTitle()));
+            now[0] += SettingsLock.QUICK_UNLOCK_MILLIS;
             assertEquals("Start unlock", String.valueOf(((Preference) list().getItemAtPosition(position(SettingsNavigation.LOCK))).getTitle()));
             Map<String, Object> before = savedValues();
 
@@ -1570,9 +1574,7 @@ public class SettingsNavigationTest {
             after.keySet().retainAll(before.keySet());
             assertEquals(before, after);
         } finally {
-            SettingsLock.Stored.LOCKED.resetToDefault();
-            SettingsLock.Stored.UNLOCK_STARTED.resetToDefault();
-            SettingsLock.clock = System::currentTimeMillis;
+            SettingsLockForTests.forget();
             BaseSettings.PAUSED.resetToDefault();
             BaseSettings.DEBUG.resetToDefault();
         }
@@ -1584,10 +1586,11 @@ public class SettingsNavigationTest {
      */
     @Test public void anUnlockWaitsADayCanBeCanceledAndThenLetsSwitchesChange() {
         long[] now = {1_800_000_000_000L};
-        SettingsLock.clock = () -> now[0];
+        SettingsLockForTests.handClocks(now);
         try {
             page.navigation.navigate("Pause");
             tap(SettingsNavigation.LOCK);
+            now[0] += SettingsLock.QUICK_UNLOCK_MILLIS;
             tap(SettingsNavigation.LOCK);
             assertEquals("Unlock started. Settings open in 24 hours unless you cancel.", ShadowToast.getTextOfLatestToast());
             Preference lock = (Preference) list().getItemAtPosition(position(SettingsNavigation.LOCK));
@@ -1622,9 +1625,43 @@ public class SettingsNavigationTest {
             tap(Settings.DISABLE_UPDATE_CHECKS.key);
             assertFalse(Settings.DISABLE_UPDATE_CHECKS.savedValue());
         } finally {
-            SettingsLock.Stored.LOCKED.resetToDefault();
-            SettingsLock.Stored.UNLOCK_STARTED.resetToDefault();
-            SettingsLock.clock = System::currentTimeMillis;
+            SettingsLockForTests.forget();
+        }
+    }
+
+    /**
+     * A lock tapped in a hurry (#23): for ten minutes the row reads Unlock now, a turned-down switch
+     * says so, and the next tap takes the lock off at once so the switch flips again.
+     */
+    @Test public void aLockTappedInAHurryComesOffWithTheNextTap() {
+        long[] now = {1_800_000_000_000L};
+        SettingsLockForTests.handClocks(now);
+        try {
+            page.navigation.navigate("Pause");
+            tap(SettingsNavigation.LOCK);
+            now[0] += 3 * 60 * 1000L;
+            page.navigation.restartChanged();
+            Preference lock = (Preference) list().getItemAtPosition(position(SettingsNavigation.LOCK));
+            assertEquals("Unlock now", String.valueOf(lock.getTitle()));
+            assertEquals("Locked just now. Tap within 7 min to unlock right away. After that, unlocking takes 24 hours.",
+                    String.valueOf(lock.getSummary()));
+            assertTrue(page.navigation.open(page.findPreference(Settings.DISABLE_UPDATE_CHECKS.key)));
+            tap(Settings.DISABLE_UPDATE_CHECKS.key);
+            assertTrue(Settings.DISABLE_UPDATE_CHECKS.savedValue());
+            assertEquals("Settings are locked. Tap Unlock now within 7 min.", ShadowToast.getTextOfLatestToast());
+
+            page.navigation.navigate("Pause");
+            tap(SettingsNavigation.LOCK);
+            assertEquals("Settings unlocked. They change as usual again.", ShadowToast.getTextOfLatestToast());
+            assertEquals(SettingsLock.State.OFF, SettingsLock.state());
+            assertEquals("Lock HushTelegram settings",
+                    String.valueOf(((Preference) list().getItemAtPosition(position(SettingsNavigation.LOCK))).getTitle()));
+            assertTrue(page.navigation.open(page.findPreference(Settings.DISABLE_UPDATE_CHECKS.key)));
+            tap(Settings.DISABLE_UPDATE_CHECKS.key);
+            assertFalse(Settings.DISABLE_UPDATE_CHECKS.savedValue());
+        } finally {
+            SettingsLockForTests.forget();
+            Settings.DISABLE_UPDATE_CHECKS.resetToDefault();
         }
     }
 
@@ -1666,10 +1703,11 @@ public class SettingsNavigationTest {
         assertEquals("1 switch differs from how it started. Open to flip it back.", changedLine());
 
         long[] now = {1_800_000_000_000L};
-        SettingsLock.clock = () -> now[0];
+        SettingsLockForTests.handClocks(now);
         try {
             page.navigation.navigate("Pause");
             tap(SettingsNavigation.LOCK);
+            now[0] += SettingsLock.QUICK_UNLOCK_MILLIS;
             page.navigation.navigate("");
             tap(SettingsNavigation.CHANGED);
             ShadowToast.reset();
@@ -1678,9 +1716,7 @@ public class SettingsNavigationTest {
             assertFalse(Settings.HIDE_ADS.savedValue());
             assertEquals("a flip turned down keeps the row", Collections.singleton(Settings.HIDE_ADS.key), switchesShown());
         } finally {
-            SettingsLock.Stored.LOCKED.resetToDefault();
-            SettingsLock.Stored.UNLOCK_STARTED.resetToDefault();
-            SettingsLock.clock = System::currentTimeMillis;
+            SettingsLockForTests.forget();
         }
         assertTrue(page.navigation.back());
         assertTrue(contains(SettingsNavigation.CHANGED));
