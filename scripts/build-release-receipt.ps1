@@ -252,11 +252,10 @@ function Get-PatchVerdicts {
         [string[]]@(Get-ReportPatchNames -Entries $Report.appliedPatches),
         [System.StringComparer]::Ordinal)
     $failures = @{}
-    foreach ($failure in @($Report.failedPatches)) {
-        $name = if ($null -ne $failure.patch) { [string]$failure.patch.name } else { $null }
-        if (-not $name) { continue }
-        $reason = ([string]$failure.reason -split "`n" | Select-Object -First 1).Trim()
-        $failures[$name] = $reason
+    # Get-ReportFailures reads both result shapes: {patch: {name}, reason} up to morphe-desktop
+    # 1.18.1 and {name, error} from 1.19.0 on.
+    foreach ($failure in @(Get-ReportFailures -Entries $Report.failedPatches)) {
+        $failures[$failure.Name] = ([string]$failure.Reason -split "`n" | Select-Object -First 1).Trim()
     }
 
     $verdicts = New-Object System.Collections.Generic.List[object]

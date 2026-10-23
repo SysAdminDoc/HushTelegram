@@ -12,6 +12,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** Keep deleted messages has a second switch, **Show deleted in red**. It starts off. Turned on, the word "deleted" next to a kept message's time is drawn in red so you can spot those messages while scrolling. The time itself keeps its usual color, and nothing about the bubble's size changes. (#25)
 * **Telegram:** **Hide Contacts tab** has one more switch on the Chat list page, **Hide new message button**. With it on, the round pencil button on the chat list is gone. The story camera button, the archive, your folders and search work as before, and you start a chat from the menu or search instead. It's off unless you turn it on, and a restart shows the change. (#22)
 * **Telegram:** **Keep videos muted on volume keys** has a second switch on the Playback page, **Full screen videos turn either way**. Telegram puts a full screen video on one landscape side and keeps it there, so turning the phone the other way leaves the picture upside down. With this switch on, the video follows your phone to either side, even with auto-rotate off. It's off unless you turn it on. (#27)
+* **Tooling:** The release and patch selection scripts read morphe-desktop 1.19.0's results as well as 1.18.1's. The new CLI renamed its list of patching steps, names applied patches without the rest of their details, and writes a failed patch as just its name and error. It also writes no result file when it can't read the options file. A result with no steps or a failed step is still refused.
 
 ## 0.0.19 (2026-10-17)
 

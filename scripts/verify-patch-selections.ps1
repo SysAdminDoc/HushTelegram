@@ -178,7 +178,9 @@ function New-SelectionOptionsDocument {
         $options = if ($Selection.Options.ContainsKey($name)) { $Selection.Options[$name] } else { @{} }
         $entries[$name] = [ordered]@{ enabled = $Selection.Names -ccontains $name; options = $options }
     }
-    # The CLI 1.18 loader reads an array of PatchBundle objects, identified by SHA256 or basename.
+    # The CLI loader (1.18 and 1.19.0 alike) reads an array of PatchBundle objects, identified by
+    # SHA256 or basename. 1.19.0 warns that an options object left empty "has new options"; those
+    # patches keep their defaults either way, so the warning is expected for unselected ones.
     ConvertTo-Json -InputObject @([ordered]@{ meta = [ordered]@{ source = $BundleName; sha256 = $BundleHash }; patches = $entries }) -Depth 12
 }
 
@@ -191,13 +193,29 @@ function Test-SelectionPublicText {
 }
 
 function Test-SelectionRefusal {
+    <# A refusal passes only in the whole shape one CLI writes, never a mix of the two.
+       morphe-desktop 1.18.1 and older: patchingSteps, failures as {patch: {name}, reason}, a result
+       file even for an options file it can't read, and the exception printed bare in the log.
+       1.19.0 (patcher 2.0): stepResults with an error text, failures as {name, error}, failureReason
+       and failureDetail, no result file for an unreadable options file, and log lines led by ERROR:. #>
     param([object]$Selection, [object]$Report, [string]$PrivateLog, [object]$Stock)
-    if ($null -eq $Report -or $Report.appliedPatches -isnot [array] -or $Report.failedPatches -isnot [array] -or
-        $Report.patchingSteps -isnot [array] -or $Report.appliedPatches.Count) { return $false }
     $exceptions = @([regex]::Matches($PrivateLog,
         '(?m)^[ \t]*(?:(?:Caused by|Suppressed):[ \t]*|Exception in thread "[^"\r\n]+" )?([\w.$]+(?:Exception|Error))(?::|[ \t]*\r?$)') | ForEach-Object { $_.Groups[1].Value })
+    if ($null -eq $Report) {
+        # 1.19.0 reads the options file before it writes anything, so a malformed one leaves no result.
+        return [bool]$Selection.Malformed -and
+            $exceptions.Count -eq 1 -and $exceptions[0] -ceq 'kotlinx.serialization.json.JsonDecodingException' -and
+            $PrivateLog -cmatch '(?m)^\s+at app\.morphe\.engine\.options\.PatchBundle\$\$serializer\.deserialize\(PatchOptionsFile\.kt:\d+\)' -and
+            $PrivateLog -cmatch '(?m)^\s+at app\.morphe\.engine\.options\.PatchOptionsFileKt\.readPatchBundles\('
+    }
+    $legacy = $null -eq $Report.PSObject.Properties['stepResults']
+    # Read through the property name: an if-expression would unroll a one-step array into its step.
+    $stepField = if ($legacy) { 'patchingSteps' } else { 'stepResults' }
+    $steps = $Report.$stepField
+    if ($Report.appliedPatches -isnot [array] -or $Report.failedPatches -isnot [array] -or
+        $steps -isnot [array] -or $Report.appliedPatches.Count) { return $false }
     if ($Selection.Malformed) {
-        return $Report.failedPatches.Count -eq 0 -and $Report.patchingSteps.Count -eq 0 -and
+        return $legacy -and $Report.failedPatches.Count -eq 0 -and $steps.Count -eq 0 -and
             $null -eq $Report.PSObject.Properties['success'] -and
             $null -eq $Report.PSObject.Properties['packageName'] -and
             $null -eq $Report.PSObject.Properties['packageVersion'] -and
@@ -216,15 +234,28 @@ function Test-SelectionRefusal {
     $patchName = $Selection.Names[0]
     $reason = 'app.morphe.patcher.patch.PatchException: ' + $patchName + ': ' + $suffix
     if ($Report.success -isnot [bool] -or $Report.success -or $Report.failedPatches.Count -ne 1 -or
-        $Report.patchingSteps.Count -ne 1 -or $Report.packageName -cne $Stock.package -or
+        $steps.Count -ne 1 -or $Report.packageName -cne $Stock.package -or
         $Report.packageVersion -cne $Stock.versionName) { return $false }
     $failure = $Report.failedPatches[0]
-    $step = $Report.patchingSteps[0]
-    return $failure.patch.name -ceq $patchName -and ([string]$failure.reason -split '\r?\n')[0] -ceq $reason -and
+    $step = $steps[0]
+    if ($legacy) {
+        return $failure.patch.name -ceq $patchName -and ([string]$failure.reason -split '\r?\n')[0] -ceq $reason -and
+            $step.step -ceq 'PATCHING' -and $step.success -is [bool] -and -not $step.success -and
+            $step.message -ceq ('app.morphe.desktop.command.PatchFailedException: FAILED: ' + $patchName) -and
+            $exceptions.Count -eq 1 -and $exceptions[0] -ceq 'app.morphe.patcher.patch.PatchException' -and
+            $PrivateLog -cmatch ('(?m)^' + [regex]::Escape($reason) + '\r?$')
+    }
+    # 1.19.0 leads the printed exception with ERROR:, so no bare exception header may appear at all.
+    $stepError = 'Patch "' + $patchName + '" failed: ' + $patchName + ': ' + $suffix
+    return $null -eq $Report.PSObject.Properties['patchingSteps'] -and $null -eq $failure.PSObject.Properties['patch'] -and
+        $failure.name -ceq $patchName -and ([string]$failure.error -split '\r?\n')[0] -ceq $reason -and
         $step.step -ceq 'PATCHING' -and $step.success -is [bool] -and -not $step.success -and
-        $step.message -ceq ('app.morphe.desktop.command.PatchFailedException: FAILED: ' + $patchName) -and
-        $exceptions.Count -eq 1 -and $exceptions[0] -ceq 'app.morphe.patcher.patch.PatchException' -and
-        $PrivateLog -cmatch ('(?m)^' + [regex]::Escape($reason) + '\r?$')
+        $step.error -ceq $stepError -and
+        $Report.failureReason -ceq ('Patching failed: ' + $stepError) -and
+        ([string]$Report.failureDetail -split '\r?\n')[0] -ceq $reason -and
+        $exceptions.Count -eq 0 -and
+        $PrivateLog -cmatch ('(?m)^ERROR: FAILED: ' + [regex]::Escape($patchName) + '\r?$') -and
+        $PrivateLog -cmatch ('(?m)^ERROR: ' + [regex]::Escape($reason) + '\r?$')
 }
 
 function Invoke-SelectionTool {

@@ -202,6 +202,53 @@ try {
         reason = ($canaries -join ' ') + ' C:\synthetic-private-path\retained.jks'
     })
     Assert-True ((Invoke-Summary $failed).failureCodes -ccontains 'PATCH_FAILED') 'A nested CLI failed patch was accepted.'
+
+    # morphe-desktop 1.19.0 (patcher 2.0) writes applied names as plain strings, the steps as
+    # stepResults and success every time; a failure is {name, error} with failureReason and
+    # failureDetail beside it. None of that text may reach the summary either.
+    $currentJson = @'
+{
+  "success": true,
+  "outputPath": "C:\\synthetic-private-path\\configured.apk",
+  "packageName": "org.telegram.messenger.web",
+  "packageVersion": "DECLARED_WEB_VERSION",
+  "appliedPatches": ["Use registered Telegram API credentials", "Use registered Maps API key"],
+  "failedPatches": [],
+  "stepResults": [
+    {"step": "PATCHING", "success": true},
+    {"step": "REBUILDING", "success": true}
+  ]
+}
+'@
+    $currentReport = $currentJson.Replace('DECLARED_WEB_VERSION', $webVersion) | ConvertFrom-Json
+    $answer = Invoke-Summary $currentReport
+    Assert-True (@($answer.failureCodes).Count -eq 0 -and ($answer.appliedPatches -join '|') -ceq ($requestedNames -join '|')) `
+        'A 1.19.0 success with plain applied names was rejected.'
+    $currentMutations = @(
+        @{ Code = 'REPORT_FAILED'; Change = { param($r) $r.success = $false } },
+        @{ Code = 'PATCHING_STEP_FAILED'; Change = { param($r) $r.stepResults[1].success = $false } },
+        @{ Code = 'PATCHING_STEP_FAILED'; Change = { param($r) $r.stepResults[0].PSObject.Properties.Remove('success') } },
+        @{ Code = 'PATCHING_STEP_FAILED'; Change = { param($r) $r.stepResults = @() } },
+        @{ Code = 'REPORT_INVALID'; Change = { param($r) $r.stepResults = 'synthetic-private-error' } },
+        @{ Code = 'REPORT_INVALID'; Change = { param($r) $r.PSObject.Properties.Remove('stepResults') } },
+        @{ Code = 'PATCH_NAMES_INVALID'; Change = { param($r) $r.appliedPatches = @($r.appliedPatches + 'AIza_SYNTHETIC_PRIVATE_MAPS_CANARY') } },
+        @{ Code = 'PATCH_SET_INVALID'; Change = { param($r) $r.appliedPatches = @($r.appliedPatches[0]) } }
+    )
+    foreach ($case in $currentMutations) {
+        $report = Copy-Json $currentReport
+        & $case.Change $report
+        Assert-True ((Invoke-Summary $report).failureCodes -ccontains $case.Code) 'A malformed or failed 1.19.0 report had no fixed failure code.'
+    }
+    $currentFailed = Copy-Json $currentReport
+    $currentFailed.success = $false
+    $currentFailed.appliedPatches = @($requestedNames[1])
+    $currentFailed.failedPatches = @([pscustomobject]@{ name = $requestedNames[0]; error = ($canaries -join ' ') + ' C:\synthetic-private-path\retained.jks' })
+    $currentFailed.stepResults = @([pscustomobject]@{ step = 'PATCHING'; success = $false; error = ($canaries -join ' ') })
+    Add-Member -InputObject $currentFailed -NotePropertyName failureReason -NotePropertyValue ('Patching failed: ' + ($canaries -join ' '))
+    Add-Member -InputObject $currentFailed -NotePropertyName failureDetail -NotePropertyValue (($canaries -join ' ') + ' C:\synthetic-private-path\retained.jks')
+    $answer = Invoke-Summary $currentFailed
+    Assert-True ($answer.failureCodes -ccontains 'PATCH_FAILED' -and $answer.failureCodes -ccontains 'REPORT_FAILED' -and
+        $answer.failureCodes -ccontains 'PATCHING_STEP_FAILED') 'A 1.19.0 failed patch was accepted.'
     Assert-True ((Invoke-Summary $baseReport -Names @($requestedNames[0], 'synthetic-private-error')).failureCodes `
         -ccontains 'REQUESTED_PATCHES_INVALID') 'An unlisted requested name was published.'
     Assert-True ((Invoke-Summary $baseReport -Names @($requestedNames[0], $requestedNames[0])).failureCodes `

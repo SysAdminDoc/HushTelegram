@@ -392,11 +392,14 @@ try {
     } finally {
         $archive.Dispose()
     }
+    # The shape morphe-desktop 1.19.0 (patcher 2.0) writes: success every time, plain applied
+    # names and the steps under stepResults.
     $dependencyReport = [pscustomobject]@{
-        patchingSteps = @([pscustomobject]@{ success = $true })
-        appliedPatches = @($allNames + $allDependencies | ForEach-Object {
-            [pscustomobject]@{ name = $_ }
-        })
+        success = $true
+        stepResults = @(
+            [pscustomobject]@{ step = 'PATCHING'; success = $true },
+            [pscustomobject]@{ step = 'REBUILDING'; success = $true })
+        appliedPatches = @($allNames + $allDependencies)
         failedPatches = @()
         packageName = $target.PackageName
         packageVersion = $target.PackageVersion
@@ -406,6 +409,40 @@ try {
         -ExpectedPackageName $target.PackageName -ExpectedPackageVersion $target.PackageVersion
     Assert-True $reportValidation.Valid `
         "A complete result with a declared dependency was rejected: $($reportValidation.Reason)"
+    # 1.18.1 and older: no success field, applied patches as {name} and the steps as patchingSteps.
+    $olderReport = $dependencyReport | Select-Object * -ExcludeProperty success, stepResults
+    $olderReport.appliedPatches = @($allNames + $allDependencies | ForEach-Object { [pscustomobject]@{ name = $_ } })
+    $olderReport | Add-Member -NotePropertyName patchingSteps -NotePropertyValue @([pscustomobject]@{ success = $true })
+    $olderValidation = Test-PatchingReport -Report $olderReport -ExpectedNames $allNames `
+        -AllowedDependencyNames $allDependencies -OutputPath $reportApk `
+        -ExpectedPackageName $target.PackageName -ExpectedPackageVersion $target.PackageVersion
+    Assert-True $olderValidation.Valid "A 1.18 CLI result was rejected: $($olderValidation.Reason)"
+    $stepless = $dependencyReport | Select-Object * -ExcludeProperty stepResults
+    $steplessValidation = Test-PatchingReport -Report $stepless -ExpectedNames $allNames `
+        -AllowedDependencyNames $allDependencies -OutputPath $reportApk `
+        -ExpectedPackageName $target.PackageName -ExpectedPackageVersion $target.PackageVersion
+    Assert-True (-not $steplessValidation.Valid -and $steplessValidation.Reason -match 'step') `
+        "A result with no step list passed: $($steplessValidation.Reason)"
+    $failedStep = $dependencyReport | Select-Object *
+    $failedStep.stepResults = @([pscustomobject]@{ step = 'PATCHING'; success = $true },
+        [pscustomobject]@{ step = 'REBUILDING'; success = $false; error = 'synthetic rebuild failure' })
+    $failedStepValidation = Test-PatchingReport -Report $failedStep -ExpectedNames $allNames `
+        -AllowedDependencyNames $allDependencies -OutputPath $reportApk `
+        -ExpectedPackageName $target.PackageName -ExpectedPackageVersion $target.PackageVersion
+    Assert-True (-not $failedStepValidation.Valid) 'A result whose rebuild step failed passed.'
+    # Failed patches read the same from either shape, and an entry without a name is skipped.
+    $readFailures = @(Get-ReportFailures -Entries @(
+        [pscustomobject]@{ name = 'Current shape'; error = "app.morphe.patcher.patch.PatchException: current`n`tat frame" },
+        [pscustomobject]@{ patch = [pscustomobject]@{ name = 'Older shape' }; reason = 'app.morphe.patcher.patch.PatchException: older' },
+        [pscustomobject]@{ error = 'no name' },
+        [pscustomobject]@{ patch = $null; reason = 'no patch' },
+        'a bare string'))
+    Assert-True ($readFailures.Count -eq 2 -and $readFailures[0].Name -ceq 'Current shape' -and
+        $readFailures[0].Reason -ceq "app.morphe.patcher.patch.PatchException: current`n`tat frame" -and
+        $readFailures[1].Name -ceq 'Older shape' -and $readFailures[1].Reason -ceq 'app.morphe.patcher.patch.PatchException: older') `
+        'Failed patches lost a name or a reason from one result shape.'
+    Assert-True (@(Get-ReportFailures -Entries @()).Count -eq 0 -and @(Get-ReportFailures -Entries $null).Count -eq 0) `
+        'An empty failure list read as a failure.'
 
     # Replacement uninstall assertions contradicted the data-preserving installation contract.
     # The isolated suite retains absent-package and ADB-failure coverage and proves owned leases,
@@ -4903,11 +4940,12 @@ class AlignmentFixture {
             -Value (Get-FixtureManifest -Build $build -Code "$versionCode" -WithSplit -MinSdk $stockMinSdk -Package $package)
         Set-Content -LiteralPath "$apkm.patched.txt" -Encoding ASCII -NoNewline `
             -Value (Get-FixtureManifest -Build $build -Code "$versionCode" -WithSplit -Patched -MinSdk $stockMinSdk -Package $package)
-        # The report the CLI writes: every patch and the internal dependencies applied, one step,
-        # and the input's own version, which is what the CLI reports.
+        # The report morphe-desktop 1.19.0 writes: every patch and the internal dependencies applied
+        # as plain names, both steps passed, and the input's own version, which is what the CLI reports.
         Set-Content -LiteralPath "$apkm.result.json" -Encoding ASCII -Value ([ordered]@{
-            patchingSteps = @([ordered]@{ success = $true })
-            appliedPatches = @(@($releaseNames) + @($dependencyNamesHere) | ForEach-Object { [ordered]@{ name = $_ } })
+            success = $true
+            stepResults = @([ordered]@{ step = 'PATCHING'; success = $true }, [ordered]@{ step = 'REBUILDING'; success = $true })
+            appliedPatches = @(@($releaseNames) + @($dependencyNamesHere))
             failedPatches = @()
             packageName = $package
             packageVersion = $build } | ConvertTo-Json -Depth 6)

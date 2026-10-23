@@ -52,6 +52,30 @@ function Get-ReportPatchNames {
     return $names.ToArray()
 }
 
+function Get-ReportFailures {
+    <# Each failed patch's name and reason, from either result shape: morphe-desktop 1.18.1 and older
+       write {patch: {name}, reason}; 1.19.0 writes {name, error}. An entry with no name is left out. #>
+    param([object]$Entries)
+    $failures = New-Object System.Collections.Generic.List[object]
+    foreach ($entry in @($Entries)) {
+        if ($null -eq $entry -or $entry -is [string]) { continue }
+        $patch = $entry.PSObject.Properties['patch']
+        if ($null -ne $patch) {
+            $name = if ($null -ne $patch.Value) { $patch.Value.PSObject.Properties['name'] } else { $null }
+            $reason = $entry.PSObject.Properties['reason']
+        } else {
+            $name = $entry.PSObject.Properties['name']
+            $reason = $entry.PSObject.Properties['error']
+        }
+        if ($null -eq $name -or [string]::IsNullOrWhiteSpace([string]$name.Value)) { continue }
+        $failures.Add([pscustomobject]@{
+            Name = [string]$name.Value
+            Reason = if ($null -ne $reason -and $null -ne $reason.Value) { [string]$reason.Value } else { '' }
+        })
+    }
+    return $failures.ToArray()
+}
+
 function Get-PatchDependencyNames {
     param([object]$PatchList, [string[]]$RequestedNames)
 
@@ -164,8 +188,11 @@ function Test-PatchingReport {
     # read PatchingResult before relying on this. The step check below is the independent one,
     # and it is what catches the case these scripts exist for, a result file written from a
     # finally block after a failed compile, because the step that failed reports success false.
+    # morphe-desktop 1.19.0, the first CLI on patcher 2.0, writes the step list as stepResults and
+    # always writes success; 1.18.1 and older called the list patchingSteps.
     $success = $Report.PSObject.Properties['success']
-    $steps = @($Report.patchingSteps)
+    $stepList = if ($null -ne $Report.PSObject.Properties['stepResults']) { $Report.stepResults } else { $Report.patchingSteps }
+    $steps = @($stepList | Where-Object { $null -ne $_ })
     $stepsOk = $steps.Count -gt 0 -and @($steps | Where-Object {
         $property = $_.PSObject.Properties['success']
         $null -eq $property -or -not (Test-TrueBoolean $property.Value)
@@ -335,7 +362,9 @@ function New-PublicPatchSummary {
         } else {
             [void]$codes.Add('TARGET_UNSUPPORTED')
         }
-        foreach ($field in @('appliedPatches', 'failedPatches', 'patchingSteps')) {
+        # The step list is stepResults from morphe-desktop 1.19.0 on, patchingSteps before it.
+        $stepField = if ($null -ne $Report.PSObject.Properties['stepResults']) { 'stepResults' } else { 'patchingSteps' }
+        foreach ($field in @('appliedPatches', 'failedPatches', $stepField)) {
             $property = $Report.PSObject.Properties[$field]
             if ($null -eq $property -or $property.Value -isnot [System.Collections.IList]) { throw 'REPORT_INVALID' }
         }

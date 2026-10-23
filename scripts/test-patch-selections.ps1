@@ -43,7 +43,7 @@ foreach ($plan in $plans) {
         $plan.ApiHash -cmatch '^[0-9a-f]{32}$' -and $plan.MapsKey -cmatch '^AIza[0-9A-Za-z_-]{35}$') 'Synthetic configured values no longer fit the real validators.'
     $document = @(New-SelectionOptionsDocument -Catalog $catalog -Selection $plan -BundleName 'fixture.mpp' -BundleHash ('a' * 64) | ConvertFrom-Json)
     Assert-Selection ($document.Count -eq 1 -and $document[0].meta.source -ceq 'fixture.mpp' -and
-        $document[0].meta.sha256 -ceq ('a' * 64)) 'Options no longer follow the CLI 1.18 PatchBundle array grammar.'
+        $document[0].meta.sha256 -ceq ('a' * 64)) 'Options no longer follow the CLI''s PatchBundle array grammar (1.18 and 1.19.0).'
     foreach ($patch in $catalog.patches) {
         $entry = $document[0].patches.PSObject.Properties[$patch.name].Value
         Assert-Selection ($entry.enabled -is [bool] -and $entry.enabled -eq ($plan.Names -ccontains $patch.name)) 'Options enabled a patch that the case did not request.'
@@ -107,6 +107,64 @@ foreach ($toolFailure in @('java.lang.OutOfMemoryError: exhausted', 'java.lang.C
     "`tSuppressed: java.io.IOException: unavailable", "`tCaused by: java.lang.OutOfMemoryError: exhausted")) {
     Assert-Selection (-not (Test-SelectionRefusal -Selection $invalidId -Report $rejection -PrivateLog ($reason + "`n" + $toolFailure) -Stock $stock)) 'A tool crash satisfied an option-validation case.'
     Assert-Selection (-not (Test-SelectionRefusal -Selection $malformed -Report $parseReport -PrivateLog ($parseLog + "`n" + $toolFailure) -Stock $stock)) 'A tool crash satisfied the options parser case.'
+}
+
+# morphe-desktop 1.19.0 (patcher 2.0) writes the same refusal as stepResults, {name, error},
+# failureReason and failureDetail, and leads the exception it prints with ERROR:.
+$trace = "`n`tat app.morphe.patcher.patch.Patch.execute(Patch.kt:141)"
+$stepError = 'Patch "Use registered Telegram API credentials" failed: Use registered Telegram API credentials: apiId must be a positive 32-bit decimal integer.'
+$currentLog = "INFO: Executing patches`nERROR: FAILED: Use registered Telegram API credentials`nERROR: " + $reason + $trace
+$current = [pscustomobject]@{
+    success = $false; outputPath = 'private.apk'; packageName = $stock.package; packageVersion = $stock.versionName; appliedPatches = @()
+    failedPatches = @([pscustomobject]@{ name = 'Use registered Telegram API credentials'; error = $reason + $trace })
+    stepResults = @([pscustomobject]@{ step = 'PATCHING'; success = $false; error = $stepError })
+    failureReason = 'Patching failed: ' + $stepError
+    failureDetail = $reason + $trace
+}
+Assert-Selection (Test-SelectionRefusal -Selection $invalidId -Report $current -PrivateLog $currentLog -Stock $stock) 'A proved 1.19.0 option-validation refusal was rejected.'
+foreach ($change in @('wrong target', 'wrong version', 'success', 'wrong patch', 'wrong reason', 'applied', 'rebuild', 'wrong step',
+    'step passed', 'wrong step error', 'wrong failure reason', 'wrong failure detail', 'older failure shape', 'both step lists',
+    'bare log line', 'no FAILED line')) {
+    $bad = $current | ConvertTo-Json -Depth 8 | ConvertFrom-Json
+    $badLog = $currentLog
+    switch ($change) {
+        'wrong target' { $bad.packageName = 'unrelated.package' }
+        'wrong version' { $bad.packageVersion = '0.0' }
+        'success' { $bad.success = $true }
+        'wrong patch' { $bad.failedPatches[0].name = 'Use registered Maps API key' }
+        'wrong reason' { $bad.failedPatches[0].error = 'java.lang.OutOfMemoryError: unrelated failure' }
+        'applied' { $bad.appliedPatches = @('HushTelegram settings') }
+        'rebuild' { $bad.stepResults += [pscustomobject]@{ step = 'REBUILDING'; success = $true } }
+        'wrong step' { $bad.stepResults[0].step = 'REBUILDING' }
+        'step passed' { $bad.stepResults[0].success = $true }
+        'wrong step error' { $bad.stepResults[0].error = 'java.lang.OutOfMemoryError: unrelated failure' }
+        'wrong failure reason' { $bad.failureReason = 'Patching failed: java.lang.OutOfMemoryError: unrelated failure' }
+        'wrong failure detail' { $bad.failureDetail = 'java.lang.OutOfMemoryError: unrelated failure' }
+        'older failure shape' { $bad.failedPatches = @([pscustomobject]@{ patch = [pscustomobject]@{ name = 'Use registered Telegram API credentials' }; reason = $reason }) }
+        'both step lists' { $bad | Add-Member -NotePropertyName patchingSteps -NotePropertyValue @($bad.stepResults) }
+        'bare log line' { $badLog = $currentLog.Replace("ERROR: $reason", $reason) }
+        'no FAILED line' { $badLog = $currentLog.Replace('ERROR: FAILED: ', 'INFO: ') }
+    }
+    Assert-Selection (-not (Test-SelectionRefusal -Selection $invalidId -Report $bad -PrivateLog $badLog -Stock $stock)) "Unrelated failure accepted as a 1.19.0 validation: $change"
+}
+# 1.19.0 reads the options file before it writes a result, so a malformed one leaves none.
+$currentParseLog = 'INFO: Reading options from private.json' + "`n" +
+    'kotlinx.serialization.json.JsonDecodingException: Unexpected JSON token at offset 3: Encountered an unknown key ''private'' at path: $[0]' + "`n`t" +
+    'at app.morphe.engine.options.PatchBundle$$serializer.deserialize(PatchOptionsFile.kt:30)' + "`n`t" +
+    'at app.morphe.engine.options.PatchOptionsFileKt.readPatchBundles(PatchOptionsFile.kt:412)' + "`n`t" +
+    'at app.morphe.engine.PatchEngine$patch$3.invokeSuspend(PatchEngine.kt:311)'
+Assert-Selection (Test-SelectionRefusal -Selection $malformed -Report $null -PrivateLog $currentParseLog -Stock $stock) 'The 1.19.0 options-file parser refusal was rejected.'
+Assert-Selection (-not (Test-SelectionRefusal -Selection $invalidId -Report $null -PrivateLog $currentParseLog -Stock $stock)) '1.19.0 parser evidence satisfied an unrelated API validation case.'
+Assert-Selection (-not (Test-SelectionRefusal -Selection $malformed -Report $null -PrivateLog $parseLog -Stock $stock)) 'A 1.18 parser log passed without the result file 1.18 always writes.'
+Assert-Selection (-not (Test-SelectionRefusal -Selection $malformed -Report $parseReport -PrivateLog $currentParseLog -Stock $stock)) 'A 1.19.0 parser log passed beside a 1.18 result file.'
+Assert-Selection (-not (Test-SelectionRefusal -Selection $malformed -PrivateLog $currentParseLog -Stock $stock `
+    -Report ([pscustomobject]@{ appliedPatches = @(); failedPatches = @(); stepResults = @() }))) 'A 1.19.0 parser refusal passed with a result file.'
+Assert-Selection (-not (Test-SelectionRefusal -Selection $malformed -Report $null -PrivateLog ($currentParseLog.Replace('PatchBundle', 'UnrelatedDocument')) -Stock $stock)) 'An unrelated 1.19.0 JSON parser failure passed.'
+Assert-Selection (-not (Test-SelectionRefusal -Selection $malformed -Report $null -PrivateLog ($currentParseLog.Replace('readPatchBundles', 'readSomethingElse')) -Stock $stock)) 'A 1.19.0 JSON failure outside the options file reader passed.'
+foreach ($toolFailure in @('java.lang.OutOfMemoryError: exhausted', 'Exception in thread "main" java.lang.OutOfMemoryError: exhausted',
+    "`tCaused by: java.io.IOException: unavailable")) {
+    Assert-Selection (-not (Test-SelectionRefusal -Selection $invalidId -Report $current -PrivateLog ($currentLog + "`n" + $toolFailure) -Stock $stock)) 'A tool crash satisfied a 1.19.0 option-validation case.'
+    Assert-Selection (-not (Test-SelectionRefusal -Selection $malformed -Report $null -PrivateLog ($currentParseLog + "`n" + $toolFailure) -Stock $stock)) 'A tool crash satisfied the 1.19.0 options parser case.'
 }
 
 $scratch = Join-Path ([IO.Path]::GetTempPath()) ('hushtelegram-selection-contracts-' + [guid]::NewGuid().ToString('N'))
