@@ -13,12 +13,14 @@ import app.hushtelegram.extension.shared.settings.PauseForTests;
 import app.hushtelegram.extension.shared.settings.SettingReadsForTests;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
+import android.view.View;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
@@ -33,6 +35,8 @@ public class MainTabsTest {
         Settings.HIDE_CONTACTS_TAB.resetToDefault();
         SettingReadsForTests.mend(Settings.COMPACT_TAB_BAR);
         Settings.COMPACT_TAB_BAR.resetToDefault();
+        SettingReadsForTests.mend(Settings.HIDE_NEW_MESSAGE);
+        Settings.HIDE_NEW_MESSAGE.resetToDefault();
         HookStatus.clear();
     }
 
@@ -158,6 +162,48 @@ public class MainTabsTest {
         assertEquals(64, MainTabs.barHeight(72));
         SettingReadsForTests.breakReads(Settings.COMPACT_TAB_BAR);
         assertStockBar("unreadable");
+        assertFalse(HookStatus.missing(FamilyNames.HIDE_CONTACTS_TAB).isEmpty());
+    }
+
+    private static boolean hidden(View button) {
+        MainTabs.newMessageButton(button);
+        return button.getVisibility() == View.GONE;
+    }
+
+    @Test public void theNewMessageButtonStaysUnlessTheSwitchIsOn() {
+        View button = new View(RuntimeEnvironment.getApplication());
+        assertFalse(Settings.HIDE_NEW_MESSAGE.get());
+        assertFalse(hidden(button));
+        assertEquals(View.VISIBLE, button.getVisibility());
+        assertFalse(report().contains("new message button hidden"));
+
+        Settings.HIDE_NEW_MESSAGE.save(true);
+        assertTrue(hidden(button));
+        assertTrue(report().contains("new message button hidden"));
+        // Hiding it takes no part in the Contacts tab or the bar.
+        assertFalse(MainTabs.on());
+        assertEquals(72, MainTabs.barHeight(72));
+    }
+
+    @Test public void anythingButAViewIsLeftAlone() {
+        Settings.HIDE_NEW_MESSAGE.save(true);
+        MainTabs.newMessageButton(null);
+        MainTabs.newMessageButton("not a view");
+        assertTrue(HookStatus.missing(FamilyNames.HIDE_CONTACTS_TAB).isEmpty());
+    }
+
+    @Test public void pausingAnEarlyStartOrAnUnreadableSwitchKeepsTheButton() {
+        Settings.HIDE_NEW_MESSAGE.save(true);
+        View button = new View(RuntimeEnvironment.getApplication());
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
+            PauseForTests.pause(reason);
+            assertFalse(reason.name(), hidden(button));
+            PauseForTests.resume();
+        }
+        SettingsContextRule.withoutContext(() -> assertFalse(hidden(button)));
+        SettingReadsForTests.breakReads(Settings.HIDE_NEW_MESSAGE);
+        assertFalse(hidden(button));
         assertFalse(HookStatus.missing(FamilyNames.HIDE_CONTACTS_TAB).isEmpty());
     }
 }

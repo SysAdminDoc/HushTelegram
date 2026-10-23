@@ -110,6 +110,7 @@ public final class SettingsStatus {
     public static boolean hideContactsTab() { return false; }
     public static boolean compactTabBar() { return false; }
     public static boolean sideMenu() { return false; }
+    public static boolean hideNewMessage() { return false; }
     public static boolean fasterDownloads() { return false; }
     public static boolean dataSaverDownloads() { return false; }
     public static boolean saveDownloads() { return false; }

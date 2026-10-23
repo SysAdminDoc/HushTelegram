@@ -168,14 +168,18 @@ public class PatchFamilyTest {
         assertEquals("Hide Contacts tab", family.patchName);
         assertEquals("hideContactsTab", family.statusMethod);
         // The compact bar and the side menu start off too and work with or without the first.
-        assertEquals(Arrays.asList(Settings.HIDE_CONTACTS_TAB, Settings.COMPACT_TAB_BAR, Settings.SIDE_MENU), family.switches);
+        assertEquals(Arrays.asList(Settings.HIDE_CONTACTS_TAB, Settings.COMPACT_TAB_BAR, Settings.SIDE_MENU,
+                Settings.HIDE_NEW_MESSAGE), family.switches);
         for (BooleanSetting setting : family.switches) assertFalse(setting.key, setting.defaultValue);
         // Telegram builds the bar with the main screen, so a change to it shows after a restart.
         assertTrue(Settings.HIDE_CONTACTS_TAB.rebootApp);
         assertTrue(Settings.COMPACT_TAB_BAR.rebootApp);
         // Each swipe reads the side menu's switch, so it needs none.
         assertFalse(Settings.SIDE_MENU.rebootApp);
-        assertEquals(EnumSet.of(PatchFamily.Capability.COMPACT_TAB_BAR, PatchFamily.Capability.SIDE_MENU), family.expectedCapabilities());
+        // The pencil button is set up when the chat list is built, so hiding it needs one too.
+        assertTrue(Settings.HIDE_NEW_MESSAGE.rebootApp);
+        assertEquals(EnumSet.of(PatchFamily.Capability.COMPACT_TAB_BAR, PatchFamily.Capability.SIDE_MENU,
+                PatchFamily.Capability.HIDE_NEW_MESSAGE), family.expectedCapabilities());
         assertOnItsPage(family);
         // The bar sits under the chat list, beside its folder switches.
         assertEquals(PatchFamily.Page.CHAT_LIST, PatchFamily.Page.of(family));

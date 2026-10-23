@@ -9,6 +9,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** Locking the HushTelegram settings by mistake no longer costs a day. For 10 minutes after you lock them the row reads **Unlock now**, and one tap opens them again. After that, unlocking takes the usual 24 hours. Setting the phone's clock or restarting it ends those 10 minutes early. (#23)
 * **Telegram:** Save downloaded files has a second switch, **Also save from chats that don't allow saving**. It starts off. Turned on, files and songs from chats whose owner turned off saving get their copy in Download/Telegram too, so you can keep what an owner is fine with you keeping. Secret chats and self-destructing media still stay in Telegram. (#29)
 * **Telegram:** Keep deleted messages has a second switch, **Show deleted in red**. It starts off. Turned on, the word "deleted" next to a kept message's time is drawn in red so you can spot those messages while scrolling. The time itself keeps its usual color, and nothing about the bubble's size changes. (#25)
+* **Telegram:** **Hide Contacts tab** has one more switch on the Chat list page, **Hide new message button**. With it on, the round pencil button on the chat list is gone. The story camera button, the archive, your folders and search work as before, and you start a chat from the menu or search instead. It's off unless you turn it on, and a restart shows the change. (#22)
 
 ## 0.0.19 (2026-10-17)
 

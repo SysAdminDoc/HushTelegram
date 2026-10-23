@@ -803,6 +803,12 @@ public class HushTelegramPreferenceFragmentTest {
                     String.valueOf(page.findPreference(Settings.SIDE_MENU.key).getSummary()));
             // A swipe on the chat list stays Telegram's until the switch is turned on.
             assertFalse(((SwitchPreference) page.findPreference(Settings.SIDE_MENU.key)).isChecked());
+            assertEquals("Hide new message button", String.valueOf(page.findPreference(Settings.HIDE_NEW_MESSAGE.key).getTitle()));
+            assertEquals("Removes the round pencil button from the chat list. Start a chat from the menu or search. "
+                            + "Restart Telegram to see the change.",
+                    String.valueOf(page.findPreference(Settings.HIDE_NEW_MESSAGE.key).getSummary()));
+            // The pencil button stays until the switch is turned on.
+            assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_NEW_MESSAGE.key)).isChecked());
             assertEquals("Ask before sending a GIF", String.valueOf(page.findPreference(Settings.ASK_BEFORE_GIF.key).getTitle()));
             assertEquals("Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs "
                     + "go out without asking.",

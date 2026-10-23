@@ -434,6 +434,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "your profile, new message, contacts, calls, saved messages and settings, plus a way to switch "
                                 + "accounts. Back or a tap beside it closes it.")));
             }
+            if (PatchFamily.Capability.HIDE_NEW_MESSAGE.installed()) {
+                on(pages, PatchFamily.HIDE_CONTACTS_TAB).addPreference(toggle(context, Settings.HIDE_NEW_MESSAGE,
+                        L10n.t("Hide new message button"),
+                        L10n.t("Removes the round pencil button from the chat list. Start a chat from the menu or search. "
+                                + "Restart Telegram to see the change.")));
+            }
         }
     }
 

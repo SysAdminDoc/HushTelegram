@@ -4,6 +4,8 @@
  */
 package app.hushtelegram.extension.telegram.misc;
 
+import android.view.View;
+
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
@@ -72,6 +74,24 @@ public final class MainTabs {
      */
     public static float barMinWidth(float stock) {
         return compact("width") ? COMPACT_MIN_WIDTH : stock;
+    }
+
+    /**
+     * Called each time the chat list gives its round button the pencil, which is when it builds the
+     * list. With the switch on the button is gone from the layout, so there's no empty spot left to
+     * tap. The story camera button and everything else on the list are separate views.
+     *
+     * @param button the chat list's round button
+     */
+    public static void newMessageButton(Object button) {
+        HookStatus.invoked(FamilyNames.HIDE_CONTACTS_TAB);
+        try {
+            if (!(button instanceof View) || !Utils.settingsReady() || !Settings.HIDE_NEW_MESSAGE.get()) return;
+            ((View) button).setVisibility(View.GONE);
+            HookStatus.counted(FamilyNames.HIDE_CONTACTS_TAB, "new message button hidden");
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_CONTACTS_TAB, "new message button", failure);
+        }
     }
 
     /** Whether the compact switch is on and HushTelegram isn't paused, asked for one of the bar's sizes. */

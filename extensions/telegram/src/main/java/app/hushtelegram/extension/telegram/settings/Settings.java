@@ -406,6 +406,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting SIDE_MENU =
             new BooleanSetting("hushtelegram_drawer_menu", FALSE);
 
+    /**
+     * The chat list's round pencil button is hidden. Telegram sets it up when it builds the chat list,
+     * so a restart shows the change.
+     */
+    public static final BooleanSetting HIDE_NEW_MESSAGE =
+            new BooleanSetting("hushtelegram_hide_new_message", FALSE, true);
+
     /** Downloads take 512 KB pieces, 8 at a time, unless Telegram drops back to small ones itself. */
     public static final BooleanSetting FASTER_DOWNLOADS =
             new BooleanSetting("hushtelegram_faster_downloads", FALSE);

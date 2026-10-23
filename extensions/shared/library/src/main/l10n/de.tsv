@@ -865,3 +865,9 @@ Couldn't save the folder. Try again in a moment.	Der Ordner ließ sich nicht spe
 Couldn't read your folders.	Deine Ordner ließen sich nicht lesen.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that opens the chat list on a picked folder
 which folder the chat list opens on	Ordner, in dem die Chatliste startet
+# context: Chat list page switch title, under Hide Contacts tab. When on, the round pencil button (new message) on the chat list is removed.
+Hide new message button	Button für neue Nachricht ausblenden
+# context: Summary under that switch. The menu is the side menu or Telegram's own menu; search is the chat list's search.
+Removes the round pencil button from the chat list. Start a chat from the menu or search. Restart Telegram to see the change.	Entfernt den runden Stift-Button aus der Chatliste. Starte einen Chat über das Menü oder die Suche. Starte Telegram neu, um die Änderung zu sehen.
+# context: Lowercase noun phrase in a status line. It names the part of Hide Contacts tab that removes the round pencil (new message) button from the chat list.
+new message button	Button für neue Nachricht

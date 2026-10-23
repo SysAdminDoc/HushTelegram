@@ -166,7 +166,7 @@ class HideContactsTabFixtureTest {
                 }
                 assertStock(what, stock, after) { i -> i + 2 * own.count { it.at <= i } }
             }
-            for (flag in listOf("hideContactsTab", "compactTabBar")) {
+            for (flag in listOf("hideContactsTab", "compactTabBar", "hideNewMessage")) {
                 val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.controlBody()
                 assertEquals("$name: $flag", 1L, (status.first() as WideLiteralInstruction).wideLiteral)
             }
@@ -226,7 +226,7 @@ class HideContactsTabFixtureTest {
                     PatchLogCapture.warnings { hideContactsTabPatch.execute(context) })
                 assertEquals("$what: the bar's sizes stay Telegram's", before, sized.map { method -> method.controlBody().map(::operands) })
                 assertEquals("$what: the Contacts tab is still hidden each time the bar is set", shown + 1, plan.shown.controlBody().size)
-                for ((flag, value) in listOf("hideContactsTab" to 1L, "compactTabBar" to 0L, "sideMenu" to 1L)) {
+                for ((flag, value) in listOf("hideContactsTab" to 1L, "compactTabBar" to 0L, "sideMenu" to 1L, "hideNewMessage" to 1L)) {
                     val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.controlBody()
                     assertEquals("$what: $flag", value, (status.first() as WideLiteralInstruction).wideLiteral)
                 }
@@ -307,7 +307,72 @@ class HideContactsTabFixtureTest {
             assertEquals(name, listOf("Hide Contacts tab: Telegram's main activity is gone. The patch goes on without the side menu."),
                 PatchLogCapture.warnings { hideContactsTabPatch.execute(context) })
             assertEquals("$name: the swipe start stays Telegram's", before, start.controlBody().map(::operands))
-            for ((flag, value) in listOf("hideContactsTab" to 1L, "compactTabBar" to 1L, "sideMenu" to 0L)) {
+            for ((flag, value) in listOf("hideContactsTab" to 1L, "compactTabBar" to 1L, "sideMenu" to 0L, "hideNewMessage" to 1L)) {
+                val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.controlBody()
+                assertEquals("$name: $flag", value, (status.first() as WideLiteralInstruction).wideLiteral)
+            }
+        }
+    }
+
+    @Test fun `the chat list's pencil button goes through the runtime only where it gets the pencil`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val found = context.resolveNewMessageButton()
+            assertNull("$name: ${found.missing}", found.missing)
+            val method = found.method!!
+            val stock = ImmutableMethod.of(method).controlBody()
+            assertEquals("$name: the compose icon", COMPOSE_ICON, stock[found.at].controlRef())
+            assertEquals("$name: the picture is set on the button right after", listOf(found.register),
+                stock[found.at + 1].namedRegisters().take(1))
+            // The check mark Done button's branch loads another icon and is not the one hooked.
+            assertTrue("$name: the check mark branch comes first", stock.take(found.at).any { it.controlRef()?.endsWith("->floating_check:I") == true })
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { hideContactsTabPatch.execute(context) })
+
+            val after = method.controlBody()
+            val hook = found.at
+            assertEquals("$name: one instruction", stock.size + 1, after.size)
+            assertEquals(name, Opcode.INVOKE_STATIC_RANGE, after[hook].opcode)
+            assertEquals(name, NEW_MESSAGE_BUTTON, after[hook].controlRef())
+            assertEquals("$name: the icon load follows the hook", COMPOSE_ICON, after[hook + 1].controlRef())
+            // The way into the pencil's branch now lands on the hook, and nothing else leads into it.
+            val flow = ControlFlow.of(method)
+            val into = after.indices.filter { hook in flow.normal[it] || hook in flow.exceptional[it] }
+            assertEquals("$name: one way in", 1, into.size)
+            assertTrue("$name: a branch, not the check mark's return", after[into.single()].opcode != Opcode.RETURN_VOID)
+            assertStock(name, stock, after) { if (it < hook) it else it + 1 }
+            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "hideNewMessage" }.controlBody()
+            assertEquals("$name: hideNewMessage", 1L, (status.first() as WideLiteralInstruction).wideLiteral)
+        }
+    }
+
+    @Test fun `a chat list whose button changed leaves the new message switch out and keeps the others`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val found = context.resolveNewMessageButton()
+            assertNull("$name: ${found.missing}", found.missing)
+            val method = found.method!!
+            val view = found.register
+            method.replaceInstruction(found.at + 1, "invoke-virtual {v$view}, Landroid/view/View;->getVisibility()I")
+            val before = method.controlBody().map(::operands)
+            assertEquals(name, listOf("Hide Contacts tab: the new message button's picture is no longer set right after the icon loads. " +
+                "The patch goes on without the new message switch."), PatchLogCapture.warnings { hideContactsTabPatch.execute(context) })
+            assertEquals("$name: the chat list stays Telegram's", before, method.controlBody().map(::operands))
+            for ((flag, value) in listOf("hideContactsTab" to 1L, "compactTabBar" to 1L, "sideMenu" to 1L, "hideNewMessage" to 0L)) {
+                val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.controlBody()
+                assertEquals("$name: $flag", value, (status.first() as WideLiteralInstruction).wideLiteral)
+            }
+        }
+    }
+
+    @Test fun `a build with no chat list keeps the other three switches`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build, withChatList = false))
+            assertEquals(name, listOf("Hide Contacts tab: the chat list no longer sets its new message button in one place (0). " +
+                "The patch goes on without the new message switch."), PatchLogCapture.warnings { hideContactsTabPatch.execute(context) })
+            for ((flag, value) in listOf("hideContactsTab" to 1L, "compactTabBar" to 1L, "sideMenu" to 1L, "hideNewMessage" to 0L)) {
                 val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.controlBody()
                 assertEquals("$name: $flag", value, (status.first() as WideLiteralInstruction).wideLiteral)
             }
@@ -330,11 +395,12 @@ class HideContactsTabFixtureTest {
      * The main screen, found the way the patch finds it, with the classes it names that the patch
      * reads: its superclass, the types of their fields, the tab views, and each one's superclasses.
      */
-    private fun hosts(build: File, leaveOut: Set<String> = emptySet()): Collection<ClassDef> {
+    private fun hosts(build: File, leaveOut: Set<String> = emptySet(), withChatList: Boolean = true): Collection<ClassDef> {
         val screens = FixtureDex.classesWhere(build, { true }, ::isMainBuild)
         assertEquals("${build.name}: one main screen", 1, screens.size)
         val loaded = LinkedHashMap<String, ClassDef>()
         screens.forEach { loaded[it.type] = it }
+        if (withChatList) FixtureDex.classesWhere(build, { true }, ::isChatListButton).forEach { loaded[it.type] = it }
         val asked = HashSet<String>(leaveOut)
         var wanted = setOfNotNull(screens.single().superclass) + (SIDE_MENU_HOSTS - leaveOut)
         while (wanted.isNotEmpty()) {
@@ -345,7 +411,7 @@ class HideContactsTabFixtureTest {
                 loaded.values.mapNotNull { it.superclass }
             wanted = named.filter { it.startsWith("L") && isAppType(it) && it !in asked && it !in loaded }.toSet()
         }
-        return loaded.values
+        return if (withChatList) loaded.values else loaded.values.filterNot { cls -> cls.methods.any(::isChatListButton) }
     }
 
     /** What the side menu reads beyond the main screen: the activity its links go to, and Telegram's account, name and words. */
@@ -353,6 +419,10 @@ class HideContactsTabFixtureTest {
         "Lorg/telegram/messenger/LocaleController;", "Lorg/telegram/messenger/R\$string;")
 
     private fun isAppType(type: String) = !type.startsWith("Landroid") && !type.startsWith("Ljava") && !type.startsWith("Lkotlin")
+
+    private fun isChatListButton(method: Method) = method.controlBody().let { body ->
+        body.any { it.controlRef() == COMPOSE_ICON } && body.any { it.controlRef() == NEW_MESSAGE_TITLE }
+    }
 
     private fun isMainBuild(method: Method) = method.name == "createView" && method.controlBody().let { body ->
         listOf(CONTACTS_LABEL, CALLS_LABEL, SHOW_CALLS_TAB).all { ref -> body.any { it.controlRef() == ref } }

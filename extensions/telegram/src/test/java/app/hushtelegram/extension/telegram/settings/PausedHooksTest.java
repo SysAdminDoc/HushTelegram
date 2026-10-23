@@ -373,7 +373,8 @@ public class PausedHooksTest {
         // keeps Telegram's 72 dp height.
         probes.put(PatchFamily.HIDE_CONTACTS_TAB, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.MainTabs.blocksSwipe(0, true),
-                () -> app.hushtelegram.extension.telegram.misc.MainTabs.barHeight(72) != 72));
+                () -> app.hushtelegram.extension.telegram.misc.MainTabs.barHeight(72) != 72,
+                () -> app.hushtelegram.extension.telegram.misc.MainTabsForTests.hidesNewMessage()));
         // The gallery's camera stays off until a tap, and a tap that asks for the permission wakes it.
         probes.put(PatchFamily.GALLERY_CAMERA_ON_TAP, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.GalleryCamera.keepCameraOff(new Object()),
