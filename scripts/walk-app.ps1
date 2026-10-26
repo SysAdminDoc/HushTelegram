@@ -12,9 +12,20 @@
     holds it to. When the release build stage has already staged that bundle, the two have to be
     the same file.
 
+    Next to the signed APK the walk leaves patch-artifact.json (New-WalkArtifact): the APK's
+    SHA-256, package, version and version code, the vendor fixture and bundle it was patched from
+    and the patches selected. The receipt carries that record, and the hash of the APK actually
+    installed has to match it. -SkipPatch walks that same APK again by its record (-Artifact,
+    patch\patch-artifact.json under -OutDir unless given), so a walk of an app installed some
+    other way doesn't back a release.
+
+    What a walk has to open comes from walk-scenarios.json: each scenario's id, and the patches
+    that make it required. -Visit, -SettingsPages and -MorePages default to that list. A shorter
+    list walks less and the walk comes back PARTIAL, naming what it left out.
+
     The result the walk writes:
-      PASS      the whole app was walked, every screen and settings page opened, no crash.
-      PARTIAL   the settings pages were skipped, so it was not the whole app.
+      PASS      every required scenario opened, no crash and no problem.
+      PARTIAL   the settings pages were skipped, or a required scenario wasn't asked for.
       FAIL      a Telegram crash, a screen or page that would not open, or Telegram gone at the end.
     Only a PASS backs a release.
 
@@ -48,23 +59,16 @@ param(
     [string]$Serial,
     [string]$Package = 'org.telegram.messenger.web',
     # Telegram's own screens to open once signed in, each a deep link. A link that won't open
-    # fails the walk rather than skipping it.
-    [string[]]$Visit = @(
-        'tg://settings',
-        'tg://settings/privacy',
-        'tg://settings/folders',
-        'tg://settings/themes',
-        'tg://resolve?domain=telegram'
-    ),
+    # fails the walk rather than skipping it. walk-scenarios.json's visits unless given.
+    [string[]]$Visit,
     # The Hush settings pages on the home list, by the name each row shows in English.
-    [string[]]$SettingsPages = @('Ads', 'Chat list', 'Conversations', 'Playback', 'Notifications',
-        'Look and feel', 'Privacy', 'Changed switches'),
+    [string[]]$SettingsPages,
     # The pages under More settings.
-    [string[]]$MorePages = @('Links', 'Updates', 'Pause', 'Settings backup', 'Diagnostics', 'About'),
-    # Walk the app that's already installed instead of patching and installing a fresh one. The
-    # installed build must have been patched from the release bundle; the receipt still names the
-    # bundle's hash, so an install from any other build would make a receipt publish won't honor.
+    [string[]]$MorePages,
+    # Walk the app that's already installed instead of patching and installing a fresh one. Its
+    # hash has to match the patch artifact record of an earlier walk's APK (-Artifact).
     [switch]$SkipPatch,
+    [string]$Artifact,
     # Leave the Hush settings pages out of the walk. Makes the walk PARTIAL, not a release walk.
     [switch]$SkipSettings,
     [ValidateRange(1, 30)][int]$SettleSeconds = 4,
@@ -298,7 +302,7 @@ function Exit-WalkLease {
 function Invoke-WalkApp {
     param(
         [string]$Serial, [string]$Package, [string[]]$Visit, [string[]]$SettingsPages, [string[]]$MorePages,
-        [bool]$SkipPatch, [bool]$SkipSettings, [int]$SettleSeconds, [string]$OutDir, [string]$Apk,
+        [bool]$SkipPatch, [string]$Artifact, [bool]$SkipSettings, [int]$SettleSeconds, [string]$OutDir, [string]$Apk,
         [string]$Keystore, [string]$KeyAlias, [bool]$CliDefaultKeystore, [string]$LeaseDirectory,
         [string]$ChatIdentity, [string]$Adb, [string]$Aapt2, [string]$Root
     )
@@ -336,14 +340,23 @@ function Invoke-WalkApp {
     }
     if (-not $Adb) { throw 'No adb found. Put it on the PATH or pass -Adb.' }
     $Aapt2 = Resolve-Aapt2 -Explicit $Aapt2 -Root $Root
+    $walkScenarios = @(Read-WalkScenarios)
 
+    $patchDirectory = Join-Path $OutDir 'patch'
+    if (-not $Artifact) { $Artifact = Join-Path $patchDirectory 'patch-artifact.json' }
+    $Artifact = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Artifact)
+    $artifactRecord = $null
     if (-not $SkipPatch) {
         # Patching is as heavy as a build and waits in the build queue, so it runs before the lease.
-        $patchDirectory = Join-Path $OutDir 'patch'
         $installApk = Join-Path $patchDirectory "hushtelegram-$version-signed.apk"
-        if (Test-Path -LiteralPath $installApk) { Remove-Item -LiteralPath $installApk -Force }
-        $patchArguments = @{ OutDir = $patchDirectory; Root = $Root; PackageName = $Package }
-        if ($Apk) { $patchArguments.Apk = $Apk }
+        foreach ($old in @($installApk, $Artifact)) { if (Test-Path -LiteralPath $old) { Remove-Item -LiteralPath $old -Force } }
+        # The fixture is settled here, not left to patch-for-device.ps1, so the record names it.
+        $catalog = Get-Content -LiteralPath (Join-Path $Root 'patches-list.json') -Raw | ConvertFrom-Json
+        if (-not $Apk) { $Apk = Find-DefaultVendorApk -Target (Get-PatchTarget -PatchList $catalog -PackageName $Package) -FixtureDirectory $env:HUSHTELEGRAM_FIXTURE_DIR }
+        if (-not $Apk -or -not (Test-Path -LiteralPath $Apk -PathType Leaf)) {
+            throw 'No vendor APK. Pass -Apk with the declared build, or set HUSHTELEGRAM_FIXTURE_DIR to the folder that holds it.'
+        }
+        $patchArguments = @{ OutDir = $patchDirectory; Root = $Root; PackageName = $Package; Apk = $Apk }
         if ($Keystore) { $patchArguments.Keystore = $Keystore }
         if ($KeyAlias) { $patchArguments.KeyAlias = $KeyAlias }
         if ($CliDefaultKeystore) { $patchArguments.CliDefaultKeystore = $true }
@@ -352,12 +365,26 @@ function Invoke-WalkApp {
         if (-not (Test-Path -LiteralPath $installApk -PathType Leaf)) {
             throw 'patch-for-device.ps1 left no signed APK, so there is nothing to walk.'
         }
+        # patch-for-device.ps1 names the APK only once its report proved every requested patch.
+        $summary = Get-Content -LiteralPath (Join-Path $patchDirectory 'public-summary.json') -Raw | ConvertFrom-Json
+        $facts = Get-ApkManifestFacts -Apk $installApk -Aapt2 $Aapt2
+        $artifactRecord = New-WalkArtifact -ApkSha256 (Get-FileHash -LiteralPath $installApk -Algorithm SHA256).Hash `
+            -Package $facts.package -PackageVersion $facts.versionName -VersionCode $facts.versionCode `
+            -SignerSha256 ([string[]]@(Get-VendorSignerDigests -Apk $installApk -Aapt2 $Aapt2)) -FixtureName (Split-Path -Leaf $Apk) -FixtureSha256 (Get-FileHash -LiteralPath $Apk -Algorithm SHA256).Hash `
+            -BundleVersion $version -BundleSha256 $bundleSha256 -Patches ([string[]]@($summary.requestedPatches)) `
+            -Created ([DateTimeOffset]::UtcNow)
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Artifact) | Out-Null
+        [IO.File]::WriteAllText($Artifact, (ConvertTo-Json -InputObject $artifactRecord -Depth 4) + "`n")
+        Write-Host "[walk] patch artifact $Artifact"
+    } elseif (Test-Path -LiteralPath $Artifact -PathType Leaf) {
+        $artifactRecord = Get-Content -LiteralPath $Artifact -Raw | ConvertFrom-Json
     }
 
     $lease = $null
     $problems = [Collections.Generic.List[string]]::new()
     $screens = 0
-    $seen = [pscustomobject]@{ Screens = 0 }
+    # Each screen opened, and the walk-scenarios.json id it was opened as.
+    $seen = [pscustomobject]@{ Screens = 0; Scenarios = [Collections.Generic.List[string]]::new() }
     $account = 'unknown'
     $dumpPath = '/sdcard/hushtelegram-walk.xml'
     try {
@@ -391,7 +418,7 @@ function Invoke-WalkApp {
         # lower down come into view one swipe at a time, each followed by a fresh dump; the list is
         # the Hush settings, and nothing else is on screen to touch.
         $walkPage = {
-            param([string]$Name, [scriptblock]$OnList, [int]$Width, [int]$Height)
+            param([string]$Name, [scriptblock]$OnList, [int]$Width, [int]$Height, [string]$Prefix)
             $nodes = & $readScreen
             $row = Find-WalkRow $nodes $Name $Package
             for ($swipe = 0; -not $row -and $swipe -lt 6; $swipe++) {
@@ -410,7 +437,7 @@ function Invoke-WalkApp {
             Start-Sleep -Seconds 2
             $nodes = & $readScreen
             if ((Test-WalkSettingsPage $nodes $Name $Package) -and (& $inFront)) {
-                $seen.Screens++
+                $seen.Screens++; $seen.Scenarios.Add("$Prefix$Name")
                 Write-Host "[walk] opened the settings page $Name"
             } else {
                 $problems.Add("the settings page $Name would not open")
@@ -465,7 +492,7 @@ function Invoke-WalkApp {
         $launch = & $walkAdb @('shell', 'am', 'start', '-W', '-n', "$Package/$WalkMainActivity")
         Start-Sleep -Seconds ($SettleSeconds * 2)
         if (($launch.Output -join "`n") -match '(?m)^Status:\s*ok\s*$' -and (& $inFront)) {
-            $seen.Screens++
+            $seen.Screens++; $seen.Scenarios.Add('launch')
             $nodes = & $readScreen
             $account = if (Find-WalkRow $nodes $WalkSignedOutMarker $Package) { 'signed out' } else { 'signed in' }
             Write-Host "[walk] opened Telegram ($account)"
@@ -480,7 +507,7 @@ function Invoke-WalkApp {
                 $ok = ($opened.Output -join "`n") -match '(?m)^Status:\s*ok\s*$'
                 $front = & $inFront
                 if ($ok -and $front) {
-                    $seen.Screens++
+                    $seen.Screens++; $seen.Scenarios.Add("visit:$link")
                     Write-Host "[walk] opened $link"
                 } else {
                     $problems.Add("$link would not open (status ok: $ok, Telegram in front: $front)")
@@ -500,22 +527,22 @@ function Invoke-WalkApp {
                 $problems.Add('the Hush settings would not open from App info''s intent')
                 Write-Host '[walk] the Hush settings would not open'
             } else {
-                $seen.Screens++
+                $seen.Screens++; $seen.Scenarios.Add('settings:home')
                 Write-Host '[walk] opened the Hush settings'
                 $width, $height = & $screenSize
                 $onHome = { param($nodes) Test-WalkSettingsHome $nodes $Package }
                 $onMore = { param($nodes) Test-WalkSettingsPage $nodes $WalkMorePage $Package }
                 $listed = $true
                 foreach ($page in $SettingsPages) {
-                    $listed = & $walkPage $page $onHome $width $height
+                    $listed = & $walkPage $page $onHome $width $height 'settings:'
                     if (-not $listed) { break }
                 }
                 if ($listed -and @($MorePages).Count -gt 0) {
                     $before = $problems.Count
-                    [void](& $walkPage $WalkMorePage $onHome $width $height)
+                    [void](& $walkPage $WalkMorePage $onHome $width $height 'settings:')
                     if ($problems.Count -eq $before) {
                         foreach ($page in $MorePages) {
-                            if (-not (& $walkPage $page $onMore $width $height)) { break }
+                            if (-not (& $walkPage $page $onMore $width $height 'more:')) { break }
                         }
                         [void](& $walkAdb @('shell', 'input', 'keyevent', 'KEYCODE_BACK'))
                         Start-Sleep -Seconds 2
@@ -550,21 +577,36 @@ function Invoke-WalkApp {
             $installedSha = (((& $walkAdb @('shell', 'sha256sum', $apkPath.Substring(8).Trim())).Output -join '') -split '\s+')[0]
         }
 
-        $full = $full -and $problems.Count -eq 0
+        # The app walked has to be the APK the record names, patched from this bundle.
+        if ($null -eq $artifactRecord) {
+            $problems.Add("there's no patch artifact record at $Artifact for the installed APK, so nothing ties it to this bundle")
+        } else {
+            if ($installedSha -cnotmatch '^[0-9a-f]{64}$' -or $installedSha -cne $artifactRecord.apkSha256) {
+                $problems.Add("the installed APK ($installedSha) isn't the patched APK $($artifactRecord.apkSha256) in $Artifact")
+            }
+            if ($artifactRecord.bundleSha256 -cne $bundleSha256) {
+                $problems.Add("the patched APK in $Artifact came from another bundle ($($artifactRecord.bundleSha256))")
+            }
+        }
+        $patched = if ($artifactRecord) { [string[]]@($artifactRecord.patches) } else { [string[]]@() }
+        $missing = @(Get-WalkRequiredScenarios -Scenarios $walkScenarios -Patches $patched -Account $account |
+            Where-Object { $seen.Scenarios -cnotcontains $_ })
+        if ($missing.Count -gt 0) { Write-Host "[walk] not walked: $($missing -join ', ')" }
+
+        $full = $full -and $problems.Count -eq 0 -and $missing.Count -eq 0
         $result = Resolve-WalkOutcome -Screens $screens -Crashes $fatal.Count -Problems ([string[]]$problems) -Full $full
-        $receipt = New-WalkReceipt -Result $result -Full $full -Serial $Serial -Device $model `
-            -AppVersion $appVersion -BundleSha256 $bundleSha256 -InstalledApkSha256 $installedSha `
+        $receipt = New-WalkReceipt -Result $result -Full $full -Serial $Serial -Device $model -Package $Package `
+            -AppVersion $appVersion -BundleSha256 $bundleSha256 -InstalledApkSha256 $installedSha -Artifact $artifactRecord `
+            -Account $account -Scenarios ([string[]]$seen.Scenarios) `
             -Started $started -Finished ([DateTimeOffset]::UtcNow) -Screens $screens -Crashes $fatal.Count `
             -Problems ([string[]]$problems)
-        $receipt.package = $Package
-        $receipt.account = $account
         $receiptPath = Join-Path $OutDir 'walk-receipt.json'
         [IO.File]::WriteAllText($receiptPath, (ConvertTo-Json -InputObject $receipt -Depth 4) + "`n")
 
         Write-Host "[walk] receipt $receiptPath"
         foreach ($problem in $problems) { Write-Host "[walk]   $problem" }
         if ($result -ne 'PASS') { Write-Host '[walk] this walk does not back a release.' }
-        Write-Host "[walk] $result on $model ($Serial, $account): $screens screens, $($fatal.Count) crashes, $($problems.Count) problems"
+        Write-Host "[walk] $result on $model ($Serial, $account, $($receipt.kind)): $screens screens, $($fatal.Count) crashes, $($problems.Count) problems"
         return $receiptPath
     } finally {
         if ($lease) {
@@ -575,8 +617,14 @@ function Invoke-WalkApp {
 }
 
 if ($MyInvocation.InvocationName -ne '.') {
+    $scenarioList = @(Read-WalkScenarios)
+    if (-not $PSBoundParameters.ContainsKey('Visit')) { $Visit = @($scenarioList | Where-Object Kind -CEQ 'visit' | ForEach-Object Link) }
+    if (-not $PSBoundParameters.ContainsKey('SettingsPages')) {
+        $SettingsPages = @($scenarioList | Where-Object { $_.Kind -ceq 'settings' -and $_.Page -cne $WalkMorePage } | ForEach-Object Page)
+    }
+    if (-not $PSBoundParameters.ContainsKey('MorePages')) { $MorePages = @($scenarioList | Where-Object Kind -CEQ 'more' | ForEach-Object Page) }
     $receiptPath = Invoke-WalkApp -Serial $Serial -Package $Package -Visit $Visit -SettingsPages $SettingsPages `
-        -MorePages $MorePages -SkipPatch:$SkipPatch -SkipSettings:$SkipSettings -SettleSeconds $SettleSeconds `
+        -MorePages $MorePages -SkipPatch:$SkipPatch -Artifact $Artifact -SkipSettings:$SkipSettings -SettleSeconds $SettleSeconds `
         -OutDir $OutDir -Apk $Apk -Keystore $Keystore -KeyAlias $KeyAlias -CliDefaultKeystore:$CliDefaultKeystore `
         -LeaseDirectory $LeaseDirectory -ChatIdentity $ChatIdentity -Adb $Adb -Aapt2 $Aapt2 -Root $Root
     $walked = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json

@@ -171,32 +171,60 @@ try {
     $started = [DateTimeOffset]::Parse('2026-10-23T00:00:00Z')
     $finished = $started.AddMinutes(6)
 
+    $catalogPath = Join-Path (Split-Path -Parent $PSScriptRoot) 'patches-list.json'
+    $catalog = Get-Content -LiteralPath $catalogPath -Raw | ConvertFrom-Json
+    $target = Get-PatchTarget -PatchList $catalog -PackageName 'org.telegram.messenger.web'
+    $versionCode = [string]@($target.PackageVersionCodes[$target.PackageVersion])[0]
+    $allPatches = [string[]]@($catalog.patches | ForEach-Object { $_.name })
+    $smokeScenarios = [string[]]@(Get-WalkRequiredScenarios -Scenarios @(Read-WalkScenarios) -Patches $allPatches -Account 'signed out')
     function New-WalkReceiptFile([string]$Name, [string]$Result, [bool]$Full, [int]$Screens, [int]$Crashes, [string]$Sha, [string[]]$Problems) {
+        $artifact = New-WalkArtifact -ApkSha256 ('0' * 64) -Package 'org.telegram.messenger.web' -PackageVersion $target.PackageVersion `
+            -VersionCode $versionCode -SignerSha256 ('2' * 64) -FixtureName "telegram-web-$($target.PackageVersion)-$versionCode.apk" `
+            -FixtureSha256 ('1' * 64) -BundleVersion '0.0.0' `
+            -BundleSha256 $Sha -Patches $allPatches -Created $started.AddMinutes(-1)
         $receipt = New-WalkReceipt -Result $Result -Full $Full -Serial 'emulator-5554' -Device 'sdk_gphone64_x86_64' `
-            -AppVersion '13.1.0' -BundleSha256 $Sha -InstalledApkSha256 ('0' * 64) `
+            -Package 'org.telegram.messenger.web' -AppVersion $target.PackageVersion -BundleSha256 $Sha -InstalledApkSha256 ('0' * 64) `
+            -Artifact $artifact -Account 'signed out' -Scenarios $smokeScenarios `
             -Started $started -Finished $finished -Screens $Screens -Crashes $Crashes -Problems $Problems
-        $receipt.package = 'org.telegram.messenger.web'
-        $receipt.account = 'signed out'
         $path = Join-Path $scratch $Name
-        [IO.File]::WriteAllText($path, (ConvertTo-Json -InputObject $receipt -Depth 4) + "`n")
+        [IO.File]::WriteAllText($path, (ConvertTo-Json -InputObject $receipt -Depth 5) + "`n")
         return $path
     }
+    function Test-Walk([string]$Path) { Test-WalkReceipt -Path $Path -BundlePath $bundle -PatchListPath $catalogPath }
 
     $passWalk = New-WalkReceiptFile 'pass.json' 'PASS' $true 22 0 $bundleSha256 @()
-    Assert-True (Test-WalkReceipt -Path $passWalk -BundlePath $bundle).Valid `
+    Assert-True (Test-Walk $passWalk).Valid `
         'A whole clean walk of this bundle should back a release.'
 
     $crashWalk = New-WalkReceiptFile 'crash.json' 'FAIL' $false 9 1 $bundleSha256 @('Telegram crashed during the walk: ...')
-    Assert-True (-not (Test-WalkReceipt -Path $crashWalk -BundlePath $bundle).Valid) `
+    Assert-True (-not (Test-Walk $crashWalk).Valid) `
         'A walk that recorded a crash must not back a release.'
 
     $skipWalk = New-WalkReceiptFile 'skip.json' 'PARTIAL' $false 6 0 $bundleSha256 @()
-    Assert-True (-not (Test-WalkReceipt -Path $skipWalk -BundlePath $bundle).Valid) `
+    Assert-True (-not (Test-Walk $skipWalk).Valid) `
         'A walk that skipped part of the app must not back a release.'
 
     $otherWalk = New-WalkReceiptFile 'other-bundle.json' 'PASS' $true 22 0 ('a' * 64) @()
-    Assert-True (-not (Test-WalkReceipt -Path $otherWalk -BundlePath $bundle).Valid) `
+    Assert-True (-not (Test-Walk $otherWalk).Valid) `
         'A clean walk of a different bundle must not back this one.'
+
+    # The page lists walk-app.ps1 walks by default are the manifest's, so the defaults can't drift
+    # from what publish asks for.
+    $walkText = [IO.File]::ReadAllText((Join-Path $PSScriptRoot 'walk-app.ps1'))
+    foreach ($listed in @('Visit', 'SettingsPages', 'MorePages')) {
+        Assert-True ($walkText -cmatch "(?m)^\s*\[string\[\]\]\`$$listed,\s*$" -and
+            $walkText.Contains("if (-not `$PSBoundParameters.ContainsKey('$listed'))")) `
+            "walk-app.ps1's -$listed has a default of its own instead of walk-scenarios.json's."
+    }
+    # The screen and scenario tally is made before the first screen counts into it. Lost once in a
+    # rewrite, every walk died at launch on "The property 'Screens' cannot be found".
+    $walkAst = [Management.Automation.Language.Parser]::ParseInput($walkText, [ref]$null, [ref]$null)
+    $invoke = $walkAst.Find({ param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -ceq 'Invoke-WalkApp' }, $true)
+    $seenUses = @($invoke.FindAll({ param($node) $node -is [Management.Automation.Language.VariableExpressionAst] -and $node.VariablePath.UserPath -ceq 'seen' }, $true) |
+        Sort-Object { $_.Extent.StartOffset })
+    $seenMade = $seenUses.Count -gt 0 -and $seenUses[0].Parent -is [Management.Automation.Language.AssignmentStatementAst] -and
+        $seenUses[0].Parent.Right.Extent.Text -cmatch 'Screens = 0; Scenarios = \[Collections\.Generic\.List\[string\]\]::new\(\)'
+    Assert-True $seenMade 'Invoke-WalkApp counts screens into $seen before it makes it with Screens and Scenarios.'
 
     Write-Host "[walk-app] $passed checks passed"
 } finally {
