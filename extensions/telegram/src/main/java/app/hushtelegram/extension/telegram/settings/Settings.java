@@ -192,6 +192,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_video_either_landscape", FALSE);
 
     /**
+     * The video viewer stays upright when the phone is turned and goes landscape only from its full
+     * screen button (#27).
+     */
+    public static final BooleanSetting VIDEO_ONLY_FROM_BUTTON =
+            new BooleanSetting("hushtelegram_video_only_from_button", FALSE);
+
+    /**
      * A swipe to the right on a profile's photos or media tabs goes back instead of to the previous
      * photo or tab.
      */

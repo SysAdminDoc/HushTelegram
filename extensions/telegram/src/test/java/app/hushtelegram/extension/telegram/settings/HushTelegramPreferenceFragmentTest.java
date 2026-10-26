@@ -535,6 +535,13 @@ public class HushTelegramPreferenceFragmentTest {
             // Full screen keeps Telegram's one side until the switch is turned on.
             assertFalse(Settings.VIDEO_EITHER_LANDSCAPE.key,
                     ((SwitchPreference) page.findPreference(Settings.VIDEO_EITHER_LANDSCAPE.key)).isChecked());
+            assertEquals("Turn videos only from the full screen button",
+                    String.valueOf(page.findPreference(Settings.VIDEO_ONLY_FROM_BUTTON.key).getTitle()));
+            assertEquals("An open video stays upright when you turn your phone. It goes landscape only when you tap "
+                    + "full screen.", String.valueOf(page.findPreference(Settings.VIDEO_ONLY_FROM_BUTTON.key).getSummary()));
+            // Videos follow the phone as Telegram has it until the switch is turned on.
+            assertFalse(Settings.VIDEO_ONLY_FROM_BUTTON.key,
+                    ((SwitchPreference) page.findPreference(Settings.VIDEO_ONLY_FROM_BUTTON.key)).isChecked());
             assertEquals("Swipe back on profiles", String.valueOf(page.findPreference(Settings.SWIPE_BACK_ON_PROFILES.key).getTitle()));
             assertEquals("Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, "
                     + "instead of showing the previous photo or tab.",

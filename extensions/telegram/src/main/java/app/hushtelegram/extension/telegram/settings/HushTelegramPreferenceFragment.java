@@ -575,6 +575,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Full screen videos turn either way"), L10n.t("After you tap full screen, a video follows"
                                 + " your phone to either landscape side, even with auto-rotate off.")));
             }
+            if (PatchFamily.Capability.VIDEO_ONLY_FROM_BUTTON.installed()) {
+                on(pages, PatchFamily.KEEP_VIDEOS_MUTED).addPreference(toggle(context, Settings.VIDEO_ONLY_FROM_BUTTON,
+                        L10n.t("Turn videos only from the full screen button"), L10n.t("An open video stays upright when you"
+                                + " turn your phone. It goes landscape only when you tap full screen.")));
+            }
         }
         if (build.contains(PatchFamily.VOICE_ONE_AT_A_TIME)) {
             on(pages, PatchFamily.VOICE_ONE_AT_A_TIME).addPreference(toggle(context, Settings.VOICE_ONE_AT_A_TIME, L10n.t("Play voice messages one at a time"),

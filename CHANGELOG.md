@@ -5,6 +5,7 @@ Every HushTelegram release, newest first.
 ## Unreleased
 
 * **Telegram:** **Hide new message button** keeps the pencil button hidden now. Telegram brings the button back with its own little grow animation whenever the chat list settles (after a scroll, on opening the app, when you leave a chat), and that animation used to undo the switch. The Done button Telegram shows in the same spot while you pick chats still shows up like before. (#31)
+* **Telegram:** **Keep videos muted on volume keys** has a third switch on the Playback page, **Turn videos only from the full screen button**. With auto-rotate on, an open video can swing to landscape the moment you tilt your phone. With this switch on, it stays upright until you tap full screen, and the app goes back to its usual turning when you leave full screen or close the video. It's off unless you turn it on. Whatever the switch says, the diagnostic report now counts whether a video went full screen from its button or from the phone turning, so you can see which one happened. (#27)
 
 ## 0.0.20 (2026-10-23)
 
