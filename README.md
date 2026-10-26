@@ -22,7 +22,7 @@
 
 HushTelegram is a set of [Morphe](https://morphe.software) patches for Telegram on Android. It takes the sponsored messages and search ads out of Telegram and keeps the app's usage reports on your phone. Everything else is a switch in its own settings screen, so you can hide Stories and the Premium upsells, keep messages other people delete, translate a whole chat, get notifications through UnifiedPush, go AMOLED black and plenty more. It doesn't give away paid Premium features or get around a channel's forwarding and saving limits.
 
-The latest release is [v0.0.20](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.20), with 67 patches for Telegram 13.1.0, both telegram.org's build and the one from Google Play. It needs Morphe Manager 2.0.0 or newer. The version badge follows the source on main, which can be ahead of the release. What changed in each version is in the [changelog](CHANGELOG.md).
+The latest release is [v0.0.20](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.20), with 67 patches for Telegram 13.1.0, both telegram.org's build and the one from Google Play. That release works with Morphe Manager 2.0.0 and up, and the next one will need 2.2.0. The version badge follows the source on main, which can be ahead of the release. What changed in each version is in the [changelog](CHANGELOG.md).
 
 **[Add HushTelegram to Morphe Manager](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram)** | [Download a release](https://github.com/SysAdminDoc/HushTelegram/releases/latest) | [Browse the patches](#patches)
 
