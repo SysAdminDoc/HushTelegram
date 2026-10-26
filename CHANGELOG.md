@@ -2,6 +2,10 @@
 
 Every HushTelegram release, newest first.
 
+## Unreleased
+
+* **Telegram:** **Hide new message button** keeps the pencil button hidden now. Telegram brings the button back with its own little grow animation whenever the chat list settles (after a scroll, on opening the app, when you leave a chat), and that animation used to undo the switch. The Done button Telegram shows in the same spot while you pick chats still shows up like before. (#31)
+
 ## 0.0.20 (2026-10-23)
 
 The eleventh release, with 67 patches for Telegram 13.1.0 from telegram.org and from Google Play. It's built on Morphe's 2.0 patcher, so update Morphe Manager to 2.0.0 before you patch. Four new switches came out of your issue reports.
