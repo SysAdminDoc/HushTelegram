@@ -387,7 +387,7 @@ function Invoke-PatchSelectionMatrix {
             $expected = Get-SelectionExpectation -Catalog $catalog -StatusModel $model -Selection $selection
             $expectationPath = Join-Path $caseDir 'expectation-private.json'
             [IO.File]::WriteAllText($expectationPath, ($expected | ConvertTo-Json -Depth 8), [Text.UTF8Encoding]::new($false))
-            $arguments = @('-Xmx2g', '-XX:ActiveProcessorCount=2', '-jar', $DesktopJar, 'patch', '--unsigned', '-p', $Bundle,
+            $arguments = @('-Xmx2g', '-XX:ActiveProcessorCount=2', '-jar', $DesktopJar, 'patch', '--validate', '--unsigned', '-p', $Bundle,
                 '-o', $output, '-t', $temporary, '-r', $reportPath)
             if (-not $selection.Default) {
                 $arguments += '--exclusive'

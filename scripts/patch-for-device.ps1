@@ -216,7 +216,7 @@ try {
         $signing += @('--keystore-password', $keystorePassword, '--keystore-entry-alias', $KeyAlias,
             '--keystore-entry-password', $keystorePassword)
     }
-    $arguments = @('patch', '--exclusive', '-p', $bundle, '-o', $out, '-t', $temp, '-r', $result) + $signing + $enable + @($Apk)
+    $arguments = @('patch', '--validate', '--exclusive', '-p', $bundle, '-o', $out, '-t', $temp, '-r', $result) + $signing + $enable + @($Apk)
     $argumentFile = Resolve-WithinRoot -Root $runDir -Path (Join-Path $runDir 'morphe-patch.args')
     $argumentFileLines = @($arguments | ForEach-Object {
         $value = [string]$_

@@ -260,4 +260,19 @@ Assert-Selection (-not (Test-SelectionRewrittenValues -Report ($rewrites -replac
 Assert-Selection (-not (Test-SelectionRewrittenValues -Report ($rewrites -replace 'night-v29', 'v31') -Closure $logoOnly)) 'A rewrite of the light launch theme passed.'
 Assert-Selection (-not (Test-SelectionRewrittenValues -Report ($rewrites -replace 'rewritten values: 2', 'rewritten values: 3') -Closure $logoOnly)) 'A third rewrite passed with the logo''s two.'
 Assert-Selection (-not (Test-SelectionRewrittenValues -Report 'no table report' -Closure $default)) 'A report without its rewritten values line passed.'
+# No contract runs this matrix through the CLI, so its patch command is read from the source: every
+# argument list that runs the CLI's patch command also passes --validate.
+$selectionSource = [System.Management.Automation.Language.Parser]::ParseFile(
+    (Join-Path $Root 'scripts/verify-patch-selections.ps1'), [ref]$null, [ref]$null)
+$patchCommands = @($selectionSource.FindAll({ param($Node)
+            $Node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+            @($Node.Right.FindAll({ param($Inner)
+                        $Inner -is [System.Management.Automation.Language.StringConstantExpressionAst] -and
+                        $Inner.Value -ceq 'patch' }, $true)).Count -gt 0 }, $true))
+$unvalidated = @($patchCommands | Where-Object {
+        @($_.Right.FindAll({ param($Inner)
+                    $Inner -is [System.Management.Automation.Language.StringConstantExpressionAst] -and
+                    $Inner.Value -ceq '--validate' }, $true)).Count -eq 0 })
+Assert-Selection ($patchCommands.Count -ge 1 -and $unvalidated.Count -eq 0) `
+    "verify-patch-selections.ps1 runs the CLI's patch command without --validate: $(@($unvalidated | ForEach-Object { $_.Extent.Text }) -join '; ')"
 Write-Host "[selections] contracts passed ($assertions assertions)"
