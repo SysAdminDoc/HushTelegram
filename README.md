@@ -47,7 +47,7 @@ Open Telegram's Settings and tap **HushTelegram settings**, or press and hold th
 
 The home page is search plus one short list of sections. Tap a section to open its switches right there, and tap it again to fold it away. The first seven are grouped the way Morphe Manager groups them, and Links, Updates, Pause, Settings backup, Diagnostics and About come after. The **Pause** button at the top turns HushTelegram's changes off from the next start and keeps your choices for when you resume. In the Pause section, **Lock HushTelegram settings** makes every setting read-only until you start an unlock and wait 24 hours. **Quick setups** in Settings backup turns on the Quiet or Privacy switches in one tap, or puts every switch back the way it started. **Changed switches** lists only what you've changed, and **Report a problem** opens a GitHub bug report with your versions and switches already filled in.
 
-<p><img src="assets/settings-overview.png" width="320" alt="HushTelegram settings in Telegram blue, with search, Pause and the settings sections"><img src="assets/settings-ads.png" width="320" alt="The Ads page with Hide ads turned on"></p>
+<p><img src="assets/settings-overview.png" width="320" alt="HushTelegram settings in Telegram blue, with search, Pause and the settings sections"><img src="assets/settings-ads.png" width="320" alt="The Ads section open in place, with Hide ads turned on"></p>
 
 ## Patches
 
