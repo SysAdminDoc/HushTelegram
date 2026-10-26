@@ -343,7 +343,7 @@ public final class SelectionCheck {
         hook(calls, flags, "stickerSize", "misc/StickerSize", "size");
         hook(calls, flags, "ignoreMutedMentions", "misc/MutedMentions", "notifyDialog");
         hook(calls, flags, "hideBlockedInGroups", "misc/BlockedSenders", "type", "hideReply");
-        hook(calls, flags, "hideFeaturesAndInvite", "misc/FeaturesInvite", "addFeaturesRow");
+        hook(calls, flags, "hideFeaturesAndInvite", "misc/FeaturesInvite", "addFeaturesRow", "listShown");
         hook(calls, flags, "messageMenuRepeat", "misc/MessageMenu", "fill");
         hook(calls, flags, "keepDeleted", "misc/KeepDeleted", "userUpdate", "channelUpdate", "push", "measuring");
         hook(calls, flags, "redDeletedLabel", "misc/KeepDeleted", "painted");
