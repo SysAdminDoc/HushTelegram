@@ -137,8 +137,8 @@ public class ScreenColorsTest {
         ScreenColors page = ScreenColors.DEFAULT;
         assertEquals(19.22, contrast(page.title, page.background), 0.01);
         assertEquals(10.20, contrast(page.summary, page.background), 0.01);
-        assertEquals(12.49, contrast(page.heading, page.background), 0.01);
-        assertEquals(10.46, contrast(page.onAccent, page.accent), 0.01);
+        assertEquals(8.16, contrast(page.heading, page.background), 0.01);
+        assertEquals(7.26, contrast(page.onAccent, page.accent), 0.01);
         assertEquals(4.76, contrast(page.offThumb(), page.switchOff), 0.01);
     }
 

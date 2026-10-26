@@ -104,22 +104,22 @@ final class ScreenColors {
         dialog = 0xFF0A111C;
         title = 0xFFEEF6FC;
         summary = 0xFFA5B7C7;
-        heading = 0xFF63D5FF;
-        accent = 0xFF63D5FF;
+        heading = 0xFF2AABEE;
+        accent = 0xFF2AABEE;
         switchOff = 0xFF60758A;
         card = 0xFF0A111C;
         outline = 0xFF223044;
-        onAccent = 0xFF041B29;
-        iconTile = 0xFF0C2936;
+        onAccent = 0xFF03141F;
+        iconTile = 0xFF082230;
         fieldBorder = 0xFF607C92;
         selection = 0xFF17344A;
         error = 0xFFFFB4A8;
-        ripple = 0x3363D5FF;
+        ripple = 0x332AABEE;
     }
 
     /**
      * The white thumb of an off switch reads against its muted track. On switches use dark ink
-     * against cyan, so the thumb's position stays distinct in both states.
+     * against Telegram blue, so the thumb's position stays distinct in both states.
      */
     int offThumb() {
         return Color.WHITE;
@@ -133,7 +133,7 @@ final class ScreenColors {
     }
 
     /**
-     * The text of a dialog's outlined actions, such as Cancel, uses the same cyan as headings.
+     * The text of a dialog's outlined actions, such as Cancel, uses the same Telegram blue as headings.
      */
     int secondaryActionText() {
         return heading;
