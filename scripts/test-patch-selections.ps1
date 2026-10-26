@@ -161,6 +161,14 @@ Assert-Selection (-not (Test-SelectionRefusal -Selection $malformed -PrivateLog 
     -Report ([pscustomobject]@{ appliedPatches = @(); failedPatches = @(); stepResults = @() }))) 'A 1.19.0 parser refusal passed with a result file.'
 Assert-Selection (-not (Test-SelectionRefusal -Selection $malformed -Report $null -PrivateLog ($currentParseLog.Replace('PatchBundle', 'UnrelatedDocument')) -Stock $stock)) 'An unrelated 1.19.0 JSON parser failure passed.'
 Assert-Selection (-not (Test-SelectionRefusal -Selection $malformed -Report $null -PrivateLog ($currentParseLog.Replace('readPatchBundles', 'readSomethingElse')) -Stock $stock)) 'A 1.19.0 JSON failure outside the options file reader passed.'
+# 1.19.1 wraps each stack line in italic style codes, as its real refusal log does.
+$styleOn = [string][char]27 + '[3m'
+$styleOff = [string][char]27 + '[23m' + [char]27 + '[0m'
+$styledParseLog = (($currentParseLog -split "`n") | ForEach-Object { if ($_.StartsWith("`tat ")) { $styleOn + $_ + $styleOff } else { $_ } }) -join "`n"
+Assert-Selection ($styledParseLog -ne $currentParseLog) 'The styled 1.19.1 parser log carries no style codes.'
+Assert-Selection (Test-SelectionRefusal -Selection $malformed -Report $null -PrivateLog $styledParseLog -Stock $stock) 'A 1.19.1 parser refusal with styled stack lines was rejected.'
+Assert-Selection (-not (Test-SelectionRefusal -Selection $malformed -Report $null -PrivateLog ($styledParseLog.Replace('readPatchBundles', 'readSomethingElse')) -Stock $stock)) 'A styled JSON failure outside the options file reader passed.'
+Assert-Selection (-not (Test-SelectionRefusal -Selection $invalidId -Report $null -PrivateLog $styledParseLog -Stock $stock)) 'Styled parser evidence satisfied an unrelated API validation case.'
 foreach ($toolFailure in @('java.lang.OutOfMemoryError: exhausted', 'Exception in thread "main" java.lang.OutOfMemoryError: exhausted',
     "`tCaused by: java.io.IOException: unavailable")) {
     Assert-Selection (-not (Test-SelectionRefusal -Selection $invalidId -Report $current -PrivateLog ($currentLog + "`n" + $toolFailure) -Stock $stock)) 'A tool crash satisfied a 1.19.0 option-validation case.'
