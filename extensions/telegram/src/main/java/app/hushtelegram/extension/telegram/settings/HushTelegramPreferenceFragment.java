@@ -84,6 +84,7 @@ import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
 import app.hushtelegram.extension.telegram.misc.GalleryFolder;
 import app.hushtelegram.extension.telegram.misc.KeepDeleted;
+import app.hushtelegram.extension.telegram.misc.KeepEdits;
 import app.hushtelegram.extension.telegram.misc.LaunchFolder;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
@@ -117,6 +118,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String SUPPORTED_LINKS = "action_supported_links";
     /** The Clear kept messages row's key, which stores nothing. */
     static final String CLEAR_KEPT = "action_clear_kept_messages";
+    /** The Clear edit history row's key, which stores nothing. */
+    static final String CLEAR_EDITS = "action_clear_edit_history";
     /** The Sticker size row's key. The size itself is saved under {@link Settings#STICKER_SIZE}. */
     static final String STICKER_SIZE_ROW = "action_sticker_size";
     /** The Gallery folder row's key. The choice itself is saved under {@link Settings#GALLERY_FOLDER}. */
@@ -540,6 +543,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + " it stands out in the chat. Works with Keep deleted messages on.")));
             }
             on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(clearKeptRow(context));
+            // The earlier text shows in Message details, which the message menu patch adds.
+            if (PatchFamily.Capability.EDIT_HISTORY.installed()) {
+                on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(toggle(context, Settings.KEEP_EDIT_HISTORY,
+                        L10n.t("Keep edit history"), L10n.t("Keeps the text a message had before someone else edited it, on this"
+                                + " phone only. Message details in the message's menu shows it.")));
+                on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(clearEditsRow(context));
+            }
         }
         if (build.contains(PatchFamily.ASK_BEFORE_STICKER)) {
             on(pages, PatchFamily.ASK_BEFORE_STICKER).addPreference(toggle(context, Settings.ASK_BEFORE_STICKER, L10n.t("Ask before sending a sticker"),
@@ -1393,6 +1403,21 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         row.actsAtOnce = true;
         row.setOnPreferenceClickListener(p -> {
             Utils.showToastLong(KeepDeleted.clearedMessage(KeepDeleted.clear()));
+            return true;
+        });
+        return row;
+    }
+
+    /** Forgets every earlier text Keep edit history kept, in every account, and says how many messages had some. */
+    private static Preference clearEditsRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(CLEAR_EDITS);
+        row.setPersistent(false);
+        row.setTitle(L10n.t("Clear edit history"));
+        row.setSummary(L10n.t("Forgets the earlier text this phone kept for edited messages, in every account."));
+        row.actsAtOnce = true;
+        row.setOnPreferenceClickListener(p -> {
+            Utils.showToastLong(KeepEdits.clearedMessage(KeepEdits.clear()));
             return true;
         });
         return row;

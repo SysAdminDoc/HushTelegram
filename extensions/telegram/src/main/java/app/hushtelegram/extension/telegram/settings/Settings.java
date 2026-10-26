@@ -376,6 +376,12 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_red_deleted_label", FALSE);
 
     /**
+     * When someone else edits a message, this phone keeps the text it had before, shown in Message details.
+     */
+    public static final BooleanSetting KEEP_EDIT_HISTORY =
+            new BooleanSetting("hushtelegram_keep_edit_history", FALSE);
+
+    /**
      * A sticker you tap asks Send or Cancel before it goes into the chat.
      */
     public static final BooleanSetting ASK_BEFORE_STICKER =

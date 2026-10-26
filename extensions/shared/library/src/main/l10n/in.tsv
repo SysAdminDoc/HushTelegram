@@ -410,6 +410,22 @@ Removing %1$d kept messages.	Menghapus %1$d pesan yang disimpan.
 # context: the notice once Telegram has finished removing them, with how many went
 Removed %1$d kept message.	%1$d pesan yang disimpan telah dihapus.
 Removed %1$d kept messages.	%1$d pesan yang disimpan telah dihapus.
+# context: a third switch under Keep deleted messages. Turned on, the text a message had before someone else edited it is kept on the phone.
+Keep edit history	Simpan riwayat edit
+# context: that switch's summary. "Message details" is HushTelegram's own message menu item, translated the same as that row.
+Keeps the text a message had before someone else edited it, on this phone only. Message details in the message's menu shows it.	Menyimpan teks pesan sebelum orang lain mengeditnya, hanya di ponsel ini. Detail pesan di menu pesan menampilkannya.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep deleted messages that keeps the text from before an edit.
+earlier text of edited messages	teks lama dari pesan yang diedit
+# context: an action row under Keep edit history; a tap forgets every earlier text that switch kept
+Clear edit history	Hapus riwayat edit
+Forgets the earlier text this phone kept for edited messages, in every account.	Melupakan teks lama yang disimpan ponsel ini untuk pesan yang diedit, di setiap akun.
+# context: the notice after that tap when nothing was kept. A toast: two short lines at most.
+There's no edit history to clear.	Tidak ada riwayat edit untuk dihapus.
+# context: the notice after that tap, with how many messages had earlier text. A toast: two short lines at most.
+Cleared the edit history of %1$d message.	Riwayat edit %1$d pesan telah dihapus.
+Cleared the edit history of %1$d messages.	Riwayat edit %1$d pesan telah dihapus.
+# context: a line in Message details. %1$s is the date and time of the edit, %2$s the text the message had before it.
+Before the edit at %1$s: %2$s	Sebelum diedit (%1$s): %2$s
 Ask before sending a sticker	Tanya dulu sebelum mengirim stiker
 Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.	Menanyakan Kirim atau Batal sebelum stiker yang Anda ketuk masuk ke obrolan. Batal membuangnya. Stiker terjadwal terkirim tanpa bertanya.
 Translate with an outside service	Terjemahkan dengan layanan luar

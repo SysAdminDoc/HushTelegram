@@ -407,6 +407,22 @@ Removing %1$d kept messages.	Премахват се %1$d запазени съ�
 # context: the notice once Telegram has finished removing them, with how many went
 Removed %1$d kept message.	Премахнато е %1$d запазено съобщение.
 Removed %1$d kept messages.	Премахнати са %1$d запазени съобщения.
+# context: a third switch under Keep deleted messages. Turned on, the text a message had before someone else edited it is kept on the phone.
+Keep edit history	Запазване на историята на редакциите
+# context: that switch's summary. "Message details" is HushTelegram's own message menu item, translated the same as that row.
+Keeps the text a message had before someone else edited it, on this phone only. Message details in the message's menu shows it.	Пази текста, който съобщението е имало, преди някой друг да го редактира, само на този телефон. Показва се в Подробности за съобщението в менюто на съобщението.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep deleted messages that keeps the text from before an edit.
+earlier text of edited messages	предишния текст на редактираните съобщения
+# context: an action row under Keep edit history; a tap forgets every earlier text that switch kept
+Clear edit history	Изчистване на историята на редакциите
+Forgets the earlier text this phone kept for edited messages, in every account.	Забравя предишния текст, който този телефон е запазил за редактирани съобщения, във всички акаунти.
+# context: the notice after that tap when nothing was kept. A toast: two short lines at most.
+There's no edit history to clear.	Няма история на редакциите за изчистване.
+# context: the notice after that tap, with how many messages had earlier text. A toast: two short lines at most.
+Cleared the edit history of %1$d message.	Историята на редакциите на %1$d съобщение е изчистена.
+Cleared the edit history of %1$d messages.	Историята на редакциите на %1$d съобщения е изчистена.
+# context: a line in Message details. %1$s is the date and time of the edit, %2$s the text the message had before it.
+Before the edit at %1$s: %2$s	Преди редакцията (%1$s): %2$s
 Ask before sending a sticker	Потвърждение преди изпращане на стикер
 Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.	Пита „Изпращане“ или „Отказ“, преди докоснат стикер да влезе в чат. „Отказ“ го отхвърля. Планираните стикери се изпращат без питане.
 Translate with an outside service	Превод с външна услуга
