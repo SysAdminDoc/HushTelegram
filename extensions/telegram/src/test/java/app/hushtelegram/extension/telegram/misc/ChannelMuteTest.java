@@ -7,6 +7,7 @@ package app.hushtelegram.extension.telegram.misc;
 import static org.junit.Assert.*;
 
 import android.view.View;
+import android.widget.FrameLayout;
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
@@ -102,6 +103,27 @@ public class ChannelMuteTest {
         update(second, false);
         assertEquals(View.VISIBLE, second.getVisibility());
         assertEquals(View.VISIBLE, first.getVisibility());
+    }
+
+    @Test public void theBubbleBehindATakenOffBarGoesWithIt() {
+        Settings.HIDE_CHANNEL_MUTE.save(true);
+        FrameLayout holder = new FrameLayout(RuntimeEnvironment.getApplication());
+        FrameLayout island = new FrameLayout(RuntimeEnvironment.getApplication());
+        holder.addView(island);
+        View bar = bar();
+        island.addView(bar);
+        FrameLayout otherChat = new FrameLayout(RuntimeEnvironment.getApplication());
+        assertTrue(ChannelMute.bubble(holder, 1));
+        update(bar, true);
+        assertFalse(ChannelMute.bubble(holder, 1));
+        assertFalse(ChannelMute.bubble(holder, 0));
+        assertTrue("another chat screen keeps its bubble", ChannelMute.bubble(otherChat, 1));
+        Settings.HIDE_CHANNEL_MUTE.save(false);
+        assertTrue(ChannelMute.bubble(holder, 1));
+        Settings.HIDE_CHANNEL_MUTE.save(true);
+        update(bar, false);
+        assertTrue("a bar given back brings the bubble back", ChannelMute.bubble(holder, 1));
+        assertTrue(ChannelMute.bubble(null, 1));
     }
 
     @Test public void turningTheSwitchOffBringsAHeldBarBack() {

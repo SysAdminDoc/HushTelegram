@@ -81,6 +81,22 @@ class HideChannelBarButtonsFixtureTest {
             val visibility = visible.single().controlBody()
             assertEquals("$name: the bar's setVisibility asks the extension first",
                 listOf(Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT), visibility.take(2).map { it.opcode })
+            // The bubble behind the bar asks too: its flag goes through the extension between its read and its test.
+            val drawn = mutableListOf<Method>()
+            context.classDefForEach { cls ->
+                if (cls.type.startsWith("Lapp/hushtelegram/")) return@classDefForEach
+                cls.methods.filterTo(drawn) { m -> m.controlBody().any { it.controlRef() == MUTE_BUBBLE } }
+            }
+            assertEquals("$name: one bubble draw hooked", listOf("dispatchDraw"), drawn.map { it.name })
+            val draw = drawn.single().controlBody()
+            val asked = draw.indexOfFirst { it.controlRef() == MUTE_BUBBLE }
+            val self = drawn.single().implementation!!.registerCount - 2
+            assertEquals("$name: the flag is read first", Opcode.IGET_BOOLEAN, draw[asked - 1].opcode)
+            val flag = draw[asked - 1].namedRegisters().first()
+            assertEquals("$name: the holder and its flag", listOf(self, flag), draw[asked].namedRegisters())
+            assertEquals("$name: the answer replaces the flag", listOf(Opcode.MOVE_RESULT, Opcode.IF_EQZ), draw.subList(asked + 1, asked + 3).map { it.opcode })
+            assertEquals("$name: the guard tests the answer", listOf(flag, flag), listOf(draw[asked + 1], draw[asked + 2]).map { it.namedRegisters().single() })
+            assertEquals("$name: the guard keeps the bubble's draw", "Landroid/graphics/drawable/Drawable;->draw(Landroid/graphics/Canvas;)V", draw[asked + 4].controlRef())
             val muteStatus = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "hideChannelMute" }.controlBody()
             assertEquals("$name: the Mute capability", 1L, (muteStatus.first() as WideLiteralInstruction).wideLiteral)
             assertEquals("$name: Recent actions untouched", elsewhere, placeCallers(context, plan.place) - signature(plan.update))
@@ -145,7 +161,9 @@ class HideChannelBarButtonsFixtureTest {
         // The chat screen's bar is a field of one of those users, and its class has a setVisibility of its own.
         val fieldTypes = users.flatMap { it.methods }.flatMap { it.controlBody() }.mapNotNull { it.controlField()?.type }.toSet()
         val views = FixtureDex.classesWhere(build, { true }) { m -> m.name == "setVisibility" && m.definingClass in fieldTypes }
-        return (bars + users + views).distinctBy { it.type }
+        // The view holding the bar draws the bubble behind it.
+        val holder = FixtureDex.classesWhere(build, { true }) { m -> m.name == "getInputIslandBubbleContainer" }
+        return (bars + users + views + holder).distinctBy { it.type }
     }
 
     private fun placeCallers(context: BytecodePatchContext, place: String): Set<String> {

@@ -19,7 +19,8 @@ import java.util.WeakHashMap;
  * just be hidden. Instead the chat screen says each time it updates the bar whether it just labelled
  * the button Mute or Unmute, and with the switch on the whole bar is taken off the screen for that
  * state (#26). Search and Info sit in the same bar and go with it. Every other state of the bar
- * keeps the stock look, and the channel's own page still mutes it.
+ * keeps the stock look, and the channel's own page still mutes it. The rounded bubble Telegram 13
+ * draws behind the bar goes with it, or it would stay as an empty pill.
  *
  * <p>Telegram shows the bar again from other places too, so a bar taken off stays off until the
  * chat screen's next update decides otherwise, and then gets back whatever Telegram last asked for.
@@ -83,6 +84,36 @@ public final class ChannelMute {
             HookStatus.threw(FamilyNames.HIDE_CHANNEL_BUTTONS, "mute visibility", failure);
             return visibility;
         }
+    }
+
+    /**
+     * Takes the place of whether the chat screen draws the rounded bubble it keeps behind the bar.
+     * With the bar taken off the bubble would stay as an empty pill, so it goes too.
+     *
+     * @param host the view that draws the bubble and holds the bar
+     * @param drawn whether Telegram would draw it, non-zero for yes
+     * @return whether it's drawn
+     */
+    public static boolean bubble(Object host, int drawn) {
+        boolean shown = drawn != 0;
+        if (!shown || host == null || TAKEN_OFF.isEmpty()) return shown;
+        try {
+            synchronized (TAKEN_OFF) {
+                for (Object bar : TAKEN_OFF.keySet()) {
+                    if (bar instanceof View && ((View) bar).getVisibility() == View.GONE && inside((View) bar, host)) return !on();
+                }
+            }
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_CHANNEL_BUTTONS, "mute bubble", failure);
+        }
+        return shown;
+    }
+
+    private static boolean inside(View view, Object host) {
+        for (Object parent = view.getParent(); parent != null; parent = ((android.view.ViewParent) parent).getParent()) {
+            if (parent == host) return true;
+        }
+        return false;
     }
 
     /** Whether the switch is on and HushTelegram isn't paused. */
