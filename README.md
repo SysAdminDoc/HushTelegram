@@ -20,7 +20,7 @@
 
 # <img src="assets/icon.png" width="36" alt=""> HushTelegram
 
-HushTelegram is a set of [Morphe](https://morphe.software) patches for Telegram on Android. It takes the sponsored messages and search ads out of Telegram and keeps the app's usage reports on your phone. Everything else is a switch in its own settings screen, so you can hide Stories and the Premium upsells, keep messages other people delete, translate a whole chat, get notifications through UnifiedPush, go AMOLED black and plenty more. It doesn't give away paid Premium features or get around a channel's forwarding and saving limits.
+HushTelegram is a set of [Morphe](https://morphe.software) patches for Telegram on Android. It takes the sponsored messages and search ads out of Telegram and keeps the app's usage reports on your phone. Everything else is a switch in its own settings screen, so you can hide Stories and the Premium upsells, keep messages other people delete, translate a whole chat, get notifications through UnifiedPush, go AMOLED black and plenty more. It doesn't give away paid Premium features. A second switch under Save downloaded files, off until you turn it on, also saves downloaded files and songs from chats that don't allow saving. Protected photos and videos, self-destructing media and secret chats still follow Telegram's rules.
 
 The latest release is [v0.0.20](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.20), with 67 patches for Telegram 13.1.0, both telegram.org's build and the one from Google Play. That release works with Morphe Manager 2.0.0 and up, and the next one will need 2.2.0. The version badge follows the source on main, which can be ahead of the release. What changed in each version is in the [changelog](CHANGELOG.md).
 
@@ -37,7 +37,7 @@ The latest release is [v0.0.20](https://github.com/SysAdminDoc/HushTelegram/rele
 4. Pick the file in Morphe Manager, keep the default selection and patch. It has every patch that comes with a switch.
 5. Four patches start unselected: Use registered Telegram API credentials, Use registered Maps API key, HushTelegram icon and name, and Black and white launch logo. To add one, turn on **Settings > Advanced > Expert mode** in Morphe Manager and fill in its options before you patch.
 
-The first time you sign in, Telegram turns down the API ID that ships with any patched build, so no code arrives and you see `API_ID_PUBLISHED_FLOOD`. This happens on every patched Telegram, not just this one. The one-time fix is in [Your Telegram account](#your-telegram-account): register a free app at my.telegram.org, then patch with Use registered Telegram API credentials so the app signs in as your own.
+When you sign in, Telegram often turns down the API ID that ships with a patched build, so no code arrives and you see `API_ID_PUBLISHED_FLOOD`. It happens on other patched Telegram builds too. The one-time fix is in [Your Telegram account](#your-telegram-account): register a free app at my.telegram.org, then patch with Use registered Telegram API credentials so the app signs in as your own.
 
 **Coming from stock Telegram?** The keys differ, so you'll have to uninstall stock Telegram before the patched copy goes on. That deletes this phone's secret chats for good, though cloud chats come back when you sign in. Stay signed in on another device until the patched app is in, because that's usually where the login code shows up.
 
@@ -52,6 +52,8 @@ The home page has search and seven pages of switches, grouped the way Morphe Man
 ## Patches
 
 The current release has 67 patches. Each description is the one Morphe Manager shows, and it says which page of HushTelegram settings holds the switch and whether it starts on or off. The table runs in the order of those pages.
+
+One description is behind the app. Since 0.0.20, `Save downloaded files` has a second switch under it, **Also save from chats that don't allow saving**, which starts off. With both on, files and songs from those chats get a copy too, so only use it where the owner is fine with that. Secret chats and self-destructing media always stay in Telegram. Photos and videos aren't part of either switch, protected or not.
 
 | Patch | What it does |
 |---|---|
@@ -145,7 +147,7 @@ Delivery also needs Telegram's servers to hold push credentials for the app, whi
 
 ## Your Telegram account
 
-If sign-in fails with `API_ID_PUBLISHED_FLOOD`, Telegram has refused the API ID that ships with the app. Telegram's screen doesn't say so, which is why HushTelegram shows a message there linking to this section. Register your own app, then patch with Use registered Telegram API credentials and fill in `apiId` and `apiHash`. The result installs over your current HushTelegram build, and from its first start Telegram sees your app instead of the bundled one. Telegram still picks which login methods you get, so keep any copy that's already signed in.
+If sign-in fails with `API_ID_PUBLISHED_FLOOD`, Telegram has refused the API ID that ships with the app. Telegram's screen doesn't say so, which is why HushTelegram shows a message there linking to this section. Register your own app, then patch with Use registered Telegram API credentials and fill in `apiId` and `apiHash`. The result installs over your current HushTelegram build, and from its first start Telegram sees your app instead of the bundled one. Your own API ID only gets you past that refusal. Telegram still picks which login methods you get (a code in Telegram, SMS, email and so on), so keep any copy that's already signed in. Passkeys only work in Telegram's own signed app, so they can't work in a patched copy signed with your key. From the next release, HushTelegram hides passkey setup and the passkey step at sign-in on such a copy.
 
 Filling in the form at [my.telegram.org/apps](https://my.telegram.org/apps):
 
