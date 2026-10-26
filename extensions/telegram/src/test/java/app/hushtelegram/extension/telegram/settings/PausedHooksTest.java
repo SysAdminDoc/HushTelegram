@@ -366,8 +366,9 @@ public class PausedHooksTest {
         probes.put(PatchFamily.OUTSIDE_TRANSLATE, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.active()));
         // A channel's bar keeps Search, Direct messages and Info.
-        probes.put(PatchFamily.HIDE_CHANNEL_BUTTONS, Collections.singletonList(
-                () -> app.hushtelegram.extension.telegram.misc.ChannelButtonsForTests.on()));
+        probes.put(PatchFamily.HIDE_CHANNEL_BUTTONS, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.ChannelButtonsForTests.on(),
+                () -> app.hushtelegram.extension.telegram.misc.ChannelMuteForTests.on()));
         // The message box keeps its Send as button.
         probes.put(PatchFamily.HIDE_SEND_AS, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.ChannelButtonsForTests.sendAsOn()));

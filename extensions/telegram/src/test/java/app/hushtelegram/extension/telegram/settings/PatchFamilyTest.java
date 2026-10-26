@@ -112,6 +112,7 @@ public class PatchFamilyTest {
         Settings.ASK_BEFORE_STICKER.resetToDefault();
         Settings.OUTSIDE_TRANSLATE.resetToDefault();
         Settings.HIDE_CHANNEL_BUTTONS.resetToDefault();
+        Settings.HIDE_CHANNEL_MUTE.resetToDefault();
         Settings.HIDE_SEND_AS.resetToDefault();
         Settings.HIDE_CONTACTS_TAB.resetToDefault();
         Settings.FASTER_DOWNLOADS.resetToDefault();
@@ -149,7 +150,9 @@ public class PatchFamilyTest {
         PatchFamily bar = PatchFamily.HIDE_CHANNEL_BUTTONS;
         assertEquals("Hide channel bar buttons", bar.patchName);
         assertEquals("hideChannelButtons", bar.statusMethod);
-        assertEquals(Collections.singletonList(Settings.HIDE_CHANNEL_BUTTONS), bar.switches);
+        assertEquals(Arrays.asList(Settings.HIDE_CHANNEL_BUTTONS, Settings.HIDE_CHANNEL_MUTE), bar.switches);
+        assertEquals(EnumSet.of(PatchFamily.Capability.HIDE_CHANNEL_MUTE), bar.expectedCapabilities());
+        assertEquals("hideChannelMute", PatchFamily.Capability.HIDE_CHANNEL_MUTE.statusMethod);
         PatchFamily sendAs = PatchFamily.HIDE_SEND_AS;
         assertEquals("Hide Send as button", sendAs.patchName);
         assertEquals("hideSendAs", sendAs.statusMethod);
@@ -158,10 +161,13 @@ public class PatchFamilyTest {
             assertFalse(family.switches.get(0).defaultValue);
             // Both take effect the next time a chat updates its bar or message box, without a restart.
             assertFalse(family.switches.get(0).rebootApp);
-            assertTrue(family.expectedCapabilities().isEmpty());
             assertOnItsPage(family);
             assertEquals(PatchFamily.Page.LOOK, PatchFamily.Page.of(family));
         }
+        assertTrue(sendAs.expectedCapabilities().isEmpty());
+        // The Mute switch is off by default too and applies the next time a channel is opened.
+        assertFalse(Settings.HIDE_CHANNEL_MUTE.defaultValue);
+        assertFalse(Settings.HIDE_CHANNEL_MUTE.rebootApp);
     }
 
     @Test

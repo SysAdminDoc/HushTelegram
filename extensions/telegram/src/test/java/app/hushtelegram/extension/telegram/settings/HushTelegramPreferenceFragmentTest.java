@@ -789,6 +789,12 @@ public class HushTelegramPreferenceFragmentTest {
                             + "and tapping the channel's name at the top still opens its info. A channel picks this up the "
                             + "next time you open it.",
                     String.valueOf(page.findPreference(Settings.HIDE_CHANNEL_BUTTONS.key).getSummary()));
+            assertEquals("Hide channel Mute button", String.valueOf(page.findPreference(Settings.HIDE_CHANNEL_MUTE.key).getTitle()));
+            assertEquals("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the "
+                            + "Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a "
+                            + "channel, open its info. A channel picks this up the next time you open it.",
+                    String.valueOf(page.findPreference(Settings.HIDE_CHANNEL_MUTE.key).getSummary()));
+            assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_CHANNEL_MUTE.key)).isChecked());
             assertEquals("Your picture next to the message box goes away in groups and channels where you could post as "
                             + "a channel, while you're posting as yourself. Once you pick a channel it shows again, so you "
                             + "can always see who you're posting as. To pick one, turn this off first. A chat picks this up "
@@ -1577,6 +1583,8 @@ public class HushTelegramPreferenceFragmentTest {
     public void partialBuildRowsNameTheirSurvivingAndMissingCoverage() {
         PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
         for (PatchFamily.Capability missing : PatchFamily.Capability.values()) {
+            // The Mute switch is its own row, shown only when its hook installed; the bar row keeps a plain summary.
+            if (missing == PatchFamily.Capability.HIDE_CHANNEL_MUTE) continue;
             Set<PatchFamily.Capability> installed = EnumSet.allOf(PatchFamily.Capability.class);
             installed.remove(missing);
             PatchFamily.capabilitiesForTests = installed;

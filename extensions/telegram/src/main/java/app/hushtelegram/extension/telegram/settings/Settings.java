@@ -392,6 +392,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_CHANNEL_BUTTONS =
             new BooleanSetting("hushtelegram_hide_channel_buttons", FALSE);
 
+    /** The bar at the bottom of a joined channel is left off the screen while it would show Mute or Unmute (#26). */
+    public static final BooleanSetting HIDE_CHANNEL_MUTE =
+            new BooleanSetting("hushtelegram_hide_channel_mute", FALSE);
+
     /** The Send as picture next to the message box is left out while you'd post as yourself. */
     public static final BooleanSetting HIDE_SEND_AS =
             new BooleanSetting("hushtelegram_hide_send_as", FALSE);

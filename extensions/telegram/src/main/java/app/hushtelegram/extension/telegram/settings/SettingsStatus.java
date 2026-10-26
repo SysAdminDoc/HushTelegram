@@ -108,6 +108,7 @@ public final class SettingsStatus {
     public static boolean askBeforeSending() { return false; }
     public static boolean outsideTranslate() { return false; }
     public static boolean hideChannelButtons() { return false; }
+    public static boolean hideChannelMute() { return false; }
     public static boolean hideSendAs() { return false; }
     public static boolean hideContactsTab() { return false; }
     public static boolean compactTabBar() { return false; }

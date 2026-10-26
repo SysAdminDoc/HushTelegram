@@ -843,9 +843,15 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         }
         if (build.contains(PatchFamily.HIDE_CHANNEL_BUTTONS)) {
             on(pages, PatchFamily.HIDE_CHANNEL_BUTTONS).addPreference(toggle(context, Settings.HIDE_CHANNEL_BUTTONS, L10n.t("Hide channel bar buttons"),
-                    PatchFamily.HIDE_CHANNEL_BUTTONS.coverageSummary(L10n.t("Search, Direct messages and Info leave the bar at the bottom of a channel. "
+                    L10n.t("Search, Direct messages and Info leave the bar at the bottom of a channel. "
                             + "Mute and Join stay, and tapping the channel's name at the top still opens its info. A channel picks "
-                            + "this up the next time you open it."))));
+                            + "this up the next time you open it.")));
+            if (PatchFamily.Capability.HIDE_CHANNEL_MUTE.installed()) {
+                on(pages, PatchFamily.HIDE_CHANNEL_BUTTONS).addPreference(toggle(context, Settings.HIDE_CHANNEL_MUTE,
+                        L10n.t("Hide channel Mute button"), L10n.t("The bar at the bottom of a channel you've joined goes away, along with its "
+                                + "Mute button and the Search and Info buttons beside it. Channels you haven't joined still show "
+                                + "Join. To mute a channel, open its info. A channel picks this up the next time you open it.")));
+            }
         }
         if (build.contains(PatchFamily.HIDE_SEND_AS)) {
             on(pages, PatchFamily.HIDE_SEND_AS).addPreference(toggle(context, Settings.HIDE_SEND_AS, L10n.t("Hide Send as button"),
