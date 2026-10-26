@@ -104,6 +104,34 @@ public class SettingsPolishTest {
         }
     }
 
+    @Test public void translationServiceKeyboardMakesRoomForTheButtons() {
+        try (ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class).setup()) {
+            AlertDialog dialog = TranslateServiceEditor.open(activity.get(), new Preference(activity.get()));
+            try { assertResizesForKeyboard(dialog); } finally { dialog.dismiss(); }
+        }
+    }
+
+    @Test public void titleEmojiKeyboardMakesRoomForTheButtons() {
+        try (ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class).setup()) {
+            AlertDialog dialog = TitleEmojiEditor.open(activity.get(), new Preference(activity.get()), before -> { });
+            try { assertResizesForKeyboard(dialog); } finally { dialog.dismiss(); }
+        }
+    }
+
+    @Test public void filterEditorKeyboardMakesRoomForTheButtons() {
+        try (ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class).setup()) {
+            AlertDialog dialog = FilterEditor.open(activity.get(), new Preference(activity.get()),
+                    Settings.MESSAGE_FILTERS_GROUPS, "Filters for groups");
+            try { assertResizesForKeyboard(dialog); } finally { dialog.dismiss(); }
+        }
+    }
+
+    private static void assertResizesForKeyboard(AlertDialog dialog) {
+        assertEquals("the keyboard makes room rather than covering Save and Cancel",
+                android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE,
+                dialog.getWindow().getAttributes().softInputMode & android.view.WindowManager.LayoutParams.SOFT_INPUT_MASK_ADJUST);
+    }
+
     @Test public void diagnosticChooserClosesWithSettingsAndReopensWithANewOwner() {
         PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
         try (ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class).setup()) {
