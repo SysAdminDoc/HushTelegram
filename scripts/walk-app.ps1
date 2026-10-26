@@ -20,7 +20,7 @@
     other way doesn't back a release.
 
     What a walk has to open comes from walk-scenarios.json: each scenario's id, and the patches
-    that make it required. -Visit, -SettingsPages and -MorePages default to that list. A shorter
+    that make it required. -Visit, -SettingsPages and -Sections default to that list. A shorter
     list walks less and the walk comes back PARTIAL, naming what it left out.
 
     The result the walk writes:
@@ -35,11 +35,13 @@
     in front. Signed out (a "Start Messaging" button), nothing past sign-in can be opened, so the
     links are left out and the receipt says "account": "signed out". The Hush settings open
     through APPLICATION_PREFERENCES, the intent Android's App info page sends, and work either
-    way. Each settings page is opened from its list: a fresh uiautomator dump, the row whose text
-    is exactly the page's name, a tap on its centre, and the page counts when its title shows and
-    the list's markers are gone. The pages under More settings are opened from that page the
-    same way. Taps only ever land on Hush settings rows read from a dump taken after the last
-    swipe or Back, never on a chat, a contact or anything else of Telegram's.
+    way. Each section of the home list opens in place: a fresh uiautomator dump, the heading
+    whose text is exactly the section's name, a tap on its centre, and the section counts when
+    rows that aren't another heading show right under it and a second tap closes it again. A
+    page of its own (Changed switches) is opened from its row the same way and counts when its
+    title shows and the home list's markers are gone. Taps only ever land on Hush settings rows
+    read from a dump taken after the last swipe or Back, never on a chat, a contact or anything
+    else of Telegram's.
 
     Device safety: the walk takes an exclusive whole-device lease in the shared pool
     (HUSHTELEGRAM_DEVICE_LEASE_DIRECTORY), checks it before every adb call and releases it when it's
@@ -61,10 +63,10 @@ param(
     # Telegram's own screens to open once signed in, each a deep link. A link that won't open
     # fails the walk rather than skipping it. walk-scenarios.json's visits unless given.
     [string[]]$Visit,
-    # The Hush settings pages on the home list, by the name each row shows in English.
+    # The Hush settings pages that open from a home list row, by the name each row shows in English.
     [string[]]$SettingsPages,
-    # The pages under More settings.
-    [string[]]$MorePages,
+    # The sections that open in place on the home list, by the name each heading shows.
+    [string[]]$Sections,
     # Walk the app that's already installed instead of patching and installing a fresh one. Its
     # hash has to match the patch artifact record of an earlier walk's APK (-Artifact).
     [switch]$SkipPatch,
@@ -97,8 +99,11 @@ $ErrorActionPreference = 'Stop'
 $WalkMainActivity = 'org.telegram.ui.LaunchActivity'
 # The settings home page, read by its search box hint and its title. A page hides both, so their
 # going away is how a page is told from the list.
-$WalkSettingsHome = @('Search settings', 'Your Telegram.')
-$WalkMorePage = 'More settings'
+$WalkSearchHint = 'Search settings'
+$WalkSettingsHome = @($WalkSearchHint, 'HushTelegram')
+# The rows that close the home list after its sections. One of them, or another section's
+# heading, right under a heading means that section is closed.
+$WalkHomeTail = @('Changed switches', 'Report a problem', 'Support HushTelegram')
 # Telegram's intro screen shows this button until someone signs in.
 $WalkSignedOutMarker = 'Start Messaging'
 
@@ -179,14 +184,43 @@ function Test-WalkSettingsPage {
     <#
     .SYNOPSIS
         Whether the screen is the settings page -Name: its title shows and the home list doesn't.
-        Any page but More settings itself also has to have left More settings, whose title would
-        still show under a sub-page that failed to open.
     #>
     param($Nodes, [string]$Name, [string]$Package = 'org.telegram.messenger.web')
     if (-not (Find-WalkRow $Nodes $Name $Package)) { return $false }
     if (Test-WalkSettingsHome $Nodes $Package) { return $false }
-    if ($Name -cne $WalkMorePage -and (Find-WalkRow $Nodes $WalkMorePage $Package)) { return $false }
     return $true
+}
+
+function Find-WalkHeading {
+    <#
+    .SYNOPSIS
+        The heading of the home list section -Name: the topmost -Package node with exactly that
+        text below the search box. The toolbar's Pause button sits above the box, and a row in an
+        open section that shares its heading's name sits below the heading.
+    #>
+    param($Nodes, [string]$Name, [string]$Package = 'org.telegram.messenger.web')
+    $box = Find-WalkRow $Nodes $WalkSearchHint $Package
+    if (-not $box) { return $null }
+    @($Nodes | Where-Object { $_.Package -ceq $Package -and $_.Text -ceq $Name -and $_.Top -ge $box.Bottom } |
+        Sort-Object Top) | Select-Object -First 1
+}
+
+function Get-WalkSectionState {
+    <#
+    .SYNOPSIS
+        'open' when a row that isn't a heading or a home tail row shows right under the heading of
+        -Name, 'closed' when one of those or nothing does, $null when the heading isn't on screen.
+        -Headings names every section heading.
+    #>
+    param($Nodes, [string]$Name, [string[]]$Headings, [string]$Package = 'org.telegram.messenger.web')
+    $heading = Find-WalkHeading $Nodes $Name $Package
+    if (-not $heading) { return $null }
+    $next = @($Nodes | Where-Object { $_.Package -ceq $Package -and $_.Top -ge $heading.Bottom } | Sort-Object Top) |
+        Select-Object -First 1
+    # A row named like its own section (the Pause switch under Pause) is that section's row.
+    if ($next -and $next.Text -ceq $Name) { return 'open' }
+    if (-not $next -or @($Headings) -ccontains $next.Text -or $WalkHomeTail -ccontains $next.Text) { return 'closed' }
+    return 'open'
 }
 
 function ConvertTo-WalkArgument {
@@ -301,7 +335,7 @@ function Exit-WalkLease {
 
 function Invoke-WalkApp {
     param(
-        [string]$Serial, [string]$Package, [string[]]$Visit, [string[]]$SettingsPages, [string[]]$MorePages,
+        [string]$Serial, [string]$Package, [string[]]$Visit, [string[]]$SettingsPages, [string[]]$Sections,
         [bool]$SkipPatch, [string]$Artifact, [bool]$SkipSettings, [int]$SettleSeconds, [string]$OutDir, [string]$Apk,
         [string]$Keystore, [string]$KeyAlias, [bool]$CliDefaultKeystore, [string]$LeaseDirectory,
         [string]$ChatIdentity, [string]$Adb, [string]$Aapt2, [string]$Root
@@ -444,9 +478,7 @@ function Invoke-WalkApp {
                 Write-Host "[walk] the settings page $Name would not open"
                 # A tap that changed nothing leaves the list on screen, and Back would close it.
                 if (& $OnList $nodes) { return $true }
-                if ($Name -ceq $WalkMorePage) { return $false }
             }
-            if ($Name -ceq $WalkMorePage) { return $true }
             [void](& $walkAdb @('shell', 'input', 'keyevent', 'KEYCODE_BACK'))
             Start-Sleep -Seconds 2
             $nodes = & $readScreen
@@ -455,6 +487,41 @@ function Invoke-WalkApp {
                 Write-Host "[walk] Back from $Name didn't return to its settings list"
                 return $false
             }
+            return $true
+        }
+        # Opens the section -Name in place on the home list, checks its rows came up under its
+        # heading, and closes it again. The heading is found the way $walkPage finds a row, and
+        # every tap is read from a dump taken after the last swipe or tap.
+        $walkSection = {
+            param([string]$Name, [string[]]$Headings, [int]$Width, [int]$Height)
+            $nodes = & $readScreen
+            $heading = Find-WalkHeading $nodes $Name $Package
+            for ($swipe = 0; -not $heading -and $swipe -lt 6; $swipe++) {
+                [void](& $walkAdb @('shell', 'input', 'swipe', [string][int]($Width / 2), [string][int]($Height * 0.75),
+                    [string][int]($Width / 2), [string][int]($Height * 0.35), '400'))
+                Start-Sleep -Milliseconds 900
+                $nodes = & $readScreen
+                $heading = Find-WalkHeading $nodes $Name $Package
+            }
+            if (-not $heading) {
+                $problems.Add("the settings section $Name isn't in the home list")
+                Write-Host "[walk] no $Name heading in the settings list"
+                return $true
+            }
+            foreach ($want in @('open', 'closed')) {
+                [void](& $walkAdb @('shell', 'input', 'tap', [string]$heading.X, [string]$heading.Y))
+                Start-Sleep -Seconds 2
+                $nodes = & $readScreen
+                $state = Get-WalkSectionState $nodes $Name $Headings $Package
+                if ($state -cne $want -or -not (Test-WalkSettingsHome $nodes $Package) -or -not (& $inFront)) {
+                    $problems.Add("the settings section $Name would not $(if ($want -ceq 'open') { 'open' } else { 'close' })")
+                    Write-Host "[walk] the settings section $Name stayed $(if ($state) { $state } else { 'off screen' })"
+                    return (Test-WalkSettingsHome $nodes $Package)
+                }
+                $heading = Find-WalkHeading $nodes $Name $Package
+            }
+            $seen.Screens++; $seen.Scenarios.Add("section:$Name")
+            Write-Host "[walk] opened and closed the settings section $Name"
             return $true
         }
 
@@ -531,25 +598,17 @@ function Invoke-WalkApp {
                 Write-Host '[walk] opened the Hush settings'
                 $width, $height = & $screenSize
                 $onHome = { param($nodes) Test-WalkSettingsHome $nodes $Package }
-                $onMore = { param($nodes) Test-WalkSettingsPage $nodes $WalkMorePage $Package }
+                # Every section heading the scenarios name, walked or not, so a closed section is
+                # told apart by the heading under it.
+                $headings = @($walkScenarios | Where-Object Kind -CEQ 'section' | ForEach-Object Page) + @($Sections)
                 $listed = $true
-                foreach ($page in $SettingsPages) {
-                    $listed = & $walkPage $page $onHome $width $height 'settings:'
+                foreach ($section in $Sections) {
+                    $listed = & $walkSection $section $headings $width $height
                     if (-not $listed) { break }
                 }
-                if ($listed -and @($MorePages).Count -gt 0) {
-                    $before = $problems.Count
-                    [void](& $walkPage $WalkMorePage $onHome $width $height 'settings:')
-                    if ($problems.Count -eq $before) {
-                        foreach ($page in $MorePages) {
-                            if (-not (& $walkPage $page $onMore $width $height 'more:')) { break }
-                        }
-                        [void](& $walkAdb @('shell', 'input', 'keyevent', 'KEYCODE_BACK'))
-                        Start-Sleep -Seconds 2
-                        if (-not (& $onHome (& $readScreen))) {
-                            $problems.Add("Back from $WalkMorePage didn't return to the settings home page")
-                            Write-Host "[walk] Back from $WalkMorePage didn't return to the settings home page"
-                        }
+                if ($listed) {
+                    foreach ($page in $SettingsPages) {
+                        if (-not (& $walkPage $page $onHome $width $height 'settings:')) { break }
                     }
                 }
             }
@@ -620,11 +679,11 @@ if ($MyInvocation.InvocationName -ne '.') {
     $scenarioList = @(Read-WalkScenarios)
     if (-not $PSBoundParameters.ContainsKey('Visit')) { $Visit = @($scenarioList | Where-Object Kind -CEQ 'visit' | ForEach-Object Link) }
     if (-not $PSBoundParameters.ContainsKey('SettingsPages')) {
-        $SettingsPages = @($scenarioList | Where-Object { $_.Kind -ceq 'settings' -and $_.Page -cne $WalkMorePage } | ForEach-Object Page)
+        $SettingsPages = @($scenarioList | Where-Object Kind -CEQ 'settings' | ForEach-Object Page)
     }
-    if (-not $PSBoundParameters.ContainsKey('MorePages')) { $MorePages = @($scenarioList | Where-Object Kind -CEQ 'more' | ForEach-Object Page) }
+    if (-not $PSBoundParameters.ContainsKey('Sections')) { $Sections = @($scenarioList | Where-Object Kind -CEQ 'section' | ForEach-Object Page) }
     $receiptPath = Invoke-WalkApp -Serial $Serial -Package $Package -Visit $Visit -SettingsPages $SettingsPages `
-        -MorePages $MorePages -SkipPatch:$SkipPatch -Artifact $Artifact -SkipSettings:$SkipSettings -SettleSeconds $SettleSeconds `
+        -Sections $Sections -SkipPatch:$SkipPatch -Artifact $Artifact -SkipSettings:$SkipSettings -SettleSeconds $SettleSeconds `
         -OutDir $OutDir -Apk $Apk -Keystore $Keystore -KeyAlias $KeyAlias -CliDefaultKeystore:$CliDefaultKeystore `
         -LeaseDirectory $LeaseDirectory -ChatIdentity $ChatIdentity -Adb $Adb -Aapt2 $Aapt2 -Root $Root
     $walked = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json

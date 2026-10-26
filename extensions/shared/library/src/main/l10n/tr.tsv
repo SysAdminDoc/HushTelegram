@@ -43,7 +43,6 @@ Export diagnostic report	Tanılama raporunu dışa aktar
 Export settings	Ayarları dışa aktar
 After Telegram restarts, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.	Telegram yeniden başlatıldıktan sonra Hata ayıklama günlüğü dışındaki her anahtar kapalıymış gibi davranır. Seçimleriniz kayıtlı kalır. Yamalama sırasında yapılan değişiklikler geçerli kalır.
 Hide ads	Reklamları gizle
-Links, updates, backup and more	Bağlantılar, güncellemeler, yedekleme ve daha fazlası
 Privacy	Gizlilik
 Settings exported but not checked. Open the file to make sure.	Ayarlar dışa aktarıldı ama kontrol edilmedi. Dosyayı açıp kontrol et.
 That app is slow to answer. Nothing was changed. Try again.	Bu uygulama geç yanıt veriyor. Hiçbir şey değiştirilmedi. Tekrar dene.
@@ -111,14 +110,12 @@ Your switches already match that file, so nothing will change.	Anahtarların zat
 Copy a short report to the clipboard.	Kısa raporu panoya kopyalar.
 Settings imported.	Ayarlar içe aktarıldı.
 Can't open the link. Go to %1$s.	Bağlantı açılamıyor. %1$s adresine git.
-# context: Separate pages under More settings. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
+# context: Sections on the settings home list. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
 Settings backup	Ayar yedeği
 Diagnostics	Tanılama
 Updates	Güncellemeler
 Jump to a section	Bir bölüme git
 Go straight to one group of settings. Back returns to where you were.	Doğrudan bir ayar grubuna git. Geri, bulunduğun yere döndürür.
-Browse settings	Ayarları keşfet
-More settings	Diğer ayarlar
 No matching settings	Eşleşen ayar yok
 %1$d setting found	%1$d ayar bulundu
 %1$d settings found	%1$d ayar bulundu
@@ -731,8 +728,6 @@ Open the guide	Rehberi aç
 %1$s turns on	%1$s açılacak
 %1$s turns off	%1$s kapanacak
 Preparing the diagnostic report	Tanılama raporu hazırlanıyor
-Your Telegram.	Senin Telegram’ın.
-A quieter space, your way.	Daha sakin bir alan, tam istediğin gibi.
 # context: Readable actions, validation, import details and notification recovery.
 Open notification settings	Bildirim ayarlarını aç
 Tap for details and Android settings.	Ayrıntılar ve Android ayarları için dokun.
@@ -929,3 +924,6 @@ Search languages	Dil ara
 Couldn't save the language. Try again in a moment.	Dil kaydedilemedi. Birazdan tekrar deneyin.
 # context: Line in the settings import preview when the file changes the Translate into language.
 The translation language will change.	Çeviri dili değişecek.
+# context: A screen reader's state for a settings section heading that opens and closes in place.
+Expanded	Genişletildi
+Collapsed	Daraltıldı

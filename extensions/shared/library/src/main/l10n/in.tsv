@@ -43,7 +43,6 @@ Export diagnostic report	Ekspor laporan diagnostik
 Export settings	Ekspor pengaturan
 After Telegram restarts, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.	Setelah Telegram dimulai ulang, semua sakelar kecuali Pencatatan debug dianggap mati. Pilihan Anda tetap tersimpan. Perubahan yang dibuat saat menambal tetap berlaku.
 Hide ads	Sembunyikan iklan
-Links, updates, backup and more	Tautan, pembaruan, cadangan, dan lainnya
 Privacy	Privasi
 Settings exported but not checked. Open the file to make sure.	Pengaturan diekspor tapi belum diperiksa. Buka filenya untuk memastikan.
 That app is slow to answer. Nothing was changed. Try again.	Aplikasi itu lambat merespons. Tidak ada yang diubah. Coba lagi.
@@ -111,14 +110,12 @@ Your switches already match that file, so nothing will change.	Sakelar Anda suda
 Copy a short report to the clipboard.	Salin laporan singkat ke papan klip.
 Settings imported.	Pengaturan diimpor.
 Can't open the link. Go to %1$s.	Tautan tidak bisa dibuka. Buka %1$s.
-# context: Separate pages under More settings. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
+# context: Sections on the settings home list. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
 Settings backup	Cadangan setelan
 Diagnostics	Diagnostik
 Updates	Pembaruan
 Jump to a section	Lompat ke bagian
 Go straight to one group of settings. Back returns to where you were.	Langsung ke satu kelompok setelan. Kembali membawamu ke tempat semula.
-Browse settings	Jelajahi pengaturan
-More settings	Pengaturan lainnya
 No matching settings	Tidak ada pengaturan yang cocok
 %1$d setting found	%1$d pengaturan ditemukan
 %1$d settings found	%1$d pengaturan ditemukan
@@ -731,8 +728,6 @@ Open the guide	Buka panduan
 %1$s turns on	%1$s dinyalakan
 %1$s turns off	%1$s dimatikan
 Preparing the diagnostic report	Menyiapkan laporan diagnostik
-Your Telegram.	Telegram milikmu.
-A quieter space, your way.	Ruang yang lebih tenang, sesuai keinginanmu.
 # context: Readable actions, validation, import details and notification recovery.
 Open notification settings	Buka setelan notifikasi
 Tap for details and Android settings.	Ketuk untuk melihat detail dan setelan Android.
@@ -929,3 +924,6 @@ Search languages	Cari bahasa
 Couldn't save the language. Try again in a moment.	Bahasa tidak dapat disimpan. Coba lagi sebentar lagi.
 # context: Line in the settings import preview when the file changes the Translate into language.
 The translation language will change.	Bahasa terjemahan akan berubah.
+# context: A screen reader's state for a settings section heading that opens and closes in place.
+Expanded	Diluaskan
+Collapsed	Diciutkan

@@ -2253,7 +2253,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
      * A double tap goes through the list, the way a tap does, so the preference's own click runs.
      * A dialog's choice card has no preference behind it, and is always there to tap.
      */
-    static final class RowSemantics extends View.AccessibilityDelegate {
+    static class RowSemantics extends View.AccessibilityDelegate {
         @Nullable private final Preference preference;
         private final Class<? extends View> role;
 

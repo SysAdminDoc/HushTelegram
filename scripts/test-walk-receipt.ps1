@@ -25,7 +25,7 @@ foreach ($scenario in $scenarios) {
 $signedIn = @(Get-WalkRequiredScenarios -Scenarios $scenarios -Patches $allPatches -Account 'signed in')
 $signedOut = @(Get-WalkRequiredScenarios -Scenarios $scenarios -Patches $allPatches -Account 'signed out')
 Assert-WalkContract ($signedIn.Count -eq $scenarios.Count) 'A signed-in walk of every patch did not need every scenario.'
-Assert-WalkContract ($signedOut -ccontains 'more:About' -and $signedOut -cnotcontains 'visit:tg://settings') `
+Assert-WalkContract ($signedOut -ccontains 'section:About' -and $signedOut -cnotcontains 'visit:tg://settings') `
     'A signed-out walk needs the settings and not the screens past sign-in.'
 # A build without a family's patches doesn't need that family's screen.
 $noThemes = @(Get-WalkRequiredScenarios -Scenarios $scenarios -Account 'signed in' `
@@ -67,7 +67,7 @@ try {
     $smoke = Test-Walk
     Assert-WalkContract ($smoke.Valid -and $smoke.Kind -ceq 'settings smoke') "A signed-out walk of every settings page was refused or not called a smoke: $($smoke.Reason) $($smoke.Kind)"
 
-    $shortList = [string[]]@($signedIn | Where-Object { $_ -cne 'more:About' })
+    $shortList = [string[]]@($signedIn | Where-Object { $_ -cne 'section:About' })
     foreach ($badWalk in @(
             @(@{ result = 'FAIL' }, @{}, '*the walk ended FAIL, not PASS*'),
             @(@{ result = 'PARTIAL'; full = $false }, @{}, '*the walk ended PARTIAL, not PASS*'),
@@ -104,16 +104,16 @@ try {
             @(@{ account = 'unknown' }, @{}, "*doesn't say whether Telegram was signed in*"),
             @(@{ account = 'Signed In' }, @{}, "*doesn't say whether Telegram was signed in*"),
             @(@{ kind = 'feature acceptance'; account = 'signed out' }, @{}, "*calls it 'feature acceptance'*"),
-            @(@{ scenarios = $shortList }, @{}, '*the walk left out more:About*'),
+            @(@{ scenarios = $shortList }, @{}, '*the walk left out section:About*'),
             @(@{ scenarios = @() }, @{}, '*the walk left out launch*'))) {
         Write-Walk $badWalk[0] $badWalk[1]
         $bad = Test-Walk
         Assert-WalkContract (-not $bad.Valid -and $bad.Reason -like $badWalk[2]) "Expected the walk refusal [$($badWalk[2])], got [$($bad.Reason)]."
     }
     # A signed-out smoke still has to open every settings page.
-    Write-Walk @{ scenarios = [string[]]@($signedOut | Where-Object { $_ -cne 'settings:Privacy' }) } -Account 'signed out'
+    Write-Walk @{ scenarios = [string[]]@($signedOut | Where-Object { $_ -cne 'section:Privacy' }) } -Account 'signed out'
     $bad = Test-Walk
-    Assert-WalkContract (-not $bad.Valid -and $bad.Reason -like '*left out settings:Privacy*') "A smoke that skipped a page passed: $($bad.Reason)"
+    Assert-WalkContract (-not $bad.Valid -and $bad.Reason -like '*left out section:Privacy*') "A smoke that skipped a page passed: $($bad.Reason)"
 
     [IO.File]::WriteAllText($walkPath, 'not json')
     $bad = Test-Walk

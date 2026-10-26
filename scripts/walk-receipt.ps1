@@ -49,7 +49,7 @@ function Read-WalkScenarios {
     foreach ($scenario in @($manifest.scenarios)) {
         if ($scenario.id -isnot [string] -or -not $scenario.id) { throw "$Path has a scenario with no id." }
         if (-not $ids.Add($scenario.id)) { throw "$Path names the scenario $($scenario.id) twice." }
-        if (@('launch', 'visit', 'settings-home', 'settings', 'more') -cnotcontains $scenario.kind) {
+        if (@('launch', 'visit', 'settings-home', 'settings', 'section') -cnotcontains $scenario.kind) {
             throw "$Path gives the scenario $($scenario.id) the unknown kind '$($scenario.kind)'."
         }
         $account = if ($scenario.account) { [string]$scenario.account } else { 'any' }

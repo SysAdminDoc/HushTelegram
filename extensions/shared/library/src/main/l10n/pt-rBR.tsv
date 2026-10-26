@@ -43,7 +43,6 @@ Export diagnostic report	Exportar relatório de diagnóstico
 Export settings	Exportar configurações
 After Telegram restarts, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.	Depois que o Telegram reinicia, todas as opções, menos Registro de depuração, funcionam como se estivessem desligadas. Suas escolhas continuam salvas. As alterações feitas ao aplicar o patch continuam valendo.
 Hide ads	Ocultar anúncios
-Links, updates, backup and more	Links, atualizações, backup e mais
 Privacy	Privacidade
 Settings exported but not checked. Open the file to make sure.	Configurações exportadas sem conferência. Abra o arquivo para conferir.
 That app is slow to answer. Nothing was changed. Try again.	Esse app demora a responder. Nada foi alterado. Tente de novo.
@@ -110,14 +109,12 @@ Your switches already match that file, so nothing will change.	Suas opções já
 Copy a short report to the clipboard.	Copie um relatório curto para a área de transferência.
 Settings imported.	Configurações importadas.
 Can't open the link. Go to %1$s.	Não dá para abrir o link. Vá para %1$s.
-# context: Separate pages under More settings. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
+# context: Sections on the settings home list. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
 Settings backup	Backup de configurações
 Diagnostics	Diagnóstico
 Updates	Atualizações
 Jump to a section	Ir para uma seção
 Go straight to one group of settings. Back returns to where you were.	Vá diretamente para um grupo de configurações. Voltar leva você de volta ao ponto em que estava.
-Browse settings	Explorar configurações
-More settings	Mais configurações
 No matching settings	Nenhuma configuração encontrada
 %1$d setting found	%1$d configuração encontrada
 %1$d settings found	%1$d configurações encontradas
@@ -728,8 +725,6 @@ Open the guide	Abrir o guia
 %1$s turns on	%1$s será ativado
 %1$s turns off	%1$s será desativado
 Preparing the diagnostic report	Preparando o relatório de diagnóstico
-Your Telegram.	Seu Telegram.
-A quieter space, your way.	Um espaço mais tranquilo, do seu jeito.
 # context: Readable actions, validation, import details and notification recovery.
 Open notification settings	Abrir configurações de notificações
 Tap for details and Android settings.	Toque para ver os detalhes e as configurações do Android.
@@ -926,3 +921,6 @@ Search languages	Buscar idiomas
 Couldn't save the language. Try again in a moment.	Não foi possível salvar o idioma. Tente de novo em instantes.
 # context: Line in the settings import preview when the file changes the Translate into language.
 The translation language will change.	O idioma de tradução será alterado.
+# context: A screen reader's state for a settings section heading that opens and closes in place.
+Expanded	Expandido
+Collapsed	Recolhido

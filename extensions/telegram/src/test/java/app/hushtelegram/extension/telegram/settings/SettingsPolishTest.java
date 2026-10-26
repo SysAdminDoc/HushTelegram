@@ -61,7 +61,7 @@ public class SettingsPolishTest {
             search.setText("ads");
             assertEquals("Search settings", ((TextView) dialog.getView().findViewWithTag(SettingsDialog.PAGE_TITLE)).getText().toString());
             search.setText("");
-            assertEquals("Your Telegram.", ((TextView) dialog.getView().findViewWithTag(SettingsDialog.PAGE_TITLE)).getText().toString());
+            assertEquals("HushTelegram", ((TextView) dialog.getView().findViewWithTag(SettingsDialog.PAGE_TITLE)).getText().toString());
             assertTrue("Deleting the last character must keep editing focus", search.hasFocus());
         }
     }
@@ -73,9 +73,28 @@ public class SettingsPolishTest {
             SettingsDialog dialog = show(activity.get());
             HushTelegramPreferenceFragment page = page(dialog);
             android.widget.ListView list = dialog.getView().findViewById(android.R.id.list);
-            View card = page.navigation.getView(0, null, list);
-            assertTrue(((TextView) card.findViewById(android.R.id.summary)).getText().toString(),
-                    ((TextView) card.findViewById(android.R.id.summary)).getText().toString().contains("restart"));
+            // Nothing is paused, so the status card stays out of the list and the restart row, first
+            // on it, is what says a change waits. Nothing on the home list says all is well.
+            Preference first = page.navigation.getItem(0);
+            assertEquals(SettingsNavigation.RESTART, first.getKey());
+            assertTrue(String.valueOf(first.getTitle()), String.valueOf(first.getTitle()).contains("Restart"));
+            for (int i = 0; i < page.navigation.getCount(); i++) {
+                View drawn = page.navigation.getView(i, null, list);
+                TextView summary = drawn.findViewById(android.R.id.summary);
+                assertFalse("row " + i + " claims the switches are working",
+                        summary != null && summary.getText().toString().contains("Your switches are working"));
+            }
+            // Paused, the card is drawn and says what the next start does, not that all is well.
+            app.hushtelegram.extension.shared.settings.BaseSettings.PAUSED.save(true);
+            try {
+                page.navigation.restartChanged();
+                Preference card = page.navigation.getItem(0);
+                assertSame(page.getPreferenceScreen().getPreference(0), card);
+                TextView line = page.navigation.getView(0, null, list).findViewById(android.R.id.summary);
+                assertFalse(line.getText().toString(), line.getText().toString().contains("Your switches are working"));
+            } finally {
+                app.hushtelegram.extension.shared.settings.BaseSettings.PAUSED.resetToDefault();
+            }
         }
     }
 

@@ -83,6 +83,11 @@ final class ScreenColors {
     final int error;
     final int ripple;
     static final int CARD_RADIUS = 12;
+    /** How far a card sits in from the screen's sides. */
+    static final int CARD_INSET = 12;
+    /** A row icon's tile, and the column it sits in with the gap before the text. */
+    static final int ICON_SIZE = 36;
+    static final int ICON_COLUMN = 48;
     static final int BUTTON_RADIUS = 12;
     static final int FIELD_RADIUS = 12;
     static final int ICON_RADIUS = 12;
@@ -139,7 +144,7 @@ final class ScreenColors {
         TextView title = row.findViewById(android.R.id.title);
         if (title != null) {
             title.setTextColor(dimmedWhenDisabled(this.title));
-            title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+            title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
             title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
             if (title.getParent() instanceof View) {
                 View text = (View) title.getParent();
@@ -150,8 +155,8 @@ final class ScreenColors {
         TextView summary = row.findViewById(android.R.id.summary);
         if (summary != null) {
             summary.setTextColor(dimmedWhenDisabled(this.summary));
-            summary.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-            summary.setLineSpacing(dp(row, 2), 1);
+            summary.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+            summary.setLineSpacing(dp(row, 1), 1);
         }
         View widget = row.findViewById(android.R.id.switch_widget);
         if (widget instanceof Switch) {
@@ -188,15 +193,15 @@ final class ScreenColors {
             // template, with one consistent tile and a full-size glyph.
             icon.setColorFilter(heading);
             icon.setBackground(rounded(iconTile, dp(row, ICON_RADIUS)));
-            icon.setPadding(dp(row, 8), dp(row, 8), dp(row, 8), dp(row, 8));
-            imageSize.width = dp(row, 40);
-            imageSize.height = dp(row, 40);
+            icon.setPadding(dp(row, 7), dp(row, 7), dp(row, 7), dp(row, 7));
+            imageSize.width = dp(row, ICON_SIZE);
+            imageSize.height = dp(row, ICON_SIZE);
             icon.setLayoutParams(imageSize);
             if (icon.getParent() instanceof ViewGroup) {
                 ViewGroup frame = (ViewGroup) icon.getParent();
-                frame.setPaddingRelative(0, 0, dp(row, 14), 0);
+                frame.setPaddingRelative(0, 0, dp(row, ICON_COLUMN - ICON_SIZE), 0);
                 ViewGroup.LayoutParams size = frame.getLayoutParams();
-                size.width = dp(row, 54);
+                size.width = dp(row, ICON_COLUMN);
                 if (!(preference instanceof android.preference.SwitchPreference)
                         && size instanceof LinearLayout.LayoutParams) {
                     ((LinearLayout.LayoutParams) size).gravity = Gravity.TOP;
@@ -250,21 +255,24 @@ final class ScreenColors {
         ring.setStroke(dp(row, 2), accent);
         ring.setCornerRadii(corners);
         android.graphics.drawable.StateListDrawable keyboard = new android.graphics.drawable.StateListDrawable();
+        int inset = dp(row, CARD_INSET);
         keyboard.addState(new int[]{android.R.attr.state_focused},
-                new InsetDrawable(ring, dp(row, 20), top, dp(row, 20), bottom));
+                new InsetDrawable(ring, inset, top, inset, bottom));
         keyboard.addState(new int[]{android.R.attr.state_selected},
-                new InsetDrawable(ring, dp(row, 20), top, dp(row, 20), bottom));
+                new InsetDrawable(ring, inset, top, inset, bottom));
         android.graphics.drawable.LayerDrawable layers = new android.graphics.drawable.LayerDrawable(new Drawable[]{
-                new InsetDrawable(surface, dp(row, 20), top, dp(row, 20), bottom), keyboard});
+                new InsetDrawable(surface, inset, top, inset, bottom), keyboard});
         // Stacked, so the ring isn't inset a second time by the surface's padding.
         layers.setPaddingMode(android.graphics.drawable.LayerDrawable.PADDING_MODE_STACK);
         row.setBackground(preference.isSelectable()
                 ? new RippleDrawable(ColorStateList.valueOf(ripple), layers, null) : layers);
         // Explicit padding after the inset background prevents its padding from moving the text.
-        int vertical = preference.getSummary() == null ? 12 : 14;
-        row.setPaddingRelative(dp(row, 36), dp(row, vertical + (first ? 4 : 0)),
-                dp(row, 36), dp(row, vertical + (last ? 4 : 0)));
-        row.setMinimumHeight(dp(row, 64));
+        int vertical = preference.getSummary() == null ? 8 : 10;
+        // A card keeps its text clear of the card's edge, even among plain rows.
+        int side = dp(row, CARD_INSET + 14);
+        row.setPaddingRelative(side, dp(row, vertical + (first ? 4 : 0)),
+                side, dp(row, vertical + (last ? 4 : 0)));
+        row.setMinimumHeight(dp(row, 52));
     }
 
     /**
@@ -278,7 +286,7 @@ final class ScreenColors {
 
     /** How far a row's text sits in from the screen's sides: inside the card, or from the edge in the plain look. */
     int rowSide(View row) {
-        return dp(row, plainRows() ? 20 : 36);
+        return dp(row, plainRows() ? 16 : CARD_INSET + 14);
     }
 
     /**
@@ -288,9 +296,9 @@ final class ScreenColors {
      */
     private void paintPlain(View row, Preference preference, boolean last) {
         int side = rowSide(row);
-        // A row with an icon has its text past the icon's 54 dp, and the line starts there too.
+        // A row with an icon has its text past the icon's column, and the line starts there too.
         Drawable line = last ? new ColorDrawable(Color.TRANSPARENT)
-                : new Divider(outline, dp(row, 1), side + (preference.getIcon() != null ? dp(row, 54) : 0));
+                : new Divider(outline, dp(row, 1), side + (preference.getIcon() != null ? dp(row, ICON_COLUMN) : 0));
         GradientDrawable ring = new GradientDrawable();
         ring.setColor(Color.TRANSPARENT);
         ring.setStroke(dp(row, 2), accent);
@@ -303,9 +311,9 @@ final class ScreenColors {
         // Nothing here is opaque, so the ripple gets the whole row as its mask.
         row.setBackground(preference.isSelectable()
                 ? new RippleDrawable(ColorStateList.valueOf(ripple), layers, new ColorDrawable(Color.WHITE)) : layers);
-        int vertical = preference.getSummary() == null ? 12 : 14;
+        int vertical = preference.getSummary() == null ? 8 : 10;
         row.setPaddingRelative(side, dp(row, vertical), side, dp(row, vertical));
-        row.setMinimumHeight(dp(row, 56));
+        row.setMinimumHeight(dp(row, 48));
     }
 
     /** The plain look's line along a row's bottom edge, starting a given distance in from the side the row reads from. */
@@ -411,7 +419,7 @@ final class ScreenColors {
         ImageView icon = new ImageView(context);
         icon.setId(android.R.id.icon);
         icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-        iconFrame.addView(icon, new FrameLayout.LayoutParams(dp(row, 40), dp(row, 40)));
+        iconFrame.addView(icon, new FrameLayout.LayoutParams(dp(row, ICON_SIZE), dp(row, ICON_SIZE)));
         header.addView(iconFrame);
         TextView title = new TextView(context);
         title.setId(android.R.id.title);

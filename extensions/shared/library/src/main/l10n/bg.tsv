@@ -43,7 +43,6 @@ Export diagnostic report	Експортиране на диагностичен 
 Export settings	Експортиране на настройките
 After Telegram restarts, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.	След рестартиране на Telegram всички превключватели освен „Подробен дневник“ действат като изключени. Изборът ви се запазва. Промените от пачването остават.
 Hide ads	Скриване на рекламите
-Links, updates, backup and more	Връзки, актуализации, резервно копие и още
 Privacy	Поверителност
 Settings exported but not checked. Open the file to make sure.	Настройките са експортирани без проверка. Отворете файла, за да се уверите.
 That app is slow to answer. Nothing was changed. Try again.	Приложението отговаря бавно. Нищо не е променено. Опитайте отново.
@@ -111,14 +110,12 @@ Your switches already match that file, so nothing will change.	Превключ�
 Copy a short report to the clipboard.	Копирайте кратък отчет в клипборда.
 Settings imported.	Настройките са импортирани.
 Can't open the link. Go to %1$s.	Връзката не може да се отвори. Отворете %1$s.
-# context: Separate pages under More settings. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
+# context: Sections on the settings home list. Settings backup contains export and import; Diagnostics contains logging and diagnostic data controls.
 Settings backup	Резервно копие на настройките
 Diagnostics	Диагностика
 Updates	Актуализации
 Jump to a section	Преминаване към раздел
 Go straight to one group of settings. Back returns to where you were.	Отидете направо на група настройки. „Назад“ ви връща там, където бяхте.
-Browse settings	Преглед на настройките
-More settings	Още настройки
 No matching settings	Няма съвпадащи настройки
 %1$d setting found	Намерена е %1$d настройка
 %1$d settings found	Намерени са %1$d настройки
@@ -727,8 +724,6 @@ Open the guide	Отваряне на ръководството
 %1$s turns on	%1$s се включва
 %1$s turns off	%1$s се изключва
 Preparing the diagnostic report	Подготвяне на диагностичния отчет
-Your Telegram.	Вашият Telegram.
-A quieter space, your way.	По-спокойно място, по ваш вкус.
 # context: Readable actions, validation, import details and notification recovery.
 Open notification settings	Отваряне на настройките за известия
 Tap for details and Android settings.	Докоснете за подробности и настройките на Android.
@@ -925,3 +920,6 @@ Search languages	Търсене на езици
 Couldn't save the language. Try again in a moment.	Езикът не можа да се запази. Опитайте отново след малко.
 # context: Line in the settings import preview when the file changes the Translate into language.
 The translation language will change.	Езикът на превода ще се промени.
+# context: A screen reader's state for a settings section heading that opens and closes in place.
+Expanded	Разгънато
+Collapsed	Свито

@@ -1876,12 +1876,14 @@ public class SettingsBackupTest {
         }
     }
 
-    /** What the card at the top of the settings home page says, as it's drawn. */
+    /**
+     * What the status card says. The home list draws the card only while paused or a newer release
+     * is news, so with nothing paused the restart row (see {@link #restartRow}) is what shows a
+     * change that's owed, and the card's line stays right for when it is drawn.
+     */
     private static String overview(HushTelegramPreferenceFragment page) {
         while (page.navigation.back()) { }
-        android.widget.ListView list = page.getView().findViewById(android.R.id.list);
-        android.view.View card = page.navigation.getView(0, null, list);
-        return ((android.widget.TextView) card.findViewById(android.R.id.summary)).getText().toString();
+        return String.valueOf(page.getPreferenceScreen().getPreference(0).getSummary());
     }
 
     /** The restart row's title on the page showing, or null when the row isn't there. */
