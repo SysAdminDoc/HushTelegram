@@ -885,3 +885,13 @@ Hide new message button	Скриване на бутона за ново съо�
 Removes the round pencil button from the chat list. Start a chat from the menu or search. Restart Telegram to see the change.	Премахва кръглия бутон с молив от списъка с чатове. Започнете чат от менюто или търсенето. Рестартирайте Telegram, за да видите промяната.
 # context: Lowercase noun phrase in a status line. It names the part of Hide Contacts tab that removes the round pencil (new message) button from the chat list.
 new message button	бутона за ново съобщение
+# context: Playback page row title under Save downloaded files. Tapping it picks the gallery folder Save to Gallery writes photos and videos to.
+Gallery folder	Папка в галерията
+# context: Choice in the gallery folder list and its summary. Pictures/Telegram and Movies/Telegram are folder names on the phone, keep them as they are.
+Pictures/Telegram and Movies/Telegram (Telegram's own)	Pictures/Telegram и Movies/Telegram (тези на Telegram)
+# context: Summary under the gallery folder row. %1$s is the picked folder name, like DCIM/Telegram.
+Photos and videos you save to the gallery go to %1$s. Camera photos, automatic saving and Android 9 and older keep Telegram's folders.	Снимките и видеоклиповете, които запазвате в галерията, отиват в %1$s. Снимките от камерата, автоматичното запазване и Android 9 и по-старите версии остават в папките на Telegram.
+# context: Line in the settings import preview when the file changes only the gallery folder.
+The gallery folder will change.	Папката в галерията ще се промени.
+# context: Lowercase noun phrase in a status line. It names the part of Save downloaded files that picks the gallery folder.
+gallery folder for saved photos and videos	папка в галерията за запазените снимки и видеоклипове

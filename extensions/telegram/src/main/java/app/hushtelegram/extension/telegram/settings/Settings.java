@@ -450,6 +450,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting SAVE_RESTRICTED_DOWNLOADS =
             new BooleanSetting("hushtelegram_save_restricted_downloads", FALSE);
 
+    /**
+     * Which folders Telegram's Save to gallery puts photos and videos in, one of
+     * {@link app.hushtelegram.extension.telegram.misc.GalleryFolder#CHOICES}. Empty keeps Telegram's
+     * Pictures/Telegram and Movies/Telegram (#30).
+     */
+    public static final StringSetting GALLERY_FOLDER =
+            new StringSetting("hushtelegram_gallery_folder", "");
+
     /** Turned on, makes Private, Groups, Channels and Bots folders; turned off, removes the untouched ones it made. */
     public static final BooleanSetting CHAT_TYPE_FOLDERS =
             new BooleanSetting("hushtelegram_chat_type_folders", FALSE);

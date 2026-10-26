@@ -410,7 +410,11 @@ public class PatchFamilyTest {
             // Each finished download reads the switches, so no restart is needed.
             assertFalse(setting.key, setting.rebootApp);
         }
-        assertTrue(family.expectedCapabilities().isEmpty());
+        // The gallery folder choice (#30) rides on this patch as its one tracked target, and starts on Telegram's folders.
+        assertEquals(EnumSet.of(PatchFamily.Capability.GALLERY_FOLDER), family.expectedCapabilities());
+        assertEquals("galleryFolder", PatchFamily.Capability.GALLERY_FOLDER.statusMethod);
+        assertEquals("", Settings.GALLERY_FOLDER.defaultValue);
+        assertFalse(Settings.GALLERY_FOLDER.rebootApp);
         assertOnItsPage(family);
         assertEquals(PatchFamily.Page.PLAYBACK, PatchFamily.Page.of(family));
     }

@@ -10,7 +10,9 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
+import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
@@ -79,10 +81,19 @@ val saveDownloadsPatch = bytecodePatch(
     execute {
         val callback = resolveSaveDownloads()
         val account = delegateAccount(callback)
-        // Assembled on a copy first, so a refusal leaves the app untouched.
+        requireGalleryFolderRuntime()
+        val gallery = resolveGalleryFolder()
+        // Assembled on copies first, so a refusal leaves the app untouched.
         insertSaveDownloadsHook(MutableMethod(ImmutableMethod.of(callback)), account)
+        if (gallery.missing == null) gallery.rehearse()
         insertSaveDownloadsHook(callback, account)
         writeSaveDownloadsStubs()
+        if (gallery.missing == null) {
+            gallery.apply()
+            enableCapability("galleryFolder")
+        } else {
+            patchLog.warning("Save downloaded files: ${gallery.missing}. The patch goes on without the gallery folder choice.")
+        }
         enableStatus("saveDownloads")
     }
 }

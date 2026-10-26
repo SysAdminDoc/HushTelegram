@@ -1197,6 +1197,56 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
+     * Save downloaded files brings the gallery folder row under its two switches when its target
+     * went in (#30). A tap lists the three choices with the saved one checked, and a pick saves it
+     * at once and closes the list.
+     */
+    @Test
+    public void theGalleryFolderRowListsTheFoldersAndSavesThePick() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SAVE_DOWNLOADS);
+        PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            assertNotNull(page.findPreference(Settings.SAVE_DOWNLOADS.key));
+            assertNull("a build without the target has no row", page.findPreference(HushTelegramPreferenceFragment.GALLERY_FOLDER_ROW));
+        }
+        PatchFamily.capabilitiesForTests = null;
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            Preference folder = rows.get(indexOfKey(rows, Settings.SAVE_RESTRICTED_DOWNLOADS.key) + 1);
+            assertEquals(HushTelegramPreferenceFragment.GALLERY_FOLDER_ROW, folder.getKey());
+            assertEquals("Playback", String.valueOf(folder.getParent().getTitle()));
+            assertFalse("it stores nothing itself", folder.isPersistent());
+            assertEquals("Gallery folder", String.valueOf(folder.getTitle()));
+            assertEquals("Photos and videos you save to the gallery go to Pictures/Telegram and Movies/Telegram (Telegram's own)."
+                    + " Camera photos, automatic saving and Android 9 and older keep Telegram's folders.", String.valueOf(folder.getSummary()));
+
+            assertTrue(folder.getOnPreferenceClickListener().onPreferenceClick(folder));
+            ShadowLooper.idleMainLooper();
+            AlertDialog list = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertTrue(list.isShowing());
+            assertEquals("Gallery folder", String.valueOf(shadowOf(list).getTitle()));
+            ListView choices = list.getListView();
+            List<String> labels = new ArrayList<>();
+            for (int i = 0; i < choices.getCount(); i++) labels.add(String.valueOf(choices.getAdapter().getItem(i)));
+            assertEquals(Arrays.asList("Pictures/Telegram and Movies/Telegram (Telegram's own)", "DCIM/Telegram",
+                    "DCIM/Telegram/Photos and DCIM/Telegram/Videos"), labels);
+            assertEquals("Telegram's folders are checked", 0, choices.getCheckedItemPosition());
+
+            shadowOf(list).clickOnItem(1);
+            settle();
+            assertFalse(list.isShowing());
+            assertEquals(app.hushtelegram.extension.telegram.misc.GalleryFolder.DCIM, Settings.GALLERY_FOLDER.savedValue());
+            assertTrue(String.valueOf(folder.getSummary()).startsWith("Photos and videos you save to the gallery go to DCIM/Telegram."));
+            assertFalse("picking a folder leaves the switch alone", Settings.SAVE_DOWNLOADS.savedValue());
+            assertTrue("and owes no restart", AbstractPreferenceFragment.restartPending.isEmpty());
+        } finally {
+            Settings.GALLERY_FOLDER.resetToDefault();
+        }
+    }
+
+    /**
      * Hide folder tab counters brings the folder at launch switch and, under it, a row that lists
      * All Chats and the account's folders and saves the pick for the account shown.
      */

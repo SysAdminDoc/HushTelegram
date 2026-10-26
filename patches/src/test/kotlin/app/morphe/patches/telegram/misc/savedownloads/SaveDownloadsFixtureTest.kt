@@ -34,7 +34,7 @@ import org.junit.Test
 /** ImageLoader's finished-download callback on both declared builds, and the checks the stubs borrow. */
 class SaveDownloadsFixtureTest {
     private val hosts = setOf(IMAGE_LOADER, FILE_LOADER, MESSAGE_OBJECT, TL_MESSAGE, DOCUMENT, DIALOG_OBJECT, MESSAGES_CONTROLLER,
-        MESSAGES_STORAGE)
+        MESSAGES_STORAGE, GALLERY_MEDIA_CONTROLLER)
 
     private fun context(build: File): BytecodePatchContext {
         // The callback is an anonymous class; ImageLoader names it where it hands FileLoader its delegate.

@@ -207,7 +207,7 @@ public class SettingsBackupTest {
                 Collections.emptyList(), notSwitches);
         assertEquals(Arrays.asList(Settings.MESSAGE_FILTERS_GROUPS, Settings.MESSAGE_FILTERS_CHANNELS), SettingsBackup.FILTER_LISTS);
         assertEquals(Collections.singletonList(Settings.STICKER_SIZE), SettingsBackup.NUMBERS);
-        assertEquals(Collections.singletonList(Settings.TITLE_EMOJI), SettingsBackup.TEXTS);
+        assertEquals(Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER), SettingsBackup.TEXTS);
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES,
                         Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_COMMERCE,
                         Settings.HIDE_PROMOTIONAL_BANNERS,
@@ -710,12 +710,47 @@ public class SettingsBackupTest {
         cleared.getJSONObject("settings").put(Settings.TITLE_EMOJI.key, "");
         assertEquals("", SettingsBackup.parse(cleared.toString()).texts.get(Settings.TITLE_EMOJI));
 
-        // A saved state is read back as strictly: text the title can't show is left out.
+        // A saved state is read back as strictly: text the title can't show is left out, and only
+        // the file's other text, the gallery folder, comes back.
         Bundle state = snapshot.toBundle();
         state.getBundle("texts").putString(Settings.TITLE_EMOJI.key, tooLong.toString());
-        assertTrue(SettingsBackup.Snapshot.fromBundle(state).texts.isEmpty());
+        assertEquals(java.util.Collections.singleton(Settings.GALLERY_FOLDER), SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
         state.getBundle("texts").putInt(Settings.TITLE_EMOJI.key, 1);
-        assertTrue(SettingsBackup.Snapshot.fromBundle(state).texts.isEmpty());
+        assertEquals(java.util.Collections.singleton(Settings.GALLERY_FOLDER), SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
+    }
+
+    /** The gallery folder goes out as its choice and comes back only as one, never as a path (#30). */
+    @Test
+    public void theGalleryFolderRoundTripsOnlyAsOneOfItsChoices() throws Exception {
+        String dcim = app.hushtelegram.extension.telegram.misc.GalleryFolder.DCIM;
+        Settings.GALLERY_FOLDER.save(dcim);
+        String file = SettingsBackup.create();
+        assertEquals(dcim, new JSONObject(file).getJSONObject("settings").get(Settings.GALLERY_FOLDER.key));
+
+        Settings.GALLERY_FOLDER.resetToDefault();
+        SettingsBackup.Snapshot snapshot = SettingsBackup.parse(file);
+        assertEquals(0, snapshot.switchChanges());
+        assertEquals("it isn't a filter list", 0, snapshot.listChanges());
+        assertFalse(snapshot.titleEmojiChanges());
+        assertTrue(snapshot.galleryFolderChanges());
+        assertEquals(1, SettingsBackup.apply(SettingsBackup.Snapshot.fromBundle(snapshot.toBundle())));
+        assertEquals(dcim, Settings.GALLERY_FOLDER.savedValue());
+        assertEquals("a file read back is the file", file, SettingsBackup.create());
+
+        for (Object bad : new Object[]{"DCIM/Telegram/", "../../Android/data/", "/storage/emulated/0/DCIM", "Dcim", " dcim", 1, true,
+                JSONObject.NULL, new org.json.JSONArray()}) {
+            JSONObject wrong = new JSONObject(file);
+            wrong.getJSONObject("settings").put(Settings.GALLERY_FOLDER.key, bad);
+            assertEquals(String.valueOf(bad), SettingsBackup.Reason.VALUE, reasonFor(wrong.toString()));
+        }
+        // Empty is a choice: Telegram's own folders.
+        JSONObject telegrams = new JSONObject(file);
+        telegrams.getJSONObject("settings").put(Settings.GALLERY_FOLDER.key, "");
+        assertEquals("", SettingsBackup.parse(telegrams.toString()).texts.get(Settings.GALLERY_FOLDER));
+
+        Bundle state = snapshot.toBundle();
+        state.getBundle("texts").putString(Settings.GALLERY_FOLDER.key, "../DCIM");
+        assertFalse(SettingsBackup.Snapshot.fromBundle(state).texts.containsKey(Settings.GALLERY_FOLDER));
     }
 
     // ---- Refusals ------------------------------------------------------------------------------
@@ -1107,6 +1142,29 @@ public class SettingsBackupTest {
             // import used to leave it off the restart row.
             assertEquals(Collections.singleton(Settings.TITLE_EMOJI.key), new TreeSet<>(AbstractPreferenceFragment.restartPending));
             assertEquals("Restart Telegram to apply this change", restartRow(page));
+        }
+    }
+
+    @Test
+    public void aFileThatChangesOnlyTheGalleryFolderSaysSoAndImportsIt() throws Exception {
+        Settings.GALLERY_FOLDER.save(app.hushtelegram.extension.telegram.misc.GalleryFolder.DCIM_APART);
+        String file = SettingsBackup.create();
+        Settings.GALLERY_FOLDER.resetToDefault();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            deliver(activity, tap(activity, page, IMPORT_ROW), file);
+            AlertDialog preview = shownPreview();
+            assertEquals("The gallery folder will change.\n\nGallery folder: Pictures/Telegram and Movies/Telegram (Telegram's own)"
+                    + " to DCIM/Telegram/Photos and DCIM/Telegram/Videos", String.valueOf(shadowOf(preview).getMessage()));
+            preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertEquals("Settings imported.", ShadowToast.getTextOfLatestToast());
+            assertEquals(app.hushtelegram.extension.telegram.misc.GalleryFolder.DCIM_APART, Settings.GALLERY_FOLDER.savedValue());
+            assertTrue("the row shows the imported folders", String.valueOf(page.findPreference(
+                    HushTelegramPreferenceFragment.GALLERY_FOLDER_ROW).getSummary()).contains("DCIM/Telegram/Photos"));
+            // Each save reads the choice, so nothing waits for a restart.
+            assertTrue(AbstractPreferenceFragment.restartPending.isEmpty());
         }
     }
 

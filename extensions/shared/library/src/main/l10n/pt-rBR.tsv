@@ -886,3 +886,13 @@ Hide new message button	Ocultar o botão de nova mensagem
 Removes the round pencil button from the chat list. Start a chat from the menu or search. Restart Telegram to see the change.	Remove o botão redondo do lápis da lista de conversas. Inicie uma conversa pelo menu ou pela busca. Reinicie o Telegram para ver a mudança.
 # context: Lowercase noun phrase in a status line. It names the part of Hide Contacts tab that removes the round pencil (new message) button from the chat list.
 new message button	botão de nova mensagem
+# context: Playback page row title under Save downloaded files. Tapping it picks the gallery folder Save to Gallery writes photos and videos to.
+Gallery folder	Pasta da galeria
+# context: Choice in the gallery folder list and its summary. Pictures/Telegram and Movies/Telegram are folder names on the phone, keep them as they are.
+Pictures/Telegram and Movies/Telegram (Telegram's own)	Pictures/Telegram e Movies/Telegram (as do Telegram)
+# context: Summary under the gallery folder row. %1$s is the picked folder name, like DCIM/Telegram.
+Photos and videos you save to the gallery go to %1$s. Camera photos, automatic saving and Android 9 and older keep Telegram's folders.	Fotos e vídeos que você salva na galeria vão para %1$s. Fotos da câmera, o salvamento automático e o Android 9 ou anterior continuam usando as pastas do Telegram.
+# context: Line in the settings import preview when the file changes only the gallery folder.
+The gallery folder will change.	A pasta da galeria será alterada.
+# context: Lowercase noun phrase in a status line. It names the part of Save downloaded files that picks the gallery folder.
+gallery folder for saved photos and videos	pasta da galeria para fotos e vídeos salvos

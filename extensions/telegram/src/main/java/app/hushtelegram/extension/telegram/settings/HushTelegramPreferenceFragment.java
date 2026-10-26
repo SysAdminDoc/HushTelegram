@@ -82,6 +82,7 @@ import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
 import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
+import app.hushtelegram.extension.telegram.misc.GalleryFolder;
 import app.hushtelegram.extension.telegram.misc.KeepDeleted;
 import app.hushtelegram.extension.telegram.misc.LaunchFolder;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
@@ -118,6 +119,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String CLEAR_KEPT = "action_clear_kept_messages";
     /** The Sticker size row's key. The size itself is saved under {@link Settings#STICKER_SIZE}. */
     static final String STICKER_SIZE_ROW = "action_sticker_size";
+    /** The Gallery folder row's key. The choice itself is saved under {@link Settings#GALLERY_FOLDER}. */
+    static final String GALLERY_FOLDER_ROW = "action_gallery_folder";
     /** The Folder to open row's key. The picks are kept by {@link LaunchFolder}, one for each account. */
     static final String LAUNCH_FOLDER_ROW = "action_launch_folder";
 
@@ -259,7 +262,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     void refreshSwitches() {
         updateUIToSettingValues();
         onRestartPendingChanged();
-        // An import can change the filter lists, the sticker size and the title emoji too, and their rows say so.
+        // An import can change the filter lists, the sticker size, the title emoji and the gallery folder too, and their rows say so.
         if (getPreferenceScreen() == null) return;
         Preference groups = findPreference(FilterEditor.GROUPS);
         if (groups != null) groups.setSummary(FilterEditor.summary(Settings.MESSAGE_FILTERS_GROUPS));
@@ -269,6 +272,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (size != null) size.setSummary(stickerSizeSummary());
         Preference emoji = findPreference(TitleEmojiEditor.KEY);
         if (emoji != null) emoji.setSummary(TitleEmojiEditor.summary(Settings.TITLE_EMOJI.savedValue()));
+        Preference gallery = findPreference(GALLERY_FOLDER_ROW);
+        if (gallery != null) gallery.setSummary(galleryFolderSummary());
     }
 
     @Override
@@ -622,6 +627,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     L10n.t("With Save downloaded files on, files from chats whose owner turned off saving get copied too. Only use"
                             + " it where the owner is fine with you keeping a copy, since it goes past their setting. Secret chats"
                             + " still stay in Telegram.")));
+            if (PatchFamily.Capability.GALLERY_FOLDER.installed()) {
+                on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(galleryFolderRow(context));
+            }
         }
     }
 
@@ -1443,6 +1451,68 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
     static String stickerSizeSummary() {
         return L10n.f("%1$s of Telegram's size", percent(StickerSize.percent(Settings.STICKER_SIZE.savedValue())));
+    }
+
+    /** Where Save to gallery puts photos and videos: the row names the folders, and a tap lists the others. */
+    private Preference galleryFolderRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(GALLERY_FOLDER_ROW);
+        row.setTitle(L10n.t("Gallery folder"));
+        row.setPersistent(false);
+        row.setSummary(galleryFolderSummary());
+        row.setOnPreferenceClickListener(p -> {
+            showGalleryFolders(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    /** The folder choices with the saved one checked, saved and closed the way the sticker sizes are. */
+    void showGalleryFolders(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
+        CharSequence[] labels = new CharSequence[GalleryFolder.CHOICES.size()];
+        for (int i = 0; i < labels.length; i++) labels[i] = galleryFolderLabel(GalleryFolder.CHOICES.get(i));
+        show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Gallery folder"))
+                .setSingleChoiceItems(labels, savedGalleryChoice(), (dialog, which) -> {
+                    boolean started = save((AlertDialog) dialog,
+                            () -> Settings.GALLERY_FOLDER.saveCommitted(GalleryFolder.CHOICES.get(which)), landed -> {
+                                if (landed) {
+                                    row.setSummary(galleryFolderSummary());
+                                    dialog.dismiss();
+                                } else {
+                                    checkSavedGalleryFolder((AlertDialog) dialog);
+                                    Utils.showToastLong(L10n.t("Couldn't save the folder. Try again in a moment."));
+                                }
+                            });
+                    if (!started) checkSavedGalleryFolder((AlertDialog) dialog);
+                })
+                .setNegativeButton(L10n.t("Cancel"), null));
+    }
+
+    /** Where the saved folder choice sits in the list. One that's none of them reads as Telegram's. */
+    static int savedGalleryChoice() {
+        String saved = Settings.GALLERY_FOLDER.savedValue();
+        return GalleryFolder.CHOICES.indexOf(GalleryFolder.allowed(saved) ? saved : GalleryFolder.TELEGRAM);
+    }
+
+    private static void checkSavedGalleryFolder(AlertDialog dialog) {
+        dialog.getListView().setItemChecked(savedGalleryChoice(), true);
+    }
+
+    /**
+     * A choice as the list, the row and an import preview name it, with anything that isn't one read
+     * as Telegram's. The folder names are the ones on the phone and stay as they are.
+     */
+    static String galleryFolderLabel(String choice) {
+        if (GalleryFolder.DCIM.equals(choice)) return "DCIM/Telegram";
+        if (GalleryFolder.DCIM_APART.equals(choice)) return L10n.join(Arrays.asList("DCIM/Telegram/Photos", "DCIM/Telegram/Videos"));
+        return L10n.t("Pictures/Telegram and Movies/Telegram (Telegram's own)");
+    }
+
+    static String galleryFolderSummary() {
+        return L10n.f("Photos and videos you save to the gallery go to %1$s. Camera photos, automatic saving and Android 9"
+                + " and older keep Telegram's folders.", galleryFolderLabel(Settings.GALLERY_FOLDER.savedValue()));
     }
 
     /** The folder the chat list opens on for the account shown now: the row says which, and a tap lists the others. */
