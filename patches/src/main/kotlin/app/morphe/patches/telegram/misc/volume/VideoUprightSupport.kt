@@ -18,6 +18,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 
 internal const val VIDEO_UPRIGHT = "$EXTENSION_PACKAGE/misc/VideoUpright;"
@@ -108,7 +109,7 @@ internal fun BytecodePatchContext.resolveVideoUpright(turn: FullScreenTurn): Upr
                 val edit = UprightHooks.Edit(cls.type, m.toString(), i, hook)
                 if (hook == LISTENER_ON_HOOK || hook == LISTENER_OFF_HOOK) {
                     // Another player in the app has a sensor listener of its own, so a switch counts only when the listener is the viewer's.
-                    switches += edit to (if (i > 0) body[i - 1].controlField()?.type else null)
+                    switches += edit to listenerRead(body, i)
                 } else {
                     edits += edit
                 }
@@ -125,3 +126,17 @@ internal fun BytecodePatchContext.resolveVideoUpright(turn: FullScreenTurn): Upr
     if (activityFields != 1) return missing("the video viewer no longer holds its activity in one place ($activityFields)")
     return UprightHooks(edits, null)
 }
+
+/**
+ * The type of the field a listener switch at [at] got its listener from, or null. The viewer's
+ * release checks the listener for null between the read and the switch, so null checks on the
+ * listener's register are passed over.
+ */
+private fun listenerRead(body: List<Instruction>, at: Int): String? {
+    val listener = body[at].namedRegisters().firstOrNull() ?: return null
+    var read = at - 1
+    while (read >= 0 && body[read].opcode in NULL_CHECKS && body[read].namedRegisters() == listOf(listener)) read--
+    return body.getOrNull(read)?.takeIf { it.opcode == Opcode.IGET_OBJECT && it.namedRegisters().first() == listener }?.controlField()?.type
+}
+
+private val NULL_CHECKS = setOf(Opcode.IF_EQZ, Opcode.IF_NEZ)

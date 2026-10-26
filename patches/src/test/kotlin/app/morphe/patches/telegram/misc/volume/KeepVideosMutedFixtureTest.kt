@@ -113,7 +113,13 @@ class KeepVideosMutedFixtureTest {
             assertEquals("$name", null, upright.missing)
             fun count(hook: String) = upright.edits.count { it.hook == hook }
             assertEquals("$name: the one place the sensor listener starts", 1, count(LISTENER_ON_HOOK))
-            assertTrue("$name: the sensor listener stops", count(LISTENER_OFF_HOOK) >= 1)
+            // Opening a video stops it when the phone can't sense turns, and letting a player go stops it
+            // behind a null check. Closing the viewer comes through the second, so it gives the screen back.
+            val offs = upright.edits.filter { it.hook == LISTENER_OFF_HOOK }.map { off ->
+                context.mutableClassDefBy(off.type).methods.single { it.toString() == off.signature }.controlBody()[off.index - 1].opcode
+            }
+            assertEquals("$name: both places the sensor listener stops", 2, offs.size)
+            assertEquals("$name: both places the sensor listener stops", setOf(Opcode.IF_EQZ, Opcode.IGET_OBJECT), offs.toSet())
             assertTrue("$name: the orientation Telegram saves is read", count(REQUESTED_HOOK) >= 1)
             assertTrue("$name: full screen ends in at least three places", count(RESTORE_HOOK) >= 3)
             assertTrue("$name: the two landscape turns stay the button's",
