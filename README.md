@@ -5,7 +5,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
   <img src="https://img.shields.io/badge/Telegram-13.1.0-2AABEE" alt="Telegram 13.1.0">
-  <img src="https://img.shields.io/badge/for-Morphe%20Manager%202.0.0%2B-8A2BE2" alt="For Morphe Manager 2.0.0 or newer">
+  <img src="https://img.shields.io/badge/for-Morphe%20Manager%202.2.0%2B-8A2BE2" alt="For Morphe Manager 2.2.0 or newer">
 </p>
 
 <p align="center">
@@ -31,7 +31,7 @@ The latest release is [v0.0.20](https://github.com/SysAdminDoc/HushTelegram/rele
 
 ## Install
 
-1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 2.0.0 or newer.
+1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 2.2.0 or newer.
 2. Open the [add-source link](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) on your phone to add HushTelegram as a patch source.
 3. Get Telegram 13.1.0. The [Google Play](https://play.google.com/store/apps/details?id=org.telegram.messenger) build (version code 72291) works, and so does telegram.org's build (version code 72299) from its [Download button](https://telegram.org/android) or a mirror such as [APKMirror](https://www.apkmirror.com/apk/telegram-fz-llc/telegram/). telegram.org hands out whatever is newest, so check the [checksum](#supported-telegram-builds) before you patch.
 4. Pick the file in Morphe Manager, keep the default selection and patch. It has every patch that comes with a switch.
