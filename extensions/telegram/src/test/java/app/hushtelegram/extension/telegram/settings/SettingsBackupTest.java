@@ -207,7 +207,7 @@ public class SettingsBackupTest {
                 Collections.emptyList(), notSwitches);
         assertEquals(Arrays.asList(Settings.MESSAGE_FILTERS_GROUPS, Settings.MESSAGE_FILTERS_CHANNELS), SettingsBackup.FILTER_LISTS);
         assertEquals(Collections.singletonList(Settings.STICKER_SIZE), SettingsBackup.NUMBERS);
-        assertEquals(Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER), SettingsBackup.TEXTS);
+        assertEquals(Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET), SettingsBackup.TEXTS);
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES,
                         Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_COMMERCE,
                         Settings.HIDE_PROMOTIONAL_BANNERS,
@@ -711,12 +711,13 @@ public class SettingsBackupTest {
         assertEquals("", SettingsBackup.parse(cleared.toString()).texts.get(Settings.TITLE_EMOJI));
 
         // A saved state is read back as strictly: text the title can't show is left out, and only
-        // the file's other text, the gallery folder, comes back.
+        // the file's other texts, the gallery folder and the translation language, come back.
         Bundle state = snapshot.toBundle();
         state.getBundle("texts").putString(Settings.TITLE_EMOJI.key, tooLong.toString());
-        assertEquals(java.util.Collections.singleton(Settings.GALLERY_FOLDER), SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
+        Set<StringSetting> others = new java.util.HashSet<>(Arrays.asList(Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET));
+        assertEquals(others, SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
         state.getBundle("texts").putInt(Settings.TITLE_EMOJI.key, 1);
-        assertEquals(java.util.Collections.singleton(Settings.GALLERY_FOLDER), SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
+        assertEquals(others, SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
     }
 
     /** The gallery folder goes out as its choice and comes back only as one, never as a path (#30). */
@@ -751,6 +752,38 @@ public class SettingsBackupTest {
         Bundle state = snapshot.toBundle();
         state.getBundle("texts").putString(Settings.GALLERY_FOLDER.key, "../DCIM");
         assertFalse(SettingsBackup.Snapshot.fromBundle(state).texts.containsKey(Settings.GALLERY_FOLDER));
+    }
+
+    /** The translation language goes out as its code and comes back only as one of the codes (#35). */
+    @Test
+    public void theTranslationLanguageRoundTripsOnlyAsOneOfItsCodes() throws Exception {
+        Settings.TRANSLATE_TARGET.save("fa");
+        String file = SettingsBackup.create();
+        assertEquals("fa", new JSONObject(file).getJSONObject("settings").get(Settings.TRANSLATE_TARGET.key));
+
+        Settings.TRANSLATE_TARGET.resetToDefault();
+        SettingsBackup.Snapshot snapshot = SettingsBackup.parse(file);
+        assertEquals(0, snapshot.switchChanges());
+        assertEquals("it isn't a filter list", 0, snapshot.listChanges());
+        assertFalse(snapshot.galleryFolderChanges());
+        assertTrue(snapshot.translateTargetChanges());
+        assertEquals(1, SettingsBackup.apply(SettingsBackup.Snapshot.fromBundle(snapshot.toBundle())));
+        assertEquals("fa", Settings.TRANSLATE_TARGET.savedValue());
+        assertEquals("a file read back is the file", file, SettingsBackup.create());
+
+        for (Object bad : new Object[]{"xx", "FA", " fa", "fa-IR", "../fa", 1, true, JSONObject.NULL, new org.json.JSONArray()}) {
+            JSONObject wrong = new JSONObject(file);
+            wrong.getJSONObject("settings").put(Settings.TRANSLATE_TARGET.key, bad);
+            assertEquals(String.valueOf(bad), SettingsBackup.Reason.VALUE, reasonFor(wrong.toString()));
+        }
+        // Empty is a choice: Telegram's language.
+        JSONObject telegrams = new JSONObject(file);
+        telegrams.getJSONObject("settings").put(Settings.TRANSLATE_TARGET.key, "");
+        assertEquals("", SettingsBackup.parse(telegrams.toString()).texts.get(Settings.TRANSLATE_TARGET));
+
+        Bundle state = snapshot.toBundle();
+        state.getBundle("texts").putString(Settings.TRANSLATE_TARGET.key, "xx");
+        assertFalse(SettingsBackup.Snapshot.fromBundle(state).texts.containsKey(Settings.TRANSLATE_TARGET));
     }
 
     // ---- Refusals ------------------------------------------------------------------------------
@@ -1164,6 +1197,30 @@ public class SettingsBackupTest {
             assertTrue("the row shows the imported folders", String.valueOf(page.findPreference(
                     HushTelegramPreferenceFragment.GALLERY_FOLDER_ROW).getSummary()).contains("DCIM/Telegram/Photos"));
             // Each save reads the choice, so nothing waits for a restart.
+            assertTrue(AbstractPreferenceFragment.restartPending.isEmpty());
+        }
+    }
+
+    @Test
+    public void aFileThatChangesOnlyTheTranslationLanguageSaysSoAndImportsIt() throws Exception {
+        Settings.TRANSLATE_TARGET.save("fa");
+        String file = SettingsBackup.create();
+        Settings.TRANSLATE_TARGET.resetToDefault();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            deliver(activity, tap(activity, page, IMPORT_ROW), file);
+            AlertDialog preview = shownPreview();
+            String message = String.valueOf(shadowOf(preview).getMessage());
+            assertTrue(message, message.startsWith("The translation language will change.\n\nTranslate into: Telegram's language to "));
+            assertTrue(message, message.endsWith("(Persian)"));
+            preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertEquals("Settings imported.", ShadowToast.getTextOfLatestToast());
+            assertEquals("fa", Settings.TRANSLATE_TARGET.savedValue());
+            assertTrue("the row shows the imported language", String.valueOf(page.findPreference(
+                    TranslateTargetPicker.KEY).getSummary()).contains("(Persian)"));
+            // Each translation reads the choice, so nothing waits for a restart.
             assertTrue(AbstractPreferenceFragment.restartPending.isEmpty());
         }
     }

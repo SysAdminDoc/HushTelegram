@@ -899,3 +899,17 @@ Photos and videos you save to the gallery go to %1$s. Camera photos, automatic s
 The gallery folder will change.	Folder galeri akan berubah.
 # context: Lowercase noun phrase in a status line. It names the part of Save downloaded files that picks the gallery folder.
 gallery folder for saved photos and videos	folder galeri untuk foto dan video yang disimpan
+# context: Conversations page row title under Translation service, and the title of the language list it opens. Tapping it picks the language outside translations are written in.
+Translate into	Terjemahkan ke
+# context: Summary under the Translate into row. %1$s is the picked language's name, or Telegram's language.
+Language for outside translations: %1$s. Tap to pick another.	Bahasa untuk terjemahan luar: %1$s. Ketuk untuk memilih yang lain.
+# context: First choice in the Translate into list: translate into the language Telegram's app is set to, as before there was a choice.
+Telegram's language	Bahasa Telegram
+# context: A language in the Translate into list: %1$s is the name the language calls itself, %2$s its name in the app's language, like Deutsch (German).
+%1$s (%2$s)	%1$s (%2$s)
+# context: Hint in the search field at the top of the Translate into list.
+Search languages	Cari bahasa
+# context: Toast when the language picked in the Translate into list couldn't be saved.
+Couldn't save the language. Try again in a moment.	Bahasa tidak dapat disimpan. Coba lagi sebentar lagi.
+# context: Line in the settings import preview when the file changes the Translate into language.
+The translation language will change.	Bahasa terjemahan akan berubah.

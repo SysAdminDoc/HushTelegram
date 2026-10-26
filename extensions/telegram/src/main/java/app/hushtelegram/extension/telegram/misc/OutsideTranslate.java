@@ -263,7 +263,7 @@ public final class OutsideTranslate {
                 APPLIED.remove(key);
                 return false;
             }
-            if (result.sameLanguageAs(target)) {
+            if (result.sameLanguageAs(target, target.equals(TranslateTarget.chosen()))) {
                 APPLIED.remove(key);
                 return false;
             }
@@ -696,6 +696,8 @@ public final class OutsideTranslate {
     // The language the translation is written in.
 
     static String target() {
+        String chosen = TranslateTarget.chosen();
+        if (chosen != null) return chosen;
         Locale locale = null;
         try {
             locale = appLocale();

@@ -167,6 +167,28 @@ public class OutsideTranslateTest {
         assertEquals(0, message.applied);
     }
 
+    @Test public void aPickedChineseScriptIsWrittenEvenFromTheOtherOne() {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        Settings.TRANSLATE_TARGET.save("zh-TW");
+        try {
+            OutsideTranslate.toggleChat(OWNER, 10);
+            List<String> asked = new ArrayList<>();
+            OutsideTranslate.fetcher = (service, target, text) -> {
+                asked.add(target);
+                return new GoogleTranslate.Result("你好，世界", "zh-CN");
+            };
+            Fake message = new Fake();
+            message.original = "你好，世界";
+            OutsideTranslate.showMessage(message, message);
+            ShadowLooper.idleMainLooper();
+            assertTrue("Simplified Chinese is written out in Traditional", OutsideTranslate.showMessage(message, message));
+            assertEquals(1, message.applied);
+            assertEquals(Collections.singletonList("zh-TW"), asked);
+        } finally {
+            Settings.TRANSLATE_TARGET.resetToDefault();
+        }
+    }
+
     @Test public void aFailedRequestIsNotRepeatedAtOnceAndNothingIsShown() {
         Settings.OUTSIDE_TRANSLATE.save(true);
         OutsideTranslate.toggleChat(OWNER, 10);

@@ -388,6 +388,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting OUTSIDE_TRANSLATE =
             new BooleanSetting("hushtelegram_external_translate", FALSE);
 
+    /**
+     * The language the outside translate writes in, one of
+     * {@link app.hushtelegram.extension.telegram.misc.TranslateTarget#LANGUAGES}. Empty keeps
+     * Telegram's language (#35).
+     */
+    public static final StringSetting TRANSLATE_TARGET =
+            new StringSetting("hushtelegram_translate_target", "");
+
     /** Search, Direct messages and Info leave the bar at the bottom of a channel. Mute and Join stay. */
     public static final BooleanSetting HIDE_CHANNEL_BUTTONS =
             new BooleanSetting("hushtelegram_hide_channel_buttons", FALSE);

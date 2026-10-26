@@ -366,7 +366,8 @@ public class SettingsBackupPreference extends Preference {
         boolean size = snapshot.sizeChanges();
         boolean emoji = snapshot.titleEmojiChanges();
         boolean gallery = snapshot.galleryFolderChanges();
-        boolean nothing = switches == 0 && lists == 0 && !size && !emoji && !gallery;
+        boolean language = snapshot.translateTargetChanges();
+        boolean nothing = switches == 0 && lists == 0 && !size && !emoji && !gallery && !language;
         String message = nothing
                 ? L10n.t("Your switches already match that file, so nothing will change.")
                 : switches == 0 ? "" : L10n.quantity(switches, "%1$d switch will change.", "%1$d switches will change.", switches);
@@ -382,6 +383,9 @@ public class SettingsBackupPreference extends Preference {
         }
         if (gallery) {
             message += (message.isEmpty() ? "" : " ") + L10n.t("The gallery folder will change.");
+        }
+        if (language) {
+            message += (message.isEmpty() ? "" : " ") + L10n.t("The translation language will change.");
         }
         // Each switch by name, so a file someone shared can't turn Open links externally or Disable
         // analytics around without it showing here.
@@ -437,6 +441,10 @@ public class SettingsBackupPreference extends Preference {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Gallery folder"),
                         HushTelegramPreferenceFragment.galleryFolderLabel(Settings.GALLERY_FOLDER.savedValue()),
                         HushTelegramPreferenceFragment.galleryFolderLabel((String) change.getValue())));
+            } else if (change.getKey() == Settings.TRANSLATE_TARGET) {
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Translate into"),
+                        TranslateTargetPicker.label(Settings.TRANSLATE_TARGET.savedValue()),
+                        TranslateTargetPicker.label((String) change.getValue())));
             } else if (change.getKey() instanceof StringSetting) {
                 String title = L10n.t(change.getKey() == Settings.MESSAGE_FILTERS_GROUPS ? "Filters for groups" : "Filters for channels");
                 int count = MessageFilters.lines((String) change.getValue()).size();

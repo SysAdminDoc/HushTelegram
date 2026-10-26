@@ -1247,6 +1247,84 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
+     * Translate with an outside service brings a Translate into row under the service (#35). A tap
+     * lists Telegram's language and then every language Google's web translate knows, the search
+     * finds one by any of its names, and a pick saves it at once and closes the list.
+     */
+    @Test
+    public void theTranslateIntoRowListsEveryLanguageAndSavesThePick() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.OUTSIDE_TRANSLATE);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            Preference row = rows.get(indexOfKey(rows, TranslateServiceEditor.KEY) + 1);
+            assertEquals(TranslateTargetPicker.KEY, row.getKey());
+            assertEquals("Translate into", String.valueOf(row.getTitle()));
+            assertFalse("it stores nothing itself", row.isPersistent());
+            assertEquals("Language for outside translations: Telegram's language. Tap to pick another.",
+                    String.valueOf(row.getSummary()));
+
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowLooper.idleMainLooper();
+            AlertDialog list = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertTrue(list.isShowing());
+            assertEquals("Translate into", String.valueOf(shadowOf(list).getTitle()));
+            assertEquals("the keyboard makes room rather than covering Cancel",
+                    android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE,
+                    list.getWindow().getAttributes().softInputMode & android.view.WindowManager.LayoutParams.SOFT_INPUT_MASK_ADJUST);
+            View decor = list.getWindow().getDecorView();
+            EditText search = decor.findViewWithTag(TranslateTargetPicker.SEARCH);
+            ListView choices = decor.findViewWithTag(TranslateTargetPicker.LIST);
+            assertEquals(app.hushtelegram.extension.telegram.misc.TranslateTarget.LANGUAGES.size() + 1, choices.getCount());
+            assertEquals("Telegram's language", String.valueOf(choices.getAdapter().getItem(0)));
+            assertEquals("Telegram's language is checked", 0, choices.getCheckedItemPosition());
+
+            // By its name in the app's language, its own name or its code. Persian comes with
+            // Afghanistan's, which Google lists as Dari.
+            for (String typed : new String[]{"persian", "فارسی"}) {
+                search.setText(typed);
+                assertEquals(typed, 2, choices.getCount());
+                assertTrue(typed, String.valueOf(choices.getAdapter().getItem(persianIn(choices))).endsWith("(Persian)"));
+                assertEquals("nothing shown is the saved one", ListView.INVALID_POSITION, choices.getCheckedItemPosition());
+            }
+            search.setText("Deutsch");
+            assertEquals(1, choices.getCount());
+            search.setText("zh-TW");
+            assertEquals(1, choices.getCount());
+            search.setText("");
+            assertEquals(app.hushtelegram.extension.telegram.misc.TranslateTarget.LANGUAGES.size() + 1, choices.getCount());
+            assertEquals(0, choices.getCheckedItemPosition());
+
+            search.setText("persian");
+            choices.performItemClick(null, persianIn(choices), 0);
+            assertFalse("a second tap can't land while the pick saves", choices.isEnabled());
+            settle();
+            assertFalse(list.isShowing());
+            assertEquals("fa", Settings.TRANSLATE_TARGET.savedValue());
+            assertTrue(String.valueOf(row.getSummary()), String.valueOf(row.getSummary()).contains("(Persian)"));
+            assertTrue("and owes no restart", AbstractPreferenceFragment.restartPending.isEmpty());
+
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowLooper.idleMainLooper();
+            ListView again = ShadowAlertDialog.getLatestDialog().getWindow().getDecorView().findViewWithTag(TranslateTargetPicker.LIST);
+            int saved = again.getCheckedItemPosition();
+            assertTrue("Persian is checked", String.valueOf(again.getAdapter().getItem(saved)).endsWith("(Persian)"));
+            assertEquals("and opens in view", saved, again.getSelectedItemPosition());
+            ShadowAlertDialog.getLatestDialog().dismiss();
+        } finally {
+            Settings.TRANSLATE_TARGET.resetToDefault();
+        }
+    }
+
+    /** Where Persian itself is among the rows shown. */
+    private static int persianIn(ListView choices) {
+        for (int i = 0; i < choices.getCount(); i++) {
+            if (String.valueOf(choices.getAdapter().getItem(i)).endsWith("(Persian)")) return i;
+        }
+        throw new AssertionError("no Persian row");
+    }
+
+    /**
      * Hide folder tab counters brings the folder at launch switch and, under it, a row that lists
      * All Chats and the account's folders and saves the pick for the account shown.
      */

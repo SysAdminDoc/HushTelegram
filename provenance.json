@@ -207,6 +207,8 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ChatTypeFolders.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/AiTranslate.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/TranslateServiceEditor.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TranslateTarget.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/TranslateTargetPicker.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/UnifiedPush.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/UnifiedPushReceiver.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/UnifiedPushRaise.java",

@@ -262,7 +262,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     void refreshSwitches() {
         updateUIToSettingValues();
         onRestartPendingChanged();
-        // An import can change the filter lists, the sticker size, the title emoji and the gallery folder too, and their rows say so.
+        // An import can change the filter lists, the sticker size, the title emoji, the gallery folder and the
+        // translation language too, and their rows say so.
         if (getPreferenceScreen() == null) return;
         Preference groups = findPreference(FilterEditor.GROUPS);
         if (groups != null) groups.setSummary(FilterEditor.summary(Settings.MESSAGE_FILTERS_GROUPS));
@@ -274,6 +275,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (emoji != null) emoji.setSummary(TitleEmojiEditor.summary(Settings.TITLE_EMOJI.savedValue()));
         Preference gallery = findPreference(GALLERY_FOLDER_ROW);
         if (gallery != null) gallery.setSummary(galleryFolderSummary());
+        Preference target = findPreference(TranslateTargetPicker.KEY);
+        if (target != null) target.setSummary(TranslateTargetPicker.summary(Settings.TRANSLATE_TARGET.savedValue()));
     }
 
     @Override
@@ -566,6 +569,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             });
             on(pages, PatchFamily.OUTSIDE_TRANSLATE).addPreference(outside);
             on(pages, PatchFamily.OUTSIDE_TRANSLATE).addPreference(translateServiceRow(context));
+            on(pages, PatchFamily.OUTSIDE_TRANSLATE).addPreference(translateTargetRow(context));
         }
     }
 
@@ -1662,6 +1666,22 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             Activity activity = getActivity();
             if (SettingsLock.refuses()) return true;
             if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) own(TranslateServiceEditor.open(activity, p));
+            return true;
+        });
+        return row;
+    }
+
+    /** The language the outside translate writes in: the row names it, and a tap lists every one with a search. */
+    private Preference translateTargetRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(TranslateTargetPicker.KEY);
+        row.setTitle(L10n.t("Translate into"));
+        row.setPersistent(false);
+        row.setSummary(TranslateTargetPicker.summary(Settings.TRANSLATE_TARGET.savedValue()));
+        row.setOnPreferenceClickListener(p -> {
+            Activity activity = getActivity();
+            if (SettingsLock.refuses()) return true;
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) own(TranslateTargetPicker.open(activity, p));
             return true;
         });
         return row;

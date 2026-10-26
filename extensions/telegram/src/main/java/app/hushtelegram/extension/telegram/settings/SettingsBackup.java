@@ -50,6 +50,7 @@ import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
 import app.hushtelegram.extension.telegram.misc.TitleEmoji;
+import app.hushtelegram.extension.telegram.misc.TranslateTarget;
 
 /**
  * HushTelegram's switches as a file, and back.
@@ -192,10 +193,12 @@ public final class SettingsBackup {
     static final List<IntegerSetting> NUMBERS = Collections.singletonList(Settings.STICKER_SIZE);
 
     /**
-     * The short texts a file carries as they're saved: the emoji beside the chat list's title and
-     * the gallery folder choice. A build from before them counts the name as unknown and leaves it out.
+     * The short texts a file carries as they're saved: the emoji beside the chat list's title, the
+     * gallery folder choice and the translation language. A build from before them counts the name
+     * as unknown and leaves it out.
      */
-    static final List<StringSetting> TEXTS = Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER);
+    static final List<StringSetting> TEXTS = Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER,
+            Settings.TRANSLATE_TARGET);
 
     /**
      * Bounds for the parser, well past anything this class writes, so a file built to be
@@ -340,6 +343,11 @@ public final class SettingsBackup {
         /** Whether this file changes where Save to gallery puts photos and videos. */
         boolean galleryFolderChanges() {
             return changes().containsKey(Settings.GALLERY_FOLDER);
+        }
+
+        /** Whether this file changes the language the outside translate writes in. */
+        boolean translateTargetChanges() {
+            return changes().containsKey(Settings.TRANSLATE_TARGET);
         }
 
         /** For the settings page's saved state, so a preview outlives the page being rebuilt. */
@@ -549,8 +557,7 @@ public final class SettingsBackup {
             if (shortText != null) {
                 Object value = values.opt(name);
                 if (!(value instanceof String) || !allowed(shortText, (String) value)) {
-                    throw new Rejected(Reason.VALUE, (shortText == Settings.GALLERY_FOLDER
-                            ? "Not one of the gallery folder choices: " : "Not text the title can show: ") + name);
+                    throw new Rejected(Reason.VALUE, "Not a value its row would save: " + name);
                 }
                 foundTexts.put(shortText, (String) value);
                 continue;
@@ -599,6 +606,7 @@ public final class SettingsBackup {
     /** Whether a short text is one its setting's row would save: clean and short enough, or one of the choices. */
     static boolean allowed(StringSetting setting, String value) {
         if (setting == Settings.GALLERY_FOLDER) return GalleryFolder.allowed(value);
+        if (setting == Settings.TRANSLATE_TARGET) return TranslateTarget.allowed(value);
         return setting == Settings.TITLE_EMOJI && TitleEmoji.allowed(value);
     }
 
