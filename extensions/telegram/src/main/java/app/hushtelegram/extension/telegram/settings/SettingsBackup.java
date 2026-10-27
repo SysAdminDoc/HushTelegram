@@ -70,6 +70,8 @@ import app.hushtelegram.extension.telegram.misc.TranslateTarget;
  * <p>The release check stays out of the file: it puts the phone online, so it's switched on
  * from the phone's own screen, never by a file. So does Folders by chat type: flipping it makes or
  * removes folders on your account, and an import would flip it without doing either.
+ * The chats picked under Hide picked chats stay out too, though the switch goes in: they name the
+ * account and the chats someone chose to hide, and settings files get passed around to help others.
  *
  * <p>Call the file and preference work on a worker thread.
  */
