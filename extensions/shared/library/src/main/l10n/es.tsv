@@ -949,3 +949,15 @@ The translation language will change.	Cambiará el idioma de traducción.
 # context: A screen reader's state for a settings section heading that opens and closes in place.
 Expanded	Desplegado
 Collapsed	Plegado
+# context: Switch title under Save downloaded files. It moves the folder Telegram keeps its own downloads in from Android/data to the phone's main storage.
+Keep Telegram's files in internal storage	Guardar los archivos de Telegram en el almacenamiento interno
+# context: Summary under that switch. Internal storage/Telegram and Android/data are folder paths: translate Internal storage as Android's Files app does, keep Telegram and Android/data as they are. All files access is Android's name for the special app access page.
+New photos, videos and files Telegram downloads go to Internal storage/Telegram, where file managers and other apps can open them, instead of Android/data. Files downloaded before stay in Android/data. Needs All files access and a restart.	Las fotos, los videos y los archivos nuevos que descarga Telegram van a Almacenamiento interno/Telegram, donde los administradores de archivos y otras apps pueden abrirlos, en lugar de Android/data. Los archivos descargados antes se quedan en Android/data. Necesita Acceso a todos los archivos y reiniciar.
+# context: Second line of that summary when Android has given Telegram All files access.
+All files access is on.	El acceso a todos los archivos está activado.
+# context: Second line of that summary when Android hasn't given Telegram All files access. Android/data is a folder path, keep it as it is.
+All files access is off, so Telegram's files stay in Android/data. Turning this on opens the setting.	El acceso a todos los archivos está desactivado, así que los archivos de Telegram se quedan en Android/data. Al activar esto se abre el ajuste.
+# context: Toast when Android's All files access page couldn't be opened. Keep it short: a toast shows two short lines.
+Couldn't open All files access.	No se pudo abrir el acceso.
+# context: Noun phrase in a status line. It names the part of Save downloaded files that keeps Telegram's own folder in the phone's main storage.
+Telegram's own files in internal storage	archivos propios de Telegram en el almacenamiento interno

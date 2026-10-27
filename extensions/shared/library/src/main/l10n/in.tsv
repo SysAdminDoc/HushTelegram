@@ -949,3 +949,15 @@ The translation language will change.	Bahasa terjemahan akan berubah.
 # context: A screen reader's state for a settings section heading that opens and closes in place.
 Expanded	Diluaskan
 Collapsed	Diciutkan
+# context: Switch title under Save downloaded files. It moves the folder Telegram keeps its own downloads in from Android/data to the phone's main storage.
+Keep Telegram's files in internal storage	Simpan file Telegram di penyimpanan internal
+# context: Summary under that switch. Internal storage/Telegram and Android/data are folder paths: translate Internal storage as Android's Files app does, keep Telegram and Android/data as they are. All files access is Android's name for the special app access page.
+New photos, videos and files Telegram downloads go to Internal storage/Telegram, where file managers and other apps can open them, instead of Android/data. Files downloaded before stay in Android/data. Needs All files access and a restart.	Foto, video, dan file baru yang diunduh Telegram masuk ke Penyimpanan internal/Telegram, tempat pengelola file dan aplikasi lain bisa membukanya, bukan ke Android/data. File yang diunduh sebelumnya tetap di Android/data. Perlu Akses semua file dan mulai ulang.
+# context: Second line of that summary when Android has given Telegram All files access.
+All files access is on.	Akses semua file aktif.
+# context: Second line of that summary when Android hasn't given Telegram All files access. Android/data is a folder path, keep it as it is.
+All files access is off, so Telegram's files stay in Android/data. Turning this on opens the setting.	Akses semua file nonaktif, jadi file Telegram tetap di Android/data. Mengaktifkan ini akan membuka setelannya.
+# context: Toast when Android's All files access page couldn't be opened. Keep it short: a toast shows two short lines.
+Couldn't open All files access.	Akses semua file tak bisa dibuka.
+# context: Noun phrase in a status line. It names the part of Save downloaded files that keeps Telegram's own folder in the phone's main storage.
+Telegram's own files in internal storage	file Telegram sendiri di penyimpanan internal

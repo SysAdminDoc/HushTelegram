@@ -473,6 +473,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_save_restricted_downloads", FALSE);
 
     /**
+     * On Android 11 and up with All files access, Telegram's own Telegram Images, Video, Documents
+     * and the rest live in Internal storage/Telegram instead of Android/data (#7). Read once when
+     * Telegram sets up its folders, so it needs a restart.
+     */
+    public static final BooleanSetting STORAGE_FOLDER =
+            new BooleanSetting("hushtelegram_storage_folder", FALSE, true);
+
+    /**
      * Which folders Telegram's Save to gallery puts photos and videos in, one of
      * {@link app.hushtelegram.extension.telegram.misc.GalleryFolder#CHOICES}. Empty keeps Telegram's
      * Pictures/Telegram and Movies/Telegram (#30).
