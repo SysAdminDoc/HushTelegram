@@ -234,7 +234,21 @@
         "lanadilan/morphe-patches",
         "itsmartashub/rushi-morphe-patches",
         "Sc00tz/morphe-patches",
-        "sadicii/morphe-patches-rushiran"
+        "sadicii/morphe-patches-rushiran",
+        "dheeraj-2095/morphe-patches",
+        "trinoo1979/morphe-patches",
+        "nakoo/morphe-patches",
+        "oviron/morphe-patches",
+        "Salvationdk/morphe-patches",
+        "madushas/morphe-patches",
+        "Level0r0s/morphe-patches",
+        "jyotidwi/morphe-patches",
+        "rahulsinghusa-in/morphe2-patches",
+        "ninjatall12/morphe-patches",
+        "MRD955/morphe-patches",
+        "blach-bwp/Rushi-Ranpise",
+        "angelmelplayle/morphe-patches2",
+        "InfoSecJams/morphe-patches-pc"
       ],
       "contentHashes": [],
       "mirrors": [],
@@ -310,6 +324,11 @@
         {
           "repository": "https://github.com/rahul9999xda/telegram-morphe-patches",
           "reason": "The same bundle under another name, gone (404) by 2026-09-30. Known only from the Morphe Archive's snapshot.",
+          "blobs": []
+        },
+        {
+          "repository": "https://github.com/cingxcong/morphe.patches.telegram",
+          "reason": "The Paresh lineage ported to Telegram 12.10.5 on its dev and port branches (last pinned at 25d9be3), with a bytecode audit and a fingerprint matrix, targeting Plus Messenger 12.10.1.1 and the web build 12.10.1. It added Disable rich HTML paste, Enable translations, High quality stories and Stories features to the set. It answers 404 as of 2026-10-27. Its Premium, restriction bypass and anti-screenshot-notification patches stay open ideas, not adopted code.",
           "blobs": []
         }
       ],
@@ -613,7 +632,7 @@
       "branches": [
         {
           "name": "master",
-          "commit": "1a181bf88f241c9b587c05b6d7f76c131b05254b"
+          "commit": "de91d3de1239bf81c0d36cf3068bca672ab24384"
         }
       ],
       "watchPaths": [
@@ -814,13 +833,54 @@
         "chandler.bing/ecoscan-82031658-deletion_scheduled-86437644",
         "chandler.bing/ecoscan-82031658-deletion_scheduled-86405694",
         "rachel.green.r/ecoscan-82031658-deletion_scheduled-86378599",
-        "rachel.green.r/ecoscan-82031658-deletion_scheduled-86338341"
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-86338341",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-88171048",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-88153177",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-88140108",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-88133021",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-88123931",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-88107596",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-88093526",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-88085246",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-88079316",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-88070878",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-88062720",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-88057562",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-88052750",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-88045136",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-88036600",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-88030029",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-88024633",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-88012290",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-87997775",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-87987441",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-87979972",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-87968546",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-87953664",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-87941708",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-87934012",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-87920862",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-87904599",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-87887162",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-87861480",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-87841571",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-87747390",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-87705114",
+        "chandler.bing/ecoscan-82031658-deletion_scheduled-87604967",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-87553053",
+        "rachel.green.r/ecoscan-82031658-deletion_scheduled-87510265",
+        "Pluto-2100/paresh-patches"
       ],
       "contentHashes": [],
       "mirrors": [
         {
           "repository": "https://github.com/paresh-maheshwari/paresh-patches",
           "reason": "The GitHub address Awesome Morphe lists for this project. It answers 404 today, and the code lives on GitLab.",
+          "blobs": []
+        },
+        {
+          "repository": "https://github.com/Joussflls10/Jouss-Patches",
+          "reason": "A general bundle that carried the Paresh Telegram set for the web build at 12.8.3 and Plus Messenger at 12.7.3.0, with its compiled build output committed. It answers 404 as of 2026-10-27, and had been rejected as a copy with nothing newer than the lineage's own entries.",
           "blobs": []
         }
       ],
@@ -922,7 +982,15 @@
       "branches": [
         {
           "name": "main",
-          "commit": "e5cc2ec2c7dceaecf1423a81d6f7128240e16b93"
+          "commit": "2560dc9782d26062b7616339c3f3c2145c5c2591"
+        },
+        {
+          "name": "dev",
+          "commit": "2560dc9782d26062b7616339c3f3c2145c5c2591"
+        },
+        {
+          "name": "test",
+          "commit": "2d08699cefab96a3505ff526ad75dd6308f21e45"
         }
       ],
       "watchPaths": [
@@ -979,61 +1047,6 @@
       "contaminatedBy": null,
       "disposition": "rejected",
       "reason": "A general bundle with one Telegram patch, Anti-disappearing media, built on the Paresh lineage's fingerprints. Its patch list declares only the web build, at 12.8.3 and 12.10.1. The indexes list the store package too. The patch exists in every other copy of the lineage, so there is nothing new here.",
-      "archived": false,
-      "forks": [],
-      "contentHashes": [],
-      "mirrors": [],
-      "lastChecked": "2026-10-11"
-    },
-    {
-      "id": "jouss",
-      "repository": "https://github.com/Joussflls10/Jouss-Patches",
-      "lineage": "paresh",
-      "upstream": null,
-      "kind": "morphe-patches",
-      "packages": [
-        "org.telegram.messenger",
-        "org.telegram.messenger.web",
-        "org.telegram.plus"
-      ],
-      "targetVersions": {
-        "org.telegram.messenger": [],
-        "org.telegram.messenger.web": [
-          "12.8.3"
-        ]
-      },
-      "features": [
-        "Remove ads",
-        "Disable analytics",
-        "Disable auto update",
-        "Bypass integrity",
-        "Hide typing indicator",
-        "Download speed boost",
-        "Anti-delete messages",
-        "Anti-disappearing media",
-        "Anti-screenshot notification",
-        "Bypass channel restrictions",
-        "Bypass content restrictions",
-        "Telegram Premium",
-        "Plus Premium"
-      ],
-      "branches": [
-        {
-          "name": "main",
-          "commit": "9ad4a81a76e248708b48baa728368f8053ca8bd5"
-        }
-      ],
-      "watchPaths": [
-        "patches/patches/src/main/kotlin/app/jouss/patches/telegram"
-      ],
-      "license": {
-        "spdx": "GPL-3.0",
-        "url": "https://github.com/Joussflls10/Jouss-Patches/blob/93160907b31e234a4b060f01525fdc29295acb2c/LICENSE",
-        "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
-      },
-      "contaminatedBy": null,
-      "disposition": "rejected",
-      "reason": "A general bundle that carries the Paresh Telegram set for the web build at 12.8.3 and Plus Messenger at 12.7.3.0. It also commits its compiled build output. Everything in it exists, newer, in the other copies of the lineage.",
       "archived": false,
       "forks": [],
       "contentHashes": [],
@@ -1151,7 +1164,11 @@
       "branches": [
         {
           "name": "main",
-          "commit": "2a0be5c0fadd5d492937a556d0f8c2dd8cb228c1"
+          "commit": "e551f9a1907c64555984042456bfc03859bf68ea"
+        },
+        {
+          "name": "dev",
+          "commit": "e551f9a1907c64555984042456bfc03859bf68ea"
         }
       ],
       "watchPaths": [
@@ -1451,7 +1468,8 @@
         "opensourcefuture/TMoe",
         "kingking888/TMoe",
         "BraveSail/TMoe",
-        "CrackerCat/TMoe"
+        "CrackerCat/TMoe",
+        "sheffykhlg/TMoe"
       ],
       "contentHashes": [],
       "mirrors": [
@@ -1736,7 +1754,8 @@
         "sanbeiicecream/Telegram-Speed-Hook",
         "Regimidia/Telegram-Speed-Hook",
         "echoaix/Telegram-Speed",
-        "kataki/Telegram-Speed-Hook"
+        "kataki/Telegram-Speed-Hook",
+        "DarknessFalls225/Telegram-Speed-Hook"
       ],
       "contentHashes": [],
       "mirrors": [],
@@ -2270,52 +2289,168 @@
       "lastChecked": "2026-10-11"
     },
     {
-      "id": "cingxcong-telegram",
-      "repository": "https://github.com/cingxcong/morphe.patches.telegram",
-      "lineage": "paresh",
-      "upstream": "https://github.com/newuser7171/telegram-morphe-patches-",
-      "kind": "morphe-patches",
+      "id": "a092devs",
+      "repository": "https://github.com/a092devs/NexAlloyNext-Patches",
+      "lineage": "a092devs",
+      "upstream": null,
+      "kind": "xposed-module",
       "packages": [
         "org.telegram.messenger",
-        "org.telegram.messenger.web",
-        "org.telegram.plus"
+        "org.telegram.messenger.web"
       ],
       "targetVersions": {
-        "org.telegram.messenger": [
-          "12.10.5"
-        ],
-        "org.telegram.messenger.web": [
-          "12.10.1"
-        ]
+        "org.telegram.messenger": [],
+        "org.telegram.messenger.web": []
       },
       "features": [
-        "Remove ads",
+        "Remove sponsored messages and video ads",
+        "Hide Stories",
+        "Keep deleted messages",
+        "Faster file downloads",
+        "Block in-app update prompts",
         "Disable analytics",
-        "Disable auto update",
-        "Bypass integrity",
-        "Hide typing indicator",
-        "Download speed boost",
-        "Disable channel switching",
-        "Voice to music",
-        "Disable rich HTML paste",
-        "Enable translations",
-        "High quality stories",
-        "Stories features",
-        "Anti-delete messages",
-        "Anti-disappearing media",
-        "Anti-screenshot notification",
-        "Bypass channel restrictions",
-        "Bypass content restrictions",
-        "Telegram Premium"
+        "Strip link tracking parameters",
+        "Auto-reveal spoilers",
+        "Mask phone number",
+        "Hide Premium, gifts and Stars upsells",
+        "Pure black dark theme"
       ],
       "branches": [
         {
-          "name": "dev",
-          "commit": "25d9be344cd922a31c2b01ead7e7bf344f81ef88"
-        },
+          "name": "main",
+          "commit": "3e61dfb09d147261156cb030fc4c3ac43f645d1f"
+        }
+      ],
+      "watchPaths": [
+        "bundles/nexfusion/src/main/java/io/github/nexalloy/nexfusion/telegram"
+      ],
+      "license": {
+        "spdx": "GPL-3.0",
+        "url": "https://github.com/a092devs/NexAlloyNext-Patches/blob/ec89df3806a4f7470a3b3072f45d85ddd9250deb/LICENSE",
+        "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+      },
+      "contaminatedBy": null,
+      "disposition": "candidate",
+      "reason": "A runtime patch bundle (.nxb) for NexAlloyNext, an engine of its own and not Morphe, so any idea would have to be rewritten as a patch. GPL-3.0, created 2026-10-15 and pushed daily. Its README lists a long Telegram set for the store build and says the web build gets the same set, with no target version declared. The feature list comes from that README, the Kotlin source was not read, and the README credits HushTelegram among its inspirations. Keep deleted messages and Auto-reveal spoilers are open ideas, not adopted code.",
+      "archived": false,
+      "forks": [],
+      "contentHashes": [],
+      "mirrors": [],
+      "lastChecked": "2026-10-27"
+    },
+    {
+      "id": "curious-grapes",
+      "repository": "https://github.com/curious-grapes/revanced-patches",
+      "lineage": "curious-grapes",
+      "upstream": null,
+      "kind": "revanced-patches",
+      "packages": [
+        "org.telegram.messenger"
+      ],
+      "targetVersions": {
+        "org.telegram.messenger": []
+      },
+      "features": [
+        "Hide sponsored messages"
+      ],
+      "branches": [
         {
-          "name": "port/telegram-12.10.5",
-          "commit": "25d9be344cd922a31c2b01ead7e7bf344f81ef88"
+          "name": "main",
+          "commit": "dea578f72d83a1fe0d9c47f2b544d30ef55b2456"
+        }
+      ],
+      "watchPaths": [
+        "patches/src/main/kotlin/app/revanced/patches/forkgram"
+      ],
+      "license": {
+        "spdx": "GPL-3.0",
+        "url": "https://github.com/curious-grapes/revanced-patches/blob/dea578f72d83a1fe0d9c47f2b544d30ef55b2456/LICENSE",
+        "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+      },
+      "contaminatedBy": null,
+      "disposition": "candidate",
+      "reason": "A ReVanced patches template pushed on 2026-10-24 with one Telegram patch, Hide sponsored messages, in a folder named forkgram. Code search matched it on org.telegram.messenger. It declares no build, and whether it targets official Telegram or Forkgram wasn't confirmed. Two commits, no forks.",
+      "archived": false,
+      "forks": [],
+      "contentHashes": [],
+      "mirrors": [],
+      "lastChecked": "2026-10-27"
+    },
+    {
+      "id": "kazimmt",
+      "repository": "https://github.com/kazimmt/ReVancedExperiments",
+      "lineage": "auna",
+      "upstream": "https://github.com/Aunali321/ReVancedExperiments",
+      "kind": "revanced-patches",
+      "packages": [
+        "org.telegram.messenger",
+        "org.telegram.messenger.web"
+      ],
+      "targetVersions": {
+        "org.telegram.messenger": [],
+        "org.telegram.messenger.web": []
+      },
+      "features": [
+        "Hide sponsored ads",
+        "No media timer limit",
+        "Hide typing indicator",
+        "View deleted messages"
+      ],
+      "branches": [
+        {
+          "name": "main",
+          "commit": "29556ab011e23f2569b44c5e7fc25a20d49b0c71"
+        }
+      ],
+      "watchPaths": [
+        "src/main/kotlin/li/auna/patches/telegram"
+      ],
+      "license": {
+        "spdx": "GPL-3.0",
+        "url": "https://github.com/kazimmt/ReVancedExperiments/blob/29556ab011e23f2569b44c5e7fc25a20d49b0c71/LICENSE",
+        "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+      },
+      "contaminatedBy": null,
+      "disposition": "rejected",
+      "reason": "An August 2024 copy of Aunali321's ReVanced Telegram patches (the li.auna package, not a GitHub fork) in an older src/main layout. Its last commit adds the non-Play-store variant, and it hasn't moved since 2024-08-19. It declares no Telegram build. Nothing in it the original doesn't do better. Its dev branch is behind main. No media timer limit gets past self-destruct timers, an open idea.",
+      "archived": false,
+      "forks": [],
+      "contentHashes": [],
+      "mirrors": [],
+      "lastChecked": "2026-10-27"
+    },
+    {
+      "id": "madushas",
+      "repository": "https://github.com/madushas/tele_web_patch",
+      "lineage": "paresh",
+      "upstream": "https://github.com/rushiranpise/morphe-patches",
+      "kind": "morphe-patches",
+      "packages": [
+        "org.telegram.messenger",
+        "org.telegram.messenger.web"
+      ],
+      "targetVersions": {
+        "org.telegram.messenger": [],
+        "org.telegram.messenger.web": [
+          "10.2.0"
+        ]
+      },
+      "features": [
+        "Anti-delete messages",
+        "Anti-screenshot notification",
+        "Bypass integrity check",
+        "Disable auto-update",
+        "Disable channel switching",
+        "Download speed boost",
+        "Hide typing indicator",
+        "Remove ads",
+        "Unlock Premium",
+        "Voice to music"
+      ],
+      "branches": [
+        {
+          "name": "main",
+          "commit": "1da6a9f2bb8f3bac9353f1d3b8b2889c06992484"
         }
       ],
       "watchPaths": [
@@ -2323,17 +2458,103 @@
       ],
       "license": {
         "spdx": "GPL-3.0",
-        "url": "https://github.com/cingxcong/morphe.patches.telegram/blob/942685f423389f18e0fd4b25a209c248b6caa592/LICENSE",
+        "url": "https://github.com/madushas/tele_web_patch/blob/d738321e17554aeebce60eaa66411e2776ad44b4/LICENSE",
         "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
       },
       "contaminatedBy": null,
-      "disposition": "candidate",
-      "reason": "The Paresh lineage ported to Telegram 12.10.5 on its dev and port branches, while main is still the stock Morphe template, which is why the indexes list it with an empty patch list. The port rebuilds the fingerprints for 12.10.5 (the ChatActivity sponsored-slot methods moved into an obfuscated class) and ships a bytecode audit and a fingerprint matrix. It adds Disable rich HTML paste, Enable translations, High quality stories and Stories features to the lineage's set, and targets Plus Messenger 12.10.1.1 and the web build 12.10.1. The audit documents are the useful part. Its Premium, restriction bypass and anti-screenshot-notification patches are open ideas, not adopted code.",
+      "disposition": "rejected",
+      "reason": "A three-commit port of rushiranpise's patch set (same patch names and cert seed patch) to the web build at 10.2.0, pushed 2026-10-15. Its own patch list declares only org.telegram.messenger.web; the indexes also list the store package, so no version is recorded for it. 10.2.0 is far behind the live bundle's 12.x and 13.x targets, and nothing in it is new to the lineage. Its Premium, anti-screenshot-notification and integrity patches are open ideas, not adopted code.",
       "archived": false,
       "forks": [],
       "contentHashes": [],
       "mirrors": [],
-      "lastChecked": "2026-10-11"
+      "lastChecked": "2026-10-27"
+    },
+    {
+      "id": "sudeepcapri",
+      "repository": "https://github.com/sudeepcapri/morphe_patch",
+      "lineage": "sudeepcapri",
+      "upstream": null,
+      "kind": "morphe-patches",
+      "packages": [
+        "org.telegram.messenger.web"
+      ],
+      "targetVersions": {
+        "org.telegram.messenger.web": [
+          "12.8.3",
+          "12.10.1"
+        ]
+      },
+      "features": [
+        "Anti-disappearing media"
+      ],
+      "branches": [
+        {
+          "name": "main",
+          "commit": "9b8156b81f01c606877328bc80e191192a6649e9"
+        }
+      ],
+      "watchPaths": [
+        "patches/src/main/kotlin/app/aapam/patches/telegram"
+      ],
+      "license": {
+        "spdx": "GPL-3.0",
+        "url": "https://github.com/sudeepcapri/morphe_patch/blob/10b5194616a854afb6b46f09cdeed6d19dae582e/LICENSE",
+        "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+      },
+      "contaminatedBy": null,
+      "disposition": "candidate",
+      "reason": "A Morphe bundle (patch list 1.5.0) whose only Telegram patch is Anti-disappearing media for the web build at 12.8.3 and 12.10.1. The rest of the bundle is for other apps. Keeping view-once and self-destructing media viewable is one of the open ideas, not adopted code, and could only ship as a default-off switch. Its dev branch sits at the same Telegram commit as main.",
+      "archived": false,
+      "forks": [],
+      "contentHashes": [],
+      "mirrors": [],
+      "lastChecked": "2026-10-27"
+    },
+    {
+      "id": "soligeram",
+      "repository": "https://github.com/MrSoheyl/SoliGeram",
+      "lineage": "soligeram",
+      "upstream": null,
+      "kind": "xposed-module",
+      "packages": [
+        "org.telegram.messenger",
+        "org.telegram.messenger.web",
+        "org.telegram.messenger.beta"
+      ],
+      "targetVersions": {
+        "org.telegram.messenger": [
+          "13.0.2"
+        ],
+        "org.telegram.messenger.web": [],
+        "org.telegram.messenger.beta": []
+      },
+      "features": [
+        "Fake Premium",
+        "Ghost mode",
+        "Allow saving media",
+        "Download boost",
+        "Keep secret media",
+        "Show deleted messages"
+      ],
+      "branches": [
+        {
+          "name": "main",
+          "commit": "558aac48e84d2e7822e26011e3246b8e972fe153"
+        }
+      ],
+      "watchPaths": [
+        "app/src/main/kotlin/com/soligeram/module"
+      ],
+      "license": null,
+      "contaminatedBy": null,
+      "disposition": "behavior-only",
+      "reason": "An LSPosed module for Telegram 13.0.2, created 2026-10-13, with no licence, so none of its code can be read for porting. Its setup notes are in Persian. The hook file names show Fake Premium, Ghost mode, Allow save media, a download boost, secret media deletion prevention and deleted message display. The Premium, save-restriction and secret-media hooks are open ideas that could only come back as default-off switches.",
+      "archived": false,
+      "forks": [],
+      "contentHashes": [],
+      "mirrors": [],
+      "lastChecked": "2026-10-27"
     }
   ],
   "outOfScope": [
@@ -2572,6 +2793,31 @@
       "repository": "https://github.com/transaero21/telebug",
       "reason": "An Xposed module that makes a third-party client identify itself as official Telegram (API id, hash and signer). It changes how another client presents itself and patches nothing in the official app.",
       "lastChecked": "2026-10-11"
+    },
+    {
+      "repository": "https://github.com/dikafarabian/tgclient",
+      "reason": "A Telegram fork client with its own package (Nekogram or exteraGram lineage), so not a patch source for official Telegram.",
+      "lastChecked": "2026-10-27"
+    },
+    {
+      "repository": "https://github.com/Duckerer/DuckDuckGram",
+      "reason": "A Telegram fork client with its own package (built on exteraless, Nekogram or exteraGram lineage), so not a patch source for official Telegram.",
+      "lastChecked": "2026-10-27"
+    },
+    {
+      "repository": "https://github.com/MoltenSt4r/MoltenGram",
+      "reason": "A Telegram fork client with its own package (Nekogram or exteraGram lineage), so not a patch source for official Telegram.",
+      "lastChecked": "2026-10-27"
+    },
+    {
+      "repository": "https://github.com/FahadBinHussain/glitchdraft",
+      "reason": "A cross-app draft sync tool (browser extension, LSPosed module and backend) whose description names Messenger, Discord, WhatsApp and Instagram. The Telegram package name appears in its hook file and AGENTS.md notes only incidentally.",
+      "lastChecked": "2026-10-27"
+    },
+    {
+      "repository": "https://github.com/mkr-infinity/mkr-morphe-patches",
+      "reason": "A personal Morphe bundle for many apps. Telegram appears in its README (a sponsored-channel filter, with 11.7.1 and 11.8.2 builds), but its patch list holds no Telegram patch and the repository has no Telegram path to watch.",
+      "lastChecked": "2026-10-27"
     }
   ],
   "elsewhere": [
@@ -2580,9 +2826,9 @@
       "packages": [
         "org.telegram.messenger"
       ],
-      "version": "v0.25.1",
-      "reason": "A bundle for the ReSeam patch engine (.reseam files, not Morphe) on the project's own Forgejo server, AGPL-3.0-or-later with section 7 terms since 2026-10-06. Its Telegram part targets 12.10.6: hide sponsored ads, a download boost, push notifications after re-signing by spoofing the signature, an integrity bypass, screenshots, a deleted-message archive, restriction and forward-from-restricted bypasses, hiding the typing indicator, removing Play Store restrictions, Unlock Pro and turning off auto-update (read through the Forgejo API at e629ca4, 2026-10-10). Recorded for reference only. The bypasses, the deleted-message archive and Unlock Pro stay out under HushTelegram's rules, and a different engine's code isn't ported.",
-      "lastChecked": "2026-10-11"
+      "version": "v0.50.0",
+      "reason": "A bundle for the ReSeam patch engine (.reseam files, not Morphe) on the project's own Forgejo server, AGPL-3.0-or-later with section 7 terms since 2026-10-06. Its Telegram part targets 12.10.6: hide sponsored ads, a download boost, push notifications after re-signing by spoofing the signature, an integrity bypass, screenshots, a deleted-message archive, restriction and forward-from-restricted bypasses, hiding the typing indicator, removing Play Store restrictions, Unlock Pro and turning off auto-update (read through the Forgejo API at e629ca4, 2026-10-10). v0.50.0 keeps the same 12 Telegram patches for 12.10.6, with Unlock Pro renamed Unlock Premium (read through Jman's catalog API, 2026-10-27). Recorded for reference only. The bypasses, the deleted-message archive and Unlock Premium stay out under HushTelegram's rules, and a different engine's code isn't ported.",
+      "lastChecked": "2026-10-27"
     }
   ]
 }
