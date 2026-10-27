@@ -9,7 +9,10 @@ import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
@@ -67,18 +70,42 @@ class GalleryFolderFixtureTest {
             // Ten puts in the ordinary save, four in the live photo's, all of them plain three-register calls.
             assertEquals(name, 10, saves.getValue("saveFileInternal").size)
             assertEquals(name, 4, saves.getValue(live).size)
-            val stock = plan.saves.associate { (method, _) -> method.name to ImmutableMethod.of(method).controlBody() }
-            val others = context.media().filterKeys { key -> saves.keys.none { key.startsWith("$it(") } }
+            // Before Android 10: the photo and the video folder in saveFile's thread, and the live photo's one.
+            assertEquals("$name: nothing missing on Android 9", null, plan.olderMissing)
+            val older = plan.older.associate { (method, folders) -> method.name to folders }
+            val thread = older.keys.single { it != live }
+            assertTrue("$name: $thread", thread.startsWith("lambda\$saveFile\$"))
+            assertEquals(name, 2, older.getValue(thread).size)
+            assertEquals(name, 1, older.getValue(live).size)
+            val edited = plan.saves.map { it.first } + plan.older.map { it.first }.filter { it.name !in saves.keys }
+            val stock = edited.associate { method -> method.name to ImmutableMethod.of(method).controlBody() }
+            val others = context.media().filterKeys { key -> stock.keys.none { key.startsWith("$it(") } }
 
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { saveDownloadsPatch.execute(context) })
 
-            for ((method, puts) in plan.saves) {
+            for (method in edited) {
                 val where = "$name: ${method.name}"
+                val puts = saves[method.name].orEmpty()
                 val before = stock.getValue(method.name)
-                val after = method.controlBody()
+                val edits = method.controlBody()
+                // Each Android 9 folder goes past the extension right after it's made, ahead of Telegram's mkdirs.
+                val calls = edits.indices.filter { edits[it].controlRef() == GALLERY_OLDER }
+                assertEquals(where, older[method.name].orEmpty().size, calls.size)
+                for (j in calls) {
+                    assertEquals("$where: $j", GALLERY_FILE_IN, edits[j - 1].controlRef())
+                    val folder = listOf(edits[j - 1].namedRegisters().first())
+                    assertEquals("$where: $j", Opcode.INVOKE_STATIC_RANGE, edits[j].opcode)
+                    assertEquals("$where: $j", folder, edits[j].namedRegisters())
+                    assertEquals("$where: $j", Opcode.MOVE_RESULT_OBJECT, edits[j + 1].opcode)
+                    assertEquals("$where: $j", folder, edits[j + 1].namedRegisters())
+                    assertEquals("$where: $j", "Ljava/io/File;->mkdirs()Z", edits[j + 2].controlRef())
+                }
+                val after = edits.filterIndexed { i, _ -> calls.none { i == it || i == it + 1 } }
                 assertEquals(where, before.size, after.size)
-                // Each folder write still comes after its relative_path key, which only the extension reads.
-                assertTrue(where, after.any { it.controlString() == GALLERY_RELATIVE_PATH })
+                if (puts.isNotEmpty()) {
+                    // Each folder write still comes after its relative_path key, which only the extension reads.
+                    assertTrue(where, after.any { it.controlString() == GALLERY_RELATIVE_PATH })
+                }
                 for (i in before.indices) {
                     if (i in puts) {
                         assertEquals("$where: $i", Opcode.INVOKE_STATIC, after[i].opcode)
@@ -132,6 +159,43 @@ class GalleryFolderFixtureTest {
                 callback.controlBody()[1].controlRef())
             assertEquals(why, 1L, context.flag("saveDownloads"))
             assertEquals(why, 0L, context.flag("galleryFolder"))
+        }
+    }
+
+    @Test fun `changed Android 9 saves keep Telegram's folders there and the Android 10 choice goes on`() {
+        val build = Fixtures.declaredBuilds().first()
+        fun BytecodePatchContext.thread() = mutableClassDefBy(GALLERY_MEDIA_CONTROLLER).methods.single { method ->
+            method.name.startsWith("lambda\$saveFile\$") && method.controlBody().none { it.controlString() == GALLERY_RELATIVE_PATH } &&
+                method.controlBody().any { it.controlRef() == GALLERY_MOVIES }
+        }
+        val shapes = listOf<Pair<String, (BytecodePatchContext) -> Unit>>(
+            "Telegram's Android 9 gallery saves changed" to { context ->
+                val thread = context.thread()
+                val body = thread.controlBody()
+                val at = body.indexOfFirst { it.controlRef() == GALLERY_MOVIES }
+                thread.replaceInstruction(at, "sget-object v${body[at].namedRegisters().single()}, " +
+                    "Landroid/os/Environment;->DIRECTORY_DCIM:Ljava/lang/String;")
+            },
+            // A jump onto Telegram's mkdirs would skip the hook on that path.
+            "makes its Android 9 gallery folder differently" to { context ->
+                val thread = context.thread()
+                val at = thread.controlBody().indexOfFirst { it.controlRef() == GALLERY_FILE_IN }
+                thread.addInstructionsWithLabels(0, "goto :hush_mkdirs", ExternalLabel("hush_mkdirs", thread.getInstruction(at + 1)))
+            },
+        )
+        for ((why, change) in shapes) {
+            val context = context(build)
+            val thread = context.thread()
+            change(context)
+            val stock = thread.controlBody().map { it.shape() }
+            val warnings = PatchLogCapture.warnings { saveDownloadsPatch.execute(context) }
+            assertEquals(why, 1, warnings.size)
+            assertTrue("$why: $warnings", warnings.single().startsWith("Save downloaded files: ") && why in warnings.single())
+            assertTrue("$why: $warnings", warnings.single().endsWith(". Saves on Android 9 and older keep Telegram's folders."))
+            assertEquals(why, stock, thread.controlBody().map { it.shape() })
+            assertEquals(why, emptyList<Int>(), context.saveFileInternal().controlBody().indices
+                .filter { context.saveFileInternal().controlBody()[it].controlRef() == GALLERY_VALUES_PUT })
+            assertEquals(why, 1L, context.flag("galleryFolder"))
         }
     }
 

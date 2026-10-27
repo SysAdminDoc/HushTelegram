@@ -927,7 +927,7 @@ Gallery folder	Galeri klasörü
 # context: Choice in the gallery folder list and its summary. Pictures/Telegram and Movies/Telegram are folder names on the phone, keep them as they are.
 Pictures/Telegram and Movies/Telegram (Telegram's own)	Pictures/Telegram ve Movies/Telegram (Telegram'ın kendi klasörleri)
 # context: Summary under the gallery folder row. %1$s is the picked folder name, like DCIM/Telegram.
-Photos and videos you save to the gallery go to %1$s. Camera photos, automatic saving and Android 9 and older keep Telegram's folders.	Galeriye kaydettiğiniz fotoğraf ve videolar %1$s klasörüne gider. Kamera fotoğrafları, otomatik kaydetme ve Android 9 ve öncesi Telegram'ın klasörlerini kullanmaya devam eder.
+Photos and videos you save to the gallery go to %1$s. Camera photos and automatic saving keep Telegram's folders.	Galeriye kaydettiğiniz fotoğraf ve videolar %1$s klasörüne gider. Kamera fotoğrafları ve otomatik kaydetme Telegram'ın klasörlerini kullanmaya devam eder.
 # context: Line in the settings import preview when the file changes only the gallery folder.
 The gallery folder will change.	Galeri klasörü değişecek.
 # context: Lowercase noun phrase in a status line. It names the part of Save downloaded files that picks the gallery folder.

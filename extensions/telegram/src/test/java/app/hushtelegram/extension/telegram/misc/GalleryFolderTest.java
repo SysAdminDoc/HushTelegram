@@ -8,6 +8,8 @@ import static org.junit.Assert.*;
 
 import android.content.ContentValues;
 
+import java.io.File;
+
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
@@ -78,6 +80,30 @@ public class GalleryFolderTest {
         ContentValues named = new ContentValues();
         GalleryFolder.put(named, "_display_name", "Pictures/Telegram/");
         assertEquals("Pictures/Telegram/", named.getAsString("_display_name"));
+    }
+
+    @Test public void androidNineSavesMoveTheirFolderUnderTheSameStorage() {
+        File storage = new File("/storage/emulated/0");
+        File pictures = new File(new File(storage, "Pictures"), "Telegram");
+        File movies = new File(new File(storage, "Movies"), "Telegram");
+        assertSame("default", pictures, GalleryFolder.older(pictures));
+        Settings.GALLERY_FOLDER.save(GalleryFolder.DCIM);
+        assertEquals(new File(storage, "DCIM/Telegram"), GalleryFolder.older(pictures));
+        assertEquals(new File(storage, "DCIM/Telegram"), GalleryFolder.older(movies));
+        Settings.GALLERY_FOLDER.save(GalleryFolder.DCIM_APART);
+        assertEquals(new File(storage, "DCIM/Telegram/Photos"), GalleryFolder.older(pictures));
+        assertEquals(new File(storage, "DCIM/Telegram/Videos"), GalleryFolder.older(movies));
+        // Documents, songs, other names and a folder with nothing above it come back as they were.
+        for (File other : new File[]{new File(new File(storage, "Download"), "Telegram"), new File(new File(storage, "Music"), "Telegram"),
+                new File(new File(storage, "Pictures"), "Other"), new File("Pictures/Telegram"), new File("Telegram")}) {
+            assertSame(other.getPath(), other, GalleryFolder.older(other));
+        }
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
+            PauseForTests.pause(reason);
+            assertSame(reason.name(), pictures, GalleryFolder.older(pictures));
+            PauseForTests.resume();
+        }
     }
 
     @Test public void onlyTheChoicesAreAllowedAndAnyOtherValueReadsAsTelegrams() {

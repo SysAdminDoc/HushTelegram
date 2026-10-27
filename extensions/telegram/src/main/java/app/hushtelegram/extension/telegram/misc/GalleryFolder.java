@@ -6,6 +6,7 @@ package app.hushtelegram.extension.telegram.misc;
 
 import android.content.ContentValues;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -22,7 +23,9 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * for the ones picked in {@link Settings#GALLERY_FOLDER}. The file name, its type and the Images or
  * Video collection stay Telegram's, so MediaStore still numbers a file whose name is taken and
  * Telegram still removes a write that failed. Both collections take DCIM on every Android that
- * gets here. Android 9 and older, camera shots and automatic saving keep Telegram's folders.
+ * gets here. On Android 9 and older the same saves copy the file into a folder {@link #older} moves
+ * the same way. Camera shots and automatic saving keep Telegram's folders: those files are
+ * Telegram's own download cache, which its Clear cache empties.
  */
 public final class GalleryFolder {
     /** Telegram's own Pictures/Telegram and Movies/Telegram. */
@@ -44,6 +47,21 @@ public final class GalleryFolder {
     /** Called in place of ContentValues.put(String, String) in Telegram's gallery saves. */
     public static void put(ContentValues values, String key, String value) {
         values.put(key, folder(key, value));
+    }
+
+    /**
+     * Called on the File Telegram copies a gallery save into before Android 10, right after it's made:
+     * Pictures/Telegram or Movies/Telegram under the shared storage. Gives the folder the choice puts it
+     * in, under the same storage, and any other folder back as it came.
+     */
+    public static File older(File folder) {
+        File parent = folder.getParentFile();
+        File storage = parent == null ? null : parent.getParentFile();
+        if (storage == null || !"Telegram".equals(folder.getName())) return folder;
+        String value = "Pictures".equals(parent.getName()) ? PICTURES : "Movies".equals(parent.getName()) ? MOVIES : null;
+        if (value == null) return folder;
+        String moved = folder(RELATIVE_PATH, value);
+        return moved.equals(value) ? folder : new File(storage, moved);
     }
 
     /** The value to save under [key]: a gallery folder the choice moves, else what Telegram gave. */

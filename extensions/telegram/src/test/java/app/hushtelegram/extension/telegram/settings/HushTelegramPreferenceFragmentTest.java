@@ -1232,7 +1232,7 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse("it stores nothing itself", folder.isPersistent());
             assertEquals("Gallery folder", String.valueOf(folder.getTitle()));
             assertEquals("Photos and videos you save to the gallery go to Pictures/Telegram and Movies/Telegram (Telegram's own)."
-                    + " Camera photos, automatic saving and Android 9 and older keep Telegram's folders.", String.valueOf(folder.getSummary()));
+                    + " Camera photos and automatic saving keep Telegram's folders.", String.valueOf(folder.getSummary()));
 
             assertTrue(folder.getOnPreferenceClickListener().onPreferenceClick(folder));
             ShadowLooper.idleMainLooper();

@@ -923,7 +923,7 @@ Gallery folder	Папка в галерията
 # context: Choice in the gallery folder list and its summary. Pictures/Telegram and Movies/Telegram are folder names on the phone, keep them as they are.
 Pictures/Telegram and Movies/Telegram (Telegram's own)	Pictures/Telegram и Movies/Telegram (тези на Telegram)
 # context: Summary under the gallery folder row. %1$s is the picked folder name, like DCIM/Telegram.
-Photos and videos you save to the gallery go to %1$s. Camera photos, automatic saving and Android 9 and older keep Telegram's folders.	Снимките и видеоклиповете, които запазвате в галерията, отиват в %1$s. Снимките от камерата, автоматичното запазване и Android 9 и по-старите версии остават в папките на Telegram.
+Photos and videos you save to the gallery go to %1$s. Camera photos and automatic saving keep Telegram's folders.	Снимките и видеоклиповете, които запазвате в галерията, отиват в %1$s. Снимките от камерата и автоматичното запазване остават в папките на Telegram.
 # context: Line in the settings import preview when the file changes only the gallery folder.
 The gallery folder will change.	Папката в галерията ще се промени.
 # context: Lowercase noun phrase in a status line. It names the part of Save downloaded files that picks the gallery folder.

@@ -927,7 +927,7 @@ Gallery folder	Carpeta de la galería
 # context: Choice in the gallery folder list and its summary. Pictures/Telegram and Movies/Telegram are folder names on the phone, keep them as they are.
 Pictures/Telegram and Movies/Telegram (Telegram's own)	Pictures/Telegram y Movies/Telegram (las de Telegram)
 # context: Summary under the gallery folder row. %1$s is the picked folder name, like DCIM/Telegram.
-Photos and videos you save to the gallery go to %1$s. Camera photos, automatic saving and Android 9 and older keep Telegram's folders.	Las fotos y los videos que guardas en la galería van a %1$s. Las fotos de la cámara, el guardado automático y Android 9 o anterior siguen usando las carpetas de Telegram.
+Photos and videos you save to the gallery go to %1$s. Camera photos and automatic saving keep Telegram's folders.	Las fotos y los videos que guardas en la galería van a %1$s. Las fotos de la cámara y el guardado automático siguen usando las carpetas de Telegram.
 # context: Line in the settings import preview when the file changes only the gallery folder.
 The gallery folder will change.	Cambiará la carpeta de la galería.
 # context: Lowercase noun phrase in a status line. It names the part of Save downloaded files that picks the gallery folder.

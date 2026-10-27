@@ -98,6 +98,9 @@ val saveDownloadsPatch = bytecodePatch(
         if (gallery.missing == null) {
             gallery.apply()
             enableCapability("galleryFolder")
+            if (gallery.olderMissing != null) {
+                patchLog.warning("Save downloaded files: ${gallery.olderMissing}. Saves on Android 9 and older keep Telegram's folders.")
+            }
         } else {
             patchLog.warning("Save downloaded files: ${gallery.missing}. The patch goes on without the gallery folder choice.")
         }

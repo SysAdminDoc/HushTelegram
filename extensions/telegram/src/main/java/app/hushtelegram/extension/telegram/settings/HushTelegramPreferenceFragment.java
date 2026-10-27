@@ -1558,8 +1558,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     }
 
     static String galleryFolderSummary() {
-        return L10n.f("Photos and videos you save to the gallery go to %1$s. Camera photos, automatic saving and Android 9"
-                + " and older keep Telegram's folders.", galleryFolderLabel(Settings.GALLERY_FOLDER.savedValue()));
+        return L10n.f("Photos and videos you save to the gallery go to %1$s. Camera photos and automatic saving keep"
+                + " Telegram's folders.", galleryFolderLabel(Settings.GALLERY_FOLDER.savedValue()));
     }
 
     /** The folder the chat list opens on for the account shown now: the row says which, and a tap lists the others. */
