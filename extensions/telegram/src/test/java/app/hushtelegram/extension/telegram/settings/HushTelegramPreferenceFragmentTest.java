@@ -623,6 +623,14 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse(Settings.LAUNCH_FOLDER.key,
                     ((SwitchPreference) page.findPreference(Settings.LAUNCH_FOLDER.key)).isChecked());
             assertEquals("Folder to open", String.valueOf(page.findPreference(HushTelegramPreferenceFragment.LAUNCH_FOLDER_ROW).getTitle()));
+            assertEquals("Hide All Chats", String.valueOf(page.findPreference(Settings.HIDE_ALL_CHATS.key).getTitle()));
+            assertEquals("The folder tabs leave out All Chats, so the chat list opens on the folder picked above or your "
+                    + "first one. Archived Chats moves to the chat list's menu, and to the side menu when that's on. Tabs "
+                    + "can't be dragged into a new order while this is on. Restart Telegram to see the change.",
+                    String.valueOf(page.findPreference(Settings.HIDE_ALL_CHATS.key).getSummary()));
+            // All Chats stays until the switch is turned on.
+            assertFalse(Settings.HIDE_ALL_CHATS.key,
+                    ((SwitchPreference) page.findPreference(Settings.HIDE_ALL_CHATS.key)).isChecked());
             assertEquals("Hide picked chats", String.valueOf(page.findPreference(Settings.HIDDEN_CHATS.key).getTitle()));
             assertEquals("The chats you pick below leave All Chats, your folders and archived chats. They keep their messages "
                     + "and notifications, search still finds them, and nothing changes on your other devices. Each account "
@@ -1400,6 +1408,7 @@ public class HushTelegramPreferenceFragmentTest {
             HushTelegramPreferenceFragment page = pageOf(controller);
             assertNull("a build without the target has no switch", page.findPreference(Settings.LAUNCH_FOLDER.key));
             assertNull("or row", page.findPreference(HushTelegramPreferenceFragment.LAUNCH_FOLDER_ROW));
+            assertNull("or Hide All Chats", page.findPreference(Settings.HIDE_ALL_CHATS.key));
         }
         PatchFamily.capabilitiesForTests = null;
         LaunchFolderForTests.signedIn(1000, "Work", "Friends");
@@ -1410,6 +1419,8 @@ public class HushTelegramPreferenceFragmentTest {
             Preference folder = rows.get(toggle + 1);
             assertEquals(HushTelegramPreferenceFragment.LAUNCH_FOLDER_ROW, folder.getKey());
             assertSame(rows.get(toggle).getParent(), folder.getParent());
+            // Hide All Chats right under the row, since it opens on that pick.
+            assertEquals(Settings.HIDE_ALL_CHATS.key, rows.get(toggle + 2).getKey());
             assertFalse("it stores nothing itself", folder.isPersistent());
             assertEquals("All Chats", String.valueOf(folder.getSummary()));
 

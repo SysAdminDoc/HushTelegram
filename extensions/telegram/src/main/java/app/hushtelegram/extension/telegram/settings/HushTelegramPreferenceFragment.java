@@ -413,6 +413,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "All Chats opens as usual.")));
                 folderTabs.addPreference(launchFolderRow(context));
             }
+            if (PatchFamily.Capability.HIDE_ALL_CHATS.installed()) {
+                folderTabs.addPreference(toggle(context, Settings.HIDE_ALL_CHATS, L10n.t("Hide All Chats"),
+                        L10n.t("The folder tabs leave out All Chats, so the chat list opens on the folder picked above or "
+                                + "your first one. Archived Chats moves to the chat list's menu, and to the side menu when "
+                                + "that's on. Tabs can't be dragged into a new order while this is on. Restart Telegram to "
+                                + "see the change.")));
+            }
             if (PatchFamily.Capability.HIDDEN_CHATS.installed()) {
                 SwitchPreference hide = toggle(context, Settings.HIDDEN_CHATS, L10n.t("Hide picked chats"),
                         L10n.t("The chats you pick below leave All Chats, your folders and archived chats. They keep their "

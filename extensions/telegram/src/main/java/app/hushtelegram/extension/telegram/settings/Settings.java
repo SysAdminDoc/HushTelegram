@@ -271,6 +271,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_launch_folder", FALSE);
 
     /**
+     * The folder tabs leave out All Chats while the account has another folder to open, and the side
+     * menu gets an Archived Chats row ({@link app.hushtelegram.extension.telegram.misc.LaunchFolder}).
+     * Each chat list reads it once as its tabs are first built, so a restart shows the change.
+     */
+    public static final BooleanSetting HIDE_ALL_CHATS =
+            new BooleanSetting("hushtelegram_hide_all_chats", FALSE, true);
+
+    /**
      * The chats picked for each account leave the chat list, its folders and the archive
      * ({@link app.hushtelegram.extension.telegram.misc.HiddenChats}). The picks themselves stay on
      * this phone, outside the settings.
