@@ -910,6 +910,8 @@ You don't have any chats yet.	Anda belum punya obrolan.
 Couldn't save the chats. Try again in a moment.	Obrolan tidak dapat disimpan. Coba lagi sebentar lagi.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that hides picked chats
 chats hidden from the chat list	obrolan yang disembunyikan dari daftar obrolan
+# context: Chats to hide's list names the account's own chat this way, as Telegram's chat list does (SavedMessages): use Telegram's applied translation
+Saved Messages	Pesan Tersimpan
 # context: Chat list page switch title, under Hide Contacts tab. When on, the round pencil button (new message) on the chat list is removed.
 Hide new message button	Sembunyikan tombol pesan baru
 # context: Summary under that switch. The menu is the side menu or Telegram's own menu; search is the chat list's search.

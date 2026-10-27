@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
+import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
@@ -148,7 +149,8 @@ public final class HiddenChats {
             List<Chat> chats = new ArrayList<>();
             for (long id : ids) {
                 if (id == 0) continue;
-                String name = telegram.peerName(account, id);
+                // Your own chat is Saved Messages, as Telegram lists it, not your name.
+                String name = id == user ? L10n.t("Saved Messages") : telegram.peerName(account, id);
                 chats.add(new Chat(id, name == null || name.trim().isEmpty() ? String.valueOf(id) : name));
             }
             return new Shown(user, account, Collections.unmodifiableList(chats), hidden);

@@ -167,6 +167,15 @@ public class HiddenChatsTest {
         assertTrue(report(), report().contains("chat list refresh"));
     }
 
+    @Test public void yourOwnChatIsSavedMessagesNotYourName() {
+        telegram.chats(0, 0, 1000, 11);
+        telegram.names.put(1000L, "M");
+        telegram.names.put(11L, "Alice");
+        List<String> names = new ArrayList<>();
+        for (HiddenChats.Chat chat : HiddenChats.shown().chats) names.add(chat.id + "=" + chat.name);
+        assertEquals(Arrays.asList("1000=Saved Messages", "11=Alice"), names);
+    }
+
     @Test public void aRefreshSortsTheAccountAgain() {
         HiddenChats.refresh(1);
         telegram.selected = 0;
