@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
+import app.hushtelegram.extension.shared.ui.ShimmerTitle;
 
 /**
  * WCAG 2.2 AA for what HushTelegram draws itself: the settings screen, its dialogs and its
@@ -265,6 +266,32 @@ public class ScreenColorsTest {
         for (TextView text : new TextView[]{title, summary}) {
             assertEquals(android.view.ViewGroup.LayoutParams.MATCH_PARENT, text.getLayoutParams().width);
             assertEquals(android.view.Gravity.CENTER, text.getGravity() & android.view.Gravity.CENTER);
+        }
+        assertTrue("the recovery title wears Telegram's blues", ShimmerTitle.wears(title));
+        assertTrue("the message keeps its own colour", !ShimmerTitle.wears(summary));
+    }
+
+    /**
+     * Every HushTelegram title wears Telegram's blues, so every stop reads at 7:1 on the black
+     * screen and on the dialogs' panel, and a painted dialog's title wears them.
+     */
+    @Test
+    public void everyTitleStopReadsOnTheScreenAndItsDialogs() {
+        assertTrue("on the screen", ShimmerTitle.readsOn(ScreenColors.DEFAULT.background));
+        assertTrue("on a dialog", ShimmerTitle.readsOn(ScreenColors.DEFAULT.dialog));
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            android.app.AlertDialog dialog = new android.app.AlertDialog.Builder(controller.get())
+                    .setTitle("Reset all settings?").setPositiveButton("Reset", null).create();
+            dialog.show();
+            try {
+                ScreenColors.DEFAULT.paint(dialog);
+                int titleId = dialog.getContext().getResources().getIdentifier("alertTitle", "id", "android");
+                TextView title = dialog.findViewById(titleId);
+                assertNotNull(title);
+                assertTrue("dialog titles wear Telegram's blues", ShimmerTitle.wears(title));
+            } finally {
+                dialog.dismiss();
+            }
         }
     }
 

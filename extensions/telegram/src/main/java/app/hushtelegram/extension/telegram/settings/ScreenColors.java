@@ -50,6 +50,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
+import app.hushtelegram.extension.shared.ui.ShimmerTitle;
 
 /**
  * The colours of the HushTelegram screen, its rows and its dialogs: a black page with dark Material
@@ -617,7 +618,9 @@ final class ScreenColors {
             fillWidth(title);
             title.setGravity(android.view.Gravity.CENTER);
             title.setTextSize(22);
-            title.setTextColor(palette.title);
+            // The gradient follows the lines as laid out, so they're placed by the gravity above.
+            title.setTextAlignment(View.TEXT_ALIGNMENT_GRAVITY);
+            ShimmerTitle.wear(title);
             title.setTypeface(Typeface.create("sans-serif-medium", 0));
             Drawable icon = SettingsIcons.icon(row.getContext(), SettingsIcons.ABOUT, palette.heading);
             icon.setBounds(0, 0, dp(row, 56), dp(row, 56));
@@ -662,7 +665,8 @@ final class ScreenColors {
         int titleId = dialog.getContext().getResources().getIdentifier("alertTitle", "id", "android");
         TextView title = titleId == 0 ? null : dialog.findViewById(titleId);
         if (title != null) {
-            title.setTextColor(this.title);
+            // In Telegram's blues, as every HushTelegram title is.
+            ShimmerTitle.wear(title);
             title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
             title.setSingleLine(false);
             title.setMaxLines(Integer.MAX_VALUE);

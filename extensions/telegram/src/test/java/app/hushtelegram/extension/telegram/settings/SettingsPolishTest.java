@@ -39,6 +39,7 @@ import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.shared.settings.FailingStore;
 import app.hushtelegram.extension.shared.ui.CustomDialog;
+import app.hushtelegram.extension.shared.ui.ShimmerTitle;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 30)
@@ -59,7 +60,9 @@ public class SettingsPolishTest {
             EditText search = search(dialog.getView());
             search.requestFocus();
             search.setText("ads");
-            assertEquals("Search settings", ((TextView) dialog.getView().findViewWithTag(SettingsDialog.PAGE_TITLE)).getText().toString());
+            TextView title = dialog.getView().findViewWithTag(SettingsDialog.PAGE_TITLE);
+            assertEquals("Search settings", title.getText().toString());
+            assertTrue("the bar's title wears Telegram's blues", ShimmerTitle.wears(title));
             search.setText("");
             assertEquals("HushTelegram", ((TextView) dialog.getView().findViewWithTag(SettingsDialog.PAGE_TITLE)).getText().toString());
             assertTrue("Deleting the last character must keep editing focus", search.hasFocus());

@@ -41,6 +41,7 @@ import androidx.annotation.Nullable;
 
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Logger;
+import app.hushtelegram.extension.shared.ui.ShimmerTitle;
 
 /**
  * The HushTelegram screen: a full screen, black dialog with a title bar and the preference list.
@@ -195,7 +196,7 @@ public final class SettingsDialog extends DialogFragment {
         pageTitle = new TextView(getContext());
         pageTitle.setTag(PAGE_TITLE);
         pageTitle.setText("HushTelegram");
-        pageTitle.setTextColor(ScreenColors.DEFAULT.title);
+        ShimmerTitle.wear(pageTitle);
         pageTitle.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         pageTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
         pageTitle.setMaxLines(1);
