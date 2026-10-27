@@ -1809,20 +1809,25 @@ public class HushTelegramPreferenceFragmentTest {
     public void partialBuildRowsNameTheirSurvivingAndMissingCoverage() {
         PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
         for (PatchFamily.Capability missing : PatchFamily.Capability.values()) {
-            // The Mute switch is its own row, shown only when its hook installed; the bar row keeps a plain summary.
-            if (missing == PatchFamily.Capability.HIDE_CHANNEL_MUTE) continue;
             Set<PatchFamily.Capability> installed = EnumSet.allOf(PatchFamily.Capability.class);
             installed.remove(missing);
             PatchFamily.capabilitiesForTests = installed;
+            List<PatchFamily.Capability> switchTargets = new ArrayList<>();
+            for (PatchFamily.Capability target : missing.family.expectedCapabilities()) {
+                if (!target.rowOnly) switchTargets.add(target);
+            }
             try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
                 HushTelegramPreferenceFragment page = pageOf(controller);
                 String summary = String.valueOf(page.findPreference(missing.family.switches.get(0).key).getSummary());
-                if (missing.family.expectedCapabilities().size() == 1) {
+                if (missing.rowOnly) {
+                    // Only that target's own row is gone; the switch still does what its description says.
+                    assertFalse(missing + ": " + summary, summary.startsWith("This patched app"));
+                } else if (switchTargets.size() == 1) {
                     assertEquals("This patched app doesn't change " + missing.label + ".", summary);
                 } else {
                     assertTrue(summary, summary.startsWith("This patched app changes "));
                     assertTrue(summary, summary.endsWith(" but not " + missing.label + "."));
-                    for (PatchFamily.Capability covered : missing.family.expectedCapabilities()) {
+                    for (PatchFamily.Capability covered : switchTargets) {
                         if (covered != missing) assertTrue(summary, summary.contains(covered.label));
                     }
                 }

@@ -929,6 +929,30 @@ public class PatchFamilyTest {
         assertTrue(none.toString(), none.contains("Disable analytics coverage: none; missing: channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports"));
     }
 
+    /** A target that only adds its own row leaves the switch working, so its description and report say so. */
+    @Test
+    public void aMissingRowOnlyTargetKeepsTheSwitchDescriptionAndIsNamedMissingInTheReport() {
+        Set<PatchFamily> build = EnumSet.of(PatchFamily.SAVE_DOWNLOADS, PatchFamily.FASTER_DOWNLOADS, PatchFamily.HIDE_ADS);
+        PatchFamily.inBuildForTests = build;
+        PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+        assertEquals("usual", PatchFamily.SAVE_DOWNLOADS.coverageSummary("usual"));
+        assertEquals("usual", PatchFamily.FASTER_DOWNLOADS.coverageSummary("usual"));
+        assertEquals("This patched app doesn't change " + L10n.join(Arrays.asList("channel ads", "video ads", "search ads")) + ".",
+                PatchFamily.HIDE_ADS.coverageSummary("usual"));
+        List<String> report = PatchFamily.reportLines(build, false);
+        assertTrue(report.toString(), report.contains(
+                "Save downloaded files coverage: switch only; missing: gallery folder for saved photos and videos"));
+        assertTrue(report.toString(), report.contains(
+                "Faster downloads coverage: switch only; missing: automatic downloads on Data Saver"));
+        assertTrue(report.toString(), report.contains("Hide ads coverage: none; missing: channel ads, video ads, search ads"));
+
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.GALLERY_FOLDER,
+                PatchFamily.Capability.DATA_SAVER_DOWNLOADS);
+        report = PatchFamily.reportLines(build, false);
+        assertTrue(report.toString(), report.contains("Save downloaded files coverage: gallery folder for saved photos and videos"));
+        assertTrue(report.toString(), report.contains("Faster downloads coverage: automatic downloads on Data Saver"));
+    }
+
     /**
      * A paused export marks the Hook status lines of the families a switch runs. Every family in
      * this build has one, so registerDiagnostics() exempts none of them: each invoked family's line
