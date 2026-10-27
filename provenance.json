@@ -56,7 +56,7 @@
         "https://github.com/SysAdminDoc/hushfeed"
       ],
       "license": "GPL-3.0-only",
-      "changes": "Hush settings standard (2026-10-12) copied from the Pinterest sibling: packages renamed to app.hushtelegram.extension.shared and app.hushtelegram.extension.telegram, HushTelegramPause in place of HushPinterestPause, Telegram's repository, names and switches in Report a problem and Quick setups, and Quick setups running each switch row's change listener before it sets the switch."
+      "changes": "Hush settings standard (2026-10-12) copied from the Pinterest sibling:packages renamed to app.hushtelegram.extension.shared and app.hushtelegram.extension.telegram, HushTelegramPause in place of HushPinterestPause, Telegram's repository, names and switches in Report a problem and Quick setups, and Quick setups running each switch row's change listener before it sets the switch."
     },
     {
       "paths": [
@@ -315,6 +315,8 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/SettingsLock.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LaunchFolder.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/folders/LaunchFolderSupport.kt",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/HiddenChats.java",
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/folders/HiddenChatsSupport.kt",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SideMenu.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SideMenuPanel.java"
       ],

@@ -271,6 +271,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_launch_folder", FALSE);
 
     /**
+     * The chats picked for each account leave the chat list, its folders and the archive
+     * ({@link app.hushtelegram.extension.telegram.misc.HiddenChats}). The picks themselves stay on
+     * this phone, outside the settings.
+     */
+    public static final BooleanSetting HIDDEN_CHATS =
+            new BooleanSetting("hushtelegram_hidden_chats", FALSE);
+
+    /**
      * Forwards start with Telegram's Hide sender's name option turned on.
      */
     public static final BooleanSetting FORWARD_HIDE_SENDER =

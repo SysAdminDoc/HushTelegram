@@ -31,6 +31,7 @@ import android.preference.TwoStatePreference;
 import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.text.util.Linkify;
@@ -57,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,6 +85,7 @@ import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
 import app.hushtelegram.extension.telegram.misc.GalleryFolder;
+import app.hushtelegram.extension.telegram.misc.HiddenChats;
 import app.hushtelegram.extension.telegram.misc.KeepDeleted;
 import app.hushtelegram.extension.telegram.misc.KeepEdits;
 import app.hushtelegram.extension.telegram.misc.LaunchFolder;
@@ -126,6 +129,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String GALLERY_FOLDER_ROW = "action_gallery_folder";
     /** The Folder to open row's key. The picks are kept by {@link LaunchFolder}, one for each account. */
     static final String LAUNCH_FOLDER_ROW = "action_launch_folder";
+    static final String HIDDEN_CHATS_ROW = "action_hidden_chats";
 
     /** Thrown by the next initialize() and then cleared: how a test reaches the recovery page. */
     static volatile RuntimeException failNextInitialization;
@@ -404,6 +408,20 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "own pick, and the folder order doesn't change. If that folder is gone, renamed or locked, "
                                 + "All Chats opens as usual.")));
                 folderTabs.addPreference(launchFolderRow(context));
+            }
+            if (PatchFamily.Capability.HIDDEN_CHATS.installed()) {
+                SwitchPreference hide = toggle(context, Settings.HIDDEN_CHATS, L10n.t("Hide picked chats"),
+                        L10n.t("The chats you pick below leave All Chats, your folders and archived chats. They keep their "
+                                + "messages and notifications, search still finds them, and nothing changes on your other "
+                                + "devices. Each account keeps its own list. Folder tab counts and the app badge still count "
+                                + "their unread messages."));
+                hide.setOnPreferenceChangeListener((row, value) -> {
+                    // Once the switch is saved, so the chat list sorts by what it says.
+                    Utils.runOnMainThreadDelayed(HiddenChats::refreshShown, 0);
+                    return true;
+                });
+                folderTabs.addPreference(hide);
+                folderTabs.addPreference(hiddenChatsRow(context));
             }
         }
         if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS)) {
@@ -1609,6 +1627,78 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         LaunchFolder.Shown shown = LaunchFolder.shown();
         int choice = shown == null ? 0 : shown.choice();
         return choice == 0 ? L10n.t("All Chats") : shown.folders.get(choice - 1).name;
+    }
+
+    /** The chats hidden for the account shown now: the row names them, and a tap lists every chat to tick. */
+    private Preference hiddenChatsRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(HIDDEN_CHATS_ROW);
+        row.setTitle(L10n.t("Chats to hide"));
+        row.setPersistent(false);
+        row.setSummary(hiddenChatsSummary(HiddenChats.shown()));
+        row.setOnPreferenceClickListener(p -> {
+            showHiddenChats(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    /**
+     * The account's chats, archived ones too, with the hidden ones ticked. Save writes the ticks and
+     * the list closes once they're saved; ticks that can't be saved leave the list open as it was.
+     */
+    void showHiddenChats(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
+        HiddenChats.Shown shown = HiddenChats.shown();
+        if (shown == null) {
+            Utils.showToastLong(L10n.t("Couldn't read your chats."));
+            return;
+        }
+        if (shown.user == 0) {
+            Utils.showToastLong(L10n.t("Sign in to Telegram first."));
+            return;
+        }
+        List<HiddenChats.Chat> chats = shown.chats;
+        if (chats.isEmpty()) {
+            Utils.showToastLong(L10n.t("You don't have any chats yet."));
+            return;
+        }
+        CharSequence[] labels = new CharSequence[chats.size()];
+        for (int i = 0; i < chats.size(); i++) labels[i] = chats.get(i).name;
+        boolean[] ticked = shown.ticked();
+        AlertDialog dialog = show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Chats to hide"))
+                .setMultiChoiceItems(labels, ticked, (d, which, checked) -> ticked[which] = checked)
+                .setPositiveButton(L10n.t("Save"), null)
+                .setNegativeButton(L10n.t("Cancel"), null));
+        if (dialog == null) return;
+        // Set here rather than on the builder, so a tap waits for the save instead of closing the list.
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            Set<Long> hide = new LinkedHashSet<>();
+            for (int i = 0; i < ticked.length; i++) {
+                if (ticked[i]) hide.add(chats.get(i).id);
+            }
+            save(dialog, () -> HiddenChats.hide(shown.user, hide), landed -> {
+                if (landed) {
+                    HiddenChats.refresh(shown.account);
+                    row.setSummary(hiddenChatsSummary(HiddenChats.shown()));
+                    dialog.dismiss();
+                } else {
+                    Utils.showToastLong(L10n.t("Couldn't save the chats. Try again in a moment."));
+                }
+            });
+        });
+    }
+
+    /** The hidden chats' names for the account shown now, or that there are none. */
+    static String hiddenChatsSummary(@Nullable HiddenChats.Shown shown) {
+        List<String> names = new ArrayList<>();
+        if (shown != null) {
+            for (HiddenChats.Chat chat : shown.chats) {
+                if (shown.hidden.contains(chat.id)) names.add(chat.name);
+            }
+        }
+        return names.isEmpty() ? L10n.t("No chats hidden yet.") : TextUtils.join(", ", names);
     }
 
     /** What the Data Saver switch does, then what Android reports right now, read when the page opens. */

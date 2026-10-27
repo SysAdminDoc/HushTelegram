@@ -131,6 +131,7 @@ public final class SettingsBackup {
             Settings.REACTION_EFFECTS_OFF,
             Settings.HIDE_FOLDER_COUNTERS,
             Settings.LAUNCH_FOLDER,
+            Settings.HIDDEN_CHATS,
             Settings.FORWARD_HIDE_SENDER,
             Settings.VOICE_MUSIC_PLAYER,
             Settings.SILENCE_NON_CONTACTS,

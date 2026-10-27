@@ -93,6 +93,7 @@ public class PatchFamilyTest {
         Settings.REACTION_EFFECTS_OFF.resetToDefault();
         Settings.HIDE_FOLDER_COUNTERS.resetToDefault();
         Settings.LAUNCH_FOLDER.resetToDefault();
+        Settings.HIDDEN_CHATS.resetToDefault();
         Settings.FORWARD_HIDE_SENDER.resetToDefault();
         Settings.VOICE_MUSIC_PLAYER.resetToDefault();
         Settings.SILENCE_NON_CONTACTS.resetToDefault();
@@ -466,15 +467,17 @@ public class PatchFamilyTest {
     public void hideFolderCountersHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
         PatchFamily family = PatchFamily.HIDE_FOLDER_COUNTERS;
         assertEquals("Hide folder tab counters", family.patchName);
-        // The second switch, the folder the chat list opens on, starts off too and works with or without the first.
-        assertEquals(Arrays.asList(Settings.HIDE_FOLDER_COUNTERS, Settings.LAUNCH_FOLDER), family.switches);
+        // The folder the chat list opens on and the hidden chats start off too, and each works with or without the others.
+        assertEquals(Arrays.asList(Settings.HIDE_FOLDER_COUNTERS, Settings.LAUNCH_FOLDER, Settings.HIDDEN_CHATS), family.switches);
         for (BooleanSetting setting : family.switches) {
             assertFalse(setting.key, setting.defaultValue);
-            // The counters change at once, and the folder pick is for the next chat list, so neither needs a restart.
+            // The counters change at once, the folder pick is for the next chat list, and the hidden
+            // chats sort again when the switch flips, so none needs a restart.
             assertFalse(setting.key, setting.rebootApp);
         }
-        assertEquals(EnumSet.of(PatchFamily.Capability.LAUNCH_FOLDER), family.expectedCapabilities());
+        assertEquals(EnumSet.of(PatchFamily.Capability.LAUNCH_FOLDER, PatchFamily.Capability.HIDDEN_CHATS), family.expectedCapabilities());
         assertEquals("launchFolder", PatchFamily.Capability.LAUNCH_FOLDER.statusMethod);
+        assertEquals("hiddenChats", PatchFamily.Capability.HIDDEN_CHATS.statusMethod);
         assertOnItsPage(family);
     }
 

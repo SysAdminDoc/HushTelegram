@@ -1,0 +1,301 @@
+/*
+ * Copyright 2026 HushTelegram contributors
+ * https://github.com/SysAdminDoc/HushTelegram
+ */
+package app.hushtelegram.extension.telegram.misc;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.SparseArray;
+
+import androidx.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
+import app.hushtelegram.extension.shared.Utils;
+import app.hushtelegram.extension.shared.diagnostics.HookStatus;
+import app.hushtelegram.extension.telegram.settings.FamilyNames;
+import app.hushtelegram.extension.telegram.settings.Settings;
+
+/**
+ * Leaves chats you picked out of the chat list.
+ *
+ * <p>Telegram sorts every folder's chats, the archive's included, each time a chat moves. Right
+ * after that, before it drops the folders left empty, this takes the hidden chats out of those
+ * lists and out of the folder tabs' lists, so All Chats, every folder and the archive go without
+ * them and a new message doesn't bring them back. Nothing changes on the server: the chats keep
+ * their messages and notifications, search still finds them, and they show again the moment the
+ * switch goes off or they're unticked.
+ *
+ * <p>Each account keeps its own hidden chats on this phone, by the account's user id, so another
+ * account signed in to the same slot never gets them. The unread counts on the folder tabs and
+ * the app icon still count them.
+ */
+public final class HiddenChats {
+    private HiddenChats() {}
+
+    /** What the diagnostic report counts each sort that left a hidden chat out as. */
+    static final String LEFT_OUT = "chat list sorted without the hidden chats";
+
+    private static final String PREFS = "hushtelegram_hidden_chats";
+
+    static Function<Context, SharedPreferences> store = context -> context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+
+    /** Telegram's side, through the stubs below. A test answers it itself. */
+    static Telegram telegram = new Stubs();
+
+    /** A chat the settings page lists: Telegram's dialog id for it and its name. */
+    public static final class Chat {
+        public final long id;
+        public final String name;
+
+        Chat(long id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+    }
+
+    /** The account Telegram shows now, as the settings page reads it once: who's signed in, their chats and the hidden ones. */
+    public static final class Shown {
+        /** The user id, or 0 when no one is signed in. */
+        public final long user;
+        /** Telegram's account slot, for the refresh after a save. */
+        public final int account;
+        /** The chat list's chats, then the archive's, then hidden ones Telegram hasn't loaded, each once. */
+        public final List<Chat> chats;
+        public final Set<Long> hidden;
+
+        Shown(long user, int account, List<Chat> chats, Set<Long> hidden) {
+            this.user = user;
+            this.account = account;
+            this.chats = chats;
+            this.hidden = hidden;
+        }
+
+        /** Which of [chats] are ticked, in their order. */
+        public boolean[] ticked() {
+            boolean[] ticked = new boolean[chats.size()];
+            for (int i = 0; i < ticked.length; i++) ticked[i] = hidden.contains(chats.get(i).id);
+            return ticked;
+        }
+    }
+
+    /**
+     * Injected in MessagesController.sortDialogs after every folder's chats are sorted, before the
+     * folders left empty are dropped.
+     */
+    public static void prune(Object controller) {
+        HookStatus.invoked(FamilyNames.HIDE_FOLDER_COUNTERS);
+        try {
+            if (!Utils.settingsReady() || !Settings.HIDDEN_CHATS.get()) return;
+            Set<Long> hidden = hidden(telegram.controllerUser(controller));
+            if (hidden.isEmpty()) return;
+            int left = 0;
+            SparseArray<?> folders = telegram.folders(controller);
+            for (int i = 0; folders != null && i < folders.size(); i++) {
+                left += leaveOut(folders.valueAt(i), hidden);
+            }
+            Object[] tabs = telegram.selectedFilters(controller);
+            for (int i = 0; tabs != null && i < tabs.length; i++) {
+                if (tabs[i] != null) leaveOut(telegram.filterDialogs(tabs[i]), hidden);
+            }
+            if (left > 0) HookStatus.counted(FamilyNames.HIDE_FOLDER_COUNTERS, LEFT_OUT);
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "hidden chats", failure);
+        }
+    }
+
+    /** Takes the chats in [hidden] out of [list], a list of Telegram's dialogs, and says how many went. */
+    private static int leaveOut(@Nullable Object list, Set<Long> hidden) {
+        if (!(list instanceof List)) return 0;
+        int left = 0;
+        for (Iterator<?> each = ((List<?>) list).iterator(); each.hasNext(); ) {
+            Object dialog = each.next();
+            if (dialog != null && hidden.contains(telegram.dialogId(dialog))) {
+                each.remove();
+                left++;
+            }
+        }
+        return left;
+    }
+
+    /**
+     * The account Telegram shows now, its chats and the hidden ones, or null when Telegram's side
+     * can't be read, which the settings page says rather than going down with it. Main thread only:
+     * Telegram's lists change there.
+     */
+    @Nullable
+    public static Shown shown() {
+        try {
+            int account = telegram.selectedAccount();
+            long user = telegram.userId(account);
+            Set<Long> hidden = hidden(user);
+            Set<Long> ids = new LinkedHashSet<>();
+            for (int folder = 0; folder <= 1; folder++) {
+                List<?> dialogs = telegram.dialogs(account, folder);
+                if (dialogs == null) continue;
+                for (Object dialog : dialogs) {
+                    if (dialog != null) ids.add(telegram.dialogId(dialog));
+                }
+            }
+            ids.addAll(hidden);
+            List<Chat> chats = new ArrayList<>();
+            for (long id : ids) {
+                if (id == 0) continue;
+                String name = telegram.peerName(account, id);
+                chats.add(new Chat(id, name == null || name.trim().isEmpty() ? String.valueOf(id) : name));
+            }
+            return new Shown(user, account, Collections.unmodifiableList(chats), hidden);
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "chat list for hiding", failure);
+            return null;
+        }
+    }
+
+    /** The chats hidden for [user], empty for no one and when they can't be read. */
+    public static Set<Long> hidden(long user) {
+        Context context = Utils.getContext();
+        if (user == 0 || context == null) return Collections.emptySet();
+        try {
+            Set<String> saved = store.apply(context).getStringSet(String.valueOf(user), null);
+            if (saved == null || saved.isEmpty()) return Collections.emptySet();
+            Set<Long> ids = new LinkedHashSet<>();
+            for (String id : saved) {
+                try {
+                    ids.add(Long.parseLong(id));
+                } catch (NumberFormatException skipped) {
+                    // Not one this wrote.
+                }
+            }
+            return Collections.unmodifiableSet(ids);
+        } catch (RuntimeException unreadable) {
+            HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "hidden chats", unreadable);
+            return Collections.emptySet();
+        }
+    }
+
+    /**
+     * Saves [ids] as [user]'s hidden chats, none for an empty set. It's written before this returns,
+     * so call it off the main thread.
+     *
+     * @return whether it was written
+     */
+    public static boolean hide(long user, Set<Long> ids) {
+        Context context = Utils.getContext();
+        if (user == 0 || context == null) return false;
+        SharedPreferences.Editor edit = store.apply(context).edit();
+        if (ids.isEmpty()) {
+            edit.remove(String.valueOf(user));
+        } else {
+            Set<String> saved = new LinkedHashSet<>();
+            for (long id : ids) saved.add(String.valueOf(id));
+            edit.putStringSet(String.valueOf(user), saved);
+        }
+        return edit.commit();
+    }
+
+    /** Sorts [account]'s chats again and redraws its chat lists, so a change shows now. Main thread only. */
+    public static void refresh(int account) {
+        try {
+            telegram.resort(account);
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "chat list refresh", failure);
+        }
+    }
+
+    /** {@link #refresh} for the account Telegram shows now. */
+    public static void refreshShown() {
+        try {
+            refresh(telegram.selectedAccount());
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "chat list refresh", failure);
+        }
+    }
+
+    /** What this needs from Telegram. */
+    interface Telegram {
+        long controllerUser(Object controller);
+
+        @Nullable
+        SparseArray<?> folders(Object controller);
+
+        @Nullable
+        Object[] selectedFilters(Object controller);
+
+        @Nullable
+        List<?> filterDialogs(Object filter);
+
+        long dialogId(Object dialog);
+
+        int selectedAccount();
+
+        long userId(int account);
+
+        @Nullable
+        List<?> dialogs(int account, int folder);
+
+        @Nullable
+        String peerName(int account, long id);
+
+        void resort(int account);
+    }
+
+    private static final class Stubs implements Telegram {
+        @Override public long controllerUser(Object controller) { return HiddenChats.controllerUser(controller); }
+        @Override public SparseArray<?> folders(Object controller) { return HiddenChats.folders(controller); }
+        @Override public Object[] selectedFilters(Object controller) { return HiddenChats.selectedFilters(controller); }
+        @Override public List<?> filterDialogs(Object filter) { return HiddenChats.filterDialogs(filter); }
+        @Override public long dialogId(Object dialog) { return HiddenChats.dialogId(dialog); }
+        @Override public int selectedAccount() { return HiddenChats.selectedAccount(); }
+        @Override public long userId(int account) { return HiddenChats.userId(account); }
+        @Override public List<?> dialogs(int account, int folder) { return HiddenChats.dialogs(account, folder); }
+        @Override public String peerName(int account, long id) { return HiddenChats.peerName(account, id); }
+        @Override public void resort(int account) { HiddenChats.resort(account); }
+    }
+
+    // Stubs. The patch gives each one Telegram's code; until then they do nothing.
+
+    /** {@code controller.getUserConfig().getClientUserId()}. */
+    public static long controllerUser(Object controller) { return 0; }
+
+    /** {@code controller.dialogsByFolder}, each folder's chats by folder id. */
+    @Nullable
+    public static SparseArray<?> folders(Object controller) { return null; }
+
+    /** {@code controller.selectedDialogFilter}, the folders the chat list's tabs show now. */
+    @Nullable
+    public static Object[] selectedFilters(Object controller) { return null; }
+
+    /** {@code filter.dialogs}. */
+    @Nullable
+    public static ArrayList<?> filterDialogs(Object filter) { return null; }
+
+    /** {@code dialog.id}. */
+    public static long dialogId(Object dialog) { return 0; }
+
+    /** {@code UserConfig.selectedAccount}. */
+    public static int selectedAccount() { return 0; }
+
+    /** {@code UserConfig.getInstance(account).getClientUserId()}. */
+    public static long userId(int account) { return 0; }
+
+    /** {@code MessagesController.getInstance(account).getDialogs(folder)}. */
+    @Nullable
+    public static ArrayList<?> dialogs(int account, int folder) { return null; }
+
+    /** {@code MessagesController.getInstance(account).getPeerName(id)}. */
+    @Nullable
+    public static String peerName(int account, long id) { return null; }
+
+    /**
+     * {@code MessagesController.getInstance(account).sortDialogs(null)}, then
+     * {@code NotificationCenter.getInstance(account).postNotificationName(dialogsNeedReload)}.
+     */
+    public static void resort(int account) {}
+}

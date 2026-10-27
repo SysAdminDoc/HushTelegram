@@ -57,6 +57,8 @@ import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloadsForTests;
+import app.hushtelegram.extension.telegram.misc.HiddenChats;
+import app.hushtelegram.extension.telegram.misc.HiddenChatsForTests;
 import app.hushtelegram.extension.telegram.misc.LaunchFolder;
 import app.hushtelegram.extension.telegram.misc.LaunchFolderForTests;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
@@ -85,6 +87,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -620,6 +623,15 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse(Settings.LAUNCH_FOLDER.key,
                     ((SwitchPreference) page.findPreference(Settings.LAUNCH_FOLDER.key)).isChecked());
             assertEquals("Folder to open", String.valueOf(page.findPreference(HushTelegramPreferenceFragment.LAUNCH_FOLDER_ROW).getTitle()));
+            assertEquals("Hide picked chats", String.valueOf(page.findPreference(Settings.HIDDEN_CHATS.key).getTitle()));
+            assertEquals("The chats you pick below leave All Chats, your folders and archived chats. They keep their messages "
+                    + "and notifications, search still finds them, and nothing changes on your other devices. Each account "
+                    + "keeps its own list. Folder tab counts and the app badge still count their unread messages.",
+                    String.valueOf(page.findPreference(Settings.HIDDEN_CHATS.key).getSummary()));
+            // Every chat shows until the switch is turned on.
+            assertFalse(Settings.HIDDEN_CHATS.key,
+                    ((SwitchPreference) page.findPreference(Settings.HIDDEN_CHATS.key)).isChecked());
+            assertEquals("Chats to hide", String.valueOf(page.findPreference(HushTelegramPreferenceFragment.HIDDEN_CHATS_ROW).getTitle()));
             assertEquals("Folders by chat type", String.valueOf(page.findPreference(Settings.CHAT_TYPE_FOLDERS.key).getTitle()));
             assertEquals("Turning this on makes Private, Groups, Channels and Bots folders, as tabs above the chat list "
                     + "and on your other devices. Turning it off removes the ones it made, unless you renamed or changed them. "
@@ -1390,6 +1402,92 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("All Chats", HushTelegramPreferenceFragment.launchFolderSummary());
         } finally {
             LaunchFolderForTests.restore();
+        }
+    }
+
+    /**
+     * Hide folder tab counters also brings the hidden chats switch and, under it, a row that lists
+     * the account's chats, archived ones included, and saves the ticked ones for that account.
+     */
+    @Test
+    public void theChatsToHideRowListsTheChatsAndSavesTheTicks() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_FOLDER_COUNTERS);
+        PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            assertNull("a build without the hook has no switch", page.findPreference(Settings.HIDDEN_CHATS.key));
+            assertNull("or row", page.findPreference(HushTelegramPreferenceFragment.HIDDEN_CHATS_ROW));
+        }
+        PatchFamily.capabilitiesForTests = null;
+        HiddenChatsForTests.Fake telegram = HiddenChatsForTests.use(new HiddenChatsForTests.Fake().chats(0, 0, 11, 12).chats(0, 1, 13));
+        telegram.users.put(0, 1000L);
+        telegram.names.put(11L, "Alice");
+        telegram.names.put(12L, "Book club");
+        telegram.names.put(13L, "Old news");
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            int toggle = indexOfKey(rows, Settings.HIDDEN_CHATS.key);
+            Preference chats = rows.get(toggle + 1);
+            assertEquals(HushTelegramPreferenceFragment.HIDDEN_CHATS_ROW, chats.getKey());
+            assertSame(rows.get(toggle).getParent(), chats.getParent());
+            assertFalse("it stores nothing itself", chats.isPersistent());
+            assertEquals("No chats hidden yet.", String.valueOf(chats.getSummary()));
+
+            AlertDialog list = dialogOf(chats);
+            assertTrue(list.isShowing());
+            assertEquals("Chats to hide", String.valueOf(shadowOf(list).getTitle()));
+            ListView choices = list.getListView();
+            List<String> labels = new ArrayList<>();
+            for (int i = 0; i < choices.getCount(); i++) labels.add(String.valueOf(choices.getAdapter().getItem(i)));
+            assertEquals("the chat list, then the archive", Arrays.asList("Alice", "Book club", "Old news"), labels);
+            shadowOf(list).clickOnItem(1);
+            shadowOf(list).clickOnItem(2);
+            assertTrue("a tick alone doesn't close the list", list.isShowing());
+            assertEquals("or save", Collections.emptySet(), HiddenChats.hidden(1000));
+            list.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertFalse(list.isShowing());
+            assertEquals(new LinkedHashSet<>(Arrays.asList(12L, 13L)), HiddenChats.hidden(1000));
+            assertEquals("the chat list sorts again at once", Collections.singletonList(0), telegram.resorted);
+            assertEquals("Book club, Old news", String.valueOf(chats.getSummary()));
+            assertFalse("ticking chats leaves the switch alone", Settings.HIDDEN_CHATS.savedValue());
+
+            // A hidden chat Telegram no longer lists still shows, so it can be unticked.
+            telegram.chats(0, 1);
+            list = dialogOf(chats);
+            assertEquals(3, list.getListView().getCount());
+            assertTrue("the saved ones are ticked", list.getListView().isItemChecked(1) && list.getListView().isItemChecked(2));
+            assertFalse(list.getListView().isItemChecked(0));
+            shadowOf(list).clickOnItem(1);
+            shadowOf(list).clickOnItem(2);
+            list.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertEquals(Collections.emptySet(), HiddenChats.hidden(1000));
+            assertEquals("No chats hidden yet.", String.valueOf(chats.getSummary()));
+
+            // Flipping the switch sorts the chat list again too.
+            telegram.resorted.clear();
+            assertTrue(rows.get(toggle).getOnPreferenceChangeListener().onPreferenceChange(rows.get(toggle), Boolean.TRUE));
+            ShadowLooper.idleMainLooper();
+            assertEquals(Collections.singletonList(0), telegram.resorted);
+
+            // Signed out, no chats yet, or chats that can't be read: a note instead of a list.
+            for (Object[] state : new Object[][]{{0L, "Sign in to Telegram first."}, {1000L, "You don't have any chats yet."},
+                    {-1L, "Couldn't read your chats."}}) {
+                HiddenChatsForTests.Fake other = HiddenChatsForTests.use(new HiddenChatsForTests.Fake());
+                if ((Long) state[0] < 0) other.broken = true;
+                else other.users.put(0, (Long) state[0]);
+                ShadowToast.reset();
+                ShadowAlertDialog.reset();
+                assertTrue(chats.getOnPreferenceClickListener().onPreferenceClick(chats));
+                ShadowLooper.idleMainLooper();
+                assertNull(ShadowAlertDialog.getLatestAlertDialog());
+                assertEquals(state[1], ShadowToast.getTextOfLatestToast());
+            }
+            assertEquals("No chats hidden yet.", HushTelegramPreferenceFragment.hiddenChatsSummary(null));
+        } finally {
+            HiddenChatsForTests.restore();
         }
     }
 
