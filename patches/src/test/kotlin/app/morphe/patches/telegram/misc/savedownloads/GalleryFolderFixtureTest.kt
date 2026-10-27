@@ -33,7 +33,7 @@ import org.junit.Test
 /** MediaController's Save to Gallery writes on both declared builds, where the gallery folder is chosen. */
 class GalleryFolderFixtureTest {
     private val hosts = setOf(IMAGE_LOADER, FILE_LOADER, MESSAGE_OBJECT, TL_MESSAGE, DOCUMENT, DIALOG_OBJECT, MESSAGES_CONTROLLER,
-        MESSAGES_STORAGE, GALLERY_MEDIA_CONTROLLER)
+        MESSAGES_STORAGE, GALLERY_MEDIA_CONTROLLER, ANDROID_UTILITIES)
 
     private fun context(build: File): BytecodePatchContext {
         val images = FixtureDex.classes(build, setOf(IMAGE_LOADER)).values.single()
