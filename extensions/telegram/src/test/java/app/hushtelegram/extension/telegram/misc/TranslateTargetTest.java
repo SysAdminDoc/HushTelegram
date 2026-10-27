@@ -120,6 +120,29 @@ public class TranslateTargetTest {
         assertFalse(new GoogleTranslate.Result("", "").sameLanguageAs("", true));
     }
 
+    @Test public void telegramsTranslateBarCodesReadAsGooglesAndItsFallbackAsNoPick() {
+        Locale english = Locale.ENGLISH;
+        assertEquals("de", OutsideTranslate.telegramPick("de", english));
+        assertEquals("zh-CN", OutsideTranslate.telegramPick("zh-cn", english));
+        assertEquals("zh-TW", OutsideTranslate.telegramPick("zh-tw", english));
+        assertEquals("zh-CN", OutsideTranslate.telegramPick("zh", english));
+        assertEquals("pt-PT", OutsideTranslate.telegramPick("pt_PT", english));
+        assertEquals("pt", OutsideTranslate.telegramPick("pt-br", english));
+        assertEquals("iw", OutsideTranslate.telegramPick("he", english));
+        assertEquals("id", OutsideTranslate.telegramPick("in", english));
+        assertEquals("no", OutsideTranslate.telegramPick("nb", english));
+        assertEquals("tl", OutsideTranslate.telegramPick("fil", english));
+        assertEquals("fa", OutsideTranslate.telegramPick(" FA ", english));
+        // Nothing picked, Telegram answers its own language bare, and Java and Telegram spell Hebrew apart.
+        assertNull(OutsideTranslate.telegramPick("en", english));
+        assertNull(OutsideTranslate.telegramPick("he", new Locale("iw", "IL")));
+        assertNull("the app's script stays with target()", OutsideTranslate.telegramPick("zh", Locale.TRADITIONAL_CHINESE));
+        assertEquals("a picked script isn't the fallback", "zh-CN", OutsideTranslate.telegramPick("zh-cn", Locale.TRADITIONAL_CHINESE));
+        for (String none : new String[]{null, "", "  ", "xx", "en-zz"}) {
+            assertNull(String.valueOf(none), OutsideTranslate.telegramPick(none, Locale.GERMAN));
+        }
+    }
+
     @Test public void anAiServiceIsToldTheLanguageByNameEvenWhereThePhoneHasNone() {
         assertEquals("Persian (fa)", AiTranslate.languageName("fa"));
         assertTrue(AiTranslate.instructions("kri").contains("Krio (kri)"));
