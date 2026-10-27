@@ -57,7 +57,10 @@ final class TranslateTargetPicker {
         String own = TranslateTarget.nativeName(code);
         String app = TranslateTarget.nameIn(code, L10n.locale());
         if (app == null) app = TranslateTarget.englishName(code);
-        return app.equalsIgnoreCase(own) ? own : L10n.f("%1$s (%2$s)", L10n.isolate(own), app);
+        if (!app.equalsIgnoreCase(own)) return L10n.f("%1$s (%2$s)", L10n.isolate(own), app);
+        // Where the phone's name isn't the one Google's list uses, Google's goes in brackets.
+        String google = TranslateTarget.googleNameIfOther(code);
+        return google == null || google.equalsIgnoreCase(own) ? own : L10n.f("%1$s (%2$s)", L10n.isolate(own), google);
     }
 
     /** Whether [query] is part of the code or of the language's name in its own, the app's or English. */

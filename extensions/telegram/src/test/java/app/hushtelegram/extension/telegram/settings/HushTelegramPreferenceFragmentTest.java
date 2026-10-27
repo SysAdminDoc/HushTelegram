@@ -1303,6 +1303,11 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals(1, choices.getCount());
             search.setText("zh-TW");
             assertEquals(1, choices.getCount());
+            // The phone calls Twi Akan, so the row carries Google's name as well.
+            search.setText("Twi");
+            assertEquals(1, choices.getCount());
+            String twi = String.valueOf(choices.getAdapter().getItem(0));
+            assertTrue(twi, twi.contains("Akan") && twi.endsWith("(Twi)"));
             search.setText("");
             assertEquals(app.hushtelegram.extension.telegram.misc.TranslateTarget.LANGUAGES.size() + 1, choices.getCount());
             assertEquals(0, choices.getCheckedItemPosition());

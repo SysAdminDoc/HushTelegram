@@ -67,6 +67,15 @@ public class TranslateTargetTest {
         assertNull("no name the phone doesn't have", TranslateTarget.nameIn("xyz", Locale.ENGLISH));
     }
 
+    @Test public void threeLanguagesThePhoneNamesOtherwiseKeepGooglesNameToo() {
+        assertEquals("Twi", TranslateTarget.googleNameIfOther("ak"));
+        assertEquals("Chichewa", TranslateTarget.googleNameIfOther("ny"));
+        assertEquals("Filipino", TranslateTarget.googleNameIfOther("tl"));
+        for (String same : new String[]{"de", "fa", "iw", "zh-TW", "kri"}) {
+            assertNull(same, TranslateTarget.googleNameIfOther(same));
+        }
+    }
+
     @Test public void onlyTelegramsLanguageAndTheCodesAreAllowed() {
         assertTrue(TranslateTarget.allowed(TranslateTarget.TELEGRAM));
         assertTrue(TranslateTarget.allowed("fa"));

@@ -97,6 +97,17 @@ public final class TranslateTarget {
         return LANGUAGES.get(code);
     }
 
+    /**
+     * Google's name for a code the phone knows under another language name (Akan for Twi, Nyanja
+     * for Chichewa, Tagalog for Filipino), or null where the two agree.
+     */
+    @Nullable
+    public static String googleNameIfOther(String code) {
+        if (!code.equals("ak") && !code.equals("ny") && !code.equals("tl")) return null;
+        String google = englishName(code);
+        return google == null || google.equalsIgnoreCase(nameIn(code, Locale.ENGLISH)) ? null : google;
+    }
+
     /** What the language calls itself, like Deutsch or Español, or its English name where the phone has none. */
     public static String nativeName(String code) {
         String own = nameIn(code, locale(code));
