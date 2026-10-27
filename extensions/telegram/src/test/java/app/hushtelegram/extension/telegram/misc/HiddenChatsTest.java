@@ -176,6 +176,93 @@ public class HiddenChatsTest {
         assertEquals(Arrays.asList("1000=Saved Messages", "11=Alice"), names);
     }
 
+    @Test public void aHiddenPinnedChatKeepsItsPlaceInThePinOrderTelegramSends() {
+        Object controller = new Object();
+        // Pins 13 (5), hidden 12 (4), 11 (3), hidden 15 (6) in the archive, then the unpinned 16 and hidden 17.
+        ArrayList<Object> list = new ArrayList<>(Arrays.asList(new HiddenChatsForTests.Dialog(13).pin(5),
+            new HiddenChatsForTests.Dialog(12).pin(4), new HiddenChatsForTests.Dialog(11).pin(3),
+            new HiddenChatsForTests.Dialog(16), new HiddenChatsForTests.Dialog(17)));
+        ArrayList<Object> archive = new ArrayList<>(Collections.singletonList(new HiddenChatsForTests.Dialog(15).pin(6)));
+        telegram.folders.clear();
+        telegram.folders.put(0, list);
+        telegram.folders.put(1, archive);
+        // Off, the list goes through as it is.
+        HiddenChats.hide(1000, ids(12L, 15L, 17L));
+        HiddenChats.prune(controller);
+        assertTrue(list == HiddenChats.pinOrder(controller, 0, list));
+        Settings.HIDDEN_CHATS.save(true);
+        HiddenChats.prune(controller);
+        assertEquals("[13, 11, 16]", list.toString());
+        HookStatus.clear();
+        Object order = HiddenChats.pinOrder(controller, 0, list);
+        // The hidden pin goes back between the pins it sat between, the unpinned hidden chat stays out, and the list on screen doesn't change.
+        assertEquals("[13, 12, 11, 16]", order.toString());
+        assertEquals("[13, 11, 16]", list.toString());
+        assertTrue(report(), report().contains(HiddenChats.KEPT_PINNED));
+        // Each folder gets its own: the archive's hidden pin goes first in the archive's order.
+        assertEquals("[15, 18]", HiddenChats.pinOrder(controller, 1, new ArrayList<>(Collections.singletonList(
+            new HiddenChatsForTests.Dialog(18).pin(2)))).toString());
+        // Another controller, an empty list, and a chat unticked since the sort all leave the list alone.
+        assertTrue(list == HiddenChats.pinOrder(new Object(), 0, list));
+        ArrayList<Object> empty = new ArrayList<>();
+        assertTrue(empty == HiddenChats.pinOrder(controller, 0, empty));
+        HiddenChats.hide(1000, ids(15L, 17L));
+        assertTrue(list == HiddenChats.pinOrder(controller, 0, list));
+        // Switched off after the sort, nothing comes back either.
+        HiddenChats.hide(1000, ids(12L));
+        Settings.HIDDEN_CHATS.save(false);
+        assertTrue(list == HiddenChats.pinOrder(controller, 0, list));
+    }
+
+    @Test public void aPinOrderThatCantBeReadGoesOutAsTelegramMadeIt() {
+        Settings.HIDDEN_CHATS.save(true);
+        HiddenChats.hide(1000, ids(12L));
+        Object controller = new Object();
+        ArrayList<Object> list = new ArrayList<>(Arrays.asList(new HiddenChatsForTests.Dialog(11).pin(1),
+            new HiddenChatsForTests.Dialog(12).pin(2)));
+        telegram.folders.clear();
+        telegram.folders.put(0, list);
+        HiddenChats.prune(controller);
+        HiddenChatsForTests.use(new HiddenChatsForTests.Fake() {
+            @Override public boolean pinned(Object dialog) { throw new IllegalStateException("Telegram changed"); }
+        });
+        HookStatus.clear();
+        assertTrue(list == HiddenChats.pinOrder(controller, 0, list));
+        assertTrue(report(), report().contains("pinned order"));
+    }
+
+    @Test public void aSortThatBreaksKeepsOnlyWhatItTookOut() {
+        Settings.HIDDEN_CHATS.save(true);
+        HiddenChats.hide(1000, ids(12L, 14L));
+        Object controller = new Object();
+        telegram.folders.clear();
+        telegram.folders.put(0, new ArrayList<>(Arrays.asList(new HiddenChatsForTests.Dialog(11).pin(1),
+            new HiddenChatsForTests.Dialog(12).pin(2))));
+        HiddenChats.prune(controller);
+        // The next sort breaks before it reads a folder: the pin the last one took out isn't sent again.
+        HiddenChatsForTests.use(new HiddenChatsForTests.Fake() {
+            @Override public android.util.SparseArray<?> folders(Object c) { throw new IllegalStateException("Telegram changed"); }
+        });
+        HiddenChats.prune(controller);
+        ArrayList<Object> list = new ArrayList<>(Collections.singletonList(new HiddenChatsForTests.Dialog(11).pin(1)));
+        assertTrue(list == HiddenChats.pinOrder(controller, 0, list));
+        // One that breaks in the archive still puts back the pin it took out of the chat list.
+        HiddenChatsForTests.Fake halfway = new HiddenChatsForTests.Fake() {
+            @Override public long dialogId(Object dialog) {
+                if (((HiddenChatsForTests.Dialog) dialog).id == 14) throw new IllegalStateException("Telegram changed");
+                return super.dialogId(dialog);
+            }
+        };
+        halfway.folders.put(0, new ArrayList<>(Arrays.asList(new HiddenChatsForTests.Dialog(11).pin(1),
+            new HiddenChatsForTests.Dialog(12).pin(2))));
+        halfway.folders.put(1, new ArrayList<>(Collections.singletonList(new HiddenChatsForTests.Dialog(14).pin(3))));
+        HiddenChatsForTests.use(halfway);
+        HiddenChats.prune(controller);
+        assertEquals("[12, 11]", HiddenChats.pinOrder(controller, 0, list).toString());
+        ArrayList<Object> archive = new ArrayList<>(Collections.singletonList(new HiddenChatsForTests.Dialog(15).pin(1)));
+        assertTrue(archive == HiddenChats.pinOrder(controller, 1, archive));
+    }
+
     @Test public void aRefreshSortsTheAccountAgain() {
         HiddenChats.refresh(1);
         telegram.selected = 0;

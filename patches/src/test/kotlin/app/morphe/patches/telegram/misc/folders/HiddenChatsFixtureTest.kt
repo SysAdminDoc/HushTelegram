@@ -65,6 +65,57 @@ class HiddenChatsFixtureTest {
         }
     }
 
+    @Test fun `the pinned order swaps its folder's chats for the extension's right after reading them`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = PatchContexts.of(ExtensionDex.classes() + launchFolderHosts(build))
+            context.requireHiddenChatsRuntime()
+            val plan = context.resolveHiddenChats()
+            assertNull("$name: ${plan.missing}", plan.missing)
+            val pins = plan.pins!!
+            assertEquals(name, "reorderPinnedDialogs", pins.method.name)
+            val stock = pins.method.body().map(::operands)
+            val read = stock[pins.at - 2]
+            plan.apply()
+            val body = pins.method.body()
+            assertEquals("$name: three instructions", stock.size + PIN_ORDER_SIZE, body.size)
+            // The read, handed the controller and the folder, then the swap on its result.
+            assertEquals(read, operands(body[pins.at - 2]))
+            assertEquals(GET_DIALOGS, body[pins.at - 2].ref())
+            assertEquals(listOf(pins.controller, pins.folder), body[pins.at - 2].namedRegisters())
+            assertEquals(Opcode.INVOKE_STATIC, body[pins.at].opcode)
+            assertEquals(PIN_ORDER, body[pins.at].ref())
+            assertEquals(listOf(pins.controller, pins.folder, pins.list), body[pins.at].namedRegisters())
+            assertEquals(Opcode.MOVE_RESULT_OBJECT, body[pins.at + 1].opcode)
+            assertEquals(listOf(pins.list), body[pins.at + 1].namedRegisters())
+            assertEquals(Opcode.CHECK_CAST, body[pins.at + 2].opcode)
+            assertEquals("Ljava/util/ArrayList;", body[pins.at + 2].ref())
+            assertEquals("$name: Telegram's own code is unchanged around it", stock,
+                (body.take(pins.at) + body.drop(pins.at + PIN_ORDER_SIZE)).map(::operands))
+            // What comes next reads the swapped list: Telegram's emptiness check.
+            assertEquals("Ljava/util/ArrayList;->isEmpty()Z", body[pins.at + 3].ref())
+            assertEquals(listOf(pins.list), body[pins.at + 3].namedRegisters())
+        }
+    }
+
+    @Test fun `a pinned order that changed leaves the switch out and both methods as they were`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = PatchContexts.of(ExtensionDex.classes() + launchFolderHosts(build))
+            val reorder = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == "reorderPinnedDialogs" }
+            val read = reorder.body().indexOfFirst { it.ref() == GET_DIALOGS }
+            // A second read of the folder's chats: which one the server's order comes from is no longer clear.
+            val (self, folder) = reorder.body()[read].namedRegisters()
+            reorder.addInstructions(read + 2, "invoke-virtual {v$self, v$folder}, $GET_DIALOGS")
+            val before = reorder.body().map(::operands)
+            val sortBefore = context.sortDialogs().body().map(::operands)
+            val plan = context.resolveHiddenChats()
+            assertTrue("${build.name}: ${plan.missing}", plan.missing.orEmpty().contains("no longer reads one folder's chats"))
+            plan.apply()
+            assertEquals(build.name, before, reorder.body().map(::operands))
+            assertEquals(build.name, sortBefore, context.sortDialogs().body().map(::operands))
+        }
+    }
+
     @Test fun `the whole patch fills every stub and turns the switch on`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
@@ -79,6 +130,8 @@ class HiddenChatsFixtureTest {
                 "selectedFilters" to (3 to listOf(SELECTED_FILTERS)),
                 "filterDialogs" to (3 to listOf(FILTER_DIALOGS)),
                 "dialogId" to (3 to listOf(DIALOG_ID)),
+                "pinned" to (3 to listOf(DIALOG_PINNED)),
+                "pinnedNum" to (3 to listOf(DIALOG_PIN_NUM)),
                 "selectedAccount" to (2 to listOf(SELECTED_ACCOUNT)),
                 "userId" to (5 to listOf(CLIENT_USER_ID)),
                 "dialogs" to (5 to listOf(CONTROLLER_INSTANCE, GET_DIALOGS)),
@@ -99,6 +152,8 @@ class HiddenChatsFixtureTest {
             assertEquals(1L, statusOf(context, "launchFolder"))
             assertEquals(1, context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == "sortDialogs" }.body()
                 .count { it.ref() == "$HIDDEN_CHATS->prune(Ljava/lang/Object;)V" })
+            assertEquals(1, context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == "reorderPinnedDialogs" }.body()
+                .count { it.ref() == PIN_ORDER })
         }
     }
 

@@ -26,9 +26,18 @@ public final class HiddenChatsForTests {
     /** One of Telegram's dialogs, as the stubs read it. */
     public static final class Dialog {
         public final long id;
+        public boolean pinned;
+        public int pinnedNum;
 
         public Dialog(long id) {
             this.id = id;
+        }
+
+        /** This chat pinned at [num], Telegram's place for it among the pins (highest first). */
+        public Dialog pin(int num) {
+            pinned = true;
+            pinnedNum = num;
+            return this;
         }
 
         @Override public String toString() {
@@ -73,6 +82,8 @@ public final class HiddenChatsForTests {
         @Override public Object[] selectedFilters(Object controller) { return filters; }
         @Override public List<?> filterDialogs(Object filter) { return ((Filter) filter).dialogs; }
         @Override public long dialogId(Object dialog) { return ((Dialog) dialog).id; }
+        @Override public boolean pinned(Object dialog) { return ((Dialog) dialog).pinned; }
+        @Override public int pinnedNum(Object dialog) { return ((Dialog) dialog).pinnedNum; }
 
         @Override public int selectedAccount() {
             if (broken) throw new IllegalStateException("Telegram changed");

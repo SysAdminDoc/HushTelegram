@@ -12,10 +12,13 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.function.Function;
 
 import app.hushtelegram.extension.shared.L10n;
@@ -32,7 +35,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * lists and out of the folder tabs' lists, so All Chats, every folder and the archive go without
  * them and a new message doesn't bring them back. Nothing changes on the server: the chats keep
  * their messages and notifications, search still finds them, and they show again the moment the
- * switch goes off or they're unticked.
+ * switch goes off or they're unticked. A hidden pinned chat stays pinned: the pin order Telegram
+ * sends when you pin or move a chat keeps it in its place.
  *
  * <p>Each account keeps its own hidden chats on this phone, by the account's user id, so another
  * account signed in to the same slot never gets them. The unread counts on the folder tabs and
@@ -43,6 +47,9 @@ public final class HiddenChats {
 
     /** What the diagnostic report counts each sort that left a hidden chat out as. */
     static final String LEFT_OUT = "chat list sorted without the hidden chats";
+
+    /** What the report counts each pinned order sent with the hidden pins put back as. */
+    static final String KEPT_PINNED = "pinned order kept the hidden pins";
 
     private static final String PREFS = "hushtelegram_hidden_chats";
 
@@ -93,37 +100,114 @@ public final class HiddenChats {
      */
     public static void prune(Object controller) {
         HookStatus.invoked(FamilyNames.HIDE_FOLDER_COUNTERS);
+        SparseArray<List<Object>> away = null;
         try {
-            if (!Utils.settingsReady() || !Settings.HIDDEN_CHATS.get()) return;
+            if (!Utils.settingsReady() || !Settings.HIDDEN_CHATS.get()) {
+                keep(controller, null);
+                return;
+            }
             Set<Long> hidden = hidden(telegram.controllerUser(controller));
-            if (hidden.isEmpty()) return;
+            if (hidden.isEmpty()) {
+                keep(controller, null);
+                return;
+            }
             int left = 0;
+            away = new SparseArray<>();
             SparseArray<?> folders = telegram.folders(controller);
             for (int i = 0; folders != null && i < folders.size(); i++) {
-                left += leaveOut(folders.valueAt(i), hidden);
+                List<Object> gone = new ArrayList<>();
+                away.put(folders.keyAt(i), gone);
+                left += leaveOut(folders.valueAt(i), hidden, gone);
+                if (gone.isEmpty()) away.remove(folders.keyAt(i));
             }
+            keep(controller, away);
             Object[] tabs = telegram.selectedFilters(controller);
             for (int i = 0; tabs != null && i < tabs.length; i++) {
-                if (tabs[i] != null) leaveOut(telegram.filterDialogs(tabs[i]), hidden);
+                if (tabs[i] != null) leaveOut(telegram.filterDialogs(tabs[i]), hidden, null);
             }
             if (left > 0) HookStatus.counted(FamilyNames.HIDE_FOLDER_COUNTERS, LEFT_OUT);
         } catch (Throwable failure) {
+            // What this sort took out, never what an earlier one did.
+            keep(controller, away);
             HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "hidden chats", failure);
         }
     }
 
-    /** Takes the chats in [hidden] out of [list], a list of Telegram's dialogs, and says how many went. */
-    private static int leaveOut(@Nullable Object list, Set<Long> hidden) {
+    /**
+     * Takes the chats in [hidden] out of [list], a list of Telegram's dialogs, adds them to [gone]
+     * when there is one, and says how many went.
+     */
+    private static int leaveOut(@Nullable Object list, Set<Long> hidden, @Nullable List<Object> gone) {
         if (!(list instanceof List)) return 0;
         int left = 0;
         for (Iterator<?> each = ((List<?>) list).iterator(); each.hasNext(); ) {
             Object dialog = each.next();
             if (dialog != null && hidden.contains(telegram.dialogId(dialog))) {
                 each.remove();
+                if (gone != null) gone.add(dialog);
                 left++;
             }
         }
         return left;
+    }
+
+    /** The chats each controller's last sort left out, by folder id, for the pinned order. */
+    private static final Map<Object, SparseArray<List<Object>>> AWAY = new WeakHashMap<>();
+
+    private static void keep(Object controller, @Nullable SparseArray<List<Object>> away) {
+        synchronized (AWAY) {
+            if (away == null || away.size() == 0) AWAY.remove(controller);
+            else AWAY.put(controller, away);
+        }
+    }
+
+    /**
+     * Injected in MessagesController.reorderPinnedDialogs right after it reads [folder]'s chats.
+     * Telegram sends the server the pinned chats in that list as the whole pinned order, so a
+     * hidden pinned chat missing from it would come unpinned everywhere. This gives it back a copy
+     * with the hidden pinned chats among the pins, each at its own pin place. The list on screen
+     * stays as it is.
+     */
+    public static Object pinOrder(Object controller, int folder, Object list) {
+        try {
+            if (!(list instanceof List) || ((List<?>) list).isEmpty() || !Utils.settingsReady() || !Settings.HIDDEN_CHATS.get()) {
+                return list;
+            }
+            Set<Long> hidden = hidden(telegram.controllerUser(controller));
+            List<Object> away;
+            synchronized (AWAY) {
+                SparseArray<List<Object>> folders = AWAY.get(controller);
+                away = folders == null ? null : folders.get(folder);
+                away = away == null ? null : new ArrayList<>(away);
+            }
+            if (hidden.isEmpty() || away == null) return list;
+            Set<Long> listed = new HashSet<>();
+            List<Object> pins = new ArrayList<>();
+            List<Object> rest = new ArrayList<>();
+            for (Object dialog : (List<?>) list) {
+                if (dialog != null) listed.add(telegram.dialogId(dialog));
+                (dialog != null && telegram.pinned(dialog) ? pins : rest).add(dialog);
+            }
+            int back = 0;
+            for (Object dialog : away) {
+                long id = telegram.dialogId(dialog);
+                if (!hidden.contains(id) || listed.contains(id) || !telegram.pinned(dialog)) continue;
+                // Telegram orders pins by pinnedNum, highest first.
+                int num = telegram.pinnedNum(dialog);
+                int at = 0;
+                while (at < pins.size() && telegram.pinnedNum(pins.get(at)) >= num) at++;
+                pins.add(at, dialog);
+                back++;
+            }
+            if (back == 0) return list;
+            ArrayList<Object> order = new ArrayList<>(pins);
+            order.addAll(rest);
+            HookStatus.counted(FamilyNames.HIDE_FOLDER_COUNTERS, KEPT_PINNED);
+            return order;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "pinned order", failure);
+            return list;
+        }
     }
 
     /**
@@ -235,6 +319,10 @@ public final class HiddenChats {
 
         long dialogId(Object dialog);
 
+        boolean pinned(Object dialog);
+
+        int pinnedNum(Object dialog);
+
         int selectedAccount();
 
         long userId(int account);
@@ -254,6 +342,8 @@ public final class HiddenChats {
         @Override public Object[] selectedFilters(Object controller) { return HiddenChats.selectedFilters(controller); }
         @Override public List<?> filterDialogs(Object filter) { return HiddenChats.filterDialogs(filter); }
         @Override public long dialogId(Object dialog) { return HiddenChats.dialogId(dialog); }
+        @Override public boolean pinned(Object dialog) { return HiddenChats.pinned(dialog); }
+        @Override public int pinnedNum(Object dialog) { return HiddenChats.pinnedNum(dialog); }
         @Override public int selectedAccount() { return HiddenChats.selectedAccount(); }
         @Override public long userId(int account) { return HiddenChats.userId(account); }
         @Override public List<?> dialogs(int account, int folder) { return HiddenChats.dialogs(account, folder); }
@@ -280,6 +370,12 @@ public final class HiddenChats {
 
     /** {@code dialog.id}. */
     public static long dialogId(Object dialog) { return 0; }
+
+    /** {@code dialog.pinned}. */
+    public static boolean pinned(Object dialog) { return false; }
+
+    /** {@code dialog.pinnedNum}. */
+    public static int pinnedNum(Object dialog) { return 0; }
 
     /** {@code UserConfig.selectedAccount}. */
     public static int selectedAccount() { return 0; }

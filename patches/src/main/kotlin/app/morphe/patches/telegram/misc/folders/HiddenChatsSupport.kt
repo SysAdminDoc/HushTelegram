@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.folders
 
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -49,14 +50,29 @@ private const val SPARSE_SIZE = "$SPARSE->size()I"
 private const val SPARSE_REMOVE = "$SPARSE->remove(I)V"
 private val GOTOS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)
 
+private const val REORDER_PINS = "Lorg/telegram/tgnet/TLRPC\$TL_messages_reorderPinnedDialogs;"
+internal const val DIALOG_PINNED = "Lorg/telegram/tgnet/TLRPC\$Dialog;->pinned:Z"
+internal const val DIALOG_PIN_NUM = "Lorg/telegram/tgnet/TLRPC\$Dialog;->pinnedNum:I"
+internal const val PIN_ORDER = "$HIDDEN_CHATS->pinOrder(${HIDDEN_OBJECT}I$HIDDEN_OBJECT)$HIDDEN_OBJECT"
+
 /** The call that hands the sorted lists to the extension: one instruction. */
 internal const val HIDDEN_CHATS_SIZE = 1
 
+/** The pinned order's swap: the call, its result and the cast back to Telegram's list. */
+internal const val PIN_ORDER_SIZE = 3
+
 /**
- * Where sortDialogs starts dropping the folders left empty, found and checked before anything is
- * edited, or [missing], why this build can't hide chats.
+ * Where reorderPinnedDialogs has just read one folder's chats into [list]: [at] is the instruction
+ * after the read, [controller] and [folder] the registers the read was handed.
  */
-internal class HiddenChatsPlan(val sort: MutableMethod?, val at: Int, val controller: Int, val missing: String?) {
+internal class PinOrderPlan(val method: MutableMethod, val at: Int, val controller: Int, val folder: Int, val list: Int)
+
+/**
+ * Where sortDialogs starts dropping the folders left empty, and where the pinned order reads its
+ * folder's chats, found and checked before anything is edited, or [missing], why this build can't
+ * hide chats.
+ */
+internal class HiddenChatsPlan(val sort: MutableMethod?, val at: Int, val controller: Int, val missing: String?, val pins: PinOrderPlan? = null) {
     fun apply(into: (MutableMethod) -> MutableMethod = { it }) {
         val method = sort?.let(into) ?: return
         val before = method.implementation!!.instructions.size
@@ -65,6 +81,17 @@ internal class HiddenChatsPlan(val sort: MutableMethod?, val at: Int, val contro
             "invoke-static/range {v$controller .. v$controller}, $HIDDEN_CHATS->prune($HIDDEN_OBJECT)V")
         // smali drops an instruction it can't build and only logs it.
         hiddenFits(method.implementation!!.instructions.size - before == HIDDEN_CHATS_SIZE, "the hidden chats call didn't compile whole")
+        val pin = pins ?: return
+        val reorder = into(pin.method)
+        val stock = reorder.implementation!!.instructions.count { it.opcode != Opcode.NOP }
+        // Nothing jumps onto [at], so a plain insert runs on the read's only way on.
+        reorder.addInstructions(pin.at, """
+            invoke-static {v${pin.controller}, v${pin.folder}, v${pin.list}}, $PIN_ORDER
+            move-result-object v${pin.list}
+            check-cast v${pin.list}, $HIDDEN_LIST
+        """)
+        hiddenFits(reorder.implementation!!.instructions.count { it.opcode != Opcode.NOP } - stock == PIN_ORDER_SIZE,
+            "the pinned order's swap didn't compile whole")
     }
 
     /** The same edit on a copy, so a smali problem shows before the app is touched. */
@@ -84,6 +111,9 @@ internal fun BytecodePatchContext.requireHiddenChatsRuntime() {
     controlHook(HIDDEN_CHATS, "selectedFilters", listOf(HIDDEN_OBJECT), "[$HIDDEN_OBJECT")
     controlHook(HIDDEN_CHATS, "filterDialogs", listOf(HIDDEN_OBJECT), HIDDEN_LIST)
     controlHook(HIDDEN_CHATS, "dialogId", listOf(HIDDEN_OBJECT), "J")
+    controlHook(HIDDEN_CHATS, "pinOrder", listOf(HIDDEN_OBJECT, "I", HIDDEN_OBJECT), HIDDEN_OBJECT)
+    controlHook(HIDDEN_CHATS, "pinned", listOf(HIDDEN_OBJECT), "Z")
+    controlHook(HIDDEN_CHATS, "pinnedNum", listOf(HIDDEN_OBJECT), "I")
     controlHook(HIDDEN_CHATS, "selectedAccount", emptyList(), "I")
     controlHook(HIDDEN_CHATS, "userId", listOf("I"), "J")
     controlHook(HIDDEN_CHATS, "dialogs", listOf("I", "I"), HIDDEN_LIST)
@@ -155,7 +185,11 @@ private fun BytecodePatchContext.emptyFolderWalk(): HiddenChatsPlan {
     hiddenFits(flow.normal.withIndex().none { (index, next) -> head in next && index != at && index < head } &&
         flow.exceptional.none { head in it || at in it }, "something jumps into the empty folder walk")
 
+    // Without the pinned order a hidden pinned chat would come unpinned everywhere, so it's both or neither.
+    val pins = pinOrderRead()
+
     for ((reference, static) in listOf(BY_FOLDER to false, SELECTED_FILTERS to false, FILTER_DIALOGS to false, DIALOG_ID to false,
+        DIALOG_PINNED to false, DIALOG_PIN_NUM to false,
         GET_DIALOGS to false, PEER_NAME to false, GET_USER_CONFIG to false, CLIENT_USER_ID to false, SELECTED_ACCOUNT to true,
         USER_CONFIG_INSTANCE to true, CONTROLLER_INSTANCE to true, NOTIFICATIONS_INSTANCE to true, DIALOGS_NEED_RELOAD to true,
         POST_NOTIFICATION to false, method.toString() to false)) {
@@ -165,7 +199,40 @@ private fun BytecodePatchContext.emptyFolderWalk(): HiddenChatsPlan {
             throw Unhidden("$reference isn't reachable from the extension")
         }
     }
-    return HiddenChatsPlan(method, at, self, null)
+    return HiddenChatsPlan(method, at, self, null, pins)
+}
+
+/**
+ * MessagesController.reorderPinnedDialogs sends the server, as the whole pinned order, the pinned
+ * chats in the list getDialogs(folder) hands it, which the sort left the hidden ones out of. The
+ * swap goes right after that read, the method's only one.
+ */
+private fun BytecodePatchContext.pinOrderRead(): PinOrderPlan {
+    val methods = mutableClassDefBy(MESSAGES_CONTROLLER).methods.filter { m ->
+        !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" &&
+            m.controlBody().any { it.opcode == Opcode.NEW_INSTANCE && it.controlRef() == REORDER_PINS }
+    }
+    hiddenFits(methods.size == 1, "the pinned order is missing or ambiguous")
+    val method = methods.single()
+    val body = method.controlBody()
+    val reads = body.indices.filter { body[it].opcode == Opcode.INVOKE_VIRTUAL && body[it].controlRef() == GET_DIALOGS }
+    hiddenFits(reads.size == 1, "the pinned order no longer reads one folder's chats")
+    val read = reads.single()
+    val handed = body[read].namedRegisters()
+    val result = body.getOrNull(read + 1)
+    hiddenFits(handed.size == 2 && result?.opcode == Opcode.MOVE_RESULT_OBJECT, "the pinned order's chat read changed")
+    val list = (result as OneRegisterInstruction).registerA
+    // The read's registers still hold the controller and the folder after it, and fit the call's 4-bit form.
+    hiddenFits(list !in handed && (handed + list).all { it in 0..15 }, "the pinned order's registers don't fit the swap")
+    val at = read + 2
+    val flow = try {
+        ControlFlow.of(method)
+    } catch (failed: IllegalArgumentException) {
+        throw Unhidden("the pinned order can't be read (${failed.message})")
+    }
+    hiddenFits(at < body.size && flow.normal.withIndex().none { (index, next) -> at in next && index != read + 1 } &&
+        flow.exceptional.none { at in it }, "something jumps into the pinned order's chat read")
+    return PinOrderPlan(method, at, handed[0], handed[1], list)
 }
 
 /** Gives HiddenChats' stubs this build's chat lists, account and refresh. [sort] is sortDialogs itself. */
@@ -197,6 +264,16 @@ internal fun BytecodePatchContext.writeHiddenChatsStubs(sort: String) {
         check-cast p0, ${DIALOG_ID.substringBefore("->")}
         iget-wide v0, p0, $DIALOG_ID
         return-wide v0
+    """)
+    writeStub(HIDDEN_CHATS, "pinned", 2, """
+        check-cast p0, ${DIALOG_PINNED.substringBefore("->")}
+        iget-boolean v0, p0, $DIALOG_PINNED
+        return v0
+    """)
+    writeStub(HIDDEN_CHATS, "pinnedNum", 2, """
+        check-cast p0, ${DIALOG_PIN_NUM.substringBefore("->")}
+        iget v0, p0, $DIALOG_PIN_NUM
+        return v0
     """)
     writeStub(HIDDEN_CHATS, "selectedAccount", 1, """
         sget v0, $SELECTED_ACCOUNT
