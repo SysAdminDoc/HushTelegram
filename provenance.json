@@ -32,6 +32,17 @@
     },
     {
       "paths": [
+        "extensions/shared/library/src/main/java/app/hushtelegram/extension/shared/ui/ShimmerTitle.java"
+      ],
+      "origin": "ported",
+      "upstream": "https://github.com/SysAdminDoc/HushGram",
+      "commit": "9a1a2f8a3001a5b83207e13d3e2878ab22b688e6",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "The animated settings title copied from the Instagram sibling: package app.hushtelegram.extension.shared.ui, and Telegram's blues in place of Instagram's gradient."
+    },
+    {
+      "paths": [
         "extensions/shared/library/src/main/java/app/hushtelegram/extension/shared/settings/preference/ReopenSettingsAfterRestart.java",
         "extensions/shared/library/src/main/java/app/hushtelegram/extension/shared/settings/preference/ReportProblem.java",
         "extensions/shared/library/src/main/java/app/hushtelegram/extension/shared/settings/preference/QuickSetups.java",
