@@ -78,7 +78,7 @@ class LaunchFolderFixtureTest {
     @Test fun `the whole patch fills every stub and turns the switch on`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
-            val context = PatchContexts.of((ExtensionDex.classes() + folderCounterHosts(build) + launchFolderHosts(build)).distinctBy { it.type })
+            val context = PatchContexts.of((ExtensionDex.classes() + folderCounterHosts(build) + menuHosts(build)).distinctBy { it.type })
             val refs = context.resolveLaunchFolder().refs!!
             assertEquals(name, emptyList<String>(), PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) })
             val stubs = context.mutableClassDefBy(LAUNCH_FOLDER).methods.associateBy { it.name }
@@ -192,7 +192,7 @@ class LaunchFolderFixtureTest {
 private val LAUNCH_FOLDER_HOSTS = ConcurrentHashMap<String, List<ClassDef>>()
 private val LAUNCH_FOLDER_LISTS = ConcurrentHashMap<String, String>()
 
-private fun Method.isTabBuildLike() = returnType == "V" && parameterTypes.map(CharSequence::toString) == listOf("Z", "Z") &&
+internal fun Method.isTabBuildLike() = returnType == "V" && parameterTypes.map(CharSequence::toString) == listOf("Z", "Z") &&
     body().any { it.ref()?.endsWith("->getCurrentTabStableId()I") == true } &&
     body().any { it.ref() == "Lorg/telegram/messenger/R\$string;->FilterAllChats:I" }
 

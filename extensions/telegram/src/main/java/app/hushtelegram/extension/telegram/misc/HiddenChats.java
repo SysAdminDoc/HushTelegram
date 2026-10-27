@@ -7,9 +7,11 @@ package app.hushtelegram.extension.telegram.misc;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.SparseArray;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,6 +28,7 @@ import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
+import app.hushtelegram.extension.telegram.settings.SettingsLock;
 
 /**
  * Leaves chats you picked out of the chat list.
@@ -36,7 +39,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * them and a new message doesn't bring them back. Nothing changes on the server: the chats keep
  * their messages and notifications, search still finds them, and they show again the moment the
  * switch goes off or they're unticked. A hidden pinned chat stays pinned: the pin order Telegram
- * sends when you pin or move a chat keeps it in its place.
+ * sends when you pin or move a chat keeps it in its place. Chats get picked on the settings page,
+ * or with Hide from chat list in the more menu of a long press.
  *
  * <p>Each account keeps its own hidden chats on this phone, by the account's user id, so another
  * account signed in to the same slot never gets them. The unread counts on the folder tabs and
@@ -304,6 +308,88 @@ public final class HiddenChats {
         }
     }
 
+    /** The long press menu's Hide from chat list item, an id far from Telegram's own. */
+    static final int MENU_ID = 0x48544801;
+
+    /** Telegram's id for its back arrow, which closes the long press selection. */
+    static final int CLOSE_SELECTION = -1;
+
+    /** Each chat list's Hide from chat list item, so it can follow the switch. Main thread only. */
+    private static final Map<Object, WeakReference<View>> MENU_ITEMS = new WeakHashMap<>();
+
+    /**
+     * Injected in DialogsActivity.createActionMode right after the more menu's Block item: adds
+     * Hide from chat list under it.
+     */
+    public static void menuItem(Object list, Object more) {
+        try {
+            Context context = Utils.getContext();
+            int icon = context == null ? 0 : context.getResources().getIdentifier("msg_archive_hide", "drawable", context.getPackageName());
+            Object item = telegram.addMenuItem(more, MENU_ID, icon, L10n.t("Hide from chat list"));
+            if (item instanceof View) {
+                MENU_ITEMS.put(list, new WeakReference<>((View) item));
+                menuShown(list);
+            }
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "hide from chat list item", failure);
+        }
+    }
+
+    /**
+     * Injected at the start of DialogsActivity.updateCounters, which runs each time the selection
+     * changes: the item shows while Hide picked chats is on.
+     */
+    public static void menuShown(Object list) {
+        try {
+            WeakReference<View> held = MENU_ITEMS.get(list);
+            View item = held == null ? null : held.get();
+            if (item == null) return;
+            item.setVisibility(Utils.settingsReady() && Settings.HIDDEN_CHATS.get() ? View.VISIBLE : View.GONE);
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "hide from chat list item", failure);
+        }
+    }
+
+    /**
+     * Injected at the start of DialogsActivity's action bar click handler. A tap on Hide from chat
+     * list adds the selected chats to the account's hidden ones and hands Telegram its back arrow,
+     * which closes the selection; any other id goes on as it came.
+     */
+    public static int menuChoice(Object listener, int id) {
+        if (id != MENU_ID) return id;
+        try {
+            if (SettingsLock.refuses()) return id;
+            Set<Long> picked = new LinkedHashSet<>();
+            List<?> selected = telegram.selectedChats(listener);
+            for (int i = 0; selected != null && i < selected.size(); i++) {
+                Object chat = selected.get(i);
+                if (chat instanceof Long && (Long) chat != 0) picked.add((Long) chat);
+            }
+            int account = telegram.selectedAccount();
+            long user = telegram.userId(account);
+            if (picked.isEmpty() || user == 0) return CLOSE_SELECTION;
+            // Read and written in one queued task, so two quick hides don't drop each other's chats.
+            boolean queued = Utils.runInOrderOnBackgroundThread(() -> {
+                Set<Long> hide = new LinkedHashSet<>(hidden(user));
+                hide.addAll(picked);
+                boolean saved = hide(user, hide);
+                Utils.runOnMainThread(() -> {
+                    if (saved) {
+                        refresh(account);
+                        Utils.showToastShort(L10n.t("Hidden from your chat list."));
+                    } else {
+                        Utils.showToastLong(L10n.t("Couldn't save the chats. Try again in a moment."));
+                    }
+                });
+            });
+            if (!queued) Utils.showToastLong(L10n.t("Couldn't save the chats. Try again in a moment."));
+            return CLOSE_SELECTION;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "hide from chat list", failure);
+            return id;
+        }
+    }
+
     /** What this needs from Telegram. */
     interface Telegram {
         long controllerUser(Object controller);
@@ -334,6 +420,12 @@ public final class HiddenChats {
         String peerName(int account, long id);
 
         void resort(int account);
+
+        @Nullable
+        Object addMenuItem(Object more, int id, int icon, String text);
+
+        @Nullable
+        List<?> selectedChats(Object listener);
     }
 
     private static final class Stubs implements Telegram {
@@ -349,6 +441,8 @@ public final class HiddenChats {
         @Override public List<?> dialogs(int account, int folder) { return HiddenChats.dialogs(account, folder); }
         @Override public String peerName(int account, long id) { return HiddenChats.peerName(account, id); }
         @Override public void resort(int account) { HiddenChats.resort(account); }
+        @Override public Object addMenuItem(Object more, int id, int icon, String text) { return HiddenChats.addMenuItem(more, id, icon, text); }
+        @Override public List<?> selectedChats(Object listener) { return HiddenChats.selectedChats(listener); }
     }
 
     // Stubs. The patch gives each one Telegram's code; until then they do nothing.
@@ -396,4 +490,12 @@ public final class HiddenChats {
      * {@code NotificationCenter.getInstance(account).postNotificationName(dialogsNeedReload)}.
      */
     public static void resort(int account) {}
+
+    /** {@code more.addSubItem(id, icon, text)}, the long press menu's new item. */
+    @Nullable
+    public static Object addMenuItem(Object more, int id, int icon, String text) { return null; }
+
+    /** {@code listener.this$0.selectedDialogs}, the chat ids the long press picked. */
+    @Nullable
+    public static ArrayList<?> selectedChats(Object listener) { return null; }
 }

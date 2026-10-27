@@ -6,6 +6,7 @@ package app.hushtelegram.extension.telegram.misc;
 
 import android.content.SharedPreferences;
 import android.util.SparseArray;
+import android.view.View;
 
 import org.robolectric.RuntimeEnvironment;
 
@@ -94,6 +95,19 @@ public final class HiddenChatsForTests {
         @Override public List<?> dialogs(int account, int folder) { return chats.get(account + "/" + folder); }
         @Override public String peerName(int account, long id) { return names.get(id); }
         @Override public void resort(int account) { resorted.add(account); }
+
+        /** The long press menu's items as "id text", and the chat ids a long press picked. */
+        public final List<String> menu = new ArrayList<>();
+        public final ArrayList<Object> picked = new ArrayList<>();
+        public View item;
+
+        @Override public Object addMenuItem(Object more, int id, int icon, String text) {
+            menu.add(Integer.toHexString(id) + " " + text);
+            item = new View(RuntimeEnvironment.getApplication());
+            return item;
+        }
+
+        @Override public List<?> selectedChats(Object listener) { return picked; }
 
         /** Each folder's chat ids, as "folder: ids" in folder order. */
         public List<String> lists() {

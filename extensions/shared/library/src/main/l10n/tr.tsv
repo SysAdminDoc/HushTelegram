@@ -908,6 +908,10 @@ Couldn't read your chats.	Sohbetleriniz okunamadı.
 You don't have any chats yet.	Henüz hiç sohbetiniz yok.
 # context: Toast when the ticked chats couldn't be written to the phone's storage
 Couldn't save the chats. Try again in a moment.	Sohbetler kaydedilemedi. Birazdan tekrar deneyin.
+# context: Item in the chat list's long press menu (the three dots, under Block). It hides the selected chats from the chat list
+Hide from chat list	Sohbet listesinden gizle
+# context: Toast after the long press menu's Hide from chat list hid the selected chats
+Hidden from your chat list.	Sohbet listenden gizlendi.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that hides picked chats
 chats hidden from the chat list	sohbet listesinden gizlenen sohbetler
 # context: Chats to hide's list names the account's own chat this way, as Telegram's chat list does (SavedMessages): use Telegram's applied translation

@@ -17,6 +17,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowToast;
+
+import android.view.View;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +29,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
+import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.PauseForTests;
@@ -268,5 +273,57 @@ public class HiddenChatsTest {
         telegram.selected = 0;
         HiddenChats.refreshShown();
         assertEquals(Arrays.asList(1, 0), telegram.resorted);
+    }
+
+    @Test public void theLongPressItemFollowsTheSwitch() {
+        Object list = new Object();
+        HiddenChats.menuItem(list, new Object());
+        assertEquals(Collections.singletonList("48544801 Hide from chat list"), telegram.menu);
+        assertEquals(View.GONE, telegram.item.getVisibility());
+        Settings.HIDDEN_CHATS.save(true);
+        HiddenChats.menuShown(list);
+        assertEquals(View.VISIBLE, telegram.item.getVisibility());
+        Settings.HIDDEN_CHATS.save(false);
+        HiddenChats.menuShown(list);
+        assertEquals(View.GONE, telegram.item.getVisibility());
+        // Another chat list's check leaves this one's item alone.
+        Settings.HIDDEN_CHATS.save(true);
+        HiddenChats.menuShown(new Object());
+        assertEquals(View.GONE, telegram.item.getVisibility());
+        assertFalse(report(), report().contains("threw"));
+    }
+
+    @Test public void aTapOnTheItemHidesThePickedChatsAndClosesTheSelection() throws Exception {
+        Settings.HIDDEN_CHATS.save(true);
+        HiddenChats.hide(1000, ids(13L));
+        telegram.picked.addAll(Arrays.asList(11L, 12L));
+        assertEquals(HiddenChats.CLOSE_SELECTION, HiddenChats.menuChoice(new Object(), HiddenChats.MENU_ID));
+        Utils.awaitBackgroundTasksForTests();
+        ShadowLooper.idleMainLooper();
+        assertEquals(ids(13L, 11L, 12L), HiddenChats.hidden(1000));
+        assertEquals(Collections.singletonList(0), telegram.resorted);
+        assertEquals("Hidden from your chat list.", String.valueOf(ShadowToast.getTextOfLatestToast()));
+        // The other account's chats are its own.
+        assertEquals(Collections.emptySet(), HiddenChats.hidden(2000));
+    }
+
+    @Test public void everyOtherIdAndAnEmptyPickGoOnAsTheyCame() throws Exception {
+        assertEquals(0x6a, HiddenChats.menuChoice(new Object(), 0x6a));
+        assertEquals(-1, HiddenChats.menuChoice(new Object(), -1));
+        // Nothing picked: the selection closes and nothing is saved.
+        assertEquals(HiddenChats.CLOSE_SELECTION, HiddenChats.menuChoice(new Object(), HiddenChats.MENU_ID));
+        Utils.awaitBackgroundTasksForTests();
+        ShadowLooper.idleMainLooper();
+        assertEquals(Collections.emptySet(), HiddenChats.hidden(1000));
+        assertTrue(telegram.resorted.isEmpty());
+        assertNull(ShadowToast.getTextOfLatestToast());
+    }
+
+    @Test public void aBrokenReadLeavesTheTapToTelegram() {
+        telegram.picked.add(11L);
+        telegram.broken = true;
+        assertEquals(HiddenChats.MENU_ID, HiddenChats.menuChoice(new Object(), HiddenChats.MENU_ID));
+        assertTrue(report(), report().contains("hide from chat list"));
+        assertEquals(Collections.emptySet(), HiddenChats.hidden(1000));
     }
 }

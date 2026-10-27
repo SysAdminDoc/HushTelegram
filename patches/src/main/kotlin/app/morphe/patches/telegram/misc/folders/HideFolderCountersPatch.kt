@@ -71,6 +71,16 @@ val hideFolderCountersPatch = bytecodePatch(
         } catch (failed: Exception) {
             "the hidden chats' stubs don't build (${failed.javaClass.simpleName}: ${failed.message})"
         }
+        // The long press item rides on the hiding, and a menu without its shape leaves only the item out.
+        val menu = if (unhidden == null) resolveHideMenu() else null
+        val noMenu = menu?.let {
+            it.missing ?: try {
+                writeHideMenuStubs(it.refs!!)
+                null
+            } catch (failed: Exception) {
+                "the long press item's stubs don't build (${failed.javaClass.simpleName}: ${failed.message})"
+            }
+        }
         insertCounterAnswer(counter)
         enableStatus("hideFolderCounters")
         if (missing == null) {
@@ -82,6 +92,11 @@ val hideFolderCountersPatch = bytecodePatch(
         if (unhidden == null) {
             hidden.apply()
             enableCapability("hiddenChats")
+            if (noMenu == null) {
+                menu!!.apply()
+            } else {
+                patchLog.warning("Hide folder tab counters: $noMenu. Hidden chats go on without Hide from chat list in the long press menu.")
+            }
         } else {
             patchLog.warning("Hide folder tab counters: $unhidden. The patch goes on without hiding chats.")
         }
