@@ -210,22 +210,12 @@ public final class SendConfirm {
      */
     static boolean holdVoice(Object media, boolean once) {
         try {
-            if (pausesVoice(voiceRecorderV2(media), voicePaused(media))) pauseVoice(media, once);
+            if (!voicePaused(media)) pauseVoice(media, once);
             return true;
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.ASK_BEFORE_STICKER, "voice pause", failure);
             return false;
         }
-    }
-
-    /**
-     * Whether a voice recording gets paused before its question: only on Telegram's newer recorder,
-     * which sends a paused clip when the recording is stopped, and only when it isn't paused yet. The
-     * older one, which the server can switch back to, drops a paused clip on that stop, so there the
-     * recording goes on behind the question.
-     */
-    static boolean pausesVoice(boolean newer, boolean paused) {
-        return newer && !paused;
     }
 
     /**
@@ -257,7 +247,7 @@ public final class SendConfirm {
      * Send for a voice recording held for its question. A paused clip goes out from the chat bar's
      * preview. Leaving the chat while the question is up ends the pause (Telegram stops a paused
      * recording when its chat goes to the background) but keeps that preview, so a preview holding
-     * the clip counts too. A recording that was never paused, on the older recorder, ends at once.
+     * the clip counts too. A recording that didn't pause ends at once, which sends it.
      */
     static void sendVoice(Object media, Activity window, Runnable stop) {
         if (voiceHeld(media) || previewBar(window, VOICE) != null) fromPreview(VOICE, window, stop, PREVIEW_TRIES);
@@ -445,9 +435,6 @@ public final class SendConfirm {
 
     /** Telegram's own end of a recording, again. Replaced when patching. */
     public static void resumeVoice(Object media, int send, boolean notify, int scheduleDate, boolean once, long stars) {}
-
-    /** Whether Telegram records voice with its newer recorder. Replaced when patching. */
-    public static boolean voiceRecorderV2(Object media) { return false; }
 
     /** Whether Telegram's voice recording is paused. Replaced when patching. */
     public static boolean voicePaused(Object media) { return false; }

@@ -217,11 +217,6 @@ public class SendConfirmTest {
         assertTrue(SendConfirm.holdVoice(new Object(), false));
         assertTrue(SendConfirm.holdVideo(new Object()));
         assertEquals("the state Telegram's chat bar sends a paused round video in", 4, SendConfirm.VIDEO_PREVIEW);
-        // Only the newer voice recorder sends a paused clip, and a clip that's paused already isn't toggled back on.
-        assertTrue(SendConfirm.pausesVoice(true, false));
-        assertFalse("the older recorder drops a paused clip", SendConfirm.pausesVoice(false, false));
-        assertFalse(SendConfirm.pausesVoice(false, true));
-        assertFalse("a paused clip would start recording again", SendConfirm.pausesVoice(true, true));
     }
 
     @Test public void aClipSentFromItsPreviewAsksAndItsAnsweredSendGoesThroughOnce() {
