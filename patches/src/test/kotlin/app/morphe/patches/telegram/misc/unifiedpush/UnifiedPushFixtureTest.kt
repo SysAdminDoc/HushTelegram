@@ -13,6 +13,7 @@ import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
+import app.morphe.patches.telegram.misc.extension.localRegisterCount
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.util.namedRegisters
@@ -35,7 +36,7 @@ class UnifiedPushFixtureTest {
     private val hosts = setOf(PUSH_CONTROLLER, MESSAGES_CONTROLLER, "Lorg/telegram/messenger/UserConfig;",
         "Lorg/telegram/tgnet/ConnectionsManager;", "Lorg/telegram/messenger/ApplicationLoader;",
         "Lorg/telegram/messenger/Utilities;", "Lorg/telegram/messenger/DispatchQueue;", "Lorg/telegram/messenger/SharedConfig;",
-        "Lorg/telegram/messenger/PushListenerController\$IPushListenerServiceProvider;")
+        "Lorg/telegram/messenger/PushListenerController\$IPushListenerServiceProvider;") + REACTION_ALERT_TYPES
 
     private fun context(build: File): BytecodePatchContext {
         val host = FixtureDex.classes(build, hosts).values.map(ImmutableClassDef::of)
@@ -93,7 +94,39 @@ class UnifiedPushFixtureTest {
             }
             val status = context.mutableClassDefBy(SETTINGS_STATUS).method("unifiedPush").controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
+
+            // The update loop hands each reactions update over right after its cast, with itself.
+            val loop = context.mutableClassDefBy(MESSAGES_CONTROLLER).method("processUpdateArray")
+            val code = loop.controlBody()
+            val cast = code.indexOfFirst { it.opcode == Opcode.CHECK_CAST && it.controlRef() == REACTIONS_UPDATE }
+            val update = code[cast].namedRegisters().single()
+            assertEquals("$name: the hook after the cast", listOf(Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_FROM16, Opcode.INVOKE_STATIC_RANGE),
+                code.subList(cast + 1, cast + 4).map { it.opcode })
+            val scratch = code[cast + 1].namedRegisters()
+            assertEquals(update, scratch[1])
+            assertEquals(listOf(scratch[0] + 1, loop.localRegisterCount()), code[cast + 2].namedRegisters())
+            assertEquals("$REACTION_ALERTS->changed(Ljava/lang/Object;Ljava/lang/Object;)V", code[cast + 3].controlRef())
+            assertEquals(listOf(scratch[0], scratch[0] + 1), code[cast + 3].namedRegisters())
+            val reactions = context.mutableClassDefBy(SETTINGS_STATUS).method("reactionAlerts").controlBody()
+            assertEquals(1L, (reactions.first() as WideLiteralInstruction).wideLiteral)
         }
+    }
+
+    @Test fun `a build without the reactions cast keeps UnifiedPush and leaves the update loop alone`() {
+        val context = context(Fixtures.declaredBuilds().first())
+        val loop = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == "processUpdateArray" }
+        loop.replaceInstruction(loop.controlBody().indexOfFirst {
+            it.opcode == Opcode.CHECK_CAST && it.controlRef() == REACTIONS_UPDATE
+        }, "nop")
+        val untouched = loop.controlBody().map { it.opcode to it.namedRegisters() }
+        val warnings = PatchLogCapture.warnings { unifiedPushPatch.execute(context) }
+        assertEquals(1, warnings.size)
+        assertTrue(warnings.single(), warnings.single().contains("no longer casts a reactions update once"))
+        assertEquals(untouched, loop.controlBody().map { it.opcode to it.namedRegisters() })
+        assertEquals(1L, (context.mutableClassDefBy(SETTINGS_STATUS).method("unifiedPush").controlBody().first()
+            as WideLiteralInstruction).wideLiteral)
+        assertEquals(0L, (context.mutableClassDefBy(SETTINGS_STATUS).method("reactionAlerts").controlBody().first()
+            as WideLiteralInstruction).wideLiteral)
     }
 
     @Test fun `a changed sign-up or wake-up refuses before anything is edited`() {

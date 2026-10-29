@@ -969,3 +969,9 @@ All files access is off, so Telegram's files stay in Android/data. Turning this 
 Couldn't open All files access.	Akses semua file tak bisa dibuka.
 # context: Noun phrase in a status line. It names the part of Save downloaded files that keeps Telegram's own folder in the phone's main storage.
 Telegram's own files in internal storage	file Telegram sendiri di penyimpanan internal
+# context: a second switch under UnifiedPush notifications on the Notifications page. Turned on, a reaction to your own message shows a notification from Telegram's open connection, for phones where no push arrives. "Push" means a push notification; "reaction" is Telegram's word for an emoji reaction to a message.
+Reaction notifications without push	Notifikasi reaksi tanpa push
+# context: that switch's summary.
+Shows a notification when someone reacts to your message while Telegram is connected, even when no push arrives. A reaction that also comes by push shows once.	Menampilkan notifikasi saat seseorang bereaksi pada pesan Anda selama Telegram terhubung, meski tidak ada push yang masuk. Reaksi yang juga datang lewat push hanya ditampilkan sekali.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of UnifiedPush notifications that shows reactions without a push.
+reaction notifications without push	notifikasi reaksi tanpa push

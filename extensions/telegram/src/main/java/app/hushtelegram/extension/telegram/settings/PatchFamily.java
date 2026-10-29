@@ -130,7 +130,7 @@ public enum PatchFamily {
             Settings.DISABLE_UPDATE_CHECKS),
     REPAIR_FIREBASE_PUSH(FamilyNames.REPAIR_FIREBASE_PUSH, "repairFirebasePush", null,
             Settings.REPAIR_FIREBASE_PUSH),
-    UNIFIED_PUSH(FamilyNames.UNIFIED_PUSH, "unifiedPush", null, Settings.UNIFIED_PUSH);
+    UNIFIED_PUSH(FamilyNames.UNIFIED_PUSH, "unifiedPush", null, Settings.UNIFIED_PUSH, Settings.REACTION_ALERTS);
 
     /** The patch's name in Morphe Manager. */
     public final String patchName;
@@ -377,7 +377,8 @@ public enum PatchFamily {
         VIDEO_ONLY_FROM_BUTTON(KEEP_VIDEOS_MUTED, "videoOnlyFromButton", "keeping a video upright until full screen", true),
         HIDE_CHANNEL_MUTE(HIDE_CHANNEL_BUTTONS, "hideChannelMute", "Mute button on the channel bar", true),
         FIREBASE_CERTIFICATE_HEADER(REPAIR_FIREBASE_PUSH, "firebaseCertificateHeader", "Firebase certificate header"),
-        FIREBASE_LOCAL_STATUS(REPAIR_FIREBASE_PUSH, "firebaseLocalStatus", "local notification status");
+        FIREBASE_LOCAL_STATUS(REPAIR_FIREBASE_PUSH, "firebaseLocalStatus", "local notification status"),
+        REACTION_ALERTS(UNIFIED_PUSH, "reactionAlerts", "reaction notifications without push", true);
 
         public final PatchFamily family;
         final String statusMethod;

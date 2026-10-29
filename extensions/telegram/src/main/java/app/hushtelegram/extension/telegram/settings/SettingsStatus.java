@@ -165,6 +165,7 @@ public final class SettingsStatus {
     public static boolean firebaseCertificateHeader() { return false; }
     public static boolean firebaseLocalStatus() { return false; }
     public static boolean unifiedPush() { return false; }
+    public static boolean reactionAlerts() { return false; }
 
     public static boolean channelAds() {
         return false;

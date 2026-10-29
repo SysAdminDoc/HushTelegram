@@ -599,6 +599,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_unified_push", FALSE);
 
     /**
+     * Someone's reaction to your message shows a notification even when no push arrives, from the
+     * connection Telegram already has open. On by default: a push for the same reaction shows once.
+     */
+    public static final BooleanSetting REACTION_ALERTS =
+            new BooleanSetting("hushtelegram_reaction_alerts", TRUE);
+
+    /**
      * Once a day, when Telegram starts, ask api.github.com whether a newer HushTelegram release is
      * out, and say so on the settings screen ({@link ReleaseCheck}). It's the settings entry's own
      * switch rather than a patch's, so every build has it ({@link PatchFamily#ENTRY_SWITCHES}). Off

@@ -823,6 +823,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             });
             on(pages, PatchFamily.UNIFIED_PUSH).addPreference(push);
             on(pages, PatchFamily.UNIFIED_PUSH).addPreference(app);
+            // Works with or without UnifiedPush, for builds where no push arrives at all.
+            if (PatchFamily.Capability.REACTION_ALERTS.installed()) {
+                on(pages, PatchFamily.UNIFIED_PUSH).addPreference(toggle(context, Settings.REACTION_ALERTS,
+                        L10n.t("Reaction notifications without push"), L10n.t("Shows a notification when someone reacts to your"
+                                + " message while Telegram is connected, even when no push arrives. A reaction that also"
+                                + " comes by push shows once.")));
+            }
         }
         if (build.contains(PatchFamily.SILENCE_NON_CONTACTS)) {
             on(pages, PatchFamily.SILENCE_NON_CONTACTS).addPreference(toggle(context, Settings.SILENCE_NON_CONTACTS, L10n.t("Silence people outside your contacts"),

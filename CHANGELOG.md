@@ -2,6 +2,10 @@
 
 Every HushTelegram release, newest first.
 
+## Unreleased
+
+* **Telegram:** Reactions to your messages now show a notification on patched builds, which Google's push never reaches. **UnifiedPush notifications** has a new switch under it, **Reaction notifications without push**, on by default. While Telegram is connected, someone reacting to one of your messages gets the same "reacted to your message" notification Telegram shows from a push, once per reaction. (#41)
+
 ## 0.0.21 (2026-10-27)
 
 The twelfth release, with 67 patches for Telegram 13.1.1 from Google Play and 13.1.0 from telegram.org. It's built on Morphe patcher 2.0.1, so update Morphe Manager to 2.2.0 before you patch. Most of what's new came out of your reports. You can hide chats you pick, drop the All Chats tab, keep the text of edited messages and translate into any language Google knows, and the settings are one short list now.
