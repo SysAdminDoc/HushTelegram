@@ -162,6 +162,9 @@ public class StorageFolderTest {
         File cache = new File(temporary.getRoot(), "cache/voice.ogg");
         assertSame(cache, StorageFolder.olderFor(cache, from, to));
         File sibling = new File(to.getPath() + "2", "Telegram Audio/voice.ogg");
+        // Where a match without the separator would look for it.
+        File unrelated = new File(from, "2/Telegram Audio/voice.ogg");
+        assertTrue(unrelated.getParentFile().mkdirs() && unrelated.createNewFile());
         assertSame(sibling, StorageFolder.olderFor(sibling, from, to));
         assertTrue(new File(from, "Telegram Video/clip.mp4").mkdirs());
         File clip = new File(to, "Telegram Video/clip.mp4");

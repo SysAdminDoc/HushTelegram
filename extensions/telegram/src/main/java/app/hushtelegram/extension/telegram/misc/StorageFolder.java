@@ -63,7 +63,8 @@ public final class StorageFolder {
 
     /**
      * Called on the path FileLoader.getPathToAttach makes for a downloaded file, right before it
-     * hands it back. Once Telegram's folder has moved, a file it downloaded earlier is still in the
+     * hands it back, and on the one FileLoadOperation.start makes for a photo or video it's about to
+     * load, right before it checks it. Once Telegram's folder has moved, a file it downloaded earlier is still in the
      * old one under Android/data, so a path that isn't there in the moved folder but is in the old
      * one gives the old one, and Telegram opens it instead of downloading it again. Anything else
      * comes back as it came, so new downloads still go in the moved folder.
