@@ -65,6 +65,7 @@ private const val LONG = "Ljava/lang/Long;"
 private const val SET_FIELD_TEXT = "$ENTER_VIEW->setFieldText(Ljava/lang/CharSequence;)V"
 private const val VOICE_PAUSED = "$MEDIA_CONTROLLER->isRecordingPaused()Z"
 private const val PAUSE_VOICE = "$MEDIA_CONTROLLER->toggleRecordingPause(Z)V"
+internal const val VOICE_V2 = "$MEDIA_CONTROLLER->audioRecorderV2Active:Z"
 
 /** How far before a strip's send its sticker and its paid-message answer are cast, and how soon after it the typed emoji is cleared. */
 private const val STRIP_BEFORE = 60
@@ -204,6 +205,7 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     controlHook(SEND_CONFIRM, "startCall", CALL_HOOK, "V")
     controlHook(SEND_CONFIRM, "stripSticker", listOf(OBJECT, OBJECT), "Z")
     controlHook(SEND_CONFIRM, "resumeStripSticker", listOf(OBJECT, OBJECT), "V")
+    controlHook(SEND_CONFIRM, "voiceRecorderV2", listOf(OBJECT), "Z")
     controlHook(SEND_CONFIRM, "voicePaused", listOf(OBJECT), "Z")
     controlHook(SEND_CONFIRM, "pauseVoice", listOf(OBJECT, "Z"), "V")
     controlHook(SEND_CONFIRM, "videoPaused", listOf(OBJECT), "Z")
@@ -303,6 +305,10 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
         controlShape(mediaClass.methods.any { it.name == name && it.controlShape(params, result) && it.controlCallable(false) },
             "the media controller's $name is gone")
     }
+    // Which recorder is on: only the newer one sends a clip that was paused when the recording stops.
+    // The flag is private, and the stub that reads it gets it opened when the stubs are written.
+    controlShape(mediaClass.fields.any { f -> "${f.definingClass}->${f.name}:${f.type}" == VOICE_V2 && !AccessFlags.STATIC.isSet(f.accessFlags) },
+        "the media controller no longer says which voice recorder is on")
     val paidPause = barClass.methods.filter { m -> m.implementation != null && m.controlBody().any { it.controlRef() == PAUSE_VOICE } }
         .controlSingle("the chat bar's pause before a paid message")
     val pauseBody = paidPause.controlBody()
@@ -432,6 +438,14 @@ internal fun BytecodePatchContext.writeSendConfirmStubs(site: SendConfirmSite) {
         check-cast p0, $chat
         invoke-virtual/range {p0 .. p8}, ${signature(site.video)}
         return-void
+    """)
+    mutableClassDefBy(MEDIA_CONTROLLER).fields.single { "${it.definingClass}->${it.name}:${it.type}" == VOICE_V2 }.apply {
+        accessFlags = accessFlags and AccessFlags.PRIVATE.value.inv() or AccessFlags.PUBLIC.value
+    }
+    writeStub(SEND_CONFIRM, "voiceRecorderV2", 2, """
+        check-cast p0, $MEDIA_CONTROLLER
+        iget-boolean v0, p0, $VOICE_V2
+        return v0
     """)
     writeStub(SEND_CONFIRM, "voicePaused", 2, """
         check-cast p0, $MEDIA_CONTROLLER

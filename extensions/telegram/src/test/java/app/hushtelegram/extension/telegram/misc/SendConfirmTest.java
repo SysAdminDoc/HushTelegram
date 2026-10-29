@@ -211,6 +211,38 @@ public class SendConfirmTest {
         assertTrue(SendConfirm.holdVoice(new Object(), false));
         assertTrue(SendConfirm.holdVideo(new Object()));
         assertEquals("the state Telegram's chat bar sends a paused round video in", 4, SendConfirm.VIDEO_PREVIEW);
+        // Only the newer voice recorder sends a paused clip, and a clip that's paused already isn't toggled back on.
+        assertTrue(SendConfirm.pausesVoice(true, false));
+        assertFalse("the older recorder drops a paused clip", SendConfirm.pausesVoice(false, false));
+        assertFalse(SendConfirm.pausesVoice(false, true));
+        assertFalse("a paused clip would start recording again", SendConfirm.pausesVoice(true, true));
+    }
+
+    @Test public void aHeldRecordingSendsOnceOnSendAndAtOnceWhenItsQuestionCantShow() throws Exception {
+        Activity window = window();
+        AtomicInteger sent = new AtomicInteger();
+        assertFalse(SendConfirm.askHeld(3, window, "Send voice message", "Send this voice message to this chat?", sent::incrementAndGet));
+        Dialog dialog = ShadowDialog.getLatestDialog();
+        assertNotNull(dialog);
+        assertEquals("nothing goes out while it asks", 0, sent.get());
+        button(dialog.getWindow().getDecorView(), "Cancel").performClick();
+        ShadowLooper.idleMainLooper();
+        assertEquals("Cancel leaves the paused clip where it is", 0, sent.get());
+
+        assertFalse(SendConfirm.askHeld(3, window, "Send voice message", "Send this voice message to this chat?", sent::incrementAndGet));
+        button(ShadowDialog.getLatestDialog().getWindow().getDecorView(), "Send").performClick();
+        ShadowLooper.idleMainLooper();
+        assertEquals(1, sent.get());
+
+        // Off the main thread no question can show, so the clip goes out the way Send sends it, once, and
+        // Telegram's own send, which would no longer find it recording, is held back.
+        AtomicBoolean heldBack = new AtomicBoolean();
+        Thread other = new Thread(() -> heldBack.set(!SendConfirm.askHeld(4, window, "Send video message",
+                "Send this video message to this chat?", sent::incrementAndGet)));
+        other.start();
+        other.join();
+        assertTrue(heldBack.get());
+        assertEquals(2, sent.get());
     }
 
     @Test public void aCallAsksOnlyWithAWindowAndTheSwitchOn() {

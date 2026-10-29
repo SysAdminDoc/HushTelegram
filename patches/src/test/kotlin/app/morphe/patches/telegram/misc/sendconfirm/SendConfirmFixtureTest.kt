@@ -15,6 +15,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.util.ControlFlow
 import app.morphe.util.call
 import app.morphe.util.namedRegisters
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -151,6 +152,15 @@ class SendConfirmFixtureTest {
                 assertEquals("$name $n", ref, call.controlRef())
                 assertEquals("$name $n: the controller and its view-once flag", registers, call.namedRegisters())
             }
+            val newer = stub("voiceRecorderV2")
+            assertEquals("$name voiceRecorderV2: the controller's own flag", listOf(Opcode.CHECK_CAST, Opcode.IGET_BOOLEAN, Opcode.RETURN),
+                newer.map { it.opcode })
+            assertEquals("$name voiceRecorderV2", VOICE_V2, newer[1].controlRef())
+            assertEquals("$name voiceRecorderV2: read into v0 from the controller", listOf(0, 1), newer[1].namedRegisters())
+            val flag = context.mutableClassDefBy("Lorg/telegram/messenger/MediaController;").fields.single { it.name == "audioRecorderV2Active" }
+            assertEquals("$name: the flag opened to the stub and nothing else about it changed",
+                listOf(true, false, false), listOf(AccessFlags.PUBLIC.isSet(flag.accessFlags), AccessFlags.PRIVATE.isSet(flag.accessFlags),
+                    AccessFlags.STATIC.isSet(flag.accessFlags)))
             val chat = context.mutableClassDefBy(site.video.definingClass)
             assertTrue("$name: the chat implements the recorder", site.recorder in chat.interfaces)
             assertTrue("$name: a paused check and a pause", site.videoPaused.endsWith("()Z") && site.pauseVideo.endsWith("()V"))

@@ -116,9 +116,9 @@ public final class SendConfirm {
         if (passed(VOICE)) return true;
         if (!voiceSend(send, notify, scheduleDate, stars) || !on(Settings.ASK_BEFORE_VOICE_VIDEO)) return true;
         Activity window = current();
-        if (window == null || !holdVoice(media, once)) return true;
-        return ask(VOICE, window, L10n.t(window, "Send voice message"), L10n.t(window, "Send this voice message to this chat?"), L10n.t(window, "Send"),
-                () -> resumeVoice(media, send, notify, scheduleDate, once, stars), null);
+        if (window == null || !mainThread() || !holdVoice(media, once)) return true;
+        return askHeld(VOICE, window, L10n.t(window, "Send voice message"), L10n.t(window, "Send this voice message to this chat?"),
+                () -> resumeVoice(media, send, notify, scheduleDate, once, stars));
     }
 
     /** In front of the chat's handling of the round video recorder, in the order one build gives its arguments. */
@@ -126,9 +126,9 @@ public final class SendConfirm {
         if (passed(VIDEO)) return true;
         if (!videoSend(state, notify, scheduleDate, stars) || !on(Settings.ASK_BEFORE_VOICE_VIDEO)) return true;
         Activity window = current();
-        if (window == null || !holdVideo(chat)) return true;
-        return ask(VIDEO, window, L10n.t(window, "Send video message"), L10n.t(window, "Send this video message to this chat?"), L10n.t(window, "Send"),
-                () -> resumeVideo(chat, VIDEO_PREVIEW, notify, scheduleDate, ttl, effect, stars), null);
+        if (window == null || !mainThread() || !holdVideo(chat)) return true;
+        return askHeld(VIDEO, window, L10n.t(window, "Send video message"), L10n.t(window, "Send this video message to this chat?"),
+                () -> resumeVideo(chat, VIDEO_PREVIEW, notify, scheduleDate, ttl, effect, stars));
     }
 
     /** {@link #video} for the build that gives the date, the timer and the effect before the sound flag. */
@@ -136,24 +136,43 @@ public final class SendConfirm {
         if (passed(VIDEO)) return true;
         if (!videoSend(state, notify, scheduleDate, stars) || !on(Settings.ASK_BEFORE_VOICE_VIDEO)) return true;
         Activity window = current();
-        if (window == null || !holdVideo(chat)) return true;
-        return ask(VIDEO, window, L10n.t(window, "Send video message"), L10n.t(window, "Send this video message to this chat?"), L10n.t(window, "Send"),
-                () -> resumeVideoReordered(chat, VIDEO_PREVIEW, scheduleDate, ttl, effect, stars, notify), null);
+        if (window == null || !mainThread() || !holdVideo(chat)) return true;
+        return askHeld(VIDEO, window, L10n.t(window, "Send video message"), L10n.t(window, "Send this video message to this chat?"),
+                () -> resumeVideoReordered(chat, VIDEO_PREVIEW, scheduleDate, ttl, effect, stars, notify));
+    }
+
+    /**
+     * {@link #ask} for a recording already paused for its question. When the question can't show,
+     * the clip goes out the way Send sends it, since Telegram's own send no longer finds it recording.
+     */
+    static boolean askHeld(int kind, Activity window, String title, String message, Runnable sendAction) {
+        if (ask(kind, window, title, message, L10n.t(window, "Send"), sendAction, null)) answered(kind, sendAction);
+        return false;
     }
 
     /**
      * Pauses the voice recording unless it's paused already, so the question stands in front of a
-     * finished clip. Telegram stops a paused recording by sending it. False when it couldn't pause,
-     * and then Telegram sends at once rather than recording on behind the question.
+     * finished clip. False when it couldn't pause, and then Telegram sends at once rather than
+     * recording on behind the question.
      */
     static boolean holdVoice(Object media, boolean once) {
         try {
-            if (!voicePaused(media)) pauseVoice(media, once);
+            if (pausesVoice(voiceRecorderV2(media), voicePaused(media))) pauseVoice(media, once);
             return true;
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.ASK_BEFORE_STICKER, "voice pause", failure);
             return false;
         }
+    }
+
+    /**
+     * Whether a voice recording gets paused before its question: only on Telegram's newer recorder,
+     * which sends a paused clip when the recording is stopped, and only when it isn't paused yet. The
+     * older one, which the server can switch back to, drops a paused clip on that stop, so there the
+     * recording goes on behind the question.
+     */
+    static boolean pausesVoice(boolean newer, boolean paused) {
+        return newer && !paused;
     }
 
     /**
@@ -225,7 +244,7 @@ public final class SendConfirm {
      * nowhere to ask or asking failed, and false once the dialog is up and the answer will decide.
      */
     static boolean ask(int kind, Activity window, String title, String message, String send, Runnable sendAction, Runnable cancelAction) {
-        if (window == null || Looper.myLooper() != Looper.getMainLooper()) return true;
+        if (window == null || !mainThread()) return true;
         try {
             boolean[] decided = {false};
             Runnable yes = () -> {
@@ -247,6 +266,11 @@ public final class SendConfirm {
             HookStatus.threw(FamilyNames.ASK_BEFORE_STICKER, "question", failure);
             return true;
         }
+    }
+
+    /** Whether this runs on the app's main thread, the only one a question shows from. */
+    static boolean mainThread() {
+        return Looper.myLooper() == Looper.getMainLooper();
     }
 
     /** Runs [action], the one call Telegram's own method is let through for. */
@@ -303,6 +327,9 @@ public final class SendConfirm {
 
     /** Telegram's own end of a recording, again. Replaced when patching. */
     public static void resumeVoice(Object media, int send, boolean notify, int scheduleDate, boolean once, long stars) {}
+
+    /** Whether Telegram records voice with its newer recorder. Replaced when patching. */
+    public static boolean voiceRecorderV2(Object media) { return false; }
 
     /** Whether Telegram's voice recording is paused. Replaced when patching. */
     public static boolean voicePaused(Object media) { return false; }
