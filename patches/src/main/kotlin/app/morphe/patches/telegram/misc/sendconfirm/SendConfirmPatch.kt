@@ -61,6 +61,7 @@ internal const val CAMERA_ALLOWED = "Lorg/telegram/messenger/camera/CameraView;-
 internal const val SEND_HELPER = "Lorg/telegram/messenger/SendMessagesHelper;"
 internal const val CALLBACK = "Lorg/telegram/messenger/Utilities\$Callback;"
 private const val TL_DOCUMENT = "Lorg/telegram/tgnet/TLRPC\$TL_document;"
+private const val VIDEO_INFO = "Lorg/telegram/messenger/VideoEditedInfo;"
 private const val LONG = "Ljava/lang/Long;"
 private const val SET_FIELD_TEXT = "$ENTER_VIEW->setFieldText(Ljava/lang/CharSequence;)V"
 private const val VOICE_PAUSED = "$MEDIA_CONTROLLER->isRecordingPaused()Z"
@@ -80,6 +81,9 @@ private val VOICE_TARGET = listOf("I", "Z", "I", "Z", "J")
 private val VOICE_HOOK = listOf(OBJECT, "I", "Z", "I", "Z", "J")
 private val CALL_TARGET = listOf(USER, "Z", "Z", ACTIVITY, USER_FULL, ACCOUNT_INSTANCE)
 private val CALL_HOOK = listOf(OBJECT, "Z", "Z", OBJECT, OBJECT, OBJECT)
+
+/** The chat bar's send of what it holds: date, sound, a flag, whether its paid-message question may ask, stars. */
+private val BAR_SEND = listOf("I", "Z", "I", "Z", "J")
 
 /** The round video recorder's entry in the chat, which the two builds give their arguments in a different order. */
 internal enum class VideoShape(val target: List<String>, val hook: String, val resume: String) {
@@ -116,6 +120,7 @@ internal class SendConfirmSite(
     val shape: VideoShape, val recorder: String, val videoPaused: String, val pauseVideo: String,
     val header: MutableMethod, val headerCall: Int, val profile: MutableMethod, val profileCall: Int,
     val startCall: String, val launchField: String, val strips: List<StripSite>,
+    val barSend: String, val voiceClip: String, val videoClip: String,
 ) {
     /** Hands each place that gets code to [change] with the edit that does it, copy or real. */
     fun insert(change: (MutableMethod, (MutableMethod) -> Unit) -> Unit) {
@@ -210,6 +215,10 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     controlHook(SEND_CONFIRM, "pauseVoice", listOf(OBJECT, "Z"), "V")
     controlHook(SEND_CONFIRM, "videoPaused", listOf(OBJECT), "Z")
     controlHook(SEND_CONFIRM, "pauseVideo", listOf(OBJECT), "V")
+    controlHook(SEND_CONFIRM, "chatBar", listOf(OBJECT), "Z")
+    controlHook(SEND_CONFIRM, "voiceClip", listOf(OBJECT), OBJECT)
+    controlHook(SEND_CONFIRM, "videoClip", listOf(OBJECT), OBJECT)
+    controlHook(SEND_CONFIRM, "sendFromBar", listOf(OBJECT), "V")
     for (shape in VideoShape.values()) {
         controlHook(SEND_CONFIRM, shape.hook, listOf(OBJECT).plus(shape.target), "Z")
         controlHook(SEND_CONFIRM, shape.resume, listOf(OBJECT).plus(shape.target), "V")
@@ -324,6 +333,22 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     val videoPaused = recorderCalls.filter { it.returnType == "Z" }.map(::signature).distinct().controlSingle("the round video recorder's paused check")
     val pauseVideo = recorderCalls.filter { it.returnType == "V" }.map(::signature).distinct().controlSingle("the round video recorder's pause")
 
+    // That method is also the chat bar's send, the one its send button runs: it sends the voice clip
+    // or the round video waiting in its preview, each in a field of its own, and closes the preview.
+    // Send from a question in front of a paused recording goes through it. The stubs that read the
+    // two fields get them opened when the stubs are written.
+    controlShape(!AccessFlags.STATIC.isSet(paidPause.accessFlags) && AccessFlags.PUBLIC.isSet(paidPause.accessFlags) &&
+        paidPause.returnType == "Z" && paidPause.parameterTypes.map(CharSequence::toString) == BAR_SEND,
+        "the chat bar's send no longer takes a date, sound, its paid-message question and stars")
+    val (voiceClip, videoClip) = listOf(TL_DOCUMENT to "voice clip", VIDEO_INFO to "round video").map { (type, what) ->
+        val field = barClass.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.type == type }
+            .controlSingle("the chat bar's paused $what")
+        val ref = "${field.definingClass}->${field.name}:${field.type}"
+        controlShape(pauseBody.any { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.toString() == ref },
+            "the chat bar's send no longer sends its paused $what")
+        ref
+    }
+
     // The header menu's call item, and the profile's call button, each calling once.
     val (headerType, headerWanted, headerCalls) = headers.controlSingle("the chat header's menu")
     val header = mutableClassDefBy(headerType).methods.single { signature(it) == headerWanted }
@@ -369,7 +394,7 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     }
 
     return SendConfirmSite(sticker, gif, voice, video, shape, recorder, videoPaused, pauseVideo,
-        header, headerCall, profile, profileCall, startRef, own, stripSites)
+        header, headerCall, profile, profileCall, startRef, own, stripSites, signature(paidPause), voiceClip, videoClip)
 }
 
 /**
@@ -467,6 +492,33 @@ internal fun BytecodePatchContext.writeSendConfirmStubs(site: SendConfirmSite) {
     writeStub(SEND_CONFIRM, "pauseVideo", 1, """
         check-cast p0, ${site.recorder}
         invoke-interface {p0}, ${site.pauseVideo}
+        return-void
+    """)
+    writeStub(SEND_CONFIRM, "chatBar", 2, """
+        instance-of v0, p0, $bar
+        return v0
+    """)
+    val barFields = mutableClassDefBy(bar).fields
+    for ((name, clip) in listOf("voiceClip" to site.voiceClip, "videoClip" to site.videoClip)) {
+        barFields.single { "${it.definingClass}->${it.name}:${it.type}" == clip }.apply {
+            accessFlags = accessFlags and (AccessFlags.PRIVATE.value or AccessFlags.PROTECTED.value).inv() or AccessFlags.PUBLIC.value
+        }
+        writeStub(SEND_CONFIRM, name, 2, """
+            check-cast p0, $bar
+            iget-object v0, p0, $clip
+            return-object v0
+        """)
+    }
+    // Now, with sound, and with Telegram's own paid-message question free to ask, as the send button sends.
+    writeStub(SEND_CONFIRM, "sendFromBar", 8, """
+        check-cast p0, $bar
+        move-object v0, p0
+        const/4 v1, 0x0
+        const/4 v2, 0x1
+        const/4 v3, 0x0
+        const/4 v4, 0x1
+        const-wide/16 v5, 0x0
+        invoke-virtual/range {v0 .. v6}, ${site.barSend}
         return-void
     """)
     writeStub(SEND_CONFIRM, "startCall", 6, """

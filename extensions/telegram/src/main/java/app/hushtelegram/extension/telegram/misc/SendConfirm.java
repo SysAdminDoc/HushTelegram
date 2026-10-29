@@ -8,9 +8,11 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.os.Handler;
 import android.os.Looper;
 import android.util.Pair;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Utils;
@@ -19,6 +21,7 @@ import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.ui.CustomDialog;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
+import java.util.function.Predicate;
 
 /**
  * Four questions Telegram doesn't ask: send this sticker, this GIF, this voice or video message,
@@ -52,6 +55,10 @@ public final class SendConfirm {
 
     /** The state Telegram's chat bar sends a paused round video in, the one its paid-message question sends with. */
     static final int VIDEO_PREVIEW = 4;
+
+    /** How many times, {@link #PREVIEW_STEP_MS} apart, Send looks for the preview of a paused clip: five seconds. */
+    static final int PREVIEW_TRIES = 50;
+    static final long PREVIEW_STEP_MS = 100L;
 
     /** The kind of send the next call through its hook is the answered one of, or 0. */
     private static volatile int passing;
@@ -117,8 +124,11 @@ public final class SendConfirm {
         if (!voiceSend(send, notify, scheduleDate, stars) || !on(Settings.ASK_BEFORE_VOICE_VIDEO)) return true;
         Activity window = current();
         if (window == null || !mainThread() || !holdVoice(media, once)) return true;
-        return askHeld(VOICE, window, L10n.t(window, "Send voice message"), L10n.t(window, "Send this voice message to this chat?"),
-                () -> resumeVoice(media, send, notify, scheduleDate, once, stars));
+        Runnable stop = () -> resumeVoice(media, send, notify, scheduleDate, once, stars);
+        return askHeld(VOICE, window, L10n.t(window, "Send voice message"), L10n.t(window, "Send this voice message to this chat?"), () -> {
+            if (voiceHeld(media)) fromPreview(VOICE, window, stop, PREVIEW_TRIES);
+            else stop.run();
+        });
     }
 
     /** In front of the chat's handling of the round video recorder, in the order one build gives its arguments. */
@@ -128,7 +138,7 @@ public final class SendConfirm {
         Activity window = current();
         if (window == null || !mainThread() || !holdVideo(chat)) return true;
         return askHeld(VIDEO, window, L10n.t(window, "Send video message"), L10n.t(window, "Send this video message to this chat?"),
-                () -> resumeVideo(chat, VIDEO_PREVIEW, notify, scheduleDate, ttl, effect, stars));
+                () -> fromPreview(VIDEO, window, () -> resumeVideo(chat, VIDEO_PREVIEW, notify, scheduleDate, ttl, effect, stars), PREVIEW_TRIES));
     }
 
     /** {@link #video} for the build that gives the date, the timer and the effect before the sound flag. */
@@ -138,7 +148,7 @@ public final class SendConfirm {
         Activity window = current();
         if (window == null || !mainThread() || !holdVideo(chat)) return true;
         return askHeld(VIDEO, window, L10n.t(window, "Send video message"), L10n.t(window, "Send this video message to this chat?"),
-                () -> resumeVideoReordered(chat, VIDEO_PREVIEW, scheduleDate, ttl, effect, stars, notify));
+                () -> fromPreview(VIDEO, window, () -> resumeVideoReordered(chat, VIDEO_PREVIEW, scheduleDate, ttl, effect, stars, notify), PREVIEW_TRIES));
     }
 
     /**
@@ -188,6 +198,58 @@ public final class SendConfirm {
             HookStatus.threw(FamilyNames.ASK_BEFORE_STICKER, "video pause", failure);
             return false;
         }
+    }
+
+    /** Whether the voice recording sits paused, so its clip waits in the chat bar's preview. */
+    static boolean voiceHeld(Object media) {
+        try {
+            return voicePaused(media);
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.ASK_BEFORE_STICKER, "voice pause", failure);
+            return false;
+        }
+    }
+
+    /**
+     * Sends a paused recording with the chat bar's own send, the one its send button runs, which
+     * sends the clip in its preview and closes the preview behind it. Ending the recording instead
+     * sends the clip too, but a chat bar that saw it paused never hears about that, and its preview
+     * stays up. The preview shows once the paused clip is written, a moment after the pause, so Send
+     * waits for it; with none by then, [stop] ends the recording, which still sends the clip.
+     */
+    static void fromPreview(int kind, Activity window, Runnable stop, int tries) {
+        if (!mainThread()) {
+            new Handler(Looper.getMainLooper()).post(() -> fromPreview(kind, window, stop, tries));
+            return;
+        }
+        Object bar = previewBar(window, kind);
+        if (bar != null) answered(kind, () -> sendFromBar(bar));
+        else if (tries > 0) new Handler(Looper.getMainLooper()).postDelayed(() -> fromPreview(kind, window, stop, tries - 1), PREVIEW_STEP_MS);
+        else answered(kind, stop);
+    }
+
+    /** The chat bar on screen in [window] that holds a paused clip of this kind, or null. */
+    static Object previewBar(Activity window, int kind) {
+        try {
+            if (window == null || window.isDestroyed() || window.getWindow() == null) return null;
+            return find(window.getWindow().getDecorView(),
+                    view -> view.isShown() && chatBar(view) && (kind == VIDEO ? videoClip(view) : voiceClip(view)) != null);
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.ASK_BEFORE_STICKER, "preview", failure);
+            return null;
+        }
+    }
+
+    /** The first view in [root]'s tree, [root] included, that [wanted] takes. */
+    static View find(View root, Predicate<View> wanted) {
+        if (wanted.test(root)) return root;
+        if (!(root instanceof ViewGroup)) return null;
+        ViewGroup group = (ViewGroup) root;
+        for (int i = 0; i < group.getChildCount(); i++) {
+            View found = find(group.getChildAt(i), wanted);
+            if (found != null) return found;
+        }
+        return null;
     }
 
     /**
@@ -348,6 +410,18 @@ public final class SendConfirm {
 
     /** {@link #resumeVideo} for the other order of arguments. Replaced when patching. */
     public static void resumeVideoReordered(Object chat, int state, int scheduleDate, int ttl, long effect, long stars, boolean notify) {}
+
+    /** Whether a view is Telegram's chat bar. Replaced when patching. */
+    public static boolean chatBar(Object view) { return false; }
+
+    /** The paused voice clip in the chat bar's preview, or null. Replaced when patching. */
+    public static Object voiceClip(Object bar) { return null; }
+
+    /** The paused round video in the chat bar's preview, or null. Replaced when patching. */
+    public static Object videoClip(Object bar) { return null; }
+
+    /** The chat bar's send, as its send button runs it: now, with sound. Replaced when patching. */
+    public static void sendFromBar(Object bar) {}
 
     /** Telegram's own start of a call. Replaced when patching. */
     public static void startCall(Object user, boolean video, boolean canVideo, Object activity, Object userFull, Object account) {}

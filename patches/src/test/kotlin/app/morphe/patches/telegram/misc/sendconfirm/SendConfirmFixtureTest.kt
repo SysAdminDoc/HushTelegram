@@ -142,6 +142,39 @@ class SendConfirmFixtureTest {
             again("resumeVoice", site.voice, 7)
             again(site.shape.resume, site.video, 9)
 
+            // Send in front of a paused recording: the chat bar's own send, the one its send button
+            // runs, from the bar that holds the clip in its preview.
+            val enterView = "Lorg/telegram/ui/Components/ChatActivityEnterView;"
+            val bar = context.mutableClassDefBy(enterView)
+            assertTrue("$name: the chat bar's send", site.barSend.startsWith("$enterView->") && site.barSend.endsWith("(IZIZJ)Z"))
+            assertTrue("$name: the send button runs it", bar.methods.any { m ->
+                m.parameterTypes.isEmpty() && m.returnType == "Z" && m.implementation != null && m.controlBody().any { it.controlRef() == site.barSend }
+            })
+            val fromBar = stub("sendFromBar")
+            val send = fromBar.single { it.opcode == Opcode.INVOKE_VIRTUAL_RANGE }
+            assertEquals("$name sendFromBar", site.barSend, send.controlRef())
+            assertEquals("$name sendFromBar: the bar and its five words", (0..6).toList(), send.namedRegisters())
+            assertEquals("$name sendFromBar: the bar it was handed", listOf(Opcode.MOVE_OBJECT, listOf(0, 7)),
+                fromBar.single { it.opcode == Opcode.MOVE_OBJECT }.let { listOf(it.opcode, it.namedRegisters()) })
+            assertEquals("$name sendFromBar: now, with sound, no flag, its paid-message question free to ask, no stars",
+                listOf(1 to 0L, 2 to 1L, 3 to 0L, 4 to 1L, 5 to 0L),
+                fromBar.filterIsInstance<WideLiteralInstruction>().map { (it as Instruction).namedRegisters().first() to it.wideLiteral })
+            val isBar = stub("chatBar")
+            assertEquals("$name chatBar", listOf(Opcode.INSTANCE_OF, Opcode.RETURN), isBar.map { it.opcode })
+            assertEquals("$name chatBar", listOf(enterView, listOf(0, 1)), listOf(isBar[0].controlRef(), isBar[0].namedRegisters()))
+            for ((n, field, type) in listOf(
+                Triple("voiceClip", site.voiceClip, "Lorg/telegram/tgnet/TLRPC\$TL_document;"),
+                Triple("videoClip", site.videoClip, "Lorg/telegram/messenger/VideoEditedInfo;"),
+            )) {
+                val read = stub(n)
+                assertEquals("$name $n", listOf(Opcode.CHECK_CAST, Opcode.IGET_OBJECT, Opcode.RETURN_OBJECT), read.map { it.opcode })
+                assertEquals("$name $n: the bar's own field", listOf(field, listOf(0, 1)), listOf(read[1].controlRef(), read[1].namedRegisters()))
+                val declared = bar.fields.single { "${it.definingClass}->${it.name}:${it.type}" == field }
+                assertEquals("$name $n: the one $type, open to the stub", listOf(type, true, false, false),
+                    listOf(declared.type, AccessFlags.PUBLIC.isSet(declared.accessFlags), AccessFlags.PRIVATE.isSet(declared.accessFlags),
+                        AccessFlags.STATIC.isSet(declared.accessFlags)))
+            }
+
             // The pauses before a question: the media controller's for a voice recording, and the
             // recorder's for a round video, each one the chat really implements.
             for ((n, ref, registers) in listOf(

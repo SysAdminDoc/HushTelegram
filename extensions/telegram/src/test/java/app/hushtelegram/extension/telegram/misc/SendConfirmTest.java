@@ -10,6 +10,8 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
@@ -21,6 +23,7 @@ import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
@@ -243,6 +246,49 @@ public class SendConfirmTest {
         other.join();
         assertTrue(heldBack.get());
         assertEquals(2, sent.get());
+    }
+
+    @Test public void sendWaitsForThePausedClipsPreviewAndEndsTheRecordingWhenNoneShows() throws Exception {
+        Activity window = window();
+        FrameLayout root = new FrameLayout(window);
+        LinearLayout row = new LinearLayout(window);
+        View leaf = new View(window);
+        row.addView(leaf);
+        root.addView(row);
+        assertSame("the whole tree is searched", leaf, SendConfirm.find(root, view -> view == leaf));
+        assertSame("the root counts", root, SendConfirm.find(root, view -> true));
+        assertNull(SendConfirm.find(root, view -> false));
+        // Unpatched no view is the chat bar, a paused voice recording reads as not paused, and nothing holds a clip.
+        window.setContentView(root);
+        assertNull(SendConfirm.previewBar(window, 3));
+        assertNull(SendConfirm.previewBar(window, 4));
+        assertNull(SendConfirm.previewBar(null, 4));
+        assertFalse(SendConfirm.voiceHeld(new Object()));
+
+        AtomicInteger stopped = new AtomicInteger();
+        AtomicBoolean letThrough = new AtomicBoolean();
+        Runnable stop = () -> {
+            stopped.incrementAndGet();
+            letThrough.set(SendConfirm.passed(4));
+        };
+        SendConfirm.fromPreview(4, window, stop, SendConfirm.PREVIEW_TRIES);
+        long wait = SendConfirm.PREVIEW_TRIES * SendConfirm.PREVIEW_STEP_MS;
+        ShadowLooper.idleMainLooper(wait - SendConfirm.PREVIEW_STEP_MS, TimeUnit.MILLISECONDS);
+        assertEquals("it looks for the preview until the last try", 0, stopped.get());
+        ShadowLooper.idleMainLooper(SendConfirm.PREVIEW_STEP_MS, TimeUnit.MILLISECONDS);
+        assertEquals("with none, Telegram's end of the recording sends the clip, once", 1, stopped.get());
+        assertTrue("and that end goes through its hook without asking again", letThrough.get());
+        assertFalse("the pass is used up", SendConfirm.passed(4));
+        ShadowLooper.idleMainLooper(wait, TimeUnit.MILLISECONDS);
+        assertEquals(1, stopped.get());
+
+        // Off the main thread the wait moves onto it.
+        Thread other = new Thread(() -> SendConfirm.fromPreview(3, window, stopped::incrementAndGet, 0));
+        other.start();
+        other.join();
+        assertEquals(1, stopped.get());
+        ShadowLooper.idleMainLooper();
+        assertEquals(2, stopped.get());
     }
 
     @Test public void aCallAsksOnlyWithAWindowAndTheSwitchOn() {
