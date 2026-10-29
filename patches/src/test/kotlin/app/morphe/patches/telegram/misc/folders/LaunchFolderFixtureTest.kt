@@ -338,10 +338,12 @@ internal fun launchFolderHosts(build: File): List<ClassDef> = LAUNCH_FOLDER_HOST
     val list = launchFolderList(build)
     val first = FixtureDex.classes(build, setOf(list)).getValue(list)
     val tabs = first.methods.single { it.isTabBuildLike() }
-    // The dialog and notification classes are for the hidden chats' stubs, which go in with the same patch, and
-    // the strings and locale for Hide All Chats' archive title.
+    // The dialog and notification classes are for the hidden chats' stubs, which go in with the same patch, the
+    // storage and its queue for their unread counts, and the strings and locale for Hide All Chats' archive title.
     val wanted = mutableSetOf(list, MESSAGES_CONTROLLER, LOCAL_FILTER, USER_CONFIG, "Lorg/telegram/tgnet/TLRPC\$Dialog;",
-        "Lorg/telegram/messenger/NotificationCenter;", "Lorg/telegram/messenger/R\$string;", "Lorg/telegram/messenger/LocaleController;")
+        "Lorg/telegram/messenger/NotificationCenter;", "Lorg/telegram/messenger/MessagesStorage;",
+        "Lorg/telegram/messenger/DispatchQueue;",
+        "Lorg/telegram/messenger/R\$string;", "Lorg/telegram/messenger/LocaleController;")
     for (instruction in tabs.body()) {
         val field = (instruction as? ReferenceInstruction)?.reference as? com.android.tools.smali.dexlib2.iface.reference.FieldReference ?: continue
         if (field.definingClass == list || field.definingClass.startsWith("Lorg/telegram/ui/")) {

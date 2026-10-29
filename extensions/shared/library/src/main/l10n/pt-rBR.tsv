@@ -901,8 +901,12 @@ which folder the chat list opens on	pasta em que a lista de conversas abre
 the All Chats tab	a aba Todos os Chats
 # context: Switch on the Chat list page under Hide folder tab counters, off by default. With it on, the chats the user ticks in Chats to hide stop showing in the chat list
 Hide picked chats	Ocultar conversas escolhidas
-# context: Summary of Hide picked chats. All Chats is Telegram's own name for the first folder tab and Archived Chats Telegram's name for the archive (ArchivedChats): use Telegram's translations. The app badge is the unread count on the app's icon
-The chats you pick below leave All Chats, your folders and archived chats. They keep their messages and notifications, search still finds them, and nothing changes on your other devices. Each account keeps its own list. Folder tab counts and the app badge still count their unread messages.	As conversas que você escolher abaixo saem de Todos os Chats, das suas pastas e de Conversas arquivadas. Elas mantêm as mensagens e notificações, a busca continua encontrando elas e nada muda nos seus outros aparelhos. Cada conta tem a própria lista. As contagens das abas de pastas e o selo do app continuam contando as mensagens não lidas delas.
+# context: Summary of Hide picked chats, followed by one of the next two sentences. All Chats is Telegram's own name for the first folder tab and Archived Chats Telegram's name for the archive (ArchivedChats): use Telegram's translations
+The chats you pick below leave All Chats, your folders and archived chats. They keep their messages and notifications, search still finds them, and nothing changes on your other devices. Each account keeps its own list.	As conversas que você escolher abaixo saem de Todos os Chats, das suas pastas e de Conversas arquivadas. Elas mantêm as mensagens e notificações, a busca continua encontrando elas e nada muda nos seus outros aparelhos. Cada conta tem a própria lista.
+# context: Ends the summary of Hide picked chats when this build's folder tab counts leave the hidden chats out. The app badge is the unread count on the app's icon
+Folder tab counts leave them out, but the app badge still counts their unread messages.	As contagens das abas de pastas deixam elas de fora, mas o selo do app continua contando as mensagens não lidas delas.
+# context: Ends the summary of Hide picked chats when this build's folder tab counts still count the hidden chats. The app badge is the unread count on the app's icon
+Folder tab counts and the app badge still count their unread messages.	As contagens das abas de pastas e o selo do app continuam contando as mensagens não lidas delas.
 # context: Row under Hide picked chats. Its summary names the hidden chats, and a tap lists the account's chats to tick
 Chats to hide	Conversas a ocultar
 # context: Summary of Chats to hide when no chat is ticked
@@ -919,6 +923,8 @@ Hide from chat list	Ocultar da lista de conversas
 Hidden from your chat list.	Ocultado da sua lista de conversas.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that hides picked chats
 chats hidden from the chat list	conversas ocultas da lista de conversas
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that leaves hidden chats out of the folder tabs' unread counts
+hidden chats in the unread counts	conversas ocultas nas contagens de não lidas
 # context: Chats to hide's list names the account's own chat this way, as Telegram's chat list does (SavedMessages): use Telegram's applied translation
 Saved Messages	Mensagens Salvas
 # context: Chat list page switch title, under Hide Contacts tab. When on, the round pencil button (new message) on the chat list is removed.

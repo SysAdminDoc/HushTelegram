@@ -424,11 +424,14 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 SwitchPreference hide = toggle(context, Settings.HIDDEN_CHATS, L10n.t("Hide picked chats"),
                         L10n.t("The chats you pick below leave All Chats, your folders and archived chats. They keep their "
                                 + "messages and notifications, search still finds them, and nothing changes on your other "
-                                + "devices. Each account keeps its own list. Folder tab counts and the app badge still count "
-                                + "their unread messages."));
+                                + "devices. Each account keeps its own list.") + " "
+                                // The badge follows their notifications, which they keep.
+                                + (PatchFamily.Capability.HIDDEN_UNREAD.installed()
+                                        ? L10n.t("Folder tab counts leave them out, but the app badge still counts their unread messages.")
+                                        : L10n.t("Folder tab counts and the app badge still count their unread messages.")));
                 hide.setOnPreferenceChangeListener((row, value) -> {
                     // Once the switch is saved, so the chat list sorts by what it says.
-                    Utils.runOnMainThreadDelayed(HiddenChats::refreshShown, 0);
+                    Utils.runOnMainThreadDelayed(HiddenChats::refreshAll, 0);
                     return true;
                 });
                 folderTabs.addPreference(hide);

@@ -92,6 +92,7 @@ public final class SettingsStatus {
     public static boolean launchFolder() { return false; }
     public static boolean hideAllChats() { return false; }
     public static boolean hiddenChats() { return false; }
+    public static boolean hiddenUnread() { return false; }
     public static boolean forwardHideSender() { return false; }
     public static boolean voiceMusicPlayer() { return false; }
     public static boolean silenceNonContacts() { return false; }

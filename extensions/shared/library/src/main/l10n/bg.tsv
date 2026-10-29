@@ -900,8 +900,12 @@ which folder the chat list opens on	коя папка отваря списък�
 the All Chats tab	раздела „All Chats“
 # context: Switch on the Chat list page under Hide folder tab counters, off by default. With it on, the chats the user ticks in Chats to hide stop showing in the chat list
 Hide picked chats	Скриване на избрани чатове
-# context: Summary of Hide picked chats. All Chats is Telegram's own name for the first folder tab and Archived Chats Telegram's name for the archive (ArchivedChats): use Telegram's translations. The app badge is the unread count on the app's icon
-The chats you pick below leave All Chats, your folders and archived chats. They keep their messages and notifications, search still finds them, and nothing changes on your other devices. Each account keeps its own list. Folder tab counts and the app badge still count their unread messages.	Чатовете, които изберете по-долу, излизат от All Chats, папките ви и Archived Chats. Те запазват съобщенията и известията си, търсенето пак ги намира и нищо не се променя на другите ви устройства. Всеки акаунт пази свой списък. Броячите на разделите на папките и значката на приложението продължават да броят непрочетените им съобщения.
+# context: Summary of Hide picked chats, followed by one of the next two sentences. All Chats is Telegram's own name for the first folder tab and Archived Chats Telegram's name for the archive (ArchivedChats): use Telegram's translations
+The chats you pick below leave All Chats, your folders and archived chats. They keep their messages and notifications, search still finds them, and nothing changes on your other devices. Each account keeps its own list.	Чатовете, които изберете по-долу, излизат от All Chats, папките ви и Archived Chats. Те запазват съобщенията и известията си, търсенето пак ги намира и нищо не се променя на другите ви устройства. Всеки акаунт пази свой списък.
+# context: Ends the summary of Hide picked chats when this build's folder tab counts leave the hidden chats out. The app badge is the unread count on the app's icon
+Folder tab counts leave them out, but the app badge still counts their unread messages.	Броячите на разделите на папките не ги броят, но значката на приложението продължава да брои непрочетените им съобщения.
+# context: Ends the summary of Hide picked chats when this build's folder tab counts still count the hidden chats. The app badge is the unread count on the app's icon
+Folder tab counts and the app badge still count their unread messages.	Броячите на разделите на папките и значката на приложението продължават да броят непрочетените им съобщения.
 # context: Row under Hide picked chats. Its summary names the hidden chats, and a tap lists the account's chats to tick
 Chats to hide	Чатове за скриване
 # context: Summary of Chats to hide when no chat is ticked
@@ -918,6 +922,8 @@ Hide from chat list	Скриване от списъка с чатове
 Hidden from your chat list.	Скрито от списъка с чатове.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that hides picked chats
 chats hidden from the chat list	кои чатове са скрити от списъка с чатове
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that leaves hidden chats out of the folder tabs' unread counts
+hidden chats in the unread counts	скритите чатове в броячите на непрочетени
 # context: Chats to hide's list names the account's own chat this way, as Telegram's chat list does (SavedMessages): use Telegram's applied translation
 Saved Messages	Запазени съобщения
 # context: Chat list page switch title, under Hide Contacts tab. When on, the round pencil button (new message) on the chat list is removed.

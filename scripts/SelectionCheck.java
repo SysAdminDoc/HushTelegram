@@ -335,6 +335,7 @@ public final class SelectionCheck {
         hook(calls, flags, "launchFolder", "misc/LaunchFolder", "firstTabs");
         hook(calls, flags, "hideAllChats", "misc/LaunchFolder", "allChatsTab", "tabsAdded", "editing", "skipsDone");
         hook(calls, flags, "hiddenChats", "misc/HiddenChats", "prune");
+        hook(calls, flags, "hiddenUnread", "misc/HiddenChats", "uncounted");
         hook(calls, flags, "forwardHideSender", "misc/ForwardSender", "starts");
         hook(calls, flags, "voiceMusicPlayer", "misc/VoicePlayer", "music");
         hook(calls, flags, "silenceNonContacts", "misc/NonContacts", "silenced");
