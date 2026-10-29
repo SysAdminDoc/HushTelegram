@@ -264,6 +264,9 @@ public class SendConfirmTest {
         assertNull(SendConfirm.previewBar(window, 4));
         assertNull(SendConfirm.previewBar(null, 4));
         assertFalse(SendConfirm.voiceHeld(new Object()));
+        AtomicInteger ended = new AtomicInteger();
+        SendConfirm.sendVoice(new Object(), window, ended::incrementAndGet);
+        assertEquals("a voice recording neither paused nor in a preview ends at once", 1, ended.get());
 
         AtomicInteger stopped = new AtomicInteger();
         AtomicBoolean letThrough = new AtomicBoolean();

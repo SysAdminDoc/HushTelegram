@@ -125,10 +125,8 @@ public final class SendConfirm {
         Activity window = current();
         if (window == null || !mainThread() || !holdVoice(media, once)) return true;
         Runnable stop = () -> resumeVoice(media, send, notify, scheduleDate, once, stars);
-        return askHeld(VOICE, window, L10n.t(window, "Send voice message"), L10n.t(window, "Send this voice message to this chat?"), () -> {
-            if (voiceHeld(media)) fromPreview(VOICE, window, stop, PREVIEW_TRIES);
-            else stop.run();
-        });
+        return askHeld(VOICE, window, L10n.t(window, "Send voice message"), L10n.t(window, "Send this voice message to this chat?"),
+                () -> sendVoice(media, window, stop));
     }
 
     /** In front of the chat's handling of the round video recorder, in the order one build gives its arguments. */
@@ -208,6 +206,17 @@ public final class SendConfirm {
             HookStatus.threw(FamilyNames.ASK_BEFORE_STICKER, "voice pause", failure);
             return false;
         }
+    }
+
+    /**
+     * Send for a voice recording held for its question. A paused clip goes out from the chat bar's
+     * preview. Leaving the chat while the question is up ends the pause (Telegram stops a paused
+     * recording when its chat goes to the background) but keeps that preview, so a preview holding
+     * the clip counts too. A recording that was never paused, on the older recorder, ends at once.
+     */
+    static void sendVoice(Object media, Activity window, Runnable stop) {
+        if (voiceHeld(media) || previewBar(window, VOICE) != null) fromPreview(VOICE, window, stop, PREVIEW_TRIES);
+        else stop.run();
     }
 
     /**
