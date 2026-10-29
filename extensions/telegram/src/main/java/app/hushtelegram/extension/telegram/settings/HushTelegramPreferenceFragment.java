@@ -1812,6 +1812,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         row.setSummary(TitleEmojiEditor.summary(Settings.TITLE_EMOJI.savedValue()));
         row.setOnPreferenceClickListener(p -> {
             Activity activity = getActivity();
+            if (SettingsLock.refuses()) return true;
             if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
                 own(TitleEmojiEditor.open(activity, p, before -> titleEmojiSaved(activity, before)));
             }

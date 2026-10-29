@@ -1713,9 +1713,11 @@ public class SettingsNavigationTest {
             assertEquals(android.content.Intent.ACTION_CREATE_DOCUMENT, export.intent.getAction());
             while (page.navigation.back()) { }
 
-            // Every chooser: sticker size, both filter lists, the translation service and language, and the push app.
+            // Every chooser: sticker size, both filter lists, the title emoji, the translation service and language,
+            // and the push app.
             for (String key : Arrays.asList(HushTelegramPreferenceFragment.STICKER_SIZE_ROW, FilterEditor.GROUPS,
-                    FilterEditor.CHANNELS, TranslateServiceEditor.KEY, TranslateTargetPicker.KEY, UnifiedPushPicker.KEY)) {
+                    FilterEditor.CHANNELS, TitleEmojiEditor.KEY, TranslateServiceEditor.KEY, TranslateTargetPicker.KEY,
+                    UnifiedPushPicker.KEY)) {
                 Preference row = page.findPreference(key);
                 assertNotNull(key, row);
                 shown = org.robolectric.shadows.ShadowDialog.getLatestDialog();
