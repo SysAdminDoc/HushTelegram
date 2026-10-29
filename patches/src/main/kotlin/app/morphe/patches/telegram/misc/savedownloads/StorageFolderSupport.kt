@@ -141,7 +141,7 @@ internal fun BytecodePatchContext.resolveOlderFiles(): OlderFilePlan {
  * at the size Telegram expects. That File goes past the extension right before the iput-object, so
  * an older photo shows from Android/data. The encrypted branch (a secret chat's file named
  * differently) and the theme branch are left alone. If an older file's size doesn't match,
- * Telegram deletes it and downloads it again to the same place, as it would without the move.
+ * Telegram deletes it and downloads it again where it was, under Android/data, as stock does.
  * None or more than one such write downloads older photos and videos again.
  */
 internal fun BytecodePatchContext.resolveOlderLoads(): OlderFilePlan {

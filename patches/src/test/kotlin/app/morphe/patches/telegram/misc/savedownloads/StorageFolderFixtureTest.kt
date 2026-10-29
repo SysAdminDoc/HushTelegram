@@ -23,6 +23,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
@@ -243,6 +244,23 @@ class StorageFolderFixtureTest {
             assertEquals(why, 1, context.attachPath().controlBody().count { it.controlRef() == STORAGE_OLDER_FILE })
             assertEquals(why, 1L, context.flag("storageFolder"))
             assertEquals(why, 1L, context.flag("saveDownloads"))
+        }
+    }
+
+    @Test fun `a jump onto the path Telegram returns or keeps reaches the extension first`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = context(build)
+            // Neither declared build jumps onto these, so one jump is added ahead of each.
+            for (plan in listOf(context.resolveOlderFiles(), context.resolveOlderLoads())) {
+                val method = plan.method!!
+                method.addInstructionsWithLabels(0, "goto/32 :hush_site", ExternalLabel("hush_site", method.getInstruction(plan.at)))
+            }
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { saveDownloadsPatch.execute(context) })
+            for (method in listOf(context.attachPath(), context.loadStart())) {
+                val target = method.getInstruction<BuilderOffsetInstruction>(0).target.location.index
+                assertEquals("${build.name}: ${method.name}", STORAGE_OLDER_FILE, method.getInstruction(target).controlRef())
+                assertEquals("${build.name}: ${method.name}", 1, method.controlBody().count { it.controlRef() == STORAGE_OLDER_FILE })
+            }
         }
     }
 
