@@ -21,6 +21,7 @@ import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.ui.CustomDialog;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
+import java.lang.ref.WeakReference;
 import java.util.function.Predicate;
 
 /**
@@ -39,7 +40,7 @@ import java.util.function.Predicate;
  * that preview, where Telegram's own buttons play it, delete it or send it.
  *
  * <p>Only what a person starts by hand is asked about: a sticker or GIF picked in Telegram's
- * panels or its suggestion strip, a recording sent from the record button, and the call buttons in
+ * panels or its suggestion strip, a recording sent from the record button or from its preview, and the call buttons in
  * a chat's header and on a profile. A scheduled send, a send that already carries its own paid-message confirmation and a
  * call started from anywhere else go through untouched.
  */
@@ -62,6 +63,9 @@ public final class SendConfirm {
 
     /** The kind of send the next call through its hook is the answered one of, or 0. */
     private static volatile int passing;
+
+    /** The last question shown, so a second tap on a preview's send while it's up asks nothing more. */
+    private static WeakReference<Dialog> asked = new WeakReference<>(null);
 
     /**
      * In front of the chat bar's sticker send.
@@ -150,6 +154,47 @@ public final class SendConfirm {
     }
 
     /**
+     * In front of the chat bar's send of the round video waiting in its preview, the one its send
+     * button runs, before that send clears the preview, so Cancel leaves the clip there. Send runs
+     * the bar's send again, and the answered call goes on to {@link #video}, which takes the flag,
+     * so the clip isn't asked about twice.
+     *
+     * @param notify 0 for a send without sound
+     * @param repeat how often a scheduled send repeats, 0 for an ordinary send
+     * @param confirm whether Telegram's paid-message question may still ask, which a send with stars says anyway
+     */
+    public static boolean previewVideo(Object bar, int scheduleDate, int notify, int repeat, int confirm, long stars) {
+        if (passing == VIDEO) return true;
+        return preview(VIDEO, bar, scheduleDate, notify, repeat, stars, () -> sendFromBar(bar));
+    }
+
+    /** {@link #previewVideo} for the voice clip, whose send never reaches {@link #voice}, so this one takes the flag. */
+    public static boolean previewVoice(Object bar, int scheduleDate, int notify, int repeat, int confirm, long stars) {
+        if (passed(VOICE)) return true;
+        return preview(VOICE, bar, scheduleDate, notify, repeat, stars, () -> sendFromBar(bar));
+    }
+
+    /**
+     * Asks about the clip waiting in [bar]'s preview; Send runs [send], the bar's send again. A tap
+     * while a question is up keeps the preview and asks nothing more.
+     */
+    static boolean preview(int kind, Object bar, int scheduleDate, int notify, int repeat, long stars, Runnable send) {
+        if (!previewSend(scheduleDate, notify, repeat, stars) || !on(Settings.ASK_BEFORE_VOICE_VIDEO)) return true;
+        Activity window = activity(bar);
+        if (window == null) return true;
+        Dialog open = asked.get();
+        if (open != null && open.isShowing()) return false;
+        String title = kind == VIDEO ? L10n.t(window, "Send video message") : L10n.t(window, "Send voice message");
+        String message = kind == VIDEO ? L10n.t(window, "Send this video message to this chat?") : L10n.t(window, "Send this voice message to this chat?");
+        return ask(kind, window, title, message, L10n.t(window, "Send"), send, null);
+    }
+
+    /** Whether a send from the preview goes out now, with sound, once and with nothing to pay. */
+    static boolean previewSend(int scheduleDate, int notify, int repeat, long stars) {
+        return scheduleDate == 0 && notify != 0 && repeat == 0 && stars == 0L;
+    }
+
+    /**
      * {@link #ask} for a recording already paused for its question. When the question can't show,
      * the clip goes out the way Send sends it, since Telegram's own send no longer finds it recording.
      */
@@ -224,14 +269,15 @@ public final class SendConfirm {
      * sends the clip in its preview and closes the preview behind it. Ending the recording instead
      * sends the clip too, but a chat bar that saw it paused never hears about that, and its preview
      * stays up. The preview shows once the paused clip is written, a moment after the pause, so Send
-     * waits for it; with none by then, [stop] ends the recording, which still sends the clip.
+     * waits for it; with none by then, [stop] ends the recording, which still sends the clip. A
+     * window closed meanwhile gives way to the main window in front.
      */
     static void fromPreview(int kind, Activity window, Runnable stop, int tries) {
         if (!mainThread()) {
             new Handler(Looper.getMainLooper()).post(() -> fromPreview(kind, window, stop, tries));
             return;
         }
-        Object bar = previewBar(window, kind);
+        Object bar = previewBar(usable(window, false) ? window : current(), kind);
         if (bar != null) answered(kind, () -> sendFromBar(bar));
         else if (tries > 0) new Handler(Looper.getMainLooper()).postDelayed(() -> fromPreview(kind, window, stop, tries - 1), PREVIEW_STEP_MS);
         else answered(kind, stop);
@@ -331,6 +377,7 @@ public final class SendConfirm {
             Pair<Dialog, LinearLayout> dialog = CustomDialog.create(window, title, message, null, send, yes, no, null, null, false);
             dialog.first.setOnDismissListener(shown -> no.run());
             dialog.first.show();
+            asked = new WeakReference<>(dialog.first);
             HookStatus.counted(FamilyNames.ASK_BEFORE_STICKER, "asked");
             return false;
         } catch (Throwable failure) {

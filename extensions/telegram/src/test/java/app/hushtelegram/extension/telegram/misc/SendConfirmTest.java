@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowDialog;
 import org.robolectric.shadows.ShadowLooper;
@@ -49,6 +50,8 @@ public class SendConfirmTest {
 
     @Before public void reset() { restore(); }
     @After public void restore() {
+        // A question left up would read as one still showing to the next test's preview send.
+        for (Dialog dialog : ShadowDialog.getShownDialogs()) dialog.dismiss();
         PauseForTests.resume();
         for (BooleanSetting setting : switches()) {
             SettingReadsForTests.mend(setting);
@@ -221,6 +224,76 @@ public class SendConfirmTest {
         assertFalse("a paused clip would start recording again", SendConfirm.pausesVoice(true, true));
     }
 
+    @Test public void aClipSentFromItsPreviewAsksAndItsAnsweredSendGoesThroughOnce() {
+        assertTrue(SendConfirm.previewSend(0, 1, 0, 0L));
+        assertFalse("scheduled", SendConfirm.previewSend(1_790_000_000, 1, 0, 0L));
+        assertFalse("without sound", SendConfirm.previewSend(0, 0, 0, 0L));
+        assertFalse("repeating", SendConfirm.previewSend(0, 1, 86_400, 0L));
+        assertFalse("already confirmed as paid", SendConfirm.previewSend(0, 1, 0, 5L));
+
+        View bar = new View(window());
+        assertTrue("off by default", SendConfirm.previewVoice(bar, 0, 1, 0, 1, 0L));
+        assertTrue(SendConfirm.previewVideo(bar, 0, 1, 0, 1, 0L));
+        Settings.ASK_BEFORE_VOICE_VIDEO.save(true);
+        assertTrue("no window to ask in", SendConfirm.previewVoice(new Object(), 0, 1, 0, 1, 0L));
+        assertTrue("a scheduled send", SendConfirm.previewVideo(bar, 1_790_000_000, 1, 0, 0, 0L));
+        assertNull(ShadowDialog.getLatestDialog());
+
+        // Asked, the send returns as it does once it has sent, and Cancel leaves the clip in its preview.
+        for (boolean voice : new boolean[] {true, false}) {
+            assertFalse("asked instead", voice ? SendConfirm.previewVoice(bar, 0, 1, 0, 1, 0L) : SendConfirm.previewVideo(bar, 0, 1, 0, 1, 0L));
+            Dialog dialog = ShadowDialog.getLatestDialog();
+            assertNotNull(dialog);
+            assertTrue(dialog.isShowing());
+            assertNotNull(button(dialog.getWindow().getDecorView(), "Send"));
+            button(dialog.getWindow().getDecorView(), "Cancel").performClick();
+            assertFalse(dialog.isShowing());
+        }
+
+        // Send runs the bar's send once, as the answered call of its kind, and the pass ends with it.
+        // A second tap while the question is up asks nothing more and sends nothing.
+        for (int kind : new int[] {3, 4}) {
+            AtomicInteger sends = new AtomicInteger();
+            AtomicBoolean asItsKind = new AtomicBoolean();
+            assertFalse(SendConfirm.preview(kind, bar, 0, 1, 0, 0L, () -> {
+                sends.incrementAndGet();
+                asItsKind.set(SendConfirm.passed(kind));
+            }));
+            Dialog dialog = ShadowDialog.getLatestDialog();
+            assertFalse("kept in its preview", SendConfirm.preview(kind, bar, 0, 1, 0, 0L, sends::incrementAndGet));
+            assertSame("no second question", dialog, ShadowDialog.getLatestDialog());
+            assertEquals(0, sends.get());
+            button(dialog.getWindow().getDecorView(), "Send").performClick();
+            ShadowLooper.idleMainLooper();
+            assertEquals(1, sends.get());
+            assertTrue(asItsKind.get());
+            assertFalse(SendConfirm.passed(kind));
+            assertFalse(dialog.isShowing());
+        }
+
+        // Send runs the bar's send again: the voice clip's send takes the flag, and the round video's
+        // leaves it for the chat's handling of the recorder that its send goes on to.
+        AtomicBoolean through = new AtomicBoolean();
+        AtomicBoolean left = new AtomicBoolean(true);
+        SendConfirm.answered(3, () -> {
+            through.set(SendConfirm.previewVoice(bar, 0, 1, 0, 0, 0L));
+            left.set(SendConfirm.passed(3));
+        });
+        assertTrue(through.get());
+        assertFalse("the voice clip's send took the flag", left.get());
+        through.set(false);
+        SendConfirm.answered(4, () -> {
+            through.set(SendConfirm.previewVideo(bar, 0, 1, 0, 0, 0L));
+            left.set(SendConfirm.passed(4));
+        });
+        assertTrue(through.get());
+        assertTrue("left for the recorder's hook", left.get());
+        // The other kind's flag lets nothing through.
+        SendConfirm.answered(3, () -> through.set(SendConfirm.previewVideo(bar, 0, 1, 0, 0, 0L)));
+        assertFalse(through.get());
+        ShadowDialog.getLatestDialog().dismiss();
+    }
+
     @Test public void aHeldRecordingSendsOnceOnSendAndAtOnceWhenItsQuestionCantShow() throws Exception {
         Activity window = window();
         AtomicInteger sent = new AtomicInteger();
@@ -284,6 +357,26 @@ public class SendConfirmTest {
         assertFalse("the pass is used up", SendConfirm.passed(4));
         ShadowLooper.idleMainLooper(wait, TimeUnit.MILLISECONDS);
         assertEquals(1, stopped.get());
+
+        // A window closed meanwhile gives way to the main window in front. Unpatched there's none, so
+        // the recording ends after the last try, once, as the answered call.
+        ActivityController<Activity> closing = Robolectric.buildActivity(Activity.class).setup();
+        Activity closed = closing.get();
+        closing.pause().stop().destroy();
+        assertFalse(SendConfirm.usable(closed, false));
+        assertNull(SendConfirm.previewBar(closed, 3));
+        AtomicInteger endedClosed = new AtomicInteger();
+        AtomicBoolean closedThrough = new AtomicBoolean();
+        SendConfirm.fromPreview(3, closed, () -> {
+            endedClosed.incrementAndGet();
+            closedThrough.set(SendConfirm.passed(3));
+        }, 1);
+        assertEquals(0, endedClosed.get());
+        ShadowLooper.idleMainLooper(SendConfirm.PREVIEW_STEP_MS, TimeUnit.MILLISECONDS);
+        assertEquals(1, endedClosed.get());
+        assertTrue(closedThrough.get());
+        ShadowLooper.idleMainLooper(wait, TimeUnit.MILLISECONDS);
+        assertEquals(1, endedClosed.get());
 
         // Off the main thread the wait moves onto it.
         Thread other = new Thread(() -> SendConfirm.fromPreview(3, window, stopped::incrementAndGet, 0));

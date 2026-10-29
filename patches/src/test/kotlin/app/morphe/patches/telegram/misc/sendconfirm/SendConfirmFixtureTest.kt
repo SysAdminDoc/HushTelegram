@@ -8,6 +8,8 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
@@ -23,6 +25,8 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -37,6 +41,8 @@ class SendConfirmFixtureTest {
         "Lorg/telegram/ui/Components/ChatActivityEnterView;", "Lorg/telegram/messenger/MediaController;", "Lorg/telegram/ui/LaunchActivity;",
         CALLBACK,
     )
+
+    private val WIDE_GOTOS = setOf(Opcode.GOTO_16, Opcode.GOTO_32)
 
     private fun Instruction.shape() = listOf(opcode, namedRegisters(), (this as? ReferenceInstruction)?.reference?.toString())
     private fun signature(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
@@ -75,6 +81,7 @@ class SendConfirmFixtureTest {
             )
             assertEquals("$name: the strip's two sends, in a chat and in a story's reply bar", 2, site.strips.size)
             val stripsBefore = site.strips.map { ImmutableMethod.of(it.method) }
+            val barBefore = ImmutableMethod.of(site.barSendMethod)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { sendConfirmPatch.execute(context) })
 
             // A question: the extension's call first, then Telegram's own code, which is everything the method held.
@@ -98,7 +105,10 @@ class SendConfirmFixtureTest {
             }
 
             // The strip: the question at the send itself, the rest of the callback as it was.
-            val kept = { list: List<Instruction> -> list.filter { it.opcode != Opcode.NOP }.map { it.shape() } }
+            // A goto widened to reach past the new code is the same goto.
+            val kept = { list: List<Instruction> ->
+                list.filter { it.opcode != Opcode.NOP }.map { it.shape().let { s -> listOf(if (it.opcode in WIDE_GOTOS) Opcode.GOTO else s[0]) + s.drop(1) } }
+            }
             for ((strip, unchanged) in site.strips.zip(stripsBefore)) {
                 val key = "${strip.method.definingClass} strip"
                 val stock = unchanged.controlBody()
@@ -115,6 +125,36 @@ class SendConfirmFixtureTest {
                 assertEquals("$name $key: everything before", kept(stock.subList(0, at)), kept(gated.subList(0, at)))
                 assertEquals("$name $key: everything after", kept(stock.subList(at, stock.size)), kept(gated.subList(at + 5, gated.size)))
             }
+
+            // The chat bar's send of a clip in its preview: a question right after its test that the
+            // clip is there, Telegram's send of it right after the question, the rest as it was.
+            assertEquals("$name: the chat bar's send", site.barSend, signature(site.barSendMethod))
+            val barGated = site.barSendMethod.controlBody()
+            val barTop = site.barSendMethod.implementation!!.registerCount
+            val barFlow = ControlFlow.of(site.barSendMethod)
+            val asks = listOf(site.voicePreview to site.voiceClip, site.videoPreview to site.videoClip).map { (preview, field) ->
+                val key = "$name ${preview.hook}"
+                val at = barGated.indexOfFirst { it.controlRef() == "$SEND_CONFIRM->${preview.hook}(Ljava/lang/Object;IIIIJ)Z" }
+                assertTrue("$key: in the chat bar's send", at > 0)
+                assertEquals("$key: this and every parameter", (barTop - 7 until barTop).toList(), barGated[at].namedRegisters())
+                assertEquals(listOf(Opcode.MOVE_RESULT, Opcode.IF_NEZ, Opcode.RETURN), barGated.subList(at + 1, at + 4).map { it.opcode })
+                assertEquals("$key: the answer in a free local, and returned as the send returns", List(3) { listOf(preview.answer) },
+                    barGated.subList(at + 1, at + 4).map { it.namedRegisters() })
+                assertTrue("$key: a local", preview.answer < barTop - 7)
+                assertEquals("$key: Send goes on to the send", setOf(at + 3, at + 4), barFlow.normal[at + 2].toSet())
+                val test = barGated[at - 1]
+                assertEquals("$key: right after the clip's null test", Opcode.IF_EQZ, test.opcode)
+                assertTrue("$key: of the clip just read", (maxOf(0, at - 5) until at - 1).any { read ->
+                    barGated[read].opcode == Opcode.IGET_OBJECT && barGated[read].controlRef() == field &&
+                        barGated[read].namedRegisters().first() == test.namedRegisters().first()
+                })
+                assertTrue("$key: only the test falls into it", barFlow.normal.withIndex().none { (from, to) -> from != at - 1 && at in to })
+                at
+            }
+            assertTrue("$name: two places", asks.distinct().size == 2)
+            val hooked = asks.flatMap { it until it + 4 }.toSet()
+            assertEquals("$name: the chat bar's send as it was", kept(barBefore.controlBody()),
+                kept(barGated.filterIndexed { i, _ -> i !in hooked }))
 
             // A call: the same registers and the same place, to the extension.
             for ((key, method, index) in listOf(Triple("header", site.header, site.headerCall), Triple("profile", site.profile, site.profileCall))) {
@@ -215,5 +255,66 @@ class SendConfirmFixtureTest {
             val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "askBeforeSending" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }
+    }
+
+    private val clip = "Lcom/example/Bar;->clip:Ljava/lang/Object;"
+
+    private fun bar(body: String) = MutableMethod(
+        ImmutableMethod(
+            "Lcom/example/Bar;", "send", listOf(ImmutableMethodParameter("Lcom/example/Bar;", null, null)), "V",
+            AccessFlags.PUBLIC.value or AccessFlags.STATIC.value, null, null,
+            ImmutableMethodImplementation(3, emptyList(), null, null),
+        ),
+    ).apply { addInstructionsWithLabels(0, body.trimIndent()) }
+
+    @Test fun `the send of a clip starts only where its null test alone leads`() {
+        assertEquals("right after the test", listOf(3), previewStarts(bar("""
+            iget-object v0, p0, $clip
+            const/4 v1, 0x0
+            if-eqz v0, :none
+            invoke-static {v0}, Lcom/example/Log;->keep(Ljava/lang/Object;)V
+            :none
+            return-void
+        """), clip))
+        assertEquals("a jump onto the send would skip the question", emptyList<Int>(), previewStarts(bar("""
+            iget-object v0, p0, $clip
+            if-eqz v0, :none
+            :again
+            invoke-static {v0}, Lcom/example/Log;->keep(Ljava/lang/Object;)V
+            :none
+            const/4 v1, 0x0
+            if-eqz v1, :again
+            return-void
+        """), clip))
+        assertEquals("the register tested no longer holds the clip", emptyList<Int>(), previewStarts(bar("""
+            iget-object v0, p0, $clip
+            const/4 v0, 0x0
+            if-eqz v0, :none
+            invoke-static {v0}, Lcom/example/Log;->keep(Ljava/lang/Object;)V
+            :none
+            return-void
+        """), clip))
+        assertEquals("another path reaches the test", emptyList<Int>(), previewStarts(bar("""
+            const/4 v0, 0x0
+            const/4 v1, 0x0
+            if-eqz v1, :test
+            iget-object v0, p0, $clip
+            :test
+            if-eqz v0, :none
+            invoke-static {v0}, Lcom/example/Log;->keep(Ljava/lang/Object;)V
+            :none
+            return-void
+        """), clip))
+        assertEquals("too far from the read", emptyList<Int>(), previewStarts(bar("""
+            iget-object v0, p0, $clip
+            const/4 v1, 0x0
+            const/4 v1, 0x0
+            const/4 v1, 0x0
+            const/4 v1, 0x0
+            if-eqz v0, :none
+            invoke-static {v0}, Lcom/example/Log;->keep(Ljava/lang/Object;)V
+            :none
+            return-void
+        """), clip))
     }
 }

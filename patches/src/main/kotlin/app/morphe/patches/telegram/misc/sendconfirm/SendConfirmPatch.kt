@@ -84,6 +84,10 @@ private val CALL_HOOK = listOf(OBJECT, "Z", "Z", OBJECT, OBJECT, OBJECT)
 
 /** The chat bar's send of what it holds: date, sound, a flag, whether its paid-message question may ask, stars. */
 private val BAR_SEND = listOf("I", "Z", "I", "Z", "J")
+private val PREVIEW_HOOK = listOf(OBJECT, "I", "I", "I", "I", "J")
+
+/** How far after the chat bar's send reads a clip from its preview it tests the clip for null. */
+private const val PREVIEW_TEST = 4
 
 /** The round video recorder's entry in the chat, which the two builds give their arguments in a different order. */
 internal enum class VideoShape(val target: List<String>, val hook: String, val resume: String) {
@@ -121,6 +125,7 @@ internal class SendConfirmSite(
     val header: MutableMethod, val headerCall: Int, val profile: MutableMethod, val profileCall: Int,
     val startCall: String, val launchField: String, val strips: List<StripSite>,
     val barSend: String, val voiceClip: String, val videoClip: String,
+    val barSendMethod: MutableMethod, val voicePreview: PreviewSite, val videoPreview: PreviewSite,
 ) {
     /** Hands each place that gets code to [change] with the edit that does it, copy or real. */
     fun insert(change: (MutableMethod, (MutableMethod) -> Unit) -> Unit) {
@@ -131,7 +136,36 @@ internal class SendConfirmSite(
         change(header) { replaceCall(it, headerCall) }
         change(profile) { replaceCall(it, profileCall) }
         strips.forEach { strip -> change(strip.method) { stripGate(it, strip) } }
+        // The later one first, so the earlier one's index still holds.
+        change(barSendMethod) { method ->
+            listOf(voicePreview, videoPreview).sortedByDescending { it.at }.forEach { previewGate(method, it) }
+        }
     }
+}
+
+/**
+ * The start of the chat bar's send of the clip waiting in its preview, right after its test that
+ * the clip is there, with a local nothing reads from there on. [hook] is the extension's question.
+ */
+internal class PreviewSite(val at: Int, val answer: Int, val hook: String)
+
+/**
+ * Asks in front of the send of the clip in the preview, with `this` and every parameter, which sit
+ * together in the top seven registers. On true the send goes on; on false the extension has asked,
+ * and the method returns false as that send does, with the preview left as it was.
+ */
+private fun previewGate(target: MutableMethod, preview: PreviewSite) {
+    val top = target.implementation!!.registerCount
+    target.addInstructionsWithLabels(
+        preview.at,
+        """
+            invoke-static/range {v${top - 7} .. v${top - 1}}, $SEND_CONFIRM->${preview.hook}(${PREVIEW_HOOK.joinToString("")})Z
+            move-result v${preview.answer}
+            if-nez v${preview.answer}, :hush_send
+            return v${preview.answer}
+        """,
+        ExternalLabel("hush_send", target.getInstruction(preview.at)),
+    )
 }
 
 /**
@@ -219,6 +253,8 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     controlHook(SEND_CONFIRM, "voiceClip", listOf(OBJECT), OBJECT)
     controlHook(SEND_CONFIRM, "videoClip", listOf(OBJECT), OBJECT)
     controlHook(SEND_CONFIRM, "sendFromBar", listOf(OBJECT), "V")
+    controlHook(SEND_CONFIRM, "previewVoice", PREVIEW_HOOK, "Z")
+    controlHook(SEND_CONFIRM, "previewVideo", PREVIEW_HOOK, "Z")
     for (shape in VideoShape.values()) {
         controlHook(SEND_CONFIRM, shape.hook, listOf(OBJECT).plus(shape.target), "Z")
         controlHook(SEND_CONFIRM, shape.resume, listOf(OBJECT).plus(shape.target), "V")
@@ -349,6 +385,20 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
         ref
     }
 
+    // Where that send starts sending each clip: right after it tests the field it just read for
+    // null. Its own send button runs it there too, which never reaches the end of a recording.
+    val barFlow = ControlFlow.of(paidPause)
+    val barTop = paidPause.implementation!!.registerCount
+    val (voicePreview, videoPreview) = listOf(Triple(voiceClip, "voice clip", "previewVoice"), Triple(videoClip, "round video", "previewVideo"))
+        .map { (field, what, hook) ->
+            val at = previewStarts(paidPause, field).controlSingle("the chat bar's send of the $what in its preview")
+            for (register in barTop - 7 until barTop) {
+                controlShape(!writes(pauseBody[0], register) && barFlow.definitionReaches(0, at, register),
+                    "the chat bar's send changes its arguments before it sends the $what in its preview")
+            }
+            PreviewSite(at, paidPause.freeLocalsAt(NAME, at, 1, highest = 255).single(), hook)
+        }
+
     // The header menu's call item, and the profile's call button, each calling once.
     val (headerType, headerWanted, headerCalls) = headers.controlSingle("the chat header's menu")
     val header = mutableClassDefBy(headerType).methods.single { signature(it) == headerWanted }
@@ -394,7 +444,37 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     }
 
     return SendConfirmSite(sticker, gif, voice, video, shape, recorder, videoPaused, pauseVideo,
-        header, headerCall, profile, profileCall, startRef, own, stripSites, signature(paidPause), voiceClip, videoClip)
+        header, headerCall, profile, profileCall, startRef, own, stripSites, signature(paidPause), voiceClip, videoClip,
+        paidPause, voicePreview, videoPreview)
+}
+
+/**
+ * Where [method] goes on with what it read from [field] once it found it there: right after each
+ * `if-eqz` on the register a read of the field filled, where nothing but that test leads.
+ */
+internal fun previewStarts(method: Method, field: String): List<Int> {
+    val body = method.controlBody()
+    val flow = ControlFlow.of(method)
+    val into = Array(body.size) { mutableListOf<Int>() }
+    body.indices.forEach { from -> (flow.normal[from] + flow.exceptional[from]).forEach { into[it] += from } }
+    return body.indices.filter { body[it].opcode == Opcode.IGET_OBJECT && body[it].controlField()?.toString() == field }
+        .mapNotNull { read -> nullTest(body, into, read) }
+        .filter { test -> test + 1 < body.size && into[test + 1] == listOf(test) }
+        .map { it + 1 }
+}
+
+/**
+ * The `if-eqz` that tests what instruction [read] just read, within [PREVIEW_TEST] instructions
+ * that nothing else jumps into and that leave the register alone, or null.
+ */
+private fun nullTest(body: List<Instruction>, into: Array<MutableList<Int>>, read: Int): Int? {
+    val register = body[read].namedRegisters().first()
+    for (at in read + 1..minOf(read + PREVIEW_TEST, body.size - 1)) {
+        if (into[at] != listOf(at - 1)) return null
+        if (body[at].opcode == Opcode.IF_EQZ && body[at].namedRegisters().first() == register) return at
+        if (writes(body[at], register) || !body[at].opcode.canContinue()) return null
+    }
+    return null
 }
 
 /**
