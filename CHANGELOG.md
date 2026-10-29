@@ -4,7 +4,7 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
-* **Telegram:** Reactions to your messages now show a notification on patched builds, which Google's push never reaches. **UnifiedPush notifications** has a new switch under it, **Reaction notifications without push**, on by default. While Telegram is connected, someone reacting to one of your messages gets the same "reacted to your message" notification Telegram shows from a push, once per reaction. (#41)
+* **Telegram:** Reactions to your messages now show a notification on patched builds, which Google's push never reaches. **UnifiedPush notifications** has a new switch under it, **Reaction notifications without push**, on by default. While Telegram is connected, someone reacting to one of your messages gets the same "reacted to your message" notification Telegram shows from a push, once per reaction. Telegram's own **Reactions** switch in Notifications and Sounds still has to be on. (#41)
 
 ## 0.0.21 (2026-10-27)
 
