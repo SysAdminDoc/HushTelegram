@@ -439,7 +439,7 @@ Turn chat translation on again. It's now set per account.	Schalte die Chat-Über
 Ask before sending a GIF	Vor dem Senden eines GIFs nachfragen
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Fragt Senden oder Abbrechen, bevor ein angetipptes GIF in einen Chat geht. Abbrechen verwirft es. Geplante GIFs gehen ohne Nachfrage raus.
 Ask before sending a voice or video message	Vor dem Senden einer Sprach- oder Videonachricht nachfragen
-Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.	Fragt Senden oder Abbrechen, bevor eine aufgenommene Sprach- oder Videonachricht rausgeht. Abbrechen verwirft die Aufnahme.
+Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Fragt Senden oder Abbrechen, bevor eine aufgenommene Sprach- oder Videonachricht rausgeht. Die Aufnahme pausiert vorher, und Abbrechen lässt sie pausiert, bereit zum Abspielen, Löschen oder Senden.
 Ask before starting a call	Vor dem Starten eines Anrufs nachfragen
 Asks Call or Cancel before the call button in a chat or on a profile starts a call.	Fragt Anrufen oder Abbrechen, bevor die Anruftaste in einem Chat oder auf einem Profil einen Anruf startet.
 Send sticker	Sticker senden

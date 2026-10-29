@@ -436,7 +436,7 @@ Turn chat translation on again. It's now set per account.	Ative de novo a tradu�
 Ask before sending a GIF	Perguntar antes de enviar um GIF
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Pergunta Enviar ou Cancelar antes de um GIF em que você tocou entrar na conversa. Cancelar o descarta. GIFs agendados saem sem perguntar.
 Ask before sending a voice or video message	Perguntar antes de enviar uma mensagem de voz ou de vídeo
-Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.	Pergunta Enviar ou Cancelar antes de uma mensagem de voz ou de vídeo que você gravou sair. Cancelar descarta a gravação.
+Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Pergunta Enviar ou Cancelar antes de uma mensagem de voz ou de vídeo que você gravou sair. A gravação é pausada antes, e Cancelar a deixa pausada, pronta para reproduzir, apagar ou enviar.
 Ask before starting a call	Perguntar antes de iniciar uma chamada
 Asks Call or Cancel before the call button in a chat or on a profile starts a call.	Pergunta Ligar ou Cancelar antes de o botão de chamada em uma conversa ou perfil iniciar uma chamada.
 Send sticker	Enviar sticker

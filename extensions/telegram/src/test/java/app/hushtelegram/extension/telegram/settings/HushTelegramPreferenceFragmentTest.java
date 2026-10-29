@@ -856,8 +856,8 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse(Settings.ASK_BEFORE_GIF.key,
                     ((SwitchPreference) page.findPreference(Settings.ASK_BEFORE_GIF.key)).isChecked());
             assertEquals("Ask before sending a voice or video message", String.valueOf(page.findPreference(Settings.ASK_BEFORE_VOICE_VIDEO.key).getTitle()));
-            assertEquals("Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the"
-                    + " recording away.",
+            assertEquals("Asks Send or Cancel before a voice or video message you recorded goes out. The recording"
+                    + " pauses first, and Cancel leaves it paused, ready to play, delete or send.",
                     String.valueOf(page.findPreference(Settings.ASK_BEFORE_VOICE_VIDEO.key).getSummary()));
             assertFalse(Settings.ASK_BEFORE_VOICE_VIDEO.key,
                     ((SwitchPreference) page.findPreference(Settings.ASK_BEFORE_VOICE_VIDEO.key)).isChecked());

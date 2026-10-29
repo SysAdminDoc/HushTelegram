@@ -436,7 +436,7 @@ Turn chat translation on again. It's now set per account.	Включете от�
 Ask before sending a GIF	Потвърждение преди изпращане на GIF
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Пита „Изпращане“ или „Отказ“, преди докоснат GIF да влезе в чат. „Отказ“ го отхвърля. Планираните GIF файлове се изпращат без питане.
 Ask before sending a voice or video message	Потвърждение преди изпращане на гласово или видеосъобщение
-Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.	Пита „Изпращане“ или „Отказ“, преди записано от вас гласово или видеосъобщение да бъде изпратено. „Отказ“ изхвърля записа.
+Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Пита „Изпращане“ или „Отказ“, преди записано от вас гласово или видеосъобщение да бъде изпратено. Записът първо спира на пауза, а „Отказ“ го оставя на пауза, готов за пускане, изтриване или изпращане.
 Ask before starting a call	Потвърждение преди започване на обаждане
 Asks Call or Cancel before the call button in a chat or on a profile starts a call.	Пита „Обаждане“ или „Отказ“, преди бутонът за обаждане в чат или профил да започне обаждане.
 Send sticker	Изпращане на стикер

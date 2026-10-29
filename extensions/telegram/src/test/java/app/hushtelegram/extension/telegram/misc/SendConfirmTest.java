@@ -200,6 +200,19 @@ public class SendConfirmTest {
         assertNull(ShadowDialog.getLatestDialog());
     }
 
+    @Test public void aRecordingIsHeldOnlyWhenItsQuestionCanShowAndAVideoSendsFromItsPreview() {
+        Settings.ASK_BEFORE_VOICE_VIDEO.save(true);
+        // No main window to ask in: nothing is paused, and Telegram sends as it always did.
+        assertTrue(SendConfirm.voice(new Object(), 1, true, 0, false, 0L));
+        assertTrue(SendConfirm.video(new Object(), 1, true, 0, 0, 0L, 0L));
+        assertTrue(SendConfirm.videoReordered(new Object(), 1, 0, 0, 0L, 0L, true));
+        assertNull(ShadowDialog.getLatestDialog());
+        // Unpatched, the pauses do nothing and nothing reads as paused, so the hold goes on to the question.
+        assertTrue(SendConfirm.holdVoice(new Object(), false));
+        assertTrue(SendConfirm.holdVideo(new Object()));
+        assertEquals("the state Telegram's chat bar sends a paused round video in", 4, SendConfirm.VIDEO_PREVIEW);
+    }
+
     @Test public void aCallAsksOnlyWithAWindowAndTheSwitchOn() {
         Activity window = window();
         Settings.ASK_BEFORE_CALL.save(true);

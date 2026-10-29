@@ -20,6 +20,7 @@ import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
+import app.morphe.patches.telegram.misc.localcontrols.controlCallable
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
@@ -38,6 +39,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 
 internal const val SEND_CONFIRM = "$EXTENSION_PACKAGE/misc/SendConfirm;"
@@ -61,6 +63,8 @@ internal const val CALLBACK = "Lorg/telegram/messenger/Utilities\$Callback;"
 private const val TL_DOCUMENT = "Lorg/telegram/tgnet/TLRPC\$TL_document;"
 private const val LONG = "Ljava/lang/Long;"
 private const val SET_FIELD_TEXT = "$ENTER_VIEW->setFieldText(Ljava/lang/CharSequence;)V"
+private const val VOICE_PAUSED = "$MEDIA_CONTROLLER->isRecordingPaused()Z"
+private const val PAUSE_VOICE = "$MEDIA_CONTROLLER->toggleRecordingPause(Z)V"
 
 /** How far before a strip's send its sticker and its paid-message answer are cast, and how soon after it the typed emoji is cleared. */
 private const val STRIP_BEFORE = 60
@@ -108,7 +112,8 @@ val sendConfirmPatch = bytecodePatch(
 /** A method of the app and, for a call site, the one instruction in it to change. */
 internal class SendConfirmSite(
     val sticker: MutableMethod, val gif: MutableMethod, val voice: MutableMethod, val video: MutableMethod,
-    val shape: VideoShape, val header: MutableMethod, val headerCall: Int, val profile: MutableMethod, val profileCall: Int,
+    val shape: VideoShape, val recorder: String, val videoPaused: String, val pauseVideo: String,
+    val header: MutableMethod, val headerCall: Int, val profile: MutableMethod, val profileCall: Int,
     val startCall: String, val launchField: String, val strips: List<StripSite>,
 ) {
     /** Hands each place that gets code to [change] with the edit that does it, copy or real. */
@@ -199,6 +204,10 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     controlHook(SEND_CONFIRM, "startCall", CALL_HOOK, "V")
     controlHook(SEND_CONFIRM, "stripSticker", listOf(OBJECT, OBJECT), "Z")
     controlHook(SEND_CONFIRM, "resumeStripSticker", listOf(OBJECT, OBJECT), "V")
+    controlHook(SEND_CONFIRM, "voicePaused", listOf(OBJECT), "Z")
+    controlHook(SEND_CONFIRM, "pauseVoice", listOf(OBJECT, "Z"), "V")
+    controlHook(SEND_CONFIRM, "videoPaused", listOf(OBJECT), "Z")
+    controlHook(SEND_CONFIRM, "pauseVideo", listOf(OBJECT), "V")
     for (shape in VideoShape.values()) {
         controlHook(SEND_CONFIRM, shape.hook, listOf(OBJECT).plus(shape.target), "Z")
         controlHook(SEND_CONFIRM, shape.resume, listOf(OBJECT).plus(shape.target), "V")
@@ -287,6 +296,28 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     controlShape(AccessFlags.PUBLIC.isSet(videoClass.accessFlags), "the chat's video recorder listener is inaccessible")
     requireGateable(video, "the chat's handling of the round video recorder")
 
+    // Telegram's own pause before a recording's question, the one its paid-message check takes:
+    // the chat bar's one method that pauses a voice recording, which first asks the round video
+    // recorder, through the interface the chat implements, whether it's paused and pauses it.
+    for ((name, params, result) in listOf(Triple("isRecordingPaused", listOf<String>(), "Z"), Triple("toggleRecordingPause", listOf("Z"), "V"))) {
+        controlShape(mediaClass.methods.any { it.name == name && it.controlShape(params, result) && it.controlCallable(false) },
+            "the media controller's $name is gone")
+    }
+    val paidPause = barClass.methods.filter { m -> m.implementation != null && m.controlBody().any { it.controlRef() == PAUSE_VOICE } }
+        .controlSingle("the chat bar's pause before a paid message")
+    val pauseBody = paidPause.controlBody()
+    val voiceAsked = pauseBody.indexOfFirst { it.controlRef() == VOICE_PAUSED }
+    controlShape(voiceAsked > 0, "the chat bar's paid-message pause no longer asks whether a voice recording is paused")
+    val recorderCalls = pauseBody.subList(0, voiceAsked)
+        .filter { it.opcode == Opcode.INVOKE_INTERFACE || it.opcode == Opcode.INVOKE_INTERFACE_RANGE }
+        .mapNotNull { it.call() }.filter { it.definingClass in videoClass.interfaces && it.parameterTypes.isEmpty() }
+    val recorder = recorderCalls.map { it.definingClass }.distinct().controlSingle("the round video recorder's interface")
+    val recorderClass = mutableClassDefBy(recorder)
+    controlShape(AccessFlags.PUBLIC.isSet(recorderClass.accessFlags) && AccessFlags.INTERFACE.isSet(recorderClass.accessFlags),
+        "the round video recorder's interface is inaccessible")
+    val videoPaused = recorderCalls.filter { it.returnType == "Z" }.map(::signature).distinct().controlSingle("the round video recorder's paused check")
+    val pauseVideo = recorderCalls.filter { it.returnType == "V" }.map(::signature).distinct().controlSingle("the round video recorder's pause")
+
     // The header menu's call item, and the profile's call button, each calling once.
     val (headerType, headerWanted, headerCalls) = headers.controlSingle("the chat header's menu")
     val header = mutableClassDefBy(headerType).methods.single { signature(it) == headerWanted }
@@ -331,7 +362,8 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
         StripSite(method, call, method.freeLocalsAt(NAME, call, 1, highest = 255).single())
     }
 
-    return SendConfirmSite(sticker, gif, voice, video, shape, header, headerCall, profile, profileCall, startRef, own, stripSites)
+    return SendConfirmSite(sticker, gif, voice, video, shape, recorder, videoPaused, pauseVideo,
+        header, headerCall, profile, profileCall, startRef, own, stripSites)
 }
 
 /**
@@ -401,6 +433,28 @@ internal fun BytecodePatchContext.writeSendConfirmStubs(site: SendConfirmSite) {
         invoke-virtual/range {p0 .. p8}, ${signature(site.video)}
         return-void
     """)
+    writeStub(SEND_CONFIRM, "voicePaused", 2, """
+        check-cast p0, $MEDIA_CONTROLLER
+        invoke-virtual {p0}, $VOICE_PAUSED
+        move-result v0
+        return v0
+    """)
+    writeStub(SEND_CONFIRM, "pauseVoice", 2, """
+        check-cast p0, $MEDIA_CONTROLLER
+        invoke-virtual {p0, p1}, $PAUSE_VOICE
+        return-void
+    """)
+    writeStub(SEND_CONFIRM, "videoPaused", 2, """
+        check-cast p0, ${site.recorder}
+        invoke-interface {p0}, ${site.videoPaused}
+        move-result v0
+        return v0
+    """)
+    writeStub(SEND_CONFIRM, "pauseVideo", 1, """
+        check-cast p0, ${site.recorder}
+        invoke-interface {p0}, ${site.pauseVideo}
+        return-void
+    """)
     writeStub(SEND_CONFIRM, "startCall", 6, """
         check-cast p0, $USER
         check-cast p3, $ACTIVITY
@@ -416,4 +470,4 @@ internal fun BytecodePatchContext.writeSendConfirmStubs(site: SendConfirmSite) {
     """)
 }
 
-private fun signature(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+private fun signature(m: MethodReference) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"

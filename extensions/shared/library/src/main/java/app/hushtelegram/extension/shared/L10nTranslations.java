@@ -264,8 +264,8 @@ public final class L10nTranslations {
                 "\u041f\u0438\u0442\u0430 \u201e\u0418\u0437\u043f\u0440\u0430\u0449\u0430\u043d\u0435\u201c \u0438\u043b\u0438 \u201e\u041e\u0442\u043a\u0430\u0437\u201c, \u043f\u0440\u0435\u0434\u0438 \u0434\u043e\u043a\u043e\u0441\u043d\u0430\u0442 GIF \u0434\u0430 \u0432\u043b\u0435\u0437\u0435 \u0432 \u0447\u0430\u0442. \u201e\u041e\u0442\u043a\u0430\u0437\u201c \u0433\u043e \u043e\u0442\u0445\u0432\u044a\u0440\u043b\u044f. \u041f\u043b\u0430\u043d\u0438\u0440\u0430\u043d\u0438\u0442\u0435 GIF \u0444\u0430\u0439\u043b\u043e\u0432\u0435 \u0441\u0435 \u0438\u0437\u043f\u0440\u0430\u0449\u0430\u0442 \u0431\u0435\u0437 \u043f\u0438\u0442\u0430\u043d\u0435.");
         table.put("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.",
                 "\u041f\u0438\u0442\u0430 \u201e\u0418\u0437\u043f\u0440\u0430\u0449\u0430\u043d\u0435\u201c \u0438\u043b\u0438 \u201e\u041e\u0442\u043a\u0430\u0437\u201c, \u043f\u0440\u0435\u0434\u0438 \u0434\u043e\u043a\u043e\u0441\u043d\u0430\u0442 \u0441\u0442\u0438\u043a\u0435\u0440 \u0434\u0430 \u0432\u043b\u0435\u0437\u0435 \u0432 \u0447\u0430\u0442. \u201e\u041e\u0442\u043a\u0430\u0437\u201c \u0433\u043e \u043e\u0442\u0445\u0432\u044a\u0440\u043b\u044f. \u041f\u043b\u0430\u043d\u0438\u0440\u0430\u043d\u0438\u0442\u0435 \u0441\u0442\u0438\u043a\u0435\u0440\u0438 \u0441\u0435 \u0438\u0437\u043f\u0440\u0430\u0449\u0430\u0442 \u0431\u0435\u0437 \u043f\u0438\u0442\u0430\u043d\u0435.");
-        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.",
-                "\u041f\u0438\u0442\u0430 \u201e\u0418\u0437\u043f\u0440\u0430\u0449\u0430\u043d\u0435\u201c \u0438\u043b\u0438 \u201e\u041e\u0442\u043a\u0430\u0437\u201c, \u043f\u0440\u0435\u0434\u0438 \u0437\u0430\u043f\u0438\u0441\u0430\u043d\u043e \u043e\u0442 \u0432\u0430\u0441 \u0433\u043b\u0430\u0441\u043e\u0432\u043e \u0438\u043b\u0438 \u0432\u0438\u0434\u0435\u043e\u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0434\u0430 \u0431\u044a\u0434\u0435 \u0438\u0437\u043f\u0440\u0430\u0442\u0435\u043d\u043e. \u201e\u041e\u0442\u043a\u0430\u0437\u201c \u0438\u0437\u0445\u0432\u044a\u0440\u043b\u044f \u0437\u0430\u043f\u0438\u0441\u0430.");
+        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.",
+                "\u041f\u0438\u0442\u0430 \u201e\u0418\u0437\u043f\u0440\u0430\u0449\u0430\u043d\u0435\u201c \u0438\u043b\u0438 \u201e\u041e\u0442\u043a\u0430\u0437\u201c, \u043f\u0440\u0435\u0434\u0438 \u0437\u0430\u043f\u0438\u0441\u0430\u043d\u043e \u043e\u0442 \u0432\u0430\u0441 \u0433\u043b\u0430\u0441\u043e\u0432\u043e \u0438\u043b\u0438 \u0432\u0438\u0434\u0435\u043e\u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0434\u0430 \u0431\u044a\u0434\u0435 \u0438\u0437\u043f\u0440\u0430\u0442\u0435\u043d\u043e. \u0417\u0430\u043f\u0438\u0441\u044a\u0442 \u043f\u044a\u0440\u0432\u043e \u0441\u043f\u0438\u0440\u0430 \u043d\u0430 \u043f\u0430\u0443\u0437\u0430, \u0430 \u201e\u041e\u0442\u043a\u0430\u0437\u201c \u0433\u043e \u043e\u0441\u0442\u0430\u0432\u044f \u043d\u0430 \u043f\u0430\u0443\u0437\u0430, \u0433\u043e\u0442\u043e\u0432 \u0437\u0430 \u043f\u0443\u0441\u043a\u0430\u043d\u0435, \u0438\u0437\u0442\u0440\u0438\u0432\u0430\u043d\u0435 \u0438\u043b\u0438 \u0438\u0437\u043f\u0440\u0430\u0449\u0430\u043d\u0435.");
         table.put("Attachment menu",
                 "\u041c\u0435\u043d\u044e \u0437\u0430 \u043f\u0440\u0438\u043a\u0430\u0447\u0432\u0430\u043d\u0435");
         table.put("Back",
@@ -1815,8 +1815,8 @@ public final class L10nTranslations {
                 "Fragt Senden oder Abbrechen, bevor ein angetipptes GIF in einen Chat geht. Abbrechen verwirft es. Geplante GIFs gehen ohne Nachfrage raus.");
         table.put("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.",
                 "Fragt Senden oder Abbrechen, bevor ein angetippter Sticker in einen Chat geht. Abbrechen verwirft ihn. Geplante Sticker gehen ohne Nachfrage raus.");
-        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.",
-                "Fragt Senden oder Abbrechen, bevor eine aufgenommene Sprach- oder Videonachricht rausgeht. Abbrechen verwirft die Aufnahme.");
+        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.",
+                "Fragt Senden oder Abbrechen, bevor eine aufgenommene Sprach- oder Videonachricht rausgeht. Die Aufnahme pausiert vorher, und Abbrechen l\u00e4sst sie pausiert, bereit zum Abspielen, L\u00f6schen oder Senden.");
         table.put("Attachment menu",
                 "Anhangmen\u00fc");
         table.put("Back",
@@ -3366,8 +3366,8 @@ public final class L10nTranslations {
                 "Pregunta Enviar o Cancelar antes de que un GIF que tocas entre en un chat. Cancelar lo descarta. Los GIF programados salen sin preguntar.");
         table.put("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.",
                 "Pregunta Enviar o Cancelar antes de que un sticker que tocas entre en un chat. Cancelar lo descarta. Los stickers programados salen sin preguntar.");
-        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.",
-                "Pregunta Enviar o Cancelar antes de que salga un mensaje de voz o de video que grabaste. Cancelar descarta la grabaci\u00f3n.");
+        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.",
+                "Pregunta Enviar o Cancelar antes de que salga un mensaje de voz o de video que grabaste. La grabaci\u00f3n se pausa primero, y Cancelar la deja en pausa, lista para reproducir, borrar o enviar.");
         table.put("Attachment menu",
                 "Men\u00fa de adjuntos");
         table.put("Back",
@@ -4917,8 +4917,8 @@ public final class L10nTranslations {
                 "Menanyakan Kirim atau Batal sebelum GIF yang Anda ketuk masuk ke obrolan. Batal membuangnya. GIF terjadwal terkirim tanpa bertanya.");
         table.put("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.",
                 "Menanyakan Kirim atau Batal sebelum stiker yang Anda ketuk masuk ke obrolan. Batal membuangnya. Stiker terjadwal terkirim tanpa bertanya.");
-        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.",
-                "Menanyakan Kirim atau Batal sebelum pesan suara atau video yang Anda rekam terkirim. Batal membuang rekamannya.");
+        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.",
+                "Menanyakan Kirim atau Batal sebelum pesan suara atau video yang Anda rekam terkirim. Rekaman dijeda dulu, dan Batal membiarkannya terjeda, siap diputar, dihapus, atau dikirim.");
         table.put("Attachment menu",
                 "Menu lampiran");
         table.put("Back",
@@ -6468,8 +6468,8 @@ public final class L10nTranslations {
                 "Pergunta Enviar ou Cancelar antes de um GIF em que voc\u00ea tocou entrar na conversa. Cancelar o descarta. GIFs agendados saem sem perguntar.");
         table.put("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.",
                 "Pergunta Enviar ou Cancelar antes de uma figurinha em que voc\u00ea tocou entrar na conversa. Cancelar a descarta. Figurinhas agendadas saem sem perguntar.");
-        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.",
-                "Pergunta Enviar ou Cancelar antes de uma mensagem de voz ou de v\u00eddeo que voc\u00ea gravou sair. Cancelar descarta a grava\u00e7\u00e3o.");
+        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.",
+                "Pergunta Enviar ou Cancelar antes de uma mensagem de voz ou de v\u00eddeo que voc\u00ea gravou sair. A grava\u00e7\u00e3o \u00e9 pausada antes, e Cancelar a deixa pausada, pronta para reproduzir, apagar ou enviar.");
         table.put("Attachment menu",
                 "Menu de anexos");
         table.put("Back",
@@ -8019,8 +8019,8 @@ public final class L10nTranslations {
                 "Dokundu\u011funuz bir GIF sohbete girmeden \u00f6nce G\u00f6nder veya \u0130ptal sorar. \u0130ptal onu atar. Zamanlanm\u0131\u015f GIF'ler sormadan gider.");
         table.put("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.",
                 "Dokundu\u011funuz bir \u00e7\u0131kartma sohbete girmeden \u00f6nce G\u00f6nder veya \u0130ptal sorar. \u0130ptal onu atar. Zamanlanm\u0131\u015f \u00e7\u0131kartmalar sormadan gider.");
-        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.",
-                "Kaydetti\u011finiz sesli veya g\u00f6r\u00fcnt\u00fcl\u00fc mesaj gitmeden \u00f6nce G\u00f6nder veya \u0130ptal sorar. \u0130ptal kayd\u0131 \u00e7\u00f6pe atar.");
+        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.",
+                "Kaydetti\u011finiz sesli veya g\u00f6r\u00fcnt\u00fcl\u00fc mesaj gitmeden \u00f6nce G\u00f6nder veya \u0130ptal sorar. Kay\u0131t \u00f6nce duraklat\u0131l\u0131r, \u0130ptal ise onu oynatmaya, silmeye veya g\u00f6ndermeye haz\u0131r \u015fekilde duraklat\u0131lm\u0131\u015f b\u0131rak\u0131r.");
         table.put("Attachment menu",
                 "Ek men\u00fcs\u00fc");
         table.put("Back",

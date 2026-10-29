@@ -60,7 +60,8 @@ class SendConfirmFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val found = FixtureDex.classesWhere(build, { true }) { wanted(it) }
-            val hosts = (FixtureDex.classes(build, fixed).values + found).distinctBy { it.type }.map(ImmutableClassDef::of)
+            // The interfaces they implement hold the round video recorder's, which the pause is called through.
+            val hosts = (FixtureDex.classes(build, fixed + found.flatMap { it.interfaces }).values + found).distinctBy { it.type }.map(ImmutableClassDef::of)
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
             val site = context.resolveSendConfirm()
             assertEquals("$name: the chat bar's sticker send", "Lorg/telegram/ui/Components/ChatActivityEnterView;", site.sticker.definingClass)
@@ -139,6 +140,27 @@ class SendConfirmFixtureTest {
             again("resumeGif", site.gif, 10)
             again("resumeVoice", site.voice, 7)
             again(site.shape.resume, site.video, 9)
+
+            // The pauses before a question: the media controller's for a voice recording, and the
+            // recorder's for a round video, each one the chat really implements.
+            for ((n, ref, registers) in listOf(
+                Triple("voicePaused", "Lorg/telegram/messenger/MediaController;->isRecordingPaused()Z", listOf(1)),
+                Triple("pauseVoice", "Lorg/telegram/messenger/MediaController;->toggleRecordingPause(Z)V", listOf(0, 1)),
+            )) {
+                val call = stub(n).single { it.opcode == Opcode.INVOKE_VIRTUAL }
+                assertEquals("$name $n", ref, call.controlRef())
+                assertEquals("$name $n: the controller and its view-once flag", registers, call.namedRegisters())
+            }
+            val chat = context.mutableClassDefBy(site.video.definingClass)
+            assertTrue("$name: the chat implements the recorder", site.recorder in chat.interfaces)
+            assertTrue("$name: a paused check and a pause", site.videoPaused.endsWith("()Z") && site.pauseVideo.endsWith("()V"))
+            for ((n, ref, registers) in listOf(Triple("videoPaused", site.videoPaused, listOf(1)), Triple("pauseVideo", site.pauseVideo, listOf(0)))) {
+                val body = stub(n)
+                assertEquals("$name $n: the chat as the recorder", listOf(Opcode.CHECK_CAST, site.recorder), listOf(body[0].opcode, body[0].controlRef()))
+                assertEquals("$name $n", listOf(Opcode.INVOKE_INTERFACE, ref, registers), listOf(body[1].opcode, body[1].controlRef(), body[1].namedRegisters()))
+                val own = ref.substringAfter("->")
+                assertTrue("$name $n: the chat's own $own", chat.methods.any { signature(it).substringAfter("->") == own && it.implementation != null })
+            }
             val start = stub("startCall").single { it.opcode == Opcode.INVOKE_STATIC_RANGE }
             assertEquals(site.startCall, start.controlRef())
             assertEquals((0..5).toList(), start.namedRegisters())

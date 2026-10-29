@@ -439,7 +439,7 @@ Turn chat translation on again. It's now set per account.	Nyalakan lagi terjemah
 Ask before sending a GIF	Tanya dulu sebelum mengirim GIF
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Menanyakan Kirim atau Batal sebelum GIF yang Anda ketuk masuk ke obrolan. Batal membuangnya. GIF terjadwal terkirim tanpa bertanya.
 Ask before sending a voice or video message	Tanya dulu sebelum mengirim pesan suara atau video
-Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.	Menanyakan Kirim atau Batal sebelum pesan suara atau video yang Anda rekam terkirim. Batal membuang rekamannya.
+Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Menanyakan Kirim atau Batal sebelum pesan suara atau video yang Anda rekam terkirim. Rekaman dijeda dulu, dan Batal membiarkannya terjeda, siap diputar, dihapus, atau dikirim.
 Ask before starting a call	Tanya dulu sebelum memulai panggilan
 Asks Call or Cancel before the call button in a chat or on a profile starts a call.	Menanyakan Panggil atau Batal sebelum tombol panggilan di obrolan atau profil memulai panggilan.
 Send sticker	Kirim stiker

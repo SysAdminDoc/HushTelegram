@@ -589,7 +589,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             + "Scheduled GIFs go out without asking."))));
             on(pages, PatchFamily.ASK_BEFORE_STICKER).addPreference(toggle(context, Settings.ASK_BEFORE_VOICE_VIDEO, L10n.t("Ask before sending a voice or video message"),
                     PatchFamily.ASK_BEFORE_STICKER.coverageSummary(L10n.t("Asks Send or Cancel before a voice or video message you recorded goes out. "
-                            + "Cancel throws the recording away."))));
+                            + "The recording pauses first, and Cancel leaves it paused, ready to play, delete or send."))));
             on(pages, PatchFamily.ASK_BEFORE_STICKER).addPreference(toggle(context, Settings.ASK_BEFORE_CALL, L10n.t("Ask before starting a call"),
                     PatchFamily.ASK_BEFORE_STICKER.coverageSummary(L10n.t("Asks Call or Cancel before the call button in a chat or on a profile starts a "
                             + "call."))));

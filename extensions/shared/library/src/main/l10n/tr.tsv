@@ -439,7 +439,7 @@ Turn chat translation on again. It's now set per account.	Sohbet çevirisini yen
 Ask before sending a GIF	GIF göndermeden önce sor
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Dokunduğunuz bir GIF sohbete girmeden önce Gönder veya İptal sorar. İptal onu atar. Zamanlanmış GIF'ler sormadan gider.
 Ask before sending a voice or video message	Sesli veya görüntülü mesaj göndermeden önce sor
-Asks Send or Cancel before a voice or video message you recorded goes out. Cancel throws the recording away.	Kaydettiğiniz sesli veya görüntülü mesaj gitmeden önce Gönder veya İptal sorar. İptal kaydı çöpe atar.
+Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Kaydettiğiniz sesli veya görüntülü mesaj gitmeden önce Gönder veya İptal sorar. Kayıt önce duraklatılır, İptal ise onu oynatmaya, silmeye veya göndermeye hazır şekilde duraklatılmış bırakır.
 Ask before starting a call	Arama başlatmadan önce sor
 Asks Call or Cancel before the call button in a chat or on a profile starts a call.	Bir sohbetteki veya profildeki arama düğmesi arama başlatmadan önce Ara veya İptal sorar.
 Send sticker	Çıkartma gönder
