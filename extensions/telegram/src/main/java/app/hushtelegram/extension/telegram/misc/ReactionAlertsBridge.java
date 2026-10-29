@@ -46,21 +46,37 @@ final class ReactionAlertsBridge implements ReactionAlerts.Source {
         return new ReactionAlertsBridge(controller, storage, account);
     }
 
-    /** The recent reactions a reactions update lists, with its chat, message and topic. */
+    /**
+     * The recent reactions an update lists, with its chat, message and topic. A reactions update
+     * names them itself. An edited message carries them on the message, and counts only in a private
+     * chat and on a message you sent, which is how Telegram itself reads one.
+     */
     static List<ReactionAlerts.Reaction> reactionsOf(Object update) throws Exception {
         if (update == null) return Collections.emptyList();
         Class<?> type = update.getClass();
-        Object reactions = type.getField("reactions").get(update);
-        if (reactions == null) return Collections.emptyList();
-        Object recent = reactions.getClass().getField("recent_reactions").get(reactions);
-        if (!(recent instanceof List) || ((List<?>) recent).isEmpty()) return Collections.emptyList();
         ClassLoader loader = type.getClassLoader();
         Method peerId = method(Class.forName("org.telegram.messenger.MessageObject", true, loader), "getPeerId",
                 Class.forName("org.telegram.tgnet.TLRPC$Peer", true, loader));
-        Class<?> emoji = Class.forName("org.telegram.tgnet.TLRPC$TL_reactionEmoji", true, loader);
+        if (type.getName().endsWith("$TL_updateEditMessage")) {
+            Object message = type.getField("message").get(update);
+            if (message == null) return Collections.emptyList();
+            Class<?> kind = message.getClass();
+            if (!kind.getField("out").getBoolean(message)) return Collections.emptyList();
+            Object peer = kind.getField("peer_id").get(message);
+            long dialog = peer == null ? 0 : ((Number) peerId.invoke(null, peer)).longValue();
+            if (dialog <= 0) return Collections.emptyList();
+            return listed(kind.getField("reactions").get(message), peerId, dialog, kind.getField("id").getInt(message), 0);
+        }
         long dialog = ((Number) peerId.invoke(null, type.getField("peer").get(update))).longValue();
-        int id = type.getField("msg_id").getInt(update);
-        int topic = type.getField("top_msg_id").getInt(update);
+        return listed(type.getField("reactions").get(update), peerId, dialog, type.getField("msg_id").getInt(update),
+                type.getField("top_msg_id").getInt(update));
+    }
+
+    private static List<ReactionAlerts.Reaction> listed(Object reactions, Method peerId, long dialog, int id, int topic) throws Exception {
+        if (reactions == null) return Collections.emptyList();
+        Object recent = reactions.getClass().getField("recent_reactions").get(reactions);
+        if (!(recent instanceof List) || ((List<?>) recent).isEmpty()) return Collections.emptyList();
+        Class<?> emoji = Class.forName("org.telegram.tgnet.TLRPC$TL_reactionEmoji", true, reactions.getClass().getClassLoader());
         ArrayList<ReactionAlerts.Reaction> found = new ArrayList<>();
         for (Object item : new ArrayList<Object>((List<?>) recent)) {
             if (item == null) continue;

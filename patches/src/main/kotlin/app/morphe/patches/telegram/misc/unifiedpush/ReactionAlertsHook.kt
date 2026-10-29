@@ -23,6 +23,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 internal const val REACTION_ALERTS = "$EXTENSION_PACKAGE/misc/ReactionAlerts;"
 internal const val REACTIONS_UPDATE = "Lorg/telegram/tgnet/tl/TL_update\$TL_updateMessageReactions;"
+internal const val EDIT_UPDATE = "Lorg/telegram/tgnet/tl/TL_update\$TL_updateEditMessage;"
 
 private const val ANY = "Ljava/lang/Object;"
 private const val TEXT = "Ljava/lang/String;"
@@ -91,6 +92,8 @@ private val FIELDS = listOf(
     Triple(REACTIONS_UPDATE, "msg_id", "I"),
     Triple(REACTIONS_UPDATE, "top_msg_id", "I"),
     Triple(REACTIONS_UPDATE, "reactions", "${TL}TL_messageReactions;"),
+    Triple(EDIT_UPDATE, "message", MESSAGE),
+    Triple(MESSAGE, "reactions", "${TL}TL_messageReactions;"),
     Triple("${TL}MessageReactions;", "recent_reactions", "Ljava/util/ArrayList;"),
     Triple("${TL}MessagePeerReaction;", "peer_id", PEER),
     Triple("${TL}MessagePeerReaction;", "reaction", "${TL}Reaction;"),
@@ -123,17 +126,26 @@ private val LINES = listOf("PushReactText", "PushReactNoText", "PushChatReactTex
 internal val REACTION_ALERT_TYPES: Set<String> =
     (CALLS.map { it.owner } + FIELDS.map { it.first } + listOf(STRINGS, CONTROLLER)).toSet()
 
-/** Where the update loop hands a reactions update over: right after it's cast, with two free registers in a row. */
-internal class ReactionHook(val updates: MutableMethod, val insertAt: Int, val update: Int, val scratch: Int) {
+/** One place the update loop hands an update over: right after it's cast, with two free registers in a row. */
+internal class ReactionSite(val type: String, val insertAt: Int, val update: Int, val scratch: Int)
+
+/**
+ * Where the update loop hands reactions over: a reactions update, which groups and channels get,
+ * and an edited message, which is how a private chat's reactions arrive.
+ */
+internal class ReactionHook(val updates: MutableMethod, val sites: List<ReactionSite>) {
     fun applyTo(method: MutableMethod) {
-        method.addInstructionsAtControlFlowLabel(
-            insertAt,
-            """
-                move-object/from16 v$scratch, v$update
-                move-object/from16 v${scratch + 1}, p0
-                invoke-static/range {v$scratch .. v${scratch + 1}}, $REACTION_ALERTS->changed($ANY$ANY)V
-            """.trimIndent(),
-        )
+        // The later site first, so the earlier one's index still holds.
+        for (site in sites.sortedByDescending { it.insertAt }) {
+            method.addInstructionsAtControlFlowLabel(
+                site.insertAt,
+                """
+                    move-object/from16 v${site.scratch}, v${site.update}
+                    move-object/from16 v${site.scratch + 1}, p0
+                    invoke-static/range {v${site.scratch} .. v${site.scratch + 1}}, $REACTION_ALERTS->changed($ANY$ANY)V
+                """.trimIndent(),
+            )
+        }
     }
 }
 
@@ -145,9 +157,11 @@ private fun needed(ok: Boolean, why: String) {
 
 /**
  * Telegram shows a reaction to your message only when a push says so; the same reaction coming in
- * on the open connection is only stored. The update loop casts each reactions update to its own
- * type, and the hook goes right after that, so the extension sees it before Telegram stores it. A
- * build where that or a name the extension reads can't be found keeps the rest of the patch.
+ * on the open connection is only stored. Groups and channels get a reactions update, and a private
+ * chat gets the whole message again as an edit, its reactions included. The update loop casts each
+ * to its own type, and a hook goes right after both casts, so the extension sees them before
+ * Telegram stores them. A build where either or a name the extension reads can't be found keeps the
+ * rest of the patch.
  *
  * @return the hook, and null; or null and why there's none
  */
@@ -187,17 +201,20 @@ private fun BytecodePatchContext.reactionHook(): ReactionHook {
     val updates = loops.single()
     needed(!AccessFlags.STATIC.isSet(updates.accessFlags), "the update loop is static")
     val body = updates.controlBody()
-    val casts = body.indices.filter { body[it].opcode == Opcode.CHECK_CAST && body[it].controlRef() == REACTIONS_UPDATE }
-    needed(casts.size == 1, "the update loop no longer casts a reactions update once")
-    val cast = casts.single()
-    val insertAt = cast + 1
     val flow = ControlFlow.of(updates)
-    needed(insertAt < body.size && flow.normal.indices.none { it != cast && insertAt in flow.normal[it] },
-        "something jumps past the reactions update's cast")
-    val live = updates.liveAcrossInjection(insertAt)
-    val free = (0 until updates.localRegisterCount()).filter { it !in live }
-    val scratch = free.firstOrNull { it + 1 in free && it + 1 <= 255 }
-    needed(scratch != null, "the update loop has no two registers in a row free after the reactions update's cast")
-    updates.requireThisIntact(PATCH, listOf(insertAt))
-    return ReactionHook(updates, insertAt, (body[cast] as OneRegisterInstruction).registerA, scratch!!)
+    val sites = listOf(REACTIONS_UPDATE to "a reactions update", EDIT_UPDATE to "an edited message").map { (type, what) ->
+        val casts = body.indices.filter { body[it].opcode == Opcode.CHECK_CAST && body[it].controlRef() == type }
+        needed(casts.size == 1, "the update loop no longer casts $what once")
+        val cast = casts.single()
+        val insertAt = cast + 1
+        needed(insertAt < body.size && flow.normal.indices.none { it != cast && insertAt in flow.normal[it] },
+            "something jumps past the cast of $what")
+        val live = updates.liveAcrossInjection(insertAt)
+        val free = (0 until updates.localRegisterCount()).filter { it !in live }
+        val scratch = free.firstOrNull { it + 1 in free && it + 1 <= 255 }
+        needed(scratch != null, "the update loop has no two registers in a row free after the cast of $what")
+        ReactionSite(type, insertAt, (body[cast] as OneRegisterInstruction).registerA, scratch!!)
+    }
+    updates.requireThisIntact(PATCH, sites.map { it.insertAt })
+    return ReactionHook(updates, sites)
 }
