@@ -316,6 +316,34 @@ public class SendConfirmTest {
         assertEquals(2, sent.get());
     }
 
+    @Test public void aSecondSendWhileTheQuestionIsUpAsksNothingMoreAndSendsNothing() {
+        Settings.ASK_BEFORE_VOICE_VIDEO.save(true);
+        AtomicInteger sent = new AtomicInteger();
+        assertFalse(SendConfirm.askHeld(3, window(), "Send voice message", "Send this voice message to this chat?", sent::incrementAndGet));
+        Dialog dialog = ShadowDialog.getLatestDialog();
+        assertTrue(SendConfirm.asking());
+        // Telegram's own send held back, so no second pause can start the recording again behind the question.
+        assertFalse(SendConfirm.voice(new Object(), 1, true, 0, false, 0L));
+        assertFalse(SendConfirm.video(new Object(), 1, true, 0, 0, 0L, 0L));
+        assertFalse(SendConfirm.videoReordered(new Object(), 4, 0, 0, 0L, 0L, true));
+        assertSame("no second question", dialog, ShadowDialog.getLatestDialog());
+        assertEquals(0, sent.get());
+
+        // A recording's other ends still go through, and so does the answered send.
+        assertTrue("a cancel", SendConfirm.voice(new Object(), 0, true, 0, false, 0L));
+        AtomicBoolean through = new AtomicBoolean();
+        SendConfirm.answered(3, () -> through.set(SendConfirm.voice(new Object(), 1, true, 0, false, 0L)));
+        assertTrue(through.get());
+        SendConfirm.answered(4, () -> through.set(SendConfirm.video(new Object(), 4, true, 0, 0, 0L, 0L)));
+        assertTrue(through.get());
+
+        // With the question gone a send goes on as before: unpatched there's no main window to ask in.
+        dialog.dismiss();
+        assertFalse(SendConfirm.asking());
+        assertTrue(SendConfirm.voice(new Object(), 1, true, 0, false, 0L));
+        assertEquals("backing out counts as Cancel", 0, sent.get());
+    }
+
     @Test public void sendWaitsForThePausedClipsPreviewAndEndsTheRecordingWhenNoneShows() throws Exception {
         Activity window = window();
         FrameLayout root = new FrameLayout(window);
@@ -326,15 +354,11 @@ public class SendConfirmTest {
         assertSame("the whole tree is searched", leaf, SendConfirm.find(root, view -> view == leaf));
         assertSame("the root counts", root, SendConfirm.find(root, view -> true));
         assertNull(SendConfirm.find(root, view -> false));
-        // Unpatched no view is the chat bar, a paused voice recording reads as not paused, and nothing holds a clip.
+        // Unpatched no view is the chat bar, so nothing holds a clip.
         window.setContentView(root);
         assertNull(SendConfirm.previewBar(window, 3));
         assertNull(SendConfirm.previewBar(window, 4));
         assertNull(SendConfirm.previewBar(null, 4));
-        assertFalse(SendConfirm.voiceHeld(new Object()));
-        AtomicInteger ended = new AtomicInteger();
-        SendConfirm.sendVoice(new Object(), window, ended::incrementAndGet);
-        assertEquals("a voice recording neither paused nor in a preview ends at once", 1, ended.get());
 
         AtomicInteger stopped = new AtomicInteger();
         AtomicBoolean letThrough = new AtomicBoolean();
