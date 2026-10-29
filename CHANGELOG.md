@@ -9,6 +9,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** **Ask before sending a voice or video message** pauses the recording before it asks, the way Telegram does before its own paid-message question, so nothing you say or film while the question is up ends up in the message. Send sends the clip as it was. Cancel leaves it paused in Telegram's preview, where you can play it, delete it or send it. The send button under that preview asks too, and Cancel there keeps the clip just as it was.
 * **Telegram:** Chats hidden with **Hide picked chats** no longer count toward the unread numbers on the folder tabs, and hiding or unhiding one updates them right away, on every account you're signed in to. The app badge still counts their unread messages, since they keep their notifications. (#24)
 * **Telegram:** The settings lock now covers **Emoji next to the chat list title** too. While the settings are locked, tapping it shows the lock note instead of opening the editor. (#17)
+* **Telegram:** Turning **Hide folder tab counters** on or off changes the folder tabs right away. Before, the counts stayed as they were until Telegram restarted.
 
 ## 0.0.21 (2026-10-27)
 

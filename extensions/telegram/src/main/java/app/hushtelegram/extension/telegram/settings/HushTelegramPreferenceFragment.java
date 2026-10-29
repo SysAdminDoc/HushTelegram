@@ -403,9 +403,15 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         }
         if (build.contains(PatchFamily.HIDE_FOLDER_COUNTERS)) {
             PreferenceCategory folderTabs = on(pages, PatchFamily.HIDE_FOLDER_COUNTERS);
-            folderTabs.addPreference(toggle(context, Settings.HIDE_FOLDER_COUNTERS, L10n.t("Hide folder tab counters"),
+            SwitchPreference counters = toggle(context, Settings.HIDE_FOLDER_COUNTERS, L10n.t("Hide folder tab counters"),
                     PatchFamily.HIDE_FOLDER_COUNTERS.coverageSummary(L10n.t("Folder tabs above the chat list show just their names, without unread counts. "
-                            + "Chats stay unread and the app icon badge doesn't change."))));
+                            + "Chats stay unread and the app icon badge doesn't change.")));
+            counters.setOnPreferenceChangeListener((row, value) -> {
+                // The tabs only ask for their counts when the counts change, so they're counted again once the switch is saved.
+                Utils.runOnMainThreadDelayed(HiddenChats::refreshAll, 0);
+                return true;
+            });
+            folderTabs.addPreference(counters);
             if (PatchFamily.Capability.LAUNCH_FOLDER.installed()) {
                 folderTabs.addPreference(toggle(context, Settings.LAUNCH_FOLDER, L10n.t("Open a folder at launch"),
                         L10n.t("The chat list opens on the folder you pick below instead of All Chats. Each account keeps its "

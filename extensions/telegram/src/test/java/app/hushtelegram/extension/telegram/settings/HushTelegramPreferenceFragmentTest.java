@@ -1573,6 +1573,30 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
+     * Folder tabs ask for their counts only when the counts change, so flipping Hide folder tab
+     * counters has every signed-in account's tabs counted again instead of waiting for a restart.
+     */
+    @Test
+    public void hideFolderCountersCountsTheTabsAgainAtOnce() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_FOLDER_COUNTERS);
+        HiddenChatsForTests.Fake telegram = HiddenChatsForTests.use(new HiddenChatsForTests.Fake());
+        telegram.users.put(0, 1000L);
+        telegram.users.put(2, 3000L);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Preference counters = pageOf(controller).findPreference(Settings.HIDE_FOLDER_COUNTERS.key);
+            for (Boolean value : new Boolean[]{Boolean.TRUE, Boolean.FALSE}) {
+                telegram.recounted.clear();
+                assertTrue(counters.getOnPreferenceChangeListener().onPreferenceChange(counters, value));
+                assertTrue("not before the switch is saved", telegram.recounted.isEmpty());
+                ShadowLooper.idleMainLooper();
+                assertEquals(value + " counts each signed-in account again", Arrays.asList(0, 2), telegram.recounted);
+            }
+        } finally {
+            HiddenChatsForTests.restore();
+        }
+    }
+
+    /**
      * Holiday look brings a row for the text beside the chat list's title, under its switch. A tap
      * opens an editor that saves the text cleaned and refuses text that's too long, and a restart
      * is owed only while the saved text isn't the one running.
