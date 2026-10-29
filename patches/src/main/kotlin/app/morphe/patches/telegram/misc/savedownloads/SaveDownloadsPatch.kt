@@ -92,13 +92,20 @@ val saveDownloadsPatch = bytecodePatch(
         val gallery = resolveGalleryFolder()
         requireStorageFolderRuntime()
         val storage = resolveStorageFolder()
+        val older = resolveOlderFiles()
         // Assembled on copies first, so a refusal leaves the app untouched.
         insertSaveDownloadsHook(MutableMethod(ImmutableMethod.of(callback)), account)
         if (gallery.missing == null) gallery.rehearse()
         if (storage.missing == null) storage.rehearse()
+        if (storage.missing == null && older.missing == null) older.rehearse()
         insertSaveDownloadsHook(callback, account)
         if (storage.missing == null) {
             storage.apply()
+            if (older.missing == null) {
+                older.apply()
+            } else {
+                patchLog.warning("Save downloaded files: ${older.missing}. Files from before the storage folder moved download again.")
+            }
             enableCapability("storageFolder")
         } else {
             patchLog.warning("Save downloaded files: ${storage.missing}. The patch goes on without the storage folder.")

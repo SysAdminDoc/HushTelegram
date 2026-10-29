@@ -689,8 +689,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     /** What the storage folder switch does, then whether Android gives Telegram the access it needs, read when the page shows. */
     static String storageFolderSummary(boolean access) {
         return L10n.t("New photos, videos and files Telegram downloads go to Internal storage/Telegram, where file managers"
-                + " and other apps can open them, instead of Android/data. Files downloaded before stay in Android/data."
-                + " Needs All files access and a restart.")
+                + " and other apps can open them, instead of Android/data. Files downloaded before stay in Android/data,"
+                + " and Telegram still opens them from there. Needs All files access and a restart.")
                 + "\n" + (access ? L10n.t("All files access is on.")
                 : L10n.t("All files access is off, so Telegram's files stay in Android/data. Turning this on opens the setting."));
     }

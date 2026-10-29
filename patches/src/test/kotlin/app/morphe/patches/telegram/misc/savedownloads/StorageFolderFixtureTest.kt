@@ -59,16 +59,41 @@ class StorageFolderFixtureTest {
 
     private fun BytecodePatchContext.mediaPaths() = mutableClassDefBy(IMAGE_LOADER).methods.single { it.name == "createMediaPaths" }
 
+    private fun BytecodePatchContext.attachPaths() = mutableClassDefBy(FILE_LOADER).methods.filter { it.name == "getPathToAttach" }
+
+    private fun BytecodePatchContext.attachPath() = attachPaths().single { it.parameterTypes.size == 5 }
+
     @Test fun `the Android 11 folder goes past the extension right before Telegram keeps it`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val context = context(build)
             val stock = context.mediaPaths().controlBody().map { it.shape() }
+            val stockPath = context.attachPath().controlBody().map { it.shape() }
             // telegramPath is written on the older Android path and the fallback too. Only the Android 11 one is moved.
             assertTrue(name, stock.count { it[2] == STORAGE_TELEGRAM_PATH } > 1)
             assertEquals("$name: nothing missing", null, context.resolveStorageFolder().missing)
+            assertEquals("$name: nothing missing", null, context.resolveOlderFiles().missing)
+            // getPathToAttach returns a File in several places. Only the one in Telegram's own folders is checked.
+            assertTrue(name, stockPath.count { it[0] == Opcode.RETURN_OBJECT } > 3)
 
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { saveDownloadsPatch.execute(context) })
+
+            val path = context.attachPath().controlBody()
+            val older = path.indices.filter { path[it].controlRef() == STORAGE_OLDER_FILE }
+            assertEquals(name, 1, older.size)
+            assertEquals(name, 1, context.attachPaths().sumOf { m -> m.controlBody().count { it.controlRef() == STORAGE_OLDER_FILE } })
+            val k = older.single()
+            val file = path[k + 2].namedRegisters().single()
+            assertEquals(name, Opcode.INVOKE_STATIC_RANGE, path[k].opcode)
+            assertEquals(name, listOf(file), path[k].namedRegisters())
+            assertEquals(name, Opcode.MOVE_RESULT_OBJECT, path[k + 1].opcode)
+            assertEquals(name, listOf(file), path[k + 1].namedRegisters())
+            assertEquals(name, Opcode.RETURN_OBJECT, path[k + 2].opcode)
+            assertEquals(name, GALLERY_FILE_IN, path[k - 1].controlRef())
+            assertEquals(name, file, path[k - 1].namedRegisters().first())
+            assertEquals(name, STORAGE_ATTACH_NAME, path[k - 3].controlRef())
+            assertEquals(name, stockPath.filter { it[0] != Opcode.NOP },
+                path.filterIndexed { i, _ -> i != k && i != k + 1 }.map { it.shape() }.filter { it[0] != Opcode.NOP })
 
             val edits = context.mediaPaths().controlBody()
             val calls = edits.indices.filter { edits[it].controlRef() == STORAGE_TELEGRAM_FOLDER }
@@ -129,6 +154,35 @@ class StorageFolderFixtureTest {
             assertEquals(why, 0L, context.flag("storageFolder"))
             assertEquals(why, 1L, context.flag("galleryFolder"))
             assertEquals(why, 1L, context.flag("saveDownloads"))
+            // With Telegram's folder where it was, its paths are left alone too.
+            assertEquals(why, 0, context.attachPaths().sumOf { m -> m.controlBody().count { it.controlRef() == STORAGE_OLDER_FILE } })
+        }
+    }
+
+    @Test fun `a changed download path keeps the moved folder and older files download again`() {
+        val build = Fixtures.declaredBuilds().first()
+        fun BytecodePatchContext.nameCall() = attachPath().controlBody().indexOfFirst { it.controlRef() == STORAGE_ATTACH_NAME }
+        val shapes = listOf<Pair<String, (BytecodePatchContext) -> Unit>>(
+            "Telegram's download path changed (0 places)" to { context ->
+                val method = context.attachPath()
+                val at = context.nameCall()
+                val attached = method.getInstruction(at).namedRegisters().first()
+                method.replaceInstruction(at, "invoke-static/range {v$attached .. v$attached}, $ATTACH_NAME")
+            },
+            "FileLoader.getPathToAttach changed" to { context ->
+                context.mutableClassDefBy(FILE_LOADER).methods.removeAll { it.name == "getPathToAttach" && it.parameterTypes.size == 5 }
+            },
+        )
+        for ((why, change) in shapes) {
+            val context = context(build)
+            change(context)
+            val untouched = context.attachPaths().map { m -> m.controlBody().map { it.shape() } }
+            val warnings = PatchLogCapture.warnings { saveDownloadsPatch.execute(context) }
+            assertEquals(why, listOf("Save downloaded files: $why. Files from before the storage folder moved download again."), warnings)
+            assertEquals(why, untouched, context.attachPaths().map { m -> m.controlBody().map { it.shape() } })
+            assertEquals(why, 1, context.mediaPaths().controlBody().count { it.controlRef() == STORAGE_TELEGRAM_FOLDER })
+            assertEquals(why, 1L, context.flag("storageFolder"))
+            assertEquals(why, 1L, context.flag("saveDownloads"))
         }
     }
 
@@ -138,6 +192,9 @@ class StorageFolderFixtureTest {
             // The extension ships with the patch, so a mismatch there is a build bug, not a Telegram change.
             "telegramFolder runtime hook is missing or ambiguous" to { context ->
                 context.mutableClassDefBy(STORAGE_FOLDER).methods.removeAll { it.name == "telegramFolder" }
+            },
+            "olderFile runtime hook is missing or ambiguous" to { context ->
+                context.mutableClassDefBy(STORAGE_FOLDER).methods.removeAll { it.name == "olderFile" }
             },
             "SettingsStatus has no boolean method storageFolder()" to { context ->
                 context.mutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.name == "storageFolder" }
