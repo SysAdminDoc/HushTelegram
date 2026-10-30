@@ -29,11 +29,18 @@ import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.ui.CustomDialog;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
+import android.webkit.MimeTypeMap;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.function.Consumer;
 
 /**
  * Extra items in a message's long-press menu, each behind its own switch. Telegram builds that
@@ -64,6 +71,7 @@ public final class MessageMenu {
     static final int QUICK_FORWARD = 0x48544d04;
     static final int COPY_TEXT = 0x48544d05;
     static final int SAVE_DOWNLOAD = 0x48544d06;
+    static final int FORWARD_COPY = 0x48544d07;
 
     /** How many chats Quick forward lists, Saved Messages first. */
     static final int QUICK_CHATS = 5;
@@ -84,7 +92,8 @@ public final class MessageMenu {
         boolean history = KeepEdits.on();
         boolean text = on(Settings.MESSAGE_MENU_COPY_PROTECTED);
         boolean save = on(Settings.MESSAGE_MENU_SAVE_PROTECTED);
-        if (!repeat && !copy && !details && !quick && !history && !text && !save || icons == null || items == null || options == null) return;
+        boolean again = on(Settings.MESSAGE_MENU_FORWARD_COPY) && sending();
+        if (!repeat && !copy && !details && !quick && !history && !text && !save && !again || icons == null || items == null || options == null) return;
         try {
             Object message = selected(chat);
             if (message == null) return;
@@ -96,7 +105,8 @@ public final class MessageMenu {
             quick = quick && forwardable && quickable(chat, message);
             text = text && restricted(message) && !copyable(chat, message).isEmpty();
             save = save && restricted(message) && downloaded(message) != null;
-            offer(icons, items, options, repeat, copy, details, quick, text, save, forwardOption());
+            again = again && restricted(message) && (!copyable(chat, message).isEmpty() || media(message));
+            offer(icons, items, options, repeat, copy, details, quick, text, save, again, forwardOption());
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "message menu", failure);
         }
@@ -104,7 +114,7 @@ public final class MessageMenu {
 
     /** Asked first when an option is chosen. Telegram's own numbers pass by untouched. */
     public static void chosen(Object chat, int option) {
-        if (option != REPEAT && option != DETAILS && option != COPY_PHOTO && option != QUICK_FORWARD && option != COPY_TEXT && option != SAVE_DOWNLOAD) return;
+        if (option != REPEAT && option != DETAILS && option != COPY_PHOTO && option != QUICK_FORWARD && option != COPY_TEXT && option != SAVE_DOWNLOAD && option != FORWARD_COPY) return;
         Context context = null;
         try {
             if (!Utils.settingsReady()) return;
@@ -112,7 +122,8 @@ public final class MessageMenu {
                     : option == DETAILS ? Settings.MESSAGE_MENU_DETAILS
                     : option == COPY_PHOTO ? Settings.MESSAGE_MENU_COPY_PHOTO
                     : option == COPY_TEXT ? Settings.MESSAGE_MENU_COPY_PROTECTED
-                    : option == SAVE_DOWNLOAD ? Settings.MESSAGE_MENU_SAVE_PROTECTED : Settings.MESSAGE_MENU_QUICK_FORWARD;
+                    : option == SAVE_DOWNLOAD ? Settings.MESSAGE_MENU_SAVE_PROTECTED
+                    : option == FORWARD_COPY ? Settings.MESSAGE_MENU_FORWARD_COPY : Settings.MESSAGE_MENU_QUICK_FORWARD;
             if (!on(setting) && !(option == DETAILS && KeepEdits.on())) return;
             context = Utils.getContext();
             Context host = activity(chat);
@@ -133,12 +144,15 @@ public final class MessageMenu {
                 long from = dialog(message);
                 boolean hide = hidesSender(message, batch);
                 Context target = context;
-                Utils.runOnMainThread(() -> chooseChat(target, account, from, batch, hide));
+                Utils.runOnMainThread(() -> chooseChat(target, account, from, L10n.t(target, "Forward to"), Settings.MESSAGE_MENU_QUICK_FORWARD,
+                        destination -> forward(target, account, destination, batch, hide)));
                 HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "quick forward opened");
             } else if (option == COPY_TEXT) {
                 copyText(context, copyable(chat, message));
             } else if (option == SAVE_DOWNLOAD) {
                 saveToDownloads(context, message);
+            } else if (option == FORWARD_COPY) {
+                forwardAsCopy(context, chat, message);
             } else if (option == COPY_PHOTO) {
                 File file = downloaded(message);
                 if (file == null) {
@@ -161,7 +175,7 @@ public final class MessageMenu {
     private static String failureMessage(Context context, int option) {
         return option == COPY_PHOTO || option == COPY_TEXT ? L10n.t(context, "Couldn't copy that. Try again.")
                 : option == SAVE_DOWNLOAD ? L10n.t(context, "Couldn't save that. Try again.")
-                : option == QUICK_FORWARD ? L10n.t(context, "Can't forward there")
+                : option == QUICK_FORWARD || option == FORWARD_COPY ? L10n.t(context, "Can't forward there")
                 : L10n.t(context, "Couldn't complete that action. Try again.");
     }
 
@@ -198,6 +212,11 @@ public final class MessageMenu {
 
     /** As above, with Save to Downloads, which a downloaded file in a chat that doesn't allow saving gets after Copy. */
     static void offer(List<Object> icons, List<Object> items, List<Object> options, boolean repeat, boolean copy, boolean details, boolean quick, boolean text, boolean save, int forward) {
+        offer(icons, items, options, repeat, copy, details, quick, text, save, false, forward);
+    }
+
+    /** As above, with Forward as copy, which a message in a chat that doesn't allow forwarding gets after Save to Downloads. */
+    static void offer(List<Object> icons, List<Object> items, List<Object> options, boolean repeat, boolean copy, boolean details, boolean quick, boolean text, boolean save, boolean again, int forward) {
         if (options.isEmpty() || icons.size() != items.size() || items.size() != options.size()) return;
         int at = options.indexOf(forward);
         if (at >= 0 && copy) {
@@ -235,6 +254,13 @@ public final class MessageMenu {
             items.add(label);
             options.add(SAVE_DOWNLOAD);
         }
+        if (again) {
+            int icon = quickIcon();
+            String label = L10n.t("Forward as copy");
+            icons.add(icon);
+            items.add(label);
+            options.add(FORWARD_COPY);
+        }
         if (details) {
             int icon = detailsIcon();
             String label = L10n.t("Message details");
@@ -266,6 +292,96 @@ public final class MessageMenu {
             HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "text copy", failure);
             feedback(context, L10n.t(context, "Couldn't copy that. Try again."));
         }
+    }
+
+    /** How long a renamed copy that Forward as copy made stays in the cache. */
+    private static final long COPY_KEEP_MS = 24L * 60 * 60 * 1000;
+
+    /** Whether the message carries a photo or a document, which Forward as copy sends from the phone's own copy. */
+    static boolean media(Object message) {
+        return photo(message) || documentName(message) != null;
+    }
+
+    /**
+     * Forward as copy: picks a chat, then sends the message's text, or its downloaded photo or file,
+     * as a new message there. Media that isn't on the phone yet asks to be opened first.
+     */
+    private static void forwardAsCopy(Context context, Object chat, Object message) {
+        String text = copyable(chat, message);
+        boolean media = media(message);
+        File file = media ? downloaded(message) : null;
+        if (media && file == null) {
+            feedback(context, L10n.t(context, "Open it first to download it"));
+            return;
+        }
+        boolean photo = media && photo(message);
+        String name = media ? SaveDownloads.displayName(documentName(message), file.getName()) : null;
+        int account = account(message);
+        long from = dialog(message);
+        Utils.runOnMainThread(() -> chooseChat(context, account, from, L10n.t(context, "Forward as copy"),
+                Settings.MESSAGE_MENU_FORWARD_COPY, destination -> sendCopy(context, account, destination, text, file, name, photo)));
+        HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "forward as copy opened");
+    }
+
+    static void sendCopy(Context context, int account, Destination destination, String text, File file, String name, boolean photo) {
+        if (!on(Settings.MESSAGE_MENU_FORWARD_COPY)) return;
+        try {
+            if (file == null) {
+                if (!sendText(account, destination.id, text)) throw new IllegalStateException("text send refused");
+                sent(context, destination, "text sent as copy");
+                return;
+            }
+            // Copied under the document's own name on the copy worker, then sent from there.
+            SaveDownloads.work.execute(() -> {
+                try {
+                    File named = renamed(context, file, name);
+                    boolean ok = photo ? sendPhoto(account, destination.id, named.getPath(), text)
+                            : sendFile(account, destination.id, named.getPath(), mimeOf(name), text);
+                    if (ok) sent(context, destination, "file sent as copy");
+                    else feedback(context, L10n.t(context, "Can't forward there"));
+                } catch (Throwable failure) {
+                    HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "forward as copy", failure);
+                    feedback(context, L10n.t(context, "Can't forward there"));
+                }
+            });
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "forward as copy", failure);
+            feedback(context, L10n.t(context, "Can't forward there"));
+        }
+    }
+
+    private static void sent(Context context, Destination destination, String what) {
+        feedback(context, L10n.f(context, "Forwarding to %1$s", L10n.isolate(destination.title)));
+        HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, what);
+    }
+
+    /** A copy of the file under the document's own name in the app's cache, in a folder of its own, older ones cleared. */
+    static File renamed(Context context, File file, String name) throws java.io.IOException {
+        File folder = new File(context.getCacheDir(), "hushtelegram_forward_copy");
+        if (!folder.mkdirs() && !folder.isDirectory()) throw new java.io.IOException("no cache folder");
+        File[] old = folder.listFiles();
+        long cutoff = System.currentTimeMillis() - COPY_KEEP_MS;
+        if (old != null) for (File each : old) if (each.lastModified() < cutoff) deleteTree(each);
+        File own = new File(folder, Long.toString(System.nanoTime()));
+        if (!own.mkdirs() && !own.isDirectory()) throw new java.io.IOException("no cache folder");
+        File target = new File(own, name.replace('/', '_'));
+        try (InputStream in = new FileInputStream(file); OutputStream out = new FileOutputStream(target)) {
+            byte[] buffer = new byte[64 * 1024];
+            for (int read; (read = in.read(buffer)) != -1; ) out.write(buffer, 0, read);
+        }
+        return target;
+    }
+
+    private static void deleteTree(File file) {
+        File[] children = file.listFiles();
+        if (children != null) for (File child : children) deleteTree(child);
+        file.delete();
+    }
+
+    static String mimeOf(String name) {
+        int dot = name.lastIndexOf('.');
+        String mime = dot < 0 ? null : MimeTypeMap.getSingleton().getMimeTypeFromExtension(name.substring(dot + 1).toLowerCase(Locale.ROOT));
+        return mime == null ? "application/octet-stream" : mime;
     }
 
     /**
@@ -362,8 +478,8 @@ public final class MessageMenu {
     }
 
     /** The list of chats to forward to, a row each. */
-    private static void chooseChat(Context context, int account, long from, ArrayList<Object> batch, boolean hide) {
-        if (!on(Settings.MESSAGE_MENU_QUICK_FORWARD)) return;
+    private static void chooseChat(Context context, int account, long from, String title, BooleanSetting guard, Consumer<Destination> pick) {
+        if (!on(guard)) return;
         try {
             List<Destination> where = destinations(account, from);
             if (where.isEmpty()) {
@@ -373,7 +489,7 @@ public final class MessageMenu {
             LinearLayout rows = new LinearLayout(context);
             rows.setOrientation(LinearLayout.VERTICAL);
             Pair<Dialog, LinearLayout> dialog = CustomDialog.createWithContent(context,
-                    L10n.t(context, "Forward to"), rows, () -> {});
+                    title, rows, () -> {});
             Context themed = dialog.second.getContext();
             int pad = Math.round(16 * themed.getResources().getDisplayMetrics().density);
             for (Destination destination : where) {
@@ -396,7 +512,7 @@ public final class MessageMenu {
                 row.setBackground(destinationBackground(themed));
                 row.setOnClickListener((View view) -> {
                     dialog.first.dismiss();
-                    forward(context, account, destination, batch, hide);
+                    pick.accept(destination);
                 });
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -405,7 +521,7 @@ public final class MessageMenu {
             }
             dialog.first.show();
         } catch (Throwable failure) {
-            HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "quick forward list", failure);
+            HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "chat list", failure);
             feedback(context, L10n.t(context, "Can't forward there"));
         }
     }
@@ -590,6 +706,18 @@ public final class MessageMenu {
 
     /** Whether the message's chat or the message itself doesn't allow saving, and it isn't a secret chat's. Replaced when patching. */
     public static boolean restricted(Object message) { return false; }
+
+    /** Whether this build can start a new message, which Forward as copy needs. False leaves the item out. */
+    public static boolean sending() { return false; }
+
+    /** Sends the text to the chat as a new message. False when it wasn't handed to Telegram. */
+    public static boolean sendText(int account, long dialog, String text) { return false; }
+
+    /** Sends the photo at the path to the chat, with the caption (may be empty). */
+    public static boolean sendPhoto(int account, long dialog, String path, String caption) { return false; }
+
+    /** Sends the file at the path to the chat as a document, with the caption (may be empty). */
+    public static boolean sendFile(int account, long dialog, String path, String mime, String caption) { return false; }
 
     /** The document's own name for the Downloads copy, null for a photo or video. */
     public static String documentName(Object message) { return null; }

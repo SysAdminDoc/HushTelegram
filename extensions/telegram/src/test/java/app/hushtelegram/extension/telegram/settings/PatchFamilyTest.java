@@ -136,6 +136,7 @@ public class PatchFamilyTest {
         Settings.MESSAGE_MENU_QUICK_FORWARD.resetToDefault();
         Settings.MESSAGE_MENU_COPY_PROTECTED.resetToDefault();
         Settings.MESSAGE_MENU_SAVE_PROTECTED.resetToDefault();
+        Settings.MESSAGE_MENU_FORWARD_COPY.resetToDefault();
         HookStatus.clear();
     }
 
@@ -285,7 +286,7 @@ public class PatchFamilyTest {
         PatchFamily family = PatchFamily.MESSAGE_MENU_REPEAT;
         assertEquals("Add Repeat to the message menu", family.patchName);
         assertEquals(Arrays.asList(Settings.MESSAGE_MENU_REPEAT, Settings.MESSAGE_MENU_COPY_PHOTO, Settings.MESSAGE_MENU_DETAILS,
-                Settings.MESSAGE_MENU_QUICK_FORWARD, Settings.MESSAGE_MENU_COPY_PROTECTED, Settings.MESSAGE_MENU_SAVE_PROTECTED), family.switches);
+                Settings.MESSAGE_MENU_QUICK_FORWARD, Settings.MESSAGE_MENU_COPY_PROTECTED, Settings.MESSAGE_MENU_SAVE_PROTECTED, Settings.MESSAGE_MENU_FORWARD_COPY), family.switches);
         for (BooleanSetting setting : family.switches) {
             assertFalse(setting.key, setting.defaultValue);
             assertFalse(setting.key, setting.rebootApp);

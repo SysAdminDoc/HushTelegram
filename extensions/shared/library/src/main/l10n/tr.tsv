@@ -1025,3 +1025,8 @@ Save to Downloads	İndirilenlere kaydet
 Saved to Downloads	İndirilenlere kaydedildi
 Already in Downloads	Zaten İndirilenler'de
 Couldn't save that. Try again.	Kaydedilemedi. Tekrar dene.
+# context: Switch for Forward as copy in the message menu (#46), its item, picker title and toast.
+Add Forward as copy to the message menu	Mesaj menüsüne Kopya olarak ilet ekle
+Adds Forward as copy to a message in a chat that doesn't allow forwarding. Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message.	İletmeye izin vermeyen bir sohbetteki mesaja Kopya olarak ilet ekler. Bir sohbet seçin; mesajın metni ya da indirilmiş fotoğrafı veya dosyası oraya yeni bir mesaj olarak gönderilir.
+Forward as copy	Kopya olarak ilet
+Open it first to download it	İndirmek için önce açın

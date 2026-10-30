@@ -45,7 +45,7 @@ class MessageMenuFixtureTest {
         "Lorg/telegram/messenger/MessagesController;", "Lorg/telegram/messenger/ChatObject;", "Lorg/telegram/messenger/UserObject;",
         "Lorg/telegram/messenger/DialogObject;", "Lorg/telegram/messenger/UserConfig;", "Lorg/telegram/messenger/R\$drawable;",
         "Lorg/telegram/messenger/FileLoader;", "Lorg/telegram/messenger/ApplicationLoader;", "Landroidx/core/content/FileProvider;",
-        "Lorg/telegram/messenger/SendMessagesHelper;", "Lorg/telegram/tgnet/TLRPC\$Dialog;", "Lorg/telegram/tgnet/TLRPC\$Chat;",
+        "Lorg/telegram/messenger/SendMessagesHelper;", "Lorg/telegram/messenger/AccountInstance;", "Lorg/telegram/tgnet/TLRPC\$Dialog;", "Lorg/telegram/tgnet/TLRPC\$Chat;",
         "Lorg/telegram/messenger/LocaleController;", "Lorg/telegram/messenger/R\$string;",
     )
 

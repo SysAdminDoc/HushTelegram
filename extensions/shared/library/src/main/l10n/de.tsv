@@ -1025,3 +1025,8 @@ Save to Downloads	In Downloads speichern
 Saved to Downloads	In Downloads gespeichert
 Already in Downloads	Schon in Downloads
 Couldn't save that. Try again.	Das ließ sich nicht speichern. Versuche es noch einmal.
+# context: Switch for Forward as copy in the message menu (#46), its item, picker title and toast.
+Add Forward as copy to the message menu	Als Kopie weiterleiten zum Nachrichtenmenü hinzufügen
+Adds Forward as copy to a message in a chat that doesn't allow forwarding. Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message.	Fügt Als Kopie weiterleiten zu einer Nachricht in einem Chat hinzu, der kein Weiterleiten erlaubt. Wähle einen Chat, und der Text der Nachricht oder das heruntergeladene Foto bzw. die Datei wird dort als neue Nachricht gesendet.
+Forward as copy	Als Kopie weiterleiten
+Open it first to download it	Öffne es zuerst, um es herunterzuladen

@@ -1025,3 +1025,8 @@ Save to Downloads	Simpan ke Unduhan
 Saved to Downloads	Disimpan ke Unduhan
 Already in Downloads	Sudah ada di Unduhan
 Couldn't save that. Try again.	Tidak bisa menyimpannya. Coba lagi.
+# context: Switch for Forward as copy in the message menu (#46), its item, picker title and toast.
+Add Forward as copy to the message menu	Tambahkan Teruskan sebagai salinan ke menu pesan
+Adds Forward as copy to a message in a chat that doesn't allow forwarding. Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message.	Menambahkan Teruskan sebagai salinan pada pesan di chat yang tidak mengizinkan penerusan. Pilih chat, lalu teks pesan, atau foto atau file yang sudah diunduh, dikirim ke sana sebagai pesan baru.
+Forward as copy	Teruskan sebagai salinan
+Open it first to download it	Buka dulu untuk mengunduhnya

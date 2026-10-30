@@ -1021,3 +1021,8 @@ Save to Downloads	Запази в Изтегляния
 Saved to Downloads	Запазено в Изтегляния
 Already in Downloads	Вече е в Изтегляния
 Couldn't save that. Try again.	Не можа да се запази. Опитай отново.
+# context: Switch for Forward as copy in the message menu (#46), its item, picker title and toast.
+Add Forward as copy to the message menu	Добавяне на Препращане като копие към менюто на съобщението
+Adds Forward as copy to a message in a chat that doesn't allow forwarding. Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message.	Добавя Препращане като копие към съобщение в чат, който не позволява препращане. Изберете чат и текстът на съобщението или изтеглената снимка или файл се изпращат там като ново съобщение.
+Forward as copy	Препращане като копие
+Open it first to download it	Първо го отворете, за да се изтегли

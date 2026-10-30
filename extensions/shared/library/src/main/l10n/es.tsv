@@ -1025,3 +1025,8 @@ Save to Downloads	Guardar en Descargas
 Saved to Downloads	Guardado en Descargas
 Already in Downloads	Ya está en Descargas
 Couldn't save that. Try again.	No se pudo guardar. Inténtalo de nuevo.
+# context: Switch for Forward as copy in the message menu (#46), its item, picker title and toast.
+Add Forward as copy to the message menu	Añadir Reenviar como copia al menú del mensaje
+Adds Forward as copy to a message in a chat that doesn't allow forwarding. Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message.	Añade Reenviar como copia a un mensaje de un chat que no permite reenviar. Elige un chat y el texto del mensaje, o su foto o archivo descargado, se envía allí como un mensaje nuevo.
+Forward as copy	Reenviar como copia
+Open it first to download it	Ábrelo primero para descargarlo

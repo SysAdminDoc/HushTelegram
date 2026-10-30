@@ -95,7 +95,7 @@ internal const val APPLICATION_ID = "Lorg/telegram/messenger/ApplicationLoader;-
 private const val NAME = "Add Repeat to the message menu"
 
 /** The extension's option numbers, Repeat, Message details, Copy photo and Quick forward, which Telegram's own may never use. */
-internal val MENU_OPTIONS = listOf(0x48544d01, 0x48544d02, 0x48544d03, 0x48544d04, 0x48544d05, 0x48544d06)
+internal val MENU_OPTIONS = listOf(0x48544d01, 0x48544d02, 0x48544d03, 0x48544d04, 0x48544d05, 0x48544d06, 0x48544d07)
 private val MOVES = setOf(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_WIDE, Opcode.MOVE_WIDE_FROM16)
 
 @Suppress("unused")
@@ -184,6 +184,10 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     for (name in listOf("forwardName", "attachPath", "text", "documentName")) controlHook(MESSAGE_MENU, name, listOf(OBJECT), "Ljava/lang/String;")
     controlHook(MESSAGE_MENU, "photoSizes", listOf(OBJECT), LIST)
     controlHook(MESSAGE_MENU, "photoFile", listOf(OBJECT), FILE)
+    controlHook(MESSAGE_MENU, "sending", listOf(), "Z")
+    controlHook(MESSAGE_MENU, "sendText", listOf("I", "J", STRING), "Z")
+    controlHook(MESSAGE_MENU, "sendPhoto", listOf("I", "J", STRING, STRING), "Z")
+    controlHook(MESSAGE_MENU, "sendFile", listOf("I", "J", STRING, STRING, STRING), "Z")
     controlHook(MESSAGE_MENU, "uri", listOf(CONTEXT, FILE), URI)
 
     // The builder, and the Premium gate on hiding an article's sender.
@@ -534,6 +538,7 @@ internal fun BytecodePatchContext.writeMessageMenuStubs(site: MessageMenuSite) {
         return v1
     """)
     writeQuickForwardStubs()
+    writeSendCopyStubs()
     writeStub(MESSAGE_MENU, "blocked", 2, """
         check-cast p0, $MESSAGE
         invoke-virtual {p0}, $MESSAGE->getId()I

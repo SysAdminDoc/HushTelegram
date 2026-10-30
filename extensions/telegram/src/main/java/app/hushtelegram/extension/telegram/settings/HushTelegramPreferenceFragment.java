@@ -591,6 +591,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_SAVE_PROTECTED, L10n.t("Add Save to Downloads to the message menu"),
                     PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Save to Downloads to a downloaded photo, video, file or song "
                             + "in a chat that doesn't allow saving. Nothing is copied until you tap it."))));
+            on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_FORWARD_COPY, L10n.t("Add Forward as copy to the message menu"),
+                    PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Forward as copy to a message in a chat that doesn't allow forwarding. "
+                            + "Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message."))));
         }
         if (build.contains(PatchFamily.KEEP_DELETED_MESSAGES)) {
             on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(toggle(context, Settings.KEEP_DELETED_MESSAGES, L10n.t("Keep deleted messages"),
