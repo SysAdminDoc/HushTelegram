@@ -156,6 +156,7 @@ public final class SettingsBackup {
             Settings.OUTSIDE_TRANSLATE,
             Settings.HIDE_CHANNEL_BUTTONS,
             Settings.HIDE_CHANNEL_MUTE,
+            Settings.HIDE_CHANNEL_SHARE,
             Settings.HIDE_SEND_AS,
             Settings.HIDE_CONTACTS_TAB,
             Settings.COMPACT_TAB_BAR,

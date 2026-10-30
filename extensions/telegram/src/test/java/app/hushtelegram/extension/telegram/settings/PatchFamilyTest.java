@@ -114,6 +114,7 @@ public class PatchFamilyTest {
         Settings.OUTSIDE_TRANSLATE.resetToDefault();
         Settings.HIDE_CHANNEL_BUTTONS.resetToDefault();
         Settings.HIDE_CHANNEL_MUTE.resetToDefault();
+        Settings.HIDE_CHANNEL_SHARE.resetToDefault();
         Settings.HIDE_SEND_AS.resetToDefault();
         Settings.HIDE_CONTACTS_TAB.resetToDefault();
         Settings.FASTER_DOWNLOADS.resetToDefault();
@@ -152,9 +153,12 @@ public class PatchFamilyTest {
         PatchFamily bar = PatchFamily.HIDE_CHANNEL_BUTTONS;
         assertEquals("Hide channel bar buttons", bar.patchName);
         assertEquals("hideChannelButtons", bar.statusMethod);
-        assertEquals(Arrays.asList(Settings.HIDE_CHANNEL_BUTTONS, Settings.HIDE_CHANNEL_MUTE), bar.switches);
-        assertEquals(EnumSet.of(PatchFamily.Capability.HIDE_CHANNEL_MUTE), bar.expectedCapabilities());
+        assertEquals(Arrays.asList(Settings.HIDE_CHANNEL_BUTTONS, Settings.HIDE_CHANNEL_MUTE, Settings.HIDE_CHANNEL_SHARE),
+                bar.switches);
+        assertEquals(EnumSet.of(PatchFamily.Capability.HIDE_CHANNEL_MUTE, PatchFamily.Capability.HIDE_CHANNEL_SHARE),
+                bar.expectedCapabilities());
         assertEquals("hideChannelMute", PatchFamily.Capability.HIDE_CHANNEL_MUTE.statusMethod);
+        assertEquals("hideChannelShare", PatchFamily.Capability.HIDE_CHANNEL_SHARE.statusMethod);
         PatchFamily sendAs = PatchFamily.HIDE_SEND_AS;
         assertEquals("Hide Send as button", sendAs.patchName);
         assertEquals("hideSendAs", sendAs.statusMethod);
@@ -170,6 +174,9 @@ public class PatchFamilyTest {
         // The Mute switch is off by default too and applies the next time a channel is opened.
         assertFalse(Settings.HIDE_CHANNEL_MUTE.defaultValue);
         assertFalse(Settings.HIDE_CHANNEL_MUTE.rebootApp);
+        // So is the share button switch, which a chat applies the next time it's opened.
+        assertFalse(Settings.HIDE_CHANNEL_SHARE.defaultValue);
+        assertFalse(Settings.HIDE_CHANNEL_SHARE.rebootApp);
     }
 
     @Test

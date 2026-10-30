@@ -4,6 +4,7 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** **Hide channel bar buttons** has a new switch under it, **Hide channel share button**, off by default. With it on, the round share button beside channel posts goes away, in the channel itself and in any chat a channel post gets forwarded to. A post's own menu still forwards it. Bots, people's media in public groups and Saved Messages keep their button.
 * **Telegram:** When **Quiet**, **Privacy** or **Back to defaults** in Quick setups finds nothing to change, it now says everything was already set that way. It used to say "Changed 0 settings", which sounded like something went wrong.
 * **Telegram:** **Export settings** and **Import settings** now show how the last try went at the top of the row, along with the pop-up message. At large text sizes Android cuts that message off after two lines, so a reason like "That isn't a HushTelegram settings file" lost its end.
 * **Telegram:** When a settings editor can't save what you typed, the reason under the field stays on screen at large text sizes with the keyboard up. The cursor used to scroll it right back out of sight.

@@ -430,6 +430,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_CHANNEL_MUTE =
             new BooleanSetting("hushtelegram_hide_channel_mute", FALSE);
 
+    /** The round share button beside channel posts, in the channel and forwarded into a chat, is left off. */
+    public static final BooleanSetting HIDE_CHANNEL_SHARE =
+            new BooleanSetting("hushtelegram_hide_channel_share", FALSE);
+
     /** The Send as picture next to the message box is left out while you'd post as yourself. */
     public static final BooleanSetting HIDE_SEND_AS =
             new BooleanSetting("hushtelegram_hide_send_as", FALSE);

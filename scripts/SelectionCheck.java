@@ -354,6 +354,7 @@ public final class SelectionCheck {
         hook(calls, flags, "outsideTranslate", "misc/OutsideTranslate", "show", "fill", "chosen", "headerMenu", "headerClick");
         hook(calls, flags, "hideChannelButtons", "misc/ChannelButtons", "set");
         hook(calls, flags, "hideChannelMute", "misc/ChannelMute", "begin", "muteLabelled", "finish", "visibility");
+        hook(calls, flags, "hideChannelShare", "misc/ChannelShare", "on", "shown");
         hook(calls, flags, "hideSendAs", "misc/SendAs", "show");
         hook(calls, flags, "hideContactsTab", "misc/MainTabs", "tabsShown", "blocksSwipe");
         hook(calls, flags, "compactTabBar", "misc/MainTabs", "barPadding", "barCorner", "barHeight", "barMinWidth");

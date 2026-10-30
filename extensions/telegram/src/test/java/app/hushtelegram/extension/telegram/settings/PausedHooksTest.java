@@ -368,10 +368,11 @@ public class PausedHooksTest {
         // Translation only works while the switch is on.
         probes.put(PatchFamily.OUTSIDE_TRANSLATE, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.active()));
-        // A channel's bar keeps Search, Direct messages and Info.
+        // A channel's bar keeps Search, Direct messages and Info, and its posts keep their share button.
         probes.put(PatchFamily.HIDE_CHANNEL_BUTTONS, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.ChannelButtonsForTests.on(),
-                () -> app.hushtelegram.extension.telegram.misc.ChannelMuteForTests.on()));
+                () -> app.hushtelegram.extension.telegram.misc.ChannelMuteForTests.on(),
+                () -> app.hushtelegram.extension.telegram.misc.ChannelShare.on()));
         // The message box keeps its Send as button.
         probes.put(PatchFamily.HIDE_SEND_AS, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.ChannelButtonsForTests.sendAsOn()));

@@ -950,6 +950,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "Mute button and the Search and Info buttons beside it. Channels you haven't joined still show "
                                 + "Join. To mute a channel, open its info. A channel picks this up the next time you open it.")));
             }
+            if (PatchFamily.Capability.HIDE_CHANNEL_SHARE.installed()) {
+                on(pages, PatchFamily.HIDE_CHANNEL_BUTTONS).addPreference(toggle(context, Settings.HIDE_CHANNEL_SHARE,
+                        L10n.t("Hide channel share button"), L10n.t("The round share button beside channel posts goes away, in the "
+                                + "channel and wherever a post is forwarded. A post's own menu still forwards it. Bots and Saved "
+                                + "Messages keep theirs. A chat picks this up the next time you open it.")));
+            }
         }
         if (build.contains(PatchFamily.HIDE_SEND_AS)) {
             on(pages, PatchFamily.HIDE_SEND_AS).addPreference(toggle(context, Settings.HIDE_SEND_AS, L10n.t("Hide Send as button"),

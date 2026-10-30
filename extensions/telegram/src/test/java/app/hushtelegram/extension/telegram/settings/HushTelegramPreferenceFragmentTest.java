@@ -817,6 +817,12 @@ public class HushTelegramPreferenceFragmentTest {
                             + "channel, open its info. A channel picks this up the next time you open it.",
                     String.valueOf(page.findPreference(Settings.HIDE_CHANNEL_MUTE.key).getSummary()));
             assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_CHANNEL_MUTE.key)).isChecked());
+            assertEquals("Hide channel share button", String.valueOf(page.findPreference(Settings.HIDE_CHANNEL_SHARE.key).getTitle()));
+            assertEquals("The round share button beside channel posts goes away, in the channel and wherever a post is "
+                            + "forwarded. A post's own menu still forwards it. Bots and Saved Messages keep theirs. A chat "
+                            + "picks this up the next time you open it.",
+                    String.valueOf(page.findPreference(Settings.HIDE_CHANNEL_SHARE.key).getSummary()));
+            assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_CHANNEL_SHARE.key)).isChecked());
             assertEquals("Your picture next to the message box goes away in groups and channels where you could post as "
                             + "a channel, while you're posting as yourself. Once you pick a channel it shows again, so you "
                             + "can always see who you're posting as. To pick one, turn this off first. A chat picks this up "
