@@ -588,7 +588,7 @@ private fun profileEdits(method: MutableMethod, gifts: Int, hasTab: String, clea
         body[it + 1].namedRegisters() == listOf(first) }
     val cachedReceiver = body[appends.last() - 1].namedRegisters().first()
     shape(cachedBox != null && first != tabIndex && cachedReceiver !in listOf(first, tabIndex) &&
-        body.getOrNull(cachedBox!! - 1)?.opcode == Opcode.NEW_INSTANCE &&
+        body.getOrNull(cachedBox - 1)?.opcode == Opcode.NEW_INSTANCE &&
         body[cachedBox - 1].reference() == "Landroid/util/Pair;" &&
         body[cachedBox - 1].namedRegisters() == listOf(cachedReceiver) &&
         flow.preservesValue(identitySource, cachedLabelBranch, identityOperand) &&
@@ -611,7 +611,7 @@ private fun profileEdits(method: MutableMethod, gifts: Int, hasTab: String, clea
     val freshVisible = body[fresh].namedRegisters().single()
     val copy = (cached + 3 until fresh).lastOrNull { body[it].opcode in MOVES &&
         body[it].namedRegisters() == listOf(freshVisible, visible) }
-    shape(copy != null && (copy!! + 1 until fresh).none { body[it].writes(freshVisible) } && visible <= 255,
+    shape(copy != null && (copy + 1 until fresh).none { body[it].writes(freshVisible) } && visible <= 255,
         "cached and fresh Gifts presence do not share one decision")
     return appends.map { appendEdit(method, it, "addProfileTab") } + CommerceEdit(method, cached + 2,
         "invoke-static/range {v$visible .. v$visible}, $COMMERCE->showGiftsTab(Z)Z\nmove-result v$visible")

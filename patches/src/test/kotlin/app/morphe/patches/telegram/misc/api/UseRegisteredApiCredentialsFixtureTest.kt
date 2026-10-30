@@ -376,7 +376,7 @@ class UseRegisteredApiCredentialsFixtureTest {
             constructor.addInstruction(index, "const v${constructor.instructions()[index].namedRegisters()[3]}, 0x1")
         }
         refusal { _, plan ->
-            val method = plan.connectionInitializer as MutableMethod
+            val method = plan.connectionInitializer
             val index = method.instructions().indices.single { method.instructions()[it].call()?.name == "native_init" }
             method.addInstruction(index, "const v${method.instructions()[index].namedRegisters()[3]}, 0x1")
         }
