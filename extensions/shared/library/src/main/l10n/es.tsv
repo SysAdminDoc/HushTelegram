@@ -234,6 +234,12 @@ Hide emoji statuses	Ocultar estados de emojis
 The emoji a Premium account puts next to its name goes away in chats, the chat list and profiles, and the Premium star shows instead. Your own status hides too but stays set for everyone else. A chat picks this up the next time you open it.	El emoji que una cuenta Premium pone junto a su nombre desaparece en los chats, la lista de chats y los perfiles, y en su lugar aparece la estrella Premium. Tu propio estado también se oculta, pero sigue puesto para los demás. Un chat lo aplica la próxima vez que lo abras.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that hides emoji statuses.
 emoji statuses next to names	estados de emojis junto a los nombres
+# context: a switch under Hide Premium, gifts and Stars. App Icon is Telegram's list of launcher icons in its appearance settings; use the applied translations of its title (key AppIcon, "App Icon") and of the icon names (keys AppIconPremium, AppIconTurbo, AppIconNox).
+Unlock Premium app icons	Desbloquear íconos Premium de la app
+# context: that switch's summary. Premium, Turbo and Nox are three icons in that list (keys AppIconPremium, AppIconTurbo, AppIconNox; Nox is applied as Noche). The Premium sheet is the page Telegram opens to sell Premium when a locked icon is tapped.
+Premium, Turbo and Nox in Telegram's App Icon list work without Premium, with no lock and no Premium sheet. Only the icon on your home screen changes.	Premium, Turbo y Noche en la lista de Ícono de la app de Telegram funcionan sin Premium, sin candado y sin la pantalla de Premium. Solo cambia el ícono de tu pantalla de inicio.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that unlocks the Premium app icons.
+Premium icons in the App Icon list	íconos Premium en la lista de Ícono de la app
 Hide promotional banners	Ocultar banners promocionales
 Hides the Premium, birthday and low Stars balance banners above your chat list. Account security notices and other suggestions still show.	Oculta los banners de Premium, cumpleaños y saldo bajo de Stars sobre tu lista de chats. Los avisos de seguridad de la cuenta y otras sugerencias se siguen mostrando.
 promotional suggestions	sugerencias promocionales

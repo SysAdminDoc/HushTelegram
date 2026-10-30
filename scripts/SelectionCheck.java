@@ -288,6 +288,9 @@ public final class SelectionCheck {
         hook(calls, flags, "commercePremiumEffects", "misc/Commerce", "skipPremiumEffect");
         hook(calls, flags, "commercePremiumEmojiPacks", "misc/Commerce", "dropLockedEmojiPacks");
         hook(calls, flags, "commerceEmojiStatus", "misc/EmojiStatus", "hide");
+        // The App Icon list's tap, lock and filter each ask after reading an icon's Premium flag.
+        require(calls.getOrDefault(OWN + "telegram/misc/AppIcons;->premium", 0)
+                == (Boolean.TRUE.equals(flags.get("commercePremiumIcons")) ? 3 : 0));
         // Both sticker targets ask premiumStickersBlocked: the two filters and the keyboard pass,
         // and the effect player's tooltip.
         int blocked = (Boolean.TRUE.equals(flags.get("commercePremiumStickers")) ? 3 : 0)

@@ -33,7 +33,10 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
@@ -159,7 +162,19 @@ class HideCommerceFixtureTest {
             assertTrue("${build.name}: the admin log keeps the real status", keepers.any { it.definingClass == MESSAGE_OBJECT })
             val swapped = (getters + keepers).map { it.key() }.toSet()
             val originalBodies = (getters + keepers).associate { it.key() to it.instructions().map(::operation) }
-            val untouched = hosts.flatMap { it.methods.toList() }.filter { (it.definingClass to it.name) !in changed && it.key() !in swapped }
+            // Unlock Premium app icons asks after the flag read in the icon list's tap, lock and
+            // filter. The Premium page's preview reads the flag too and stays stock.
+            val premiumFlag = iconFlag(hosts)
+            val iconBodies = iconReaders(hosts).associate { it.key() to it.instructions() }
+            assertEquals("${build.name}: the icon list's tap, lock and filter", 3, iconBodies.size)
+            assertEquals("${build.name}: the tap and the lock ask about the account", 2,
+                iconBodies.values.count { body -> body.any { it.reference() == PREMIUM_ON_ACCOUNTS } })
+            val untouched = hosts.flatMap { it.methods.toList() }.filter {
+                (it.definingClass to it.name) !in changed && it.key() !in swapped && it.key() !in iconBodies
+            }
+            assertTrue("${build.name}: includes the Premium page's icon preview", untouched.any { method ->
+                method.instructions().any { it.opcode == Opcode.IGET_BOOLEAN && it.reference() == premiumFlag }
+            })
             assertTrue("${build.name}: includes the ordinary channel footer controls", untouched.any { method ->
                 method.instructions().any { it.reference() == JOIN } && method.instructions().any { it.reference() == UNMUTE }
             })
@@ -184,6 +199,21 @@ class HideCommerceFixtureTest {
             CommerceTarget.entries.forEach { assertFact(context, it.capability, 1) }
             PremiumStickerTarget.entries.forEach { assertFact(context, it.capability, 1) }
             assertFact(context, "commerceEmojiStatus", 1)
+            assertFact(context, "commercePremiumIcons", 1)
+            for ((key, before) in iconBodies) {
+                val after = context.mutableClassDefBy(key.substringBefore("->")).methods.single { it.key() == key }
+                    .instructions().filter { it.opcode != Opcode.NOP }
+                val read = after.indices.single { after[it].opcode == Opcode.IGET_BOOLEAN && after[it].reference() == premiumFlag }
+                val register = (after[read] as TwoRegisterInstruction).registerA
+                val call = after[read + 1] as RegisterRangeInstruction
+                assertEquals("${build.name}: $key asks AppIcons right after the read", ICON_PREMIUM, after[read + 1].reference())
+                assertEquals(listOf(register, 1), listOf(call.startRegister, call.registerCount))
+                assertEquals(Opcode.MOVE_RESULT, after[read + 2].opcode)
+                assertEquals(register, (after[read + 2] as OneRegisterInstruction).registerA)
+                // A goto past the new code can widen, which is still the same jump.
+                assertEquals("${build.name}: $key is otherwise stock", before.filter { it.opcode != Opcode.NOP }.map(::stockOperation),
+                    after.filterIndexed { index, _ -> index != read + 1 && index != read + 2 }.map(::stockOperation))
+            }
             for (getter in getters) {
                 val owner = context.mutableClassDefBy(getter.definingClass)
                 val stockName = if (getter.definingClass == EMOJI_USERS) STOCK_USER_STATUS else STOCK_DIALOG_STATUS
@@ -582,6 +612,28 @@ class HideCommerceFixtureTest {
         }
     }
 
+    @Test
+    fun `a build without the App Icon list's enum keeps every icon locked and the rest of the patch`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val hosts = hosts(build)
+            val icons = iconFlag(hosts).substringBefore("->")
+            val readers = iconReaders(hosts).associate { it.key() to it.instructions().map(::operation) }
+            assertEquals("${build.name}: the fixture still weighs icons against Premium", 3, readers.size)
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts.filter { it.type != icons })
+            val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
+            assertEquals("${build.name}: one Premium app icon warning", 1, warnings.size)
+            assertTrue(warnings.single(), warnings.single().endsWith("The patch goes on without the Premium app icon switch."))
+            assertFact(context, "hideCommerce", 1)
+            assertFact(context, "commercePremiumIcons", 0)
+            assertFact(context, "commerceEmojiStatus", 1)
+            CommerceTarget.entries.forEach { assertFact(context, it.capability, 1) }
+            for ((key, before) in readers) {
+                val after = context.mutableClassDefBy(key.substringBefore("->")).methods.single { it.key() == key }
+                assertEquals("${build.name}: $key is stock", before, after.instructions().map(::operation))
+            }
+        }
+    }
+
     /** No early return or new stock branch: every original operation and handler survives. */
     private fun assertEdits(where: String, original: Method, edits: List<CommerceEdit>) {
         val before = original.instructions()
@@ -686,7 +738,13 @@ class HideCommerceFixtureTest {
     }
 
     private fun hosts(build: File): List<ClassDef> {
+        val icons = FixtureDex.classesWhere(build, { true }) { method ->
+            method.name == "<clinit>" && method.instructions().any { it.reference() == "VintageIcon" }
+        }
+        val flag = iconFlag(icons)
         val anchors = FixtureDex.classesWhere(build, { true }) { method ->
+            method.instructions().any { it.opcode == Opcode.IGET_BOOLEAN && it.reference() == flag }
+        } + FixtureDex.classesWhere(build, { true }) { method ->
             val refs = method.instructions().mapNotNull { it.reference() }.toSet()
             refs.contains(WALLET_LABEL) || refs.contains(SEND_GRAM) || refs.contains(PROFILE_GIFTS) || (refs.contains(GIFT_BUTTON) &&
                 method.parameterTypes.map { it.toString() } == listOf("I", "Z", "Z")) ||
@@ -697,7 +755,25 @@ class HideCommerceFixtureTest {
                 (refs.contains(PREMIUM_EMOJI_PACK) && refs.contains(FREE_EMOJI)) || refs.contains(STATUSES_EQUAL)
         }
         val kept = FixtureDex.classes(build, setOf(TABS, CONTROLLER, USER_CONFIG, EMOJI_USERS, EMOJI_DIALOGS, MESSAGE_OBJECT)).values
-        return (anchors + kept).distinctBy { it.type }
+        return (icons + anchors + kept).distinctBy { it.type }
+    }
+
+    /** The App Icon list's Premium flag: the one instance boolean of the enum naming the launcher aliases. */
+    private fun iconFlag(hosts: List<ClassDef>): String {
+        val icons = hosts.single { classDef ->
+            classDef.methods.any { method -> method.name == "<clinit>" && method.instructions().any { it.reference() == "VintageIcon" } }
+        }
+        return "${icons.type}->${icons.fields.single { it.type == "Z" && !AccessFlags.STATIC.isSet(it.accessFlags) }.name}:Z"
+    }
+
+    /** The methods that weigh the icon's Premium flag against Premium, which the switch answers for. */
+    private fun iconReaders(hosts: List<ClassDef>): List<Method> {
+        val flag = iconFlag(hosts)
+        return hosts.flatMap { it.methods.toList() }.filter { method ->
+            val refs = method.instructions().mapNotNull { it.reference() }
+            method.instructions().any { it.opcode == Opcode.IGET_BOOLEAN && it.reference() == flag } &&
+                (PREMIUM_ON_ACCOUNTS in refs || PREMIUM_BLOCKED in refs)
+        }
     }
 
     /**
@@ -739,6 +815,9 @@ class HideCommerceFixtureTest {
 
     private fun operation(instruction: Instruction) = listOf(instruction.opcode, instruction.reference(), instruction.namedRegisters(),
         if (instruction is OffsetInstruction) null else (instruction as? NarrowLiteralInstruction)?.narrowLiteral)
+    private fun stockOperation(instruction: Instruction) = operation(instruction).let {
+        if (instruction.opcode == Opcode.GOTO_16 || instruction.opcode == Opcode.GOTO_32) listOf(Opcode.GOTO) + it.drop(1) else it
+    }
     private fun Instruction.reference() = (this as? ReferenceInstruction)?.reference?.toString()
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
     private fun Method.sameSignature(other: Method) = name == other.name && returnType == other.returnType &&

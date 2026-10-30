@@ -232,6 +232,12 @@ Hide emoji statuses	Скриване на емоджи статусите
 The emoji a Premium account puts next to its name goes away in chats, the chat list and profiles, and the Premium star shows instead. Your own status hides too but stays set for everyone else. A chat picks this up the next time you open it.	Емоджито, което Premium акаунт слага до името си, изчезва в чатовете, списъка с чатове и профилите, а на негово място се показва звездата на Premium. Вашият собствен статус също се скрива, но остава зададен за всички останали. Чатът го отчита при следващото отваряне.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that hides emoji statuses.
 emoji statuses next to names	емоджи статуси до имената
+# context: a switch under Hide Premium, gifts and Stars. App Icon is Telegram's list of launcher icons in its appearance settings. Telegram's Bulgarian has no applied translation of its title or of the icon names (keys AppIcon, AppIconPremium, AppIconTurbo, AppIconNox), so this is a plain one and the names stay as in English.
+Unlock Premium app icons	Отключване на Premium иконите на приложението
+# context: that switch's summary. Premium, Turbo and Nox are three icons in that list (keys AppIconPremium, AppIconTurbo, AppIconNox). The Premium sheet is the page Telegram opens to sell Premium when a locked icon is tapped.
+Premium, Turbo and Nox in Telegram's App Icon list work without Premium, with no lock and no Premium sheet. Only the icon on your home screen changes.	Premium, Turbo и Nox в списъка с икони на приложението в Telegram работят без Premium, без катинар и без прозореца за Premium. Сменя се само иконата на началния Ви екран.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that unlocks the Premium app icons.
+Premium icons in the App Icon list	Premium иконите в списъка с икони на приложението
 Hide promotional banners	Скриване на промоционалните банери
 Hides the Premium, birthday and low Stars balance banners above your chat list. Account security notices and other suggestions still show.	Скрива банерите за Premium, рождени дни и нисък баланс на Stars над списъка с чатове. Известията за сигурност на акаунта и другите предложения се показват.
 promotional suggestions	промоционални предложения

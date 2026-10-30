@@ -104,6 +104,7 @@ val hideCommercePatch = bytecodePatch(
         val plan = resolveCommerceHooks()
         val stickers = resolvePremiumStickerHooks()
         val emoji = resolveEmojiStatus()
+        val icons = resolvePremiumIcons()
         shape(plan.hooks.isNotEmpty() || stickers.isNotEmpty(), "no sales presentation target")
         if (plan.giftTabId != null) writeStub(COMMERCE, "giftTabId", 1,
             "const/16 v0, ${plan.giftTabId}\nreturn v0")
@@ -148,6 +149,12 @@ val hideCommercePatch = bytecodePatch(
             enableCapability("commerceEmojiStatus")
         } else {
             patchLog.warning("$PATCH: ${emoji.missing}. The patch goes on without the emoji status switch.")
+        }
+        if (icons.missing == null) {
+            icons.apply()
+            enableCapability("commercePremiumIcons")
+        } else {
+            patchLog.warning("$PATCH: ${icons.missing}. The patch goes on without the Premium app icon switch.")
         }
         enableStatus("hideCommerce")
     }

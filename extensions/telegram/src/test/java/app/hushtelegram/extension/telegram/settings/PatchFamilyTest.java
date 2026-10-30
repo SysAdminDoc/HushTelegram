@@ -118,6 +118,7 @@ public class PatchFamilyTest {
         Settings.HIDE_CHANNEL_MUTE.resetToDefault();
         Settings.HIDE_CHANNEL_SHARE.resetToDefault();
         Settings.HIDE_EMOJI_STATUS.resetToDefault();
+        Settings.UNLOCK_PREMIUM_ICONS.resetToDefault();
         Settings.HIDE_KEYBOARD_FEATURED.resetToDefault();
         Settings.HIDE_SEND_AS.resetToDefault();
         Settings.HIDE_CONTACTS_TAB.resetToDefault();
@@ -190,13 +191,24 @@ public class PatchFamilyTest {
     public void hidePremiumHasAnOffByDefaultEmojiStatusSwitchThatAChatAppliesWhenOpened() {
         PatchFamily family = PatchFamily.HIDE_COMMERCE;
         assertEquals("hideCommerce", family.statusMethod);
-        assertEquals(Arrays.asList(Settings.HIDE_COMMERCE, Settings.HIDE_EMOJI_STATUS), family.switches);
+        assertEquals(Arrays.asList(Settings.HIDE_COMMERCE, Settings.HIDE_EMOJI_STATUS, Settings.UNLOCK_PREMIUM_ICONS), family.switches);
         assertTrue(family.expectedCapabilities().contains(PatchFamily.Capability.COMMERCE_EMOJI_STATUS));
         assertEquals("commerceEmojiStatus", PatchFamily.Capability.COMMERCE_EMOJI_STATUS.statusMethod);
         // Off by default, so the patch's own description stays true, and no restart: names redraw.
         assertFalse(Settings.HIDE_EMOJI_STATUS.defaultValue);
         assertFalse(Settings.HIDE_EMOJI_STATUS.rebootApp);
         assertOnItsPage(family);
+    }
+
+    @Test
+    public void hidePremiumHasAnOffByDefaultPremiumIconSwitchTheIconListReadsWhenOpened() {
+        PatchFamily family = PatchFamily.HIDE_COMMERCE;
+        assertTrue(family.switches.contains(Settings.UNLOCK_PREMIUM_ICONS));
+        assertTrue(family.expectedCapabilities().contains(PatchFamily.Capability.COMMERCE_PREMIUM_ICONS));
+        assertEquals("commercePremiumIcons", PatchFamily.Capability.COMMERCE_PREMIUM_ICONS.statusMethod);
+        // An unlock is never on by default, and the icon list asks again each time it's drawn.
+        assertFalse(Settings.UNLOCK_PREMIUM_ICONS.defaultValue);
+        assertFalse(Settings.UNLOCK_PREMIUM_ICONS.rebootApp);
     }
 
     @Test

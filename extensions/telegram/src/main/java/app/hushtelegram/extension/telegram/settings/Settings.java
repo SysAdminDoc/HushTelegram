@@ -64,6 +64,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_EMOJI_STATUS =
             new BooleanSetting("hushtelegram_hide_emoji_status", FALSE);
 
+    /** Premium, Turbo and Nox in the App Icon list switch like any other icon; the Premium page's preview stays stock. */
+    public static final BooleanSetting UNLOCK_PREMIUM_ICONS =
+            new BooleanSetting("hushtelegram_unlock_premium_icons", FALSE);
+
     /** Chat-list promotional presentation only; stored suggestions and account security stay stock. */
     public static final BooleanSetting HIDE_PROMOTIONAL_BANNERS =
             new BooleanSetting("hushtelegram_hide_promotional_banners", TRUE);

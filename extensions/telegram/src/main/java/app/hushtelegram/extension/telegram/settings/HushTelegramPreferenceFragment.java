@@ -359,6 +359,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "the chat list and profiles, and the Premium star shows instead. Your own status hides too but stays "
                                 + "set for everyone else. A chat picks this up the next time you open it.")));
             }
+            if (PatchFamily.Capability.COMMERCE_PREMIUM_ICONS.installed()) {
+                on(pages, PatchFamily.HIDE_COMMERCE).addPreference(toggle(context, Settings.UNLOCK_PREMIUM_ICONS,
+                        L10n.t("Unlock Premium app icons"), L10n.t("Premium, Turbo and Nox in Telegram's App Icon list work without "
+                                + "Premium, with no lock and no Premium sheet. Only the icon on your home screen changes.")));
+            }
         }
         if (build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS)) {
             on(pages, PatchFamily.HIDE_PROMOTIONAL_BANNERS).addPreference(toggle(context, Settings.HIDE_PROMOTIONAL_BANNERS, L10n.t("Hide promotional banners"),
