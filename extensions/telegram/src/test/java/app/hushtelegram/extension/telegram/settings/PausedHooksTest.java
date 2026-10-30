@@ -150,7 +150,11 @@ public class PausedHooksTest {
                 () -> Stories.hideAvatarStories(DIALOG_AVATAR),
                 () -> Stories.hideAvatarStoryTouches(DIALOG_AVATAR)));
         probes.put(PatchFamily.HIDE_RECOMMENDATIONS, Arrays.asList(
-                Recommendations::skipRecommendations, Recommendations::skipCachedRecommendations));
+                Recommendations::skipRecommendations, Recommendations::skipCachedRecommendations,
+                () -> {
+                    ArrayList<Object> featured = new ArrayList<>();
+                    return Recommendations.keyboardFeatured(featured) != featured;
+                }));
         probes.put(PatchFamily.HIDE_COMMERCE, Arrays.asList(
                 () -> !app.hushtelegram.extension.telegram.misc.Commerce.addSettingsRow(new ArrayList<>(), new Object()),
                 () -> !app.hushtelegram.extension.telegram.misc.Commerce.showGiftsTab(true),

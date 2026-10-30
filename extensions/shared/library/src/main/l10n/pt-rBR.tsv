@@ -201,6 +201,12 @@ Hide recommendations	Ocultar recomendações
 Hides suggested similar channels and bots, including ones already saved, and stops asking Telegram for new ones.	Oculta canais e bots semelhantes sugeridos, inclusive os já salvos, e deixa de pedir novas sugestões ao Telegram.
 similar channels and bots	canais e bots semelhantes
 cached recommendations	recomendações armazenadas
+# context: a switch under Hide recommendations. Trending packs are the sticker and emoji packs Telegram features in its keyboards; use the applied translation of Telegram's term (key FeaturedStickersShort, "Trending").
+Hide trending packs	Ocultar pacotes populares
+# context: that switch's summary. Trending is the sticker keyboard's tab (key FeaturedStickersShort) and Stickers and Emoji is the Settings screen that lists packs (key StickersName); use the applied translations of both.
+The sticker keyboard's Trending tab and row and the emoji keyboard's trending packs go away, so both list only packs you've added. Search and the Stickers and Emoji screen still show them. A chat picks this up the next time you open it.	A aba Populares e sua linha no teclado de stickers e os pacotes populares do teclado de emojis somem, então os dois mostram só os pacotes que você adicionou. A busca e a tela Stickers e Emojis continuam mostrando esses pacotes. Um chat aplica isso na próxima vez que você abri-lo.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide recommendations that hides the keyboards' trending packs.
+trending packs in the sticker and emoji keyboards	pacotes populares dos teclados de stickers e emojis
 Stop call diagnostics	Interromper diagnósticos de chamadas
 Stops your phone from automatically sending call problem reports and log files when Telegram's server asks for them.	Impede que seu celular envie automaticamente relatórios de problemas de chamada e arquivos de registro quando o servidor do Telegram os pede.
 call debug reports	relatórios de depuração de chamadas

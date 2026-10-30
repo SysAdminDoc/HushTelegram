@@ -204,6 +204,12 @@ Hide recommendations	Önerileri gizle
 Hides suggested similar channels and bots, including ones already saved, and stops asking Telegram for new ones.	Önerilen benzer kanalları ve botları, daha önce kaydedilmiş olanlar dahil, gizler ve Telegram'dan yenilerini istemeyi bırakır.
 similar channels and bots	benzer kanallar ve botlar
 cached recommendations	kayıtlı öneriler
+# context: a switch under Hide recommendations. Trending packs are the sticker and emoji packs Telegram features in its keyboards; use the applied translation of Telegram's term (key FeaturedStickersShort, "Trending").
+Hide trending packs	Popüler paketleri gizle
+# context: that switch's summary. Trending is the sticker keyboard's tab (key FeaturedStickersShort) and Stickers and Emoji is the Settings screen that lists packs (key StickersName); use the applied translations of both.
+The sticker keyboard's Trending tab and row and the emoji keyboard's trending packs go away, so both list only packs you've added. Search and the Stickers and Emoji screen still show them. A chat picks this up the next time you open it.	Çıkartma klavyesindeki Popüler sekmesi ve satırı ile emoji klavyesindeki popüler paketler kalkar, böylece ikisi de yalnızca eklediğiniz paketleri gösterir. Arama ve Çıkartmalar ve İfade ekranı bunları göstermeye devam eder. Bir sohbet bunu bir sonraki açışınızda uygular.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide recommendations that hides the keyboards' trending packs.
+trending packs in the sticker and emoji keyboards	çıkartma ve emoji klavyelerindeki popüler paketler
 Stop call diagnostics	Arama tanılamalarını durdur
 Stops your phone from automatically sending call problem reports and log files when Telegram's server asks for them.	Telegram sunucusu istediğinde telefonunuzun arama sorunu raporlarını ve günlük dosyalarını otomatik göndermesini engeller.
 call debug reports	arama hata ayıklama raporları

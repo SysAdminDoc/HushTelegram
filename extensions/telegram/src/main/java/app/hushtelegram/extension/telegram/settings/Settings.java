@@ -52,6 +52,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_RECOMMENDATIONS =
             new BooleanSetting("hushtelegram_hide_recommendations", TRUE);
 
+    /** The sticker and emoji keyboards copy an empty featured list; search and the packs screen keep Telegram's. */
+    public static final BooleanSetting HIDE_KEYBOARD_FEATURED =
+            new BooleanSetting("hushtelegram_hide_keyboard_featured", FALSE);
+
     /** Sales entry points only, with no change to purchases or account entitlements. */
     public static final BooleanSetting HIDE_COMMERCE =
             new BooleanSetting("hushtelegram_hide_commerce", TRUE);

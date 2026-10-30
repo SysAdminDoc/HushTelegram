@@ -866,6 +866,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.HIDE_RECOMMENDATIONS).addPreference(toggle(context, Settings.HIDE_RECOMMENDATIONS, L10n.t("Hide recommendations"),
                     PatchFamily.HIDE_RECOMMENDATIONS.coverageSummary(L10n.t("Hides suggested similar channels and bots, including ones already saved, and "
                             + "stops asking Telegram for new ones."))));
+            if (PatchFamily.Capability.KEYBOARD_FEATURED.installed()) {
+                on(pages, PatchFamily.HIDE_RECOMMENDATIONS).addPreference(toggle(context, Settings.HIDE_KEYBOARD_FEATURED,
+                        L10n.t("Hide trending packs"), L10n.t("The sticker keyboard's Trending tab and row and the emoji keyboard's "
+                                + "trending packs go away, so both list only packs you've added. Search and the Stickers and Emoji "
+                                + "screen still show them. A chat picks this up the next time you open it.")));
+            }
         }
         if (build.contains(PatchFamily.QUIET_CONTACTS_NAG)) {
             on(pages, PatchFamily.QUIET_CONTACTS_NAG).addPreference(toggle(context, Settings.QUIET_CONTACTS_NAG, L10n.t("Quiet contacts prompts"),

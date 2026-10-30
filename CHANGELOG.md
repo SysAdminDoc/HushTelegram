@@ -4,6 +4,7 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** **Hide recommendations** has a new switch under it, **Hide trending packs**, off by default. Turn it on and the sticker keyboard loses its Trending tab and the trending row under your packs, and the emoji keyboard stops listing packs you haven't added. Search still finds new packs, and the Stickers and Emoji screen in Settings still shows Telegram's trending list.
 * **Telegram:** **Hide Premium, gifts and Stars** has a new switch under it, **Hide emoji statuses**, off by default. Turn it on and the emoji a Premium account puts next to its name is gone from chats, the chat list and profiles, so you see the plain Premium star instead. Your own status hides on your phone too, but everyone else still sees it. Picking a new status for a channel you run still saves.
 * **Telegram:** **Hide channel bar buttons** has a new switch under it, **Hide channel share button**, off by default. With it on, the round share button beside channel posts goes away, in the channel itself and in any chat a channel post gets forwarded to. A post's own menu still forwards it. Bots, people's media in public groups and Saved Messages keep their button.
 * **Telegram:** When **Quiet**, **Privacy** or **Back to defaults** in Quick setups finds nothing to change, it now says everything was already set that way. It used to say "Changed 0 settings", which sounded like something went wrong.

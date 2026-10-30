@@ -202,6 +202,12 @@ Hide recommendations	Скриване на препоръките
 Hides suggested similar channels and bots, including ones already saved, and stops asking Telegram for new ones.	Скрива предложените подобни канали и ботове, включително вече запазените, и спира да иска нови от Telegram.
 similar channels and bots	подобни канали и ботове
 cached recommendations	кеширани препоръки
+# context: a switch under Hide recommendations. Trending packs are the sticker and emoji packs Telegram features in its keyboards. Telegram's Bulgarian has no applied translation of the tab (key FeaturedStickersShort, "Trending"), so this follows its Trending Stickers header (key FeaturedStickers, "Модерни стикери").
+Hide trending packs	Скриване на модерните пакети
+# context: that switch's summary. The sticker keyboard's tab shows Telegram's English "Trending" in Bulgarian (key FeaturedStickersShort has no applied translation), so the summary names it as shown. Stickers and Emoji is the Settings screen that lists packs; use the applied translation (key StickersName, "Стикери").
+The sticker keyboard's Trending tab and row and the emoji keyboard's trending packs go away, so both list only packs you've added. Search and the Stickers and Emoji screen still show them. A chat picks this up the next time you open it.	Разделът „Trending“ и редът му в клавиатурата за стикери и модерните пакети в клавиатурата за емоджи изчезват, така че и двете показват само пакетите, които сте добавили. Търсенето и екранът „Стикери“ продължават да ги показват. Чатът го отчита при следващото отваряне.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide recommendations that hides the keyboards' trending packs.
+trending packs in the sticker and emoji keyboards	модерни пакети в клавиатурите за стикери и емоджи
 Stop call diagnostics	Спиране на диагностиката на обажданията
 Stops your phone from automatically sending call problem reports and log files when Telegram's server asks for them.	Не позволява на телефона ви автоматично да изпраща отчети за проблеми с обажданията и лог файлове, когато сървърът на Telegram ги поиска.
 call debug reports	отчети за отстраняване на грешки в обажданията

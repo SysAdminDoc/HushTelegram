@@ -829,6 +829,13 @@ public class HushTelegramPreferenceFragmentTest {
                             + "everyone else. A chat picks this up the next time you open it.",
                     String.valueOf(page.findPreference(Settings.HIDE_EMOJI_STATUS.key).getSummary()));
             assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_EMOJI_STATUS.key)).isChecked());
+            assertEquals("Hide trending packs", String.valueOf(page.findPreference(Settings.HIDE_KEYBOARD_FEATURED.key).getTitle()));
+            assertEquals("The sticker keyboard's Trending tab and row and the emoji keyboard's trending packs go away, "
+                            + "so both list only packs you've added. Search and the Stickers and Emoji screen still show "
+                            + "them. A chat picks this up the next time you open it.",
+                    String.valueOf(page.findPreference(Settings.HIDE_KEYBOARD_FEATURED.key).getSummary()));
+            // The keyboards keep Telegram's trending packs until the switch is turned on.
+            assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_KEYBOARD_FEATURED.key)).isChecked());
             assertEquals("Your picture next to the message box goes away in groups and channels where you could post as "
                             + "a channel, while you're posting as yourself. Once you pick a channel it shows again, so you "
                             + "can always see who you're posting as. To pick one, turn this off first. A chat picks this up "

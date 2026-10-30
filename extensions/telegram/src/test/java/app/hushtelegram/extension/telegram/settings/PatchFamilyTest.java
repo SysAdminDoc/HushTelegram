@@ -116,6 +116,7 @@ public class PatchFamilyTest {
         Settings.HIDE_CHANNEL_MUTE.resetToDefault();
         Settings.HIDE_CHANNEL_SHARE.resetToDefault();
         Settings.HIDE_EMOJI_STATUS.resetToDefault();
+        Settings.HIDE_KEYBOARD_FEATURED.resetToDefault();
         Settings.HIDE_SEND_AS.resetToDefault();
         Settings.HIDE_CONTACTS_TAB.resetToDefault();
         Settings.FASTER_DOWNLOADS.resetToDefault();
@@ -190,6 +191,19 @@ public class PatchFamilyTest {
         // Off by default, so the patch's own description stays true, and no restart: names redraw.
         assertFalse(Settings.HIDE_EMOJI_STATUS.defaultValue);
         assertFalse(Settings.HIDE_EMOJI_STATUS.rebootApp);
+        assertOnItsPage(family);
+    }
+
+    @Test
+    public void hideRecommendationsHasAnOffByDefaultTrendingPacksSwitchThatAChatAppliesWhenOpened() {
+        PatchFamily family = PatchFamily.HIDE_RECOMMENDATIONS;
+        assertEquals("hideRecommendations", family.statusMethod);
+        assertEquals(Arrays.asList(Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_KEYBOARD_FEATURED), family.switches);
+        assertTrue(family.expectedCapabilities().contains(PatchFamily.Capability.KEYBOARD_FEATURED));
+        assertEquals("keyboardFeatured", PatchFamily.Capability.KEYBOARD_FEATURED.statusMethod);
+        // Off by default, so the keyboards stay stock, and no restart: a keyboard copies the list when a chat opens.
+        assertFalse(Settings.HIDE_KEYBOARD_FEATURED.defaultValue);
+        assertFalse(Settings.HIDE_KEYBOARD_FEATURED.rebootApp);
         assertOnItsPage(family);
     }
 

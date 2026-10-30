@@ -209,7 +209,7 @@ public class SettingsBackupTest {
         assertEquals(Collections.singletonList(Settings.STICKER_SIZE), SettingsBackup.NUMBERS);
         assertEquals(Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET), SettingsBackup.TEXTS);
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES,
-                        Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_COMMERCE, Settings.HIDE_EMOJI_STATUS,
+                        Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_KEYBOARD_FEATURED, Settings.HIDE_COMMERCE, Settings.HIDE_EMOJI_STATUS,
                         Settings.HIDE_PROMOTIONAL_BANNERS,
                         Settings.HIDE_SPONSORED_PROXY, Settings.HIDE_POPULAR_APPS, Settings.SEARCH_ONLY_MY_CHATS, Settings.SEARCH_STYLED_NAMES, Settings.HIDE_CONTACTS_BLOCK, Settings.HIDE_GREETING_STICKERS, Settings.DISABLE_CHAT_SWIPE, Settings.DISABLE_CHANNEL_PULL, Settings.DISABLE_TOPIC_PULL,
                         Settings.NORMAL_PASTE, Settings.SHOW_LOCAL_IDS, Settings.PROFILE_DATA_CENTER, Settings.DISABLE_DOUBLE_TAP_REACTIONS,
