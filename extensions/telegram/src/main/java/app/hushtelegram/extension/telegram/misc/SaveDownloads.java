@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -66,6 +68,12 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * time the document downloads. Copies made before the list began are taken once by name and size,
  * the way those versions matched them. A copy waiting its turn checks the switch when it starts
  * and again before it's shown, so turning it off or pausing publishes nothing more.
+ *
+ * <p>Telegram keeps a document under its own name in Telegram Files, and a document it has no
+ * saved path for counts as downloaded when a file of that name and size is already there. Another
+ * document of the same name and size then opens the earlier one's file without downloading. The
+ * patch reports that at FileLoadOperation.onFinishLoadingFile, see {@link #finishing}, and such a
+ * file isn't copied, since it may not be this document's.
  */
 public final class SaveDownloads {
     /** Where the copies go, as MediaStore writes it: the shared Download folder's Telegram folder. */
@@ -169,7 +177,13 @@ public final class SaveDownloads {
     public static void fileLoaded(int account, String name, File file, Object parent) {
         HookStatus.invoked(FamilyNames.SAVE_DOWNLOADS);
         try {
+            boolean found = file != null && FOUND.remove(file.getPath());
             if (name == null || file == null || !Utils.settingsReady() || !Settings.SAVE_DOWNLOADS.get()) return;
+            // Under the downloader's own name it can only be this document's file.
+            if (found && !file.getName().equals(name)) {
+                HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, NOT_ITS_OWN);
+                return;
+            }
             if (parent instanceof String) {
                 Queued queued = Queued.parse((String) parent);
                 // Photos and videos auto-download the same way, and are only looked up for the second switch.
@@ -182,6 +196,36 @@ public final class SaveDownloads {
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.SAVE_DOWNLOADS, "download", failure);
         }
+    }
+
+    static final String NOT_ITS_OWN = "file Telegram took by name and size without downloading, not copied";
+
+    /** More files than this waiting for their finished download means some never came, so the list starts over. */
+    static final int MAX_FOUND = 64;
+
+    /** Files Telegram took by name and size instead of downloading, until their finished download comes. */
+    private static final Set<String> FOUND = ConcurrentHashMap.newKeySet();
+
+    /**
+     * Injected at the start of FileLoadOperation.onFinishLoadingFile, on Telegram's queues, ahead of
+     * {@link #fileLoaded} for the same file.
+     *
+     * @param pathSaveData set when Telegram stores the document under its own name and has no path saved for it
+     * @param temp         the file it downloaded into, null when it found the finished file already there
+     * @param file         the finished file
+     */
+    public static void finishing(Object pathSaveData, File temp, File file) {
+        if (pathSaveData == null || temp != null || file == null) return;
+        try {
+            if (FOUND.size() >= MAX_FOUND) FOUND.clear();
+            FOUND.add(file.getPath());
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.SAVE_DOWNLOADS, "found file", failure);
+        }
+    }
+
+    static void forgetFound() {
+        FOUND.clear();
     }
 
     /** Telegram's MessageObject.TYPE_FILE, TYPE_MUSIC, TYPE_PHOTO and TYPE_VIDEO, which the patch checks are still these. */

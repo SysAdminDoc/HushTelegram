@@ -4,6 +4,7 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** **Save downloaded files** no longer puts the wrong file in Download/Telegram when two documents have the same name and size. Telegram stores a document under its own name, and when a second one of that name and size arrives it opens the first one's file without downloading anything. That file used to be copied as the second document. Now it stays in Telegram.
 * **Telegram:** With the HushTelegram settings open, tapping a Telegram link in another app now closes them and shows the chat. The chat used to open behind the settings, so you had to back out of them to see it. Tapping Telegram's icon still brings the settings back as you left them.
 * **Telegram:** With TalkBack on, tapping **Pause** at the top of the HushTelegram settings now moves focus to the card that says Telegram will pause, where its Undo button is. Before, focus went nowhere once the button stepped aside.
 * **Telegram:** In the HushTelegram settings, the search box's outline now goes all the way around while you type. The X that clears the search used to cover its right end.

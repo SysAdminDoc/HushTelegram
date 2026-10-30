@@ -74,6 +74,7 @@ public class SaveDownloadsTest {
         HookStatus.clear();
         SaveDownloadsForTests.STORED.clear();
         SaveDownloadsForTests.LOOKUPS.clear();
+        SaveDownloads.forgetFound();
     }
 
     private static Context context() {
@@ -403,6 +404,71 @@ public class SaveDownloadsTest {
         assertEquals("report (1).pdf", downloads.row(2).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
         assertEquals("one", first.toString(StandardCharsets.UTF_8.name()));
         assertEquals("two", second.toString(StandardCharsets.UTF_8.name()));
+    }
+
+    /**
+     * Telegram keeps a document under its own name, and one it has no path saved for counts as
+     * downloaded when a file of that name and size is there, so a second report.pdf of the same
+     * size opens the first one's file. Downloaded for real, it lands beside it and is copied.
+     */
+    @Test public void aFileTelegramTookByNameAndSizeIsNotCopied() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        ByteArrayOutputStream first = bodyOf(1);
+        File report = downloaded("report.pdf", "one");
+        SaveDownloads.finishing(new Object(), new File(report.getParentFile(), "2_51.pdf.temp"), report);
+        SaveDownloads.fileLoaded(0, "2_51.pdf", report, pdf());
+        assertEquals("one", first.toString(StandardCharsets.UTF_8.name()));
+
+        Message twin = new Message(new Document("2_52.pdf", "report.pdf"), true, false);
+        SaveDownloads.finishing(new Object(), null, report);
+        SaveDownloads.fileLoaded(0, "2_52.pdf", report, twin);
+        assertEquals(1, downloads.rows.size());
+        assertEquals(-1L, receipts().getLong("2_52.pdf", -1));
+        assertTrue(String.join("\n", HookStatus.report()).contains(SaveDownloads.NOT_ITS_OWN));
+
+        ByteArrayOutputStream second = bodyOf(2);
+        File own = downloaded("report (1).pdf", "two");
+        SaveDownloads.finishing(new Object(), new File(own.getParentFile(), "2_52.pdf.temp"), own);
+        SaveDownloads.fileLoaded(0, "2_52.pdf", own, twin);
+        assertEquals("report (1).pdf", downloads.row(2).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+        assertEquals("two", second.toString(StandardCharsets.UTF_8.name()));
+    }
+
+    /** Only a file under the document's name with no saved path is held back, and only for its own finish. */
+    @Test public void aFileTelegramFoundOtherwiseIsCopied() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        for (long id = 1; id <= 3; id++) bodyOf(id);
+        // Under the downloader's name, which no other document has.
+        File named = downloaded("2_51.pdf", "one");
+        SaveDownloads.finishing(new Object(), null, named);
+        SaveDownloads.fileLoaded(0, "2_51.pdf", named, pdf());
+        assertEquals(1, downloads.rows.size());
+
+        // At a path Telegram saved for this document.
+        File report = downloaded("report.pdf", "two");
+        Message other = new Message(new Document("2_52.pdf", "report.pdf"), true, false);
+        SaveDownloads.finishing(null, null, report);
+        SaveDownloads.fileLoaded(0, "2_52.pdf", report, other);
+        assertEquals(2, downloads.rows.size());
+
+        // Held back once, then taken back, so the file's next finish is an ordinary one.
+        Message third = new Message(new Document("2_53.pdf", "report.pdf"), true, false);
+        SaveDownloads.finishing(new Object(), null, report);
+        SaveDownloads.fileLoaded(0, "2_53.pdf", report, third);
+        assertEquals(2, downloads.rows.size());
+        SaveDownloads.fileLoaded(0, "2_53.pdf", report, third);
+        assertEquals(3, downloads.rows.size());
+    }
+
+    /** One that finishes with the switch off is taken back too, and doesn't hold back a later copy. */
+    @Test public void aFoundFileIsTakenBackWithTheSwitchOff() throws IOException {
+        bodyOf(1);
+        File report = downloaded("report.pdf", "one");
+        SaveDownloads.finishing(new Object(), null, report);
+        SaveDownloads.fileLoaded(0, "2_51.pdf", report, pdf());
+        Settings.SAVE_DOWNLOADS.save(true);
+        SaveDownloads.fileLoaded(0, "2_51.pdf", report, pdf());
+        assertEquals(1, downloads.rows.size());
     }
 
     /** A report.pdf of three bytes already in Download/Telegram, added at [added] in MediaStore's seconds. */
