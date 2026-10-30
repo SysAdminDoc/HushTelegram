@@ -55,9 +55,13 @@ public final class ChannelMute {
         View view = (View) bar;
         try {
             if (mute && on()) {
-                if (!TAKEN_OFF.containsKey(bar)) TAKEN_OFF.put(bar, view.getVisibility());
+                Integer asked = TAKEN_OFF.get(bar);
+                if (asked == null) asked = view.getVisibility();
+                TAKEN_OFF.put(bar, asked);
                 HookStatus.counted(FamilyNames.HIDE_CHANNEL_BUTTONS, "channel Mute button hidden");
                 view.setVisibility(View.GONE);
+                // The bar's own setVisibility comes through visibility() too, and this hide isn't Telegram's ask.
+                TAKEN_OFF.put(bar, asked);
             } else {
                 Integer asked = TAKEN_OFF.remove(bar);
                 if (asked != null) view.setVisibility(asked);
