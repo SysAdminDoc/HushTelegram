@@ -31,8 +31,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * <p>Telegram builds the folder tabs above the chat list once it has more than one folder to show,
  * and the first tab it adds is the one selected. Just before that first build, with the switch on,
  * this selects the folder picked for the account the list belongs to, so the tabs and the list come
- * up on it with nothing to animate. The folder order and the server's copy of the folders aren't
- * touched.
+ * up on it with nothing to animate, and with more tabs than fit the strip starts at its tab. The
+ * folder order and the server's copy of the folders aren't touched.
  *
  * <p>Each account keeps its own pick on this phone, by the account's user id, so another account
  * signed in to the same slot never gets it. A pick is the folder's id and the name it had when
@@ -144,7 +144,8 @@ public final class LaunchFolder {
         try {
             boolean empty = telegram.tabsEmpty(list);
             Build build = built.get(list);
-            boolean opened = false;
+            // The folder this first build opened on, or -1.
+            int opened = -1;
             if (build == null) {
                 // Counted whatever the switches say, so turning one on later doesn't move a list already up.
                 if (!empty) return;
@@ -157,11 +158,14 @@ public final class LaunchFolder {
                 if (main && launch) {
                     int account = telegram.account(list);
                     int index = indexOf(account, picked(telegram.userId(account)));
-                    opened = index >= 0 && telegram.select(list, index);
-                    if (opened) HookStatus.counted(FamilyNames.HIDE_FOLDER_COUNTERS, OPENED);
+                    if (index >= 0 && telegram.select(list, index)) {
+                        opened = index;
+                        HookStatus.counted(FamilyNames.HIDE_FOLDER_COUNTERS, OPENED);
+                    }
                 }
             }
-            if (build.hides) beforeHiding(list, build, empty, opened);
+            int selected = build.hides ? beforeHiding(list, build, empty, opened) : opened;
+            if (selected >= 0) reveal(list, build, selected);
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "folder at launch", failure);
         }
@@ -170,33 +174,56 @@ public final class LaunchFolder {
     /**
      * Decides whether this build of [list]'s tabs leaves All Chats out and notes where the list
      * stands before it. A first build that didn't open on a pick opens on the first folder.
+     *
+     * @param opened the folder the build opened on, or -1
+     * @return the folder the build opens on now, or -1
      */
-    private static void beforeHiding(Object list, Build build, boolean empty, boolean opened) {
+    private static int beforeHiding(Object list, Build build, boolean empty, int opened) {
         // Stock until this build is known to hide, so a read that throws keeps All Chats and its archive row.
         archiveFrom = new WeakReference<>(null);
         build.hiding = false;
         Object strip = telegram.strip(list);
-        if (strip == null) return;
+        if (strip == null) return opened;
         hiddenIn.remove(strip);
         int account = telegram.account(list);
         int first = firstOpen(account);
         // All Chats holds the archive's row, so it stays unless the menu or the side menu opens the archive.
-        if (first < 0 || !telegram.archiveReachable()) return;
+        if (first < 0 || !telegram.archiveReachable()) return opened;
         build.hiding = true;
         hiddenIn.put(strip, Boolean.TRUE);
         archiveFrom = new WeakReference<>(list);
         build.wasEmpty = empty;
         build.typeBefore = telegram.selectedType(list);
         build.stableBefore = telegram.currentStable(list);
-        if (empty) {
-            if (!opened) {
-                // A view built again opens where a new list would: the pick, else the first folder.
-                int pick = Utils.settingsReady() && Settings.LAUNCH_FOLDER.get()
-                        ? indexOf(account, picked(telegram.userId(account))) : -1;
-                telegram.select(list, pick >= 0 ? pick : first);
-            }
-            HookStatus.counted(FamilyNames.HIDE_FOLDER_COUNTERS, HIDDEN);
+        if (!empty) return -1;
+        int open = opened;
+        if (open < 0) {
+            // A view built again opens where a new list would: the pick, else the first folder.
+            int pick = Utils.settingsReady() && Settings.LAUNCH_FOLDER.get()
+                    ? indexOf(account, picked(telegram.userId(account))) : -1;
+            int folder = pick >= 0 ? pick : first;
+            if (telegram.select(list, folder)) open = folder;
         }
+        HookStatus.counted(FamilyNames.HIDE_FOLDER_COUNTERS, HIDDEN);
+        return open;
+    }
+
+    /**
+     * Scrolls [list]'s tab strip so the tab of folder [index] starts it, as the first build opens
+     * on it: Telegram leaves the strip at its start then, and with more folders than fit a pick
+     * past the edge would stay out of view. The strip numbers tabs by place, so All Chats left out
+     * ahead of it moves it one back. The first place is where the strip starts anyway, and a strip
+     * whose tabs all fit lays them out as before.
+     */
+    private static void reveal(Object list, Build build, int index) {
+        int position = index;
+        if (build.hiding) {
+            int account = telegram.account(list);
+            for (int i = 0; i < index; i++) {
+                if (telegram.folderDefault(account, i)) position--;
+            }
+        }
+        if (position > 0) telegram.scrollStrip(list, position);
     }
 
     /**
@@ -421,6 +448,8 @@ public final class LaunchFolder {
 
         boolean folderDefault(int account, int index);
 
+        default boolean scrollStrip(Object list, int position) { return LaunchFolder.scrollStrip(list, position); }
+
         // What Hide All Chats adds, the stubs unless a test says otherwise.
 
         @Nullable
@@ -506,6 +535,12 @@ public final class LaunchFolder {
 
     /** {@code getDialogFilters().get(index).isDefault()}, All chats. */
     public static boolean folderDefault(int account, int index) { return false; }
+
+    /**
+     * {@code list.filterTabsView.listView.scrollToPosition(position)}, false without a strip. It
+     * takes effect at the next layout, once the tabs are in.
+     */
+    public static boolean scrollStrip(Object list, int position) { return false; }
 
     /** {@code list.filterTabsView}. */
     @Nullable

@@ -133,6 +133,11 @@ public class LaunchFolderTest {
         @Override public boolean openArchive(Object list) { return archives.add(list); }
         @Override public String archiveTitle() { return archiveTitle; }
 
+        /** Each place the strip was scrolled to. */
+        final List<Integer> scrolls = new ArrayList<>();
+
+        @Override public boolean scrollStrip(Object list, int position) { return scrolls.add(position); }
+
         @Override public int selectedAccount() { return selected; }
         @Override public long userId(int account) { return users.getOrDefault(account, 0L); }
         @Override public int folderCount(int account) { return folders.getOrDefault(account, new ArrayList<>()).size(); }
@@ -482,6 +487,54 @@ public class LaunchFolderTest {
         build(new Object());
         assertEquals(Arrays.asList("0/2", "0/2"), telegram.picks);
         assertTrue(report(), report().contains(LaunchFolder.OPENED + " 2"));
+    }
+
+    @Test public void thePickedTabStartsTheStripSoAPickPastTheEdgeIsInView() {
+        Settings.LAUNCH_FOLDER.save(true);
+        LaunchFolder.pick(1000, FRIENDS);
+        Object list = new Object();
+        build(list);
+        assertEquals(Arrays.asList(2), telegram.scrolls);
+        // A view built again acts as stock, so the strip isn't moved a second time.
+        telegram.built.remove(list);
+        build(list);
+        assertEquals(Arrays.asList(2), telegram.scrolls);
+        // Nothing picked, or a pick that's gone, leaves the strip at its start.
+        LaunchFolder.pick(1000, new LaunchFolder.Folder(42, "Gone"));
+        build(new Object());
+        Settings.LAUNCH_FOLDER.save(false);
+        build(new Object());
+        assertEquals(Arrays.asList(2), telegram.scrolls);
+    }
+
+    @Test public void aPickTheStripStartsWithAnywayDoesntScrollIt() {
+        Settings.LAUNCH_FOLDER.save(true);
+        LaunchFolder.pick(1000, WORK);
+        telegram.folders.get(0).add(0, telegram.folders.get(0).remove(1));
+        build(new Object());
+        assertEquals("Work is the first tab", Arrays.asList("0/0"), telegram.picks);
+        assertEquals(new ArrayList<Integer>(), telegram.scrolls);
+    }
+
+    @Test public void withAllChatsLeftOutThePickedTabIsOneFurtherBack() {
+        Settings.HIDE_ALL_CHATS.save(true);
+        Settings.LAUNCH_FOLDER.save(true);
+        LaunchFolder.pick(1000, FRIENDS);
+        Object list = new Object();
+        buildTabs(list, 0);
+        assertEquals(Arrays.asList(1), telegram.scrolls);
+        // The first folder, which opens with no pick, is the strip's first tab.
+        LaunchFolder.pick(1000, null);
+        buildTabs(new Object(), 0);
+        assertEquals(Arrays.asList(1), telegram.scrolls);
+        // A view built again opens on the pick, and the strip follows it.
+        LaunchFolder.pick(1000, FRIENDS);
+        telegram.built.remove(list);
+        buildTabs(list, 0);
+        assertEquals(Arrays.asList(1, 1), telegram.scrolls);
+        // A rebuild of tabs already in leaves the strip where the user put it.
+        buildTabs(list, 0);
+        assertEquals(Arrays.asList(1, 1), telegram.scrolls);
     }
 
     @Test public void aListAlreadyBuiltWhenTheSwitchWentOnStaysWhereItIs() {

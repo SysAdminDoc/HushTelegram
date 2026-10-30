@@ -10,6 +10,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** Chats hidden with **Hide picked chats** no longer count toward the unread numbers on the folder tabs, and hiding or unhiding one updates them right away, on every account you're signed in to. The app badge still counts their unread messages, since they keep their notifications. (#24)
 * **Telegram:** The settings lock now covers **Emoji next to the chat list title** too. While the settings are locked, tapping it shows the lock note instead of opening the editor. (#17)
 * **Telegram:** Turning **Hide folder tab counters** on or off changes the folder tabs right away. Before, the counts stayed as they were until Telegram restarted.
+* **Telegram:** **Open a folder at launch** brings the folder you picked into view. With more folders than fit across the screen, a pick past the edge used to open selected but out of sight until you scrolled the tabs. With fewer folders the tabs look just as they did.
 
 ## 0.0.21 (2026-10-27)
 
