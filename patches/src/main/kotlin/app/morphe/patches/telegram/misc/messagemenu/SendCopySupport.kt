@@ -1,3 +1,7 @@
+/*
+ * Copyright 2026 HushTelegram contributors
+ * https://github.com/SysAdminDoc/HushTelegram
+ */
 package app.morphe.patches.telegram.misc.messagemenu
 
 import app.morphe.patcher.patch.BytecodePatchContext
