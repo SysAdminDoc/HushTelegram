@@ -27,6 +27,7 @@ import app.morphe.patches.telegram.misc.extension.resolveSendRequestGate
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
 import app.morphe.util.numberOfParameterRegisters
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
@@ -62,6 +63,27 @@ class NewChatsBlockFixtureTest {
         assertEquals("the extension's join requests", 6, named.size)
         for (build in Fixtures.declaredBuilds()) {
             assertEquals("${build.name}: every named join", named, FixtureDex.classes(build, named).keys)
+        }
+    }
+
+    /** A dropped link lookup is answered by reflection, through the callback's run and the error type it takes. */
+    @Test fun `each declared build's request callback still takes Telegram's error type, which the block can make and fill`() {
+        val delegate = "Lorg/telegram/tgnet/RequestDelegate;"
+        val error = "Lorg/telegram/tgnet/TLRPC\$TL_error;"
+        for (build in Fixtures.declaredBuilds()) {
+            val where = build.name
+            val found = FixtureDex.classes(build, setOf(delegate, error))
+            assertEquals("$where: both by name", setOf(delegate, error), found.keys)
+            val runs = found.getValue(delegate).methods.filter { it.name == "run" }
+            assertTrue("$where: RequestDelegate is an interface", AccessFlags.INTERFACE.isSet(found.getValue(delegate).accessFlags))
+            assertEquals("$where: RequestDelegate's run", listOf(listOf("Lorg/telegram/tgnet/TLObject;", error)),
+                runs.map { run -> run.parameterTypes.map { it.toString() } })
+            val errorClass = found.getValue(error)
+            assertTrue("$where: TL_error is public", AccessFlags.PUBLIC.isSet(errorClass.accessFlags))
+            assertTrue("$where: TL_error()", errorClass.methods.any { it.name == "<init>" && it.parameterTypes.isEmpty() && AccessFlags.PUBLIC.isSet(it.accessFlags) })
+            for ((name, type) in listOf("code" to "I", "text" to "Ljava/lang/String;")) {
+                assertTrue("$where: TL_error.$name", errorClass.fields.any { it.name == name && it.type == type && AccessFlags.PUBLIC.isSet(it.accessFlags) })
+            }
         }
     }
 
@@ -247,8 +269,8 @@ class NewChatsBlockFixtureTest {
 
     /**
      * [patched] opens with one gate per hook in [asks], in the order they ask, each handing the
-     * request (p1) over and returning when told to drop it, a false answer going on to the next
-     * gate and then to the stock send, which is whole below them.
+     * request (p1) over, and the block its callback (p2) too, and returning when told to drop it, a
+     * false answer going on to the next gate and then to the stock send, which is whole below them.
      */
     private fun assertGate(where: String, original: Method, patched: Method, asks: List<String>) {
         val after = patched.body()
@@ -257,7 +279,8 @@ class NewChatsBlockFixtureTest {
         for ((at, hook) in asks.withIndex()) {
             val top = at * SEND_REQUEST_GATE_SIZE
             assertEquals("$where: gate $at asks", hook, after[top].ref())
-            assertEquals("$where: gate $at hands it the request", listOf(p1), after[top].namedRegisters())
+            assertEquals("$where: gate $at hands it the request", if (hook == NEW_CHATS_BLOCK_DROP) listOf(p1, p1 + 1) else listOf(p1),
+                after[top].namedRegisters())
             assertEquals("$where: gate $at", listOf(Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.RETURN_VOID),
                 after.subList(top + 1, top + 4).map { it.opcode })
             assertEquals("$where: gate $at goes on or returns", setOf(top + 3, top + SEND_REQUEST_GATE_SIZE), flow.normal[top + 2].toSet())

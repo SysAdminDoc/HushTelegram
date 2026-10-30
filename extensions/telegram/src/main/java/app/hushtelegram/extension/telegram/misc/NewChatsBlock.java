@@ -4,6 +4,7 @@
  */
 package app.hushtelegram.extension.telegram.misc;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -20,8 +21,10 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  *
  * <p>Two hooks ask here. Every request Telegram sends passes through one private method of its
  * connection manager, which asks {@link #drop} first: with the switch on, the requests that join a
- * channel or group, look up an invite link or add a shared folder's chats never go out, and their
- * callbacks never run. And the chat screen asks {@link #refuseOpen} when it starts on a channel or
+ * channel or group, look up an invite link or add a shared folder's chats never go out. A join's
+ * callback never runs. A link lookup's gets an error, the way a dead link would, so Telegram closes
+ * the loading circle it put up and says it can't find the group or folder; with no answer at all
+ * the circle stayed until you went back. And the chat screen asks {@link #refuseOpen} when it starts on a channel or
  * supergroup you aren't in, the preview Telegram shows before you join, as does the topic list when
  * it starts on such a forum, so that screen doesn't open. Chats you're already in, comment threads
  * and everything else stay stock. Both say why with a short toast.
@@ -41,13 +44,26 @@ public final class NewChatsBlock {
             "org.telegram.tgnet.tl.TL_chatlists$TL_chatlists_checkChatlistInvite",
             "org.telegram.tgnet.tl.TL_chatlists$TL_chatlists_joinChatlistUpdates")));
 
+    /** Of those, the ones Telegram sends behind a loading circle that only their answer closes. */
+    private static final Set<String> LOOKUPS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            "org.telegram.tgnet.TLRPC$TL_messages_checkChatInvite",
+            "org.telegram.tgnet.tl.TL_chatlists$TL_chatlists_checkChatlistInvite")));
+
+    /** What a dropped lookup's callback is told. Telegram reads any error it doesn't know as a dead link. */
+    static final int ERROR_CODE = 400;
+    static final String ERROR_TEXT = "NEW_CHATS_BLOCKED";
+
     /**
-     * Asked with every request just before Telegram sends it. True means drop it: the request never
-     * goes out and its callback never runs. A request of any other kind returns at once without
-     * reading a setting. Never throws.
+     * Asked with every request and its callback just before Telegram sends it. True means drop it:
+     * the request never goes out, and a link lookup's callback, when there is one, is answered with
+     * an error. A request of any other kind returns at once without reading a setting. Never throws.
      */
-    public static boolean drop(Object request) {
-        return request != null && joins(request.getClass().getName()) && refuse("joins blocked");
+    public static boolean drop(Object request, Object callback) {
+        if (request == null) return false;
+        String name = request.getClass().getName();
+        if (!joins(name) || !refuse("joins blocked")) return false;
+        if (callback != null && LOOKUPS.contains(name)) answer(callback);
+        return true;
     }
 
     /**
@@ -61,6 +77,33 @@ public final class NewChatsBlock {
     /** Whether a request class, by the name Telegram's builds keep, joins a chat or leads to one. */
     static boolean joins(String className) {
         return JOINS.contains(className);
+    }
+
+    /**
+     * Runs the callback's {@code run(response, error)} with no response and Telegram's own error type,
+     * read off that method, so nothing here names a class R8 could move. Telegram's lookup callbacks
+     * hand the answer to the main thread themselves.
+     */
+    private static void answer(Object callback) {
+        try {
+            for (Class<?> type = callback.getClass(); type != null; type = type.getSuperclass()) {
+                for (Class<?> face : type.getInterfaces()) {
+                    for (Method run : face.getMethods()) {
+                        Class<?>[] parameters = run.getParameterTypes();
+                        if (!run.getName().equals("run") || parameters.length != 2 || !parameters[1].getName().endsWith("$TL_error")) continue;
+                        Object error = parameters[1].getConstructor().newInstance();
+                        parameters[1].getField("code").setInt(error, ERROR_CODE);
+                        parameters[1].getField("text").set(error, ERROR_TEXT);
+                        run.invoke(callback, null, error);
+                        return;
+                    }
+                }
+            }
+            HookStatus.missingMember(FamilyNames.HIDE_POPULAR_APPS, "method", callback.getClass().getName(), "run");
+        } catch (Throwable t) {
+            // The block holds without the answer; Telegram's loading circle just stays up.
+            HookStatus.threw(FamilyNames.HIDE_POPULAR_APPS, "new chats block lookup answer", t);
+        }
     }
 
     /** Whether the switch is on, counted and told when it is. */

@@ -77,6 +77,8 @@ public final class TLRPC {
         public int code;
         public String text;
 
+        public TL_error() {}
+
         public TL_error(int code, String text) {
             this.code = code;
             this.text = text;

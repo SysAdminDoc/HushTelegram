@@ -33,8 +33,8 @@ private const val PATCH = "Hide popular apps"
 
 internal const val NEW_CHATS_BLOCK = "$EXTENSION_PACKAGE/misc/NewChatsBlock;"
 
-/** Every request on its way out: true drops a join. */
-internal const val NEW_CHATS_BLOCK_DROP = "$NEW_CHATS_BLOCK->drop(Ljava/lang/Object;)Z"
+/** Every request on its way out, with its callback: true drops a join and answers a link lookup. */
+internal const val NEW_CHATS_BLOCK_DROP = "$NEW_CHATS_BLOCK->drop(Ljava/lang/Object;Ljava/lang/Object;)Z"
 
 /** A chat you aren't in, about to open: true keeps it closed. */
 internal const val NEW_CHATS_BLOCK_OPEN = "$NEW_CHATS_BLOCK->refuseOpen()Z"
@@ -135,7 +135,7 @@ internal class NewChatsBlockPlan(private val gate: SendRequestGate?, val sites: 
 /** The runtime the gate and the checks call. It's the extension's own, so a change there refuses the patch. */
 internal fun BytecodePatchContext.requireNewChatsBlockRuntime() {
     requireStatusMethod("blockNewChats")
-    controlHook(NEW_CHATS_BLOCK, "drop", listOf("Ljava/lang/Object;"), "Z")
+    controlHook(NEW_CHATS_BLOCK, "drop", listOf("Ljava/lang/Object;", "Ljava/lang/Object;"), "Z")
     controlHook(NEW_CHATS_BLOCK, "refuseOpen", emptyList(), "Z")
 }
 
