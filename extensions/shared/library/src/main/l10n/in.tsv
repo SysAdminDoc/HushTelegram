@@ -340,13 +340,13 @@ Volume keys only change the volume. They no longer start the video or round vide
 # context: a second switch under Keep videos muted on volume keys (#27). Telegram turns a video put in full screen to one fixed landscape side; with this on it follows the phone to either side.
 Full screen videos turn either way	Video layar penuh berputar ke dua arah
 # context: that switch's summary. "full screen" is Telegram's full screen button on a video; "auto-rotate" is Android's own screen rotation setting, use the phone's name for it.
-After you tap full screen, a video follows your phone to either landscape side, even with auto-rotate off.	Setelah kamu mengetuk layar penuh, video mengikuti ponselmu ke sisi lanskap mana pun, meski putar otomatis nonaktif.
+After you tap full screen, a video follows your phone to either landscape side, even with auto-rotate off. Turning your phone upright doesn't end full screen. Tap the button to leave it.	Setelah kamu mengetuk layar penuh, video mengikuti ponselmu ke sisi lanskap mana pun, meski putar otomatis nonaktif. Menegakkan ponsel tidak keluar dari layar penuh. Ketuk tombolnya untuk keluar.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that lets a full screen video turn to either landscape side.
 full screen video turning either way	putaran video layar penuh ke dua arah
 # context: a third switch under Keep videos muted on volume keys (#27). With it on, an open video in the viewer stays in portrait when the phone is turned, and goes landscape only from Telegram's full screen button.
 Turn videos only from the full screen button	Putar video hanya dari tombol layar penuh
 # context: that switch's summary. "full screen" is Telegram's full screen button on a video; use the phone's own words for turning the phone.
-An open video stays upright when you turn your phone. It goes landscape only when you tap full screen.	Video yang terbuka tetap tegak saat kamu memutar ponsel. Video baru berubah ke lanskap saat kamu mengetuk layar penuh.
+An open video stays upright when you turn your phone. It goes landscape only when you tap full screen, and back only when you tap the button again.	Video yang terbuka tetap tegak saat kamu memutar ponsel. Video baru berubah ke lanskap saat kamu mengetuk layar penuh, dan baru kembali saat kamu mengetuk tombolnya lagi.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that keeps an open video upright until full screen.
 keeping a video upright until full screen	menjaga video tetap tegak sampai layar penuh
 Swipe back on profiles	Geser kembali di profil

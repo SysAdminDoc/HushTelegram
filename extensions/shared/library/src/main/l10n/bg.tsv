@@ -337,13 +337,13 @@ Volume keys only change the volume. They no longer start the video or round vide
 # context: a second switch under Keep videos muted on volume keys (#27). Telegram turns a video put in full screen to one fixed landscape side; with this on it follows the phone to either side.
 Full screen videos turn either way	Видеоклиповете на цял екран се въртят във всяка посока
 # context: that switch's summary. "full screen" is Telegram's full screen button on a video; "auto-rotate" is Android's own screen rotation setting, use the phone's name for it.
-After you tap full screen, a video follows your phone to either landscape side, even with auto-rotate off.	След като докоснете цял екран, видеоклипът следва телефона ви към всяка от хоризонталните страни, дори при изключено автоматично завъртане.
+After you tap full screen, a video follows your phone to either landscape side, even with auto-rotate off. Turning your phone upright doesn't end full screen. Tap the button to leave it.	След като докоснете цял екран, видеоклипът следва телефона ви към всяка от хоризонталните страни, дори при изключено автоматично завъртане. Изправянето на телефона не излиза от цял екран. Докоснете бутона, за да излезете.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that lets a full screen video turn to either landscape side.
 full screen video turning either way	видеоклипове на цял екран, които се въртят във всяка посока
 # context: a third switch under Keep videos muted on volume keys (#27). With it on, an open video in the viewer stays in portrait when the phone is turned, and goes landscape only from Telegram's full screen button.
 Turn videos only from the full screen button	Въртене на видеоклиповете само с бутона за цял екран
 # context: that switch's summary. "full screen" is Telegram's full screen button on a video; use the phone's own words for turning the phone.
-An open video stays upright when you turn your phone. It goes landscape only when you tap full screen.	Отвореният видеоклип остава изправен, когато завъртите телефона. Преминава в хоризонтален изглед само когато докоснете цял екран.
+An open video stays upright when you turn your phone. It goes landscape only when you tap full screen, and back only when you tap the button again.	Отвореният видеоклип остава изправен, когато завъртите телефона. Преминава в хоризонтален изглед само когато докоснете цял екран, и се връща само когато докоснете бутона отново.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that keeps an open video upright until full screen.
 keeping a video upright until full screen	държане на видеоклипа изправен до цял екран
 Swipe back on profiles	Плъзгане назад в профилите
