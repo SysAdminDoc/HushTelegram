@@ -216,6 +216,20 @@ public class UnifiedPushTest {
         assertEquals(UnifiedPush.WEB_PUSH, UnifiedPush.type(2));
     }
 
+    /** A failed save leaves the keys in Android's memory, so they're taken back out and a later ask this run signs nothing up either. */
+    @Test public void keysAFailedSaveLeftInMemoryAreTakenBackOut() {
+        signedUp();
+        Flaky flaky = new Flaky(UnifiedPush.prefs(context));
+        UnifiedPush.store = ignored -> flaky;
+        flaky.failWrites = true;
+        flaky.failedWritesStay = true;
+        assertEquals("fcm-token", UnifiedPush.token(2, "fcm-token"));
+        assertEquals(2, UnifiedPush.type(2));
+        assertNull(UnifiedPush.prefs(context).getString(UnifiedPush.WEB_PUSH_KEY, null));
+        assertEquals("fcm-token", UnifiedPush.token(2, "fcm-token"));
+        assertEquals(2, UnifiedPush.type(2));
+    }
+
     /**
      * Telegram's sign-up thread and the main thread asking for the first time at once get the one
      * key pair that's kept, so the token Telegram holds still counts as its own when switching off.
@@ -572,6 +586,8 @@ public class UnifiedPushTest {
     private static final class Flaky implements android.content.SharedPreferences {
         final android.content.SharedPreferences real;
         boolean failWrites;
+        /** A failed write still changes what reads see, the way Android's own commit leaves it in memory. */
+        boolean failedWritesStay;
         /** When set, each read of the auth secret waits up to a second for the others, so first asks overlap if they can. */
         java.util.concurrent.CountDownLatch readers;
 
@@ -605,7 +621,7 @@ public class UnifiedPushTest {
             real.unregisterOnSharedPreferenceChangeListener(listener);
         }
 
-        /** Changes wait in the real editor and are dropped when the write fails. */
+        /** Changes wait in the real editor and are dropped when the write fails, unless {@link #failedWritesStay}. */
         @Override public Editor edit() {
             Editor writes = real.edit();
             return new Editor() {
@@ -617,8 +633,12 @@ public class UnifiedPushTest {
                 @Override public Editor putBoolean(String key, boolean value) { writes.putBoolean(key, value); return this; }
                 @Override public Editor remove(String key) { writes.remove(key); return this; }
                 @Override public Editor clear() { writes.clear(); return this; }
-                @Override public boolean commit() { return !failWrites && writes.commit(); }
-                @Override public void apply() { if (!failWrites) writes.apply(); }
+                @Override public boolean commit() {
+                    if (!failWrites) return writes.commit();
+                    if (failedWritesStay) writes.commit();
+                    return false;
+                }
+                @Override public void apply() { if (!failWrites || failedWritesStay) writes.apply(); }
             };
         }
     }

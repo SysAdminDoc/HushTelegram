@@ -268,6 +268,8 @@ public final class UnifiedPush {
                     new SecureRandom().nextBytes(secret);
                     auth = base64url.encodeToString(secret);
                     if (!prefs.edit().putString(WEB_PUSH_KEY, key).putString(WEB_PUSH_AUTH, auth).commit()) {
+                        // Android keeps a failed write in memory, where the next ask this run would find them.
+                        prefs.edit().remove(WEB_PUSH_KEY).remove(WEB_PUSH_AUTH).commit();
                         HookStatus.counted(FamilyNames.UNIFIED_PUSH, "Web Push keys not saved, made again at the next start");
                         return null;
                     }
