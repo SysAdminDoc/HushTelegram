@@ -131,6 +131,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting DISABLE_DOUBLE_TAP_REACTIONS =
             new BooleanSetting("hushtelegram_disable_double_tap_reactions", FALSE);
 
+    /** The row of reactions under a message is not drawn; the stored reactions are untouched. */
+    public static final BooleanSetting HIDE_REACTION_ROWS =
+            new BooleanSetting("hushtelegram_hide_reaction_rows", FALSE);
+
+    /** The reaction strip at the top of the long-press menu, and the panel it expands into, never open. */
+    public static final BooleanSetting HIDE_REACTION_PICKER =
+            new BooleanSetting("hushtelegram_hide_reaction_picker", FALSE);
+
     /**
      * The Contacts tab's automatic prompt and its "!" badge once a contacts prompt was declined;
      * the first request, the tab's own buttons and contact sync stay stock.

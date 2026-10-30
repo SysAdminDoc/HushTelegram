@@ -113,6 +113,8 @@ public final class SettingsBackup {
             Settings.SHOW_LOCAL_IDS,
             Settings.PROFILE_DATA_CENTER,
             Settings.DISABLE_DOUBLE_TAP_REACTIONS,
+            Settings.HIDE_REACTION_ROWS,
+            Settings.HIDE_REACTION_PICKER,
             Settings.QUIET_CONTACTS_NAG,
             Settings.HOLIDAY_LOOK,
             Settings.USE_SYSTEM_FONT,

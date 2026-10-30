@@ -69,6 +69,8 @@ public final class SettingsStatus {
     public static boolean profileLocalIds() { return false; }
     public static boolean chatDoubleTapReaction() { return false; }
     public static boolean previewDoubleTapReaction() { return false; }
+    public static boolean reactionRows() { return false; }
+    public static boolean reactionPicker() { return false; }
     public static boolean quietContactsNag() { return false; }
     public static boolean holidayLook() { return false; }
     public static boolean titleEmoji() { return false; }

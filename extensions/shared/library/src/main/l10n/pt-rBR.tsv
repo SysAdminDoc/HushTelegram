@@ -1001,3 +1001,11 @@ Reaction notifications without push	Notificações de reações sem push
 Shows a notification when someone reacts to your message while Telegram is connected, even when no push arrives. A reaction that also comes by push shows once.	Mostra uma notificação quando alguém reage à sua mensagem enquanto o Telegram está conectado, mesmo sem chegar nenhum push. Uma reação que também chega por push aparece só uma vez.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of UnifiedPush notifications that shows reactions without a push.
 reaction notifications without push	as notificações de reações sem push
+# context: Two switches under Disable double-tap reactions, for the reaction row under messages and the picker in the long-press menu.
+Hide reactions under messages	Ocultar reações abaixo das mensagens
+The row of reactions under each message isn't drawn. Nothing is removed, so turn it off and they're back. Tags in Saved Messages stay.	A linha de reações abaixo de cada mensagem não é desenhada. Nada é removido: desative e elas voltam. As tags das Mensagens salvas continuam.
+Hide the reaction picker	Ocultar o seletor de reações
+The row of reactions at the top of the long-press menu and the panel it opens are gone. The rest of the menu works as before.	A linha de reações no topo do menu de toque longo e o painel que ela abre somem. O resto do menu funciona como antes.
+# context: Coverage labels for the reaction row and reaction picker hooks.
+reaction rows under messages	linhas de reações abaixo das mensagens
+the reaction picker in the message menu	o seletor de reações no menu da mensagem

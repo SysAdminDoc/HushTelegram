@@ -517,6 +517,16 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS).addPreference(toggle(context, Settings.DISABLE_DOUBLE_TAP_REACTIONS, L10n.t("Disable double-tap reactions"),
                     PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS.coverageSummary(L10n.t("Double-tapping a message no longer adds a reaction. Scrolling, normal taps, "
                             + "selecting and the reaction menu work as before."))));
+            if (PatchFamily.Capability.REACTION_ROWS.installed()) {
+                on(pages, PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS).addPreference(toggle(context, Settings.HIDE_REACTION_ROWS,
+                        L10n.t("Hide reactions under messages"), L10n.t("The row of reactions under each message isn't drawn. "
+                                + "Nothing is removed, so turn it off and they're back. Tags in Saved Messages stay.")));
+            }
+            if (PatchFamily.Capability.REACTION_PICKER.installed()) {
+                on(pages, PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS).addPreference(toggle(context, Settings.HIDE_REACTION_PICKER,
+                        L10n.t("Hide the reaction picker"), L10n.t("The row of reactions at the top of the long-press menu and the "
+                                + "panel it opens are gone. The rest of the menu works as before.")));
+            }
         }
         if (build.contains(PatchFamily.HIDE_TRANSLATE_BAR)) {
             on(pages, PatchFamily.HIDE_TRANSLATE_BAR).addPreference(toggle(context, Settings.HIDE_TRANSLATE_BAR, L10n.t("Hide translate bar"),

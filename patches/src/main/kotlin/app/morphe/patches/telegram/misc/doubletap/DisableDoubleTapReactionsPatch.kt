@@ -32,10 +32,23 @@ val disableDoubleTapReactionsPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.telegram())
     execute {
         val sites = resolveDoubleTapReactions()
+        listOf("reactionRows", "reactionPicker").forEach(::requireStatusMethod)
+        controlHook(DOUBLE_TAP_REACTIONS, "rows", listOf("Ljava/lang/Object;", "Z", "Z"), "Ljava/lang/Object;")
+        controlHook(DOUBLE_TAP_REACTIONS, "picker", listOf("Z"), "Z")
+        val rows = resolveReactionRows()
+        val picker = resolveReactionPicker()
         sites.forEach { it.insert(MutableMethod(ImmutableMethod.of(it.method))) }
         sites.forEach { it.insert(it.method) }
         enableCapability("chatDoubleTapReaction")
         enableCapability("previewDoubleTapReaction")
+        for ((plan, capability, what) in listOf(Triple(rows, "reactionRows", "reaction rows"), Triple(picker, "reactionPicker", "reaction picker"))) {
+            if (plan.missing == null) {
+                plan.apply()
+                enableCapability(capability)
+            } else {
+                patchLog.warning("Disable double-tap reactions: ${plan.missing}. The patch goes on without the $what switch.")
+            }
+        }
         enableStatus("disableDoubleTapReactions")
     }
 }

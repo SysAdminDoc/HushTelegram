@@ -226,8 +226,10 @@ public class PausedHooksTest {
             return menu.getChildCount() == 1;
         }, () -> app.hushtelegram.extension.telegram.misc.ProfileDcForTests.row(
                 new android.widget.FrameLayout(RuntimeEnvironment.getApplication()))));
-        probes.put(PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS, Collections.singletonList(
-                app.hushtelegram.extension.telegram.misc.DoubleTapReactions::stopReaction));
+        probes.put(PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS, Arrays.asList(
+                app.hushtelegram.extension.telegram.misc.DoubleTapReactions::stopReaction,
+                () -> app.hushtelegram.extension.telegram.misc.DoubleTapReactions.rows(new Object(), false, false) == null,
+                () -> !app.hushtelegram.extension.telegram.misc.DoubleTapReactions.picker(true)));
         probes.put(PatchFamily.HIDE_CONTACTS_BLOCK, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.ContactsBlock.rows(new java.util.ArrayList<>(Collections.singletonList("contact"))) == null,
                 () -> !app.hushtelegram.extension.telegram.misc.ContactsBlock.placeholder(true)));
