@@ -63,6 +63,7 @@ public final class MessageMenu {
     static final int COPY_PHOTO = 0x48544d03;
     static final int QUICK_FORWARD = 0x48544d04;
     static final int COPY_TEXT = 0x48544d05;
+    static final int SAVE_DOWNLOAD = 0x48544d06;
 
     /** How many chats Quick forward lists, Saved Messages first. */
     static final int QUICK_CHATS = 5;
@@ -82,7 +83,8 @@ public final class MessageMenu {
         boolean quick = on(Settings.MESSAGE_MENU_QUICK_FORWARD);
         boolean history = KeepEdits.on();
         boolean text = on(Settings.MESSAGE_MENU_COPY_PROTECTED);
-        if (!repeat && !copy && !details && !quick && !history && !text || icons == null || items == null || options == null) return;
+        boolean save = on(Settings.MESSAGE_MENU_SAVE_PROTECTED);
+        if (!repeat && !copy && !details && !quick && !history && !text && !save || icons == null || items == null || options == null) return;
         try {
             Object message = selected(chat);
             if (message == null) return;
@@ -93,7 +95,8 @@ public final class MessageMenu {
             copy = copy && forwardable && photo(message) && downloaded(message) != null;
             quick = quick && forwardable && quickable(chat, message);
             text = text && restricted(message) && !copyable(chat, message).isEmpty();
-            offer(icons, items, options, repeat, copy, details, quick, text, forwardOption());
+            save = save && restricted(message) && downloaded(message) != null;
+            offer(icons, items, options, repeat, copy, details, quick, text, save, forwardOption());
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "message menu", failure);
         }
@@ -101,14 +104,15 @@ public final class MessageMenu {
 
     /** Asked first when an option is chosen. Telegram's own numbers pass by untouched. */
     public static void chosen(Object chat, int option) {
-        if (option != REPEAT && option != DETAILS && option != COPY_PHOTO && option != QUICK_FORWARD && option != COPY_TEXT) return;
+        if (option != REPEAT && option != DETAILS && option != COPY_PHOTO && option != QUICK_FORWARD && option != COPY_TEXT && option != SAVE_DOWNLOAD) return;
         Context context = null;
         try {
             if (!Utils.settingsReady()) return;
             BooleanSetting setting = option == REPEAT ? Settings.MESSAGE_MENU_REPEAT
                     : option == DETAILS ? Settings.MESSAGE_MENU_DETAILS
                     : option == COPY_PHOTO ? Settings.MESSAGE_MENU_COPY_PHOTO
-                    : option == COPY_TEXT ? Settings.MESSAGE_MENU_COPY_PROTECTED : Settings.MESSAGE_MENU_QUICK_FORWARD;
+                    : option == COPY_TEXT ? Settings.MESSAGE_MENU_COPY_PROTECTED
+                    : option == SAVE_DOWNLOAD ? Settings.MESSAGE_MENU_SAVE_PROTECTED : Settings.MESSAGE_MENU_QUICK_FORWARD;
             if (!on(setting) && !(option == DETAILS && KeepEdits.on())) return;
             context = Utils.getContext();
             Context host = activity(chat);
@@ -133,6 +137,8 @@ public final class MessageMenu {
                 HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "quick forward opened");
             } else if (option == COPY_TEXT) {
                 copyText(context, copyable(chat, message));
+            } else if (option == SAVE_DOWNLOAD) {
+                saveToDownloads(context, message);
             } else if (option == COPY_PHOTO) {
                 File file = downloaded(message);
                 if (file == null) {
@@ -154,6 +160,7 @@ public final class MessageMenu {
 
     private static String failureMessage(Context context, int option) {
         return option == COPY_PHOTO || option == COPY_TEXT ? L10n.t(context, "Couldn't copy that. Try again.")
+                : option == SAVE_DOWNLOAD ? L10n.t(context, "Couldn't save that. Try again.")
                 : option == QUICK_FORWARD ? L10n.t(context, "Can't forward there")
                 : L10n.t(context, "Couldn't complete that action. Try again.");
     }
@@ -186,6 +193,11 @@ public final class MessageMenu {
 
     /** As above, with Copy text, which a chat that doesn't allow saving gets just before Message details. */
     static void offer(List<Object> icons, List<Object> items, List<Object> options, boolean repeat, boolean copy, boolean details, boolean quick, boolean text, int forward) {
+        offer(icons, items, options, repeat, copy, details, quick, text, false, forward);
+    }
+
+    /** As above, with Save to Downloads, which a downloaded file in a chat that doesn't allow saving gets after Copy. */
+    static void offer(List<Object> icons, List<Object> items, List<Object> options, boolean repeat, boolean copy, boolean details, boolean quick, boolean text, boolean save, int forward) {
         if (options.isEmpty() || icons.size() != items.size() || items.size() != options.size()) return;
         int at = options.indexOf(forward);
         if (at >= 0 && copy) {
@@ -215,6 +227,13 @@ public final class MessageMenu {
             icons.add(icon);
             items.add(label);
             options.add(COPY_TEXT);
+        }
+        if (save) {
+            int icon = copyIcon();
+            String label = L10n.t("Save to Downloads");
+            icons.add(icon);
+            items.add(label);
+            options.add(SAVE_DOWNLOAD);
         }
         if (details) {
             int icon = detailsIcon();
@@ -247,6 +266,28 @@ public final class MessageMenu {
             HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "text copy", failure);
             feedback(context, L10n.t(context, "Couldn't copy that. Try again."));
         }
+    }
+
+    /**
+     * Copies the downloaded file into Downloads/Telegram on the copy worker, then says so. Only this
+     * item's own switch decides, so the automatic Save downloads switches can stay off.
+     */
+    private static void saveToDownloads(Context context, Object message) {
+        File file = downloaded(message);
+        if (file == null) {
+            feedback(context, L10n.t(context, "Couldn't save that. Try again."));
+            return;
+        }
+        String name = SaveDownloads.displayName(documentName(message), file.getName());
+        SaveDownloads.work.execute(() -> {
+            String result = SaveDownloads.saveByHand(file, name, file.getName());
+            boolean saved = SaveDownloads.SAVED.equals(result);
+            boolean already = SaveDownloads.ALREADY_SAVED.equals(result);
+            String said = saved ? L10n.t(context, "Saved to Downloads")
+                    : already ? L10n.t(context, "Already in Downloads") : L10n.t(context, "Couldn't save that. Try again.");
+            feedback(context, said);
+            if (saved) HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "file saved by hand");
+        });
     }
 
     /**
@@ -549,6 +590,9 @@ public final class MessageMenu {
 
     /** Whether the message's chat or the message itself doesn't allow saving, and it isn't a secret chat's. Replaced when patching. */
     public static boolean restricted(Object message) { return false; }
+
+    /** The document's own name for the Downloads copy, null for a photo or video. */
+    public static String documentName(Object message) { return null; }
 
     /** The message's text, or its caption. Replaced when patching. */
     public static String text(Object message) { return null; }

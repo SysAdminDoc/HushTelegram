@@ -1015,3 +1015,10 @@ Puts Copy back in the menu of a message in a chat that doesn't allow saving, and
 Puts Copy back in the menu of a message in a chat that doesn't allow saving. Secret chats stay as they are.	Traz o Copiar de volta ao menu de uma mensagem em um chat que não permite salvar. Chats secretos continuam como estão.
 Text copied	Texto copiado
 text selection in chats that don't allow saving	a seleção de texto em chats que não permitem salvar
+# context: Switch for Save to Downloads in the message menu (#29), its item (Telegram's own key SaveToDownloads) and its toasts.
+Add Save to Downloads to the message menu	Adicionar Salvar em Downloads ao menu da mensagem
+Adds Save to Downloads to a downloaded photo, video, file or song in a chat that doesn't allow saving. Nothing is copied until you tap it.	Adiciona Salvar em Downloads a uma foto, um vídeo, um arquivo ou uma música baixados em um chat que não permite salvar. Nada é copiado até você tocar nele.
+Save to Downloads	Salvar em Downloads
+Saved to Downloads	Salvo em Downloads
+Already in Downloads	Já está em Downloads
+Couldn't save that. Try again.	Não foi possível salvar. Tente de novo.

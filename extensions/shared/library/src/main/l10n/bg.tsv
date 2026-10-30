@@ -1014,3 +1014,10 @@ Puts Copy back in the menu of a message in a chat that doesn't allow saving, and
 Puts Copy back in the menu of a message in a chat that doesn't allow saving. Secret chats stay as they are.	Връща Копиране в менюто на съобщение в чат, който не позволява запазване. Тайните чатове остават непроменени.
 Text copied	Текстът е копиран
 text selection in chats that don't allow saving	избирането на текст в чатове, които не позволяват запазване
+# context: Switch for Save to Downloads in the message menu (#29), its item (Telegram's own key SaveToDownloads) and its toasts.
+Add Save to Downloads to the message menu	Добавяне на Запазване в Изтегляния към менюто на съобщението
+Adds Save to Downloads to a downloaded photo, video, file or song in a chat that doesn't allow saving. Nothing is copied until you tap it.	Добавя Запазване в Изтегляния към изтеглена снимка, видео, файл или песен в чат, който не позволява запазване. Нищо не се копира, докато не го докоснеш.
+Save to Downloads	Запази в Изтегляния
+Saved to Downloads	Запазено в Изтегляния
+Already in Downloads	Вече е в Изтегляния
+Couldn't save that. Try again.	Не можа да се запази. Опитай отново.

@@ -552,6 +552,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting MESSAGE_MENU_COPY_PROTECTED =
             new BooleanSetting("hushtelegram_message_menu_copy_protected", FALSE);
 
+    /** A downloaded file in a chat that doesn't allow saving gets Save to Downloads in its long-press menu (#29). */
+    public static final BooleanSetting MESSAGE_MENU_SAVE_PROTECTED =
+            new BooleanSetting("hushtelegram_message_menu_save_protected", FALSE);
+
     /**
      * A channel's read metrics (how long each post stayed on screen), Premium screen interaction
      * reports and the camera's dual-camera report are never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

@@ -71,6 +71,8 @@ public class SaveDownloadsTest {
         Settings.SAVE_DOWNLOADS.resetToDefault();
         SettingReadsForTests.mend(Settings.SAVE_RESTRICTED_DOWNLOADS);
         Settings.SAVE_RESTRICTED_DOWNLOADS.resetToDefault();
+        SettingReadsForTests.mend(Settings.MESSAGE_MENU_SAVE_PROTECTED);
+        Settings.MESSAGE_MENU_SAVE_PROTECTED.resetToDefault();
         HookStatus.clear();
         SaveDownloadsForTests.STORED.clear();
         SaveDownloadsForTests.LOOKUPS.clear();
@@ -147,6 +149,44 @@ public class SaveDownloadsTest {
 
     private static Message restrictedPdf() {
         return new Message(new Document("2_51.pdf", "report.pdf"), true, true);
+    }
+
+    @Test public void saveByHandCopiesWithOnlyTheItemsOwnSwitchOn() throws IOException {
+        assertFalse(Settings.SAVE_DOWNLOADS.get());
+        assertFalse(Settings.SAVE_RESTRICTED_DOWNLOADS.get());
+        File file = downloaded("2_51.pdf", "the protected report");
+        // Switch off: nothing is copied.
+        assertNull(SaveDownloads.saveByHand(file, "report.pdf", "2_51.pdf"));
+        assertTrue(downloads.rows.isEmpty());
+
+        Settings.MESSAGE_MENU_SAVE_PROTECTED.save(true);
+        ByteArrayOutputStream body = bodyOf(1);
+        assertEquals(SaveDownloads.SAVED, SaveDownloads.saveByHand(file, "report.pdf", "2_51.pdf"));
+        ContentValues row = downloads.row(1);
+        assertEquals("report.pdf", row.getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+        assertEquals("Download/Telegram/", row.getAsString(MediaStore.MediaColumns.RELATIVE_PATH));
+        assertEquals(Integer.valueOf(0), row.getAsInteger(MediaStore.MediaColumns.IS_PENDING));
+        assertEquals("the protected report", body.toString(StandardCharsets.UTF_8.name()));
+        // Tapped again, it is already there.
+        assertEquals(SaveDownloads.ALREADY_SAVED, SaveDownloads.saveByHand(file, "report.pdf", "2_51.pdf"));
+        assertEquals(1, downloads.rows.size());
+    }
+
+    @Test public void saveByHandStopsWhenPausedOrTheSwitchGoesOff() throws IOException {
+        File file = downloaded("2_51.pdf", "pdf");
+        Settings.MESSAGE_MENU_SAVE_PROTECTED.save(true);
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        assertNull(SaveDownloads.saveByHand(file, "report.pdf", "2_51.pdf"));
+        PauseForTests.resume();
+        Settings.MESSAGE_MENU_SAVE_PROTECTED.save(false);
+        assertNull(SaveDownloads.saveByHand(file, "report.pdf", "2_51.pdf"));
+        assertTrue(downloads.rows.isEmpty());
+    }
+
+    @Test public void saveByHandLeavesTheAutomaticSwitchesAlone() throws IOException {
+        Settings.MESSAGE_MENU_SAVE_PROTECTED.save(true);
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), restrictedPdf());
+        assertTrue("the automatic copy stays off", downloads.rows.isEmpty());
     }
 
     /**

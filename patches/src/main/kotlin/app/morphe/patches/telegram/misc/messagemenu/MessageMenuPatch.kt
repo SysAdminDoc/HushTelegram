@@ -95,7 +95,7 @@ internal const val APPLICATION_ID = "Lorg/telegram/messenger/ApplicationLoader;-
 private const val NAME = "Add Repeat to the message menu"
 
 /** The extension's option numbers, Repeat, Message details, Copy photo and Quick forward, which Telegram's own may never use. */
-internal val MENU_OPTIONS = listOf(0x48544d01, 0x48544d02, 0x48544d03, 0x48544d04, 0x48544d05)
+internal val MENU_OPTIONS = listOf(0x48544d01, 0x48544d02, 0x48544d03, 0x48544d04, 0x48544d05, 0x48544d06)
 private val MOVES = setOf(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_WIDE, Opcode.MOVE_WIDE_FROM16)
 
 @Suppress("unused")
@@ -181,7 +181,7 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     for (name in listOf("canSend", "blocked", "premium", "forwarded", "photo", "restricted")) controlHook(MESSAGE_MENU, name, listOf(OBJECT), "Z")
     for (name in listOf("type", "id", "date", "edited", "forwardDate", "fileDc", "photoSize")) controlHook(MESSAGE_MENU, name, listOf(OBJECT), "I")
     for (name in listOf("dialog", "sender", "forwardFrom", "documentSize")) controlHook(MESSAGE_MENU, name, listOf(OBJECT), "J")
-    for (name in listOf("forwardName", "attachPath", "text")) controlHook(MESSAGE_MENU, name, listOf(OBJECT), "Ljava/lang/String;")
+    for (name in listOf("forwardName", "attachPath", "text", "documentName")) controlHook(MESSAGE_MENU, name, listOf(OBJECT), "Ljava/lang/String;")
     controlHook(MESSAGE_MENU, "photoSizes", listOf(OBJECT), LIST)
     controlHook(MESSAGE_MENU, "photoFile", listOf(OBJECT), FILE)
     controlHook(MESSAGE_MENU, "uri", listOf(CONTEXT, FILE), URI)
@@ -333,7 +333,7 @@ private fun requireForwardArguments(forward: Method) {
 private fun BytecodePatchContext.requireHostMembers() {
     controlMembers(MESSAGE, "messageOwner:$TL_MESSAGE", "type:I", "currentAccount:I", "scheduled:Z",
         "getId()I", "getDialogId()J", "getFromChatId()J", "getForwardedName()Ljava/lang/String;", "getDocument()$DOCUMENT",
-        "isPoll()Z", "isTodo()Z", "isPhoto()Z", "isHiddenSensitive()Z", "static getPeerId($PEER)J", "static getMedia($MESSAGE)$MEDIA")
+        "isPoll()Z", "isTodo()Z", "isPhoto()Z", "isHiddenSensitive()Z", "getDocumentName()$STRING", "static getPeerId($PEER)J", "static getMedia($MESSAGE)$MEDIA")
     controlMembers(GROUPED, "messages:$LIST")
     controlMembers(TL_MESSAGE, "message:$STRING", "noforwards:Z", "date:I", "edit_date:I", "fwd_from:$FWD_HEADER", "action:$ACTION", "attachPath:Ljava/lang/String;")
     controlMembers(FILE_LOADER, "static getInstance(I)$FILE_LOADER", "getPathToMessage($TL_MESSAGE)$FILE")
@@ -423,6 +423,12 @@ internal fun BytecodePatchContext.writeMessageMenuStubs(site: MessageMenuSite) {
         return-object v0
         :hush_none
         const/4 v0, 0x0
+        return-object v0
+    """)
+    writeStub(MESSAGE_MENU, "documentName", 2, """
+        check-cast p0, $MESSAGE
+        invoke-virtual {p0}, $MESSAGE->getDocumentName()$STRING
+        move-result-object v0
         return-object v0
     """)
     writeStub(MESSAGE_MENU, "activity", 2, """

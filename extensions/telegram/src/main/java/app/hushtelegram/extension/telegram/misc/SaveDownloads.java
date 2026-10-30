@@ -397,29 +397,46 @@ public final class SaveDownloads {
      * @param restricted whether its chat doesn't allow saving, so the second switch has to stay on too
      */
     static void save(File file, String name, String document, boolean restricted) {
+        save(file, name, document, restricted, false);
+    }
+
+    /**
+     * The "Save to Downloads" menu item: copies the one file the user picked, whatever the two
+     * automatic switches say. Only the item's own switch is asked, before and after the write.
+     * Returns what happened ({@link #SAVED}, {@link #ALREADY_SAVED}) or null when nothing was copied.
+     */
+    static String saveByHand(File file, String name, String document) {
+        return save(file, name, document, true, true);
+    }
+
+    private static String save(File file, String name, String document, boolean restricted, boolean manual) {
         try {
             // Turned off or paused while it waited behind other copies.
-            if (!wanted(restricted)) {
+            if (!wanted(restricted, manual)) {
                 HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, DROPPED);
-                return;
+                return null;
             }
             Context context = Utils.getContext();
-            if (context == null || !file.isFile()) return;
+            if (context == null || !file.isFile()) return null;
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                 HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, "file left in Telegram's shared folder on Android 9");
-                return;
+                return null;
             }
             if (!insideApp(context, file)) {
                 HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, "file already in shared storage");
-                return;
+                return manual ? ALREADY_SAVED : null;
             }
-            HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, copy(context, file, name, document, restricted));
+            String result = copy(context, file, name, document, restricted, manual);
+            HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, result);
+            return result;
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.SAVE_DOWNLOADS, "copy", failure);
+            return null;
         }
     }
 
-    private static boolean wanted(boolean restricted) {
+    private static boolean wanted(boolean restricted, boolean manual) {
+        if (manual) return Utils.settingsReady() && Settings.MESSAGE_MENU_SAVE_PROTECTED.get();
         return Utils.settingsReady() && Settings.SAVE_DOWNLOADS.get()
                 && (!restricted || Settings.SAVE_RESTRICTED_DOWNLOADS.get());
     }
@@ -447,7 +464,7 @@ public final class SaveDownloads {
      * name and size. One added before it is taken once by name and size, see {@link #OLDER_COPY}.
      */
     @RequiresApi(Build.VERSION_CODES.Q)
-    private static String copy(Context context, File file, String name, String document, boolean restricted)
+    private static String copy(Context context, File file, String name, String document, boolean restricted, boolean manual)
             throws IOException {
         ContentResolver resolver = context.getContentResolver();
         Uri downloads = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
@@ -479,7 +496,7 @@ public final class SaveDownloads {
                 for (int read; (read = in.read(buffer)) != -1; ) out.write(buffer, 0, read);
             }
             // Turned off or paused while it was written: the hidden entry goes and nothing shows up.
-            if (!wanted(restricted)) {
+            if (!wanted(restricted, manual)) {
                 resolver.delete(pending, null, null);
                 return DROPPED;
             }

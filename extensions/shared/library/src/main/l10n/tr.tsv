@@ -1018,3 +1018,10 @@ Puts Copy back in the menu of a message in a chat that doesn't allow saving, and
 Puts Copy back in the menu of a message in a chat that doesn't allow saving. Secret chats stay as they are.	Kaydetmeye izin vermeyen bir sohbetteki mesajın menüsüne Kopyala'yı geri getirir. Gizli sohbetler olduğu gibi kalır.
 Text copied	Metin kopyalandı
 text selection in chats that don't allow saving	kaydetmeye izin vermeyen sohbetlerde metin seçimi
+# context: Switch for Save to Downloads in the message menu (#29), its item (Telegram's own key SaveToDownloads) and its toasts.
+Add Save to Downloads to the message menu	Mesaj menüsüne İndirilenlere kaydet ekle
+Adds Save to Downloads to a downloaded photo, video, file or song in a chat that doesn't allow saving. Nothing is copied until you tap it.	Kaydetmeye izin vermeyen bir sohbette indirilmiş fotoğraf, video, dosya veya şarkıya İndirilenlere kaydet ekler. Dokunana kadar hiçbir şey kopyalanmaz.
+Save to Downloads	İndirilenlere kaydet
+Saved to Downloads	İndirilenlere kaydedildi
+Already in Downloads	Zaten İndirilenler'de
+Couldn't save that. Try again.	Kaydedilemedi. Tekrar dene.
