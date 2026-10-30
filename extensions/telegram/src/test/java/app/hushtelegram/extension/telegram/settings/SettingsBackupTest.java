@@ -1078,6 +1078,8 @@ public class SettingsBackupTest {
             preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             settle();
             assertEquals("Settings imported. 2 switches changed.", ShadowToast.getTextOfLatestToast());
+            String row = String.valueOf(page.findPreference(IMPORT_ROW).getSummary());
+            assertTrue("the import row doesn't say how it went: " + row, row.startsWith("Settings imported. 2 switches changed.\n"));
             assertFalse(Settings.HIDE_ADS.savedValue());
             assertFalse(Settings.DISABLE_UPDATE_CHECKS.savedValue());
             assertTrue(Settings.DISABLE_ANALYTICS.savedValue());
@@ -1625,8 +1627,11 @@ public class SettingsBackupTest {
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             Activity activity = controller.get();
             HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            String resting = String.valueOf(page.findPreference(EXPORT_ROW).getSummary());
             export(activity, page, uri);
             assertEquals(MISMATCH, ShadowToast.getTextOfLatestToast());
+            assertEquals("the row keeps the answer a two-line toast cuts off at large text",
+                    MISMATCH + "\n" + resting, String.valueOf(page.findPreference(EXPORT_ROW).getSummary()));
             String kept = new String(SettingsFileProvider.get(uri), StandardCharsets.UTF_8);
             assertTrue("the app truncated after all", kept.startsWith(now) && kept.endsWith("{\"old\":true}"));
             assertEquals(SettingsBackup.Reason.DAMAGED, reasonFor(kept));
@@ -1635,6 +1640,8 @@ public class SettingsBackupTest {
             SettingsFileProvider.refusesTruncate = false;
             export(activity, page, uri);
             assertEquals("Settings exported.", ShadowToast.getTextOfLatestToast());
+            assertEquals("the newer answer replaces the older one", "Settings exported.\n" + resting,
+                    String.valueOf(page.findPreference(EXPORT_ROW).getSummary()));
             assertEquals(now, new String(SettingsFileProvider.get(uri), StandardCharsets.UTF_8));
         }
     }
@@ -1672,8 +1679,13 @@ public class SettingsBackupTest {
             Activity activity = controller.get();
             HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
             ShadowAlertDialog.reset();
+            String resting = String.valueOf(page.findPreference(IMPORT_ROW).getSummary());
+            String exportResting = String.valueOf(page.findPreference(EXPORT_ROW).getSummary());
             deliver(activity, tap(activity, page, IMPORT_ROW), SettingsBackup.create());
-            assertEquals(SettingsBackupPreference.refusal(SettingsBackup.Reason.UNREADABLE), ShadowToast.getTextOfLatestToast());
+            String refused = SettingsBackupPreference.refusal(SettingsBackup.Reason.UNREADABLE);
+            assertEquals(refused, ShadowToast.getTextOfLatestToast());
+            assertEquals(refused + "\n" + resting, String.valueOf(page.findPreference(IMPORT_ROW).getSummary()));
+            assertEquals("only the acting row says it", exportResting, String.valueOf(page.findPreference(EXPORT_ROW).getSummary()));
             assertNull(ShadowAlertDialog.getLatestAlertDialog());
             assertTrue(page.findPreference(IMPORT_ROW).isEnabled());
             assertTrue(page.findPreference(EXPORT_ROW).isEnabled());
