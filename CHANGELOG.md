@@ -4,6 +4,7 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** In the HushTelegram settings, the search box's outline now goes all the way around while you type. The X that clears the search used to cover its right end.
 * **Telegram:** Reactions to your messages now show a notification on patched builds, which Google's push never reaches. **UnifiedPush notifications** has a new switch under it, **Reaction notifications without push**, on by default. While Telegram is connected, someone reacting to one of your messages gets the same "reacted to your message" notification Telegram shows from a push, once per reaction. Telegram's own **Reactions** switch in Notifications and Sounds still has to be on. (#41)
 * **Telegram:** With **Keep Telegram's files in internal storage** on, files Telegram downloaded before you turned it on open from Android/data again instead of downloading a second copy. New downloads still land in Internal storage/Telegram. (#7)
 * **Telegram:** **Ask before sending a voice or video message** pauses the recording before it asks, the way Telegram does before its own paid-message question, so nothing you say or film while the question is up ends up in the message. Send sends the clip as it was. Cancel leaves it paused in Telegram's preview, where you can play it, delete it or send it. The send button under that preview asks too, and Cancel there keeps the clip just as it was.
