@@ -194,6 +194,17 @@ public class SaveDownloadsTest {
         assertTrue(downloads.rows.isEmpty());
     }
 
+    @Test public void otherMediaIsCountedButNotItsThumbnails() throws IOException {
+        Settings.SAVE_DOWNLOADS.save(true);
+        File file = downloaded("2_51.pdf", "pdf");
+        // A GIF's own file from an open chat, then its thumbnail, then a voice message auto-downloaded in the background.
+        SaveDownloads.fileLoaded(0, "2_51.pdf", file, new Message(new Document("2_51.pdf", "clip.mp4"), false, false));
+        SaveDownloads.fileLoaded(0, "2_77.jpg", file, new Message(new Document("2_51.pdf", "clip.mp4"), false, false));
+        SaveDownloads.fileLoaded(0, "2_51.pdf", file, queuedKey(51, -1002233445566L, 2));
+        assertTrue(downloads.rows.isEmpty());
+        assertTrue(String.join("\n", HookStatus.report()).contains(SaveDownloads.OTHER_MEDIA + " 2"));
+    }
+
     @Test public void aQueuedFileWhoseMessageIsGoneStaysInTelegram() throws IOException {
         Settings.SAVE_DOWNLOADS.save(true);
         SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), queuedKey(51, -1002233445566L, SaveDownloads.FILE_TYPE));

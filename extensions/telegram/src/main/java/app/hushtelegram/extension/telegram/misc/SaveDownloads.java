@@ -186,8 +186,12 @@ public final class SaveDownloads {
             }
             if (parent instanceof String) {
                 Queued queued = Queued.parse((String) parent);
+                if (queued == null) return;
                 // Photos and videos auto-download the same way, and are only looked up for the second switch.
-                if (queued == null || !queuedWanted(queued.type)) return;
+                if (!queuedWanted(queued.type)) {
+                    HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, OTHER_MEDIA);
+                    return;
+                }
                 work.execute(() -> loadedInBackground(account, name, file, queued));
                 return;
             }
@@ -242,6 +246,7 @@ public final class SaveDownloads {
 
     static final String KEPT = "file kept in Telegram, saving not allowed";
     static final String NOT_STORED = "file's message not found, kept in Telegram";
+    static final String OTHER_MEDIA = "media that isn't a file or song, left in Telegram";
 
     /** Telegram's {@code sent_<channel>_<message>_<chat>_<type>_<size>} key. A group or channel's chat ID is negative. */
     private static final Pattern SENT = Pattern.compile("sent_.*_(\\d+)_(-?\\d+)_(\\d+)_(\\d+)");
@@ -311,13 +316,17 @@ public final class SaveDownloads {
 
     /**
      * A photo or video from a chat that doesn't allow saving, copied with the second switch on (#29),
-     * since Telegram's Save to Gallery is gone there. Anywhere else Save to Gallery has it, so it stays put.
+     * since Telegram's Save to Gallery is gone there. Anywhere else Save to Gallery has it, so it stays put,
+     * like a GIF or a voice message.
      */
     private static Runnable restrictedMedia(String name, File file, Object message, Object document) {
-        if (!Settings.SAVE_RESTRICTED_DOWNLOADS.get() || !telegram.photoOrVideo(message)) return null;
         // A video's file is its document, a photo's the size the chat shows. Thumbnails load with the message too.
         Object media = document != null ? document : telegram.photo(message);
-        if (media == null || !name.equals(telegram.attachName(media)) || !telegram.savingForbidden(message)) return null;
+        if (media == null || !name.equals(telegram.attachName(media))) return null;
+        if (!Settings.SAVE_RESTRICTED_DOWNLOADS.get() || !telegram.photoOrVideo(message) || !telegram.savingForbidden(message)) {
+            HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, OTHER_MEDIA);
+            return null;
+        }
         if (telegram.secretChat(message)) {
             HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, KEPT);
             return null;
