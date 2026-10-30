@@ -2195,15 +2195,20 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
      * Lets a row's title and summary wrap to as many lines as they need. Android draws a row's
      * title on one line and cuts its summary at ten, and at 200% text size the paused card, the
      * Pause row and the list of what Pause can't reach ran past ten lines and lost their ends.
+     * Long words break where their language hyphenates them.
      */
     static void showAllText(View row) {
         TextView title = row.findViewById(android.R.id.title);
         if (title != null) {
             title.setSingleLine(false);
             title.setMaxLines(Integer.MAX_VALUE);
+            L10n.hyphenate(title);
         }
         TextView summary = row.findViewById(android.R.id.summary);
-        if (summary != null) summary.setMaxLines(Integer.MAX_VALUE);
+        if (summary != null) {
+            summary.setMaxLines(Integer.MAX_VALUE);
+            L10n.hyphenate(summary);
+        }
     }
 
     /** A section title, which a screen reader announces as a heading so a reader can jump between sections. */

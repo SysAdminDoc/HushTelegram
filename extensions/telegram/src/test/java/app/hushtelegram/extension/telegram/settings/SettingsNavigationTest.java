@@ -2221,6 +2221,30 @@ public class SettingsNavigationTest {
         }
     }
 
+    /**
+     * German at twice the text size broke its compounds at whichever letter filled the line
+     * (S22, 2026-10-30). Every title and summary on every page hyphenates as German.
+     */
+    @Test @Config(sdk = 36, qualifiers = "de-w390dp-h844dp-night-xhdpi")
+    public void germanRowsHyphenateAsGerman() {
+        Set<String> checked = new HashSet<>();
+        for (Preference section : page.sections()) {
+            assertTrue(page.navigation.open(section));
+            for (int i = 0; i < list().getCount(); i++) {
+                View row = list().getAdapter().getView(i, null, list());
+                for (int id : new int[]{android.R.id.title, android.R.id.summary}) {
+                    TextView text = row.findViewById(id);
+                    if (text == null || text.getText().length() == 0) continue;
+                    String label = String.valueOf(text.getText());
+                    assertEquals(label, android.text.Layout.HYPHENATION_FREQUENCY_NORMAL, text.getHyphenationFrequency());
+                    assertEquals(label, "de", text.getTextLocale().getLanguage());
+                    checked.add(label);
+                }
+            }
+        }
+        assertTrue("only " + checked.size() + " texts", checked.size() > 150);
+    }
+
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
     public void recoveryKeepsRetryAndBackVisible() throws Exception {
         dialog.dismiss();
