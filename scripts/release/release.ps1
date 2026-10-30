@@ -32,8 +32,10 @@
       publish    First -Walk, the walk-receipt.json of a whole-app walk of the built bundle on a
                  release phone or an emulator for each Telegram build it patches, the Play build's
                  signed in (walk-receipt.ps1): nothing goes out without them.
-                 Then release notes from -Intro, -Install and -Validation around every bullet of
-                 the version's CHANGELOG section, a lightweight tag on the release commit, the
+                 Then release notes laid out like the other Hush repositories': -Intro, every
+                 bullet of the version's CHANGELOG section under New in this release, Fixes, Other
+                 changes and Behind the scenes, -Install under How to update and -Validation under
+                 What was checked. Then a lightweight tag on the release commit, the
                  GitHub release with the four assets, each downloaded back and compared, and the
                  published notes held to the section.
       index      patches-bundle.json from -Description, the version's CHANGELOG bullets less the
@@ -491,7 +493,7 @@ switch ($Stage) {
         }
         $changelog = Read-ReleaseText -Path (Join-Path $Root 'CHANGELOG.md')
         $notes = New-ReleaseNotes -Changelog $changelog -Version $Version -Intro (Read-ReleaseText -Path $Intro) `
-            -Install (Read-ReleaseText -Path $Install) -Validation (Read-ReleaseText -Path $Validation)
+            -Install (Read-ReleaseText -Path $Install) -Validation (Read-ReleaseText -Path $Validation) -Repository $Repository
         New-Item -ItemType Directory -Force -Path $stages | Out-Null
         $notesPath = Join-Path $stages 'notes.md'
         Write-ReleaseText -Path $notesPath -Text $notes
