@@ -126,6 +126,23 @@ public class ChannelMuteTest {
         assertTrue(ChannelMute.bubble(null, 1));
     }
 
+    /** What Telegram asks for while the bar is held is what the bar gets back, a hide or a change made with the switch off included. */
+    @Test public void aHeldBarComesBackAsTelegramLastAskedForIt() {
+        Settings.HIDE_CHANNEL_MUTE.save(true);
+        View bar = bar();
+        update(bar, true);
+        bar.setVisibility(ChannelMute.visibility(bar, View.GONE));
+        update(bar, false);
+        assertEquals("Telegram hid the bar while it was held", View.GONE, bar.getVisibility());
+
+        View other = bar();
+        update(other, true);
+        Settings.HIDE_CHANNEL_MUTE.save(false);
+        other.setVisibility(ChannelMute.visibility(other, View.INVISIBLE));
+        update(other, false);
+        assertEquals("Telegram changed the bar with the switch off", View.INVISIBLE, other.getVisibility());
+    }
+
     @Test public void turningTheSwitchOffBringsAHeldBarBack() {
         Settings.HIDE_CHANNEL_MUTE.save(true);
         View bar = bar();

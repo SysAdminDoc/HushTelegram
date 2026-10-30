@@ -75,10 +75,11 @@ public final class ChannelMute {
      * @return what the bar gets
      */
     public static int visibility(Object bar, int visibility) {
-        if (visibility == View.GONE || bar == null || !TAKEN_OFF.containsKey(bar)) return visibility;
+        if (bar == null || !TAKEN_OFF.containsKey(bar)) return visibility;
         try {
-            if (!on()) return visibility;
+            // Every ask counts, a hide or one made with the switch off too, so the bar comes back as last asked.
             TAKEN_OFF.put(bar, visibility);
+            if (visibility == View.GONE || !on()) return visibility;
             return View.GONE;
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.HIDE_CHANNEL_BUTTONS, "mute visibility", failure);
