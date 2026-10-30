@@ -41,13 +41,17 @@ val disableDoubleTapReactionsPatch = bytecodePatch(
         sites.forEach { it.insert(it.method) }
         enableCapability("chatDoubleTapReaction")
         enableCapability("previewDoubleTapReaction")
-        for ((plan, capability, what) in listOf(Triple(rows, "reactionRows", "reaction rows"), Triple(picker, "reactionPicker", "reaction picker"))) {
-            if (plan.missing == null) {
-                plan.apply()
-                enableCapability(capability)
-            } else {
-                patchLog.warning("Disable double-tap reactions: ${plan.missing}. The patch goes on without the $what switch.")
-            }
+        if (rows.missing == null) {
+            rows.apply()
+            enableCapability("reactionRows")
+        } else {
+            patchLog.warning("Disable double-tap reactions: ${rows.missing}. The patch goes on without the reaction rows switch.")
+        }
+        if (picker.missing == null) {
+            picker.apply()
+            enableCapability("reactionPicker")
+        } else {
+            patchLog.warning("Disable double-tap reactions: ${picker.missing}. The patch goes on without the reaction picker switch.")
         }
         enableStatus("disableDoubleTapReactions")
     }
