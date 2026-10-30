@@ -12,6 +12,7 @@ package app.hushtelegram.extension.telegram.settings;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
@@ -1064,6 +1065,9 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("", key.getText().toString());
             assertTrue("the key field is masked",
                     (key.getInputType() & android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD) != 0);
+            assertTrue(key.getTransformationMethod() instanceof android.text.method.PasswordTransformationMethod);
+            assertEquals("the key reads in the same face as the other fields", address.getTypeface(), key.getTypeface());
+            assertNotEquals(android.graphics.Typeface.MONOSPACE, key.getTypeface());
             assertEquals("no autofill service is offered the key", android.view.View.IMPORTANT_FOR_AUTOFILL_NO,
                     key.getImportantForAutofill());
 
