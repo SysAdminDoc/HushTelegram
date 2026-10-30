@@ -12,6 +12,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** Turning **Hide folder tab counters** on or off changes the folder tabs right away. Before, the counts stayed as they were until Telegram restarted.
 * **Telegram:** When **Hide All Chats** is on but All Chats is still in the tabs, its description in the settings now says why. Either nothing else opens Archived Chats (turn on the side menu to fix that), your account has no folder of its own to open, or the folder tabs couldn't be read. The diagnostic report counts the same reasons. (#38)
 * **Telegram:** **Open a folder at launch** brings the folder you picked into view. With more folders than fit across the screen, a pick past the edge used to open selected but out of sight until you scrolled the tabs. With fewer folders the tabs look just as they did.
+* **Tooling:** `release.ps1 -Stage publish` takes a walk receipt for each Telegram build the bundle patches, so `-Walk` names one for telegram.org's build and one for the Play build. It refuses to publish when either is missing, or when the Play build's walk was signed out. Until now one walk of the web build was enough, and nothing had opened the Play build's screens past sign-in.
 
 ## 0.0.21 (2026-10-27)
 
