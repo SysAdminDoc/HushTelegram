@@ -867,15 +867,23 @@ public class PatchFamilyTest {
                 Set<String> keys = new TreeSet<>();
                 for (int option = 0; option < options.length(); option++) {
                     JSONObject input = options.getJSONObject(option);
-                    assertFalse(input.getBoolean("required"));
-                    assertTrue(input.isNull("default"));
-                    keys.add(input.getString("key"));
+                    String key = input.getString("key");
+                    assertTrue("one option per key", keys.add(key));
+                    if ("iconStyle".equals(key)) {
+                        // A pick list whose default is the badge, so leaving it alone changes nothing.
+                        assertTrue(input.getBoolean("required"));
+                        assertEquals("hushtelegram", input.getString("default"));
+                    } else {
+                        assertFalse(input.getBoolean("required"));
+                        assertTrue(input.isNull("default"));
+                    }
                 }
+                // The checked-in list gains iconStyle when it's regenerated at release.
+                if ("HushTelegram icon and name".equals(name)) keys.remove("iconStyle");
                 Set<String> expected = "Use registered Telegram API credentials".equals(name)
                         ? new TreeSet<>(Arrays.asList("apiId", "apiHash"))
                         : Collections.singleton("Use registered Maps API key".equals(name) ? "apiKey" : "appName");
                 assertEquals(expected, keys);
-                assertEquals(expected.size(), options.length());
             } else if ("Black and white launch logo".equals(name)) {
                 // A resource the launch screen shows behind AMOLED black's switch, with no switch of its own.
                 assertFalse("a patch that rebuilds resources must be optional", patch.getBoolean("use"));
