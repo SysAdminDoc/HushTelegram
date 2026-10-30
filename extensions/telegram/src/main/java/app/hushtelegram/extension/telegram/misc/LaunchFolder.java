@@ -71,6 +71,25 @@ public final class LaunchFolder {
     private static final Map<Object, Boolean> hiddenIn = new WeakHashMap<>();
     /** The last main chat list built without All Chats, which the side menu opens the archive from. */
     private static WeakReference<Object> archiveFrom = new WeakReference<>(null);
+    /** Why the last main chat list built with Hide All Chats on kept All Chats, or null when it left it out. */
+    @Nullable private static volatile Kept kept;
+
+    /** Why a main chat list built with Hide All Chats on kept All Chats, which the settings and the diagnostic report name. */
+    public enum Kept {
+        /** All Chats holds the archive's row, and this build has no other way in. */
+        NO_ARCHIVE("All Chats kept: no other way to the archive"),
+        /** The account has no folder of its own to open instead, or each one is locked. */
+        NO_FOLDER("All Chats kept: no unlocked folder of the account's own"),
+        /** The tab strip, or a folder in it, couldn't be read. */
+        NO_STRIP("All Chats kept: the tab strip couldn't be read");
+
+        /** What the diagnostic report counts it as. */
+        public final String counted;
+
+        Kept(String counted) {
+            this.counted = counted;
+        }
+    }
 
     /** One chat list's answer to Hide All Chats, and where it stood before the build going on. */
     private static final class Build {
@@ -168,6 +187,11 @@ public final class LaunchFolder {
             if (selected >= 0) reveal(list, build, selected);
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "folder at launch", failure);
+            Build build = built.get(list);
+            if (build != null && build.hides && !build.hiding) {
+                kept = Kept.NO_STRIP;
+                HookStatus.counted(FamilyNames.HIDE_FOLDER_COUNTERS, Kept.NO_STRIP.counted);
+            }
         }
     }
 
@@ -183,12 +207,14 @@ public final class LaunchFolder {
         archiveFrom = new WeakReference<>(null);
         build.hiding = false;
         Object strip = telegram.strip(list);
-        if (strip == null) return opened;
+        if (strip == null) return keep(Kept.NO_STRIP, empty, opened);
         hiddenIn.remove(strip);
+        // All Chats holds the archive's row, so it stays unless the menu or the side menu opens the archive.
+        if (!telegram.archiveReachable()) return keep(Kept.NO_ARCHIVE, empty, opened);
         int account = telegram.account(list);
         int first = firstOpen(account);
-        // All Chats holds the archive's row, so it stays unless the menu or the side menu opens the archive.
-        if (first < 0 || !telegram.archiveReachable()) return opened;
+        if (first < 0) return keep(Kept.NO_FOLDER, empty, opened);
+        kept = null;
         build.hiding = true;
         hiddenIn.put(strip, Boolean.TRUE);
         archiveFrom = new WeakReference<>(list);
@@ -206,6 +232,19 @@ public final class LaunchFolder {
         }
         HookStatus.counted(FamilyNames.HIDE_FOLDER_COUNTERS, HIDDEN);
         return open;
+    }
+
+    /** Keeps All Chats in this build for [why], counted at a first build as one left out is. */
+    private static int keep(Kept why, boolean empty, int opened) {
+        kept = why;
+        if (empty) HookStatus.counted(FamilyNames.HIDE_FOLDER_COUNTERS, why.counted);
+        return opened;
+    }
+
+    /** Why the last main chat list built with Hide All Chats on kept All Chats, or null when it left it out or none was. */
+    @Nullable
+    public static Kept kept() {
+        return kept;
     }
 
     /**
@@ -420,6 +459,7 @@ public final class LaunchFolder {
         built.clear();
         hiddenIn.clear();
         archiveFrom = new WeakReference<>(null);
+        kept = null;
     }
 
     /** What this needs from Telegram. */

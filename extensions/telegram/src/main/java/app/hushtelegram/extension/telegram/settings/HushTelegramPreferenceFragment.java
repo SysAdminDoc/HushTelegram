@@ -420,11 +420,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 folderTabs.addPreference(launchFolderRow(context));
             }
             if (PatchFamily.Capability.HIDE_ALL_CHATS.installed()) {
-                folderTabs.addPreference(toggle(context, Settings.HIDE_ALL_CHATS, L10n.t("Hide All Chats"),
-                        L10n.t("The folder tabs leave out All Chats, so the chat list opens on the folder picked above or "
-                                + "your first one. Archived Chats moves to the chat list's menu, and to the side menu when "
-                                + "that's on. Tabs can't be dragged into a new order while this is on. Restart Telegram to "
-                                + "see the change.")));
+                folderTabs.addPreference(toggle(context, Settings.HIDE_ALL_CHATS, L10n.t("Hide All Chats"), hideAllChatsSummary()));
             }
             if (PatchFamily.Capability.HIDDEN_CHATS.installed()) {
                 SwitchPreference hide = toggle(context, Settings.HIDDEN_CHATS, L10n.t("Hide picked chats"),
@@ -1689,6 +1685,32 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         LaunchFolder.Shown shown = LaunchFolder.shown();
         int choice = shown == null ? 0 : shown.choice();
         return choice == 0 ? L10n.t("All Chats") : shown.folders.get(choice - 1).name;
+    }
+
+    /** What Hide All Chats does, and with it on, why the chat list kept All Chats when it did. */
+    static String hideAllChatsSummary() {
+        String summary = L10n.t("The folder tabs leave out All Chats, so the chat list opens on the folder picked above or "
+                + "your first one. Archived Chats moves to the chat list's menu, and to the side menu when "
+                + "that's on. Tabs can't be dragged into a new order while this is on. Restart Telegram to "
+                + "see the change.");
+        LaunchFolder.Kept kept = Settings.HIDE_ALL_CHATS.get() ? LaunchFolder.kept() : null;
+        if (kept == null) return summary;
+        String why;
+        if (kept == LaunchFolder.Kept.NO_ARCHIVE) {
+            // With the side menu in the build, it's off: Disable pull to archive is the other way in.
+            why = PatchFamily.Capability.SIDE_MENU.installed()
+                    ? L10n.t("All Chats is still showing because it holds your only way to Archived Chats. Turn on the "
+                            + "side menu to give the archive another way in.")
+                    : L10n.t("All Chats is still showing because it holds your only way to Archived Chats. Patch again "
+                            + "with Disable pull to archive to give the archive another way in.");
+        } else if (kept == LaunchFolder.Kept.NO_FOLDER) {
+            why = L10n.t("All Chats is still showing because this account has no folder of its own to open, or each "
+                    + "one is locked.");
+        } else {
+            why = L10n.t("All Chats is still showing because the folder tabs couldn't be read. The diagnostic report "
+                    + "has the details.");
+        }
+        return summary + " " + why;
     }
 
     /** The chats hidden for the account shown now: the row names them, and a tap lists every chat to tick. */

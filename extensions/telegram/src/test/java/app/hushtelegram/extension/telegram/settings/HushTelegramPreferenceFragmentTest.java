@@ -1484,6 +1484,51 @@ public class HushTelegramPreferenceFragmentTest {
         }
     }
 
+    /** With Hide All Chats on and All Chats still in the tabs, its summary names why the chat list kept it (#38). */
+    @Test
+    public void hideAllChatsNamesWhyTheChatListKeptAllChats() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_FOLDER_COUNTERS, PatchFamily.HIDE_CONTACTS_TAB);
+        String base = HushTelegramPreferenceFragment.hideAllChatsSummary();
+        String sideMenu = base + " All Chats is still showing because it holds your only way to Archived Chats. Turn on "
+                + "the side menu to give the archive another way in.";
+        Settings.HIDE_ALL_CHATS.save(true);
+        try {
+            assertNull("a list that leaves it out", LaunchFolderForTests.built(true, "Work"));
+            assertEquals(base, HushTelegramPreferenceFragment.hideAllChatsSummary());
+
+            assertEquals(LaunchFolder.Kept.NO_FOLDER, LaunchFolderForTests.built(true));
+            assertEquals(base + " All Chats is still showing because this account has no folder of its own to open, or "
+                    + "each one is locked.", HushTelegramPreferenceFragment.hideAllChatsSummary());
+
+            assertEquals(LaunchFolder.Kept.NO_ARCHIVE, LaunchFolderForTests.built(false, "Work"));
+            assertEquals(sideMenu, HushTelegramPreferenceFragment.hideAllChatsSummary());
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                assertEquals("the page's row", sideMenu,
+                        String.valueOf(pageOf(controller).findPreference(Settings.HIDE_ALL_CHATS.key).getSummary()));
+            }
+            // A build without the side menu has the menu entry as its other way in.
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDE_ALL_CHATS);
+            assertEquals(base + " All Chats is still showing because it holds your only way to Archived Chats. Patch "
+                    + "again with Disable pull to archive to give the archive another way in.",
+                    HushTelegramPreferenceFragment.hideAllChatsSummary());
+            PatchFamily.capabilitiesForTests = null;
+
+            // Tabs the stubs can't read.
+            LaunchFolderForTests.signedIn(1000, "Work");
+            LaunchFolder.firstTabs(new Object());
+            assertEquals(LaunchFolder.Kept.NO_STRIP, LaunchFolder.kept());
+            assertEquals(base + " All Chats is still showing because the folder tabs couldn't be read. The diagnostic "
+                    + "report has the details.", HushTelegramPreferenceFragment.hideAllChatsSummary());
+
+            // Turned off, the summary only says what the switch does.
+            Settings.HIDE_ALL_CHATS.save(false);
+            assertEquals(base, HushTelegramPreferenceFragment.hideAllChatsSummary());
+        } finally {
+            LaunchFolderForTests.restore();
+            Settings.HIDE_ALL_CHATS.resetToDefault();
+        }
+    }
+
     /**
      * Hide folder tab counters also brings the hidden chats switch and, under it, a row that lists
      * the account's chats, archived ones included, and saves the ticked ones for that account.
