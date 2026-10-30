@@ -2,7 +2,9 @@
 
 Every HushTelegram release, newest first.
 
-## Unreleased
+## 0.0.22 (2026-10-30)
+
+The thirteenth release, still 67 patches for Telegram 13.1.1 from Google Play and 13.1.0 from telegram.org. It's built on Morphe patcher 2.1.0, so update Morphe Manager to 2.3.0 before you add it. Nearly everything new came out of your reports. There's Ghost mode, a parental block on new channels and groups, copying and forwarding from chats that don't allow it, and switches that hide reactions.
 
 ### Added
 
@@ -28,7 +30,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** The diagnostic report now counts the GIFs, voice messages and other media that **Save downloaded files** leaves in Telegram, next to the files it copies and the ones it keeps back. (#7)
 * **Telegram:** **Ask before sending a voice or video message** pauses the recording before it asks, the way Telegram does before its own paid-message question, so nothing you say or film while the question is up ends up in the message. Send sends the clip as it was. Cancel leaves it paused in Telegram's preview, where you can play it, delete it or send it. The send button under that preview asks too, and Cancel there keeps the clip just as it was.
 * **Telegram:** When **Hide All Chats** is on but All Chats is still in the tabs, its description in the settings now says why. Either nothing else opens Archived Chats (turn on the side menu to fix that), your account has no folder of its own to open, or the folder tabs couldn't be read. The diagnostic report counts the same reasons. (#38)
-* **Telegram:** Turning **Hide Stories** on or off now shows the restart button in the settings. Telegram sets up the Post Story button and loads the story list when the chat list opens, so before, the button stayed (or stayed away) until Telegram happened to restart, with nothing saying so.
+* **Telegram:** Turning **Hide Stories** on or off now shows the restart button in the settings. Telegram sets up the Post Story button and loads the story list when the chat list opens, so before, the button stayed (or stayed away) until Telegram happened to restart, and nothing told you a restart was needed.
 * **Tooling:** `release.ps1 -Stage publish` takes a walk receipt for each Telegram build the bundle patches, so `-Walk` names one for telegram.org's build and one for the Play build. It refuses to publish when either is missing, or when the Play build's walk was signed out. Until now one walk of the web build was enough, and nothing had opened the Play build's screens past sign-in.
 * **Tooling:** The release notes are laid out like the other Hush projects' now. New features, fixes and other changes each get their own heading, the scope labels are gone, setting names show in code style, and the notes end with how to update and what was checked. The CHANGELOG sorts each version's bullets under Added, Changed and Fixed to match.
 
@@ -51,7 +53,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** Long words in the HushTelegram settings break where their language hyphenates them. At large text sizes German compounds used to split at whatever letter filled the line, and a name like Firebase-Push-Registrierung moved its hyphen to the start of the next line. Dialog titles, dialog messages and choice lists break the same way now.
 * **Telegram:** **UnifiedPush notifications** makes one set of encryption keys the first time it signs up, even when Telegram's own sign-up and a new address from the push app ask for them at the same moment. Two sets could get made, with Telegram signed up on the one that wasn't kept, so turning the switch off later didn't hand notifications back to Firebase until Telegram restarted. Keys that couldn't be saved also stay out of later sign-ups until the next start.
 * **Telegram:** **Keep edit history** starts a message's history over when what it kept for that message can't be read anymore. Before, one damaged entry meant that message never kept an earlier text again.
-* **Telegram:** Patching with **Use registered Telegram API credentials** on the Morphe command line now says how to fix a missing API ID. The command line drops a bare number like `-O apiId=12345` before the patch sees it, so the patch only said to fill in both fields. It now says to quote the ID as `-O "apiId='12345'"`.
+* **Telegram:** Patching with **Use registered Telegram API credentials** from the Morphe command line explains a missing API ID. The command line drops a bare number like `-O apiId=12345` before the patch sees it, and the old message only asked you to fill in both fields. Quote the ID as `-O "apiId='12345'"` and it goes through.
 * **Telegram:** With **Hide channel Mute button** on, the bar at the bottom of a channel comes back the way Telegram last set it once the channel stops showing Mute. If Telegram hid the bar while it was held back, or changed it with the switch off, the bar used to reappear anyway.
 
 ## 0.0.21 (2026-10-27)
