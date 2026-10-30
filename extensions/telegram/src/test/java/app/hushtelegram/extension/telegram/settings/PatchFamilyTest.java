@@ -666,17 +666,25 @@ public class PatchFamilyTest {
         PatchFamily family = PatchFamily.HIDE_POPULAR_APPS;
         assertEquals("Hide popular apps", family.patchName);
         // Popular apps stay hidden as shipped; search keeps its public parts, and matches names as Telegram
-        // does, until someone turns the other switches on.
-        assertEquals(Arrays.asList(Settings.HIDE_POPULAR_APPS, Settings.SEARCH_ONLY_MY_CHATS, Settings.SEARCH_STYLED_NAMES),
+        // does, until someone turns the other switches on. New channels and groups open and join as
+        // Telegram's do until a parent turns the block on.
+        assertEquals(Arrays.asList(Settings.HIDE_POPULAR_APPS, Settings.SEARCH_ONLY_MY_CHATS, Settings.SEARCH_STYLED_NAMES,
+                        Settings.BLOCK_NEW_CHATS),
                 family.switches);
         assertTrue(Settings.HIDE_POPULAR_APPS.defaultValue);
         assertFalse(Settings.SEARCH_ONLY_MY_CHATS.defaultValue);
         assertFalse(Settings.SEARCH_STYLED_NAMES.defaultValue);
+        assertFalse(Settings.BLOCK_NEW_CHATS.defaultValue);
+        assertEquals("hushtelegram_block_new_chats", Settings.BLOCK_NEW_CHATS.key);
         for (BooleanSetting setting : family.switches) assertFalse(setting.key, setting.rebootApp);
-        assertEquals(EnumSet.of(PatchFamily.Capability.MY_CHATS_SEARCH, PatchFamily.Capability.NAME_FOLD),
+        assertEquals(EnumSet.of(PatchFamily.Capability.MY_CHATS_SEARCH, PatchFamily.Capability.NAME_FOLD,
+                        PatchFamily.Capability.BLOCK_NEW_CHATS),
                 family.expectedCapabilities());
         assertEquals("myChatsSearch", PatchFamily.Capability.MY_CHATS_SEARCH.statusMethod);
         assertEquals("nameFold", PatchFamily.Capability.NAME_FOLD.statusMethod);
+        assertEquals("blockNewChats", PatchFamily.Capability.BLOCK_NEW_CHATS.statusMethod);
+        // Its hook backs only its own row, so Hide popular apps reads the same on a build without it.
+        assertTrue(PatchFamily.Capability.BLOCK_NEW_CHATS.rowOnly);
         assertOnItsPage(family);
     }
 

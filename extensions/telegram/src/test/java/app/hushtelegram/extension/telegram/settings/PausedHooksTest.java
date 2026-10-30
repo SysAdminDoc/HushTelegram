@@ -206,7 +206,10 @@ public class PausedHooksTest {
                 app.hushtelegram.extension.telegram.misc.MyChatsSearchForTests::dropsPublicResults,
                 app.hushtelegram.extension.telegram.misc.MyChatsSearchForTests::dropsPublicTabs,
                 app.hushtelegram.extension.telegram.misc.MyChatsSearchForTests::movesDownloads,
-                () -> "ann".equals(app.hushtelegram.extension.telegram.misc.NameFold.fold("𝐀𝐧𝐧", true, false))));
+                () -> "ann".equals(app.hushtelegram.extension.telegram.misc.NameFold.fold("𝐀𝐧𝐧", true, false)),
+                // New channels and groups join and open, as Telegram's do, while paused.
+                () -> app.hushtelegram.extension.telegram.misc.NewChatsBlock.drop(new org.telegram.tgnet.TLRPC.TL_channels_joinChannel()),
+                app.hushtelegram.extension.telegram.misc.NewChatsBlock::refuseOpen));
         // A sideways swipe on a chat row starts nothing.
         probes.put(PatchFamily.DISABLE_CHAT_SWIPE, Collections.singletonList(
                 app.hushtelegram.extension.telegram.misc.ChatSwipe::keepRowStill));

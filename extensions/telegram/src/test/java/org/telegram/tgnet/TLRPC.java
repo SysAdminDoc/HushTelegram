@@ -24,6 +24,18 @@ public final class TLRPC {
     /** Any other request, for the cases that aren't sign-in. */
     public static class TL_auth_resendCode { }
 
+    /** Joins a public channel or supergroup. */
+    public static class TL_channels_joinChannel { }
+
+    /** Joins a chat by its invite link. */
+    public static class TL_messages_importChatInvite { }
+
+    /** Looks an invite link up before joining. */
+    public static class TL_messages_checkChatInvite { }
+
+    /** Leaving a channel, which a block on new chats lets through. */
+    public static class TL_channels_leaveChannel { }
+
     public static class Peer {
         public long user_id;
         public long chat_id;

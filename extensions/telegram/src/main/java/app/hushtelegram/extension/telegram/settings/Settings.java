@@ -101,6 +101,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_search_styled_names", FALSE);
 
     /**
+     * A parental control: joining a channel or group, by its page or an invite link or a shared
+     * folder, and opening one you aren't in, are both refused. Chats you're already in stay as they
+     * are ({@link app.hushtelegram.extension.telegram.misc.NewChatsBlock}).
+     */
+    public static final BooleanSetting BLOCK_NEW_CHATS =
+            new BooleanSetting("hushtelegram_block_new_chats", FALSE);
+
+    /**
      * The chat list's Your contacts on Telegram heading, rows and loading rows only; chats, folders,
      * contact sync and search stay stock.
      */

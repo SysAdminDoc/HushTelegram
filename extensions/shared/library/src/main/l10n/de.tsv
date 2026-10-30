@@ -917,6 +917,14 @@ Find names in styled letters	Namen in Zierschrift finden
 Searching your chats and contacts also finds names written in letters like 𝐁𝐨𝐥𝐝, 𝘐𝘵𝘢𝘭𝘪𝘤 or Ｗｉｄｅ when you type plain ones. Names still show as they're written and numbers aren't changed. A name found this way isn't highlighted.	Die Suche in deinen Chats und Kontakten findet auch Namen in Buchstaben wie 𝐅𝐞𝐭𝐭, 𝘒𝘶𝘳𝘴𝘪𝘷 oder Ｂｒｅｉｔ, wenn du normale Buchstaben tippst. Namen werden weiter so angezeigt, wie sie geschrieben sind, und Zahlen bleiben unverändert. Ein so gefundener Name wird nicht hervorgehoben.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide popular apps that lets search find names written in styled letters
 styled names in search	Namen in Zierschrift bei der Suche
+# context: Switch on the Ads page under Hide popular apps, off by default. A parental control: with it on, joining channels and groups and opening ones you aren't a member of are blocked
+Block new channels and groups	Neue Kanäle und Gruppen blockieren
+# context: Summary of Block new channels and groups. A shared folder is a chat folder someone shares by link (Telegram's chat folder invite link). Lock HushTelegram settings is the settings lock row on the Pause page: use that row's translation exactly
+Stops joining channels and groups, from search, a link or a shared folder, and opening ones you aren't in. Chats you're already in stay. To keep this on, also turn on Lock HushTelegram settings.	Verhindert, dass du über die Suche, einen Link oder einen geteilten Ordner Kanälen und Gruppen beitrittst oder solche öffnest, in denen du nicht bist. Chats, in denen du schon bist, bleiben. Damit das an bleibt, schalte auch HushTelegram-Einstellungen sperren ein.
+# context: Toast when the block stops a join or keeps a channel or group you aren't in from opening. HushTelegram settings is this app's settings page
+New chats are blocked in HushTelegram settings.	Neue Chats sind in den HushTelegram-Einstellungen blockiert.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide popular apps that blocks joining channels and groups
+joining new channels and groups	Beitritte zu neuen Kanälen und Gruppen
 # context: Toast after Save in the report preview when some parts were left out, so it isn't the full report. %1$s is where the file went, like Download/Morphe/name.txt. Match the wording of Full report saved to %1$s
 Report saved to %1$s	Bericht gespeichert unter %1$s
 # context: Note in the report preview when the text couldn't be redrawn after a box was ticked or unticked. Copy and Save are the dialog's buttons, so use the same words as those buttons

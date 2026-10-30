@@ -469,6 +469,13 @@ public class HushTelegramPreferenceFragmentTest {
             // Search matches names as Telegram does until someone turns the switch on.
             assertFalse(Settings.SEARCH_STYLED_NAMES.key,
                     ((SwitchPreference) page.findPreference(Settings.SEARCH_STYLED_NAMES.key)).isChecked());
+            assertEquals("Block new channels and groups", String.valueOf(page.findPreference(Settings.BLOCK_NEW_CHATS.key).getTitle()));
+            assertEquals("Stops joining channels and groups, from search, a link or a shared folder, and opening ones "
+                    + "you aren't in. Chats you're already in stay. To keep this on, also turn on Lock HushTelegram settings.",
+                    String.valueOf(page.findPreference(Settings.BLOCK_NEW_CHATS.key).getSummary()));
+            // New channels and groups open and join as Telegram's do until a parent turns the block on.
+            assertFalse(Settings.BLOCK_NEW_CHATS.key,
+                    ((SwitchPreference) page.findPreference(Settings.BLOCK_NEW_CHATS.key)).isChecked());
             assertEquals("When your chat list is short, Telegram lists your contacts below it. This hides that list "
                     + "and its heading. Chats, folders and search stay.",
                     String.valueOf(page.findPreference(Settings.HIDE_CONTACTS_BLOCK.key).getSummary()));

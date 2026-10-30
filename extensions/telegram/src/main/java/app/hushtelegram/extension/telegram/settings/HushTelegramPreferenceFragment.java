@@ -398,6 +398,14 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "Ｗｉｄｅ when you type plain ones. Names still show as they're written and numbers aren't "
                                 + "changed. A name found this way isn't highlighted.")));
             }
+            // A parental control: the settings lock is what keeps it on, so the row says to set it.
+            if (PatchFamily.Capability.BLOCK_NEW_CHATS.installed()) {
+                on(pages, PatchFamily.HIDE_POPULAR_APPS).addPreference(toggle(context, Settings.BLOCK_NEW_CHATS,
+                        L10n.t("Block new channels and groups"),
+                        L10n.t("Stops joining channels and groups, from search, a link or a shared folder, and opening ones "
+                                + "you aren't in. Chats you're already in stay. To keep this on, also turn on Lock HushTelegram "
+                                + "settings.")));
+            }
         }
     }
 

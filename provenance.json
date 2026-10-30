@@ -319,6 +319,8 @@
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/apps/NameFoldSupport.kt",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GhostMode.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/extension/SendRequestGate.kt",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/NewChatsBlock.java",
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/apps/NewChatsBlockSupport.kt",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/OwnConnection.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TitleEmoji.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/TitleEmojiEditor.java",
