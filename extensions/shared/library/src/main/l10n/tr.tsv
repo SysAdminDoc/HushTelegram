@@ -1012,3 +1012,9 @@ The row of reactions at the top of the long-press menu and the panel it opens ar
 # context: Coverage labels for the reaction row and reaction picker hooks.
 reaction rows under messages	mesajların altındaki tepki satırları
 the reaction picker in the message menu	mesaj menüsündeki tepki seçici
+# context: Switch on the Conversations page for copying text in a chat or message that doesn't allow saving (#43), its toast, and the label for the text selection part.
+Copy text from chats that don't allow saving	Kaydetmeye izin vermeyen sohbetlerden metin kopyala
+Puts Copy back in the menu of a message in a chat that doesn't allow saving, and lets you copy selected text there. Secret chats stay as they are.	Kaydetmeye izin vermeyen bir sohbetteki mesajın menüsüne Kopyala'yı geri getirir ve orada seçtiğin metni kopyalamana izin verir. Gizli sohbetler olduğu gibi kalır.
+Puts Copy back in the menu of a message in a chat that doesn't allow saving. Secret chats stay as they are.	Kaydetmeye izin vermeyen bir sohbetteki mesajın menüsüne Kopyala'yı geri getirir. Gizli sohbetler olduğu gibi kalır.
+Text copied	Metin kopyalandı
+text selection in chats that don't allow saving	kaydetmeye izin vermeyen sohbetlerde metin seçimi

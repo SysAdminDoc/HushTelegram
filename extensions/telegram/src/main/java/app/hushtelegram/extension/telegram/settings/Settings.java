@@ -548,6 +548,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting MESSAGE_MENU_QUICK_FORWARD =
             new BooleanSetting("hushtelegram_message_menu_quick_forward", FALSE);
 
+    /** A chat or message that doesn't allow saving gets Copy in its long-press menu and in text selection again (#43). */
+    public static final BooleanSetting MESSAGE_MENU_COPY_PROTECTED =
+            new BooleanSetting("hushtelegram_message_menu_copy_protected", FALSE);
+
     /**
      * A channel's read metrics (how long each post stayed on screen), Premium screen interaction
      * reports and the camera's dual-camera report are never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

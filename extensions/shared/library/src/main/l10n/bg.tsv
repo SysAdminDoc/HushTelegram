@@ -1008,3 +1008,9 @@ The row of reactions at the top of the long-press menu and the panel it opens ar
 # context: Coverage labels for the reaction row and reaction picker hooks.
 reaction rows under messages	редовете с реакции под съобщенията
 the reaction picker in the message menu	изборът на реакции в менюто на съобщението
+# context: Switch on the Conversations page for copying text in a chat or message that doesn't allow saving (#43), its toast, and the label for the text selection part.
+Copy text from chats that don't allow saving	Копиране на текст от чатове, които не позволяват запазване
+Puts Copy back in the menu of a message in a chat that doesn't allow saving, and lets you copy selected text there. Secret chats stay as they are.	Връща Копиране в менюто на съобщение в чат, който не позволява запазване, и ти дава да копираш избран текст там. Тайните чатове остават непроменени.
+Puts Copy back in the menu of a message in a chat that doesn't allow saving. Secret chats stay as they are.	Връща Копиране в менюто на съобщение в чат, който не позволява запазване. Тайните чатове остават непроменени.
+Text copied	Текстът е копиран
+text selection in chats that don't allow saving	избирането на текст в чатове, които не позволяват запазване

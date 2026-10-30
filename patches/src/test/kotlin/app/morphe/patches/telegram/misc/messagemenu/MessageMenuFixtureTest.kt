@@ -57,7 +57,7 @@ class MessageMenuFixtureTest {
             val params = m.parameterTypes.map(CharSequence::toString)
             params == listOf("Lorg/telegram/messenger/MessageObject;", list, list, list) && m.controlBody().any { it.controlRef() == FORWARD_LABEL } ||
                 AccessFlags.STATIC.isSet(m.accessFlags) && params == listOf("I", "I", list, list) && m.returnType == "V" ||
-                m.name == "getParentActivity" && params.isEmpty() ||
+                m.name == "getParentActivity" && params.isEmpty() || m.isSelectionCanCopy() ||
                 m.controlBody().map { it.controlRef() }.let { IS_PREMIUM in it && FORWARDS in it && NAME_HIDE in it }
         }
         return (FixtureDex.classes(build, fixed).values + found).distinctBy { it.type }.map(ImmutableClassDef::of)

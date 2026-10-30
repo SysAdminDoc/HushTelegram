@@ -62,6 +62,7 @@ public final class MessageMenu {
     static final int DETAILS = 0x48544d02;
     static final int COPY_PHOTO = 0x48544d03;
     static final int QUICK_FORWARD = 0x48544d04;
+    static final int COPY_TEXT = 0x48544d05;
 
     /** How many chats Quick forward lists, Saved Messages first. */
     static final int QUICK_CHATS = 5;
@@ -80,7 +81,8 @@ public final class MessageMenu {
         boolean details = on(Settings.MESSAGE_MENU_DETAILS);
         boolean quick = on(Settings.MESSAGE_MENU_QUICK_FORWARD);
         boolean history = KeepEdits.on();
-        if (!repeat && !copy && !details && !quick && !history || icons == null || items == null || options == null) return;
+        boolean text = on(Settings.MESSAGE_MENU_COPY_PROTECTED);
+        if (!repeat && !copy && !details && !quick && !history && !text || icons == null || items == null || options == null) return;
         try {
             Object message = selected(chat);
             if (message == null) return;
@@ -90,7 +92,8 @@ public final class MessageMenu {
             repeat = repeat && forwardable && repeatable(chat, message);
             copy = copy && forwardable && photo(message) && downloaded(message) != null;
             quick = quick && forwardable && quickable(chat, message);
-            offer(icons, items, options, repeat, copy, details, quick, forwardOption());
+            text = text && restricted(message) && !copyable(chat, message).isEmpty();
+            offer(icons, items, options, repeat, copy, details, quick, text, forwardOption());
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "message menu", failure);
         }
@@ -98,13 +101,14 @@ public final class MessageMenu {
 
     /** Asked first when an option is chosen. Telegram's own numbers pass by untouched. */
     public static void chosen(Object chat, int option) {
-        if (option != REPEAT && option != DETAILS && option != COPY_PHOTO && option != QUICK_FORWARD) return;
+        if (option != REPEAT && option != DETAILS && option != COPY_PHOTO && option != QUICK_FORWARD && option != COPY_TEXT) return;
         Context context = null;
         try {
             if (!Utils.settingsReady()) return;
             BooleanSetting setting = option == REPEAT ? Settings.MESSAGE_MENU_REPEAT
                     : option == DETAILS ? Settings.MESSAGE_MENU_DETAILS
-                    : option == COPY_PHOTO ? Settings.MESSAGE_MENU_COPY_PHOTO : Settings.MESSAGE_MENU_QUICK_FORWARD;
+                    : option == COPY_PHOTO ? Settings.MESSAGE_MENU_COPY_PHOTO
+                    : option == COPY_TEXT ? Settings.MESSAGE_MENU_COPY_PROTECTED : Settings.MESSAGE_MENU_QUICK_FORWARD;
             if (!on(setting) && !(option == DETAILS && KeepEdits.on())) return;
             context = Utils.getContext();
             Context host = activity(chat);
@@ -127,6 +131,8 @@ public final class MessageMenu {
                 Context target = context;
                 Utils.runOnMainThread(() -> chooseChat(target, account, from, batch, hide));
                 HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "quick forward opened");
+            } else if (option == COPY_TEXT) {
+                copyText(context, copyable(chat, message));
             } else if (option == COPY_PHOTO) {
                 File file = downloaded(message);
                 if (file == null) {
@@ -147,7 +153,7 @@ public final class MessageMenu {
     }
 
     private static String failureMessage(Context context, int option) {
-        return option == COPY_PHOTO ? L10n.t(context, "Couldn't copy that. Try again.")
+        return option == COPY_PHOTO || option == COPY_TEXT ? L10n.t(context, "Couldn't copy that. Try again.")
                 : option == QUICK_FORWARD ? L10n.t(context, "Can't forward there")
                 : L10n.t(context, "Couldn't complete that action. Try again.");
     }
@@ -175,6 +181,11 @@ public final class MessageMenu {
      * alone, and so is an empty one, which Telegram doesn't open at all.
      */
     static void offer(List<Object> icons, List<Object> items, List<Object> options, boolean repeat, boolean copy, boolean details, boolean quick, int forward) {
+        offer(icons, items, options, repeat, copy, details, quick, false, forward);
+    }
+
+    /** As above, with Copy text, which a chat that doesn't allow saving gets just before Message details. */
+    static void offer(List<Object> icons, List<Object> items, List<Object> options, boolean repeat, boolean copy, boolean details, boolean quick, boolean text, int forward) {
         if (options.isEmpty() || icons.size() != items.size() || items.size() != options.size()) return;
         int at = options.indexOf(forward);
         if (at >= 0 && copy) {
@@ -198,6 +209,13 @@ public final class MessageMenu {
             items.add(at + 1, label);
             options.add(at + 1, QUICK_FORWARD);
         }
+        if (text) {
+            int icon = copyIcon();
+            String label = L10n.t("Copy");
+            icons.add(icon);
+            items.add(label);
+            options.add(COPY_TEXT);
+        }
         if (details) {
             int icon = detailsIcon();
             String label = L10n.t("Message details");
@@ -205,6 +223,38 @@ public final class MessageMenu {
             items.add(label);
             options.add(DETAILS);
         }
+    }
+
+    /** The text of the message, or of its album's first caption, when the chat or the message doesn't allow saving; empty otherwise. */
+    static String copyable(Object chat, Object message) {
+        for (Object each : batch(chat, message)) {
+            String text = text(each);
+            if (text != null && !text.trim().isEmpty()) return text;
+        }
+        return "";
+    }
+
+    private static void copyText(Context context, String text) {
+        try {
+            if (text.isEmpty()) {
+                feedback(context, L10n.t(context, "Couldn't copy that. Try again."));
+                return;
+            }
+            Utils.setClipboard(context, L10n.t(context, "Copy"), text);
+            Toast.makeText(context, L10n.t(context, "Text copied"), Toast.LENGTH_SHORT).show();
+            HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "text copied");
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "text copy", failure);
+            feedback(context, L10n.t(context, "Couldn't copy that. Try again."));
+        }
+    }
+
+    /**
+     * Asked by the chat's text selection before it hides Copy. True lets the selection copy in a chat
+     * or message that doesn't allow saving, with Copy text on.
+     */
+    public static boolean selectionCopy() {
+        return on(Settings.MESSAGE_MENU_COPY_PROTECTED);
     }
 
     /** Whether Repeat fits this message, beyond Telegram offering Forward for it. */
@@ -496,6 +546,12 @@ public final class MessageMenu {
             return false;
         }
     }
+
+    /** Whether the message's chat or the message itself doesn't allow saving, and it isn't a secret chat's. Replaced when patching. */
+    public static boolean restricted(Object message) { return false; }
+
+    /** The message's text, or its caption. Replaced when patching. */
+    public static String text(Object message) { return null; }
 
     /** The message the menu is open on. Replaced when patching. */
     public static Object selected(Object chat) { return null; }

@@ -177,6 +177,7 @@ public final class SettingsBackup {
             Settings.MESSAGE_MENU_COPY_PHOTO,
             Settings.MESSAGE_MENU_DETAILS,
             Settings.MESSAGE_MENU_QUICK_FORWARD,
+            Settings.MESSAGE_MENU_COPY_PROTECTED,
             Settings.DISABLE_ANALYTICS,
             Settings.DISABLE_CALL_DEBUG,
             Settings.DISABLE_DRAFT_PREVIEWS,

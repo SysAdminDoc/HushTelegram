@@ -1009,3 +1009,9 @@ The row of reactions at the top of the long-press menu and the panel it opens ar
 # context: Coverage labels for the reaction row and reaction picker hooks.
 reaction rows under messages	linhas de reações abaixo das mensagens
 the reaction picker in the message menu	o seletor de reações no menu da mensagem
+# context: Switch on the Conversations page for copying text in a chat or message that doesn't allow saving (#43), its toast, and the label for the text selection part.
+Copy text from chats that don't allow saving	Copiar texto de chats que não permitem salvar
+Puts Copy back in the menu of a message in a chat that doesn't allow saving, and lets you copy selected text there. Secret chats stay as they are.	Traz o Copiar de volta ao menu de uma mensagem em um chat que não permite salvar e deixa você copiar o texto selecionado lá. Chats secretos continuam como estão.
+Puts Copy back in the menu of a message in a chat that doesn't allow saving. Secret chats stay as they are.	Traz o Copiar de volta ao menu de uma mensagem em um chat que não permite salvar. Chats secretos continuam como estão.
+Text copied	Texto copiado
+text selection in chats that don't allow saving	a seleção de texto em chats que não permitem salvar

@@ -582,6 +582,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_QUICK_FORWARD, L10n.t("Add Quick forward to the message menu"),
                     PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Quick forward to a message's menu. One tap sends it to Saved"
                             + " Messages or a recent chat. Not in protected or secret chats."))));
+            on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_COPY_PROTECTED, L10n.t("Copy text from chats that don't allow saving"),
+                    PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(PatchFamily.Capability.COPY_SELECTION.installed()
+                            ? L10n.t("Puts Copy back in the menu of a message in a chat that doesn't allow saving, and lets you copy "
+                                    + "selected text there. Secret chats stay as they are.")
+                            : L10n.t("Puts Copy back in the menu of a message in a chat that doesn't allow saving. Secret chats stay "
+                                    + "as they are."))));
         }
         if (build.contains(PatchFamily.KEEP_DELETED_MESSAGES)) {
             on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(toggle(context, Settings.KEEP_DELETED_MESSAGES, L10n.t("Keep deleted messages"),

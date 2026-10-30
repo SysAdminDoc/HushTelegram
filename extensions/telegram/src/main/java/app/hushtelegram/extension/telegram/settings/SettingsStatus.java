@@ -71,6 +71,7 @@ public final class SettingsStatus {
     public static boolean previewDoubleTapReaction() { return false; }
     public static boolean reactionRows() { return false; }
     public static boolean reactionPicker() { return false; }
+    public static boolean copySelection() { return false; }
     public static boolean quietContactsNag() { return false; }
     public static boolean holidayLook() { return false; }
     public static boolean titleEmoji() { return false; }
