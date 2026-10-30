@@ -121,6 +121,8 @@ No matching settings	Eşleşen ayar yok
 %1$d settings found	%1$d ayar bulundu
 Try a different word or clear the search.	Başka bir kelime deneyin veya aramayı temizleyin.
 Search settings	Ayarlarda ara
+# context: the settings search field's hint when "Search settings" doesn't fit its width (a narrow screen or large text).
+Search	Ara
 Clear search	Aramayı temizle
 Your switches are working.	Anahtarlarınız çalışıyor.
 Pause	Duraklat

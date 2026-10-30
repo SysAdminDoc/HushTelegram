@@ -121,6 +121,8 @@ No matching settings	Няма съвпадащи настройки
 %1$d settings found	Намерени са %1$d настройки
 Try a different word or clear the search.	Опитайте с друга дума или изчистете търсенето.
 Search settings	Търсене в настройките
+# context: the settings search field's hint when "Search settings" doesn't fit its width (a narrow screen or large text).
+Search	Търсене
 Clear search	Изчистване на търсенето
 Your switches are working.	Превключвателите ви работят.
 Pause	Пауза

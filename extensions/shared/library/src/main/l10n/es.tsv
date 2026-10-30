@@ -121,6 +121,8 @@ No matching settings	No hay ajustes coincidentes
 %1$d settings found	%1$d ajustes encontrados
 Try a different word or clear the search.	Prueba otra palabra o borra la búsqueda.
 Search settings	Buscar ajustes
+# context: the settings search field's hint when "Search settings" doesn't fit its width (a narrow screen or large text).
+Search	Buscar
 Clear search	Borrar búsqueda
 Your switches are working.	Tus interruptores están funcionando.
 Pause	Pausar

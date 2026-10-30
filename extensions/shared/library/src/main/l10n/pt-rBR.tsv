@@ -120,6 +120,8 @@ No matching settings	Nenhuma configuração encontrada
 %1$d settings found	%1$d configurações encontradas
 Try a different word or clear the search.	Tente outra palavra ou limpe a busca.
 Search settings	Buscar configurações
+# context: the settings search field's hint when "Search settings" doesn't fit its width (a narrow screen or large text).
+Search	Buscar
 Clear search	Limpar busca
 Your switches are working.	Suas opções estão funcionando.
 Pause	Pausar

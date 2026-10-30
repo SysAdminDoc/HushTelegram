@@ -121,6 +121,8 @@ No matching settings	Tidak ada pengaturan yang cocok
 %1$d settings found	%1$d pengaturan ditemukan
 Try a different word or clear the search.	Coba kata lain atau hapus pencarian.
 Search settings	Cari pengaturan
+# context: the settings search field's hint when "Search settings" doesn't fit its width (a narrow screen or large text).
+Search	Cari
 Clear search	Hapus pencarian
 Your switches are working.	Sakelar Anda aktif.
 Pause	Jeda

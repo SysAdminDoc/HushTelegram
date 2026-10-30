@@ -100,6 +100,38 @@ public class SettingsPolishTest {
         }
     }
 
+    @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    public void searchHintFitsA320dpScreenAtTwiceTheTextSize() {
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
+        org.robolectric.RuntimeEnvironment.setFontScale(2f);
+        try (ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class).setup()) {
+            SettingsDialog dialog = show(activity.get());
+            EditText search = search(dialog.getView());
+            ViewGroup box = (ViewGroup) search.getParent();
+            // A 320 dp screen less the box's two 12 dp margins, as the emulator drew it.
+            int width = Math.round(296 * box.getResources().getDisplayMetrics().density);
+            box.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+            box.layout(0, 0, width, box.getMeasuredHeight());
+            ShadowLooper.idleMainLooper();
+            int room = search.getWidth() - search.getTotalPaddingLeft() - search.getTotalPaddingRight();
+            assertTrue("the full hint must overflow here, or this proves nothing",
+                    search.getPaint().measureText("Search settings") > room);
+            assertEquals("Search", search.getHint().toString());
+            assertTrue(search.getPaint().measureText(search.getHint().toString()) <= room);
+            assertEquals("the field's description stays whole", "Search settings", search.getContentDescription().toString());
+        } finally { org.robolectric.RuntimeEnvironment.setFontScale(1f); }
+    }
+
+    @Test public void searchHintStaysWholeWhereItFits() {
+        android.graphics.Paint paint = new android.graphics.Paint();
+        paint.setTextSize(40);
+        int full = (int) Math.ceil(paint.measureText("Search settings"));
+        assertEquals("Search settings", SettingsDialog.hintThatFits(paint, full));
+        assertEquals("Search", SettingsDialog.hintThatFits(paint, full - 1));
+        assertEquals("a field not laid out yet keeps the full hint", "Search settings", SettingsDialog.hintThatFits(paint, 0));
+    }
+
     @Test public void overviewDoesNotClaimAllChangesAreWorkingBeforeARestart() {
         PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
         AbstractPreferenceFragment.restartPending.add(Settings.USE_SYSTEM_FONT.key);
