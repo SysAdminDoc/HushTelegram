@@ -352,6 +352,29 @@ public class SettingsNavigationTest {
         assertTrue(Settings.HIDE_ADS.savedValue());
     }
 
+    /**
+     * The toolbar's Pause steps aside for the status card it brings up. On the S22 TalkBack's
+     * focus went with the button and nothing said what the tap did, so the card comes into view
+     * and takes the focus, even from far down the list.
+     */
+    @Test public void toolbarPauseHandsScreenReaderFocusToTheCard() {
+        android.view.accessibility.AccessibilityManager a11y = controller.get().getSystemService(android.view.accessibility.AccessibilityManager.class);
+        org.robolectric.Shadows.shadowOf(a11y).setEnabled(true);
+        org.robolectric.Shadows.shadowOf(a11y).setTouchExplorationEnabled(true);
+        layout(dialog.getView(), 500);
+        list().setSelection(titles().indexOf("Changed switches"));
+        layout(dialog.getView(), 500);
+        assertTrue("the list starts scrolled away from the top", list().getFirstVisiblePosition() > 0);
+        dialog.pauseAction.performClick();
+        ShadowLooper.idleMainLooper();
+        layout(dialog.getView(), 500);
+        Preference card = page.getPreferenceScreen().getPreference(0);
+        assertEquals(View.GONE, dialog.pauseAction.getVisibility());
+        assertEquals(0, list().getFirstVisiblePosition());
+        assertSame(card, list().getItemAtPosition(0));
+        assertEquals(String.valueOf(card.getTitle()), focusedTitle(a11y));
+    }
+
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
     public void theBorderlessSupportRowShowsKeyboardSelection() {
         View row = list().getAdapter().getView(list().getCount() - 1, null, list());

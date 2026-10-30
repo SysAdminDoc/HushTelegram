@@ -1040,6 +1040,14 @@ final class SettingsNavigation extends BaseAdapter {
             if (pause instanceof SwitchPreference) ((SwitchPreference) pause).setChecked(!nextPaused);
         }
         rebuild();
+        Preference card = screen.getPreference(0);
+        if (row == null && visible.contains(card)) {
+            // The toolbar's button steps aside for the card, which carries it from here. TalkBack's
+            // focus went with the button and nothing said what the tap did (S22, 2026-10-30), so
+            // the card comes into view and takes the focus.
+            refocus = card;
+            showAt(visible.indexOf(card), 0);
+        }
     }
 
     private boolean markerLeft() {
