@@ -216,6 +216,28 @@ public class UnifiedPushTest {
         assertEquals(UnifiedPush.WEB_PUSH, UnifiedPush.type(2));
     }
 
+    /**
+     * Telegram's sign-up thread and the main thread asking for the first time at once get the one
+     * key pair that's kept, so the token Telegram holds still counts as its own when switching off.
+     */
+    @Test public void twoFirstAsksAtOnceGetTheKeysThatAreKept() throws Exception {
+        Flaky flaky = new Flaky(UnifiedPush.prefs(context));
+        flaky.readers = new java.util.concurrent.CountDownLatch(2);
+        UnifiedPush.store = ignored -> flaky;
+        String[] tokens = new String[2];
+        Thread first = new Thread(() -> tokens[0] = webPush());
+        Thread second = new Thread(() -> tokens[1] = webPush());
+        first.start();
+        second.start();
+        first.join(10_000);
+        second.join(10_000);
+        assertNotNull(tokens[0]);
+        assertEquals(tokens[0], tokens[1]);
+        flaky.readers = null;
+        assertEquals(tokens[0], webPush());
+        assertTrue(UnifiedPush.holds(tokens[1], context, ENDPOINT));
+    }
+
     /** Switching off hands Telegram back to Firebase whether it holds the Web Push token or the bare address a 0.0.17 sign-up left. */
     @Test public void telegramHoldsTheAddressAsAWebPushTokenOrAsTheBareOldOne() {
         signedUp();
@@ -550,13 +572,26 @@ public class UnifiedPushTest {
     private static final class Flaky implements android.content.SharedPreferences {
         final android.content.SharedPreferences real;
         boolean failWrites;
+        /** When set, each read of the auth secret waits up to a second for the others, so first asks overlap if they can. */
+        java.util.concurrent.CountDownLatch readers;
 
         Flaky(android.content.SharedPreferences real) {
             this.real = real;
         }
 
         @Override public java.util.Map<String, ?> getAll() { return real.getAll(); }
-        @Override public String getString(String key, String fallback) { return real.getString(key, fallback); }
+        @Override public String getString(String key, String fallback) {
+            String value = real.getString(key, fallback);
+            if (readers != null && UnifiedPush.WEB_PUSH_AUTH.equals(key)) {
+                readers.countDown();
+                try {
+                    readers.await(1, java.util.concurrent.TimeUnit.SECONDS);
+                } catch (InterruptedException stopped) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            return value;
+        }
         @Override public java.util.Set<String> getStringSet(String key, java.util.Set<String> fallback) { return real.getStringSet(key, fallback); }
         @Override public int getInt(String key, int fallback) { return real.getInt(key, fallback); }
         @Override public long getLong(String key, long fallback) { return real.getLong(key, fallback); }
