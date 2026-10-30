@@ -169,8 +169,13 @@ class HideCommerceFixtureTest {
             assertEquals("${build.name}: the icon list's tap, lock and filter", 3, iconBodies.size)
             assertEquals("${build.name}: the tap and the lock ask about the account", 2,
                 iconBodies.values.count { body -> body.any { it.reference() == PREMIUM_ON_ACCOUNTS } })
+            // Emoji status on this phone asks after the chat list title's status reads and Premium
+            // checks, and first thing in the account's own status send.
+            val title = titleStatus(hosts)
+            val send = statusSend(hosts)
+            val localBodies = listOf(title, send).associate { it.key() to it.instructions() }
             val untouched = hosts.flatMap { it.methods.toList() }.filter {
-                (it.definingClass to it.name) !in changed && it.key() !in swapped && it.key() !in iconBodies
+                (it.definingClass to it.name) !in changed && it.key() !in swapped && it.key() !in iconBodies && it.key() !in localBodies
             }
             assertTrue("${build.name}: includes the Premium page's icon preview", untouched.any { method ->
                 method.instructions().any { it.opcode == Opcode.IGET_BOOLEAN && it.reference() == premiumFlag }
@@ -200,6 +205,10 @@ class HideCommerceFixtureTest {
             PremiumStickerTarget.entries.forEach { assertFact(context, it.capability, 1) }
             assertFact(context, "commerceEmojiStatus", 1)
             assertFact(context, "commercePremiumIcons", 1)
+            assertFact(context, "commerceLocalEmojiStatus", 1)
+            assertLocalTitle(build.name, localBodies.getValue(title.key()),
+                context.mutableClassDefBy(title.definingClass).methods.single { it.key() == title.key() })
+            assertLocalSend(build.name, send, context.mutableClassDefBy(CONTROLLER).methods.single { it.key() == send.key() })
             for ((key, before) in iconBodies) {
                 val after = context.mutableClassDefBy(key.substringBefore("->")).methods.single { it.key() == key }
                     .instructions().filter { it.opcode != Opcode.NOP }
@@ -634,6 +643,77 @@ class HideCommerceFixtureTest {
         }
     }
 
+    @Test
+    fun `a build whose chat list title no longer draws the status keeps the send and the rest of the patch`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val hosts = hosts(build)
+            val title = titleStatus(hosts)
+            val send = statusSend(hosts)
+            val owner = hosts.single { it.type == title.definingClass }
+            val altered = ImmutableClassDef(owner.type, owner.accessFlags, owner.superclass, owner.interfaces,
+                owner.sourceFile, owner.annotations, owner.fields, owner.methods.filter { it.key() != title.key() })
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts.filter { it.type != owner.type } + altered)
+            val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
+            assertEquals("${build.name}: one local emoji status warning", 1, warnings.size)
+            assertTrue(warnings.single(), warnings.single().endsWith("The patch goes on without the local emoji status switch."))
+            assertFact(context, "hideCommerce", 1)
+            assertFact(context, "commerceLocalEmojiStatus", 0)
+            assertFact(context, "commerceEmojiStatus", 1)
+            assertFact(context, "commercePremiumIcons", 1)
+            CommerceTarget.entries.forEach { assertFact(context, it.capability, 1) }
+            val after = context.mutableClassDefBy(CONTROLLER).methods.single { it.key() == send.key() }
+            assertEquals("${build.name}: the status send is stock", send.instructions().map(::operation), after.instructions().map(::operation))
+            val stub = context.mutableClassDefBy(LOCAL_STATUS).methods.single { it.name == "statusDocument" }.instructions()
+            assertFalse("${build.name}: the stubs stay empty", stub.any { it.reference() != null })
+        }
+    }
+
+    /**
+     * Each status read in the title is followed by LocalEmojiStatus.documentId on the read's result
+     * and user, and each Premium check by LocalEmojiStatus.premium on its answer, each answer going
+     * back into the register stock code reads next. Nothing jumps past them, and the rest is stock.
+     */
+    private fun assertLocalTitle(where: String, before: List<Instruction>, method: Method) {
+        val after = method.instructions()
+        val asks = after.indices.filter { after[it].reference() == LOCAL_STATUS_ID || after[it].reference() == LOCAL_STATUS_PREMIUM }
+        assertEquals("$where: two status reads", 2, asks.count { after[it].reference() == LOCAL_STATUS_ID })
+        assertEquals("$where: two Premium checks", 2, asks.count { after[it].reference() == LOCAL_STATUS_PREMIUM })
+        val flow = ControlFlow.of(method)
+        fun into(index: Int) = after.indices.filter { index in flow.normal[it] || index in flow.exceptional[it] }
+        for (at in asks) {
+            val result = after[at - 1].namedRegisters().single()
+            if (after[at].reference() == LOCAL_STATUS_ID) {
+                assertEquals("$where: reads the getter", USER_STATUS_ID, after[at - 2].reference())
+                assertEquals(Opcode.MOVE_RESULT_OBJECT, after[at - 1].opcode)
+                assertEquals("$where: passes the id and the user", listOf(result) + after[at - 2].namedRegisters(), after[at].namedRegisters())
+                assertEquals(Opcode.MOVE_RESULT_OBJECT, after[at + 1].opcode)
+            } else {
+                assertEquals("$where: asks isPremiumUser", IS_PREMIUM_USER, after[at - 2].reference())
+                assertEquals(Opcode.MOVE_RESULT, after[at - 1].opcode)
+                assertEquals(Opcode.INVOKE_STATIC_RANGE, after[at].opcode)
+                assertEquals(listOf(result), after[at].namedRegisters())
+                assertEquals(Opcode.MOVE_RESULT, after[at + 1].opcode)
+            }
+            assertEquals("$where: the answer replaces Telegram's", listOf(result), after[at + 1].namedRegisters())
+            for (step in at..at + 2) assertEquals("$where: only the hook reaches $step", listOf(step - 1), into(step))
+        }
+        val inserted = asks.flatMap { listOf(it, it + 1) }.toSet()
+        assertEquals("$where: the title is otherwise stock", before.filter { it.opcode != Opcode.NOP }.map(::stockOperation),
+            after.filterIndexed { index, _ -> index !in inserted }.filter { it.opcode != Opcode.NOP }.map(::stockOperation))
+    }
+
+    /** The send asks LocalEmojiStatus first, returns when it kept the status, and otherwise runs whole. */
+    private fun assertLocalSend(where: String, original: Method, method: Method) {
+        val after = method.instructions()
+        assertEquals("$where: register allocation stays stock", original.implementation!!.registerCount, method.implementation!!.registerCount)
+        assertEquals(listOf(Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.RETURN_VOID), after.take(4).map { it.opcode })
+        assertEquals(LOCAL_STATUS_KEEP, after[0].reference())
+        val receiver = method.implementation!!.registerCount - 3
+        assertEquals("$where: passes the controller and the status", listOf(receiver, receiver + 1), after[0].namedRegisters())
+        assertEquals("$where: a sent status goes on to stock code", setOf(3, 4), ControlFlow.of(method).normal[2].toSet())
+        assertEquals("$where: the send is otherwise stock", original.instructions().map(::stockOperation), after.drop(4).map(::stockOperation))
+    }
+
     /** No early return or new stock branch: every original operation and handler survives. */
     private fun assertEdits(where: String, original: Method, edits: List<CommerceEdit>) {
         val before = original.instructions()
@@ -754,8 +834,23 @@ class HideCommerceFixtureTest {
                 refs.contains(STICKER_TOOLTIP) || (refs.contains(PREMIUM_BLOCKED) && refs.contains(PREMIUM_DOCUMENT)) ||
                 (refs.contains(PREMIUM_EMOJI_PACK) && refs.contains(FREE_EMOJI)) || refs.contains(STATUSES_EQUAL)
         }
+        val title = FixtureDex.classesWhere(build, { true }) { method ->
+            method.parameterTypes.map { it.toString() } == listOf(USER, "Z") && method.instructions().any { it.reference() == LIST_STAR }
+        }
         val kept = FixtureDex.classes(build, setOf(TABS, CONTROLLER, USER_CONFIG, EMOJI_USERS, EMOJI_DIALOGS, MESSAGE_OBJECT)).values
-        return (icons + anchors + kept).distinctBy { it.type }
+        return (icons + anchors + title + kept).distinctBy { it.type }
+    }
+
+    /** The chat list title's one method that draws the account's status or the Premium star. */
+    private fun titleStatus(hosts: List<ClassDef>) = hosts.flatMap { it.methods.toList() }.single { method ->
+        val refs = method.instructions().mapNotNull { it.reference() }
+        method.returnType == "V" && method.parameterTypes.map { it.toString() } == listOf(USER, "Z") &&
+            LIST_STAR in refs && USER_STATUS_ID in refs && IS_PREMIUM_USER in refs
+    }
+
+    /** MessagesController's send of the account's own new status. */
+    private fun statusSend(hosts: List<ClassDef>) = hosts.single { it.type == CONTROLLER }.methods.single { method ->
+        method.name == SEND_STATUS_NAME && method.parameterTypes.map { it.toString() } == SEND_STATUS_PARAMETERS
     }
 
     /** The App Icon list's Premium flag: the one instance boolean of the enum naming the launcher aliases. */
@@ -830,6 +925,7 @@ class HideCommerceFixtureTest {
         const val TABS = "Lorg/telegram/ui/Components/ScrollSlidingTextTabStrip;"
         const val CONTROLLER = "Lorg/telegram/messenger/MessagesController;"
         const val USER_CONFIG = "Lorg/telegram/messenger/UserConfig;"
+        const val USER = "Lorg/telegram/tgnet/TLRPC\$User;"
         const val JOIN = "Lorg/telegram/messenger/R\$string;->ChannelJoinNoCaps:I"
         const val UNMUTE = "Lorg/telegram/messenger/R\$string;->ChannelUnmuteNoCaps:I"
         const val SIDE_MENU = "Lorg/telegram/tgnet/TLRPC\$TL_attachMenuBot;->show_in_side_menu:Z"

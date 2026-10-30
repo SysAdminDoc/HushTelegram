@@ -149,9 +149,9 @@ class NativeSettingsFixtureTest {
             val before = operations(method)
             val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
             // Only Settings is loaded here: the profile, channel, Wallet menu, Send Gram and Premium
-            // sticker targets each report themselves missing, and so do the emoji status and Premium
-            // app icon switches.
-            assertEquals(CommerceTarget.entries.size - 1 + PremiumStickerTarget.entries.size + 2, warnings.size)
+            // sticker targets each report themselves missing, and so do the emoji status, Premium
+            // app icon and local emoji status switches.
+            assertEquals(CommerceTarget.entries.size - 1 + PremiumStickerTarget.entries.size + 3, warnings.size)
             assertEquals(1, method.body().count { it.ref()?.contains("->$NATIVE_ROW_BRIDGE(") == true })
             assertEquals(5, method.body().count { it.ref()?.contains("->addSettingsRow(") == true })
             val body = method.body()
@@ -165,7 +165,7 @@ class NativeSettingsFixtureTest {
                 "commerceProfileGifts" to 0, "commerceChannelGift" to 0, "commerceAttachWallet" to 0, "commerceMenuWallet" to 0,
                 "commerceProfileSendGram" to 0, "commerceAddressSendGram" to 0, "commerceTransferSendGram" to 0,
                 "commercePremiumStickers" to 0, "commercePremiumEffects" to 0, "commercePremiumEmojiPacks" to 0,
-                "commerceEmojiStatus" to 0, "commercePremiumIcons" to 0)) {
+                "commerceEmojiStatus" to 0, "commercePremiumIcons" to 0, "commerceLocalEmojiStatus" to 0)) {
                 val flag = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }
                 assertEquals(expected, (flag.body().first() as NarrowLiteralInstruction).narrowLiteral)
             }

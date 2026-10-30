@@ -291,6 +291,12 @@ public final class SelectionCheck {
         // The App Icon list's tap, lock and filter each ask after reading an icon's Premium flag.
         require(calls.getOrDefault(OWN + "telegram/misc/AppIcons;->premium", 0)
                 == (Boolean.TRUE.equals(flags.get("commercePremiumIcons")) ? 3 : 0));
+        // The chat list title reads its status and asks about Premium twice each, once for the
+        // stories strip's title and once for the action bar's; the account's own status send asks once.
+        boolean localStatus = Boolean.TRUE.equals(flags.get("commerceLocalEmojiStatus"));
+        require(calls.getOrDefault(OWN + "telegram/misc/LocalEmojiStatus;->documentId", 0) == (localStatus ? 2 : 0));
+        require(calls.getOrDefault(OWN + "telegram/misc/LocalEmojiStatus;->premium", 0) == (localStatus ? 2 : 0));
+        require(calls.getOrDefault(OWN + "telegram/misc/LocalEmojiStatus;->keep", 0) == (localStatus ? 1 : 0));
         // Both sticker targets ask premiumStickersBlocked: the two filters and the keyboard pass,
         // and the effect player's tooltip.
         int blocked = (Boolean.TRUE.equals(flags.get("commercePremiumStickers")) ? 3 : 0)

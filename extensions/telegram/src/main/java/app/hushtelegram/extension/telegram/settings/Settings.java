@@ -68,6 +68,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting UNLOCK_PREMIUM_ICONS =
             new BooleanSetting("hushtelegram_unlock_premium_icons", FALSE);
 
+    /** The chat list title's status picker works without Premium and keeps its pick on this phone; nothing is sent. */
+    public static final BooleanSetting LOCAL_EMOJI_STATUS =
+            new BooleanSetting("hushtelegram_local_emoji_status", FALSE);
+
     /** Chat-list promotional presentation only; stored suggestions and account security stay stock. */
     public static final BooleanSetting HIDE_PROMOTIONAL_BANNERS =
             new BooleanSetting("hushtelegram_hide_promotional_banners", TRUE);

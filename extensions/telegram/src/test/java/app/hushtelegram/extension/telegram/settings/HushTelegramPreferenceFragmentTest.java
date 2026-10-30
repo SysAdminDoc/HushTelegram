@@ -836,6 +836,12 @@ public class HushTelegramPreferenceFragmentTest {
                             + "Premium sheet. Only the icon on your home screen changes.",
                     String.valueOf(page.findPreference(Settings.UNLOCK_PREMIUM_ICONS.key).getSummary()));
             assertFalse(((SwitchPreference) page.findPreference(Settings.UNLOCK_PREMIUM_ICONS.key)).isChecked());
+            assertEquals("Emoji status on this phone", String.valueOf(page.findPreference(Settings.LOCAL_EMOJI_STATUS.key).getTitle()));
+            assertEquals("Tap the star next to Telegram at the top of the chat list and pick any emoji status, animated ones "
+                            + "too, without Premium. It shows there on this phone only. Nobody else sees it, and nothing is sent "
+                            + "to Telegram.",
+                    String.valueOf(page.findPreference(Settings.LOCAL_EMOJI_STATUS.key).getSummary()));
+            assertFalse(((SwitchPreference) page.findPreference(Settings.LOCAL_EMOJI_STATUS.key)).isChecked());
             assertEquals("Hide trending packs", String.valueOf(page.findPreference(Settings.HIDE_KEYBOARD_FEATURED.key).getTitle()));
             assertEquals("The sticker keyboard's Trending tab and row and the emoji keyboard's trending packs go away, "
                             + "so both list only packs you've added. Search and the Stickers and Emoji screen still show "
