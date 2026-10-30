@@ -571,6 +571,7 @@ public class Settings extends BaseSettings {
     /** A downloaded file in a chat that doesn't allow saving gets Save to Downloads in its long-press menu (#29). */
     public static final BooleanSetting MESSAGE_MENU_SAVE_PROTECTED =
             new BooleanSetting("hushtelegram_message_menu_save_protected", FALSE);
+    /** A message in a chat that doesn't allow forwarding gets Forward as copy in its long-press menu (#46, #47). */
     public static final BooleanSetting MESSAGE_MENU_FORWARD_COPY =
             new BooleanSetting("hushtelegram_message_menu_forward_copy", FALSE);
 
