@@ -176,10 +176,8 @@ Stops usage reports, strips tracking from links and covers your own phone number
 Back to defaults	Varsayılanlara dön
 # context: what Back to defaults does, under its name
 Puts every feature switch back the way it started.	Her özellik anahtarını başlangıçtaki hâline döndürür.
-# context: toast after a Quick setups choice changed exactly one switch
-Changed %1$d setting	%1$d ayar değiştirildi
-# context: the same toast for any other count, zero included; %1$d is how many
-Changed %1$d settings	%1$d ayar değiştirildi
+# context: toast after a Quick setups choice (Quiet, Privacy or Back to defaults) found every switch it sets already set that way, so nothing changed
+Already set that way.	Zaten böyle ayarlı.
 Ads in channels and search	Kanallarda ve aramada reklamlar
 Ads in channels	Kanallarda reklamlar
 Ads in search	Aramada reklamlar

@@ -4,6 +4,7 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** When **Quiet**, **Privacy** or **Back to defaults** in Quick setups finds nothing to change, it now says everything was already set that way. It used to say "Changed 0 settings", which sounded like something went wrong.
 * **Telegram:** **Export settings** and **Import settings** now show how the last try went at the top of the row, along with the pop-up message. At large text sizes Android cuts that message off after two lines, so a reason like "That isn't a HushTelegram settings file" lost its end.
 * **Telegram:** When a settings editor can't save what you typed, the reason under the field stays on screen at large text sizes with the keyboard up. The cursor used to scroll it right back out of sight.
 * **Telegram:** The API key field in **Translation service** uses the same letters as the fields above it. Its hint used to show in a typewriter font.

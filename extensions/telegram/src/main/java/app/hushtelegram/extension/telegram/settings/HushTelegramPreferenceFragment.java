@@ -2027,7 +2027,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
     /**
      * Applies one Quick setups choice to the switches on this page and says how many changed,
-     * pointing at the undo when something did, or how many couldn't change when nothing did.
+     * pointing at the undo when something did, how many couldn't change when nothing did, or that
+     * they were already set that way.
      */
     int applyQuickSetup(Map<BooleanSetting, Boolean> values) {
         PreferenceScreen screen = getPreferenceScreen();
@@ -2041,7 +2042,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             Utils.showToastLong(L10n.quantity(outcome.refused, "Nothing changed. %1$d switch couldn't change now.",
                     "Nothing changed. %1$d switches couldn't change now.", outcome.refused));
         } else {
-            Utils.showToastLong(L10n.quantity(changed, "Changed %1$d setting", "Changed %1$d settings", changed));
+            // "Changed 0 settings" read like something had failed.
+            Utils.showToastLong(L10n.t("Already set that way."));
         }
         return changed;
     }

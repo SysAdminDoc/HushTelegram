@@ -1334,7 +1334,7 @@ public class SettingsNavigationTest {
             assertEquals(changed(quietOff), ShadowToast.getTextOfLatestToast());
             assertFalse("nothing in Quiet waits for a restart", contains(SettingsNavigation.RESTART));
             assertEquals(0, page.applyQuickSetup(QuickSetupKeys.quiet()));
-            assertEquals("Changed 0 settings", ShadowToast.getTextOfLatestToast());
+            assertEquals("Already set that way.", ShadowToast.getTextOfLatestToast());
 
             int privacyOff = offOnScreen(QuickSetupKeys.PRIVACY);
             assertTrue("Privacy changes nothing on a fresh install", privacyOff > 0);
@@ -1346,6 +1346,8 @@ public class SettingsNavigationTest {
             for (app.hushtelegram.extension.shared.settings.BooleanSetting setting : QuickSetupKeys.DEFAULTS) {
                 assertEquals(setting.key, setting.defaultValue, setting.savedValue());
             }
+            assertEquals(0, page.applyQuickSetup(QuickSetupKeys.defaults()));
+            assertEquals("Back to defaults with nothing to change", "Already set that way.", ShadowToast.getTextOfLatestToast());
         } finally {
             for (app.hushtelegram.extension.shared.settings.BooleanSetting setting : QuickSetupKeys.DEFAULTS) {
                 setting.resetToDefault();
@@ -1411,11 +1413,13 @@ public class SettingsNavigationTest {
         String alreadySet = onRows == 0 ? "" : onRows == 1 ? " 1 other switch was already set."
                 : " " + onRows + " other switches were already set.";
         try {
-            assertEquals("an undo card before any choice", 3, setupCards().size());
+            assertEquals(0, page.applyQuickSetup(QuickSetupKeys.defaults()));
+            assertFalse(ShadowToast.getTextOfLatestToast().contains("Undo"));
+            assertEquals("an undo card before any choice, or after one that changed nothing", 3, setupCards().size());
             assertEquals(off.size(), page.applyQuickSetup(QuickSetupKeys.privacy()));
             assertEquals(changed(off.size()), ShadowToast.getTextOfLatestToast());
             assertEquals(0, page.applyQuickSetup(QuickSetupKeys.privacy()));
-            assertEquals("Changed 0 settings", ShadowToast.getTextOfLatestToast());
+            assertEquals("Already set that way.", ShadowToast.getTextOfLatestToast());
             List<String> cards = setupCards();
             assertEquals(4, cards.size());
             assertEquals("Undo the last setup\nTurned on: " + L10n.join(titles) + "." + alreadySet + " " + ONLY_SWITCHES,

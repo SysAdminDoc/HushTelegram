@@ -176,10 +176,8 @@ Stops usage reports, strips tracking from links and covers your own phone number
 Back to defaults	Volver a los valores predeterminados
 # context: what Back to defaults does, under its name
 Puts every feature switch back the way it started.	Devuelve cada interruptor de función a como estaba al principio.
-# context: toast after a Quick setups choice changed exactly one switch
-Changed %1$d setting	Se cambió %1$d ajuste
-# context: the same toast for any other count, zero included; %1$d is how many
-Changed %1$d settings	Se cambiaron %1$d ajustes
+# context: toast after a Quick setups choice (Quiet, Privacy or Back to defaults) found every switch it sets already set that way, so nothing changed
+Already set that way.	Ya está configurado así.
 Ads in channels and search	Anuncios en canales y en la búsqueda
 Ads in channels	Anuncios en canales
 Ads in search	Anuncios en la búsqueda
