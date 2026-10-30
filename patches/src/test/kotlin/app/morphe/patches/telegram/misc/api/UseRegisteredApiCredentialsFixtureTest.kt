@@ -38,6 +38,7 @@ import com.android.tools.smali.dexlib2.immutable.value.ImmutableStringEncodedVal
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
@@ -238,6 +239,18 @@ class UseRegisteredApiCredentialsFixtureTest {
             }
         }
         assertEquals(Int.MAX_VALUE, checkedApiCredentials(Int.MAX_VALUE.toString(), HASH.uppercase())!!.id)
+    }
+
+    @Test
+    fun `a hash with no ID says how to quote a numeric ID on the command line`() {
+        for (id in listOf(null, "", " ")) {
+            val message = assertThrows(PatchException::class.java) { checkedApiCredentials(id, HASH) }.message.orEmpty()
+            assertTrue(message.endsWith("supply both apiId and apiHash. $QUOTE_ID_HINT"))
+            assertFalse(message.contains(HASH))
+        }
+        val missingHash = assertThrows(PatchException::class.java) { checkedApiCredentials(ID, null) }.message.orEmpty()
+        assertTrue(missingHash.endsWith("supply both apiId and apiHash."))
+        assertFalse(missingHash.contains(ID))
     }
 
     @Test
