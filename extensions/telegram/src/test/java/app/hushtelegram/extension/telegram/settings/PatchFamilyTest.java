@@ -115,6 +115,7 @@ public class PatchFamilyTest {
         Settings.HIDE_CHANNEL_BUTTONS.resetToDefault();
         Settings.HIDE_CHANNEL_MUTE.resetToDefault();
         Settings.HIDE_CHANNEL_SHARE.resetToDefault();
+        Settings.HIDE_EMOJI_STATUS.resetToDefault();
         Settings.HIDE_SEND_AS.resetToDefault();
         Settings.HIDE_CONTACTS_TAB.resetToDefault();
         Settings.FASTER_DOWNLOADS.resetToDefault();
@@ -177,6 +178,19 @@ public class PatchFamilyTest {
         // So is the share button switch, which a chat applies the next time it's opened.
         assertFalse(Settings.HIDE_CHANNEL_SHARE.defaultValue);
         assertFalse(Settings.HIDE_CHANNEL_SHARE.rebootApp);
+    }
+
+    @Test
+    public void hidePremiumHasAnOffByDefaultEmojiStatusSwitchThatAChatAppliesWhenOpened() {
+        PatchFamily family = PatchFamily.HIDE_COMMERCE;
+        assertEquals("hideCommerce", family.statusMethod);
+        assertEquals(Arrays.asList(Settings.HIDE_COMMERCE, Settings.HIDE_EMOJI_STATUS), family.switches);
+        assertTrue(family.expectedCapabilities().contains(PatchFamily.Capability.COMMERCE_EMOJI_STATUS));
+        assertEquals("commerceEmojiStatus", PatchFamily.Capability.COMMERCE_EMOJI_STATUS.statusMethod);
+        // Off by default, so the patch's own description stays true, and no restart: names redraw.
+        assertFalse(Settings.HIDE_EMOJI_STATUS.defaultValue);
+        assertFalse(Settings.HIDE_EMOJI_STATUS.rebootApp);
+        assertOnItsPage(family);
     }
 
     @Test

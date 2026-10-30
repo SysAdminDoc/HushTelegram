@@ -46,6 +46,7 @@ public final class SettingsStatus {
     public static boolean commercePremiumStickers() { return false; }
     public static boolean commercePremiumEffects() { return false; }
     public static boolean commercePremiumEmojiPacks() { return false; }
+    public static boolean commerceEmojiStatus() { return false; }
     public static boolean hidePromotionalBanners() { return false; }
     public static boolean promotionalSuggestions() { return false; }
     public static boolean birthdayGiftBanner() { return false; }

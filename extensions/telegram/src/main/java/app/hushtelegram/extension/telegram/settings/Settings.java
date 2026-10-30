@@ -56,6 +56,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_COMMERCE =
             new BooleanSetting("hushtelegram_hide_commerce", TRUE);
 
+    /** Names read as having no emoji status; the channel editor and admin log still see the real one. */
+    public static final BooleanSetting HIDE_EMOJI_STATUS =
+            new BooleanSetting("hushtelegram_hide_emoji_status", FALSE);
+
     /** Chat-list promotional presentation only; stored suggestions and account security stay stock. */
     public static final BooleanSetting HIDE_PROMOTIONAL_BANNERS =
             new BooleanSetting("hushtelegram_hide_promotional_banners", TRUE);

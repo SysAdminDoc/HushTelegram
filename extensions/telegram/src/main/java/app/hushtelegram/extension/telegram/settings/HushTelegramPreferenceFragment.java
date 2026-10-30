@@ -353,6 +353,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.HIDE_COMMERCE.coverageSummary(L10n.t("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, "
                             + "Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, the Gift button in channels, "
                             + "and Premium stickers, their effects and Premium emoji packs if you don't have Premium."))));
+            if (PatchFamily.Capability.COMMERCE_EMOJI_STATUS.installed()) {
+                on(pages, PatchFamily.HIDE_COMMERCE).addPreference(toggle(context, Settings.HIDE_EMOJI_STATUS,
+                        L10n.t("Hide emoji statuses"), L10n.t("The emoji a Premium account puts next to its name goes away in chats, "
+                                + "the chat list and profiles, and the Premium star shows instead. Your own status hides too but stays "
+                                + "set for everyone else. A chat picks this up the next time you open it.")));
+            }
         }
         if (build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS)) {
             on(pages, PatchFamily.HIDE_PROMOTIONAL_BANNERS).addPreference(toggle(context, Settings.HIDE_PROMOTIONAL_BANNERS, L10n.t("Hide promotional banners"),

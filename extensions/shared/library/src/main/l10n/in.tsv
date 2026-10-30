@@ -222,6 +222,12 @@ Gram transfer Send Gram item	item Kirim Gram di transfer Gram
 Premium stickers in the keyboard and packs	stiker Premium di keyboard dan paket
 Premium sticker effects	efek stiker Premium
 Premium emoji packs in the emoji keyboard	paket emoji Premium di keyboard emoji
+# context: a switch under Hide Premium, gifts and Stars. An emoji status is the emoji a Premium account sets next to its name; use the applied translation of Telegram's term (key PremiumPreviewEmojiStatus, "Emoji Statuses").
+Hide emoji statuses	Sembunyikan Status Emoji
+# context: that switch's summary. The Premium star is the star Telegram draws next to a Premium account's name when it has no emoji status.
+The emoji a Premium account puts next to its name goes away in chats, the chat list and profiles, and the Premium star shows instead. Your own status hides too but stays set for everyone else. A chat picks this up the next time you open it.	Emoji yang dipasang akun Premium di samping namanya hilang di obrolan, daftar obrolan, dan profil, lalu bintang Premium muncul sebagai gantinya. Status Anda sendiri juga disembunyikan, tetapi tetap terpasang bagi orang lain. Obrolan akan menerapkannya saat Anda membukanya lagi.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that hides emoji statuses.
+emoji statuses next to names	status emoji di samping nama
 Hide promotional banners	Sembunyikan banner promosi
 Hides the Premium, birthday and low Stars balance banners above your chat list. Account security notices and other suggestions still show.	Menyembunyikan banner Premium, ulang tahun, dan saldo Stars yang menipis di atas daftar obrolan Anda. Pemberitahuan keamanan akun dan saran lainnya tetap tampil.
 promotional suggestions	saran promosi

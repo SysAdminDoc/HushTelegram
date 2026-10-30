@@ -219,6 +219,12 @@ Gram transfer Send Gram item	item Enviar Gram das transferências de Gram
 Premium stickers in the keyboard and packs	stickers Premium do teclado e dos pacotes
 Premium sticker effects	efeitos dos stickers Premium
 Premium emoji packs in the emoji keyboard	pacotes de emojis Premium do teclado de emojis
+# context: a switch under Hide Premium, gifts and Stars. An emoji status is the emoji a Premium account sets next to its name; use the applied translation of Telegram's term (key PremiumPreviewEmojiStatus, "Emoji Statuses").
+Hide emoji statuses	Ocultar emojis de status
+# context: that switch's summary. The Premium star is the star Telegram draws next to a Premium account's name when it has no emoji status.
+The emoji a Premium account puts next to its name goes away in chats, the chat list and profiles, and the Premium star shows instead. Your own status hides too but stays set for everyone else. A chat picks this up the next time you open it.	O emoji que uma conta Premium coloca ao lado do nome some nos chats, na lista de chats e nos perfis, e a estrela Premium aparece no lugar. Seu próprio status também fica oculto, mas continua definido para todos os outros. Um chat aplica isso na próxima vez que você abri-lo.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that hides emoji statuses.
+emoji statuses next to names	emojis de status ao lado dos nomes
 Hide promotional banners	Ocultar banners promocionais
 Hides the Premium, birthday and low Stars balance banners above your chat list. Account security notices and other suggestions still show.	Oculta os banners de Premium, aniversário e saldo baixo de Stars acima da sua lista de conversas. Avisos de segurança da conta e outras sugestões continuam aparecendo.
 promotional suggestions	sugestões promocionais

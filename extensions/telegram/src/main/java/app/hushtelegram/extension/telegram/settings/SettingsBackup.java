@@ -97,6 +97,7 @@ public final class SettingsBackup {
             Settings.HIDE_STORIES,
             Settings.HIDE_RECOMMENDATIONS,
             Settings.HIDE_COMMERCE,
+            Settings.HIDE_EMOJI_STATUS,
             Settings.HIDE_PROMOTIONAL_BANNERS,
             Settings.HIDE_SPONSORED_PROXY,
             Settings.HIDE_POPULAR_APPS,

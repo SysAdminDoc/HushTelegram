@@ -823,6 +823,12 @@ public class HushTelegramPreferenceFragmentTest {
                             + "picks this up the next time you open it.",
                     String.valueOf(page.findPreference(Settings.HIDE_CHANNEL_SHARE.key).getSummary()));
             assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_CHANNEL_SHARE.key)).isChecked());
+            assertEquals("Hide emoji statuses", String.valueOf(page.findPreference(Settings.HIDE_EMOJI_STATUS.key).getTitle()));
+            assertEquals("The emoji a Premium account puts next to its name goes away in chats, the chat list and "
+                            + "profiles, and the Premium star shows instead. Your own status hides too but stays set for "
+                            + "everyone else. A chat picks this up the next time you open it.",
+                    String.valueOf(page.findPreference(Settings.HIDE_EMOJI_STATUS.key).getSummary()));
+            assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_EMOJI_STATUS.key)).isChecked());
             assertEquals("Your picture next to the message box goes away in groups and channels where you could post as "
                             + "a channel, while you're posting as yourself. Once you pick a channel it shows again, so you "
                             + "can always see who you're posting as. To pick one, turn this off first. A chat picks this up "

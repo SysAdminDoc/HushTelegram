@@ -17,6 +17,7 @@ import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.handleTargets
 import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
+import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.requireParameterIntact
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
@@ -102,6 +103,7 @@ val hideCommercePatch = bytecodePatch(
         // Every operand, identity and cached path is proved before the first instruction changes.
         val plan = resolveCommerceHooks()
         val stickers = resolvePremiumStickerHooks()
+        val emoji = resolveEmojiStatus()
         shape(plan.hooks.isNotEmpty() || stickers.isNotEmpty(), "no sales presentation target")
         if (plan.giftTabId != null) writeStub(COMMERCE, "giftTabId", 1,
             "const/16 v0, ${plan.giftTabId}\nreturn v0")
@@ -140,6 +142,12 @@ val hideCommercePatch = bytecodePatch(
                 }
                 null
             }
+        }
+        if (emoji.missing == null) {
+            emoji.apply()
+            enableCapability("commerceEmojiStatus")
+        } else {
+            patchLog.warning("$PATCH: ${emoji.missing}. The patch goes on without the emoji status switch.")
         }
         enableStatus("hideCommerce")
     }

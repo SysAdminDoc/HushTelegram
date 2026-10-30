@@ -286,6 +286,7 @@ public final class SelectionCheck {
         hook(calls, flags, "commerceTransferSendGram", "misc/Commerce", "showTransferSendGram");
         hook(calls, flags, "commercePremiumEffects", "misc/Commerce", "skipPremiumEffect");
         hook(calls, flags, "commercePremiumEmojiPacks", "misc/Commerce", "dropLockedEmojiPacks");
+        hook(calls, flags, "commerceEmojiStatus", "misc/EmojiStatus", "hide");
         // Both sticker targets ask premiumStickersBlocked: the two filters and the keyboard pass,
         // and the effect player's tooltip.
         int blocked = (Boolean.TRUE.equals(flags.get("commercePremiumStickers")) ? 3 : 0)
