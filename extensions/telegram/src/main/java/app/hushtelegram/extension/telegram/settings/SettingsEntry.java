@@ -312,10 +312,38 @@ public final class SettingsEntry {
     /** Injected at the start of every Telegram activity's {@code onNewIntent}. */
     public static void onNewIntent(Activity activity, Intent intent) {
         try {
-            noteIntent(intent);
+            if (!noteIntent(intent) && asksForSomethingToShow(intent)) giveWay(activity, intent);
         } catch (Exception ex) {
             Logger.printException(() -> "Settings entry: onNewIntent failure", ex);
         }
+    }
+
+    /**
+     * Whether [intent] asks Telegram to show something: a link, a share, a notification's chat. A
+     * tap on Telegram's icon asks for nothing, so it comes back to the screen as it was left.
+     */
+    private static boolean asksForSomethingToShow(Intent intent) {
+        if (intent == null) return false;
+        if (intent.getData() != null) return true;
+        String action = intent.getAction();
+        return action != null && !Intent.ACTION_MAIN.equals(action);
+    }
+
+    /**
+     * Telegram opens what [intent] asked for under the screen, so the screen closes first, the way
+     * the person would close it, and an open still waiting is dropped. Left up, it hid the chat a
+     * link from another app had just opened.
+     */
+    @SuppressWarnings("deprecation") // Framework fragments, as in open().
+    private static void giveWay(Activity activity, Intent intent) {
+        openPending = false;
+        if (activity == null) return;
+        Object shown = activity.getFragmentManager().findFragmentByTag(DIALOG_TAG);
+        if (!(shown instanceof SettingsDialog)) return;
+        onClosedByUser();
+        ((SettingsDialog) shown).dismissAllowingStateLoss();
+        Logger.printInfo(() -> "Settings closed for " + intent.getAction() + " over "
+                + activity.getClass().getSimpleName());
     }
 
     /**
@@ -582,16 +610,22 @@ public final class SettingsEntry {
      * spent as it's read: the extra is taken off, and App info's action becomes the launcher's, so
      * an activity recreated with the same intent, after a rotation say, doesn't ask again, and
      * Telegram goes on as if it had been started from its icon.
+     *
+     * @return whether [intent] asked for the screen.
      */
-    private static void noteIntent(Intent intent) {
-        if (intent == null) return;
+    private static boolean noteIntent(Intent intent) {
+        if (intent == null) return false;
         if (intent.getBooleanExtra(EXTRA_OPEN_SETTINGS, false)) {
             intent.removeExtra(EXTRA_OPEN_SETTINGS);
             request("the launcher shortcut");
-        } else if (Intent.ACTION_APPLICATION_PREFERENCES.equals(intent.getAction())) {
+            return true;
+        }
+        if (Intent.ACTION_APPLICATION_PREFERENCES.equals(intent.getAction())) {
             intent.setAction(Intent.ACTION_MAIN);
             request("Android's App info page");
+            return true;
         }
+        return false;
     }
 
     private static void request(String from) {

@@ -4,6 +4,7 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** With the HushTelegram settings open, tapping a Telegram link in another app now closes them and shows the chat. The chat used to open behind the settings, so you had to back out of them to see it. Tapping Telegram's icon still brings the settings back as you left them.
 * **Telegram:** With TalkBack on, tapping **Pause** at the top of the HushTelegram settings now moves focus to the card that says Telegram will pause, where its Undo button is. Before, focus went nowhere once the button stepped aside.
 * **Telegram:** In the HushTelegram settings, the search box's outline now goes all the way around while you type. The X that clears the search used to cover its right end.
 * **Telegram:** Reactions to your messages now show a notification on patched builds, which Google's push never reaches. **UnifiedPush notifications** has a new switch under it, **Reaction notifications without push**, on by default. While Telegram is connected, someone reacting to one of your messages gets the same "reacted to your message" notification Telegram shows from a push, once per reaction. Telegram's own **Reactions** switch in Notifications and Sounds still has to be on. (#41)
