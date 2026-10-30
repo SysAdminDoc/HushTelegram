@@ -357,6 +357,50 @@ public class SettingsPolishTest {
         }
     }
 
+    @Test public void refusalStaysOnScreenWhenTheCursorAsksForTheSameFrame() {
+        try (ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity host = activity.get();
+            EditorForm form = new EditorForm(host, "Fill in the service.");
+            EditText field = new EditText(host);
+            field.setId(android.R.id.text2);
+            field.setSingleLine(true);
+            field.setText("model with spaces");
+            form.add(field, "Model");
+            android.widget.FrameLayout window = new android.widget.FrameLayout(host);
+            host.setContentView(window);
+            int width = Math.round(296 * host.getResources().getDisplayMetrics().density);
+            window.addView(form, new android.widget.FrameLayout.LayoutParams(width, 9000));
+            String reason = "A model name has no spaces. Copy it from your AI service's model list, "
+                    + "like gpt-4o-mini, and try Save again.";
+            form.refuse(field, reason);
+            lay(form, width, 9000);
+            TextView error = form.findViewWithTag(EditorForm.ERROR);
+            // Room for the reason but not for the reason and the field's line together, like 200%
+            // text with the keyboard up.
+            int room = error.getHeight() + field.getHeight() / 2;
+            form.setLayoutParams(new android.widget.FrameLayout.LayoutParams(width, room));
+            form.scrollTo(0, 0);
+            form.refuse(field, reason);
+            // The cursor moves in the same frame, so the field asks to be scrolled to as well.
+            field.setSelection(0);
+            field.setSelection(field.length());
+            lay(form, width, room);
+            ShadowLooper.idleMainLooper();
+            assertTrue("both fit, so nothing was tested", error.getHeight() + field.getHeight() > form.getHeight());
+            assertTrue("the reason starts on screen", error.getTop() >= form.getScrollY());
+            assertTrue("the reason ends on screen", error.getBottom() <= form.getScrollY() + form.getHeight());
+        }
+    }
+
+    /** One frame by hand, in the order a window draws one: layout, global layout, then pre-draw. */
+    private static void lay(View view, int width, int height) {
+        view.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY));
+        view.layout(0, 0, width, height);
+        view.getViewTreeObserver().dispatchOnGlobalLayout();
+        view.getViewTreeObserver().dispatchOnPreDraw();
+    }
+
     @Test public void failedStickerSaveKeepsThePickerAndRestoresTheSavedSelection() throws Exception {
         try (ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class).setup()) {
             HushTelegramPreferenceFragment page = page(show(activity.get()));

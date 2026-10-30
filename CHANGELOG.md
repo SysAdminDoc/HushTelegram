@@ -4,6 +4,7 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+* **Telegram:** When a settings editor can't save what you typed, the reason under the field stays on screen at large text sizes with the keyboard up. The cursor used to scroll it right back out of sight.
 * **Telegram:** The API key field in **Translation service** uses the same letters as the fields above it. Its hint used to show in a typewriter font.
 * **Telegram:** On a narrow screen or with large text, the HushTelegram settings search box says Search instead of a cut-off "Search settings". TalkBack still reads it as Search settings.
 * **Telegram:** **Save downloaded files** no longer puts the wrong file in Download/Telegram when two documents have the same name and size. Telegram stores a document under its own name, and when a second one of that name and size arrives it opens the first one's file without downloading anything. That file used to be copied as the second document. Now it stays in Telegram.
