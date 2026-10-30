@@ -2035,7 +2035,8 @@ public class SettingsNavigationTest {
         android.view.accessibility.AccessibilityNodeInfo info = feed.createAccessibilityNodeInfo();
         assertTrue("a section heading isn't spoken as a heading", info.isHeading());
         assertEquals(android.widget.Button.class.getName(), info.getClassName());
-        assertEquals("Collapsed", String.valueOf(info.getStateDescription()));
+        // TalkBack speaks the state from the actions, so a state description would say it twice.
+        assertNull(info.getStateDescription());
         assertTrue(info.getActionList().contains(android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_EXPAND));
         assertFalse(info.getActionList().contains(android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_COLLAPSE));
         assertTrue(feed.performAccessibilityAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK, null));
@@ -2045,7 +2046,7 @@ public class SettingsNavigationTest {
         feed = list().getChildAt(position("section_Ads") - list().getFirstVisiblePosition());
         info = feed.createAccessibilityNodeInfo();
         assertTrue(info.isHeading());
-        assertEquals("Expanded", String.valueOf(info.getStateDescription()));
+        assertNull(info.getStateDescription());
         assertTrue(info.getActionList().contains(android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_COLLAPSE));
         assertTrue(feed.performAccessibilityAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_COLLAPSE, null));
         assertFalse(page.navigation.isExpanded("Ads"));

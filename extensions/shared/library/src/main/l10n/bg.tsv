@@ -964,9 +964,6 @@ Search languages	Търсене на езици
 Couldn't save the language. Try again in a moment.	Езикът не можа да се запази. Опитайте отново след малко.
 # context: Line in the settings import preview when the file changes the Translate into language.
 The translation language will change.	Езикът на превода ще се промени.
-# context: A screen reader's state for a settings section heading that opens and closes in place.
-Expanded	Разгънато
-Collapsed	Свито
 # context: Switch title under Save downloaded files. It moves the folder Telegram keeps its own downloads in from Android/data to the phone's main storage.
 Keep Telegram's files in internal storage	Файловете на Telegram във вътрешното хранилище
 # context: Summary under that switch. Internal storage/Telegram and Android/data are folder paths: translate Internal storage as Android's Files app does, keep Telegram and Android/data as they are. All files access is Android's name for the special app access page.

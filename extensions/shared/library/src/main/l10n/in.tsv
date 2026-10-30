@@ -968,9 +968,6 @@ Search languages	Cari bahasa
 Couldn't save the language. Try again in a moment.	Bahasa tidak dapat disimpan. Coba lagi sebentar lagi.
 # context: Line in the settings import preview when the file changes the Translate into language.
 The translation language will change.	Bahasa terjemahan akan berubah.
-# context: A screen reader's state for a settings section heading that opens and closes in place.
-Expanded	Diluaskan
-Collapsed	Diciutkan
 # context: Switch title under Save downloaded files. It moves the folder Telegram keeps its own downloads in from Android/data to the phone's main storage.
 Keep Telegram's files in internal storage	Simpan file Telegram di penyimpanan internal
 # context: Summary under that switch. Internal storage/Telegram and Android/data are folder paths: translate Internal storage as Android's Files app does, keep Telegram and Android/data as they are. All files access is Android's name for the special app access page.

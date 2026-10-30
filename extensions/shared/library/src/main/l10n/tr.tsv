@@ -968,9 +968,6 @@ Search languages	Dil ara
 Couldn't save the language. Try again in a moment.	Dil kaydedilemedi. Birazdan tekrar deneyin.
 # context: Line in the settings import preview when the file changes the Translate into language.
 The translation language will change.	Çeviri dili değişecek.
-# context: A screen reader's state for a settings section heading that opens and closes in place.
-Expanded	Genişletildi
-Collapsed	Daraltıldı
 # context: Switch title under Save downloaded files. It moves the folder Telegram keeps its own downloads in from Android/data to the phone's main storage.
 Keep Telegram's files in internal storage	Telegram dosyalarını dahili depolamada tut
 # context: Summary under that switch. Internal storage/Telegram and Android/data are folder paths: translate Internal storage as Android's Files app does, keep Telegram and Android/data as they are. All files access is Android's name for the special app access page.
