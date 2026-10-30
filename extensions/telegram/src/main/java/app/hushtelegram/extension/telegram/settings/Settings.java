@@ -40,9 +40,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_ADS =
             new BooleanSetting("hushtelegram_hide_ads", TRUE);
 
-    /** Chat-list stories only; explicit profile stories and archives keep Telegram's paths. */
+    /**
+     * Chat-list stories only; explicit profile stories and archives keep Telegram's paths. The chat
+     * list sets up its Post Story button and loads the story list when it's built, so a change shows
+     * after a restart.
+     */
     public static final BooleanSetting HIDE_STORIES =
-            new BooleanSetting("hushtelegram_hide_stories", TRUE);
+            new BooleanSetting("hushtelegram_hide_stories", TRUE, true);
 
     /** Similar channels/bots and their cached search sections. */
     public static final BooleanSetting HIDE_RECOMMENDATIONS =
