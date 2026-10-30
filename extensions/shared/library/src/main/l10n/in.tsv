@@ -273,6 +273,19 @@ Premium promo taps	ketukan promosi Premium
 Premium promo accepts	persetujuan promosi Premium
 Premium promo failures	kegagalan promosi Premium
 dual camera reports	laporan kamera ganda
+# context: Privacy page switch title under Stop usage reports. When on, Telegram isn't told that you read a chat or watched a story.
+Ghost mode	Mode hantu
+# context: Summary under that switch. Sending a message tells Telegram the chat was read anyway, and the account's other devices never learn it was read.
+Read chats and watch stories without anyone being told. Sending a message in a chat still marks it read, and your other devices keep showing it unread.	Baca obrolan dan tonton cerita tanpa ada yang diberi tahu. Mengirim pesan di sebuah obrolan tetap menandainya sudah dibaca, dan perangkat Anda yang lain tetap menampilkannya belum dibaca.
+# context: Switch title under Ghost mode. Read receipts are the ticks that tell a sender their message was read.
+No read receipts	Tanpa laporan dibaca
+# context: Summary under that switch. A voice message stays marked unplayed for its sender until it's played.
+Messages you read stay unread for the people who sent them, in private chats, groups and secret chats, and voice messages you play stay unplayed. Works with Ghost mode on.	Pesan yang Anda baca tetap belum dibaca bagi pengirimnya, di obrolan pribadi, grup, dan obrolan rahasia, dan pesan suara yang Anda putar tetap belum diputar. Berfungsi saat Mode hantu aktif.
+# context: Switch title under Ghost mode. When on, watching someone's story doesn't put you on its viewer list.
+View stories anonymously	Lihat cerita secara anonim
+Stories you watch don't add you to their viewer list. Works with Ghost mode on.	Cerita yang Anda tonton tidak menambahkan Anda ke daftar penontonnya. Berfungsi saat Mode hantu aktif.
+# context: Lowercase noun phrase naming the part of Stop usage reports that Ghost mode covers, listed in coverage lines with "channel read metrics" and "dual camera reports".
+read receipts and story views	laporan dibaca dan tayangan cerita
 Accounts	Akun
 Every switch here applies to all the accounts in this Telegram app, not only the one you have open.	Setiap sakelar di sini berlaku untuk semua akun di aplikasi Telegram ini, bukan hanya akun yang sedang Anda buka.
 No previews before sending	Tanpa pratinjau sebelum mengirim

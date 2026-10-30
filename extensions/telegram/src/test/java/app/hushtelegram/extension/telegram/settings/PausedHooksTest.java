@@ -407,7 +407,12 @@ public class PausedHooksTest {
                 () -> Analytics.skipPremiumAppLog("premium.promo_screen_tap"),
                 () -> Analytics.skipPremiumAppLog("premium.promo_screen_accept"),
                 () -> Analytics.skipPremiumAppLog("premium.promo_screen_fail"),
-                () -> Analytics.skipDeviceAppLog("android_dual_camera")));
+                () -> Analytics.skipDeviceAppLog("android_dual_camera"),
+                // Ghost mode keeps story views back, and a pause lets them go out.
+                () -> app.hushtelegram.extension.telegram.misc.GhostMode.drop(
+                        new org.telegram.tgnet.tl.TL_stories.TL_stories_readStories()),
+                () -> app.hushtelegram.extension.telegram.misc.GhostMode.drop(
+                        new org.telegram.tgnet.tl.TL_stories.TL_stories_incrementStoryViews())));
         // Links open in the browser, and Mini Apps and web pages inside Telegram get no location.
         probes.put(PatchFamily.OPEN_EXTERNAL_LINKS, Arrays.asList(
                 PausedHooksTest::externalBrowserOpened,

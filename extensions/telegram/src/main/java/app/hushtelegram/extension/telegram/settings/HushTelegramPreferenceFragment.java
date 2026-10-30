@@ -1027,6 +1027,17 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 privacy.addPreference(toggle(context, Settings.DISABLE_ANALYTICS, L10n.t("Stop usage reports"),
                     PatchFamily.DISABLE_ANALYTICS.coverageSummary(L10n.t("Stops usage reports to Telegram, like how long you read each channel post and what "
                             + "you tap on Premium screens. Messages and calls work as before."))));
+                // Ghost mode and its two parts: each part needs Ghost mode on, which starts off.
+                if (PatchFamily.Capability.GHOST_MODE.installed()) {
+                    privacy.addPreference(toggle(context, Settings.GHOST_MODE, L10n.t("Ghost mode"),
+                            L10n.t("Read chats and watch stories without anyone being told. Sending a message in a chat still marks "
+                                    + "it read, and your other devices keep showing it unread.")));
+                    privacy.addPreference(toggle(context, Settings.GHOST_READS, L10n.t("No read receipts"),
+                            L10n.t("Messages you read stay unread for the people who sent them, in private chats, groups and secret "
+                                    + "chats, and voice messages you play stay unplayed. Works with Ghost mode on.")));
+                    privacy.addPreference(toggle(context, Settings.GHOST_STORIES, L10n.t("View stories anonymously"),
+                            L10n.t("Stories you watch don't add you to their viewer list. Works with Ghost mode on.")));
+                }
             }
             if (build.contains(PatchFamily.DISABLE_CALL_DEBUG)) {
                 privacy.addPreference(toggle(context, Settings.DISABLE_CALL_DEBUG, L10n.t("Stop call diagnostics"),

@@ -273,6 +273,19 @@ Premium promo taps	toques en promociones de Premium
 Premium promo accepts	aceptaciones de promociones de Premium
 Premium promo failures	fallos de promociones de Premium
 dual camera reports	informes de cámara dual
+# context: Privacy page switch title under Stop usage reports. When on, Telegram isn't told that you read a chat or watched a story.
+Ghost mode	Modo fantasma
+# context: Summary under that switch. Sending a message tells Telegram the chat was read anyway, and the account's other devices never learn it was read.
+Read chats and watch stories without anyone being told. Sending a message in a chat still marks it read, and your other devices keep showing it unread.	Lee chats y mira historias sin que nadie se entere. Si envías un mensaje en un chat, igualmente se marca como leído, y tus otros dispositivos lo siguen mostrando como no leído.
+# context: Switch title under Ghost mode. Read receipts are the ticks that tell a sender their message was read.
+No read receipts	Sin confirmaciones de lectura
+# context: Summary under that switch. A voice message stays marked unplayed for its sender until it's played.
+Messages you read stay unread for the people who sent them, in private chats, groups and secret chats, and voice messages you play stay unplayed. Works with Ghost mode on.	Los mensajes que lees siguen sin leer para quienes los enviaron, en chats privados, grupos y chats secretos, y los mensajes de voz que reproduces siguen sin escuchar. Funciona con el Modo fantasma activado.
+# context: Switch title under Ghost mode. When on, watching someone's story doesn't put you on its viewer list.
+View stories anonymously	Ver historias de forma anónima
+Stories you watch don't add you to their viewer list. Works with Ghost mode on.	Las historias que ves no te añaden a su lista de espectadores. Funciona con el Modo fantasma activado.
+# context: Lowercase noun phrase naming the part of Stop usage reports that Ghost mode covers, listed in coverage lines with "channel read metrics" and "dual camera reports".
+read receipts and story views	confirmaciones de lectura y vistas de historias
 Accounts	Cuentas
 Every switch here applies to all the accounts in this Telegram app, not only the one you have open.	Cada interruptor de aquí se aplica a todas las cuentas de esta app de Telegram, no solo a la que tienes abierta.
 No previews before sending	Sin vistas previas antes de enviar

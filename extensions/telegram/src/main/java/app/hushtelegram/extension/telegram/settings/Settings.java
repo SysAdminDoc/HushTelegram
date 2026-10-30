@@ -573,6 +573,24 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting DISABLE_ANALYTICS =
             new BooleanSetting("hushtelegram_disable_analytics", TRUE);
 
+    /**
+     * Ghost mode's own switch: with it off, read receipts and story views go out as in stock
+     * Telegram whatever its two parts say ({@link app.hushtelegram.extension.telegram.misc.GhostMode}).
+     */
+    public static final BooleanSetting GHOST_MODE =
+            new BooleanSetting("hushtelegram_ghost_mode", FALSE);
+
+    /**
+     * Ghost mode's read receipts: chats, groups, channels, secret chats and played voice messages
+     * stay unread for their senders. Read only while Ghost mode is on.
+     */
+    public static final BooleanSetting GHOST_READS =
+            new BooleanSetting("hushtelegram_ghost_read_receipts", TRUE);
+
+    /** Ghost mode's story views: stories you watch don't count you as a viewer. Read only while Ghost mode is on. */
+    public static final BooleanSetting GHOST_STORIES =
+            new BooleanSetting("hushtelegram_ghost_stories", TRUE);
+
     /** Automatic call diagnostics only; the call itself and its cleanup stay stock. */
     public static final BooleanSetting DISABLE_CALL_DEBUG =
             new BooleanSetting("hushtelegram_disable_call_debug", TRUE);

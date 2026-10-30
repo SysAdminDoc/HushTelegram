@@ -197,4 +197,5 @@ public final class SettingsStatus {
     public static boolean premiumPromoAccept() { return false; }
     public static boolean premiumPromoFail() { return false; }
     public static boolean dualCameraReport() { return false; }
+    public static boolean ghostMode() { return false; }
 }
