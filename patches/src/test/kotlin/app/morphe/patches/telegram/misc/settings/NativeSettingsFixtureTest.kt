@@ -88,7 +88,12 @@ class NativeSettingsFixtureTest {
             assertEquals(1, row.body().count { it.ref() == "$ENTRY->nativeSettingsTitle()Ljava/lang/String;" })
             assertEquals(1, row.body().count { it.ref() == factory.toString() })
             assertEquals(1, row.body().count { it.ref() == APPEND })
-            assertEquals(NATIVE_ROW_ID, (row.body().first() as NarrowLiteralInstruction).narrowLiteral)
+            // The way's switch is asked first, and the row is only built when it answers yes.
+            assertEquals("$ENTRY->nativeRowShown()Z", row.body().first().ref())
+            assertEquals(Opcode.MOVE_RESULT, row.body()[1].opcode)
+            assertEquals(Opcode.IF_EQZ, row.body()[2].opcode)
+            assertEquals(NATIVE_ROW_ID, (row.body()[3] as NarrowLiteralInstruction).narrowLiteral)
+            assertEquals(Opcode.RETURN_VOID, row.body().last().opcode)
             assertEquals(listOf(0, 1, 2, 3, 4, 5, 6), row.body().single { it.ref() == factory.toString() }.namedRegisters())
             assertEquals(listOf(7, 0), row.body().single { it.ref() == APPEND }.namedRegisters())
             val builder = owner.methods.single { it.toString() == plan.builder.toString() }
@@ -211,7 +216,7 @@ class NativeSettingsFixtureTest {
             "click identity", "click title", "click switch", "ordinary account click", "click callback target",
             "click capture", "fill dispatch", "fill route", "view binding", "view owner", "parent access",
             "factory access", "factory store", "factory mask", "factory title", "renderer title",
-        ) + listOf("openFromNative", "nativeSettingsTitle").flatMap { listOf("missing $it", "access $it", "ambiguous $it") }) {
+        ) + listOf("openFromNative", "nativeSettingsTitle", "nativeRowShown").flatMap { listOf("missing $it", "access $it", "ambiguous $it") }) {
             val context = context(build)
             val plan = context.resolveNativeSettings()!!
             val owner = context.mutableClassDefBy(plan.builder.definingClass)

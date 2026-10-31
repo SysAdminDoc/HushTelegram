@@ -152,6 +152,10 @@ public final class SettingsEntry {
         try {
             ShortcutManager manager = app.getSystemService(ShortcutManager.class);
             if (manager == null) return;
+            if (!SettingsRoutes.shortcut()) {
+                withdrawShortcut(manager);
+                return;
+            }
             String longLabel = L10n.t(app, "HushTelegram settings");
             // Set before the attempt, so a shortcut that can't be pushed isn't tried on every screen.
             publishedLabel = longLabel;
@@ -159,11 +163,45 @@ public final class SettingsEntry {
             // One labelled in another language, or behind Telegram's own, is pushed again below.
             if (existing != null && existing.getRank() == 0
                     && longLabel.contentEquals(existing.getLongLabel())) return;
+            for (ShortcutInfo pinned : manager.getPinnedShortcuts()) {
+                if (SHORTCUT_ID.equals(pinned.getId()) && !pinned.isEnabled()) {
+                    manager.enableShortcuts(Collections.singletonList(SHORTCUT_ID));
+                    break;
+                }
+            }
             push(manager, shortcut(app, longLabel), existing != null);
             Logger.printInfo(() -> "Settings entry: launcher shortcut published");
         } catch (Exception ex) {
             Logger.printException(() -> "Settings entry: could not publish the shortcut", ex);
         }
+    }
+
+    /**
+     * Takes the shortcut away while its way is switched off: off the dynamic list, and disabled
+     * where someone pinned a copy to a home screen, so it opens nothing. Switched on again, the next
+     * publish enables the pinned copy too. Nothing happens when it isn't there.
+     */
+    private static void withdrawShortcut(ShortcutManager manager) {
+        publishedLabel = null;
+        if (ours(manager) != null) {
+            manager.removeDynamicShortcuts(Collections.singletonList(SHORTCUT_ID));
+            Logger.printInfo(() -> "Settings entry: launcher shortcut withdrawn");
+        }
+        for (ShortcutInfo pinned : manager.getPinnedShortcuts()) {
+            if (SHORTCUT_ID.equals(pinned.getId()) && pinned.isEnabled()) {
+                manager.disableShortcuts(Collections.singletonList(SHORTCUT_ID));
+                break;
+            }
+        }
+    }
+
+    /**
+     * Publishes or withdraws the shortcut to match its switch, on a background thread. The settings
+     * screen calls it as the switch changes, so the launcher follows at once.
+     */
+    public static void syncShortcut(Context context) {
+        if (context == null) return;
+        publishShortcut(context);
     }
 
     /**
@@ -176,6 +214,10 @@ public final class SettingsEntry {
         try {
             ShortcutManager manager = app.getSystemService(ShortcutManager.class);
             if (manager == null) return;
+            if (!SettingsRoutes.shortcut()) {
+                withdrawShortcut(manager);
+                return;
+            }
             ShortcutInfo existing = ours(manager);
             if (existing == null) {
                 publishShortcutNow(app);
@@ -395,6 +437,8 @@ public final class SettingsEntry {
                     case MotionEvent.ACTION_DOWN:
                         stop();
                         opened = false;
+                        // Switched off, the title is Telegram's alone.
+                        if (!SettingsRoutes.titlePress()) return false;
                         // A long press Telegram gave the bar itself stays Telegram's.
                         if (bar.isLongClickable()) return false;
                         pressed = bar;
@@ -464,6 +508,7 @@ public final class SettingsEntry {
      * @return whether the request was made.
      */
     static boolean requestFromTitle(View bar) {
+        if (!SettingsRoutes.titlePress()) return false;
         Activity activity = activityOf(bar.getContext());
         if (activity == null) {
             Logger.printInfo(() -> "Settings entry: the chat list title isn't in an activity, so its long press is Telegram's");
@@ -587,6 +632,18 @@ public final class SettingsEntry {
         if (open(activity)) openPending = false;
     }
 
+    /**
+     * Whether the HushTelegram row is added to Telegram's Settings page. Called by the patched row
+     * builder each time the page is built, so a change applies the next time the page opens.
+     */
+    public static boolean nativeRowShown() {
+        try {
+            return SettingsRoutes.settingsRow();
+        } catch (Throwable failure) {
+            return true;
+        }
+    }
+
     /** Uses the same five translations and language selection as the launcher shortcut. */
     public static String nativeSettingsTitle() {
         return L10n.t("HushTelegram settings");
@@ -617,6 +674,8 @@ public final class SettingsEntry {
         if (intent == null) return false;
         if (intent.getBooleanExtra(EXTRA_OPEN_SETTINGS, false)) {
             intent.removeExtra(EXTRA_OPEN_SETTINGS);
+            // A copy pinned before the way was switched off opens Telegram and nothing more.
+            if (!SettingsRoutes.shortcut()) return false;
             request("the launcher shortcut");
             return true;
         }

@@ -160,6 +160,7 @@ final class SettingsNavigation extends BaseAdapter {
         }
         section("Links", L10n.t("Links"), null, SettingsIcons.LINKS);
         section("Updates", L10n.t("Updates"), null, SettingsIcons.UPDATES);
+        section("Ways in", L10n.t("Ways in"), null, SettingsIcons.OPENING);
         section("Pause", L10n.t("Pause"), null, SettingsIcons.PAUSE);
         section("Settings backup", L10n.t("Settings backup"), null, SettingsIcons.EXPORT);
         section("Diagnostics", L10n.t("Diagnostics"), null, SettingsIcons.BUG);

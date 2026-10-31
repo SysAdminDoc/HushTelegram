@@ -97,10 +97,10 @@ public class SettingsNavigationTest {
     @Test @Config(sdk = {28, 30, 33, 36})
     public void homeAndEveryCategoryAreReachableWithoutRemovingTheModel() {
         assertNotNull(page.navigation);
-        // Nothing is paused, so there is no status card: the thirteen section headings, Changed
+        // Nothing is paused, so there is no status card: the fourteen section headings, Changed
         // switches, Report a problem and Support HushTelegram.
-        assertEquals(16, list().getCount());
-        assertEquals(13, page.sections().size());
+        assertEquals(17, list().getCount());
+        assertEquals(14, page.sections().size());
         int total = page.getPreferenceScreen().getRootAdapter().getCount();
         for (Preference section : page.sections()) {
             String id = section.getTitle().toString();
@@ -126,7 +126,7 @@ public class SettingsNavigationTest {
             assertEquals(0, sectionRows(id).size());
             assertFalse(page.navigation.back());
         }
-        assertEquals(16, list().getCount());
+        assertEquals(17, list().getCount());
     }
 
     @Test public void categoryClickChangesOnlyTheSettingWhoseRowWasTapped() {
@@ -755,7 +755,7 @@ public class SettingsNavigationTest {
         assertEquals(categoryCount("Privacy"), sectionRows("Privacy").size());
         tap("section_Privacy");
         assertEquals(SettingsNavigation.RESTART, ((Preference) list().getItemAtPosition(0)).getKey());
-        assertEquals(17, list().getCount());
+        assertEquals(18, list().getCount());
 
         // With the status card drawn the row goes under it.
         BaseSettings.PAUSED.save(true);
@@ -763,7 +763,7 @@ public class SettingsNavigationTest {
         recreate();
         assertSame(page.getPreferenceScreen().getPreference(0), list().getItemAtPosition(0));
         assertEquals(SettingsNavigation.RESTART, ((Preference) list().getItemAtPosition(1)).getKey());
-        assertEquals(18, list().getCount());
+        assertEquals(19, list().getCount());
 
         // Two changes are counted, and the row goes once neither is owed.
         app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.add(
@@ -774,7 +774,7 @@ public class SettingsNavigationTest {
         app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending.clear();
         page.navigation.restartChanged();
         assertFalse(contains(SettingsNavigation.RESTART));
-        assertEquals(17, list().getCount());
+        assertEquals(18, list().getCount());
     }
 
     /** A switch that needs a restart brings the row up the moment it's flipped, and flipping it back takes it away. */
@@ -855,7 +855,7 @@ public class SettingsNavigationTest {
         controller.get().getFragmentManager().executePendingTransactions();
         ShadowLooper.idleMainLooper();
         page = page(dialog);
-        assertEquals(16, list().getCount());
+        assertEquals(17, list().getCount());
         for (Preference section : page.sections()) assertFalse(page.navigation.isExpanded(section.getTitle().toString()));
     }
 
@@ -1018,7 +1018,7 @@ public class SettingsNavigationTest {
         assertEquals("No matching settings", ((Preference) list().getItemAtPosition(0)).getTitle());
         assertTrue(page.navigation.back());
         assertEquals("", search.getText().toString());
-        assertEquals(16, list().getCount());
+        assertEquals(17, list().getCount());
     }
 
     /** A row with no summary used to carry the word "null" into its search text. */
@@ -1144,12 +1144,12 @@ public class SettingsNavigationTest {
         assertEquals("Changed switches", pageTitle().getText().toString());
         SettingsL10nTest.backOf(dialog).performClick();
         assertTrue(dialog.getDialog().isShowing());
-        assertEquals(16, list().getCount());
+        assertEquals(17, list().getCount());
         assertEquals("HushTelegram", pageTitle().getText().toString());
         tap(SettingsNavigation.CHANGED);
         dialog.getDialog().onBackPressed();
         assertTrue(dialog.getDialog().isShowing());
-        assertEquals(16, list().getCount());
+        assertEquals(17, list().getCount());
         // Sections open in place on the home list, so there is nothing between it and leaving.
         page.navigation.navigate("About");
         android.app.Dialog shown = dialog.getDialog();
@@ -1207,7 +1207,7 @@ public class SettingsNavigationTest {
             application.checkActivities(false);
         }
         assertEquals(before, savedValues());
-        assertEquals(16, list().getCount());
+        assertEquals(17, list().getCount());
     }
 
     /**
@@ -1219,7 +1219,7 @@ public class SettingsNavigationTest {
         assertFalse("a heading above the sections", titles().contains("Browse settings"));
         assertFalse(contains(SettingsNavigation.QUICK_SETUPS));
         assertFalse(contains(SettingsNavigation.LOCK));
-        assertEquals(16, list().getCount());
+        assertEquals(17, list().getCount());
     }
 
     /** Quick setups opens from Settings backup, and search still finds it. */
@@ -1970,7 +1970,7 @@ public class SettingsNavigationTest {
         String switches = decoded.substring(decoded.indexOf("&additional_context=Switches on: "));
         assertTrue(switches, switches.contains("Hide ads"));
         assertFalse(switches, switches.contains("Hide contacts on Telegram"));
-        assertEquals("the tap left the home page", 16, list().getCount());
+        assertEquals("the tap left the home page", 17, list().getCount());
 
         org.robolectric.shadows.ShadowApplication application =
                 org.robolectric.Shadows.shadowOf(org.robolectric.RuntimeEnvironment.getApplication());
@@ -2164,7 +2164,7 @@ public class SettingsNavigationTest {
             capture(section.getTitle().toString().toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z]+", "-"));
         }
         recreate();
-        for (String tool : new String[]{"Links", "Updates", "Pause", "Settings backup", "Diagnostics", "About"}) {
+        for (String tool : new String[]{"Links", "Updates", "Ways in", "Pause", "Settings backup", "Diagnostics", "About"}) {
             page.navigation.navigate(tool);
         }
         capture("tool-sections");
@@ -2402,6 +2402,66 @@ public class SettingsNavigationTest {
         Map<String, Object> values = new TreeMap<>();
         for (Setting<?> setting : Setting.allLoadedSettings()) values.put(setting.key, setting.savedValue());
         return values;
+    }
+
+    private static void resetWays() {
+        for (app.hushtelegram.extension.shared.settings.BooleanSetting way : SettingsRoutes.all()) way.resetToDefault();
+    }
+
+    /** The four ways in sit together on one section, each a switch, all on until changed (#29). */
+    @Test public void waysInHasFourSwitchesAllOn() {
+        page.navigation.navigate("Ways in");
+        for (app.hushtelegram.extension.shared.settings.BooleanSetting way : SettingsRoutes.all()) {
+            assertTrue(way.key + " isn't a visible row", position(way.key) >= 0);
+            Preference row = page.findPreference(way.key);
+            assertTrue(row instanceof SwitchPreference);
+            assertTrue(way.key + " starts off", ((SwitchPreference) row).isChecked());
+        }
+    }
+
+    /** A way can go off while another is on, and the last one on can't: the switch stays on and a toast says why. */
+    @Test public void theLastWayInStaysOn() {
+        try {
+            page.navigation.navigate("Ways in");
+            tap(SettingsRoutes.TITLE_PRESS.key);
+            tap(SettingsRoutes.SIDE_MENU_ROW.key);
+            tap(SettingsRoutes.SHORTCUT.key);
+            assertFalse(SettingsRoutes.TITLE_PRESS.savedValue());
+            assertFalse(SettingsRoutes.SIDE_MENU_ROW.savedValue());
+            assertFalse(SettingsRoutes.SHORTCUT.savedValue());
+            ShadowToast.reset();
+            tap(SettingsRoutes.SETTINGS_ROW.key);
+            assertTrue("the last way was turned off", SettingsRoutes.SETTINGS_ROW.savedValue());
+            assertTrue(((SwitchPreference) page.findPreference(SettingsRoutes.SETTINGS_ROW.key)).isChecked());
+            assertEquals("Keep one way into HushTelegram settings", ShadowToast.getTextOfLatestToast());
+            // Another can come back on, and then the first can go.
+            tap(SettingsRoutes.TITLE_PRESS.key);
+            assertTrue(SettingsRoutes.TITLE_PRESS.savedValue());
+            tap(SettingsRoutes.SETTINGS_ROW.key);
+            assertFalse(SettingsRoutes.SETTINGS_ROW.savedValue());
+        } finally {
+            resetWays();
+        }
+    }
+
+    /** The lock holds the four switches like the rest of the screen, so the ways that are on stay on. */
+    @Test public void theLockHoldsTheWaysInSwitches() {
+        long[] now = {1_800_000_000_000L};
+        SettingsLockForTests.handClocks(now);
+        try {
+            page.navigation.navigate("Ways in");
+            assertTrue(SettingsLock.lock());
+            assertTrue(SettingsLock.refuses());
+            tap(SettingsRoutes.TITLE_PRESS.key);
+            assertTrue("the lock let a way go off", SettingsRoutes.TITLE_PRESS.savedValue());
+            assertTrue(SettingsRoutes.titlePress());
+            assertTrue(SettingsRoutes.settingsRow());
+            assertTrue(SettingsRoutes.sideMenuRow());
+            assertTrue(SettingsRoutes.shortcut());
+        } finally {
+            SettingsLockForTests.forget();
+            resetWays();
+        }
     }
 
     private void tap(String key) {

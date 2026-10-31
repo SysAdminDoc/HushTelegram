@@ -335,6 +335,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
         addLinksPage(context, screen, build);
         addUpdatesPage(context, screen, build);
+        addRoutesPage(context, screen);
         addPausePage(context, screen, build);
         addBackupPage(context, screen, build);
         addDiagnosticsPage(context, screen);
@@ -1142,6 +1143,41 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         + " the top of these settings. Nothing is downloaded.")));
         updates.addPreference(mark(checkNowRow(context), SettingsIcons.UPDATES));
         ReleaseCheck.watch(this);
+    }
+
+    /**
+     * Ways in (#29): which of the four ways open these settings. The last one on can't be turned off,
+     * and the settings lock holds these switches like the rest. None of them needs a restart.
+     */
+    private void addRoutesPage(Context context, PreferenceScreen screen) {
+        PreferenceCategory ways = category(screen, L10n.t("Ways in"));
+        ways.addPreference(info(context, L10n.t("Ways to open these settings"),
+                L10n.t("One way always stays on, so you can always get back here.")));
+        ways.addPreference(routeToggle(context, SettingsRoutes.SETTINGS_ROW, L10n.t("Row in Telegram's Settings"),
+                L10n.t("Adds a HushTelegram row to Telegram's Settings page.")));
+        ways.addPreference(routeToggle(context, SettingsRoutes.TITLE_PRESS, L10n.t("Long press on the chat list title"),
+                L10n.t("Hold the Telegram title at the top of your chats.")));
+        ways.addPreference(routeToggle(context, SettingsRoutes.SIDE_MENU_ROW, L10n.t("Row in the side menu"),
+                L10n.t("Adds a HushTelegram row to the side menu, which has its own switch.")));
+        ways.addPreference(routeToggle(context, SettingsRoutes.SHORTCUT, L10n.t("Home screen shortcut"),
+                L10n.t("Adds HushTelegram to the menu you get from holding Telegram's icon.")));
+    }
+
+    private static SwitchPreference routeToggle(Context context, BooleanSetting way, String title, String summary) {
+        SwitchPreference preference = toggle(context, way, title, summary);
+        preference.setOnPreferenceChangeListener((row, value) -> {
+            if (Boolean.FALSE.equals(value) && SettingsRoutes.wouldBeTheLast(way)) {
+                // The switch goes back on its own when the change is refused.
+                Utils.showToastLong(L10n.t("Keep one way into HushTelegram settings"));
+                return false;
+            }
+            if (way == SettingsRoutes.SHORTCUT) {
+                // Once the switch is saved, so the launcher follows what it says.
+                Utils.runOnMainThreadDelayed(() -> SettingsEntry.syncShortcut(context), 0);
+            }
+            return true;
+        });
+        return preference;
     }
 
     /** Pause, what it can't reach in this build, and the settings lock, which holds Pause too. */

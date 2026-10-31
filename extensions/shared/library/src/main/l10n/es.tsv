@@ -1071,3 +1071,16 @@ Add Forward as copy to the message menu	Añadir Reenviar como copia al menú del
 Adds Forward as copy to a message in a chat that doesn't allow forwarding. Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message.	Añade Reenviar como copia a un mensaje de un chat que no permite reenviar. Elige un chat y el texto del mensaje, o su foto o archivo descargado, se envía allí como un mensaje nuevo.
 Forward as copy	Reenviar como copia
 Open it first to download it	Ábrelo primero para descargarlo
+# context: Ways in section (#29): four switches for the ways that open the HushTelegram settings. 'Settings' in the Telegram row is Telegram's own applied Settings label (translations.telegram.org key Settings).
+Ways in	Formas de entrar
+Ways to open these settings	Formas de abrir esta configuración
+One way always stays on, so you can always get back here.	Siempre queda una forma activada, para que puedas volver aquí cuando quieras.
+Row in Telegram's Settings	Fila en Ajustes de Telegram
+Adds a HushTelegram row to Telegram's Settings page.	Añade una fila de HushTelegram a la página Ajustes de Telegram.
+Long press on the chat list title	Pulsación larga en el título de la lista de chats
+Hold the Telegram title at the top of your chats.	Mantén pulsado el título Telegram, arriba de tus chats.
+Row in the side menu	Fila en el menú lateral
+Adds a HushTelegram row to the side menu, which has its own switch.	Añade una fila de HushTelegram al menú lateral, que tiene su propio interruptor.
+Home screen shortcut	Acceso directo en la pantalla de inicio
+Adds HushTelegram to the menu you get from holding Telegram's icon.	Añade HushTelegram al menú que aparece al mantener pulsado el icono de Telegram.
+Keep one way into HushTelegram settings	Deja una forma de abrir la configuración de HushTelegram

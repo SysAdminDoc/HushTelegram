@@ -1071,3 +1071,16 @@ Add Forward as copy to the message menu	Als Kopie weiterleiten zum Nachrichtenme
 Adds Forward as copy to a message in a chat that doesn't allow forwarding. Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message.	Fügt Als Kopie weiterleiten zu einer Nachricht in einem Chat hinzu, der kein Weiterleiten erlaubt. Wähle einen Chat, und der Text der Nachricht oder das heruntergeladene Foto bzw. die Datei wird dort als neue Nachricht gesendet.
 Forward as copy	Als Kopie weiterleiten
 Open it first to download it	Öffne es zuerst, um es herunterzuladen
+# context: Ways in section (#29): four switches for the ways that open the HushTelegram settings. 'Settings' in the Telegram row is Telegram's own applied Settings label (translations.telegram.org key Settings).
+Ways in	Zugänge
+Ways to open these settings	Wege, diese Einstellungen zu öffnen
+One way always stays on, so you can always get back here.	Ein Weg bleibt immer an, damit du jederzeit hierher zurückfindest.
+Row in Telegram's Settings	Zeile in den Telegram-Einstellungen
+Adds a HushTelegram row to Telegram's Settings page.	Fügt der Telegram-Seite Einstellungen eine HushTelegram-Zeile hinzu.
+Long press on the chat list title	Langer Druck auf den Titel der Chatliste
+Hold the Telegram title at the top of your chats.	Halte den Titel Telegram oben in deinen Chats gedrückt.
+Row in the side menu	Zeile im Seitenmenü
+Adds a HushTelegram row to the side menu, which has its own switch.	Fügt dem Seitenmenü eine HushTelegram-Zeile hinzu. Das Menü hat einen eigenen Schalter.
+Home screen shortcut	Verknüpfung auf dem Startbildschirm
+Adds HushTelegram to the menu you get from holding Telegram's icon.	Fügt HushTelegram dem Menü hinzu, das beim Gedrückthalten des Telegram-Symbols erscheint.
+Keep one way into HushTelegram settings	Einen Weg zu den HushTelegram-Einstellungen behalten

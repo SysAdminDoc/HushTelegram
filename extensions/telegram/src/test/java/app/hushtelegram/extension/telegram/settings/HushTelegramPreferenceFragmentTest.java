@@ -190,7 +190,7 @@ public class HushTelegramPreferenceFragmentTest {
 
     /** The sections every build has, in the order they're drawn. */
     private static final List<String> EVERY_BUILD = Arrays.asList(
-            "Links", "Updates", "Pause", "Settings backup", "Diagnostics", "About");
+            "Links", "Updates", "Ways in", "Pause", "Settings backup", "Diagnostics", "About");
 
     /** The outside translate's own preference file, where the service and its key are kept. */
     private static final String TRANSLATE_FILE = "hushtelegram_outside_translate";

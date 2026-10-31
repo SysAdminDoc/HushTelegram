@@ -1071,3 +1071,16 @@ Add Forward as copy to the message menu	Tambahkan Teruskan sebagai salinan ke me
 Adds Forward as copy to a message in a chat that doesn't allow forwarding. Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message.	Menambahkan Teruskan sebagai salinan pada pesan di chat yang tidak mengizinkan penerusan. Pilih chat, lalu teks pesan, atau foto atau file yang sudah diunduh, dikirim ke sana sebagai pesan baru.
 Forward as copy	Teruskan sebagai salinan
 Open it first to download it	Buka dulu untuk mengunduhnya
+# context: Ways in section (#29): four switches for the ways that open the HushTelegram settings. 'Settings' in the Telegram row is Telegram's own applied Settings label (translations.telegram.org key Settings).
+Ways in	Cara masuk
+Ways to open these settings	Cara membuka pengaturan ini
+One way always stays on, so you can always get back here.	Satu cara selalu tetap aktif, jadi Anda selalu bisa kembali ke sini.
+Row in Telegram's Settings	Baris di Pengaturan Telegram
+Adds a HushTelegram row to Telegram's Settings page.	Menambahkan baris HushTelegram ke halaman Pengaturan Telegram.
+Long press on the chat list title	Tekan lama judul daftar chat
+Hold the Telegram title at the top of your chats.	Tahan judul Telegram di bagian atas chat Anda.
+Row in the side menu	Baris di menu samping
+Adds a HushTelegram row to the side menu, which has its own switch.	Menambahkan baris HushTelegram ke menu samping, yang punya sakelar sendiri.
+Home screen shortcut	Pintasan layar utama
+Adds HushTelegram to the menu you get from holding Telegram's icon.	Menambahkan HushTelegram ke menu yang muncul saat ikon Telegram ditahan.
+Keep one way into HushTelegram settings	Sisakan satu cara ke pengaturan HushTelegram
