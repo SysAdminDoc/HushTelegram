@@ -1,6 +1,8 @@
 /*
  * Copyright 2026 HushTelegram contributors
  * https://github.com/SysAdminDoc/HushTelegram
+ *
+ * Icon path data from https://github.com/phosphor-icons/core (MIT, copyright 2023 Phosphor Icons).
  */
 package app.hushtelegram.extension.telegram.misc;
 
