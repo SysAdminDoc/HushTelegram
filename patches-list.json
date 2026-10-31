@@ -2539,8 +2539,7 @@
       "use": true,
       "dependencies": [
         "BytecodePatch",
-        "HushTelegram settings",
-        "Message times with seconds"
+        "HushTelegram settings"
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [

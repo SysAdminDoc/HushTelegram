@@ -23,6 +23,7 @@ Every HushTelegram release, newest first.
 ### Fixed
 
 * **Telegram:** With **Hide reactions under messages** on, TalkBack no longer reads out reactions you can't see. A message reads the same as one nobody reacted to, and Saved Messages tags are still read since they still show. (#48)
+* **Telegram:** Leaving **Message times with seconds** out in Morphe Manager now really leaves it out. **Keep deleted messages** used to pull the whole patch back in, so its switch still showed in the Hush settings. Now it takes along only the part it needs to mark a message deleted. (#49)
 
 ## 0.0.22 (2026-10-30)
 

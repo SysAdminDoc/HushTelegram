@@ -340,7 +340,9 @@ public final class SelectionCheck {
         hook(calls, flags, "swipeBackOnProfiles", "misc/SwipeBack", "touchBlocks");
         hook(calls, flags, "hidePhoneNumber", "misc/HidePhone", "shown");
         hook(calls, flags, "shareNumberUnticked", "misc/ContactShare", "startsTicked");
-        hook(calls, flags, "messageSeconds", "misc/MessageTime", "shown");
+        // Keep deleted messages marks its label on the same time calls, so either patch puts them in (#49).
+        require(calls.getOrDefault(OWN + "telegram/misc/MessageTime;->shown", 0) > 0
+                == (Boolean.TRUE.equals(flags.get("messageSeconds")) || Boolean.TRUE.equals(flags.get("keepDeleted"))));
         hook(calls, flags, "allowChatBlur", "misc/ChatBlur", "allowed");
         hook(calls, flags, "voiceOneAtATime", "misc/VoicePlaylist", "queue");
         hook(calls, flags, "lockedVoice", "misc/LockedVoice", "refuse");
