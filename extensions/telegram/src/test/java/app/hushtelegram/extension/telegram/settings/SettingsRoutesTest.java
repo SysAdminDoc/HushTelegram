@@ -220,4 +220,29 @@ public class SettingsRoutesTest {
         assertTrue(SettingsRoutes.SETTINGS_ROW.savedValue());
         assertTrue(SettingsRoutes.SIDE_MENU_ROW.savedValue());
     }
+
+    /** A file with every way off leaves the Settings row on, stored too, so its switch shows what the app does. */
+    @Test public void aFileWithEveryWayOffKeepsTheSettingsRowSwitchOn() throws Exception {
+        JSONObject file = new JSONObject(SettingsBackup.create());
+        JSONObject switches = file.getJSONObject(SettingsBackup.SETTINGS_NAME);
+        for (BooleanSetting way : SettingsRoutes.all()) switches.put(way.key, false);
+
+        SettingsBackup.Snapshot whileOn = SettingsBackup.parse(file.toString());
+        assertFalse("the row is on already, so the file leaves it", whileOn.changes().containsKey(SettingsRoutes.SETTINGS_ROW));
+        assertEquals(3, SettingsBackup.apply(whileOn));
+        assertTrue(SettingsRoutes.SETTINGS_ROW.savedValue());
+        assertFalse(SettingsRoutes.TITLE_PRESS.savedValue());
+        assertFalse(SettingsRoutes.SIDE_MENU_ROW.savedValue());
+        assertFalse(SettingsRoutes.SHORTCUT.savedValue());
+
+        // The row was off with another way on: the file turns it back on instead of leaving none.
+        for (BooleanSetting way : SettingsRoutes.all()) way.resetToDefault();
+        off(SettingsRoutes.SETTINGS_ROW);
+        SettingsBackup.Snapshot whileOff = SettingsBackup.parse(file.toString());
+        assertEquals(Boolean.TRUE, whileOff.changes().get(SettingsRoutes.SETTINGS_ROW));
+        SettingsBackup.apply(whileOff);
+        assertTrue(SettingsRoutes.SETTINGS_ROW.savedValue());
+        assertTrue(SettingsRoutes.SETTINGS_ROW.get());
+        assertFalse(SettingsRoutes.SHORTCUT.savedValue());
+    }
 }

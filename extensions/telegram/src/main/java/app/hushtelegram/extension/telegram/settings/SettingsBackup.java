@@ -340,7 +340,22 @@ public final class SettingsBackup {
                     changes.put(entry.getKey(), entry.getValue());
                 }
             }
+            keepAWayIn(changes);
             return changes;
+        }
+
+        /**
+         * A file can't turn every way into these settings off, the same as the screen can't (#29).
+         * When it would, the row on Telegram's Settings page stays on, so its switch shows what the
+         * app does.
+         */
+        private static void keepAWayIn(Map<Setting<?>, Object> changes) {
+            for (BooleanSetting way : SettingsRoutes.all()) {
+                Object value = changes.containsKey(way) ? changes.get(way) : way.savedValue();
+                if (Boolean.TRUE.equals(value)) return;
+            }
+            if (SettingsRoutes.SETTINGS_ROW.savedValue()) changes.remove(SettingsRoutes.SETTINGS_ROW);
+            else changes.put(SettingsRoutes.SETTINGS_ROW, Boolean.TRUE);
         }
 
         /** How many switches this file changes, the number the preview and the toast give. */
