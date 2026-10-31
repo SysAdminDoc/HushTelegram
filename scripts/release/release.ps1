@@ -407,6 +407,9 @@ switch ($Stage) {
             Write-Step "$Version is already built from $(Get-ShortCommit $head) and its assets match SHA256SUMS.txt. Run -Stage publish."
             return
         }
+        # The full gate's wall time, queue waits included, kept next to the bundle hash so the next
+        # release can hold it against the 14m22s v0.0.11 baseline in CLAUDE.md.
+        $clock = [Diagnostics.Stopwatch]::StartNew()
         $fixtures = @(Get-DeclaredFixtures)
         $desktopJar = Resolve-DesktopCli -Root $Root -Required
         Invoke-ReleaseBuildAdvisories
@@ -465,7 +468,9 @@ switch ($Stage) {
             '{0}  {1}' -f (Get-Sha256Hex -Path (Join-Path $assets $name)).ToLowerInvariant(), $name
         })
         Write-ReleaseText -Path (Join-Path $assets 'SHA256SUMS.txt') -Text (($sums -join "`n") + "`n")
-        Save-StageRecord 'build' @{ bundleSha256 = $bundleHash; fixtures = @($fixtures | ForEach-Object { Split-Path -Leaf $_ }) }
+        $minutes = [math]::Round($clock.Elapsed.TotalMinutes, 1)
+        Save-StageRecord 'build' @{ bundleSha256 = $bundleHash; fixtures = @($fixtures | ForEach-Object { Split-Path -Leaf $_ }); minutes = $minutes }
+        Write-Step "the full gate took $minutes minutes"
         foreach ($line in $sums) { Write-Step $line }
         Write-Step "The assets are in $assets. Write the notes' intro, install steps and validation, then run -Stage publish."
     }

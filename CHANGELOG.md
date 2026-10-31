@@ -7,6 +7,7 @@ Every HushTelegram release, newest first.
 ### Changed
 
 * **Tooling:** The whole-app walk gets past Android asking for contacts or photos over the screen it's opening. It says no (Don't allow, or Not now on Telegram's own contacts prompt, never Allow or Continue) and opens the screen again. If the ask keeps coming back, the walk's problem line names it instead of a bare "would not open".
+* **Tooling:** The release build stage writes down how long the full gate took, the same way preflight already does, so a slow gate shows up next to the earlier timing.
 
 ### Fixed
 
