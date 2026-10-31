@@ -1197,3 +1197,11 @@ uploads	subidas
 Disable secret chats	Desactivar chats secretos
 When someone asks for a secret chat, this phone ignores it. Nothing is saved or shown, and nothing is sent back, so they just see it waiting. Secret chats you already have keep working.	Cuando alguien pide un chat secreto, este teléfono lo ignora. No se guarda ni se muestra nada y no se envía nada de vuelta, así que la otra persona solo ve que está esperando. Los chats secretos que ya tienes siguen funcionando.
 secret chat requests	solicitudes de chat secreto
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default. With it on, the chat list orders the unpinned chats by the date of their last message
+Sort chats by date	Ordenar chats por fecha
+# context: Summary of Sort chats by date. Pinned chats stay at the top and the archive row stays where it is; only this phone's view changes
+Orders your unpinned chats by the date of their last message. Pinned chats and the archive row keep their places. It only changes how this phone shows the list, and nothing is sent to Telegram.	Ordena tus chats sin fijar por la fecha de su último mensaje. Los chats fijados y la fila del archivo se quedan donde están. Solo cambia cómo este teléfono muestra la lista y no se envía nada a Telegram.
+# context: Switch title under Sort chats by date. With it on, the chat with the oldest last message comes first
+Oldest chats first	Chats más antiguos primero
+# context: Summary of Oldest chats first. Sort chats by date is the title of the switch above it
+With Sort chats by date on, the chat with the oldest last message comes first instead of the newest.	Con Ordenar chats por fecha activado, va primero el chat con el último mensaje más antiguo en lugar del más reciente.

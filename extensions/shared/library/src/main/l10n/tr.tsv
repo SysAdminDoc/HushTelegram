@@ -1197,3 +1197,11 @@ uploads	yüklemeler
 Disable secret chats	Gizli sohbetleri devre dışı bırak
 When someone asks for a secret chat, this phone ignores it. Nothing is saved or shown, and nothing is sent back, so they just see it waiting. Secret chats you already have keep working.	Biri gizli sohbet istediğinde bu telefon isteği yok sayar. Hiçbir şey kaydedilmez ya da gösterilmez ve geri hiçbir şey gönderilmez, karşı taraf yalnızca bekliyor görür. Zaten sahip olduğunuz gizli sohbetler çalışmaya devam eder.
 secret chat requests	gizli sohbet istekleri
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default. With it on, the chat list orders the unpinned chats by the date of their last message
+Sort chats by date	Sohbetleri tarihe göre sırala
+# context: Summary of Sort chats by date. Pinned chats stay at the top and the archive row stays where it is; only this phone's view changes
+Orders your unpinned chats by the date of their last message. Pinned chats and the archive row keep their places. It only changes how this phone shows the list, and nothing is sent to Telegram.	Sabitlenmemiş sohbetlerini son mesajlarının tarihine göre sıralar. Sabitlenmiş sohbetler ve arşiv satırı yerinde kalır. Yalnızca bu telefonun listeyi nasıl gösterdiği değişir ve Telegram'a hiçbir şey gönderilmez.
+# context: Switch title under Sort chats by date. With it on, the chat with the oldest last message comes first
+Oldest chats first	Önce en eski sohbetler
+# context: Summary of Oldest chats first. Sort chats by date is the title of the switch above it
+With Sort chats by date on, the chat with the oldest last message comes first instead of the newest.	Sohbetleri tarihe göre sırala açıkken, en yeni yerine son mesajı en eski olan sohbet başa gelir.

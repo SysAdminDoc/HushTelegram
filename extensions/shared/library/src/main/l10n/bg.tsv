@@ -1193,3 +1193,11 @@ uploads	качвания
 Disable secret chats	Изключване на тайните чатове
 When someone asks for a secret chat, this phone ignores it. Nothing is saved or shown, and nothing is sent back, so they just see it waiting. Secret chats you already have keep working.	Когато някой поиска таен чат, този телефон го игнорира. Нищо не се запазва и не се показва, нищо не се връща, така че другият просто вижда, че чака. Тайните чатове, които вече имате, продължават да работят.
 secret chat requests	заявки за таен чат
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default. With it on, the chat list orders the unpinned chats by the date of their last message
+Sort chats by date	Подреждане на чатовете по дата
+# context: Summary of Sort chats by date. Pinned chats stay at the top and the archive row stays where it is; only this phone's view changes
+Orders your unpinned chats by the date of their last message. Pinned chats and the archive row keep their places. It only changes how this phone shows the list, and nothing is sent to Telegram.	Подрежда незакачените ти чатове по датата на последното им съобщение. Закачените чатове и редът за архива остават на местата си. Променя се само как този телефон показва списъка и нищо не се изпраща към Telegram.
+# context: Switch title under Sort chats by date. With it on, the chat with the oldest last message comes first
+Oldest chats first	Първо най-старите чатове
+# context: Summary of Oldest chats first. Sort chats by date is the title of the switch above it
+With Sort chats by date on, the chat with the oldest last message comes first instead of the newest.	Когато Подреждане на чатовете по дата е включено, първо идва чатът с най-старо последно съобщение вместо най-новия.

@@ -110,6 +110,12 @@ public final class HiddenChats {
      */
     public static void prune(Object controller) {
         HookStatus.invoked(FamilyNames.HIDE_FOLDER_COUNTERS);
+        pruneHidden(controller);
+        // After the hidden chats left, so the order only covers what shows.
+        ChatSort.sortLists(controller);
+    }
+
+    private static void pruneHidden(Object controller) {
         SparseArray<List<Object>> away = null;
         try {
             if (!Utils.settingsReady() || !Settings.HIDDEN_CHATS.get()) {

@@ -328,6 +328,17 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_hidden_chats", FALSE);
 
     /**
+     * The chat list orders its unpinned chats by the date of their last message
+     * ({@link app.hushtelegram.extension.telegram.misc.ChatSort}). Pinned chats stay where they are.
+     */
+    public static final BooleanSetting SORT_BY_DATE =
+            new BooleanSetting("hushtelegram_sort_by_date", FALSE);
+
+    /** With the date order on, the chat with the oldest last message comes first instead of the newest. */
+    public static final BooleanSetting SORT_OLDEST_FIRST =
+            new BooleanSetting("hushtelegram_sort_oldest_first", FALSE);
+
+    /**
      * Forwards start with Telegram's Hide sender's name option turned on.
      */
     public static final BooleanSetting FORWARD_HIDE_SENDER =

@@ -350,7 +350,7 @@ internal fun launchFolderHosts(build: File): List<ClassDef> = LAUNCH_FOLDER_HOST
     // storage and its queue for their unread counts, and the strings and locale for Hide All Chats' archive title.
     val wanted = mutableSetOf(list, MESSAGES_CONTROLLER, LOCAL_FILTER, USER_CONFIG, "Lorg/telegram/tgnet/TLRPC\$Dialog;",
         "Lorg/telegram/messenger/NotificationCenter;", "Lorg/telegram/messenger/MessagesStorage;",
-        "Lorg/telegram/messenger/DispatchQueue;",
+        "Lorg/telegram/messenger/DispatchQueue;", ARCHIVE_ROW,
         "Lorg/telegram/messenger/R\$string;", "Lorg/telegram/messenger/LocaleController;")
     for (instruction in tabs.body()) {
         val field = (instruction as? ReferenceInstruction)?.reference as? com.android.tools.smali.dexlib2.iface.reference.FieldReference ?: continue

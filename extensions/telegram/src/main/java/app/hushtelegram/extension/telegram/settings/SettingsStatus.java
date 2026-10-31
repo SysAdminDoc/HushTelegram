@@ -105,6 +105,7 @@ public final class SettingsStatus {
     public static boolean hideAllChats() { return false; }
     public static boolean allChatsPlace() { return false; }
     public static boolean hiddenChats() { return false; }
+    public static boolean sortByDate() { return false; }
     public static boolean hiddenUnread() { return false; }
     public static boolean forwardHideSender() { return false; }
     public static boolean voiceMusicPlayer() { return false; }

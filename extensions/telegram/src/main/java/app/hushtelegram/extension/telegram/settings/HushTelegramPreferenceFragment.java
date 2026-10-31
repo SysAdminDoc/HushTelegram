@@ -478,6 +478,22 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 folderTabs.addPreference(hide);
                 folderTabs.addPreference(hiddenChatsRow(context));
             }
+            if (PatchFamily.Capability.SORT_BY_DATE.installed()) {
+                SwitchPreference sort = toggle(context, Settings.SORT_BY_DATE, L10n.t("Sort chats by date"),
+                        L10n.t("Orders your unpinned chats by the date of their last message. Pinned chats and the archive row keep "
+                                + "their places. It only changes how this phone shows the list, and nothing is sent to Telegram."));
+                SwitchPreference oldest = toggle(context, Settings.SORT_OLDEST_FIRST, L10n.t("Oldest chats first"),
+                        L10n.t("With Sort chats by date on, the chat with the oldest last message comes first instead of the newest."));
+                Preference.OnPreferenceChangeListener resort = (row, value) -> {
+                    // Once the switch is saved, so the chat list sorts by what it says.
+                    Utils.runOnMainThreadDelayed(HiddenChats::refreshAll, 0);
+                    return true;
+                };
+                sort.setOnPreferenceChangeListener(resort);
+                oldest.setOnPreferenceChangeListener(resort);
+                folderTabs.addPreference(sort);
+                folderTabs.addPreference(oldest);
+            }
         }
         if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS)) {
             SwitchPreference folders = toggle(context, Settings.CHAT_TYPE_FOLDERS, L10n.t("Folders by chat type"),

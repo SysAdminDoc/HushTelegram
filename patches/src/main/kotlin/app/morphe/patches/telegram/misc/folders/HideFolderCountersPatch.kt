@@ -102,6 +102,14 @@ val hideFolderCountersPatch = bytecodePatch(
                 "the unread counts' stub doesn't build (${failed.javaClass.simpleName}: ${failed.message})"
             }
         }
+        // The date order rides on the same sort hook, and a build that can't give it its stubs leaves only it out.
+        val noSort = if (unhidden == null) try {
+            requireChatSortRuntime()
+            writeChatSortStubs()
+            null
+        } catch (failed: Exception) {
+            "the date order's stubs don't build (${failed.javaClass.simpleName}: ${failed.message})"
+        } else null
         insertCounterAnswer(counter)
         enableStatus("hideFolderCounters")
         if (missing == null) {
@@ -127,6 +135,11 @@ val hideFolderCountersPatch = bytecodePatch(
             val pickers = resolveHiddenPickers()
             pickers.apply()
             pickers.gaps.forEach { patchLog.warning("Hide folder tab counters: $it. Hidden chats go on, listed in that picker.") }
+            if (noSort == null) {
+                enableCapability("sortByDate")
+            } else {
+                patchLog.warning("Hide folder tab counters: $noSort. Hidden chats go on without Sort chats by date.")
+            }
             if (noMenu == null) {
                 menu!!.apply()
             } else {
