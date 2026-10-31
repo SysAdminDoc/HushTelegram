@@ -95,7 +95,7 @@ internal const val APPLICATION_ID = "Lorg/telegram/messenger/ApplicationLoader;-
 private const val NAME = "Add Repeat to the message menu"
 
 /** The extension's option numbers, Repeat, Message details, Copy photo and Quick forward, which Telegram's own may never use. */
-internal val MENU_OPTIONS = listOf(0x48544d01, 0x48544d02, 0x48544d03, 0x48544d04, 0x48544d05, 0x48544d06, 0x48544d07)
+internal val MENU_OPTIONS = listOf(0x48544d01, 0x48544d02, 0x48544d03, 0x48544d04, 0x48544d05, 0x48544d06, 0x48544d07, 0x48544d08, 0x48544d09, 0x48544d0a, 0x48544d0b, 0x48544d0c)
 private val MOVES = setOf(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_WIDE, Opcode.MOVE_WIDE_FROM16)
 
 @Suppress("unused")
@@ -199,6 +199,7 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     controlHook(MESSAGE_MENU, "sendPhoto", listOf("I", "J", STRING, STRING), "Z")
     controlHook(MESSAGE_MENU, "sendFile", listOf("I", "J", STRING, STRING, STRING), "Z")
     controlHook(MESSAGE_MENU, "uri", listOf(CONTEXT, FILE), URI)
+    resolveMessageMenuTools()
 
     // The builder, and the Premium gate on hiding an article's sender.
     val builders = messageMenuBuilders()
@@ -549,6 +550,7 @@ internal fun BytecodePatchContext.writeMessageMenuStubs(site: MessageMenuSite) {
     """)
     writeQuickForwardStubs()
     writeSendCopyStubs()
+    writeMessageMenuToolsStubs()
     writeStub(MESSAGE_MENU, "blocked", 2, """
         check-cast p0, $MESSAGE
         invoke-virtual {p0}, $MESSAGE->getId()I

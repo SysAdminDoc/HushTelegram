@@ -606,6 +606,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting MESSAGE_MENU_FORWARD_COPY =
             new BooleanSetting("hushtelegram_message_menu_forward_copy", FALSE);
 
+    /** Fast forward in the message menu (#53): forward with the sender's name or the captions left off, then pick a chat. */
+    public static final BooleanSetting MESSAGE_MENU_FAST_FORWARD =
+            new BooleanSetting("hushtelegram_message_menu_fast_forward", FALSE);
+
     /**
      * A channel's read metrics (how long each post stayed on screen), Premium screen interaction
      * reports and the camera's dual-camera report are never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

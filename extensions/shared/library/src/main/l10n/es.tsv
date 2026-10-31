@@ -1150,3 +1150,10 @@ call record button	el botón de grabar en llamadas
 Add Save to Gallery to stories	Añadir «Guardar en la galería» a las historias
 Puts Save to Gallery in a story's three-dot menu without Premium, stories that don't allow saving included. It saves only the ones you pick.	Pone «Guardar en la galería» en el menú de tres puntos de una historia sin Premium, incluso en historias que no permiten guardar. Solo guarda las que elijas.
 Save to Gallery in stories	«Guardar en la galería» en historias
+# context: Switch for Fast forward in the message menu (#53), its item, choices and picker.
+Add Fast forward to the message menu	Añadir Reenvío rápido al menú del mensaje
+Adds Fast forward to a message you can forward. Pick without the sender's name, without the caption, or both, then pick a chat.	Añade Reenvío rápido a un mensaje que puedes reenviar. Elige sin el nombre del remitente, sin el pie de foto o ambos, y luego un chat.
+Fast forward	Reenvío rápido
+Without sender name	Sin nombre del remitente
+Without caption	Sin pie de foto
+Without sender name or caption	Sin nombre del remitente ni pie de foto

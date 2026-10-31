@@ -1146,3 +1146,10 @@ call record button	бутона за записване на обаждания
 Add Save to Gallery to stories	Добавяне на „Запиши в галерия“ към историите
 Puts Save to Gallery in a story's three-dot menu without Premium, stories that don't allow saving included. It saves only the ones you pick.	Поставя „Запиши в галерия“ в менюто с трите точки на историята без Premium, включително при истории, които не позволяват запазване. Запазва само избраните от теб.
 Save to Gallery in stories	„Запиши в галерия“ в историите
+# context: Switch for Fast forward in the message menu (#53), its item, choices and picker.
+Add Fast forward to the message menu	Добавяне на Бързо препращане в менюто на съобщението
+Adds Fast forward to a message you can forward. Pick without the sender's name, without the caption, or both, then pick a chat.	Добавя Бързо препращане към съобщение, което можеш да препратиш. Избери без името на подателя, без надписа или без двете, после избери чат.
+Fast forward	Бързо препращане
+Without sender name	Без име на подателя
+Without caption	Без надпис
+Without sender name or caption	Без име на подателя и надпис

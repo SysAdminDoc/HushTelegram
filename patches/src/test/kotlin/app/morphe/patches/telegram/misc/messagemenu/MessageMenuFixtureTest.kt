@@ -26,6 +26,7 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
@@ -126,6 +127,15 @@ class MessageMenuFixtureTest {
             assertEquals((0..9).toList(), quick.namedRegisters())
             assertEquals("$name: notify on, no schedule, no stars", listOf(0L, 1L, 0L, 0L),
                 forwardTo.filter { it.opcode == Opcode.CONST_4 || it.opcode == Opcode.CONST_WIDE_16 }.map { (it as WideLiteralInstruction).wideLiteral })
+            // Fast forward: the same send with both flags read from the stub's own arguments (sender p4, caption p5).
+            val tools = context.mutableClassDefBy(MESSAGE_MENU_TOOLS).methods.single { it.name == "forwardWith" }
+            val toolsBody = tools.controlBody()
+            val fast = toolsBody.single { it.opcode == Opcode.INVOKE_VIRTUAL_RANGE }
+            assertEquals("$name: Telegram's own forward with both flags", sendHelper, fast.controlRef())
+            assertEquals((0..9).toList(), fast.namedRegisters())
+            assertEquals("$name: sixteen registers, the last argument in the last", 16, tools.implementation!!.registerCount)
+            val flags = toolsBody.filter { it.opcode == Opcode.MOVE }.map { it as TwoRegisterInstruction }.map { it.registerA to it.registerB }
+            assertEquals("$name: sender into the forward-from-my-name slot, caption into the hide-caption slot", listOf(4 to 14, 5 to 15), flags)
             assertTrue("$name: Telegram's chat list", stub("dialogs").any { it.controlRef()?.endsWith("->getAllDialogs()Ljava/util/ArrayList;") == true })
             assertTrue("$name: a chat list entry's ID", stub("dialogId").any { it.controlRef() == "Lorg/telegram/tgnet/TLRPC\$Dialog;->id:J" })
             assertTrue("$name: your own ID", stub("selfId").any { it.controlRef()?.endsWith("->getClientUserId()J") == true })

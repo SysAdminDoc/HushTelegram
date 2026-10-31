@@ -1150,3 +1150,10 @@ call record button	die Aufnahmetaste bei Anrufen
 Add Save to Gallery to stories	„In der Galerie speichern“ zu Stories hinzufügen
 Puts Save to Gallery in a story's three-dot menu without Premium, stories that don't allow saving included. It saves only the ones you pick.	Zeigt „In der Galerie speichern“ ohne Premium im Drei-Punkte-Menü einer Story, auch bei Stories, die kein Speichern erlauben. Gespeichert wird nur, was du auswählst.
 Save to Gallery in stories	„In der Galerie speichern“ in Stories
+# context: Switch for Fast forward in the message menu (#53), its item, choices and picker.
+Add Fast forward to the message menu	Schnell weiterleiten zum Nachrichtenmenü hinzufügen
+Adds Fast forward to a message you can forward. Pick without the sender's name, without the caption, or both, then pick a chat.	Fügt Schnell weiterleiten zu einer Nachricht hinzu, die du weiterleiten kannst. Wähle ohne Absendernamen, ohne Bildunterschrift oder beides, dann einen Chat.
+Fast forward	Schnell weiterleiten
+Without sender name	Ohne Absendernamen
+Without caption	Ohne Bildunterschrift
+Without sender name or caption	Ohne Absendernamen und Bildunterschrift
