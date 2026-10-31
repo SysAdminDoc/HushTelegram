@@ -21,6 +21,7 @@ The fourteenth release, still 67 patches for Telegram 13.1.1 from Google Play an
 
 * **Tooling:** The whole-app walk gets past Android asking for contacts or photos over the screen it's opening. It says no (Don't allow, or Not now on Telegram's own contacts prompt, never Allow or Continue) and opens the screen again. If the ask keeps coming back, the walk's problem line names it instead of a bare "would not open".
 * **Tooling:** The release build stage writes down how long the full gate took, the same way preflight already does, so a slow gate shows up next to the earlier timing.
+* **Tooling:** Release preflight runs the pre-push hook's check for tracked files that name the maintainer's machine or a phone. Everyday pushes skip that hook, so one such name sat in a build script comment on main until the contract tests read it.
 
 ### Fixed
 
