@@ -115,6 +115,7 @@ public final class SettingsStatus {
     public static boolean hiddenUnread() { return false; }
     public static boolean forwardHideSender() { return false; }
     public static boolean voiceMusicPlayer() { return false; }
+    public static boolean playbackPosition() { return false; }
     public static boolean silenceNonContacts() { return false; }
     public static boolean disableArchivePull() { return false; }
     public static boolean rearCameraFirst() { return false; }

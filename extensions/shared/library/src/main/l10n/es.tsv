@@ -1301,3 +1301,7 @@ I haven't seen that person.	No he visto a esa persona.
 mentions by ID	menciones por ID
 powering off accounts	apagar cuentas
 receive only mode	modo solo recepción
+# context: Switch on the Playback page for remembering where videos, voice messages and music stopped (#53). Telegram only does this for long ones.
+Remember where playback stopped	Recordar dónde se detuvo la reproducción
+# context: Summary of the switch Remember where playback stopped. Telegram itself only remembers the position of long videos, voice messages and songs.
+Videos, voice messages and music pick up where you left off, even short ones. Telegram only does that for long ones.	Los vídeos, los mensajes de voz y la música siguen donde los dejaste, incluso los cortos. Telegram solo lo hace con los largos.

@@ -1297,3 +1297,7 @@ I haven't seen that person.	Не съм виждал този човек.
 mentions by ID	споменавания по ID
 powering off accounts	изключване на акаунти
 receive only mode	режим само за получаване
+# context: Switch on the Playback page for remembering where videos, voice messages and music stopped (#53). Telegram only does this for long ones.
+Remember where playback stopped	Запомняне докъде е стигнало възпроизвеждането
+# context: Summary of the switch Remember where playback stopped. Telegram itself only remembers the position of long videos, voice messages and songs.
+Videos, voice messages and music pick up where you left off, even short ones. Telegram only does that for long ones.	Видеата, гласовите съобщения и музиката продължават оттам, където сте спрели, дори и кратките. Telegram прави това само за дългите.

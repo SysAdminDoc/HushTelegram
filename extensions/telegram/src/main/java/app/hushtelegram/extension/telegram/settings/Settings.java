@@ -388,6 +388,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_voice_music_player", FALSE);
 
     /**
+     * Videos, voice messages and music remember where they stopped, however short they are, and
+     * pick up from there the next time they play (#53).
+     */
+    public static final BooleanSetting PLAYBACK_POSITION =
+            new BooleanSetting("hushtelegram_playback_position", FALSE);
+
+    /**
      * A private message from someone outside your contacts notifies without sound or vibration.
      */
     public static final BooleanSetting SILENCE_NON_CONTACTS =

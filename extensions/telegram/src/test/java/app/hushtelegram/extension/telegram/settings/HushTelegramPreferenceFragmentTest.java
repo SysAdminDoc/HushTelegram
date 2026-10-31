@@ -700,6 +700,10 @@ public class HushTelegramPreferenceFragmentTest {
             // A voice message keeps jumping to the chat until the switch is turned on.
             assertFalse(Settings.VOICE_MUSIC_PLAYER.key,
                     ((SwitchPreference) page.findPreference(Settings.VOICE_MUSIC_PLAYER.key)).isChecked());
+            assertEquals("Remember where playback stopped", String.valueOf(page.findPreference(Settings.PLAYBACK_POSITION.key).getTitle()));
+            assertEquals("Videos, voice messages and music pick up where you left off, even short ones. Telegram only does that for long ones.",
+                    String.valueOf(page.findPreference(Settings.PLAYBACK_POSITION.key).getSummary()));
+            assertFalse(Settings.PLAYBACK_POSITION.key, ((SwitchPreference) page.findPreference(Settings.PLAYBACK_POSITION.key)).isChecked());
             assertEquals("Faster downloads", String.valueOf(page.findPreference(Settings.FASTER_DOWNLOADS.key).getTitle()));
             assertEquals("Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces 4 at a time. If a big "
                     + "piece fails, Telegram goes back to small ones. The next download picks this up.",

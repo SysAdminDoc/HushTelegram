@@ -156,6 +156,7 @@ public final class SettingsBackup {
             Settings.FIT_ALL_TABS,
             Settings.FORWARD_HIDE_SENDER,
             Settings.VOICE_MUSIC_PLAYER,
+            Settings.PLAYBACK_POSITION,
             Settings.SILENCE_NON_CONTACTS,
             Settings.REACTION_ALERTS,
             Settings.REACTION_SOUND,

@@ -1301,3 +1301,7 @@ I haven't seen that person.	Bu kişiyi görmedim.
 mentions by ID	ID ile bahsetmeler
 powering off accounts	hesapları kapatma
 receive only mode	yalnızca alma modu
+# context: Switch on the Playback page for remembering where videos, voice messages and music stopped (#53). Telegram only does this for long ones.
+Remember where playback stopped	Oynatmanın nerede durduğunu hatırla
+# context: Summary of the switch Remember where playback stopped. Telegram itself only remembers the position of long videos, voice messages and songs.
+Videos, voice messages and music pick up where you left off, even short ones. Telegram only does that for long ones.	Videolar, sesli mesajlar ve müzik, kısa olsalar bile kaldığınız yerden devam eder. Telegram bunu yalnızca uzun olanlar için yapar.

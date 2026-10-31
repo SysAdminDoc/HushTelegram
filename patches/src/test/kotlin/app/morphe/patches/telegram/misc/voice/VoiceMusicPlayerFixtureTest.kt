@@ -28,7 +28,7 @@ class VoiceMusicPlayerFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val hosts = FixtureDex.classesWhere(build, { true }) { m -> m.controlBody().any { it.controlRef() == IS_MUSIC } }
-                .map(ImmutableClassDef::of)
+                .map(ImmutableClassDef::of).let { found -> found + playbackPositionHosts(build).filter { h -> found.none { it.type == h.type } } }
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
             val site = context.resolveVoiceMusicPlayer()
             val old = site.calls.map { (m, _) -> ImmutableMethod.of(m) }
