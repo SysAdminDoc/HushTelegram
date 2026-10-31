@@ -28,6 +28,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import java.io.File
 
 /**
  * The call-debug owner and both WebRTC engines' recorder and speaker thread enter the context.
@@ -38,7 +39,7 @@ class DisableCallDebugFixtureTest {
     fun `each declared build covers both RPCs and the deferred file upload while preserving cleanup`() {
         for (build in Fixtures.declaredBuilds()) {
             val owner = FixtureDex.classes(build, setOf(VOIP_DEBUG)).getValue(VOIP_DEBUG)
-            val context = PatchContexts.of(ExtensionDex.classes() + owner + FixtureDex.classes(build, AUDIO_TYPES).values)
+            val context = PatchContexts.of(ExtensionDex.classes() + owner + FixtureDex.classes(build, AUDIO_TYPES).values + callScreens(build))
             val hooks = context.resolveCallDebugHooks()
             assertEquals("${build.name}: complete call diagnostic coverage", CallDebugTarget.entries.toSet(), hooks.keys)
             val before = hooks.mapValues { ImmutableMethod.of(it.value.method) }
@@ -108,7 +109,7 @@ class DisableCallDebugFixtureTest {
             }
             assertEquals("${build.name}: every automatic call diagnostic RPC is covered", 2, rpcs.size)
             assertTrue("${build.name}: no other call diagnostic RPC owner", rpcs.all { it.definingClass == VOIP_DEBUG })
-            for (flag in listOf("disableCallDebug", "callRecording") + CallDebugTarget.entries.map { it.capability }) {
+            for (flag in listOf("disableCallDebug", "callRecording", "callRecordButton") + CallDebugTarget.entries.map { it.capability }) {
                 val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
                 assertEquals("${build.name}: $flag build fact", 1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
                 assertEquals(Opcode.RETURN, status[1].opcode)
@@ -159,7 +160,7 @@ class DisableCallDebugFixtureTest {
                 }
                 for ((target, hook) in hooks) assertEquals("${build.name}: $changed doesn't partly mutate $target",
                     before.getValue(target), hook.method.instructions().map(::operation))
-                for (flag in listOf("disableCallDebug", "callRecording") + CallDebugTarget.entries.map { it.capability }) {
+                for (flag in listOf("disableCallDebug", "callRecording", "callRecordButton") + CallDebugTarget.entries.map { it.capability }) {
                     val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
                     assertEquals("${build.name}: rejected geometry leaves $flag false", 0, (status[0] as NarrowLiteralInstruction).narrowLiteral)
                 }
@@ -171,7 +172,7 @@ class DisableCallDebugFixtureTest {
     fun `both WebRTC engines hand each side of a call to the recorder in every declared build`() {
         for (build in Fixtures.declaredBuilds()) {
             val owner = FixtureDex.classes(build, setOf(VOIP_DEBUG)).getValue(VOIP_DEBUG)
-            val context = PatchContexts.of(ExtensionDex.classes() + owner + FixtureDex.classes(build, AUDIO_TYPES).values)
+            val context = PatchContexts.of(ExtensionDex.classes() + owner + FixtureDex.classes(build, AUDIO_TYPES).values + callScreens(build))
             val plan = context.resolveCallAudio()
             assertEquals("${build.name}: every engine can be tapped", emptyMap<CallAudioEngine, String>(), plan.missing)
             assertEquals(CallAudioEngine.entries, plan.taps.map { it.engine })
@@ -228,7 +229,7 @@ class DisableCallDebugFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             for (changed in CallAudioEngine.entries) {
                 val owner = FixtureDex.classes(build, setOf(VOIP_DEBUG)).getValue(VOIP_DEBUG)
-                val context = PatchContexts.of(ExtensionDex.classes() + owner + FixtureDex.classes(build, AUDIO_TYPES).values)
+                val context = PatchContexts.of(ExtensionDex.classes() + owner + FixtureDex.classes(build, AUDIO_TYPES).values + callScreens(build))
                 val thread = context.mutableClassDefBy(changed.playout)
                 val (method, index) = thread.methods.flatMap { method ->
                     method.instructions().withIndex().filter { (_, instruction) -> instruction.call()?.let { call ->
@@ -250,7 +251,7 @@ class DisableCallDebugFixtureTest {
                 assertTrue(context.mutableClassDefBy(other.playout).methods.any { candidate ->
                     candidate.instructions().any { it.reference() == "$CALL_RECORDER->${other.played}(Landroid/media/AudioTrack;Ljava/nio/ByteBuffer;I)V" }
                 })
-                for (flag in listOf("disableCallDebug", "callRecording") + CallDebugTarget.entries.map { it.capability }) {
+                for (flag in listOf("disableCallDebug", "callRecording", "callRecordButton") + CallDebugTarget.entries.map { it.capability }) {
                     val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
                     assertEquals("${build.name}: $flag with one engine tapped", 1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
                 }
@@ -262,12 +263,69 @@ class DisableCallDebugFixtureTest {
             val warnings = PatchLogCapture.warnings { disableCallDebugPatch.execute(context) }
             assertEquals(CallAudioEngine.entries.map { "Disable call debug upload: the ${it.label} engine's recorder is gone. " +
                 "The patch goes on without call recording on the ${it.label} engine." }, warnings)
-            for (flag in listOf("disableCallDebug", "callRecording") + CallDebugTarget.entries.map { it.capability }) {
+            for (flag in listOf("disableCallDebug", "callRecording", "callRecordButton") + CallDebugTarget.entries.map { it.capability }) {
                 val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
-                assertEquals("${build.name}: $flag with no engine", if (flag == "callRecording") 0 else 1,
+                assertEquals("${build.name}: $flag with no engine", if (flag in setOf("callRecording", "callRecordButton")) 0 else 1,
                     (status[0] as NarrowLiteralInstruction).narrowLiteral)
             }
         }
+    }
+
+    @Test
+    fun `the call screen gets its record button right before it joins the call window in every declared build`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val owner = FixtureDex.classes(build, setOf(VOIP_DEBUG)).getValue(VOIP_DEBUG)
+            val screens = callScreens(build)
+            val context = PatchContexts.of(ExtensionDex.classes() + owner + FixtureDex.classes(build, AUDIO_TYPES).values + screens)
+            val plan = context.resolveCallRecordButton()
+            assertEquals("${build.name}: the call screen takes a button", null, plan.missing)
+            val hook = plan.hook!!
+            val screen = screens.single { it.type == hook.method.definingClass }
+            assertEquals("${build.name}: the one call screen", listOf(screen.type),
+                screens.filter { CALL_STATE_LISTENER in it.interfaces }.map { it.type })
+            assertTrue(AccessFlags.STATIC.isSet(hook.method.accessFlags))
+            assertEquals(listOf("Landroid/app/Activity;", "I"), hook.method.parameterTypes.map { it.toString() })
+            val original = ImmutableMethod.of(hook.method)
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { disableCallDebugPatch.execute(context) })
+
+            val body = hook.method.instructions()
+            assertEquals(Opcode.INVOKE_STATIC_RANGE, body[hook.index].opcode)
+            assertEquals("$CALL_RECORD_BUTTON->attach(Landroid/view/View;)V", body[hook.index].reference())
+            assertEquals(listOf(hook.screen), body[hook.index].namedRegisters())
+            assertEquals("${build.name}: the button goes on the view the call window gets",
+                "Landroid/view/ViewGroup;->addView(Landroid/view/View;)V", body[hook.index + 1].reference())
+            assertEquals(hook.screen, body[hook.index + 1].namedRegisters()[1])
+            assertTrue("${build.name}: the screen's last add, after the video check",
+                body.drop(hook.index + 2).none { it.reference() == "Landroid/view/ViewGroup;->addView(Landroid/view/View;)V" } &&
+                    body.take(hook.index).any { it.reference() == "$PHONE_CALL->video:Z" })
+            assertTapped(build.name, original, hook.method, hook.index)
+            // With no call service Telegram jumps straight to the add, and that path gets the button too.
+            val oldFlow = ControlFlow.of(original)
+            val newFlow = ControlFlow.of(hook.method)
+            val ways = oldFlow.normal.indices.filter { hook.index in oldFlow.normal[it] }
+            assertTrue("${build.name}: a branch reached the window add", ways.any { it != hook.index - 1 })
+            assertEquals("${build.name}: every way to the window add runs the button first", ways.map { if (it > hook.index) it + 1 else it },
+                newFlow.normal.indices.filter { hook.index in newFlow.normal[it] })
+            val attach = ExtensionDex.classDef(CALL_RECORD_BUTTON).methods.single { it.name == "attach" }
+            assertTrue("attach is public static", AccessFlags.PUBLIC.isSet(attach.accessFlags) && AccessFlags.STATIC.isSet(attach.accessFlags))
+            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "callRecordButton" }.instructions()
+            assertEquals("${build.name}: callRecordButton build fact", 1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
+
+            // Without the call screen the recorder still works, with one warning and no button.
+            val bare = PatchContexts.of(ExtensionDex.classes() + owner + FixtureDex.classes(build, AUDIO_TYPES).values)
+            assertEquals(listOf("Disable call debug upload: the call screen is 0 classes. " +
+                "The patch goes on without the record button on the call screen."),
+                PatchLogCapture.warnings { disableCallDebugPatch.execute(bare) })
+            for ((flag, fact) in listOf("callRecording" to 1, "callRecordButton" to 0)) {
+                val bareStatus = bare.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
+                assertEquals("${build.name}: $flag without the call screen", fact, (bareStatus[0] as NarrowLiteralInstruction).narrowLiteral)
+            }
+        }
+    }
+
+    /** Every class that logs the call screen's string: VoIPFragment, whatever R8 named it, and any other. */
+    private fun callScreens(build: File) = FixtureDex.classesWhere(build, SCREEN_CENSUS, { true }) { method ->
+        method.instructions().any { it.reference() == CALL_SCREEN_STRING }
     }
 
     /**
@@ -305,6 +363,7 @@ class DisableCallDebugFixtureTest {
         parameterTypes.map { it.toString() } == other.parameterTypes.map { it.toString() }
     private companion object {
         val AUDIO_TYPES = CallAudioEngine.entries.flatMap { listOf(it.record, it.playout) }.toSet()
+        val SCREEN_CENSUS = FixtureDex.ClassCensus()
         /** Recorder, bytes, then the speaker's track, buffer and size, as both declared builds have them. */
         val REGISTERS = mapOf(
             CallAudioEngine.NEWER to listOf(0, 3, 2, 3, 4),

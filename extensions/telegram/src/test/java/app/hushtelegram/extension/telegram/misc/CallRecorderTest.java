@@ -41,6 +41,7 @@ import java.util.function.LongSupplier;
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
+import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.PauseForTests;
 import app.hushtelegram.extension.telegram.settings.Settings;
 
@@ -124,6 +125,7 @@ public class CallRecorderTest {
         };
         CallRecorder.resetForTests();
         Settings.RECORD_CALLS.resetToDefault();
+        Settings.RECORD_CALL_BUTTON.resetToDefault();
         HookStatus.clear();
         ShadowToast.reset();
     }
@@ -138,6 +140,7 @@ public class CallRecorderTest {
         for (AudioTrack track : tracks) track.release();
         for (AudioRecord record : records) record.release();
         Settings.RECORD_CALLS.resetToDefault();
+        Settings.RECORD_CALL_BUTTON.resetToDefault();
         PauseForTests.resume();
         HookStatus.clear();
     }
@@ -401,5 +404,77 @@ public class CallRecorderTest {
         assertEquals(2, opened.size());
         assertEquals(120 * BLOCK, opened.get(1).samples.size());
         assertCounted(CallRecorder.SAVED, 2);
+    }
+
+    @Test public void aTapBeforeTheCallRecordsThatCallOnlyWithTheSwitchOff() {
+        Settings.RECORD_CALL_BUTTON.save(true);
+        CallRecorder.choose(true);
+        assertTrue(CallRecorder.recordingThisCall());
+        now += 20_000;
+        AudioTrack track = track(CallMixer.RATE);
+        play(track, 101, 1000);
+        assertEquals(101, CallRecorder.QUEUE.size());
+        assertEquals("Call saved to " + L10n.isolate(FOLDER), hangUp());
+        assertEquals(101 * BLOCK, opened.get(0).samples.size());
+
+        now += 60_000;
+        assertFalse("the choice ended with its call", CallRecorder.recordingThisCall());
+        play(track, 120, 1000);
+        assertTrue(CallRecorder.QUEUE.isEmpty());
+        assertEquals(1, opened.size());
+    }
+
+    @Test public void aTapMidCallStopsThatCallOnlyWithTheSwitchOn() {
+        Settings.RECORD_CALLS.save(true);
+        Settings.RECORD_CALL_BUTTON.save(true);
+        AudioTrack track = track(CallMixer.RATE);
+        play(track, 101, 1000);
+        CallRecorder.choose(false);
+        assertFalse(CallRecorder.recordingThisCall());
+        play(track, 50, 1000);
+        assertEquals(101, CallRecorder.QUEUE.size());
+        assertEquals("Call saved to " + L10n.isolate(FOLDER), hangUp());
+
+        now += 60_000;
+        play(track, 120, 1000);
+        assertEquals("the next call follows the switch again", 120, CallRecorder.QUEUE.size());
+    }
+
+    @Test public void aTapMidCallThatEndsRightAwayDoesNotReachTheNextCall() {
+        Settings.RECORD_CALL_BUTTON.save(true);
+        AudioTrack track = track(CallMixer.RATE);
+        play(track, 101, 1000);
+        // Tapped as the call hung up: no audio follows the tap, yet the choice still ends with that call.
+        CallRecorder.choose(true);
+        now += CallRecorder.IDLE_MS + 1_000;
+        play(track, 120, 1000);
+        assertTrue(CallRecorder.QUEUE.isEmpty());
+    }
+
+    @Test public void aTapNoCallAudioFollowsLapses() {
+        Settings.RECORD_CALL_BUTTON.save(true);
+        CallRecorder.choose(true);
+        now += CallRecorder.UNANSWERED_MS - 1;
+        assertTrue(CallRecorder.recordingThisCall());
+        now += 1;
+        assertFalse(CallRecorder.recordingThisCall());
+        play(track(CallMixer.RATE), 10, 1000);
+        assertTrue(CallRecorder.QUEUE.isEmpty());
+    }
+
+    @Test public void aTapTurnsWithItsSwitchAndWithPause() {
+        Settings.RECORD_CALL_BUTTON.save(false);
+        CallRecorder.choose(true);
+        AudioTrack track = track(CallMixer.RATE);
+        play(track, 10, 1000);
+        assertTrue("the button's switch is off", CallRecorder.QUEUE.isEmpty());
+
+        Settings.RECORD_CALL_BUTTON.save(true);
+        play(track, 10, 1000);
+        assertEquals(10, CallRecorder.QUEUE.size());
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        play(track, 10, 1000);
+        assertEquals(10, CallRecorder.QUEUE.size());
+        assertFalse(CallRecorder.recordingThisCall());
     }
 }

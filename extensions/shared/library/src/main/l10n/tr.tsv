@@ -1104,3 +1104,15 @@ call recording	arama kaydı
 Call saved to %1$s	Arama %1$s klasörüne kaydedildi
 # context: a short toast shown when a call ends and its recording couldn't be written or saved.
 Couldn't save the call recording.	Arama kaydı kaydedilemedi.
+# context: a switch on the Privacy page under Record calls (#39), off by default. Turned on, it puts a round record button on Telegram's call screen, right under the minimize arrow in the top left corner.
+Record button on calls	Aramalarda kayıt düğmesi
+# context: that switch's summary. "Record calls" is the name of the switch above it, which records every call. A tap on the button records only the call on screen, or, with Record calls on, skips recording that one call.
+A button on the call screen records just that call, or stops recording it when Record calls is on.	Arama ekranındaki bir düğme yalnızca o aramayı kaydeder ya da Aramaları kaydet açıkken o aramanın kaydını durdurur.
+# context: a short toast shown when the record button on the call screen is tapped and the call starts recording.
+Recording this call	Bu arama kaydediliyor
+# context: a short toast shown when the record button on the call screen is tapped again and the call stops recording. What was already recorded is still saved.
+Recording stopped	Kayıt durduruldu
+# context: what a screen reader says for the round record button on the call screen. It's a toggle, so the screen reader adds on or off by itself.
+Record call	Aramayı kaydet
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the record button on the call screen.
+call record button	arama kayıt düğmesi

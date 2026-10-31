@@ -197,6 +197,7 @@ public final class SettingsBackup {
             Settings.GHOST_ONLINE,
             Settings.DISABLE_CALL_DEBUG,
             Settings.RECORD_CALLS,
+            Settings.RECORD_CALL_BUTTON,
             Settings.DISABLE_DRAFT_PREVIEWS,
             Settings.LOCAL_DRAFTS,
             Settings.LOCAL_SEARCH,

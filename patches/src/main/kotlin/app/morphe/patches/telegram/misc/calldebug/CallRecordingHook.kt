@@ -10,7 +10,10 @@ import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.classDefsMentioning
 import app.morphe.util.ControlFlow
+import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.branchTarget
 import app.morphe.util.call
 import app.morphe.util.namedRegisters
@@ -21,6 +24,8 @@ import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 
@@ -33,6 +38,12 @@ internal const val BYTE_BUFFER = "Ljava/nio/ByteBuffer;"
 internal const val RECORDED_NATIVE = "nativeDataIsRecorded"
 internal val CALL_RECORDER_RECORDED = listOf(AUDIO_RECORD, BYTE_BUFFER, "I")
 internal val CALL_RECORDER_PLAYED = listOf(AUDIO_TRACK, BYTE_BUFFER, "I")
+internal const val CALL_RECORD_BUTTON = "$EXTENSION_PACKAGE/misc/CallRecordButton;"
+internal const val VIEW = "Landroid/view/View;"
+internal const val CALL_STATE_LISTENER = "Lorg/telegram/messenger/voip/VoIPService\$StateListener;"
+internal const val PHONE_CALL = "Lorg/telegram/tgnet/tl/TL_phone\$PhoneCall;"
+/** VoIPFragment logs this, so it's how the call screen is found once R8 has renamed it. */
+internal const val CALL_SCREEN_STRING = "self-muted"
 private val TRACK_WRITE_CALLS = setOf(Opcode.INVOKE_VIRTUAL, Opcode.INVOKE_VIRTUAL_RANGE)
 private val RECORDED_CALLS = setOf(Opcode.INVOKE_DIRECT, Opcode.INVOKE_DIRECT_RANGE)
 private val SWITCHES = setOf(Opcode.PACKED_SWITCH, Opcode.SPARSE_SWITCH)
@@ -195,6 +206,67 @@ private fun BytecodePatchContext.recordHelper(engine: CallAudioEngine): MutableM
     if (refusals.isNotEmpty()) missingCallAudio("the ${engine.label} engine's recorder helper would fail Android's verifier: ${refusals.joinToString("; ")}")
     return helper
 }
+
+/**
+ * Where the call screen gets its record button: in VoIPFragment's static `show`, which builds the
+ * screen's view (createView is inlined there) and then adds it to the call window, the method's last
+ * one-argument `addView`. [screen] holds that view.
+ */
+internal class CallRecordButtonHook(val method: MutableMethod, val index: Int, val screen: Int) {
+    val code get() = "invoke-static/range {v$screen .. v$screen}, $CALL_RECORD_BUTTON->attach($VIEW)V"
+}
+
+/** The button's hook, or why the call screen can't take one. Nothing is edited here. */
+internal class CallRecordButtonPlan(val hook: CallRecordButtonHook?, val missing: String?)
+
+internal fun BytecodePatchContext.resolveCallRecordButton(): CallRecordButtonPlan = try {
+    CallRecordButtonPlan(callRecordButtonHook(), null)
+} catch (why: CallAudioMissing) {
+    CallRecordButtonPlan(null, why.message.orEmpty())
+}
+
+/** Adds the button's hook, already assembled on a copy. Answers whether there was one. */
+internal fun applyCallRecordButton(plan: CallRecordButtonPlan): Boolean {
+    val hook = plan.hook ?: return false
+    hook.method.addInstructionsAtControlFlowLabel(hook.index, hook.code)
+    return true
+}
+
+private fun BytecodePatchContext.callRecordButtonHook(): CallRecordButtonHook {
+    val screens = classDefsMentioning(Mention.string(CALL_SCREEN_STRING)).filter { classDef ->
+        CALL_STATE_LISTENER in classDef.interfaces && classDef.methods.any { it.showsCallScreen() }
+    }
+    if (screens.size != 1) missingCallAudio("the call screen is ${screens.size} classes")
+    val show = mutableClassDefBy(screens.single()).methods.singleOrNull { it.showsCallScreen() }
+        ?: missingCallAudio("the call screen is shown from more than one place")
+    val body = show.body()
+    val video = body.indices.lastOrNull { body[it].readsVideoFlag() } ?: missingCallAudio("the call screen no longer checks for a video call")
+    val adds = body.indices.filter { it > video && body[it].addsOneView() }
+    if (adds.size != 1) missingCallAudio("the call screen joins its window from ${adds.size} places")
+    val index = adds.single()
+    val screen = body[index].namedRegisters()[1]
+    val hook = CallRecordButtonHook(show, index, screen)
+    // Without a call service Telegram jumps straight to the add, so the hook takes over its label.
+    try {
+        MutableMethod(ImmutableMethod.of(show)).addInstructionsAtControlFlowLabel(index, hook.code)
+    } catch (refused: Exception) {
+        missingCallAudio("the call screen's record button doesn't assemble: ${refused.message}")
+    }
+    return hook
+}
+
+private fun Method.showsCallScreen() = AccessFlags.STATIC.isSet(accessFlags) && returnType == "V" &&
+    parameterTypes.map { it.toString() } == listOf("Landroid/app/Activity;", "I")
+
+private fun Instruction.readsVideoFlag() = opcode == Opcode.IGET_BOOLEAN &&
+    ((this as ReferenceInstruction).reference as? FieldReference)?.let { field ->
+        field.definingClass == PHONE_CALL && field.name == "video" && field.type == "Z"
+    } == true
+
+private fun Instruction.addsOneView() = opcode == Opcode.INVOKE_VIRTUAL && call()?.let { call ->
+    call.definingClass == "Landroid/view/ViewGroup;" && call.name == "addView" && call.returnType == "V" &&
+        call.parameterTypes.map { it.toString() } == listOf(VIEW)
+} == true
 
 private fun Method.body(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 

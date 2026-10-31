@@ -9,6 +9,7 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
+import android.widget.FrameLayout;
 
 import java.nio.ByteBuffer;
 
@@ -30,6 +31,23 @@ public final class CallRecorderForTests {
             CallRecorder.QUEUE.clear();
             CallRecorder.manual = manual;
         }
+    }
+
+    /** Whether a block is copied after the call screen's record button was tapped. The tap is forgotten after. */
+    public static boolean takesAFrameAfterATap() {
+        try {
+            CallRecorder.choose(true);
+            return takesAFrame();
+        } finally {
+            CallRecorder.resetForTests();
+        }
+    }
+
+    /** Whether the call screen gets a record button, next to a minimize button like Telegram's. */
+    public static boolean addsARecordButton() {
+        FrameLayout screen = CallRecordButtonTest.screen();
+        CallRecordButton.attach(screen);
+        return CallRecordButton.find(screen) != null;
     }
 
     /** A 16-bit mono AudioTrack at [rate], as WebRTC opens one for a call. */

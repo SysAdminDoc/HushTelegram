@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.LongSupplier;
 
 import app.hushtelegram.extension.shared.L10n;
@@ -26,7 +27,8 @@ import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
 
 /**
- * Records calls to a file on the phone when Record calls is on. Telegram's calls run on one of
+ * Records calls to a file on the phone when Record calls is on, or when the call screen's record
+ * button ({@link CallRecordButton}) says so for one call. Telegram's calls run on one of
  * two WebRTC audio engines, a newer one and an older one, and each is hooked twice: where a block
  * the microphone recorded goes to WebRTC, and where a block of the other side goes to the speaker.
  *
@@ -67,6 +69,9 @@ public final class CallRecorder {
     static final long SWITCH_MS = 500;
     /** Shorter recordings, a call that never connected, aren't kept. */
     static final long SHORTEST = CallMixer.RATE;
+    /** A record button tap that no call audio follows, a call never answered, lapses after this long. */
+    static final long UNANSWERED_MS = 120_000;
+    private static final long NEVER = Long.MIN_VALUE;
 
     /** The encoder a call writes to: {@link CallAac} on a phone. */
     interface Output extends CallMixer.Sink {
@@ -90,6 +95,10 @@ public final class CallRecorder {
     static final Writer WRITER = new Writer();
     private static final Object LOCK = new Object();
     private static volatile boolean started;
+    /** The record button's choice for the call on screen, or null to follow Record calls. */
+    private static final AtomicReference<Choice> CHOICE = new AtomicReference<>();
+    /** When a block of call audio last reached a hook, recorded or not. */
+    private static volatile long heardAt = NEVER;
 
     // Swapped by tests, which drive the writer themselves.
     static volatile boolean manual;
@@ -123,14 +132,72 @@ public final class CallRecorder {
         if (taking()) played(OLDER_SPEAKER, track, buffer, bytes);
     }
 
-    /** Whether the switch is on: off, paused or before the settings are ready, no audio is copied. */
+    /**
+     * Whether this block is copied: the record button's choice for the call if one was made,
+     * otherwise the switch. Paused or before the settings are ready, no audio is copied.
+     */
     static boolean taking() {
         HookStatus.invoked(FAMILY);
         try {
-            return Utils.settingsReady() && Settings.RECORD_CALLS.get();
+            if (!Utils.settingsReady()) return false;
+            long now = clock.getAsLong();
+            boolean taken = recording(now);
+            heardAt = now;
+            return taken;
         } catch (Throwable failure) {
             HookStatus.threw(FAMILY, "record calls switch read", failure);
             return false;
+        }
+    }
+
+    /**
+     * The record button's tap: record the call on screen, or stop recording it, whatever Record
+     * calls says. The choice lasts until that call's audio has been quiet for {@link #IDLE_MS},
+     * or {@link #UNANSWERED_MS} when no call audio ever follows it.
+     */
+    public static void choose(boolean record) {
+        long now = clock.getAsLong();
+        long heard = heardAt;
+        // Mid-call the choice belongs to the audio already flowing, so it ends with that call.
+        CHOICE.set(new Choice(record, heard != NEVER && now - heard < IDLE_MS ? heard : now));
+    }
+
+    /** Whether the call on screen is being recorded, as its record button shows it. */
+    public static boolean recordingThisCall() {
+        try {
+            return Utils.settingsReady() && recording(clock.getAsLong());
+        } catch (Throwable failure) {
+            HookStatus.threw(FAMILY, "record button state", failure);
+            return false;
+        }
+    }
+
+    private static boolean recording(long now) {
+        Choice chosen = choice(now);
+        if (chosen != null && Settings.RECORD_CALL_BUTTON.get()) return chosen.record;
+        return Settings.RECORD_CALLS.get();
+    }
+
+    /** The choice still in force at [now], dropping one whose call is over. */
+    @Nullable
+    private static Choice choice(long now) {
+        Choice chosen = CHOICE.get();
+        if (chosen == null) return null;
+        long heard = heardAt;
+        boolean over = heard != NEVER && heard >= chosen.at ? now - heard >= IDLE_MS : now - chosen.at >= UNANSWERED_MS;
+        if (!over) return chosen;
+        // Only this choice: a tap that landed meanwhile stays.
+        CHOICE.compareAndSet(chosen, null);
+        return null;
+    }
+
+    private static final class Choice {
+        final boolean record;
+        final long at;
+
+        Choice(boolean record, long at) {
+            this.record = record;
+            this.at = at;
         }
     }
 
@@ -370,5 +437,7 @@ public final class CallRecorder {
     static void resetForTests() {
         QUEUE.clear();
         WRITER.reset();
+        CHOICE.set(null);
+        heardAt = NEVER;
     }
 }

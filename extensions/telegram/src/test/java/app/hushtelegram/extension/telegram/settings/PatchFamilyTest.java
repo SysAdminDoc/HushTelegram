@@ -578,16 +578,21 @@ public class PatchFamilyTest {
         assertEquals("Disable call debug upload", family.patchName);
         assertEquals("disableCallDebug", family.statusMethod);
         // Record calls (#39) starts off and is read on every block of call audio, so no restart is needed.
-        assertEquals(Arrays.asList(Settings.DISABLE_CALL_DEBUG, Settings.RECORD_CALLS), family.switches);
+        assertEquals(Arrays.asList(Settings.DISABLE_CALL_DEBUG, Settings.RECORD_CALLS, Settings.RECORD_CALL_BUTTON), family.switches);
         assertTrue(Settings.DISABLE_CALL_DEBUG.defaultValue);
         assertFalse(Settings.RECORD_CALLS.defaultValue);
         assertFalse(Settings.RECORD_CALLS.rebootApp);
+        assertFalse(Settings.RECORD_CALL_BUTTON.defaultValue);
+        assertFalse(Settings.RECORD_CALL_BUTTON.rebootApp);
         assertEquals(EnumSet.of(PatchFamily.Capability.CALL_DEBUG_UPLOAD, PatchFamily.Capability.CALL_LOG_FILE_UPLOAD,
-                        PatchFamily.Capability.CALL_LOG_UPLOAD, PatchFamily.Capability.CALL_RECORDING),
+                        PatchFamily.Capability.CALL_LOG_UPLOAD, PatchFamily.Capability.CALL_RECORDING,
+                        PatchFamily.Capability.CALL_RECORD_BUTTON),
                 family.expectedCapabilities());
         assertEquals("callRecording", PatchFamily.Capability.CALL_RECORDING.statusMethod);
         // A build without the recording taps keeps the diagnostics switch's description, it only loses the row.
         assertTrue(PatchFamily.Capability.CALL_RECORDING.rowOnly);
+        assertEquals("callRecordButton", PatchFamily.Capability.CALL_RECORD_BUTTON.statusMethod);
+        assertTrue(PatchFamily.Capability.CALL_RECORD_BUTTON.rowOnly);
         PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.CALL_DEBUG_UPLOAD,
                 PatchFamily.Capability.CALL_LOG_FILE_UPLOAD, PatchFamily.Capability.CALL_LOG_UPLOAD);
         assertEquals("complete", family.coverageSummary("complete"));

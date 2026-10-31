@@ -271,6 +271,7 @@ public final class SelectionCheck {
         hook(calls, flags, "callLogFileUpload", "misc/CallDebug", "skipCallLogFileUpload");
         hook(calls, flags, "callLogUpload", "misc/CallDebug", "skipCallLogUpload");
         hook(calls, flags, "callRecording", "misc/CallRecorder", "modernRecorded", "modernPlayed", "legacyRecorded", "legacyPlayed");
+        hook(calls, flags, "callRecordButton", "misc/CallRecordButton", "attach");
         hook(calls, flags, "chatDraftPreviews", "misc/DraftPreviews", "skipChatPreview");
         hook(calls, flags, "shareDraftPreviews", "misc/DraftPreviews", "skipSharePreview");
         hook(calls, flags, "pollLinkPreviews", "misc/DraftPreviews", "skipPollPreview");

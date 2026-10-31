@@ -629,6 +629,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting RECORD_CALLS =
             new BooleanSetting("hushtelegram_record_calls", FALSE);
 
+    /**
+     * A button on the call screen that records the call on screen, or stops recording it when
+     * Record calls is on, for that call only. Off by default.
+     */
+    public static final BooleanSetting RECORD_CALL_BUTTON =
+            new BooleanSetting("hushtelegram_record_call_button", FALSE);
+
     /** Link previews for unsent messages only; sent messages and received previews stay stock. */
     public static final BooleanSetting DISABLE_DRAFT_PREVIEWS =
             new BooleanSetting("hushtelegram_disable_draft_previews", FALSE);
