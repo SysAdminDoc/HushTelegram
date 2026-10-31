@@ -1159,3 +1159,25 @@ Add Forward to Saved Messages to the message menu	Adicionar Encaminhar para Mens
 Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.	Adiciona Encaminhar para Mensagens salvas a uma mensagem que você pode encaminhar. Escolha como está, sem o nome do remetente, sem a legenda ou ambos, e ela chega na hora às suas Mensagens salvas.
 Forward to Saved Messages	Encaminhar para Mensagens salvas
 Forward as is	Encaminhar como está
+# context: Switch for Save video cover in the message menu (#53), its item and toasts.
+Add Save video cover to the message menu	Adicionar Salvar capa do vídeo ao menu da mensagem
+Adds Save video cover to a video message. The biggest cover or thumbnail Telegram has goes to Pictures, fetched first if it is not on the phone yet.	Adiciona Salvar capa do vídeo a uma mensagem de vídeo. A maior capa ou miniatura do Telegram vai para Imagens, baixada antes se ainda não estiver no celular.
+Save video cover	Salvar capa do vídeo
+Cover saved to Pictures	Capa salva em Imagens
+No cover to save	Nenhuma capa para salvar
+Cover isn't available yet	A capa ainda não está disponível
+Couldn't save the picture	Não foi possível salvar a imagem
+# context: Switch for Save album art in the message menu (#53), its item and toasts.
+Add Save album art to the message menu	Adicionar Salvar capa do álbum ao menu da mensagem
+Adds Save album art to a song that has art, inside the file or on Telegram. The picture goes to Pictures.	Adiciona Salvar capa do álbum a uma música que tem capa, no arquivo ou no Telegram. A imagem vai para Imagens.
+Save album art	Salvar capa do álbum
+Album art saved to Pictures	Capa do álbum salva em Imagens
+Album art isn't available yet	A capa do álbum ainda não está disponível
+No album art to save	Nenhuma capa de álbum para salvar
+# context: Switch for Clear from cache in the message menu (#53), its item and toasts.
+Add Clear from cache to the message menu	Adicionar Limpar do cache ao menu da mensagem
+Adds Clear from cache to a video or file message. It stops a running download, deletes what Telegram kept of it and brings the download arrow back. Saved copies in Downloads or Pictures stay.	Adiciona Limpar do cache a uma mensagem de vídeo ou arquivo. Para um download em andamento, apaga o que o Telegram guardou e traz de volta a seta de download. Cópias salvas em Downloads ou Imagens ficam.
+Clear from cache	Limpar do cache
+Cleared %1$s	%1$s limpos
+Nothing to clear	Nada para limpar
+Couldn't clear that. Try again.	Não foi possível limpar. Tente de novo.

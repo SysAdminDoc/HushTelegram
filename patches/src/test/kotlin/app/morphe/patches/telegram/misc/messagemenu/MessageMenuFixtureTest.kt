@@ -48,6 +48,7 @@ class MessageMenuFixtureTest {
         "Lorg/telegram/messenger/FileLoader;", "Lorg/telegram/messenger/ApplicationLoader;", "Landroidx/core/content/FileProvider;",
         "Lorg/telegram/messenger/SendMessagesHelper;", "Lorg/telegram/messenger/AccountInstance;", "Lorg/telegram/tgnet/TLRPC\$Dialog;", "Lorg/telegram/tgnet/TLRPC\$Chat;",
         "Lorg/telegram/messenger/LocaleController;", "Lorg/telegram/messenger/R\$string;",
+        "Lorg/telegram/tgnet/TLObject;", "Lorg/telegram/messenger/ImageLocation;", "Lorg/telegram/messenger/NotificationCenter;",
     )
 
     private fun Instruction.shape() = listOf(opcode, namedRegisters(), (this as? ReferenceInstruction)?.reference?.toString())
@@ -136,6 +137,21 @@ class MessageMenuFixtureTest {
             assertEquals("$name: sixteen registers, the last argument in the last", 16, tools.implementation!!.registerCount)
             val flags = toolsBody.filter { it.opcode == Opcode.MOVE }.map { it as TwoRegisterInstruction }.map { it.registerA to it.registerB }
             assertEquals("$name: sender into the forward-from-my-name slot, caption into the hide-caption slot", listOf(4 to 14, 5 to 15), flags)
+            // Save video cover, Save album art and Clear from cache: Telegram's own calls, nothing else.
+            fun tool(method: String) = context.mutableClassDefBy(MESSAGE_MENU_TOOLS).methods.single { it.name == method }.controlBody().mapNotNull { it.controlRef() }
+            val fileLoader = "Lorg/telegram/messenger/FileLoader;"
+            assertTrue("$name: video test", tool("video").contains("Lorg/telegram/messenger/MessageObject;->isVideo()Z"))
+            assertTrue("$name: music test", tool("music").contains("Lorg/telegram/messenger/MessageObject;->isMusic()Z"))
+            assertTrue("$name: the cover's sizes", tool("thumbs").contains("Lorg/telegram/tgnet/TLRPC\$MessageMedia;->video_cover:Lorg/telegram/tgnet/TLRPC\$Photo;"))
+            assertTrue("$name: the video's thumbnails", tool("thumbs").contains("Lorg/telegram/tgnet/TLRPC\$Document;->thumbs:Ljava/util/ArrayList;"))
+            assertTrue("$name: Telegram's file for a size", tool("thumbFile").contains("$fileLoader->getPathToAttach(Lorg/telegram/tgnet/TLObject;Z)Ljava/io/File;"))
+            assertTrue("$name: Telegram's own fetch", tool("thumbLoad").contains("$fileLoader->loadFile(Lorg/telegram/messenger/ImageLocation;Ljava/lang/Object;Ljava/lang/String;II)V"))
+            assertTrue("$name: Telegram's file name", tool("attachName").contains("$fileLoader->getAttachFileName(Lorg/telegram/tgnet/TLObject;)Ljava/lang/String;"))
+            assertTrue("$name: Telegram's own cancel", tool("cancelLoad").contains("$fileLoader->cancelLoadFile(Lorg/telegram/tgnet/TLRPC\$Document;)V"))
+            assertTrue("$name: Telegram's folders", tool("directory").contains("$fileLoader->getDirectory(I)Ljava/io/File;"))
+            assertTrue("$name: the cell is told", tool("refreshMedia").contains("Lorg/telegram/messenger/MessageObject;->checkMediaExistance()V"))
+            assertTrue("$name: Save icon", tool("saveIcon").contains("Lorg/telegram/messenger/R\$drawable;->msg_download:I"))
+            assertTrue("$name: Delete icon", tool("deleteIcon").contains("Lorg/telegram/messenger/R\$drawable;->msg_delete:I"))
             assertTrue("$name: Telegram's chat list", stub("dialogs").any { it.controlRef()?.endsWith("->getAllDialogs()Ljava/util/ArrayList;") == true })
             assertTrue("$name: a chat list entry's ID", stub("dialogId").any { it.controlRef() == "Lorg/telegram/tgnet/TLRPC\$Dialog;->id:J" })
             assertTrue("$name: your own ID", stub("selfId").any { it.controlRef()?.endsWith("->getClientUserId()J") == true })

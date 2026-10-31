@@ -1162,3 +1162,25 @@ Add Forward to Saved Messages to the message menu	Mesaj menüsüne Kayıtlı Mes
 Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.	İletebileceğin bir mesaja Kayıtlı Mesajlar'a ilet ekler. Olduğu gibi, gönderen adı olmadan, açıklama olmadan veya ikisi de olmadan seç, anında Kayıtlı Mesajlar'a düşer.
 Forward to Saved Messages	Kayıtlı Mesajlar'a ilet
 Forward as is	Olduğu gibi ilet
+# context: Switch for Save video cover in the message menu (#53), its item and toasts.
+Add Save video cover to the message menu	Mesaj menüsüne Video kapağını kaydet ekle
+Adds Save video cover to a video message. The biggest cover or thumbnail Telegram has goes to Pictures, fetched first if it is not on the phone yet.	Video mesajına Video kapağını kaydet ekler. Telegram'daki en büyük kapak veya küçük resim Resimler'e gider, telefonda yoksa önce indirilir.
+Save video cover	Video kapağını kaydet
+Cover saved to Pictures	Kapak Resimler'e kaydedildi
+No cover to save	Kaydedilecek kapak yok
+Cover isn't available yet	Kapak henüz hazır değil
+Couldn't save the picture	Resim kaydedilemedi
+# context: Switch for Save album art in the message menu (#53), its item and toasts.
+Add Save album art to the message menu	Mesaj menüsüne Albüm kapağını kaydet ekle
+Adds Save album art to a song that has art, inside the file or on Telegram. The picture goes to Pictures.	Kapağı olan bir şarkıya, dosyada veya Telegram'da, Albüm kapağını kaydet ekler. Resim Resimler'e gider.
+Save album art	Albüm kapağını kaydet
+Album art saved to Pictures	Albüm kapağı Resimler'e kaydedildi
+Album art isn't available yet	Albüm kapağı henüz hazır değil
+No album art to save	Kaydedilecek albüm kapağı yok
+# context: Switch for Clear from cache in the message menu (#53), its item and toasts.
+Add Clear from cache to the message menu	Mesaj menüsüne Önbellekten temizle ekle
+Adds Clear from cache to a video or file message. It stops a running download, deletes what Telegram kept of it and brings the download arrow back. Saved copies in Downloads or Pictures stay.	Video veya dosya mesajına Önbellekten temizle ekler. Süren indirmeyi durdurur, Telegram'ın sakladığını siler ve indirme okunu geri getirir. İndirilenler veya Resimler'e kaydedilen kopyalar kalır.
+Clear from cache	Önbellekten temizle
+Cleared %1$s	%1$s temizlendi
+Nothing to clear	Temizlenecek bir şey yok
+Couldn't clear that. Try again.	Temizlenemedi. Tekrar dene.

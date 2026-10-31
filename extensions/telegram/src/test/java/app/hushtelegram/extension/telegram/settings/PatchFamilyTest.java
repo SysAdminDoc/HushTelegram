@@ -150,6 +150,9 @@ public class PatchFamilyTest {
         Settings.STORY_SAVE_BUTTON.resetToDefault();
         Settings.MESSAGE_MENU_FAST_FORWARD.resetToDefault();
         Settings.MESSAGE_MENU_FORWARD_SAVED.resetToDefault();
+        Settings.MESSAGE_MENU_SAVE_COVER.resetToDefault();
+        Settings.MESSAGE_MENU_SAVE_ART.resetToDefault();
+        Settings.MESSAGE_MENU_CLEAR_CACHE.resetToDefault();
         HookStatus.clear();
     }
 
@@ -358,7 +361,7 @@ public class PatchFamilyTest {
         PatchFamily family = PatchFamily.MESSAGE_MENU_REPEAT;
         assertEquals("Add Repeat to the message menu", family.patchName);
         assertEquals(Arrays.asList(Settings.MESSAGE_MENU_REPEAT, Settings.MESSAGE_MENU_COPY_PHOTO, Settings.MESSAGE_MENU_DETAILS,
-                Settings.MESSAGE_MENU_QUICK_FORWARD, Settings.MESSAGE_MENU_COPY_PROTECTED, Settings.MESSAGE_MENU_SAVE_PROTECTED, Settings.MESSAGE_MENU_FORWARD_COPY, Settings.MESSAGE_MENU_FAST_FORWARD, Settings.MESSAGE_MENU_FORWARD_SAVED), Settings.MESSAGE_MENU_FAST_FORWARD), Settings.STORY_SAVE_BUTTON), family.switches);
+                Settings.MESSAGE_MENU_QUICK_FORWARD, Settings.MESSAGE_MENU_COPY_PROTECTED, Settings.MESSAGE_MENU_SAVE_PROTECTED, Settings.MESSAGE_MENU_FORWARD_COPY, Settings.MESSAGE_MENU_FAST_FORWARD, Settings.MESSAGE_MENU_FORWARD_SAVED, Settings.MESSAGE_MENU_SAVE_COVER, Settings.MESSAGE_MENU_SAVE_ART, Settings.MESSAGE_MENU_CLEAR_CACHE), Settings.MESSAGE_MENU_FORWARD_SAVED), Settings.MESSAGE_MENU_FAST_FORWARD), Settings.STORY_SAVE_BUTTON), family.switches);
         for (BooleanSetting setting : family.switches) {
             assertFalse(setting.key, setting.defaultValue);
             assertFalse(setting.key, setting.rebootApp);

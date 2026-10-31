@@ -1162,3 +1162,25 @@ Add Forward to Saved Messages to the message menu	In Gespeicherte Nachrichten we
 Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.	Fügt In Gespeicherte Nachrichten weiterleiten zu einer Nachricht hinzu, die du weiterleiten kannst. Wähle unverändert, ohne Absendernamen, ohne Bildunterschrift oder beides, und sie landet sofort in deinen Gespeicherten Nachrichten.
 Forward to Saved Messages	In Gespeicherte Nachrichten weiterleiten
 Forward as is	Unverändert weiterleiten
+# context: Switch for Save video cover in the message menu (#53), its item and toasts.
+Add Save video cover to the message menu	Video-Cover speichern zum Nachrichtenmenü hinzufügen
+Adds Save video cover to a video message. The biggest cover or thumbnail Telegram has goes to Pictures, fetched first if it is not on the phone yet.	Fügt einer Videonachricht Video-Cover speichern hinzu. Das größte Cover oder Vorschaubild von Telegram landet in Bilder und wird vorher geladen, falls es noch nicht auf dem Handy ist.
+Save video cover	Video-Cover speichern
+Cover saved to Pictures	Cover in Bilder gespeichert
+No cover to save	Kein Cover zum Speichern
+Cover isn't available yet	Das Cover ist noch nicht verfügbar
+Couldn't save the picture	Das Bild konnte nicht gespeichert werden
+# context: Switch for Save album art in the message menu (#53), its item and toasts.
+Add Save album art to the message menu	Albumcover speichern zum Nachrichtenmenü hinzufügen
+Adds Save album art to a song that has art, inside the file or on Telegram. The picture goes to Pictures.	Fügt einem Song mit Cover, in der Datei oder bei Telegram, Albumcover speichern hinzu. Das Bild landet in Bilder.
+Save album art	Albumcover speichern
+Album art saved to Pictures	Albumcover in Bilder gespeichert
+Album art isn't available yet	Das Albumcover ist noch nicht verfügbar
+No album art to save	Kein Albumcover zum Speichern
+# context: Switch for Clear from cache in the message menu (#53), its item and toasts.
+Add Clear from cache to the message menu	Aus Cache entfernen zum Nachrichtenmenü hinzufügen
+Adds Clear from cache to a video or file message. It stops a running download, deletes what Telegram kept of it and brings the download arrow back. Saved copies in Downloads or Pictures stay.	Fügt einer Video- oder Dateinachricht Aus Cache entfernen hinzu. Ein laufender Download wird gestoppt, was Telegram gespeichert hat wird gelöscht und der Download-Pfeil kommt zurück. Gespeicherte Kopien in Downloads oder Bilder bleiben.
+Clear from cache	Aus Cache entfernen
+Cleared %1$s	%1$s entfernt
+Nothing to clear	Nichts zu entfernen
+Couldn't clear that. Try again.	Das ließ sich nicht entfernen. Versuch es nochmal.

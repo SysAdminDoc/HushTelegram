@@ -1162,3 +1162,25 @@ Add Forward to Saved Messages to the message menu	Tambahkan Teruskan ke Pesan Te
 Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.	Menambahkan Teruskan ke Pesan Tersimpan ke pesan yang bisa kamu teruskan. Pilih apa adanya, tanpa nama pengirim, tanpa keterangan, atau keduanya, dan pesan langsung masuk ke Pesan Tersimpan.
 Forward to Saved Messages	Teruskan ke Pesan Tersimpan
 Forward as is	Teruskan apa adanya
+# context: Switch for Save video cover in the message menu (#53), its item and toasts.
+Add Save video cover to the message menu	Tambahkan Simpan sampul video ke menu pesan
+Adds Save video cover to a video message. The biggest cover or thumbnail Telegram has goes to Pictures, fetched first if it is not on the phone yet.	Menambahkan Simpan sampul video ke pesan video. Sampul atau gambar mini terbesar dari Telegram masuk ke Gambar, diunduh dulu jika belum ada di ponsel.
+Save video cover	Simpan sampul video
+Cover saved to Pictures	Sampul disimpan ke Gambar
+No cover to save	Tidak ada sampul untuk disimpan
+Cover isn't available yet	Sampul belum tersedia
+Couldn't save the picture	Gambar tidak bisa disimpan
+# context: Switch for Save album art in the message menu (#53), its item and toasts.
+Add Save album art to the message menu	Tambahkan Simpan sampul album ke menu pesan
+Adds Save album art to a song that has art, inside the file or on Telegram. The picture goes to Pictures.	Menambahkan Simpan sampul album ke lagu yang punya sampul, di dalam berkas atau di Telegram. Gambar masuk ke Gambar.
+Save album art	Simpan sampul album
+Album art saved to Pictures	Sampul album disimpan ke Gambar
+Album art isn't available yet	Sampul album belum tersedia
+No album art to save	Tidak ada sampul album untuk disimpan
+# context: Switch for Clear from cache in the message menu (#53), its item and toasts.
+Add Clear from cache to the message menu	Tambahkan Hapus dari cache ke menu pesan
+Adds Clear from cache to a video or file message. It stops a running download, deletes what Telegram kept of it and brings the download arrow back. Saved copies in Downloads or Pictures stay.	Menambahkan Hapus dari cache ke pesan video atau berkas. Unduhan yang berjalan dihentikan, yang disimpan Telegram dihapus, dan panah unduh kembali. Salinan tersimpan di Unduhan atau Gambar tetap ada.
+Clear from cache	Hapus dari cache
+Cleared %1$s	%1$s dibersihkan
+Nothing to clear	Tidak ada yang dihapus
+Couldn't clear that. Try again.	Tidak bisa dihapus. Coba lagi.

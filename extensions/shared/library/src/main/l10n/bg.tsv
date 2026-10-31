@@ -1158,3 +1158,25 @@ Add Forward to Saved Messages to the message menu	Добавяне на Преп
 Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.	Добавя Препращане към Запазени съобщения към съобщение, което можеш да препратиш. Избери както е, без името на подателя, без надписа или без двете, и то веднага отива в Запазени съобщения.
 Forward to Saved Messages	Препращане към Запазени съобщения
 Forward as is	Препращане както е
+# context: Switch for Save video cover in the message menu (#53), its item and toasts.
+Add Save video cover to the message menu	Добавяне на Запазване на корицата на видеото в менюто на съобщението
+Adds Save video cover to a video message. The biggest cover or thumbnail Telegram has goes to Pictures, fetched first if it is not on the phone yet.	Добавя Запазване на корицата на видеото към видеосъобщение. Най-голямата корица или миниатюра на Telegram отива в Снимки, като първо се изтегля, ако още я няма на телефона.
+Save video cover	Запазване на корицата на видеото
+Cover saved to Pictures	Корицата е запазена в Снимки
+No cover to save	Няма корица за запазване
+Cover isn't available yet	Корицата още не е налична
+Couldn't save the picture	Снимката не можа да се запази
+# context: Switch for Save album art in the message menu (#53), its item and toasts.
+Add Save album art to the message menu	Добавяне на Запазване на обложката на албума в менюто на съобщението
+Adds Save album art to a song that has art, inside the file or on Telegram. The picture goes to Pictures.	Добавя Запазване на обложката на албума към песен с обложка, във файла или в Telegram. Снимката отива в Снимки.
+Save album art	Запазване на обложката на албума
+Album art saved to Pictures	Обложката е запазена в Снимки
+Album art isn't available yet	Обложката още не е налична
+No album art to save	Няма обложка за запазване
+# context: Switch for Clear from cache in the message menu (#53), its item and toasts.
+Add Clear from cache to the message menu	Добавяне на Изчистване от кеша в менюто на съобщението
+Adds Clear from cache to a video or file message. It stops a running download, deletes what Telegram kept of it and brings the download arrow back. Saved copies in Downloads or Pictures stay.	Добавя Изчистване от кеша към видео или файл. Спира текущото изтегляне, изтрива каквото Telegram е запазил и връща стрелката за изтегляне. Запазените копия в Изтегляния или Снимки остават.
+Clear from cache	Изчистване от кеша
+Cleared %1$s	Изчистени %1$s
+Nothing to clear	Няма какво да се изчисти
+Couldn't clear that. Try again.	Не успя да се изчисти. Опитай пак.

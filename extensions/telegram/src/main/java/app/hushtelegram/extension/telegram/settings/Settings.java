@@ -614,6 +614,18 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting MESSAGE_MENU_FORWARD_SAVED =
             new BooleanSetting("hushtelegram_message_menu_forward_saved", FALSE);
 
+    /** Save video cover in the message menu (#53): the biggest cover or thumbnail of a video goes to Pictures. */
+    public static final BooleanSetting MESSAGE_MENU_SAVE_COVER =
+            new BooleanSetting("hushtelegram_message_menu_save_cover", FALSE);
+
+    /** Save album art in the message menu (#53): a song's embedded or server album art goes to Pictures. */
+    public static final BooleanSetting MESSAGE_MENU_SAVE_ART =
+            new BooleanSetting("hushtelegram_message_menu_save_art", FALSE);
+
+    /** Clear from cache in the message menu (#53): drops what Telegram kept of one video or file and puts the download arrow back. */
+    public static final BooleanSetting MESSAGE_MENU_CLEAR_CACHE =
+            new BooleanSetting("hushtelegram_message_menu_clear_cache", FALSE);
+
     /**
      * A channel's read metrics (how long each post stayed on screen), Premium screen interaction
      * reports and the camera's dual-camera report are never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

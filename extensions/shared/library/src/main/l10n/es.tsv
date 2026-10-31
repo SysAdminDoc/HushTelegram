@@ -1162,3 +1162,25 @@ Add Forward to Saved Messages to the message menu	Añadir Reenviar a Mensajes gu
 Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.	Añade Reenviar a Mensajes guardados a un mensaje que puedes reenviar. Elige tal cual, sin el nombre del remitente, sin el pie de foto o ambos, y llega al instante a tus Mensajes guardados.
 Forward to Saved Messages	Reenviar a Mensajes guardados
 Forward as is	Reenviar tal cual
+# context: Switch for Save video cover in the message menu (#53), its item and toasts.
+Add Save video cover to the message menu	Añadir Guardar portada del vídeo al menú del mensaje
+Adds Save video cover to a video message. The biggest cover or thumbnail Telegram has goes to Pictures, fetched first if it is not on the phone yet.	Añade Guardar portada del vídeo a un mensaje de vídeo. La portada o miniatura más grande de Telegram va a Imágenes, y se descarga antes si aún no está en el teléfono.
+Save video cover	Guardar portada del vídeo
+Cover saved to Pictures	Portada guardada en Imágenes
+No cover to save	No hay portada que guardar
+Cover isn't available yet	La portada aún no está disponible
+Couldn't save the picture	No se pudo guardar la imagen
+# context: Switch for Save album art in the message menu (#53), its item and toasts.
+Add Save album art to the message menu	Añadir Guardar carátula del álbum al menú del mensaje
+Adds Save album art to a song that has art, inside the file or on Telegram. The picture goes to Pictures.	Añade Guardar carátula del álbum a una canción que tiene carátula, en el archivo o en Telegram. La imagen va a Imágenes.
+Save album art	Guardar carátula del álbum
+Album art saved to Pictures	Carátula guardada en Imágenes
+Album art isn't available yet	La carátula aún no está disponible
+No album art to save	No hay carátula que guardar
+# context: Switch for Clear from cache in the message menu (#53), its item and toasts.
+Add Clear from cache to the message menu	Añadir Borrar de la caché al menú del mensaje
+Adds Clear from cache to a video or file message. It stops a running download, deletes what Telegram kept of it and brings the download arrow back. Saved copies in Downloads or Pictures stay.	Añade Borrar de la caché a un mensaje de vídeo o archivo. Detiene una descarga en curso, borra lo que Telegram guardó y devuelve la flecha de descarga. Las copias guardadas en Descargas o Imágenes se quedan.
+Clear from cache	Borrar de la caché
+Cleared %1$s	Se borraron %1$s
+Nothing to clear	No hay nada que borrar
+Couldn't clear that. Try again.	No se pudo borrar. Inténtalo de nuevo.

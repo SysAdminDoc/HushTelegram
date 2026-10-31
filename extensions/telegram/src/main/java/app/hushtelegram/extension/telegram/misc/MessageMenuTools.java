@@ -5,6 +5,7 @@
 package app.hushtelegram.extension.telegram.misc;
 
 import android.content.Context;
+import java.io.File;
 import android.widget.Toast;
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Utils;
@@ -29,19 +30,27 @@ public final class MessageMenuTools {
 
     static final int FAST_FORWARD = 0x48544d0a;
     static final int FORWARD_SAVED = 0x48544d0b;
+    static final int SAVE_COVER = 0x48544d08;
+    static final int SAVE_ART = 0x48544d09;
+    static final int CLEAR_CACHE = 0x48544d0c;
 
     /** Whether the number is one of this class's. */
     static boolean owns(int option) {
-        return option == FAST_FORWARD || option == FORWARD_SAVED;
+        return option == FAST_FORWARD || option == FORWARD_SAVED || option == SAVE_COVER || option == SAVE_ART || option == CLEAR_CACHE;
     }
 
     static BooleanSetting setting(int option) {
-        return option == FAST_FORWARD ? Settings.MESSAGE_MENU_FAST_FORWARD : Settings.MESSAGE_MENU_FORWARD_SAVED;
+        return option == FAST_FORWARD ? Settings.MESSAGE_MENU_FAST_FORWARD
+                : option == SAVE_COVER ? Settings.MESSAGE_MENU_SAVE_COVER
+                : option == SAVE_ART ? Settings.MESSAGE_MENU_SAVE_ART
+                : option == CLEAR_CACHE ? Settings.MESSAGE_MENU_CLEAR_CACHE : Settings.MESSAGE_MENU_FORWARD_SAVED;
     }
 
     /** Whether any of this class's switches is on. */
     static boolean any() {
-        return MessageMenu.on(Settings.MESSAGE_MENU_FAST_FORWARD) || MessageMenu.on(Settings.MESSAGE_MENU_FORWARD_SAVED);
+        return MessageMenu.on(Settings.MESSAGE_MENU_FAST_FORWARD) || MessageMenu.on(Settings.MESSAGE_MENU_FORWARD_SAVED)
+                || MessageMenu.on(Settings.MESSAGE_MENU_SAVE_COVER) || MessageMenu.on(Settings.MESSAGE_MENU_SAVE_ART)
+                || MessageMenu.on(Settings.MESSAGE_MENU_CLEAR_CACHE);
     }
 
     /** One way to forward: a label, and the two flags Telegram's forward takes. */
@@ -71,13 +80,34 @@ public final class MessageMenuTools {
             if (MessageMenu.on(Settings.MESSAGE_MENU_FAST_FORWARD) && !fastWays(message, batch).isEmpty()) chosen.add(FAST_FORWARD);
             if (MessageMenu.on(Settings.MESSAGE_MENU_FORWARD_SAVED) && savedAvailable(message)) chosen.add(FORWARD_SAVED);
         }
+        if (MessageMenu.on(Settings.MESSAGE_MENU_SAVE_COVER) && savable(message) && video(message) && MediaArt.hasVideoArt(message)) chosen.add(SAVE_COVER);
+        if (MessageMenu.on(Settings.MESSAGE_MENU_SAVE_ART) && savable(message) && music(message) && MediaArt.hasMusicArt(message)) chosen.add(SAVE_ART);
+        if (MessageMenu.on(Settings.MESSAGE_MENU_CLEAR_CACHE) && clearable(message)) chosen.add(CLEAR_CACHE);
         int at = options.indexOf(MessageMenu.DETAILS);
         for (int option : chosen) {
             int position = at < 0 ? options.size() : at++;
-            icons.add(position, MessageMenu.quickIcon());
-            items.add(position, L10n.t(option == FAST_FORWARD ? "Fast forward" : "Forward to Saved Messages"));
+            icons.add(position, option == SAVE_COVER || option == SAVE_ART ? saveIcon()
+                    : option == CLEAR_CACHE ? deleteIcon() : MessageMenu.quickIcon());
+            items.add(position, label(option));
             options.add(position, option);
         }
+    }
+
+    private static String label(int option) {
+        return option == FAST_FORWARD ? L10n.t("Fast forward")
+                : option == SAVE_COVER ? L10n.t("Save video cover")
+                : option == SAVE_ART ? L10n.t("Save album art")
+                : option == CLEAR_CACHE ? L10n.t("Clear from cache") : L10n.t("Forward to Saved Messages");
+    }
+
+    /** A message whose chat doesn't allow saving only gets a save item when Save to Downloads' switch for protected chats is on. */
+    static boolean savable(Object message) {
+        return !MessageMenu.restricted(message) || MessageMenu.on(Settings.MESSAGE_MENU_SAVE_PROTECTED);
+    }
+
+    /** Clear from cache is offered on a video or a file. */
+    static boolean clearable(Object message) {
+        return video(message) || MessageMenu.documentName(message) != null;
     }
 
     /** Whether any message in the batch carries a photo or a file, so a caption can be dropped. */
@@ -125,6 +155,21 @@ public final class MessageMenuTools {
         ArrayList<Object> batch = MessageMenu.batch(chat, message);
         int account = MessageMenu.account(message);
         long from = MessageMenu.dialog(message);
+        if (option == SAVE_COVER) {
+            MediaArt.saveVideo(context, message);
+            HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "video cover save started");
+            return;
+        }
+        if (option == SAVE_ART) {
+            MediaArt.saveMusic(context, message);
+            HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "album art save started");
+            return;
+        }
+        if (option == CLEAR_CACHE) {
+            CacheClear.clear(context, message);
+            HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "clear from cache started");
+            return;
+        }
         if (option == FAST_FORWARD) {
             List<Way> ways = fastWays(message, batch);
             Utils.runOnMainThread(() -> MessageMenu.chooseRow(context, L10n.t(context, "Fast forward"), labels(ways),
@@ -161,6 +206,39 @@ public final class MessageMenuTools {
             Toast.makeText(context, L10n.t(context, "Can't forward there"), Toast.LENGTH_SHORT).show();
         }
     }
+
+    /** Whether the message is a video Telegram shows with a play button. Replaced when patching. */
+    public static boolean video(Object message) { return false; }
+
+    /** Whether the message is a song. Replaced when patching. */
+    public static boolean music(Object message) { return false; }
+
+    /** The message's thumbnail sizes, or its video cover's sizes when cover is 1. Null when there are none. Replaced when patching. */
+    public static ArrayList<?> thumbs(Object message, int cover) { return null; }
+
+    /** Telegram's copy of a thumbnail size, in its media folder or its cache folder (force 1). Replaced when patching. */
+    public static File thumbFile(Object message, Object size, int force) { return null; }
+
+    /** Asks Telegram to fetch a thumbnail size, from the video's cover when cover is 1. Replaced when patching. */
+    public static void thumbLoad(Object message, Object size, int cover) {}
+
+    /** Telegram's name for the message's file, which its cache files are named from. Null when it has none. Replaced when patching. */
+    public static String attachName(Object message) { return null; }
+
+    /** Stops a running download of the message's file. Replaced when patching. */
+    public static void cancelLoad(Object message) {}
+
+    /** One of Telegram's folders by its number (0 images, 1 audio, 2 video, 3 documents, 4 cache). Replaced when patching. */
+    public static File directory(int type) { return null; }
+
+    /** Tells the open chat the message's file is gone so the cell shows its download arrow. Replaced when patching. */
+    public static void refreshMedia(Object message, String name) {}
+
+    /** The icon beside Clear from cache. Replaced when patching. */
+    public static int deleteIcon() { return 0; }
+
+    /** The icon beside Save items. Replaced when patching. */
+    public static int saveIcon() { return 0; }
 
     /** Telegram's own forward of the messages into the chat, sound on, now, with the sender and captions as asked. 0 for sent. Replaced when patching. */
     public static int forwardWith(int account, ArrayList<Object> messages, long dialog, boolean hideSender, boolean hideCaption) { return 1; }
