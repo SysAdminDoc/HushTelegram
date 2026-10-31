@@ -1190,3 +1190,7 @@ pasted links	links colados
 Faster uploads	Envios mais rápidos
 Uploads keep four times as many pieces on their way at once. Telegram's servers still decide how fast an account can send. The next upload picks this up.	Os envios mantêm quatro vezes mais partes a caminho ao mesmo tempo. Os servidores do Telegram ainda decidem a velocidade de envio de uma conta. O próximo envio já usa isso.
 uploads	envios
+# context: Switch on the Ads page, under Block new channels and groups (#53). A secret chat is Telegram's end-to-end encrypted one-to-one chat; use Telegram's own word for it.
+Disable secret chats	Desativar chats secretos
+When someone asks for a secret chat, this phone ignores it. Nothing is saved or shown, and nothing is sent back, so they just see it waiting. Secret chats you already have keep working.	Quando alguém pede um chat secreto, este celular ignora o pedido. Nada é salvo ou mostrado e nada é enviado de volta, então a pessoa só vê que está esperando. Os chats secretos que você já tem continuam funcionando.
+secret chat requests	pedidos de chat secreto

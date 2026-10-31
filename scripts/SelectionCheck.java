@@ -322,6 +322,7 @@ public final class SelectionCheck {
                 "keepHashtag", "endPublicPosts", "dropPublicResults");
         hook(calls, flags, "nameFold", "misc/NameFold", "fold");
         hook(calls, flags, "blockNewChats", "misc/NewChatsBlock", "drop", "refuseOpen");
+        hook(calls, flags, "disableSecretChats", "misc/SecretChats", "refuse");
         hook(calls, flags, "hideContactsBlock", "misc/ContactsBlock", "rows", "placeholder");
         hook(calls, flags, "hideGreetingStickers", "misc/GreetingStickers", "measure");
         hook(calls, flags, "disableChatSwipe", "misc/ChatSwipe", "keepRowStill");

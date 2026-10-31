@@ -107,6 +107,7 @@ public class Settings extends BaseSettings {
      */
     public static final BooleanSetting BLOCK_NEW_CHATS =
             new BooleanSetting("hushtelegram_block_new_chats", FALSE);
+/** An incoming secret chat request is ignored on this phone: not saved, not shown, not answered. */    public static final BooleanSetting DISABLE_SECRET_CHATS =            new BooleanSetting("hushtelegram_disable_encrypted_chats", FALSE);
 
     /**
      * The chat list's Your contacts on Telegram heading, rows and loading rows only; chats, folders,

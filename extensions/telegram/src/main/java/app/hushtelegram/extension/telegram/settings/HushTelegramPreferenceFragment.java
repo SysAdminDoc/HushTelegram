@@ -410,6 +410,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "you aren't in. Chats you're already in stay. To keep this on, also turn on Lock HushTelegram "
                                 + "settings.")));
             }
+            if (PatchFamily.Capability.DISABLE_SECRET_CHATS.installed()) {
+                on(pages, PatchFamily.HIDE_POPULAR_APPS).addPreference(toggle(context, Settings.DISABLE_SECRET_CHATS,
+                        L10n.t("Disable secret chats"),
+                        L10n.t("When someone asks for a secret chat, this phone ignores it. Nothing is saved or shown, and "
+                                + "nothing is sent back, so they just see it waiting. Secret chats you already have keep working.")));
+            }
         }
     }
 

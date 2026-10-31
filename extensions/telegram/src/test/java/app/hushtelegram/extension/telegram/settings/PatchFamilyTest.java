@@ -728,16 +728,18 @@ public class PatchFamilyTest {
         // does, until someone turns the other switches on. New channels and groups open and join as
         // Telegram's do until a parent turns the block on.
         assertEquals(Arrays.asList(Settings.HIDE_POPULAR_APPS, Settings.SEARCH_ONLY_MY_CHATS, Settings.SEARCH_STYLED_NAMES,
-                        Settings.BLOCK_NEW_CHATS),
+                        Settings.BLOCK_NEW_CHATS, Settings.DISABLE_SECRET_CHATS),
                 family.switches);
         assertTrue(Settings.HIDE_POPULAR_APPS.defaultValue);
         assertFalse(Settings.SEARCH_ONLY_MY_CHATS.defaultValue);
         assertFalse(Settings.SEARCH_STYLED_NAMES.defaultValue);
         assertFalse(Settings.BLOCK_NEW_CHATS.defaultValue);
+        assertFalse(Settings.DISABLE_SECRET_CHATS.defaultValue);
+        assertEquals("hushtelegram_disable_encrypted_chats", Settings.DISABLE_SECRET_CHATS.key);
         assertEquals("hushtelegram_block_new_chats", Settings.BLOCK_NEW_CHATS.key);
         for (BooleanSetting setting : family.switches) assertFalse(setting.key, setting.rebootApp);
         assertEquals(EnumSet.of(PatchFamily.Capability.MY_CHATS_SEARCH, PatchFamily.Capability.NAME_FOLD,
-                        PatchFamily.Capability.BLOCK_NEW_CHATS),
+                        PatchFamily.Capability.BLOCK_NEW_CHATS, PatchFamily.Capability.DISABLE_SECRET_CHATS),
                 family.expectedCapabilities());
         assertEquals("myChatsSearch", PatchFamily.Capability.MY_CHATS_SEARCH.statusMethod);
         assertEquals("nameFold", PatchFamily.Capability.NAME_FOLD.statusMethod);

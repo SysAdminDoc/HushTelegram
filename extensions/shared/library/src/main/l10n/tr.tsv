@@ -1193,3 +1193,7 @@ pasted links	yapıştırılan bağlantılar
 Faster uploads	Daha hızlı yüklemeler
 Uploads keep four times as many pieces on their way at once. Telegram's servers still decide how fast an account can send. The next upload picks this up.	Yüklemeler aynı anda dört kat daha fazla parçayı yolda tutar. Bir hesabın ne kadar hızlı gönderebileceğine yine Telegram'ın sunucuları karar verir. Sonraki yükleme bunu kullanır.
 uploads	yüklemeler
+# context: Switch on the Ads page, under Block new channels and groups (#53). A secret chat is Telegram's end-to-end encrypted one-to-one chat; use Telegram's own word for it.
+Disable secret chats	Gizli sohbetleri devre dışı bırak
+When someone asks for a secret chat, this phone ignores it. Nothing is saved or shown, and nothing is sent back, so they just see it waiting. Secret chats you already have keep working.	Biri gizli sohbet istediğinde bu telefon isteği yok sayar. Hiçbir şey kaydedilmez ya da gösterilmez ve geri hiçbir şey gönderilmez, karşı taraf yalnızca bekliyor görür. Zaten sahip olduğunuz gizli sohbetler çalışmaya devam eder.
+secret chat requests	gizli sohbet istekleri

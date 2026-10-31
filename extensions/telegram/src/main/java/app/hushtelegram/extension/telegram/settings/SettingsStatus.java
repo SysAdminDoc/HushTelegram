@@ -60,6 +60,7 @@ public final class SettingsStatus {
     public static boolean myChatsSearch() { return false; }
     public static boolean nameFold() { return false; }
     public static boolean blockNewChats() { return false; }
+    public static boolean disableSecretChats() { return false; }
     public static boolean hideContactsBlock() { return false; }
     public static boolean hideGreetingStickers() { return false; }
     public static boolean disableChatSwipe() { return false; }

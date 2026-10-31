@@ -46,9 +46,10 @@ private const val STRINGS = "Lorg/telegram/messenger/R\$string;"
 val hidePopularAppsPatch = bytecodePatch(
     name = PATCH,
     description = "Hides the Popular apps list on the Apps tab of search and stops Telegram from loading it. On by " +
-        "default. Turn it off in HushTelegram settings > Ads. Two more switches there start off. Search only my " +
+        "default. Turn it off in HushTelegram settings > Ads. More switches there start off. Search only my " +
         "chats keeps search to your own chats and contacts, with nothing public. Find names in styled letters finds " +
-        "names written in decorative letters when you type plain ones.",
+        "names written in decorative letters when you type plain ones. Disable secret chats ignores it when someone asks " +
+        "for a secret chat, with no answer sent back.",
     default = true,
 ) {
     category("Search")
@@ -72,6 +73,13 @@ val hidePopularAppsPatch = bytecodePatch(
         // the rest of the patch and leaves the switch out.
         val fold = resolveNameFold()
         // Blocking new chats rides along the same way, a parental control that's all there or not at all.
+        requireStatusMethod("disableSecretChats")
+        val secretChats = try {
+            resolveSecretChats()
+        } catch (unfit: PatchException) {
+            patchLog.warning("$PATCH: ${unfit.message}. The patch goes on without ignoring secret chat requests.")
+            null
+        }
         val chats = resolveNewChatsBlock()
         shape(chats.sites.none { site -> (popular + searched).any { it === site.method } }, "blocking new chats shares a method with search")
         // The runtime's stubs first: on their own nothing calls them.
@@ -90,6 +98,10 @@ val hidePopularAppsPatch = bytecodePatch(
             enableCapability("blockNewChats")
         } else {
             patchLog.warning("$PATCH: ${chats.missing}. The patch goes on without blocking new channels and groups.")
+        }
+        secretChats?.let {
+            it.apply()
+            enableCapability("disableSecretChats")
         }
         enableStatus("hidePopularApps")
     }

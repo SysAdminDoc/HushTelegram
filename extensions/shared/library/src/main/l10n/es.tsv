@@ -1193,3 +1193,7 @@ pasted links	enlaces pegados
 Faster uploads	Subidas más rápidas
 Uploads keep four times as many pieces on their way at once. Telegram's servers still decide how fast an account can send. The next upload picks this up.	Las subidas mantienen cuatro veces más partes en camino a la vez. Los servidores de Telegram siguen decidiendo la velocidad de envío de una cuenta. La próxima subida lo aplica.
 uploads	subidas
+# context: Switch on the Ads page, under Block new channels and groups (#53). A secret chat is Telegram's end-to-end encrypted one-to-one chat; use Telegram's own word for it.
+Disable secret chats	Desactivar chats secretos
+When someone asks for a secret chat, this phone ignores it. Nothing is saved or shown, and nothing is sent back, so they just see it waiting. Secret chats you already have keep working.	Cuando alguien pide un chat secreto, este teléfono lo ignora. No se guarda ni se muestra nada y no se envía nada de vuelta, así que la otra persona solo ve que está esperando. Los chats secretos que ya tienes siguen funcionando.
+secret chat requests	solicitudes de chat secreto
