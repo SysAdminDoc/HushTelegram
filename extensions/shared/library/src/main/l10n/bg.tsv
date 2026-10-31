@@ -1239,3 +1239,27 @@ Showing chats you manage.	Показани са чатовете, които у�
 Showing all chats.	Показани са всички чатове.
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the Administrators filter in the side menu
 the Administrators filter	филтърът „Администратори“
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default. It hides signed-in accounts from Telegram's account lists
+Hide accounts	Скриване на акаунти
+# context: Summary of the Hide accounts switch. It must say plainly that this only hides accounts from the account lists: they stay signed in and notifications follow Telegram's own settings. Nothing is signed out or deleted
+The accounts you pick below leave Telegram's account lists, but only there. Each one stays signed in, keeps syncing, and its notifications follow Telegram's own settings. Nothing is signed out or deleted, and the account you're using always shows.	Акаунтите, които избереш по-долу, изчезват от списъците с акаунти в Telegram, но само от тях. Всеки остава влязъл, продължава да се синхронизира, а известията му следват собствените настройки на Telegram. Нищо не се излиза и не се изтрива, а акаунтът, който използваш, винаги се показва.
+# context: Settings row title and the title of its list. The list shows every signed-in account with a tick box; ticked accounts are left out of Telegram's account lists
+Accounts to hide	Акаунти за скриване
+# context: Switch title under Hide accounts. With it on, the hidden accounts list and the switches need Telegram's own app passcode
+Passcode for hidden accounts	Парола за скритите акаунти
+# context: Summary of the passcode switch for hidden accounts. The passcode is the app passcode set in Telegram's own settings
+Opening the list of hidden accounts, and turning off Hide accounts or this switch, asks for your Telegram passcode first. It uses the passcode you already set in Telegram, and it only guards this settings page.	Отварянето на списъка със скритите акаунти и изключването на „Скриване на акаунти“ или на този превключвател първо искат паролата ти за Telegram. Използва се паролата, която вече си задал в Telegram, и тя пази само тази страница с настройки.
+# context: Sentence shown beside the Accounts to hide row when no account is hidden
+No accounts hidden yet.	Още няма скрити акаунти.
+# context: Toast when the signed-in accounts could not be read from Telegram
+Couldn't read your accounts.	Акаунтите не можаха да се прочетат.
+# context: Toast when the Accounts to hide row is tapped with only one account signed in
+Sign in to a second account first.	Първо влез във втори акаунт.
+# context: Toast when every signed-in account is ticked in Accounts to hide; one account must always stay in the account lists
+Keep at least one account showing.	Остави поне един акаунт видим.
+# context: Toast when the ticked accounts could not be written to storage
+Couldn't save the accounts. Try again in a moment.	Акаунтите не можаха да се запазят. Опитай пак след малко.
+# context: Name of an account that has no name Telegram can give yet, with its position among the signed-in accounts. %1$s is the number
+Account %1$s	Акаунт %1$s
+# context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that hides accounts from Telegram's account lists
+the hidden accounts	скритите акаунти

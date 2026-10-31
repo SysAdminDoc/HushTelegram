@@ -126,6 +126,16 @@ val hideFolderCountersPatch = bytecodePatch(
         } catch (failed: Exception) {
             "the Administrators filter's stub doesn't build (${failed.javaClass.simpleName}: ${failed.message})"
         } else null
+        // And the account hider, which turns each account list's signed-in questions over to the extension.
+        val accounts = if (unhidden == null) resolveHiddenAccounts() else null
+        val noAccounts = accounts?.let {
+            it.missing ?: try {
+                writeHiddenAccountsStubs()
+                null
+            } catch (failed: Exception) {
+                "the account hider's stubs don't build (${failed.javaClass.simpleName}: ${failed.message})"
+            }
+        }
         insertCounterAnswer(counter)
         enableStatus("hideFolderCounters")
         if (missing == null) {
@@ -160,6 +170,12 @@ val hideFolderCountersPatch = bytecodePatch(
                 enableCapability("adminChats")
             } else {
                 patchLog.warning("Hide folder tab counters: $noAdmins. Hidden chats go on without the Administrators row.")
+            }
+            if (noAccounts == null) {
+                accounts?.plan?.let { applyHiddenAccounts(it) }
+                if (accounts != null) enableCapability("hiddenAccounts")
+            } else {
+                patchLog.warning("Hide folder tab counters: $noAccounts. Hidden chats go on without Hide accounts.")
             }
             if (noSort == null) {
                 enableCapability("sortByDate")

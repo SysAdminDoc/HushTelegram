@@ -357,7 +357,7 @@ class HiddenChatsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val refs = menuContext(build).also { it.requireHiddenChatsRuntime() }.resolveHideMenu().refs!!
-            val hosts = (folderCounterHosts(build) + launchFolderHosts(build) + menuHosts(build) + allChatsPlaceHosts(build)).distinctBy { it.type }
+            val hosts = (folderCounterHosts(build) + launchFolderHosts(build) + menuHosts(build) + allChatsPlaceHosts(build) + accountListHosts(build)).distinctBy { it.type }
             val context = PatchContexts.of((ExtensionDex.classes() + hosts).distinctBy { it.type })
             assertEquals(name, emptyList<String>(), PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) })
             val stubs = context.mutableClassDefBy(HIDDEN_CHATS).methods.associateBy { it.name }
@@ -406,6 +406,7 @@ class HiddenChatsFixtureTest {
             assertEquals(1L, statusOf(context, "sortByDate"))
             assertEquals(1L, statusOf(context, "hiddenPasscode"))
             assertEquals(1L, statusOf(context, "adminChats"))
+            assertEquals(1L, statusOf(context, "hiddenAccounts"))
             assertEquals(1L, statusOf(context, "launchFolder"))
             assertEquals(1, context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == "sortDialogs" }.body()
                 .count { it.ref() == "$HIDDEN_CHATS->prune(Ljava/lang/Object;)V" })
@@ -432,7 +433,7 @@ class HiddenChatsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val refs = menuContext(build).also { it.requireHiddenChatsRuntime() }.resolveHideMenu().refs!!
-            val hosts = (folderCounterHosts(build) + menuHosts(build, clicks = false) + allChatsPlaceHosts(build)).distinctBy { it.type }
+            val hosts = (folderCounterHosts(build) + menuHosts(build, clicks = false) + allChatsPlaceHosts(build) + accountListHosts(build)).distinctBy { it.type }
             val context = PatchContexts.of((ExtensionDex.classes() + hosts).distinctBy { it.type })
             val warnings = PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) }
             assertEquals("$name: $warnings", 1, warnings.size)
@@ -515,7 +516,7 @@ class HiddenChatsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val hosts = (folderCounterHosts(build) + launchFolderHosts(build) + menuHosts(build)).distinctBy { it.type }
-            val context = PatchContexts.of((ExtensionDex.classes() + hosts + allChatsPlaceHosts(build)).distinctBy { it.type })
+            val context = PatchContexts.of((ExtensionDex.classes() + hosts + allChatsPlaceHosts(build) + accountListHosts(build)).distinctBy { it.type })
             val storage = context.mutableClassDefBy(STORAGE)
             // A reworded query: which rows the walk reads is no longer clear.
             val calc = storage.methods.single { it.name == "calcUnreadCounters" }

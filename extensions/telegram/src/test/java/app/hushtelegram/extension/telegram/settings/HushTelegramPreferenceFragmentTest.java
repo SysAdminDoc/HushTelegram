@@ -57,6 +57,8 @@ import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceF
 import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.telegram.misc.AppPasscodeForTests;
+import app.hushtelegram.extension.telegram.misc.HiddenAccounts;
+import app.hushtelegram.extension.telegram.misc.HiddenAccountsForTests;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloadsForTests;
 import app.hushtelegram.extension.telegram.misc.HiddenChats;
@@ -1553,6 +1555,65 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse(passcode.getOnPreferenceChangeListener().onPreferenceChange(passcode, true));
         } finally {
             AppPasscodeForTests.restore();
+            PatchFamily.capabilitiesForTests = null;
+        }
+    }
+
+    /**
+     * Hide accounts lists the signed-in accounts to tick, says what it does and doesn't do, refuses
+     * to hide every account, and asks for the passcode once the lock is on.
+     */
+    @Test
+    public void hideAccountsPicksAccountsAndKeepsOneShowing() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_FOLDER_COUNTERS);
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_ACCOUNTS, PatchFamily.Capability.HIDDEN_PASSCODE);
+        HiddenAccountsForTests.signedIn(0, "Work", "Home");
+        AppPasscodeForTests.use("2468");
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            Preference hide = page.findPreference(Settings.HIDE_ACCOUNTS.key);
+            assertEquals("Hide accounts", String.valueOf(hide.getTitle()));
+            String summary = String.valueOf(hide.getSummary());
+            assertTrue(summary, summary.contains("stays signed in"));
+            assertTrue(summary, summary.contains("notifications follow Telegram's own settings"));
+            Preference row = page.findPreference(HushTelegramPreferenceFragment.HIDDEN_ACCOUNTS_ROW);
+            assertEquals("No accounts hidden yet.", String.valueOf(row.getSummary()));
+
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowLooper.idleMainLooper();
+            AlertDialog list = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertEquals("Accounts to hide", String.valueOf(shadowOf(list).getTitle()));
+            assertEquals(2, list.getListView().getCount());
+            shadowOf(list).clickOnItem(0);
+            shadowOf(list).clickOnItem(1);
+            ShadowToast.reset();
+            list.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertTrue("every account can't go", list.isShowing());
+            assertEquals("Keep at least one account showing.", ShadowToast.getTextOfLatestToast());
+            assertTrue(HiddenAccounts.hidden().isEmpty());
+
+            shadowOf(list).clickOnItem(1);
+            list.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertFalse(list.isShowing());
+            assertEquals(java.util.Collections.singleton(1000L), HiddenAccounts.hidden());
+            assertEquals("Work", String.valueOf(row.getSummary()));
+
+            Settings.HIDDEN_ACCOUNTS_LOCK.save(true);
+            Settings.HIDE_ACCOUNTS.save(true);
+            assertFalse("showing the accounts again asks first", hide.getOnPreferenceChangeListener().onPreferenceChange(hide, false));
+            assertEquals("Passcode needed", String.valueOf(shadowOf((AlertDialog) ShadowAlertDialog.getLatestDialog()).getTitle()));
+            ShadowAlertDialog.reset();
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowLooper.idleMainLooper();
+            assertEquals("the list sits behind the passcode too", "Passcode needed",
+                    String.valueOf(shadowOf((AlertDialog) ShadowAlertDialog.getLatestDialog()).getTitle()));
+        } finally {
+            AppPasscodeForTests.restore();
+            HiddenAccountsForTests.restore();
+            Settings.HIDDEN_ACCOUNTS_LOCK.resetToDefault();
+            Settings.HIDE_ACCOUNTS.resetToDefault();
             PatchFamily.capabilitiesForTests = null;
         }
     }

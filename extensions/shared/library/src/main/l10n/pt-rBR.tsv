@@ -1240,3 +1240,27 @@ Showing chats you manage.	Mostrando conversas que você administra.
 Showing all chats.	Mostrando todas as conversas.
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the Administrators filter in the side menu
 the Administrators filter	o filtro de administradores
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default. It hides signed-in accounts from Telegram's account lists
+Hide accounts	Ocultar contas
+# context: Summary of the Hide accounts switch. It must say plainly that this only hides accounts from the account lists: they stay signed in and notifications follow Telegram's own settings. Nothing is signed out or deleted
+The accounts you pick below leave Telegram's account lists, but only there. Each one stays signed in, keeps syncing, and its notifications follow Telegram's own settings. Nothing is signed out or deleted, and the account you're using always shows.	As contas que você escolher abaixo saem das listas de contas do Telegram, mas só de lá. Cada uma continua conectada, continua sincronizando e suas notificações seguem as configurações do próprio Telegram. Nada é desconectado ou apagado, e a conta que você está usando sempre aparece.
+# context: Settings row title and the title of its list. The list shows every signed-in account with a tick box; ticked accounts are left out of Telegram's account lists
+Accounts to hide	Contas para ocultar
+# context: Switch title under Hide accounts. With it on, the hidden accounts list and the switches need Telegram's own app passcode
+Passcode for hidden accounts	Senha para contas ocultas
+# context: Summary of the passcode switch for hidden accounts. The passcode is the app passcode set in Telegram's own settings
+Opening the list of hidden accounts, and turning off Hide accounts or this switch, asks for your Telegram passcode first. It uses the passcode you already set in Telegram, and it only guards this settings page.	Abrir a lista de contas ocultas e desativar Ocultar contas ou esta opção pede antes a sua senha do Telegram. Ela usa a senha que você já definiu no Telegram e protege só esta página de configurações.
+# context: Sentence shown beside the Accounts to hide row when no account is hidden
+No accounts hidden yet.	Nenhuma conta oculta ainda.
+# context: Toast when the signed-in accounts could not be read from Telegram
+Couldn't read your accounts.	Não foi possível ler suas contas.
+# context: Toast when the Accounts to hide row is tapped with only one account signed in
+Sign in to a second account first.	Entre primeiro em uma segunda conta.
+# context: Toast when every signed-in account is ticked in Accounts to hide; one account must always stay in the account lists
+Keep at least one account showing.	Deixe pelo menos uma conta visível.
+# context: Toast when the ticked accounts could not be written to storage
+Couldn't save the accounts. Try again in a moment.	Não foi possível salvar as contas. Tente de novo em instantes.
+# context: Name of an account that has no name Telegram can give yet, with its position among the signed-in accounts. %1$s is the number
+Account %1$s	Conta %1$s
+# context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that hides accounts from Telegram's account lists
+the hidden accounts	as contas ocultas

@@ -85,7 +85,7 @@ class LaunchFolderFixtureTest {
     @Test fun `the whole patch fills every stub and turns the switch on`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
-            val context = PatchContexts.of((ExtensionDex.classes() + folderCounterHosts(build) + menuHosts(build) + allChatsPlaceHosts(build)).distinctBy { it.type })
+            val context = PatchContexts.of((ExtensionDex.classes() + folderCounterHosts(build) + menuHosts(build) + allChatsPlaceHosts(build) + accountListHosts(build)).distinctBy { it.type })
             val launch = context.resolveLaunchFolder()
             val refs = launch.refs!!
             val all = context.resolveAllChats(launch).refs!!

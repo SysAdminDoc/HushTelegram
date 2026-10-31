@@ -1243,3 +1243,27 @@ Showing chats you manage.	Yönettiğin sohbetler gösteriliyor.
 Showing all chats.	Tüm sohbetler gösteriliyor.
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the Administrators filter in the side menu
 the Administrators filter	Yöneticiler filtresi
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default. It hides signed-in accounts from Telegram's account lists
+Hide accounts	Hesapları gizle
+# context: Summary of the Hide accounts switch. It must say plainly that this only hides accounts from the account lists: they stay signed in and notifications follow Telegram's own settings. Nothing is signed out or deleted
+The accounts you pick below leave Telegram's account lists, but only there. Each one stays signed in, keeps syncing, and its notifications follow Telegram's own settings. Nothing is signed out or deleted, and the account you're using always shows.	Aşağıda seçtiğin hesaplar Telegram'ın hesap listelerinden çıkar, ama yalnızca oralardan. Her biri oturum açık kalır, eşitlenmeye devam eder ve bildirimleri Telegram'ın kendi ayarlarını izler. Hiçbir şeyden çıkış yapılmaz ya da silinmez, kullandığın hesap da her zaman görünür.
+# context: Settings row title and the title of its list. The list shows every signed-in account with a tick box; ticked accounts are left out of Telegram's account lists
+Accounts to hide	Gizlenecek hesaplar
+# context: Switch title under Hide accounts. With it on, the hidden accounts list and the switches need Telegram's own app passcode
+Passcode for hidden accounts	Gizli hesaplar için parola
+# context: Summary of the passcode switch for hidden accounts. The passcode is the app passcode set in Telegram's own settings
+Opening the list of hidden accounts, and turning off Hide accounts or this switch, asks for your Telegram passcode first. It uses the passcode you already set in Telegram, and it only guards this settings page.	Gizli hesaplar listesini açmak ve Hesapları gizle ya da bu anahtarı kapatmak önce Telegram parolanı ister. Telegram'da zaten belirlediğin parola kullanılır ve yalnızca bu ayar sayfasını korur.
+# context: Sentence shown beside the Accounts to hide row when no account is hidden
+No accounts hidden yet.	Henüz gizlenen hesap yok.
+# context: Toast when the signed-in accounts could not be read from Telegram
+Couldn't read your accounts.	Hesapların okunamadı.
+# context: Toast when the Accounts to hide row is tapped with only one account signed in
+Sign in to a second account first.	Önce ikinci bir hesapla oturum aç.
+# context: Toast when every signed-in account is ticked in Accounts to hide; one account must always stay in the account lists
+Keep at least one account showing.	En az bir hesap görünür kalsın.
+# context: Toast when the ticked accounts could not be written to storage
+Couldn't save the accounts. Try again in a moment.	Hesaplar kaydedilemedi. Birazdan tekrar dene.
+# context: Name of an account that has no name Telegram can give yet, with its position among the signed-in accounts. %1$s is the number
+Account %1$s	Hesap %1$s
+# context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that hides accounts from Telegram's account lists
+the hidden accounts	gizli hesaplar

@@ -108,6 +108,7 @@ public final class SettingsStatus {
     public static boolean sortByDate() { return false; }
     public static boolean hiddenPasscode() { return false; }
     public static boolean adminChats() { return false; }
+    public static boolean hiddenAccounts() { return false; }
     public static boolean hiddenUnread() { return false; }
     public static boolean forwardHideSender() { return false; }
     public static boolean voiceMusicPlayer() { return false; }

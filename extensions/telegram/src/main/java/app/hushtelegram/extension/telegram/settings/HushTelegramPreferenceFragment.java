@@ -87,6 +87,7 @@ import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
 import app.hushtelegram.extension.telegram.misc.GalleryFolder;
+import app.hushtelegram.extension.telegram.misc.HiddenAccounts;
 import app.hushtelegram.extension.telegram.misc.HiddenChats;
 import app.hushtelegram.extension.telegram.misc.KeepDeleted;
 import app.hushtelegram.extension.telegram.misc.KeepEdits;
@@ -133,6 +134,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     /** The Folder to open row's key. The picks are kept by {@link LaunchFolder}, one for each account. */
     static final String LAUNCH_FOLDER_ROW = "action_launch_folder";
     static final String HIDDEN_CHATS_ROW = "action_hidden_chats";
+    static final String HIDDEN_ACCOUNTS_ROW = "action_hidden_accounts";
 
     /** Thrown by the next initialize() and then cleared: how a test reaches the recovery page. */
     static volatile RuntimeException failNextInitialization;
@@ -515,6 +517,44 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Adds an Administrators row to the side menu, so one tap lists only the groups and channels you "
                                 + "own or manage and another brings every chat back. It needs the side menu switch on, only "
                                 + "changes how this phone lists chats, and starts off again when Telegram restarts.")));
+            }
+            if (PatchFamily.Capability.HIDDEN_ACCOUNTS.installed()) {
+                SwitchPreference hideAccounts = toggle(context, Settings.HIDE_ACCOUNTS, L10n.t("Hide accounts"),
+                        L10n.t("The accounts you pick below leave Telegram's account lists, but only there. Each one stays "
+                                + "signed in, keeps syncing, and its notifications follow Telegram's own settings. Nothing is "
+                                + "signed out or deleted, and the account you're using always shows."));
+                hideAccounts.setOnPreferenceChangeListener((row, value) -> {
+                    if (Boolean.FALSE.equals(value) && accountsLockOn()) {
+                        // Showing the hidden accounts again takes the passcode, or the switch would be the way round it.
+                        askPasscode(() -> ((SwitchPreference) row).setChecked(false));
+                        return false;
+                    }
+                    return true;
+                });
+                folderTabs.addPreference(hideAccounts);
+                folderTabs.addPreference(hiddenAccountsRow(context));
+                if (PatchFamily.Capability.HIDDEN_PASSCODE.installed()) {
+                    SwitchPreference lock = toggle(context, Settings.HIDDEN_ACCOUNTS_LOCK, L10n.t("Passcode for hidden accounts"),
+                            L10n.t("Opening the list of hidden accounts, and turning off Hide accounts or this switch, asks for "
+                                    + "your Telegram passcode first. It uses the passcode you already set in Telegram, and it "
+                                    + "only guards this settings page."));
+                    lock.setOnPreferenceChangeListener((row, value) -> {
+                        if (Boolean.TRUE.equals(value) && !AppPasscode.isSet()) {
+                            Utils.showToastLong(L10n.t("Set a Telegram passcode first."));
+                            return false;
+                        }
+                        if (Boolean.FALSE.equals(value) && accountsLockOn()) {
+                            askPasscode(() -> {
+                                ((SwitchPreference) row).setChecked(false);
+                                refreshHiddenAccountsRow();
+                            });
+                            return false;
+                        }
+                        Utils.runOnMainThreadDelayed(this::refreshHiddenAccountsRow, 0);
+                        return true;
+                    });
+                    folderTabs.addPreference(lock);
+                }
             }
             if (PatchFamily.Capability.SORT_BY_DATE.installed()) {
                 SwitchPreference sort = toggle(context, Settings.SORT_BY_DATE, L10n.t("Sort chats by date"),
@@ -1989,6 +2029,85 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             return true;
         });
         return row;
+    }
+
+    /** The accounts hidden from the account lists: the row names them, and a tap lists every signed-in account to tick. */
+    private Preference hiddenAccountsRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(HIDDEN_ACCOUNTS_ROW);
+        row.setTitle(L10n.t("Accounts to hide"));
+        row.setPersistent(false);
+        row.setSummary(hiddenAccountsSummaryNow());
+        row.setOnPreferenceClickListener(p -> {
+            if (accountsLockOn()) askPasscode(() -> showHiddenAccounts(context, p));
+            else showHiddenAccounts(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    /** Whether the hidden accounts are behind Telegram's passcode: the switch is on and there is a passcode to ask for. */
+    private static boolean accountsLockOn() {
+        return Settings.HIDDEN_ACCOUNTS_LOCK.get() && AppPasscode.isSet();
+    }
+
+    /** What the Accounts to hide row says: the accounts' names, or only that the list is locked. */
+    private static String hiddenAccountsSummaryNow() {
+        return accountsLockOn() ? L10n.t("Locked with your Telegram passcode.") : HiddenAccounts.summary(HiddenAccounts.accounts());
+    }
+
+    private void refreshHiddenAccountsRow() {
+        Preference row = findPreference(HIDDEN_ACCOUNTS_ROW);
+        if (row != null) row.setSummary(hiddenAccountsSummaryNow());
+    }
+
+    /**
+     * Every signed-in account with the hidden ones ticked. Save writes the ticks and closes the
+     * list once they're saved. Picking every account is refused, so one always shows.
+     */
+    void showHiddenAccounts(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
+        List<HiddenAccounts.Account> accounts = HiddenAccounts.accounts();
+        if (accounts == null) {
+            Utils.showToastLong(L10n.t("Couldn't read your accounts."));
+            return;
+        }
+        if (accounts.size() < 2) {
+            Utils.showToastLong(L10n.t("Sign in to a second account first."));
+            return;
+        }
+        Set<Long> hidden = HiddenAccounts.hidden();
+        CharSequence[] labels = new CharSequence[accounts.size()];
+        boolean[] ticked = new boolean[accounts.size()];
+        for (int i = 0; i < ticked.length; i++) {
+            labels[i] = accounts.get(i).name;
+            ticked[i] = hidden.contains(accounts.get(i).user);
+        }
+        AlertDialog dialog = show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Accounts to hide"))
+                .setMultiChoiceItems(labels, ticked, (d, which, checked) -> ticked[which] = checked)
+                .setPositiveButton(L10n.t("Save"), null)
+                .setNegativeButton(L10n.t("Cancel"), null));
+        if (dialog == null) return;
+        // Set here rather than on the builder, so a tap waits for the save instead of closing the list.
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            Set<Long> hide = new LinkedHashSet<>();
+            for (int i = 0; i < ticked.length; i++) {
+                if (ticked[i]) hide.add(accounts.get(i).user);
+            }
+            if (!HiddenAccounts.leavesOne(accounts, hide)) {
+                Utils.showToastLong(L10n.t("Keep at least one account showing."));
+                return;
+            }
+            save(dialog, () -> HiddenAccounts.hide(hide), landed -> {
+                if (landed) {
+                    row.setSummary(hiddenAccountsSummaryNow());
+                    dialog.dismiss();
+                } else {
+                    Utils.showToastLong(L10n.t("Couldn't save the accounts. Try again in a moment."));
+                }
+            });
+        });
     }
 
     /** Whether the hidden chats are behind Telegram's passcode: the switch is on and there is a passcode to ask for. */

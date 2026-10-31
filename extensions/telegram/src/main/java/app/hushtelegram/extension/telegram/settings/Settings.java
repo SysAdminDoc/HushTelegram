@@ -345,6 +345,18 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting ADMIN_CHATS =
             new BooleanSetting("hushtelegram_admin_chats", FALSE);
 
+    /**
+     * Accounts picked in the settings stay out of Telegram's account lists
+     * ({@link app.hushtelegram.extension.telegram.misc.HiddenAccounts}). They stay signed in and keep
+     * their notifications. The picks themselves stay on this phone, outside the settings.
+     */
+    public static final BooleanSetting HIDE_ACCOUNTS =
+            new BooleanSetting("hushtelegram_hide_accounts", FALSE);
+
+    /** The list of hidden accounts and the switch that hides them ask for Telegram's app passcode first. */
+    public static final BooleanSetting HIDDEN_ACCOUNTS_LOCK =
+            new BooleanSetting("hushtelegram_hidden_accounts_lock", FALSE);
+
     /** With the date order on, the chat with the oldest last message comes first instead of the newest. */
     public static final BooleanSetting SORT_OLDEST_FIRST =
             new BooleanSetting("hushtelegram_sort_oldest_first", FALSE);

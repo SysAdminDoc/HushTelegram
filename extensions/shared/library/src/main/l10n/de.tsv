@@ -1243,3 +1243,27 @@ Showing chats you manage.	Du siehst deine verwalteten Chats.
 Showing all chats.	Alle Chats werden gezeigt.
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the Administrators filter in the side menu
 the Administrators filter	der Administratoren-Filter
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default. It hides signed-in accounts from Telegram's account lists
+Hide accounts	Konten ausblenden
+# context: Summary of the Hide accounts switch. It must say plainly that this only hides accounts from the account lists: they stay signed in and notifications follow Telegram's own settings. Nothing is signed out or deleted
+The accounts you pick below leave Telegram's account lists, but only there. Each one stays signed in, keeps syncing, and its notifications follow Telegram's own settings. Nothing is signed out or deleted, and the account you're using always shows.	Die Konten, die du unten auswählst, verschwinden aus den Kontolisten von Telegram, aber nur dort. Jedes bleibt angemeldet, synchronisiert weiter, und seine Benachrichtigungen folgen den eigenen Einstellungen von Telegram. Nichts wird abgemeldet oder gelöscht, und das Konto, das du gerade benutzt, wird immer angezeigt.
+# context: Settings row title and the title of its list. The list shows every signed-in account with a tick box; ticked accounts are left out of Telegram's account lists
+Accounts to hide	Konten zum Ausblenden
+# context: Switch title under Hide accounts. With it on, the hidden accounts list and the switches need Telegram's own app passcode
+Passcode for hidden accounts	Code für ausgeblendete Konten
+# context: Summary of the passcode switch for hidden accounts. The passcode is the app passcode set in Telegram's own settings
+Opening the list of hidden accounts, and turning off Hide accounts or this switch, asks for your Telegram passcode first. It uses the passcode you already set in Telegram, and it only guards this settings page.	Die Liste der ausgeblendeten Konten zu öffnen sowie „Konten ausblenden“ oder diesen Schalter auszuschalten, verlangt zuerst deinen Telegram-Code. Es gilt der Code, den du in Telegram schon festgelegt hast, und er schützt nur diese Einstellungsseite.
+# context: Sentence shown beside the Accounts to hide row when no account is hidden
+No accounts hidden yet.	Noch keine Konten ausgeblendet.
+# context: Toast when the signed-in accounts could not be read from Telegram
+Couldn't read your accounts.	Deine Konten konnten nicht gelesen werden.
+# context: Toast when the Accounts to hide row is tapped with only one account signed in
+Sign in to a second account first.	Melde zuerst ein zweites Konto an.
+# context: Toast when every signed-in account is ticked in Accounts to hide; one account must always stay in the account lists
+Keep at least one account showing.	Lass mindestens ein Konto sichtbar.
+# context: Toast when the ticked accounts could not be written to storage
+Couldn't save the accounts. Try again in a moment.	Die Konten konnten nicht gespeichert werden. Versuch es gleich noch einmal.
+# context: Name of an account that has no name Telegram can give yet, with its position among the signed-in accounts. %1$s is the number
+Account %1$s	Konto %1$s
+# context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that hides accounts from Telegram's account lists
+the hidden accounts	die ausgeblendeten Konten

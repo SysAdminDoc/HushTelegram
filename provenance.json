@@ -347,6 +347,8 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/AppPasscode.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/AdminChats.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/folders/AdminChatsSupport.kt",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/HiddenAccounts.java",
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/folders/HiddenAccountsSupport.kt",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/PasscodePrompt.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/folders/AppPasscodeSupport.kt",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SideMenu.java",
