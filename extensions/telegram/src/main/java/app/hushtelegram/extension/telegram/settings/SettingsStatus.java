@@ -77,6 +77,7 @@ public final class SettingsStatus {
     public static boolean reactionSelection() { return false; }
     public static boolean emojiPackNote() { return false; }
     public static boolean copySelection() { return false; }
+    public static boolean storySave() { return false; }
     public static boolean quietContactsNag() { return false; }
     public static boolean holidayLook() { return false; }
     public static boolean titleEmoji() { return false; }

@@ -348,6 +348,9 @@ public final class SelectionCheck {
         hook(calls, flags, "lockedVoice", "misc/LockedVoice", "refuse");
         hook(calls, flags, "noHaptics", "misc/Haptics", "tap");
         hook(calls, flags, "reactionEffectsOff", "misc/ReactionEffects", "skipped");
+        hook(calls, flags, "reactionSelection", "misc/DoubleTapReactions", "selection");
+        hook(calls, flags, "emojiPackNote", "misc/DoubleTapReactions", "packNote");
+        hook(calls, flags, "storySave", "misc/StorySave", "shareable", "premium");
         hook(calls, flags, "hideFolderCounters", "misc/FolderTabs", "countersHidden");
         hook(calls, flags, "launchFolder", "misc/LaunchFolder", "firstTabs");
         hook(calls, flags, "hideAllChats", "misc/LaunchFolder", "allChatsTab", "tabsAdded", "editing", "skipsDone");

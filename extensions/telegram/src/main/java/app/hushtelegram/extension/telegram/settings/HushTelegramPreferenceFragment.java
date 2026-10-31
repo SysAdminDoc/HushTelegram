@@ -614,6 +614,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                     + "selected text there. Secret chats stay as they are.")
                             : L10n.t("Puts Copy back in the menu of a message in a chat that doesn't allow saving. Secret chats stay "
                                     + "as they are."))));
+            if (PatchFamily.Capability.STORY_SAVE.installed()) {
+                on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.STORY_SAVE_BUTTON, L10n.t("Add Save to Gallery to stories"),
+                        PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Puts Save to Gallery in a story's three-dot menu without Premium, stories "
+                                + "that don't allow saving included. It saves only the ones you pick."))));
+            }
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_SAVE_PROTECTED, L10n.t("Add Save to Downloads to the message menu"),
                     PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Save to Downloads to a downloaded photo, video, file or song "
                             + "in a chat that doesn't allow saving. Nothing is copied until you tap it."))));

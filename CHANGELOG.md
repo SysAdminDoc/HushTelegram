@@ -7,6 +7,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** Moved telegram.org's build to Telegram 13.1.1 (version code 72379). Every patch carried over without a change.
 ### Added
 
+* **Telegram:** **Add Repeat to the message menu** has a new switch, **Add Save to Gallery to stories**, off by default. A story's three-dot menu gets Telegram's own Save to Gallery without Premium, on stories that don't allow saving too. It saves only the ones you pick.
 * **Telegram:** **Disable double-tap reactions** has a new switch, **Hide the emoji pack line**, off by default. It takes the line that says a message contains emoji from some pack off the bottom of the long-press menu, along with the gap above it.
 
 ### Changed

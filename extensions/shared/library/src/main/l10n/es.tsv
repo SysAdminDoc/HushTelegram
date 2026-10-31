@@ -1126,3 +1126,7 @@ Recording stopped	Grabación detenida
 Record call	Grabar llamada
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the record button on the call screen.
 call record button	el botón de grabar en llamadas
+# context: Switch on the Conversations page that adds Telegram's Save to Gallery to a story's three-dot menu (#52). The label is Telegram's applied translation of SaveToGallery.
+Add Save to Gallery to stories	Añadir «Guardar en la galería» a las historias
+Puts Save to Gallery in a story's three-dot menu without Premium, stories that don't allow saving included. It saves only the ones you pick.	Pone «Guardar en la galería» en el menú de tres puntos de una historia sin Premium, incluso en historias que no permiten guardar. Solo guarda las que elijas.
+Save to Gallery in stories	«Guardar en la galería» en historias
