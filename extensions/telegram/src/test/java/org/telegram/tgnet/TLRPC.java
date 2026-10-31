@@ -74,6 +74,12 @@ public final class TLRPC {
         public TL_messageReactions reactions;
     }
 
+    /** The typing, recording or uploading status shown in a chat. */
+    public static class TL_messages_setTyping { }
+
+    /** The same status in a secret chat. */
+    public static class TL_messages_setEncryptedTyping { }
+
     public static class TL_error {
         public int code;
         public String text;

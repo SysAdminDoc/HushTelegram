@@ -4,6 +4,10 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+### Added
+
+* **Telegram:** **Ghost mode** has two more parts, **Hide typing** and **Hide online status**, both off by default. With Ghost mode and **Hide typing** on, people in a chat don't see that you're typing, recording a voice message or sending a file, in secret chats too. With **Hide online status** on, Telegram isn't told that you're online while you use it. Going offline still goes out, so your account shows as offline when you leave. The diagnostic report counts what each one kept back. (#45)
+
 ### Changed
 
 * **Tooling:** The whole-app walk gets past Android asking for contacts or photos over the screen it's opening. It says no (Don't allow, or Not now on Telegram's own contacts prompt, never Allow or Continue) and opens the screen again. If the ask keeps coming back, the walk's problem line names it instead of a bare "would not open".

@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.telegram.tgnet.TLRPC;
+import org.telegram.tgnet.tl.TL_account;
 import org.telegram.tgnet.tl.TL_stories;
 
 import java.util.Arrays;
@@ -49,12 +50,16 @@ public class GhostModeTest {
         Settings.GHOST_MODE.resetToDefault();
         Settings.GHOST_READS.resetToDefault();
         Settings.GHOST_STORIES.resetToDefault();
+        Settings.GHOST_TYPING.resetToDefault();
+        Settings.GHOST_ONLINE.resetToDefault();
     }
 
     @Test public void offByDefaultWithBothPartsReadyForWhenItIsTurnedOn() {
         assertFalse(Settings.GHOST_MODE.get());
         assertTrue(Settings.GHOST_READS.get());
         assertTrue(Settings.GHOST_STORIES.get());
+        assertFalse(Settings.GHOST_TYPING.get());
+        assertFalse(Settings.GHOST_ONLINE.get());
         assertFalse(GhostMode.drop(new TL_stories.TL_stories_readStories()));
         assertTrue(HookStatus.report().stream().noneMatch(row -> row.contains("Counted:")));
     }
@@ -67,9 +72,12 @@ public class GhostModeTest {
         }
         assertEquals(GhostMode.Kind.STORY, GhostMode.kind("org.telegram.tgnet.tl.TL_stories$TL_stories_readStories"));
         assertEquals(GhostMode.Kind.STORY, GhostMode.kind("org.telegram.tgnet.tl.TL_stories$TL_stories_incrementStoryViews"));
-        // Mentions, reactions, typing, sends and story fetches all go out as usual.
+        assertEquals(GhostMode.Kind.TYPING, GhostMode.kind("org.telegram.tgnet.TLRPC$TL_messages_setTyping"));
+        assertEquals(GhostMode.Kind.TYPING, GhostMode.kind("org.telegram.tgnet.TLRPC$TL_messages_setEncryptedTyping"));
+        assertEquals(GhostMode.Kind.ONLINE, GhostMode.kind("org.telegram.tgnet.tl.TL_account$updateStatus"));
+        // Mentions, reactions, sends and story fetches all go out as usual.
         for (String other : Arrays.asList("org.telegram.tgnet.TLRPC$TL_messages_readMentions",
-                "org.telegram.tgnet.TLRPC$TL_messages_readReactions", "org.telegram.tgnet.TLRPC$TL_messages_setTyping",
+                "org.telegram.tgnet.TLRPC$TL_messages_readReactions", "org.telegram.tgnet.TLRPC$TL_account_updateStatus",
                 "org.telegram.tgnet.TLRPC$TL_messages_sendMessage", "org.telegram.tgnet.TLRPC$TL_messages_getHistory",
                 "org.telegram.tgnet.tl.TL_stories$TL_stories_getAllStories", "TL_messages_readHistory",
                 "org.telegram.tgnet.TLRPC$TL_messages_readHistoryX", "")) {
@@ -119,6 +127,59 @@ public class GhostModeTest {
         assertEquals(Arrays.asList("Disable analytics: invoked 5, 0 found, 0 missing. "
                         + "Counted: read receipts kept back 1, story views kept back 1"),
                 HookStatus.report());
+    }
+
+    private static TL_account.updateStatus status(boolean offline) {
+        TL_account.updateStatus request = new TL_account.updateStatus();
+        request.offline = offline;
+        return request;
+    }
+
+    @Test public void typingIsKeptBackOnlyWithItsOwnSwitchAndCountsEach() {
+        Settings.GHOST_MODE.save(true);
+        assertFalse(GhostMode.drop(new TLRPC.TL_messages_setTyping()));
+        Settings.GHOST_TYPING.save(true);
+        assertTrue(GhostMode.drop(new TLRPC.TL_messages_setTyping()));
+        assertTrue(GhostMode.drop(new TLRPC.TL_messages_setEncryptedTyping()));
+        // The other parts stay as they were.
+        assertTrue(GhostMode.drop(new TL_stories.TL_stories_readStories()));
+        assertFalse(GhostMode.drop(status(false)));
+        Settings.GHOST_MODE.save(false);
+        assertFalse(GhostMode.drop(new TLRPC.TL_messages_setTyping()));
+        assertEquals(Arrays.asList("Disable analytics: invoked 6, 0 found, 0 missing. "
+                        + "Counted: typing statuses kept back 2, story views kept back 1"),
+                HookStatus.report());
+    }
+
+    @Test public void goingOnlineIsKeptBackAndGoingOfflineGoesOut() {
+        Settings.GHOST_MODE.save(true);
+        assertFalse(GhostMode.drop(status(false)));
+        Settings.GHOST_ONLINE.save(true);
+        assertTrue(GhostMode.drop(status(false)));
+        assertTrue(GhostMode.drop(status(false)));
+        assertFalse(GhostMode.drop(status(true)));
+        assertFalse(GhostMode.drop(new TLRPC.TL_messages_setTyping()));
+        assertEquals(Arrays.asList("Disable analytics: invoked 4, 0 found, 0 missing. Counted: online statuses kept back 2"),
+                HookStatus.report());
+    }
+
+    @Test public void typingAndOnlineGoOutUnderEveryPauseReasonAndWhenSettingsAreUnavailable() {
+        Settings.GHOST_MODE.save(true);
+        Settings.GHOST_TYPING.save(true);
+        Settings.GHOST_ONLINE.save(true);
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
+            PauseForTests.pause(reason);
+            assertFalse(reason.name(), GhostMode.drop(new TLRPC.TL_messages_setTyping()));
+            assertFalse(reason.name(), GhostMode.drop(status(false)));
+            PauseForTests.resume();
+        }
+        SettingsContextRule.withoutContext(() -> {
+            assertFalse(GhostMode.drop(new TLRPC.TL_messages_setEncryptedTyping()));
+            assertFalse(GhostMode.drop(status(false)));
+        });
+        assertTrue(HookStatus.report().stream().noneMatch(row -> row.contains("Counted:")));
+        assertTrue(GhostMode.drop(status(false)));
     }
 
     @Test public void thePartsNeedGhostModeOn() {

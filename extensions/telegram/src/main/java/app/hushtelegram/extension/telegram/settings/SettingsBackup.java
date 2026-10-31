@@ -187,6 +187,8 @@ public final class SettingsBackup {
             Settings.GHOST_MODE,
             Settings.GHOST_READS,
             Settings.GHOST_STORIES,
+            Settings.GHOST_TYPING,
+            Settings.GHOST_ONLINE,
             Settings.DISABLE_CALL_DEBUG,
             Settings.DISABLE_DRAFT_PREVIEWS,
             Settings.LOCAL_DRAFTS,

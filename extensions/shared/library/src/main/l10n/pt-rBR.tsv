@@ -281,6 +281,14 @@ Messages you read stay unread for the people who sent them, in private chats, gr
 # context: Switch title under Ghost mode. When on, watching someone's story doesn't put you on its viewer list.
 View stories anonymously	Ver stories anonimamente
 Stories you watch don't add you to their viewer list. Works with Ghost mode on.	Os stories que você vê não colocam você na lista de visualizações deles. Funciona com o Modo fantasma ativado.
+# context: Switch title under Ghost mode. When on, the chat doesn't show the other person that you're typing, recording or uploading.
+Hide typing	Ocultar digitação
+# context: Summary under that switch. Covers the typing, voice recording, video and file uploading statuses shown at the top of a chat.
+Other people don't see that you're typing, recording or sending a file. Works with Ghost mode on.	As outras pessoas não veem que você está digitando, gravando ou enviando um arquivo. Funciona com o Modo fantasma ativado.
+# context: Switch title under Ghost mode. When on, Telegram isn't told the account is online, so Last seen doesn't update while you use the app.
+Hide online status	Ocultar status online
+# context: Summary under that switch. Telegram is still told when the app goes offline, so the account shows as offline.
+Telegram isn't told that you're online while you use it. Going offline still goes out. Works with Ghost mode on.	O Telegram não é avisado de que você está online enquanto o usa. Ficar offline continua sendo enviado. Funciona com o Modo fantasma ativado.
 # context: Lowercase noun phrase naming the part of Stop usage reports that Ghost mode covers, listed in coverage lines with "channel read metrics" and "dual camera reports".
 read receipts and story views	confirmações de leitura e visualizações de stories
 Accounts	Contas

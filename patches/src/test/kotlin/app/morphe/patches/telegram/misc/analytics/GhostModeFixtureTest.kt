@@ -70,9 +70,24 @@ class GhostModeFixtureTest {
             .mapNotNull { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string }
             .filter { it.startsWith("org.telegram.tgnet.") }
             .map { "L" + it.replace('.', '/') + ";" }.toSet()
-        assertEquals("the extension's request names", 9, named.size)
+        assertEquals("the extension's request names", 12, named.size)
         for (build in Fixtures.declaredBuilds()) {
             assertEquals("${build.name}: every named request", named, FixtureDex.classes(build, named).keys)
+        }
+    }
+
+    @Test
+    fun `each declared build builds the online status request with a boolean offline field`() {
+        val status = "Lorg/telegram/tgnet/tl/TL_account\$updateStatus;"
+        for (build in Fixtures.declaredBuilds()) {
+            val request = FixtureDex.classes(build, setOf(status)).getValue(status)
+            assertEquals("${build.name}: offline", listOf("offline:Z"),
+                request.fields.filter { it.name == "offline" }.map { "${it.name}:${it.type}" })
+            assertTrue("${build.name}: public", AccessFlags.PUBLIC.isSet(request.fields.single { it.name == "offline" }.accessFlags))
+            // The typing requests are TLRPC classes under the names the extension holds back.
+            assertEquals(setOf("Lorg/telegram/tgnet/TLRPC\$TL_messages_setTyping;", "Lorg/telegram/tgnet/TLRPC\$TL_messages_setEncryptedTyping;"),
+                FixtureDex.classes(build, setOf("Lorg/telegram/tgnet/TLRPC\$TL_messages_setTyping;",
+                    "Lorg/telegram/tgnet/TLRPC\$TL_messages_setEncryptedTyping;")).keys)
         }
     }
 

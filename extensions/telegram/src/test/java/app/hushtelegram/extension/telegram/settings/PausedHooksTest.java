@@ -416,7 +416,11 @@ public class PausedHooksTest {
                 () -> app.hushtelegram.extension.telegram.misc.GhostMode.drop(
                         new org.telegram.tgnet.tl.TL_stories.TL_stories_readStories()),
                 () -> app.hushtelegram.extension.telegram.misc.GhostMode.drop(
-                        new org.telegram.tgnet.tl.TL_stories.TL_stories_incrementStoryViews())));
+                        new org.telegram.tgnet.tl.TL_stories.TL_stories_incrementStoryViews()),
+                // Typing and going online are kept back too, and a pause lets both go out.
+                () -> app.hushtelegram.extension.telegram.misc.GhostMode.drop(new org.telegram.tgnet.TLRPC.TL_messages_setTyping()),
+                () -> app.hushtelegram.extension.telegram.misc.GhostMode.drop(new org.telegram.tgnet.TLRPC.TL_messages_setEncryptedTyping()),
+                () -> app.hushtelegram.extension.telegram.misc.GhostMode.drop(new org.telegram.tgnet.tl.TL_account.updateStatus())));
         // Links open in the browser, and Mini Apps and web pages inside Telegram get no location.
         probes.put(PatchFamily.OPEN_EXTERNAL_LINKS, Arrays.asList(
                 PausedHooksTest::externalBrowserOpened,

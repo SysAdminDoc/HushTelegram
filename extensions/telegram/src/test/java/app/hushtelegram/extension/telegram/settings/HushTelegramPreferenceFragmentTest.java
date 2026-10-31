@@ -343,6 +343,14 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("View stories anonymously", String.valueOf(page.findPreference(Settings.GHOST_STORIES.key).getTitle()));
             assertEquals("Stories you watch don't add you to their viewer list. Works with Ghost mode on.",
                     String.valueOf(page.findPreference(Settings.GHOST_STORIES.key).getSummary()));
+            assertEquals("Hide typing", String.valueOf(page.findPreference(Settings.GHOST_TYPING.key).getTitle()));
+            assertEquals("Other people don't see that you're typing, recording or sending a file. Works with Ghost mode on.",
+                    String.valueOf(page.findPreference(Settings.GHOST_TYPING.key).getSummary()));
+            assertEquals("Hide online status", String.valueOf(page.findPreference(Settings.GHOST_ONLINE.key).getTitle()));
+            assertEquals("Telegram isn't told that you're online while you use it. Going offline still goes out. "
+                    + "Works with Ghost mode on.", String.valueOf(page.findPreference(Settings.GHOST_ONLINE.key).getSummary()));
+            assertFalse(Settings.GHOST_TYPING.key, ((SwitchPreference) page.findPreference(Settings.GHOST_TYPING.key)).isChecked());
+            assertFalse(Settings.GHOST_ONLINE.key, ((SwitchPreference) page.findPreference(Settings.GHOST_ONLINE.key)).isChecked());
             // Receipts go out as usual until Ghost mode itself is turned on; its two parts start on under it.
             assertFalse(Settings.GHOST_MODE.key, ((SwitchPreference) page.findPreference(Settings.GHOST_MODE.key)).isChecked());
             assertTrue(Settings.GHOST_READS.key, ((SwitchPreference) page.findPreference(Settings.GHOST_READS.key)).isChecked());

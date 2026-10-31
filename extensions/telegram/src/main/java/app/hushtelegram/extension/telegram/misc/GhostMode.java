@@ -26,6 +26,10 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * its unread count and the story ring still turns grey. Nothing else is touched, and a request of
  * any other kind returns at once without reading a setting.
  *
+ * <p>Two more parts hold back what the account says about itself: the typing, recording and
+ * uploading status a chat shows, and the online status ({@code account.updateStatus} with offline
+ * off). Going offline still goes out, so the account shows as offline.
+ *
  * <p>Sending a message into a chat tells the server it was read anyway, which this can't change.
  */
 public final class GhostMode {
@@ -46,36 +50,77 @@ public final class GhostMode {
             "org.telegram.tgnet.tl.TL_stories$TL_stories_readStories",
             "org.telegram.tgnet.tl.TL_stories$TL_stories_incrementStoryViews")));
 
+    /** Requests that show a chat's other side that you're typing, recording or uploading. */
+    private static final Set<String> TYPING = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            "org.telegram.tgnet.TLRPC$TL_messages_setTyping",
+            "org.telegram.tgnet.TLRPC$TL_messages_setEncryptedTyping")));
+
+    /** The request that sets the account online or offline, which has a boolean field named offline. */
+    private static final String STATUS = "org.telegram.tgnet.tl.TL_account$updateStatus";
+
     /** What a request is to Ghost mode. */
-    enum Kind { READ, STORY, OTHER }
+    enum Kind { READ, STORY, TYPING, ONLINE, OTHER }
 
     /**
      * Asked with every request just before Telegram sends it. True means drop it: the request never
      * goes out and its callback never runs. Never throws.
      */
     public static boolean drop(Object request) {
-        return request != null && keepBack(kind(request.getClass().getName()));
+        if (request == null) return false;
+        Kind kind = kind(request.getClass().getName());
+        if (kind == Kind.ONLINE && !goingOnline(request)) return false;
+        return keepBack(kind);
+    }
+
+    /** Whether an update status request says online. Anything unreadable is treated as offline, so it goes out. */
+    private static boolean goingOnline(Object request) {
+        try {
+            return !request.getClass().getField("offline").getBoolean(request);
+        } catch (Throwable t) {
+            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "ghost mode online status read", t);
+            return false;
+        }
     }
 
     /** Whether a request of this kind stays on the phone, counted when it does. */
     static boolean keepBack(Kind kind) {
         if (kind == Kind.OTHER) return false;
         HookStatus.invoked(FamilyNames.DISABLE_ANALYTICS);
-        BooleanSetting part = kind == Kind.READ ? Settings.GHOST_READS : Settings.GHOST_STORIES;
+        BooleanSetting part = part(kind);
         try {
             if (!Utils.settingsReady() || !Settings.GHOST_MODE.get() || !part.get()) return false;
         } catch (Throwable t) {
             HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "ghost mode switch read", t);
             return false;
         }
-        HookStatus.counted(FamilyNames.DISABLE_ANALYTICS, kind == Kind.READ ? "read receipts kept back" : "story views kept back");
+        HookStatus.counted(FamilyNames.DISABLE_ANALYTICS, label(kind));
         return true;
+    }
+
+    private static BooleanSetting part(Kind kind) {
+        switch (kind) {
+            case READ: return Settings.GHOST_READS;
+            case TYPING: return Settings.GHOST_TYPING;
+            case ONLINE: return Settings.GHOST_ONLINE;
+            default: return Settings.GHOST_STORIES;
+        }
+    }
+
+    private static String label(Kind kind) {
+        switch (kind) {
+            case READ: return "read receipts kept back";
+            case TYPING: return "typing statuses kept back";
+            case ONLINE: return "online statuses kept back";
+            default: return "story views kept back";
+        }
     }
 
     /** Which kind a request class is, by its name, which Telegram's builds keep. */
     static Kind kind(String className) {
         if (READS.contains(className)) return Kind.READ;
         if (STORIES.contains(className)) return Kind.STORY;
+        if (TYPING.contains(className)) return Kind.TYPING;
+        if (STATUS.equals(className)) return Kind.ONLINE;
         return Kind.OTHER;
     }
 }

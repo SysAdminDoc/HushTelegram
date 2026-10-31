@@ -600,6 +600,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting GHOST_STORIES =
             new BooleanSetting("hushtelegram_ghost_stories", TRUE);
 
+    /** Ghost mode's typing: the typing, recording and uploading status isn't sent. Read only while Ghost mode is on. */
+    public static final BooleanSetting GHOST_TYPING =
+            new BooleanSetting("hushtelegram_ghost_typing", FALSE);
+
+    /** Ghost mode's online status: going online isn't sent, going offline is. Read only while Ghost mode is on. */
+    public static final BooleanSetting GHOST_ONLINE =
+            new BooleanSetting("hushtelegram_ghost_online", FALSE);
+
     /** Automatic call diagnostics only; the call itself and its cleanup stay stock. */
     public static final BooleanSetting DISABLE_CALL_DEBUG =
             new BooleanSetting("hushtelegram_disable_call_debug", TRUE);

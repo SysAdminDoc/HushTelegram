@@ -1035,7 +1035,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 privacy.addPreference(toggle(context, Settings.DISABLE_ANALYTICS, L10n.t("Stop usage reports"),
                     PatchFamily.DISABLE_ANALYTICS.coverageSummary(L10n.t("Stops usage reports to Telegram, like how long you read each channel post and what "
                             + "you tap on Premium screens. Messages and calls work as before."))));
-                // Ghost mode and its two parts: each part needs Ghost mode on, which starts off.
+                // Ghost mode and its parts: each part needs Ghost mode on, which starts off.
                 if (PatchFamily.Capability.GHOST_MODE.installed()) {
                     privacy.addPreference(toggle(context, Settings.GHOST_MODE, L10n.t("Ghost mode"),
                             L10n.t("Read chats and watch stories without anyone being told. Sending a message in a chat still marks "
@@ -1045,6 +1045,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                     + "chats, and voice messages you play stay unplayed. Works with Ghost mode on.")));
                     privacy.addPreference(toggle(context, Settings.GHOST_STORIES, L10n.t("View stories anonymously"),
                             L10n.t("Stories you watch don't add you to their viewer list. Works with Ghost mode on.")));
+                    privacy.addPreference(toggle(context, Settings.GHOST_TYPING, L10n.t("Hide typing"),
+                            L10n.t("Other people don't see that you're typing, recording or sending a file. Works with Ghost mode on.")));
+                    privacy.addPreference(toggle(context, Settings.GHOST_ONLINE, L10n.t("Hide online status"),
+                            L10n.t("Telegram isn't told that you're online while you use it. Going offline still goes out. Works with Ghost mode on.")));
                 }
             }
             if (build.contains(PatchFamily.DISABLE_CALL_DEBUG)) {
