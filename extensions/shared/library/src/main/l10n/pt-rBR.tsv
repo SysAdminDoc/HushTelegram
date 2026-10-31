@@ -1302,3 +1302,19 @@ receive only mode	modo somente recepção
 Remember where playback stopped	Lembrar onde a reprodução parou
 # context: Summary of the switch Remember where playback stopped. Telegram itself only remembers the position of long videos, voice messages and songs.
 Videos, voice messages and music pick up where you left off, even short ones. Telegram only does that for long ones.	Vídeos, mensagens de voz e músicas continuam de onde você parou, até os curtos. O Telegram só faz isso com os longos.
+# context: Title of a switch under Add Repeat to the message menu (#53), and the label of the button it adds to the bar that shows while messages are selected. Tapping the button selects every message between the first and last one already selected.
+Select between	Selecionar entre
+# context: Summary of the Select between switch. The bar is the one that appears at the top of a chat while messages are selected.
+Adds a Select between button to the bar that shows while you pick messages. It selects everything between the first and last one you picked. Pick one past the end and the gap fills in.	Adiciona um botão Selecionar entre à barra que aparece quando você escolhe mensagens. Ele seleciona tudo entre a primeira e a última mensagem escolhidas. Escolha uma além da ponta e o intervalo é preenchido.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Select between button.
+selecting everything between two messages	selecionar tudo entre duas mensagens
+# context: Toast after tapping Select between with fewer than two messages selected.
+Select two messages first	Escolha duas mensagens primeiro
+# context: Toast from Select between when a selected message has scrolled out of what the chat has loaded, so the range can't be known.
+Those messages aren't all loaded	Nem todas estão carregadas
+# context: Toast from Select between when the selected messages are next to each other or the ones between can't be selected.
+Nothing in between to select	Nada no meio
+# context: Toast from Select between when Telegram's limit of 100 selected messages is reached.
+Stopped at 100 messages	Parou em 100 mensagens
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Remember where playback stopped switch.
+remembering where playback stopped	lembrar onde a reprodução parou

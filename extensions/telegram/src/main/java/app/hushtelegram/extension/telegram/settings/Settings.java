@@ -391,6 +391,13 @@ public class Settings extends BaseSettings {
      * Videos, voice messages and music remember where they stopped, however short they are, and
      * pick up from there the next time they play (#53).
      */
+    /**
+     * A button in a chat's selection bar that selects every message between the first and last
+     * one selected, and a range that grows when a message past it is picked (#53).
+     */
+    public static final BooleanSetting SELECT_BETWEEN =
+            new BooleanSetting("hushtelegram_select_between", FALSE);
+
     public static final BooleanSetting PLAYBACK_POSITION =
             new BooleanSetting("hushtelegram_playback_position", FALSE);
 

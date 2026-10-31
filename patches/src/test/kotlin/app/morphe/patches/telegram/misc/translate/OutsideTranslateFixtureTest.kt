@@ -22,6 +22,7 @@ import app.morphe.patches.telegram.misc.messagemenu.CHOSEN
 import app.morphe.patches.telegram.misc.messagemenu.FILL
 import app.morphe.patches.telegram.misc.messagemenu.isSelectionCanCopy
 import app.morphe.patches.telegram.misc.messagemenu.messageMenuPatch
+import app.morphe.patches.telegram.misc.messagemenu.selectBetweenHosts
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
 import app.morphe.util.superclassChain
@@ -91,7 +92,8 @@ class OutsideTranslateFixtureTest {
             bases += loaded
             next = loaded.mapNotNull { it.superclass }.filter { it.startsWith("Lorg/telegram/") }.toSet() - bases.map { it.type }.toSet()
         }
-        return (FixtureDex.classes(build, types).values + found + bases).distinctBy { it.type }.map(ImmutableClassDef::of)
+        val base = (FixtureDex.classes(build, types).values + found + bases).distinctBy { it.type }.map(ImmutableClassDef::of)
+        return if (neighbours) base + selectBetweenHosts(build, base) else base
     }
 
     @Test fun `each site calls the extension first and Telegram's own code follows unchanged`() {

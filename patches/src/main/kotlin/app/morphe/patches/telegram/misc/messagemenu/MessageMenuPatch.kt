@@ -131,6 +131,13 @@ val messageMenuPatch = bytecodePatch(
         } else {
             patchLog.warning("Add Repeat to the message menu: ${story.missing}. The patch goes on without Save to Gallery in stories.")
         }
+        val between = resolveSelectBetween(site.chat)
+        if (between.missing == null) {
+            between.apply(this)
+            enableCapability("selectBetween")
+        } else {
+            patchLog.warning("Add Repeat to the message menu: ${between.missing}. The patch goes on without the Select between button.")
+        }
         enableStatus("messageMenuRepeat")
     }
 }

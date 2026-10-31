@@ -157,6 +157,7 @@ public final class SettingsBackup {
             Settings.FORWARD_HIDE_SENDER,
             Settings.VOICE_MUSIC_PLAYER,
             Settings.PLAYBACK_POSITION,
+            Settings.SELECT_BETWEEN,
             Settings.SILENCE_NON_CONTACTS,
             Settings.REACTION_ALERTS,
             Settings.REACTION_SOUND,
