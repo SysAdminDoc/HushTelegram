@@ -652,6 +652,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.NORMAL_PASTE).addPreference(toggle(context, Settings.NORMAL_PASTE, L10n.t("Use normal paste"),
                     PatchFamily.NORMAL_PASTE.coverageSummary(L10n.t("Pastes text exactly as you copied it, without Telegram adding formatting, tables"
                             + " or code styling. Spaces and links stay as they were."))));
+            if (PatchFamily.Capability.MENTION_BY_ID.installed()) {
+                on(pages, PatchFamily.NORMAL_PASTE).addPreference(toggle(context, Settings.MENTION_BY_ID, L10n.t("Mention by ID"),
+                        L10n.t("Typing @ and a user ID, or tg://user?id= and the ID, turns into a real mention. It only works "
+                                + "for people this app has already seen, such as in a chat or group. Anyone else is sent as typed.")));
+            }
         }
         if (build.contains(PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS)) {
             on(pages, PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS).addPreference(toggle(context, Settings.DISABLE_DOUBLE_TAP_REACTIONS, L10n.t("Disable double-tap reactions"),

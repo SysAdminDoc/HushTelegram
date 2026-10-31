@@ -69,6 +69,7 @@ public final class SettingsStatus {
     public static boolean showLocalIds() { return false; }
     public static boolean disableDoubleTapReactions() { return false; }
     public static boolean composePlainPaste() { return false; }
+    public static boolean mentionById() { return false; }
     public static boolean captionPlainPaste() { return false; }
     public static boolean profileLocalIds() { return false; }
     public static boolean chatDoubleTapReaction() { return false; }

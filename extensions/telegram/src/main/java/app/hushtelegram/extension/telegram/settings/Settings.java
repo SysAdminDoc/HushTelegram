@@ -138,6 +138,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting NORMAL_PASTE =
             new BooleanSetting("hushtelegram_normal_paste", FALSE);
 
+    /**
+     * Typing {@code @123456789} or {@code tg://user?id=123456789} in the message box sends a real
+     * mention of that person, when the app has seen them (#53). Off by default.
+     */
+    public static final BooleanSetting MENTION_BY_ID =
+            new BooleanSetting("hushtelegram_mention_by_id", FALSE);
+
     public static final BooleanSetting SHOW_LOCAL_IDS =
             new BooleanSetting("hushtelegram_show_local_ids", FALSE);
 

@@ -1287,3 +1287,8 @@ Receive only	Само получаване
 This account is powered off.	Този профил е изключен.
 # context: Toast when a receive-only account tries to write (#53). Two lines of 28 characters at most.
 Receive only mode is on.	Режимът само за получаване е включен.
+# context: Switch under Conversations: typed @ and a user ID becomes a real mention (#53).
+Mention by ID	Споменаване по ID
+Typing @ and a user ID, or tg://user?id= and the ID, turns into a real mention. It only works for people this app has already seen, such as in a chat or group. Anyone else is sent as typed.	Ако напишете @ и ID на потребител или tg://user?id= и ID, това става истинско споменаване. Работи само за хора, които приложението вече е виждало, например в чат или група. Всички останали се изпращат както са написани.
+# context: Toast when a typed @ and ID names someone this app has not seen (#53). Two lines of 28 characters at most.
+I haven't seen that person.	Не съм виждал този човек.

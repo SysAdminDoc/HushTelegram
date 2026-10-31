@@ -1291,3 +1291,8 @@ Receive only	Hanya terima
 This account is powered off.	Akun ini sedang mati.
 # context: Toast when a receive-only account tries to write (#53). Two lines of 28 characters at most.
 Receive only mode is on.	Mode hanya terima aktif.
+# context: Switch under Conversations: typed @ and a user ID becomes a real mention (#53).
+Mention by ID	Sebut lewat ID
+Typing @ and a user ID, or tg://user?id= and the ID, turns into a real mention. It only works for people this app has already seen, such as in a chat or group. Anyone else is sent as typed.	Mengetik @ dan ID pengguna, atau tg://user?id= dan ID-nya, berubah menjadi sebutan sungguhan. Ini hanya berlaku untuk orang yang sudah pernah terlihat aplikasi ini, misalnya di obrolan atau grup. Selain itu dikirim apa adanya.
+# context: Toast when a typed @ and ID names someone this app has not seen (#53). Two lines of 28 characters at most.
+I haven't seen that person.	Orang itu belum terlihat.

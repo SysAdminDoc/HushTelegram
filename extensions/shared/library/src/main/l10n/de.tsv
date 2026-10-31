@@ -1291,3 +1291,8 @@ Receive only	Nur empfangen
 This account is powered off.	Dieses Konto ist aus.
 # context: Toast when a receive-only account tries to write (#53). Two lines of 28 characters at most.
 Receive only mode is on.	Nur-Empfangen ist aktiv.
+# context: Switch under Conversations: typed @ and a user ID becomes a real mention (#53).
+Mention by ID	Erwähnen per ID
+Typing @ and a user ID, or tg://user?id= and the ID, turns into a real mention. It only works for people this app has already seen, such as in a chat or group. Anyone else is sent as typed.	Wenn Sie @ und eine Nutzer-ID oder tg://user?id= und die ID tippen, wird daraus eine echte Erwähnung. Das klappt nur bei Leuten, die diese App schon gesehen hat, etwa in einem Chat oder einer Gruppe. Alle anderen gehen so raus, wie Sie es getippt haben.
+# context: Toast when a typed @ and ID names someone this app has not seen (#53). Two lines of 28 characters at most.
+I haven't seen that person.	Die Person kenne ich nicht.

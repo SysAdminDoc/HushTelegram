@@ -115,6 +115,7 @@ public final class SettingsBackup {
             Settings.DISABLE_CHANNEL_PULL,
             Settings.DISABLE_TOPIC_PULL,
             Settings.NORMAL_PASTE,
+            Settings.MENTION_BY_ID,
             Settings.SHOW_LOCAL_IDS,
             Settings.PROFILE_DATA_CENTER,
             Settings.DISABLE_DOUBLE_TAP_REACTIONS,

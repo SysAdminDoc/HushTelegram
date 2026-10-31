@@ -5,6 +5,7 @@
 package app.morphe.patches.telegram.misc.paste
 
 import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
@@ -28,16 +29,29 @@ private const val HTML = "Landroid/content/ClipData\$Item;->getHtmlText()Ljava/l
 val useNormalPastePatch = bytecodePatch(
     name = "Use normal paste",
     description = "Pastes text exactly as you copied it, without Telegram adding formatting, tables or code styling. " +
-        "Starts off. Turn it on in HushTelegram settings > Conversations.",
+        "A second switch, Mention by ID, turns @ and a user ID typed in the message box into a real mention of " +
+        "people the app has already seen. Both start off. Turn them on in HushTelegram settings > Conversations.",
     default = true,
 ) {
     category("Conversations")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
     execute {
+        requireStatusMethod("mentionById")
         val sites = resolveNormalPaste()
+        // Mentions come second: a build without them keeps the plain paste.
+        val mentions = try {
+            resolveMentionById()
+        } catch (unfit: PatchException) {
+            patchLog.warning("Use normal paste: ${unfit.message}. Mention by ID is left out.")
+            null
+        }
         sites.forEach { it.insert(MutableMethod(ImmutableMethod.of(it.method))) }
         sites.forEach { it.insert(it.method) }
+        mentions?.let {
+            it.insert()
+            enableCapability("mentionById")
+        }
         enableCapability("composePlainPaste")
         enableCapability("captionPlainPaste")
         enableStatus("normalPaste")
