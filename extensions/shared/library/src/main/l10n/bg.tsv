@@ -1292,3 +1292,7 @@ Mention by ID	Споменаване по ID
 Typing @ and a user ID, or tg://user?id= and the ID, turns into a real mention. It only works for people this app has already seen, such as in a chat or group. Anyone else is sent as typed.	Ако напишете @ и ID на потребител или tg://user?id= и ID, това става истинско споменаване. Работи само за хора, които приложението вече е виждало, например в чат или група. Всички останали се изпращат както са написани.
 # context: Toast when a typed @ and ID names someone this app has not seen (#53). Two lines of 28 characters at most.
 I haven't seen that person.	Не съм виждал този човек.
+# context: Names of optional parts in the patch status list (#53).
+mentions by ID	споменавания по ID
+powering off accounts	изключване на акаунти
+receive only mode	режим само за получаване

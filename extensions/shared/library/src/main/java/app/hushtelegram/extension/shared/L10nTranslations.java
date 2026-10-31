@@ -49,7 +49,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildBg() {
-        Map<String, String> table = new HashMap<>(1882);
+        Map<String, String> table = new HashMap<>(1888);
         fillBg0(table);
         fillBg1(table);
         fillBg2(table);
@@ -1900,6 +1900,8 @@ public final class L10nTranslations {
                 "\u043f\u0440\u0435\u0434\u0438 \u043f\u043e-\u043c\u0430\u043b\u043a\u043e \u043e\u0442 \u043c\u0438\u043d\u0443\u0442\u0430");
         table.put("local notification status",
                 "\u043b\u043e\u043a\u0430\u043b\u043d\u043e \u0441\u044a\u0441\u0442\u043e\u044f\u043d\u0438\u0435 \u043d\u0430 \u0438\u0437\u0432\u0435\u0441\u0442\u0438\u044f\u0442\u0430");
+        table.put("mentions by ID",
+                "\u0441\u043f\u043e\u043c\u0435\u043d\u0430\u0432\u0430\u043d\u0438\u044f \u043f\u043e ID");
         table.put("new message button",
                 "\u0431\u0443\u0442\u043e\u043d\u0430 \u0437\u0430 \u043d\u043e\u0432\u043e \u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u0435");
         table.put("none",
@@ -1910,11 +1912,13 @@ public final class L10nTranslations {
                 "\u043f\u0440\u043e\u0441\u043b\u0435\u0434\u044f\u0432\u0430\u043d\u0435 \u043d\u0430 \u043e\u0442\u0432\u0430\u0440\u044f\u043d\u0438 \u0432\u0440\u044a\u0437\u043a\u0438");
         table.put("pasted links",
                 "\u043f\u043e\u0441\u0442\u0430\u0432\u0435\u043d\u0438 \u0432\u0440\u044a\u0437\u043a\u0438");
-        table.put("poll links",
-                "\u0432\u0440\u044a\u0437\u043a\u0438 \u0432 \u0430\u043d\u043a\u0435\u0442\u0438");
     }
 
     private static void fillBg15(Map<String, String> table) {
+        table.put("poll links",
+                "\u0432\u0440\u044a\u0437\u043a\u0438 \u0432 \u0430\u043d\u043a\u0435\u0442\u0438");
+        table.put("powering off accounts",
+                "\u0438\u0437\u043a\u043b\u044e\u0447\u0432\u0430\u043d\u0435 \u043d\u0430 \u0430\u043a\u0430\u0443\u043d\u0442\u0438");
         table.put("preview double-tap reactions",
                 "\u0440\u0435\u0430\u043a\u0446\u0438\u0438 \u0441 \u0434\u0432\u043e\u0439\u043d\u043e \u0434\u043e\u043a\u043e\u0441\u0432\u0430\u043d\u0435 \u0432 \u043f\u0440\u0435\u0433\u043b\u0435\u0434");
         table.put("profile Gifts tabs",
@@ -1933,6 +1937,8 @@ public final class L10nTranslations {
                 "\u0440\u0435\u0434\u043e\u0432\u0435\u0442\u0435 \u0441 \u0440\u0435\u0430\u043a\u0446\u0438\u0438 \u043f\u043e\u0434 \u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u044f\u0442\u0430");
         table.put("read receipts and story views",
                 "\u043f\u043e\u0442\u0432\u044a\u0440\u0436\u0434\u0435\u043d\u0438\u044f \u0437\u0430 \u043f\u0440\u043e\u0447\u0438\u0442\u0430\u043d\u0435 \u0438 \u043f\u0440\u0435\u0433\u043b\u0435\u0436\u0434\u0430\u043d\u0438\u044f \u043d\u0430 \u0438\u0441\u0442\u043e\u0440\u0438\u0438");
+        table.put("receive only mode",
+                "\u0440\u0435\u0436\u0438\u043c \u0441\u0430\u043c\u043e \u0437\u0430 \u043f\u043e\u043b\u0443\u0447\u0430\u0432\u0430\u043d\u0435");
         table.put("red deleted label",
                 "\u0447\u0435\u0440\u0432\u0435\u043d \u043d\u0430\u0434\u043f\u0438\u0441 \u0437\u0430 \u0438\u0437\u0442\u0440\u0438\u0442\u043e");
         table.put("search ads",
@@ -2000,7 +2006,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1882);
+        Map<String, String> table = new HashMap<>(1888);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -3851,6 +3857,8 @@ public final class L10nTranslations {
                 "vor weniger als einer Minute");
         table.put("local notification status",
                 "lokaler Benachrichtigungsstatus");
+        table.put("mentions by ID",
+                "Erw\u00e4hnungen per ID");
         table.put("new message button",
                 "Button f\u00fcr neue Nachricht");
         table.put("none",
@@ -3861,11 +3869,13 @@ public final class L10nTranslations {
                 "Tracking beim \u00d6ffnen von Links");
         table.put("pasted links",
                 "eingef\u00fcgte Links");
-        table.put("poll links",
-                "Umfrage-Links");
     }
 
     private static void fillDe15(Map<String, String> table) {
+        table.put("poll links",
+                "Umfrage-Links");
+        table.put("powering off accounts",
+                "Konten ausschalten");
         table.put("preview double-tap reactions",
                 "Vorschaureaktionen durch Doppeltippen");
         table.put("profile Gifts tabs",
@@ -3884,6 +3894,8 @@ public final class L10nTranslations {
                 "Reaktionsreihen unter Nachrichten");
         table.put("read receipts and story views",
                 "Lesebest\u00e4tigungen und Story-Aufrufe");
+        table.put("receive only mode",
+                "Nur-Empfang-Modus");
         table.put("red deleted label",
                 "rote Markierung gel\u00f6scht");
         table.put("search ads",
@@ -3951,7 +3963,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(1882);
+        Map<String, String> table = new HashMap<>(1888);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -5802,6 +5814,8 @@ public final class L10nTranslations {
                 "hace menos de un minuto");
         table.put("local notification status",
                 "estado local de notificaciones");
+        table.put("mentions by ID",
+                "menciones por ID");
         table.put("new message button",
                 "bot\u00f3n de nuevo mensaje");
         table.put("none",
@@ -5812,11 +5826,13 @@ public final class L10nTranslations {
                 "seguimiento de enlaces abiertos");
         table.put("pasted links",
                 "enlaces pegados");
-        table.put("poll links",
-                "enlaces de encuestas");
     }
 
     private static void fillEs15(Map<String, String> table) {
+        table.put("poll links",
+                "enlaces de encuestas");
+        table.put("powering off accounts",
+                "apagar cuentas");
         table.put("preview double-tap reactions",
                 "reacciones al tocar dos veces en la vista previa");
         table.put("profile Gifts tabs",
@@ -5835,6 +5851,8 @@ public final class L10nTranslations {
                 "filas de reacciones bajo los mensajes");
         table.put("read receipts and story views",
                 "confirmaciones de lectura y vistas de historias");
+        table.put("receive only mode",
+                "modo solo recepci\u00f3n");
         table.put("red deleted label",
                 "la etiqueta eliminado en rojo");
         table.put("search ads",
@@ -5902,7 +5920,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1882);
+        Map<String, String> table = new HashMap<>(1888);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -7753,6 +7771,8 @@ public final class L10nTranslations {
                 "kurang dari semenit lalu");
         table.put("local notification status",
                 "status notifikasi lokal");
+        table.put("mentions by ID",
+                "sebutan berdasarkan ID");
         table.put("new message button",
                 "tombol pesan baru");
         table.put("none",
@@ -7763,11 +7783,13 @@ public final class L10nTranslations {
                 "pelacakan tautan yang dibuka");
         table.put("pasted links",
                 "tautan yang ditempel");
-        table.put("poll links",
-                "tautan polling");
     }
 
     private static void fillIn15(Map<String, String> table) {
+        table.put("poll links",
+                "tautan polling");
+        table.put("powering off accounts",
+                "mematikan akun");
         table.put("preview double-tap reactions",
                 "reaksi ketuk dua kali di pratinjau");
         table.put("profile Gifts tabs",
@@ -7786,6 +7808,8 @@ public final class L10nTranslations {
                 "baris reaksi di bawah pesan");
         table.put("read receipts and story views",
                 "laporan dibaca dan tayangan cerita");
+        table.put("receive only mode",
+                "mode hanya menerima");
         table.put("red deleted label",
                 "label dihapus berwarna merah");
         table.put("search ads",
@@ -7853,7 +7877,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(1882);
+        Map<String, String> table = new HashMap<>(1888);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -9704,6 +9728,8 @@ public final class L10nTranslations {
                 "h\u00e1 menos de um minuto");
         table.put("local notification status",
                 "estado local das notifica\u00e7\u00f5es");
+        table.put("mentions by ID",
+                "men\u00e7\u00f5es por ID");
         table.put("new message button",
                 "bot\u00e3o de nova mensagem");
         table.put("none",
@@ -9714,11 +9740,13 @@ public final class L10nTranslations {
                 "rastreamento de links abertos");
         table.put("pasted links",
                 "links colados");
-        table.put("poll links",
-                "links de enquetes");
     }
 
     private static void fillPt_rBR15(Map<String, String> table) {
+        table.put("poll links",
+                "links de enquetes");
+        table.put("powering off accounts",
+                "desligar contas");
         table.put("preview double-tap reactions",
                 "rea\u00e7\u00f5es por toque duplo na pr\u00e9via");
         table.put("profile Gifts tabs",
@@ -9737,6 +9765,8 @@ public final class L10nTranslations {
                 "linhas de rea\u00e7\u00f5es abaixo das mensagens");
         table.put("read receipts and story views",
                 "confirma\u00e7\u00f5es de leitura e visualiza\u00e7\u00f5es de stories");
+        table.put("receive only mode",
+                "modo somente recep\u00e7\u00e3o");
         table.put("red deleted label",
                 "o r\u00f3tulo apagada em vermelho");
         table.put("search ads",
@@ -9804,7 +9834,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(1882);
+        Map<String, String> table = new HashMap<>(1888);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -11655,6 +11685,8 @@ public final class L10nTranslations {
                 "bir dakikadan k\u0131sa s\u00fcre \u00f6nce");
         table.put("local notification status",
                 "yerel bildirim durumu");
+        table.put("mentions by ID",
+                "ID ile bahsetmeler");
         table.put("new message button",
                 "yeni mesaj d\u00fc\u011fmesi");
         table.put("none",
@@ -11665,11 +11697,13 @@ public final class L10nTranslations {
                 "a\u00e7\u0131lan ba\u011flant\u0131lar\u0131n takibi");
         table.put("pasted links",
                 "yap\u0131\u015ft\u0131r\u0131lan ba\u011flant\u0131lar");
-        table.put("poll links",
-                "anket ba\u011flant\u0131lar\u0131");
     }
 
     private static void fillTr15(Map<String, String> table) {
+        table.put("poll links",
+                "anket ba\u011flant\u0131lar\u0131");
+        table.put("powering off accounts",
+                "hesaplar\u0131 kapatma");
         table.put("preview double-tap reactions",
                 "\u00f6nizlemede \u00e7ift dokunma tepkileri");
         table.put("profile Gifts tabs",
@@ -11688,6 +11722,8 @@ public final class L10nTranslations {
                 "mesajlar\u0131n alt\u0131ndaki tepki sat\u0131rlar\u0131");
         table.put("read receipts and story views",
                 "okundu bilgileri ve hik\u00e2ye g\u00f6r\u00fcnt\u00fclemeleri");
+        table.put("receive only mode",
+                "yaln\u0131zca alma modu");
         table.put("red deleted label",
                 "k\u0131rm\u0131z\u0131 silindi etiketi");
         table.put("search ads",

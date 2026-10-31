@@ -1296,3 +1296,7 @@ Mention by ID	Mencionar por ID
 Typing @ and a user ID, or tg://user?id= and the ID, turns into a real mention. It only works for people this app has already seen, such as in a chat or group. Anyone else is sent as typed.	Si escribes @ y un ID de usuario, o tg://user?id= y el ID, se convierte en una mención real. Solo funciona con personas que esta app ya ha visto, por ejemplo en un chat o grupo. Las demás se envían tal como las escribiste.
 # context: Toast when a typed @ and ID names someone this app has not seen (#53). Two lines of 28 characters at most.
 I haven't seen that person.	No he visto a esa persona.
+# context: Names of optional parts in the patch status list (#53).
+mentions by ID	menciones por ID
+powering off accounts	apagar cuentas
+receive only mode	modo solo recepción

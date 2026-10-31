@@ -1296,3 +1296,7 @@ Mention by ID	Kimlikle bahset
 Typing @ and a user ID, or tg://user?id= and the ID, turns into a real mention. It only works for people this app has already seen, such as in a chat or group. Anyone else is sent as typed.	@ ve bir kullanıcı kimliği ya da tg://user?id= ve kimliği yazarsanız gerçek bir bahsetmeye dönüşür. Yalnızca bu uygulamanın daha önce gördüğü kişilerde, örneğin bir sohbette veya grupta çalışır. Diğerleri yazdığınız gibi gönderilir.
 # context: Toast when a typed @ and ID names someone this app has not seen (#53). Two lines of 28 characters at most.
 I haven't seen that person.	Bu kişiyi görmedim.
+# context: Names of optional parts in the patch status list (#53).
+mentions by ID	ID ile bahsetmeler
+powering off accounts	hesapları kapatma
+receive only mode	yalnızca alma modu
