@@ -300,6 +300,13 @@ private fun BytecodePatchContext.writeSaveDownloadsStubs() {
         const/4 v0, 0x0
         return v0
     """)
+    // View-once and timed media, in any chat; the extension keeps secret chats out itself (#9).
+    writeStub(SAVE_DOWNLOADS, "timedMedia", 2, """
+        check-cast p0, $MESSAGE_OBJECT
+        invoke-virtual {p0}, $IS_SECRET_MEDIA
+        move-result v0
+        return v0
+    """)
     // The size a chat shows and Save to Gallery saves, the way ChatMessageCell picks it.
     writeStub(SAVE_DOWNLOADS, "photo", 3, """
         check-cast p0, $MESSAGE_OBJECT
@@ -366,6 +373,7 @@ internal fun BytecodePatchContext.resolveSaveDownloads(): MutableMethod {
     controlHook(SAVE_DOWNLOADS, "secretChat", listOf(OBJECT), "Z")
     controlHook(SAVE_DOWNLOADS, "photoOrVideo", listOf(OBJECT), "Z")
     controlHook(SAVE_DOWNLOADS, "photo", listOf(OBJECT), OBJECT)
+    controlHook(SAVE_DOWNLOADS, "timedMedia", listOf(OBJECT), "Z")
     controlHook(SAVE_DOWNLOADS, "attachName", listOf(OBJECT), STRING)
     controlHook(SAVE_DOWNLOADS, "documentName", listOf(OBJECT), STRING)
 
@@ -394,7 +402,8 @@ internal fun BytecodePatchContext.resolveSaveDownloads(): MutableMethod {
         "the background download key changed")
     val types = mutableClassDefByOrNull(MESSAGE_OBJECT)?.staticFields
         ?.associate { it.name to (it.initialValue as? IntEncodedValue)?.value }.orEmpty()
-    controlShape(types["TYPE_FILE"] == 9 && types["TYPE_MUSIC"] == 14 && types["TYPE_PHOTO"] == 1 && types["TYPE_VIDEO"] == 3,
+    controlShape(types["TYPE_FILE"] == 9 && types["TYPE_MUSIC"] == 14 && types["TYPE_PHOTO"] == 1 && types["TYPE_VIDEO"] == 3
+            && types["TYPE_VOICE"] == 2 && types["TYPE_ROUND_VIDEO"] == 5,
         "Telegram's message types changed")
 
     for ((reference, static) in listOf(GET_DOCUMENT to false, IS_SECRET_MEDIA to false, IS_MUSIC to false,

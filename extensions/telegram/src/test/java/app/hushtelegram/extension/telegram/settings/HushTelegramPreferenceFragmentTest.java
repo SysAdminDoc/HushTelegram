@@ -727,6 +727,15 @@ public class HushTelegramPreferenceFragmentTest {
             // The owner's setting holds until this one is turned on as well.
             assertFalse(Settings.SAVE_RESTRICTED_DOWNLOADS.key,
                     ((SwitchPreference) page.findPreference(Settings.SAVE_RESTRICTED_DOWNLOADS.key)).isChecked());
+            assertEquals("Also save view-once and timed media",
+                    String.valueOf(page.findPreference(Settings.SAVE_TIMED_MEDIA.key).getTitle()));
+            assertEquals("With Save downloaded files on, view-once and self-destructing photos, videos, voice and video "
+                    + "messages get copied to Download/Telegram when they download. The sender meant them to disappear, "
+                    + "so only use it where they're fine with you keeping a copy. Secret chats still stay in Telegram.",
+                    String.valueOf(page.findPreference(Settings.SAVE_TIMED_MEDIA.key).getSummary()));
+            // The sender's timer holds until this one is turned on as well.
+            assertFalse(Settings.SAVE_TIMED_MEDIA.key,
+                    ((SwitchPreference) page.findPreference(Settings.SAVE_TIMED_MEDIA.key)).isChecked());
             assertEquals("Silence people outside your contacts", String.valueOf(page.findPreference(Settings.SILENCE_NON_CONTACTS.key).getTitle()));
             assertEquals("Private messages from people not in your contacts still show a notification, but without "
                     + "sound or vibration. Bots, reminders and login codes keep their sound.",
@@ -1301,7 +1310,7 @@ public class HushTelegramPreferenceFragmentTest {
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             List<Preference> rows = new ArrayList<>();
             collect(pageOf(controller).getPreferenceScreen(), rows);
-            Preference folder = rows.get(indexOfKey(rows, Settings.SAVE_RESTRICTED_DOWNLOADS.key) + 1);
+            Preference folder = rows.get(indexOfKey(rows, Settings.SAVE_TIMED_MEDIA.key) + 1);
             assertEquals(HushTelegramPreferenceFragment.GALLERY_FOLDER_ROW, folder.getKey());
             assertEquals("Playback", String.valueOf(folder.getParent().getTitle()));
             assertFalse("it stores nothing itself", folder.isPersistent());

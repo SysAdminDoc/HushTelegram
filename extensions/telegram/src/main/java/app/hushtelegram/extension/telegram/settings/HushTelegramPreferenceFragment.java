@@ -725,6 +725,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     L10n.t("With Save downloaded files on, files from chats whose owner turned off saving get copied too. Only use"
                             + " it where the owner is fine with you keeping a copy, since it goes past their setting. Secret chats"
                             + " still stay in Telegram.")));
+            on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(toggle(context, Settings.SAVE_TIMED_MEDIA,
+                    L10n.t("Also save view-once and timed media"),
+                    L10n.t("With Save downloaded files on, view-once and self-destructing photos, videos, voice and video"
+                            + " messages get copied to Download/Telegram when they download. The sender meant them to disappear,"
+                            + " so only use it where they're fine with you keeping a copy. Secret chats still stay in Telegram.")));
             if (PatchFamily.Capability.GALLERY_FOLDER.installed()) {
                 on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(galleryFolderRow(context));
             }

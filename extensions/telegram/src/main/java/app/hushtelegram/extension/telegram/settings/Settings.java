@@ -521,6 +521,15 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_save_restricted_downloads", FALSE);
 
     /**
+     * With {@link #SAVE_DOWNLOADS} on, view-once and self-destructing photos, videos, voice and
+     * round videos get a copy too, decrypted from Telegram's cache. Secret chats keep theirs, and a
+     * chat that doesn't allow saving needs {@link #SAVE_RESTRICTED_DOWNLOADS} as well. Starts off,
+     * since it goes past the sender's choice (#9).
+     */
+    public static final BooleanSetting SAVE_TIMED_MEDIA =
+            new BooleanSetting("hushtelegram_save_timed_media", FALSE);
+
+    /**
      * On Android 11 and up with All files access, Telegram's own Telegram Images, Video, Documents
      * and the rest live in Internal storage/Telegram instead of Android/data (#7). Read once when
      * Telegram sets up its folders, so it needs a restart.

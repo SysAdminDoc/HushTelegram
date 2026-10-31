@@ -23,7 +23,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Executor;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
@@ -71,6 +75,8 @@ public class SaveDownloadsTest {
         Settings.SAVE_DOWNLOADS.resetToDefault();
         SettingReadsForTests.mend(Settings.SAVE_RESTRICTED_DOWNLOADS);
         Settings.SAVE_RESTRICTED_DOWNLOADS.resetToDefault();
+        SettingReadsForTests.mend(Settings.SAVE_TIMED_MEDIA);
+        Settings.SAVE_TIMED_MEDIA.resetToDefault();
         SettingReadsForTests.mend(Settings.MESSAGE_MENU_SAVE_PROTECTED);
         Settings.MESSAGE_MENU_SAVE_PROTECTED.resetToDefault();
         HookStatus.clear();
@@ -292,6 +298,7 @@ public class SaveDownloadsTest {
         @Override public String documentName(Object document) { return inner.documentName(document); }
         @Override public boolean photoOrVideo(Object message) { return inner.photoOrVideo(message); }
         @Override public Object photo(Object message) { return inner.photo(message); }
+        @Override public boolean timedMedia(Object message) { return inner.timedMedia(message); }
         @Override public Object storedMessage(int account, long dialogId, int messageId) {
             throw new IllegalStateException("database closed");
         }
@@ -429,6 +436,190 @@ public class SaveDownloadsTest {
 
     private static android.content.SharedPreferences receipts() {
         return context().getSharedPreferences(SaveDownloads.RECEIPTS, Context.MODE_PRIVATE);
+    }
+
+    // #9: view-once and self-destructing media, which Telegram keeps encrypted in its cache.
+
+    /** [size] bytes that differ block to block, so a keystream off by one block shows. */
+    private static byte[] media(int size) {
+        byte[] bytes = new byte[size];
+        new Random(size).nextBytes(bytes);
+        return bytes;
+    }
+
+    /**
+     * [plain] as FileLoadOperation keeps it: [name] plus ".enc" in the cache, encrypted with AES-256
+     * in CTR mode, every block under the IV with that block's number written into its last four bytes.
+     * Built a block at a time from AES itself rather than a CTR cipher, beside its key file in the
+     * internal cache: 32 bytes of key, then the 16-byte IV, whose last four bytes Telegram ignores.
+     */
+    private static File encrypted(String name, byte[] plain) throws Exception {
+        byte[] key = new byte[32];
+        byte[] iv = new byte[16];
+        new Random(1).nextBytes(key);
+        new Random(2).nextBytes(iv);
+        Cipher aes = Cipher.getInstance("AES/ECB/NoPadding");
+        aes.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"));
+        byte[] sealed = new byte[plain.length];
+        for (int block = 0; block * 16 < plain.length; block++) {
+            byte[] counter = iv.clone();
+            counter[12] = (byte) (block >>> 24);
+            counter[13] = (byte) (block >>> 16);
+            counter[14] = (byte) (block >>> 8);
+            counter[15] = (byte) block;
+            byte[] stream = aes.doFinal(counter);
+            for (int i = 0; i < 16 && block * 16 + i < plain.length; i++) {
+                sealed[block * 16 + i] = (byte) (plain[block * 16 + i] ^ stream[i]);
+            }
+        }
+        File cache = context().getExternalCacheDir();
+        if (!cache.mkdirs() && !cache.isDirectory()) fail("no cache folder");
+        File file = new File(cache, name + SaveDownloads.ENCRYPTED);
+        Files.write(file.toPath(), sealed);
+        ByteArrayOutputStream keyFile = new ByteArrayOutputStream();
+        keyFile.write(key);
+        keyFile.write(iv);
+        Files.write(new File(context().getCacheDir(), file.getName() + ".key").toPath(), keyFile.toByteArray());
+        return file;
+    }
+
+    private static Message timedPhoto() {
+        return Message.timedPhoto(new Document("-5012_33.jpg", null), false, false);
+    }
+
+    @Test public void viewOnceMediaStaysInTelegramUntilItsOwnSwitchIsOn() throws Exception {
+        // Off until someone turns it on, since it goes past the sender's timer.
+        assertFalse(Settings.SAVE_TIMED_MEDIA.get());
+        Settings.SAVE_DOWNLOADS.save(true);
+        Settings.SAVE_RESTRICTED_DOWNLOADS.save(true);
+        SaveDownloads.fileLoaded(0, "-5012_33.jpg", encrypted("-5012_33.jpg", media(100)), timedPhoto());
+        assertTrue(downloads.rows.isEmpty());
+        String report = String.join("\n", HookStatus.report());
+        assertTrue(report.contains(SaveDownloads.OTHER_MEDIA));
+        assertFalse(report.contains(SaveDownloads.TIMED));
+    }
+
+    @Test public void theTimedSwitchAloneCopiesNothing() throws Exception {
+        Settings.SAVE_TIMED_MEDIA.save(true);
+        SaveDownloads.fileLoaded(0, "-5012_33.jpg", encrypted("-5012_33.jpg", media(100)), timedPhoto());
+        assertTrue(downloads.rows.isEmpty());
+    }
+
+    @Test public void withItsSwitchOnAViewOncePhotoIsCopiedDecrypted() throws Exception {
+        Settings.SAVE_DOWNLOADS.save(true);
+        Settings.SAVE_TIMED_MEDIA.save(true);
+        // Over 64 KB and 4,096 blocks, so the copy reads it in pieces and the block number carries.
+        byte[] photo = media(70_001);
+        ByteArrayOutputStream body = bodyOf(1);
+        // Its smaller sizes load with the same message, and stay put.
+        SaveDownloads.fileLoaded(0, "-5012_31.jpg", encrypted("-5012_31.jpg", media(40)), timedPhoto());
+        SaveDownloads.fileLoaded(0, "-5012_33.jpg", encrypted("-5012_33.jpg", photo), timedPhoto());
+        assertEquals(1, downloads.rows.size());
+        // Under the photo's own name, without the ".enc" Telegram adds.
+        assertEquals("-5012_33.jpg", downloads.row(1).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+        assertEquals("Download/Telegram/", downloads.row(1).getAsString(MediaStore.MediaColumns.RELATIVE_PATH));
+        assertArrayEquals(photo, body.toByteArray());
+        String report = String.join("\n", HookStatus.report());
+        assertTrue(report.contains(SaveDownloads.TIMED));
+        assertTrue(report.contains(SaveDownloads.SAVED));
+        assertEquals(1L, receipts().getLong("-5012_33.jpg", -1));
+    }
+
+    @Test public void aViewOnceVoiceMessageOrVideoKeepsItsOwnExtension() throws Exception {
+        Settings.SAVE_DOWNLOADS.save(true);
+        Settings.SAVE_TIMED_MEDIA.save(true);
+        byte[] voice = media(3_000);
+        byte[] video = media(5_000);
+        ByteArrayOutputStream first = bodyOf(1);
+        ByteArrayOutputStream second = bodyOf(2);
+        // A voice message has no file name of its own, a video can.
+        SaveDownloads.fileLoaded(0, "2_88.ogg", encrypted("2_88.ogg", voice),
+                Message.timedDocument(new Document("2_88.ogg", ""), false, false));
+        SaveDownloads.fileLoaded(0, "4_90.mp4", encrypted("4_90.mp4", video),
+                Message.timedDocument(new Document("4_90.mp4", "beach.mp4"), false, false));
+        assertEquals("2_88.ogg", downloads.row(1).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+        assertEquals("beach.mp4", downloads.row(2).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+        assertArrayEquals(voice, first.toByteArray());
+        assertArrayEquals(video, second.toByteArray());
+    }
+
+    @Test public void aSecretChatsTimedMediaStaysInTelegramWithEverySwitchOn() throws Exception {
+        Settings.SAVE_DOWNLOADS.save(true);
+        Settings.SAVE_RESTRICTED_DOWNLOADS.save(true);
+        Settings.SAVE_TIMED_MEDIA.save(true);
+        SaveDownloads.fileLoaded(0, "-5012_33.jpg", encrypted("-5012_33.jpg", media(100)),
+                Message.timedPhoto(new Document("-5012_33.jpg", null), false, true));
+        SaveDownloads.fileLoaded(0, "2_88.ogg", encrypted("2_88.ogg", media(100)),
+                Message.timedDocument(new Document("2_88.ogg", ""), false, true));
+        assertTrue(downloads.rows.isEmpty());
+        String report = String.join("\n", HookStatus.report());
+        assertTrue(report.contains(SaveDownloads.KEPT + " 2"));
+        assertFalse(report.contains(SaveDownloads.TIMED));
+    }
+
+    @Test public void timedMediaFromAChatThatDoesntAllowSavingNeedsTheSecondSwitchToo() throws Exception {
+        Settings.SAVE_DOWNLOADS.save(true);
+        Settings.SAVE_TIMED_MEDIA.save(true);
+        Message forbidden = Message.timedPhoto(new Document("-5012_33.jpg", null), true, false);
+        byte[] photo = media(500);
+        File file = encrypted("-5012_33.jpg", photo);
+        SaveDownloads.fileLoaded(0, "-5012_33.jpg", file, forbidden);
+        assertTrue(downloads.rows.isEmpty());
+        assertTrue(String.join("\n", HookStatus.report()).contains(SaveDownloads.KEPT));
+
+        Settings.SAVE_RESTRICTED_DOWNLOADS.save(true);
+        ByteArrayOutputStream body = bodyOf(1);
+        SaveDownloads.fileLoaded(0, "-5012_33.jpg", file, forbidden);
+        assertArrayEquals(photo, body.toByteArray());
+    }
+
+    @Test public void turningTheTimedSwitchOffDropsOnlyTheWaitingCopiesItLetThrough() throws Exception {
+        Settings.SAVE_DOWNLOADS.save(true);
+        Settings.SAVE_TIMED_MEDIA.save(true);
+        java.util.List<Runnable> queued = new java.util.ArrayList<>();
+        SaveDownloads.work = queued::add;
+        bodyOf(1);
+        SaveDownloads.fileLoaded(0, "-5012_33.jpg", encrypted("-5012_33.jpg", media(100)), timedPhoto());
+        SaveDownloads.fileLoaded(0, "2_51.pdf", downloaded("2_51.pdf", "pdf"), pdf());
+        assertEquals(2, queued.size());
+        Settings.SAVE_TIMED_MEDIA.save(false);
+        for (Runnable copy : queued) copy.run();
+        assertEquals(1, downloads.rows.size());
+        assertEquals("report.pdf", downloads.row(1).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+        assertFalse(receipts().contains("-5012_33.jpg"));
+        assertTrue(String.join("\n", HookStatus.report()).contains(SaveDownloads.DROPPED));
+    }
+
+    @Test public void queuedVoiceAndRoundVideosAreLookedUpOnlyWithTheTimedSwitchOn() throws Exception {
+        Settings.SAVE_DOWNLOADS.save(true);
+        SaveDownloadsForTests.STORED.put("0:777000:9", Message.timedDocument(new Document("2_88.ogg", ""), false, false));
+        String voiceKey = queuedKey(9, 777000L, SaveDownloads.VOICE_TYPE);
+        String roundKey = queuedKey(10, 777000L, SaveDownloads.ROUND_TYPE);
+        byte[] voice = media(3_000);
+        File file = encrypted("2_88.ogg", voice);
+        SaveDownloads.fileLoaded(0, "2_88.ogg", file, voiceKey);
+        SaveDownloads.fileLoaded(0, "2_89.mp4", file, roundKey);
+        assertTrue(SaveDownloadsForTests.LOOKUPS.isEmpty());
+
+        Settings.SAVE_TIMED_MEDIA.save(true);
+        ByteArrayOutputStream body = bodyOf(1);
+        SaveDownloads.fileLoaded(0, "2_88.ogg", file, voiceKey);
+        SaveDownloads.fileLoaded(0, "2_89.mp4", file, roundKey);
+        assertEquals(java.util.Arrays.asList("0:777000:9", "0:777000:10"), SaveDownloadsForTests.LOOKUPS);
+        assertEquals("2_88.ogg", downloads.row(1).getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
+        assertArrayEquals(voice, body.toByteArray());
+    }
+
+    @Test public void anEncryptedFileWithoutItsKeyLeavesNothingBehind() throws Exception {
+        Settings.SAVE_DOWNLOADS.save(true);
+        Settings.SAVE_TIMED_MEDIA.save(true);
+        File file = encrypted("-5012_33.jpg", media(100));
+        assertTrue(new File(context().getCacheDir(), file.getName() + ".key").delete());
+        SaveDownloads.fileLoaded(0, "-5012_33.jpg", file, timedPhoto());
+        assertEquals(1, downloads.pendingInserts);
+        assertTrue("the half-written entry is removed", downloads.rows.isEmpty());
+        assertFalse(HookStatus.missing(FamilyNames.SAVE_DOWNLOADS).isEmpty());
+        assertFalse(receipts().contains("-5012_33.jpg"));
     }
 
     @Test public void theSameDocumentDownloadedAgainIsCopiedOnce() throws IOException {

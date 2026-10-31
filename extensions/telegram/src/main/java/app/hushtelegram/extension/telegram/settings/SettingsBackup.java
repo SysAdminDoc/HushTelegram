@@ -178,6 +178,7 @@ public final class SettingsBackup {
             Settings.DATA_SAVER_DOWNLOADS,
             Settings.SAVE_DOWNLOADS,
             Settings.SAVE_RESTRICTED_DOWNLOADS,
+            Settings.SAVE_TIMED_MEDIA,
             Settings.STORAGE_FOLDER,
             Settings.ASK_BEFORE_GIF,
             Settings.ASK_BEFORE_VOICE_VIDEO,

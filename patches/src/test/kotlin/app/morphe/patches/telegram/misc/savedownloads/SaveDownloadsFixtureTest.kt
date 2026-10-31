@@ -107,8 +107,10 @@ class SaveDownloadsFixtureTest {
             assertEquals(listOf(MESSAGE_OBJECT, IS_SECRET_MEDIA, IS_GIF, IS_ROUND_VIDEO, IS_PHOTO, IS_VIDEO),
                 context.stub("photoOrVideo").refs())
             assertEquals(listOf(MESSAGE_OBJECT, PHOTO_THUMBS, PHOTO_SIZE, CLOSEST_PHOTO_SIZE), context.stub("photo").refs())
+            // View-once and timed media in any chat; the extension turns a secret chat's away (#9).
+            assertEquals(listOf(MESSAGE_OBJECT, IS_SECRET_MEDIA), context.stub("timedMedia").refs())
             for (stub in listOf("messageDocument", "fileOrSong", "savingForbidden", "secretChat", "attachName", "documentName",
-                "storedMessage", "photoOrVideo", "photo")) {
+                "storedMessage", "photoOrVideo", "photo", "timedMedia")) {
                 val method = context.mutableClassDefBy(SAVE_DOWNLOADS).method(stub)
                 assertTrue("$name: $stub", AccessFlags.PUBLIC.isSet(method.accessFlags) && AccessFlags.STATIC.isSet(method.accessFlags))
             }

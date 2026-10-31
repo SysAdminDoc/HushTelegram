@@ -132,6 +132,7 @@ public class PatchFamilyTest {
         Settings.DATA_SAVER_DOWNLOADS.resetToDefault();
         Settings.SAVE_DOWNLOADS.resetToDefault();
         Settings.SAVE_RESTRICTED_DOWNLOADS.resetToDefault();
+        Settings.SAVE_TIMED_MEDIA.resetToDefault();
         Settings.CHAT_TYPE_FOLDERS.resetToDefault();
         Settings.UNIFIED_PUSH.resetToDefault();
         Settings.REACTION_ALERTS.resetToDefault();
@@ -510,12 +511,14 @@ public class PatchFamilyTest {
         PatchFamily family = PatchFamily.SAVE_DOWNLOADS;
         assertEquals("Save downloaded files", family.patchName);
         assertEquals("saveDownloads", family.statusMethod);
-        // The second switch lets chats that don't allow saving through, so it starts off like the first.
+        // The second switch lets chats that don't allow saving through and the third view-once and timed media (#9),
+        // so they start off like the first.
         // The storage folder switch (#7) moves Telegram's own folder at startup, so it starts off and needs a restart.
-        assertEquals(Arrays.asList(Settings.SAVE_DOWNLOADS, Settings.SAVE_RESTRICTED_DOWNLOADS, Settings.STORAGE_FOLDER), family.switches);
+        assertEquals(Arrays.asList(Settings.SAVE_DOWNLOADS, Settings.SAVE_RESTRICTED_DOWNLOADS, Settings.SAVE_TIMED_MEDIA,
+                Settings.STORAGE_FOLDER), family.switches);
         for (BooleanSetting setting : family.switches) {
             assertFalse(setting.key, setting.defaultValue);
-            // Each finished download reads the first two switches, so they need no restart.
+            // Each finished download reads the first three switches, so they need no restart.
             assertEquals(setting.key, setting == Settings.STORAGE_FOLDER, setting.rebootApp);
         }
         // The gallery folder choice (#30) and the storage folder (#7) ride on this patch as its tracked targets,

@@ -11,6 +11,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** Reaction notifications with **UnifiedPush notifications** now cover custom emoji reactions too. Once Telegram has loaded that emoji on your phone, the notification names the regular emoji it stands for. (#41)
 
 * **Telegram:** A new **Ways in** section on the HushTelegram settings page has a switch for each way to open them, all on by default. They are the HushTelegram row on Telegram's Settings page, a long press on the Telegram title in the chat list, the row in the side menu, and the shortcut in the menu you get from holding Telegram's icon. A way you turn off acts like stock Telegram. The row, the long press and the side menu entry are gone, and the shortcut is taken off the launcher, pinned copies included. One way always stays on so you can get back in, and turning off the last one puts the switch back with a short message. No restart needed. **Lock HushTelegram settings** holds these switches like the rest. (#29)
+* **Telegram:** **Save downloaded files** has a third switch, **Also save view-once and timed media**, off by default. With it on, view-once and self-destructing photos, videos, voice messages and video messages get copied to Download/Telegram once they download, readable like any other file. Secret chats stay in Telegram whatever the switches say. From a chat that doesn't allow saving, **Also save from chats that don't allow saving** has to be on as well. (#9)
 
 ### Changed
 
