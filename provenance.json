@@ -290,6 +290,8 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/ads/ProxyPromotions.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LinkRouting.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SecretChats.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/AccountGuard.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/Accounts.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/MiniAppLocation.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/ads/HideAdsPatch.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/analytics/DisableAnalyticsPatch.kt",

@@ -266,6 +266,7 @@ final class SideMenuPanel extends FrameLayout {
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.HIDE_CONTACTS_TAB, "side menu name", failure);
         }
+        if (self != null && !self.isEmpty()) self = AccountGuard.mark(SideMenu.selfId(screen)) + self;
         name.setText(self == null ? "" : self);
         name.setVisibility(self == null || self.isEmpty() ? GONE : VISIBLE);
         showArchive();

@@ -56,6 +56,13 @@ private const val ANALYTICS = "$EXTENSION_PACKAGE/misc/Analytics;"
 internal const val GHOST_MODE = "$EXTENSION_PACKAGE/misc/GhostMode;"
 internal const val GHOST_MODE_DROP = "$GHOST_MODE->drop(Ljava/lang/Object;Ljava/lang/Object;)Z"
 
+/**
+ * Power off account and Receive only mode: the connection manager, the request and its callback, and
+ * true keeps the request on the phone, with the callback told it failed.
+ */
+internal const val ACCOUNT_GUARD = "$EXTENSION_PACKAGE/misc/AccountGuard;"
+internal const val ACCOUNT_GUARD_DROP = "$ACCOUNT_GUARD->drop(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z"
+
 /** A channel's batch of read metrics: how long each post stayed on screen as you scrolled. */
 internal const val REPORT_READ_METRICS = "Lorg/telegram/tgnet/TLRPC\$TL_messages_reportReadMetrics;"
 
@@ -96,7 +103,7 @@ val disableAnalyticsPatch = bytecodePatch(
     description = "Stops Telegram from reporting how you use the app, like how long you read channel posts and what you" +
         " tap on Premium screens, and keeps the camera from reporting your phone's maker and model. " +
         "Messages, calls and notifications work as before. On by default. Turn it off in " +
-        "HushTelegram settings > Privacy.",
+        "HushTelegram settings > Privacy, where Receive only mode and Power off accounts also live, both off by default.",
     default = true,
 ) {
     category("Privacy")
@@ -108,7 +115,10 @@ val disableAnalyticsPatch = bytecodePatch(
         requireStatusMethod("readMetrics")
         AppLogEvent.entries.forEach { requireStatusMethod(it.capability) }
         requireStatusMethod("ghostMode")
+        requireStatusMethod("receiveOnly")
+        requireStatusMethod("powerOff")
         controlHook(GHOST_MODE, "drop", listOf("Ljava/lang/Object;", "Ljava/lang/Object;"), "Z")
+        controlHook(ACCOUNT_GUARD, "drop", listOf("Ljava/lang/Object;", "Ljava/lang/Object;", "Ljava/lang/Object;"), "Z")
 
         val metrics = SendReadMetricsFingerprint.methodOrNull
         val metricsMissing = metrics?.skipReadMetricsWhen("$ANALYTICS->skipReadMetrics(Ljava/util/List;)Z", dryRun = true)
@@ -151,6 +161,16 @@ val disableAnalyticsPatch = bytecodePatch(
             enableCapability("ghostMode")
         } else {
             patchLog.warning("$PATCH: ${ghost.missing}. The patch goes on without Ghost mode.")
+        }
+
+        // The per-account guard is a second gate on the same send, with the same stand-alone rule.
+        val guard = resolveSendRequestGate(ACCOUNT_GUARD_DROP)
+        if (guard.missing == null) {
+            guard.apply(ACCOUNT_GUARD_DROP)
+            enableCapability("receiveOnly")
+            enableCapability("powerOff")
+        } else {
+            patchLog.warning("$PATCH: ${guard.missing}. The patch goes on without Receive only mode and Power off accounts.")
         }
 
         enableStatus("disableAnalytics")

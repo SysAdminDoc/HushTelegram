@@ -705,6 +705,28 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting GHOST_ONLINE =
             new BooleanSetting("hushtelegram_ghost_online", FALSE);
 
+    /**
+     * Receive only mode: the accounts on {@link #RECEIVE_ONLY_ACCOUNTS} send nothing that writes.
+     * With it off every account sends as in stock Telegram.
+     */
+    public static final BooleanSetting RECEIVE_ONLY =
+            new BooleanSetting("hushtelegram_receive_only", FALSE);
+
+    /** The accounts (their positions in Telegram's list, comma separated) that are receive only. Read only while Receive only mode is on. */
+    public static final StringSetting RECEIVE_ONLY_ACCOUNTS =
+            new StringSetting("hushtelegram_receive_only_accounts", "", false, false);
+
+    /**
+     * Power off accounts: the accounts on {@link #POWERED_OFF_ACCOUNTS} send nothing at all. With it
+     * off every account is connected as in stock Telegram.
+     */
+    public static final BooleanSetting POWER_OFF_ACCOUNTS =
+            new BooleanSetting("hushtelegram_power_off_accounts", FALSE);
+
+    /** The accounts (their positions in Telegram's list, comma separated) that are powered off. Read only while Power off accounts is on. */
+    public static final StringSetting POWERED_OFF_ACCOUNTS =
+            new StringSetting("hushtelegram_powered_off_accounts", "", false, false);
+
     /** Automatic call diagnostics only; the call itself and its cleanup stay stock. */
     public static final BooleanSetting DISABLE_CALL_DEBUG =
             new BooleanSetting("hushtelegram_disable_call_debug", TRUE);

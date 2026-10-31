@@ -31,10 +31,11 @@ internal const val SEND_REQUEST_GATE_SIZE = 4
 
 /**
  * The gate for [hook], a static that answers true to drop the request: `(Ljava/lang/Object;)Z` is
- * handed the request, `(Ljava/lang/Object;Ljava/lang/Object;)Z` the request and its callback (p2).
+ * handed the request, `(Ljava/lang/Object;Ljava/lang/Object;)Z` the request and its callback (p2), and
+ * `(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z` the connection manager (p0) first.
  */
 internal fun sendRequestGateCode(hook: String) = """
-    invoke-static/range {p1 .. ${if (hook.endsWith("(Ljava/lang/Object;Ljava/lang/Object;)Z")) "p2" else "p1"}}, $hook
+    invoke-static/range {${if (hook.contains("(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z")) "p0" else "p1"} .. ${if (hook.contains("(Ljava/lang/Object;Ljava/lang/Object;")) "p2" else "p1"}}, $hook
     move-result v0
     if-eqz v0, :hush_send
     return-void

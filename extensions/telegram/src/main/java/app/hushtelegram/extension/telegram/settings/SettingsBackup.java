@@ -214,6 +214,8 @@ public final class SettingsBackup {
             Settings.GHOST_STORIES,
             Settings.GHOST_TYPING,
             Settings.GHOST_ONLINE,
+            Settings.RECEIVE_ONLY,
+            Settings.POWER_OFF_ACCOUNTS,
             Settings.DISABLE_CALL_DEBUG,
             Settings.RECORD_CALLS,
             Settings.RECORD_CALL_BUTTON,

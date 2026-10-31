@@ -72,7 +72,7 @@ class TargetCapabilitiesTest {
                 } else execute(context)
             }
             // These synthetic builds have no ConnectionsManager, so Ghost mode stays out and says so.
-            val ghost = if (family == "disableAnalytics" && present.isNotEmpty()) 1 else 0
+            val ghost = if (family == "disableAnalytics" && present.isNotEmpty()) 2 else 0
             assertEquals("$family subset $present warnings", if (present.isEmpty()) 0 else targetCount - present.size + ghost, warnings.size)
             for (premium in premiumTargets) {
                 assertFlag(context, premium.capability, false)
@@ -80,6 +80,8 @@ class TargetCapabilitiesTest {
             }
             if (family == "disableAnalytics") {
                 assertFlag(context, "ghostMode", false)
+                assertFlag(context, "receiveOnly", false)
+                assertFlag(context, "powerOff", false)
                 if (present.isNotEmpty()) assertTrue(warnings.toString(), warnings.any { "without Ghost mode" in it })
             }
             assertFlag(context, family, present.isNotEmpty())

@@ -267,6 +267,8 @@ public final class SelectionCheck {
         require(promo == promoFlags);
         hook(calls, flags, "dualCameraReport", "misc/Analytics", "skipDeviceAppLog");
         hook(calls, flags, "ghostMode", "misc/GhostMode", "drop");
+        hook(calls, flags, "receiveOnly", "misc/AccountGuard", "drop");
+        hook(calls, flags, "powerOff", "misc/AccountGuard", "drop");
         hook(calls, flags, "callDebugUpload", "misc/CallDebug", "skipCallDebugUpload");
         hook(calls, flags, "callLogFileUpload", "misc/CallDebug", "skipCallLogFileUpload");
         hook(calls, flags, "callLogUpload", "misc/CallDebug", "skipCallLogUpload");

@@ -82,6 +82,8 @@ import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
 import app.hushtelegram.extension.telegram.misc.AppPasscode;
+import app.hushtelegram.extension.telegram.misc.AccountGuard;
+import app.hushtelegram.extension.telegram.misc.Accounts;
 import app.hushtelegram.extension.telegram.misc.CallRecorder;
 import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
@@ -1213,6 +1215,23 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             L10n.t("Other people don't see that you're typing, recording or sending a file. Works with Ghost mode on.")));
                     privacy.addPreference(toggle(context, Settings.GHOST_ONLINE, L10n.t("Hide online status"),
                             L10n.t("Telegram isn't told that you're online while you use it. Going offline still goes out. Works with Ghost mode on.")));
+                }
+                if (PatchFamily.Capability.RECEIVE_ONLY.installed()) {
+                    privacy.addPreference(toggle(context, Settings.RECEIVE_ONLY, L10n.t("Receive only mode"),
+                            L10n.t("The accounts you pick below can read but not write. Messages, reactions, drafts and typing "
+                                    + "stay on this phone and show an error. Reading, files and read receipts work. Works with this switch on.")));
+                    addAccountRows(context, privacy, false);
+                }
+                if (PatchFamily.Capability.POWER_OFF_ACCOUNTS.installed()) {
+                    SwitchPreference powerOff = toggle(context, Settings.POWER_OFF_ACCOUNTS, L10n.t("Power off accounts"),
+                            L10n.t("The accounts you pick below send nothing. Telegram's connection can still stay open in the "
+                                    + "background, so it may still receive messages and notifications. Works with this switch on."));
+                    powerOff.setOnPreferenceChangeListener((row, value) -> {
+                        AccountGuard.masterChanged(Boolean.TRUE.equals(value));
+                        return true;
+                    });
+                    privacy.addPreference(powerOff);
+                    addAccountRows(context, privacy, true);
                 }
             }
             if (build.contains(PatchFamily.DISABLE_CALL_DEBUG)) {
@@ -2581,6 +2600,26 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         category.setTitle(title);
         screen.addPreference(category);
         return category;
+    }
+
+    /**
+     * One switch for each signed-in account under Receive only mode or Power off accounts. The
+     * list is Telegram's own, read when the page is drawn, and each switch saves at once.
+     */
+    private static void addAccountRows(Context context, PreferenceCategory page, boolean power) {
+        for (Accounts.Entry account : Accounts.signedIn()) {
+            SwitchPreference row = new Toggle(context);
+            row.setPersistent(false);
+            row.setTitle(account.name);
+            row.setSummary(power ? L10n.t("Powered off") : L10n.t("Receive only"));
+            row.setChecked(power ? AccountGuard.isListedOff(account.index) : AccountGuard.isListedReceiveOnly(account.index));
+            row.setOnPreferenceChangeListener((changed, value) -> {
+                if (power) AccountGuard.setPoweredOff(account.index, Boolean.TRUE.equals(value));
+                else AccountGuard.setReceiveOnly(account.index, Boolean.TRUE.equals(value));
+                return true;
+            });
+            page.addPreference(row);
+        }
     }
 
     static SwitchPreference toggle(Context context, BooleanSetting setting, String title, String summary) {

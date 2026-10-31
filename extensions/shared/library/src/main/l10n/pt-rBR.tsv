@@ -1270,3 +1270,21 @@ Fit all folder tabs	Ajustar todas as abas de pastas
 Shrinks the folder tabs above the chat list until all of them fit on the screen, so you never scroll sideways to find one. With only a few folders nothing changes.	Reduz as abas de pastas acima da lista de conversas até todas caberem na tela, para você nunca precisar rolar de lado para achar uma. Com poucas pastas, nada muda.
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that shrinks the folder tabs to fit the screen
 the fitted folder tabs	as abas de pastas ajustadas
+# context: Switch under Privacy for Receive only mode, per account (#53).
+Receive only mode	Modo somente receber
+The accounts you pick below can read but not write. Messages, reactions, drafts and typing stay on this phone and show an error. Reading, files and read receipts work. Works with this switch on.	As contas que você escolher abaixo podem ler, mas não escrever. Mensagens, reações, rascunhos e o aviso de digitação ficam neste telefone e mostram um erro. Leitura, arquivos e confirmações de leitura funcionam. Vale com esta chave ligada.
+# context: Switch under Privacy for Power off accounts, per account (#53).
+Power off accounts	Desligar contas
+The accounts you pick below send nothing. Telegram's connection can still stay open in the background, so it may still receive messages and notifications. Works with this switch on.	As contas que você escolher abaixo não enviam nada. A conexão do Telegram pode continuar aberta em segundo plano, então ainda podem chegar mensagens e notificações. Vale com esta chave ligada.
+# context: Summary under a per-account switch in Power off accounts (#53).
+Powered off	Desligada
+# context: Summary under a per-account switch in Receive only mode (#53).
+Receive only	Somente receber
+# context: Short tag in front of an account name in the side menu: powered off (#53).
+(Off)	(Desligada)
+# context: Short tag in front of an account name in the side menu: receive only (#53).
+(Read only)	(Só leitura)
+# context: Toast when a powered-off account tries to send (#53). Two lines of 28 characters at most.
+This account is powered off.	Esta conta está desligada.
+# context: Toast when a receive-only account tries to write (#53). Two lines of 28 characters at most.
+Receive only mode is on.	O modo somente receber está ativo.

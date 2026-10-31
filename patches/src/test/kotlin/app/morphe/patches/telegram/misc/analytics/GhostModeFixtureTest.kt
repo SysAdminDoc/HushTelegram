@@ -120,7 +120,9 @@ class GhostModeFixtureTest {
             val warnings = PatchLogCapture.warnings { disableAnalyticsPatch.execute(context) }
             // This slice leaves the Premium reports out, so those say so; Ghost mode doesn't.
             assertTrue(warnings.toString(), warnings.none { "Ghost mode" in it })
-            assertGhostGate(build.name, send(ghostModeHosts(build)), send(context))
+            assertGates(build.name, send(ghostModeHosts(build)), send(context), ACCOUNT_GUARD_DROP, GHOST_MODE_DROP)
+            assertFlag(context, "receiveOnly", true)
+            assertFlag(context, "powerOff", true)
             assertFlag(context, "ghostMode", true)
             assertFlag(context, "disableAnalytics", true)
         }
@@ -228,27 +230,36 @@ class GhostModeFixtureTest {
          * falls to the stock first instruction and a true one returns. Below it the stock body is
          * whole, nothing branches back into the gate, and no register was added.
          */
-        fun assertGhostGate(where: String, original: Method, patched: Method) {
+        fun assertGhostGate(where: String, original: Method, patched: Method) = assertGates(where, original, patched, GHOST_MODE_DROP)
+
+        /** The gates for [hooks] in the order they ask: each hands over what its shape takes, and a false answer falls to the next. */
+        fun assertGates(where: String, original: Method, patched: Method, vararg hooks: String) {
             val before = original.implementation!!.instructions.toList()
             val after = patched.implementation!!.instructions.toList()
-            val call = after[0]
-            assertEquals("$where: asks first", Opcode.INVOKE_STATIC_RANGE, call.opcode)
-            assertEquals("$where: asks Ghost mode", GHOST_MODE_DROP, (call as ReferenceInstruction).reference.toString())
-            val p1 = patched.implementation!!.registerCount - patched.numberOfParameterRegisters + 1
-            assertEquals("$where: hands it the request and its callback", listOf(p1, 2),
-                listOf((call as RegisterRangeInstruction).startRegister, call.registerCount))
-            assertEquals("$where: the gate", listOf(Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.RETURN_VOID), after.subList(1, 4).map { it.opcode })
-            assertEquals("$where: answer and test share v0", listOf(listOf(0), listOf(0)), after.subList(1, 3).map { it.namedRegisters() })
+            val size = hooks.size * SEND_REQUEST_GATE_SIZE
+            val p0 = patched.implementation!!.registerCount - patched.numberOfParameterRegisters
             val flow = ControlFlow.of(patched)
-            assertEquals("$where: false sends, true returns", setOf(3, SEND_REQUEST_GATE_SIZE), flow.normal[2].toSet())
-            for (index in SEND_REQUEST_GATE_SIZE until after.size) {
-                assertTrue("$where: $index branches into the gate",
-                    (flow.normal[index] + flow.exceptional[index]).none { it < SEND_REQUEST_GATE_SIZE })
+            hooks.forEachIndexed { number, hook ->
+                val at = number * SEND_REQUEST_GATE_SIZE
+                val call = after[at]
+                assertEquals("$where: gate $number asks first", Opcode.INVOKE_STATIC_RANGE, call.opcode)
+                assertEquals("$where: asks $hook", hook, (call as ReferenceInstruction).reference.toString())
+                val three = hook.contains("Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;")
+                assertEquals("$where: hands it what it takes", listOf(if (three) p0 else p0 + 1, if (three) 3 else 2),
+                    listOf((call as RegisterRangeInstruction).startRegister, call.registerCount))
+                assertEquals("$where: the gate", listOf(Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.RETURN_VOID),
+                    after.subList(at + 1, at + 4).map { it.opcode })
+                assertEquals("$where: answer and test share v0", listOf(listOf(0), listOf(0)), after.subList(at + 1, at + 3).map { it.namedRegisters() })
+                assertEquals("$where: false goes on, true returns", setOf(at + 3, at + SEND_REQUEST_GATE_SIZE), flow.normal[at + 2].toSet())
+            }
+            for (index in size until after.size) {
+                assertTrue("$where: $index branches into the gates",
+                    (flow.normal[index] + flow.exceptional[index]).none { it < size })
             }
             fun stock(list: List<Instruction>) = list.filter { it.opcode != Opcode.NOP }.map { instruction ->
                 listOf(instruction.opcode, (instruction as? ReferenceInstruction)?.reference?.toString(), instruction.namedRegisters())
             }
-            assertEquals("$where: the stock send is whole", stock(before), stock(after.drop(SEND_REQUEST_GATE_SIZE)))
+            assertEquals("$where: the stock send is whole", stock(before), stock(after.drop(size)))
             assertEquals("$where: no register added", original.implementation!!.registerCount, patched.implementation!!.registerCount)
         }
     }

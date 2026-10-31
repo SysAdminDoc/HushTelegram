@@ -1269,3 +1269,21 @@ Fit all folder tabs	Всички папки на екрана
 Shrinks the folder tabs above the chat list until all of them fit on the screen, so you never scroll sideways to find one. With only a few folders nothing changes.	Свива табовете на папките над списъка с чатове, докато всички се поберат на екрана, и не се налага да превърташ настрани, за да намериш някой. При малко папки нищо не се променя.
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that shrinks the folder tabs to fit the screen
 the fitted folder tabs	побраните папки
+# context: Switch under Privacy for Receive only mode, per account (#53).
+Receive only mode	Режим само за получаване
+The accounts you pick below can read but not write. Messages, reactions, drafts and typing stay on this phone and show an error. Reading, files and read receipts work. Works with this switch on.	Профилите, които изберете по-долу, могат да четат, но не и да пишат. Съобщенията, реакциите, черновите и писането остават на този телефон и показват грешка. Четенето, файловете и потвържденията за прочитане работят. Действа при включен този превключвател.
+# context: Switch under Privacy for Power off accounts, per account (#53).
+Power off accounts	Изключване на профили
+The accounts you pick below send nothing. Telegram's connection can still stay open in the background, so it may still receive messages and notifications. Works with this switch on.	Профилите, които изберете по-долу, не изпращат нищо. Връзката на Telegram може да остане отворена на заден план, затова още може да получавате съобщения и известия. Действа при включен този превключвател.
+# context: Summary under a per-account switch in Power off accounts (#53).
+Powered off	Изключен
+# context: Summary under a per-account switch in Receive only mode (#53).
+Receive only	Само получаване
+# context: Short tag in front of an account name in the side menu: powered off (#53).
+(Off)	(Изкл.)
+# context: Short tag in front of an account name in the side menu: receive only (#53).
+(Read only)	(Само четене)
+# context: Toast when a powered-off account tries to send (#53). Two lines of 28 characters at most.
+This account is powered off.	Този профил е изключен.
+# context: Toast when a receive-only account tries to write (#53). Two lines of 28 characters at most.
+Receive only mode is on.	Режимът само за получаване е включен.

@@ -1273,3 +1273,21 @@ Fit all folder tabs	Ajustar todas las pestañas de carpetas
 Shrinks the folder tabs above the chat list until all of them fit on the screen, so you never scroll sideways to find one. With only a few folders nothing changes.	Reduce las pestañas de carpetas sobre la lista de chats hasta que todas caben en la pantalla, así no tienes que desplazarte de lado para encontrar una. Con pocas carpetas no cambia nada.
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that shrinks the folder tabs to fit the screen
 the fitted folder tabs	las pestañas de carpetas ajustadas
+# context: Switch under Privacy for Receive only mode, per account (#53).
+Receive only mode	Modo solo recepción
+The accounts you pick below can read but not write. Messages, reactions, drafts and typing stay on this phone and show an error. Reading, files and read receipts work. Works with this switch on.	Las cuentas que elijas abajo pueden leer pero no escribir. Los mensajes, reacciones, borradores y el aviso de escritura se quedan en este teléfono y muestran un error. Leer, los archivos y las confirmaciones de lectura funcionan. Actúa con este interruptor activado.
+# context: Switch under Privacy for Power off accounts, per account (#53).
+Power off accounts	Apagar cuentas
+The accounts you pick below send nothing. Telegram's connection can still stay open in the background, so it may still receive messages and notifications. Works with this switch on.	Las cuentas que elijas abajo no envían nada. La conexión de Telegram puede seguir abierta en segundo plano, así que aún pueden llegar mensajes y notificaciones. Actúa con este interruptor activado.
+# context: Summary under a per-account switch in Power off accounts (#53).
+Powered off	Apagada
+# context: Summary under a per-account switch in Receive only mode (#53).
+Receive only	Solo recibir
+# context: Short tag in front of an account name in the side menu: powered off (#53).
+(Off)	(Apagada)
+# context: Short tag in front of an account name in the side menu: receive only (#53).
+(Read only)	(Solo lectura)
+# context: Toast when a powered-off account tries to send (#53). Two lines of 28 characters at most.
+This account is powered off.	Esta cuenta está apagada.
+# context: Toast when a receive-only account tries to write (#53). Two lines of 28 characters at most.
+Receive only mode is on.	El modo solo recepción está activo.

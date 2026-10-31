@@ -1273,3 +1273,21 @@ Fit all folder tabs	Tüm klasör sekmelerini sığdır
 Shrinks the folder tabs above the chat list until all of them fit on the screen, so you never scroll sideways to find one. With only a few folders nothing changes.	Sohbet listesinin üstündeki klasör sekmelerini hepsi ekrana sığana kadar küçültür, böylece birini bulmak için yana kaydırman gerekmez. Klasör azsa hiçbir şey değişmez.
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that shrinks the folder tabs to fit the screen
 the fitted folder tabs	sığdırılmış klasör sekmeleri
+# context: Switch under Privacy for Receive only mode, per account (#53).
+Receive only mode	Yalnızca alma modu
+The accounts you pick below can read but not write. Messages, reactions, drafts and typing stay on this phone and show an error. Reading, files and read receipts work. Works with this switch on.	Aşağıda seçtiğiniz hesaplar okuyabilir ama yazamaz. Mesajlar, tepkiler, taslaklar ve yazıyor bilgisi bu telefonda kalır ve hata gösterir. Okuma, dosyalar ve okundu bilgisi çalışır. Bu anahtar açıkken geçerlidir.
+# context: Switch under Privacy for Power off accounts, per account (#53).
+Power off accounts	Hesapları kapat
+The accounts you pick below send nothing. Telegram's connection can still stay open in the background, so it may still receive messages and notifications. Works with this switch on.	Aşağıda seçtiğiniz hesaplar hiçbir şey göndermez. Telegram'ın bağlantısı arka planda açık kalabilir, bu yüzden mesaj ve bildirimler yine de gelebilir. Bu anahtar açıkken geçerlidir.
+# context: Summary under a per-account switch in Power off accounts (#53).
+Powered off	Kapalı
+# context: Summary under a per-account switch in Receive only mode (#53).
+Receive only	Yalnızca alma
+# context: Short tag in front of an account name in the side menu: powered off (#53).
+(Off)	(Kapalı)
+# context: Short tag in front of an account name in the side menu: receive only (#53).
+(Read only)	(Salt okunur)
+# context: Toast when a powered-off account tries to send (#53). Two lines of 28 characters at most.
+This account is powered off.	Bu hesap kapalı.
+# context: Toast when a receive-only account tries to write (#53). Two lines of 28 characters at most.
+Receive only mode is on.	Yalnızca alma modu açık.
