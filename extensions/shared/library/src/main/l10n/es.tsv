@@ -1059,10 +1059,14 @@ reaction notifications without push	las notificaciones de reacciones sin push
 Hide reactions under messages	Ocultar reacciones bajo los mensajes
 The row of reactions under each message isn't drawn. Nothing is removed, so turn it off and they're back. Tags in Saved Messages stay.	La fila de reacciones bajo cada mensaje no se dibuja. No se borra nada: desactívalo y vuelven. Las etiquetas de Mensajes guardados se mantienen.
 Hide the reaction picker	Ocultar el selector de reacciones
-The row of reactions at the top of the long-press menu and the panel it opens are gone. The rest of the menu works as before.	La fila de reacciones de la parte superior del menú de pulsación larga y el panel que abre desaparecen. El resto del menú funciona igual que antes.
+The row of reactions at the top of the long-press menu, the panel it opens and the reaction bubble over a selected message are gone. The rest of the menu works as before.	La fila de reacciones en la parte superior del menú de pulsación larga, el panel que abre y la burbuja de reacciones sobre un mensaje seleccionado desaparecen. El resto del menú funciona como antes.
+Hide the emoji pack line	Ocultar la línea del paquete de emojis
+The line at the bottom of the long-press menu that names a message's emoji pack is gone. The rest of the menu works as before.	La línea al final del menú de pulsación larga que indica el paquete de emojis de un mensaje desaparece. El resto del menú funciona como antes.
 # context: Coverage labels for the reaction row and reaction picker hooks.
 reaction rows under messages	filas de reacciones bajo los mensajes
 the reaction picker in the message menu	el selector de reacciones del menú del mensaje
+the reaction bubble on selected messages	la burbuja de reacciones sobre los mensajes seleccionados
+the emoji pack line in the message menu	la línea del paquete de emojis del menú del mensaje
 # context: Switch on the Conversations page for copying text in a chat or message that doesn't allow saving (#43), its toast, and the label for the text selection part.
 Copy text from chats that don't allow saving	Copiar texto de chats que no permiten guardar
 Puts Copy back in the menu of a message in a chat that doesn't allow saving, and lets you copy selected text there. Secret chats stay as they are.	Devuelve Copiar al menú de un mensaje en un chat que no permite guardar y te deja copiar el texto seleccionado allí. Los chats secretos no cambian.

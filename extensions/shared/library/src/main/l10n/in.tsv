@@ -1059,10 +1059,14 @@ reaction notifications without push	notifikasi reaksi tanpa push
 Hide reactions under messages	Sembunyikan reaksi di bawah pesan
 The row of reactions under each message isn't drawn. Nothing is removed, so turn it off and they're back. Tags in Saved Messages stay.	Baris reaksi di bawah setiap pesan tidak ditampilkan. Tidak ada yang dihapus, jadi matikan saja dan reaksinya kembali. Tag di Pesan Tersimpan tetap ada.
 Hide the reaction picker	Sembunyikan pemilih reaksi
-The row of reactions at the top of the long-press menu and the panel it opens are gone. The rest of the menu works as before.	Baris reaksi di bagian atas menu tekan lama dan panel yang dibukanya dihilangkan. Menu lainnya berfungsi seperti biasa.
+The row of reactions at the top of the long-press menu, the panel it opens and the reaction bubble over a selected message are gone. The rest of the menu works as before.	Baris reaksi di bagian atas menu tekan lama, panel yang dibukanya, dan gelembung reaksi di atas pesan yang dipilih hilang. Bagian menu lainnya berfungsi seperti biasa.
+Hide the emoji pack line	Sembunyikan baris paket emoji
+The line at the bottom of the long-press menu that names a message's emoji pack is gone. The rest of the menu works as before.	Baris di bagian bawah menu tekan lama yang menyebutkan paket emoji pesan hilang. Bagian menu lainnya berfungsi seperti biasa.
 # context: Coverage labels for the reaction row and reaction picker hooks.
 reaction rows under messages	baris reaksi di bawah pesan
 the reaction picker in the message menu	pemilih reaksi di menu pesan
+the reaction bubble on selected messages	gelembung reaksi di atas pesan yang dipilih
+the emoji pack line in the message menu	baris paket emoji di menu pesan
 # context: Switch on the Conversations page for copying text in a chat or message that doesn't allow saving (#43), its toast, and the label for the text selection part.
 Copy text from chats that don't allow saving	Salin teks dari chat yang tidak mengizinkan penyimpanan
 Puts Copy back in the menu of a message in a chat that doesn't allow saving, and lets you copy selected text there. Secret chats stay as they are.	Mengembalikan Salin ke menu pesan di chat yang tidak mengizinkan penyimpanan, dan membuat teks yang dipilih di sana bisa disalin. Chat rahasia tidak berubah.

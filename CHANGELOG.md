@@ -5,6 +5,13 @@ Every HushTelegram release, newest first.
 ## Unreleased
 
 * **Telegram:** Moved telegram.org's build to Telegram 13.1.1 (version code 72379). Every patch carried over without a change.
+### Added
+
+* **Telegram:** **Disable double-tap reactions** has a new switch, **Hide the emoji pack line**, off by default. It takes the line that says a message contains emoji from some pack off the bottom of the long-press menu, along with the gap above it.
+
+### Changed
+
+* **Telegram:** **Hide the reaction picker** now covers the bubble of reactions that pops up over a selected message too, so tapping a post to pick it for a reply or a forward can't land on a reaction.
 
 ## 0.0.23 (2026-10-31)
 

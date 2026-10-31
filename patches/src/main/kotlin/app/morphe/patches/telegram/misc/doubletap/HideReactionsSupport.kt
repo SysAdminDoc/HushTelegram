@@ -23,6 +23,9 @@ internal const val MESSAGE_OBJECT = "Lorg/telegram/messenger/MessageObject;"
 internal const val MESSAGE_REACTIONS = "Lorg/telegram/tgnet/TLRPC\$MessageReactions;"
 internal const val REACTIONS_AVAILABLE = "$MESSAGE_OBJECT->isReactionsAvailable()Z"
 internal const val ENABLED_REACTIONS = "Lorg/telegram/messenger/MediaDataController;->getEnabledReactionsList()Ljava/util/List;"
+internal const val MESSAGE_GROUP_ID = "$MESSAGE_OBJECT->getGroupId()J"
+internal const val PREMIUM_BLOCKED = "Lorg/telegram/messenger/MessagesController;->premiumFeaturesBlocked()Z"
+internal const val EMOJI_PACK_PLURAL = "MessageContainsEmojiPacks"
 
 /** A hook that goes in once [missing] is null, so the patch can collect both plans before changing anything. */
 internal abstract class ReactionPlan(val missing: String?) {
@@ -163,6 +166,82 @@ internal fun BytecodePatchContext.resolveReactionPicker(): ReactionPlan {
                 """
                     invoke-static/range {v$reg .. v$reg}, $DOUBLE_TAP_REACTIONS->picker(Z)Z
                     move-result v$reg
+                """,
+            )
+        }
+    }
+}
+
+internal fun Method.isSelectionSetter() = !AccessFlags.STATIC.isSet(accessFlags) && returnType == "V" &&
+    parameterTypes.map { it.toString() } == listOf("Ljava/util/List;") && controlBody().any { it.controlRef() == MESSAGE_GROUP_ID }
+
+/**
+ * The bubble of reactions over a selected message lives in its own overlay, away from the long-press
+ * menu. Its one setter takes the selected messages and decides to show itself only when the list
+ * isn't empty, so handing it an empty list keeps it hidden. The chat's own selection isn't touched.
+ */
+internal fun BytecodePatchContext.resolveReactionSelection(): ReactionPlan {
+    val found = classDefsMentioning(Mention.reference(MESSAGE_GROUP_ID)).flatMap { cls ->
+        cls.methods.filter { it.isSelectionSetter() }
+    }
+    val match = found.singleOrNull() ?: return nothing("the selection's reaction bubble no longer has one setter")
+    val method = mutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
+    return object : ReactionPlan(null) {
+        override fun apply() {
+            method.addInstructions(
+                0,
+                """
+                    invoke-static/range {p1 .. p1}, $DOUBLE_TAP_REACTIONS->selection(Ljava/util/List;)Ljava/util/List;
+                    move-result-object p1
+                """,
+            )
+        }
+    }
+}
+
+/**
+ * Where the long-press menu adds the emoji pack line: the premium-blocked test right before the line
+ * is made. Returns that call's index, or -1 unless its result goes straight to an if-nez that skips
+ * past the line. The patch applies other hooks to this method, so apply() looks it up again.
+ */
+private fun Method.packNoteCall(button: String): Int {
+    val body = controlBody()
+    val made = body.indexOfFirst { it.opcode == Opcode.NEW_INSTANCE && it.controlRef() == button }
+    if (made < 0) return -1
+    val call = (made downTo maxOf(made - 24, 0)).firstOrNull { body[it].controlRef() == PREMIUM_BLOCKED } ?: return -1
+    val result = body[call + 1]
+    val test = body[call + 2]
+    if (result.opcode != Opcode.MOVE_RESULT || test.opcode != Opcode.IF_NEZ) return -1
+    if ((result as OneRegisterInstruction).registerA != (test as OneRegisterInstruction).registerA) return -1
+    val skip = try { ControlFlow.of(this).normal[call + 2].maxOrNull() ?: -1 } catch (failure: IllegalArgumentException) { -1 }
+    return if (skip > made) call else -1
+}
+
+/**
+ * The "this message contains emoji from" line goes in behind a test of premiumFeaturesBlocked(),
+ * because a client with premium blocked already leaves it out along with its divider. The hook answers
+ * that one test, so the line goes the way stock takes it away. Premium itself is never asked again here.
+ */
+internal fun BytecodePatchContext.resolveEmojiPackNote(): ReactionPlan {
+    val button = classDefsMentioning(Mention.string(EMOJI_PACK_PLURAL)).filter { cls ->
+        cls.methods.any { method -> method.controlBody().any { it.controlString() == EMOJI_PACK_PLURAL } }
+    }.singleOrNull()?.type
+        ?: return nothing("the emoji pack line is no longer built by one class")
+    val found = classDefsMentioning(Mention.reference(REACTIONS_AVAILABLE) and Mention.reference(ENABLED_REACTIONS)).flatMap { cls ->
+        cls.methods.filter { it.isMenuBuilder() }
+    }
+    val match = found.singleOrNull() ?: return nothing("the chat's message menu builder is no longer found in one place")
+    val method = mutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
+    if (method.packNoteCall(button) < 0) return nothing("the chat's message menu no longer tests premium right before the emoji pack line")
+    return object : ReactionPlan(null) {
+        override fun apply() {
+            val call = method.packNoteCall(button)
+            val register = (method.controlBody()[call + 1] as OneRegisterInstruction).registerA
+            method.addInstructions(
+                call + 2,
+                """
+                    invoke-static/range {v$register .. v$register}, $DOUBLE_TAP_REACTIONS->packNote(I)Z
+                    move-result v$register
                 """,
             )
         }

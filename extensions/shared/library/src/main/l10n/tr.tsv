@@ -1059,10 +1059,14 @@ reaction notifications without push	push olmadan tepki bildirimlerini
 Hide reactions under messages	Mesajların altındaki tepkileri gizle
 The row of reactions under each message isn't drawn. Nothing is removed, so turn it off and they're back. Tags in Saved Messages stay.	Her mesajın altındaki tepki satırı çizilmez. Hiçbir şey silinmez, kapatırsan geri gelirler. Kayıtlı Mesajlar'daki etiketler kalır.
 Hide the reaction picker	Tepki seçiciyi gizle
-The row of reactions at the top of the long-press menu and the panel it opens are gone. The rest of the menu works as before.	Uzun basma menüsünün üstündeki tepki satırı ve açtığı panel kaldırılır. Menünün geri kalanı eskisi gibi çalışır.
+The row of reactions at the top of the long-press menu, the panel it opens and the reaction bubble over a selected message are gone. The rest of the menu works as before.	Uzun basma menüsünün üstündeki tepki satırı, açtığı panel ve seçili iletinin üzerindeki tepki balonu kaldırılır. Menünün geri kalanı eskisi gibi çalışır.
+Hide the emoji pack line	Emoji paketi satırını gizle
+The line at the bottom of the long-press menu that names a message's emoji pack is gone. The rest of the menu works as before.	Uzun basma menüsünün altında iletinin emoji paketini belirten satır kaldırılır. Menünün geri kalanı eskisi gibi çalışır.
 # context: Coverage labels for the reaction row and reaction picker hooks.
 reaction rows under messages	mesajların altındaki tepki satırları
 the reaction picker in the message menu	mesaj menüsündeki tepki seçici
+the reaction bubble on selected messages	seçili mesajların üzerindeki tepki balonu
+the emoji pack line in the message menu	mesaj menüsündeki emoji paketi satırı
 # context: Switch on the Conversations page for copying text in a chat or message that doesn't allow saving (#43), its toast, and the label for the text selection part.
 Copy text from chats that don't allow saving	Kaydetmeye izin vermeyen sohbetlerden metin kopyala
 Puts Copy back in the menu of a message in a chat that doesn't allow saving, and lets you copy selected text there. Secret chats stay as they are.	Kaydetmeye izin vermeyen bir sohbetteki mesajın menüsüne Kopyala'yı geri getirir ve orada seçtiğin metni kopyalamana izin verir. Gizli sohbetler olduğu gibi kalır.

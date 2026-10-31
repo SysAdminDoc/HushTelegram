@@ -154,6 +154,8 @@ public class Settings extends BaseSettings {
     /** The reaction strip at the top of the long-press menu, and the panel it expands into, never open. */
     public static final BooleanSetting HIDE_REACTION_PICKER =
             new BooleanSetting("hushtelegram_hide_reaction_picker", FALSE);
+    public static final BooleanSetting HIDE_EMOJI_PACK_NOTE =
+            new BooleanSetting("hushtelegram_hide_emoji_pack_note", FALSE);
 
     /**
      * The Contacts tab's automatic prompt and its "!" badge once a contacts prompt was declined;

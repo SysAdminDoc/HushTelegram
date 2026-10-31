@@ -118,6 +118,7 @@ public final class SettingsBackup {
             Settings.DISABLE_DOUBLE_TAP_REACTIONS,
             Settings.HIDE_REACTION_ROWS,
             Settings.HIDE_REACTION_PICKER,
+            Settings.HIDE_EMOJI_PACK_NOTE,
             Settings.QUIET_CONTACTS_NAG,
             Settings.HOLIDAY_LOOK,
             Settings.USE_SYSTEM_FONT,

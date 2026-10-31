@@ -32,13 +32,17 @@ val disableDoubleTapReactionsPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.telegram())
     execute {
         val sites = resolveDoubleTapReactions()
-        listOf("reactionRows", "reactionPicker").forEach(::requireStatusMethod)
+        listOf("reactionRows", "reactionPicker", "reactionSelection", "emojiPackNote").forEach(::requireStatusMethod)
         controlHook(DOUBLE_TAP_REACTIONS, "rows", listOf("Ljava/lang/Object;", "Z", "Z"), "Ljava/lang/Object;")
         controlHook(DOUBLE_TAP_REACTIONS, "picker", listOf("Z"), "Z")
         controlHook(DOUBLE_TAP_REACTIONS, "spoken", listOf("Ljava/lang/Object;"), "Ljava/lang/Object;")
+        controlHook(DOUBLE_TAP_REACTIONS, "selection", listOf("Ljava/util/List;"), "Ljava/util/List;")
+        controlHook(DOUBLE_TAP_REACTIONS, "packNote", listOf("I"), "Z")
         val rows = resolveReactionRows()
         val speech = resolveReactionSpeech()
         val picker = resolveReactionPicker()
+        val selection = resolveReactionSelection()
+        val packNote = resolveEmojiPackNote()
         sites.forEach { it.insert(MutableMethod(ImmutableMethod.of(it.method))) }
         sites.forEach { it.insert(it.method) }
         enableCapability("chatDoubleTapReaction")
@@ -56,6 +60,18 @@ val disableDoubleTapReactionsPatch = bytecodePatch(
             enableCapability("reactionPicker")
         } else {
             patchLog.warning("Disable double-tap reactions: ${picker.missing}. The patch goes on without the reaction picker switch.")
+        }
+        if (selection.missing == null) {
+            selection.apply()
+            enableCapability("reactionSelection")
+        } else {
+            patchLog.warning("Disable double-tap reactions: ${selection.missing}. The reaction picker switch leaves the selection's bubble alone.")
+        }
+        if (packNote.missing == null) {
+            packNote.apply()
+            enableCapability("emojiPackNote")
+        } else {
+            patchLog.warning("Disable double-tap reactions: ${packNote.missing}. The patch goes on without the emoji pack line switch.")
         }
         enableStatus("disableDoubleTapReactions")
     }

@@ -545,8 +545,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             }
             if (PatchFamily.Capability.REACTION_PICKER.installed()) {
                 on(pages, PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS).addPreference(toggle(context, Settings.HIDE_REACTION_PICKER,
-                        L10n.t("Hide the reaction picker"), L10n.t("The row of reactions at the top of the long-press menu and the "
-                                + "panel it opens are gone. The rest of the menu works as before.")));
+                        L10n.t("Hide the reaction picker"), L10n.t("The row of reactions at the top of the long-press menu, the "
+                                + "panel it opens and the reaction bubble over a selected message are gone. The rest of the menu works as before.")));
+            }
+            if (PatchFamily.Capability.EMOJI_PACK_NOTE.installed()) {
+                on(pages, PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS).addPreference(toggle(context, Settings.HIDE_EMOJI_PACK_NOTE,
+                        L10n.t("Hide the emoji pack line"), L10n.t("The line at the bottom of the long-press menu that names a "
+                                + "message's emoji pack is gone. The rest of the menu works as before.")));
             }
         }
         if (build.contains(PatchFamily.HIDE_TRANSLATE_BAR)) {

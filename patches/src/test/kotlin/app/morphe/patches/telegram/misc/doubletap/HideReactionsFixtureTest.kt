@@ -24,7 +24,10 @@ import org.junit.Test
 /** The real reaction row and long-press menu builder of every declared build. */
 class HideReactionsFixtureTest {
     private fun hosts(build: java.io.File): List<ClassDef> =
-        FixtureDex.classesWhere(build, { true }) { it.isRowSetter() || it.isMenuBuilder() || it.isSpokenBuilder() }
+        FixtureDex.classesWhere(build, { true }) { method ->
+            method.isRowSetter() || method.isMenuBuilder() || method.isSpokenBuilder() || method.isSelectionSetter() ||
+                method.controlBody().any { it.controlString() == EMOJI_PACK_PLURAL }
+        }
 
     private fun operand(i: Instruction) = listOf(i.opcode, i.namedRegisters(), i.controlRef(), (i as? WideLiteralInstruction)?.wideLiteral)
 
@@ -100,6 +103,57 @@ class HideReactionsFixtureTest {
             assertEquals(Opcode.IF_EQZ, body[test].opcode)
             val skip = ControlFlow.of(patched).normal[test].max()
             assertTrue("${build.name}: skip passes the reaction text", body.indexOfLast { it.controlString() == REACTED_WITH } < skip)
+        }
+    }
+
+    @Test fun `the selection bubble's one setter gets its list through the hook`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val classes = hosts(build)
+            val context = PatchContexts.of(ExtensionDex.classes() + classes)
+            val plan = context.resolveReactionSelection()
+            assertEquals("${build.name}: ${plan.missing}", null, plan.missing)
+            val stock = classes.flatMap { it.methods }.single { it.isSelectionSetter() }
+            val before = stock.controlBody()
+            plan.apply()
+            val patched = context.mutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
+            val after = patched.controlBody()
+            assertEquals("${build.name}: register count", stock.implementation!!.registerCount, patched.implementation!!.registerCount)
+            assertEquals(listOf(Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT_OBJECT), after.take(2).map { it.opcode })
+            assertEquals("$DOUBLE_TAP_REACTIONS->selection(Ljava/util/List;)Ljava/util/List;", after[0].controlRef())
+            assertEquals("${build.name}: the hook reads and rewrites p1", after[0].namedRegisters().toSet(), after[1].namedRegisters().toSet())
+            assertEquals("${build.name}: stock code unchanged", before.map(::operand), after.drop(2).map(::operand))
+        }
+    }
+
+    @Test fun `the emoji pack line's premium test goes through the hook, whichever hook lands first`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val classes = hosts(build)
+            val context = PatchContexts.of(ExtensionDex.classes() + classes)
+            val picker = context.resolveReactionPicker()
+            val plan = context.resolveEmojiPackNote()
+            assertEquals("${build.name}: ${plan.missing}", null, plan.missing)
+            val stock = classes.flatMap { it.methods }.single { it.isMenuBuilder() }
+            val stockBody = stock.controlBody()
+            val stockAt = stockBody.indexOfLast { it.controlRef() == PREMIUM_BLOCKED }
+            picker.apply()
+            plan.apply()
+            val patched = context.mutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
+            val after = patched.controlBody()
+            assertEquals("${build.name}: register count", stock.implementation!!.registerCount, patched.implementation!!.registerCount)
+            val at = after.indexOfFirst { it.controlRef() == "$DOUBLE_TAP_REACTIONS->packNote(I)Z" }
+            assertTrue("${build.name}: hook inserted", at > 0)
+            assertEquals("${build.name}: right after the premium test's result", PREMIUM_BLOCKED, after[at - 2].controlRef())
+            assertEquals(Opcode.MOVE_RESULT, after[at - 1].opcode)
+            assertEquals(Opcode.INVOKE_STATIC_RANGE, after[at].opcode)
+            assertEquals(Opcode.MOVE_RESULT, after[at + 1].opcode)
+            assertEquals(Opcode.IF_NEZ, after[at + 2].opcode)
+            val register = after[at - 1].namedRegisters().first()
+            listOf(at, at + 1, at + 2).forEach { assertEquals("${build.name}: one register", register, after[it].namedRegisters().first()) }
+            assertEquals("${build.name}: stock's last premium test is the line's", stockBody[stockAt + 2].opcode, after[at + 2].opcode)
+            val skip = ControlFlow.of(patched).normal[at + 2].max()
+            val button = classes.flatMap { it.methods }.first { m -> m.controlBody().any { it.controlString() == EMOJI_PACK_PLURAL } }.definingClass
+            val made = after.indexOfFirst { it.opcode == Opcode.NEW_INSTANCE && it.controlRef() == button }
+            assertTrue("${build.name}: the skip passes the line", at + 2 < made && made < skip)
         }
     }
 }
