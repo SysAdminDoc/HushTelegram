@@ -687,7 +687,7 @@ val settingsPatch = bytecodePatch(
     name = "HushTelegram settings",
     description = "Adds a HushTelegram row to Telegram's Settings, where you turn features on or off, pause " +
         "HushTelegram, save your choices and export a report. You can also press and hold Telegram's app " +
-        "icon. Works as soon as you patch it in, with no switch.",
+        "icon or the Telegram title at the top of the chat list. Works as soon as you patch it in, with no switch.",
     default = true,
 ) {
     category("Settings")

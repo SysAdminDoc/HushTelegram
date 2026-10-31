@@ -128,7 +128,7 @@ These are set when you patch, so Pause can't turn them off. Only the first is in
 
 | Patch | What it does |
 |---|---|
-| `HushTelegram settings` | Adds a HushTelegram row to Telegram's Settings, where you turn features on or off, pause HushTelegram, save your choices and export a report. You can also press and hold Telegram's app icon. Works as soon as you patch it in, with no switch. |
+| `HushTelegram settings` | Adds a HushTelegram row to Telegram's Settings, where you turn features on or off, pause HushTelegram, save your choices and export a report. You can also press and hold Telegram's app icon or the Telegram title at the top of the chat list. Works as soon as you patch it in, with no switch. |
 | `Use registered Telegram API credentials` | Signs in to Telegram with the API ID and hash you registered at my.telegram.org. Fill in both options, or leave both empty to keep the originals. It has no switch and isn't selected by default. Use Expert mode in Morphe Manager. |
 | `Use registered Maps API key` | Lets maps in your patched Telegram use a Google Maps key you registered. Leave the option empty to keep Telegram's key. It has no switch and isn't selected by default. Turn on Expert mode in Morphe Manager to pick it and enter your key. |
 | `HushTelegram icon and name` | Gives your patched Telegram HushTelegram's own home screen icon, with a themed version on Android 13 and up, and can change the name under it. An alternate icon picked in Telegram's settings keeps its own look. It isn't selected by default. Turn on Expert mode in Morphe Manager to pick it and name the app. Only patching again without it puts Telegram's icon back. |
