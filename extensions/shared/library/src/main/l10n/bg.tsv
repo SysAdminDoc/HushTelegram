@@ -1180,3 +1180,8 @@ Clear from cache	Изчистване от кеша
 Cleared %1$s	Изчистени %1$s
 Nothing to clear	Няма какво да се изчисти
 Couldn't clear that. Try again.	Не успя да се изчисти. Опитай пак.
+# context: Switch under Links for cleaning a link when it is copied or pasted into the message box (#53).
+Clean links when you copy or paste	Почиствай връзките при копиране и поставяне
+A link you copy in Telegram, or paste into the message box, loses the same tracking tags. Only text that is one link and nothing else is changed.	Връзка, която копирате в Telegram или поставяте в полето за съобщение, губи същите следящи етикети. Променя се само текст, който е една връзка и нищо друго.
+copied links	копирани връзки
+pasted links	поставени връзки

@@ -219,7 +219,7 @@ public class SettingsBackupTest {
                         Settings.DISABLE_CALL_DEBUG, Settings.RECORD_CALLS, Settings.RECORD_CALL_BUTTON, Settings.DISABLE_DRAFT_PREVIEWS,
                         Settings.LOCAL_DRAFTS, Settings.LOCAL_SEARCH, Settings.GALLERY_CAMERA_ON_TAP,
                         Settings.OPEN_EXTERNAL_LINKS, Settings.MINI_APP_LOCATION_OFF, Settings.STRIP_LINK_TRACKING,
-                        Settings.SKIP_AUTOLOGIN, Settings.DISABLE_UPDATE_CHECKS,
+                        Settings.SKIP_AUTOLOGIN, Settings.STRIP_LINK_COPY_PASTE, Settings.DISABLE_UPDATE_CHECKS,
                         Settings.REPAIR_FIREBASE_PUSH),
                 SettingsBackup.ALLOWLIST);
     }

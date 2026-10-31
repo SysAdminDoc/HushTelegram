@@ -30,6 +30,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** **Add Repeat to the message menu** has a new switch, **Add Save video cover to the message menu**, off by default. A video gets a Save video cover item that puts its biggest cover or thumbnail in Pictures, fetching it first if it isn't on the phone yet.
 * **Telegram:** **Add Repeat to the message menu** has a new switch, **Add Forward to Saved Messages to the message menu**, off by default. A message you can forward gets a Forward to Saved Messages item in its long-press menu. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.
 * **Telegram:** **Add Repeat to the message menu** has a new switch, **Add Fast forward to the message menu**, off by default. A message you can forward gets a Fast forward item in its long-press menu. Pick without the sender's name, without the caption, or both, then pick a chat, and it goes out at once.
+* **Telegram:** **Strip link tracking** has a new switch, **Clean links when you copy or paste**, off by default. Copy a link in Telegram, or paste one into the message box, and tags like utm_source and fbclid come off. Only text that is one link and nothing else changes. Find it in HushTelegram settings > More settings > Links. Refs #53.
 
 ## 0.0.23 (2026-10-31)
 

@@ -1171,6 +1171,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             links.addPreference(toggle(context, Settings.STRIP_LINK_TRACKING, L10n.t("Remove link tracking tags"),
                     PatchFamily.STRIP_LINK_TRACKING.coverageSummary(L10n.t("Removes tracking tags like utm_source, gclid and fbclid from links you open or "
                             + "share. A link with any other tag is left unchanged."))));
+            if (PatchFamily.Capability.COPIED_LINK_TRACKING.installed() || PatchFamily.Capability.PASTED_LINK_TRACKING.installed()) {
+                links.addPreference(toggle(context, Settings.STRIP_LINK_COPY_PASTE, L10n.t("Clean links when you copy or paste"),
+                        L10n.t("A link you copy in Telegram, or paste into the message box, loses the same tracking tags. "
+                                + "Only text that is one link and nothing else is changed.")));
+            }
             if (PatchFamily.Capability.SKIP_AUTOLOGIN.installed()) {
                 links.addPreference(toggle(context, Settings.SKIP_AUTOLOGIN, L10n.t("No automatic sign-in on Telegram's sites"),
                         L10n.t("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, "

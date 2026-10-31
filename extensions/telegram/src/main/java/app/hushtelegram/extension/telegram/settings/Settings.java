@@ -724,6 +724,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_skip_autologin", FALSE);
 
     /**
+     * A link copied from Telegram, and one pasted into the message box, loses the same tracking tags the
+     * opened and shared ones do (#53). Only a text that is one link and nothing else is changed.
+     */
+    public static final BooleanSetting STRIP_LINK_COPY_PASTE =
+            new BooleanSetting("hushtelegram_strip_link_copy_paste", FALSE);
+
+    /**
      * telegram.org's build stops checking for its own updates, which can't install over a re-signed
      * build anyway ({@link app.hushtelegram.extension.telegram.misc.UpdateChecks}).
      */

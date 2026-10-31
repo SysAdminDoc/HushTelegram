@@ -1184,3 +1184,8 @@ Clear from cache	Önbellekten temizle
 Cleared %1$s	%1$s temizlendi
 Nothing to clear	Temizlenecek bir şey yok
 Couldn't clear that. Try again.	Temizlenemedi. Tekrar dene.
+# context: Switch under Links for cleaning a link when it is copied or pasted into the message box (#53).
+Clean links when you copy or paste	Kopyalarken veya yapıştırırken bağlantıları temizle
+A link you copy in Telegram, or paste into the message box, loses the same tracking tags. Only text that is one link and nothing else is changed.	Telegram'da kopyaladığınız ya da mesaj kutusuna yapıştırdığınız bağlantı aynı izleme etiketlerini kaybeder. Yalnızca tek bir bağlantıdan oluşan metin değişir.
+copied links	kopyalanan bağlantılar
+pasted links	yapıştırılan bağlantılar

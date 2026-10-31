@@ -313,6 +313,8 @@ public final class SelectionCheck {
         hook(calls, flags, "miniAppLocation", "misc/MiniAppLocation", "refuse", "location", "refusePrompt", "answer");
         hook(calls, flags, "openedLinkTracking", "misc/LinkRouting", "cleanOpenedUri");
         hook(calls, flags, "sharedLinkTracking", "misc/LinkRouting", "cleanShareIntent");
+        hook(calls, flags, "copiedLinkTracking", "misc/LinkRouting", "cleanCopiedLink");
+        hook(calls, flags, "pastedLinkTracking", "misc/LinkRouting", "watchPaste");
         hook(calls, flags, "firebaseCertificateHeader", "misc/FirebasePush", "certificateHeader");
         hook(calls, flags, "repairFirebasePush", "misc/FirebasePush", "registerDeviceAnswer");
         hook(calls, flags, "hidePopularApps", "misc/PopularApps", "skipLoad", "hideSection");

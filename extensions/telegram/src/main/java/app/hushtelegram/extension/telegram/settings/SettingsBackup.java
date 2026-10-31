@@ -216,6 +216,7 @@ public final class SettingsBackup {
             Settings.MINI_APP_LOCATION_OFF,
             Settings.STRIP_LINK_TRACKING,
             Settings.SKIP_AUTOLOGIN,
+            Settings.STRIP_LINK_COPY_PASTE,
             Settings.DISABLE_UPDATE_CHECKS,
             Settings.REPAIR_FIREBASE_PUSH));
 
