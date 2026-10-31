@@ -52,6 +52,10 @@ public final class TLRPC {
         public String emoticon;
     }
 
+    public static class TL_reactionCustomEmoji extends Reaction {
+        public long document_id;
+    }
+
     public static class MessagePeerReaction {
         public int flags;
         public Peer peer_id;

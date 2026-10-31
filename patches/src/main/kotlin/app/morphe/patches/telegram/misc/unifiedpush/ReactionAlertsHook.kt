@@ -14,12 +14,17 @@ import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.liveAcrossInjection
 import app.morphe.patches.telegram.misc.extension.localRegisterCount
 import app.morphe.patches.telegram.misc.extension.requireThisIntact
+import app.morphe.patches.telegram.misc.extension.writeStub
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.classDefsMentioning
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 
@@ -103,6 +108,7 @@ private val FIELDS = listOf(
     Triple("${TL}MessagePeerReaction;", "unread", "Z"),
     Triple("${TL}MessagePeerReaction;", "flags", "I"),
     Triple("${TL}TL_reactionEmoji;", "emoticon", TEXT),
+    Triple("${TL}TL_reactionCustomEmoji;", "document_id", "J"),
     Triple(PEER, "user_id", "J"),
     Triple(PEER, "chat_id", "J"),
     Triple(PEER, "channel_id", "J"),
@@ -219,6 +225,52 @@ private fun BytecodePatchContext.reactionHook(): ReactionHook {
     }
     updates.requireThisIntact(PATCH, sites.map { it.insertAt })
     return ReactionHook(updates, sites)
+}
+
+private const val DOCUMENT = "${TL}Document;"
+private const val DRAWABLE = "Landroid/graphics/drawable/Drawable;"
+private const val CACHE_READ = "Ljava/util/HashMap;->get(Ljava/lang/Object;)Ljava/lang/Object;"
+internal const val EMOJI_NAME = "${MESSAGE_OBJECT}->findAnimatedEmojiEmoticon($DOCUMENT$TEXT)$TEXT"
+
+/**
+ * Whether [method] of [owner] has the shape of AnimatedEmojiDrawable.findDocument, which R8 renames:
+ * public and static on a public Drawable, an account and a document ID in, a Document out, read from
+ * a HashMap and cast.
+ */
+internal fun isEmojiLookup(owner: ClassDef, method: Method): Boolean =
+    owner.superclass == DRAWABLE && AccessFlags.PUBLIC.isSet(owner.accessFlags) && method.returnType == DOCUMENT &&
+        method.parameterTypes.joinToString("") == "IJ" && AccessFlags.PUBLIC.isSet(method.accessFlags) &&
+        AccessFlags.STATIC.isSet(method.accessFlags) && method.controlBody().let { body ->
+            body.any { it.controlRef() == CACHE_READ } && body.any { it.opcode == Opcode.CHECK_CAST && it.controlRef() == DOCUMENT }
+        }
+
+/**
+ * A custom emoji reaction names its emoji by document ID alone. Telegram keeps the custom emoji it
+ * has loaded in AnimatedEmojiDrawable, whose findDocument(account, id) is found by its shape, the
+ * only one of its kind, and MessageObject.findAnimatedEmojiEmoticon reads the emoji a document
+ * stands for. A build where either can't be found keeps reaction notifications without custom emoji.
+ *
+ * @return the lookup's reference, and null; or null and why there's none
+ */
+internal fun BytecodePatchContext.resolveEmojiLookup(): Pair<String?, String?> {
+    val lookups = classDefsMentioning(Mention.type(DOCUMENT) and Mention.member("Ljava/util/HashMap;", "get")).flatMap { owner ->
+        owner.methods.filter { isEmojiLookup(owner, it) }
+    }
+    if (lookups.size != 1) return Pair(null, "the lookup of loaded custom emoji is missing or ambiguous")
+    val name = classDefByOrNull(MESSAGE_OBJECT)?.methods?.any {
+        it.toString() == EMOJI_NAME && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags)
+    }
+    if (name != true) return Pair(null, "$EMOJI_NAME is no longer a public method custom emoji can call")
+    return Pair(lookups.single().toString(), null)
+}
+
+/** ReactionAlerts.emojiDocument's body: Telegram's loaded copy of the custom emoji, or null. */
+internal fun BytecodePatchContext.writeEmojiLookup(lookup: String) {
+    writeStub(REACTION_ALERTS, "emojiDocument", 4, """
+        invoke-static {p0, p1, p2}, $lookup
+        move-result-object v0
+        return-object v0
+    """)
 }
 
 private const val REACTION_PUSH = "${MESSAGE_OBJECT}->isReactionPush:Z"

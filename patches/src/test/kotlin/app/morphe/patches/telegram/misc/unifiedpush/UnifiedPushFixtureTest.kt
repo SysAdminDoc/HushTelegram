@@ -39,6 +39,10 @@ import org.junit.Test
 
 /** PushListenerController's sign-up and wake-up on both declared builds, where UnifiedPush plugs in. */
 class UnifiedPushFixtureTest {
+    private companion object {
+        val EMOJI_CENSUS = FixtureDex.ClassCensus()
+    }
+
     private val hosts = setOf(PUSH_CONTROLLER, MESSAGES_CONTROLLER, "Lorg/telegram/messenger/UserConfig;",
         "Lorg/telegram/tgnet/ConnectionsManager;", "Lorg/telegram/messenger/ApplicationLoader;",
         "Lorg/telegram/messenger/Utilities;", "Lorg/telegram/messenger/DispatchQueue;", "Lorg/telegram/messenger/SharedConfig;",
@@ -73,10 +77,19 @@ class UnifiedPushFixtureTest {
         assertEquals(1, code.count { it.controlRef() == REACTION_QUIET })
     }
 
-    private fun context(build: File): BytecodePatchContext {
+    /**
+     * Every class with a static-shaped Document lookup taking an int and a long, across the whole
+     * build: AnimatedEmojiDrawable among them, whose name R8 changes from build to build.
+     */
+    private fun emojiLookupClasses(build: File) = FixtureDex.classesWhere(build, EMOJI_CENSUS, { true }) {
+        it.returnType == "Lorg/telegram/tgnet/TLRPC\$Document;" && it.parameterTypes.joinToString("") == "IJ"
+    }
+
+    private fun context(build: File, withEmojiLookup: Boolean = true): BytecodePatchContext {
         val host = FixtureDex.classes(build, hosts).values.map(ImmutableClassDef::of)
         assertEquals("${build.name}: Telegram's push classes", hosts.size, host.size)
-        return PatchContexts.of(ExtensionDex.classes() + host)
+        val lookups = if (withEmojiLookup) emojiLookupClasses(build).map(ImmutableClassDef::of) else emptyList()
+        return PatchContexts.of(ExtensionDex.classes() + host + lookups.filter { it.type !in hosts })
     }
 
     private fun ClassDef.method(name: String) = methods.single { it.name == name }
@@ -156,6 +169,33 @@ class UnifiedPushFixtureTest {
             assertEquals("$name: the rest of the check is stock", withoutSoundHook(stockSilent), withoutSoundHook(silent))
             assertEquals(1L, context.status("reactionSound"))
         }
+    }
+
+    @Test fun `a custom emoji reaction asks Telegram's one lookup of loaded custom emoji`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val lookups = emojiLookupClasses(build).flatMap { owner -> owner.methods.filter { isEmojiLookup(owner, it) } }
+            assertEquals("$name: one lookup in the whole app", 1, lookups.size)
+            val context = context(build)
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { unifiedPushPatch.execute(context) })
+            val stub = context.mutableClassDefBy(REACTION_ALERTS).method("emojiDocument")
+            assertTrue(name, AccessFlags.PUBLIC.isSet(stub.accessFlags) && AccessFlags.STATIC.isSet(stub.accessFlags))
+            val code = stub.controlBody()
+            assertEquals(listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT, Opcode.RETURN_OBJECT), code.map { it.opcode })
+            assertEquals(listOf(lookups.single().toString(), null, null), code.refs())
+            // The account and both halves of the document ID, as the stub got them.
+            assertEquals(listOf(1, 2, 3), code[0].namedRegisters())
+        }
+    }
+
+    @Test fun `a build without the custom emoji lookup keeps reaction notifications for plain emoji`() {
+        val context = context(Fixtures.declaredBuilds().first(), withEmojiLookup = false)
+        val warnings = PatchLogCapture.warnings { unifiedPushPatch.execute(context) }
+        assertEquals(1, warnings.size)
+        assertTrue(warnings.single(), warnings.single().contains("without custom emoji"))
+        assertEquals(1L, context.status("reactionAlerts"))
+        val code = context.mutableClassDefBy(REACTION_ALERTS).method("emojiDocument").controlBody()
+        assertTrue("the extension's own null stays", code.none { it.opcode == Opcode.INVOKE_STATIC })
     }
 
     @Test fun `the sound hook and Silence non-contacts share the silent check in either order`() {
