@@ -110,6 +110,14 @@ val hideFolderCountersPatch = bytecodePatch(
         } catch (failed: Exception) {
             "the date order's stubs don't build (${failed.javaClass.simpleName}: ${failed.message})"
         } else null
+        // So does the passcode that hidden chats can ask for, which reads Telegram's own passcode state.
+        val noPasscode = if (unhidden == null) try {
+            requireAppPasscodeRuntime()
+            writeAppPasscodeStubs()
+            null
+        } catch (failed: Exception) {
+            "the app passcode's stubs don't build (${failed.javaClass.simpleName}: ${failed.message})"
+        } else null
         insertCounterAnswer(counter)
         enableStatus("hideFolderCounters")
         if (missing == null) {
@@ -135,6 +143,11 @@ val hideFolderCountersPatch = bytecodePatch(
             val pickers = resolveHiddenPickers()
             pickers.apply()
             pickers.gaps.forEach { patchLog.warning("Hide folder tab counters: $it. Hidden chats go on, listed in that picker.") }
+            if (noPasscode == null) {
+                enableCapability("hiddenPasscode")
+            } else {
+                patchLog.warning("Hide folder tab counters: $noPasscode. Hidden chats go on without the passcode switch.")
+            }
             if (noSort == null) {
                 enableCapability("sortByDate")
             } else {

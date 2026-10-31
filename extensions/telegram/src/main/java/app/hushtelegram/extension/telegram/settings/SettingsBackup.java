@@ -148,6 +148,7 @@ public final class SettingsBackup {
             Settings.HIDDEN_CHATS,
             Settings.SORT_BY_DATE,
             Settings.SORT_OLDEST_FIRST,
+            Settings.HIDDEN_CHATS_PASSCODE,
             Settings.FORWARD_HIDE_SENDER,
             Settings.VOICE_MUSIC_PLAYER,
             Settings.SILENCE_NON_CONTACTS,

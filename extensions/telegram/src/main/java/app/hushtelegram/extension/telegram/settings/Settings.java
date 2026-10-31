@@ -334,6 +334,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting SORT_BY_DATE =
             new BooleanSetting("hushtelegram_sort_by_date", FALSE);
 
+    /**
+     * The list of hidden chats and the switch that hides them ask for Telegram's app passcode first
+     * ({@link app.hushtelegram.extension.telegram.misc.AppPasscode}).
+     */
+    public static final BooleanSetting HIDDEN_CHATS_PASSCODE =
+            new BooleanSetting("hushtelegram_hidden_chats_lock", FALSE);
+
     /** With the date order on, the chat with the oldest last message comes first instead of the newest. */
     public static final BooleanSetting SORT_OLDEST_FIRST =
             new BooleanSetting("hushtelegram_sort_oldest_first", FALSE);

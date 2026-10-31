@@ -81,6 +81,7 @@ import app.hushtelegram.extension.shared.settings.preference.ExportDiagnosticRep
 import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
+import app.hushtelegram.extension.telegram.misc.AppPasscode;
 import app.hushtelegram.extension.telegram.misc.CallRecorder;
 import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
@@ -471,12 +472,43 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                         ? L10n.t("Folder tab counts leave them out, but the app badge still counts their unread messages.")
                                         : L10n.t("Folder tab counts and the app badge still count their unread messages.")));
                 hide.setOnPreferenceChangeListener((row, value) -> {
+                    if (Boolean.FALSE.equals(value) && passcodeOn()) {
+                        // Showing the hidden chats again takes the passcode, or the switch would be the way round it.
+                        askPasscode(() -> {
+                            ((SwitchPreference) row).setChecked(false);
+                            Utils.runOnMainThreadDelayed(HiddenChats::refreshAll, 0);
+                        });
+                        return false;
+                    }
                     // Once the switch is saved, so the chat list sorts by what it says.
                     Utils.runOnMainThreadDelayed(HiddenChats::refreshAll, 0);
                     return true;
                 });
                 folderTabs.addPreference(hide);
                 folderTabs.addPreference(hiddenChatsRow(context));
+                if (PatchFamily.Capability.HIDDEN_PASSCODE.installed()) {
+                    SwitchPreference passcode = toggle(context, Settings.HIDDEN_CHATS_PASSCODE, L10n.t("Passcode for hidden chats"),
+                            L10n.t("Opening the list of hidden chats, and turning off Hide picked chats or this switch, asks for "
+                                    + "your Telegram passcode first. It uses the passcode you already set in Telegram, and it only "
+                                    + "guards this settings page. Anyone who can open Telegram can still find the hidden chats "
+                                    + "through search."));
+                    passcode.setOnPreferenceChangeListener((row, value) -> {
+                        if (Boolean.TRUE.equals(value) && !AppPasscode.isSet()) {
+                            Utils.showToastLong(L10n.t("Set a Telegram passcode first."));
+                            return false;
+                        }
+                        if (Boolean.FALSE.equals(value) && passcodeOn()) {
+                            askPasscode(() -> {
+                                ((SwitchPreference) row).setChecked(false);
+                                refreshHiddenChatsRow();
+                            });
+                            return false;
+                        }
+                        Utils.runOnMainThreadDelayed(this::refreshHiddenChatsRow, 0);
+                        return true;
+                    });
+                    folderTabs.addPreference(passcode);
+                }
             }
             if (PatchFamily.Capability.SORT_BY_DATE.installed()) {
                 SwitchPreference sort = toggle(context, Settings.SORT_BY_DATE, L10n.t("Sort chats by date"),
@@ -1944,12 +1976,36 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         row.setKey(HIDDEN_CHATS_ROW);
         row.setTitle(L10n.t("Chats to hide"));
         row.setPersistent(false);
-        row.setSummary(hiddenChatsSummary(HiddenChats.shown()));
+        row.setSummary(hiddenChatsSummaryNow());
         row.setOnPreferenceClickListener(p -> {
-            showHiddenChats(context, p);
+            if (passcodeOn()) askPasscode(() -> showHiddenChats(context, p));
+            else showHiddenChats(context, p);
             return true;
         });
         return row;
+    }
+
+    /** Whether the hidden chats are behind Telegram's passcode: the switch is on and there is a passcode to ask for. */
+    private static boolean passcodeOn() {
+        return Settings.HIDDEN_CHATS_PASSCODE.get() && AppPasscode.isSet();
+    }
+
+    /** Asks for Telegram's passcode over the page, then runs [granted]. */
+    private void askPasscode(Runnable granted) {
+        Activity activity = getActivity();
+        if (getView() == null || activity == null || activity.isFinishing() || activity.isDestroyed()) return;
+        Dialog prompt = PasscodePrompt.ask(activity, L10n.t("Passcode needed"), granted);
+        if (prompt != null) own(prompt);
+    }
+
+    /** What the Chats to hide row says: the chats' names, or only that the list is locked. */
+    private static String hiddenChatsSummaryNow() {
+        return passcodeOn() ? L10n.t("Locked with your Telegram passcode.") : hiddenChatsSummary(HiddenChats.shown());
+    }
+
+    private void refreshHiddenChatsRow() {
+        Preference row = findPreference(HIDDEN_CHATS_ROW);
+        if (row != null) row.setSummary(hiddenChatsSummaryNow());
     }
 
     /**
@@ -1990,7 +2046,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             save(dialog, () -> HiddenChats.hide(shown.user, hide), landed -> {
                 if (landed) {
                     HiddenChats.refresh(shown.account);
-                    row.setSummary(hiddenChatsSummary(HiddenChats.shown()));
+                    row.setSummary(hiddenChatsSummaryNow());
                     dialog.dismiss();
                 } else {
                     Utils.showToastLong(L10n.t("Couldn't save the chats. Try again in a moment."));

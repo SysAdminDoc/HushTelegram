@@ -404,6 +404,7 @@ class HiddenChatsFixtureTest {
             assertEquals(1L, statusOf(context, "hiddenChats"))
             assertEquals(1L, statusOf(context, "hiddenUnread"))
             assertEquals(1L, statusOf(context, "sortByDate"))
+            assertEquals(1L, statusOf(context, "hiddenPasscode"))
             assertEquals(1L, statusOf(context, "launchFolder"))
             assertEquals(1, context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == "sortDialogs" }.body()
                 .count { it.ref() == "$HIDDEN_CHATS->prune(Ljava/lang/Object;)V" })

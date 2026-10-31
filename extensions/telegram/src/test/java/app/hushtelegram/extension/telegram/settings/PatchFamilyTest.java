@@ -104,6 +104,7 @@ public class PatchFamilyTest {
         Settings.HIDDEN_CHATS.resetToDefault();
         Settings.SORT_BY_DATE.resetToDefault();
         Settings.SORT_OLDEST_FIRST.resetToDefault();
+        Settings.HIDDEN_CHATS_PASSCODE.resetToDefault();
         Settings.FORWARD_HIDE_SENDER.resetToDefault();
         Settings.VOICE_MUSIC_PLAYER.resetToDefault();
         Settings.SILENCE_NON_CONTACTS.resetToDefault();
@@ -630,7 +631,7 @@ public class PatchFamilyTest {
         assertEquals("Hide folder tab counters", family.patchName);
         // The folder the chat list opens on and the hidden chats start off too, and each works with or without the others.
         assertEquals(Arrays.asList(Settings.HIDE_FOLDER_COUNTERS, Settings.LAUNCH_FOLDER, Settings.HIDE_ALL_CHATS,
-                Settings.MOVE_ALL_CHATS, Settings.HIDDEN_CHATS), family.switches, Settings.HIDDEN_CHATS, Settings.SORT_BY_DATE, Settings.SORT_OLDEST_FIRST));
+                Settings.MOVE_ALL_CHATS, Settings.HIDDEN_CHATS), family.switches, Settings.HIDDEN_CHATS, Settings.SORT_BY_DATE, Settings.SORT_OLDEST_FIRST, Settings.HIDDEN_CHATS_PASSCODE), Settings.SORT_OLDEST_FIRST));
         for (BooleanSetting setting : family.switches) {
             assertFalse(setting.key, setting.defaultValue);
             // The counters change at once, the folder pick is for the next chat list, and the hidden
@@ -640,12 +641,13 @@ public class PatchFamilyTest {
             assertEquals(setting.key, setting == Settings.HIDE_ALL_CHATS || setting == Settings.MOVE_ALL_CHATS, setting.rebootApp);
         }
         assertEquals(EnumSet.of(PatchFamily.Capability.LAUNCH_FOLDER, PatchFamily.Capability.HIDE_ALL_CHATS, PatchFamily.Capability.ALL_CHATS_PLACE,
-                PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.SORT_BY_DATE, PatchFamily.Capability.HIDDEN_UNREAD), family.expectedCapabilities());
+                PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.SORT_BY_DATE, PatchFamily.Capability.HIDDEN_PASSCODE, PatchFamily.Capability.HIDDEN_UNREAD), family.expectedCapabilities());
         assertEquals("launchFolder", PatchFamily.Capability.LAUNCH_FOLDER.statusMethod);
         assertEquals("hideAllChats", PatchFamily.Capability.HIDE_ALL_CHATS.statusMethod);
         assertEquals("allChatsPlace", PatchFamily.Capability.ALL_CHATS_PLACE.statusMethod);
         assertEquals("hiddenChats", PatchFamily.Capability.HIDDEN_CHATS.statusMethod);
         assertEquals("sortByDate", PatchFamily.Capability.SORT_BY_DATE.statusMethod);
+        assertEquals("hiddenPasscode", PatchFamily.Capability.HIDDEN_PASSCODE.statusMethod);
         assertEquals("hiddenUnread", PatchFamily.Capability.HIDDEN_UNREAD.statusMethod);
         assertOnItsPage(family);
     }

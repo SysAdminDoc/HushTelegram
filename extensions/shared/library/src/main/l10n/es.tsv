@@ -1205,3 +1205,27 @@ Orders your unpinned chats by the date of their last message. Pinned chats and t
 Oldest chats first	Chats más antiguos primero
 # context: Summary of Oldest chats first. Sort chats by date is the title of the switch above it
 With Sort chats by date on, the chat with the oldest last message comes first instead of the newest.	Con Ordenar chats por fecha activado, va primero el chat con el último mensaje más antiguo en lugar del más reciente.
+# context: Switch title under Hide picked chats on the Chat list page, off by default. With it on, the hidden chats ask for the Telegram app passcode
+Passcode for hidden chats	Código para chats ocultos
+# context: Summary of Passcode for hidden chats. Says plainly it only guards this settings page and that search still finds the chats
+Opening the list of hidden chats, and turning off Hide picked chats or this switch, asks for your Telegram passcode first. It uses the passcode you already set in Telegram, and it only guards this settings page. Anyone who can open Telegram can still find the hidden chats through search.	Abrir la lista de chats ocultos, o desactivar Ocultar chats elegidos o este interruptor, pide primero tu código de Telegram. Usa el código que ya pusiste en Telegram y solo protege esta página de ajustes. Quien pueda abrir Telegram aún puede encontrar los chats ocultos con la búsqueda.
+# context: Toast when Passcode for hidden chats is switched on but the Telegram app has no passcode yet
+Set a Telegram passcode first.	Primero pon un código en Telegram.
+# context: Dialog title when the Telegram passcode is asked for before the hidden chats open or their switch turns off
+Passcode needed	Hace falta el código
+# context: Row summary of Chats to hide while Passcode for hidden chats is on; the names stay out of sight
+Locked with your Telegram passcode.	Bloqueado con tu código de Telegram.
+# context: Hint in the passcode box that asks for the Telegram app passcode
+Telegram passcode	Código de Telegram
+# context: Instruction above the passcode box that asks for the Telegram app passcode
+Type the passcode you use to unlock Telegram.	Escribe el código con el que desbloqueas Telegram.
+# context: Button on the passcode dialog that checks the typed passcode
+Unlock	Desbloquear
+# context: Shown under the passcode box after a wrong passcode
+That's not your passcode.	Ese no es tu código.
+# context: Shown under the passcode box after five wrong passcodes in a row; %1$s is the number of seconds to wait
+Too many tries. Wait %1$s seconds and try again.	Demasiados intentos. Espera %1$s segundos e inténtalo de nuevo.
+# context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line such as 'the patch could not find %1$s'. It names the chat list's order by date
+chat list ordered by date	el orden de la lista de chats por fecha
+# context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line such as 'the patch could not find %1$s'. It names the passcode check that guards the hidden chats
+the app passcode for hidden chats	el código de la app para los chats ocultos

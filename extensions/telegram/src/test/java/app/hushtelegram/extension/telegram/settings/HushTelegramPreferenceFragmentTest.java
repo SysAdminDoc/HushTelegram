@@ -56,6 +56,7 @@ import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
+import app.hushtelegram.extension.telegram.misc.AppPasscodeForTests;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloadsForTests;
 import app.hushtelegram.extension.telegram.misc.HiddenChats;
@@ -1489,6 +1490,69 @@ public class HushTelegramPreferenceFragmentTest {
                     + "keeps its own list. Folder tab counts and the app badge still count their unread messages.",
                     String.valueOf(pageOf(controller).findPreference(Settings.HIDDEN_CHATS.key).getSummary()));
         } finally {
+            PatchFamily.capabilitiesForTests = null;
+        }
+    }
+
+    /**
+     * With the passcode switch on, the chats row, Hide picked chats and the passcode switch each ask for
+     * Telegram's passcode before they give way, and a wrong one changes nothing.
+     */
+    @Test
+    public void thePasscodeGuardsTheHiddenChatsPage() {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_FOLDER_COUNTERS);
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.HIDDEN_PASSCODE);
+        AppPasscodeForTests.use("2468");
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            SwitchPreference passcode = (SwitchPreference) page.findPreference(Settings.HIDDEN_CHATS_PASSCODE.key);
+            assertEquals("Passcode for hidden chats", String.valueOf(passcode.getTitle()));
+            assertFalse("off until turned on", passcode.isChecked());
+            assertTrue(String.valueOf(passcode.getSummary()).contains("guards this settings page"));
+
+            assertTrue("turning it on needs a passcode to exist", passcode.getOnPreferenceChangeListener().onPreferenceChange(passcode, true));
+            Settings.HIDDEN_CHATS_PASSCODE.save(true);
+            Settings.HIDDEN_CHATS.save(true);
+            Preference row = page.findPreference(HushTelegramPreferenceFragment.HIDDEN_CHATS_ROW);
+            Preference hide = page.findPreference(Settings.HIDDEN_CHATS.key);
+
+            assertFalse("showing the chats again asks first", hide.getOnPreferenceChangeListener().onPreferenceChange(hide, false));
+            AlertDialog prompt = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertTrue(prompt.isShowing());
+            assertEquals("Passcode needed", String.valueOf(shadowOf(prompt).getTitle()));
+            ((android.widget.EditText) prompt.findViewById(android.R.id.edit)).setText("1111");
+            prompt.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            assertTrue("a wrong passcode keeps the prompt", prompt.isShowing());
+            assertTrue("and the switch on", Settings.HIDDEN_CHATS.get());
+            ((android.widget.EditText) prompt.findViewById(android.R.id.edit)).setText("2468");
+            prompt.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            assertFalse("the right one closes it", prompt.isShowing());
+            assertFalse("and turns the switch off", ((SwitchPreference) hide).isChecked());
+
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowLooper.idleMainLooper();
+            AlertDialog second = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertEquals("the list sits behind the passcode too", "Passcode needed", String.valueOf(shadowOf(second).getTitle()));
+            assertEquals("Locked with your Telegram passcode.", String.valueOf(row.getSummary()));
+        } finally {
+            AppPasscodeForTests.restore();
+            Settings.HIDDEN_CHATS_PASSCODE.resetToDefault();
+            Settings.HIDDEN_CHATS.resetToDefault();
+            PatchFamily.capabilitiesForTests = null;
+        }
+    }
+
+    /** Without a Telegram passcode the switch refuses to turn on, and says why. */
+    @Test
+    public void thePasscodeSwitchNeedsAPasscodeToExist() {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_FOLDER_COUNTERS);
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.HIDDEN_PASSCODE);
+        AppPasscodeForTests.use(null);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Preference passcode = pageOf(controller).findPreference(Settings.HIDDEN_CHATS_PASSCODE.key);
+            assertFalse(passcode.getOnPreferenceChangeListener().onPreferenceChange(passcode, true));
+        } finally {
+            AppPasscodeForTests.restore();
             PatchFamily.capabilitiesForTests = null;
         }
     }

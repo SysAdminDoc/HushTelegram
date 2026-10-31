@@ -1205,3 +1205,27 @@ Orders your unpinned chats by the date of their last message. Pinned chats and t
 Oldest chats first	Chat terlama dulu
 # context: Summary of Oldest chats first. Sort chats by date is the title of the switch above it
 With Sort chats by date on, the chat with the oldest last message comes first instead of the newest.	Saat Urutkan chat menurut tanggal aktif, chat dengan pesan terakhir paling lama muncul lebih dulu, bukan yang terbaru.
+# context: Switch title under Hide picked chats on the Chat list page, off by default. With it on, the hidden chats ask for the Telegram app passcode
+Passcode for hidden chats	Kode sandi untuk chat tersembunyi
+# context: Summary of Passcode for hidden chats. Says plainly it only guards this settings page and that search still finds the chats
+Opening the list of hidden chats, and turning off Hide picked chats or this switch, asks for your Telegram passcode first. It uses the passcode you already set in Telegram, and it only guards this settings page. Anyone who can open Telegram can still find the hidden chats through search.	Membuka daftar chat tersembunyi, atau mematikan Sembunyikan obrolan pilihan atau sakelar ini, meminta kode sandi Telegram-mu dulu. Ini memakai kode sandi yang sudah kamu atur di Telegram, dan hanya menjaga halaman pengaturan ini. Siapa pun yang bisa membuka Telegram tetap bisa menemukan chat tersembunyi lewat pencarian.
+# context: Toast when Passcode for hidden chats is switched on but the Telegram app has no passcode yet
+Set a Telegram passcode first.	Atur kode sandi Telegram dulu.
+# context: Dialog title when the Telegram passcode is asked for before the hidden chats open or their switch turns off
+Passcode needed	Perlu kode sandi
+# context: Row summary of Chats to hide while Passcode for hidden chats is on; the names stay out of sight
+Locked with your Telegram passcode.	Dikunci dengan kode sandi Telegram-mu.
+# context: Hint in the passcode box that asks for the Telegram app passcode
+Telegram passcode	Kode sandi Telegram
+# context: Instruction above the passcode box that asks for the Telegram app passcode
+Type the passcode you use to unlock Telegram.	Ketik kode sandi yang kamu pakai untuk membuka Telegram.
+# context: Button on the passcode dialog that checks the typed passcode
+Unlock	Buka kunci
+# context: Shown under the passcode box after a wrong passcode
+That's not your passcode.	Itu bukan kode sandimu.
+# context: Shown under the passcode box after five wrong passcodes in a row; %1$s is the number of seconds to wait
+Too many tries. Wait %1$s seconds and try again.	Terlalu banyak percobaan. Tunggu %1$s detik lalu coba lagi.
+# context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line such as 'the patch could not find %1$s'. It names the chat list's order by date
+chat list ordered by date	urutan daftar chat menurut tanggal
+# context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line such as 'the patch could not find %1$s'. It names the passcode check that guards the hidden chats
+the app passcode for hidden chats	kode sandi aplikasi untuk chat tersembunyi
