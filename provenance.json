@@ -194,6 +194,8 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/VoicePlayer.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/PlaybackPosition.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SelectBetween.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FolderIcons.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FolderIconPath.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/NonContacts.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ArchivePull.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/RearCamera.java",
@@ -376,6 +378,17 @@
       "via": [],
       "license": "GPL-3.0-only",
       "changes": "Telegram request and presentation guards written for version 12.10.6 from its own dex. Runtime switches retain the stock paths when disabled or paused, with separate target capabilities."
+    },
+    {
+      "paths": [
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FolderIconData.java"
+      ],
+      "origin": "ported",
+      "upstream": "https://github.com/phosphor-icons/core",
+      "commit": "2b75f3ad12b420c9504ef05df8d2564a28f8500e",
+      "via": [],
+      "license": "MIT",
+      "changes": "Path data of twenty Phosphor Icons in the regular, bold and fill weights, copied from the upstream SVG files into string arrays for the Folder icons setting."
     },
     {
       "paths": [

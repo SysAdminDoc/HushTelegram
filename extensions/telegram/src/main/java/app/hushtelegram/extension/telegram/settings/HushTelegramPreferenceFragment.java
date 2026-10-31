@@ -88,6 +88,7 @@ import app.hushtelegram.extension.telegram.misc.CallRecorder;
 import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
+import app.hushtelegram.extension.telegram.misc.FolderIcons;
 import app.hushtelegram.extension.telegram.misc.GalleryFolder;
 import app.hushtelegram.extension.telegram.misc.HiddenAccounts;
 import app.hushtelegram.extension.telegram.misc.HiddenChats;
@@ -136,6 +137,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String GALLERY_FOLDER_ROW = "action_gallery_folder";
     /** The Folder to open row's key. The picks are kept by {@link LaunchFolder}, one for each account. */
     static final String LAUNCH_FOLDER_ROW = "action_launch_folder";
+    /** The Folder icons row's key. The choice itself is saved under {@link Settings#FOLDER_ICON_PACK}. */
+    static final String FOLDER_ICON_ROW = "action_folder_icons";
     static final String HIDDEN_CHATS_ROW = "action_hidden_chats";
     static final String HIDDEN_ACCOUNTS_ROW = "action_hidden_accounts";
 
@@ -295,6 +298,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (gallery != null) gallery.setSummary(galleryFolderSummary());
         Preference storageName = findPreference(StorageFolderEditor.KEY);
         if (storageName != null) storageName.setSummary(StorageFolderEditor.summary(Settings.STORAGE_FOLDER_NAME.savedValue()));
+        Preference icons = findPreference(FOLDER_ICON_ROW);
+        if (icons != null) icons.setSummary(folderIconSummary());
         Preference target = findPreference(TranslateTargetPicker.KEY);
         if (target != null) target.setSummary(TranslateTargetPicker.summary(Settings.TRANSLATE_TARGET.savedValue()));
     }
@@ -585,6 +590,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 folderTabs.addPreference(sort);
                 folderTabs.addPreference(oldest);
             }
+            folderTabs.addPreference(folderIconRow(context));
         }
         if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS)) {
             SwitchPreference folders = toggle(context, Settings.CHAT_TYPE_FOLDERS, L10n.t("Folders by chat type"),
@@ -1968,6 +1974,99 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 + " Telegram's folders.", galleryFolderLabel(Settings.GALLERY_FOLDER.savedValue()));
     }
 
+    /** The folder names as a choice list, each with its icon in the chosen pack beside it, or plain names with none chosen. */
+    private static android.widget.ListAdapter folderListAdapter(Context context, CharSequence[] labels) {
+        String pack = FolderIcons.pack();
+        int size = Math.round(24 * context.getResources().getDisplayMetrics().density);
+        return new android.widget.ArrayAdapter<CharSequence>(context, android.R.layout.simple_list_item_single_choice, labels) {
+            @Override
+            public View getView(int position, View convert, ViewGroup parent) {
+                TextView view = (TextView) super.getView(position, convert, parent);
+                String name = position == 0 ? "All Chats" : getItem(position).toString();
+                android.graphics.drawable.Drawable icon = position == 0 && !pack.isEmpty()
+                        ? FolderIcons.drawable(pack, "chat-circle", size, view.getCurrentTextColor())
+                        : FolderIcons.forFolder(pack, name, size, view.getCurrentTextColor());
+                view.setCompoundDrawables(icon, null, null, null);
+                view.setCompoundDrawablePadding(icon == null ? 0 : size / 2);
+                return view;
+            }
+        };
+    }
+
+    /** The icon pack row: it names the pack, and a tap lists them with a few of each pack's icons beside the name. */
+    private Preference folderIconRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(FOLDER_ICON_ROW);
+        row.setTitle(L10n.t("Folder icons"));
+        row.setPersistent(false);
+        row.setSummary(folderIconSummary());
+        row.setOnPreferenceClickListener(p -> {
+            showFolderIcons(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    /** The packs with the saved one checked, each drawn under its name so the choice is seen before it's made. */
+    void showFolderIcons(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
+        CharSequence[] labels = new CharSequence[FolderIcons.CHOICES.size()];
+        for (int i = 0; i < labels.length; i++) labels[i] = folderIconLabel(FolderIcons.CHOICES.get(i));
+        float density = context.getResources().getDisplayMetrics().density;
+        int size = Math.round(28 * density);
+        int gap = Math.round(10 * density);
+        android.widget.ArrayAdapter<CharSequence> adapter = new android.widget.ArrayAdapter<CharSequence>(
+                context, android.R.layout.simple_list_item_single_choice, labels) {
+            @Override
+            public View getView(int position, View convert, ViewGroup parent) {
+                TextView view = (TextView) super.getView(position, convert, parent);
+                android.graphics.drawable.Drawable preview = FolderIcons.preview(
+                        FolderIcons.CHOICES.get(position), size, gap, view.getCurrentTextColor());
+                view.setCompoundDrawables(null, null, null, preview);
+                view.setCompoundDrawablePadding(preview == null ? 0 : gap);
+                return view;
+            }
+        };
+        show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Folder icons"))
+                .setSingleChoiceItems(adapter, savedFolderIconChoice(), (dialog, which) -> {
+                    boolean started = save((AlertDialog) dialog,
+                            () -> Settings.FOLDER_ICON_PACK.saveCommitted(FolderIcons.CHOICES.get(which)), landed -> {
+                                if (landed) {
+                                    row.setSummary(folderIconSummary());
+                                    dialog.dismiss();
+                                } else {
+                                    checkSavedFolderIcons((AlertDialog) dialog);
+                                    Utils.showToastLong(L10n.t("Couldn't save the choice. Try again in a moment."));
+                                }
+                            });
+                    if (!started) checkSavedFolderIcons((AlertDialog) dialog);
+                })
+                .setNegativeButton(L10n.t("Cancel"), null));
+    }
+
+    static int savedFolderIconChoice() {
+        String saved = Settings.FOLDER_ICON_PACK.savedValue();
+        return FolderIcons.CHOICES.indexOf(FolderIcons.allowed(saved) ? saved : FolderIcons.OFF);
+    }
+
+    private static void checkSavedFolderIcons(AlertDialog dialog) {
+        dialog.getListView().setItemChecked(savedFolderIconChoice(), true);
+    }
+
+    /** A pack as the list, the row and an import preview name it; anything that isn't a pack reads as none. */
+    static String folderIconLabel(String pack) {
+        if (FolderIcons.REGULAR.equals(pack)) return L10n.t("Regular");
+        if (FolderIcons.BOLD.equals(pack)) return L10n.t("Bold");
+        if (FolderIcons.FILL.equals(pack)) return L10n.t("Filled");
+        return L10n.t("None");
+    }
+
+    static String folderIconSummary() {
+        return L10n.f("%1$s. Icons show beside folder names in HushTelegram's own lists."
+                + " Telegram's folder tabs stay as they are.", folderIconLabel(Settings.FOLDER_ICON_PACK.savedValue()));
+    }
+
     /** The folder the chat list opens on for the account shown now: the row says which, and a tap lists the others. */
     private Preference launchFolderRow(Context context) {
         Row row = new Row(context);
@@ -2007,7 +2106,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         for (int i = 0; i < folders.size(); i++) labels[i + 1] = folders.get(i).name;
         show(new AlertDialog.Builder(context)
                 .setTitle(L10n.t("Folder to open"))
-                .setSingleChoiceItems(labels, shown.choice(), (dialog, which) -> {
+                .setSingleChoiceItems(folderListAdapter(context, labels), shown.choice(), (dialog, which) -> {
                     LaunchFolder.Folder folder = which == 0 ? null : folders.get(which - 1);
                     boolean started = save((AlertDialog) dialog, () -> LaunchFolder.pick(shown.user, folder), landed -> {
                         if (landed) {

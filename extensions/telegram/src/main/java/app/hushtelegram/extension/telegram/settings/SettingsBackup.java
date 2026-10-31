@@ -45,6 +45,7 @@ import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.SettingsJson;
 import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
+import app.hushtelegram.extension.telegram.misc.FolderIcons;
 import app.hushtelegram.extension.telegram.misc.GalleryFolder;
 import app.hushtelegram.extension.telegram.misc.StorageFolder;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
@@ -254,7 +255,7 @@ public final class SettingsBackup {
      * from before them counts the name as unknown and leaves it out.
      */
     static final List<StringSetting> TEXTS = Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER,
-            Settings.TRANSLATE_TARGET, Settings.STORAGE_FOLDER_NAME);
+            Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME);
 
     /**
      * Bounds for the parser, well past anything this class writes, so a file built to be
@@ -684,6 +685,7 @@ public final class SettingsBackup {
         if (setting == Settings.GALLERY_FOLDER) return GalleryFolder.allowed(value);
         if (setting == Settings.TRANSLATE_TARGET) return TranslateTarget.allowed(value);
         if (setting == Settings.STORAGE_FOLDER_NAME) return StorageFolder.allowedName(value);
+        if (setting == Settings.FOLDER_ICON_PACK) return FolderIcons.allowed(value);
         return setting == Settings.TITLE_EMOJI && TitleEmoji.allowed(value);
     }
 

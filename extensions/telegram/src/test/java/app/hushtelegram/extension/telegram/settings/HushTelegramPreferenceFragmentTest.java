@@ -1351,6 +1351,44 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
+     * The Folder icons row sits with the folder tab rows, says what is picked, lists None and the
+     * three packs with the saved one checked, and a pick saves at once and closes the list (#53).
+     */
+    @Test
+    public void theFolderIconsRowListsThePacksAndSavesThePick() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_FOLDER_COUNTERS);
+        PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            Preference icons = page.findPreference(HushTelegramPreferenceFragment.FOLDER_ICON_ROW);
+            assertNotNull(icons);
+            assertFalse("it stores nothing itself", icons.isPersistent());
+            assertEquals("Folder icons", String.valueOf(icons.getTitle()));
+            assertTrue(String.valueOf(icons.getSummary()).startsWith("None. Icons show beside folder names"));
+
+            assertTrue(icons.getOnPreferenceClickListener().onPreferenceClick(icons));
+            ShadowLooper.idleMainLooper();
+            AlertDialog list = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertTrue(list.isShowing());
+            assertEquals("Folder icons", String.valueOf(shadowOf(list).getTitle()));
+            ListView choices = list.getListView();
+            List<String> labels = new ArrayList<>();
+            for (int i = 0; i < choices.getCount(); i++) labels.add(String.valueOf(choices.getAdapter().getItem(i)));
+            assertEquals(Arrays.asList("None", "Regular", "Bold", "Filled"), labels);
+            assertEquals("None is checked", 0, choices.getCheckedItemPosition());
+
+            shadowOf(list).clickOnItem(2);
+            settle();
+            assertFalse(list.isShowing());
+            assertEquals(app.hushtelegram.extension.telegram.misc.FolderIcons.BOLD, Settings.FOLDER_ICON_PACK.savedValue());
+            assertTrue(String.valueOf(icons.getSummary()).startsWith("Bold. Icons show beside folder names"));
+            assertTrue("and owes no restart", AbstractPreferenceFragment.restartPending.isEmpty());
+        } finally {
+            Settings.FOLDER_ICON_PACK.resetToDefault();
+        }
+    }
+
+    /**
      * Save downloaded files brings the storage folder switch under the gallery folder row when its
      * target went in (#7). Its summary says whether Android gives Telegram All files access, and
      * turning it on without that opens Android's page for it.

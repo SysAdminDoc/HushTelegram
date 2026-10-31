@@ -42,6 +42,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** **Use normal paste** has a new switch, **Mention by ID**, off by default. Type @ and a user's ID number, or tg://user?id= and the ID, in the message box and it goes out as a real mention. It only works for people the app has already seen, in a chat or a group. For anyone else the text stays as you typed it and a short note says so. Turn it on in HushTelegram settings > Conversations.
 * **Telegram:** **Voice messages in the music player** has a new switch, **Remember where playback stopped**, off by default. Videos, voice messages and music pick up where you left off, even short ones. Telegram only does that for long ones. Turn it off and everything plays as Telegram plays it. (#53)
 * **Telegram:** **Add Repeat to the message menu** has a new switch, **Select between**, off by default. It adds a button to the bar that shows while you pick messages. Tap it and everything between the first and last message you picked gets selected. Pick one past the end and the gap fills in. It stops at Telegram's 100 message limit. (#53)
+* **Telegram:** **Folder icons** is a new row with the folder tab settings. Pick Regular, Bold or Filled and HushTelegram draws a small icon beside each folder in its own lists, like Folder to open. A folder called Work gets a briefcase, Friends a group, and a name it doesn't know gets a plain folder. Telegram 13.1 doesn't draw folder icons at all, so its own tabs stay as they are. The icons are from Phosphor Icons (MIT). Off by default. (#53)
 
 ## 0.0.23 (2026-10-31)
 

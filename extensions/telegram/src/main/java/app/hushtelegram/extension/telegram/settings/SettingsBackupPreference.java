@@ -449,6 +449,10 @@ public class SettingsBackupPreference extends Preference {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Folder in internal storage"),
                         StorageFolderEditor.shown(Settings.STORAGE_FOLDER_NAME.savedValue()),
                         StorageFolderEditor.shown((String) change.getValue())));
+            } else if (change.getKey() == Settings.FOLDER_ICON_PACK) {
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Folder icons"),
+                        HushTelegramPreferenceFragment.folderIconLabel(Settings.FOLDER_ICON_PACK.savedValue()),
+                        HushTelegramPreferenceFragment.folderIconLabel((String) change.getValue())));
             } else if (change.getKey() == Settings.TRANSLATE_TARGET) {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Translate into"),
                         TranslateTargetPicker.label(Settings.TRANSLATE_TARGET.savedValue()),

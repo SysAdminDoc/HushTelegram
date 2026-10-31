@@ -631,6 +631,13 @@ public class Settings extends BaseSettings {
     public static final StringSetting GALLERY_FOLDER =
             new StringSetting("hushtelegram_gallery_folder", "");
 
+    /**
+     * The icon pack HushTelegram draws beside folder names in its own lists, one of
+     * {@link app.hushtelegram.extension.telegram.misc.FolderIcons#CHOICES}. Empty draws none (#53).
+     */
+    public static final StringSetting FOLDER_ICON_PACK =
+            new StringSetting("hushtelegram_folder_icon_pack", "");
+
     /** Turned on, makes Private, Groups, Channels and Bots folders; turned off, removes the untouched ones it made. */
     public static final BooleanSetting CHAT_TYPE_FOLDERS =
             new BooleanSetting("hushtelegram_chat_type_folders", FALSE);
