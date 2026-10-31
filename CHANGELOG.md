@@ -8,6 +8,10 @@ Every HushTelegram release, newest first.
 
 * **Tooling:** The whole-app walk gets past Android asking for contacts or photos over the screen it's opening. It says no (Don't allow, or Not now on Telegram's own contacts prompt, never Allow or Continue) and opens the screen again. If the ask keeps coming back, the walk's problem line names it instead of a bare "would not open".
 
+### Fixed
+
+* **Telegram:** With **Hide reactions under messages** on, TalkBack no longer reads out reactions you can't see. A message reads the same as one nobody reacted to, and Saved Messages tags are still read since they still show. (#48)
+
 ## 0.0.22 (2026-10-30)
 
 The thirteenth release, still 67 patches for Telegram 13.1.1 from Google Play and 13.1.0 from telegram.org. It's built on Morphe patcher 2.1.0, so update Morphe Manager to 2.3.0 before you add it. Nearly everything new came out of your reports. There's Ghost mode, a parental block on new channels and groups, copying and forwarding from chats that don't allow it, and switches that hide reactions.

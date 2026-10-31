@@ -10,6 +10,7 @@ import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.classDefsMentioning
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -66,7 +67,56 @@ internal fun Method.isRowSetter(): Boolean {
         body.any { it.controlRef()?.endsWith("->getChatFull(J)Lorg/telegram/tgnet/TLRPC\$ChatFull;") == true }
 }
 
-internal fun Method.isMenuBuilder() = !AccessFlags.STATIC.isSet(accessFlags) && returnType == "Z" &&
+internal const val STORED_REACTIONS = "Lorg/telegram/tgnet/TLRPC\$Message;->reactions:Lorg/telegram/tgnet/TLRPC\$TL_messageReactions;"
+internal const val REACTED_WITH = "AccDescrReactedWith"
+private const val SPOKEN_REACTIONS = "Lorg/telegram/tgnet/TLRPC\$TL_messageReactions;"
+
+internal fun Method.isSpokenBuilder() = name == "createAccessibilityNodeInfo" &&
+    parameterTypes.map { it.toString() } == listOf("I") && returnType == "Landroid/view/accessibility/AccessibilityNodeInfo;" &&
+    controlBody().any { it.controlRef() == STORED_REACTIONS } && controlBody().any { it.controlString() == REACTED_WITH }
+
+/**
+ * A chat message's accessibility node builds what TalkBack reads from the message's stored
+ * reactions, not from the row, so a hidden row still read "X reacted with". Its reaction text
+ * sits behind one null test of those reactions, and the hook filters the value that test reads.
+ */
+internal fun BytecodePatchContext.resolveReactionSpeech(): ReactionPlan {
+    val found = classDefsMentioning(Mention.reference(STORED_REACTIONS) and Mention.string(REACTED_WITH)).flatMap { cls ->
+        cls.methods.filter { it.isSpokenBuilder() }
+    }
+    val match = found.singleOrNull() ?: return nothing("the chat message's TalkBack text is no longer built in one place")
+    val method = mutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
+    val body = method.controlBody()
+    val read = body.indexOfFirst { it.controlRef() == STORED_REACTIONS }
+    val test = body.getOrNull(read + 1)
+    val register = (body[read] as OneRegisterInstruction).registerA
+    if (test?.opcode != Opcode.IF_EQZ || (test as OneRegisterInstruction).registerA != register) {
+        return nothing("the chat message's TalkBack text no longer checks its reactions before reading them")
+    }
+    val flow = try { ControlFlow.of(method) } catch (failure: IllegalArgumentException) {
+        return nothing("the chat message's TalkBack text has a branch the patch can't follow")
+    }
+    val skip = flow.normal[read + 1].maxOrNull() ?: -1
+    val lastSpoken = body.indexOfLast { it.controlRef() == STORED_REACTIONS }
+    if (skip <= lastSpoken || body.indexOfFirst { it.controlString() == REACTED_WITH } !in read until skip) {
+        return nothing("the chat message's reaction check no longer skips all of its reaction text")
+    }
+    val at = read + 1
+    return object : ReactionPlan(null) {
+        override fun apply() {
+            method.addInstructionsAtControlFlowLabel(
+                at,
+                """
+                    invoke-static/range {v$register .. v$register}, $DOUBLE_TAP_REACTIONS->spoken(Ljava/lang/Object;)Ljava/lang/Object;
+                    move-result-object v$register
+                    check-cast v$register, $SPOKEN_REACTIONS
+                """,
+            )
+        }
+    }
+}
+
+internal fun Method.isMenuBuilder() =!AccessFlags.STATIC.isSet(accessFlags) && returnType == "Z" &&
     parameterTypes.map { it.toString() } == listOf("Landroid/view/View;", "Z", "Z", "F", "F", "Z", "Z", "Z") &&
     controlBody().any { it.controlRef() == REACTIONS_AVAILABLE } && controlBody().any { it.controlRef() == ENABLED_REACTIONS }
 

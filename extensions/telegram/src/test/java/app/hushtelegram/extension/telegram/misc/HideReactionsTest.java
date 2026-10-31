@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.telegram.tgnet.TLRPC;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 30)
@@ -53,6 +54,30 @@ public class HideReactionsTest {
         assertSame("Saved Messages tags are another feature", message, DoubleTapReactions.rows(message, false, true));
         assertNull(DoubleTapReactions.rows(null, false, false));
         assertTrue("the picker is its own switch", DoubleTapReactions.picker(true));
+    }
+
+    @Test public void talkBackSkipsReactionsOnlyWhileTheRowIsHidden() {
+        TLRPC.TL_messageReactions reactions = new TLRPC.TL_messageReactions();
+        assertSame("off reads like stock Telegram", reactions, DoubleTapReactions.spoken(reactions));
+        Settings.HIDE_REACTION_ROWS.save(true);
+        assertNull(DoubleTapReactions.spoken(reactions));
+        assertNull(DoubleTapReactions.spoken(null));
+        reactions.reactions_as_tags = true;
+        assertSame("Saved Messages tags still show, so they still read", reactions, DoubleTapReactions.spoken(reactions));
+        Settings.HIDE_REACTION_ROWS.save(false);
+        Settings.HIDE_REACTION_PICKER.save(true);
+        reactions.reactions_as_tags = false;
+        assertSame("the picker is its own switch", reactions, DoubleTapReactions.spoken(reactions));
+    }
+
+    @Test public void talkBackFallsBackToStockWhenTheReactionsCantBeRead() {
+        Settings.HIDE_REACTION_ROWS.save(true);
+        Object odd = new Object();
+        assertSame(odd, DoubleTapReactions.spoken(odd));
+        assertFalse(HookStatus.missing(FamilyNames.DISABLE_DOUBLE_TAP_REACTIONS).isEmpty());
+        TLRPC.TL_messageReactions reactions = new TLRPC.TL_messageReactions();
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        assertSame(reactions, DoubleTapReactions.spoken(reactions));
     }
 
     @Test public void pickerSwitchOnlyTurnsAnAvailablePickerOff() {

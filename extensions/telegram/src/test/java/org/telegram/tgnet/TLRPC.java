@@ -62,6 +62,7 @@ public final class TLRPC {
 
     public static class MessageReactions {
         public java.util.ArrayList<MessagePeerReaction> recent_reactions = new java.util.ArrayList<>();
+        public boolean reactions_as_tags;
     }
 
     public static class TL_messageReactions extends MessageReactions { }

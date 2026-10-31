@@ -10,6 +10,7 @@ import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
@@ -23,7 +24,7 @@ import org.junit.Test
 /** The real reaction row and long-press menu builder of every declared build. */
 class HideReactionsFixtureTest {
     private fun hosts(build: java.io.File): List<ClassDef> =
-        FixtureDex.classesWhere(build, { true }) { it.isRowSetter() || it.isMenuBuilder() }
+        FixtureDex.classesWhere(build, { true }) { it.isRowSetter() || it.isMenuBuilder() || it.isSpokenBuilder() }
 
     private fun operand(i: Instruction) = listOf(i.opcode, i.namedRegisters(), i.controlRef(), (i as? WideLiteralInstruction)?.wideLiteral)
 
@@ -72,4 +73,33 @@ class HideReactionsFixtureTest {
         }
     }
 
+    @Test fun `TalkBack's reaction text reads the stored reactions through the hook before its one null test`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val classes = hosts(build)
+            val context = PatchContexts.of(ExtensionDex.classes() + classes)
+            val plan = context.resolveReactionSpeech()
+            assertEquals("${build.name}: ${plan.missing}", null, plan.missing)
+            val stock = classes.flatMap { it.methods }.single { it.isSpokenBuilder() }
+            val before = stock.controlBody().filter { it.opcode != Opcode.NOP }
+            plan.apply()
+            val patched = context.mutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
+            val after = patched.controlBody().filter { it.opcode != Opcode.NOP }
+            assertEquals("${build.name}: register count", stock.implementation!!.registerCount, patched.implementation!!.registerCount)
+            val at = after.indexOfFirst { it.controlRef() == "$DOUBLE_TAP_REACTIONS->spoken(Ljava/lang/Object;)Ljava/lang/Object;" }
+            assertTrue("${build.name}: hook inserted", at > 0)
+            assertEquals("${build.name}: right after the first read", after.indexOfFirst { it.controlRef() == STORED_REACTIONS }, at - 1)
+            assertEquals(listOf(Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT_OBJECT, Opcode.CHECK_CAST, Opcode.IF_EQZ),
+                after.subList(at, at + 4).map { it.opcode })
+            assertEquals("Lorg/telegram/tgnet/TLRPC\$TL_messageReactions;", after[at + 2].controlRef())
+            val register = after[at - 1].namedRegisters().first()
+            listOf(at, at + 1, at + 2, at + 3).forEach { assertEquals("${build.name}: one register", register, after[it].namedRegisters().first()) }
+            assertEquals("${build.name}: stock code unchanged", before.map(::operand), (after.take(at) + after.drop(at + 3)).map(::operand))
+            // The null test still skips every reaction string when the hook answers null.
+            val body = patched.controlBody()
+            val test = body.indexOfFirst { it.controlRef() == after[at].controlRef() } + 3
+            assertEquals(Opcode.IF_EQZ, body[test].opcode)
+            val skip = ControlFlow.of(patched).normal[test].max()
+            assertTrue("${build.name}: skip passes the reaction text", body.indexOfLast { it.controlString() == REACTED_WITH } < skip)
+        }
+    }
 }

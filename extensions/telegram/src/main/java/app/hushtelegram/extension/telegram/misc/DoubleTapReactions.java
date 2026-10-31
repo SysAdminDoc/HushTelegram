@@ -42,6 +42,24 @@ public final class DoubleTapReactions {
         }
     }
 
+    /**
+     * Called with a message's stored reactions where its accessibility node builds what TalkBack
+     * reads. Answering null skips the reaction text the way a message with no reactions does, so
+     * a hidden row isn't read out either. Saved Messages tags still show, so they still read.
+     */
+    public static Object spoken(Object reactions) {
+        HookStatus.invoked(FamilyNames.DISABLE_DOUBLE_TAP_REACTIONS);
+        try {
+            if (reactions == null || !Utils.settingsReady() || !Settings.HIDE_REACTION_ROWS.get()) return reactions;
+            if (reactions.getClass().getField("reactions_as_tags").getBoolean(reactions)) return reactions;
+            HookStatus.counted(FamilyNames.DISABLE_DOUBLE_TAP_REACTIONS, "reactions left out of TalkBack");
+            return null;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.DISABLE_DOUBLE_TAP_REACTIONS, "spoken reactions switch", failure);
+            return reactions;
+        }
+    }
+
     /** Called with the long-press menu's "reactions are available" answer; false means no strip and no panel. */
     public static boolean picker(boolean available) {
         HookStatus.invoked(FamilyNames.DISABLE_DOUBLE_TAP_REACTIONS);

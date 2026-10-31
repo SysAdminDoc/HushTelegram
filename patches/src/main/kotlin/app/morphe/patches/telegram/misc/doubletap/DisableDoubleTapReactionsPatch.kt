@@ -35,7 +35,9 @@ val disableDoubleTapReactionsPatch = bytecodePatch(
         listOf("reactionRows", "reactionPicker").forEach(::requireStatusMethod)
         controlHook(DOUBLE_TAP_REACTIONS, "rows", listOf("Ljava/lang/Object;", "Z", "Z"), "Ljava/lang/Object;")
         controlHook(DOUBLE_TAP_REACTIONS, "picker", listOf("Z"), "Z")
+        controlHook(DOUBLE_TAP_REACTIONS, "spoken", listOf("Ljava/lang/Object;"), "Ljava/lang/Object;")
         val rows = resolveReactionRows()
+        val speech = resolveReactionSpeech()
         val picker = resolveReactionPicker()
         sites.forEach { it.insert(MutableMethod(ImmutableMethod.of(it.method))) }
         sites.forEach { it.insert(it.method) }
@@ -44,6 +46,8 @@ val disableDoubleTapReactionsPatch = bytecodePatch(
         if (rows.missing == null) {
             rows.apply()
             enableCapability("reactionRows")
+            if (speech.missing == null) speech.apply()
+            else patchLog.warning("Disable double-tap reactions: ${speech.missing}. Hidden reaction rows still show in what TalkBack reads.")
         } else {
             patchLog.warning("Disable double-tap reactions: ${rows.missing}. The patch goes on without the reaction rows switch.")
         }
