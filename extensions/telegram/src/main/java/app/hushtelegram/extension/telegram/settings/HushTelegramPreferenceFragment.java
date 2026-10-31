@@ -81,6 +81,7 @@ import app.hushtelegram.extension.shared.settings.preference.ExportDiagnosticRep
 import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
+import app.hushtelegram.extension.telegram.misc.CallRecorder;
 import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
@@ -1068,6 +1069,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 privacy.addPreference(toggle(context, Settings.DISABLE_CALL_DEBUG, L10n.t("Stop call diagnostics"),
                         PatchFamily.DISABLE_CALL_DEBUG.coverageSummary(L10n.t("Stops your phone from automatically sending call problem reports and log files "
                                 + "when Telegram's server asks for them."))));
+                // Off as shipped: saving a call is the user's choice, and the other person isn't asked.
+                if (PatchFamily.Capability.CALL_RECORDING.installed()) {
+                    privacy.addPreference(toggle(context, Settings.RECORD_CALLS, L10n.t("Record calls"),
+                            L10n.f("Saves both sides of each call to %1$s on this phone. The other person isn't told.",
+                                    L10n.isolate(CallRecorder.folder()))));
+                }
             }
             if (build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS)) {
                 privacy.addPreference(toggle(context, Settings.DISABLE_DRAFT_PREVIEWS, L10n.t("No previews before sending"),

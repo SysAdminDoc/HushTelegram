@@ -621,6 +621,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting DISABLE_CALL_DEBUG =
             new BooleanSetting("hushtelegram_disable_call_debug", TRUE);
 
+    /**
+     * Each call's audio, both sides, is saved to a file on this phone once the call ends. Read on
+     * every block of call audio, so turning it off stops a call's recording where it is. Off by
+     * default.
+     */
+    public static final BooleanSetting RECORD_CALLS =
+            new BooleanSetting("hushtelegram_record_calls", FALSE);
+
     /** Link previews for unsent messages only; sent messages and received previews stay stock. */
     public static final BooleanSetting DISABLE_DRAFT_PREVIEWS =
             new BooleanSetting("hushtelegram_disable_draft_previews", FALSE);

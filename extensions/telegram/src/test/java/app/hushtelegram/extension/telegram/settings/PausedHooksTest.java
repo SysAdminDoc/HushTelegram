@@ -176,7 +176,8 @@ public class PausedHooksTest {
         probes.put(PatchFamily.DISABLE_CALL_DEBUG, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.CallDebug.skipCallDebugUpload(true),
                 app.hushtelegram.extension.telegram.misc.CallDebug::skipCallLogFileUpload,
-                app.hushtelegram.extension.telegram.misc.CallDebug::skipCallLogUpload));
+                app.hushtelegram.extension.telegram.misc.CallDebug::skipCallLogUpload,
+                app.hushtelegram.extension.telegram.misc.CallRecorderForTests::takesAFrame));
         // An unsent message's link preview is never asked for, on any compose surface, its draft
         // stays off Telegram's server, and what's typed in search stays here too.
         probes.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, Arrays.asList(

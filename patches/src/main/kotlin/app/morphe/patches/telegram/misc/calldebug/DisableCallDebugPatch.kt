@@ -16,9 +16,11 @@ import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
 import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
+import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.requireParameterIntact
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -60,8 +62,15 @@ val disableCallDebugPatch = bytecodePatch(
         requireStatusMethod("callDebugUpload")
         requireStatusMethod("callLogFileUpload")
         requireStatusMethod("callLogUpload")
+        requireStatusMethod("callRecording")
+        for (engine in CallAudioEngine.entries) {
+            controlHook(CALL_RECORDER, engine.recorded, CALL_RECORDER_RECORDED, "V")
+            controlHook(CALL_RECORDER, engine.played, CALL_RECORDER_PLAYED, "V")
+        }
         // Every gate, original return and borrowed register is checked before the first edit.
         val hooks = resolveCallDebugHooks()
+        // Call recording is an extra: an engine that can't be tapped is left out with a warning.
+        val audio = resolveCallAudio()
         for ((target, hook) in hooks) {
             hook.method.addInstructionsAtControlFlowLabel(hook.index, hook.code,
                 ExternalLabel("hush_done", hook.method.getInstruction(hook.finish)))
@@ -71,6 +80,11 @@ val disableCallDebugPatch = bytecodePatch(
                 CallDebugTarget.LOG -> enableCapability("callLogUpload")
             }
         }
+        applyCallAudio(audio)
+        for ((engine, why) in audio.missing) {
+            patchLog.warning("$PATCH: $why. The patch goes on without call recording on the ${engine.label} engine.")
+        }
+        if (audio.taps.isNotEmpty()) enableCapability("callRecording")
         enableStatus("disableCallDebug")
     }
 }

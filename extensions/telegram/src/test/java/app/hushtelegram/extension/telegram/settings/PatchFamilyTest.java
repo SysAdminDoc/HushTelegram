@@ -573,6 +573,29 @@ public class PatchFamilyTest {
     }
 
     @Test
+    public void callDiagnosticsCarryAnOffByDefaultCallRecordingSwitchOfItsOwn() {
+        PatchFamily family = PatchFamily.DISABLE_CALL_DEBUG;
+        assertEquals("Disable call debug upload", family.patchName);
+        assertEquals("disableCallDebug", family.statusMethod);
+        // Record calls (#39) starts off and is read on every block of call audio, so no restart is needed.
+        assertEquals(Arrays.asList(Settings.DISABLE_CALL_DEBUG, Settings.RECORD_CALLS), family.switches);
+        assertTrue(Settings.DISABLE_CALL_DEBUG.defaultValue);
+        assertFalse(Settings.RECORD_CALLS.defaultValue);
+        assertFalse(Settings.RECORD_CALLS.rebootApp);
+        assertEquals(EnumSet.of(PatchFamily.Capability.CALL_DEBUG_UPLOAD, PatchFamily.Capability.CALL_LOG_FILE_UPLOAD,
+                        PatchFamily.Capability.CALL_LOG_UPLOAD, PatchFamily.Capability.CALL_RECORDING),
+                family.expectedCapabilities());
+        assertEquals("callRecording", PatchFamily.Capability.CALL_RECORDING.statusMethod);
+        // A build without the recording taps keeps the diagnostics switch's description, it only loses the row.
+        assertTrue(PatchFamily.Capability.CALL_RECORDING.rowOnly);
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.CALL_DEBUG_UPLOAD,
+                PatchFamily.Capability.CALL_LOG_FILE_UPLOAD, PatchFamily.Capability.CALL_LOG_UPLOAD);
+        assertEquals("complete", family.coverageSummary("complete"));
+        assertOnItsPage(family);
+        assertEquals(PatchFamily.Page.PRIVACY, PatchFamily.Page.of(family));
+    }
+
+    @Test
     public void forwardHideSenderHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
         PatchFamily family = PatchFamily.FORWARD_HIDE_SENDER;
         assertEquals("Hide sender names when forwarding", family.patchName);

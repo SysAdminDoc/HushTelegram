@@ -147,6 +147,7 @@ public final class SettingsStatus {
     public static boolean callDebugUpload() { return false; }
     public static boolean callLogFileUpload() { return false; }
     public static boolean callLogUpload() { return false; }
+    public static boolean callRecording() { return false; }
 
     public static boolean disableDraftPreviews() { return false; }
     public static boolean chatDraftPreviews() { return false; }
