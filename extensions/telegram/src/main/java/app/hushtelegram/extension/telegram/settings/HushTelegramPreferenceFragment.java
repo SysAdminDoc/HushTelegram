@@ -886,6 +886,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Uploads keep four times as many pieces on their way at once. Telegram's servers still decide how fast"
                                 + " an account can send. The next upload picks this up.")));
             }
+            if (PatchFamily.Capability.DOWNLOAD_MANAGER.installed()) {
+                on(pages, PatchFamily.FASTER_DOWNLOADS).addPreference(toggle(context, Settings.DOWNLOAD_MANAGER,
+                        L10n.t("Download manager"), L10n.t("Files download one at a time, in the order you asked for them."
+                                + " Adds a Downloads row to the side menu, which needs Side menu on too.")));
+            }
         }
         if (build.contains(PatchFamily.SAVE_DOWNLOADS)) {
             on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(toggle(context, Settings.SAVE_DOWNLOADS, L10n.t("Save downloaded files"),

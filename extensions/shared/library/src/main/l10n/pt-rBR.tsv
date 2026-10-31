@@ -1332,3 +1332,19 @@ None	Nenhum
 Couldn't save the choice. Try again in a moment.	Não foi possível salvar a escolha. Tente de novo daqui a pouco.
 # context: Summary of the Folder icons row. %1$s is the chosen pack (Regular, Bold, Filled or None).
 %1$s. Icons show beside folder names in HushTelegram's own lists. Telegram's folder tabs stay as they are.	%1$s. Os ícones aparecem ao lado dos nomes das pastas nas listas do próprio HushTelegram. As abas de pastas do Telegram continuam como estão.
+# context: Settings row that makes downloads run one at a time. Its list is in the side menu.
+Download manager	Gerenciador de downloads
+# context: Summary of the Download manager row.
+Files download one at a time, in the order you asked for them. Adds a Downloads row to the side menu, which needs Side menu on too.	Os arquivos baixam um de cada vez, na ordem em que você pediu. Adiciona uma linha Downloads ao menu lateral, que também precisa estar ativado.
+# context: Side menu row and title of the list of running, waiting and finished downloads.
+Downloads	Downloads
+# context: State of the download running now, in the Downloads list. A size may follow after a comma.
+Downloading	Baixando
+# context: State of a download waiting its turn, in the Downloads list. A size may follow after a comma.
+Waiting	Aguardando
+# context: State of a finished download, in the Downloads list. A size may follow after a comma.
+Finished	Concluído
+# context: Shown in the Downloads list when nothing has been downloaded.
+No downloads yet	Nenhum download ainda
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Download manager part of Faster downloads: running downloads one at a time with a list in the side menu
+download manager	o gerenciador de downloads

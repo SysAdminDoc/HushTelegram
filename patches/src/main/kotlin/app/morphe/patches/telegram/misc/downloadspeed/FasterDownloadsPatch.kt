@@ -47,8 +47,8 @@ val fasterDownloadsPatch = bytecodePatch(
         "pick, instead of 128 KB pieces 4 at a time. If a big piece fails, Telegram still drops back to small ones. " +
         "A second switch, Hold automatic downloads on Data Saver, keeps Telegram from downloading media on its own " +
         "while Android's Data Saver is on and the network is metered. A third, Faster uploads, keeps four times as many " +
-        "upload pieces in flight. All start off. Turn them on in HushTelegram " +
-        "settings > Playback.",
+        "upload pieces in flight. A fourth, Download manager, runs downloads one at a time in the order you asked and " +
+        "adds a Downloads row to the side menu. All four start off. Turn them on in HushTelegram settings > Playback.",
     default = true,
 ) {
     category("Playback")
@@ -66,9 +66,12 @@ val fasterDownloadsPatch = bytecodePatch(
             patchLog.warning("Faster downloads: ${unfit.message}. Uploads are left as they are.")
             null
         }
+        requireDownloadManagerRuntime()
+        val manager = resolveDownloadManager()
         // Assembled on copies first, so a refusal leaves the app untouched.
         insertDownloadSpeedGate(MutableMethod(ImmutableMethod.of(plan.method)), plan)
         if (saver.missing == null) saver.rehearse()
+        if (manager.missing == null) manager.rehearse()
         insertDownloadSpeedGate(plan.method, plan)
         if (saver.missing == null) {
             saver.apply()
@@ -80,6 +83,12 @@ val fasterDownloadsPatch = bytecodePatch(
         uploads?.let {
             it.insert()
             enableCapability("fasterUploads")
+        }
+        if (manager.missing == null) {
+            manager.apply()
+            enableCapability("downloadManager")
+        } else {
+            patchLog.warning("Faster downloads: ${manager.missing}. The patch goes on without the download manager.")
         }
         enableStatus("fasterDownloads")
     }

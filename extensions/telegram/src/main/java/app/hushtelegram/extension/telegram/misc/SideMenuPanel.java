@@ -87,6 +87,7 @@ final class SideMenuPanel extends FrameLayout {
     /** The HushTelegram row and the line above it, which the way's switch shows or hides each time the menu opens. */
     View hushRow;
     View hushDivider;
+    View downloadsRow;
     private final int touchSlop;
     private final int flingSpeed;
     private float progress;
@@ -146,7 +147,7 @@ final class SideMenuPanel extends FrameLayout {
         menu.addView(accounts);
         menu.addView(divider());
         String[] labels = SideMenu.rowLabels();
-        String[] icons = {"msg_openprofile", "msg_message", "msg_contacts", "msg_calls", "msg_saved", "msg_settings_old", "msg_archive", "msg_admins", "msg_settings"};
+        String[] icons = {"msg_openprofile", "msg_message", "msg_contacts", "msg_calls", "msg_saved", "msg_settings_old", "msg_archive", "msg_admins", "msg_settings", "msg_download"};
         for (SideMenu.Row each : SideMenu.Row.values()) {
             if (each == SideMenu.Row.HUSH) {
                 hushDivider = divider();
@@ -161,6 +162,7 @@ final class SideMenuPanel extends FrameLayout {
             }
             TextView added = row(labels[each.ordinal()], icons[each.ordinal()], each);
             if (each == SideMenu.Row.HUSH) hushRow = added;
+            if (each == SideMenu.Row.DOWNLOADS) downloadsRow = added;
             menu.addView(added);
         }
     }
@@ -176,6 +178,7 @@ final class SideMenuPanel extends FrameLayout {
         }
         if (hushRow != null) hushRow.setVisibility(shown ? VISIBLE : GONE);
         if (hushDivider != null) hushDivider.setVisibility(shown ? VISIBLE : GONE);
+        if (downloadsRow != null) downloadsRow.setVisibility(DownloadManager.rowShown() ? VISIBLE : GONE);
     }
 
     /** Shows the Administrators row while its switch is on, adding it the first time, and says what a tap does next. */

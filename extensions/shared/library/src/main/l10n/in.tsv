@@ -1335,3 +1335,19 @@ None	Tidak ada
 Couldn't save the choice. Try again in a moment.	Pilihan tidak tersimpan. Coba lagi sebentar lagi.
 # context: Summary of the Folder icons row. %1$s is the chosen pack (Regular, Bold, Filled or None).
 %1$s. Icons show beside folder names in HushTelegram's own lists. Telegram's folder tabs stay as they are.	%1$s. Ikon muncul di samping nama folder pada daftar HushTelegram sendiri. Tab folder Telegram tetap seperti semula.
+# context: Settings row that makes downloads run one at a time. Its list is in the side menu.
+Download manager	Pengelola unduhan
+# context: Summary of the Download manager row.
+Files download one at a time, in the order you asked for them. Adds a Downloads row to the side menu, which needs Side menu on too.	File diunduh satu per satu, sesuai urutan yang kamu minta. Menambahkan baris Unduhan ke menu samping, yang juga harus diaktifkan.
+# context: Side menu row and title of the list of running, waiting and finished downloads.
+Downloads	Unduhan
+# context: State of the download running now, in the Downloads list. A size may follow after a comma.
+Downloading	Mengunduh
+# context: State of a download waiting its turn, in the Downloads list. A size may follow after a comma.
+Waiting	Menunggu
+# context: State of a finished download, in the Downloads list. A size may follow after a comma.
+Finished	Selesai
+# context: Shown in the Downloads list when nothing has been downloaded.
+No downloads yet	Belum ada unduhan
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Download manager part of Faster downloads: running downloads one at a time with a list in the side menu
+download manager	pengelola unduhan

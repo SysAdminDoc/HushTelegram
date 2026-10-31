@@ -295,6 +295,7 @@ public class SideMenuTest {
         for (int i = 0; i < SideMenu.FALLBACK.length; i++) expected.add(SideMenu.FALLBACK[i]);
         expected.add("line");
         expected.add(SettingsEntry.nativeSettingsTitle());
+        expected.add("Downloads");
         assertEquals(expected, rows);
         panel.menu.getChildAt(1).performClick();
         panel.menu.getChildAt(4).performClick();

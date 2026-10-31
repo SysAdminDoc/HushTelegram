@@ -139,6 +139,7 @@ public class PatchFamilyTest {
         Settings.HIDE_CONTACTS_TAB.resetToDefault();
         Settings.FASTER_DOWNLOADS.resetToDefault();
         Settings.DATA_SAVER_DOWNLOADS.resetToDefault();
+        Settings.DOWNLOAD_MANAGER.resetToDefault();
         Settings.SAVE_DOWNLOADS.resetToDefault();
         Settings.SAVE_RESTRICTED_DOWNLOADS.resetToDefault();
         Settings.SAVE_TIMED_MEDIA.resetToDefault();
@@ -513,19 +514,19 @@ public class PatchFamilyTest {
     }
 
     @Test
-    public void fasterDownloadsHasTwoOffByDefaultSwitchesOnPlaybackThatApplyAtOnce() {
+    public void fasterDownloadsHasThreeOffByDefaultSwitchesOnPlaybackThatApplyAtOnce() {
         PatchFamily family = PatchFamily.FASTER_DOWNLOADS;
         assertEquals("Faster downloads", family.patchName);
         assertEquals("fasterDownloads", family.statusMethod);
         // The second switch, the Data Saver hold, starts off too and works with or without the first.
-        assertEquals(Arrays.asList(Settings.FASTER_DOWNLOADS, Settings.DATA_SAVER_DOWNLOADS, Settings.FASTER_UPLOADS), family.switches);
+        assertEquals(Arrays.asList(Settings.FASTER_DOWNLOADS, Settings.DATA_SAVER_DOWNLOADS, Settings.DOWNLOAD_MANAGER, Settings.FASTER_UPLOADS), family.switches);
         for (BooleanSetting setting : family.switches) {
             assertFalse(setting.key, setting.defaultValue);
             // Telegram picks the piece size each time a download starts and asks again before each
             // automatic download, so no restart is needed.
             assertFalse(setting.key, setting.rebootApp);
         }
-        assertEquals(EnumSet.of(PatchFamily.Capability.DATA_SAVER_DOWNLOADS, PatchFamily.Capability.FASTER_UPLOADS), family.expectedCapabilities());
+        assertEquals(EnumSet.of(PatchFamily.Capability.DATA_SAVER_DOWNLOADS, PatchFamily.Capability.FASTER_UPLOADS, PatchFamily.Capability.DOWNLOAD_MANAGER), family.expectedCapabilities());
         assertOnItsPage(family);
         assertEquals(PatchFamily.Page.PLAYBACK, PatchFamily.Page.of(family));
     }
@@ -1149,7 +1150,7 @@ public class PatchFamilyTest {
                 "Save downloaded files coverage: switch only; missing: gallery folder for saved photos and videos, "
                         + "Telegram's own files in internal storage"));
         assertTrue(report.toString(), report.contains(
-                "Faster downloads coverage: switch only; missing: automatic downloads on Data Saver, uploads"));
+                "Faster downloads coverage: switch only; missing: automatic downloads on Data Saver, uploads, download manager"));
         assertTrue(report.toString(), report.contains("Hide ads coverage: none; missing: channel ads, video ads, search ads"));
 
         PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.GALLERY_FOLDER,
@@ -1157,7 +1158,7 @@ public class PatchFamilyTest {
         report = PatchFamily.reportLines(build, false);
         assertTrue(report.toString(), report.contains("Save downloaded files coverage: gallery folder for saved photos and videos; "
                 + "missing: Telegram's own files in internal storage"));
-        assertTrue(report.toString(), report.contains("Faster downloads coverage: automatic downloads on Data Saver; missing: uploads"));
+        assertTrue(report.toString(), report.contains("Faster downloads coverage: automatic downloads on Data Saver; missing: uploads, download manager"));
     }
 
     /**

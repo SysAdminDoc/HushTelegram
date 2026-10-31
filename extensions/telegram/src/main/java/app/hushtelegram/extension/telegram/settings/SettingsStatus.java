@@ -145,6 +145,7 @@ public final class SettingsStatus {
     public static boolean fasterDownloads() { return false; }
     public static boolean dataSaverDownloads() { return false; }
     public static boolean fasterUploads() { return false; }
+    public static boolean downloadManager() { return false; }
     public static boolean saveDownloads() { return false; }
     public static boolean galleryFolder() { return false; }
     public static boolean storageFolder() { return false; }

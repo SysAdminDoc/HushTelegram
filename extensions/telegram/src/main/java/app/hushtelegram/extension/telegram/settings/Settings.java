@@ -586,6 +586,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting DATA_SAVER_DOWNLOADS =
             new BooleanSetting("hushtelegram_data_saver_downloads", FALSE);
 
+    /** Downloads run one at a time in the order asked, and the side menu lists them. */
+    public static final BooleanSetting DOWNLOAD_MANAGER =
+            new BooleanSetting("hushtelegram_download_manager", FALSE);
+
     /** A file or song that finishes downloading gets a copy in Download/Telegram, unless saving it isn't allowed. */
     public static final BooleanSetting SAVE_DOWNLOADS =
             new BooleanSetting("hushtelegram_save_downloads", FALSE);

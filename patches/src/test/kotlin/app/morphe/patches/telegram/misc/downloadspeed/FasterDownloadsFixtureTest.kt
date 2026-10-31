@@ -36,8 +36,9 @@ import org.junit.Test
 /** FileLoadOperation.updateParams on both declared builds, where Telegram picks a download's piece size. */
 class FasterDownloadsFixtureTest {
     private fun context(build: File): BytecodePatchContext {
-        val host = FixtureDex.classes(build, setOf(LOAD_OPERATION, DOWNLOAD_CONTROLLER, UPLOAD_OPERATION)).values.map(ImmutableClassDef::of)
-        assertEquals("${build.name}: FileLoadOperation, DownloadController and FileUploadOperation", 3, host.size)
+        val host = FixtureDex.classes(build, setOf(LOAD_OPERATION, DOWNLOAD_CONTROLLER, UPLOAD_OPERATION, "Lorg/telegram/messenger/FileLoader;",
+            "Lorg/telegram/messenger/FileLoaderPriorityQueue;")).values.map(ImmutableClassDef::of)
+        assertEquals("${build.name}: FileLoadOperation, DownloadController, FileUploadOperation and the download queues", 5, host.size)
         return PatchContexts.of(ExtensionDex.classes() + host)
     }
 
