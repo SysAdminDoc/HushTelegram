@@ -378,6 +378,8 @@ public final class SelectionCheck {
         hook(calls, flags, "saveDownloads", "misc/SaveDownloads", "fileLoaded");
         hook(calls, flags, "storageFolder", "misc/StorageFolder", "telegramFolder", "olderFile");
         hook(calls, flags, "unifiedPush", "misc/UnifiedPush", "token", "type");
+        hook(calls, flags, "reactionAlerts", "misc/ReactionAlerts", "changed");
+        hook(calls, flags, "reactionSound", "misc/ReactionAlerts", "quiet");
         hook(calls, flags, "hideByKeyword", "misc/MessageFilters", "type");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");
         hook(calls, flags, "disableUpdateChecks", "misc/UpdateChecks", "skipUpdateCheck");

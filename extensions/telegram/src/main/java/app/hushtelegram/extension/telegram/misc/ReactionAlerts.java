@@ -140,6 +140,29 @@ public final class ReactionAlerts {
         }
     }
 
+    /**
+     * Asked by Telegram's silent notification check right after it reads whether a notification is
+     * for a reaction. Telegram keeps every reaction notification silent, pushed or not. With the
+     * sound switch on, a reaction plays the sound and vibration set for reactions in Telegram's own
+     * Notifications and Sounds, the way a message does.
+     *
+     * @param reaction non-zero when the notification is for a reaction
+     * @return whether it still counts as a reaction, which keeps it silent
+     */
+    public static boolean quiet(int reaction) {
+        if (reaction == 0) return false;
+        try {
+            HookStatus.invoked(FamilyNames.UNIFIED_PUSH);
+            if (Utils.settingsReady() && Settings.REACTION_SOUND.get()) {
+                HookStatus.counted(FamilyNames.UNIFIED_PUSH, "reaction sounds let through");
+                return false;
+            }
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.UNIFIED_PUSH, "reaction sound", failure);
+        }
+        return true;
+    }
+
     /** The newest unread emoji reaction someone else left within the last {@link #RECENT} seconds, or null. */
     static Reaction pick(List<Reaction> reactions, long self, int now) {
         Reaction newest = null;

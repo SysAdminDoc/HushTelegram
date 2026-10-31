@@ -885,6 +885,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + " message while Telegram is connected, even when no push arrives. A reaction that also"
                                 + " comes by push shows once.")));
             }
+            // Pushed reactions too: Telegram keeps every reaction notification silent.
+            if (PatchFamily.Capability.REACTION_SOUND.installed()) {
+                on(pages, PatchFamily.UNIFIED_PUSH).addPreference(toggle(context, Settings.REACTION_SOUND,
+                        L10n.t("Sound for reaction notifications"), L10n.t("Telegram's reaction notifications make no sound."
+                                + " Turned on, they play the sound and vibration set in Telegram's Notifications and Sounds"
+                                + " > Reactions.")));
+            }
         }
         if (build.contains(PatchFamily.SILENCE_NON_CONTACTS)) {
             on(pages, PatchFamily.SILENCE_NON_CONTACTS).addPreference(toggle(context, Settings.SILENCE_NON_CONTACTS, L10n.t("Silence people outside your contacts"),

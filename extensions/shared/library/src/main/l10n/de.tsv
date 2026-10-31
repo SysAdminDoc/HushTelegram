@@ -1084,3 +1084,9 @@ Adds a HushTelegram row to the side menu, which has its own switch.	Fügt dem Se
 Home screen shortcut	Verknüpfung auf dem Startbildschirm
 Adds HushTelegram to the menu you get from holding Telegram's icon.	Fügt HushTelegram dem Menü hinzu, das beim Gedrückthalten des Telegram-Symbols erscheint.
 Keep one way into HushTelegram settings	Einen Weg zu den HushTelegram-Einstellungen behalten
+# context: a third switch under UnifiedPush notifications on the Notifications page, off by default. Telegram keeps every reaction notification silent; turned on, a reaction's notification plays the sound and vibration chosen for reactions in Telegram's own settings. "Reaction" is Telegram's word for an emoji reaction to a message.
+Sound for reaction notifications	Ton für Reaktionsbenachrichtigungen
+# context: that switch's summary. "Notifications and Sounds > Reactions" is the path in Telegram's own Settings, written with Telegram's applied labels for this language (keys NotificationsAndSounds and NotificationReactions on translations.telegram.org; Bulgarian has no applied NotificationReactions, so Telegram shows the English "Reactions" there).
+Telegram's reaction notifications make no sound. Turned on, they play the sound and vibration set in Telegram's Notifications and Sounds > Reactions.	Reaktionsbenachrichtigungen von Telegram sind stumm. Eingeschaltet spielen sie den Ton und die Vibration ab, die in Telegrams Mitteilungen und Töne > Reaktionen eingestellt sind.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of UnifiedPush notifications that plays a sound for reactions.
+sound for reaction notifications	den Ton für Reaktionsbenachrichtigungen

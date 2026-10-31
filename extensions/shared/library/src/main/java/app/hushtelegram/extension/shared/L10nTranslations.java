@@ -49,7 +49,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildBg() {
-        Map<String, String> table = new HashMap<>(1630);
+        Map<String, String> table = new HashMap<>(1636);
         fillBg0(table);
         fillBg1(table);
         fillBg2(table);
@@ -1195,6 +1195,8 @@ public final class L10nTranslations {
                 "\u0420\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u0430\u043d\u0435 \u0441 %1$s\u2026");
         table.put("Silence people outside your contacts",
                 "\u0417\u0430\u0433\u043b\u0443\u0448\u0430\u0432\u0430\u043d\u0435 \u043d\u0430 \u0445\u043e\u0440\u0430 \u0438\u0437\u0432\u044a\u043d \u043a\u043e\u043d\u0442\u0430\u043a\u0442\u0438\u0442\u0435");
+        table.put("Sound for reaction notifications",
+                "\u0417\u0432\u0443\u043a \u0437\u0430 \u0438\u0437\u0432\u0435\u0441\u0442\u0438\u044f\u0442\u0430 \u0437\u0430 \u0440\u0435\u0430\u043a\u0446\u0438\u0438");
         table.put("Source code and issues",
                 "\u0418\u0437\u0445\u043e\u0434\u0435\u043d \u043a\u043e\u0434 \u0438 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u0438");
         table.put("Spoiler text, photos and videos show right away without a tap. View-once media, sensitive content and login codes stay covered.",
@@ -1293,11 +1295,11 @@ public final class L10nTranslations {
                 "Telegram \u0440\u0430\u0437\u043c\u0430\u0437\u0432\u0430 \u0437\u0430\u0433\u043b\u0430\u0432\u043d\u0438\u0442\u0435 \u0447\u0430\u0441\u0442\u0438 \u0438 \u043f\u0430\u043d\u0435\u043b\u0438\u0442\u0435 \u043d\u0430 \u0447\u0430\u0442\u0430 \u0441\u0430\u043c\u043e \u043d\u0430 \u0431\u044a\u0440\u0437\u0438 \u0442\u0435\u043b\u0435\u0444\u043e\u043d\u0438. \u0422\u043e\u0432\u0430 \u043f\u043e\u0437\u0432\u043e\u043b\u044f\u0432\u0430 \u043d\u0430 \u0432\u0441\u0435\u043a\u0438 \u0442\u0435\u043b\u0435\u0444\u043e\u043d \u0434\u0430 \u0433\u043e \u043f\u0440\u0430\u0432\u0438, \u043a\u043e\u0433\u0430\u0442\u043e \u201eBlur in chat\u201c \u0435 \u0432\u043a\u043b\u044e\u0447\u0435\u043d\u043e \u0432 \u201ePower Saving\u201c.");
         table.put("Telegram refused this app's ID",
                 "Telegram \u043e\u0442\u0445\u0432\u044a\u0440\u043b\u0438 ID \u043d\u0430 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435\u0442\u043e");
-        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
-                "Telegram \u0441\u043f\u0438\u0440\u0430 \u0434\u0430 \u043f\u0440\u0435\u0434\u043b\u0430\u0433\u0430 \u0430\u043a\u0442\u0443\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u0438 \u043e\u0442 telegram.org. \u0422\u0435 \u043d\u0435 \u043c\u043e\u0433\u0430\u0442 \u0434\u0430 \u0441\u0435 \u0438\u043d\u0441\u0442\u0430\u043b\u0438\u0440\u0430\u0442 \u0432\u044a\u0440\u0445\u0443 \u0442\u043e\u0432\u0430 \u043f\u0430\u0447\u043d\u0430\u0442\u043e \u043a\u043e\u043f\u0438\u0435, \u0437\u0430\u0442\u043e\u0432\u0430 \u043f\u0430\u0447\u0432\u0430\u0439\u0442\u0435 \u0432\u0441\u044f\u043a\u0430 \u043d\u043e\u0432\u0430 \u0432\u0435\u0440\u0441\u0438\u044f \u0432 Morphe Manager.");
     }
 
     private static void fillBg10(Map<String, String> table) {
+        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
+                "Telegram \u0441\u043f\u0438\u0440\u0430 \u0434\u0430 \u043f\u0440\u0435\u0434\u043b\u0430\u0433\u0430 \u0430\u043a\u0442\u0443\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u0438 \u043e\u0442 telegram.org. \u0422\u0435 \u043d\u0435 \u043c\u043e\u0433\u0430\u0442 \u0434\u0430 \u0441\u0435 \u0438\u043d\u0441\u0442\u0430\u043b\u0438\u0440\u0430\u0442 \u0432\u044a\u0440\u0445\u0443 \u0442\u043e\u0432\u0430 \u043f\u0430\u0447\u043d\u0430\u0442\u043e \u043a\u043e\u043f\u0438\u0435, \u0437\u0430\u0442\u043e\u0432\u0430 \u043f\u0430\u0447\u0432\u0430\u0439\u0442\u0435 \u0432\u0441\u044f\u043a\u0430 \u043d\u043e\u0432\u0430 \u0432\u0435\u0440\u0441\u0438\u044f \u0432 Morphe Manager.");
         table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
                 "Telegram \u043e\u0442\u0445\u0432\u044a\u0440\u043b\u0438 API ID, \u0441 \u043a\u043e\u0439\u0442\u043e \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435\u0442\u043e \u0432\u043b\u0438\u0437\u0430, \u0437\u0430\u0442\u043e\u0432\u0430 \u043d\u0435 \u0431\u0435\u0448\u0435 \u0438\u0437\u043f\u0440\u0430\u0442\u0435\u043d \u043a\u043e\u0434 \u0437\u0430 \u0432\u0445\u043e\u0434. \u041f\u0430\u0447\u043d\u0435\u0442\u0435 HushTelegram \u043e\u0442\u043d\u043e\u0432\u043e \u0441 \u201eUse registered Telegram API credentials\u201c \u0438 \u0441\u043e\u0431\u0441\u0442\u0432\u0435\u043d ID \u043e\u0442 my.telegram.org/apps. \u0420\u044a\u043a\u043e\u0432\u043e\u0434\u0441\u0442\u0432\u043e\u0442\u043e \u0432\u0438 \u043f\u0440\u0435\u0432\u0435\u0436\u0434\u0430 \u043f\u0440\u0435\u0437 \u0441\u0442\u044a\u043f\u043a\u0438\u0442\u0435.");
         table.put("Telegram turned the folders down. Try again later.",
@@ -1306,6 +1308,8 @@ public final class L10nTranslations {
                 "\u0415\u0437\u0438\u043a\u044a\u0442 \u043d\u0430 Telegram");
         table.put("Telegram's own files in internal storage",
                 "\u0444\u0430\u0439\u043b\u043e\u0432\u0435\u0442\u0435 \u043d\u0430 Telegram \u0432\u044a\u0432 \u0432\u044a\u0442\u0440\u0435\u0448\u043d\u043e\u0442\u043e \u0445\u0440\u0430\u043d\u0438\u043b\u0438\u0449\u0435");
+        table.put("Telegram's reaction notifications make no sound. Turned on, they play the sound and vibration set in Telegram's Notifications and Sounds > Reactions.",
+                "\u0418\u0437\u0432\u0435\u0441\u0442\u0438\u044f\u0442\u0430 \u043d\u0430 Telegram \u0437\u0430 \u0440\u0435\u0430\u043a\u0446\u0438\u0438 \u0441\u0430 \u0431\u0435\u0437 \u0437\u0432\u0443\u043a. \u041a\u043e\u0433\u0430\u0442\u043e \u0435 \u0432\u043a\u043b\u044e\u0447\u0435\u043d\u043e, \u0442\u0435 \u0438\u0437\u043f\u043e\u043b\u0437\u0432\u0430\u0442 \u0437\u0432\u0443\u043a\u0430 \u0438 \u0432\u0438\u0431\u0440\u0430\u0446\u0438\u044f\u0442\u0430, \u0437\u0430\u0434\u0430\u0434\u0435\u043d\u0438 \u0432 \u0418\u0437\u0432\u0435\u0441\u0442\u0438\u044f \u0438 \u0437\u0432\u0443\u0446\u0438 > Reactions \u043d\u0430 Telegram.");
         table.put("Telegram's reply to account %1$s on %2$s: %3$s, %4$s",
                 "\u041e\u0442\u0433\u043e\u0432\u043e\u0440 \u043d\u0430 Telegram \u043a\u044a\u043c \u0430\u043a\u0430\u0443\u043d\u0442 %1$s \u0437\u0430 %2$s: %3$s, %4$s");
         table.put("Telegram's reply to notification sign-up: %1$s",
@@ -1414,13 +1418,13 @@ public final class L10nTranslations {
                 "\u041f\u043e\u043b\u0435\u0442\u043e \u0435 \u0442\u0432\u044a\u0440\u0434\u0435 \u0434\u044a\u043b\u0433\u043e. \u0418\u0437\u043f\u043e\u043b\u0437\u0432\u0430\u0439\u0442\u0435 \u043d\u0430\u0439-\u043c\u043d\u043e\u0433\u043e %1$d \u0437\u043d\u0430\u043a\u0430.");
         table.put("This list is too long for a settings file. Remove a few lines.",
                 "\u0421\u043f\u0438\u0441\u044a\u043a\u044a\u0442 \u0435 \u0442\u0432\u044a\u0440\u0434\u0435 \u0434\u044a\u043b\u044a\u0433 \u0437\u0430 \u0444\u0430\u0439\u043b \u0441 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438. \u041f\u0440\u0435\u043c\u0430\u0445\u043d\u0435\u0442\u0435 \u043d\u044f\u043a\u043e\u043b\u043a\u043e \u0440\u0435\u0434\u0430.");
+    }
+
+    private static void fillBg11(Map<String, String> table) {
         table.put("This network is metered.",
                 "\u0422\u0430\u0437\u0438 \u043c\u0440\u0435\u0436\u0430 \u0435 \u0441 \u043e\u0442\u0447\u0438\u0442\u0430\u043d\u0435.");
         table.put("This network isn't metered.",
                 "\u0422\u0430\u0437\u0438 \u043c\u0440\u0435\u0436\u0430 \u043d\u0435 \u0435 \u0441 \u043e\u0442\u0447\u0438\u0442\u0430\u043d\u0435.");
-    }
-
-    private static void fillBg11(Map<String, String> table) {
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "\u0422\u043e\u0432\u0430 \u043f\u043e\u043a\u0430\u0437\u0432\u0430 \u0441\u0430\u043c\u043e \u043a\u0430\u043a\u0432\u043e \u0435 \u0437\u0430\u043f\u0430\u0437\u0435\u043d\u043e \u043d\u0430 \u0442\u043e\u0437\u0438 \u0442\u0435\u043b\u0435\u0444\u043e\u043d. \u041d\u0435 \u0433\u0430\u0440\u0430\u043d\u0442\u0438\u0440\u0430, \u0447\u0435 \u0438\u0437\u0432\u0435\u0441\u0442\u0438\u044f\u0442\u0430 \u0449\u0435 \u043f\u0440\u0438\u0441\u0442\u0438\u0433\u0430\u0442.");
         table.put("This patched app changes %1$s but not %2$s.",
@@ -1537,13 +1541,13 @@ public final class L10nTranslations {
                 "\u041d\u0430\u0447\u0438\u043d\u0438 \u0437\u0430 \u0434\u043e\u0441\u0442\u044a\u043f");
         table.put("Ways to open these settings",
                 "\u041d\u0430\u0447\u0438\u043d\u0438 \u0437\u0430 \u043e\u0442\u0432\u0430\u0440\u044f\u043d\u0435 \u043d\u0430 \u0442\u0435\u0437\u0438 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438");
+    }
+
+    private static void fillBg12(Map<String, String> table) {
         table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
                 "\u041d\u0430\u043f\u0438\u0441\u0430\u043d\u043e\u0442\u043e \u0432 \u043e\u0441\u043d\u043e\u0432\u043d\u043e\u0442\u043e \u0442\u044a\u0440\u0441\u0435\u043d\u0435 \u043d\u0435 \u0441\u0435 \u0438\u0437\u043f\u0440\u0430\u0449\u0430 \u043d\u0430 Telegram, \u043e\u0441\u0432\u0435\u043d \u0432 \u0440\u0430\u0437\u0434\u0435\u043b\u0430 \u201ePosts\u201c. \u0420\u0430\u0437\u0434\u0435\u043b\u044a\u0442 \u201eChats\u201c \u043d\u0430\u043c\u0438\u0440\u0430 \u0432\u0430\u0448\u0438\u0442\u0435 \u0447\u0430\u0442\u043e\u0432\u0435 \u0438 \u043a\u043e\u043d\u0442\u0430\u043a\u0442\u0438 \u043d\u0430 \u0442\u043e\u0437\u0438 \u0442\u0435\u043b\u0435\u0444\u043e\u043d, \u043f\u043b\u044e\u0441 \u0441\u043a\u043e\u0440\u043e\u0448\u043d\u0438 \u0442\u044a\u0440\u0441\u0435\u043d\u0438\u044f, \u043d\u043e \u043d\u0435 \u0438 \u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u044f \u0438\u043b\u0438 \u043f\u0443\u0431\u043b\u0438\u0447\u043d\u0438 \u0430\u043a\u0430\u0443\u043d\u0442\u0438. \u201eChannels\u201c, \u201eApps\u201c, \u0440\u0430\u0437\u0434\u0435\u043b\u0438\u0442\u0435 \u0441 \u043c\u0435\u0434\u0438\u044f \u0438 \u0444\u0438\u043b\u0442\u0440\u0438\u0442\u0435 \u0437\u0430 \u0447\u0430\u0442 \u0438\u043b\u0438 \u0434\u0430\u0442\u0430 \u043d\u0435 \u0442\u044a\u0440\u0441\u044f\u0442 \u043f\u043e \u043d\u0430\u043f\u0438\u0441\u0430\u043d \u0442\u0435\u043a\u0441\u0442. \u0422\u044a\u0440\u0441\u0435\u043d\u0435\u0442\u043e \u0432 \u0447\u0430\u0442 \u043f\u0430\u043a \u043e\u0442\u0438\u0432\u0430 \u0434\u043e Telegram.");
         table.put("When a voice or video message ends, the next one doesn't start by itself.",
                 "\u041a\u043e\u0433\u0430\u0442\u043e \u0433\u043b\u0430\u0441\u043e\u0432\u043e \u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0438\u043b\u0438 \u0432\u0438\u0434\u0435\u043e\u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0441\u0432\u044a\u0440\u0448\u0438, \u0441\u043b\u0435\u0434\u0432\u0430\u0449\u043e\u0442\u043e \u043d\u0435 \u0437\u0430\u043f\u043e\u0447\u0432\u0430 \u0441\u0430\u043c\u043e.");
-    }
-
-    private static void fillBg12(Map<String, String> table) {
         table.put("When someone reacts to a message, the emoji doesn't fly across the screen and burst. The reaction still shows on the message.",
                 "\u041a\u043e\u0433\u0430\u0442\u043e \u043d\u044f\u043a\u043e\u0439 \u0440\u0435\u0430\u0433\u0438\u0440\u0430 \u043d\u0430 \u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u0435, \u0435\u043c\u043e\u0434\u0436\u0438\u0442\u043e \u043d\u0435 \u043f\u0440\u0435\u043b\u0438\u0442\u0430 \u043f\u0440\u0435\u0437 \u0435\u043a\u0440\u0430\u043d\u0430 \u0438 \u043d\u0435 \u0441\u0435 \u043f\u0440\u044a\u0441\u0432\u0430. \u0420\u0435\u0430\u043a\u0446\u0438\u044f\u0442\u0430 \u043f\u0430\u043a \u0441\u0435 \u0432\u0438\u0436\u0434\u0430 \u0432\u044a\u0440\u0445\u0443 \u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u0435\u0442\u043e.");
         table.put("When you add someone as a contact from their chat, Telegram ticks the box that shares your phone number with them. With this on, the box starts clear and your number goes only if you tick it.",
@@ -1660,13 +1664,13 @@ public final class L10nTranslations {
                 "\u043f\u0440\u0438\u0441\u044a\u0435\u0434\u0438\u043d\u044f\u0432\u0430\u043d\u0435\u0442\u043e \u043a\u044a\u043c \u043d\u043e\u0432\u0438 \u043a\u0430\u043d\u0430\u043b\u0438 \u0438 \u0433\u0440\u0443\u043f\u0438");
         table.put("keeping a video upright until full screen",
                 "\u0434\u044a\u0440\u0436\u0430\u043d\u0435 \u043d\u0430 \u0432\u0438\u0434\u0435\u043e\u043a\u043b\u0438\u043f\u0430 \u0438\u0437\u043f\u0440\u0430\u0432\u0435\u043d \u0434\u043e \u0446\u044f\u043b \u0435\u043a\u0440\u0430\u043d");
+    }
+
+    private static void fillBg13(Map<String, String> table) {
         table.put("less than a minute ago",
                 "\u043f\u0440\u0435\u0434\u0438 \u043f\u043e-\u043c\u0430\u043b\u043a\u043e \u043e\u0442 \u043c\u0438\u043d\u0443\u0442\u0430");
         table.put("local notification status",
                 "\u043b\u043e\u043a\u0430\u043b\u043d\u043e \u0441\u044a\u0441\u0442\u043e\u044f\u043d\u0438\u0435 \u043d\u0430 \u0438\u0437\u0432\u0435\u0441\u0442\u0438\u044f\u0442\u0430");
-    }
-
-    private static void fillBg13(Map<String, String> table) {
         table.put("new message button",
                 "\u0431\u0443\u0442\u043e\u043d\u0430 \u0437\u0430 \u043d\u043e\u0432\u043e \u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u0435");
         table.put("none",
@@ -1711,6 +1715,8 @@ public final class L10nTranslations {
                 "\u0441\u0442\u0440\u0430\u043d\u0438\u0447\u043d\u043e\u0442\u043e \u043c\u0435\u043d\u044e");
         table.put("similar channels and bots",
                 "\u043f\u043e\u0434\u043e\u0431\u043d\u0438 \u043a\u0430\u043d\u0430\u043b\u0438 \u0438 \u0431\u043e\u0442\u043e\u0432\u0435");
+        table.put("sound for reaction notifications",
+                "\u0437\u0432\u0443\u043a\u0430 \u0437\u0430 \u0438\u0437\u0432\u0435\u0441\u0442\u0438\u044f\u0442\u0430 \u0437\u0430 \u0440\u0435\u0430\u043a\u0446\u0438\u0438");
         table.put("story links",
                 "\u0432\u0440\u044a\u0437\u043a\u0438 \u0432 \u0438\u0441\u0442\u043e\u0440\u0438\u0438");
         table.put("story list requests",
@@ -1740,7 +1746,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1630);
+        Map<String, String> table = new HashMap<>(1636);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -2886,6 +2892,8 @@ public final class L10nTranslations {
                 "Anmeldung bei %1$s\u2026");
         table.put("Silence people outside your contacts",
                 "Personen au\u00dferhalb deiner Kontakte stummschalten");
+        table.put("Sound for reaction notifications",
+                "Ton f\u00fcr Reaktionsbenachrichtigungen");
         table.put("Source code and issues",
                 "Quellcode und Issues");
         table.put("Spoiler text, photos and videos show right away without a tap. View-once media, sensitive content and login codes stay covered.",
@@ -2984,11 +2992,11 @@ public final class L10nTranslations {
                 "Telegram weichzeichnet Chat-Kopfzeilen und Leisten nur auf schnellen Handys. Das erlaubt es jedem Handy, sobald unter Energiesparen die Option Unsch\u00e4rfe im Chat an ist.");
         table.put("Telegram refused this app's ID",
                 "Telegram hat die ID dieser App abgelehnt");
-        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
-                "Telegram bietet keine Updates von telegram.org mehr an. Sie lie\u00dfen sich nicht \u00fcber diesen gepatchten Build installieren, also patche jede neue Version stattdessen im Morphe Manager.");
     }
 
     private static void fillDe10(Map<String, String> table) {
+        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
+                "Telegram bietet keine Updates von telegram.org mehr an. Sie lie\u00dfen sich nicht \u00fcber diesen gepatchten Build installieren, also patche jede neue Version stattdessen im Morphe Manager.");
         table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
                 "Telegram hat die API-ID abgelehnt, mit der sich diese App anmeldet, daher kam kein Anmeldecode. Patche HushTelegram erneut mit Use registered Telegram API credentials und deiner eigenen ID von my.telegram.org/apps. Die Anleitung zeigt dir, wie es geht.");
         table.put("Telegram turned the folders down. Try again later.",
@@ -2997,6 +3005,8 @@ public final class L10nTranslations {
                 "Sprache von Telegram");
         table.put("Telegram's own files in internal storage",
                 "Telegrams eigene Dateien im internen Speicher");
+        table.put("Telegram's reaction notifications make no sound. Turned on, they play the sound and vibration set in Telegram's Notifications and Sounds > Reactions.",
+                "Reaktionsbenachrichtigungen von Telegram sind stumm. Eingeschaltet spielen sie den Ton und die Vibration ab, die in Telegrams Mitteilungen und T\u00f6ne > Reaktionen eingestellt sind.");
         table.put("Telegram's reply to account %1$s on %2$s: %3$s, %4$s",
                 "Telegrams Antwort an Konto %1$s \u00fcber %2$s: %3$s, %4$s");
         table.put("Telegram's reply to notification sign-up: %1$s",
@@ -3105,13 +3115,13 @@ public final class L10nTranslations {
                 "Dieses Feld ist zu lang. Verwende h\u00f6chstens %1$d Zeichen.");
         table.put("This list is too long for a settings file. Remove a few lines.",
                 "Diese Liste ist zu lang f\u00fcr eine Einstellungsdatei. Entferne ein paar Zeilen.");
+    }
+
+    private static void fillDe11(Map<String, String> table) {
         table.put("This network is metered.",
                 "Dieses Netzwerk ist getaktet.");
         table.put("This network isn't metered.",
                 "Dieses Netzwerk ist nicht getaktet.");
-    }
-
-    private static void fillDe11(Map<String, String> table) {
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "Das zeigt nur, was auf diesem Handy gespeichert ist. Es beweist nicht, dass Benachrichtigungen ankommen.");
         table.put("This patched app changes %1$s but not %2$s.",
@@ -3228,13 +3238,13 @@ public final class L10nTranslations {
                 "Zug\u00e4nge");
         table.put("Ways to open these settings",
                 "Wege, diese Einstellungen zu \u00f6ffnen");
+    }
+
+    private static void fillDe12(Map<String, String> table) {
         table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
                 "Was du in der Hauptsuche eingibst, wird nicht an Telegram gesendet, au\u00dfer im Tab \u201eBeitr\u00e4ge\u201c. Der Tab \u201eChats\u201c findet deine Chats und Kontakte auf diesem Handy und die letzten Suchen, aber keine Nachrichten oder \u00f6ffentlichen Konten. \u201eKan\u00e4le\u201c, \u201eApps\u201c, die Medien-Tabs und Chat- oder Datumsfilter suchen nicht nach eingegebenem Text. Die Suche in einem Chat geht weiter an Telegram.");
         table.put("When a voice or video message ends, the next one doesn't start by itself.",
                 "Wenn eine Sprach- oder Videonachricht endet, startet die n\u00e4chste nicht von selbst.");
-    }
-
-    private static void fillDe12(Map<String, String> table) {
         table.put("When someone reacts to a message, the emoji doesn't fly across the screen and burst. The reaction still shows on the message.",
                 "Wenn jemand auf eine Nachricht reagiert, fliegt das Emoji nicht \u00fcber den Bildschirm und platzt nicht auf. Die Reaktion bleibt an der Nachricht sichtbar.");
         table.put("When you add someone as a contact from their chat, Telegram ticks the box that shares your phone number with them. With this on, the box starts clear and your number goes only if you tick it.",
@@ -3351,13 +3361,13 @@ public final class L10nTranslations {
                 "Beitritte zu neuen Kan\u00e4len und Gruppen");
         table.put("keeping a video upright until full screen",
                 "Aufrechthalten eines Videos bis zum Vollbild");
+    }
+
+    private static void fillDe13(Map<String, String> table) {
         table.put("less than a minute ago",
                 "vor weniger als einer Minute");
         table.put("local notification status",
                 "lokaler Benachrichtigungsstatus");
-    }
-
-    private static void fillDe13(Map<String, String> table) {
         table.put("new message button",
                 "Button f\u00fcr neue Nachricht");
         table.put("none",
@@ -3402,6 +3412,8 @@ public final class L10nTranslations {
                 "Seitenmen\u00fc");
         table.put("similar channels and bots",
                 "\u00e4hnliche Kan\u00e4le und Bots");
+        table.put("sound for reaction notifications",
+                "den Ton f\u00fcr Reaktionsbenachrichtigungen");
         table.put("story links",
                 "Story-Links");
         table.put("story list requests",
@@ -3431,7 +3443,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(1630);
+        Map<String, String> table = new HashMap<>(1636);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -4577,6 +4589,8 @@ public final class L10nTranslations {
                 "Registrando con %1$s\u2026");
         table.put("Silence people outside your contacts",
                 "Silenciar a quien no est\u00e1 en tus contactos");
+        table.put("Sound for reaction notifications",
+                "Sonido de las notificaciones de reacciones");
         table.put("Source code and issues",
                 "C\u00f3digo fuente e incidencias");
         table.put("Spoiler text, photos and videos show right away without a tap. View-once media, sensitive content and login codes stay covered.",
@@ -4675,11 +4689,11 @@ public final class L10nTranslations {
                 "Telegram solo desenfoca las cabeceras y los paneles del chat en tel\u00e9fonos r\u00e1pidos. Esto permite que cualquier tel\u00e9fono lo haga, cuando Desenfoque en el chat est\u00e9 activado en Ahorro de energ\u00eda.");
         table.put("Telegram refused this app's ID",
                 "Telegram rechaz\u00f3 el ID de esta app");
-        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
-                "Telegram deja de ofrecer actualizaciones de telegram.org. No se pueden instalar sobre este build parcheado, as\u00ed que parchea cada versi\u00f3n nueva en Morphe Manager.");
     }
 
     private static void fillEs10(Map<String, String> table) {
+        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
+                "Telegram deja de ofrecer actualizaciones de telegram.org. No se pueden instalar sobre este build parcheado, as\u00ed que parchea cada versi\u00f3n nueva en Morphe Manager.");
         table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
                 "Telegram rechaz\u00f3 el ID de API con el que inicia sesi\u00f3n esta app, as\u00ed que no se envi\u00f3 ning\u00fan c\u00f3digo. Vuelve a parchear HushTelegram con Use registered Telegram API credentials y tu propio ID de my.telegram.org/apps. La gu\u00eda te explica c\u00f3mo.");
         table.put("Telegram turned the folders down. Try again later.",
@@ -4688,6 +4702,8 @@ public final class L10nTranslations {
                 "Idioma de Telegram");
         table.put("Telegram's own files in internal storage",
                 "archivos propios de Telegram en el almacenamiento interno");
+        table.put("Telegram's reaction notifications make no sound. Turned on, they play the sound and vibration set in Telegram's Notifications and Sounds > Reactions.",
+                "Telegram muestra las notificaciones de reacciones sin sonido. Al activarlo, usan el sonido y la vibraci\u00f3n configurados en Notificaciones y sonidos > Reacciones de Telegram.");
         table.put("Telegram's reply to account %1$s on %2$s: %3$s, %4$s",
                 "Respuesta de Telegram a la cuenta %1$s por %2$s: %3$s, %4$s");
         table.put("Telegram's reply to notification sign-up: %1$s",
@@ -4796,13 +4812,13 @@ public final class L10nTranslations {
                 "Este campo es demasiado largo. Usa como m\u00e1ximo %1$d caracteres.");
         table.put("This list is too long for a settings file. Remove a few lines.",
                 "Lista demasiado larga para el archivo de configuraci\u00f3n. Quita unas l\u00edneas.");
+    }
+
+    private static void fillEs11(Map<String, String> table) {
         table.put("This network is metered.",
                 "Esta red es de uso medido.");
         table.put("This network isn't metered.",
                 "Esta red no es de uso medido.");
-    }
-
-    private static void fillEs11(Map<String, String> table) {
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "Esto solo muestra lo que est\u00e1 guardado en este tel\u00e9fono. No demuestra que las notificaciones vayan a llegar.");
         table.put("This patched app changes %1$s but not %2$s.",
@@ -4919,13 +4935,13 @@ public final class L10nTranslations {
                 "Formas de entrar");
         table.put("Ways to open these settings",
                 "Formas de abrir esta configuraci\u00f3n");
+    }
+
+    private static void fillEs12(Map<String, String> table) {
         table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
                 "Lo que escribes en la b\u00fasqueda principal no se env\u00eda a Telegram, salvo en la pesta\u00f1a Posts. La pesta\u00f1a Chats encuentra tus chats y contactos de este tel\u00e9fono, adem\u00e1s de las b\u00fasquedas recientes, pero no mensajes ni cuentas p\u00fablicas. Canales, Apps, las pesta\u00f1as de contenido y los filtros por chat o fecha no buscan el texto que escribes. La b\u00fasqueda dentro de un chat sigue yendo a Telegram.");
         table.put("When a voice or video message ends, the next one doesn't start by itself.",
                 "Cuando termina un mensaje de voz o de video, el siguiente no empieza solo.");
-    }
-
-    private static void fillEs12(Map<String, String> table) {
         table.put("When someone reacts to a message, the emoji doesn't fly across the screen and burst. The reaction still shows on the message.",
                 "Cuando alguien reacciona a un mensaje, el emoji no cruza la pantalla ni estalla. La reacci\u00f3n sigue apareciendo en el mensaje.");
         table.put("When you add someone as a contact from their chat, Telegram ticks the box that shares your phone number with them. With this on, the box starts clear and your number goes only if you tick it.",
@@ -5042,13 +5058,13 @@ public final class L10nTranslations {
                 "el ingreso a canales y grupos nuevos");
         table.put("keeping a video upright until full screen",
                 "mantener el video vertical hasta la pantalla completa");
+    }
+
+    private static void fillEs13(Map<String, String> table) {
         table.put("less than a minute ago",
                 "hace menos de un minuto");
         table.put("local notification status",
                 "estado local de notificaciones");
-    }
-
-    private static void fillEs13(Map<String, String> table) {
         table.put("new message button",
                 "bot\u00f3n de nuevo mensaje");
         table.put("none",
@@ -5093,6 +5109,8 @@ public final class L10nTranslations {
                 "men\u00fa lateral");
         table.put("similar channels and bots",
                 "canales y bots similares");
+        table.put("sound for reaction notifications",
+                "el sonido de las notificaciones de reacciones");
         table.put("story links",
                 "enlaces de historias");
         table.put("story list requests",
@@ -5122,7 +5140,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1630);
+        Map<String, String> table = new HashMap<>(1636);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -6268,6 +6286,8 @@ public final class L10nTranslations {
                 "Mendaftar dengan %1$s\u2026");
         table.put("Silence people outside your contacts",
                 "Senyapkan orang di luar kontak Anda");
+        table.put("Sound for reaction notifications",
+                "Suara notifikasi reaksi");
         table.put("Source code and issues",
                 "Kode sumber dan laporan masalah");
         table.put("Spoiler text, photos and videos show right away without a tap. View-once media, sensitive content and login codes stay covered.",
@@ -6366,11 +6386,11 @@ public final class L10nTranslations {
                 "Telegram hanya mengaburkan header dan panel obrolan di ponsel yang cepat. Ini memungkinkan ponsel apa pun melakukannya, setelah Blur di obrolan aktif di bawah Penghemat daya.");
         table.put("Telegram refused this app's ID",
                 "Telegram menolak ID aplikasi ini");
-        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
-                "Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.");
     }
 
     private static void fillIn10(Map<String, String> table) {
+        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
+                "Telegram berhenti menawarkan pembaruan dari telegram.org. Pembaruan itu tidak bisa dipasang di atas build yang sudah di-patch ini, jadi patch setiap versi baru di Morphe Manager.");
         table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
                 "Telegram menolak ID API yang dipakai aplikasi ini untuk masuk, jadi kode login tidak dikirim. Tambal ulang HushTelegram dengan Use registered Telegram API credentials dan ID Anda sendiri dari my.telegram.org/apps. Panduannya menjelaskan caranya.");
         table.put("Telegram turned the folders down. Try again later.",
@@ -6379,6 +6399,8 @@ public final class L10nTranslations {
                 "Bahasa Telegram");
         table.put("Telegram's own files in internal storage",
                 "file Telegram sendiri di penyimpanan internal");
+        table.put("Telegram's reaction notifications make no sound. Turned on, they play the sound and vibration set in Telegram's Notifications and Sounds > Reactions.",
+                "Notifikasi reaksi Telegram tidak bersuara. Jika diaktifkan, notifikasi ini memakai suara dan getaran yang diatur di Notifikasi dan Suara > Reaksi Telegram.");
         table.put("Telegram's reply to account %1$s on %2$s: %3$s, %4$s",
                 "Balasan Telegram untuk akun %1$s lewat %2$s: %3$s, %4$s");
         table.put("Telegram's reply to notification sign-up: %1$s",
@@ -6487,13 +6509,13 @@ public final class L10nTranslations {
                 "Kolom ini terlalu panjang. Gunakan maksimal %1$d karakter.");
         table.put("This list is too long for a settings file. Remove a few lines.",
                 "Daftar ini terlalu panjang untuk file pengaturan. Hapus beberapa baris.");
+    }
+
+    private static void fillIn11(Map<String, String> table) {
         table.put("This network is metered.",
                 "Jaringan ini berkuota.");
         table.put("This network isn't metered.",
                 "Jaringan ini tidak berkuota.");
-    }
-
-    private static void fillIn11(Map<String, String> table) {
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "Ini hanya menunjukkan apa yang tersimpan di ponsel ini. Ini tidak membuktikan bahwa notifikasi akan sampai.");
         table.put("This patched app changes %1$s but not %2$s.",
@@ -6610,13 +6632,13 @@ public final class L10nTranslations {
                 "Cara masuk");
         table.put("Ways to open these settings",
                 "Cara membuka pengaturan ini");
+    }
+
+    private static void fillIn12(Map<String, String> table) {
         table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
                 "Yang Anda ketik di pencarian utama tidak dikirim ke Telegram, kecuali di tab Postingan. Tab Obrolan menemukan obrolan dan kontak Anda di ponsel ini, serta pencarian terbaru, tetapi tidak menemukan pesan atau akun publik. Channel, Aplikasi, tab media, serta filter obrolan atau tanggal tidak mencari teks yang Anda ketik. Pencarian di dalam obrolan tetap dikirim ke Telegram.");
         table.put("When a voice or video message ends, the next one doesn't start by itself.",
                 "Saat pesan suara atau video selesai, pesan berikutnya tidak mulai sendiri.");
-    }
-
-    private static void fillIn12(Map<String, String> table) {
         table.put("When someone reacts to a message, the emoji doesn't fly across the screen and burst. The reaction still shows on the message.",
                 "Saat seseorang bereaksi pada pesan, emoji tidak melayang melintasi layar dan meledak. Reaksinya tetap tampil di pesan.");
         table.put("When you add someone as a contact from their chat, Telegram ticks the box that shares your phone number with them. With this on, the box starts clear and your number goes only if you tick it.",
@@ -6733,13 +6755,13 @@ public final class L10nTranslations {
                 "bergabung ke kanal dan grup baru");
         table.put("keeping a video upright until full screen",
                 "menjaga video tetap tegak sampai layar penuh");
+    }
+
+    private static void fillIn13(Map<String, String> table) {
         table.put("less than a minute ago",
                 "kurang dari semenit lalu");
         table.put("local notification status",
                 "status notifikasi lokal");
-    }
-
-    private static void fillIn13(Map<String, String> table) {
         table.put("new message button",
                 "tombol pesan baru");
         table.put("none",
@@ -6784,6 +6806,8 @@ public final class L10nTranslations {
                 "menu samping");
         table.put("similar channels and bots",
                 "saluran dan bot serupa");
+        table.put("sound for reaction notifications",
+                "suara notifikasi reaksi");
         table.put("story links",
                 "tautan cerita");
         table.put("story list requests",
@@ -6813,7 +6837,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(1630);
+        Map<String, String> table = new HashMap<>(1636);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -7959,6 +7983,8 @@ public final class L10nTranslations {
                 "Cadastrando no %1$s\u2026");
         table.put("Silence people outside your contacts",
                 "Silenciar quem n\u00e3o est\u00e1 nos seus contatos");
+        table.put("Sound for reaction notifications",
+                "Som das notifica\u00e7\u00f5es de rea\u00e7\u00f5es");
         table.put("Source code and issues",
                 "C\u00f3digo-fonte e relatos de problemas");
         table.put("Spoiler text, photos and videos show right away without a tap. View-once media, sensitive content and login codes stay covered.",
@@ -8057,11 +8083,11 @@ public final class L10nTranslations {
                 "O Telegram s\u00f3 desfoca o cabe\u00e7alho e os pain\u00e9is da conversa em celulares r\u00e1pidos. Isso permite que qualquer celular fa\u00e7a isso, quando Desfoque no chat estiver ligado em Economia de energia.");
         table.put("Telegram refused this app's ID",
                 "O Telegram recusou o ID deste app");
-        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
-                "O Telegram deixa de oferecer atualiza\u00e7\u00f5es do telegram.org. Elas n\u00e3o podem ser instaladas sobre este build corrigido, ent\u00e3o aplique o patch de cada nova vers\u00e3o pelo Morphe Manager.");
     }
 
     private static void fillPt_rBR10(Map<String, String> table) {
+        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
+                "O Telegram deixa de oferecer atualiza\u00e7\u00f5es do telegram.org. Elas n\u00e3o podem ser instaladas sobre este build corrigido, ent\u00e3o aplique o patch de cada nova vers\u00e3o pelo Morphe Manager.");
         table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
                 "O Telegram recusou o ID de API que este app usa para entrar, ent\u00e3o nenhum c\u00f3digo foi enviado. Aplique o patch no HushTelegram de novo com Use registered Telegram API credentials e seu pr\u00f3prio ID de my.telegram.org/apps. O guia mostra como.");
         table.put("Telegram turned the folders down. Try again later.",
@@ -8070,6 +8096,8 @@ public final class L10nTranslations {
                 "Idioma do Telegram");
         table.put("Telegram's own files in internal storage",
                 "arquivos do pr\u00f3prio Telegram no armazenamento interno");
+        table.put("Telegram's reaction notifications make no sound. Turned on, they play the sound and vibration set in Telegram's Notifications and Sounds > Reactions.",
+                "As notifica\u00e7\u00f5es de rea\u00e7\u00f5es do Telegram n\u00e3o t\u00eam som. Ativado, elas usam o som e a vibra\u00e7\u00e3o definidos em Notifica\u00e7\u00f5es e Sons > Rea\u00e7\u00f5es do Telegram.");
         table.put("Telegram's reply to account %1$s on %2$s: %3$s, %4$s",
                 "Resposta do Telegram para a conta %1$s pelo %2$s: %3$s, %4$s");
         table.put("Telegram's reply to notification sign-up: %1$s",
@@ -8178,13 +8206,13 @@ public final class L10nTranslations {
                 "Este campo \u00e9 muito longo. Use no m\u00e1ximo %1$d caracteres.");
         table.put("This list is too long for a settings file. Remove a few lines.",
                 "Lista longa demais para um arquivo de configura\u00e7\u00f5es. Remova algumas linhas.");
+    }
+
+    private static void fillPt_rBR11(Map<String, String> table) {
         table.put("This network is metered.",
                 "Esta rede \u00e9 limitada.");
         table.put("This network isn't metered.",
                 "Esta rede n\u00e3o \u00e9 limitada.");
-    }
-
-    private static void fillPt_rBR11(Map<String, String> table) {
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "Isto s\u00f3 mostra o que est\u00e1 salvo neste celular. N\u00e3o prova que as notifica\u00e7\u00f5es v\u00e3o chegar.");
         table.put("This patched app changes %1$s but not %2$s.",
@@ -8301,13 +8329,13 @@ public final class L10nTranslations {
                 "Formas de entrar");
         table.put("Ways to open these settings",
                 "Formas de abrir estas configura\u00e7\u00f5es");
+    }
+
+    private static void fillPt_rBR12(Map<String, String> table) {
         table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
                 "O que voc\u00ea digita na busca principal n\u00e3o \u00e9 enviado ao Telegram, exceto na aba Posts. A aba Chats encontra suas conversas e contatos neste celular, al\u00e9m das buscas recentes, mas n\u00e3o mensagens nem contas p\u00fablicas. Canais, Apps, as abas de m\u00eddia e os filtros de conversa ou data n\u00e3o buscam o texto digitado. A busca dentro de uma conversa continua indo para o Telegram.");
         table.put("When a voice or video message ends, the next one doesn't start by itself.",
                 "Quando uma mensagem de voz ou de v\u00eddeo termina, a pr\u00f3xima n\u00e3o come\u00e7a sozinha.");
-    }
-
-    private static void fillPt_rBR12(Map<String, String> table) {
         table.put("When someone reacts to a message, the emoji doesn't fly across the screen and burst. The reaction still shows on the message.",
                 "Quando algu\u00e9m reage a uma mensagem, o emoji n\u00e3o voa pela tela nem explode. A rea\u00e7\u00e3o continua aparecendo na mensagem.");
         table.put("When you add someone as a contact from their chat, Telegram ticks the box that shares your phone number with them. With this on, the box starts clear and your number goes only if you tick it.",
@@ -8424,13 +8452,13 @@ public final class L10nTranslations {
                 "a entrada em novos canais e grupos");
         table.put("keeping a video upright until full screen",
                 "manter o v\u00eddeo na vertical at\u00e9 a tela cheia");
+    }
+
+    private static void fillPt_rBR13(Map<String, String> table) {
         table.put("less than a minute ago",
                 "h\u00e1 menos de um minuto");
         table.put("local notification status",
                 "estado local das notifica\u00e7\u00f5es");
-    }
-
-    private static void fillPt_rBR13(Map<String, String> table) {
         table.put("new message button",
                 "bot\u00e3o de nova mensagem");
         table.put("none",
@@ -8475,6 +8503,8 @@ public final class L10nTranslations {
                 "menu lateral");
         table.put("similar channels and bots",
                 "canais e bots semelhantes");
+        table.put("sound for reaction notifications",
+                "o som das notifica\u00e7\u00f5es de rea\u00e7\u00f5es");
         table.put("story links",
                 "links de Stories");
         table.put("story list requests",
@@ -8504,7 +8534,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(1630);
+        Map<String, String> table = new HashMap<>(1636);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -9650,6 +9680,8 @@ public final class L10nTranslations {
                 "%1$s ile kaydolunuyor\u2026");
         table.put("Silence people outside your contacts",
                 "Ki\u015fileriniz d\u0131\u015f\u0131ndakileri sessize al");
+        table.put("Sound for reaction notifications",
+                "Tepki bildirimleri i\u00e7in ses");
         table.put("Source code and issues",
                 "Kaynak kodu ve sorunlar");
         table.put("Spoiler text, photos and videos show right away without a tap. View-once media, sensitive content and login codes stay covered.",
@@ -9748,11 +9780,11 @@ public final class L10nTranslations {
                 "Telegram sohbet ba\u015fl\u0131\u011f\u0131n\u0131 ve panelleri yaln\u0131zca h\u0131zl\u0131 telefonlarda bulan\u0131kla\u015ft\u0131r\u0131r. Bu, G\u00fc\u00e7 tasarrufu alt\u0131nda Sohbette bulan\u0131kl\u0131k a\u00e7\u0131ld\u0131\u011f\u0131nda her telefonun bunu yapmas\u0131n\u0131 sa\u011flar.");
         table.put("Telegram refused this app's ID",
                 "Telegram bu uygulaman\u0131n kimli\u011fini reddetti");
-        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
-                "Telegram, telegram.org g\u00fcncellemelerini sunmay\u0131 b\u0131rak\u0131r. Bunlar bu yamal\u0131 s\u00fcr\u00fcm\u00fcn \u00fczerine kurulamaz, bu y\u00fczden her yeni s\u00fcr\u00fcm\u00fc Morphe Manager'da yamala.");
     }
 
     private static void fillTr10(Map<String, String> table) {
+        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
+                "Telegram, telegram.org g\u00fcncellemelerini sunmay\u0131 b\u0131rak\u0131r. Bunlar bu yamal\u0131 s\u00fcr\u00fcm\u00fcn \u00fczerine kurulamaz, bu y\u00fczden her yeni s\u00fcr\u00fcm\u00fc Morphe Manager'da yamala.");
         table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
                 "Telegram bu uygulaman\u0131n giri\u015f i\u00e7in kulland\u0131\u011f\u0131 API kimli\u011fini reddetti, bu y\u00fczden giri\u015f kodu g\u00f6nderilmedi. HushTelegram'\u0131 Use registered Telegram API credentials ve my.telegram.org/apps adresinden ald\u0131\u011f\u0131n\u0131z kendi kimli\u011finizle yeniden yamalay\u0131n. Rehber ad\u0131m ad\u0131m anlat\u0131yor.");
         table.put("Telegram turned the folders down. Try again later.",
@@ -9761,6 +9793,8 @@ public final class L10nTranslations {
                 "Telegram'\u0131n dili");
         table.put("Telegram's own files in internal storage",
                 "Telegram'\u0131n kendi dosyalar\u0131 dahili depolamada");
+        table.put("Telegram's reaction notifications make no sound. Turned on, they play the sound and vibration set in Telegram's Notifications and Sounds > Reactions.",
+                "Telegram tepki bildirimlerini sessiz g\u00f6sterir. A\u00e7\u0131kken bu bildirimler, Telegram'\u0131n Bildirimler ve Sesler > Tepkiler b\u00f6l\u00fcm\u00fcnde ayarlanan ses ve titre\u015fimi kullan\u0131r.");
         table.put("Telegram's reply to account %1$s on %2$s: %3$s, %4$s",
                 "Telegram'\u0131n %2$s \u00fczerinden hesap %1$s i\u00e7in yan\u0131t\u0131: %3$s, %4$s");
         table.put("Telegram's reply to notification sign-up: %1$s",
@@ -9869,13 +9903,13 @@ public final class L10nTranslations {
                 "Bu alan \u00e7ok uzun. En fazla %1$d karakter kullan.");
         table.put("This list is too long for a settings file. Remove a few lines.",
                 "Bu liste ayar dosyas\u0131 i\u00e7in \u00e7ok uzun. Birka\u00e7 sat\u0131r\u0131 kald\u0131r.");
+    }
+
+    private static void fillTr11(Map<String, String> table) {
         table.put("This network is metered.",
                 "Bu a\u011f s\u0131n\u0131rl\u0131.");
         table.put("This network isn't metered.",
                 "Bu a\u011f s\u0131n\u0131rl\u0131 de\u011fil.");
-    }
-
-    private static void fillTr11(Map<String, String> table) {
         table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
                 "Bu yaln\u0131zca bu telefonda nelerin kay\u0131tl\u0131 oldu\u011funu g\u00f6sterir. Bildirimlerin ula\u015faca\u011f\u0131n\u0131 kan\u0131tlamaz.");
         table.put("This patched app changes %1$s but not %2$s.",
@@ -9992,13 +10026,13 @@ public final class L10nTranslations {
                 "Giri\u015f yollar\u0131");
         table.put("Ways to open these settings",
                 "Bu ayarlar\u0131 a\u00e7ma yollar\u0131");
+    }
+
+    private static void fillTr12(Map<String, String> table) {
         table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
                 "Ana aramaya yazd\u0131klar\u0131n\u0131z, Yay\u0131nlar sekmesi d\u0131\u015f\u0131nda Telegram'a g\u00f6nderilmez. Sohbetler sekmesi bu telefondaki sohbetlerinizi ve ki\u015filerinizi, ayr\u0131ca son aramalar\u0131 bulur ama mesajlar\u0131 ve herkese a\u00e7\u0131k hesaplar\u0131 bulmaz. Kanallar, Uygulamalar, medya sekmeleri ve sohbet ya da tarih filtreleri yazd\u0131\u011f\u0131n\u0131z metni aramaz. Sohbet i\u00e7indeki arama yine Telegram'a gider.");
         table.put("When a voice or video message ends, the next one doesn't start by itself.",
                 "Bir sesli veya g\u00f6r\u00fcnt\u00fcl\u00fc mesaj bitti\u011finde bir sonrakisi kendili\u011finden ba\u015flamaz.");
-    }
-
-    private static void fillTr12(Map<String, String> table) {
         table.put("When someone reacts to a message, the emoji doesn't fly across the screen and burst. The reaction still shows on the message.",
                 "Biri bir mesaja tepki verdi\u011finde emoji ekranda u\u00e7up patlamaz. Tepki mesaj\u0131n \u00fczerinde g\u00f6r\u00fcnmeye devam eder.");
         table.put("When you add someone as a contact from their chat, Telegram ticks the box that shares your phone number with them. With this on, the box starts clear and your number goes only if you tick it.",
@@ -10115,13 +10149,13 @@ public final class L10nTranslations {
                 "yeni kanallara ve gruplara kat\u0131lma");
         table.put("keeping a video upright until full screen",
                 "videoyu tam ekrana kadar dik tutma");
+    }
+
+    private static void fillTr13(Map<String, String> table) {
         table.put("less than a minute ago",
                 "bir dakikadan k\u0131sa s\u00fcre \u00f6nce");
         table.put("local notification status",
                 "yerel bildirim durumu");
-    }
-
-    private static void fillTr13(Map<String, String> table) {
         table.put("new message button",
                 "yeni mesaj d\u00fc\u011fmesi");
         table.put("none",
@@ -10166,6 +10200,8 @@ public final class L10nTranslations {
                 "yan men\u00fc");
         table.put("similar channels and bots",
                 "benzer kanallar ve botlar");
+        table.put("sound for reaction notifications",
+                "tepki bildirimlerinin sesini");
         table.put("story links",
                 "hik\u00e2ye ba\u011flant\u0131lar\u0131");
         table.put("story list requests",

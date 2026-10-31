@@ -52,6 +52,8 @@ public class ReactionAlertsTest {
         PauseForTests.resume();
         SettingReadsForTests.mend(Settings.REACTION_ALERTS);
         Settings.REACTION_ALERTS.resetToDefault();
+        SettingReadsForTests.mend(Settings.REACTION_SOUND);
+        Settings.REACTION_SOUND.resetToDefault();
         ReactionAlerts.sources = REAL_SOURCES;
         ReactionAlerts.updates = REAL_UPDATES;
         ReactionAlerts.forget();
@@ -91,6 +93,31 @@ public class ReactionAlertsTest {
         SettingReadsForTests.breakReads(Settings.REACTION_ALERTS);
         assertFalse(ReactionAlerts.on());
         assertTrue(account.shown.isEmpty());
+    }
+
+    @Test public void aReactionStaysSilentUntilTheSoundSwitchIsOn() {
+        assertFalse(Settings.REACTION_SOUND.defaultValue);
+        assertFalse("not a reaction, so Telegram's own check goes on", ReactionAlerts.quiet(0));
+        assertTrue(ReactionAlerts.quiet(1));
+        assertFalse(String.join("\n", HookStatus.report()).contains("reaction sounds let through"));
+
+        Settings.REACTION_SOUND.save(true);
+        assertFalse(ReactionAlerts.quiet(1));
+        assertFalse(ReactionAlerts.quiet(0));
+        assertTrue(String.join("\n", HookStatus.report()).contains("reaction sounds let through"));
+    }
+
+    @Test public void pausedOrUnreadableTheReactionStaysSilent() {
+        Settings.REACTION_SOUND.save(true);
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
+            PauseForTests.pause(reason);
+            assertTrue(reason.name(), ReactionAlerts.quiet(1));
+            PauseForTests.resume();
+        }
+        SettingReadsForTests.breakReads(Settings.REACTION_SOUND);
+        assertTrue(ReactionAlerts.quiet(1));
+        assertFalse(ReactionAlerts.quiet(0));
     }
 
     @Test public void onlyTheNewestUnreadEmojiReactionFromSomeoneElseCounts() {

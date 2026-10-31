@@ -176,6 +176,7 @@ public final class SettingsStatus {
     public static boolean firebaseLocalStatus() { return false; }
     public static boolean unifiedPush() { return false; }
     public static boolean reactionAlerts() { return false; }
+    public static boolean reactionSound() { return false; }
 
     public static boolean channelAds() {
         return false;

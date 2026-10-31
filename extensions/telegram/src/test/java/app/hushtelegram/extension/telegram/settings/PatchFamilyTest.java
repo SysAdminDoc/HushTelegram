@@ -135,6 +135,7 @@ public class PatchFamilyTest {
         Settings.CHAT_TYPE_FOLDERS.resetToDefault();
         Settings.UNIFIED_PUSH.resetToDefault();
         Settings.REACTION_ALERTS.resetToDefault();
+        Settings.REACTION_SOUND.resetToDefault();
         Settings.ASK_BEFORE_GIF.resetToDefault();
         Settings.ASK_BEFORE_VOICE_VIDEO.resetToDefault();
         Settings.ASK_BEFORE_CALL.resetToDefault();
@@ -550,15 +551,20 @@ public class PatchFamilyTest {
         assertEquals("UnifiedPush notifications", family.patchName);
         assertEquals("unifiedPush", family.statusMethod);
         // The second switch, reaction notifications without push, starts on and works with or without UnifiedPush.
-        assertEquals(Arrays.asList(Settings.UNIFIED_PUSH, Settings.REACTION_ALERTS), family.switches);
+        // The third, a sound for reaction notifications (#41), starts off and is read each time one shows.
+        assertEquals(Arrays.asList(Settings.UNIFIED_PUSH, Settings.REACTION_ALERTS, Settings.REACTION_SOUND), family.switches);
         assertFalse(Settings.UNIFIED_PUSH.defaultValue);
         assertTrue(Settings.REACTION_ALERTS.defaultValue);
+        assertFalse(Settings.REACTION_SOUND.defaultValue);
         // The switch signs up or ends the sign-up when it changes, so no restart is needed.
         assertFalse(Settings.UNIFIED_PUSH.rebootApp);
         assertFalse(Settings.REACTION_ALERTS.rebootApp);
+        assertFalse(Settings.REACTION_SOUND.rebootApp);
         assertNull(family.staysWhilePaused);
-        assertEquals(EnumSet.of(PatchFamily.Capability.REACTION_ALERTS), family.expectedCapabilities());
+        assertEquals(EnumSet.of(PatchFamily.Capability.REACTION_ALERTS, PatchFamily.Capability.REACTION_SOUND),
+                family.expectedCapabilities());
         assertEquals("reactionAlerts", PatchFamily.Capability.REACTION_ALERTS.statusMethod);
+        assertEquals("reactionSound", PatchFamily.Capability.REACTION_SOUND.statusMethod);
         assertOnItsPage(family);
         assertEquals(PatchFamily.Page.NOTIFICATIONS, PatchFamily.Page.of(family));
     }

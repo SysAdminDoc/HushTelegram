@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.unifiedpush
 
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -20,6 +21,7 @@ import app.morphe.util.addInstructionsAtControlFlowLabel
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 
 internal const val REACTION_ALERTS = "$EXTENSION_PACKAGE/misc/ReactionAlerts;"
 internal const val REACTIONS_UPDATE = "Lorg/telegram/tgnet/tl/TL_update\$TL_updateMessageReactions;"
@@ -217,4 +219,60 @@ private fun BytecodePatchContext.reactionHook(): ReactionHook {
     }
     updates.requireThisIntact(PATCH, sites.map { it.insertAt })
     return ReactionHook(updates, sites)
+}
+
+private const val REACTION_PUSH = "${MESSAGE_OBJECT}->isReactionPush:Z"
+internal const val REACTION_QUIET = "$REACTION_ALERTS->quiet(I)Z"
+
+/** Right after Telegram's silent notification check reads whether a notification is for a reaction. */
+internal class ReactionSoundHook(val check: MutableMethod, val insertAt: Int, val flag: Int) {
+    fun applyTo(method: MutableMethod) {
+        method.addInstructions(
+            insertAt,
+            """
+                invoke-static/range {v$flag .. v$flag}, $REACTION_QUIET
+                move-result v$flag
+            """.trimIndent(),
+        )
+    }
+}
+
+/**
+ * Telegram's silent notification check counts every reaction as silent, so a reaction's
+ * notification never plays the sound or vibration Telegram's own Notifications and Sounds sets for
+ * reactions. The hook goes right after the check reads the reaction flag and lets the extension
+ * clear it. It goes there and not at the top, where Silence non-contacts hooks the same method. A
+ * build where the read can't be found keeps the rest of the patch.
+ *
+ * @return the hook, and null; or null and why there's none
+ */
+internal fun BytecodePatchContext.resolveReactionSound(): Pair<ReactionSoundHook?, String?> = try {
+    Pair(reactionSoundHook(), null)
+} catch (missing: NoReactions) {
+    Pair(null, missing.message)
+} catch (missing: PatchException) {
+    Pair(null, missing.message)
+}
+
+private fun BytecodePatchContext.reactionSoundHook(): ReactionSoundHook {
+    val checks = mutableClassDefByOrNull(NOTIFIER)?.methods?.filter {
+        it.name == "isSilentMessage" && it.parameterTypes.joinToString("") == MESSAGE_OBJECT && it.returnType == "Z" &&
+            !AccessFlags.STATIC.isSet(it.accessFlags)
+    } ?: emptyList()
+    needed(checks.size == 1, "the silent notification check is missing or ambiguous")
+    val check = checks.single()
+    val body = check.controlBody()
+    val reads = body.indices.filter { body[it].opcode == Opcode.IGET_BOOLEAN && body[it].controlRef() == REACTION_PUSH }
+    needed(reads.size == 1, "the silent notification check no longer reads the reaction flag once")
+    val read = reads.single()
+    val insertAt = read + 1
+    val flag = (body[read] as TwoRegisterInstruction).registerA
+    val test = body.getOrNull(insertAt)
+    needed(test != null && (test.opcode == Opcode.IF_EQZ || test.opcode == Opcode.IF_NEZ) &&
+        (test as OneRegisterInstruction).registerA == flag,
+        "the silent notification check no longer tests the reaction flag right after reading it")
+    val flow = ControlFlow.of(check)
+    needed(flow.normal.indices.none { it != read && insertAt in flow.normal[it] },
+        "something jumps past the silent notification check's reaction flag read")
+    return ReactionSoundHook(check, insertAt, flag)
 }

@@ -683,6 +683,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_reaction_alerts", TRUE);
 
     /**
+     * A reaction's notification plays the sound and vibration set for reactions in Telegram's
+     * Notifications and Sounds, where Telegram keeps every reaction silent. Off by default.
+     */
+    public static final BooleanSetting REACTION_SOUND =
+            new BooleanSetting("hushtelegram_reaction_sound", FALSE);
+
+    /**
      * Once a day, when Telegram starts, ask api.github.com whether a newer HushTelegram release is
      * out, and say so on the settings screen ({@link ReleaseCheck}). It's the settings entry's own
      * switch rather than a patch's, so every build has it ({@link PatchFamily#ENTRY_SWITCHES}). Off
