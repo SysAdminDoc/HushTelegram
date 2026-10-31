@@ -382,7 +382,10 @@ internal fun launchFolderHosts(build: File): List<ClassDef> = LAUNCH_FOLDER_HOST
         wanted += parents
         loaded = FixtureDex.classes(build, wanted)
     }
-    loaded.values.toList()
+    // The share sheet and quick share, for the hidden chats' pickers.
+    (loaded.values + FixtureDex.classesWhere(build, { true }) { m ->
+        m.body().mapNotNull { it.ref() }.let { refs -> GET_ALL_DIALOGS in refs && (DIALOGS_FORWARD in refs || TOP_PEERS in refs) }
+    }).distinctBy { it.type }
 }
 
 /** The class with the folder tab counter. */

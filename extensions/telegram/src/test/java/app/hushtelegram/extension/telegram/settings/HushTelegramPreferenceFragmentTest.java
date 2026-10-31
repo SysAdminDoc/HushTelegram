@@ -666,7 +666,7 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse(Settings.HIDE_ALL_CHATS.key,
                     ((SwitchPreference) page.findPreference(Settings.HIDE_ALL_CHATS.key)).isChecked());
             assertEquals("Hide picked chats", String.valueOf(page.findPreference(Settings.HIDDEN_CHATS.key).getTitle()));
-            assertEquals("The chats you pick below leave All Chats, your folders and archived chats. They keep their messages "
+            assertEquals("The chats you pick below leave All Chats, your folders, archived chats and the forward and share lists. They keep their messages "
                     + "and notifications, search still finds them, and nothing changes on your other devices. Each account "
                     + "keeps its own list. Folder tab counts leave them out, but the app badge still counts their "
                     + "unread messages.",
@@ -1479,7 +1479,7 @@ public class HushTelegramPreferenceFragmentTest {
         PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_FOLDER_COUNTERS);
         PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_CHATS);
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            assertEquals("The chats you pick below leave All Chats, your folders and archived chats. They keep their messages "
+            assertEquals("The chats you pick below leave All Chats, your folders, archived chats and the forward and share lists. They keep their messages "
                     + "and notifications, search still finds them, and nothing changes on your other devices. Each account "
                     + "keeps its own list. Folder tab counts and the app badge still count their unread messages.",
                     String.valueOf(pageOf(controller).findPreference(Settings.HIDDEN_CHATS.key).getSummary()));

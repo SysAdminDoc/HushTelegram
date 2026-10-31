@@ -39,6 +39,7 @@ import app.morphe.util.definitionReaches
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
@@ -51,6 +52,14 @@ private const val SPARSE = "Landroid/util/SparseArray;"
 internal const val BY_FOLDER = "$MESSAGES_CONTROLLER->dialogsByFolder:$SPARSE"
 internal const val SELECTED_FILTERS = "$MESSAGES_CONTROLLER->selectedDialogFilter:[$LOCAL_FILTER"
 internal const val FILTER_DIALOGS = "$LOCAL_FILTER->dialogs:$HIDDEN_LIST"
+internal const val DIALOGS_FORWARD = "$MESSAGES_CONTROLLER->dialogsForward:$HIDDEN_LIST"
+internal const val FILTER_FORWARD = "$LOCAL_FILTER->dialogsForward:$HIDDEN_LIST"
+internal const val GET_ALL_DIALOGS = "$MESSAGES_CONTROLLER->getAllDialogs()$HIDDEN_LIST"
+/** The people Telegram suggests. Quick share is the one method that reads these and every chat. */
+internal const val TOP_PEERS = "Lorg/telegram/messenger/MediaDataController;->hints:$HIDDEN_LIST"
+private const val LIST_ADD_ALL = "$HIDDEN_LIST->addAll(Ljava/util/Collection;)Z"
+internal const val SHARE_SHEET_CHATS = "$HIDDEN_CHATS->shareSheetChats($HIDDEN_LIST)$HIDDEN_LIST"
+internal const val QUICK_SHARE_IDS = "$HIDDEN_CHATS->quickShareIds($HIDDEN_LIST)V"
 internal const val DIALOG_ID = "Lorg/telegram/tgnet/TLRPC\$Dialog;->id:J"
 internal const val GET_DIALOGS = "$MESSAGES_CONTROLLER->getDialogs(I)$HIDDEN_LIST"
 internal const val PEER_NAME = "$MESSAGES_CONTROLLER->getPeerName(J)Ljava/lang/String;"
@@ -69,6 +78,16 @@ private const val REORDER_PINS = "Lorg/telegram/tgnet/TLRPC\$TL_messages_reorder
 internal const val DIALOG_PINNED = "Lorg/telegram/tgnet/TLRPC\$Dialog;->pinned:Z"
 internal const val DIALOG_PIN_NUM = "Lorg/telegram/tgnet/TLRPC\$Dialog;->pinnedNum:I"
 internal const val PIN_ORDER = "$HIDDEN_CHATS->pinOrder(${HIDDEN_OBJECT}I$HIDDEN_OBJECT)$HIDDEN_OBJECT"
+internal const val SERVER_PINS = "$HIDDEN_CHATS->serverPins(${HIDDEN_OBJECT}I$HIDDEN_OBJECT)V"
+internal const val PIN_ROOM = "$HIDDEN_CHATS->pinRoom(I)I"
+internal const val KEEP_PINS = "$STORAGE->unpinAllDialogsExceptNew(${HIDDEN_LIST}I)V"
+private const val BASE_CONTROLLER = "Lorg/telegram/messenger/BaseController;"
+private const val GET_STORAGE = "$BASE_CONTROLLER->getMessagesStorage()$STORAGE"
+/** Read only by the two pin checks and the controller itself, so it finds them. */
+internal const val FOLDER_PIN_LIMIT = "$MESSAGES_CONTROLLER->maxFolderPinnedDialogsCountDefault:I"
+/** What those checks read for the chat list itself. The archive's and the folder tabs' read is one shared branch, left alone. */
+internal val MAIN_PIN_LIMITS = listOf("maxPinnedDialogsCountPremium", "maxPinnedDialogsCountDefault",
+    "dialogFiltersPinnedLimitPremium", "dialogFiltersPinnedLimitDefault").map { "$MESSAGES_CONTROLLER->$it:I" }.toSet()
 
 /** The call that hands the sorted lists to the extension: one instruction. */
 internal const val HIDDEN_CHATS_SIZE = 1
@@ -82,12 +101,25 @@ internal const val PIN_ORDER_SIZE = 3
  */
 internal class PinOrderPlan(val method: MutableMethod, val at: Int, val controller: Int, val folder: Int, val list: Int)
 
+/** Where the answer to loadPinnedDialogs hands the storage the server's pins, and the registers the extension takes there. */
+internal class ServerPinsPlan(val method: MutableMethod, val controller: Int, val folder: Int, val ids: Int)
+
+/** The storage call in [this], looked up when it's needed, since another hook can move it. */
+internal fun Method.keepPinsCall(): Int = controlBody().indexOfFirst { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == KEEP_PINS }
+
+/** Each read of the chat list's own pin limit in [this], looked up the same way. */
+internal fun Method.mainPinLimitReads(): List<Int> {
+    val body = controlBody()
+    return body.indices.filter { body[it].opcode == Opcode.IGET && body[it].controlRef() in MAIN_PIN_LIMITS }
+}
+
 /**
  * Where sortDialogs starts dropping the folders left empty, and where the pinned order reads its
  * folder's chats, found and checked before anything is edited, or [missing], why this build can't
  * hide chats.
  */
-internal class HiddenChatsPlan(val sort: MutableMethod?, val at: Int, val controller: Int, val missing: String?, val pins: PinOrderPlan? = null) {
+internal class HiddenChatsPlan(val sort: MutableMethod?, val at: Int, val controller: Int, val missing: String?, val pins: PinOrderPlan? = null,
+    val serverPins: ServerPinsPlan? = null, val pinLimits: List<MutableMethod> = emptyList(), val pinGaps: List<String> = emptyList()) {
     fun apply(into: (MutableMethod) -> MutableMethod = { it }) {
         val method = sort?.let(into) ?: return
         val before = method.implementation!!.instructions.size
@@ -107,6 +139,26 @@ internal class HiddenChatsPlan(val sort: MutableMethod?, val at: Int, val contro
         """)
         hiddenFits(reorder.implementation!!.instructions.count { it.opcode != Opcode.NOP } - stock == PIN_ORDER_SIZE,
             "the pinned order's swap didn't compile whole")
+        serverPins?.let { plan ->
+            val answer = into(plan.method)
+            val untouched = answer.implementation!!.instructions.count { it.opcode != Opcode.NOP }
+            // Between the storage read's result and the call: nothing jumps there, and the branch past Telegram's resort lands before the read.
+            answer.addInstructions(answer.keepPinsCall(), "invoke-static {v${plan.controller}, v${plan.folder}, v${plan.ids}}, $SERVER_PINS")
+            hiddenFits(answer.implementation!!.instructions.count { it.opcode != Opcode.NOP } - untouched == 1, "the server's pins call didn't compile whole")
+        }
+        for (reader in pinLimits.map(into)) {
+            val untouched = reader.implementation!!.instructions.count { it.opcode != Opcode.NOP }
+            val reads = reader.mainPinLimitReads()
+            // Last first, so the earlier index stays good. The read has just written over the controller, so the limit is all there is to hand on.
+            for (read in reads.asReversed()) {
+                val limit = (reader.controlBody()[read] as TwoRegisterInstruction).registerA
+                reader.addInstructions(read + 1, """
+                    invoke-static/range {v$limit .. v$limit}, $PIN_ROOM
+                    move-result v$limit
+                """)
+            }
+            hiddenFits(reader.implementation!!.instructions.count { it.opcode != Opcode.NOP } - untouched == reads.size * 2, "the pin limit's call didn't compile whole")
+        }
     }
 
     /** The same edit on a copy, so a smali problem shows before the app is touched. */
@@ -125,8 +177,15 @@ internal fun BytecodePatchContext.requireHiddenChatsRuntime() {
     controlHook(HIDDEN_CHATS, "folders", listOf(HIDDEN_OBJECT), SPARSE)
     controlHook(HIDDEN_CHATS, "selectedFilters", listOf(HIDDEN_OBJECT), "[$HIDDEN_OBJECT")
     controlHook(HIDDEN_CHATS, "filterDialogs", listOf(HIDDEN_OBJECT), HIDDEN_LIST)
+    controlHook(HIDDEN_CHATS, "forwardList", listOf(HIDDEN_OBJECT), HIDDEN_LIST)
+    controlHook(HIDDEN_CHATS, "filterForward", listOf(HIDDEN_OBJECT), HIDDEN_LIST)
+    controlHook(HIDDEN_CHATS, "shareSheetChats", listOf(HIDDEN_LIST), HIDDEN_LIST)
+    controlHook(HIDDEN_CHATS, "quickShareIds", listOf(HIDDEN_LIST), "V")
     controlHook(HIDDEN_CHATS, "dialogId", listOf(HIDDEN_OBJECT), "J")
     controlHook(HIDDEN_CHATS, "pinOrder", listOf(HIDDEN_OBJECT, "I", HIDDEN_OBJECT), HIDDEN_OBJECT)
+    controlHook(HIDDEN_CHATS, "serverPins", listOf(HIDDEN_OBJECT, "I", HIDDEN_OBJECT), "V")
+    controlHook(HIDDEN_CHATS, "pinRoom", listOf("I"), "I")
+    controlHook(HIDDEN_CHATS, "unpin", listOf(HIDDEN_OBJECT), "V")
     controlHook(HIDDEN_CHATS, "pinned", listOf(HIDDEN_OBJECT), "Z")
     controlHook(HIDDEN_CHATS, "pinnedNum", listOf(HIDDEN_OBJECT), "I")
     controlHook(HIDDEN_CHATS, "selectedAccount", emptyList(), "I")
@@ -212,7 +271,23 @@ private fun BytecodePatchContext.emptyFolderWalk(): HiddenChatsPlan {
     // Without the pinned order a hidden pinned chat would come unpinned everywhere, so it's both or neither.
     val pins = pinOrderRead()
 
-    for ((reference, static) in listOf(BY_FOLDER to false, SELECTED_FILTERS to false, FILTER_DIALOGS to false, DIALOG_ID to false,
+    // Each of these only closes a small gap, so a build that moved one still hides chats and says what it lost.
+    val gaps = mutableListOf<String>()
+    val serverPins = try {
+        serverPinsCall()
+    } catch (gap: Unhidden) {
+        gaps += gap.message.orEmpty()
+        null
+    }
+    val pinLimits = try {
+        pinLimitReaders()
+    } catch (gap: Unhidden) {
+        gaps += gap.message.orEmpty()
+        emptyList()
+    }
+
+    for ((reference, static) in listOf(BY_FOLDER to false, SELECTED_FILTERS to false, FILTER_DIALOGS to false, DIALOGS_FORWARD to false,
+        FILTER_FORWARD to false, DIALOG_ID to false,
         DIALOG_PINNED to false, DIALOG_PIN_NUM to false,
         GET_DIALOGS to false, PEER_NAME to false, GET_USER_CONFIG to false, CLIENT_USER_ID to false, SELECTED_ACCOUNT to true,
         USER_CONFIG_INSTANCE to true, ACCOUNT_SLOTS to true, CONTROLLER_INSTANCE to true, NOTIFICATIONS_INSTANCE to true,
@@ -223,7 +298,140 @@ private fun BytecodePatchContext.emptyFolderWalk(): HiddenChatsPlan {
             throw Unhidden("$reference isn't reachable from the extension")
         }
     }
-    return HiddenChatsPlan(method, at, self, null, pins)
+    return HiddenChatsPlan(method, at, self, null, pins, serverPins, pinLimits, gaps)
+}
+
+/**
+ * The answer to loadPinnedDialogs unpins the pinned chats the sorted list holds and the server no
+ * longer names, then hands the storage what the server named. The sorted list has no hidden chats,
+ * so the extension gets the same list right before that call and does the same for them.
+ */
+private fun BytecodePatchContext.serverPinsCall(): ServerPinsPlan {
+    val answers = mutableClassDefBy(MESSAGES_CONTROLLER).methods.filter { m -> m.keepPinsCall() >= 0 }
+    hiddenFits(answers.size == 1, "the server's pins are no longer handled in one place")
+    val method = answers.single()
+    val body = method.controlBody()
+    hiddenFits(body.count { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == KEEP_PINS } == 1, "the server's pins are no longer handed over once")
+    val at = method.keepPinsCall()
+    val handed = body[at].namedRegisters()
+    val result = body.getOrNull(at - 1)
+    val read = body.getOrNull(at - 2)
+    hiddenFits(handed.size == 3 && result?.opcode == Opcode.MOVE_RESULT_OBJECT && (result as OneRegisterInstruction).registerA == handed[0] &&
+        read?.opcode == Opcode.INVOKE_VIRTUAL && read.controlRef() == GET_STORAGE, "the server's pins call changed")
+    val controller = read!!.namedRegisters().single()
+    val (storage, ids, folder) = handed
+    hiddenFits(controller != storage && listOf(controller, folder, ids).all { it in 0..15 }, "the server's pins registers don't fit the call")
+    val flow = try {
+        ControlFlow.of(method)
+    } catch (failed: IllegalArgumentException) {
+        throw Unhidden("the server's pins can't be read (${failed.message})")
+    }
+    hiddenFits(flow.normal.withIndex().none { (index, next) -> at in next && index != at - 1 } && flow.exceptional.none { at in it },
+        "something jumps into the server's pins call")
+    return ServerPinsPlan(method, controller, folder, ids)
+}
+
+/**
+ * The two pickers that don't read the sorted forward list, or not only that: the share sheet walks
+ * every chat, and quick share every chat plus the people Telegram suggests. Each is found and
+ * checked alone, so a build that moved one still hides chats and says which picker lists them.
+ */
+internal class HiddenPickersPlan(val shareSheet: MutableMethod?, val quickShare: MutableMethod?, val gaps: List<String>) {
+    fun apply(into: (MutableMethod) -> MutableMethod = { it }) {
+        shareSheet?.let(into)?.let { sheet ->
+            val read = sheet.allChatsRead()
+            val chats = (sheet.controlBody()[read + 1] as OneRegisterInstruction).registerA
+            // Past the read's result, on the only way on: the method has just read the forward list's first chat.
+            sheet.addInstructions(read + 2, """
+                invoke-static/range {v$chats .. v$chats}, $SHARE_SHEET_CHATS
+                move-result-object v$chats
+            """)
+        }
+        quickShare?.let(into)?.let { quick ->
+            val added = quick.idsAdded()
+            val ids = quick.controlBody()[added].namedRegisters().first()
+            quick.addInstructions(added + 1, "invoke-static/range {v$ids .. v$ids}, $QUICK_SHARE_IDS")
+        }
+    }
+}
+
+/** The read of every chat in [this], looked up when it's needed, since another hook can move it. */
+internal fun Method.allChatsRead(): Int = controlBody().indexOfFirst { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == GET_ALL_DIALOGS }
+
+/** Where the archive's ids join the rest in [this], the last addition to quick share's list. */
+internal fun Method.idsAdded(): Int = controlBody().indexOfFirst { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == LIST_ADD_ALL }
+
+internal fun BytecodePatchContext.resolveHiddenPickers(): HiddenPickersPlan {
+    val gaps = mutableListOf<String>()
+    val sheet = try {
+        val method = oneMethodReading(DIALOGS_FORWARD, GET_ALL_DIALOGS, "the share sheet")
+        val body = method.controlBody()
+        val read = method.allChatsRead()
+        hiddenFits(body.count { it.controlRef() == GET_ALL_DIALOGS } == 1 && body.getOrNull(read + 1)?.opcode == Opcode.MOVE_RESULT_OBJECT,
+            "the share sheet's read of every chat changed")
+        nothingJumpsTo(method, read + 2, "the share sheet's read of every chat")
+        method
+    } catch (gap: Unhidden) {
+        gaps += gap.message.orEmpty()
+        null
+    }
+    val quick = try {
+        val method = oneMethodReading(TOP_PEERS, GET_ALL_DIALOGS, "quick share")
+        val body = method.controlBody()
+        val added = method.idsAdded()
+        hiddenFits(body.count { it.controlRef() == LIST_ADD_ALL } == 1 && added > method.allChatsRead() &&
+            body.getOrNull(added + 1)?.opcode !in setOf(Opcode.MOVE_RESULT, null), "quick share's list changed")
+        nothingJumpsTo(method, added + 1, "quick share's list")
+        method
+    } catch (gap: Unhidden) {
+        gaps += gap.message.orEmpty()
+        null
+    }
+    return HiddenPickersPlan(sheet, quick, gaps)
+}
+
+private fun BytecodePatchContext.oneMethodReading(first: String, second: String, what: String): MutableMethod {
+    val readers = mutableListOf<Pair<String, String>>()
+    forEachClassMentioning(Mention.allReferences(listOf(first, second))) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.type == MESSAGES_CONTROLLER) return@forEachClassMentioning
+        cls.methods.filter { m ->
+            val reads = m.controlBody().mapNotNull { it.controlRef() }
+            first in reads && second in reads
+        }.forEach { readers += cls.type to it.toString() }
+    }
+    hiddenFits(readers.size == 1, "$what is no longer one method")
+    val (type, method) = readers.single()
+    return mutableClassDefBy(type).methods.single { it.toString() == method }
+}
+
+private fun nothingJumpsTo(method: Method, at: Int, what: String) {
+    val flow = try {
+        ControlFlow.of(method)
+    } catch (failed: IllegalArgumentException) {
+        throw Unhidden("$what can't be read (${failed.message})")
+    }
+    hiddenFits(flow.normal.withIndex().none { (index, next) -> at in next && index != at - 1 } && flow.exceptional.none { at in it },
+        "something jumps into $what")
+}
+
+/**
+ * The two pin checks, the long press menu's and the pin action's, compare the pins in the list on
+ * screen with a limit each reads in its own branch for the chat list. Those branches only run with
+ * no folder tab open, so the limit is the only thing that has to change.
+ */
+private fun BytecodePatchContext.pinLimitReaders(): List<MutableMethod> {
+    val readers = mutableListOf<Pair<String, String>>()
+    forEachClassMentioning(Mention.allReferences(listOf(FOLDER_PIN_LIMIT))) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.type == MESSAGES_CONTROLLER) return@forEachClassMentioning
+        cls.methods.filter { m -> m.controlBody().any { it.opcode == Opcode.IGET && it.controlRef() == FOLDER_PIN_LIMIT } }
+            .forEach { readers += cls.type to it.toString() }
+    }
+    hiddenFits(readers.size == 2, "the pin checks are no longer two")
+    return readers.map { (type, method) ->
+        val reader = mutableClassDefBy(type).methods.single { it.toString() == method }
+        hiddenFits(reader.mainPinLimitReads().size == 2, "a pin check's limit reads changed")
+        reader
+    }
 }
 
 /**
@@ -264,7 +472,6 @@ internal const val STORAGE_INSTANCE = "$STORAGE->getInstance(I)$STORAGE"
 internal const val RECOUNT = "$STORAGE->resetAllUnreadCounters(Z)V"
 internal const val STORAGE_QUEUE = "$STORAGE->getStorageQueue()Lorg/telegram/messenger/DispatchQueue;"
 internal const val POST_RUNNABLE = "Lorg/telegram/messenger/DispatchQueue;->postRunnable(Ljava/lang/Runnable;)Z"
-private const val BASE_CONTROLLER = "Lorg/telegram/messenger/BaseController;"
 private const val CURSOR = "Lorg/telegram/SQLite/SQLiteCursor;"
 private const val QUERY = "Lorg/telegram/SQLite/SQLiteDatabase;->queryFinalized(Ljava/lang/String;[Ljava/lang/Object;)$CURSOR"
 private const val CURSOR_NEXT = "$CURSOR->next()Z"
@@ -703,6 +910,16 @@ internal fun BytecodePatchContext.writeHiddenChatsStubs(sort: String) {
         iget-object v0, p0, $FILTER_DIALOGS
         return-object v0
     """)
+    writeStub(HIDDEN_CHATS, "forwardList", 2, """
+        check-cast p0, $MESSAGES_CONTROLLER
+        iget-object v0, p0, $DIALOGS_FORWARD
+        return-object v0
+    """)
+    writeStub(HIDDEN_CHATS, "filterForward", 2, """
+        check-cast p0, $LOCAL_FILTER
+        iget-object v0, p0, $FILTER_FORWARD
+        return-object v0
+    """)
     writeStub(HIDDEN_CHATS, "dialogId", 3, """
         check-cast p0, ${DIALOG_ID.substringBefore("->")}
         iget-wide v0, p0, $DIALOG_ID
@@ -717,6 +934,13 @@ internal fun BytecodePatchContext.writeHiddenChatsStubs(sort: String) {
         check-cast p0, ${DIALOG_PIN_NUM.substringBefore("->")}
         iget v0, p0, $DIALOG_PIN_NUM
         return v0
+    """)
+    writeStub(HIDDEN_CHATS, "unpin", 2, """
+        check-cast p0, ${DIALOG_PINNED.substringBefore("->")}
+        const/4 v0, 0x0
+        iput-boolean v0, p0, $DIALOG_PINNED
+        iput v0, p0, $DIALOG_PIN_NUM
+        return-void
     """)
     writeStub(HIDDEN_CHATS, "selectedAccount", 1, """
         sget v0, $SELECTED_ACCOUNT

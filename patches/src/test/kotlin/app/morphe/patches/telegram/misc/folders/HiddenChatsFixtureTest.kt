@@ -111,6 +111,154 @@ class HiddenChatsFixtureTest {
         }
     }
 
+    @Test fun `the extension sees the server's pins right before the storage does`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = PatchContexts.of(ExtensionDex.classes() + launchFolderHosts(build))
+            context.requireHiddenChatsRuntime()
+            val plan = context.resolveHiddenChats()
+            assertEquals(name, emptyList<String>(), plan.pinGaps)
+            val pins = plan.serverPins!!
+            val stock = pins.method.body().code()
+            val at = pins.method.keepPinsCall()
+            val handed = pins.method.body()[at].namedRegisters()
+            assertEquals(name, listOf(pins.ids, pins.folder), handed.drop(1))
+            plan.apply()
+            val body = pins.method.body()
+            val hook = body[at]
+            assertEquals(name, SERVER_PINS, hook.ref())
+            assertEquals(name, Opcode.INVOKE_STATIC, hook.opcode)
+            assertEquals(name, listOf(pins.controller, pins.folder, pins.ids), hook.namedRegisters())
+            // The storage read, its result, this call, then Telegram's own on the same result.
+            assertEquals(name, "Lorg/telegram/messenger/BaseController;->getMessagesStorage()Lorg/telegram/messenger/MessagesStorage;", body[at - 2].ref())
+            assertEquals(name, listOf(pins.controller), body[at - 2].namedRegisters())
+            assertEquals(name, Opcode.MOVE_RESULT_OBJECT, body[at - 1].opcode)
+            assertEquals(name, KEEP_PINS, body[at + 1].ref())
+            assertEquals(name, handed, body[at + 1].namedRegisters())
+            assertEquals("$name: Telegram's own code is unchanged around it", stock, body.filterIndexed { index, _ -> index != at }.code())
+        }
+    }
+
+    @Test fun `both pin checks shrink only the chat list's own limit`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = PatchContexts.of(ExtensionDex.classes() + launchFolderHosts(build))
+            context.requireHiddenChatsRuntime()
+            val plan = context.resolveHiddenChats()
+            assertEquals(name, 2, plan.pinLimits.size)
+            val stock = plan.pinLimits.associateWith { it.body().code() }
+            val shown = plan.pinLimits.flatMap { method -> method.body().mapNotNull { it.ref() }.filter { it in MAIN_PIN_LIMITS } }.toSet()
+            assertEquals(name, MAIN_PIN_LIMITS, shown)
+            plan.apply()
+            for (method in plan.pinLimits) {
+                val body = method.body()
+                val hooks = body.indices.filter { body[it].ref() == PIN_ROOM }
+                assertEquals("$name: ${method.name}", 2, hooks.size)
+                for (hook in hooks) {
+                    // The read, the call on what it read, and the answer back in the same register.
+                    val read = body[hook - 1]
+                    assertTrue("$name: ${read.ref()}", read.ref() in MAIN_PIN_LIMITS)
+                    val limit = (read as TwoRegisterInstruction).registerA
+                    assertEquals(name, Opcode.INVOKE_STATIC_RANGE, body[hook].opcode)
+                    assertEquals(name, listOf(limit), body[hook].namedRegisters())
+                    assertEquals(name, Opcode.MOVE_RESULT, body[hook + 1].opcode)
+                    assertEquals(name, listOf(limit), body[hook + 1].namedRegisters())
+                }
+                // The folder tabs' and archive's limit is read straight, on to the shared comparison.
+                val folder = body.indexOfFirst { it.ref() == FOLDER_PIN_LIMIT }
+                assertTrue("$name: ${method.name}", body[folder + 1].ref() != PIN_ROOM)
+                val added = hooks.flatMap { listOf(it, it + 1) }.toSet()
+                assertEquals("$name: ${method.name} keeps Telegram's code", stock.getValue(method),
+                    body.filterIndexed { index, _ -> index !in added }.code())
+            }
+        }
+    }
+
+    @Test fun `the share sheet reads a copy and quick share hands over its ids`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = PatchContexts.of(ExtensionDex.classes() + launchFolderHosts(build))
+            context.requireHiddenChatsRuntime()
+            val plan = context.resolveHiddenPickers()
+            assertEquals(name, emptyList<String>(), plan.gaps)
+            val sheet = plan.shareSheet!!
+            val quick = plan.quickShare!!
+            val stock = listOf(sheet, quick).map { it.body().code() }
+            plan.apply()
+
+            val sheetBody = sheet.body().filter { it.opcode != Opcode.NOP }
+            val hook = sheetBody.indexOfFirst { it.ref() == SHARE_SHEET_CHATS }
+            assertEquals(name, GET_ALL_DIALOGS, sheetBody[hook - 2].ref())
+            val chats = (sheetBody[hook - 1] as OneRegisterInstruction).registerA
+            assertEquals(name, Opcode.MOVE_RESULT_OBJECT, sheetBody[hook - 1].opcode)
+            assertEquals(name, Opcode.INVOKE_STATIC_RANGE, sheetBody[hook].opcode)
+            assertEquals(name, listOf(chats), sheetBody[hook].namedRegisters())
+            assertEquals(name, Opcode.MOVE_RESULT_OBJECT, sheetBody[hook + 1].opcode)
+            assertEquals(name, chats, (sheetBody[hook + 1] as OneRegisterInstruction).registerA)
+            assertEquals("$name keeps the share sheet's code", stock[0],
+                sheetBody.filterIndexed { index, _ -> index != hook && index != hook + 1 }.code())
+
+            val quickBody = quick.body().filter { it.opcode != Opcode.NOP }
+            val handed = quickBody.indexOfFirst { it.ref() == QUICK_SHARE_IDS }
+            assertEquals(name, "Ljava/util/ArrayList;->addAll(Ljava/util/Collection;)Z", quickBody[handed - 1].ref())
+            assertEquals(name, quickBody[handed - 1].namedRegisters().first(), quickBody[handed].namedRegisters().single())
+            assertEquals("$name keeps quick share's code", stock[1],
+                quickBody.filterIndexed { index, _ -> index != handed }.code())
+        }
+    }
+
+    @Test fun `a picker that changed only warns and stays as it was`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = PatchContexts.of(ExtensionDex.classes() + launchFolderHosts(build))
+            context.requireHiddenChatsRuntime()
+            val found = context.resolveHiddenPickers()
+            val sheet = found.shareSheet!!
+            val read = sheet.allChatsRead()
+            val self = sheet.controlBody()[read].namedRegisters().single()
+            val result = (sheet.controlBody()[read + 1] as OneRegisterInstruction).registerA
+            // A second read of every chat: which one the sheet lists is no longer clear.
+            sheet.addInstructions(read + 2, """
+                invoke-virtual {v$self}, $GET_ALL_DIALOGS
+                move-result-object v$result
+            """)
+            val before = sheet.body().code()
+            val plan = context.resolveHiddenPickers()
+            assertEquals(name, 1, plan.gaps.size)
+            assertNull(name, plan.shareSheet)
+            assertTrue(name, plan.quickShare != null)
+            plan.apply()
+            assertEquals(name, before, sheet.body().code())
+        }
+    }
+
+    @Test fun `a pin gap that changed only warns and hiding goes on`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = PatchContexts.of(ExtensionDex.classes() + launchFolderHosts(build))
+            context.requireHiddenChatsRuntime()
+            val found = context.resolveHiddenChats()
+            // A second handover and a third limit read: which one to hook is no longer clear.
+            val answer = found.serverPins!!.method
+            val call = answer.keepPinsCall()
+            val handed = answer.body()[call].namedRegisters()
+            answer.addInstructions(call + 1, "invoke-virtual {v${handed[0]}, v${handed[1]}, v${handed[2]}}, $KEEP_PINS")
+            val reader = found.pinLimits.first()
+            val read = reader.mainPinLimitReads().first()
+            val limit = reader.body()[read] as TwoRegisterInstruction
+            reader.addInstructions(read, "iget v${limit.registerA}, v${limit.registerB}, ${reader.body()[read].ref()}")
+            val before = listOf(answer, reader).map { it.body().code() }
+            val plan = context.resolveHiddenChats()
+            assertNull("$name: ${plan.missing}", plan.missing)
+            assertEquals(name, 2, plan.pinGaps.size)
+            assertNull(name, plan.serverPins)
+            assertEquals(name, emptyList<MutableMethod>(), plan.pinLimits)
+            plan.apply()
+            assertEquals(name, before, listOf(answer, reader).map { it.body().code() })
+            assertEquals(name, 1, context.sortDialogs().body().count { it.ref() == "$HIDDEN_CHATS->prune(Ljava/lang/Object;)V" })
+        }
+    }
+
     @Test fun `a pinned order that changed leaves the switch out and both methods as they were`() {
         for (build in Fixtures.declaredBuilds()) {
             val context = PatchContexts.of(ExtensionDex.classes() + launchFolderHosts(build))
@@ -220,9 +368,12 @@ class HiddenChatsFixtureTest {
                 "folders" to (3 to listOf(BY_FOLDER)),
                 "selectedFilters" to (3 to listOf(SELECTED_FILTERS)),
                 "filterDialogs" to (3 to listOf(FILTER_DIALOGS)),
+                "forwardList" to (3 to listOf(DIALOGS_FORWARD)),
+                "filterForward" to (3 to listOf(FILTER_FORWARD)),
                 "dialogId" to (3 to listOf(DIALOG_ID)),
                 "pinned" to (3 to listOf(DIALOG_PINNED)),
                 "pinnedNum" to (3 to listOf(DIALOG_PIN_NUM)),
+                "unpin" to (5 to listOf(DIALOG_PINNED, DIALOG_PIN_NUM)),
                 "selectedAccount" to (2 to listOf(SELECTED_ACCOUNT)),
                 "userId" to (5 to listOf(CLIENT_USER_ID)),
                 "dialogs" to (5 to listOf(CONTROLLER_INSTANCE, GET_DIALOGS)),
@@ -257,6 +408,10 @@ class HiddenChatsFixtureTest {
                 .count { it.ref() == "$HIDDEN_CHATS->prune(Ljava/lang/Object;)V" })
             assertEquals(1, context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == "reorderPinnedDialogs" }.body()
                 .count { it.ref() == PIN_ORDER })
+            // The server's pins once, and each of the two pin checks' two limits.
+            val controllerCalls = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.sumOf { m -> m.body().count { it.ref() == SERVER_PINS } }
+            assertEquals(name, 1, controllerCalls)
+            assertEquals(name, 4, context.mutableClassDefBy(launchFolderList(build)).methods.sumOf { m -> m.body().count { it.ref() == PIN_ROOM } })
             // One skip in each unread count.
             assertEquals(name, mapOf("calcUnreadCounters" to 1, "updateFiltersReadCounter" to 1),
                 context.mutableClassDefBy(STORAGE).methods.groupBy { it.name }

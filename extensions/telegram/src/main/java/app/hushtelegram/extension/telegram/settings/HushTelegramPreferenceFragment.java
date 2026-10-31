@@ -451,7 +451,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             }
             if (PatchFamily.Capability.HIDDEN_CHATS.installed()) {
                 SwitchPreference hide = toggle(context, Settings.HIDDEN_CHATS, L10n.t("Hide picked chats"),
-                        L10n.t("The chats you pick below leave All Chats, your folders and archived chats. They keep their "
+                        L10n.t("The chats you pick below leave All Chats, your folders, archived chats and the forward and share lists. They keep their "
                                 + "messages and notifications, search still finds them, and nothing changes on your other "
                                 + "devices. Each account keeps its own list.") + " "
                                 // The badge follows their notifications, which they keep.

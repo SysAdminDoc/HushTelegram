@@ -13,6 +13,13 @@ Every HushTelegram release, newest first.
 ### Changed
 
 * **Telegram:** **Hide the reaction picker** now covers the bubble of reactions that pops up over a selected message too, so tapping a post to pick it for a reply or a forward can't land on a reaction.
+### Changed
+
+- `Hide picked chats` now takes hidden chats out of the lists you forward and share to as well: the forward picker, the share sheet and quick share. Saved Messages always stays in those lists.
+
+### Fixed
+
+- If you hide a pinned chat and unpin it on another device, the unpin now sticks. Hidden pins also count toward your pin limit here, so you see Telegram's limit message instead of a pin the server would turn down.
 
 ## 0.0.23 (2026-10-31)
 

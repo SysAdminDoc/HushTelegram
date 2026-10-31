@@ -123,6 +123,10 @@ val hideFolderCountersPatch = bytecodePatch(
         if (unhidden == null) {
             hidden.apply()
             enableCapability("hiddenChats")
+            hidden.pinGaps.forEach { patchLog.warning("Hide folder tab counters: $it. Hidden chats go on, with that pin gap left open.") }
+            val pickers = resolveHiddenPickers()
+            pickers.apply()
+            pickers.gaps.forEach { patchLog.warning("Hide folder tab counters: $it. Hidden chats go on, listed in that picker.") }
             if (noMenu == null) {
                 menu!!.apply()
             } else {
