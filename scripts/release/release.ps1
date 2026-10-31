@@ -408,7 +408,7 @@ switch ($Stage) {
             return
         }
         # The full gate's wall time, queue waits included, kept next to the bundle hash so the next
-        # release can hold it against the 14m22s v0.0.11 baseline in CLAUDE.md.
+        # release can hold it against the v0.0.11 baseline of 14m22s.
         $clock = [Diagnostics.Stopwatch]::StartNew()
         $fixtures = @(Get-DeclaredFixtures)
         $desktopJar = Resolve-DesktopCli -Root $Root -Required
