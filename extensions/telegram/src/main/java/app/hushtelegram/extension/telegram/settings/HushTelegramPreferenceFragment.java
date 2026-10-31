@@ -868,8 +868,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             SwitchPreference push = toggle(context, Settings.UNIFIED_PUSH, L10n.t("UnifiedPush notifications"),
                     PatchFamily.UNIFIED_PUSH.coverageSummary(L10n.t("For phones where Firebase notifications don't arrive. Telegram signs up an "
                             + "address from a UnifiedPush app like ntfy, and Telegram's servers call it to wake Telegram when "
-                            + "something arrives. The messages still come from Telegram itself. Turned off, Telegram goes back "
-                            + "to Firebase the next time it starts.")));
+                            + "something arrives. The messages still come from Telegram itself. It also turns on Telegram's own "
+                            + "Keep-Alive Service and Background Connection, unless you've set either one yourself. Turned "
+                            + "off, Telegram goes back to Firebase the next time it starts.")));
             Preference app = pushAppRow(context);
             push.setOnPreferenceChangeListener((row, value) -> {
                 boolean on = Boolean.TRUE.equals(value);

@@ -384,8 +384,9 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("UnifiedPush notifications", String.valueOf(page.findPreference(Settings.UNIFIED_PUSH.key).getTitle()));
             assertEquals("For phones where Firebase notifications don't arrive. Telegram signs up an address from a "
                     + "UnifiedPush app like ntfy, and Telegram's servers call it to wake Telegram when something "
-                    + "arrives. The messages still come from Telegram itself. Turned off, Telegram goes back to "
-                    + "Firebase the next time it starts.",
+                    + "arrives. The messages still come from Telegram itself. It also turns on Telegram's own Keep-Alive "
+                    + "Service and Background Connection, unless you've set either one yourself. Turned off, Telegram "
+                    + "goes back to Firebase the next time it starts.",
                     String.valueOf(page.findPreference(Settings.UNIFIED_PUSH.key).getSummary()));
             // Telegram keeps signing up with Firebase until the switch is turned on.
             assertFalse(Settings.UNIFIED_PUSH.key,
