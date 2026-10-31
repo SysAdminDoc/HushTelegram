@@ -1157,3 +1157,8 @@ Fast forward	Teruskan cepat
 Without sender name	Tanpa nama pengirim
 Without caption	Tanpa keterangan
 Without sender name or caption	Tanpa nama pengirim dan keterangan
+# context: Switch for Forward to Saved Messages in the message menu (#53), its item and choices.
+Add Forward to Saved Messages to the message menu	Tambahkan Teruskan ke Pesan Tersimpan ke menu pesan
+Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.	Menambahkan Teruskan ke Pesan Tersimpan ke pesan yang bisa kamu teruskan. Pilih apa adanya, tanpa nama pengirim, tanpa keterangan, atau keduanya, dan pesan langsung masuk ke Pesan Tersimpan.
+Forward to Saved Messages	Teruskan ke Pesan Tersimpan
+Forward as is	Teruskan apa adanya

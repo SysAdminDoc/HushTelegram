@@ -633,6 +633,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             + "Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message."))));
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_FAST_FORWARD, L10n.t("Add Fast forward to the message menu"),
                     PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Fast forward to a message you can forward. Pick without the sender's name, without the caption, or both, then pick a chat."))));
+            on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_FORWARD_SAVED, L10n.t("Add Forward to Saved Messages to the message menu"),
+                    PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once."))));
         }
         if (build.contains(PatchFamily.KEEP_DELETED_MESSAGES)) {
             on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(toggle(context, Settings.KEEP_DELETED_MESSAGES, L10n.t("Keep deleted messages"),

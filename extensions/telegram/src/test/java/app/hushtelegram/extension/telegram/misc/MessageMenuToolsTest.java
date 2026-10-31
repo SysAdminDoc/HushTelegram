@@ -46,6 +46,8 @@ public class MessageMenuToolsTest {
         static String documentName;
         static boolean premium;
         static int type;
+        static long chat = 1L;
+        static boolean reachable = true;
 
         @Implementation protected static Object selected(Object chat) { return message; }
         @Implementation protected static ArrayList<?> grouped(Object chat) { return null; }
@@ -57,7 +59,9 @@ public class MessageMenuToolsTest {
         @Implementation protected static String documentName(Object message) { return documentName; }
         @Implementation protected static boolean blocked(Object message) { return false; }
         @Implementation protected static boolean secret(long dialog) { return false; }
-        @Implementation protected static long dialog(Object message) { return 1L; }
+        @Implementation protected static long dialog(Object message) { return chat; }
+        @Implementation protected static long selfId(int account) { return 5L; }
+        @Implementation protected static boolean reachable(int account, long dialog) { return reachable; }
         @Implementation protected static int account(Object message) { return 0; }
     }
 
@@ -80,6 +84,8 @@ public class MessageMenuToolsTest {
         Menu.documentName = null;
         Menu.premium = false;
         Menu.type = 0;
+        Menu.chat = 1L;
+        Menu.reachable = true;
         Tools.result = 0;
     }
 
@@ -87,6 +93,8 @@ public class MessageMenuToolsTest {
         PauseForTests.resume();
         SettingReadsForTests.mend(Settings.MESSAGE_MENU_FAST_FORWARD);
         Settings.MESSAGE_MENU_FAST_FORWARD.resetToDefault();
+        SettingReadsForTests.mend(Settings.MESSAGE_MENU_FORWARD_SAVED);
+        Settings.MESSAGE_MENU_FORWARD_SAVED.resetToDefault();
         Tools.sent.clear();
         HookStatus.clear();
         ShadowToast.reset();
@@ -178,6 +186,51 @@ public class MessageMenuToolsTest {
         Tools.sent.clear();
         MessageMenuTools.forward(Menu.host, 0, new MessageMenu.Destination(42L, "Chat"),
                 MessageMenu.batch(null, Menu.message), new MessageMenuTools.Way("x", false, true), Settings.MESSAGE_MENU_FAST_FORWARD);
+        assertTrue(Tools.sent.isEmpty());
+    }
+
+    @Test public void forwardToSavedStartsOffAndShowsOnlyWhenOnAndForwardable() {
+        assertFalse(Settings.MESSAGE_MENU_FORWARD_SAVED.get());
+        assertEquals(Arrays.<Object>asList(FORWARD), filled(FORWARD).get(2));
+        Settings.MESSAGE_MENU_FORWARD_SAVED.save(true);
+        ArrayList<ArrayList<Object>> menu = filled(FORWARD, MessageMenu.DETAILS);
+        assertEquals(Arrays.<Object>asList(FORWARD, MessageMenuTools.FORWARD_SAVED, MessageMenu.DETAILS), menu.get(2));
+        assertEquals("Forward to Saved Messages", menu.get(1).get(1));
+        assertEquals(Arrays.<Object>asList(1), filled(1).get(2));
+    }
+
+    @Test public void forwardToSavedIsLeftOutInSavedMessagesItself() {
+        Settings.MESSAGE_MENU_FORWARD_SAVED.save(true);
+        Menu.chat = 5L;
+        assertEquals(Arrays.<Object>asList(FORWARD), filled(FORWARD).get(2));
+        Menu.chat = 1L;
+        Menu.reachable = false;
+        assertEquals(Arrays.<Object>asList(FORWARD), filled(FORWARD).get(2));
+    }
+
+    @Test public void bothItemsCanShowTogether() {
+        Settings.MESSAGE_MENU_FAST_FORWARD.save(true);
+        Settings.MESSAGE_MENU_FORWARD_SAVED.save(true);
+        assertEquals(Arrays.<Object>asList(FORWARD, MessageMenuTools.FAST_FORWARD, MessageMenuTools.FORWARD_SAVED), filled(FORWARD).get(2));
+    }
+
+    @Test public void savedWaysStartWithAsIsThenTheFastChoices() {
+        Menu.photo = true;
+        List<MessageMenuTools.Way> ways = MessageMenuTools.savedWays(Menu.message, MessageMenu.batch(null, Menu.message));
+        assertEquals(4, ways.size());
+        assertEquals("Forward as is", ways.get(0).label);
+        assertFalse(ways.get(0).hideSender || ways.get(0).hideCaption);
+    }
+
+    @Test public void theSavedChatGetsTheForwardAndItsSettingGuardsIt() {
+        Settings.MESSAGE_MENU_FORWARD_SAVED.save(true);
+        MessageMenuTools.forward(Menu.host, 0, new MessageMenu.Destination(5L, "Saved Messages"),
+                MessageMenu.batch(null, Menu.message), new MessageMenuTools.Way("x", false, true), Settings.MESSAGE_MENU_FORWARD_SAVED);
+        assertEquals(Arrays.asList("5 sender=false caption=true n=1"), Tools.sent);
+        Settings.MESSAGE_MENU_FORWARD_SAVED.save(false);
+        Tools.sent.clear();
+        MessageMenuTools.forward(Menu.host, 0, new MessageMenu.Destination(5L, "Saved Messages"),
+                MessageMenu.batch(null, Menu.message), new MessageMenuTools.Way("x", false, true), Settings.MESSAGE_MENU_FORWARD_SAVED);
         assertTrue(Tools.sent.isEmpty());
     }
 }

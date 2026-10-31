@@ -1157,3 +1157,8 @@ Fast forward	Hızlı ilet
 Without sender name	Gönderen adı olmadan
 Without caption	Açıklama olmadan
 Without sender name or caption	Gönderen adı ve açıklama olmadan
+# context: Switch for Forward to Saved Messages in the message menu (#53), its item and choices.
+Add Forward to Saved Messages to the message menu	Mesaj menüsüne Kayıtlı Mesajlar'a ilet ekle
+Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.	İletebileceğin bir mesaja Kayıtlı Mesajlar'a ilet ekler. Olduğu gibi, gönderen adı olmadan, açıklama olmadan veya ikisi de olmadan seç, anında Kayıtlı Mesajlar'a düşer.
+Forward to Saved Messages	Kayıtlı Mesajlar'a ilet
+Forward as is	Olduğu gibi ilet

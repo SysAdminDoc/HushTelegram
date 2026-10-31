@@ -1157,3 +1157,8 @@ Fast forward	Reenvío rápido
 Without sender name	Sin nombre del remitente
 Without caption	Sin pie de foto
 Without sender name or caption	Sin nombre del remitente ni pie de foto
+# context: Switch for Forward to Saved Messages in the message menu (#53), its item and choices.
+Add Forward to Saved Messages to the message menu	Añadir Reenviar a Mensajes guardados al menú del mensaje
+Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.	Añade Reenviar a Mensajes guardados a un mensaje que puedes reenviar. Elige tal cual, sin el nombre del remitente, sin el pie de foto o ambos, y llega al instante a tus Mensajes guardados.
+Forward to Saved Messages	Reenviar a Mensajes guardados
+Forward as is	Reenviar tal cual

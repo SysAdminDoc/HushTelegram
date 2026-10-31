@@ -1154,3 +1154,8 @@ Fast forward	Encaminhar rápido
 Without sender name	Sem o nome do remetente
 Without caption	Sem legenda
 Without sender name or caption	Sem o nome do remetente e sem legenda
+# context: Switch for Forward to Saved Messages in the message menu (#53), its item and choices.
+Add Forward to Saved Messages to the message menu	Adicionar Encaminhar para Mensagens salvas ao menu da mensagem
+Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.	Adiciona Encaminhar para Mensagens salvas a uma mensagem que você pode encaminhar. Escolha como está, sem o nome do remetente, sem a legenda ou ambos, e ela chega na hora às suas Mensagens salvas.
+Forward to Saved Messages	Encaminhar para Mensagens salvas
+Forward as is	Encaminhar como está

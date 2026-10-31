@@ -610,6 +610,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting MESSAGE_MENU_FAST_FORWARD =
             new BooleanSetting("hushtelegram_message_menu_fast_forward", FALSE);
 
+    /** Forward to Saved Messages in the message menu (#53): one tap to your own chat, with a choice of what to leave off. */
+    public static final BooleanSetting MESSAGE_MENU_FORWARD_SAVED =
+            new BooleanSetting("hushtelegram_message_menu_forward_saved", FALSE);
+
     /**
      * A channel's read metrics (how long each post stayed on screen), Premium screen interaction
      * reports and the camera's dual-camera report are never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

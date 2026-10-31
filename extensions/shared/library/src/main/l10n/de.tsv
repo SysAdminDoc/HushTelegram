@@ -1157,3 +1157,8 @@ Fast forward	Schnell weiterleiten
 Without sender name	Ohne Absendernamen
 Without caption	Ohne Bildunterschrift
 Without sender name or caption	Ohne Absendernamen und Bildunterschrift
+# context: Switch for Forward to Saved Messages in the message menu (#53), its item and choices.
+Add Forward to Saved Messages to the message menu	In Gespeicherte Nachrichten weiterleiten zum Nachrichtenmenü hinzufügen
+Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.	Fügt In Gespeicherte Nachrichten weiterleiten zu einer Nachricht hinzu, die du weiterleiten kannst. Wähle unverändert, ohne Absendernamen, ohne Bildunterschrift oder beides, und sie landet sofort in deinen Gespeicherten Nachrichten.
+Forward to Saved Messages	In Gespeicherte Nachrichten weiterleiten
+Forward as is	Unverändert weiterleiten

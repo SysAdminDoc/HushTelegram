@@ -1153,3 +1153,8 @@ Fast forward	Бързо препращане
 Without sender name	Без име на подателя
 Without caption	Без надпис
 Without sender name or caption	Без име на подателя и надпис
+# context: Switch for Forward to Saved Messages in the message menu (#53), its item and choices.
+Add Forward to Saved Messages to the message menu	Добавяне на Препращане към Запазени съобщения в менюто на съобщението
+Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.	Добавя Препращане към Запазени съобщения към съобщение, което можеш да препратиш. Избери както е, без името на подателя, без надписа или без двете, и то веднага отива в Запазени съобщения.
+Forward to Saved Messages	Препращане към Запазени съобщения
+Forward as is	Препращане както е

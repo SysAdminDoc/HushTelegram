@@ -25,6 +25,7 @@ Every HushTelegram release, newest first.
 
 - When Google sign-in fails on Telegram's login email screen, a short message now points at the email box. Telegram used to just stay on the screen after you picked an account, and a patched copy can't get past Google there.
 * **Telegram:** **Keep Telegram's files in internal storage** has a **Folder in internal storage** row under it, so Telegram's files can go in a folder you name, like Internal storage/Plus, instead of Internal storage/Telegram. Changing the name takes a restart, and files in the folder you used before stay there and still open. Leave it empty for Telegram. (#7)
+* **Telegram:** **Add Repeat to the message menu** has a new switch, **Add Forward to Saved Messages to the message menu**, off by default. A message you can forward gets a Forward to Saved Messages item in its long-press menu. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.
 * **Telegram:** **Add Repeat to the message menu** has a new switch, **Add Fast forward to the message menu**, off by default. A message you can forward gets a Fast forward item in its long-press menu. Pick without the sender's name, without the caption, or both, then pick a chat, and it goes out at once.
 
 ## 0.0.23 (2026-10-31)

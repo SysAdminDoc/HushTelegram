@@ -28,19 +28,20 @@ public final class MessageMenuTools {
     private MessageMenuTools() {}
 
     static final int FAST_FORWARD = 0x48544d0a;
+    static final int FORWARD_SAVED = 0x48544d0b;
 
     /** Whether the number is one of this class's. */
     static boolean owns(int option) {
-        return option == FAST_FORWARD;
+        return option == FAST_FORWARD || option == FORWARD_SAVED;
     }
 
     static BooleanSetting setting(int option) {
-        return Settings.MESSAGE_MENU_FAST_FORWARD;
+        return option == FAST_FORWARD ? Settings.MESSAGE_MENU_FAST_FORWARD : Settings.MESSAGE_MENU_FORWARD_SAVED;
     }
 
     /** Whether any of this class's switches is on. */
     static boolean any() {
-        return MessageMenu.on(Settings.MESSAGE_MENU_FAST_FORWARD);
+        return MessageMenu.on(Settings.MESSAGE_MENU_FAST_FORWARD) || MessageMenu.on(Settings.MESSAGE_MENU_FORWARD_SAVED);
     }
 
     /** One way to forward: a label, and the two flags Telegram's forward takes. */
@@ -68,12 +69,13 @@ public final class MessageMenuTools {
         if (forwardable && MessageMenu.quickable(chat, message)) {
             ArrayList<Object> batch = MessageMenu.batch(chat, message);
             if (MessageMenu.on(Settings.MESSAGE_MENU_FAST_FORWARD) && !fastWays(message, batch).isEmpty()) chosen.add(FAST_FORWARD);
+            if (MessageMenu.on(Settings.MESSAGE_MENU_FORWARD_SAVED) && savedAvailable(message)) chosen.add(FORWARD_SAVED);
         }
         int at = options.indexOf(MessageMenu.DETAILS);
         for (int option : chosen) {
             int position = at < 0 ? options.size() : at++;
             icons.add(position, MessageMenu.quickIcon());
-            items.add(position, L10n.t("Fast forward"));
+            items.add(position, L10n.t(option == FAST_FORWARD ? "Fast forward" : "Forward to Saved Messages"));
             options.add(position, option);
         }
     }
@@ -104,16 +106,39 @@ public final class MessageMenuTools {
         return ways;
     }
 
+    /** Forward to Saved Messages: your own chat, unless the message is already in it. */
+    static boolean savedAvailable(Object message) {
+        long self = MessageMenu.selfId(MessageMenu.account(message));
+        return self != 0 && self != MessageMenu.dialog(message) && MessageMenu.reachable(MessageMenu.account(message), self);
+    }
+
+    /** What Forward to Saved Messages offers: as is, then each way Telegram's forward can drop something. */
+    static List<Way> savedWays(Object message, ArrayList<Object> batch) {
+        List<Way> ways = new ArrayList<>();
+        ways.add(new Way(L10n.t("Forward as is"), MessageMenu.hidesSender(message, batch), false));
+        ways.addAll(fastWays(message, batch));
+        return ways;
+    }
+
     /** Runs the chosen item. */
     static void choose(Context context, Object chat, Object message, int option) {
         ArrayList<Object> batch = MessageMenu.batch(chat, message);
         int account = MessageMenu.account(message);
         long from = MessageMenu.dialog(message);
-        List<Way> ways = fastWays(message, batch);
-        Utils.runOnMainThread(() -> MessageMenu.chooseRow(context, L10n.t(context, "Fast forward"), labels(ways),
-                Settings.MESSAGE_MENU_FAST_FORWARD, index -> MessageMenu.chooseChat(context, account, from, L10n.t(context, "Forward to"),
-                        Settings.MESSAGE_MENU_FAST_FORWARD, destination -> forward(context, account, destination, batch, ways.get(index), Settings.MESSAGE_MENU_FAST_FORWARD))));
-        HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "fast forward opened");
+        if (option == FAST_FORWARD) {
+            List<Way> ways = fastWays(message, batch);
+            Utils.runOnMainThread(() -> MessageMenu.chooseRow(context, L10n.t(context, "Fast forward"), labels(ways),
+                    Settings.MESSAGE_MENU_FAST_FORWARD, index -> MessageMenu.chooseChat(context, account, from, L10n.t(context, "Forward to"),
+                            Settings.MESSAGE_MENU_FAST_FORWARD, destination -> forward(context, account, destination, batch, ways.get(index), Settings.MESSAGE_MENU_FAST_FORWARD))));
+            HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "fast forward opened");
+        } else {
+            long self = MessageMenu.selfId(account);
+            List<Way> ways = savedWays(message, batch);
+            MessageMenu.Destination saved = new MessageMenu.Destination(self, MessageMenu.title(account, self));
+            Utils.runOnMainThread(() -> MessageMenu.chooseRow(context, L10n.t(context, "Forward to Saved Messages"), labels(ways),
+                    Settings.MESSAGE_MENU_FORWARD_SAVED, index -> forward(context, account, saved, batch, ways.get(index), Settings.MESSAGE_MENU_FORWARD_SAVED)));
+            HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "forward to saved messages opened");
+        }
     }
 
     private static List<String> labels(List<Way> ways) {
