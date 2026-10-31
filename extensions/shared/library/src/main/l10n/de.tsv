@@ -1229,3 +1229,17 @@ Too many tries. Wait %1$s seconds and try again.	Zu viele Versuche. Warte %1$s S
 chat list ordered by date	die Sortierung der Chatliste nach Datum
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line such as 'the patch could not find %1$s'. It names the passcode check that guards the hidden chats
 the app passcode for hidden chats	der App-Code für versteckte Chats
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default. With it on, the side menu gets an Administrators row
+Administrators row in the side menu	Zeile „Administratoren“ im Seitenmenü
+# context: Summary of the Administrators row switch. The side menu is the menu Hush brings back on the left of the chat list; Administrators is the row's name
+Adds an Administrators row to the side menu, so one tap lists only the groups and channels you own or manage and another brings every chat back. It needs the side menu switch on, only changes how this phone lists chats, and starts off again when Telegram restarts.	Fügt dem Seitenmenü eine Zeile „Administratoren“ hinzu. Ein Tipp zeigt nur die Gruppen und Kanäle, die du besitzt oder verwaltest, ein weiterer bringt alle Chats zurück. Das Seitenmenü muss dafür an sein, es ändert nur, wie dieses Telefon die Chats auflistet, und es ist nach einem Neustart von Telegram wieder aus.
+# context: Side menu row name, and the Hide folder tab counters switch's name for it. Groups and channels the user owns or administers
+Administrators	Administratoren
+# context: Side menu row name while the Administrators filter is on; a tap brings every chat back
+Show all chats	Alle Chats zeigen
+# context: Toast after the Administrators row is tapped and the chat list shows only the chats the user owns or manages
+Showing chats you manage.	Du siehst deine verwalteten Chats.
+# context: Toast after the Administrators row is tapped again and every chat is back
+Showing all chats.	Alle Chats werden gezeigt.
+# context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the Administrators filter in the side menu
+the Administrators filter	der Administratoren-Filter

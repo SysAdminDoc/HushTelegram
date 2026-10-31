@@ -111,6 +111,7 @@ public final class HiddenChats {
     public static void prune(Object controller) {
         HookStatus.invoked(FamilyNames.HIDE_FOLDER_COUNTERS);
         pruneHidden(controller);
+        AdminChats.prune(controller);
         // After the hidden chats left, so the order only covers what shows.
         ChatSort.sortLists(controller);
     }

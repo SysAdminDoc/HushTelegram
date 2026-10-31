@@ -341,6 +341,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDDEN_CHATS_PASSCODE =
             new BooleanSetting("hushtelegram_hidden_chats_lock", FALSE);
 
+    /** The side menu gets an Administrators row that limits the chat list to the chats you manage. */
+    public static final BooleanSetting ADMIN_CHATS =
+            new BooleanSetting("hushtelegram_admin_chats", FALSE);
+
     /** With the date order on, the chat with the oldest last message comes first instead of the newest. */
     public static final BooleanSetting SORT_OLDEST_FIRST =
             new BooleanSetting("hushtelegram_sort_oldest_first", FALSE);

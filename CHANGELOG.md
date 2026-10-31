@@ -35,6 +35,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** **Hide popular apps** has a new switch, **Disable secret chats**, off by default. When someone asks for a secret chat, the phone ignores the request. Nothing is saved or shown and nothing is sent back, so the other person just sees it waiting. Secret chats you already have keep working. Find it in HushTelegram settings > Ads. Refs #53.
 * **Telegram:** **Sort chats by date** is a new switch under **Hide folder tab counters**, off by default, with a second one, **Oldest chats first**. Your unpinned chats line up by the date of their last message, newest or oldest first. Pinned chats and the archive row stay where they are, and nothing is sent to Telegram, so it only changes this phone's list. (#53)
 * **Telegram:** **Passcode for hidden chats** is a new switch under **Hide picked chats**, off by default. With it on, opening **Chats to hide**, turning off **Hide picked chats** and turning the switch itself off all ask for your Telegram passcode first. It guards this settings page only, so search still finds the hidden chats. Telegram needs a passcode set before it will turn on. (#53)
+* **Telegram:** **Administrators row in the side menu** is a new switch under **Hide folder tab counters**, off by default. It adds an **Administrators** row to the side menu. One tap lists only the groups and channels you own or manage, and the row then reads **Show all chats** to bring the rest back. It only changes this phone's list and starts off again when Telegram restarts. (#53)
 
 ## 0.0.23 (2026-10-31)
 

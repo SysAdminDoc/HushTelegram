@@ -43,9 +43,10 @@ public final class SideMenu {
 
     /**
      * The rows under the name, in the order {@link #labels()} gives Telegram's words for the first six.
-     * Archived Chats only shows while Hide All Chats has taken the archive's usual way in.
+     * Archived Chats only shows while Hide All Chats has taken the archive's usual way in, and
+     * Administrators while its switch is on.
      */
-    enum Row { PROFILE, NEW_MESSAGE, CONTACTS, CALLS, SAVED, SETTINGS, ARCHIVE, HUSH }
+    enum Row { PROFILE, NEW_MESSAGE, CONTACTS, CALLS, SAVED, SETTINGS, ARCHIVE, ADMINS, HUSH }
 
     /** English for the rows when Telegram's words aren't there, which is only outside a patched app. */
     static final String[] FALLBACK = {"My Profile", "New Message", "Contacts", "Calls", "Saved Messages", "Settings"};
@@ -158,6 +159,7 @@ public final class SideMenu {
             words[i] = own == null || own.isEmpty() ? FALLBACK[i] : own;
         }
         words[Row.ARCHIVE.ordinal()] = LaunchFolder.archiveTitle();
+        words[Row.ADMINS.ordinal()] = AdminChats.rowLabel();
         words[Row.HUSH.ordinal()] = SettingsEntry.nativeSettingsTitle();
         return words;
     }
@@ -189,6 +191,9 @@ public final class SideMenu {
                 break;
             case ARCHIVE:
                 if (!LaunchFolder.openArchive()) return;
+                break;
+            case ADMINS:
+                AdminChats.toggle();
                 break;
             case HUSH:
                 opener.hushSettings(activity);

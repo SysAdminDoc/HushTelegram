@@ -118,6 +118,14 @@ val hideFolderCountersPatch = bytecodePatch(
         } catch (failed: Exception) {
             "the app passcode's stubs don't build (${failed.javaClass.simpleName}: ${failed.message})"
         } else null
+        // And the Administrators row, which asks Telegram whether a chat is one you manage.
+        val noAdmins = if (unhidden == null) try {
+            requireAdminChatsRuntime()
+            writeAdminChatsStubs()
+            null
+        } catch (failed: Exception) {
+            "the Administrators filter's stub doesn't build (${failed.javaClass.simpleName}: ${failed.message})"
+        } else null
         insertCounterAnswer(counter)
         enableStatus("hideFolderCounters")
         if (missing == null) {
@@ -147,6 +155,11 @@ val hideFolderCountersPatch = bytecodePatch(
                 enableCapability("hiddenPasscode")
             } else {
                 patchLog.warning("Hide folder tab counters: $noPasscode. Hidden chats go on without the passcode switch.")
+            }
+            if (noAdmins == null) {
+                enableCapability("adminChats")
+            } else {
+                patchLog.warning("Hide folder tab counters: $noAdmins. Hidden chats go on without the Administrators row.")
             }
             if (noSort == null) {
                 enableCapability("sortByDate")

@@ -22,6 +22,8 @@ import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.PauseForTests;
 import app.hushtelegram.extension.shared.settings.SettingReadsForTests;
+import app.hushtelegram.extension.telegram.settings.PatchFamily;
+import app.hushtelegram.extension.telegram.settings.PatchFamilyForTests;
 import app.hushtelegram.extension.telegram.settings.Settings;
 import app.hushtelegram.extension.telegram.settings.SettingsEntry;
 import app.hushtelegram.extension.telegram.settings.SettingsRoutes;
@@ -219,6 +221,39 @@ public class SideMenuTest {
         assertEquals(SideMenu.Row.values().length, words.length);
         for (int i = 0; i < SideMenu.FALLBACK.length; i++) assertEquals(SideMenu.FALLBACK[i], words[i]);
         assertEquals(SettingsEntry.nativeSettingsTitle(), words[SideMenu.Row.HUSH.ordinal()]);
+    }
+
+    @Test public void theAdministratorsRowFollowsItsSwitchAndATapTogglesTheFilter() {
+        Activity activity = activity();
+        FrameLayout parent = new FrameLayout(activity);
+        activity.setContentView(parent);
+        PatchFamilyForTests.inBuild(PatchFamily.HIDE_FOLDER_COUNTERS);
+        PatchFamilyForTests.installed(PatchFamily.Capability.ADMIN_CHATS);
+        AdminChats.forget();
+        HiddenChatsForTests.use(new HiddenChatsForTests.Fake());
+        SideMenuPanel panel = SideMenuPanel.in(parent, new Object());
+        try {
+            assertNull("no row until the switch is on", panel.admins);
+            Settings.ADMIN_CHATS.save(true);
+            panel.showAdminsForTests();
+            assertEquals(View.VISIBLE, panel.admins.getVisibility());
+            assertEquals("Administrators", String.valueOf(panel.admins.getText()));
+            panel.admins.performClick();
+            assertTrue(AdminChats.showing());
+            panel.showAdminsForTests();
+            assertEquals("Show all chats", String.valueOf(panel.admins.getText()));
+            panel.admins.performClick();
+            assertFalse(AdminChats.showing());
+            Settings.ADMIN_CHATS.save(false);
+            panel.showAdminsForTests();
+            assertEquals(View.GONE, panel.admins.getVisibility());
+        } finally {
+            AdminChats.forget();
+            HiddenChatsForTests.restore();
+            Settings.ADMIN_CHATS.resetToDefault();
+            PatchFamilyForTests.reset();
+            PatchFamilyForTests.resetCapabilities();
+        }
     }
 
     @Test public void theHushRowFollowsItsWayInSwitch() {

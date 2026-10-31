@@ -510,6 +510,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     folderTabs.addPreference(passcode);
                 }
             }
+            if (PatchFamily.Capability.ADMIN_CHATS.installed()) {
+                folderTabs.addPreference(toggle(context, Settings.ADMIN_CHATS, L10n.t("Administrators row in the side menu"),
+                        L10n.t("Adds an Administrators row to the side menu, so one tap lists only the groups and channels you "
+                                + "own or manage and another brings every chat back. It needs the side menu switch on, only "
+                                + "changes how this phone lists chats, and starts off again when Telegram restarts.")));
+            }
             if (PatchFamily.Capability.SORT_BY_DATE.installed()) {
                 SwitchPreference sort = toggle(context, Settings.SORT_BY_DATE, L10n.t("Sort chats by date"),
                         L10n.t("Orders your unpinned chats by the date of their last message. Pinned chats and the archive row keep "
