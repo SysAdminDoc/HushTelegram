@@ -1267,3 +1267,9 @@ Couldn't save the accounts. Try again in a moment.	Die Konten konnten nicht gesp
 Account %1$s	Konto %1$s
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that hides accounts from Telegram's account lists
 the hidden accounts	die ausgeblendeten Konten
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default. It shrinks the folder tabs above the chat list until all of them fit on the screen
+Fit all folder tabs	Alle Ordner-Tabs einpassen
+# context: Summary of the Fit all folder tabs switch. The folder tabs shrink so none of them scrolls out of sight; with few folders nothing changes
+Shrinks the folder tabs above the chat list until all of them fit on the screen, so you never scroll sideways to find one. With only a few folders nothing changes.	Verkleinert die Ordner-Tabs über der Chatliste, bis alle auf den Bildschirm passen, damit du nie seitwärts scrollen musst, um einen zu finden. Bei wenigen Ordnern ändert sich nichts.
+# context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that shrinks the folder tabs to fit the screen
+the fitted folder tabs	die eingepassten Ordner-Tabs

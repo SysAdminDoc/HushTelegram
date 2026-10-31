@@ -37,8 +37,8 @@ class SecretChatsFixtureTest {
             assertEquals("$where: iget of the chat first", Opcode.IGET_OBJECT, after[0].opcode)
             assertEquals("$where: instance-of", Opcode.INSTANCE_OF, after[1].opcode)
             assertTrue("$where: asks the extension", refs.contains(SECRET_REFUSE))
-            assertEquals("$where: returns when told to ignore", Opcode.RETURN_VOID, after[5].opcode)
-            assertEquals("$where: stock body whole below the check", before.filter { it != Opcode.NOP }, after.drop(5 + 1).map { it.opcode })
+            assertEquals("$where: returns when told to ignore", Opcode.RETURN_VOID, after[6].opcode)
+            assertEquals("$where: stock body whole below the check", before.filter { it != Opcode.NOP }, after.drop(6 + 1).map { it.opcode })
         }
     }
 

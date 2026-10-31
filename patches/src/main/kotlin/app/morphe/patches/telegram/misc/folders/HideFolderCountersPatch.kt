@@ -148,6 +148,7 @@ val hideFolderCountersPatch = bytecodePatch(
             }
             launch.apply()
             enableCapability("launchFolder")
+            if (launch.refs!!.range != null) enableCapability("fitTabs")
             if (launch.refs!!.scrollTo == null) {
                 patchLog.warning("Hide folder tab counters: the folder tabs can't be scrolled. A picked folder past the screen's edge opens out of view.")
             }

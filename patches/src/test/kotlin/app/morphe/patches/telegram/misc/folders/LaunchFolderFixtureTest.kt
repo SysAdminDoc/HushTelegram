@@ -79,6 +79,8 @@ class LaunchFolderFixtureTest {
             assertTrue("$name: ${refs.tabList}", refs.tabList?.startsWith(refs.tabs.substringBefore("->") + "->") == true)
             assertTrue("$name: ${refs.scrollTo}", refs.scrollTo?.startsWith("$TAB_LIST_BASE->") == true)
             assertTrue("$name: ${refs.scrollTo}", refs.scrollTo?.endsWith("(I)V") == true)
+            // And how wide the tabs are together, for Fit all folder tabs.
+            assertEquals("$name: the tabs' width", "$TAB_LIST_BASE->computeHorizontalScrollRange()I", refs.range)
         }
     }
 
@@ -116,6 +118,18 @@ class LaunchFolderFixtureTest {
                     "Lorg/telegram/messenger/LocaleController;->getString(I)Ljava/lang/String;")),
                 "scrollStrip" to (9 to listOf(refs.strip, refs.tabList!!, refs.scrollTo!!)),
             )
+            // Fit all folder tabs: the strip, and the width of its tabs through the same list.
+            val fit = context.mutableClassDefBy(TAB_FIT).methods.associateBy { it.name }
+            assertEquals("$name: the strip", listOf(Opcode.CHECK_CAST, Opcode.IGET_OBJECT, Opcode.RETURN_OBJECT),
+                fit.getValue("tabStrip").body().filter { it.opcode != Opcode.NOP }.map { it.opcode })
+            val range = fit.getValue("tabsRange").body()
+            assertEquals("$name: the width", 9, range.size)
+            for (reference in listOf(refs.strip, refs.tabList!!, refs.range!!)) {
+                assertTrue("$name: tabsRange reaches $reference", reference in range.mapNotNull { it.ref() })
+            }
+            assertEquals(1, statusOf(context, "fitTabs"))
+            val buildTabs = context.tabBuild(launchFolderList(build)).body()
+            assertEquals("$name: the strip is watched at every tab build", 1, buildTabs.count { it.ref() == "$LAUNCH_FOLDER->firstTabs(Ljava/lang/Object;)V" })
             for ((stub, want) in expected) {
                 val body = stubs.getValue(stub).body()
                 assertEquals("$name: $stub", want.first, body.size)

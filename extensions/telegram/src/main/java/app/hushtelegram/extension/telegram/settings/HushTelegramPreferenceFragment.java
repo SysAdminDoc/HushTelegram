@@ -95,6 +95,7 @@ import app.hushtelegram.extension.telegram.misc.LaunchFolder;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
 import app.hushtelegram.extension.telegram.misc.StorageFolder;
+import app.hushtelegram.extension.telegram.misc.TabFit;
 import app.hushtelegram.extension.telegram.misc.UnifiedPush;
 
 /**
@@ -555,6 +556,16 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     });
                     folderTabs.addPreference(lock);
                 }
+            }
+            if (PatchFamily.Capability.FIT_TABS.installed()) {
+                SwitchPreference fit = toggle(context, Settings.FIT_ALL_TABS, L10n.t("Fit all folder tabs"),
+                        L10n.t("Shrinks the folder tabs above the chat list until all of them fit on the screen, so you never "
+                                + "scroll sideways to find one. With only a few folders nothing changes."));
+                fit.setOnPreferenceChangeListener((row, value) -> {
+                    Utils.runOnMainThreadDelayed(TabFit::refreshAll, 0);
+                    return true;
+                });
+                folderTabs.addPreference(fit);
             }
             if (PatchFamily.Capability.SORT_BY_DATE.installed()) {
                 SwitchPreference sort = toggle(context, Settings.SORT_BY_DATE, L10n.t("Sort chats by date"),

@@ -353,6 +353,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_ACCOUNTS =
             new BooleanSetting("hushtelegram_hide_accounts", FALSE);
 
+    /**
+     * The folder tabs above the chat list shrink to fit the screen, so none of them scrolls out of
+     * sight ({@link app.hushtelegram.extension.telegram.misc.TabFit}).
+     */
+    public static final BooleanSetting FIT_ALL_TABS =
+            new BooleanSetting("hushtelegram_fit_all_tabs", FALSE);
+
     /** The list of hidden accounts and the switch that hides them ask for Telegram's app passcode first. */
     public static final BooleanSetting HIDDEN_ACCOUNTS_LOCK =
             new BooleanSetting("hushtelegram_hidden_accounts_lock", FALSE);

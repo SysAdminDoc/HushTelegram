@@ -1267,3 +1267,9 @@ Couldn't save the accounts. Try again in a moment.	Hesaplar kaydedilemedi. Biraz
 Account %1$s	Hesap %1$s
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that hides accounts from Telegram's account lists
 the hidden accounts	gizli hesaplar
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default. It shrinks the folder tabs above the chat list until all of them fit on the screen
+Fit all folder tabs	Tüm klasör sekmelerini sığdır
+# context: Summary of the Fit all folder tabs switch. The folder tabs shrink so none of them scrolls out of sight; with few folders nothing changes
+Shrinks the folder tabs above the chat list until all of them fit on the screen, so you never scroll sideways to find one. With only a few folders nothing changes.	Sohbet listesinin üstündeki klasör sekmelerini hepsi ekrana sığana kadar küçültür, böylece birini bulmak için yana kaydırman gerekmez. Klasör azsa hiçbir şey değişmez.
+# context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that shrinks the folder tabs to fit the screen
+the fitted folder tabs	sığdırılmış klasör sekmeleri

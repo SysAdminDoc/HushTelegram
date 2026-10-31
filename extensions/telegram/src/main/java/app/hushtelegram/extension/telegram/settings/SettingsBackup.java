@@ -152,6 +152,7 @@ public final class SettingsBackup {
             Settings.ADMIN_CHATS,
             Settings.HIDE_ACCOUNTS,
             Settings.HIDDEN_ACCOUNTS_LOCK,
+            Settings.FIT_ALL_TABS,
             Settings.FORWARD_HIDE_SENDER,
             Settings.VOICE_MUSIC_PLAYER,
             Settings.SILENCE_NON_CONTACTS,

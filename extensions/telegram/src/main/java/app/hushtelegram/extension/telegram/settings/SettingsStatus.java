@@ -106,6 +106,7 @@ public final class SettingsStatus {
     public static boolean allChatsPlace() { return false; }
     public static boolean hiddenChats() { return false; }
     public static boolean sortByDate() { return false; }
+    public static boolean fitTabs() { return false; }
     public static boolean hiddenPasscode() { return false; }
     public static boolean adminChats() { return false; }
     public static boolean hiddenAccounts() { return false; }

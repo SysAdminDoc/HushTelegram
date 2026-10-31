@@ -73,6 +73,8 @@ private const val GET_STRING = "Lorg/telegram/messenger/LocaleController;->getSt
 /** The folder id Telegram's archive row opens a chat list with. */
 private const val ARCHIVE_FOLDER = 1
 private const val RECYCLER_VIEW = "Landroidx/recyclerview/widget/RecyclerView;"
+private const val TABS_RANGE = "$RECYCLER_VIEW->computeHorizontalScrollRange()I"
+internal const val TAB_FIT = "$EXTENSION_PACKAGE/misc/TabFit;"
 /** What RecyclerView.scrollToPosition logs without a layout manager, which finds it under any name. */
 private const val NO_LAYOUT_TO_SCROLL = "Cannot scroll to position a LayoutManager set. Call setLayoutManager with a non-null argument."
 
@@ -110,6 +112,8 @@ internal class LaunchRefs(
     val tabList: String? = null,
     /** RecyclerView.scrollToPosition(int), null with [tabList]. */
     val scrollTo: String? = null,
+    /** RecyclerView.computeHorizontalScrollRange(), which says how wide all the tabs are. Null with [tabList] when it isn't reachable. */
+    val range: String? = null,
 )
 
 /**
@@ -152,6 +156,10 @@ internal fun BytecodePatchContext.requireLaunchFolderRuntime() {
         controlHook(LAUNCH_FOLDER, name, listOf("I", "I"), result)
     }
     controlHook(LAUNCH_FOLDER, "scrollStrip", listOf(OBJECT, "I"), "Z")
+    requireStatusMethod("fitTabs")
+    controlHook(TAB_FIT, "update", listOf(OBJECT), "V")
+    controlHook(TAB_FIT, "tabStrip", listOf(OBJECT), OBJECT)
+    controlHook(TAB_FIT, "tabsRange", listOf(OBJECT), "I")
 }
 
 /** Why this build's chat list can't take a picked folder. */
@@ -263,8 +271,15 @@ private fun BytecodePatchContext.firstTabs(): LaunchFolderPlan {
         }
     }
     val scroll = stripScroll(strip)
+    // How wide the tabs are together, for Fit all folder tabs. Without it only that switch is left out.
+    val range = if (scroll == null) null else try {
+        requireReachable(TABS_RANGE, false)
+        TABS_RANGE
+    } catch (failed: PatchException) {
+        null
+    }
     val refs = LaunchRefs(list, stripField.toString(), tabsField.toString(), selected, pages.single(), selectedType, arguments, account,
-        scroll?.first, scroll?.second)
+        scroll?.first, scroll?.second, range)
     return LaunchFolderPlan(method, at, self, refs, null)
 }
 
@@ -634,6 +649,26 @@ internal fun BytecodePatchContext.writeLaunchFolderStubs(refs: LaunchRefs) {
             if-eqz p0, :hush_none
             invoke-virtual {p0, p1}, ${refs.scrollTo}
             const/4 v0, 0x1
+            :hush_none
+            return v0
+        """)
+    }
+    // Fit all folder tabs: the strip, and how wide its tabs are together.
+    if (refs.tabList != null && refs.range != null) {
+        writeStub(TAB_FIT, "tabStrip", 1, """
+            check-cast p0, ${refs.list}
+            iget-object p0, p0, ${refs.strip}
+            return-object p0
+        """)
+        writeStub(TAB_FIT, "tabsRange", 2, """
+            check-cast p0, ${refs.list}
+            const/4 v0, 0x0
+            iget-object p0, p0, ${refs.strip}
+            if-eqz p0, :hush_none
+            iget-object p0, p0, ${refs.tabList}
+            if-eqz p0, :hush_none
+            invoke-virtual {p0}, ${refs.range}
+            move-result v0
             :hush_none
             return v0
         """)

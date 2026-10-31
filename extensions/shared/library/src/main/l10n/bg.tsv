@@ -1263,3 +1263,9 @@ Couldn't save the accounts. Try again in a moment.	Акаунтите не мо�
 Account %1$s	Акаунт %1$s
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that hides accounts from Telegram's account lists
 the hidden accounts	скритите акаунти
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default. It shrinks the folder tabs above the chat list until all of them fit on the screen
+Fit all folder tabs	Всички папки на екрана
+# context: Summary of the Fit all folder tabs switch. The folder tabs shrink so none of them scrolls out of sight; with few folders nothing changes
+Shrinks the folder tabs above the chat list until all of them fit on the screen, so you never scroll sideways to find one. With only a few folders nothing changes.	Свива табовете на папките над списъка с чатове, докато всички се поберат на екрана, и не се налага да превърташ настрани, за да намериш някой. При малко папки нищо не се променя.
+# context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that shrinks the folder tabs to fit the screen
+the fitted folder tabs	побраните папки
