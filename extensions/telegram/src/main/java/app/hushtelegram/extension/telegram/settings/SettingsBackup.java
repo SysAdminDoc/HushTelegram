@@ -180,6 +180,7 @@ public final class SettingsBackup {
             SettingsRoutes.SHORTCUT,
             Settings.FASTER_DOWNLOADS,
             Settings.DATA_SAVER_DOWNLOADS,
+            Settings.FASTER_UPLOADS,
             Settings.SAVE_DOWNLOADS,
             Settings.SAVE_RESTRICTED_DOWNLOADS,
             Settings.SAVE_TIMED_MEDIA,

@@ -747,6 +747,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 });
                 on(pages, PatchFamily.FASTER_DOWNLOADS).addPreference(dataSaver);
             }
+            if (PatchFamily.Capability.FASTER_UPLOADS.installed()) {
+                on(pages, PatchFamily.FASTER_DOWNLOADS).addPreference(toggle(context, Settings.FASTER_UPLOADS, L10n.t("Faster uploads"),
+                        L10n.t("Uploads keep four times as many pieces on their way at once. Telegram's servers still decide how fast"
+                                + " an account can send. The next upload picks this up.")));
+            }
         }
         if (build.contains(PatchFamily.SAVE_DOWNLOADS)) {
             on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(toggle(context, Settings.SAVE_DOWNLOADS, L10n.t("Save downloaded files"),

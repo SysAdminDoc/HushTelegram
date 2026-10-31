@@ -1185,3 +1185,7 @@ Clean links when you copy or paste	Почиствай връзките при к
 A link you copy in Telegram, or paste into the message box, loses the same tracking tags. Only text that is one link and nothing else is changed.	Връзка, която копирате в Telegram или поставяте в полето за съобщение, губи същите следящи етикети. Променя се само текст, който е една връзка и нищо друго.
 copied links	копирани връзки
 pasted links	поставени връзки
+# context: Third switch under Faster downloads on the Playback page (#53). An upload is sending a file to Telegram; pieces are the chunks it is cut into.
+Faster uploads	По-бързи качвания
+Uploads keep four times as many pieces on their way at once. Telegram's servers still decide how fast an account can send. The next upload picks this up.	Качването държи четири пъти повече части в движение едновременно. Сървърите на Telegram пак решават колко бързо може да изпраща един акаунт. Следващото качване ще го използва.
+uploads	качвания

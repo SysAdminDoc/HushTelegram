@@ -1186,3 +1186,7 @@ Clean links when you copy or paste	Limpar links ao copiar ou colar
 A link you copy in Telegram, or paste into the message box, loses the same tracking tags. Only text that is one link and nothing else is changed.	Um link que você copia no Telegram ou cola na caixa de mensagem perde as mesmas marcas de rastreamento. Só muda o texto que é um link e nada mais.
 copied links	links copiados
 pasted links	links colados
+# context: Third switch under Faster downloads on the Playback page (#53). An upload is sending a file to Telegram; pieces are the chunks it is cut into.
+Faster uploads	Envios mais rápidos
+Uploads keep four times as many pieces on their way at once. Telegram's servers still decide how fast an account can send. The next upload picks this up.	Os envios mantêm quatro vezes mais partes a caminho ao mesmo tempo. Os servidores do Telegram ainda decidem a velocidade de envio de uma conta. O próximo envio já usa isso.
+uploads	envios

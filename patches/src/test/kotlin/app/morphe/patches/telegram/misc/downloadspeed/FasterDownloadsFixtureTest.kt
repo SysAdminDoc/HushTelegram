@@ -36,8 +36,8 @@ import org.junit.Test
 /** FileLoadOperation.updateParams on both declared builds, where Telegram picks a download's piece size. */
 class FasterDownloadsFixtureTest {
     private fun context(build: File): BytecodePatchContext {
-        val host = FixtureDex.classes(build, setOf(LOAD_OPERATION, DOWNLOAD_CONTROLLER)).values.map(ImmutableClassDef::of)
-        assertEquals("${build.name}: FileLoadOperation and DownloadController", 2, host.size)
+        val host = FixtureDex.classes(build, setOf(LOAD_OPERATION, DOWNLOAD_CONTROLLER, UPLOAD_OPERATION)).values.map(ImmutableClassDef::of)
+        assertEquals("${build.name}: FileLoadOperation, DownloadController and FileUploadOperation", 3, host.size)
         return PatchContexts.of(ExtensionDex.classes() + host)
     }
 
@@ -50,6 +50,39 @@ class FasterDownloadsFixtureTest {
         after.indices.single { (after[it] as? WideLiteralInstruction)?.wideLiteral == size }
 
     private fun Instruction.shape() = listOf(opcode, namedRegisters(), (this as? ReferenceInstruction)?.reference?.toString())
+
+    @Test fun `the upload piece limit goes through the extension once and the rest of the uploader is untouched`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = context(build)
+            val plan = context.resolveFasterUploads()
+            val before = plan.method.controlBody().filter { it.opcode != Opcode.NOP }.map { it.shape() }
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { fasterDownloadsPatch.execute(context) })
+            val after = plan.method.controlBody().filter { it.opcode != Opcode.NOP }
+            assertEquals("$name: two instructions", before.size + 2, after.size)
+            assertEquals(Opcode.INVOKE_STATIC_RANGE, after[plan.index].opcode)
+            assertEquals(UPLOAD_HOOK, after[plan.index].controlRef())
+            assertEquals(Opcode.MOVE_RESULT, after[plan.index + 1].opcode)
+            assertEquals(UPLOAD_REQUESTS, after[plan.index + 2].controlRef())
+            assertEquals("$name: stock code kept in order", before, (after.take(plan.index) + after.drop(plan.index + 2)).map { it.shape() })
+            assertEquals(1L, context.flag("fasterUploads"))
+            assertEquals(1, plan.method.controlBody().count { it.controlRef() == UPLOAD_HOOK })
+        }
+    }
+
+    @Test fun `a changed upload sizing is refused for its own reason and downloads still patch`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = context(build)
+            val plan = context.resolveFasterUploads()
+            val at = plan.method.controlBody().indexOfFirst { it.controlRef() == "Ljava/lang/Math;->max(II)I" }
+            plan.method.replaceInstruction(at, "invoke-static {v2, v0}, Ljava/lang/Math;->min(II)I")
+            val warnings = PatchLogCapture.warnings { fasterDownloadsPatch.execute(context) }
+            assertTrue("${build.name}: $warnings", warnings.single().contains("upload piece limit is no longer sized from the piece size"))
+            assertEquals(0L, context.flag("fasterUploads"))
+            assertEquals(1L, context.flag("fasterDownloads"))
+            assertEquals(0, plan.method.controlBody().count { it.controlRef() == UPLOAD_HOOK })
+        }
+    }
 
     @Test fun `the extension answers for the server's flag and the small-piece fallback still has the last word`() {
         for (build in Fixtures.declaredBuilds()) {

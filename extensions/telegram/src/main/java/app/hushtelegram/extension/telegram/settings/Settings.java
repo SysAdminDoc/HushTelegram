@@ -515,6 +515,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting FASTER_DOWNLOADS =
             new BooleanSetting("hushtelegram_faster_downloads", FALSE);
 
+    /** An upload keeps four times as many pieces in flight. */
+    public static final BooleanSetting FASTER_UPLOADS =
+            new BooleanSetting("hushtelegram_faster_uploads", FALSE);
+
     /** Automatic media downloads wait while Android's Data Saver restricts Telegram on a metered network. */
     public static final BooleanSetting DATA_SAVER_DOWNLOADS =
             new BooleanSetting("hushtelegram_data_saver_downloads", FALSE);

@@ -385,6 +385,7 @@ public final class SelectionCheck {
         hook(calls, flags, "hideNewMessage", "misc/MainTabs", "newMessageButton");
         hook(calls, flags, "fasterDownloads", "misc/DownloadSpeed", "fast");
         hook(calls, flags, "dataSaverDownloads", "misc/DataSaverDownloads", "hold", "holdMask");
+        hook(calls, flags, "fasterUploads", "misc/UploadSpeed", "requests");
         hook(calls, flags, "saveDownloads", "misc/SaveDownloads", "fileLoaded");
         hook(calls, flags, "storageFolder", "misc/StorageFolder", "telegramFolder", "olderFile");
         hook(calls, flags, "unifiedPush", "misc/UnifiedPush", "token", "type");

@@ -5,6 +5,7 @@
 package app.morphe.patches.telegram.misc.downloadspeed
 
 import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
@@ -45,7 +46,8 @@ val fasterDownloadsPatch = bytecodePatch(
     description = "Downloads files in 512 KB pieces, 8 at a time, the way Telegram already does for accounts its servers " +
         "pick, instead of 128 KB pieces 4 at a time. If a big piece fails, Telegram still drops back to small ones. " +
         "A second switch, Hold automatic downloads on Data Saver, keeps Telegram from downloading media on its own " +
-        "while Android's Data Saver is on and the network is metered. Both start off. Turn them on in HushTelegram " +
+        "while Android's Data Saver is on and the network is metered. A third, Faster uploads, keeps four times as many " +
+        "upload pieces in flight. All start off. Turn them on in HushTelegram " +
         "settings > Playback.",
     default = true,
 ) {
@@ -56,6 +58,14 @@ val fasterDownloadsPatch = bytecodePatch(
         val plan = resolveFasterDownloads()
         requireDataSaverRuntime()
         val saver = resolveDataSaverDownloads()
+        // Uploads come second: a build without them keeps faster downloads.
+        requireStatusMethod("fasterUploads")
+        val uploads = try {
+            resolveFasterUploads().also { it.rehearse() }
+        } catch (unfit: PatchException) {
+            patchLog.warning("Faster downloads: ${unfit.message}. Uploads are left as they are.")
+            null
+        }
         // Assembled on copies first, so a refusal leaves the app untouched.
         insertDownloadSpeedGate(MutableMethod(ImmutableMethod.of(plan.method)), plan)
         if (saver.missing == null) saver.rehearse()
@@ -66,6 +76,10 @@ val fasterDownloadsPatch = bytecodePatch(
             enableCapability("dataSaverDownloads")
         } else {
             patchLog.warning("Faster downloads: ${saver.missing}. The patch goes on without holding automatic downloads on Data Saver.")
+        }
+        uploads?.let {
+            it.insert()
+            enableCapability("fasterUploads")
         }
         enableStatus("fasterDownloads")
     }

@@ -505,14 +505,14 @@ public class PatchFamilyTest {
         assertEquals("Faster downloads", family.patchName);
         assertEquals("fasterDownloads", family.statusMethod);
         // The second switch, the Data Saver hold, starts off too and works with or without the first.
-        assertEquals(Arrays.asList(Settings.FASTER_DOWNLOADS, Settings.DATA_SAVER_DOWNLOADS), family.switches);
+        assertEquals(Arrays.asList(Settings.FASTER_DOWNLOADS, Settings.DATA_SAVER_DOWNLOADS, Settings.FASTER_UPLOADS), family.switches);
         for (BooleanSetting setting : family.switches) {
             assertFalse(setting.key, setting.defaultValue);
             // Telegram picks the piece size each time a download starts and asks again before each
             // automatic download, so no restart is needed.
             assertFalse(setting.key, setting.rebootApp);
         }
-        assertEquals(EnumSet.of(PatchFamily.Capability.DATA_SAVER_DOWNLOADS), family.expectedCapabilities());
+        assertEquals(EnumSet.of(PatchFamily.Capability.DATA_SAVER_DOWNLOADS, PatchFamily.Capability.FASTER_UPLOADS), family.expectedCapabilities());
         assertOnItsPage(family);
         assertEquals(PatchFamily.Page.PLAYBACK, PatchFamily.Page.of(family));
     }
@@ -1130,7 +1130,7 @@ public class PatchFamilyTest {
                 "Save downloaded files coverage: switch only; missing: gallery folder for saved photos and videos, "
                         + "Telegram's own files in internal storage"));
         assertTrue(report.toString(), report.contains(
-                "Faster downloads coverage: switch only; missing: automatic downloads on Data Saver"));
+                "Faster downloads coverage: switch only; missing: automatic downloads on Data Saver, uploads"));
         assertTrue(report.toString(), report.contains("Hide ads coverage: none; missing: channel ads, video ads, search ads"));
 
         PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.GALLERY_FOLDER,
@@ -1138,7 +1138,7 @@ public class PatchFamilyTest {
         report = PatchFamily.reportLines(build, false);
         assertTrue(report.toString(), report.contains("Save downloaded files coverage: gallery folder for saved photos and videos; "
                 + "missing: Telegram's own files in internal storage"));
-        assertTrue(report.toString(), report.contains("Faster downloads coverage: automatic downloads on Data Saver"));
+        assertTrue(report.toString(), report.contains("Faster downloads coverage: automatic downloads on Data Saver; missing: uploads"));
     }
 
     /**
