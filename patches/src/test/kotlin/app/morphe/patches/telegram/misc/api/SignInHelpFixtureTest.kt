@@ -12,6 +12,8 @@ import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import org.junit.Assert.assertEquals
@@ -28,14 +30,15 @@ class SignInHelpFixtureTest {
     fun `the general error handler asks the extension first on each declared build`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
-            val hosts = FixtureDex.classesWhere(build, { true }) { isProcessError(it) }
+            val hosts = FixtureDex.classesWhere(build, { true }) { isProcessError(it) || it.googleFailureAt() != null }
             assertEquals("$name: one general error handler", 1, hosts.sumOf { host -> host.methods.count { isProcessError(it) } })
-            val before = hosts.single().methods.single { isProcessError(it) }.controlBody()
+            val host = hosts.single { candidate -> candidate.methods.any { isProcessError(it) } }
+            val before = host.methods.single { isProcessError(it) }.controlBody()
 
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
             assertEquals("$name: no warning", emptyList<String>(), PatchLogCapture.warnings { signInHelpPatch.execute(context) })
 
-            val handler = context.mutableClassDefBy(hosts.single().type).methods.single { isProcessError(it) }
+            val handler = context.mutableClassDefBy(host.type).methods.single { isProcessError(it) }
             val after = handler.controlBody()
             assertEquals("$name: five instructions", before.size + 5, after.size)
             assertEquals(
@@ -58,10 +61,34 @@ class SignInHelpFixtureTest {
     }
 
     @Test
-    fun `a build without the handler patches on and says the message is missing`() {
+    fun `a failed Google sign-in reaches the extension from both login email screens`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val hosts = FixtureDex.classesWhere(build, { true }) { it.googleFailureAt() != null }
+            assertEquals(name, 2, hosts.size)
+            val operand = { op: Instruction -> op.opcode to (op as? ReferenceInstruction)?.reference?.toString() }
+            val stock = hosts.associate { host -> host.type to host.methods.single { it.googleFailureAt() != null }.controlBody().map(operand) }
+
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts)
+            assertTrue(name, context.sayWhenGoogleFails())
+
+            for (host in hosts) {
+                val after = context.mutableClassDefBy(host.type).methods.single { it.name == "didReceivedNotification" }.controlBody()
+                val caught = after.indexOfFirst { it.opcode == Opcode.MOVE_EXCEPTION }
+                assertEquals(name, SIGN_IN_GOOGLE_FAILED, after[caught + 1].controlRef())
+                val call = after[caught + 1] as RegisterRangeInstruction
+                assertEquals(name, 1, call.registerCount)
+                assertEquals(name, (after[caught] as OneRegisterInstruction).registerA, call.startRegister)
+                assertEquals("$name: stock code stays", stock.getValue(host.type), after.filterIndexed { i, _ -> i != caught + 1 }.map(operand))
+            }
+        }
+    }
+
+    @Test
+    fun `a build without the handler patches on and says each message is missing`() {
         val context = PatchContexts.of(ExtensionDex.classes())
         val warnings = PatchLogCapture.warnings { signInHelpPatch.execute(context) }
-        assertEquals(1, warnings.size)
-        assertTrue(warnings.single(), warnings.single().startsWith("Sign-in help:"))
+        assertEquals(warnings.toString(), 2, warnings.size)
+        assertTrue(warnings.toString(), warnings.all { it.startsWith("Sign-in help:") })
     }
 }

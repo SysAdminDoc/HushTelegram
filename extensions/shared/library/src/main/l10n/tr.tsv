@@ -782,6 +782,8 @@ Telegram kept some folders. Turn this off again to retry.	Telegram bazı klasör
 Telegram didn't remove the folders. Try again in a moment.	Telegram klasörleri kaldırmadı. Birazdan tekrar dene.
 # context: a short toast (two lines at most) when the folder switch is flipped while Telegram still hasn't answered the last flip.
 Telegram is still answering. Try again in a moment.	Telegram hâlâ yanıt veriyor. Birazdan tekrar dene.
+# context: Toast on Telegram's login email screen when the Google button fails, pointing at the email box above it (#19). The login still works with a typed email.
+Google sign-in failed. Type your email above.	Google girişi başarısız. E-postanı yukarıya yaz.
 Telegram refused this app's ID	Telegram bu uygulamanın kimliğini reddetti
 Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.	Telegram bu uygulamanın giriş için kullandığı API kimliğini reddetti, bu yüzden giriş kodu gönderilmedi. HushTelegram'ı Use registered Telegram API credentials ve my.telegram.org/apps adresinden aldığınız kendi kimliğinizle yeniden yamalayın. Rehber adım adım anlatıyor.
 Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.	Telegram bu uygulamanın yamalandığı API kimliğini ve hash değerini kabul etmedi, bu yüzden giriş kodu gönderilmedi. İkisini my.telegram.org/apps adresinden yeniden kopyalayın ve tekrar yamalayın.

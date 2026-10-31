@@ -5,8 +5,10 @@
 package app.morphe.patches.telegram.misc.api
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
@@ -14,15 +16,23 @@ import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.requireLocals
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
+import app.morphe.patches.telegram.misc.localcontrols.Mention
+import app.morphe.patches.telegram.misc.localcontrols.classDefsMentioning
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
+import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 internal const val SIGN_IN_HELP = "$EXTENSION_PACKAGE/misc/SignInHelp;"
 private const val OBJECT = "Ljava/lang/Object;"
 internal const val SIGN_IN_EXPLAIN = "$SIGN_IN_HELP->explain($OBJECT$OBJECT$OBJECT)Z"
+internal const val SIGN_IN_GOOGLE_FAILED = "$SIGN_IN_HELP->googleFailed($OBJECT)V"
+private const val GOOGLE_ACCOUNT = "Lcom/google/android/gms/auth/api/signin/GoogleSignInAccount;"
+private const val LOG_FAILURE = "Lorg/telegram/messenger/FileLog;->e(Ljava/lang/Throwable;)V"
 internal const val TL_ERROR = "Lorg/telegram/tgnet/TLRPC\$TL_error;"
 internal const val TL_OBJECT = "Lorg/telegram/tgnet/TLObject;"
 
@@ -65,18 +75,51 @@ internal fun MutableMethod.askSignInHelpFirst() {
 }
 
 /**
+ * Where a login email screen takes Google's answer: the handler that catches a failure and only logs
+ * it. The one instruction after it is where the extension gets told.
+ */
+internal fun Method.googleFailureAt(): Int? {
+    if (name != "didReceivedNotification") return null
+    val code = implementation?.instructions?.toList() ?: return null
+    if (code.none { it.opcode == Opcode.CHECK_CAST && it.controlRef() == GOOGLE_ACCOUNT }) return null
+    return code.indices.singleOrNull { at ->
+        code[at].opcode == Opcode.MOVE_EXCEPTION && code.getOrNull(at + 1)?.controlRef() == LOG_FAILURE
+    }
+}
+
+/** Tells the extension about each failed Google sign-in. False when no screen takes one. */
+internal fun BytecodePatchContext.sayWhenGoogleFails(): Boolean {
+    val found = classDefsMentioning(Mention.type(GOOGLE_ACCOUNT)).flatMap { cls ->
+        cls.methods.filter { it.googleFailureAt() != null }
+    }
+    for (match in found) {
+        val method = mutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
+        val at = method.googleFailureAt() ?: continue
+        val caught = (method.getInstruction(at) as OneRegisterInstruction).registerA
+        method.addInstructions(at + 1, "invoke-static/range {v$caught .. v$caught}, $SIGN_IN_GOOGLE_FAILED")
+    }
+    return found.isNotEmpty()
+}
+
+/**
  * Says why sign-in stopped when Telegram refuses the app's API ID. On Telegram 13 the phone screen
  * names a few sendCode errors and hands the rest to the general error handler, which has no case for
  * sendCode, so API_ID_PUBLISHED_FLOOD left the screen sitting there with nothing said. The handler
  * now asks the extension first; it answers only for API_ID_PUBLISHED_FLOOD and API_ID_INVALID on
- * sendCode and leaves every other error to Telegram. Part of HushTelegram settings, which every
- * selection carries, and it doesn't stop patching when a build moves the handler.
+ * sendCode and leaves every other error to Telegram. A failed Google sign-in on the login email
+ * screen, which Telegram only logs, gets a toast pointing at the email box. Part of HushTelegram
+ * settings, which every selection carries, and it doesn't stop patching when a build moves either.
  */
 internal val signInHelpPatch = bytecodePatch {
     dependsOn(telegramExtensionPatch)
 
     execute {
         controlHook(SIGN_IN_HELP, "explain", listOf(OBJECT, OBJECT, OBJECT), "Z")
+        controlHook(SIGN_IN_HELP, "googleFailed", listOf(OBJECT), "V")
+        if (!sayWhenGoogleFails()) {
+            patchLog.warning("Sign-in help: the login email screen's Google answer wasn't found, so a failed " +
+                "Google sign-in still shows no message.")
+        }
         val handler = ProcessErrorFingerprint.methodOrNull
         if (handler == null || handler.returnType.startsWith("[") || !handler.returnType.startsWith("L")) {
             patchLog.warning("Sign-in help: Telegram's general error handler wasn't found, so a refused API ID " +

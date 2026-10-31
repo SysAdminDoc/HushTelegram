@@ -782,6 +782,8 @@ Telegram kept some folders. Turn this off again to retry.	Telegram hat einige Or
 Telegram didn't remove the folders. Try again in a moment.	Telegram hat die Ordner nicht entfernt. Versuch es gleich noch mal.
 # context: a short toast (two lines at most) when the folder switch is flipped while Telegram still hasn't answered the last flip.
 Telegram is still answering. Try again in a moment.	Telegram antwortet noch. Versuch es gleich noch mal.
+# context: Toast on Telegram's login email screen when the Google button fails, pointing at the email box above it (#19). The login still works with a typed email.
+Google sign-in failed. Type your email above.	Google ging nicht. Gib oben deine E-Mail ein.
 Telegram refused this app's ID	Telegram hat die ID dieser App abgelehnt
 Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.	Telegram hat die API-ID abgelehnt, mit der sich diese App anmeldet, daher kam kein Anmeldecode. Patche HushTelegram erneut mit Use registered Telegram API credentials und deiner eigenen ID von my.telegram.org/apps. Die Anleitung zeigt dir, wie es geht.
 Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.	Telegram hat die API-ID und den Hash nicht angenommen, mit denen diese App gepatcht wurde, daher kam kein Anmeldecode. Kopiere beide erneut von my.telegram.org/apps und patche noch einmal.

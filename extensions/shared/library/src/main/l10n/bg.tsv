@@ -778,6 +778,8 @@ Telegram kept some folders. Turn this off again to retry.	Telegram запази 
 Telegram didn't remove the folders. Try again in a moment.	Telegram не премахна папките. Опитайте отново след малко.
 # context: a short toast (two lines at most) when the folder switch is flipped while Telegram still hasn't answered the last flip.
 Telegram is still answering. Try again in a moment.	Telegram още отговаря. Опитайте отново след малко.
+# context: Toast on Telegram's login email screen when the Google button fails, pointing at the email box above it (#19). The login still works with a typed email.
+Google sign-in failed. Type your email above.	Входът с Google не успя. Въведете имейла си по-горе.
 Telegram refused this app's ID	Telegram отхвърли ID на приложението
 Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.	Telegram отхвърли API ID, с който приложението влиза, затова не беше изпратен код за вход. Пачнете HushTelegram отново с „Use registered Telegram API credentials“ и собствен ID от my.telegram.org/apps. Ръководството ви превежда през стъпките.
 Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.	Telegram не прие API ID и хеша, с които е пачнато приложението, затова не беше изпратен код за вход. Копирайте ги отново от my.telegram.org/apps и пачнете пак.
