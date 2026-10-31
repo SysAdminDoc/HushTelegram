@@ -367,7 +367,8 @@ public class SettingsBackupPreference extends Preference {
         boolean emoji = snapshot.titleEmojiChanges();
         boolean gallery = snapshot.galleryFolderChanges();
         boolean language = snapshot.translateTargetChanges();
-        boolean nothing = switches == 0 && lists == 0 && !size && !emoji && !gallery && !language;
+        boolean storageName = snapshot.storageFolderNameChanges();
+        boolean nothing = switches == 0 && lists == 0 && !size && !emoji && !gallery && !language && !storageName;
         String message = nothing
                 ? L10n.t("Your switches already match that file, so nothing will change.")
                 : switches == 0 ? "" : L10n.quantity(switches, "%1$d switch will change.", "%1$d switches will change.", switches);
@@ -386,6 +387,9 @@ public class SettingsBackupPreference extends Preference {
         }
         if (language) {
             message += (message.isEmpty() ? "" : " ") + L10n.t("The translation language will change.");
+        }
+        if (storageName) {
+            message += (message.isEmpty() ? "" : " ") + L10n.t("The folder for Telegram's files will change.");
         }
         // Each switch by name, so a file someone shared can't turn Open links externally or Disable
         // analytics around without it showing here.
@@ -441,6 +445,10 @@ public class SettingsBackupPreference extends Preference {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Gallery folder"),
                         HushTelegramPreferenceFragment.galleryFolderLabel(Settings.GALLERY_FOLDER.savedValue()),
                         HushTelegramPreferenceFragment.galleryFolderLabel((String) change.getValue())));
+            } else if (change.getKey() == Settings.STORAGE_FOLDER_NAME) {
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Folder in internal storage"),
+                        StorageFolderEditor.shown(Settings.STORAGE_FOLDER_NAME.savedValue()),
+                        StorageFolderEditor.shown((String) change.getValue())));
             } else if (change.getKey() == Settings.TRANSLATE_TARGET) {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Translate into"),
                         TranslateTargetPicker.label(Settings.TRANSLATE_TARGET.savedValue()),

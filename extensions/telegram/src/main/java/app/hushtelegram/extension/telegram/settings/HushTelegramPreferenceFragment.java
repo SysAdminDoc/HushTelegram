@@ -287,6 +287,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (emoji != null) emoji.setSummary(TitleEmojiEditor.summary(Settings.TITLE_EMOJI.savedValue()));
         Preference gallery = findPreference(GALLERY_FOLDER_ROW);
         if (gallery != null) gallery.setSummary(galleryFolderSummary());
+        Preference storageName = findPreference(StorageFolderEditor.KEY);
+        if (storageName != null) storageName.setSummary(StorageFolderEditor.summary(Settings.STORAGE_FOLDER_NAME.savedValue()));
         Preference target = findPreference(TranslateTargetPicker.KEY);
         if (target != null) target.setSummary(TranslateTargetPicker.summary(Settings.TRANSLATE_TARGET.savedValue()));
     }
@@ -763,14 +765,15 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     return true;
                 });
                 on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(storage);
+                on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(storageFolderNameRow(context));
             }
         }
     }
 
     /** What the storage folder switch does, then whether Android gives Telegram the access it needs, read when the page shows. */
     static String storageFolderSummary(boolean access) {
-        return L10n.t("New photos, videos and files Telegram downloads go to Internal storage/Telegram, where file managers"
-                + " and other apps can open them, instead of Android/data. Files downloaded before stay in Android/data,"
+        return L10n.t("New photos, videos and files Telegram downloads go to the folder below in Internal storage, where file"
+                + " managers and other apps can open them, instead of Android/data. Files downloaded before stay where they are,"
                 + " and Telegram still opens them from there. Needs All files access and a restart.")
                 + "\n" + (access ? L10n.t("All files access is on.")
                 : L10n.t("All files access is off, so Telegram's files stay in Android/data. Turning this on opens the setting."));
@@ -1712,6 +1715,30 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
     static String stickerSizeSummary() {
         return L10n.f("%1$s of Telegram's size", percent(StickerSize.percent(Settings.STICKER_SIZE.savedValue())));
+    }
+
+    /** The folder the storage switch moves Telegram's files to: the row names it, and a tap opens its editor. */
+    private Preference storageFolderNameRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(StorageFolderEditor.KEY);
+        row.setTitle(L10n.t("Folder in internal storage"));
+        row.setPersistent(false);
+        row.setSummary(StorageFolderEditor.summary(Settings.STORAGE_FOLDER_NAME.savedValue()));
+        row.setOnPreferenceClickListener(p -> {
+            Activity activity = getActivity();
+            if (SettingsLock.refuses()) return true;
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                own(StorageFolderEditor.open(activity, p, before -> storageFolderNameSaved(activity, before)));
+            }
+            return true;
+        });
+        return row;
+    }
+
+    /** Telegram reads its folder once, so a new name waits for a restart unless it's the one running. */
+    private void storageFolderNameSaved(Context context, String before) {
+        if (noteRestartPending(Settings.STORAGE_FOLDER_NAME, before)) showRestartDialog(context);
+        else Utils.showToastShort(L10n.t("Saved."));
     }
 
     /** Where Save to gallery puts photos and videos: the row names the folders, and a tap lists the others. */

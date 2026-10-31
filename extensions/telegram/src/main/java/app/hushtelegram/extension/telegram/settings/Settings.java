@@ -549,6 +549,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_storage_folder", FALSE, true);
 
     /**
+     * The folder under Internal storage that {@link #STORAGE_FOLDER} moves Telegram's files to, one
+     * {@link app.hushtelegram.extension.telegram.misc.StorageFolder#allowedName} takes. Empty is
+     * Internal storage/Telegram (#7). Read once with the folder, so it needs a restart too.
+     */
+    public static final StringSetting STORAGE_FOLDER_NAME =
+            new StringSetting("hushtelegram_storage_folder_name", "", true);
+
+    /**
      * Which folders Telegram's Save to gallery puts photos and videos in, one of
      * {@link app.hushtelegram.extension.telegram.misc.GalleryFolder#CHOICES}. Empty keeps Telegram's
      * Pictures/Telegram and Movies/Telegram (#30).

@@ -45,6 +45,8 @@ public class StorageFolderTest {
         HookStatus.clear();
         PauseForTests.resume();
         Settings.STORAGE_FOLDER.resetToDefault();
+        Settings.STORAGE_FOLDER_NAME.resetToDefault();
+        earlierFolders().edit().clear().commit();
         savedWait = StorageFolder.startupWaitMillis;
         StorageFolder.moved = null;
         allFilesAccess(false);
@@ -55,6 +57,8 @@ public class StorageFolderTest {
         StorageFolder.moved = null;
         allFilesAccess(false);
         Settings.STORAGE_FOLDER.resetToDefault();
+        Settings.STORAGE_FOLDER_NAME.resetToDefault();
+        earlierFolders().edit().clear().commit();
         PauseForTests.resume();
         HookStatus.clear();
     }
@@ -73,25 +77,104 @@ public class StorageFolderTest {
     @Test public void theFolderMovesOnlyWithEverythingInPlace() throws IOException {
         File folder = temporary.newFolder("Android", "data", "Telegram");
         File storage = temporary.newFolder("storage");
-        assertSame(folder, StorageFolder.folderFor(folder, 29, true, true, storage));
-        assertSame(folder, StorageFolder.folderFor(folder, 30, false, true, storage));
-        assertSame(folder, StorageFolder.folderFor(folder, 30, true, false, storage));
-        assertSame(folder, StorageFolder.folderFor(folder, 30, true, true, null));
-        assertEquals(null, StorageFolder.folderFor(null, 30, true, true, storage));
+        assertSame(folder, StorageFolder.folderFor(folder, 29, true, true, storage, "Telegram"));
+        assertSame(folder, StorageFolder.folderFor(folder, 30, false, true, storage, "Telegram"));
+        assertSame(folder, StorageFolder.folderFor(folder, 30, true, false, storage, "Telegram"));
+        assertSame(folder, StorageFolder.folderFor(folder, 30, true, true, null, "Telegram"));
+        assertEquals(null, StorageFolder.folderFor(null, 30, true, true, storage, "Telegram"));
         assertFalse(new File(storage, "Telegram").exists());
 
-        File moved = StorageFolder.folderFor(folder, 30, true, true, storage);
+        File moved = StorageFolder.folderFor(folder, 30, true, true, storage, "Telegram");
         assertEquals(new File(storage, "Telegram"), moved);
         assertTrue(moved.isDirectory());
         // A second start finds the folder already there.
-        assertEquals(moved, StorageFolder.folderFor(folder, 31, true, true, storage));
+        assertEquals(moved, StorageFolder.folderFor(folder, 31, true, true, storage, "Telegram"));
+    }
+
+    private static android.content.SharedPreferences earlierFolders() {
+        return StorageFolder.store.apply(app.hushtelegram.extension.shared.Utils.getContext());
+    }
+
+    /** What the reporter asked for: Internal storage/Plus rather than Internal storage/Telegram (#7). */
+    @Test public void theRowsNameSaysWhichFolderInInternalStorage() throws IOException {
+        File folder = temporary.newFolder("data");
+        Settings.STORAGE_FOLDER.save(true);
+        allFilesAccess(true);
+        assertEquals(new File(Environment.getExternalStorageDirectory(), "Telegram"), StorageFolder.telegramFolder(folder));
+
+        Settings.STORAGE_FOLDER_NAME.save("Plus");
+        File plus = new File(Environment.getExternalStorageDirectory(), "Plus");
+        assertEquals(plus, StorageFolder.telegramFolder(folder));
+        assertTrue(plus.isDirectory());
+
+        Settings.STORAGE_FOLDER_NAME.save("Documents/Chats");
+        File nested = new File(Environment.getExternalStorageDirectory(), "Documents/Chats");
+        assertEquals(nested, StorageFolder.telegramFolder(folder));
+        assertTrue(nested.isDirectory());
+
+        // A name edited by hand in a settings file never gets past the check.
+        Settings.STORAGE_FOLDER_NAME.save("../../data");
+        assertEquals(new File(Environment.getExternalStorageDirectory(), "Telegram"), StorageFolder.telegramFolder(folder));
+    }
+
+    @Test public void aNewNameStillFindsFilesInEveryFolderBeforeIt() throws IOException {
+        File folder = temporary.newFolder("data");
+        File inData = new File(folder, "Telegram Documents/first.pdf");
+        assertTrue(inData.getParentFile().mkdirs() && inData.createNewFile());
+        Settings.STORAGE_FOLDER.save(true);
+        allFilesAccess(true);
+
+        File first = StorageFolder.telegramFolder(folder);
+        File inFirst = new File(first, "Telegram Documents/second.pdf");
+        assertTrue(inFirst.getParentFile().mkdirs() && inFirst.createNewFile());
+
+        // After a restart under the new name, as a restart is what Telegram reads the folder on.
+        Settings.STORAGE_FOLDER_NAME.save("Plus");
+        File plus = StorageFolder.telegramFolder(folder);
+        assertEquals(inData, StorageFolder.olderFile(new File(plus, "Telegram Documents/first.pdf")));
+        assertEquals(inFirst, StorageFolder.olderFile(new File(plus, "Telegram Documents/second.pdf")));
+        File fresh = new File(plus, "Telegram Documents/third.pdf");
+        assertSame("a new download goes in the new folder", fresh, StorageFolder.olderFile(fresh));
+
+        // Back to the first name, Plus's files count as older ones and the first folder as its own.
+        File inPlus = new File(plus, "Telegram Documents/fourth.pdf");
+        assertTrue(inPlus.getParentFile().mkdirs() && inPlus.createNewFile());
+        Settings.STORAGE_FOLDER_NAME.save("");
+        assertEquals(first, StorageFolder.telegramFolder(folder));
+        assertEquals(inPlus, StorageFolder.olderFile(new File(first, "Telegram Documents/fourth.pdf")));
+        File own = new File(first, "Telegram Documents/second.pdf");
+        assertSame("a file in the folder in use is its own", own, StorageFolder.olderFile(own));
+    }
+
+    @Test public void onlyAFolderUnderInternalStorageIsAName() {
+        for (String good : new String[] {"", "Plus", "Telegram", "My Files", "Documents/Chats", ".hidden", "Android2", "Телеграм"}) {
+            assertTrue(good, StorageFolder.allowedName(good));
+        }
+        StringBuilder tooLong = new StringBuilder();
+        for (int i = 0; i <= StorageFolder.MAX_NAME_CHARS; i++) tooLong.append('a');
+        for (String bad : new String[] {"..", "../x", "a/../b", "a/.", "a//b", "Android", "android/data", "ANDROID", "a:b", "a*", "a?", "a|b", "a\"b",
+                "a<b", "a>b", "a\\b", "dots.", " a", "a ", "a/ b", "a" + (char) 0x0a + "b", "a" + (char) 0x200f + "b", tooLong.toString()}) {
+            assertFalse(bad, StorageFolder.allowedName(bad));
+        }
+        assertFalse(StorageFolder.allowedName(null));
+    }
+
+    @Test public void aWholePathIsCutDownToThePartUnderInternalStorage() {
+        assertEquals("Plus", StorageFolder.cleanName("/storage/emulated/0/Plus"));
+        assertEquals("Plus", StorageFolder.cleanName("storage/emulated/0/Plus"));
+        assertEquals("Plus", StorageFolder.cleanName("  /sdcard/Plus/ "));
+        assertEquals("Plus/Chats", StorageFolder.cleanName("SDCARD/Plus/Chats"));
+        assertEquals("Plus", StorageFolder.cleanName("/Plus/"));
+        assertEquals("", StorageFolder.cleanName(null));
+        assertEquals("", StorageFolder.cleanName(" / "));
+        assertFalse("a climb is still a climb", StorageFolder.allowedName(StorageFolder.cleanName("/storage/emulated/0/../..")));
     }
 
     @Test public void aFileInTheWayKeepsAndroidData() throws IOException {
         File folder = temporary.newFolder("data");
         File storage = temporary.newFolder("storage");
         assertTrue(new File(storage, "Telegram").createNewFile());
-        assertSame(folder, StorageFolder.folderFor(folder, 30, true, true, storage));
+        assertSame(folder, StorageFolder.folderFor(folder, 30, true, true, storage, "Telegram"));
     }
 
     @Test public void theSwitchAndAllFilesAccessMoveTheFolder() throws IOException {

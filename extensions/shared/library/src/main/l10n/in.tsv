@@ -1047,8 +1047,20 @@ Couldn't save the language. Try again in a moment.	Bahasa tidak dapat disimpan. 
 The translation language will change.	Bahasa terjemahan akan berubah.
 # context: Switch title under Save downloaded files. It moves the folder Telegram keeps its own downloads in from Android/data to the phone's main storage.
 Keep Telegram's files in internal storage	Simpan file Telegram di penyimpanan internal
-# context: Summary under that switch. Internal storage/Telegram and Android/data are folder paths: translate Internal storage as Android's Files app does, keep Telegram and Android/data as they are. All files access is Android's name for the special app access page.
-New photos, videos and files Telegram downloads go to Internal storage/Telegram, where file managers and other apps can open them, instead of Android/data. Files downloaded before stay in Android/data, and Telegram still opens them from there. Needs All files access and a restart.	Foto, video, dan file baru yang diunduh Telegram masuk ke Penyimpanan internal/Telegram, tempat pengelola file dan aplikasi lain bisa membukanya, bukan ke Android/data. File yang diunduh sebelumnya tetap di Android/data, dan Telegram tetap membukanya dari sana. Perlu Akses semua file dan mulai ulang.
+# context: Summary under that switch. Internal storage and Android/data are folder places: translate Internal storage as Android's Files app does, keep Android/data as it is. All files access is Android's name for the special app access page.
+New photos, videos and files Telegram downloads go to the folder below in Internal storage, where file managers and other apps can open them, instead of Android/data. Files downloaded before stay where they are, and Telegram still opens them from there. Needs All files access and a restart.	Foto, video, dan file baru yang diunduh Telegram masuk ke folder di bawah ini di Penyimpanan internal, tempat pengelola file dan aplikasi lain bisa membukanya, bukan ke Android/data. File yang diunduh sebelumnya tetap di tempatnya, dan Telegram tetap membukanya dari sana. Perlu Akses semua file dan mulai ulang.
+# context: Row under the switch that names the folder Telegram's files go in. A folder inside the phone's Internal storage.
+Folder in internal storage	Folder di penyimpanan internal
+# context: The row's summary, a folder path. Translate Internal storage as Android's Files app does and keep %1$s, the folder's name.
+Internal storage/%1$s	Penyimpanan internal/%1$s
+# context: Hint in the box where the folder's name is typed.
+Folder name	Nama folder
+# context: Text above that box. Telegram here is the default folder's name and the app's, both stay as they are.
+Telegram's files go in this folder in Internal storage, and it's made if it isn't there. Leave it empty for Telegram, and restart Telegram after a change.	File Telegram masuk ke folder ini di Penyimpanan internal, dan folder dibuat kalau belum ada. Kosongkan untuk Telegram, lalu mulai ulang Telegram setelah mengubahnya.
+# context: Toast when the typed folder name can't be used.
+That name won't work. Try letters and numbers.	Nama itu tidak bisa dipakai. Coba huruf dan angka.
+# context: A line of the settings file import preview, the folder Telegram's files move to.
+The folder for Telegram's files will change.	Folder untuk file Telegram akan berubah.
 # context: Second line of that summary when Android has given Telegram All files access.
 All files access is on.	Akses semua file aktif.
 # context: Second line of that summary when Android hasn't given Telegram All files access. Android/data is a folder path, keep it as it is.

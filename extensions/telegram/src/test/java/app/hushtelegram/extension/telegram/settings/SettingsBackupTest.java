@@ -208,7 +208,7 @@ public class SettingsBackupTest {
                 Collections.emptyList(), notSwitches);
         assertEquals(Arrays.asList(Settings.MESSAGE_FILTERS_GROUPS, Settings.MESSAGE_FILTERS_CHANNELS), SettingsBackup.FILTER_LISTS);
         assertEquals(Collections.singletonList(Settings.STICKER_SIZE), SettingsBackup.NUMBERS);
-        assertEquals(Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET), SettingsBackup.TEXTS);
+        assertEquals(Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.STORAGE_FOLDER_NAME), SettingsBackup.TEXTS);
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES,
                         Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_KEYBOARD_FEATURED, Settings.HIDE_COMMERCE, Settings.HIDE_EMOJI_STATUS,
                         Settings.UNLOCK_PREMIUM_ICONS, Settings.LOCAL_EMOJI_STATUS, Settings.HIDE_PROMOTIONAL_BANNERS,
@@ -713,13 +713,36 @@ public class SettingsBackupTest {
         assertEquals("", SettingsBackup.parse(cleared.toString()).texts.get(Settings.TITLE_EMOJI));
 
         // A saved state is read back as strictly: text the title can't show is left out, and only
-        // the file's other texts, the gallery folder and the translation language, come back.
+        // the file's other texts, the gallery folder, the translation language and the storage folder, come back.
         Bundle state = snapshot.toBundle();
         state.getBundle("texts").putString(Settings.TITLE_EMOJI.key, tooLong.toString());
-        Set<StringSetting> others = new java.util.HashSet<>(Arrays.asList(Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET));
+        Set<StringSetting> others = new java.util.HashSet<>(Arrays.asList(Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.STORAGE_FOLDER_NAME));
         assertEquals(others, SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
         state.getBundle("texts").putInt(Settings.TITLE_EMOJI.key, 1);
         assertEquals(others, SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
+    }
+
+    /** Telegram's folder name goes out as typed and only comes back as one the row would save (#7). */
+    @Test
+    public void theStorageFolderNameRoundTripsOnlyAsAFolderUnderInternalStorage() throws Exception {
+        try {
+            Settings.STORAGE_FOLDER_NAME.save("Plus");
+            JSONObject file = new JSONObject(SettingsBackup.create());
+            assertEquals("Plus", file.getJSONObject("settings").get(Settings.STORAGE_FOLDER_NAME.key));
+
+            Settings.STORAGE_FOLDER_NAME.resetToDefault();
+            assertEquals("Plus", SettingsBackup.parse(file.toString()).texts.get(Settings.STORAGE_FOLDER_NAME));
+
+            for (String bad : new String[] {"../../data", "Android/data", "a/../b", "a:b"}) {
+                file.getJSONObject("settings").put(Settings.STORAGE_FOLDER_NAME.key, bad);
+                assertEquals(bad, SettingsBackup.Reason.VALUE, reasonFor(file.toString()));
+            }
+
+            file.getJSONObject("settings").put(Settings.STORAGE_FOLDER_NAME.key, "Plus");
+            assertTrue("a file that only moves the folder says so", SettingsBackup.parse(file.toString()).storageFolderNameChanges());
+        } finally {
+            Settings.STORAGE_FOLDER_NAME.resetToDefault();
+        }
     }
 
     /** The gallery folder goes out as its choice and comes back only as one, never as a path (#30). */

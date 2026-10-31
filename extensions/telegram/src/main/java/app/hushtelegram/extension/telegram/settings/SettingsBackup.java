@@ -46,6 +46,7 @@ import app.hushtelegram.extension.shared.settings.SettingsJson;
 import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.GalleryFolder;
+import app.hushtelegram.extension.telegram.misc.StorageFolder;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
@@ -229,11 +230,11 @@ public final class SettingsBackup {
 
     /**
      * The short texts a file carries as they're saved: the emoji beside the chat list's title, the
-     * gallery folder choice and the translation language. A build from before them counts the name
-     * as unknown and leaves it out.
+     * gallery folder choice, the translation language and the name of Telegram's own folder. A build
+     * from before them counts the name as unknown and leaves it out.
      */
     static final List<StringSetting> TEXTS = Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER,
-            Settings.TRANSLATE_TARGET);
+            Settings.TRANSLATE_TARGET, Settings.STORAGE_FOLDER_NAME);
 
     /**
      * Bounds for the parser, well past anything this class writes, so a file built to be
@@ -393,6 +394,11 @@ public final class SettingsBackup {
         /** Whether this file changes where Save to gallery puts photos and videos. */
         boolean galleryFolderChanges() {
             return changes().containsKey(Settings.GALLERY_FOLDER);
+        }
+
+        /** Whether this file changes the folder Telegram's own files move to. */
+        boolean storageFolderNameChanges() {
+            return changes().containsKey(Settings.STORAGE_FOLDER_NAME);
         }
 
         /** Whether this file changes the language the outside translate writes in. */
@@ -657,6 +663,7 @@ public final class SettingsBackup {
     static boolean allowed(StringSetting setting, String value) {
         if (setting == Settings.GALLERY_FOLDER) return GalleryFolder.allowed(value);
         if (setting == Settings.TRANSLATE_TARGET) return TranslateTarget.allowed(value);
+        if (setting == Settings.STORAGE_FOLDER_NAME) return StorageFolder.allowedName(value);
         return setting == Settings.TITLE_EMOJI && TitleEmoji.allowed(value);
     }
 

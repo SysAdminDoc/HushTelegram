@@ -1047,8 +1047,20 @@ Couldn't save the language. Try again in a moment.	Die Sprache ließ sich nicht 
 The translation language will change.	Die Übersetzungssprache wird geändert.
 # context: Switch title under Save downloaded files. It moves the folder Telegram keeps its own downloads in from Android/data to the phone's main storage.
 Keep Telegram's files in internal storage	Telegram-Dateien im internen Speicher ablegen
-# context: Summary under that switch. Internal storage/Telegram and Android/data are folder paths: translate Internal storage as Android's Files app does, keep Telegram and Android/data as they are. All files access is Android's name for the special app access page.
-New photos, videos and files Telegram downloads go to Internal storage/Telegram, where file managers and other apps can open them, instead of Android/data. Files downloaded before stay in Android/data, and Telegram still opens them from there. Needs All files access and a restart.	Neue Fotos, Videos und Dateien, die Telegram herunterlädt, landen in Interner Speicher/Telegram, wo Dateimanager und andere Apps sie öffnen können, statt in Android/data. Früher heruntergeladene Dateien bleiben in Android/data, und Telegram öffnet sie weiter von dort. Braucht Zugriff auf alle Dateien und einen Neustart.
+# context: Summary under that switch. Internal storage and Android/data are folder places: translate Internal storage as Android's Files app does, keep Android/data as it is. All files access is Android's name for the special app access page.
+New photos, videos and files Telegram downloads go to the folder below in Internal storage, where file managers and other apps can open them, instead of Android/data. Files downloaded before stay where they are, and Telegram still opens them from there. Needs All files access and a restart.	Neue Fotos, Videos und Dateien, die Telegram herunterlädt, landen im Ordner unten in Interner Speicher, wo Dateimanager und andere Apps sie öffnen können, statt in Android/data. Früher heruntergeladene Dateien bleiben, wo sie sind, und Telegram öffnet sie weiter von dort. Braucht Zugriff auf alle Dateien und einen Neustart.
+# context: Row under the switch that names the folder Telegram's files go in. A folder inside the phone's Internal storage.
+Folder in internal storage	Ordner im internen Speicher
+# context: The row's summary, a folder path. Translate Internal storage as Android's Files app does and keep %1$s, the folder's name.
+Internal storage/%1$s	Interner Speicher/%1$s
+# context: Hint in the box where the folder's name is typed.
+Folder name	Ordnername
+# context: Text above that box. Telegram here is the default folder's name and the app's, both stay as they are.
+Telegram's files go in this folder in Internal storage, and it's made if it isn't there. Leave it empty for Telegram, and restart Telegram after a change.	Die Dateien von Telegram landen in diesem Ordner in Interner Speicher, und er wird angelegt, falls es ihn nicht gibt. Lass das Feld leer für Telegram und starte Telegram nach einer Änderung neu.
+# context: Toast when the typed folder name can't be used.
+That name won't work. Try letters and numbers.	Dieser Name geht nicht. Versuch es mit Buchstaben und Zahlen.
+# context: A line of the settings file import preview, the folder Telegram's files move to.
+The folder for Telegram's files will change.	Der Ordner für die Dateien von Telegram wird geändert.
 # context: Second line of that summary when Android has given Telegram All files access.
 All files access is on.	Zugriff auf alle Dateien ist an.
 # context: Second line of that summary when Android hasn't given Telegram All files access. Android/data is a folder path, keep it as it is.

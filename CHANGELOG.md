@@ -24,6 +24,7 @@ Every HushTelegram release, newest first.
 ### Fixed
 
 - When Google sign-in fails on Telegram's login email screen, a short message now points at the email box. Telegram used to just stay on the screen after you picked an account, and a patched copy can't get past Google there.
+* **Telegram:** **Keep Telegram's files in internal storage** has a **Folder in internal storage** row under it, so Telegram's files can go in a folder you name, like Internal storage/Plus, instead of Internal storage/Telegram. Changing the name takes a restart, and files in the folder you used before stay there and still open. Leave it empty for Telegram. (#7)
 
 ## 0.0.23 (2026-10-31)
 

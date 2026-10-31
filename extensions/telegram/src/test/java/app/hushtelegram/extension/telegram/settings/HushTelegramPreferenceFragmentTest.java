@@ -1365,10 +1365,15 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Playback", String.valueOf(storage.getParent().getTitle()));
             assertEquals("Keep Telegram's files in internal storage", String.valueOf(storage.getTitle()));
             assertFalse(storage.isChecked());
-            assertEquals("New photos, videos and files Telegram downloads go to Internal storage/Telegram, where file managers"
-                    + " and other apps can open them, instead of Android/data. Files downloaded before stay in Android/data,"
+            assertEquals("New photos, videos and files Telegram downloads go to the folder below in Internal storage, where file"
+                    + " managers and other apps can open them, instead of Android/data. Files downloaded before stay where they are,"
                     + " and Telegram still opens them from there. Needs All files access and a restart.\nAll files access is off, so Telegram's files stay in Android/data."
                     + " Turning this on opens the setting.", String.valueOf(storage.getSummary()));
+
+            Preference name = rows.get(rows.indexOf(storage) + 1);
+            assertEquals(StorageFolderEditor.KEY, name.getKey());
+            assertEquals("Folder in internal storage", String.valueOf(name.getTitle()));
+            assertEquals("Internal storage/Telegram", String.valueOf(name.getSummary()).replaceAll("[^\\p{ASCII}]", ""));
 
             assertTrue(storage.getOnPreferenceChangeListener().onPreferenceChange(storage, true));
             android.content.Intent opened = shadowOf(controller.get()).getNextStartedActivity();
