@@ -349,6 +349,7 @@ public enum PatchFamily {
         COMMERCE_ATTACH_WALLET(HIDE_COMMERCE, "commerceAttachWallet", "attach menu Wallet button"),
         COMMERCE_MENU_WALLET(HIDE_COMMERCE, "commerceMenuWallet", "chat list menu Wallet item"),
         COMMERCE_PROFILE_SEND_GRAM(HIDE_COMMERCE, "commerceProfileSendGram", "profile menu Send Gram item"),
+        COMMERCE_PROFILE_GIFT_MENU(HIDE_COMMERCE, "commerceProfileGiftMenu", "profile menu Send a Gift item"),
         COMMERCE_ADDRESS_SEND_GRAM(HIDE_COMMERCE, "commerceAddressSendGram", "TON link Send Gram item"),
         COMMERCE_TRANSFER_SEND_GRAM(HIDE_COMMERCE, "commerceTransferSendGram", "Gram transfer Send Gram item"),
         COMMERCE_PREMIUM_STICKERS(HIDE_COMMERCE, "commercePremiumStickers", "Premium stickers in the keyboard and packs"),

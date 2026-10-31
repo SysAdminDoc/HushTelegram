@@ -78,6 +78,18 @@ class HideCommerceFixtureTest {
             assertEquals(1, channel.size)
             assertEquals("${build.name}: footer visibility guard is before stock UI work", 0, channel.single().index)
 
+            // A profile's menu adds Send a Gift twice, each behind its own purchase check.
+            val gift = plan.hooks.getValue(CommerceTarget.PROFILE_GIFT_MENU)
+            assertEquals("${build.name}: person and channel Send a Gift", 2, gift.size)
+            gift.forEach { edit ->
+                val menu = edit.method.instructions()
+                assertEquals(Opcode.IF_NEZ, menu[edit.index].opcode)
+                assertEquals(PROFILE_GIFT_GATE, menu[edit.index - 2].reference())
+                val skip = ControlFlow.of(edit.method).normal[edit.index].single { it != edit.index + 1 }
+                assertEquals("${build.name}: the check skips one Send a Gift", 1,
+                    (edit.index + 1 until skip).count { menu[it].reference() in PROFILE_GIFT_ITEMS })
+            }
+
             // 13.0's attach menu gives Wallet's button its number only past the gate. Gallery and
             // File get theirs outside it, so their buttons don't depend on the answer.
             val attach = plan.hooks.getValue(CommerceTarget.ATTACH_WALLET).single()
@@ -194,7 +206,10 @@ class HideCommerceFixtureTest {
 
             for ((target, edits) in plan.hooks) {
                 if (target == CommerceTarget.MENU_WALLET) assertMenuEdit("${build.name}: $target", originals.getValue(target), edits.single(), menuExit)
-                else assertEdits("${build.name}: $target", originals.getValue(target), edits)
+                // Send a Gift and Send Gram edit the same builder, so they're counted together.
+                else if (target == CommerceTarget.PROFILE_SEND_GRAM) assertEdits("${build.name}: $target", originals.getValue(target),
+                    edits + plan.hooks.getValue(CommerceTarget.PROFILE_GIFT_MENU))
+                else if (target != CommerceTarget.PROFILE_GIFT_MENU) assertEdits("${build.name}: $target", originals.getValue(target), edits)
             }
             for (method in untouched) {
                 val after = context.mutableClassDefBy(method.definingClass).methods.single { it.sameSignature(method) }
@@ -582,6 +597,16 @@ class HideCommerceFixtureTest {
             assertFact(context, "commerceAttachWallet", 1)
             assertFact(context, "commerceMenuWallet", 1)
             assertFact(context, "commerceProfileSendGram", 1)
+            assertFact(context, "commerceProfileGiftMenu", 1)
+            val builder = context.mutableClassDefBy("Lorg/telegram/ui/ProfileActivity;").methods
+                .single { method -> method.instructions().any { it.reference() == PROFILE_GIFT_ITEMS.first() } }.instructions()
+            val answers = builder.indices.filter { builder[it].reference()?.endsWith("->profileGiftMenuBlocked(I)Z") == true }
+            assertEquals("${build.name}: both Send a Gift checks answered after Send Gram went in", 2, answers.size)
+            answers.forEach { answer ->
+                assertEquals(PROFILE_GIFT_GATE, builder[answer - 2].reference())
+                assertEquals(Opcode.MOVE_RESULT, builder[answer + 1].opcode)
+                assertEquals(Opcode.IF_NEZ, builder[answer + 2].opcode)
+            }
             assertFact(context, "commerceAddressSendGram", 1)
             assertFact(context, "commerceTransferSendGram", 1)
             val stub = context.mutableClassDefBy(COMMERCE).methods.single { it.name == "giftButtonIndex" }.instructions()

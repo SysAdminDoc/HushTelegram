@@ -64,6 +64,10 @@ internal const val SEND_GRAM = "Lorg/telegram/messenger/R\$string;->WalletSendMo
 internal const val COPY_ADDRESS = "Lorg/telegram/messenger/R\$string;->WalletCopyAddress:I"
 internal const val GRAM_TRANSFER = "Lorg/telegram/tgnet/TLRPC\$TL_messageActionGramTransfer;"
 private const val PROFILE_ACTIVITY = "Lorg/telegram/ui/ProfileActivity;"
+// A profile's menu adds Send a Gift for a person and for a channel, each behind Telegram's purchase check.
+internal val PROFILE_GIFT_ITEMS = listOf("ProfileSendAGift", "ProfileSendAGiftToChannel")
+    .map { "Lorg/telegram/messenger/R\$string;->$it:I" }
+internal const val PROFILE_GIFT_GATE = "Lorg/telegram/messenger/MessagesController;->premiumPurchaseBlocked()Z"
 private const val MESSAGE_OBJECT = "Lorg/telegram/messenger/MessageObject;"
 private const val LINK_STYLE = "Landroid/text/style/CharacterStyle;"
 private const val STRINGS = "Lorg/telegram/messenger/R\$string;->"
@@ -114,7 +118,9 @@ val hideCommercePatch = bytecodePatch(
         stickers.stubs.forEach { (stub, smali) -> writeStub(COMMERCE, stub, 2, smali) }
         // One list, so the patch refuses only when the build has none of them at all.
         handleTargets(PATCH, "sales presentation targets", CommerceTarget.entries + PremiumStickerTarget.entries) { target ->
-            val edits = if (target is CommerceTarget) plan.hooks[target] else stickers[target as PremiumStickerTarget]
+            // The profile's Send a Gift shares its method with Send Gram, which goes in just before it.
+            val edits = if (target == CommerceTarget.PROFILE_GIFT_MENU) plan.hooks[target]?.let { profileGiftMenuEdits(it.first().method) }
+                else if (target is CommerceTarget) plan.hooks[target] else stickers[target as PremiumStickerTarget]
             val capability = if (target is CommerceTarget) target.capability else (target as PremiumStickerTarget).capability
             val changed = (target as? PremiumStickerTarget)?.let { stickers.leftOut[it] }
             if (changed != null) "$capability left out, $changed"
@@ -138,6 +144,7 @@ val hideCommercePatch = bytecodePatch(
                     CommerceTarget.PROFILE_SEND_GRAM -> enableCapability("commerceProfileSendGram")
                     CommerceTarget.ADDRESS_SEND_GRAM -> enableCapability("commerceAddressSendGram")
                     CommerceTarget.TRANSFER_SEND_GRAM -> enableCapability("commerceTransferSendGram")
+                    CommerceTarget.PROFILE_GIFT_MENU -> enableCapability("commerceProfileGiftMenu")
                     PremiumStickerTarget.STICKERS -> enableCapability("commercePremiumStickers")
                     PremiumStickerTarget.EFFECTS -> enableCapability("commercePremiumEffects")
                     PremiumStickerTarget.EMOJI_PACKS -> enableCapability("commercePremiumEmojiPacks")
@@ -171,7 +178,7 @@ internal enum class CommerceTarget(val capability: String) {
     SETTINGS("commerceSettingsRows"), PROFILE_GIFTS("commerceProfileGifts"), CHANNEL_GIFT("commerceChannelGift"),
     ATTACH_WALLET("commerceAttachWallet"), MENU_WALLET("commerceMenuWallet"),
     PROFILE_SEND_GRAM("commerceProfileSendGram"), ADDRESS_SEND_GRAM("commerceAddressSendGram"),
-    TRANSFER_SEND_GRAM("commerceTransferSendGram"),
+    TRANSFER_SEND_GRAM("commerceTransferSendGram"), PROFILE_GIFT_MENU("commerceProfileGiftMenu"),
 }
 
 /**
@@ -296,6 +303,11 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
     val profileGram = sendGram.filter { it.definingClass == PROFILE_ACTIVITY && it.hasShape(listOf("Z"), "V") }
         .unique("profile menu with Send Gram")
     if (profileGram != null) hooks[CommerceTarget.PROFILE_SEND_GRAM] = listOf(sendGramEdit(mutable(profileGram), PROFILE_GRAM))
+    val giftMenu = methods(Mention.allReferences(PROFILE_GIFT_ITEMS)).filter { method ->
+        method.definingClass == PROFILE_ACTIVITY && method.hasShape(listOf("Z"), "V") &&
+            method.instructions().let { body -> PROFILE_GIFT_ITEMS.all { label -> body.any { it.reference() == label } } }
+    }.unique("profile menu with Send a Gift")
+    if (giftMenu != null) hooks[CommerceTarget.PROFILE_GIFT_MENU] = profileGiftMenuEdits(mutable(giftMenu))
     val addressGram = sendGram.filter { AccessFlags.STATIC.isSet(it.accessFlags) && it.parameterTypes.lastOrNull()?.toString() == LINK_STYLE }
         .unique("TON address popup with Send Gram")
     if (addressGram != null) {
@@ -314,6 +326,30 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
         hooks[CommerceTarget.TRANSFER_SEND_GRAM] = listOf(edit)
     }
     return CommercePlan(hooks, giftTabId, giftButtonIndex)
+}
+
+/**
+ * Telegram adds Send a Gift to a profile's menu only while premiumPurchaseBlocked() reads false, on
+ * the person path and on the channel path. The hook answers that check, so the menu comes out as an
+ * account with blocked purchases gets it. The menu's later setSubItemShown calls find no item with
+ * that tag and do nothing.
+ */
+internal fun profileGiftMenuEdits(method: MutableMethod): List<CommerceEdit> {
+    val body = method.instructions()
+    val flow = ControlFlow.of(method)
+    return PROFILE_GIFT_ITEMS.map { label ->
+        val at = body.indices.filter { body[it].reference() == label }.unique("$label in the profile menu")
+            ?: throw PatchException("$PATCH: missing $label (before editing)")
+        val check = (at - 1 downTo 0).firstOrNull { body[it].reference() == PROFILE_GIFT_GATE }
+            ?: throw PatchException("$PATCH: no purchase check before $label (before editing)")
+        val branch = check + 2
+        shape(body.getOrNull(check + 1)?.opcode == Opcode.MOVE_RESULT && body.getOrNull(branch)?.opcode == Opcode.IF_NEZ &&
+            body[branch].namedRegisters() == body[check + 1].namedRegisters(), "$label has no purchase check branch")
+        val skip = flow.normal[branch].single { it != branch + 1 }
+        shape(at in branch + 1 until skip, "the purchase check does not skip $label")
+        val blocked = body[branch].namedRegisters().single()
+        CommerceEdit(method, branch, "invoke-static/range {v$blocked .. v$blocked}, $COMMERCE->profileGiftMenuBlocked(I)Z\nmove-result v$blocked")
+    }
 }
 
 /**

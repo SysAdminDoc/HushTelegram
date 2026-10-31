@@ -288,6 +288,7 @@ public final class SelectionCheck {
         hook(calls, flags, "commerceAttachWallet", "misc/Commerce", "showAttachWallet");
         hook(calls, flags, "commerceMenuWallet", "misc/Commerce", "showMenuWallet");
         hook(calls, flags, "commerceProfileSendGram", "misc/Commerce", "showProfileSendGram");
+        hook(calls, flags, "commerceProfileGiftMenu", "misc/Commerce", "profileGiftMenuBlocked");
         hook(calls, flags, "commerceAddressSendGram", "misc/Commerce", "showAddressSendGram");
         hook(calls, flags, "commerceTransferSendGram", "misc/Commerce", "showTransferSendGram");
         hook(calls, flags, "commercePremiumEffects", "misc/Commerce", "skipPremiumEffect");

@@ -42,6 +42,7 @@ public final class SettingsStatus {
     public static boolean commerceAttachWallet() { return false; }
     public static boolean commerceMenuWallet() { return false; }
     public static boolean commerceProfileSendGram() { return false; }
+    public static boolean commerceProfileGiftMenu() { return false; }
     public static boolean commerceAddressSendGram() { return false; }
     public static boolean commerceTransferSendGram() { return false; }
     public static boolean commercePremiumStickers() { return false; }

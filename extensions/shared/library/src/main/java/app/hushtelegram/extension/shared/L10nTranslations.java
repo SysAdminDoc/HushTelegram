@@ -49,7 +49,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildBg() {
-        Map<String, String> table = new HashMap<>(1888);
+        Map<String, String> table = new HashMap<>(1890);
         fillBg0(table);
         fillBg1(table);
         fillBg2(table);
@@ -1927,6 +1927,8 @@ public final class L10nTranslations {
                 "\u043b\u043e\u043a\u0430\u043b\u043d\u0438 ID \u0432 \u043f\u0440\u043e\u0444\u0438\u043b\u0438");
         table.put("profile menu Send Gram item",
                 "\u0435\u043b\u0435\u043c\u0435\u043d\u0442 Send Gram \u0432 \u043c\u0435\u043d\u044e\u0442\u043e \u043d\u0430 \u043f\u0440\u043e\u0444\u0438\u043b\u0430");
+        table.put("profile menu Send a Gift item",
+                "\u0435\u043b\u0435\u043c\u0435\u043d\u0442 Send a Gift \u0432 \u043c\u0435\u043d\u044e\u0442\u043e \u043d\u0430 \u043f\u0440\u043e\u0444\u0438\u043b\u0430");
         table.put("promotional suggestions",
                 "\u043f\u0440\u043e\u043c\u043e\u0446\u0438\u043e\u043d\u0430\u043b\u043d\u0438 \u043f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u044f");
         table.put("public search lookups",
@@ -2006,7 +2008,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1888);
+        Map<String, String> table = new HashMap<>(1890);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -3884,6 +3886,8 @@ public final class L10nTranslations {
                 "lokale Profil-IDs");
         table.put("profile menu Send Gram item",
                 "Gram-senden-Eintrag im Profilmen\u00fc");
+        table.put("profile menu Send a Gift item",
+                "Geschenk-senden-Eintrag im Profilmen\u00fc");
         table.put("promotional suggestions",
                 "Werbeempfehlungen");
         table.put("public search lookups",
@@ -3963,7 +3967,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(1888);
+        Map<String, String> table = new HashMap<>(1890);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -5841,6 +5845,8 @@ public final class L10nTranslations {
                 "IDs locales del perfil");
         table.put("profile menu Send Gram item",
                 "opci\u00f3n Enviar Gram del men\u00fa del perfil");
+        table.put("profile menu Send a Gift item",
+                "opci\u00f3n Enviar un regalo del men\u00fa del perfil");
         table.put("promotional suggestions",
                 "sugerencias promocionales");
         table.put("public search lookups",
@@ -5920,7 +5926,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1888);
+        Map<String, String> table = new HashMap<>(1890);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -7798,6 +7804,8 @@ public final class L10nTranslations {
                 "ID profil lokal");
         table.put("profile menu Send Gram item",
                 "item Kirim Gram di menu profil");
+        table.put("profile menu Send a Gift item",
+                "item Kirim Hadiah di menu profil");
         table.put("promotional suggestions",
                 "saran promosi");
         table.put("public search lookups",
@@ -7877,7 +7885,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(1888);
+        Map<String, String> table = new HashMap<>(1890);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -9755,6 +9763,8 @@ public final class L10nTranslations {
                 "IDs locais do perfil");
         table.put("profile menu Send Gram item",
                 "item Enviar Gram do menu do perfil");
+        table.put("profile menu Send a Gift item",
+                "item Enviar um Presente do menu do perfil");
         table.put("promotional suggestions",
                 "sugest\u00f5es promocionais");
         table.put("public search lookups",
@@ -9834,7 +9844,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(1888);
+        Map<String, String> table = new HashMap<>(1890);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -11712,6 +11722,8 @@ public final class L10nTranslations {
                 "yerel profil kimlikleri");
         table.put("profile menu Send Gram item",
                 "profil men\u00fcs\u00fcndeki Gram G\u00f6nder \u00f6\u011fesi");
+        table.put("profile menu Send a Gift item",
+                "profil men\u00fcs\u00fcndeki Hediye G\u00f6nder \u00f6\u011fesi");
         table.put("promotional suggestions",
                 "tan\u0131t\u0131m \u00f6nerileri");
         table.put("public search lookups",
