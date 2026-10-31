@@ -24,6 +24,7 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** With **Hide reactions under messages** on, TalkBack no longer reads out reactions you can't see. A message reads the same as one nobody reacted to, and Saved Messages tags are still read since they still show. (#48)
 * **Telegram:** Leaving **Message times with seconds** out in Morphe Manager now really leaves it out. **Keep deleted messages** used to pull the whole patch back in, so its switch still showed in the Hush settings. Now it takes along only the part it needs to mark a message deleted. (#49)
+* **Telegram:** With **UnifiedPush** on, Hush now also turns on Telegram's own **Keep-Alive Service** and **Background Connection** once your push app hands over its address, so messages come in while Telegram is closed instead of when you next open it. It only does that if you never set either switch yourself, and the notification report says what turned them on. (#50)
 
 ## 0.0.22 (2026-10-30)
 

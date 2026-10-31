@@ -569,7 +569,10 @@ public final class UnifiedPush {
         }
         Logger.printInfo(() -> "UnifiedPush: got an address at " + Uri.parse(endpoint).getHost());
         // Paused, Telegram keeps the address it has; the next start hands this one over.
-        if (Utils.settingsReady() && Settings.UNIFIED_PUSH.get()) telegram.register(endpoint);
+        if (Utils.settingsReady() && Settings.UNIFIED_PUSH.get()) {
+            telegram.register(endpoint);
+            OwnConnection.besideUnifiedPush(context);
+        }
     }
 
     /**

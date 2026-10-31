@@ -49,6 +49,8 @@ public class UnifiedPushTest {
     private UnifiedPush.Telegram real;
     private java.util.concurrent.Executor realWork;
     private final java.util.function.Function<Context, android.content.SharedPreferences> realStore = UnifiedPush.store;
+    private final Runnable realApply = OwnConnection.apply;
+    private int ownConnectionApplied;
     private Context context;
 
     @Before public void setUp() {
@@ -61,8 +63,11 @@ public class UnifiedPushTest {
             @Override public void release(String endpoint) { released.add(endpoint); }
         };
         UnifiedPush.work = Runnable::run;
+        OwnConnection.apply = () -> ownConnectionApplied++;
         PatchFamilyForTests.inBuild(PatchFamily.UNIFIED_PUSH);
         UnifiedPush.prefs(context).edit().clear().commit();
+        OwnConnection.telegramStore.apply(context).edit().clear().commit();
+        OwnConnection.store.apply(context).edit().clear().commit();
         Settings.UNIFIED_PUSH.resetToDefault();
     }
 
@@ -70,6 +75,7 @@ public class UnifiedPushTest {
         UnifiedPush.telegram = real;
         UnifiedPush.work = realWork;
         UnifiedPush.store = realStore;
+        OwnConnection.apply = realApply;
         PatchFamilyForTests.reset();
         PauseForTests.resume();
         UnifiedPush.prefs(context).edit().clear().commit();
@@ -319,6 +325,27 @@ public class UnifiedPushTest {
         UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, token()).putExtra("endpoint", ENDPOINT + "2"), () -> {});
         assertEquals(ENDPOINT + "2", UnifiedPush.prefs(context).getString(UnifiedPush.ENDPOINT, null));
         assertTrue(registered.isEmpty());
+    }
+
+    /**
+     * Issue #50: with only the address signed up, messages waited until Telegram was opened, so the
+     * address going to Telegram also turns its own connection on. Paused, neither happens.
+     */
+    @Test public void anAddressGoingToTelegramKeepsTelegramsOwnConnectionOnBesideIt() {
+        install(UnifiedPush.NTFY);
+        Settings.UNIFIED_PUSH.save(true);
+        UnifiedPush.sync(context, true);
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, token()).putExtra("endpoint", ENDPOINT), () -> {});
+        assertNotEquals(Boolean.TRUE, OwnConnection.bothOn(context));
+        assertEquals(0, ownConnectionApplied);
+
+        PauseForTests.resume();
+        UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, token()).putExtra("endpoint", ENDPOINT), () -> {});
+        assertEquals(java.util.Collections.singletonList(ENDPOINT), registered);
+        assertEquals(Boolean.TRUE, OwnConnection.bothOn(context));
+        assertTrue(OwnConnection.turnedOnBesideUnifiedPush(context));
+        assertEquals(1, ownConnectionApplied);
     }
 
     @Test public void aMessageWakesTelegramAndIsAcknowledged() {
