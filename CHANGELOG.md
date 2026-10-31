@@ -2,7 +2,9 @@
 
 Every HushTelegram release, newest first.
 
-## Unreleased
+## 0.0.23 (2026-10-31)
+
+The fourteenth release, still 67 patches for Telegram 13.1.1 from Google Play and 13.1.0 from telegram.org. It's on the same Morphe patcher 2.1.0 as the last one, so Morphe Manager 2.3.0 still works. Most of it came from your reports again. Calls can be recorded to your phone now, and view-once and timed photos can stay in the chat after you open them. Ghost mode also hides typing and your online status if you want it to.
 
 ### Added
 
@@ -11,10 +13,9 @@ Every HushTelegram release, newest first.
 * **Telegram:** Reaction notifications with **UnifiedPush notifications** now cover custom emoji reactions too. Once Telegram has loaded that emoji on your phone, the notification names the regular emoji it stands for. (#41)
 * **Telegram:** **Disable call debug upload** has a new switch, **Record calls**, off by default. Turn it on and every call is saved on your phone as one .m4a file with both sides in it, named for when the call began, in Recordings/Telegram calls (Music/Telegram calls on Android 11 and older). Voice chats and live streams you're in get saved the same way. The other person isn't told. On Android 9 it needs Telegram's storage permission. (#39)
 * **Telegram:** **Record button on calls**, off by default, puts a round record button on the call screen right under the minimize arrow. Tap it to record just the call you're on. With **Record calls** on, the button starts out red and a tap skips recording that one call, keeping what was already recorded. It hides along with the rest of the call screen's buttons, and the choice ends with the call. (#39)
-
 * **Telegram:** A new **Ways in** section on the HushTelegram settings page has a switch for each way to open them, all on by default. They are the HushTelegram row on Telegram's Settings page, a long press on the Telegram title in the chat list, the row in the side menu, and the shortcut in the menu you get from holding Telegram's icon. A way you turn off acts like stock Telegram. The row, the long press and the side menu entry are gone, and the shortcut is taken off the launcher, pinned copies included. One way always stays on so you can get back in, and turning off the last one puts the switch back with a short message. No restart needed. **Lock HushTelegram settings** holds these switches like the rest. (#29)
 * **Telegram:** **Save downloaded files** has a third switch, **Also save view-once and timed media**, off by default. With it on, view-once and self-destructing photos, videos, voice messages and video messages get copied to Download/Telegram once they download, readable like any other file. Secret chats stay in Telegram whatever the switches say. From a chat that doesn't allow saving, **Also save from chats that don't allow saving** has to be on as well. (#9)
-* **Telegram:** **Keep deleted messages** has a new switch, **Keep view-once and timed media**, off by default. Turn it on and a view-once or self-destructing photo, video, voice message or video message someone sends you stays in the chat after you open it. There's no countdown, you can open it again as often as you like, and the sender doesn't see that you opened it. Secret chats work as usual. Timed media you send stays on your phone too. (#9)
+* **Telegram:** **Keep deleted messages** has a new switch, **Keep view-once and timed media**, off by default. Turn it on and a view-once or self-destructing photo, video, voice message or video message someone sends you stays in the chat after you open it. There's no countdown, and you can open it again as often as you like. Secret chats work as usual. Timed media you send stays on your phone too. (#9)
 
 ### Changed
 
