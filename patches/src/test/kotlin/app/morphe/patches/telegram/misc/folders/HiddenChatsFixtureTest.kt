@@ -357,7 +357,7 @@ class HiddenChatsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val refs = menuContext(build).also { it.requireHiddenChatsRuntime() }.resolveHideMenu().refs!!
-            val hosts = (folderCounterHosts(build) + launchFolderHosts(build) + menuHosts(build)).distinctBy { it.type }
+            val hosts = (folderCounterHosts(build) + launchFolderHosts(build) + menuHosts(build) + allChatsPlaceHosts(build)).distinctBy { it.type }
             val context = PatchContexts.of((ExtensionDex.classes() + hosts).distinctBy { it.type })
             assertEquals(name, emptyList<String>(), PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) })
             val stubs = context.mutableClassDefBy(HIDDEN_CHATS).methods.associateBy { it.name }
@@ -429,7 +429,7 @@ class HiddenChatsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val refs = menuContext(build).also { it.requireHiddenChatsRuntime() }.resolveHideMenu().refs!!
-            val hosts = (folderCounterHosts(build) + menuHosts(build, clicks = false)).distinctBy { it.type }
+            val hosts = (folderCounterHosts(build) + menuHosts(build, clicks = false) + allChatsPlaceHosts(build)).distinctBy { it.type }
             val context = PatchContexts.of((ExtensionDex.classes() + hosts).distinctBy { it.type })
             val warnings = PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) }
             assertEquals("$name: $warnings", 1, warnings.size)
@@ -512,7 +512,7 @@ class HiddenChatsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val hosts = (folderCounterHosts(build) + launchFolderHosts(build) + menuHosts(build)).distinctBy { it.type }
-            val context = PatchContexts.of((ExtensionDex.classes() + hosts).distinctBy { it.type })
+            val context = PatchContexts.of((ExtensionDex.classes() + hosts + allChatsPlaceHosts(build)).distinctBy { it.type })
             val storage = context.mutableClassDefBy(STORAGE)
             // A reworded query: which rows the walk reads is no longer clear.
             val calc = storage.methods.single { it.name == "calcUnreadCounters" }

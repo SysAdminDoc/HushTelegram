@@ -623,18 +623,20 @@ public class PatchFamilyTest {
         assertEquals("Hide folder tab counters", family.patchName);
         // The folder the chat list opens on and the hidden chats start off too, and each works with or without the others.
         assertEquals(Arrays.asList(Settings.HIDE_FOLDER_COUNTERS, Settings.LAUNCH_FOLDER, Settings.HIDE_ALL_CHATS,
-                Settings.HIDDEN_CHATS), family.switches);
+                Settings.MOVE_ALL_CHATS, Settings.HIDDEN_CHATS), family.switches);
         for (BooleanSetting setting : family.switches) {
             assertFalse(setting.key, setting.defaultValue);
             // The counters change at once, the folder pick is for the next chat list, and the hidden
             // chats sort again when the switch flips, so none needs a restart. Hiding All Chats does,
-            // since each chat list reads it once, at its first tab build.
-            assertEquals(setting.key, setting == Settings.HIDE_ALL_CHATS, setting.rebootApp);
+            // since each chat list reads it once, at its first tab build. Moving All Chats does too,
+            // since the folders are only put in place when they load.
+            assertEquals(setting.key, setting == Settings.HIDE_ALL_CHATS || setting == Settings.MOVE_ALL_CHATS, setting.rebootApp);
         }
-        assertEquals(EnumSet.of(PatchFamily.Capability.LAUNCH_FOLDER, PatchFamily.Capability.HIDE_ALL_CHATS,
+        assertEquals(EnumSet.of(PatchFamily.Capability.LAUNCH_FOLDER, PatchFamily.Capability.HIDE_ALL_CHATS, PatchFamily.Capability.ALL_CHATS_PLACE,
                 PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.HIDDEN_UNREAD), family.expectedCapabilities());
         assertEquals("launchFolder", PatchFamily.Capability.LAUNCH_FOLDER.statusMethod);
         assertEquals("hideAllChats", PatchFamily.Capability.HIDE_ALL_CHATS.statusMethod);
+        assertEquals("allChatsPlace", PatchFamily.Capability.ALL_CHATS_PLACE.statusMethod);
         assertEquals("hiddenChats", PatchFamily.Capability.HIDDEN_CHATS.statusMethod);
         assertEquals("hiddenUnread", PatchFamily.Capability.HIDDEN_UNREAD.statusMethod);
         assertOnItsPage(family);

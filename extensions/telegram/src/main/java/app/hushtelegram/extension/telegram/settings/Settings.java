@@ -315,6 +315,8 @@ public class Settings extends BaseSettings {
      */
     public static final BooleanSetting HIDE_ALL_CHATS =
             new BooleanSetting("hushtelegram_hide_all_chats", FALSE, true);
+    public static final BooleanSetting MOVE_ALL_CHATS =
+            new BooleanSetting("hushtelegram_move_all_chats", FALSE, true);
 
     /**
      * The chats picked for each account leave the chat list, its folders and the archive

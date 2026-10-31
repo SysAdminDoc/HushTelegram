@@ -141,6 +141,20 @@ val hideFolderCountersPatch = bytecodePatch(
         } else {
             patchLog.warning("Hide folder tab counters: $unhidden. The patch goes on without hiding chats.")
         }
+        // Moving All Chats goes last, since Hide All Chats hooks one of the same methods and would move the indices.
+        val place = resolveAllChatsPlace()
+        val unplaced = place.missing ?: try {
+            writeAllChatsPlaceStubs()
+            null
+        } catch (failed: Exception) {
+            "the All Chats place's stubs don't build (${failed.javaClass.simpleName}: ${failed.message})"
+        }
+        if (unplaced == null) {
+            place.apply()
+            enableCapability("allChatsPlace")
+        } else {
+            patchLog.warning("Hide folder tab counters: $unplaced. The patch goes on with All Chats first.")
+        }
     }
 }
 

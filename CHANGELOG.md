@@ -20,6 +20,7 @@ Every HushTelegram release, newest first.
 ### Fixed
 
 - If you hide a pinned chat and unpin it on another device, the unpin now sticks. Hidden pins also count toward your pin limit here, so you see Telegram's limit message instead of a pin the server would turn down.
+- `Move All Chats`, under the folder tabs settings. It starts off. With it on, an account without Premium can drag All Chats to another place among its folder tabs, and it stays there after a restart. The place is kept on this phone for this account, so your other devices still show All Chats first.
 
 ## 0.0.23 (2026-10-31)
 

@@ -449,6 +449,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             if (PatchFamily.Capability.HIDE_ALL_CHATS.installed()) {
                 folderTabs.addPreference(toggle(context, Settings.HIDE_ALL_CHATS, L10n.t("Hide All Chats"), hideAllChatsSummary()));
             }
+            if (PatchFamily.Capability.ALL_CHATS_PLACE.installed()) {
+                folderTabs.addPreference(toggle(context, Settings.MOVE_ALL_CHATS, L10n.t("Move All Chats"),
+                        L10n.t("Lets you drag All Chats to another place among your folder tabs, as Premium does. The place is saved on this phone for this account, and your other devices keep All Chats first. Has no effect while Hide All Chats is on.")));
+            }
             if (PatchFamily.Capability.HIDDEN_CHATS.installed()) {
                 SwitchPreference hide = toggle(context, Settings.HIDDEN_CHATS, L10n.t("Hide picked chats"),
                         L10n.t("The chats you pick below leave All Chats, your folders, archived chats and the forward and share lists. They keep their "
