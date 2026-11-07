@@ -34,6 +34,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import app.morphe.util.names.origName
+import app.morphe.util.names.origType
 import app.morphe.util.names.tgMutableClassDefBy
 
 /** MediaController's Save to Gallery writes on both declared builds, where the gallery folder is chosen. */
@@ -44,7 +45,7 @@ class GalleryFolderFixtureTest {
     private fun context(build: File): BytecodePatchContext {
         val images = FixtureDex.classes(build, setOf(IMAGE_LOADER)).values.single()
         val host = FixtureDex.classes(build, hosts + images.delegateCandidates()).values.map(ImmutableClassDef::of)
-        assertTrue("${build.name}: Telegram's download and gallery classes", host.map { it.type }.containsAll(hosts))
+        assertTrue("${build.name}: Telegram's download and gallery classes", host.map { it.origType }.containsAll(hosts))
         return PatchContexts.of(ExtensionDex.classes() + host)
     }
 

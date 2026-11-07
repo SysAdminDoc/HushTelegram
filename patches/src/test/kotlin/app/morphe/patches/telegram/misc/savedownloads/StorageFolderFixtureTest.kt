@@ -42,6 +42,7 @@ import org.junit.rules.TemporaryFolder
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import app.morphe.util.names.origName
+import app.morphe.util.names.origType
 import app.morphe.util.names.tgMutableClassDefBy
 
 /** ImageLoader's Android 11 folder for Telegram's own files on both declared builds, where the storage folder switch reaches it (#7). */
@@ -54,7 +55,7 @@ class StorageFolderFixtureTest {
     private fun context(build: File): BytecodePatchContext {
         val images = FixtureDex.classes(build, setOf(IMAGE_LOADER)).values.single()
         val host = FixtureDex.classes(build, hosts + images.delegateCandidates()).values.map(ImmutableClassDef::of)
-        assertTrue("${build.name}: Telegram's download and folder classes", host.map { it.type }.containsAll(hosts))
+        assertTrue("${build.name}: Telegram's download and folder classes", host.map { it.origType }.containsAll(hosts))
         return PatchContexts.of(ExtensionDex.classes() + host)
     }
 

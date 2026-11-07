@@ -28,6 +28,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
@@ -58,16 +59,18 @@ class ExactNumbersFixtureTest {
             val after = site.method.controlBody()
             assertEquals("$name: register count", old.implementation!!.registerCount, site.method.implementation!!.registerCount)
             assertEquals("$name: four instructions", before.size + 4, after.size)
-            assertEquals("$name: the count and the array are the parameters", old.implementation!!.registerCount - 2, site.first)
-            assertEquals(Opcode.INVOKE_STATIC_RANGE, after[0].opcode)
+            val registers = old.implementation!!.registerCount
+            assertEquals("$name: the count and the array are the parameters", setOf(registers - 2, registers - 1), setOf(site.count, site.array))
+            assertEquals("$name: the count", registers - 2 + old.parameterTypes.map { it.toString() }.indexOf("I"), site.count)
+            assertEquals(if (site.array == site.count + 1) Opcode.INVOKE_STATIC_RANGE else Opcode.INVOKE_STATIC, after[0].opcode)
             assertEquals("$EXACT_NUMBERS->format(I[I)Ljava/lang/String;", after[0].controlRef())
-            assertEquals(listOf(site.first, site.first + 1), after[0].namedRegisters())
+            assertEquals(listOf(site.count, site.array), after[0].namedRegisters())
             val result = after[1].namedRegisters().single()
             assertEquals(Opcode.MOVE_RESULT_OBJECT, after[1].opcode)
             assertEquals(Opcode.IF_EQZ, after[2].opcode)
             assertEquals(Opcode.RETURN_OBJECT, after[3].opcode)
             assertEquals(listOf(result), after[3].namedRegisters())
-            assertTrue("$name: the answer lands in a local Telegram writes before reading", result < site.first &&
+            assertTrue("$name: the answer lands in a local Telegram writes before reading", result < minOf(site.count, site.array) &&
                 before.first().opcode == Opcode.NEW_INSTANCE && before.first().namedRegisters() == listOf(result))
 
             val a = ControlFlow.of(old)
@@ -89,7 +92,7 @@ class ExactNumbersFixtureTest {
         // Reviewed 2026-10-06: member, subscriber and bot-user counts, views, replies, reactions and
         // Premium limit previews. A new caller fails here so it gets the same review.
         for (build in Fixtures.declaredBuilds()) {
-            val callers = hosts(build).flatMap { it.methods }.filter { m -> m.controlBody().any { it.controlRef() == SHORT_NUMBER } }
+            val callers = hosts(build).flatMap { it.methods }.filter { m -> m.controlBody().any { it.callsShortNumber() } }
             assertEquals("${build.name}: calling methods", 11, callers.size)
         }
     }
@@ -135,7 +138,7 @@ class ExactNumbersFixtureTest {
 
     /** LocaleController, and every class with a method that shortens a count. */
     private fun loadHosts(build: File): List<ClassDef> {
-        val callers = FixtureDex.classesWhere(build, { true }) { method -> method.controlBody().any { it.controlRef() == SHORT_NUMBER } }
+        val callers = FixtureDex.classesWhere(build, { true }) { method -> method.controlBody().any { it.callsShortNumber() } }
         return (callers + FixtureDex.classes(build, setOf(LOCALE_CONTROLLER)).values).associateBy { it.type }.values.map(ImmutableClassDef::of)
     }
 
@@ -147,6 +150,8 @@ class ExactNumbersFixtureTest {
     private fun Instruction.operand() = listOf(opcode, namedRegisters(), origRef(),
         (this as? WideLiteralInstruction)?.wideLiteral)
     private fun key(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+    private fun Instruction.callsShortNumber() =
+        ((this as? ReferenceInstruction)?.reference as? MethodReference)?.isShortNumber() == true
 
     companion object {
         private val HOSTS = mutableMapOf<String, SoftReference<List<ClassDef>>>()

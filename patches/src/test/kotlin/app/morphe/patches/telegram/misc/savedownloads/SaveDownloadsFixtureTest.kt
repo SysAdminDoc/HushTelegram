@@ -33,6 +33,7 @@ import org.junit.Assert.fail
 import org.junit.Test
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
+import app.morphe.util.names.origType
 import app.morphe.util.names.tgMutableClassDefBy
 
 /** ImageLoader's finished-download callback on both declared builds, and the checks the stubs borrow. */
@@ -44,7 +45,7 @@ class SaveDownloadsFixtureTest {
         // The callback is an anonymous class; ImageLoader names it where it hands FileLoader its delegate.
         val images = FixtureDex.classes(build, setOf(IMAGE_LOADER)).values.single()
         val host = FixtureDex.classes(build, hosts + images.delegateCandidates()).values.map(ImmutableClassDef::of)
-        assertTrue("${build.name}: Telegram's download classes", host.map { it.type }.containsAll(hosts))
+        assertTrue("${build.name}: Telegram's download classes", host.map { it.origType }.containsAll(hosts))
         return PatchContexts.of(ExtensionDex.classes() + host)
     }
 

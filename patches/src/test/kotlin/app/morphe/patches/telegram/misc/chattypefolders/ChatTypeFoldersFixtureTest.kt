@@ -34,6 +34,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import app.morphe.util.names.origName
+import app.morphe.util.names.origType
+import app.morphe.util.names.origString
 import app.morphe.util.names.tgMutableClassDefBy
 
 /** The folder stubs on both declared builds: Telegram's own folder list, limit, update request and local list. */
@@ -52,7 +54,7 @@ class ChatTypeFoldersFixtureTest {
 
     private fun context(build: File): BytecodePatchContext {
         val host = FixtureDex.classes(build, hosts).values.map(ImmutableClassDef::of)
-        assertEquals("${build.name}: Telegram's folder classes", emptySet<String>(), hosts - host.map { it.type }.toSet())
+        assertEquals("${build.name}: Telegram's folder classes", emptySet<String>(), hosts - host.map { it.origType }.toSet())
         return PatchContexts.of(ExtensionDex.classes() + host)
     }
 
@@ -227,7 +229,7 @@ class ChatTypeFoldersFixtureTest {
     private fun BytecodePatchContext.changeBotsFlag() {
         val controller = tgMutableClassDefBy(MESSAGES_CONTROLLER)
         val bots = TYPE_FLAGS.last().first
-        val field = controller.fields.single { "$MESSAGES_CONTROLLER->${it.name}:${it.type}" == bots }
+        val field = controller.fields.single { it.origString() == bots }
         if (field.initialValue is IntEncodedValue) field.initialValue = ImmutableIntEncodedValue(32).toMutable()
         val init = controller.methods.singleOrNull { it.origName == "<clinit>" } ?: return
         val body = init.controlBody()
@@ -253,7 +255,7 @@ class ChatTypeFoldersFixtureTest {
             },
             "$UPDATE_FILTER_FIELD isn't reachable from the extension" to { context ->
                 val update = context.tgMutableClassDefBy(UPDATE_FILTER)
-                val field = update.fields.single { "$UPDATE_FILTER->${it.name}:${it.type}" == UPDATE_FILTER_FIELD }
+                val field = update.fields.single { it.origString() == UPDATE_FILTER_FIELD }
                 field.accessFlags = field.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value
             },
             // A callback the Proxy can't implement, from the extension's package, leaves every answer unheard.
@@ -263,7 +265,7 @@ class ChatTypeFoldersFixtureTest {
             },
             "$FILTER_COLOR isn't reachable from the extension" to { context ->
                 val filter = context.tgMutableClassDefBy(SERVER_FILTER)
-                val field = filter.fields.single { "$SERVER_FILTER->${it.name}:${it.type}" == FILTER_COLOR }
+                val field = filter.fields.single { it.origString() == FILTER_COLOR }
                 field.accessFlags = field.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value
             },
         )
