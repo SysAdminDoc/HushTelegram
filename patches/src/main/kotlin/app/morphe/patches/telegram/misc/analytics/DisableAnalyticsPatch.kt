@@ -232,6 +232,8 @@ private fun MutableMethod.skipReadMetricsWhen(hook: String, dryRun: Boolean = fa
 internal const val SAVE_APP_LOG = "Lorg/telegram/tgnet/TLRPC\$TL_help_saveAppLog;"
 private const val APP_EVENT = "Lorg/telegram/tgnet/TLRPC\$TL_inputAppEvent;"
 internal const val LOG_DUAL_CAMERA = "Lorg/telegram/messenger/ApplicationLoader;->logDualCamera(ZZ)V"
+internal const val APP_LOADER_INSTANCE =
+    "Lorg/telegram/messenger/ApplicationLoader;->applicationLoaderInstance:Lorg/telegram/messenger/ApplicationLoader;"
 
 /**
  * The `help.saveAppLog` events the switch stops, each with the payload its builder must carry: the
@@ -329,20 +331,24 @@ internal fun BytecodePatchContext.resolveAppLogHooks(): Map<AppLogEvent, AppLogH
         if (event != AppLogEvent.FAIL) {
             // A report that continues into a stock call must reach it straight from the send and
             // return right after, so skipping the send skips nothing else.
-            val end = if (event.after == null) continuation else continuation + 1
+            val end = if (event.after == null) continuation else stockTailEnd(instructions, flow, continuation, event.after)
             promoShape(AccessFlags.STATIC.isSet(method.accessFlags) && method.origReturnType == "V" &&
                 method.parameterTypes.map { it.toString() } == event.parameters &&
-                (event.after == null || instructions[continuation].appLogCall()?.toString() == event.after &&
-                    flow.normal[continuation] == listOf(end)) &&
-                instructions.getOrNull(end)?.opcode == Opcode.RETURN_VOID &&
+                end != null && instructions.getOrNull(end)?.opcode == Opcode.RETURN_VOID &&
                 instructions.count { it.appLogCall()?.origName == "sendRequest" } == 1, "${event.type} is no longer a standalone report")
         } else {
             val request = requests.single()
             val cancellation = request - 1
             val cleanup = instructions[continuation]
+            // 13.2's R8 narrowed the callback to the one Runnable class ever passed, which the
+            // method then runs directly.
+            val callback = method.parameterTypes.getOrNull(2)?.toString()
+            val runs = callback == "Ljava/lang/Runnable;" || instructions.any { it.appLogCall()?.let { call ->
+                call.definingClass == callback && call.name == "run" && call.parameterTypes.isEmpty() && call.returnType == "V"
+            } == true }
             promoShape(method.origDefiningClass == "Lorg/telegram/messenger/BillingController;" && method.origReturnType == "V" &&
-                !AccessFlags.STATIC.isSet(method.accessFlags) && method.parameterTypes.size == 3 && method.parameterTypes.map { it.toString() }.takeLast(2) ==
-                listOf("Ljava/util/List;", "Ljava/lang/Runnable;") && instructions.getOrNull(cancellation)?.opcode == Opcode.IF_NE &&
+                !AccessFlags.STATIC.isSet(method.accessFlags) && method.parameterTypes.size == 3 &&
+                method.parameterTypes[1].toString() == "Ljava/util/List;" && runs && instructions.getOrNull(cancellation)?.opcode == Opcode.IF_NE &&
                 continuation in flow.normal[cancellation] && cleanup.opcode == Opcode.IGET_OBJECT && cleanup.appLogField()?.let { field ->
                     field.origDefiningClass == method.origDefiningClass && field.origName == "onCanceled" && field.origType == "Ljava/lang/Runnable;"
                 } == true, "Premium cancellation report no longer joins billing cleanup")
@@ -376,6 +382,23 @@ internal fun BytecodePatchContext.resolveAppLogHooks(): Map<AppLogEvent, AppLogH
         """)
     }
     return hooks
+}
+
+/**
+ * Where the stock call [after], which a report's send continues into, hands over to the return: right
+ * after the call, with nothing else jumping in or out. ApplicationLoader's logDualCamera only passes
+ * its flags to an empty method on the app's instance, so 13.2's R8 inlined it down to the read of
+ * that instance and its null check, and those two stand in for the call.
+ */
+private fun stockTailEnd(instructions: List<Instruction>, flow: ControlFlow, at: Int, after: String): Int? {
+    val first = instructions[at]
+    if (first.appLogCall()?.toString() == after) return (at + 1).takeIf { flow.normal[at] == listOf(it) }
+    if (after != LOG_DUAL_CAMERA) return null
+    val check = instructions.getOrNull(at + 1) ?: return null
+    val inlined = first.opcode == Opcode.SGET_OBJECT && first.appLogReference() == APP_LOADER_INSTANCE &&
+        check.opcode == Opcode.INVOKE_VIRTUAL && check.appLogCall()?.toString() == "Ljava/lang/Object;->getClass()Ljava/lang/Class;" &&
+        check.namedRegisters() == first.namedRegisters()
+    return (at + 2).takeIf { inlined && flow.normal[at] == listOf(at + 1) && flow.normal[at + 1] == listOf(it) }
 }
 
 private fun promoShape(valid: Boolean, reason: String) {
