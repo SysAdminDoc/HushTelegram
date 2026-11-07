@@ -33,6 +33,7 @@ import org.junit.Assert.fail
 import org.junit.Test
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
+import app.morphe.util.names.origString
 import app.morphe.util.names.origType
 import app.morphe.util.names.tgMutableClassDefBy
 
@@ -47,13 +48,13 @@ class QuietContactsNagFixtureTest {
             val badge = ImmutableMethod.of(sites.badge)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { quietContactsNagPatch.execute(context) })
             val name = build.name
-            assertEquals("$name: Telegram's own settings getter", "getGlobalNotificationsSettings", sites.prefs.name)
+            assertEquals("$name: Telegram's own settings getter", "getGlobalNotificationsSettings", sites.prefs.origName)
 
             // The Contacts tab: permission missing, quiet returns where a granted permission does.
             val askAfter = sites.ask.instructions()
             val gate = sites.askGate
             assertEquals("$name: prompt hook", HOOK, askAfter.subList(gate, gate + 5).map { it.opcode })
-            assertEquals("$name: prompt reads the flags from", sites.prefs.toString(), askAfter[gate].reference())
+            assertEquals("$name: prompt reads the flags from", sites.prefs.origString(), askAfter[gate].reference())
             assertEquals("$name: prompt asks", "$CONTACTS_NAG->skipAsk($PREFS)Z", askAfter[gate + 2].reference())
             val askMoved = assertKeepsStock("$name: Contacts tab", ask, sites.ask, gate, 5)
             assertEquals("$name: quiet leaves as a grant does; otherwise asks", setOf(gate + 5, askMoved.getValue(sites.askDone)),
