@@ -20845,3 +20845,5 @@ f Lorg/telegram/messenger/DispatchQueue; syncLatch Ljava/util/concurrent/CountDo
 m Lorg/telegram/messenger/MessagesController; deleteMessagesByPush (JLjava/util/ArrayList;J)V Lorg/telegram/messenger/lp; c0 (JJLjava/util/ArrayList;)V
 # added by hand: createDeleteShowOnceTask, kept with the message ID first (writes task 102, then the chat, then the ID)
 m Lorg/telegram/messenger/MessagesController; createDeleteShowOnceTask (JI)J Lorg/telegram/messenger/lp; V (IJ)J
+# added by hand: commerce
+m Lorg/telegram/messenger/MessagesController; isPremiumUser (Lorg/telegram/tgnet/TLRPC$User;)Z Lorg/telegram/messenger/lp; A2 (Lorg/telegram/tgnet/TLRPC$User;)Z

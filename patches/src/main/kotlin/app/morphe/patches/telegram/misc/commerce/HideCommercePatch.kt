@@ -43,6 +43,7 @@ import app.morphe.util.names.origName
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
 import app.morphe.util.names.tgMutableClassDefBy
 
 private const val PATCH = "Hide Premium, gifts and Stars"
@@ -83,7 +84,8 @@ private const val ARRAY_LIST = "Ljava/util/ArrayList;"
 private const val APPEND = "$ARRAY_LIST->add(Ljava/lang/Object;)Z"
 private const val INSERT = "$ARRAY_LIST->add(ILjava/lang/Object;)V"
 private const val PAIR = "Landroid/util/Pair;-><init>(Ljava/lang/Object;Ljava/lang/Object;)V"
-private const val STRING = "Lorg/telegram/messenger/LocaleController;->getString(I)Ljava/lang/String;"
+private const val LOCALE = "Lorg/telegram/messenger/LocaleController;"
+private const val STRING = "$LOCALE->getString(I)Ljava/lang/String;"
 private const val BOX_INT = "Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;"
 private val SALES_FACTORY = List(4) { "I" } + List(3) { "Ljava/lang/CharSequence;" }
 private val FOOTER_LABELS = listOf("ProfileActionsGift", "ChannelOpenDirect", "Search", "BroadcastGroupInfo")
@@ -228,8 +230,9 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
             AccessFlags.STATIC.isSet(it.accessFlags) } == 1, "extension has no single integer $stub stub")
     }
     val hooks = mutableMapOf<CommerceTarget, List<CommerceEdit>>()
+    val titles = titleCall()
 
-    val settings = methods(Mention.anyReference(SETTINGS_SALES)).filter { method ->
+    val settings =methods(Mention.anyReference(SETTINGS_SALES)).filter { method ->
         method.origReturnType == "V" && AccessFlags.STATIC.isSet(method.accessFlags) &&
             method.parameterTypes.map { it.toString() } == listOf(method.definingClass, ARRAY_LIST) &&
             SETTINGS_SALES.any { resource -> method.instructions().any { it.reference() == resource } }
@@ -237,7 +240,7 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
     if (settings != null) {
         shape(SETTINGS_SALES.all { resource -> settings.instructions().any { it.reference() == resource } },
             "partially changed Settings sales labels")
-        hooks[CommerceTarget.SETTINGS] = settingsEdits(mutable(settings))
+        hooks[CommerceTarget.SETTINGS] = settingsEdits(mutable(settings), titles)
     }
 
     var giftTabId: Int? = null
@@ -269,7 +272,7 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
         }.unique("profile tab strip rebuild") ?: throw PatchException("$PATCH: no profile tab strip rebuild (before editing)")
         shape(clear.instructions().any { it.reference() == "Landroid/util/SparseIntArray;->clear()V" },
             "profile rebuild no longer clears cached tab identities")
-        hooks[CommerceTarget.PROFILE_GIFTS] = profileEdits(mutable(profile), giftTabId, hasTab.toString(), clear.toString())
+        hooks[CommerceTarget.PROFILE_GIFTS] = profileEdits(mutable(profile), giftTabId, hasTab.toString(), clear.toString(), titles)
     }
 
     var giftButtonIndex: Int? = null
@@ -302,14 +305,14 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
         method.instructions().let { body -> body.any { it.reference() == WALLET_LABEL } &&
             MENU_NEIGHBORS.all { label -> body.any { it.reference() == label } } }
     }.unique("chat list menu with Wallet")
-    if (menu != null) hooks[CommerceTarget.MENU_WALLET] = listOf(menuWalletEdit(mutable(menu)))
+    if (menu != null) hooks[CommerceTarget.MENU_WALLET] = listOf(menuWalletEdit(mutable(menu), titles))
 
     // Send Gram, found by the kept types around it: the profile's menu builder, the static popup a
     // TON address link's style opens, and the message menu builder that fills three lists.
     val sendGram = methods(Mention.reference(SEND_GRAM)).filter { method -> method.instructions().any { it.reference() == SEND_GRAM } }
     val profileGram = sendGram.filter { it.origDefiningClass == PROFILE_ACTIVITY && it.hasShape(listOf("Z"), "V") }
         .unique("profile menu with Send Gram")
-    if (profileGram != null) hooks[CommerceTarget.PROFILE_SEND_GRAM] = listOf(sendGramEdit(mutable(profileGram), PROFILE_GRAM))
+    if (profileGram != null) hooks[CommerceTarget.PROFILE_SEND_GRAM] = listOf(sendGramEdit(mutable(profileGram), PROFILE_GRAM, titles))
     val giftMenu = methods(Mention.allReferences(PROFILE_GIFT_ITEMS)).filter { method ->
         method.origDefiningClass == PROFILE_ACTIVITY && method.hasShape(listOf("Z"), "V") &&
             method.instructions().let { body -> PROFILE_GIFT_ITEMS.all { label -> body.any { it.reference() == label } } }
@@ -320,12 +323,12 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
     if (addressGram != null) {
         // The popup's own items stay: Copy address is the one every TON address gets.
         shape(addressGram.instructions().any { it.reference() == COPY_ADDRESS }, "TON address popup no longer offers Copy address")
-        hooks[CommerceTarget.ADDRESS_SEND_GRAM] = listOf(sendGramEdit(mutable(addressGram), ADDRESS_GRAM))
+        hooks[CommerceTarget.ADDRESS_SEND_GRAM] = listOf(sendGramEdit(mutable(addressGram), ADDRESS_GRAM, titles))
     }
     val transferGram = sendGram.filter { !AccessFlags.STATIC.isSet(it.accessFlags) &&
         it.hasShape(listOf(MESSAGE_OBJECT, ARRAY_LIST, ARRAY_LIST, ARRAY_LIST), "V") }.unique("message menu with Send Gram")
     if (transferGram != null) {
-        val edit = sendGramEdit(mutable(transferGram), TRANSFER_GRAM)
+        val edit = sendGramEdit(mutable(transferGram), TRANSFER_GRAM, titles)
         val body = edit.method.instructions()
         val skip = ControlFlow.of(edit.method).normal[edit.index].single { it != edit.index + 1 }
         shape((edit.index + 1 until skip).any { body[it].opcode == Opcode.INSTANCE_OF && body[it].reference() == GRAM_TRANSFER },
@@ -367,7 +370,7 @@ internal fun profileGiftMenuEdits(method: MutableMethod): List<CommerceEdit> {
  * so a hidden item leaves the menu exactly as that account gets it. Receiving, viewing and
  * claiming Gram never pass through these branches.
  */
-private fun sendGramEdit(method: MutableMethod, site: SendGramSite): CommerceEdit {
+private fun sendGramEdit(method: MutableMethod, site: SendGramSite, titles: TitleCall): CommerceEdit {
     val where = site.where
     val body = method.instructions()
     val flow = ControlFlow.of(method)
@@ -382,12 +385,13 @@ private fun sendGramEdit(method: MutableMethod, site: SendGramSite): CommerceEdi
         body.indices.none { at -> at !in branch && at != gate && (flow.normal[at] + flow.exceptional[at]).any { it in branch } },
         "$where Send Gram has another way in or out")
     val label = labels.single()
-    shape(label in branch && body.getOrNull(label + 1)?.reference() == STRING &&
-        body.getOrNull(label + 2)?.opcode == Opcode.MOVE_RESULT_OBJECT, "$where Send Gram has no title")
-    val title = body[label + 2].namedRegisters().single()
-    val add = (label + 3 until skip).firstOrNull { body[it].call() != null && title in body[it].namedRegisters() }
+    val read = titles.call(body, flow, label)
+    shape(label in branch && read != null &&
+        body.getOrNull(read + 1)?.opcode == Opcode.MOVE_RESULT_OBJECT, "$where Send Gram has no title")
+    val title = body[read!! + 1].namedRegisters().single()
+    val add = (read + 2 until skip).firstOrNull { body[it].call() != null && title in body[it].namedRegisters() }
     shape(add != null && site.add(body[add].call()!!) && body[add].namedRegisters().getOrNull(site.title) == title &&
-        (label + 3 until add).none { body[it].writes(title) }, "$where no longer adds Send Gram as an item")
+        (read + 2 until add).none { body[it].writes(title) }, "$where no longer adds Send Gram as an item")
     // Nothing else waits behind the flag: no other label, and nothing stored beyond the item.
     shape(branch.none { at -> at != label && body[at].reference()?.startsWith(STRINGS) == true } &&
         branch.none { body[it].opcode in STORES },
@@ -461,7 +465,7 @@ private fun attachWalletEdits(binder: MutableMethod, methods: (Mention) -> List<
  * stock paths meet once their entries are in, leaving the menu as a Wallet account has it, minus
  * Wallet.
  */
-private fun menuWalletEdit(method: MutableMethod): CommerceEdit {
+private fun menuWalletEdit(method: MutableMethod, titles: TitleCall): CommerceEdit {
     val body = method.instructions()
     val flow = ControlFlow.of(method)
     val reads = body.indices.filter { body[it].reference() == WALLET_AVAILABLE }
@@ -472,14 +476,15 @@ private fun menuWalletEdit(method: MutableMethod): CommerceEdit {
     val skip = flow.normal[gate].singleOrNull { it != gate + 1 }
     shape(skip != null && skip > gate + 1 && flow.normal[gate].size == 2, "chat list menu Wallet availability no longer skips forward")
     val label = labels.single()
-    shape(label in gate + 1 until skip!! && body.getOrNull(label + 1)?.reference() == STRING &&
-        body.getOrNull(label + 2)?.opcode == Opcode.MOVE_RESULT_OBJECT, "chat list menu Wallet entry has no title")
-    val title = body[label + 2].namedRegisters().single()
-    val add = (label + 3 until skip).firstOrNull { body[it].opcode in setOf(Opcode.INVOKE_VIRTUAL, Opcode.INVOKE_VIRTUAL_RANGE) }
+    val read = titles.call(body, flow, label)
+    shape(label in gate + 1 until skip!! && read != null &&
+        body.getOrNull(read + 1)?.opcode == Opcode.MOVE_RESULT_OBJECT, "chat list menu Wallet entry has no title")
+    val title = body[read!! + 1].namedRegisters().single()
+    val add = (read + 2 until skip).firstOrNull { body[it].opcode in setOf(Opcode.INVOKE_VIRTUAL, Opcode.INVOKE_VIRTUAL_RANGE) }
         ?: throw PatchException("$PATCH: chat list menu no longer adds Wallet as an entry (before editing)")
     val call = body[add].call()
     shape(call != null && call.origReturnType == "V" && call.parameterTypes.map { it.toString() } == MENU_ADD &&
-        body[add].namedRegisters().getOrNull(2) == title && (label + 3 until add).none { body[it].writes(title) },
+        body[add].namedRegisters().getOrNull(2) == title && (read + 2 until add).none { body[it].writes(title) },
         "chat list menu no longer adds Wallet as an entry")
     val saved = body.indexOfFirst { it.reference() == MENU_NEIGHBORS.last() }
     shape(saved in 0 until reads.single() && (saved until reads.single()).any { body[it].reference() == body[add].reference() },
@@ -510,7 +515,7 @@ private fun gateAfter(body: List<Instruction>, read: Int, where: String): Int {
     return gate
 }
 
-private fun settingsEdits(method: MutableMethod): List<CommerceEdit> {
+private fun settingsEdits(method: MutableMethod, titles: TitleCall): List<CommerceEdit> {
     val body = method.instructions()
     val flow = ControlFlow.of(method)
     val factories = mutableSetOf<String>()
@@ -518,15 +523,16 @@ private fun settingsEdits(method: MutableMethod): List<CommerceEdit> {
     val edits = SETTINGS_SALES.map { resource ->
         val at = body.indices.filter { body[it].reference() == resource }.unique("$resource Settings label")
             ?: throw PatchException("$PATCH: missing $resource Settings label (before editing)")
-        shape(body.getOrNull(at + 1)?.reference() == STRING && body.getOrNull(at + 2)?.opcode == Opcode.MOVE_RESULT_OBJECT,
+        val read = titles.call(body, flow, at)
+        shape(read != null && body.getOrNull(read + 1)?.opcode == Opcode.MOVE_RESULT_OBJECT,
             "$resource does not produce a row title")
-        val title = body[at + 2].namedRegisters().single()
-        val factory = (at + 3 until minOf(body.size, at + 64)).firstOrNull { index ->
+        val title = body[read!! + 1].namedRegisters().single()
+        val factory = (read + 2 until minOf(body.size, at + 64)).firstOrNull { index ->
             body[index].call()?.parameterTypes?.map { it.toString() } == SALES_FACTORY &&
                 body[index].opcode in setOf(Opcode.INVOKE_STATIC, Opcode.INVOKE_STATIC_RANGE)
         } ?: throw PatchException("$PATCH: no $resource Settings row factory (before editing)")
         shape(body[factory].namedRegisters().getOrNull(4) == title &&
-            (at + 3 until factory).none { body[it].writes(title) }, "$resource Settings title is not intact")
+            (read + 2 until factory).none { body[it].writes(title) }, "$resource Settings title is not intact")
         factories += body[factory].reference()!!
         val row = body.getOrNull(factory + 1)
         val append = factory + 2
@@ -586,7 +592,7 @@ private fun walletEdits(method: MutableMethod, factory: String, rows: Int): List
     }
 }
 
-private fun profileEdits(method: MutableMethod, gifts: Int, hasTab: String, clear: String): List<CommerceEdit> {
+private fun profileEdits(method: MutableMethod, gifts: Int, hasTab: String, clear: String, titles: TitleCall): List<CommerceEdit> {
     val body = method.instructions()
     val flow = ControlFlow.of(method)
     val resources = body.indices.filter { body[it].reference() == PROFILE_GIFTS }
@@ -606,17 +612,18 @@ private fun profileEdits(method: MutableMethod, gifts: Int, hasTab: String, clea
     val label = resources.last()
     // The title may go through a copy on its way to the jump (12.10) or straight from the string
     // lookup (13.0).
-    val copied = body.getOrNull(label + 3)?.opcode in setOf(Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16)
-    val jump = if (copied) label + 4 else label + 3
-    shape(body.getOrNull(label + 1)?.reference() == STRING &&
-        body.getOrNull(label + 2)?.opcode == Opcode.MOVE_RESULT_OBJECT &&
+    val read = titles.call(body, flow, label) ?: label
+    val copied = body.getOrNull(read + 2)?.opcode in setOf(Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16)
+    val jump = if (copied) read + 3 else read + 2
+    shape(read != label &&
+        body.getOrNull(read + 1)?.opcode == Opcode.MOVE_RESULT_OBJECT &&
         body.getOrNull(jump)?.opcode in setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32),
         "cached Gifts label no longer jumps to its shared Pair constructor")
     val cachedPair = flow.normal[jump].single()
-    val title = body[label + 2].namedRegisters().single()
+    val title = body[read + 1].namedRegisters().single()
     shape(body[cachedPair].reference() == PAIR &&
-        (!copied || title == body[label + 3].namedRegisters()[1]) &&
-        (if (copied) body[label + 3].namedRegisters()[0] else title) == body[cachedPair].namedRegisters()[2],
+        (!copied || title == body[read + 2].namedRegisters()[1]) &&
+        (if (copied) body[read + 2].namedRegisters()[0] else title) == body[cachedPair].namedRegisters()[2],
         "cached Gifts label no longer supplies the Pair title")
     val appends = listOf(freshPair, cachedPair).map { pair ->
         val append = pair + 1
@@ -721,6 +728,73 @@ private fun constantBefore(body: List<Instruction>, before: Int, register: Int, 
         in MOVES -> if (copies == 0) null else constantBefore(body, write, body[write].namedRegisters()[1], copies - 1)
         else -> null
     }
+}
+
+/**
+ * How the build reads an item's title from its string resource. Telegram calls
+ * LocaleController.getString(int), a wrapper that passes the id on with a null beside it, and 13.2's
+ * R8 inlined that wrapper into its callers, which now make the forwarded call themselves.
+ */
+private class TitleCall(private val forward: String?, private val id: Int) {
+    /**
+     * The index of the call that reads the text of the resource loaded at [load]: the next
+     * instruction, or the one after when the null the forwarded call takes is set up in between.
+     */
+    fun call(body: List<Instruction>, flow: ControlFlow, load: Int): Int? {
+        if (body.getOrNull(load + 1)?.reference() == STRING) return load + 1
+        val resource = body.getOrNull(load)?.namedRegisters()?.firstOrNull() ?: return null
+        return (load + 1..load + 2).firstOrNull { at ->
+            val made = body.getOrNull(at) ?: return@firstOrNull false
+            val operands = made.namedRegisters()
+            forward != null && made.opcode == Opcode.INVOKE_STATIC && made.call()?.toString() == forward &&
+                operands.size == 2 && operands[id] == resource &&
+                (load + 1 until at).all { body[it].opcode in CONSTANTS && body[it].writes(operands[1 - id]) } &&
+                flow.onlyZeroReaches(at, operands[1 - id])
+        }
+    }
+}
+
+/** What getString(int) forwards to, when it's the plain wrapper; without one only getString(int) itself counts. */
+private fun BytecodePatchContext.titleCall(): TitleCall {
+    val wrapper = tgClassDefByOrNull(LOCALE)?.methods?.filter { it.origName == "getString" &&
+        AccessFlags.STATIC.isSet(it.accessFlags) && it.origParameterTypes == listOf("I") && it.origReturnType == "Ljava/lang/String;"
+    }?.singleOrNull() ?: return TitleCall(null, 0)
+    val body = wrapper.instructions()
+    val absent = body.firstOrNull()?.namedRegisters()?.singleOrNull()
+    val operands = body.getOrNull(1)?.namedRegisters().orEmpty()
+    val id = wrapper.parameterRegisterNumber(0)
+    val plain = body.size == 4 && body[0].opcode == Opcode.CONST_4 && (body[0] as NarrowLiteralInstruction).narrowLiteral == 0 &&
+        body[1].opcode == Opcode.INVOKE_STATIC && operands.size == 2 && operands.toSet() == setOf(absent, id) && absent != id &&
+        body[2].opcode == Opcode.MOVE_RESULT_OBJECT && body[3].opcode == Opcode.RETURN_OBJECT &&
+        body[2].namedRegisters() == body[3].namedRegisters()
+    return if (plain) TitleCall(body[1].call().toString(), operands.indexOf(id)) else TitleCall(null, 0)
+}
+
+/** Every value [register] can hold at [use] is the constant 0, a null for an object. */
+private fun ControlFlow.onlyZeroReaches(use: Int, register: Int): Boolean {
+    val predecessors = Array(instructions.size) { mutableListOf<Pair<Int, Boolean>>() }
+    instructions.indices.forEach { at ->
+        normal[at].forEach { predecessors[it] += at to false }
+        exceptional[at].forEach { predecessors[it] += at to true }
+    }
+    if (predecessors[use].isEmpty()) return false
+    val seen = mutableSetOf<Pair<Int, Boolean>>()
+    val pending = ArrayDeque(predecessors[use])
+    while (pending.isNotEmpty()) {
+        val step = pending.removeFirst()
+        if (!seen.add(step)) continue
+        val (at, thrown) = step
+        val instruction = instructions[at]
+        if (instruction.writes(register)) {
+            if (instruction.opcode !in CONSTANTS || (instruction as? NarrowLiteralInstruction)?.narrowLiteral != 0) return false
+            // An instruction that throws never writes, so its handler also sees what came before.
+            if (!thrown) continue
+        }
+        // Reaching the entry means the value comes from the caller or was never set.
+        if (at == 0) return false
+        pending.addAll(predecessors[at])
+    }
+    return true
 }
 
 /** Bound provenance by its source definition, including handlers and paths that jump backward. */

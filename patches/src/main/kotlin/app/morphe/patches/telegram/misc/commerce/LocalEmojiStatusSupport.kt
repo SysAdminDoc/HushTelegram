@@ -199,10 +199,13 @@ private fun Method.statusReads(): List<Int> = controlBody().let { body ->
     }
 }
 
-/** Each isPremiumUser call whose answer comes straight back in a move-result. */
+/**
+ * Each isPremiumUser call whose answer comes straight back in a move-result. 13.2's R8 made the
+ * method static, since it never reads its controller.
+ */
 private fun Method.premiumReads(): List<Int> = controlBody().let { body ->
     body.indices.filter { index ->
-        body[index].opcode == Opcode.INVOKE_VIRTUAL && body[index].controlRef() == IS_PREMIUM_USER &&
+        body[index].opcode in setOf(Opcode.INVOKE_VIRTUAL, Opcode.INVOKE_STATIC) && body[index].controlRef() == IS_PREMIUM_USER &&
             body.getOrNull(index + 1)?.opcode == Opcode.MOVE_RESULT
     }
 }

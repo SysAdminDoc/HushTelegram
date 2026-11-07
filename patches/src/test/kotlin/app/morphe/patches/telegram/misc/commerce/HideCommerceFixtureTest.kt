@@ -870,7 +870,9 @@ class HideCommerceFixtureTest {
         val title = FixtureDex.classesWhere(build, { true }) { method ->
             method.parameterTypes.map { it.toString() } == listOf(USER, "Z") && method.instructions().any { it.reference() == LIST_STAR }
         }
-        val kept = FixtureDex.classes(build, setOf(TABS, CONTROLLER, USER_CONFIG, EMOJI_USERS, EMOJI_DIALOGS, MESSAGE_OBJECT)).values
+        // LocaleController holds the getString(int) wrapper whose forwarded call 13.2 inlined into the title sites.
+        val kept = FixtureDex.classes(build, setOf(TABS, CONTROLLER, USER_CONFIG, EMOJI_USERS, EMOJI_DIALOGS, MESSAGE_OBJECT,
+            "Lorg/telegram/messenger/LocaleController;")).values
         return (icons + anchors + title + kept).distinctBy { it.type }
     }
 

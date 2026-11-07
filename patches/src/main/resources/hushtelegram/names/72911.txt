@@ -20829,3 +20829,5 @@ f Lorg/telegram/messenger/FileLoaderPriorityQueue; workerQueue Lorg/telegram/mes
 m Lorg/telegram/messenger/MessagesController; deleteMessagesByPush (JLjava/util/ArrayList;J)V Lorg/telegram/messenger/vp; c0 (JJLjava/util/ArrayList;)V
 # added by hand: createDeleteShowOnceTask, kept with the message ID first (writes task 102, then the chat, then the ID)
 m Lorg/telegram/messenger/MessagesController; createDeleteShowOnceTask (JI)J Lorg/telegram/messenger/vp; V (IJ)J
+# added by hand: commerce
+m Lorg/telegram/messenger/MessagesController; isPremiumUser (Lorg/telegram/tgnet/TLRPC$User;)Z Lorg/telegram/messenger/vp; B2 (Lorg/telegram/tgnet/TLRPC$User;)Z
