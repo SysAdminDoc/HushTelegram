@@ -33,7 +33,7 @@ class SignInHelpFixtureTest {
     fun `the general error handler asks the extension first on each declared build`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
-            val hosts = FixtureDex.classesWhere(build, { true }) { isProcessError(it) || it.googleFailureAt() != null }
+            val hosts = FixtureDex.classesWhere(build, { true }) { isProcessError(it) || it.googleFailures().isNotEmpty() }
             assertEquals("$name: one general error handler", 1, hosts.sumOf { host -> host.methods.count { isProcessError(it) } })
             val host = hosts.single { candidate -> candidate.methods.any { isProcessError(it) } }
             val before = host.methods.single { isProcessError(it) }.controlBody()
@@ -67,22 +67,27 @@ class SignInHelpFixtureTest {
     fun `a failed Google sign-in reaches the extension from both login email screens`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
-            val hosts = FixtureDex.classesWhere(build, { true }) { it.googleFailureAt() != null }
-            assertEquals(name, 2, hosts.size)
+            val hosts = FixtureDex.classesWhere(build, { true }) { it.googleFailures().isNotEmpty() }
+            // 13.2's R8 merged the two screens' observers into one class, so the two handlers share one method.
+            assertEquals(name, 2, hosts.sumOf { host -> host.methods.sumOf { it.googleFailures().size } })
             val operand = { op: Instruction -> op.opcode to op.origRef() }
-            val stock = hosts.associate { host -> host.type to host.methods.single { it.googleFailureAt() != null }.controlBody().map(operand) }
+            val stock = hosts.associate { host -> host.type to host.methods.single { it.googleFailures().isNotEmpty() }.controlBody().map(operand) }
 
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
             assertTrue(name, context.sayWhenGoogleFails())
 
             for (host in hosts) {
                 val after = context.tgMutableClassDefBy(host.type).methods.single { it.origName == "didReceivedNotification" }.controlBody()
-                val caught = after.indexOfFirst { it.opcode == Opcode.MOVE_EXCEPTION }
-                assertEquals(name, SIGN_IN_GOOGLE_FAILED, after[caught + 1].controlRef())
-                val call = after[caught + 1] as RegisterRangeInstruction
-                assertEquals(name, 1, call.registerCount)
-                assertEquals(name, (after[caught] as OneRegisterInstruction).registerA, call.startRegister)
-                assertEquals("$name: stock code stays", stock.getValue(host.type), after.filterIndexed { i, _ -> i != caught + 1 }.map(operand))
+                val caught = after.indices.filter { after[it].opcode == Opcode.MOVE_EXCEPTION }
+                assertEquals(name, host.methods.single { it.googleFailures().isNotEmpty() }.googleFailures().size, caught.size)
+                for (at in caught) {
+                    assertEquals(name, SIGN_IN_GOOGLE_FAILED, after[at + 1].controlRef())
+                    val call = after[at + 1] as RegisterRangeInstruction
+                    assertEquals(name, 1, call.registerCount)
+                    assertEquals(name, (after[at] as OneRegisterInstruction).registerA, call.startRegister)
+                }
+                val hooks = caught.map { it + 1 }.toSet()
+                assertEquals("$name: stock code stays", stock.getValue(host.type), after.filterIndexed { i, _ -> i !in hooks }.map(operand))
             }
         }
     }

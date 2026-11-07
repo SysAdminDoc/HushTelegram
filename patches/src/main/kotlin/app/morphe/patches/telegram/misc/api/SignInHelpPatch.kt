@@ -78,14 +78,15 @@ internal fun MutableMethod.askSignInHelpFirst() {
 }
 
 /**
- * Where a login email screen takes Google's answer: the handler that catches a failure and only logs
- * it. The one instruction after it is where the extension gets told.
+ * Where a login email screen takes Google's answer: each handler that catches a failure and only logs
+ * it. The one instruction after it is where the extension gets told. 13.2's R8 merged the two
+ * screens' observers into one class, whose one method now holds both handlers.
  */
-internal fun Method.googleFailureAt(): Int? {
-    if (name != "didReceivedNotification") return null
-    val code = implementation?.instructions?.toList() ?: return null
-    if (code.none { it.opcode == Opcode.CHECK_CAST && it.controlRef() == GOOGLE_ACCOUNT }) return null
-    return code.indices.singleOrNull { at ->
+internal fun Method.googleFailures(): List<Int> {
+    if (name != "didReceivedNotification") return emptyList()
+    val code = implementation?.instructions?.toList() ?: return emptyList()
+    if (code.none { it.opcode == Opcode.CHECK_CAST && it.controlRef() == GOOGLE_ACCOUNT }) return emptyList()
+    return code.indices.filter { at ->
         code[at].opcode == Opcode.MOVE_EXCEPTION && code.getOrNull(at + 1)?.controlRef() == LOG_FAILURE
     }
 }
@@ -93,13 +94,15 @@ internal fun Method.googleFailureAt(): Int? {
 /** Tells the extension about each failed Google sign-in. False when no screen takes one. */
 internal fun BytecodePatchContext.sayWhenGoogleFails(): Boolean {
     val found = classDefsMentioning(Mention.type(GOOGLE_ACCOUNT)).flatMap { cls ->
-        cls.methods.filter { it.googleFailureAt() != null }
+        cls.methods.filter { it.googleFailures().isNotEmpty() }
     }
     for (match in found) {
         val method = tgMutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
-        val at = method.googleFailureAt() ?: continue
-        val caught = (method.getInstruction(at) as OneRegisterInstruction).registerA
-        method.addInstructions(at + 1, "invoke-static/range {v$caught .. v$caught}, $SIGN_IN_GOOGLE_FAILED")
+        // Last first, so the handlers still to come stay where they were.
+        for (at in method.googleFailures().asReversed()) {
+            val caught = (method.getInstruction(at) as OneRegisterInstruction).registerA
+            method.addInstructions(at + 1, "invoke-static/range {v$caught .. v$caught}, $SIGN_IN_GOOGLE_FAILED")
+        }
     }
     return found.isNotEmpty()
 }
