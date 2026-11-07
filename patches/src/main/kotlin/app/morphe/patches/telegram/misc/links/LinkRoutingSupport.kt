@@ -101,9 +101,10 @@ internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
     val candidates = methods(Mention.allOf(anchors.map { Mention.string(it) }) and
         Mention.reference("$MC->isWebBrowserOpenInApp(Ljava/lang/String;)Z")).filter { method ->
         val parameters = method.parameterTypes.map { it.toString() }
-        AccessFlags.STATIC.isSet(method.accessFlags) && method.origReturnType == "V" && parameters.size == 10 &&
+        // 13.2 added a fourth trailing flag, which skips its own cleanup of the link's query.
+        AccessFlags.STATIC.isSet(method.accessFlags) && method.origReturnType == "V" && parameters.size in 10..11 &&
             parameters.take(5) == listOf(CONTEXT, URI, "Z", "Z", "Z") && parameters[5].startsWith("L") &&
-            parameters.drop(6) == listOf("Ljava/lang/String;", "Z", "Z", "Z") &&
+            parameters.drop(6) == listOf("Ljava/lang/String;") + List(parameters.size - 7) { "Z" } &&
             anchors.all { anchor -> method.instructions().any { it.string() == anchor } } &&
             method.instructions().any { it.ref() == "$MC->isWebBrowserOpenInApp(Ljava/lang/String;)Z" }
     }
@@ -125,21 +126,28 @@ internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
     val uriAlias = operands[0]
     val flags = operands[2]
     val internal = code[classification + 1].namedRegisters().single()
-    checkShape(listOf(uriAlias, flags, internal).all { it <= 15 }, "classification operands exceed invoke registers")
+    checkShape(listOf(uriAlias, flags).all { it <= 15 }, "classification operands exceed invoke registers")
+    // 13.2 keeps the classification's answer above v15, out of an invoke's reach, so each hook copies
+    // it into a free local first.
+    val carried = internal > 15
     val cleanAt = classification + 2
     val uriParameter = browser.parameterRegisterNumber(1)
     browser.requireParameterIntact("link URI", 1, listOf(classification))
-    checkShape(reachingWrites(browser, uriAlias, classification).singleOrNull()?.let { index ->
-        code[index].opcode in OBJECT_MOVES && code[index].namedRegisters() == listOf(uriAlias, uriParameter)
-    } == true, "classified URI isn't the original Uri parameter")
+    checkShape(holdsLinkUri(browser, uriAlias, classification, uriParameter), "classified URI isn't the original Uri parameter")
 
     val append = autologinAppend(code) ?: fail("autologin augmentation no longer has its unique builder call")
+    val built = code[append + 3].namedRegisters().singleOrNull()
+    // 13.2 copies the signed-in link back to the link's own register and falls through to the merge.
+    val copied = code[append + 4].opcode in OBJECT_MOVES && code[append + 4].namedRegisters()[1] == built
     checkShape(code[append + 2].ref() == "$URI_BUILDER->build()$URI" && code[append + 3].opcode == Opcode.MOVE_RESULT_OBJECT &&
-        code[append + 4].opcode in GOTOS, "autologin builder has no guarded merge")
+        (code[append + 4].opcode in GOTOS || copied), "autologin builder has no guarded merge")
     var routingAt = ControlFlow.of(browser).normal[append + 4].single()
     // The other independently selectable patch may already have moved the merge label to its hook.
-    if (code.getOrNull(routingAt + 1)?.ref() == "$LINKS->tryOpenExternal($CONTEXT$URI" + "Z[ZLjava/lang/String;)Z") routingAt += 6
-    val routingUri = code[append + 3].namedRegisters().single()
+    val routingLength = if (carried) 7 else 6
+    if (code.getOrNull(routingAt + routingLength - 5)?.ref() == "$LINKS->tryOpenExternal($CONTEXT$URI" + "Z[ZLjava/lang/String;)Z") {
+        routingAt += routingLength
+    }
+    val routingUri = if (copied) code[append + 4].namedRegisters()[0] else built!!
     checkShape(routingAt > classification && code[routingAt].opcode == Opcode.IF_EQZ && routingUri <= 15,
         "browser-choice merge changed")
     checkShape(reachingWrites(browser, internal, routingAt) == setOf(classification + 1), "native classification was overwritten")
@@ -164,17 +172,21 @@ internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
     checkShape(reachingWrites(browser, context, routingAt).singleOrNull()?.let { index ->
         code[index].opcode in OBJECT_MOVES && code[index].namedRegisters() == listOf(context, browser.parameterRegisterNumber(0))
     } == true, "browser context alias changed")
-    val scratch = browser.freeLocalsAt("external browser", routingAt, 1).single()
-    val routingCode = """
+    val routingLocals = browser.freeLocalsAt("external browser", routingAt, if (carried) 2 else 1)
+    val scratch = routingLocals[0]
+    val routingInternal = if (carried) routingLocals[1] else internal
+    val routingCode = (if (carried) "move/from16 v$routingInternal, v$internal\n" else "") + """
         move-object/from16 v$scratch, v$chosenPackage
-        invoke-static {v$context, v$routingUri, v$internal, v$flags, v$scratch}, $LINKS->tryOpenExternal($CONTEXT$URI""" + "Z[ZLjava/lang/String;)Z\n" + """
+        invoke-static {v$context, v$routingUri, v$routingInternal, v$flags, v$scratch}, $LINKS->tryOpenExternal($CONTEXT$URI""" + "Z[ZLjava/lang/String;)Z\n" + """
         move-result v$scratch
         if-eqz v$scratch, :hush_stock_browser
         return-void
         :hush_stock_browser
         nop
     """
-    val cleanCode = "invoke-static {v$uriAlias, v$internal, v$flags}, $LINKS->cleanOpenedUri($URI" +
+    val cleanInternal = if (carried) browser.freeLocalsAt("opened-link cleaner", cleanAt, 1).single() else internal
+    val cleanCode = (if (carried) "move/from16 v$cleanInternal, v$internal\n" else "") +
+        "invoke-static {v$uriAlias, v$cleanInternal, v$flags}, $LINKS->cleanOpenedUri($URI" +
         "Z[Z)$URI\nmove-result-object v$uriAlias\nmove-object/16 v$uriParameter, v$uriAlias\nnop"
 
     val shares = methods(Mention.reference(TITLE) and Mention.string("android.intent.action.SEND")).filter { method ->
@@ -330,6 +342,34 @@ private fun reachingWrites(method: Method, register: Int, at: Int): Set<Int> {
     }
     checkShape(writes.isNotEmpty(), "v$register has no provable definition before instruction $at")
     return writes
+}
+
+/**
+ * Whether [register] holds the link at [at] on every path: a copy of [parameter], or (since 13.2)
+ * Telegram's own rebuild of it through [parameter]'s buildUpon(), which drops tracking from the
+ * query and fragment. The parameter is checked intact up to the classification, which every read
+ * here reaches.
+ */
+private fun holdsLinkUri(method: Method, register: Int, at: Int, parameter: Int, depth: Int = 0): Boolean {
+    if (depth > 4) return false
+    val code = method.instructions()
+    val firstParameter = method.parameterRegisterNumber(0)
+    return reachingWrites(method, register, at).all { write ->
+        val instruction = code[write]
+        val source = instruction.namedRegisters().getOrNull(1)
+        when {
+            instruction.opcode in OBJECT_MOVES && source != null ->
+                if (source >= firstParameter) source == parameter else holdsLinkUri(method, source, write, parameter, depth + 1)
+            instruction.opcode == Opcode.MOVE_RESULT_OBJECT && write > 0 && code[write - 1].ref() == "$URI_BUILDER->build()$URI" -> {
+                val builder = code[write - 1].namedRegisters().single()
+                builder < firstParameter && reachingWrites(method, builder, write - 1).all { start ->
+                    code[start].opcode == Opcode.MOVE_RESULT_OBJECT && start > 0 &&
+                        code[start - 1].ref() == "$URI->buildUpon()$URI_BUILDER" && code[start - 1].namedRegisters() == listOf(parameter)
+                }
+            }
+            else -> false
+        }
+    }
 }
 
 private val OBJECT_MOVES = setOf(Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16)

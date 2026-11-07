@@ -257,7 +257,7 @@ class LinkRoutingFixtureTest {
 
     private fun hostClasses(build: File): List<ClassDef> {
         val sinks = FixtureDex.classesWhere(build, HOST_CENSUS, { true }) { method ->
-            (method.origReturnType == "V" && method.parameterTypes.size == 10 &&
+            (method.origReturnType == "V" && method.parameterTypes.size in 10..11 &&
                 method.parameterTypes.take(2) == listOf("Landroid/content/Context;", "Landroid/net/Uri;") &&
                 method.instructions().any { it.ref() == "autologin_token" }) ||
                 (method.instructions().any { it.ref() == "Lorg/telegram/messenger/R\$string;->ShareLink:I" } &&
@@ -272,10 +272,16 @@ class LinkRoutingFixtureTest {
         val before = original.instructions()
         val after = patched.instructions()
         val injected = mutableListOf<IntRange>()
+        // 13.2 keeps the classification's answer above v15, so a hook first copies it into a local.
+        fun carried(at: Int, call: Int, operand: Int) = after.getOrNull(at)?.let {
+            it.opcode == Opcode.MOVE_FROM16 && it.namedRegisters()[0] == after[call].namedRegisters()[operand]
+        } == true
         for (index in after.indices) {
             when {
-                after[index].ref()?.startsWith("$LINKS->tryOpenExternal(") == true -> injected += index - 1..index + 4
-                after[index].ref()?.startsWith("$LINKS->cleanOpenedUri(") == true -> injected += index..index + 3
+                after[index].ref()?.startsWith("$LINKS->tryOpenExternal(") == true ->
+                    injected += (if (carried(index - 2, index, 2)) index - 2 else index - 1)..index + 4
+                after[index].ref()?.startsWith("$LINKS->cleanOpenedUri(") == true ->
+                    injected += (if (carried(index - 1, index, 1)) index - 1 else index)..index + 3
                 after[index].ref()?.startsWith("$LINKS->cleanShareIntent(") == true -> injected += index..index + 1
                 after[index].ref() == AUTOLOGIN_GATE -> injected += index..index + 1
             }
@@ -295,11 +301,10 @@ class LinkRoutingFixtureTest {
             assertEquals("$where: stock exception handler $index", oldFlow.exceptional[index].toSet(), newFlow.exceptional[stock[index]].map(::oldTarget).toSet())
         }
         for (site in injected) {
-            if (after[site.first + 1].ref()?.startsWith("$LINKS->tryOpenExternal(") == true) {
-                assertEquals(Opcode.IF_EQZ, after[site.first + 3].opcode)
-                assertEquals(Opcode.RETURN_VOID, after[site.first + 4].opcode)
-                assertEquals("success returns; false resumes stock", setOf(site.first + 4, site.last), newFlow.normal[site.first + 3].toSet())
-            }
+            val call = site.firstOrNull { after[it].ref()?.startsWith("$LINKS->tryOpenExternal(") == true } ?: continue
+            assertEquals(Opcode.IF_EQZ, after[call + 2].opcode)
+            assertEquals(Opcode.RETURN_VOID, after[call + 3].opcode)
+            assertEquals("success returns; false resumes stock", setOf(call + 3, site.last), newFlow.normal[call + 2].toSet())
         }
     }
 
