@@ -309,7 +309,7 @@ internal fun BytecodePatchContext.resolveDisableArchivePull(): ArchivePullSites 
 /** A public static field the stubs read, given as `Lowner;->name:type`. */
 private fun BytecodePatchContext.staticField(field: String): Boolean {
     val owner = field.substringBefore("->")
-    return tgClassDefByOrNull(owner)?.fields?.any { "${it.definingClass}->${it.name}:${it.type}" == field &&
+    return tgClassDefByOrNull(owner)?.fields?.any { it.origString() == field &&
         AccessFlags.STATIC.isSet(it.accessFlags) && AccessFlags.PUBLIC.isSet(it.accessFlags) } == true
 }
 

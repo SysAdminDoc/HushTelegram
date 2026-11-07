@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.promos
 
+import app.morphe.util.names.origString
 import app.morphe.util.names.addInstructions
 import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -33,6 +34,8 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
@@ -188,7 +191,7 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
     val settings = tgMutableClassDefBy(settingsType).methods.single { ref(it) == settingsRef }
     val body = settings.controlBody()
     val label = body.indices.filter { body[it].controlRef() == FEATURES_LABEL }.controlSingle("Telegram Features label")
-    controlShape(body.getOrNull(label + 1)?.controlRef() == STRING && body.getOrNull(label + 2)?.opcode == Opcode.MOVE_RESULT_OBJECT,
+    controlShape(body.getOrNull(label + 1)?.isGetString() == true && body.getOrNull(label + 2)?.opcode == Opcode.MOVE_RESULT_OBJECT,
         "the Telegram Features label no longer becomes a row title")
     val title = body[label + 2].namedRegisters().single()
     val factory = (label + 3 until minOf(body.size, label + FACTORY_REACH)).firstOrNull { at ->
@@ -289,7 +292,7 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
     controlShape(adapter.methods.any { it.origName == count.origName && shape(it, listOf("I"), "I") && it.controlBody().firstOrNull()?.controlRef() == inviteList },
         "the empty Contacts list's flag no longer decides its section counts")
     controlShape(AccessFlags.PUBLIC.isSet(adapter.accessFlags) && listOf(phonebook, onlyUsers, inviteList).all { wanted ->
-        adapter.fields.any { "${it.definingClass}->${it.name}:${it.type}" == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) }
+        adapter.fields.any { it.origString() == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) }
     }, "the Contacts list's flags can't be read from outside")
 
     val base2 = tgMutableClassDefBy(base.type)
@@ -320,3 +323,8 @@ private fun Instruction.writes(register: Int): Boolean {
 
 private fun shape(m: Method, parameters: List<String>, result: String) = m.parameterTypes.map(CharSequence::toString) == parameters && m.origReturnType == result
 private fun ref(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+
+/** LocaleController.getString(int), which 13.2 mostly inlines into getString(null, int) with the two swapped. */
+private fun Instruction.isGetString() = controlRef() == STRING || ((this as? ReferenceInstruction)?.reference as? MethodReference)?.let {
+    it.origDefiningClass == "Lorg/telegram/messenger/LocaleController;" && it.origName == "getString" &&
+        it.parameterTypes.map(CharSequence::toString) == listOf("I", "Ljava/lang/String;") } == true

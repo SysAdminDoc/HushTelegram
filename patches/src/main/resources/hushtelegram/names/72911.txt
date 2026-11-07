@@ -20805,3 +20805,14 @@ r string items_other 7f0fd024
 r string messages_one 7f0fd022
 r string messages_other 7f0fd021
 r string project_id 7f0f00c2
+# added by hand: exact numbers
+m Lorg/telegram/messenger/LocaleController; formatShortNumber (I[I)Ljava/lang/String; Lorg/telegram/messenger/hd; S ([II)Ljava/lang/String;
+
+# added by hand: hide blocked in groups
+f Lorg/telegram/messenger/MessagesController; blockePeers Lorg/telegram/messenger/support/LongSparseIntArray; Lorg/telegram/messenger/vp; H0 Lorg/telegram/messenger/support/LongSparseIntArray;
+
+# added by hand: forward hide sender
+f Lorg/telegram/messenger/MessagePreviewParams; hideForwardSendersName Z Lorg/telegram/messenger/pj; k Z
+
+# added by hand: getString(String, int), which 13.2 inlines getString(int) into with its parameters swapped
+m Lorg/telegram/messenger/LocaleController; getString (Ljava/lang/String;I)Ljava/lang/String; Lorg/telegram/messenger/hd; M0 (ILjava/lang/String;)Ljava/lang/String;

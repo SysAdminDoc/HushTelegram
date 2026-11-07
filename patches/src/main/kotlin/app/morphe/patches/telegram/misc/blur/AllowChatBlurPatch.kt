@@ -23,6 +23,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origString
 import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val CHAT_BLUR = "$EXTENSION_PACKAGE/misc/ChatBlur;"
@@ -66,11 +67,11 @@ internal fun BytecodePatchContext.resolveAllowChatBlur(): MutableMethod {
     controlHook(CHAT_BLUR, "allowed", listOf(), "Z")
     val config = tgMutableClassDefByOrNull(SHARED_CONFIG)
     controlShape(config != null, "SharedConfig is missing")
-    val rating = config!!.methods.filter { "${it.definingClass}->${it.name}()${it.returnType}" == CAN_BLUR && it.parameterTypes.isEmpty() &&
+    val rating = config!!.methods.filter { it.origString() == CAN_BLUR && it.parameterTypes.isEmpty() &&
         AccessFlags.STATIC.isSet(it.accessFlags) }.controlSingle("chat blur rating")
     controlShape(rating.implementation!!.registerCount >= 1, "the chat blur rating has no register to answer in")
     controlShape(rating.controlBody().any { it.controlRef() == PERFORMANCE }, "the chat blur rating no longer looks at the phone's speed")
-    controlShape(config.methods.any { "${it.definingClass}->${it.name}()${it.returnType}" == BLUR_ENABLED &&
+    controlShape(config.methods.any { it.origString() == BLUR_ENABLED &&
         it.controlBody().any { i -> i.controlRef() == CAN_BLUR } }, "chat blur no longer asks for the rating")
     return rating
 }

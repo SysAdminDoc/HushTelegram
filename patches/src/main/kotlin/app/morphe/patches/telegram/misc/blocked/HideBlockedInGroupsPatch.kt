@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.blocked
 
+import app.morphe.util.names.origString
 import app.morphe.util.names.addInstructions
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -37,6 +38,8 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
+import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origType
 import app.morphe.util.names.tgClassDefByOrNull
 import app.morphe.util.names.tgMutableClassDefBy
@@ -200,7 +203,7 @@ internal fun BytecodePatchContext.resolveBlockedReplyQuote(): Pair<MutableMethod
     controlHook(BLOCKED_SENDERS, "hideReply", listOf("Ljava/lang/Object;"), "Z")
     controlHook(BLOCKED_SENDERS, "quoted", listOf("Ljava/lang/Object;"), "Ljava/lang/Object;")
     val message = tgMutableClassDefByOrNull(MESSAGE_OBJECT)
-    controlShape(message != null && message.fields.any { "${it.definingClass}->${it.name}:${it.type}" == REPLY_MESSAGE && !AccessFlags.STATIC.isSet(it.accessFlags) },
+    controlShape(message != null && message.fields.any { it.origString() == REPLY_MESSAGE && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "a message no longer keeps the message it replies to")
     val valid = message!!.methods.filter { signature(it) == VALID_REPLY && callable(it, false) }.controlSingle("the reply header's check")
     val body = valid.controlBody()
@@ -266,14 +269,14 @@ internal fun BytecodePatchContext.resolveHideBlockedInGroups(): List<Pair<Mutabl
     val sites = resolveOpenChatTypeReads()
 
     val controller = tgClassDefByOrNull(CONTROLLER)
-    controlShape(controller != null && controller.methods.any { signature(it) == "getInstance(I)$CONTROLLER" && callable(it, true) } &&
-        controller.fields.any { "${it.definingClass}->${it.name}:${it.type}" == BLOCKED_PEERS && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) },
+    controlShape(controller != null && controller.methods.any { origSig(it) == "getInstance(I)$CONTROLLER" && callable(it, true) } &&
+        controller.fields.any { it.origString() == BLOCKED_PEERS && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "MessagesController no longer keeps the blocked list")
-    controlShape(controller!!.methods.any { signature(it) == "getBlockedPeers(Z)V" && callable(it, false) } &&
+    controlShape(controller!!.methods.any { origSig(it) == "getBlockedPeers(Z)V" && callable(it, false) } &&
         listOf(BLOCKED_END, BLOCKED_LOADING).all { wanted ->
-            controller.fields.any { "${it.definingClass}->${it.name}:${it.type}" == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) }
+            controller.fields.any { it.origString() == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) }
         }, "MessagesController no longer loads the blocked list a page at a time")
-    controlShape(tgClassDefByOrNull(PEERS)?.methods?.any { signature(it) == "indexOfKey(J)I" && callable(it, false) } == true,
+    controlShape(tgClassDefByOrNull(PEERS)?.methods?.any { origSig(it) == "indexOfKey(J)I" && callable(it, false) } == true,
         "the blocked list can no longer be looked up")
     return sites
 }
@@ -316,7 +319,7 @@ internal fun BytecodePatchContext.resolveOpenChatTypeReads(): List<Pair<MutableM
     }
 
     val message = tgClassDefByOrNull(MESSAGE_OBJECT)
-    controlShape(message != null && listOf("getDialogId()J", "getFromChatId()J", "isOut()Z").all { wanted -> message.methods.any { signature(it) == wanted && callable(it, false) } } &&
+    controlShape(message != null && listOf("getDialogId()J", "getFromChatId()J", "isOut()Z").all { wanted -> message.methods.any { origSig(it) == wanted && callable(it, false) } } &&
         message.fields.any { it.origName == "currentAccount" && it.origType == "I" && !AccessFlags.STATIC.isSet(it.accessFlags) } &&
         message.fields.any { it.origName == "messageOwner" && it.origType == TL_MESSAGE && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "a message no longer says its chat, sender and account")
@@ -344,3 +347,4 @@ private fun typeTests(body: List<Instruction>): List<Pair<Int, Int>> = body.indi
 
 private fun signature(m: Method) = "${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
 private fun callable(m: Method, static: Boolean) = AccessFlags.PUBLIC.isSet(m.accessFlags) && AccessFlags.STATIC.isSet(m.accessFlags) == static
+private fun origSig(m: Method) = "${m.origName}(${m.origParameterTypes.joinToString("")})${m.origReturnType}"

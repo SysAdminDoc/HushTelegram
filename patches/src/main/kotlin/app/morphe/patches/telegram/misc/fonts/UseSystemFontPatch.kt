@@ -38,6 +38,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origString
 import app.morphe.util.names.origType
 import app.morphe.util.names.tgMutableClassDefBy
 import app.morphe.util.names.tgMutableClassDefByOrNull
@@ -128,7 +129,7 @@ internal fun BytecodePatchContext.resolveSystemFont(): SystemFontSite {
 
     val owner = tgMutableClassDefByOrNull(ANDROID_UTILITIES)
     controlShape(owner != null, "AndroidUtilities is missing")
-    val loader = owner!!.methods.filter { it.toString() == GET_TYPEFACE }.controlSingle("asset font loader")
+    val loader = owner!!.methods.filter { it.origString() == GET_TYPEFACE }.controlSingle("asset font loader")
     controlShape(AccessFlags.STATIC.isSet(loader.accessFlags), "the asset font loader is no longer static")
     val body = loader.controlBody()
     val asset = loader.localRegisterCount()

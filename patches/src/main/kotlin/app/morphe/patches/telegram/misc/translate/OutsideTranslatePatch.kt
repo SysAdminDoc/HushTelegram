@@ -198,7 +198,7 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
     // The message's own decision.
     val messageClass = tgMutableClassDefByOrNull(MESSAGE_OBJECT)
     controlShape(messageClass != null && AccessFlags.PUBLIC.isSet(messageClass.accessFlags), "MessageObject is missing")
-    val update = messageClass!!.methods.filter { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == UPDATE }.controlSingle("updateTranslation")
+    val update = messageClass!!.methods.filter { "${it.origName}(${it.parameterTypes.joinToString("")})${it.origReturnType}" == UPDATE }.controlSingle("updateTranslation")
     controlShape(AccessFlags.PUBLIC.isSet(update.accessFlags) && !AccessFlags.STATIC.isSet(update.accessFlags) &&
         update.implementation!!.registerCount >= 3 && update.controlBody().any { it.controlRef() == TRANSLATING },
         "updateTranslation no longer asks whether the dialog is being translated")

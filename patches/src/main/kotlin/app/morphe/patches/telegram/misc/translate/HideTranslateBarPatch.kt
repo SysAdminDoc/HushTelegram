@@ -26,6 +26,7 @@ import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origString
 import app.morphe.util.names.origType
 import app.morphe.util.names.tgMutableClassDefBy
 import app.morphe.util.names.tgMutableClassDefByOrNull
@@ -96,7 +97,7 @@ internal fun BytecodePatchContext.resolveTranslateBar(): List<TranslateBarSite> 
     val controller = tgMutableClassDefByOrNull(TRANSLATE_CONTROLLER)
     controlShape(controller != null && AccessFlags.PUBLIC.isSet(controller.accessFlags), "TranslateController is missing")
     for (wanted in listOf(BAR_HIDDEN, TRANSLATING)) {
-        val method = controller!!.methods.singleOrNull { it.toString() == wanted }
+        val method = controller!!.methods.singleOrNull { it.origString() == wanted }
         controlShape(method != null && AccessFlags.PUBLIC.isSet(method.accessFlags) && !AccessFlags.STATIC.isSet(method.accessFlags),
             "${wanted.substringAfter("->")} isn't a public TranslateController method")
     }
