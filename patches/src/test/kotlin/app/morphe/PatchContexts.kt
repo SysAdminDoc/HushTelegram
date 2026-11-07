@@ -15,6 +15,7 @@ import app.morphe.patcher.PatcherConfig
 import app.morphe.patcher.PatcherContext
 import app.morphe.patcher.PatcherProgress
 import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.util.names.TelegramNames
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import java.io.File
@@ -44,6 +45,9 @@ internal object PatchContexts {
         // Classes read from a fixture carry its version code, which picks the build's name table
         // as the APK's own manifest does in production. Synthetic classes keep the source names.
         val versionCode = classes.firstNotNullOfOrNull { (it as? FixtureDex.FixtureClassDef)?.versionCode } ?: "0"
+        // A test that keeps a build's classes between cases makes its context without reading the
+        // fixture again, so names read off those copies would come from whichever build was read last.
+        TelegramNames.forVersionCode(versionCode)?.let { TelegramNames.ambient = it }
         val metadataType = Class.forName("app.morphe.patcher.PackageMetadata")
         val metadata = metadataType.getConstructor(
             String::class.java, String::class.java, String::class.java,
