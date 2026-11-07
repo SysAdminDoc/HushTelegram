@@ -49,6 +49,7 @@ import app.morphe.util.names.origName
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origString
 import app.morphe.util.names.tgMutableClassDefBy
+import app.morphe.util.names.tgClassDefBy
 
 /** Registered credentials change two initialization literals and tag the native init version. Authentication stays intact. */
 class UseRegisteredApiCredentialsFixtureTest {
@@ -77,8 +78,9 @@ class UseRegisteredApiCredentialsFixtureTest {
                 assertEquals("${build.name}: unchanged instruction $index", operation(oldInitializer.instructions()[index]), operation(body[index]))
             }
             val after = state(context, hosts)
+            val buildVars = context.tgClassDefBy(BUILD_VARS).type
             assertEquals("${build.name}: every class other than BuildVars and ConnectionsManager stays intact",
-                before - BUILD_VARS - CONNECTIONS, after - BUILD_VARS - CONNECTIONS)
+                before - buildVars - CONNECTIONS, after - buildVars - CONNECTIONS)
             assertEquals("${build.name}: every other connection method stays intact",
                 otherMethods(before, plan.connectionInitializer), otherMethods(after, plan.connectionInitializer))
             val connection = plan.connectionInitializer.instructions()
@@ -106,7 +108,7 @@ class UseRegisteredApiCredentialsFixtureTest {
                 ControlFlow.of(plan.initializer).normal.toList())
             assertEquals("${build.name}: initializer exception edges stay intact", ControlFlow.of(oldInitializer).exceptional.toList(),
                 ControlFlow.of(plan.initializer).exceptional.toList())
-            assertEquals(5, plan.readers.size)
+            assertEquals(5 + firebaseLogins(build), plan.readers.size)
             assertEquals(CONNECTIONS, plan.connectionInitializer.definingClass)
         }
     }
@@ -321,22 +323,26 @@ class UseRegisteredApiCredentialsFixtureTest {
 
     @Test
     fun `every removed reader refuses before credentials change`() {
-        for (reader in 0 until 7) refusal { _, plan ->
+        // Seven reads, and two more where the Play build signs in by Firebase number check; a build
+        // with fewer goes round its own reads again.
+        for (reader in 0 until 9) refusal { _, plan ->
             val accesses = plan.readers.flatMap { method -> method.instructions().mapIndexedNotNull { index, instruction ->
                 instruction.field()?.takeIf { it.isCredential() }?.let { method to index }
             } }
-            assertEquals(7, accesses.size)
-            (accesses[reader].first as MutableMethod).replaceInstruction(accesses[reader].second, "nop")
+            assertEquals(7 + 2 * firebaseLogins(plan), accesses.size)
+            val (method, index) = accesses[reader % accesses.size]
+            (method as MutableMethod).replaceInstruction(index, "nop")
         }
     }
 
     @Test
     fun `each reader with the wrong static field opcode refuses before credentials change`() {
-        for (reader in 0 until 7) refusal { _, plan ->
+        for (reader in 0 until 9) refusal { _, plan ->
             val accesses = plan.readers.flatMap { method -> method.instructions().mapIndexedNotNull { index, instruction ->
                 instruction.field()?.takeIf { it.isCredential() }?.let { method to index }
             } }
-            val (method, index) = accesses[reader]
+            assertEquals(7 + 2 * firebaseLogins(plan), accesses.size)
+            val (method, index) = accesses[reader % accesses.size]
             val instruction = method.instructions()[index]
             val wrongOpcode = if (instruction.opcode == Opcode.SGET) "sget-object" else "sget"
             (method as MutableMethod).replaceInstruction(index,
@@ -452,12 +458,19 @@ class UseRegisteredApiCredentialsFixtureTest {
         val selected = FixtureDex.classesWhere(build,
             { dex -> dex.fieldSection.any { it.isCredential() } },
             { method -> method.instructions().any { it.field()?.isCredential() == true } }).associateBy { it.type }.toMutableMap()
-        selected.putAll(FixtureDex.classes(build, setOf(BUILD_VARS, CONNECTIONS, "Lorg/telegram/messenger/PasskeysController;")))
+        selected.putAll(FixtureDex.classes(build, setOf(BUILD_VARS, CONNECTIONS, "Lorg/telegram/messenger/PasskeysController;"))
+            .values.associateBy { it.type })
         selected.values.toList().also { HOSTS[build.absolutePath] = SoftReference(it) }
     }
+    /** 1 where [build] sends the credentials with Firebase phone number sign-in (Play 13.2.1 on), else 0. */
+    private fun firebaseLogins(build: File) = if (hosts(build).any { host -> host.methods.any { method ->
+        method.instructions().any { it.field()?.origDefiningClass == FIREBASE_LOGIN }
+    } }) 1 else 0
+    private fun firebaseLogins(plan: ApiCredentialsPlan) =
+        plan.readers.count { method -> method.instructions().any { it.field()?.origDefiningClass == FIREBASE_LOGIN } }
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
     private fun Instruction.field() = (this as? ReferenceInstruction)?.reference as? FieldReference
-    private fun FieldReference.isCredential() = definingClass == BUILD_VARS && name in setOf("APP_ID", "APP_HASH")
+    private fun FieldReference.isCredential() = origDefiningClass == BUILD_VARS && origName in setOf("APP_ID", "APP_HASH")
     private fun Instruction.call() = (this as? ReferenceInstruction)?.reference as? MethodReference
     private fun operation(instruction: Instruction): List<Any?> {
         val reference = (instruction as? ReferenceInstruction)?.reference
@@ -468,6 +481,7 @@ class UseRegisteredApiCredentialsFixtureTest {
     private companion object {
         const val ID = "12345678"
         const val HASH = "0123456789abcdef0123456789abcdef"
+        const val FIREBASE_LOGIN = "Lorg/telegram/tgnet/TLRPC\$TL_auth_initFirebasePnvLogin;"
         val HOSTS = mutableMapOf<String, SoftReference<List<ClassDef>>>()
     }
 }

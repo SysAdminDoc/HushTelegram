@@ -36,12 +36,16 @@ import app.morphe.util.names.origName
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 private const val PATCH = "Use registered Telegram API credentials"
 internal const val BUILD_VARS = "Lorg/telegram/messenger/BuildVars;"
 internal const val CONNECTIONS = "Lorg/telegram/tgnet/ConnectionsManager;"
 private const val STRING = "Ljava/lang/String;"
 private const val PASSKEYS = "Lorg/telegram/messenger/PasskeysController;"
+private val AUTH_REQUESTS = setOf("Lorg/telegram/tgnet/TLRPC\$TL_auth_sendCode;", "Lorg/telegram/tgnet/tl/TL_account\$initPasskeyLogin;")
+/** Play 13.2.1's sign-in by Firebase phone number verification sends the pair too. */
+private const val FIREBASE_LOGIN = "Lorg/telegram/tgnet/TLRPC\$TL_auth_initFirebasePnvLogin;"
 private const val UNKNOWN = -1
 internal const val QUOTE_ID_HINT =
     "On the command line, quote the ID (-O \"apiId='12345'\"): a bare number never reaches this option."
@@ -121,9 +125,9 @@ internal fun BytecodePatchContext.resolveApiCredentials(): ApiCredentialsPlan {
             instruction.credentialField() != null || instruction.call()?.let {
                 it.origDefiningClass == CONNECTIONS && it.origName == "native_init"
             } == true
-        } }) types += owner.type
+        } }) types += owner.origType
     }
-    val classes = types.map(::mutableClassDefBy)
+    val classes = types.map { tgMutableClassDefBy(it) }
     val build = classes.single { it.origType == BUILD_VARS }
     requireShape(AccessFlags.PUBLIC.isSet(build.accessFlags), "credential owner is inaccessible")
     for ((name, type) in listOf("APP_ID" to "I", "APP_HASH" to STRING)) {
@@ -144,7 +148,7 @@ internal fun BytecodePatchContext.resolveApiCredentials(): ApiCredentialsPlan {
     } }
     val writes = accesses.filter { it.instruction.opcode in setOf(Opcode.SPUT, Opcode.SPUT_OBJECT) }
     requireShape(writes.size == 2 && writes.all { it.method === initializer } &&
-        writes.map { it.field.name }.toSet() == setOf("APP_ID", "APP_HASH"), "credential writes are not confined to initialization")
+        writes.map { it.field.origName }.toSet() == setOf("APP_ID", "APP_HASH"), "credential writes are not confined to initialization")
     requireShape(accesses.all { access -> access.field.origType == (if (access.field.origName == "APP_ID") "I" else STRING) &&
         access.instruction.opcode in (if (access.field.origName == "APP_ID") setOf(Opcode.SGET, Opcode.SPUT)
             else setOf(Opcode.SGET_OBJECT, Opcode.SPUT_OBJECT))
@@ -172,14 +176,17 @@ internal fun BytecodePatchContext.resolveApiCredentials(): ApiCredentialsPlan {
     val id = literal("APP_ID")
     val hash = literal("APP_HASH")
     val reads = accesses.filter { it !in writes }
-    requireShape(reads.count { it.field.origName == "APP_ID" } == 5 && reads.count { it.field.origName == "APP_HASH" } == 2,
+    // Phone and passkey sign-in read both, and the Play build's Firebase number check does too. The
+    // connection and the two support email appendices read the ID alone.
+    val hashReads = reads.count { it.field.origName == "APP_HASH" }
+    requireShape(hashReads in 2..3 && reads.count { it.field.origName == "APP_ID" } == hashReads + 3,
         "credential reader inventory changed")
     val authentication = reads.filter { it.field.origName == "APP_HASH" }.map { it.method }.distinct()
     val requestTypes = linkedSetOf<String>()
     for (method in authentication) {
         val body = method.instructions()
         val methodReads = reads.filter { it.method === method }
-        requireShape(methodReads.size == 2 && methodReads.map { it.field.name }.toSet() == setOf("APP_ID", "APP_HASH"),
+        requireShape(methodReads.size == 2 && methodReads.map { it.field.origName }.toSet() == setOf("APP_ID", "APP_HASH"),
             "authentication no longer reads a paired identity")
         val stores = methodReads.map { read ->
             val fieldName = if (read.field.origName == "APP_ID") "api_id" else "api_hash"
@@ -195,12 +202,11 @@ internal fun BytecodePatchContext.resolveApiCredentials(): ApiCredentialsPlan {
         requireShape(allocation != null && allocation >= 0 && stores.all { it.second == setOf(allocation) } &&
             body[allocation].opcode == Opcode.NEW_INSTANCE, "authentication pair targets different request objects")
         val request = ((body[allocation!!] as? ReferenceInstruction)?.reference as? TypeReference)?.type
-        requireShape(request in setOf("Lorg/telegram/tgnet/TLRPC\$TL_auth_sendCode;",
-            "Lorg/telegram/tgnet/tl/TL_account\$initPasskeyLogin;") &&
+        requireShape(request in AUTH_REQUESTS + FIREBASE_LOGIN &&
             stores.all { body[it.first].field()?.origDefiningClass == request }, "authentication request type changed")
         requireShape(requestTypes.add(request!!), "authentication request binding is ambiguous")
     }
-    requireShape(requestTypes.size == 2, "phone or passkey authentication binding is missing")
+    requireShape(requestTypes.containsAll(AUTH_REQUESTS), "phone or passkey authentication binding is missing")
 
     val connection = classes.single { it.origType == CONNECTIONS }
     val nativeDefinition = connection.methods.filter { it.origName == "native_init" }.unique("native initializer declaration")
