@@ -34,6 +34,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import app.morphe.util.names.origRef
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** The menu builder's return, the choice handler's entry, the forward the stubs send with, and the runtime. */
 class MessageMenuFixtureTest {
@@ -51,7 +55,7 @@ class MessageMenuFixtureTest {
         "Lorg/telegram/tgnet/TLObject;", "Lorg/telegram/messenger/ImageLocation;", "Lorg/telegram/messenger/NotificationCenter;",
     )
 
-    private fun Instruction.shape() = listOf(opcode, namedRegisters(), (this as? ReferenceInstruction)?.reference?.toString())
+    private fun Instruction.shape() = listOf(opcode, namedRegisters(), origRef())
     private fun signature(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
 
     internal fun hosts(build: File): List<ClassDef> = baseHosts(build).let { it + selectBetweenHosts(build, it) }
@@ -60,8 +64,8 @@ class MessageMenuFixtureTest {
         val found = FixtureDex.classesWhere(build, { true }) { m ->
             val params = m.parameterTypes.map(CharSequence::toString)
             params == listOf("Lorg/telegram/messenger/MessageObject;", list, list, list) && m.controlBody().any { it.controlRef() == FORWARD_LABEL } ||
-                AccessFlags.STATIC.isSet(m.accessFlags) && params == listOf("I", "I", list, list) && m.returnType == "V" ||
-                m.name == "getParentActivity" && params.isEmpty() || m.isSelectionCanCopy() || m.isStorySaveMenu() ||
+                AccessFlags.STATIC.isSet(m.accessFlags) && params == listOf("I", "I", list, list) && m.origReturnType == "V" ||
+                m.origName == "getParentActivity" && params.isEmpty() || m.isSelectionCanCopy() || m.isStorySaveMenu() ||
                 m.controlBody().map { it.controlRef() }.let { IS_PREMIUM in it && FORWARDS in it && NAME_HIDE in it }
         }
         return (FixtureDex.classes(build, fixed).values + found).distinctBy { it.type }.map(ImmutableClassDef::of)
@@ -106,7 +110,7 @@ class MessageMenuFixtureTest {
             assertEquals("$name: the chat and the number", listOf(chooseTop - 2, chooseTop - 1), chosen[0].namedRegisters())
             for (i in stock.indices) assertEquals("$name: stock choice $i", stock[i].shape(), chosen[i + 1].shape())
 
-            val stub = { n: String -> context.mutableClassDefBy(MESSAGE_MENU).methods.single { it.name == n }.controlBody() }
+            val stub = { n: String -> context.tgMutableClassDefBy(MESSAGE_MENU).methods.single { it.origName == n }.controlBody() }
             assertTrue("$name: the selected message", stub("selected").any { it.controlRef() == site.selected.toString() })
             assertTrue("$name: the selected album", stub("grouped").any { it.controlRef() == site.group.toString() })
             val send = stub("send").single { it.opcode == Opcode.INVOKE_VIRTUAL_RANGE }
@@ -131,7 +135,7 @@ class MessageMenuFixtureTest {
             assertEquals("$name: notify on, no schedule, no stars", listOf(0L, 1L, 0L, 0L),
                 forwardTo.filter { it.opcode == Opcode.CONST_4 || it.opcode == Opcode.CONST_WIDE_16 }.map { (it as WideLiteralInstruction).wideLiteral })
             // Fast forward: the same send with both flags read from the stub's own arguments (sender p4, caption p5).
-            val tools = context.mutableClassDefBy(MESSAGE_MENU_TOOLS).methods.single { it.name == "forwardWith" }
+            val tools = context.tgMutableClassDefBy(MESSAGE_MENU_TOOLS).methods.single { it.origName == "forwardWith" }
             val toolsBody = tools.controlBody()
             val fast = toolsBody.single { it.opcode == Opcode.INVOKE_VIRTUAL_RANGE }
             assertEquals("$name: Telegram's own forward with both flags", sendHelper, fast.controlRef())
@@ -140,7 +144,7 @@ class MessageMenuFixtureTest {
             val flags = toolsBody.filter { it.opcode == Opcode.MOVE }.map { it as TwoRegisterInstruction }.map { it.registerA to it.registerB }
             assertEquals("$name: sender into the forward-from-my-name slot, caption into the hide-caption slot", listOf(4 to 14, 5 to 15), flags)
             // Save video cover, Save album art and Clear from cache: Telegram's own calls, nothing else.
-            fun tool(method: String) = context.mutableClassDefBy(MESSAGE_MENU_TOOLS).methods.single { it.name == method }.controlBody().mapNotNull { it.controlRef() }
+            fun tool(method: String) = context.tgMutableClassDefBy(MESSAGE_MENU_TOOLS).methods.single { it.origName == method }.controlBody().mapNotNull { it.controlRef() }
             val fileLoader = "Lorg/telegram/messenger/FileLoader;"
             assertTrue("$name: video test", tool("video").contains("Lorg/telegram/messenger/MessageObject;->isVideo()Z"))
             assertTrue("$name: music test", tool("music").contains("Lorg/telegram/messenger/MessageObject;->isMusic()Z"))
@@ -168,7 +172,7 @@ class MessageMenuFixtureTest {
             assertTrue("$name: secret chats refused", stub("canSend").any { it.controlRef() == "Lorg/telegram/messenger/DialogObject;->isEncryptedDialog(J)Z" })
             assertTrue("$name: the chat's own send rights", stub("canSend").any { it.controlRef()?.endsWith("->canSendMessages(Lorg/telegram/tgnet/TLRPC\$Chat;)Z") == true })
             assertTrue("$name: paid media refused", stub("blocked").any { it.controlRef() == "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaPaidMedia;" })
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "messageMenuRepeat" }.controlBody()
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "messageMenuRepeat" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }
     }
@@ -191,7 +195,7 @@ class MessageMenuFixtureTest {
             assertEquals("${build.name}: the menu's call still comes last", FILL, after[after.size - 2].controlRef())
             assertEquals(Opcode.RETURN_VOID, after.last().opcode)
             for (flag in listOf("messageMenuRepeat", "commerceTransferSendGram")) {
-                val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.controlBody()
+                val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.controlBody()
                 assertEquals("${build.name}: $flag", 1L, (status.first() as WideLiteralInstruction).wideLiteral)
             }
         }

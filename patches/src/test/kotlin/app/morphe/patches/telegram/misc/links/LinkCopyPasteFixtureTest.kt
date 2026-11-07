@@ -18,6 +18,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
 
 /** The copy and paste hooks of Strip link tracking, on the real pinned web and Play builds. */
 class LinkCopyPasteFixtureTest {
@@ -43,8 +45,8 @@ class LinkCopyPasteFixtureTest {
     }
     private fun hosts(build: File): List<ClassDef> {
         val found = FixtureDex.classesWhere(build, { true }) { method: Method ->
-            method.name == "onTextContextMenuItem" ||
-                (method.definingClass == "Lorg/telegram/messenger/AndroidUtilities;" && method.name == "addToClipboard")
+            method.origName == "onTextContextMenuItem" ||
+                (method.origDefiningClass == "Lorg/telegram/messenger/AndroidUtilities;" && method.origName == "addToClipboard")
         }.associateByTo(linkedMapOf()) { it.type }
         while (true) {
             val ancestors = found.values.flatMap { listOfNotNull(it.superclass) + it.interfaces }

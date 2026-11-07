@@ -16,6 +16,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import app.morphe.util.names.origRef
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** Disable secret chats on the pinned builds: the check sits at the top of the one update entry and stock follows whole. */
 class SecretChatsFixtureTest {
@@ -23,7 +26,7 @@ class SecretChatsFixtureTest {
         (ExtensionDex.classes() + FixtureDex.classes(build, setOf(SECRET_HELPER)).values).distinctBy { it.type })
 
     private fun entry(context: app.morphe.patcher.patch.BytecodePatchContext) =
-        context.mutableClassDefBy(SECRET_HELPER).methods.single { it.name == "processUpdateEncryption" }
+        context.tgMutableClassDefBy(SECRET_HELPER).methods.single { it.origName == "processUpdateEncryption" }
 
     @Test fun `the check goes in front of the secret chat update and the stock body follows unchanged`() {
         for (build in Fixtures.declaredBuilds()) {
@@ -33,7 +36,7 @@ class SecretChatsFixtureTest {
             val site = context.resolveSecretChats()
             site.apply()
             val after = entry(context).implementation!!.instructions.filter { it.opcode != Opcode.NOP }
-            val refs = after.map { (it as? ReferenceInstruction)?.reference?.toString() }
+            val refs = after.map { it.origRef() }
             assertEquals("$where: iget of the chat first", Opcode.IGET_OBJECT, after[0].opcode)
             assertEquals("$where: instance-of", Opcode.INSTANCE_OF, after[1].opcode)
             assertTrue("$where: asks the extension", refs.contains(SECRET_REFUSE))
@@ -48,11 +51,11 @@ class SecretChatsFixtureTest {
             val context = PatchContexts.of((ExtensionDex.classes() + popularAppsOwners(build) + myChatsSearchHosts(build) +
                 nameFoldHosts(build) + newChatsHosts(build) + FixtureDex.classes(build, setOf(SECRET_HELPER)).values).distinctBy { it.type })
             hidePopularAppsPatch.execute(context)
-            val body = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "disableSecretChats" }.implementation!!.instructions.toList()
+            val body = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "disableSecretChats" }.implementation!!.instructions.toList()
             assertEquals("$where: on", 1, (body[0] as NarrowLiteralInstruction).narrowLiteral)
             assertNotNull(where, entry(context))
             assertTrue("$where: hooked", entry(context).implementation!!.instructions.any {
-                (it as? ReferenceInstruction)?.reference?.toString() == SECRET_REFUSE })
+                it.origRef() == SECRET_REFUSE })
         }
     }
 }

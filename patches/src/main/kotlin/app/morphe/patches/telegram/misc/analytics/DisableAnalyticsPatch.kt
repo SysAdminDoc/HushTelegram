@@ -44,6 +44,14 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import app.morphe.util.names.origRef
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origString
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 private const val PATCH = "Disable analytics"
 
@@ -192,10 +200,10 @@ private enum class Report(val premium: AppLogEvent? = null) {
  */
 private fun MutableMethod.skipReadMetricsWhen(hook: String, dryRun: Boolean = false): String? {
     val request = indexOfFirstInstruction {
-        opcode == Opcode.NEW_INSTANCE && (this as ReferenceInstruction).reference.toString() == REPORT_READ_METRICS
+        opcode == Opcode.NEW_INSTANCE && (this as ReferenceInstruction).reference.origString() == REPORT_READ_METRICS
     }
     val check = if (request < 0) -1 else indexOfFirstInstructionReversed(request) {
-        opcode == Opcode.INVOKE_VIRTUAL && (this as ReferenceInstruction).reference.toString() == "Ljava/util/ArrayList;->isEmpty()Z"
+        opcode == Opcode.INVOKE_VIRTUAL && (this as ReferenceInstruction).reference.origString() == "Ljava/util/ArrayList;->isEmpty()Z"
     }
     if (check < 0 || request - check > 3) {
         return "the read metrics sender doesn't check its batch just before building $REPORT_READ_METRICS"
@@ -249,7 +257,7 @@ internal data class AppLogHook(val method: MutableMethod, val index: Int, val co
 internal fun BytecodePatchContext.resolveAppLogHooks(): Map<AppLogEvent, AppLogHook> {
     val candidates = AppLogEvent.entries.associateWith { mutableListOf<Method>() }
     forEachClassMentioning(Mention.reference(SAVE_APP_LOG)) { classDef ->
-        if (classDef.type.startsWith("Lapp/hushtelegram/extension/")) return@forEachClassMentioning
+        if (classDef.origType.startsWith("Lapp/hushtelegram/extension/")) return@forEachClassMentioning
         for (method in classDef.methods) {
             val instructions = method.appLogInstructions()
             if (instructions.none { it.opcode == Opcode.NEW_INSTANCE && it.appLogReference() == SAVE_APP_LOG }) continue
@@ -260,11 +268,11 @@ internal fun BytecodePatchContext.resolveAppLogHooks(): Map<AppLogEvent, AppLogH
     for ((event, matches) in candidates) {
         promoShape(matches.size <= 1, "ambiguous ${event.type} builder")
         val found = matches.singleOrNull() ?: continue
-        val method = mutableClassDefBy(found.definingClass).methods.single { it.name == found.name && it.returnType == found.returnType &&
+        val method = tgMutableClassDefBy(found.definingClass).methods.single { it.origName == found.origName && it.origReturnType == found.origReturnType &&
             it.parameterTypes.map { type -> type.toString() } == found.parameterTypes.map { type -> type.toString() } }
         val instructions = method.appLogInstructions()
         val types = instructions.indices.filter { instructions[it].opcode == Opcode.IPUT_OBJECT && instructions[it].appLogField()?.let { field ->
-            field.definingClass == APP_EVENT && field.name == "type" && field.type == "Ljava/lang/String;"
+            field.origDefiningClass == APP_EVENT && field.origName == "type" && field.origType == "Ljava/lang/String;"
         } == true }
         promoShape(types.size == 1, "${event.type} includes other or unverified event types")
         val type = types.single()
@@ -275,8 +283,8 @@ internal fun BytecodePatchContext.resolveAppLogHooks(): Map<AppLogEvent, AppLogH
         promoShape(requests.size == 1 && events.size == 1 &&
             instructions[events.single()].namedRegisters().single() == instructions[type].namedRegisters()[1], "${event.type} event/request batch changed")
         val sends = instructions.indices.filter { instructions[it].appLogCall()?.let { call ->
-            call.definingClass == "Lorg/telegram/tgnet/ConnectionsManager;" && call.name == "sendRequest" &&
-                call.parameterTypes.map { it.toString() } == listOf("Lorg/telegram/tgnet/TLObject;", "Lorg/telegram/tgnet/RequestDelegate;") && call.returnType == "I"
+            call.origDefiningClass == "Lorg/telegram/tgnet/ConnectionsManager;" && call.origName == "sendRequest" &&
+                call.parameterTypes.map { it.toString() } == listOf("Lorg/telegram/tgnet/TLObject;", "Lorg/telegram/tgnet/RequestDelegate;") && call.origReturnType == "I"
         } == true }
         promoShape(sends.size == 1, "${event.type} telemetry send is ambiguous")
         val send = sends.single()
@@ -285,14 +293,14 @@ internal fun BytecodePatchContext.resolveAppLogHooks(): Map<AppLogEvent, AppLogH
         promoShape(send > type && instructions[send].namedRegisters().size == 3 &&
             instructions[send].namedRegisters()[1] == requestRegister, "${event.type} request is not the object sent")
         val batch = instructions.indices.filter { instructions[it].opcode == Opcode.IGET_OBJECT && instructions[it].appLogField()?.let { field ->
-            field.definingClass == SAVE_APP_LOG && field.name == "events" && field.type == "Ljava/util/ArrayList;"
+            field.origDefiningClass == SAVE_APP_LOG && field.origName == "events" && field.origType == "Ljava/util/ArrayList;"
         } == true }
         promoShape(batch.size == 1 && instructions[batch.single()].namedRegisters()[1] == requestRegister &&
             instructions.getOrNull(batch.single() + 1)?.appLogCall()?.toString() == "Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z" &&
             instructions[batch.single() + 1].namedRegisters() == listOf(instructions[batch.single()].namedRegisters()[0], eventRegister),
             "${event.type} no longer sends exactly the verified event")
         val data = instructions.indices.filter { instructions[it].opcode == Opcode.IPUT_OBJECT && instructions[it].appLogField()?.let { field ->
-            field.definingClass == APP_EVENT && field.name == "data" && field.type == "Lorg/telegram/tgnet/TLRPC\$JSONValue;"
+            field.origDefiningClass == APP_EVENT && field.origName == "data" && field.origType == "Lorg/telegram/tgnet/TLRPC\$JSONValue;"
         } == true }
         promoShape(data.size == 1 && instructions[data.single()].namedRegisters()[1] == eventRegister,
             "${event.type} data assignment changed")
@@ -322,21 +330,21 @@ internal fun BytecodePatchContext.resolveAppLogHooks(): Map<AppLogEvent, AppLogH
             // A report that continues into a stock call must reach it straight from the send and
             // return right after, so skipping the send skips nothing else.
             val end = if (event.after == null) continuation else continuation + 1
-            promoShape(AccessFlags.STATIC.isSet(method.accessFlags) && method.returnType == "V" &&
+            promoShape(AccessFlags.STATIC.isSet(method.accessFlags) && method.origReturnType == "V" &&
                 method.parameterTypes.map { it.toString() } == event.parameters &&
                 (event.after == null || instructions[continuation].appLogCall()?.toString() == event.after &&
                     flow.normal[continuation] == listOf(end)) &&
                 instructions.getOrNull(end)?.opcode == Opcode.RETURN_VOID &&
-                instructions.count { it.appLogCall()?.name == "sendRequest" } == 1, "${event.type} is no longer a standalone report")
+                instructions.count { it.appLogCall()?.origName == "sendRequest" } == 1, "${event.type} is no longer a standalone report")
         } else {
             val request = requests.single()
             val cancellation = request - 1
             val cleanup = instructions[continuation]
-            promoShape(method.definingClass == "Lorg/telegram/messenger/BillingController;" && method.returnType == "V" &&
+            promoShape(method.origDefiningClass == "Lorg/telegram/messenger/BillingController;" && method.origReturnType == "V" &&
                 !AccessFlags.STATIC.isSet(method.accessFlags) && method.parameterTypes.size == 3 && method.parameterTypes.map { it.toString() }.takeLast(2) ==
                 listOf("Ljava/util/List;", "Ljava/lang/Runnable;") && instructions.getOrNull(cancellation)?.opcode == Opcode.IF_NE &&
                 continuation in flow.normal[cancellation] && cleanup.opcode == Opcode.IGET_OBJECT && cleanup.appLogField()?.let { field ->
-                    field.definingClass == method.definingClass && field.name == "onCanceled" && field.type == "Ljava/lang/Runnable;"
+                    field.origDefiningClass == method.origDefiningClass && field.origName == "onCanceled" && field.origType == "Ljava/lang/Runnable;"
                 } == true, "Premium cancellation report no longer joins billing cleanup")
             val response = instructions[cancellation].namedRegisters()[0]
             promoShape(instructions.getOrNull(cancellation - 1)?.opcode == Opcode.IF_EQZ &&
@@ -345,7 +353,7 @@ internal fun BytecodePatchContext.resolveAppLogHooks(): Map<AppLogEvent, AppLogH
             val responseRead = (0 until cancellation).lastOrNull { instructions[it].opcode.setsRegister() &&
                 instructions[it].namedRegisters().firstOrNull() == response }
             promoShape(responseRead != null && instructions[responseRead].opcode == Opcode.IGET && instructions[responseRead].appLogField()?.let { field ->
-                field.type == "I" && field.definingClass == method.parameterTypes.first().toString()
+                field.origType == "I" && field.origDefiningClass == method.origParameterTypes.first().toString()
             } == true, "Premium fail event no longer reads the billing result")
             val responseIndex = responseRead!!
             val result = instructions[responseIndex].namedRegisters()[1]
@@ -374,7 +382,7 @@ private fun promoShape(valid: Boolean, reason: String) {
     if (!valid) throw PatchException("$PATCH: $reason; refuses changed app-log geometry before editing")
 }
 private fun Method.appLogInstructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
-private fun Instruction.appLogReference() = (this as? ReferenceInstruction)?.reference?.toString()
+private fun Instruction.appLogReference() = origRef()
 private fun Instruction.appLogString() = ((this as? ReferenceInstruction)?.reference as? StringReference)?.string
 private fun Instruction.appLogField() = (this as? ReferenceInstruction)?.reference as? FieldReference
 private fun Instruction.appLogCall() = (this as? ReferenceInstruction)?.reference as? MethodReference

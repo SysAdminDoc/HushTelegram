@@ -5,7 +5,7 @@
 package app.morphe.patches.telegram.misc.recommendations
 
 import app.morphe.patcher.Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.fieldAccess
 import app.morphe.patcher.methodCall
 import app.morphe.patcher.newInstance
@@ -37,6 +37,13 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origString
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgFingerprint
+import app.morphe.util.names.tgMutableClassDefBy
 
 private const val PATCH = "Hide recommendations"
 private const val RECOMMENDATIONS = "$EXTENSION_PACKAGE/misc/Recommendations;"
@@ -51,24 +58,32 @@ internal const val GET_CHANNEL_RECOMMENDATIONS = "Lorg/telegram/tgnet/TLRPC\$TL_
 internal const val GET_BOT_RECOMMENDATIONS = "Lorg/telegram/tgnet/tl/TL_bots\$getBotRecommendations;"
 
 /** One controller method fetches similar bots for positive IDs and channels for zero or negative IDs. */
-internal object GetChannelRecommendationsFingerprint : Fingerprint(
-    definingClass = MESSAGES_CONTROLLER,
-    returnType = CHANNEL_RECOMMENDATIONS,
-    parameters = listOf("J"),
-    filters = listOf(newInstance(GET_BOT_RECOMMENDATIONS), newInstance(GET_CHANNEL_RECOMMENDATIONS)),
-)
+internal val GetChannelRecommendationsFingerprint by tgFingerprint {
+    Fingerprint(
+        definingClass = type(MESSAGES_CONTROLLER),
+        returnType = type(CHANNEL_RECOMMENDATIONS),
+        parameters = listOf("J"),
+        filters = listOf(newInstance(GET_BOT_RECOMMENDATIONS), newInstance(GET_CHANNEL_RECOMMENDATIONS)),
+    )
+}
 
 /** Search also reads recommendations through this separate kept cache getter. */
-internal object GetCachedChannelRecommendationsFingerprint : Fingerprint(
-    name = "getCachedChannelRecommendations",
-    definingClass = MESSAGES_CONTROLLER,
-    returnType = CHANNEL_RECOMMENDATIONS,
-    parameters = listOf("J"),
-    filters = listOf(
-        fieldAccess(definingClass = MESSAGES_CONTROLLER, name = "cachedChannelRecommendations", type = "Ljava/util/HashMap;"),
-        methodCall(definingClass = "Ljava/util/HashMap;", name = "get"),
-    ),
-)
+internal val GetCachedChannelRecommendationsFingerprint by tgFingerprint {
+    Fingerprint(
+        name = methodName(MESSAGES_CONTROLLER, "getCachedChannelRecommendations", listOf("J"), CHANNEL_RECOMMENDATIONS),
+        definingClass = type(MESSAGES_CONTROLLER),
+        returnType = type(CHANNEL_RECOMMENDATIONS),
+        parameters = listOf("J"),
+        filters = listOf(
+            fieldAccess(
+                definingClass = type(MESSAGES_CONTROLLER),
+                name = field(MESSAGES_CONTROLLER, "cachedChannelRecommendations", "Ljava/util/HashMap;").name,
+                type = "Ljava/util/HashMap;",
+            ),
+            methodCall(definingClass = "Ljava/util/HashMap;", name = "get"),
+        ),
+    )
+}
 
 /**
  * Hides similar channels and bots without clearing Telegram's recommendation cache.
@@ -112,16 +127,16 @@ val hideRecommendationsPatch = bytecodePatch(
                     }
                 }
                 RecommendationTarget.CACHE -> GetCachedChannelRecommendationsFingerprint.methodOrNull.let { method ->
-                    val result = classDefByOrNull(CHANNEL_RECOMMENDATIONS)
+                    val result = tgClassDefByOrNull(CHANNEL_RECOMMENDATIONS)
                     val constructor = result?.methods?.singleOrNull {
-                        it.name == "<init>" && it.parameterTypes.isEmpty() && it.returnType == "V" &&
+                        it.origName == "<init>" && it.parameterTypes.isEmpty() && it.origReturnType == "V" &&
                             AccessFlags.PUBLIC.isSet(it.accessFlags)
                     }
                     val body = constructor?.implementation?.instructions?.toList().orEmpty()
                     val emptyList = result != null && AccessFlags.PUBLIC.isSet(result.accessFlags) &&
                         body.map { it.opcode } == listOf(
                         Opcode.INVOKE_DIRECT, Opcode.NEW_INSTANCE, Opcode.INVOKE_DIRECT, Opcode.IPUT_OBJECT, Opcode.RETURN_VOID,
-                    ) && body.filterIsInstance<ReferenceInstruction>().map { it.reference.toString() } == listOf(
+                    ) && body.filterIsInstance<ReferenceInstruction>().map { it.reference.origString() } == listOf(
                         "Ljava/lang/Object;-><init>()V", "Ljava/util/ArrayList;", "Ljava/util/ArrayList;-><init>()V",
                         "$CHANNEL_RECOMMENDATIONS->chats:Ljava/util/ArrayList;",
                     )
@@ -185,15 +200,15 @@ internal fun BytecodePatchContext.resolveKeyboardFeatured(): KeyboardFeaturedPla
     }
     val (keyboard, tab) = tabs.singleOrNull()
         ?: return missing("the sticker keyboard no longer builds its Trending tab in one place")
-    val tabRead = mutableClassDefBy(keyboard).methods.single { it.toString() == tab.toString() }
+    val tabRead = tgMutableClassDefBy(keyboard).methods.single { it.toString() == tab.toString() }
         .featuredRead(FEATURED_STICKERS) ?: return missing("the sticker keyboard no longer reads its trending packs once")
 
     val grids = classDefsMentioning(Mention.reference(FEATURED_EMOJI)).filter { classDef ->
-        classDef.fields.any { it.type == keyboard.type && !AccessFlags.STATIC.isSet(it.accessFlags) }
+        classDef.fields.any { it.origType == keyboard.origType && !AccessFlags.STATIC.isSet(it.accessFlags) }
     }.flatMap { classDef -> classDef.methods.filter { it.isKeyboardPass() && it.featuredCalls(FEATURED_EMOJI) == 1 }.map { classDef to it } }
     val (owner, grid) = grids.singleOrNull()
         ?: return missing("the emoji keyboard no longer builds its pack list in one place")
-    val gridRead = mutableClassDefBy(owner).methods.single { it.toString() == grid.toString() }
+    val gridRead = tgMutableClassDefBy(owner).methods.single { it.toString() == grid.toString() }
         .featuredRead(FEATURED_EMOJI) ?: return missing("the emoji keyboard no longer reads its trending packs once")
 
     for (read in listOf(tabRead, gridRead)) {
@@ -230,8 +245,8 @@ private fun MutableMethod.featuredRead(call: String): FeaturedRead? {
 private fun FeaturedRead.trialRefusals(context: BytecodePatchContext): List<String> {
     val trial = MutableMethod(ImmutableMethod(method.definingClass, method.name, method.parameters, method.returnType,
         method.accessFlags, null, null, method.implementation)).apply { addInstructions(at, smali) }
-    fun refusals(target: Method) = refusedByVerifier(target, { context.classDefByOrNull(it)?.superclass },
-        { context.classDefByOrNull(it)?.let { found -> AccessFlags.INTERFACE.isSet(found.accessFlags) } })
+    fun refusals(target: Method) = refusedByVerifier(target, { context.tgClassDefByOrNull(it)?.superclass },
+        { context.tgClassDefByOrNull(it)?.let { found -> AccessFlags.INTERFACE.isSet(found.accessFlags) } })
     val numbered = Regex("^instruction (\\d+) ")
     fun asStock(refusal: String): String {
         val number = numbered.find(refusal)?.groups?.get(1) ?: return refusal

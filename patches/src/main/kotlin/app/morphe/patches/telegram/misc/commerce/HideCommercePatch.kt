@@ -5,7 +5,8 @@
 package app.morphe.patches.telegram.misc.commerce
 
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.origRef
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
@@ -37,6 +38,12 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 private const val PATCH = "Hide Premium, gifts and Stars"
 internal const val COMMERCE = "$EXTENSION_PACKAGE/misc/Commerce;"
@@ -191,7 +198,7 @@ private val PROFILE_GRAM = SendGramSite("profile menu", "showProfileSendGram", 3
     call.parameterTypes.map { it.toString() } == listOf("I", "I", "Ljava/lang/String;")
 }
 private val ADDRESS_GRAM = SendGramSite("TON address popup", "showAddressSendGram", 2) { call ->
-    call.returnType == "V" && call.parameterTypes.map { it.toString() } == MENU_ADD
+    call.origReturnType == "V" && call.parameterTypes.map { it.toString() } == MENU_ADD
 }
 private val TRANSFER_GRAM = SendGramSite("Gram transfer menu", "showTransferSendGram", 2) { call -> call.toString() == INSERT }
 
@@ -211,19 +218,19 @@ internal data class CommercePlan(
 /** Kept resources and TL types identify the surfaces; all renamed classes and members come from their bodies. */
 internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
     val classes = mutableMapOf<String, ClassDef>()
-    classDefForEach { if (!it.type.startsWith("Lapp/hushtelegram/extension/")) classes[it.type] = it }
+    classDefForEach { if (!it.origType.startsWith("Lapp/hushtelegram/extension/")) classes[it.type] = it }
     // Each search below reads only the methods of classes that might mention what it looks for,
     // still in the app's order and still checked in full.
     fun methods(mentioning: Mention) = classDefsMentioning(mentioning).mapNotNull { classes[it.type] }.flatMap { it.methods.toList() }
-    fun mutable(method: Method) = mutableClassDefBy(method.definingClass).methods.single { it.sameSignature(method) }
+    fun mutable(method: Method) = tgMutableClassDefBy(method.definingClass).methods.single { it.sameSignature(method) }
     for (stub in listOf("giftTabId", "giftButtonIndex")) {
-        shape(mutableClassDefBy(COMMERCE).methods.count { it.name == stub && it.hasShape(emptyList(), "I") &&
+        shape(tgMutableClassDefBy(COMMERCE).methods.count { it.origName == stub && it.hasShape(emptyList(), "I") &&
             AccessFlags.STATIC.isSet(it.accessFlags) } == 1, "extension has no single integer $stub stub")
     }
     val hooks = mutableMapOf<CommerceTarget, List<CommerceEdit>>()
 
     val settings = methods(Mention.anyReference(SETTINGS_SALES)).filter { method ->
-        method.returnType == "V" && AccessFlags.STATIC.isSet(method.accessFlags) &&
+        method.origReturnType == "V" && AccessFlags.STATIC.isSet(method.accessFlags) &&
             method.parameterTypes.map { it.toString() } == listOf(method.definingClass, ARRAY_LIST) &&
             SETTINGS_SALES.any { resource -> method.instructions().any { it.reference() == resource } }
     }.unique("Settings sales row builder")
@@ -283,7 +290,7 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
 
     // Telegram 13.0's attach menu: the button binder is the one bound by position that labels a
     // button Wallet.
-    val binder = methods(Mention.reference(WALLET_LABEL)).filter { method -> method.returnType == "V" && !AccessFlags.STATIC.isSet(method.accessFlags) &&
+    val binder = methods(Mention.reference(WALLET_LABEL)).filter { method -> method.origReturnType == "V" && !AccessFlags.STATIC.isSet(method.accessFlags) &&
         method.parameterTypes.size == 2 && method.parameterTypes[1].toString() == "I" &&
         method.instructions().any { it.reference() == WALLET_LABEL }
     }.unique("attach menu button binder")
@@ -300,11 +307,11 @@ internal fun BytecodePatchContext.resolveCommerceHooks(): CommercePlan {
     // Send Gram, found by the kept types around it: the profile's menu builder, the static popup a
     // TON address link's style opens, and the message menu builder that fills three lists.
     val sendGram = methods(Mention.reference(SEND_GRAM)).filter { method -> method.instructions().any { it.reference() == SEND_GRAM } }
-    val profileGram = sendGram.filter { it.definingClass == PROFILE_ACTIVITY && it.hasShape(listOf("Z"), "V") }
+    val profileGram = sendGram.filter { it.origDefiningClass == PROFILE_ACTIVITY && it.hasShape(listOf("Z"), "V") }
         .unique("profile menu with Send Gram")
     if (profileGram != null) hooks[CommerceTarget.PROFILE_SEND_GRAM] = listOf(sendGramEdit(mutable(profileGram), PROFILE_GRAM))
     val giftMenu = methods(Mention.allReferences(PROFILE_GIFT_ITEMS)).filter { method ->
-        method.definingClass == PROFILE_ACTIVITY && method.hasShape(listOf("Z"), "V") &&
+        method.origDefiningClass == PROFILE_ACTIVITY && method.hasShape(listOf("Z"), "V") &&
             method.instructions().let { body -> PROFILE_GIFT_ITEMS.all { label -> body.any { it.reference() == label } } }
     }.unique("profile menu with Send a Gift")
     if (giftMenu != null) hooks[CommerceTarget.PROFILE_GIFT_MENU] = profileGiftMenuEdits(mutable(giftMenu))
@@ -420,7 +427,7 @@ private fun attachWalletEdits(binder: MutableMethod, methods: (Mention) -> List<
     shape(touching.sumOf { method -> method.instructions().count { it.opcode == Opcode.IGET && it.reference() == field } } == 1,
         "attach menu Wallet number is read outside its binder")
     val writers = touching.filter { method -> method.instructions().any { it.opcode == Opcode.IPUT && it.reference() == field } }
-    shape(writers.size == 1 && writers.single().definingClass == binder.definingClass &&
+    shape(writers.size == 1 && writers.single().origDefiningClass == binder.origDefiningClass &&
         writers.single().hasShape(emptyList(), "V"), "attach menu Wallet number has no single numbering pass")
     val rows = mutable(writers.single())
     val body = rows.instructions()
@@ -471,7 +478,7 @@ private fun menuWalletEdit(method: MutableMethod): CommerceEdit {
     val add = (label + 3 until skip).firstOrNull { body[it].opcode in setOf(Opcode.INVOKE_VIRTUAL, Opcode.INVOKE_VIRTUAL_RANGE) }
         ?: throw PatchException("$PATCH: chat list menu no longer adds Wallet as an entry (before editing)")
     val call = body[add].call()
-    shape(call != null && call.returnType == "V" && call.parameterTypes.map { it.toString() } == MENU_ADD &&
+    shape(call != null && call.origReturnType == "V" && call.parameterTypes.map { it.toString() } == MENU_ADD &&
         body[add].namedRegisters().getOrNull(2) == title && (label + 3 until add).none { body[it].writes(title) },
         "chat list menu no longer adds Wallet as an entry")
     val saved = body.indexOfFirst { it.reference() == MENU_NEIGHBORS.last() }
@@ -677,7 +684,7 @@ private fun footerGiftIndex(classDef: ClassDef, method: Method): Int {
     val gift = constantBefore(body, label - 1, operands.single { it != button })
         ?: throw PatchException("$PATCH: no footer Gift index (before editing)")
     shape(gift in 0..32767, "footer Gift index does not fit the extension fact")
-    val init = classDef.methods.singleOrNull { it.name == "<clinit>" }
+    val init = classDef.methods.singleOrNull { it.origName == "<clinit>" }
         ?: throw PatchException("$PATCH: no footer icon table (before editing)")
     val icons = init.instructions()
     val icon = icons.indices.singleOrNull { icons[it].reference() == GIFT_ICON }
@@ -756,7 +763,7 @@ private fun Instruction.writes(register: Int): Boolean {
     val destination = namedRegisters().firstOrNull() ?: return false
     return destination == register || opcode.setsWideRegister() && destination + 1 == register
 }
-private fun Instruction.reference() = (this as? ReferenceInstruction)?.reference?.toString()
+private fun Instruction.reference() = origRef()
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun MethodReference.hasShape(parameters: List<String>, result: String) =
     parameterTypes.map { it.toString() } == parameters && returnType == result

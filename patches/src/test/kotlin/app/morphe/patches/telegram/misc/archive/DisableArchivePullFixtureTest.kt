@@ -25,6 +25,10 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import app.morphe.util.names.origRef
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** hasHiddenArchive, the archive row's sort, the chat list's menu, the stubs and the runtime. */
 class DisableArchivePullFixtureTest {
@@ -34,7 +38,7 @@ class DisableArchivePullFixtureTest {
             val kept = FixtureDex.classes(build, setOf(MESSAGES_CONTROLLER, ARCHIVE_HIDDEN, SELECTED_ACCOUNT, ARCHIVED_CHATS, ARCHIVE_ICON)
                 .map { it.substringBefore("->") }.toSet()).values
             val chats = FixtureDex.classesWhere(build, { true }) { m ->
-                m.controlBody().any { it.call()?.let { c -> c.definingClass == APPLICATION_LOADER && c.name == "addItemOptions" } == true }
+                m.controlBody().any { it.call()?.let { c -> c.origDefiningClass == APPLICATION_LOADER && c.origName == "addItemOptions" } == true }
             }
             val context = PatchContexts.of(ExtensionDex.classes() + (kept + chats).map(ImmutableClassDef::of))
             val sites = context.resolveDisableArchivePull()
@@ -71,7 +75,7 @@ class DisableArchivePullFixtureTest {
             assertStock("$name menu head", menu.take(at), menuAfter.take(at))
             assertStock("$name menu tail", menu.drop(at), menuAfter.drop(at + 3))
 
-            val stub = { n: String -> context.mutableClassDefBy(ARCHIVE_PULL).methods.single { it.name == n }.controlBody() }
+            val stub = { n: String -> context.tgMutableClassDefBy(ARCHIVE_PULL).methods.single { it.origName == n }.controlBody() }
             assertEquals(ARCHIVE_HIDDEN, stub("hidden").first().controlRef())
             assertTrue("$name: the archive folder lookup", stub("archived").any { it.controlRef() == "${sites.lookup.definingClass}->${sites.lookup.name}(J)Ljava/lang/Object;" })
             val add = stub("add")
@@ -81,7 +85,7 @@ class DisableArchivePullFixtureTest {
             assertTrue("$name: a chat list for the archive", open.any { it.controlRef() == "${sites.chats}-><init>(Landroid/os/Bundle;)V" })
             assertEquals("$name: shown over this one", sites.present.toString(), open.last { it.opcode == Opcode.INVOKE_VIRTUAL }.controlRef())
 
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "disableArchivePull" }.controlBody()
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "disableArchivePull" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }
     }
@@ -89,8 +93,8 @@ class DisableArchivePullFixtureTest {
     private fun assertStock(what: String, before: List<Instruction>, after: List<Instruction>) {
         assertEquals("$what: length", before.size, after.size)
         for (i in before.indices) {
-            assertEquals("$what: stock $i", listOf(before[i].opcode, before[i].namedRegisters(), (before[i] as? ReferenceInstruction)?.reference?.toString()),
-                listOf(after[i].opcode, after[i].namedRegisters(), (after[i] as? ReferenceInstruction)?.reference?.toString()))
+            assertEquals("$what: stock $i", listOf(before[i].opcode, before[i].namedRegisters(), before[i].origRef()),
+                listOf(after[i].opcode, after[i].namedRegisters(), after[i].origRef()))
         }
     }
 }

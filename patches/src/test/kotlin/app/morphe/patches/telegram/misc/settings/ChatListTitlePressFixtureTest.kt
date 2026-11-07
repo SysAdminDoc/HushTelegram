@@ -8,7 +8,7 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.util.names.addInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.holiday.HOLIDAY_LOOK
@@ -29,6 +29,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import app.morphe.util.names.origName
 
 /**
  * A long press on the "Telegram" title at the top of the chat list opens HushTelegram settings. The
@@ -131,9 +132,9 @@ class ChatListTitlePressFixtureTest {
         assertEquals("${build.name}: the holiday check", 1, check.size)
         val loader = check.single().methods.single { method -> method.body().any { it.reference() == NEW_YEAR_HAT } }
         val snow = loader.body().first { it.opcode == Opcode.SPUT_BOOLEAN }.reference()
-        val readers = FixtureDex.classesWhere(build, READER_CENSUS, { true }) { method -> method.name == "getTextStartX" ||
+        val readers = FixtureDex.classesWhere(build, READER_CENSUS, { true }) { method -> method.origName == "getTextStartX" ||
             method.body().any { (it.opcode == Opcode.SGET_BOOLEAN && it.reference() == snow) ||
-                (method.name == "createView" && it.reference() == LOGO) } }
+                (method.origName == "createView" && it.reference() == LOGO) } }
         return (check + readers).distinctBy { it.type }
     }
 

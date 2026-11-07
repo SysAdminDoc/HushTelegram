@@ -48,9 +48,9 @@
 package app.morphe.util
 
 import app.morphe.patcher.InstructionFilter
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.addInstruction
+import app.morphe.util.names.addInstructions
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstruction
@@ -76,6 +76,8 @@ import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstructio
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.Reference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
 
 /**
  * Inserts instructions at a given index, using the existing control flow label at that index.
@@ -284,7 +286,7 @@ fun BytecodePatchContext.superclassChain(type: String, maxDepth: Int = 20): Sequ
     var depth = 0
     while (at != null && depth++ < maxDepth && seen.add(at)) {
         yield(at)
-        at = classDefByOrNull(at)?.superclass
+        at = tgClassDefByOrNull(at)?.superclass
     }
 }
 
@@ -607,7 +609,7 @@ val Method.numberOfParameterRegisters: Int
         }
 
         for (param in parameters) {
-            count += when (param.type) {
+            count += when (param.origType) {
                 "J", "D" -> 2   // wide
                 else -> 1       // normal
             }

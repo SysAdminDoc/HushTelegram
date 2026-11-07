@@ -23,11 +23,15 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import app.morphe.util.names.origRef
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgMutableClassDefBy
 
 private val PLACE_HOSTS = ConcurrentHashMap<String, List<ClassDef>>()
 
 private fun Method.placeBody(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
-private fun Instruction.placeRef() = (this as? ReferenceInstruction)?.reference?.toString()
+private fun Instruction.placeRef() = origRef()
 
 /** Every class a place hook goes in, with the classes the stubs and the drag resets read. */
 internal fun allChatsPlaceHosts(build: File): List<ClassDef> = PLACE_HOSTS.getOrPut(build.path) {
@@ -61,8 +65,8 @@ class AllChatsPlaceFixtureTest {
                 val request = sent.namedRegisters()[1]
                 assertTrue(build.name, site.smali.contains("{v$request}"))
             }
-            assertEquals(build.name, 1, orders.count { it.method.name == "setIsEditing" })
-            assertEquals(build.name, 1, orders.count { it.method.definingClass == PLACE_SETUP })
+            assertEquals(build.name, 1, orders.count { it.method.origName == "setIsEditing" })
+            assertEquals(build.name, 1, orders.count { it.method.origDefiningClass == PLACE_SETUP })
         }
     }
 
@@ -73,9 +77,9 @@ class AllChatsPlaceFixtureTest {
             val answers = plan.sites.filter { it.smali.contains(PLACE_KEEPS) }
             // The strip's two drag checks, its reset, the settings page's reset and the startup check.
             assertEquals(build.name, 5, answers.size)
-            val runs = answers.filter { it.method.name == "run" }
+            val runs = answers.filter { it.method.origName == "run" }
             assertEquals(build.name, 2, runs.size)
-            assertEquals(build.name, 1, answers.count { it.method.name == "updatePremium" })
+            assertEquals(build.name, 1, answers.count { it.method.origName == "updatePremium" })
             for (site in answers) {
                 val body = site.method.placeBody()
                 assertEquals(build.name, Opcode.MOVE_RESULT, body[site.at - 1].opcode)
@@ -100,7 +104,7 @@ class AllChatsPlaceFixtureTest {
             assertNull(build.name, plan.missing)
             val load = plan.sites.single { it.smali.contains(PLACE_LOADED) }
             val body = load.method.placeBody()
-            assertTrue(build.name, load.method.name.startsWith("lambda\$processLoadedDialogFilters\$"))
+            assertTrue(build.name, load.method.origName.startsWith("lambda\$processLoadedDialogFilters\$"))
             assertEquals(build.name, Opcode.INVOKE_STATIC, body[load.at - 1].opcode)
             assertEquals(build.name, "Ljava/util/Collections;->sort(Ljava/util/List;Ljava/util/Comparator;)V", body[load.at - 1].placeRef())
             val sorted = body[load.at - 1].namedRegisters().first()
@@ -132,7 +136,7 @@ class AllChatsPlaceFixtureTest {
                 assertEquals(build.name, Opcode.INVOKE_STATIC, hook.opcode)
                 assertTrue(build.name, hook.placeRef()!!.startsWith(ALL_CHATS_PLACE))
             }
-            val stubs = context.mutableClassDefBy(ALL_CHATS_PLACE).methods.associateBy { it.name }
+            val stubs = context.tgMutableClassDefBy(ALL_CHATS_PLACE).methods.associateBy { it.name }
             // Each one whole: smali drops what it can't build, and the count shows it.
             mapOf("selectedConfig" to 4, "config" to 4, "premium" to 4, "userId" to 4, "folderId" to 3, "order" to 3).forEach { (name, size) ->
                 assertEquals("${build.name} $name", size, stubs.getValue(name).placeBody().size)
@@ -143,7 +147,7 @@ class AllChatsPlaceFixtureTest {
     @Test fun `a build whose folder locking changed says so instead of hooking half of it`() {
         val build = Fixtures.declaredBuilds().first()
         val context = contextOf(build)
-        context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.removeIf { it.name == "lockFiltersInternal" }
+        context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.removeIf { it.origName == "lockFiltersInternal" }
         val plan = context.resolveAllChatsPlace()
         assertTrue(plan.missing!!, plan.sites.isEmpty())
         assertTrue(plan.missing!!, "folder locking" in plan.missing!!)

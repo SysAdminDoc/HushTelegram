@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.messagemenu
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.localcontrols.Mention
@@ -14,6 +14,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val STORY_SAVE = "Lapp/hushtelegram/extension/telegram/misc/StorySave;"
 internal const val STORY_SHAREABLE = "$STORY_SAVE->shareable(I)Z"
@@ -88,6 +89,6 @@ internal fun BytecodePatchContext.resolveStorySave(): StorySavePlan {
     }
     val match = found.singleOrNull() ?: return StorySavePlan(
         "the story menu no longer has one Save to Gallery check (found ${found.size})", null)
-    val method = mutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
+    val method = tgMutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
     return StorySavePlan(null, method)
 }

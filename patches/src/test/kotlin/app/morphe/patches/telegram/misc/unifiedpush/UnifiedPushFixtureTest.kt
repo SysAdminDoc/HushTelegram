@@ -8,7 +8,8 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.origRef
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
@@ -36,6 +37,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** PushListenerController's sign-up and wake-up on both declared builds, where UnifiedPush plugs in. */
 class UnifiedPushFixtureTest {
@@ -50,9 +55,9 @@ class UnifiedPushFixtureTest {
         REACTION_ALERT_TYPES
 
     private fun BytecodePatchContext.silentCheck() =
-        mutableClassDefBy(NOTIFICATIONS).methods.single { it.name == "isSilentMessage" }
+        tgMutableClassDefBy(NOTIFICATIONS).methods.single { it.origName == "isSilentMessage" }
     private fun BytecodePatchContext.status(name: String) =
-        (mutableClassDefBy(SETTINGS_STATUS).method(name).controlBody().first() as WideLiteralInstruction).wideLiteral
+        (tgMutableClassDefBy(SETTINGS_STATUS).method(name).controlBody().first() as WideLiteralInstruction).wideLiteral
 
     /** The silent check's code with the sound hook taken out, for comparing with stock. */
     private fun withoutSoundHook(code: List<com.android.tools.smali.dexlib2.iface.instruction.Instruction>): List<List<Any?>> {
@@ -82,20 +87,20 @@ class UnifiedPushFixtureTest {
      * build: AnimatedEmojiDrawable among them, whose name R8 changes from build to build.
      */
     private fun emojiLookupClasses(build: File) = FixtureDex.classesWhere(build, EMOJI_CENSUS, { true }) {
-        it.returnType == "Lorg/telegram/tgnet/TLRPC\$Document;" && it.parameterTypes.joinToString("") == "IJ"
+        it.origReturnType == "Lorg/telegram/tgnet/TLRPC\$Document;" && it.parameterTypes.joinToString("") == "IJ"
     }
 
     private fun context(build: File, withEmojiLookup: Boolean = true): BytecodePatchContext {
         val host = FixtureDex.classes(build, hosts).values.map(ImmutableClassDef::of)
         assertEquals("${build.name}: Telegram's push classes", hosts.size, host.size)
         val lookups = if (withEmojiLookup) emojiLookupClasses(build).map(ImmutableClassDef::of) else emptyList()
-        return PatchContexts.of(ExtensionDex.classes() + host + lookups.filter { it.type !in hosts })
+        return PatchContexts.of(ExtensionDex.classes() + host + lookups.filter { it.origType !in hosts })
     }
 
-    private fun ClassDef.method(name: String) = methods.single { it.name == name }
-    private fun BytecodePatchContext.stub(name: String) = mutableClassDefBy(UNIFIED_PUSH).method(name).controlBody()
+    private fun ClassDef.method(name: String) = methods.single { it.origName == name }
+    private fun BytecodePatchContext.stub(name: String) = tgMutableClassDefBy(UNIFIED_PUSH).method(name).controlBody()
     private fun List<com.android.tools.smali.dexlib2.iface.instruction.Instruction>.refs() =
-        map { (it as? ReferenceInstruction)?.reference?.toString() }
+        map { it.origRef() }
 
     @Test fun `every sign-up asks the extension for its token and type, and the stubs reach Telegram`() {
         for (build in Fixtures.declaredBuilds()) {
@@ -138,15 +143,15 @@ class UnifiedPushFixtureTest {
             assertEquals(listOf(GET_PUSH_PROVIDER, HAS_SERVICES, REQUEST_PUSH_TOKEN),
                 context.stub("requestPushToken").refs().filterNotNull())
             for (stub in listOf("sendToTelegram", "telegramToken", "startTelegram", "onStageQueue", "wakeAccounts", "requestPushToken")) {
-                val method = context.mutableClassDefBy(UNIFIED_PUSH).method(stub)
+                val method = context.tgMutableClassDefBy(UNIFIED_PUSH).method(stub)
                 assertTrue("$name: $stub", AccessFlags.PUBLIC.isSet(method.accessFlags) && AccessFlags.STATIC.isSet(method.accessFlags))
             }
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).method("unifiedPush").controlBody()
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).method("unifiedPush").controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
 
             // The update loop hands each reactions update and each edited message (a private chat's
             // reactions) over right after its cast, with itself.
-            val loop = context.mutableClassDefBy(MESSAGES_CONTROLLER).method("processUpdateArray")
+            val loop = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).method("processUpdateArray")
             val code = loop.controlBody()
             for (type in listOf(REACTIONS_UPDATE, EDIT_UPDATE)) {
                 val cast = code.indexOfFirst { it.opcode == Opcode.CHECK_CAST && it.controlRef() == type }
@@ -160,7 +165,7 @@ class UnifiedPushFixtureTest {
                 assertEquals(listOf(scratch[0], scratch[0] + 1), code[cast + 3].namedRegisters())
             }
             assertEquals(2, code.count { it.controlRef() == "$REACTION_ALERTS->changed(Ljava/lang/Object;Ljava/lang/Object;)V" })
-            val reactions = context.mutableClassDefBy(SETTINGS_STATUS).method("reactionAlerts").controlBody()
+            val reactions = context.tgMutableClassDefBy(SETTINGS_STATUS).method("reactionAlerts").controlBody()
             assertEquals(1L, (reactions.first() as WideLiteralInstruction).wideLiteral)
 
             // Telegram's silent notification check asks the extension whether a reaction stays silent (#41).
@@ -178,7 +183,7 @@ class UnifiedPushFixtureTest {
             assertEquals("$name: one lookup in the whole app", 1, lookups.size)
             val context = context(build)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { unifiedPushPatch.execute(context) })
-            val stub = context.mutableClassDefBy(REACTION_ALERTS).method("emojiDocument")
+            val stub = context.tgMutableClassDefBy(REACTION_ALERTS).method("emojiDocument")
             assertTrue(name, AccessFlags.PUBLIC.isSet(stub.accessFlags) && AccessFlags.STATIC.isSet(stub.accessFlags))
             val code = stub.controlBody()
             assertEquals(listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT, Opcode.RETURN_OBJECT), code.map { it.opcode })
@@ -194,7 +199,7 @@ class UnifiedPushFixtureTest {
         assertEquals(1, warnings.size)
         assertTrue(warnings.single(), warnings.single().contains("without custom emoji"))
         assertEquals(1L, context.status("reactionAlerts"))
-        val code = context.mutableClassDefBy(REACTION_ALERTS).method("emojiDocument").controlBody()
+        val code = context.tgMutableClassDefBy(REACTION_ALERTS).method("emojiDocument").controlBody()
         assertTrue("the extension's own null stays", code.none { it.opcode == Opcode.INVOKE_STATIC })
     }
 
@@ -235,7 +240,7 @@ class UnifiedPushFixtureTest {
     @Test fun `a build without either reactions cast keeps UnifiedPush and leaves the update loop alone`() {
         for ((type, what) in listOf(REACTIONS_UPDATE to "a reactions update", EDIT_UPDATE to "an edited message")) {
             val context = context(Fixtures.declaredBuilds().first())
-            val loop = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == "processUpdateArray" }
+            val loop = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.origName == "processUpdateArray" }
             loop.replaceInstruction(loop.controlBody().indexOfFirst {
                 it.opcode == Opcode.CHECK_CAST && it.controlRef() == type
             }, "nop")
@@ -244,9 +249,9 @@ class UnifiedPushFixtureTest {
             assertEquals(what, 1, warnings.size)
             assertTrue(warnings.single(), warnings.single().contains("no longer casts $what once"))
             assertEquals(what, untouched, loop.controlBody().map { it.opcode to it.namedRegisters() })
-            assertEquals(1L, (context.mutableClassDefBy(SETTINGS_STATUS).method("unifiedPush").controlBody().first()
+            assertEquals(1L, (context.tgMutableClassDefBy(SETTINGS_STATUS).method("unifiedPush").controlBody().first()
                 as WideLiteralInstruction).wideLiteral)
-            assertEquals(0L, (context.mutableClassDefBy(SETTINGS_STATUS).method("reactionAlerts").controlBody().first()
+            assertEquals(0L, (context.tgMutableClassDefBy(SETTINGS_STATUS).method("reactionAlerts").controlBody().first()
                 as WideLiteralInstruction).wideLiteral)
         }
     }
@@ -260,12 +265,12 @@ class UnifiedPushFixtureTest {
                 signUp.replaceInstruction(post, "nop")
             },
             "Telegram's device sign-up no longer sends the push type as its token type" to { context ->
-                val register = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.toString() == REGISTER_FOR_PUSH }
+                val register = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.toString() == REGISTER_FOR_PUSH }
                 val write = register.controlBody().indexOfFirst { it.controlRef() == TOKEN_TYPE }
                 register.replaceInstruction(write, "nop")
             },
             "Telegram's wake-up no longer reconnects each signed-in account" to { context ->
-                val wake = context.mutableClassDefBy(PUSH_CONTROLLER).methods.single { it.name == "onDecryptError" }
+                val wake = context.tgMutableClassDefBy(PUSH_CONTROLLER).methods.single { it.origName == "onDecryptError" }
                 val resume = wake.controlBody().indexOfFirst { it.controlRef() == RESUME_NETWORK }
                 wake.replaceInstruction(resume, "nop")
             },
@@ -273,7 +278,7 @@ class UnifiedPushFixtureTest {
         for ((why, change) in shapes) {
             val context = context(build)
             change(context)
-            val signUp = context.mutableClassDefBy(PUSH_CONTROLLER).methods.single { it.toString() == SEND_REGISTRATION }
+            val signUp = context.tgMutableClassDefBy(PUSH_CONTROLLER).methods.single { it.toString() == SEND_REGISTRATION }
             val untouched = signUp.controlBody().map { it.opcode to it.namedRegisters() }
             val stub = context.stub("sendToTelegram").map { it.opcode }
             try {
@@ -284,7 +289,7 @@ class UnifiedPushFixtureTest {
             }
             assertEquals(why, untouched, signUp.controlBody().map { it.opcode to it.namedRegisters() })
             assertEquals(why, stub, context.stub("sendToTelegram").map { it.opcode })
-            assertEquals(why, 0L, (context.mutableClassDefBy(SETTINGS_STATUS).method("unifiedPush").controlBody().first()
+            assertEquals(why, 0L, (context.tgMutableClassDefBy(SETTINGS_STATUS).method("unifiedPush").controlBody().first()
                 as WideLiteralInstruction).wideLiteral)
         }
     }

@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.savedownloads
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -22,6 +22,9 @@ import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.w3c.dom.Element
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val STORAGE_FOLDER = "$EXTENSION_PACKAGE/misc/StorageFolder;"
 internal const val STORAGE_TELEGRAM_FOLDER = "$STORAGE_FOLDER->telegramFolder(Ljava/io/File;)Ljava/io/File;"
@@ -113,10 +116,10 @@ internal class OlderFilePlan(val method: MutableMethod?, val at: Int, val missin
  * here, see [resolveOlderLoads].
  */
 internal fun BytecodePatchContext.resolveOlderFiles(): OlderFilePlan {
-    val owner = mutableClassDefByOrNull(FILE_LOADER) ?: return OlderFilePlan.missing("FileLoader is missing")
+    val owner = tgMutableClassDefByOrNull(FILE_LOADER) ?: return OlderFilePlan.missing("FileLoader is missing")
     val wanted = listOf(TL_OBJECT, "Ljava/lang/String;", "Ljava/lang/String;", "Z", "Z")
     val methods = owner.methods.filter {
-        it.name == "getPathToAttach" && it.returnType == "Ljava/io/File;" && it.parameterTypes.map(CharSequence::toString) == wanted
+        it.origName == "getPathToAttach" && it.origReturnType == "Ljava/io/File;" && it.parameterTypes.map(CharSequence::toString) == wanted
     }
     val method = methods.singleOrNull() ?: return OlderFilePlan.missing("FileLoader.getPathToAttach changed")
     val body = method.controlBody()
@@ -145,10 +148,10 @@ internal fun BytecodePatchContext.resolveOlderFiles(): OlderFilePlan {
  * None or more than one such write downloads older photos and videos again.
  */
 internal fun BytecodePatchContext.resolveOlderLoads(): OlderFilePlan {
-    val owner = mutableClassDefByOrNull(LOAD_OPERATION) ?: return OlderFilePlan.missing("FileLoadOperation is missing")
+    val owner = tgMutableClassDefByOrNull(LOAD_OPERATION) ?: return OlderFilePlan.missing("FileLoadOperation is missing")
     val wanted = listOf("Lorg/telegram/messenger/FileLoadOperationStream;", "J", "Z")
     val methods = owner.methods.filter {
-        it.name == "start" && it.returnType == "Z" && it.parameterTypes.map(CharSequence::toString) == wanted
+        it.origName == "start" && it.origReturnType == "Z" && it.parameterTypes.map(CharSequence::toString) == wanted
     }
     val method = methods.singleOrNull() ?: return OlderFilePlan.missing("FileLoadOperation.start changed")
     val body = method.controlBody()
@@ -178,9 +181,9 @@ internal fun BytecodePatchContext.resolveOlderLoads(): OlderFilePlan {
  * Android/data.
  */
 internal fun BytecodePatchContext.resolveStorageFolder(): StorageFolderPlan {
-    val owner = mutableClassDefByOrNull(IMAGE_LOADER) ?: return StorageFolderPlan.missing("ImageLoader is missing")
+    val owner = tgMutableClassDefByOrNull(IMAGE_LOADER) ?: return StorageFolderPlan.missing("ImageLoader is missing")
     val methods = owner.methods.filter {
-        it.name == "createMediaPaths" && it.parameterTypes.isEmpty() && it.returnType == "Landroid/util/SparseArray;"
+        it.origName == "createMediaPaths" && it.parameterTypes.isEmpty() && it.origReturnType == "Landroid/util/SparseArray;"
     }
     val method = methods.singleOrNull() ?: return StorageFolderPlan.missing("ImageLoader.createMediaPaths changed")
     val body = method.controlBody()

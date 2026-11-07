@@ -8,7 +8,8 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.origRef
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
@@ -27,6 +28,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** The download queues on both declared builds: FileLoader.loadFileInternal and FileLoaderPriorityQueue.checkLoadingOperationInternal. */
 class DownloadManagerFixtureTest {
@@ -40,12 +43,12 @@ class DownloadManagerFixtureTest {
         return PatchContexts.of(ExtensionDex.classes() + host)
     }
 
-    private fun Instruction.shape() = listOf(opcode, namedRegisters(), (this as? ReferenceInstruction)?.reference?.toString())
+    private fun Instruction.shape() = listOf(opcode, namedRegisters(), origRef())
 
     private fun List<Instruction>.code() = filter { it.opcode != Opcode.NOP }
 
     private fun BytecodePatchContext.flag(name: String) =
-        (mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }.controlBody().first() as WideLiteralInstruction).wideLiteral
+        (tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == name }.controlBody().first() as WideLiteralInstruction).wideLiteral
 
     private fun isGoto(instruction: Instruction) = instruction.opcode in setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)
 
@@ -99,12 +102,12 @@ class DownloadManagerFixtureTest {
         val build = Fixtures.declaredBuilds().first()
         val shapes = listOf<Pair<String, (BytecodePatchContext) -> Unit>>(
             "FileLoader.loadFileInternal no longer reads the small and the large queue once each" to { context ->
-                val method = context.mutableClassDefBy(loader).methods.single { it.name == "loadFileInternal" }
+                val method = context.tgMutableClassDefBy(loader).methods.single { it.origName == "loadFileInternal" }
                 val body = method.controlBody()
                 method.replaceInstruction(body.indices.first { body[it].controlRef() == largeQueues }, "nop")
             },
             "the queue's limit is no longer read once for each queue" to { context ->
-                val method = context.mutableClassDefBy(queue).methods.single { it.name == "checkLoadingOperationInternal" }
+                val method = context.tgMutableClassDefBy(queue).methods.single { it.origName == "checkLoadingOperationInternal" }
                 val body = method.controlBody()
                 method.replaceInstruction(body.indices.first { body[it].controlRef()?.endsWith("->smallQueueMaxActiveOperations:I") == true }, "nop")
             },

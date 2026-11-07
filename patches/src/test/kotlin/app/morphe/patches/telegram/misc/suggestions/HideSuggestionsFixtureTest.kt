@@ -8,7 +8,8 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -33,6 +34,11 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** Declared-build presentation hooks, untouched storage, and truthful partial-build flags. */
 class HideSuggestionsFixtureTest {
@@ -46,7 +52,7 @@ class HideSuggestionsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val where = build.name
             val hosts = FixtureDex.classesWhere(build, { true }) { method ->
-                method.definingClass.startsWith("Lorg/telegram/ui/") && method.returnType == "V" &&
+                method.origDefiningClass.startsWith("Lorg/telegram/ui/") && method.origReturnType == "V" &&
                     method.parameterTypes.isEmpty() && method.instructions().any { it.reference() == SUGGESTION_FILL } &&
                     method.instructions().any { (it as? ReferenceInstruction)?.reference.let { it as? StringReference }?.string == "BIRTHDAY_SETUP" }
             }
@@ -54,10 +60,10 @@ class HideSuggestionsFixtureTest {
             val host = hosts.single()
             val original = host.methods.single { it.instructions().any { instruction -> instruction.reference() == SUGGESTION_FILL } }
             val messages = FixtureDex.classes(build, setOf(controller)).getValue(controller)
-            assertEquals("$where: pendingSuggestions is a Set", "Ljava/util/Set;", messages.fields.single { it.name == "pendingSuggestions" }.type)
+            assertEquals("$where: pendingSuggestions is a Set", "Ljava/util/Set;", messages.fields.single { it.origName == "pendingSuggestions" }.type)
             val context = PatchContexts.of(ExtensionDex.classes() + listOf(host, messages))
             assertEquals("$where: no missing targets", emptyList<String>(), PatchLogCapture.warnings { hideSuggestionsPatch.execute(context) })
-            val patched = context.mutableClassDefBy(host.type).methods.single { it.sameSignatureAs(original) }
+            val patched = context.tgMutableClassDefBy(host.type).methods.single { it.sameSignatureAs(original) }
             val before = original.instructions()
             val after = patched.instructions()
             val reads = before.count { it.opcode == Opcode.IGET_OBJECT && it.reference() == PENDING_SUGGESTIONS }
@@ -94,7 +100,7 @@ class HideSuggestionsFixtureTest {
             assertEquals("$where: the frame is unchanged", original.implementation!!.registerCount, patched.implementation!!.registerCount)
             assertControlFlowUnchanged(where, original, patched, kept)
             for (method in messages.methods) {
-                val untouched = context.mutableClassDefBy(controller).methods.single { it.sameSignatureAs(method) }
+                val untouched = context.tgMutableClassDefBy(controller).methods.single { it.sameSignatureAs(method) }
                 assertEquals("$where: controller storage and RPC paths stay unchanged", method.instructions().map { it.opcode }, untouched.instructions().map { it.opcode })
                 assertEquals("$where: controller references stay unchanged", method.instructions().map { it.reference() }, untouched.instructions().map { it.reference() })
             }
@@ -131,7 +137,7 @@ class HideSuggestionsFixtureTest {
         for (flag in flags) {
             val host = host()
             val context = PatchContexts.of(ExtensionDex.classes() + host)
-            context.mutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.name == flag }
+            context.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == flag }
             val failure = assertThrows(PatchException::class.java) { hideSuggestionsPatch.execute(context) }
             assertTrue(failure.message, failure.message.orEmpty().contains("no boolean method $flag()"))
             assertUnchanged(context, host)
@@ -148,7 +154,7 @@ class HideSuggestionsFixtureTest {
         assertTrue(warnings.single(), warnings.single().contains("escape their membership check"))
         assertFlag(context, "promotionalSuggestions", false)
         assertFlag(context, "birthdayGiftBanner", true)
-        assertFalse(context.mutableClassDefBy(host.type).methods.single().instructions().any { it.reference() == filter })
+        assertFalse(context.tgMutableClassDefBy(host.type).methods.single().instructions().any { it.reference() == filter })
     }
 
     @Test
@@ -161,7 +167,7 @@ class HideSuggestionsFixtureTest {
             assertTrue(warnings.single(), warnings.single().contains("value escapes presentation"))
             assertFlag(context, "promotionalSuggestions", false)
             assertFlag(context, "birthdayGiftBanner", true)
-            assertFalse(escape, context.mutableClassDefBy(host.type).methods.single().instructions().any { it.reference() == filter })
+            assertFalse(escape, context.tgMutableClassDefBy(host.type).methods.single().instructions().any { it.reference() == filter })
         }
     }
 
@@ -172,7 +178,7 @@ class HideSuggestionsFixtureTest {
             val context = PatchContexts.of(ExtensionDex.classes() + host)
             assertEquals(use, emptyList<String>(), PatchLogCapture.warnings { hideSuggestionsPatch.execute(context) })
             flags.forEach { assertFlag(context, it, true) }
-            assertEquals(use, 1, context.mutableClassDefBy(host.type).methods.single().instructions().count { it.reference() == filter })
+            assertEquals(use, 1, context.tgMutableClassDefBy(host.type).methods.single().instructions().count { it.reference() == filter })
         }
     }
 
@@ -214,7 +220,7 @@ class HideSuggestionsFixtureTest {
     }
 
     private fun assertFlag(context: BytecodePatchContext, name: String, enabled: Boolean) {
-        val instructions = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }.instructions()
+        val instructions = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == name }.instructions()
         assertEquals(Opcode.CONST_4, instructions[0].opcode)
         assertEquals("$name coverage", if (enabled) 1 else 0, (instructions[0] as NarrowLiteralInstruction).narrowLiteral)
         assertEquals(Opcode.RETURN, instructions[1].opcode)
@@ -222,7 +228,7 @@ class HideSuggestionsFixtureTest {
 
     private fun assertUnchanged(context: BytecodePatchContext, host: ClassDef) {
         val original = host.methods.single()
-        val patched = context.mutableClassDefBy(host.type).methods.single()
+        val patched = context.tgMutableClassDefBy(host.type).methods.single()
         assertEquals(original.instructions().map { it.opcode }, patched.instructions().map { it.opcode })
         assertEquals(original.instructions().map { it.reference() }, patched.instructions().map { it.reference() })
     }
@@ -298,5 +304,5 @@ class HideSuggestionsFixtureTest {
         parameterTypes.map { it.toString() } == other.parameterTypes.map { it.toString() }
 
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
-    private fun Instruction.reference(): String? = (this as? ReferenceInstruction)?.reference?.toString()
+    private fun Instruction.reference(): String? = origRef()
 }

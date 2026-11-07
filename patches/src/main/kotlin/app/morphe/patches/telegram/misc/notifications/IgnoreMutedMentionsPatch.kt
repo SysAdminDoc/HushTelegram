@@ -5,7 +5,7 @@
 package app.morphe.patches.telegram.misc.notifications
 
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -25,6 +25,10 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val MUTED_MENTIONS = "$EXTENSION_PACKAGE/misc/MutedMentions;"
 internal const val NOTIFY_DIALOG = "$MUTED_MENTIONS->notifyDialog(Ljava/lang/Object;)J"
@@ -115,7 +119,7 @@ internal fun BytecodePatchContext.resolveIgnoreMutedMentions(): List<Pair<Mutabl
     controlHook(MUTED_MENTIONS, "chat", listOf("Ljava/lang/Object;"), "J")
     controlHook(MUTED_MENTIONS, "muted", listOf("Ljava/lang/Object;"), "Z")
 
-    val notifications = mutableClassDefByOrNull(NOTIFICATIONS)
+    val notifications = tgMutableClassDefByOrNull(NOTIFICATIONS)
     controlShape(notifications != null, "NotificationsController is missing")
     val sites = notifications!!.methods.mapNotNull { method ->
         val body = method.controlBody()
@@ -129,16 +133,16 @@ internal fun BytecodePatchContext.resolveIgnoreMutedMentions(): List<Pair<Mutabl
         if (swaps.isEmpty()) null else method to swaps
     }
     // NotificationsController's lambdas keep their names, so the new-message path can be told apart.
-    controlShape(sites.count { it.first.name.contains("processNewMessages") } == 1 &&
-        sites.single { it.first.name.contains("processNewMessages") }.second.size == 1, "new messages no longer swap a mention to its sender")
+    controlShape(sites.count { it.first.origName.contains("processNewMessages") } == 1 &&
+        sites.single { it.first.origName.contains("processNewMessages") }.second.size == 1, "new messages no longer swap a mention to its sender")
 
-    val message = classDefByOrNull(MESSAGE_OBJECT)
+    val message = tgClassDefByOrNull(MESSAGE_OBJECT)
     controlShape(message != null && listOf("getFromChatId()J", "getDialogId()J").all { wanted -> message.methods.any { signature(it) == wanted && callable(it, false) } } &&
         message.methods.any { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == "getTopicId(I${TL_MESSAGE}Z)J" && callable(it, true) } &&
-        message.fields.any { it.name == "currentAccount" && it.type == "I" && !AccessFlags.STATIC.isSet(it.accessFlags) } &&
-        message.fields.any { it.name == "messageOwner" && it.type == TL_MESSAGE && !AccessFlags.STATIC.isSet(it.accessFlags) },
+        message.fields.any { it.origName == "currentAccount" && it.origType == "I" && !AccessFlags.STATIC.isSet(it.accessFlags) } &&
+        message.fields.any { it.origName == "messageOwner" && it.origType == TL_MESSAGE && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "a message no longer says its sender, chat and topic")
-    val controller = classDefByOrNull(CONTROLLER)
+    val controller = tgClassDefByOrNull(CONTROLLER)
     controlShape(controller != null && controller.methods.any { signature(it) == "getInstance(I)$CONTROLLER" && callable(it, true) } &&
         controller.methods.any { signature(it) == "isForum($MESSAGE_OBJECT)Z" && callable(it, false) } &&
         controller.methods.any { signature(it) == "isDialogMuted(JJ)Z" && callable(it, false) },

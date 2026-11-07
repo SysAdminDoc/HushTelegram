@@ -45,6 +45,13 @@ import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val KEEP_DELETED = "$EXTENSION_PACKAGE/misc/KeepDeleted;"
 internal const val KEEP_EDITS = "$EXTENSION_PACKAGE/misc/KeepEdits;"
@@ -263,13 +270,13 @@ internal fun BytecodePatchContext.resolveEdits(updates: MutableMethod, branches:
 
 private fun BytecodePatchContext.editHooks(updates: MutableMethod, branches: List<DeleteBranch>): List<EditHook> {
     for ((owner, name, type) in EDIT_FIELDS) {
-        val cls = classDefByOrNull(owner)
+        val cls = tgClassDefByOrNull(owner)
         need(cls != null && AccessFlags.PUBLIC.isSet(cls.accessFlags) && cls.fields.any {
-            it.name == name && it.type == type && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
+            it.origName == name && it.origType == type && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
         }, "$owner->$name is no longer a public field Keep edit history can read")
     }
-    need(classDefByOrNull(MESSAGE_OBJECT)?.methods?.any {
-        it.name == "getDialogId" && it.parameterTypes.joinToString("") == TL_MESSAGE && it.returnType == "J" &&
+    need(tgClassDefByOrNull(MESSAGE_OBJECT)?.methods?.any {
+        it.origName == "getDialogId" && it.parameterTypes.joinToString("") == TL_MESSAGE && it.origReturnType == "J" &&
             AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags)
     } == true, "MessageObject no longer finds a message's chat for Keep edit history")
     val body = updates.controlBody()
@@ -315,7 +322,7 @@ internal fun resolveRedLabel(bubble: ClassDef, measure: Method): Pair<RedLabel?,
 private fun redLabel(bubble: ClassDef, measure: Method): RedLabel {
     val body = measure.controlBody()
     val written = body.filter { it.opcode == Opcode.IPUT_OBJECT }.mapNotNull { it.controlField() }
-        .filter { it.definingClass == bubble.type && it.type == CHAR_SEQUENCE }.map { it.toString() }.distinct()
+        .filter { it.origDefiningClass == bubble.origType && it.origType == CHAR_SEQUENCE }.map { it.toString() }.distinct()
     need(written.size == 1, "the message time measuring no longer keeps its time text in one field")
     val field = written.single()
     need(bubble.fields.any { it.toString() == field && !AccessFlags.STATIC.isSet(it.accessFlags) },
@@ -413,25 +420,25 @@ internal val KEEP_DELETED_TYPES: Set<String> = (API.map { it.owner } + FIELDS.ma
  */
 private fun BytecodePatchContext.requireTelegramNames() {
     for (api in API) {
-        val owner = classDefByOrNull(api.owner)
+        val owner = tgClassDefByOrNull(api.owner)
         controlShape(owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags) && owner.methods.any {
-            it.name == api.name && it.parameterTypes.joinToString("") == api.parameters && it.returnType == api.result &&
+            it.origName == api.name && it.parameterTypes.joinToString("") == api.parameters && it.origReturnType == api.result &&
                 AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == api.static
         }, "${api.owner}->${api.name} is no longer a public method Keep deleted messages can call")
     }
     for ((owner, name, type) in FIELDS) {
-        val cls = classDefByOrNull(owner)
+        val cls = tgClassDefByOrNull(owner)
         controlShape(cls != null && AccessFlags.PUBLIC.isSet(cls.accessFlags) && cls.fields.any {
-            it.name == name && it.type == type && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
+            it.origName == name && it.origType == type && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
         }, "$owner->$name is no longer a public field Keep deleted messages can read")
     }
     for ((owner, name, type) in STATIC_FIELDS) {
-        val cls = classDefByOrNull(owner)
+        val cls = tgClassDefByOrNull(owner)
         controlShape(cls != null && AccessFlags.PUBLIC.isSet(cls.accessFlags) && cls.fields.any {
-            it.name == name && it.type == type && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags)
+            it.origName == name && it.origType == type && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags)
         }, "$owner->$name is no longer a public static field Keep deleted messages can read")
     }
-    val storage = classDefByOrNull(STORAGE)
+    val storage = tgClassDefByOrNull(STORAGE)
     val strings = (storage?.methods ?: emptyList()).flatMap { m -> m.controlBody().mapNotNull { it.controlString() } }
     controlShape(strings.any { it.startsWith("CREATE TABLE messages_v2(") && listOf("mid INTEGER", "uid INTEGER", "out INTEGER", "ttl INTEGER",
         "data BLOB", "is_channel INTEGER").all { column -> column in it } }, "the stored messages table changed")
@@ -456,7 +463,7 @@ internal fun BytecodePatchContext.resolveKeepDeleted(): KeepDeletedPlan {
     requireStatusMethod("keepEditHistory")
     requireTelegramNames()
 
-    val controller = mutableClassDefByOrNull(MESSAGES_CONTROLLER)
+    val controller = tgMutableClassDefByOrNull(MESSAGES_CONTROLLER)
     controlShape(controller != null, "MessagesController is missing")
 
     // The update loop: the one method that adds both kinds of deleted IDs to the list it collects.
@@ -475,15 +482,15 @@ internal fun BytecodePatchContext.resolveKeepDeleted(): KeepDeletedPlan {
 
     // The push deletion, whose own entry the extension answers first.
     val push = controller.methods.filter { m ->
-        m.name == "deleteMessagesByPush" && m.parameterTypes.map(CharSequence::toString) == listOf("J", LIST, "J") &&
-            m.returnType == "V" && !AccessFlags.STATIC.isSet(m.accessFlags)
+        m.origName == "deleteMessagesByPush" && m.parameterTypes.map(CharSequence::toString) == listOf("J", LIST, "J") &&
+            m.origReturnType == "V" && !AccessFlags.STATIC.isSet(m.accessFlags)
     }.controlSingle("push deletion")
     // It posts its work to the storage queue, and that work, a lambda of its own, marks the messages deleted.
     val pushRefs = push.controlBody().mapNotNull { it.controlRef() }
     controlShape("$STORAGE->getStorageQueue()$QUEUE" in pushRefs && "$QUEUE->postRunnable(Ljava/lang/Runnable;)Z" in pushRefs,
         "the push deletion no longer posts its work to the storage queue")
     controlShape(controller.methods.any { m ->
-        m.name.startsWith("lambda\$deleteMessagesByPush\$") && m.controlBody().any { it.controlRef()?.startsWith("$STORAGE->markMessagesAsDeleted(") == true }
+        m.origName.startsWith("lambda\$deleteMessagesByPush\$") && m.controlBody().any { it.controlRef()?.startsWith("$STORAGE->markMessagesAsDeleted(") == true }
     }, "the push deletion no longer marks messages deleted in the storage")
     controlShape(push.localRegisterCount() >= 1, "the push deletion has no register for the answer")
     controlShape(ControlFlow.of(push).normal.none { 0 in it }, "something jumps back to the start of the push deletion")
@@ -492,9 +499,9 @@ internal fun BytecodePatchContext.resolveKeepDeleted(): KeepDeletedPlan {
     // The bubble's time measuring, found by what Message times with seconds left in it.
     val measures = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.allReferences(listOf(EDITED_MESSAGE, MESSAGE_TIME_SHOWN))) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
-            if (m.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE_OBJECT) && m.returnType == "V" &&
+            if (m.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE_OBJECT) && m.origReturnType == "V" &&
                 !AccessFlags.STATIC.isSet(m.accessFlags)) {
                 val refs = m.controlBody().mapNotNull { it.controlRef() }.toSet()
                 if (EDITED_MESSAGE in refs && MESSAGE_TIME_SHOWN in refs) measures += cls.type to m.name
@@ -502,9 +509,9 @@ internal fun BytecodePatchContext.resolveKeepDeleted(): KeepDeletedPlan {
         }
     }
     val (type, name) = measures.controlSingle("message time measuring")
-    val bubble = mutableClassDefBy(type)
-    val measure = bubble.methods.single { it.name == name && it.parameterTypes.size == 1 &&
-        it.parameterTypes[0].toString() == MESSAGE_OBJECT && it.returnType == "V" }
+    val bubble = tgMutableClassDefBy(type)
+    val measure = bubble.methods.single { it.origName == name && it.parameterTypes.size == 1 &&
+        it.parameterTypes[0].toString() == MESSAGE_OBJECT && it.origReturnType == "V" }
     controlShape(ControlFlow.of(measure).normal.none { 0 in it }, "something jumps back to the start of the message time measuring")
     val layout = requireRedraw(bubble, measure)
     val (red, redMissing) = resolveRedLabel(bubble, measure)
@@ -522,15 +529,15 @@ internal fun BytecodePatchContext.resolveKeepDeleted(): KeepDeletedPlan {
  * @return the bubble's layout
  */
 internal fun BytecodePatchContext.requireRedraw(bubble: ClassDef, measure: Method): Method {
-    controlShape(classDefByOrNull(STORAGE)?.methods?.any { m ->
-        m.name.startsWith(REPLACE_IF_EXISTS) && !AccessFlags.STATIC.isSet(m.accessFlags) &&
+    controlShape(tgClassDefByOrNull(STORAGE)?.methods?.any { m ->
+        m.origName.startsWith(REPLACE_IF_EXISTS) && !AccessFlags.STATIC.isSet(m.accessFlags) &&
             m.controlBody().mapNotNull { it.controlRef() }.let { refs ->
                 REPLACE_MESSAGES in refs && "$MESSAGE_OBJECT->getDialogId()J" in refs && POST_NOTIFICATION in refs
             }
     } == true, "Telegram's storage no longer tells the open chat that a message was replaced")
     val measured = "${measure.definingClass}->${measure.name}($MESSAGE_OBJECT)V"
     return bubble.methods.filter { m ->
-        m.parameterTypes.map(CharSequence::toString).take(2) == listOf(MESSAGE_OBJECT, GROUPED_MESSAGES) && m.returnType == "V" &&
+        m.parameterTypes.map(CharSequence::toString).take(2) == listOf(MESSAGE_OBJECT, GROUPED_MESSAGES) && m.origReturnType == "V" &&
             !AccessFlags.STATIC.isSet(m.accessFlags) && m.controlBody().let { body ->
                 body.any { it.opcode == Opcode.IGET_BOOLEAN && it.controlRef() == FORCE_UPDATE } &&
                     body.any { it.opcode == Opcode.IPUT_BOOLEAN && it.controlRef() == FORCE_UPDATE } &&
@@ -548,21 +555,21 @@ internal fun BytecodePatchContext.requireRedraw(bubble: ClassDef, measure: Metho
  * @return the renamed sparse array type
  */
 internal fun BytecodePatchContext.requireNotificationCleanup(updates: Method): String {
-    val notifications = classDefByOrNull(NOTIFICATIONS)
+    val notifications = tgClassDefByOrNull(NOTIFICATIONS)
     val cleanups = notifications?.methods?.filter {
-        it.name == NOTIFICATION_CLEANUP && it.parameterTypes.size == 2 && it.parameterTypes[1].toString() == "Z" && it.returnType == "V"
+        it.origName == NOTIFICATION_CLEANUP && it.parameterTypes.size == 2 && it.parameterTypes[1].toString() == "Z" && it.origReturnType == "V"
     }.orEmpty()
     controlShape(notifications != null && AccessFlags.PUBLIC.isSet(notifications.accessFlags) && cleanups.size == 1 &&
         AccessFlags.PUBLIC.isSet(cleanups.single().accessFlags) && !AccessFlags.STATIC.isSet(cleanups.single().accessFlags),
         "Telegram's notification cleanup for deleted messages changed")
     val sparseType = cleanups.single().parameterTypes[0].toString()
-    val sparse = classDefByOrNull(sparseType)
+    val sparse = tgClassDefByOrNull(sparseType)
     val puts = sparse?.methods?.filter {
-        it.parameterTypes.map(CharSequence::toString) == listOf(OBJECT, "J") && it.returnType == "V" &&
+        it.parameterTypes.map(CharSequence::toString) == listOf(OBJECT, "J") && it.origReturnType == "V" &&
             AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
     }.orEmpty()
     controlShape(sparse != null && AccessFlags.PUBLIC.isSet(sparse.accessFlags) && puts.size == 1 && sparse.methods.any {
-        it.name == "<init>" && it.parameterTypes.isEmpty() && AccessFlags.PUBLIC.isSet(it.accessFlags)
+        it.origName == "<init>" && it.parameterTypes.isEmpty() && AccessFlags.PUBLIC.isSet(it.accessFlags)
     }, "the notification cleanup's sparse array no longer has one public put and a public empty constructor")
     val put = "$sparseType->${puts.single().name}(${OBJECT}J)V"
     controlShape(updates.controlBody().any { it.controlRef() == put },

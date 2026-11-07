@@ -4,8 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.commerce
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.addInstructionsWithLabels
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
@@ -26,6 +26,12 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val EMOJI_STATUS = "$EXTENSION_PACKAGE/misc/EmojiStatus;"
 internal const val EMOJI_HIDE = "$EMOJI_STATUS->hide()Z"
@@ -110,28 +116,28 @@ internal fun BytecodePatchContext.resolveEmojiStatus(): EmojiStatusPlan {
     requireStatusMethod("commerceEmojiStatus")
     fun missing(why: String) = EmojiStatusPlan(emptyList(), emptyList(), why)
 
-    val users = mutableClassDefByOrNull(EMOJI_USERS) ?: return missing("the app has no user helper to ask for emoji statuses")
-    val dialogs = mutableClassDefByOrNull(EMOJI_DIALOGS) ?: return missing("the app has no chat helper to ask for emoji statuses")
+    val users = tgMutableClassDefByOrNull(EMOJI_USERS) ?: return missing("the app has no user helper to ask for emoji statuses")
+    val dialogs = tgMutableClassDefByOrNull(EMOJI_DIALOGS) ?: return missing("the app has no chat helper to ask for emoji statuses")
     val userGetter = users.statusGetter("Ljava/lang/Long;") ?: return missing("people no longer read their emoji status in one place")
     val dialogGetter = dialogs.statusGetter("J") ?: return missing("chats no longer read their emoji status in one place")
-    if (users.methods.any { it.name == STOCK_USER_STATUS } || dialogs.methods.any { it.name == STOCK_DIALOG_STATUS }) {
+    if (users.methods.any { it.origName == STOCK_USER_STATUS } || dialogs.methods.any { it.origName == STOCK_DIALOG_STATUS }) {
         return missing("emoji statuses are already wrapped")
     }
     val equal = dialogs.methods.singleOrNull { method ->
-        method.name == "emojiStatusesEqual" && method.returnType == "Z" && AccessFlags.STATIC.isSet(method.accessFlags) &&
+        method.origName == "emojiStatusesEqual" && method.origReturnType == "Z" && AccessFlags.STATIC.isSet(method.accessFlags) &&
             method.parameterTypes.map { it.toString() } == listOf(EMOJI_STATUS_TYPE, EMOJI_STATUS_TYPE)
     } ?: return missing("the check for a changed emoji status is gone")
     if (equal.statusReads().isEmpty()) return missing("the check for a changed emoji status no longer reads the status")
     val editors = classDefsMentioning(Mention.reference(STATUSES_EQUAL)).filter { classDef ->
-        classDef.type != EMOJI_DIALOGS && classDef.methods.any { method -> method.controlBody().any { it.controlRef() == STATUSES_EQUAL } }
+        classDef.origType != EMOJI_DIALOGS && classDef.methods.any { method -> method.controlBody().any { it.controlRef() == STATUSES_EQUAL } }
     }
     if (editors.isEmpty()) return missing("no screen asks whether an emoji status changed anymore")
     val keepers = mutableListOf<MutableMethod>(equal)
     editors.filter { classDef -> classDef.methods.any { it.statusReads().isNotEmpty() } }.forEach { classDef ->
-        keepers += mutableClassDefBy(classDef).methods.filter { it.statusReads().isNotEmpty() }
+        keepers += tgMutableClassDefBy(classDef).methods.filter { it.statusReads().isNotEmpty() }
     }
-    mutableClassDefByOrNull(EMOJI_MESSAGES)?.methods?.filter { method ->
-        method.name == "<init>" && method.parameterTypes.any { it.toString() == ADMIN_LOG_EVENT } && method.statusReads().isNotEmpty()
+    tgMutableClassDefByOrNull(EMOJI_MESSAGES)?.methods?.filter { method ->
+        method.origName == "<init>" && method.parameterTypes.any { it.toString() == ADMIN_LOG_EVENT } && method.statusReads().isNotEmpty()
     }?.let { keepers += it }
 
     val swaps = listOf(
@@ -142,7 +148,7 @@ internal fun BytecodePatchContext.resolveEmojiStatus(): EmojiStatusPlan {
 }
 
 private fun MutableClass.statusGetter(result: String): MutableMethod? = methods.singleOrNull { method ->
-    method.name == EMOJI_GETTER && method.returnType == result && method.parameterTypes.map { it.toString() } == listOf(EMOJI_STATUS_TYPE)
+    method.origName == EMOJI_GETTER && method.origReturnType == result && method.parameterTypes.map { it.toString() } == listOf(EMOJI_STATUS_TYPE)
 }?.takeIf { AccessFlags.STATIC.isSet(it.accessFlags) && !AccessFlags.ABSTRACT.isSet(it.accessFlags) && it.implementation != null }
 
 private fun BytecodePatchContext.swap(
@@ -158,8 +164,8 @@ private fun BytecodePatchContext.swap(
     val wrapper = ImmutableMethod(owner.type, getter.name, getter.parameters, getter.returnType, getter.accessFlags,
         getter.annotations, getter.hiddenApiRestrictions, MutableMethodImplementation(registers))
         .toMutable().apply { addInstructionsWithLabels(0, smali) }
-    val refusals = refusedByVerifier(wrapper, { classDefByOrNull(it)?.superclass },
-        { classDefByOrNull(it)?.let { found -> AccessFlags.INTERFACE.isSet(found.accessFlags) } })
+    val refusals = refusedByVerifier(wrapper, { tgClassDefByOrNull(it)?.superclass },
+        { tgClassDefByOrNull(it)?.let { found -> AccessFlags.INTERFACE.isSet(found.accessFlags) } })
     if (refusals.isNotEmpty()) throw PatchException("$getter would fail Android's verifier: ${refusals.joinToString("; ")}")
     return EmojiStatusSwap(owner, getter, stock, wrapper)
 }

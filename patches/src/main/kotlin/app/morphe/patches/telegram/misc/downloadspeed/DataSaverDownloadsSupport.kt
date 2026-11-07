@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.downloadspeed
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -21,6 +21,8 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val DATA_SAVER = "$EXTENSION_PACKAGE/misc/DataSaverDownloads;"
 internal const val DOWNLOAD_CONTROLLER = "Lorg/telegram/messenger/DownloadController;"
@@ -128,12 +130,12 @@ internal fun BytecodePatchContext.resolveDataSaverDownloads(): DataSaverPlan = t
 }
 
 private fun BytecodePatchContext.answers(): Map<AutoDownloadAnswer, MutableMethod> {
-    val controller = mutableClassDefByOrNull(DOWNLOAD_CONTROLLER)
+    val controller = tgMutableClassDefByOrNull(DOWNLOAD_CONTROLLER)
     need(controller != null, "DownloadController is missing")
-    val internal = controller!!.methods.filter { it.name == INTERNAL && !AccessFlags.STATIC.isSet(it.accessFlags) }
+    val internal = controller!!.methods.filter { it.origName == INTERNAL && !AccessFlags.STATIC.isSet(it.accessFlags) }
     need(internal.isNotEmpty() && internal.all { reads(it, NETWORK_TYPE) }, "the message check no longer reads the network's download settings")
     val known = AutoDownloadAnswer.entries.map { it.signature }.toSet()
-    val unknown = controller.methods.filter { (it.name.startsWith("canDownload") || it.name.startsWith("canPreload")) && it.name != INTERNAL }
+    val unknown = controller.methods.filter { (it.origName.startsWith("canDownload") || it.origName.startsWith("canPreload")) && it.origName != INTERNAL }
         .map { it.signature() }.filter { it !in known }.sorted()
     need(unknown.isEmpty(), "DownloadController has answers the hold doesn't know (${unknown.joinToString()})")
     val check = controller.methods.filter { it.signature() == "checkAutodownloadSettings()V" }

@@ -8,9 +8,10 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.smali.ExternalLabel
@@ -34,6 +35,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** Premium stickers and emoji packs under Hide Premium, gifts and Stars, against both real builds. */
 class PremiumStickerFixtureTest {
@@ -46,11 +51,11 @@ class PremiumStickerFixtureTest {
 
             val stickers = plan.getValue(PremiumStickerTarget.STICKERS)
             assertEquals("${build.name}: two filters and the keyboard pass", 3, stickers.size)
-            val filters = stickers.filter { it.method.definingClass == CONTROLLER }
+            val filters = stickers.filter { it.method.origDefiningClass == CONTROLLER }
             assertEquals("${build.name}: one pack and a list of packs", setOf(STICKER_SET, "Ljava/util/ArrayList;"),
                 filters.map { it.method.parameterTypes.single().toString() }.toSet())
-            assertTrue("${build.name}: both filters are filterPremiumStickers", filters.all { it.method.name == "filterPremiumStickers" })
-            val keyboard = stickers.single { it.method.definingClass != CONTROLLER }
+            assertTrue("${build.name}: both filters are filterPremiumStickers", filters.all { it.method.origName == "filterPremiumStickers" })
+            val keyboard = stickers.single { it.method.origDefiningClass != CONTROLLER }
             assertEquals("${build.name}: the keyboard pass takes the refresh flag", listOf("Z"),
                 keyboard.method.parameterTypes.map { it.toString() })
             val effects = plan.getValue(PremiumStickerTarget.EFFECTS)
@@ -147,7 +152,7 @@ class PremiumStickerFixtureTest {
             assertTrue("${build.name}: nothing skips the hand-over", handedFlow.indices.none { it != at + 1 && at + 2 in handedFlow[it] })
 
             for (target in PremiumStickerTarget.entries) assertFact(context, target.capability, 1)
-            val stubs = context.mutableClassDefBy(COMMERCE).methods.associateBy { it.name }
+            val stubs = context.tgMutableClassDefBy(COMMERCE).methods.associateBy { it.name }
             val viewPremium = stubs.getValue("emojiViewPremium").instructions()
             assertTrue(viewPremium.any { it.reference() == "Lorg/telegram/messenger/UserConfig;->isPremium()Z" })
             assertEquals("${build.name}: the view's account and its every-emoji flag", listOf(Opcode.IGET, Opcode.IGET_BOOLEAN),
@@ -170,9 +175,9 @@ class PremiumStickerFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
             val keyboard = context.resolvePremiumStickerHooks().getValue(PremiumStickerTarget.STICKERS)
-                .single { it.method.definingClass != CONTROLLER }
+                .single { it.method.origDefiningClass != CONTROLLER }
             val filters = context.resolvePremiumStickerHooks().getValue(PremiumStickerTarget.STICKERS)
-                .filter { it.method.definingClass == CONTROLLER }.map { it.method to it.method.instructions().map(::operation) }
+                .filter { it.method.origDefiningClass == CONTROLLER }.map { it.method to it.method.instructions().map(::operation) }
             val register = keyboard.method.instructions()[keyboard.index].namedRegisters().single()
             keyboard.method.replaceInstruction(keyboard.index, "invoke-virtual {v$register}, $CONTROLLER->isClientActivated()Z")
             val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
@@ -191,7 +196,7 @@ class PremiumStickerFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
             val stickers = context.resolvePremiumStickerHooks().getValue(PremiumStickerTarget.STICKERS)
-            val changed = stickers.first { it.method.definingClass == CONTROLLER }
+            val changed = stickers.first { it.method.origDefiningClass == CONTROLLER }
             val register = changed.method.instructions()[changed.index].namedRegisters().single()
             changed.method.replaceInstruction(changed.index, "invoke-virtual {v$register}, $CONTROLLER->isClientActivated()Z")
             val before = stickers.map { it.method to it.method.instructions().map(::operation) }
@@ -246,8 +251,8 @@ class PremiumStickerFixtureTest {
             assertFact(context, "commercePremiumStickers", 1)
             assertFact(context, "commercePremiumEffects", 1)
             assertEquals("${build.name}: the pack pass is left as it was", before, sorter.instructions().map(::operation))
-            assertTrue("${build.name}: no emoji stubs without the pass", context.mutableClassDefBy(COMMERCE).methods
-                .single { it.name == "emojiPackFree" }.instructions().none { it.opcode == Opcode.IGET_BOOLEAN })
+            assertTrue("${build.name}: no emoji stubs without the pass", context.tgMutableClassDefBy(COMMERCE).methods
+                .single { it.origName == "emojiPackFree" }.instructions().none { it.opcode == Opcode.IGET_BOOLEAN })
         }
     }
 
@@ -267,8 +272,8 @@ class PremiumStickerFixtureTest {
             assertFact(context, "commercePremiumStickers", 1)
             assertFact(context, "commercePremiumEffects", 1)
             assertEquals("${build.name}: the pack pass is left as it was", before, sorter.instructions().map(::operation))
-            assertTrue("${build.name}: no emoji stubs without the pass", context.mutableClassDefBy(COMMERCE).methods
-                .single { it.name == "emojiPackFree" }.instructions().none { it.opcode == Opcode.IGET_BOOLEAN })
+            assertTrue("${build.name}: no emoji stubs without the pass", context.tgMutableClassDefBy(COMMERCE).methods
+                .single { it.origName == "emojiPackFree" }.instructions().none { it.opcode == Opcode.IGET_BOOLEAN })
         }
     }
 
@@ -276,14 +281,14 @@ class PremiumStickerFixtureTest {
     fun `a third sticker filter leaves the stickers out and the rest still apply`() {
         for (build in Fixtures.declaredBuilds()) {
             val hosts = hosts(build)
-            val controller = hosts.single { it.type == CONTROLLER }
-            val filter = controller.methods.single { it.name == "filterPremiumStickers" && it.parameterTypes.single().toString() == STICKER_SET }
+            val controller = hosts.single { it.origType == CONTROLLER }
+            val filter = controller.methods.single { it.origName == "filterPremiumStickers" && it.parameterTypes.single().toString() == STICKER_SET }
             val third = ImmutableMethod(CONTROLLER, filter.name, listOf(ImmutableMethodParameter("Ljava/lang/Object;", null, null)),
                 filter.returnType, filter.accessFlags, filter.annotations, filter.hiddenApiRestrictions, filter.implementation)
             val altered = ImmutableClassDef(controller.type, controller.accessFlags, controller.superclass, controller.interfaces,
                 controller.sourceFile, controller.annotations, controller.fields, controller.methods.toList() + third)
-            val context = PatchContexts.of(ExtensionDex.classes() + hosts.filter { it.type != CONTROLLER } + altered)
-            val filters = context.mutableClassDefBy(CONTROLLER).methods.filter { it.name == "filterPremiumStickers" }
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts.filter { it.origType != CONTROLLER } + altered)
+            val filters = context.tgMutableClassDefBy(CONTROLLER).methods.filter { it.origName == "filterPremiumStickers" }
             val before = filters.map { it to it.instructions().map(::operation) }
             val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
             assertTrue("${build.name}: $warnings", warnings.any {
@@ -302,7 +307,7 @@ class PremiumStickerFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
             val stickers = context.resolvePremiumStickerHooks().getValue(PremiumStickerTarget.STICKERS)
-            val changed = stickers.first { it.method.definingClass == CONTROLLER }
+            val changed = stickers.first { it.method.origDefiningClass == CONTROLLER }
             val register = changed.method.instructions()[changed.index].namedRegisters().single()
             // Still one premiumFeaturesBlocked call read right after, but with a register the plan can't place.
             changed.method.replaceInstruction(changed.index, "invoke-virtual {v$register, v$register}, $PREMIUM_BLOCKED")
@@ -326,12 +331,12 @@ class PremiumStickerFixtureTest {
             val hosts = hosts(build)
             val initial = PatchContexts.of(ExtensionDex.classes() + hosts)
             val tooltip = initial.resolvePremiumStickerHooks().getValue(PremiumStickerTarget.EFFECTS).single { it.replace }.method
-            val original = hosts.single { it.type == tooltip.definingClass }
+            val original = hosts.single { it.origType == tooltip.origDefiningClass }
             val duplicate = ImmutableMethod(tooltip.definingClass, "tooltipAmbiguity", tooltip.parameters, tooltip.returnType,
                 tooltip.accessFlags, tooltip.annotations, tooltip.hiddenApiRestrictions, tooltip.implementation)
             val altered = ImmutableClassDef(original.type, original.accessFlags, original.superclass, original.interfaces,
                 original.sourceFile, original.annotations, original.fields, original.methods.toList() + duplicate)
-            val context = PatchContexts.of(ExtensionDex.classes() + hosts.filter { it.type != original.type } + altered)
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts.filter { it.origType != original.origType } + altered)
             try {
                 hideCommercePatch.execute(context)
                 fail("${build.name}: a second tooltip was accepted")
@@ -339,7 +344,7 @@ class PremiumStickerFixtureTest {
                 assertTrue(expected.message.orEmpty(), expected.message.orEmpty().contains("ambiguous Premium sticker tooltip"))
             }
             for (classDef in hosts) for (stock in classDef.methods) {
-                val after = context.mutableClassDefBy(classDef.type).methods.single { it.key() == stock.key() }
+                val after = context.tgMutableClassDefBy(classDef.type).methods.single { it.key() == stock.key() }
                 assertEquals("${build.name}: ambiguity retains $stock", stock.instructions().map(::operation), after.instructions().map(::operation))
             }
             assertFact(context, "hideCommerce", 0)
@@ -358,14 +363,14 @@ class PremiumStickerFixtureTest {
     }
 
     private fun assertFact(context: BytecodePatchContext, name: String, value: Int) {
-        val body = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }.instructions()
+        val body = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == name }.instructions()
         assertEquals("$name is a build fact", value, (body[0] as NarrowLiteralInstruction).narrowLiteral)
     }
 
     private fun Method.key() = "$definingClass->$name(${parameterTypes.joinToString("")})"
     private fun operation(instruction: Instruction) = listOf(instruction.opcode, instruction.reference(), instruction.namedRegisters(),
         if (instruction is OffsetInstruction) null else (instruction as? NarrowLiteralInstruction)?.narrowLiteral)
-    private fun Instruction.reference() = (this as? ReferenceInstruction)?.reference?.toString()
+    private fun Instruction.reference() = origRef()
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 
     private companion object {

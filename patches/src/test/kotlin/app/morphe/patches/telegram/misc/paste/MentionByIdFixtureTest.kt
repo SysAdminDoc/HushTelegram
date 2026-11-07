@@ -19,6 +19,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
 
 /** The Mention by ID hook on the real pinned web and Play builds. */
 class MentionByIdFixtureTest {
@@ -45,7 +47,7 @@ class MentionByIdFixtureTest {
 
     private fun hosts(build: File): List<ClassDef> {
         val found = FixtureDex.classesWhere(build, { true }) { method: Method ->
-            method.definingClass == "Lorg/telegram/messenger/MediaDataController;" && method.name == "getEntities"
+            method.origDefiningClass == "Lorg/telegram/messenger/MediaDataController;" && method.origName == "getEntities"
         }.associateByTo(linkedMapOf()) { it.type }
         while (true) {
             val ancestors = found.values.flatMap { listOfNotNull(it.superclass) + it.interfaces }

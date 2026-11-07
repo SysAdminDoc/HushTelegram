@@ -22,8 +22,8 @@ final class RequestAnswers {
                     Class<?>[] parameters = run.getParameterTypes();
                     if (!run.getName().equals("run") || parameters.length != 2 || !parameters[1].getName().endsWith("$TL_error")) continue;
                     Object error = parameters[1].getConstructor().newInstance();
-                    parameters[1].getField("code").setInt(error, code);
-                    parameters[1].getField("text").set(error, text);
+                    HostNames.field(parameters[1], "code").setInt(error, code);
+                    HostNames.field(parameters[1], "text").set(error, text);
                     run.invoke(callback, null, error);
                     return true;
                 }

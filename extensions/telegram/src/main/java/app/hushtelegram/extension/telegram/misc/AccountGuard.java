@@ -133,12 +133,12 @@ public final class AccountGuard {
         try {
             Class<?> type = manager.getClass();
             if (off) {
-                type.getMethod("native_pauseNetwork", int.class).invoke(null, account);
-                type.getMethod("native_setNetworkAvailable", int.class, boolean.class, int.class, boolean.class)
+                HostNames.method(type, "native_pauseNetwork", int.class).invoke(null, account);
+                HostNames.method(type, "native_setNetworkAvailable", int.class, boolean.class, int.class, boolean.class)
                         .invoke(null, account, false, 0, false);
             } else {
-                type.getMethod("native_resumeNetwork", int.class, boolean.class).invoke(null, account, false);
-                Method check = type.getMethod("checkConnection");
+                HostNames.method(type, "native_resumeNetwork", int.class, boolean.class).invoke(null, account, false);
+                Method check = HostNames.method(type, "checkConnection");
                 check.invoke(manager);
             }
         } catch (ReflectiveOperationException | RuntimeException failure) {

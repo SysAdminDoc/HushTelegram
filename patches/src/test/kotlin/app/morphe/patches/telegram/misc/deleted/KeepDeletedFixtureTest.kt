@@ -8,7 +8,7 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
@@ -35,6 +35,11 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 private const val OBJECT = "Ljava/lang/Object;"
 private const val MESSAGES_STORAGE = "Lorg/telegram/messenger/MessagesStorage;"
@@ -169,16 +174,16 @@ class KeepDeletedFixtureTest {
             }
             assertTrue("$name: its times still go through the extension", measure.any { it.controlRef() == MESSAGE_TIME_SHOWN })
 
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "keepDeleted" }.controlBody()
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "keepDeleted" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
-            val painted = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "redDeletedLabel" }.controlBody()
+            val painted = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "redDeletedLabel" }.controlBody()
             assertEquals(1L, (painted.first() as WideLiteralInstruction).wideLiteral)
-            val history = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "keepEditHistory" }.controlBody()
+            val history = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "keepEditHistory" }.controlBody()
             assertEquals(1L, (history.first() as WideLiteralInstruction).wideLiteral)
-            val timed = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "keepTimedMedia" }.controlBody()
+            val timed = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "keepTimedMedia" }.controlBody()
             assertEquals("$name: the timed media switch shows", 1L, (timed.first() as WideLiteralInstruction).wideLiteral)
             // Message times with seconds wasn't picked, so its switch stays hidden (#49).
-            val seconds = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "messageSeconds" }.controlBody()
+            val seconds = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "messageSeconds" }.controlBody()
             assertEquals("$name: no seconds switch without its patch", 0L, (seconds.first() as WideLiteralInstruction).wideLiteral)
         }
     }
@@ -200,9 +205,9 @@ class KeepDeletedFixtureTest {
             val updates = known.updates.controlBody()
             assertEquals("$name: only the deletion hooks", before.size + 16, updates.size)
             assertTrue("$name: no edit hook at all", updates.none { it.controlRef()?.startsWith(KEEP_EDITS) == true })
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods
-            assertEquals(1L, (status.single { it.name == "keepDeleted" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
-            assertEquals(0L, (status.single { it.name == "keepEditHistory" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods
+            assertEquals(1L, (status.single { it.origName == "keepDeleted" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
+            assertEquals(0L, (status.single { it.origName == "keepEditHistory" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
         }
     }
 
@@ -211,16 +216,16 @@ class KeepDeletedFixtureTest {
             val name = build.name
             val context = context(build)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { messageTimePatch.execute(context) })
-            context.mutableClassDefBy(MESSAGES_STORAGE).methods.removeAll { it.name == "emptyMessagesMedia" }
+            context.tgMutableClassDefBy(MESSAGES_STORAGE).methods.removeAll { it.origName == "emptyMessagesMedia" }
             val warnings = PatchLogCapture.warnings { keepDeletedPatch.execute(context) }
             assertEquals("$name: $warnings", 1, warnings.size)
             assertTrue(warnings.single(), "emptyMessagesMedia" in warnings.single() && "without Keep view-once and timed media" in warnings.single())
-            val played = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == "markMessageContentAsRead" }
+            val played = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.origName == "markMessageContentAsRead" }
             assertTrue("$name: no timed media hook", played.controlBody().none { it.controlRef()?.startsWith(KEEP_TIMED_MEDIA) == true })
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods
-            assertEquals(1L, (status.single { it.name == "keepDeleted" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
-            assertEquals(1L, (status.single { it.name == "keepEditHistory" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
-            assertEquals(0L, (status.single { it.name == "keepTimedMedia" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods
+            assertEquals(1L, (status.single { it.origName == "keepDeleted" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
+            assertEquals(1L, (status.single { it.origName == "keepEditHistory" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
+            assertEquals(0L, (status.single { it.origName == "keepTimedMedia" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
         }
     }
 
@@ -241,36 +246,36 @@ class KeepDeletedFixtureTest {
             val measure = known.measure.controlBody()
             assertEquals("$name: only the measuring call", before.size + 1, measure.size)
             assertTrue(measure.none { it.controlRef() == PAINTED })
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods
-            assertEquals(1L, (status.single { it.name == "keepDeleted" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
-            assertEquals(0L, (status.single { it.name == "redDeletedLabel" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods
+            assertEquals(1L, (status.single { it.origName == "keepDeleted" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
+            assertEquals(0L, (status.single { it.origName == "redDeletedLabel" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
         }
     }
 
     @Test fun `a changed notification cleanup or sparse array refuses before any edit`() {
         val changes = linkedMapOf<String, (BytecodePatchContext, String) -> Unit>(
             "missing cleanup" to { context, _ ->
-                context.mutableClassDefBy(NOTIFICATIONS).methods.removeAll { it.name == NOTIFICATION_CLEANUP }
+                context.tgMutableClassDefBy(NOTIFICATIONS).methods.removeAll { it.origName == NOTIFICATION_CLEANUP }
             },
             "static cleanup" to { context, _ ->
-                val cleanup = context.mutableClassDefBy(NOTIFICATIONS).methods.single { it.name == NOTIFICATION_CLEANUP }
+                val cleanup = context.tgMutableClassDefBy(NOTIFICATIONS).methods.single { it.origName == NOTIFICATION_CLEANUP }
                 cleanup.accessFlags = cleanup.accessFlags or AccessFlags.STATIC.value
             },
             "no put" to { context, sparse ->
-                context.mutableClassDefBy(sparse).methods.removeAll { it.parameterTypes.map(CharSequence::toString) == listOf(OBJECT, "J") && it.returnType == "V" }
+                context.tgMutableClassDefBy(sparse).methods.removeAll { it.parameterTypes.map(CharSequence::toString) == listOf(OBJECT, "J") && it.origReturnType == "V" }
             },
             "two puts" to { context, sparse ->
-                val owner = context.mutableClassDefBy(sparse)
-                val put = owner.methods.single { it.parameterTypes.map(CharSequence::toString) == listOf(OBJECT, "J") && it.returnType == "V" }
+                val owner = context.tgMutableClassDefBy(sparse)
+                val put = owner.methods.single { it.parameterTypes.map(CharSequence::toString) == listOf(OBJECT, "J") && it.origReturnType == "V" }
                 owner.methods.add(ImmutableMethod(sparse, "putAgain", put.parameters, put.returnType, put.accessFlags, put.annotations,
                     put.hiddenApiRestrictions, put.implementation).toMutable())
             },
             "no empty constructor" to { context, sparse ->
-                context.mutableClassDefBy(sparse).methods.removeAll { it.name == "<init>" && it.parameterTypes.isEmpty() }
+                context.tgMutableClassDefBy(sparse).methods.removeAll { it.origName == "<init>" && it.parameterTypes.isEmpty() }
             },
             "update loop uses another put" to { context, sparse ->
-                val owner = context.mutableClassDefBy(sparse)
-                val put = owner.methods.single { it.parameterTypes.map(CharSequence::toString) == listOf(OBJECT, "J") && it.returnType == "V" }
+                val owner = context.tgMutableClassDefBy(sparse)
+                val put = owner.methods.single { it.parameterTypes.map(CharSequence::toString) == listOf(OBJECT, "J") && it.origReturnType == "V" }
                 owner.methods.remove(put)
                 owner.methods.add(ImmutableMethod(sparse, "renamedPut", put.parameters, put.returnType, put.accessFlags, put.annotations,
                     put.hiddenApiRestrictions, put.implementation).toMutable())
@@ -280,13 +285,13 @@ class KeepDeletedFixtureTest {
             val context = context(build)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { messageTimePatch.execute(context) })
             mutate(context, sparseType(build))
-            val before = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.associate { it.toString() to it.controlBody().map(::shape) }
+            val before = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.associate { it.toString() to it.controlBody().map(::shape) }
             val failure = assertThrows("${build.name}: $change", PatchException::class.java) { keepDeletedPatch.execute(context) }
             assertTrue("${build.name}: $change refuses for the cleanup: ${failure.message}",
                 failure.message.orEmpty().let { "notification cleanup" in it || "sparse array" in it })
             assertEquals("${build.name}: $change leaves the controller as it was", before,
-                context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.associate { it.toString() to it.controlBody().map(::shape) })
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "keepDeleted" }.controlBody()
+                context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.associate { it.toString() to it.controlBody().map(::shape) })
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "keepDeleted" }.controlBody()
             assertEquals(0L, (status.first() as WideLiteralInstruction).wideLiteral)
         }
     }
@@ -303,7 +308,7 @@ class KeepDeletedFixtureTest {
                 layout.parameterTypes.take(2).map(CharSequence::toString))
 
             // Read independently: the bubble's one method that reads the mark, before it measures the time, and clears it.
-            val bubble = context.mutableClassDefBy(layout.definingClass)
+            val bubble = context.tgMutableClassDefBy(layout.definingClass)
             val readers = bubble.methods.filter { m -> m.controlBody().any { it.opcode == Opcode.IGET_BOOLEAN && it.controlRef() == FORCE_UPDATE } }
             assertEquals("$name: one method reads the mark", listOf(layout.name), readers.map { it.name })
             val body = layout.controlBody()
@@ -313,8 +318,8 @@ class KeepDeletedFixtureTest {
             assertTrue("$name: and cleared", body.any { it.opcode == Opcode.IPUT_BOOLEAN && it.controlRef() == FORCE_UPDATE })
 
             // Telegram's own storage posts the event with the replaced message's chat, then the messages.
-            val replace = context.mutableClassDefBy(MESSAGES_STORAGE).methods.single { m ->
-                m.name.startsWith(REPLACE_IF_EXISTS) && m.controlBody().any { it.controlRef() == REPLACE_MESSAGES }
+            val replace = context.tgMutableClassDefBy(MESSAGES_STORAGE).methods.single { m ->
+                m.origName.startsWith(REPLACE_IF_EXISTS) && m.controlBody().any { it.controlRef() == REPLACE_MESSAGES }
             }.controlBody()
             val event = replace.indexOfFirst { it.controlRef() == REPLACE_MESSAGES }
             val chat = replace.indexOfFirst { it.controlRef() == "$MESSAGE_OBJECT->getDialogId()J" }
@@ -330,11 +335,11 @@ class KeepDeletedFixtureTest {
     @Test fun `a moved redraw refuses before any edit`() {
         val changes = linkedMapOf<String, (BytecodePatchContext, Method) -> Unit>(
             "storage no longer posts the replacement" to { context, _ ->
-                context.mutableClassDefBy(MESSAGES_STORAGE).methods.removeAll { it.name.startsWith(REPLACE_IF_EXISTS) }
+                context.tgMutableClassDefBy(MESSAGES_STORAGE).methods.removeAll { it.origName.startsWith(REPLACE_IF_EXISTS) }
             },
             "the bubble has no layout for a marked message" to { context, layout ->
-                context.mutableClassDefBy(layout.definingClass).methods.removeAll {
-                    it.name == layout.name && it.parameterTypes.map(CharSequence::toString) == layout.parameterTypes.map(CharSequence::toString)
+                context.tgMutableClassDefBy(layout.definingClass).methods.removeAll {
+                    it.origName == layout.origName && it.parameterTypes.map(CharSequence::toString) == layout.parameterTypes.map(CharSequence::toString)
                 }
             },
         )
@@ -344,13 +349,13 @@ class KeepDeletedFixtureTest {
                 val context = context(build)
                 assertEquals(emptyList<String>(), PatchLogCapture.warnings { messageTimePatch.execute(context) })
                 mutate(context, known)
-                val before = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.associate { it.toString() to it.controlBody().map(::shape) }
+                val before = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.associate { it.toString() to it.controlBody().map(::shape) }
                 val failure = assertThrows("${build.name}: $change", PatchException::class.java) { keepDeletedPatch.execute(context) }
                 assertTrue("${build.name}: $change refuses for the redraw: ${failure.message}",
                     failure.message.orEmpty().let { "replaced" in it || "fresh layout" in it })
                 assertEquals("${build.name}: $change leaves the controller as it was", before,
-                    context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.associate { it.toString() to it.controlBody().map(::shape) })
-                val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "keepDeleted" }.controlBody()
+                    context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.associate { it.toString() to it.controlBody().map(::shape) })
+                val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "keepDeleted" }.controlBody()
                 assertEquals(0L, (status.first() as WideLiteralInstruction).wideLiteral)
             }
         }
@@ -365,15 +370,15 @@ class KeepDeletedFixtureTest {
         assertEquals("${build.name}: the chat kinds", setOf(TIMED_DIALOG_OBJECT), dialog.keys)
         // The bubble and time hosts, plus the chat that opens and expires timed media.
         val hosts = FixtureDex.classesWhere(build, { true }) { m ->
-            m.definingClass == FAST_DATE_FORMAT || m.controlBody().any { it.controlRef().let { ref ->
+            m.origDefiningClass == FAST_DATE_FORMAT || m.controlBody().any { it.controlRef().let { ref ->
                 ref == EDITED_MESSAGE || ref == TIMED_OPENED || ref == TIMED_SHOW_ONCE
             } }
-        }.filter { it.type !in telegram.keys && it.type !in sparse.keys && it.type != TIMED_DIALOG_OBJECT }
+        }.filter { it.origType !in telegram.keys && it.origType !in sparse.keys && it.origType != TIMED_DIALOG_OBJECT }
             .distinctBy { it.type }.map(ImmutableClassDef::of)
         return PatchContexts.of(ExtensionDex.classes() + telegram.values + sparse.values + dialog.values + hosts)
     }
 
     /** Read independently of the patch: the cleanup's first parameter, as the fixture declares it. */
     private fun sparseType(build: File) = FixtureDex.classes(build, setOf(NOTIFICATIONS)).getValue(NOTIFICATIONS).methods
-        .single { it.name == NOTIFICATION_CLEANUP }.parameterTypes[0].toString()
+        .single { it.origName == NOTIFICATION_CLEANUP }.parameterTypes[0].toString()
 }

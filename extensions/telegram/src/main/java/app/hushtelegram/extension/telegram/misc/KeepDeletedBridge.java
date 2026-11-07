@@ -42,7 +42,7 @@ final class KeepDeletedBridge implements KeepDeleted.Source, KeepEdits.Source {
         ClassLoader loader = KeepDeletedBridge.class.getClassLoader();
         Class<?> configs = Class.forName("org.telegram.messenger.UserConfig", true, loader);
         Class<?> controllers = Class.forName("org.telegram.messenger.MessagesController", true, loader);
-        int slots = configs.getField("MAX_ACCOUNT_COUNT").getInt(null);
+        int slots = HostNames.field(configs, "MAX_ACCOUNT_COUNT").getInt(null);
         Method config = method(configs, "getInstance", int.class);
         Method controller = method(controllers, "getInstance", int.class);
         ArrayList<KeepDeleted.Source> accounts = new ArrayList<>();
@@ -55,17 +55,17 @@ final class KeepDeletedBridge implements KeepDeleted.Source, KeepEdits.Source {
 
     /** The message IDs a deletion update carries. */
     static ArrayList<?> messages(Object update) throws Exception {
-        return (ArrayList<?>) update.getClass().getField("messages").get(update);
+        return (ArrayList<?>) HostNames.field(update.getClass(), "messages").get(update);
     }
 
     /** The channel a channel deletion update is about. */
     static long channel(Object update) throws Exception {
-        return update.getClass().getField("channel_id").getLong(update);
+        return HostNames.field(update.getClass(), "channel_id").getLong(update);
     }
 
     /** The account, chat and ID of a message the bubble is measuring. */
     static long[] keyOf(Object message) throws Exception {
-        int account = message.getClass().getField("currentAccount").getInt(message);
+        int account = HostNames.field(message.getClass(), "currentAccount").getInt(message);
         Class<?> configs = Class.forName("org.telegram.messenger.UserConfig", true, message.getClass().getClassLoader());
         Object config = method(configs, "getInstance", int.class).invoke(null, account);
         return new long[] {
@@ -83,7 +83,7 @@ final class KeepDeletedBridge implements KeepDeleted.Source, KeepEdits.Source {
         Class<?> messages = Class.forName("org.telegram.tgnet.TLRPC$Message", true, loader);
         Class<?> objects = Class.forName("org.telegram.messenger.MessageObject", true, loader);
         // getDialogId fills in dialog_id, and the update loop still reads it as the server sent it.
-        Field dialogId = type.getField("dialog_id");
+        Field dialogId = HostNames.field(type, "dialog_id");
         long sent = dialogId.getLong(message);
         long dialog;
         try {
@@ -93,9 +93,9 @@ final class KeepDeletedBridge implements KeepDeleted.Source, KeepEdits.Source {
         }
         return new Object[] {
             dialog,
-            type.getField("id").getInt(message),
-            (String) type.getField("message").get(message),
-            type.getField("edit_date").getInt(message),
+            HostNames.field(type, "id").getInt(message),
+            (String) HostNames.field(type, "message").get(message),
+            HostNames.field(type, "edit_date").getInt(message),
         };
     }
 
@@ -112,7 +112,7 @@ final class KeepDeletedBridge implements KeepDeleted.Source, KeepEdits.Source {
             Object message = readMessage(cursor, 2);
             if (message == null) return null;
             boolean[] flags = flags(message);
-            String text = (String) message.getClass().getField("message").get(message);
+            String text = (String) HostNames.field(message.getClass(), "message").get(message);
             return new KeepEdits.Stored(text, mine || flags[0], timed || flags[1], flags[2] || chatIsProtected(dialogId));
         } finally {
             method(cursor.getClass(), "dispose").invoke(cursor);
@@ -204,10 +204,10 @@ final class KeepDeletedBridge implements KeepDeleted.Source, KeepEdits.Source {
      */
     @Override public void redraw(long dialogId, ArrayList<Object> messages) throws Exception {
         Object center = call(controller, "getNotificationCenter");
-        int replaced = center.getClass().getField("replaceMessagesObjects").getInt(null);
+        int replaced = HostNames.field(center.getClass(), "replaceMessagesObjects").getInt(null);
         Method post = method(center.getClass(), "postNotificationName", int.class, Object[].class);
         ArrayList<Field> marks = new ArrayList<>(messages.size());
-        for (Object message : messages) marks.add(message.getClass().getField("forceUpdate"));
+        for (Object message : messages) marks.add(HostNames.field(message.getClass(), "forceUpdate"));
         // Telegram's chat screens read the event and their messages on the main thread only.
         Utils.runOnMainThread(() -> {
             try {
@@ -232,7 +232,7 @@ final class KeepDeletedBridge implements KeepDeleted.Source, KeepEdits.Source {
         clear = null;
         for (Method candidate : notifications.getMethods()) {
             Class<?>[] parameters = candidate.getParameterTypes();
-            if (!candidate.getName().equals("removeDeletedMessagesFromNotifications") || parameters.length != 2
+            if (!HostNames.named(candidate, "removeDeletedMessagesFromNotifications") || parameters.length != 2
                     || parameters[1] != boolean.class) continue;
             if (clear != null) throw new IllegalStateException("two notification cleanups");
             clear = candidate;
@@ -276,11 +276,11 @@ final class KeepDeletedBridge implements KeepDeleted.Source, KeepEdits.Source {
     /** Whether [message] is sent by me, disappears on a timer, or can't be saved. */
     private static boolean[] flags(Object message) throws Exception {
         Class<?> type = message.getClass();
-        boolean mine = type.getField("out").getBoolean(message);
-        boolean timed = type.getField("ttl_period").getInt(message) != 0;
-        Object media = type.getField("media").get(message);
-        if (media != null && media.getClass().getField("ttl_seconds").getInt(media) != 0) timed = true;
-        boolean noForwards = type.getField("noforwards").getBoolean(message);
+        boolean mine = HostNames.field(type, "out").getBoolean(message);
+        boolean timed = HostNames.field(type, "ttl_period").getInt(message) != 0;
+        Object media = HostNames.field(type, "media").get(message);
+        if (media != null && HostNames.field(media.getClass(), "ttl_seconds").getInt(media) != 0) timed = true;
+        boolean noForwards = HostNames.field(type, "noforwards").getBoolean(message);
         return new boolean[] {mine, timed, noForwards};
     }
 
@@ -289,7 +289,7 @@ final class KeepDeletedBridge implements KeepDeleted.Source, KeepEdits.Source {
         if (dialog >= 0) return false;
         Object chat = method(controller.getClass(), "getChat", Long.class).invoke(controller, Long.valueOf(-dialog));
         if (chat == null) return false;
-        Field flag = chat.getClass().getField("noforwards");
+        Field flag = HostNames.field(chat.getClass(), "noforwards");
         return flag.getBoolean(chat);
     }
 
@@ -302,7 +302,7 @@ final class KeepDeletedBridge implements KeepDeleted.Source, KeepEdits.Source {
         for (Class<?> parameter : parameters) key.append(',').append(parameter.getName());
         Method found = METHODS.get(key.toString());
         if (found == null) {
-            found = owner.getMethod(name, parameters);
+            found = HostNames.method(owner, name, parameters);
             METHODS.put(key.toString(), found);
         }
         return found;

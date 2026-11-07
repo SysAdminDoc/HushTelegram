@@ -8,8 +8,9 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstructionsWithLabels
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
@@ -37,6 +38,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** A whole-fixture census, followed by mutation of only the handful of report-owning classes. */
 class PremiumAppLogFixtureTest {
@@ -46,7 +51,7 @@ class PremiumAppLogFixtureTest {
             val builders = hosts(build).flatMap { it.methods }.filter(::buildsAppLog)
             assertEquals("${build.name}: complete constructor census", 6, builders.size)
             assertEquals(6, builders.sumOf { method -> method.instructions().count { it.call()?.let { call ->
-                call.definingClass == SAVE_APP_LOG && call.name == "<init>"
+                call.origDefiningClass == SAVE_APP_LOG && call.origName == "<init>"
             } == true } })
             val classified = builders.filter { method -> method.strings().any { it in CLASSIFIED_TYPES } }
             assertEquals("five literal types and one dynamic push-token batch", 5, classified.size)
@@ -70,7 +75,7 @@ class PremiumAppLogFixtureTest {
                 it.opcode == Opcode.NEW_INSTANCE && it.reference() == APP_EVENT
             })
             assertEquals(2, push.instructions().count { it.opcode == Opcode.NEW_INSTANCE && it.reference() == JSON_NULL })
-            assertTrue(push.instructions().any { it.call()?.name == "setRegId" })
+            assertTrue(push.instructions().any { it.call()?.origName == "setRegId" })
             assertTrue(push.instructions().any { it.reference() == "Lorg/telegram/messenger/SharedConfig;->pushStringGetTimeStart:J" })
             assertTrue(push.instructions().any { it.reference() == "Lorg/telegram/messenger/SharedConfig;->pushStringGetTimeEnd:J" })
             val camera = builders.single { "android_dual_camera" in it.strings() }
@@ -143,7 +148,7 @@ class PremiumAppLogFixtureTest {
                 "Lorg/telegram/messenger/MessagesController;->collectDeviceStats:Z", camera.method.instructions().first {
                     it.opcode == Opcode.IGET_BOOLEAN }.reference())
             for (method in stock) assertEquals("${build.name}: operational path stays stock", method.instructions().map(::operation),
-                context.mutableClassDefBy(method.definingClass).methods.single { it.sameSignature(method) }.instructions().map(::operation))
+                context.tgMutableClassDefBy(method.definingClass).methods.single { it.sameSignature(method) }.instructions().map(::operation))
             assertFlags(context, AppLogEvent.entries.toSet())
         }
     }
@@ -282,7 +287,7 @@ class PremiumAppLogFixtureTest {
                     "const-string v$typeRegister, \"support.report\"")
                 val now = method.instructions()
                 val literal = now.indexOfFirst { it.string() == AppLogEvent.SHOW.type }
-                val send = now.indexOfFirst { it.call()?.name == "sendRequest" }
+                val send = now.indexOfFirst { it.call()?.origName == "sendRequest" }
                 val protected = if (change == "literal exception") literal else send - 3
                 val target = if (change == "literal exception") literal + 1 else send
                 val handler = now.size
@@ -338,9 +343,9 @@ class PremiumAppLogFixtureTest {
             val at = show.method.instructions().indexOfFirst { it.string() == AppLogEvent.SHOW.type }
             val register = show.method.instructions()[at].namedRegisters().single()
             show.method.replaceInstruction(at, "const-string v$register, \"support.report\"")
-            val replaced = classes.map { if (it.type == show.method.definingClass) ImmutableClassDef.of(setup.mutableClassDefBy(it.type)) else it }
+            val replaced = classes.map { if (it.origType == show.method.origDefiningClass) ImmutableClassDef.of(setup.tgMutableClassDefBy(it.type)) else it }
             val context = PatchContexts.of(ExtensionDex.classes() + replaced)
-            val unknown = context.mutableClassDefBy(show.method.definingClass).methods.single { it.sameSignature(show.method) }
+            val unknown = context.tgMutableClassDefBy(show.method.definingClass).methods.single { it.sameSignature(show.method) }
             val before = unknown.instructions().map(::operation)
             val warnings = PatchLogCapture.warnings { disableAnalyticsPatch.execute(context) }
             assertEquals(1, warnings.size)
@@ -378,7 +383,7 @@ class PremiumAppLogFixtureTest {
     private fun buildsAppLog(method: Method) = method.instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.reference() == SAVE_APP_LOG }
     private fun snapshots(context: BytecodePatchContext, classes: List<ClassDef>) =
         (classes.map { it.type } + listOf(ANALYTICS, SETTINGS_STATUS)).distinct().flatMap { owner ->
-        context.mutableClassDefBy(owner).methods.filter { owner in listOf(ANALYTICS, SETTINGS_STATUS) || buildsAppLog(it) || it.instructions().any { instruction ->
+        context.tgMutableClassDefBy(owner).methods.filter { owner in listOf(ANALYTICS, SETTINGS_STATUS) || buildsAppLog(it) || it.instructions().any { instruction ->
             instruction.opcode == Opcode.NEW_INSTANCE && instruction.reference() == REPORT_READ_METRICS
         } }.map { method ->
             val flow = method.implementation?.let { ControlFlow.of(method) }
@@ -399,7 +404,7 @@ class PremiumAppLogFixtureTest {
         val expected = AppLogEvent.entries.associate { it.capability to (it in covered) } +
             mapOf("readMetrics" to oldTargets, "disableAnalytics" to family, "ghostMode" to family)
         for ((flag, enabled) in expected) {
-            val body = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
+            val body = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.instructions()
             assertEquals(flag, if (enabled) 1 else 0, (body[0] as NarrowLiteralInstruction).narrowLiteral)
             assertEquals(Opcode.RETURN, body[1].opcode)
         }
@@ -425,7 +430,7 @@ class PremiumAppLogFixtureTest {
     }
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
     private fun Method.strings() = instructions().mapNotNull { it.string() }
-    private fun Instruction.reference() = (this as? ReferenceInstruction)?.reference?.toString()
+    private fun Instruction.reference() = origRef()
     private fun Instruction.string() = ((this as? ReferenceInstruction)?.reference as? StringReference)?.string
     private fun Instruction.call() = (this as? ReferenceInstruction)?.reference as? MethodReference
     private fun operation(instruction: Instruction) = listOf(instruction.opcode, instruction.reference(), instruction.namedRegisters(),

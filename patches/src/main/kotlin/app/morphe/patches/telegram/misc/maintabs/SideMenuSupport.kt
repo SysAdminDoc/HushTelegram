@@ -4,8 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.maintabs
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.addInstructions
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -28,6 +28,12 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefBy
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val SIDE_MENU = "$EXTENSION_PACKAGE/misc/SideMenu;"
 internal const val SWIPE_STARTS = "$SIDE_MENU->swipeStarts(Ljava/lang/Object;Landroid/view/MotionEvent;Z)V"
@@ -128,7 +134,7 @@ internal fun BytecodePatchContext.resolveSideMenu(plan: MainTabsPlan): SideMenu 
     // The swipe start: a method of the pager's base class that reads the page showing and turns a
     // backward swipe down with false before it calls anything.
     val base = plan.swipeStart.substringBefore("->")
-    val start = mutableClassDefBy(base).methods.singleOrNull { signatureOf(it) == plan.swipeStart }
+    val start = tgMutableClassDefBy(base).methods.singleOrNull { signatureOf(it) == plan.swipeStart }
         ?: return missing("the pager's swipe start is gone")
     val opening = start.controlBody().takeWhile { ((it as? ReferenceInstruction)?.reference is MethodReference).not() }
     if (opening.none { it.opcode == Opcode.IGET && it.controlRef() == plan.position } || opening.none { it.opcode == Opcode.RETURN }) {
@@ -138,30 +144,30 @@ internal fun BytecodePatchContext.resolveSideMenu(plan: MainTabsPlan): SideMenu 
 
     // The pager's way back to its screen: the field its backward question reads and casts to the screen.
     val gate = plan.gates.single { !it.forward }.method
-    val holder = classDefBy(plan.screen).superclass ?: return missing("the main screen has no superclass")
+    val holder = tgClassDefBy(plan.screen).superclass ?: return missing("the main screen has no superclass")
     val gateBody = gate.controlBody()
     val screenFields = gateBody.indices.filter { at ->
-        gateBody[at].opcode == Opcode.IGET_OBJECT && gateBody[at].controlField()?.type == holder &&
+        gateBody[at].opcode == Opcode.IGET_OBJECT && gateBody[at].controlField()?.origType == holder &&
             gateBody.getOrNull(at + 1)?.let { it.opcode == Opcode.CHECK_CAST && it.controlRef() == plan.screen } == true
     }.map { gateBody[it].controlRef()!! }.distinct()
     if (screenFields.size != 1) return missing("the pager no longer knows its screen (${screenFields.size})")
     val backward = signatureOf(gate)
 
     // The Profile page, which the menu's first row turns to.
-    val screen = classDefBy(plan.screen)
+    val screen = tgClassDefBy(plan.screen)
     if (pageBuilt(screen, PROFILE_SCREEN) != PROFILE) return missing("the Profile page is no longer the fourth page")
 
     // The account switcher Telegram shows on a long press of the Profile tab.
     val switchers = screen.methods.filter { m ->
-        !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf(VIEW) &&
+        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf(VIEW) &&
             m.controlBody().let { body -> body.any { it.controlRef() == ADD_ACCOUNT } && body.any { it.controlRef() == CLIENT_ACTIVATED } }
     }
     if (switchers.size != 1) return missing("the main screen's account switcher is missing or ambiguous (${switchers.size})")
     val accounts = signatureOf(switchers.single())
 
     // Back: the main screen's own answer, with a local free at its start for the menu's answer.
-    val backs = mutableClassDefBy(plan.screen).methods.filter { m ->
-        m.name == "onBackPressed" && !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "Z" &&
+    val backs = tgMutableClassDefBy(plan.screen).methods.filter { m ->
+        m.origName == "onBackPressed" && !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "Z" &&
             m.parameterTypes.map(CharSequence::toString) == listOf("Z") && m.controlBody().isNotEmpty()
     }
     if (backs.size != 1) return missing("the main screen no longer answers Back itself (${backs.size})")
@@ -176,16 +182,16 @@ internal fun BytecodePatchContext.resolveSideMenu(plan: MainTabsPlan): SideMenu 
     }
 
     // The screen's account number, from the fragment class every screen extends.
-    val accountGetters = superclassChain(plan.screen).mapNotNull { type -> classDefByOrNull(type) }.flatMap { cls ->
+    val accountGetters = superclassChain(plan.screen).mapNotNull { type -> tgClassDefByOrNull(type) }.flatMap { cls ->
         cls.methods.filter { m ->
-            m.name == "getCurrentAccount" && !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "I" && m.parameterTypes.isEmpty() &&
+            m.origName == "getCurrentAccount" && !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "I" && m.parameterTypes.isEmpty() &&
                 AccessFlags.PUBLIC.isSet(m.accessFlags) && AccessFlags.PUBLIC.isSet(cls.accessFlags)
         }.map { signatureOf(it) }
     }
     val currentAccount = accountGetters.firstOrNull() ?: return missing("Telegram's screens no longer give their account number")
 
     // The links the rows open, handled by Telegram's main activity.
-    val launcher = classDefByOrNull(LAUNCHER) ?: return missing("Telegram's main activity is gone")
+    val launcher = tgClassDefByOrNull(LAUNCHER) ?: return missing("Telegram's main activity is gone")
     val handled = launcher.methods.flatMap { m -> m.controlBody().mapNotNull { it.controlString() } }.toSet()
     LINKS.firstOrNull { it !in handled }?.let { return missing("Telegram's main activity no longer opens $it") }
 
@@ -281,12 +287,12 @@ internal fun BytecodePatchContext.writeSideMenuStubs(menu: SideMenu) {
 
 /** Whether [reference], a method or a field, is public on a public class, and static or not as [static] says. */
 private fun BytecodePatchContext.reaches(reference: String, static: Boolean): Boolean {
-    val owner = classDefByOrNull(reference.substringBefore("->")) ?: return false
+    val owner = tgClassDefByOrNull(reference.substringBefore("->")) ?: return false
     val member = reference.substringAfter("->")
     if (!AccessFlags.PUBLIC.isSet(owner.accessFlags)) return false
     return if ('(' in member) {
         // A method may be inherited, so the whole chain counts.
-        superclassChain(owner.type).mapNotNull { classDefByOrNull(it) }.any { cls ->
+        superclassChain(owner.type).mapNotNull { tgClassDefByOrNull(it) }.any { cls ->
             cls.methods.any { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == member &&
                 AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static }
         }

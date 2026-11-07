@@ -8,7 +8,7 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.downloadspeed.LOAD_OPERATION
@@ -31,6 +31,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** ImageLoader's finished-download callback on both declared builds, and the checks the stubs borrow. */
 class SaveDownloadsFixtureTest {
@@ -45,8 +48,8 @@ class SaveDownloadsFixtureTest {
         return PatchContexts.of(ExtensionDex.classes() + host)
     }
 
-    private fun ClassDef.method(name: String) = methods.single { it.name == name }
-    private fun BytecodePatchContext.stub(name: String) = mutableClassDefBy(SAVE_DOWNLOADS).method(name).controlBody()
+    private fun ClassDef.method(name: String) = methods.single { it.origName == name }
+    private fun BytecodePatchContext.stub(name: String) = tgMutableClassDefBy(SAVE_DOWNLOADS).method(name).controlBody()
     private fun List<Instruction>.refs() = mapNotNull { it.controlRef() }
 
     @Test fun `every finished download goes past the extension first, and the stubs reach Telegram's own checks`() {
@@ -54,7 +57,7 @@ class SaveDownloadsFixtureTest {
             val name = build.name
             val context = context(build)
             val callback = context.resolveSaveDownloads()
-            assertTrue("$name: ${callback.definingClass}", callback.definingClass.startsWith("Lorg/telegram/messenger/ImageLoader$"))
+            assertTrue("$name: ${callback.definingClass}", callback.origDefiningClass.startsWith("Lorg/telegram/messenger/ImageLoader$"))
             val old = ImmutableMethod.of(callback)
             val finishing = context.resolveFoundFiles()
             assertEquals("$name: ${finishing.definingClass}", LOAD_OPERATION, finishing.definingClass)
@@ -111,10 +114,10 @@ class SaveDownloadsFixtureTest {
             assertEquals(listOf(MESSAGE_OBJECT, IS_SECRET_MEDIA), context.stub("timedMedia").refs())
             for (stub in listOf("messageDocument", "fileOrSong", "savingForbidden", "secretChat", "attachName", "documentName",
                 "storedMessage", "photoOrVideo", "photo", "timedMedia")) {
-                val method = context.mutableClassDefBy(SAVE_DOWNLOADS).method(stub)
+                val method = context.tgMutableClassDefBy(SAVE_DOWNLOADS).method(stub)
                 assertTrue("$name: $stub", AccessFlags.PUBLIC.isSet(method.accessFlags) && AccessFlags.STATIC.isSet(method.accessFlags))
             }
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).method("saveDownloads").controlBody()
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).method("saveDownloads").controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }
     }
@@ -123,36 +126,36 @@ class SaveDownloadsFixtureTest {
         val build = Fixtures.declaredBuilds().first()
         val shapes = listOf<Pair<String, (BytecodePatchContext) -> Unit>>(
             "ImageLoader's download callback is missing or ambiguous" to { context ->
-                val images = context.mutableClassDefBy(IMAGE_LOADER)
+                val images = context.tgMutableClassDefBy(IMAGE_LOADER)
                 val handOver = images.methods.single { method -> method.controlBody().any { it.controlRef() == SET_DELEGATE } }
                 val at = handOver.controlBody().indexOfFirst { it.controlRef() == SET_DELEGATE }
                 handOver.replaceInstruction(at, "nop")
             },
             "Telegram's rules for saving a file outside the app changed" to { context ->
-                val loader = context.mutableClassDefBy(FILE_LOADER)
+                val loader = context.tgMutableClassDefBy(FILE_LOADER)
                 val rules = loader.methods.single { method -> method.controlBody().refs().containsAll(listOf(PEER_NO_FORWARDS, NO_FORWARDS)) }
                 val at = rules.controlBody().indexOfFirst { it.controlRef() == NO_FORWARDS }
                 rules.replaceInstruction(at, "nop")
             },
             "$PEER_NO_FORWARDS isn't reachable from the extension" to { context ->
-                val controller = context.mutableClassDefBy(MESSAGES_CONTROLLER)
+                val controller = context.tgMutableClassDefBy(MESSAGES_CONTROLLER)
                 val check = controller.methods.single { it.toString() == PEER_NO_FORWARDS }
                 check.accessFlags = check.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value
             },
             "the background download key changed" to { context ->
-                val loader = context.mutableClassDefBy(FILE_LOADER)
+                val loader = context.tgMutableClassDefBy(FILE_LOADER)
                 val parser = loader.methods.single { method -> method.controlBody().any { it.controlString() == SENT_KEY } }
                 val at = parser.controlBody().indexOfFirst { it.controlString() == SENT_KEY }
                 val register = (parser.controlBody()[at] as OneRegisterInstruction).registerA
                 parser.replaceInstruction(at, "const-string v$register, \"sent_.*_([0-9]+)_([0-9]+)_([0-9]+)\"")
             },
             "$STORED_MESSAGE isn't reachable from the extension" to { context ->
-                val storage = context.mutableClassDefBy(MESSAGES_STORAGE)
+                val storage = context.tgMutableClassDefBy(MESSAGES_STORAGE)
                 val read = storage.methods.single { it.toString() == STORED_MESSAGE }
                 read.accessFlags = read.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value
             },
             "FileLoadOperation's download file isn't set in start alone" to { context ->
-                val operation = context.mutableClassDefBy(LOAD_OPERATION)
+                val operation = context.tgMutableClassDefBy(LOAD_OPERATION)
                 val start = operation.methods.single { method ->
                     method.controlBody().any { it.opcode == Opcode.IPUT_OBJECT && it.controlRef() == CACHE_FILE_TEMP }
                 }
@@ -177,7 +180,7 @@ class SaveDownloadsFixtureTest {
             assertEquals(why, untouched, callback.controlBody().map { it.opcode to it.namedRegisters() })
             assertEquals(why, finishUntouched, finishing.controlBody().map { it.opcode to it.namedRegisters() })
             assertEquals(why, stub, context.stub("attachName").map { it.opcode })
-            assertEquals(why, 0L, (context.mutableClassDefBy(SETTINGS_STATUS).method("saveDownloads").controlBody().first()
+            assertEquals(why, 0L, (context.tgMutableClassDefBy(SETTINGS_STATUS).method("saveDownloads").controlBody().first()
                 as WideLiteralInstruction).wideLiteral)
         }
     }

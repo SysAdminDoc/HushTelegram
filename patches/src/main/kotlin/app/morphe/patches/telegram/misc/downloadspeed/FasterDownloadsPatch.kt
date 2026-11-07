@@ -29,6 +29,9 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val DOWNLOAD_SPEED = "$EXTENSION_PACKAGE/misc/DownloadSpeed;"
 internal const val LOAD_OPERATION = "Lorg/telegram/messenger/FileLoadOperation;"
@@ -114,9 +117,9 @@ internal fun insertDownloadSpeedGate(target: MutableMethod, plan: FasterDownload
 internal fun BytecodePatchContext.resolveFasterDownloads(): FasterDownloadsPlan {
     requireStatusMethod("fasterDownloads")
     controlHook(DOWNLOAD_SPEED, "fast", listOf("Z"), "Z")
-    val owner = mutableClassDefByOrNull(LOAD_OPERATION)
+    val owner = tgMutableClassDefByOrNull(LOAD_OPERATION)
     controlShape(owner != null, "Telegram's file downloader is missing")
-    val method = owner!!.methods.filter { it.name == "updateParams" && it.parameterTypes.isEmpty() && it.returnType == "V" && it.implementation != null }
+    val method = owner!!.methods.filter { it.origName == "updateParams" && it.parameterTypes.isEmpty() && it.origReturnType == "V" && it.implementation != null }
         .controlSingle("the download piece size choice")
     val body = method.controlBody()
     val read = body.indices.filter { body[it].opcode == Opcode.IGET_BOOLEAN && body[it].controlRef() == EXPERIMENTAL_PARAMS }

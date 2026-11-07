@@ -8,9 +8,10 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
@@ -45,6 +46,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.security.MessageDigest
+import app.morphe.util.names.origName
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 private const val ANSWER_CALLBACK = "lambda\$registerForPush\$"
 private val ANSWER_PARAMETERS = listOf("I", "Ljava/lang/String;", "Lorg/telegram/tgnet/TLObject;", "Lorg/telegram/tgnet/TLRPC\$TL_error;")
@@ -63,8 +67,8 @@ private fun Method.isPushRequest() =
 class RepairFirebasePushFixtureTest {
     @Test
     fun `header seed is the actual official fixture signer rather than a guessed fingerprint`() {
-        val seed = ExtensionDex.classes().single { it.type == FIREBASE_PUSH }.fields.single {
-            it.name == "OFFICIAL_CERTIFICATE_SHA1"
+        val seed = ExtensionDex.classes().single { it.origType == FIREBASE_PUSH }.fields.single {
+            it.origName == "OFFICIAL_CERTIFICATE_SHA1"
         }.initialValue as StringEncodedValue
         for (build in Fixtures.declaredBuilds()) {
             val signature = ApkVerifier.Builder(build).build().verify()
@@ -102,7 +106,7 @@ class RepairFirebasePushFixtureTest {
                 "/installations" in it.strings() && "x-goog-fis-android-iid-migration-auth" in it.strings()
             })
             repairFirebasePushPatch.execute(context)
-            val patched = context.mutableClassDefBy(original.definingClass).methods.single { it.signature() == original.signature() }
+            val patched = context.tgMutableClassDefBy(original.definingClass).methods.single { it.signature() == original.signature() }
             val after = patched.instructions()
             assertEquals(before.size + 2, after.size)
             assertEquals(Opcode.INVOKE_STATIC, after[at].opcode)
@@ -126,7 +130,7 @@ class RepairFirebasePushFixtureTest {
             for (owner in hosts) for (method in owner.methods) {
                 if (method.signature() == original.signature() || method.isAnswerCallback() || method.isPushRequest()) continue
                 assertEquals("${build.name}: untouched ${method.signature()}", snapshot(method),
-                    snapshot(context.mutableClassDefBy(owner.type).methods.single { it.signature() == method.signature() }))
+                    snapshot(context.tgMutableClassDefBy(owner.type).methods.single { it.signature() == method.signature() }))
             }
             assertFlag(context, "repairFirebasePush", true)
             assertFlag(context, "firebaseCertificateHeader", true)
@@ -139,9 +143,9 @@ class RepairFirebasePushFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val hosts = hosts(build)
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
-            val controller = hosts.single { it.type == PUSH_CONTROLLER }
+            val controller = hosts.single { it.origType == PUSH_CONTROLLER }
             assertEquals("${build.name}: the answer and the in-flight reset share the name", 2,
-                controller.methods.count { it.name.startsWith(ANSWER_CALLBACK) })
+                controller.methods.count { it.origName.startsWith(ANSWER_CALLBACK) })
             val original = controller.methods.single { it.isAnswerCallback() }
             assertTrue("${build.name}: instance callback", !AccessFlags.STATIC.isSet(original.accessFlags))
             val registers = original.implementation!!.registerCount
@@ -150,10 +154,10 @@ class RepairFirebasePushFixtureTest {
             assertEquals("Lorg/telegram/tgnet/TLRPC\$TL_boolTrue;", before[0].reference())
             assertEquals("${build.name}: stock test reads the response", registers - 2, (before[0] as TwoRegisterInstruction).registerB)
             assertEquals("${build.name}: one accepted-registration write", 1, before.count {
-                it.opcode == Opcode.IPUT_BOOLEAN && it.field()?.name == "registeredForPush"
+                it.opcode == Opcode.IPUT_BOOLEAN && it.field()?.origName == "registeredForPush"
             })
             repairFirebasePushPatch.execute(context)
-            val patched = context.mutableClassDefBy(PUSH_CONTROLLER).methods.single { it.signature() == original.signature() }
+            val patched = context.tgMutableClassDefBy(PUSH_CONTROLLER).methods.single { it.signature() == original.signature() }
             val after = patched.instructions()
             assertEquals(before.size + 1, after.size)
             assertEquals(Opcode.INVOKE_STATIC, after[0].opcode)
@@ -175,9 +179,9 @@ class RepairFirebasePushFixtureTest {
             for (method in controller.methods) {
                 if (method.signature() == original.signature() || method.isPushRequest()) continue
                 assertEquals("${build.name}: untouched ${method.signature()}", snapshot(method),
-                    snapshot(context.mutableClassDefBy(PUSH_CONTROLLER).methods.single { it.signature() == method.signature() }))
+                    snapshot(context.tgMutableClassDefBy(PUSH_CONTROLLER).methods.single { it.signature() == method.signature() }))
             }
-            val hook = context.mutableClassDefBy(FIREBASE_PUSH).methods.single { it.name == "registerDeviceAnswer" }
+            val hook = context.tgMutableClassDefBy(FIREBASE_PUSH).methods.single { it.origName == "registerDeviceAnswer" }
             assertEquals(ANSWER_HOOK, "${hook.definingClass}->${hook.name}(${hook.parameterTypes.joinToString("")})${hook.returnType}")
             assertFlag(context, "repairFirebasePush", true)
         }
@@ -188,7 +192,7 @@ class RepairFirebasePushFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val hosts = hosts(build)
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
-            val original = hosts.single { it.type == PUSH_CONTROLLER }.methods.single { it.isPushRequest() }
+            val original = hosts.single { it.origType == PUSH_CONTROLLER }.methods.single { it.isPushRequest() }
             assertTrue("${build.name}: instance method", !AccessFlags.STATIC.isSet(original.accessFlags))
             val registers = original.implementation!!.registerCount
             val before = original.instructions()
@@ -198,7 +202,7 @@ class RepairFirebasePushFixtureTest {
             assertEquals("${build.name}: the request carries the push type parameter", listOf(registers - 2),
                 before.filter { it.reference() == TOKEN_TYPE }.map { (it as TwoRegisterInstruction).registerA })
             repairFirebasePushPatch.execute(context)
-            val patched = context.mutableClassDefBy(PUSH_CONTROLLER).methods.single { it.signature() == original.signature() }
+            val patched = context.tgMutableClassDefBy(PUSH_CONTROLLER).methods.single { it.signature() == original.signature() }
             val after = patched.instructions()
             assertEquals(before.size + 1, after.size)
             // A range, since this and the push type sit past every local and may be out of a plain invoke's reach.
@@ -220,7 +224,7 @@ class RepairFirebasePushFixtureTest {
                 assertEquals("${build.name}: stock exceptional successors at $index",
                     oldFlow.exceptional[index].map(::destination), newFlow.exceptional[moved(index)])
             }
-            val hook = context.mutableClassDefBy(FIREBASE_PUSH).methods.single { it.name == "registerDeviceSent" }
+            val hook = context.tgMutableClassDefBy(FIREBASE_PUSH).methods.single { it.origName == "registerDeviceSent" }
             assertEquals(SENT_HOOK, "${hook.definingClass}->${hook.name}(${hook.parameterTypes.joinToString("")})${hook.returnType}")
             assertFlag(context, "repairFirebasePush", true)
         }
@@ -235,7 +239,7 @@ class RepairFirebasePushFixtureTest {
                 Triple(SHARED_CONFIG, TOKEN_READER, setOf("sync", "configLoaded", "pushString")),
                 Triple(USER_CONFIG, ACCOUNT_READER, setOf("Instance", "sync", "configLoaded", "currentUser", "registeredForPush")),
             )) {
-                val method = context.mutableClassDefBy(owner).methods.single { it.name == reader }
+                val method = context.tgMutableClassDefBy(owner).methods.single { it.origName == reader }
                 assertEquals("${build.name}: primitive evidence only", "I", method.returnType)
                 assertTrue(method.parameterTypes.isEmpty())
                 assertTrue(AccessFlags.PUBLIC.isSet(method.accessFlags) && AccessFlags.STATIC.isSet(method.accessFlags))
@@ -253,7 +257,7 @@ class RepairFirebasePushFixtureTest {
                         "Ljava/lang/String;->isEmpty()Z", call.signature()) }
                 }
                 val stubName = if (owner == SHARED_CONFIG) "nativeTokenPresence" else "nativeAccountCounts"
-                val stub = context.mutableClassDefBy(FIREBASE_PUSH).methods.single { it.name == stubName }
+                val stub = context.tgMutableClassDefBy(FIREBASE_PUSH).methods.single { it.origName == stubName }
                 assertEquals(listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.RETURN), stub.instructions().map { it.opcode })
                 assertEquals("$owner->$reader()I", stub.instructions()[0].reference())
             }
@@ -266,14 +270,14 @@ class RepairFirebasePushFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
             repairFirebasePushPatch.execute(context)
-            val token = ReadOnlyProbe(context.mutableClassDefBy(SHARED_CONFIG).methods.single { it.name == TOKEN_READER })
+            val token = ReadOnlyProbe(context.tgMutableClassDefBy(SHARED_CONFIG).methods.single { it.origName == TOKEN_READER })
             for (value in listOf(null, "", "synthetic-token-canary-391883", " ")) {
                 assertEquals(if (value == null) -1 else if (value.isEmpty()) 0 else 1,
                     token.run(mapOf("sync" to Any(), "configLoaded" to 1, "pushString" to value)))
                 assertEquals(-1, token.run(mapOf("sync" to Any(), "configLoaded" to 0, "pushString" to value)))
             }
             assertEquals(-1, token.run(mapOf("sync" to null)))
-            val accounts = ReadOnlyProbe(context.mutableClassDefBy(USER_CONFIG).methods.single { it.name == ACCOUNT_READER })
+            val accounts = ReadOnlyProbe(context.tgMutableClassDefBy(USER_CONFIG).methods.single { it.origName == ACCOUNT_READER })
             for (mask in 0 until 256) {
                 var active = 0
                 var acknowledged = 0
@@ -307,67 +311,67 @@ class RepairFirebasePushFixtureTest {
             USER_CONFIG to "registeredForPush", USER_CONFIG to "MAX_ACCOUNT_COUNT")
         val mutations = linkedMapOf<String, (BytecodePatchContext) -> Unit>()
         for ((owner, name) in fields) {
-            mutations["missing $owner $name"] = { it.mutableClassDefBy(owner).fields.removeAll { field -> field.name == name } }
-            mutations["wrong access $owner $name"] = { it.mutableClassDefBy(owner).fields.single { field -> field.name == name }.accessFlags = 0 }
+            mutations["missing $owner $name"] = { it.tgMutableClassDefBy(owner).fields.removeAll { field -> field.origName == name } }
+            mutations["wrong access $owner $name"] = { it.tgMutableClassDefBy(owner).fields.single { field -> field.origName == name }.accessFlags = 0 }
             mutations["wrong type $owner $name"] = { context ->
-                val host = context.mutableClassDefBy(owner)
-                val field = host.fields.single { it.name == name }
+                val host = context.tgMutableClassDefBy(owner)
+                val field = host.fields.single { it.origName == name }
                 host.fields.remove(field)
-                host.fields.add(ImmutableField(owner, name, if (field.type == "I") "J" else "I", field.accessFlags,
+                host.fields.add(ImmutableField(owner, name, if (field.origType == "I") "J" else "I", field.accessFlags,
                     field.initialValue, field.annotations, field.hiddenApiRestrictions).toMutable())
             }
         }
         for ((name, instruction) in listOf("isConfigLoaded" to "const/4 v0, 0x0", "isClientActivated" to "const/4 v0, 0x0",
             "<clinit>" to "const/4 v0, 0x3", "loadConfig" to "const/4 v0, 0x0")) {
-            mutations["changed $name"] = { it.mutableClassDefBy(USER_CONFIG).methods.single { method -> method.name == name }
+            mutations["changed $name"] = { it.tgMutableClassDefBy(USER_CONFIG).methods.single { method -> method.origName == name }
                 .replaceInstruction(0, instruction) }
         }
         mutations["changed token preference"] = { context ->
-            val method = context.mutableClassDefBy(SHARED_CONFIG).methods.single { it.name == "loadConfig" }
+            val method = context.tgMutableClassDefBy(SHARED_CONFIG).methods.single { it.origName == "loadConfig" }
             val at = method.instructions().indexOfFirst { it.string() == "pushString2" }
             method.replaceInstruction(at, "const-string v2, \"unrelatedPreference\"")
         }
         for (name in listOf("isConfigLoaded", "isClientActivated")) {
-            mutations["missing $name getter"] = { it.mutableClassDefBy(USER_CONFIG).methods.removeAll { method -> method.name == name } }
+            mutations["missing $name getter"] = { it.tgMutableClassDefBy(USER_CONFIG).methods.removeAll { method -> method.origName == name } }
             mutations["ambiguous $name getter"] = { context ->
-                val owner = context.mutableClassDefBy(USER_CONFIG)
-                val method = owner.methods.single { it.name == name }
+                val owner = context.tgMutableClassDefBy(USER_CONFIG)
+                val method = owner.methods.single { it.origName == name }
                 owner.methods.add(ImmutableMethod(USER_CONFIG, name, method.parameters, "I", method.accessFlags,
                     method.annotations, method.hiddenApiRestrictions, method.implementation).toMutable())
             }
         }
         for ((owner, bridge) in listOf(SHARED_CONFIG to TOKEN_READER, USER_CONFIG to ACCOUNT_READER)) {
             mutations["existing $bridge"] = { context ->
-                val method = context.mutableClassDefBy(owner).methods.first { it.parameterTypes.isEmpty() }
-                context.mutableClassDefBy(owner).methods.add(ImmutableMethod(owner, bridge, method.parameters, "I",
+                val method = context.tgMutableClassDefBy(owner).methods.first { it.parameterTypes.isEmpty() }
+                context.tgMutableClassDefBy(owner).methods.add(ImmutableMethod(owner, bridge, method.parameters, "I",
                     method.accessFlags, method.annotations, method.hiddenApiRestrictions, method.implementation).toMutable())
             }
         }
         for (name in listOf("nativeTokenPresence", "nativeAccountCounts")) {
             mutations["invalid $name fallback"] = { context ->
-                context.mutableClassDefBy(FIREBASE_PUSH).methods.single { it.name == name }.replaceInstruction(0, "const/4 v0, 0x0")
+                context.tgMutableClassDefBy(FIREBASE_PUSH).methods.single { it.origName == name }.replaceInstruction(0, "const/4 v0, 0x0")
             }
             mutations["ambiguous $name fallback"] = { context ->
-                val owner = context.mutableClassDefBy(FIREBASE_PUSH)
-                val method = owner.methods.single { it.name == name }
+                val owner = context.tgMutableClassDefBy(FIREBASE_PUSH)
+                val method = owner.methods.single { it.origName == name }
                 owner.methods.add(ImmutableMethod(FIREBASE_PUSH, name, method.parameters, "Z", method.accessFlags,
                     method.annotations, method.hiddenApiRestrictions, method.implementation).toMutable())
             }
         }
         fun callback(context: BytecodePatchContext) =
-            context.mutableClassDefBy(PUSH_CONTROLLER).methods.single { it.isAnswerCallback() }
+            context.tgMutableClassDefBy(PUSH_CONTROLLER).methods.single { it.isAnswerCallback() }
         mutations["missing push answer callback"] = { context ->
-            context.mutableClassDefBy(PUSH_CONTROLLER).methods.removeAll { it.isAnswerCallback() }
+            context.tgMutableClassDefBy(PUSH_CONTROLLER).methods.removeAll { it.isAnswerCallback() }
         }
         mutations["ambiguous push answer callback"] = { context ->
             val method = callback(context)
-            context.mutableClassDefBy(PUSH_CONTROLLER).methods.add(ImmutableMethod(PUSH_CONTROLLER, "${ANSWER_CALLBACK}9999",
+            context.tgMutableClassDefBy(PUSH_CONTROLLER).methods.add(ImmutableMethod(PUSH_CONTROLLER, "${ANSWER_CALLBACK}9999",
                 method.parameters, method.returnType, method.accessFlags, method.annotations, method.hiddenApiRestrictions,
                 method.implementation).toMutable())
         }
         mutations["changed push answer parameters"] = { context ->
             val method = callback(context)
-            val owner = context.mutableClassDefBy(PUSH_CONTROLLER)
+            val owner = context.tgMutableClassDefBy(PUSH_CONTROLLER)
             owner.methods.remove(method)
             owner.methods.add(ImmutableMethod(PUSH_CONTROLLER, method.name, method.parameters.take(3) + method.parameters.take(1),
                 method.returnType, method.accessFlags, method.annotations, method.hiddenApiRestrictions, method.implementation).toMutable())
@@ -389,12 +393,12 @@ class RepairFirebasePushFixtureTest {
         }
         mutations["push answer no longer records the registration"] = { context ->
             val method = callback(context)
-            method.replaceInstruction(method.instructions().indexOfFirst { it.field()?.name == "registeredForPush" }, "nop")
+            method.replaceInstruction(method.instructions().indexOfFirst { it.field()?.origName == "registeredForPush" }, "nop")
         }
         fun request(context: BytecodePatchContext) =
-            context.mutableClassDefBy(PUSH_CONTROLLER).methods.single { it.isPushRequest() }
+            context.tgMutableClassDefBy(PUSH_CONTROLLER).methods.single { it.isPushRequest() }
         mutations["missing push request method"] = { context ->
-            context.mutableClassDefBy(PUSH_CONTROLLER).methods.removeAll { it.isPushRequest() }
+            context.tgMutableClassDefBy(PUSH_CONTROLLER).methods.removeAll { it.isPushRequest() }
         }
         mutations["static push request method"] = { context ->
             val method = request(context)
@@ -419,16 +423,16 @@ class RepairFirebasePushFixtureTest {
         }
         for ((what, name) in listOf("answer" to "registerDeviceAnswer", "request" to "registerDeviceSent")) {
             mutations["missing push $what hook"] = { context ->
-                context.mutableClassDefBy(FIREBASE_PUSH).methods.removeAll { it.name == name }
+                context.tgMutableClassDefBy(FIREBASE_PUSH).methods.removeAll { it.origName == name }
             }
             mutations["private push $what hook"] = { context ->
-                val hook = context.mutableClassDefBy(FIREBASE_PUSH).methods.single { it.name == name }
+                val hook = context.tgMutableClassDefBy(FIREBASE_PUSH).methods.single { it.origName == name }
                 hook.accessFlags = (hook.accessFlags and AccessFlags.PUBLIC.value.inv()) or AccessFlags.PRIVATE.value
             }
             // An extension whose hook doesn't take the controller can't say which account asked.
             mutations["push $what hook without its controller"] = { context ->
-                val owner = context.mutableClassDefBy(FIREBASE_PUSH)
-                val hook = owner.methods.single { it.name == name }
+                val owner = context.tgMutableClassDefBy(FIREBASE_PUSH)
+                val hook = owner.methods.single { it.origName == name }
                 owner.methods.remove(hook)
                 owner.methods.add(ImmutableMethod(FIREBASE_PUSH, name, hook.parameters.drop(1), hook.returnType, hook.accessFlags,
                     hook.annotations, hook.hiddenApiRestrictions, hook.implementation).toMutable())
@@ -436,10 +440,10 @@ class RepairFirebasePushFixtureTest {
         }
         // The hooks ask the controller who's signed in by these two names.
         mutations["missing user id reader"] = { context ->
-            context.mutableClassDefBy(USER_CONFIG).methods.removeAll { it.name == "getClientUserId" }
+            context.tgMutableClassDefBy(USER_CONFIG).methods.removeAll { it.origName == "getClientUserId" }
         }
         mutations["hidden account reader"] = { context ->
-            val reader = context.mutableClassDefBy(BASE_CONTROLLER).methods.single { it.name == "getUserConfig" }
+            val reader = context.tgMutableClassDefBy(BASE_CONTROLLER).methods.single { it.origName == "getUserConfig" }
             reader.accessFlags = (reader.accessFlags and AccessFlags.PUBLIC.value.inv()) or AccessFlags.PROTECTED.value
         }
         for (build in Fixtures.declaredBuilds()) {
@@ -455,7 +459,7 @@ class RepairFirebasePushFixtureTest {
                 assertFlag(context, "firebaseLocalStatus", false)
             }
             for (owner in listOf(SHARED_CONFIG, USER_CONFIG, PUSH_CONTROLLER, BASE_CONTROLLER)) {
-                val context = PatchContexts.of(ExtensionDex.classes() + nativeHosts.filter { it.type != owner })
+                val context = PatchContexts.of(ExtensionDex.classes() + nativeHosts.filter { it.origType != owner })
                 val before = snapshot(context)
                 assertThrows(PatchException::class.java) { repairFirebasePushPatch.execute(context) }
                 assertEquals(before, snapshot(context))
@@ -467,7 +471,7 @@ class RepairFirebasePushFixtureTest {
     fun `missing local capability refuses without inserting even the unrelated certificate hook`() {
         for (build in Fixtures.declaredBuilds()) {
             val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
-            context.mutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.name == "firebaseLocalStatus" }
+            context.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == "firebaseLocalStatus" }
             val before = snapshot(context)
             assertThrows(PatchException::class.java) { repairFirebasePushPatch.execute(context) }
             assertEquals(before, snapshot(context))
@@ -489,14 +493,14 @@ class RepairFirebasePushFixtureTest {
                     "Ljava/net/URLConnection;->addRequestProperty(Ljava/lang/String;Ljava/lang/String;)V")
                 "return" -> method.replaceInstruction(header.index + 3, "return-object v3")
                 "url" -> {
-                    val factory = context.mutableClassDefBy(method.definingClass).methods.single {
+                    val factory = context.tgMutableClassDefBy(method.definingClass).methods.single {
                         "https://firebaseinstallations.googleapis.com/v1/" in it.strings()
                     }
                     factory.replaceInstruction(0, "const-string v0, \"https://unrelated.invalid/\"")
                 }
                 "create", "token" -> {
                     val request = header.requests.getValue(if (change == "create") FirebaseRequest.CREATE else FirebaseRequest.TOKEN)
-                    val mutable = context.mutableClassDefBy(request.definingClass).methods.single { it.signature() == request.signature() }
+                    val mutable = context.tgMutableClassDefBy(request.definingClass).methods.single { it.signature() == request.signature() }
                     val anchor = if (change == "create") "x-goog-fis-android-iid-migration-auth" else "/authTokens:generate"
                     val index = mutable.instructions().indexOfFirst { it.string() == anchor }
                     mutable.replaceInstruction(index, "const-string v${mutable.instructions()[index].namedRegisters().single()}, \"changed-request\"")
@@ -545,7 +549,7 @@ class RepairFirebasePushFixtureTest {
             assertThrows(PatchException::class.java) { repairFirebasePushPatch.execute(ambiguous) }
             assertEquals(before, snapshot(ambiguous))
             val inaccessible = PatchContexts.of(ExtensionDex.classes() + hosts)
-            val hook = inaccessible.mutableClassDefBy(FIREBASE_PUSH).methods.single { it.name == "certificateHeader" }
+            val hook = inaccessible.tgMutableClassDefBy(FIREBASE_PUSH).methods.single { it.origName == "certificateHeader" }
             hook.accessFlags = hook.accessFlags and AccessFlags.PUBLIC.value.inv()
             val badShape = snapshot(inaccessible)
             assertThrows(PatchException::class.java) { repairFirebasePushPatch.execute(inaccessible) }
@@ -565,11 +569,11 @@ class RepairFirebasePushFixtureTest {
     private fun pushController(build: File): ClassDef {
         val owner = FixtureDex.classes(build, setOf(PUSH_CONTROLLER)).getValue(PUSH_CONTROLLER)
         return ImmutableClassDef(owner.type, owner.accessFlags, owner.superclass, owner.interfaces, owner.sourceFile,
-            owner.annotations, owner.fields, owner.methods.filter { it.name.startsWith(ANSWER_CALLBACK) || it.name == "registerForPush" })
+            owner.annotations, owner.fields, owner.methods.filter { it.origName.startsWith(ANSWER_CALLBACK) || it.origName == "registerForPush" })
     }
     private fun snapshot(context: BytecodePatchContext): Map<String, List<String>> {
         val result = linkedMapOf<String, List<String>>()
-        context.classDefForEach { result[it.type] = snapshot(context.mutableClassDefBy(it.type)) }
+        context.classDefForEach { result[it.type] = snapshot(context.tgMutableClassDefBy(it.type)) }
         return result
     }
     private fun snapshot(owner: ClassDef) = listOf(owner.accessFlags.toString()) + owner.fields.sortedBy { it.name }
@@ -582,7 +586,7 @@ class RepairFirebasePushFixtureTest {
     private fun operation(instruction: Instruction) = listOf(instruction.opcode.name, instruction.reference(),
         instruction.namedRegisters(), (instruction as? NarrowLiteralInstruction)?.narrowLiteral).joinToString("|")
     private fun assertFlag(context: BytecodePatchContext, name: String, enabled: Boolean) {
-        val body = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }.instructions()
+        val body = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == name }.instructions()
         assertEquals(Opcode.CONST_4, body[0].opcode)
         assertEquals(if (enabled) 1 else 0, (body[0] as NarrowLiteralInstruction).narrowLiteral)
         assertEquals(Opcode.RETURN, body[1].opcode)
@@ -591,7 +595,7 @@ class RepairFirebasePushFixtureTest {
         .joinToString("") { "%02x".format(it.toInt() and 0xff) }
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
     private fun Method.strings() = instructions().mapNotNull { it.string() }.toSet()
-    private fun Instruction.reference() = (this as? ReferenceInstruction)?.reference?.toString()
+    private fun Instruction.reference() = origRef()
     private fun Instruction.string() = ((this as? ReferenceInstruction)?.reference as? StringReference)?.string
     private fun Instruction.call() = (this as? ReferenceInstruction)?.reference as? MethodReference
     private fun Instruction.field() = (this as? ReferenceInstruction)?.reference as? com.android.tools.smali.dexlib2.iface.reference.FieldReference

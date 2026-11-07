@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.greetings
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -35,6 +35,12 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origSuperclass
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val GREETING_STICKERS = "$EXTENSION_PACKAGE/misc/GreetingStickers;"
 internal const val GREETINGS_STICKER = "Lorg/telegram/messenger/MediaDataController;->getGreetingsSticker()Lorg/telegram/tgnet/TLRPC\$Document;"
@@ -96,26 +102,26 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
 
     val owners = mutableListOf<ClassDef>()
     classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.superclass != LINEAR_LAYOUT) return@classDefForEach
+        if (cls.origType.startsWith("Lapp/hushtelegram/") || cls.origSuperclass != LINEAR_LAYOUT) return@classDefForEach
         val asks = cls.methods.filter { m -> m.controlBody().any { it.controlRef() == GREETINGS_STICKER } }
-        if (asks.any { it.name == "<init>" && it.parameterTypes.getOrNull(2)?.toString() == "Lorg/telegram/tgnet/TLRPC\$Document;" } &&
-            asks.any { it.name == "onAttachedToWindow" && it.parameterTypes.isEmpty() }) owners += cls
+        if (asks.any { it.origName == "<init>" && it.parameterTypes.getOrNull(2)?.toString() == "Lorg/telegram/tgnet/TLRPC\$Document;" } &&
+            asks.any { it.origName == "onAttachedToWindow" && it.parameterTypes.isEmpty() }) owners += cls
     }
-    val owner = mutableClassDefBy(owners.controlSingle("greeting view").type)
+    val owner = tgMutableClassDefBy(owners.controlSingle("greeting view").type)
 
     // The sticker frame: the one FrameLayout field, made in the constructor.
-    val frameFields = owner.fields.filter { it.type == FRAME_LAYOUT && !AccessFlags.STATIC.isSet(it.accessFlags) }
+    val frameFields = owner.fields.filter { it.origType == FRAME_LAYOUT && !AccessFlags.STATIC.isSet(it.accessFlags) }
     val frame = frameFields.controlSingle("greeting sticker frame")
     val frameKey = "${owner.type}->${frame.name}:${frame.type}"
     val frameWrites = owner.methods.flatMap { m -> m.controlBody().filter { it.opcode == Opcode.IPUT_OBJECT && it.controlRef() == frameKey }.map { m } }
-    controlShape(frameWrites.size == 1 && frameWrites.single().name == "<init>", "the sticker frame is no longer made only by the constructor")
+    controlShape(frameWrites.size == 1 && frameWrites.single().origName == "<init>", "the sticker frame is no longer made only by the constructor")
     val children = frameChildren(frameWrites.single(), frameKey, owner.type)
 
     // setSticker(Document), which dispatchDraw calls on the first draw, makes one of those views
     // send the sticker when tapped. Hiding the frame hides that view and its stand-in, nothing else.
-    val setSticker = owner.methods.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.returnType == "V" &&
+    val setSticker = owner.methods.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.origReturnType == "V" &&
         it.parameterTypes.map(CharSequence::toString) == listOf(DOCUMENT) }.controlSingle("greeting setSticker")
-    val draw = owner.methods.filter { it.name == "dispatchDraw" && it.parameterTypes.map(CharSequence::toString) == listOf("Landroid/graphics/Canvas;") }
+    val draw = owner.methods.filter { it.origName == "dispatchDraw" && it.parameterTypes.map(CharSequence::toString) == listOf("Landroid/graphics/Canvas;") }
         .controlSingle("greeting dispatchDraw")
     val setStickerKey = "${owner.type}->${setSticker.name}($DOCUMENT)V"
     controlShape(draw.controlBody().any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == setStickerKey },
@@ -130,38 +136,38 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
     // Where the plain greeting adds the frame: right after reading it, with nothing else using it.
     val frameReaders = readers(frameKey)
     val layout = frameReaders.keys.controlSingleList("greeting layout")
-    controlShape(layout.definingClass == owner.type, "the sticker frame is read outside the greeting")
+    controlShape(layout.origDefiningClass == owner.origType, "the sticker frame is read outside the greeting")
     val layoutBody = layout.controlBody()
     val frameRead = frameReaders.getValue(layout).controlSingle("sticker frame read")
     val add = layoutBody.getOrNull(frameRead + 1)
     controlShape(add?.controlRef() == ADD_VIEW && add.namedRegisters().getOrNull(1) == layoutBody[frameRead].namedRegisters().first() &&
-        layoutBody.first().call()?.name == "removeAllViews", "the greeting no longer lays the sticker frame out under its text")
+        layoutBody.first().call()?.origName == "removeAllViews", "the greeting no longer lays the sticker frame out under its text")
 
     // onMeasure: stop layout requests, then measure twice with LinearLayout's own pass.
-    val measure = owner.methods.filter { it.name == "onMeasure" && it.parameterTypes.map(CharSequence::toString) == listOf("I", "I") && it.returnType == "V" }
+    val measure = owner.methods.filter { it.origName == "onMeasure" && it.parameterTypes.map(CharSequence::toString) == listOf("I", "I") && it.origReturnType == "V" }
         .controlSingle("greeting onMeasure")
     val body = measure.controlBody()
     val self = measure.localRegisterCount()
     val quiet = body.getOrNull(1)?.controlField()
     controlShape(body.firstOrNull()?.opcode == Opcode.CONST_4 && (body[0] as NarrowLiteralInstruction).narrowLiteral == 1 &&
-        body[1].opcode == Opcode.IPUT_BOOLEAN && quiet != null && quiet.definingClass == owner.type &&
+        body[1].opcode == Opcode.IPUT_BOOLEAN && quiet != null && quiet.origDefiningClass == owner.origType &&
         body[1].namedRegisters() == listOf(body[0].namedRegisters().first(), self) &&
         body.count { it.controlRef() == SUPER_MEASURE } == 2 && body.last().opcode == Opcode.RETURN_VOID,
         "the greeting no longer quiets layout requests before it measures")
     controlShape(self <= 15 && (0..1).none { at -> body[at].opcode.setsRegister() && body[at].namedRegisters().first() == self },
         "the greeting's receiver changes before the hook or is out of the hook's reach")
     val quietKey = quiet.toString()
-    val requestLayout = owner.methods.filter { it.name == "requestLayout" && it.parameterTypes.isEmpty() }.controlSingle("greeting requestLayout")
+    val requestLayout = owner.methods.filter { it.origName == "requestLayout" && it.parameterTypes.isEmpty() }.controlSingle("greeting requestLayout")
     controlShape(requestLayout.controlBody().firstOrNull()?.controlRef() == quietKey, "the greeting no longer ignores layout requests while measuring")
 
     // The introduction flag: set true by one (CharSequence, CharSequence) method, read only here.
-    val introductions = owner.fields.filter { field -> field.type == "Z" && !AccessFlags.STATIC.isSet(field.accessFlags) &&
+    val introductions = owner.fields.filter { field -> field.origType == "Z" && !AccessFlags.STATIC.isSet(field.accessFlags) &&
         "${owner.type}->${field.name}:Z".let { key -> owner.methods.any { m -> m.parameterTypes.map(CharSequence::toString) ==
             listOf("Ljava/lang/CharSequence;", "Ljava/lang/CharSequence;") && m.controlBody().any { it.opcode == Opcode.IPUT_BOOLEAN && it.controlRef() == key } } &&
             body.any { it.opcode == Opcode.IGET_BOOLEAN && it.controlRef() == key } } }
     val introduction = introductions.controlSingle("greeting introduction flag")
     val introductionKey = "${owner.type}->${introduction.name}:Z"
-    controlShape(readers(introductionKey).keys.all { it.definingClass == owner.type && it.name == "onMeasure" },
+    controlShape(readers(introductionKey).keys.all { it.origDefiningClass == owner.origType && it.origName == "onMeasure" },
         "the introduction flag is read outside the greeting's onMeasure")
 
     // Every write raises the flag to true in that one setter, and every greeting subclass that
@@ -171,14 +177,14 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
     var measuresAlone = false
     val ownMeasure = "${owner.type}->onMeasure(II)V"
     forEachClassMentioning(Mention.reference(introductionKey)) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
             val b = m.controlBody()
             b.indices.filter { b[it].opcode == Opcode.IPUT_BOOLEAN && b[it].controlRef() == introductionKey }.forEach { i ->
                 val one = b.getOrNull(i - 1)
                 val raised = one?.opcode == Opcode.CONST_4 && (one as NarrowLiteralInstruction).narrowLiteral == 1 &&
                     one.namedRegisters().first() == b[i].namedRegisters().first()
-                if (raised && m.definingClass == owner.type && m.parameterTypes.map(CharSequence::toString) == TWO_TEXTS) {
+                if (raised && m.origDefiningClass == owner.origType && m.parameterTypes.map(CharSequence::toString) == TWO_TEXTS) {
                     raisers += "${m.name}(${m.parameterTypes.joinToString("")})"
                 } else loweredOrElsewhere = true
             }
@@ -187,9 +193,9 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
     // A subclass that skips the greeting's pass names nothing to search for, so every class is
     // checked by its superclass and only the subclasses' code is read.
     classDefForEach { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.superclass != owner.type) return@classDefForEach
+        if (cls.origType.startsWith("Lapp/hushtelegram/") || cls.origSuperclass != owner.origType) return@classDefForEach
         cls.methods.forEach { m ->
-            if (m.name == "onMeasure" && m.parameterTypes.map(CharSequence::toString) == listOf("I", "I") &&
+            if (m.origName == "onMeasure" && m.parameterTypes.map(CharSequence::toString) == listOf("I", "I") &&
                 m.controlBody().none { it.opcode == Opcode.INVOKE_SUPER && it.controlRef() == ownMeasure }) measuresAlone = true
         }
     }
@@ -207,7 +213,7 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
 private fun BytecodePatchContext.readers(key: String): Map<Method, List<Int>> {
     val found = linkedMapOf<Method, List<Int>>()
     forEachClassMentioning(Mention.reference(key)) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
             val body = m.controlBody()
             val reads = body.indices.filter { body[it].opcode in FIELD_READS && body[it].controlRef() == key }
@@ -250,7 +256,7 @@ private fun List<Instruction>.fieldFeeding(at: Int, register: Int, self: Int, ow
     val source = (at - 1 downTo 0).firstOrNull { this[it].opcode.setsRegister() && this[it].namedRegisters().firstOrNull() == register }
         ?: return null
     val read = this[source]
-    return read.controlRef().takeIf { read.opcode == Opcode.IGET_OBJECT && read.namedRegisters()[1] == self && read.controlField()?.definingClass == owner }
+    return read.controlRef().takeIf { read.opcode == Opcode.IGET_OBJECT && read.namedRegisters()[1] == self && read.controlField()?.origDefiningClass == owner }
 }
 
 private fun Collection<Method>.controlSingleList(why: String) = toList().controlSingle(why)

@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.phone
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
@@ -27,6 +27,11 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val CONTACT_SHARE = "$EXTENSION_PACKAGE/misc/ContactShare;"
 internal const val STARTS_TICKED = "$CONTACT_SHARE->startsTicked(Ljava/lang/Object;ZZ)Z"
@@ -62,34 +67,34 @@ internal fun BytecodePatchContext.resolveContactShare(): ContactShareSite {
     controlHook(CONTACT_SHARE, "startsTicked", listOf("Ljava/lang/Object;", "Z", "Z"), "Z")
     val saves = mutableListOf<Pair<FieldReference, FieldReference>>()
     forEachClassMentioning(Mention.reference(ADD_CONTACT)) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         for (method in cls.methods) {
             val body = method.controlBody()
             body.indices.filter { body[it].controlRef() == ADD_CONTACT }.forEach { at -> shareOperand(method, at)?.let(saves::add) }
         }
     }
     val (offer, box) = saves.controlSingle("add contact save that reads the share box")
-    controlShape(offer.definingClass == box.definingClass && offer.name != box.name && offer.type == "Z" && box.type == "Z",
+    controlShape(offer.origDefiningClass == box.origDefiningClass && offer.origName != box.origName && offer.origType == "Z" && box.origType == "Z",
         "the share box and its offer aren't one screen's flags")
-    val screen = mutableClassDefBy(offer.definingClass)
+    val screen = tgMutableClassDefBy(offer.definingClass)
 
-    val created = screen.methods.filter { it.name == "onFragmentCreate" && it.parameterTypes.isEmpty() && it.returnType == "Z" }
+    val created = screen.methods.filter { it.origName == "onFragmentCreate" && it.parameterTypes.isEmpty() && it.origReturnType == "Z" }
         .controlSingle("add contact screen's onFragmentCreate").controlBody()
     controlShape(created.any { it.controlString() == EXCEPTION_KEY } &&
         created.any { it.opcode == Opcode.IPUT_BOOLEAN && it.controlField() == offer },
         "the share box offer no longer comes from Telegram's add contact bar")
 
-    controlShape(screen.methods.filter { it.name == "<init>" }.all { constructor ->
+    controlShape(screen.methods.filter { it.origName == "<init>" }.all { constructor ->
         val body = constructor.controlBody()
         body.indices.filter { body[it].controlField() == box }.all { at -> body[at].opcode == Opcode.IPUT_BOOLEAN && storesZero(body, at) }
     }, "a new add contact screen doesn't start with the share box clear")
 
-    val ticks = screen.methods.filter { it.name != "<init>" }.flatMap { method ->
+    val ticks = screen.methods.filter { it.origName != "<init>" }.flatMap { method ->
         val body = method.controlBody()
         body.indices.filter { body[it].opcode == Opcode.IPUT_BOOLEAN && body[it].controlField() == box }.map { method to it }
     }
     val (view, tick) = ticks.controlSingle("share box tick")
-    controlShape(view.name == "createView" && view.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;"),
+    controlShape(view.origName == "createView" && view.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;"),
         "Telegram ticks the share box outside createView")
     val body = view.controlBody()
     val (value, owner) = body[tick].namedRegisters()

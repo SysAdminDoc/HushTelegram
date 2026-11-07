@@ -5,8 +5,8 @@
 package app.morphe.patches.telegram.misc.api
 
 import app.morphe.patcher.Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.addInstructions
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
@@ -26,6 +26,9 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val SIGN_IN_HELP = "$EXTENSION_PACKAGE/misc/SignInHelp;"
 private const val OBJECT = "Ljava/lang/Object;"
@@ -46,7 +49,7 @@ internal val PROCESS_ERROR_ANCHORS = setOf("BALANCE_TOO_LOW", "CHANNELS_TOO_MUCH
 internal fun isProcessError(method: Method): Boolean {
     val types = method.parameterTypes.map { it.toString() }
     if (!AccessFlags.STATIC.isSet(method.accessFlags) || types.size != 5 || types[0] != "I" || types[1] != TL_ERROR ||
-        types[3] != TL_OBJECT || types[4] != "[$OBJECT" || !method.definingClass.startsWith("Lorg/telegram/ui/")
+        types[3] != TL_OBJECT || types[4] != "[$OBJECT" || !method.origDefiningClass.startsWith("Lorg/telegram/ui/")
     ) return false
     val strings = method.implementation?.instructions
         ?.mapNotNull { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string }?.toSet().orEmpty()
@@ -93,7 +96,7 @@ internal fun BytecodePatchContext.sayWhenGoogleFails(): Boolean {
         cls.methods.filter { it.googleFailureAt() != null }
     }
     for (match in found) {
-        val method = mutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
+        val method = tgMutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
         val at = method.googleFailureAt() ?: continue
         val caught = (method.getInstruction(at) as OneRegisterInstruction).registerA
         method.addInstructions(at + 1, "invoke-static/range {v$caught .. v$caught}, $SIGN_IN_GOOGLE_FAILED")
@@ -121,7 +124,7 @@ internal val signInHelpPatch = bytecodePatch {
                 "Google sign-in still shows no message.")
         }
         val handler = ProcessErrorFingerprint.methodOrNull
-        if (handler == null || handler.returnType.startsWith("[") || !handler.returnType.startsWith("L")) {
+        if (handler == null || handler.origReturnType.startsWith("[") || !handler.origReturnType.startsWith("L")) {
             patchLog.warning("Sign-in help: Telegram's general error handler wasn't found, so a refused API ID " +
                 "still shows no message.")
             return@execute

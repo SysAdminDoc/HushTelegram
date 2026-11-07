@@ -12,6 +12,8 @@ package app.morphe
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.PatcherConfig
+import app.morphe.patcher.PatcherContext
+import app.morphe.patcher.PatcherProgress
 import app.morphe.patcher.patch.BytecodePatchContext
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -39,18 +41,39 @@ internal object PatchContexts {
         (fingerprints.get(null) as List<WeakReference<Fingerprint>>).forEach { it.get()?.clearMatch() }
         val work = File(System.getProperty("java.io.tmpdir"), "hushtelegram-patch-context")
         val config = PatcherConfig(apkFile = File(work, "none.apk"), temporaryFilesPath = work)
+        // Classes read from a fixture carry its version code, which picks the build's name table
+        // as the APK's own manifest does in production. Synthetic classes keep the source names.
+        val versionCode = classes.firstNotNullOfOrNull { (it as? FixtureDex.FixtureClassDef)?.versionCode } ?: "0"
         val metadataType = Class.forName("app.morphe.patcher.PackageMetadata")
         val metadata = metadataType.getConstructor(
             String::class.java, String::class.java, String::class.java,
             Class.forName("com.reandroid.archive.block.ApkSignatureBlock"),
-        ).newInstance("com.instagram.barcelona", "0", "0", null)
+        ).newInstance("com.instagram.barcelona", "0", versionCode, null)
         val context = BytecodePatchContext::class.java.getConstructor(PatcherConfig::class.java, metadataType)
             .newInstance(config, metadata)
         val poolType = Class.forName("app.morphe.patcher.util.PatchClasses")
-        val pool = poolType.getConstructor(Set::class.java).newInstance(classes.toSet())
+        // Patcher 2.3.0 hands PatchClasses a PatcherProgress beside the classes; tests report none.
+        val pool = poolType.getConstructor(Set::class.java, PatcherProgress::class.java).newInstance(classes.toSet(), null)
         BytecodePatchContext::class.java.getMethod("setPatchClasses\$morphe_patcher", poolType).invoke(context, pool)
         BytecodePatchContext::class.java.getMethod("setOpcodes\$morphe_patcher", Opcodes::class.java)
             .invoke(context, Opcodes.getDefault())
+        makeCurrent(context, metadata)
         return context
+    }
+
+    /**
+     * Patcher 2.3.0's global lookups (classDefBy and the rest) read the patcher's current context,
+     * which only its own run sets. A context built here becomes current the same way, through an
+     * instance that skips the constructor's APK reading and holds just the bytecode context and
+     * package metadata.
+     */
+    private fun makeCurrent(context: BytecodePatchContext, metadata: Any) {
+        val unsafeField = Class.forName("sun.misc.Unsafe").getDeclaredField("theUnsafe").apply { isAccessible = true }
+        val unsafe = unsafeField.get(null)
+        val patcher = unsafe.javaClass.getMethod("allocateInstance", Class::class.java)
+            .invoke(unsafe, PatcherContext::class.java)
+        PatcherContext::class.java.getDeclaredField("bytecodeContext").apply { isAccessible = true }.set(patcher, context)
+        PatcherContext::class.java.getDeclaredField("packageMetadata").apply { isAccessible = true }.set(patcher, metadata)
+        PatcherContext::class.java.getDeclaredField("current").apply { isAccessible = true }.set(null, patcher)
     }
 }

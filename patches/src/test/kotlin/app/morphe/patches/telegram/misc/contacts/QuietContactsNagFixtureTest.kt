@@ -8,8 +8,9 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstructions
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
@@ -30,6 +31,10 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** The Contacts tab's class, the badge's class and the runtime are the whole context. */
 class QuietContactsNagFixtureTest {
@@ -89,7 +94,7 @@ class QuietContactsNagFixtureTest {
             assertTrue("$name: the clear passes null", badgeStock[clearCall - 1].let { it.opcode == Opcode.CONST_4 &&
                 it.namedRegisters()[0] == clearText && (it as NarrowLiteralInstruction).narrowLiteral == 0 })
 
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "quietContactsNag" }.instructions()
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "quietContactsNag" }.instructions()
             assertEquals("$name: build fact", 1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
         }
     }
@@ -108,12 +113,12 @@ class QuietContactsNagFixtureTest {
             val owners = FixtureDex.classes(build, checks.map { it.definingClass }.toSet())
             val inTab = checks.filter { method -> owners.getValue(method.definingClass).methods.flatMap { it.instructions() }
                 .mapNotNull { it.string() }.containsAll(listOf(ASKED_ANYWHERE, ASKED_IN_CONTACTS)) }
-            val visible = inTab.single { it.name == "onBecomeFullyVisible" }
+            val visible = inTab.single { it.origName == "onBecomeFullyVisible" }
             val request = visible.instructions().mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
-                .single { it.definingClass == visible.definingClass && it.parameterTypes.map(CharSequence::toString) == listOf("Z") }
+                .single { it.origDefiningClass == visible.origDefiningClass && it.parameterTypes.map(CharSequence::toString) == listOf("Z") }
             assertEquals("${build.name}: the Contacts tab's contacts checks", setOf("onBecomeFullyVisible" to "()V", request.name to "(Z)V"),
                 inTab.map { it.name to "(${it.parameterTypes.joinToString("")})${it.returnType}" }.toSet())
-            assertTrue("${build.name}: the request asks Android", inTab.single { it.name == request.name }.instructions()
+            assertTrue("${build.name}: the request asks Android", inTab.single { it.origName == request.origName }.instructions()
                 .any { it.reference()?.contains("->requestPermissions(") == true })
         }
     }
@@ -143,7 +148,7 @@ class QuietContactsNagFixtureTest {
                     sites.ask.replaceInstruction(text, "const-string v${body[text].namedRegisters()[0]}, \"android.permission.CAMERA\"")
                 },
                 "a second badge reader" to { context, sites ->
-                    val other = context.mutableClassDefBy(sites.badge.definingClass).methods.first { it != sites.badge &&
+                    val other = context.tgMutableClassDefBy(sites.badge.definingClass).methods.first { it != sites.badge &&
                         (it.implementation?.registerCount ?: 0) > 2 }
                     other.addInstructions(0, """
                         const-string v0, "$ASKED_IN_CONTACTS"
@@ -165,7 +170,7 @@ class QuietContactsNagFixtureTest {
     private fun assertRefusedUntouched(file: java.io.File, case: String, context: BytecodePatchContext) {
         val build = file.name
         val owners = owners(file).map { it.type }
-        val before = owners.associateWith { type -> context.mutableClassDefBy(type).methods.map { it.instructions().map(::operation) } }
+        val before = owners.associateWith { type -> context.tgMutableClassDefBy(type).methods.map { it.instructions().map(::operation) } }
         try {
             quietContactsNagPatch.execute(context)
             fail("$build: $case was accepted")
@@ -173,8 +178,8 @@ class QuietContactsNagFixtureTest {
             assertTrue("$build: $case: ${expected.message}", expected.message.orEmpty().contains("before editing"))
         }
         assertEquals("$build: $case doesn't partly mutate the Contacts tab or its badge", before,
-            owners.associateWith { type -> context.mutableClassDefBy(type).methods.map { it.instructions().map(::operation) } })
-        val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "quietContactsNag" }.instructions()
+            owners.associateWith { type -> context.tgMutableClassDefBy(type).methods.map { it.instructions().map(::operation) } })
+        val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "quietContactsNag" }.instructions()
         assertEquals("$build: $case leaves the build fact false", 0, (status[0] as NarrowLiteralInstruction).narrowLiteral)
     }
 
@@ -203,7 +208,7 @@ class QuietContactsNagFixtureTest {
     private fun owners(build: java.io.File): List<ClassDef> {
         val badge = FixtureDex.classesWhere(build, { true }) { method -> method.instructions().let { body ->
             body.any { it.string() == ASKED_IN_CONTACTS } && body.any { it.isGetBoolean() } } }
-        val tab = FixtureDex.classesWhere(build, { true }) { method -> method.name == "onBecomeFullyVisible" &&
+        val tab = FixtureDex.classesWhere(build, { true }) { method -> method.origName == "onBecomeFullyVisible" &&
             method.instructions().any { it.string() == READ_CONTACTS } }
         assertEquals("${build.name}: the badge", 1, badge.size)
         assertEquals("${build.name}: the Contacts tab", 1, tab.size)
@@ -211,7 +216,7 @@ class QuietContactsNagFixtureTest {
     }
 
     private fun contextFor(build: java.io.File, runtime: Boolean = true): BytecodePatchContext {
-        val extension = ExtensionDex.classes().filter { runtime || it.type != CONTACTS_NAG }
+        val extension = ExtensionDex.classes().filter { runtime || it.origType != CONTACTS_NAG }
         return PatchContexts.of(extension + owners(build))
     }
 
@@ -235,10 +240,10 @@ class QuietContactsNagFixtureTest {
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
     private fun List<Instruction>.isPadding(index: Int) = this[index].opcode == Opcode.NOP && getOrNull(index + 1)?.opcode in
         setOf(Opcode.PACKED_SWITCH_PAYLOAD, Opcode.SPARSE_SWITCH_PAYLOAD, Opcode.ARRAY_PAYLOAD)
-    private fun Instruction.reference() = (this as? ReferenceInstruction)?.reference?.toString()
+    private fun Instruction.reference() = origRef()
     private fun Instruction.string(): String? =
         if (opcode == Opcode.CONST_STRING || opcode == Opcode.CONST_STRING_JUMBO) ((this as ReferenceInstruction).reference as? StringReference)?.string else null
     private fun Instruction.isGetBoolean() = opcode == Opcode.INVOKE_INTERFACE &&
-        ((this as ReferenceInstruction).reference as? MethodReference)?.let { it.definingClass == PREFS && it.name == "getBoolean" } == true
+        ((this as ReferenceInstruction).reference as? MethodReference)?.let { it.origDefiningClass == PREFS && it.origName == "getBoolean" } == true
     private fun operation(instruction: Instruction) = instruction.opcode to instruction.reference()
 }

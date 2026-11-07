@@ -8,7 +8,8 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.origRef
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
@@ -35,6 +36,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.lang.ref.SoftReference
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origString
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** LaunchActivity, the chat screen, and the runtime. */
 class KeepVideosMutedFixtureTest {
@@ -95,7 +101,7 @@ class KeepVideosMutedFixtureTest {
             assertEquals("$name: same turn paths", e.normal.toList(), f.normal.toList())
             assertEquals("$name: same turn handlers", e.exceptional.toList(), f.exceptional.toList())
 
-            val stub = context.mutableClassDefBy(VOLUME_KEYS).methods.single { it.name == "stockChatTakesKey" }.controlBody()
+            val stub = context.tgMutableClassDefBy(VOLUME_KEYS).methods.single { it.origName == "stockChatTakesKey" }.controlBody()
             assertEquals(listOf(Opcode.CHECK_CAST, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT, Opcode.RETURN), stub.map { it.opcode })
             assertEquals(site.handler.toString(), stub[1].controlRef())
             assertEquals(1L, status(context, "keepVideosMuted"))
@@ -116,7 +122,7 @@ class KeepVideosMutedFixtureTest {
             // Opening a video stops it when the phone can't sense turns, and letting a player go stops it
             // behind a null check. Closing the viewer comes through the second, so it gives the screen back.
             val offs = upright.edits.filter { it.hook == LISTENER_OFF_HOOK }.map { off ->
-                context.mutableClassDefBy(off.type).methods.single { it.toString() == off.signature }.controlBody()[off.index - 1].opcode
+                context.tgMutableClassDefBy(off.type).methods.single { it.toString() == off.signature }.controlBody()[off.index - 1].opcode
             }
             assertEquals("$name: both places the sensor listener stops", 2, offs.size)
             assertEquals("$name: both places the sensor listener stops", setOf(Opcode.IF_EQZ, Opcode.IGET_OBJECT), offs.toSet())
@@ -126,12 +132,12 @@ class KeepVideosMutedFixtureTest {
                 upright.edits.none { it.signature == turn.method.toString() && it.index in turn.calls })
             val before = upright.edits.groupBy { it.signature }.mapValues { (signature, _) ->
                 val type = upright.edits.first { it.signature == signature }.type
-                ImmutableMethod.of(context.mutableClassDefBy(type).methods.single { it.toString() == signature })
+                ImmutableMethod.of(context.tgMutableClassDefBy(type).methods.single { it.toString() == signature })
             }
             assertEquals("$name", emptyList<String>(), PatchLogCapture.warnings { keepVideosMutedPatch.execute(context) })
             for ((signature, old) in before) {
                 val type = upright.edits.first { it.signature == signature }.type
-                val now = context.mutableClassDefBy(type).methods.single { it.toString() == signature }
+                val now = context.tgMutableClassDefBy(type).methods.single { it.toString() == signature }
                 val a = old.controlBody()
                 val b = now.controlBody()
                 assertEquals("$name: $signature keeps its length", a.size, b.size)
@@ -160,7 +166,7 @@ class KeepVideosMutedFixtureTest {
             val c = context(build)
             val upright = c.resolveVideoUpright(c.resolveFullScreenTurn())
             val on = upright.edits.single { it.hook == LISTENER_ON_HOOK }
-            val method = c.mutableClassDefBy(on.type).methods.single { it.toString() == on.signature }
+            val method = c.tgMutableClassDefBy(on.type).methods.single { it.toString() == on.signature }
             method.replaceInstruction(on.index, "nop")
             val warnings = PatchLogCapture.warnings { keepVideosMutedPatch.execute(c) }
             assertEquals("${build.name}: $warnings", 1, warnings.size)
@@ -169,7 +175,7 @@ class KeepVideosMutedFixtureTest {
             assertEquals(1L, status(c, "videoEitherLandscape"))
             assertEquals(0L, status(c, "videoOnlyFromButton"))
             for (edit in upright.edits.filter { it.hook != LISTENER_ON_HOOK }) {
-                val m = c.mutableClassDefBy(edit.type).methods.single { it.toString() == edit.signature }
+                val m = c.tgMutableClassDefBy(edit.type).methods.single { it.toString() == edit.signature }
                 assertTrue("${build.name}: ${edit.signature} ${edit.index} stays Telegram's", m.controlBody()[edit.index].controlRef() != edit.hook)
             }
         }
@@ -197,19 +203,19 @@ class KeepVideosMutedFixtureTest {
             val mutations: List<Pair<String, (BytecodePatchContext, KeepVideosMutedSite) -> Unit>> = listOf(
                 "no cast before the offer" to { _, s -> s.indices.forEach { s.dispatch.replaceInstruction(it - 1, "nop") } },
                 "the answer isn't read" to { _, s -> s.dispatch.replaceInstruction(s.indices.first() + 1, "nop") },
-                "the answer no longer plays a video" to { c, s -> val m = c.mutableClassDefBy(s.handler.definingClass).methods.single { it.toString() == s.handler.toString() }
+                "the answer no longer plays a video" to { c, s -> val m = c.tgMutableClassDefBy(s.handler.definingClass).methods.single { it.toString() == s.handler.toString() }
                     m.replaceInstruction(m.controlBody().indexOfFirst { it.controlRef()?.endsWith("->setNoSoundHintShowed(Z)V") == true }, "nop") },
-                "private answer" to { c, s -> val m = c.mutableClassDefBy(s.handler.definingClass).methods.single { it.toString() == s.handler.toString() }
+                "private answer" to { c, s -> val m = c.tgMutableClassDefBy(s.handler.definingClass).methods.single { it.toString() == s.handler.toString() }
                     m.accessFlags = m.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value },
-                "missing build flag" to { c, _ -> c.mutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.name == "keepVideosMuted" } },
-                "private volume hook" to { c, _ -> val h = c.mutableClassDefBy(VOLUME_KEYS).methods.single { it.name == "chatTakesKey" }
+                "missing build flag" to { c, _ -> c.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == "keepVideosMuted" } },
+                "private volume hook" to { c, _ -> val h = c.tgMutableClassDefBy(VOLUME_KEYS).methods.single { it.origName == "chatTakesKey" }
                     h.accessFlags = h.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value },
-                "missing stock stub" to { c, _ -> c.mutableClassDefBy(VOLUME_KEYS).methods.removeAll { it.name == "stockChatTakesKey" } },
-                "missing turn flag" to { c, _ -> c.mutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.name == "videoEitherLandscape" } },
-                "missing upright flag" to { c, _ -> c.mutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.name == "videoOnlyFromButton" } },
-                "private upright hook" to { c, _ -> val h = c.mutableClassDefBy(VIDEO_UPRIGHT).methods.single { it.name == "restore" }
+                "missing stock stub" to { c, _ -> c.tgMutableClassDefBy(VOLUME_KEYS).methods.removeAll { it.origName == "stockChatTakesKey" } },
+                "missing turn flag" to { c, _ -> c.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == "videoEitherLandscape" } },
+                "missing upright flag" to { c, _ -> c.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == "videoOnlyFromButton" } },
+                "private upright hook" to { c, _ -> val h = c.tgMutableClassDefBy(VIDEO_UPRIGHT).methods.single { it.origName == "restore" }
                     h.accessFlags = h.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value },
-                "private turn hook" to { c, _ -> val h = c.mutableClassDefBy(VIDEO_TURN).methods.single { it.name == "fullScreen" }
+                "private turn hook" to { c, _ -> val h = c.tgMutableClassDefBy(VIDEO_TURN).methods.single { it.origName == "fullScreen" }
                     h.accessFlags = h.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value },
             )
             for ((case, change) in mutations) {
@@ -224,12 +230,12 @@ class KeepVideosMutedFixtureTest {
 
     private fun context(build: File) = PatchContexts.of(ExtensionDex.classes() + hosts(build))
     private fun status(c: BytecodePatchContext, name: String) =
-        (c.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }.controlBody().first() as WideLiteralInstruction).wideLiteral
+        (c.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == name }.controlBody().first() as WideLiteralInstruction).wideLiteral
     private fun completeState(build: File, c: BytecodePatchContext) = (hosts(build).map { it.type } + listOf(VOLUME_KEYS, VIDEO_TURN, VIDEO_UPRIGHT, SETTINGS_STATUS))
-        .filter { c.classDefByOrNull(it) != null }.associateWith { type -> c.mutableClassDefBy(type).let { cls ->
+        .filter { c.tgClassDefByOrNull(it) != null }.associateWith { type -> c.tgMutableClassDefBy(type).let { cls ->
             listOf(cls.accessFlags, cls.methods.map { key(it) to it.state() }) } }
     private fun hostState(build: File, c: BytecodePatchContext, except: Set<String>) = hosts(build)
-        .flatMap { c.mutableClassDefBy(it.type).methods }.filter { key(it) !in except }.associate { key(it) to it.state() }
+        .flatMap { c.tgMutableClassDefBy(it.type).methods }.filter { key(it) !in except }.associate { key(it) to it.state() }
 
     private fun hosts(build: File): List<ClassDef> {
         val identity = FixtureDex.inputIdentity(build)
@@ -243,10 +249,10 @@ class KeepVideosMutedFixtureTest {
     private fun loadHosts(build: File): List<ClassDef> {
         val launch = FixtureDex.classes(build, setOf(LAUNCH_ACTIVITY)).values.single()
         val dispatch = launch.methods.single { it.toString() == DISPATCH_KEY }.controlBody()
-        val chats = dispatch.filter { it.opcode == Opcode.CHECK_CAST }.map { (it as ReferenceInstruction).reference.toString() }
-            .filter { type -> dispatch.any { ((it as? ReferenceInstruction)?.reference as? MethodReference)?.definingClass == type } }.toSet()
+        val chats = dispatch.filter { it.opcode == Opcode.CHECK_CAST }.map { (it as ReferenceInstruction).reference.origString() }
+            .filter { type -> dispatch.any { ((it as? ReferenceInstruction)?.reference as? MethodReference)?.origDefiningClass == type } }.toSet()
         val turns = FixtureDex.classesWhere(build, { true }) { m ->
-            val refs = m.instructions().mapNotNull { (it as? ReferenceInstruction)?.reference?.toString() }
+            val refs = m.instructions().mapNotNull { it.origRef() }
             refs.any { it.startsWith("$PHOTO_VIEWER->") } &&
                 refs.any { it == SET_ORIENTATION || it == GET_ORIENTATION || it == LISTENER_ON || it == LISTENER_OFF }
         }
@@ -260,7 +266,7 @@ class KeepVideosMutedFixtureTest {
         return listOf(accessFlags, implementation?.registerCount, body.map { it.operand() }, body.map { listOf(it.codeUnits, (it as? OffsetInstruction)?.codeOffset) },
             flow?.normal?.toList(), flow?.exceptional?.toList())
     }
-    private fun Instruction.operand() = listOf(opcode, namedRegisters(), (this as? ReferenceInstruction)?.reference?.toString(),
+    private fun Instruction.operand() = listOf(opcode, namedRegisters(), origRef(),
         (this as? WideLiteralInstruction)?.wideLiteral)
     private fun key(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
 

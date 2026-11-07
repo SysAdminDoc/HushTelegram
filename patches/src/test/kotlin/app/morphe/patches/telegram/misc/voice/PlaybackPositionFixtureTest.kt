@@ -8,7 +8,7 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
@@ -23,6 +23,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import app.morphe.util.names.origName
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** The lengths Telegram remembers a position past, on the pinned builds. */
 class PlaybackPositionFixtureTest {
@@ -53,7 +56,7 @@ class PlaybackPositionFixtureTest {
                     assertEquals("$name: the same register", load.namedRegisters(), now[at + 1].namedRegisters())
                 }
             }
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "playbackPosition" }.controlBody()
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "playbackPosition" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }
     }
@@ -70,15 +73,15 @@ class PlaybackPositionFixtureTest {
             assertEquals("$name: $warnings", 1, warnings.size)
             assertTrue(warnings.single(), "goes on without the playback position switch" in warnings.single())
             for (e in sites.edits) assertTrue(methodOf(context, e).controlBody().none { it.controlRef() == e.hook })
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "playbackPosition" }.controlBody()
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "playbackPosition" }.controlBody()
             assertTrue("$name: the build flag stays off", (status.first() as? WideLiteralInstruction)?.wideLiteral != 1L)
-            val music = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "voiceMusicPlayer" }.controlBody()
+            val music = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "voiceMusicPlayer" }.controlBody()
             assertEquals(1L, (music.first() as WideLiteralInstruction).wideLiteral)
         }
     }
 
     private fun methodOf(context: BytecodePatchContext, edit: PositionEdit) =
-        context.mutableClassDefBy(edit.type).methods.single { it.toString() == edit.signature }
+        context.tgMutableClassDefBy(edit.type).methods.single { it.toString() == edit.signature }
 
     private fun context(build: File) = PatchContexts.of(ExtensionDex.classes() + voiceHosts(build))
 }
@@ -92,5 +95,5 @@ internal fun playbackPositionHosts(build: File): List<ClassDef> =
 private fun voiceHosts(build: File): List<ClassDef> {
     val isMusic = "Lorg/telegram/messenger/MessageObject;->isMusic()Z"
     val player = FixtureDex.classesWhere(build, { true }) { m -> m.controlBody().any { it.controlRef() == isMusic } }.map(ImmutableClassDef::of)
-    return player + playbackPositionHosts(build).filter { h -> player.none { it.type == h.type } }
+    return player + playbackPositionHosts(build).filter { h -> player.none { it.origType == h.origType } }
 }

@@ -8,7 +8,8 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.origRef
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
@@ -42,6 +43,10 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** The message's translation decision, the menu builder and choice, the header item and its click, and the runtime. */
 class OutsideTranslateFixtureTest {
@@ -64,7 +69,7 @@ class OutsideTranslateFixtureTest {
         "Lorg/telegram/tgnet/TLRPC\$Chat;", "Lorg/telegram/messenger/R\$string;",
     )
 
-    private fun Instruction.shape() = listOf(opcode, namedRegisters(), (this as? ReferenceInstruction)?.reference?.toString())
+    private fun Instruction.shape() = listOf(opcode, namedRegisters(), origRef())
     private fun signature(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
 
     /** The chat screen, the header delegate and the item adder, plus what the message menu family reads when [neighbours]. */
@@ -72,16 +77,16 @@ class OutsideTranslateFixtureTest {
         val found = FixtureDex.classesWhere(build, { true }) { m ->
             val params = m.parameterTypes.map(CharSequence::toString)
             params == listOf("Lorg/telegram/messenger/MessageObject;", list, list, list) && m.controlBody().any { it.controlRef() == "Lorg/telegram/messenger/R\$string;->Forward:I" } ||
-                params == listOf("I") && m.returnType == "V" && m.controlBody().any { it.controlRef() == "Lorg/telegram/messenger/TranslateController;->toggleTranslatingDialog(JZ)Z" } ||
+                params == listOf("I") && m.origReturnType == "V" && m.controlBody().any { it.controlRef() == "Lorg/telegram/messenger/TranslateController;->toggleTranslatingDialog(JZ)Z" } ||
                 params.size == 3 && params[0] == "I" && params[1] == "I" && params[2] in setOf("Ljava/lang/String;", "Ljava/lang/CharSequence;") &&
-                m.returnType.startsWith("Lorg/telegram/ui/ActionBar/") ||
-                neighbours && (AccessFlags.STATIC.isSet(m.accessFlags) && params == listOf("I", "I", list, list) && m.returnType == "V" ||
-                    m.name == "getParentActivity" && params.isEmpty() || m.isSelectionCanCopy() ||
+                m.origReturnType.startsWith("Lorg/telegram/ui/ActionBar/") ||
+                neighbours && (AccessFlags.STATIC.isSet(m.accessFlags) && params == listOf("I", "I", list, list) && m.origReturnType == "V" ||
+                    m.origName == "getParentActivity" && params.isEmpty() || m.isSelectionCanCopy() ||
                     m.controlBody().map { it.controlRef() }.let { IS_PREMIUM in it && FORWARDS in it && NAME_HIDE in it })
         }
         val items = found.flatMap { it.methods }.filter { m ->
             m.parameterTypes.map(CharSequence::toString) in listOf(listOf("I", "I", "Ljava/lang/String;"), listOf("I", "I", "Ljava/lang/CharSequence;")) &&
-                m.returnType.startsWith("Lorg/telegram/ui/ActionBar/")
+                m.origReturnType.startsWith("Lorg/telegram/ui/ActionBar/")
         }.map { it.returnType }.toSet()
         val types = (if (neighbours) fixed + menuFixed else fixed) + items
         // The screens' base classes, where the chat screen's account getter is declared.
@@ -170,7 +175,7 @@ class OutsideTranslateFixtureTest {
             for (i in clickBefore.indices) assertEquals("$name: stock click $i", clickBefore[i].shape(), clickAfter[i + 4].shape())
 
             // The stubs reach what Telegram's own translation reads, and nothing of its Premium path.
-            val stub = { n: String -> context.mutableClassDefBy(OUTSIDE_TRANSLATE).methods.single { it.name == n }.controlBody() }
+            val stub = { n: String -> context.tgMutableClassDefBy(OUTSIDE_TRANSLATE).methods.single { it.origName == n }.controlBody() }
             val everything = listOf("selected", "original", "translatable", "messageType", "dialog", "id", "entities", "isTranslated", "applyTranslated",
                 "notifyTranslated", "notifyDialog", "translateIcon", "appLocale", "dialogTarget", "hasTranslateItem", "addHeaderItem", "setHeaderText", "chatOf",
                 "chatDialog", "owner", "chatOwner")
@@ -197,7 +202,7 @@ class OutsideTranslateFixtureTest {
                 stub("addHeaderItem").takeLast(2).map { it.opcode })
             assertTrue("$name: the returned item stays in the same register", stub("addHeaderItem").takeLast(2).all { it.namedRegisters() == listOf(0) })
             assertEquals("$name: the bridge returns an object", "Ljava/lang/Object;",
-                context.mutableClassDefBy(OUTSIDE_TRANSLATE).methods.single { it.name == "addHeaderItem" }.returnType)
+                context.tgMutableClassDefBy(OUTSIDE_TRANSLATE).methods.single { it.origName == "addHeaderItem" }.returnType)
             val setter = stub("setHeaderText")
             assertEquals(listOf(Opcode.CHECK_CAST, Opcode.INVOKE_VIRTUAL, Opcode.RETURN_VOID), setter.map { it.opcode })
             assertEquals("$name: the cast uses the resolved native item", itemType, setter[0].controlRef())
@@ -214,10 +219,10 @@ class OutsideTranslateFixtureTest {
             assertEquals("$name: the chat screen's account", listOf(site.accountGetter, accountConfig, userId), chatOwner)
             val base = site.accountGetter.substringBefore("->")
             assertTrue("$name: the getter is on the chat screen or a class above it", site.accountGetter.endsWith(";->getCurrentAccount()I") &&
-                context.classDefByOrNull(base) != null && base in context.superclassChain(site.chat).toList())
+                context.tgClassDefByOrNull(base) != null && base in context.superclassChain(site.chat).toList())
             assertEquals(Opcode.RETURN_WIDE, stub("chatOwner").last().opcode)
             assertTrue("$name: the delegate is public", site.delegate.definingClass.isNotEmpty() && AccessFlags.PUBLIC.isSet(site.delegate.accessFlags))
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "outsideTranslate" }.controlBody()
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "outsideTranslate" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }
     }
@@ -229,7 +234,7 @@ class OutsideTranslateFixtureTest {
             for (mutation in listOf("missing setter", "private setter", "static setter", "no visible text update", "missing bridge")) {
                 val context = PatchContexts.of(ExtensionDex.classes() + hostClasses)
                 val site = context.resolveOutsideTranslate()
-                val owner = context.mutableClassDefBy(site.setHeaderText.definingClass)
+                val owner = context.tgMutableClassDefBy(site.setHeaderText.definingClass)
                 val setter = owner.methods.single { signature(it) == site.setHeaderText.toString() }
                 when (mutation) {
                     "missing setter" -> owner.methods.remove(setter)
@@ -238,7 +243,7 @@ class OutsideTranslateFixtureTest {
                     "no visible text update" -> setter.controlBody().mapIndexedNotNull { index, instruction ->
                         index.takeIf { instruction.controlRef()?.contains("->setText(Ljava/lang/CharSequence;)V") == true }
                     }.asReversed().forEach { setter.replaceInstruction(it, "nop") }
-                    "missing bridge" -> context.mutableClassDefBy(OUTSIDE_TRANSLATE).methods.removeAll { it.name == "setHeaderText" }
+                    "missing bridge" -> context.tgMutableClassDefBy(OUTSIDE_TRANSLATE).methods.removeAll { it.origName == "setHeaderText" }
                 }
                 val before = state(context, types)
                 assertThrows("${build.name}: $mutation", PatchException::class.java) { outsideTranslatePatch.execute(context) }
@@ -249,7 +254,7 @@ class OutsideTranslateFixtureTest {
     }
 
     private fun state(context: BytecodePatchContext, types: List<String>) = types.associateWith { type ->
-        context.mutableClassDefBy(type).let { cls ->
+        context.tgMutableClassDefBy(type).let { cls ->
             listOf(cls.accessFlags, cls.methods.associate { method -> signature(method) to listOf(
                 method.accessFlags, method.implementation?.registerCount,
                 method.controlBody().map { instruction -> instruction.shape() + listOf(
@@ -296,7 +301,7 @@ class OutsideTranslateFixtureTest {
                 chosen.take(2).map { it.controlRef() }.toSet())
 
             for (flag in listOf("outsideTranslate", "hideTranslateBar", "messageMenuRepeat")) {
-                val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.controlBody()
+                val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.controlBody()
                 assertEquals("$name: $flag", 1L, (status.first() as WideLiteralInstruction).wideLiteral)
             }
         }

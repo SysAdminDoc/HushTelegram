@@ -4,7 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.holiday
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -29,6 +30,14 @@ import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 private const val CANVAS = "Landroid/graphics/Canvas;"
 private const val VIEW = "Landroid/view/View;"
@@ -114,7 +123,7 @@ internal class HolidayLogoSites(
     fun apply(context: BytecodePatchContext) {
         insertBar(bar)
         insertTitle(create)
-        val runtime = context.mutableClassDefBy(HOLIDAY_LOOK)
+        val runtime = context.tgMutableClassDefBy(HOLIDAY_LOOK)
         runtime.methods.remove(stub)
         runtime.methods.add(bridge)
     }
@@ -149,9 +158,9 @@ internal fun BytecodePatchContext.resolveHolidayLogoSites(holiday: HolidayLookSi
     runtimeMethod("drawLogoHatAt", listOf(CANVAS, TEXT, DRAWABLE) + List(7) { "I" }, "V")
     runtimeMethod("decorate", listOf(BUILDER), "V", TITLE_EMOJI)
 
-    val originalBar = holiday.readers.single { it.name == "drawChild" }
-    val bar = mutableClassDefBy(originalBar.definingClass).methods.single { it.name == "drawChild" &&
-        it.parameterTypes.map(CharSequence::toString) == listOf(CANVAS, VIEW, "J") && it.returnType == "Z" }
+    val originalBar = holiday.readers.single { it.origName == "drawChild" }
+    val bar = tgMutableClassDefBy(originalBar.definingClass).methods.single { it.origName == "drawChild" &&
+        it.parameterTypes.map(CharSequence::toString) == listOf(CANVAS, VIEW, "J") && it.origReturnType == "Z" }
     val body = bar.body()
     val asks = body.indices.filter { body[it].call()?.toString() == "${holiday.check.definingClass}->${holiday.check.name}()$DRAWABLE" }
     shape(asks.size == 1 && body.size > asks.single() + 96, "the bar no longer has one bounded holiday draw")
@@ -170,9 +179,9 @@ internal fun BytecodePatchContext.resolveHolidayLogoSites(holiday: HolidayLookSi
     val searchFlag = ownField(bar, body[ask - 16], "Z")
     val titleViews = ownField(bar, body[ask - 12], "[$titleType")
     val overlayFlag = ownField(bar, body[ask - 5], "Z")
-    val supports = classDefByOrNull(bar.definingClass)!!.methods.filter { it.name == "setSupportsHolidayImage" }
+    val supports = tgClassDefByOrNull(bar.definingClass)!!.methods.filter { it.origName == "setSupportsHolidayImage" }
     shape(supports.size == 1 && supports.single().parameterTypes.map(CharSequence::toString) == listOf("Z") &&
-        supports.single().returnType == "V" && AccessFlags.PUBLIC.isSet(supports.single().accessFlags) &&
+        supports.single().origReturnType == "V" && AccessFlags.PUBLIC.isSet(supports.single().accessFlags) &&
         !AccessFlags.STATIC.isSet(supports.single().accessFlags) && !AccessFlags.ABSTRACT.isSet(supports.single().accessFlags) &&
         !AccessFlags.NATIVE.isSet(supports.single().accessFlags),
         "the holiday support flag no longer guards the title draw")
@@ -240,22 +249,22 @@ internal fun BytecodePatchContext.resolveHolidayLogoSites(holiday: HolidayLookSi
         barFlow.preservesValue(21, at + 16, 6), "the title array or first-letter bounds operands changed")
     shape(body[ask + 8].reference() == titleType && body[ask + 8].opcode == Opcode.CHECK_CAST,
         "the holiday title no longer has its original type")
-    val titleClass = classDefByOrNull(titleType)
+    val titleClass = tgClassDefByOrNull(titleType)
     shape(titleClass != null && AccessFlags.PUBLIC.isSet(titleClass.accessFlags), "the title class is no longer public")
     for ((name, result) in listOf("getText" to TEXT, "getTextStartX" to "I", "getTextStartY" to "I", "getTextHeight" to "I")) {
-        shape(titleClass!!.methods.count { it.name == name && it.parameterTypes.isEmpty() && it.returnType == result &&
+        shape(titleClass!!.methods.count { it.origName == name && it.parameterTypes.isEmpty() && it.origReturnType == result &&
             AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) &&
             !AccessFlags.ABSTRACT.isSet(it.accessFlags) && !AccessFlags.NATIVE.isSet(it.accessFlags) && it.body().isNotEmpty() } == 1,
             "the title's $name is no longer callable")
     }
-    val geometryTitle = mutableClassDefBy(titleType)
-    val height = geometryTitle.methods.single { it.name == "getTextHeight" && it.parameterTypes.isEmpty() }
-    val startX = geometryTitle.methods.single { it.name == "getTextStartX" && it.parameterTypes.isEmpty() }
-    val startY = geometryTitle.methods.single { it.name == "getTextStartY" && it.parameterTypes.isEmpty() }
+    val geometryTitle = tgMutableClassDefBy(titleType)
+    val height = geometryTitle.methods.single { it.origName == "getTextHeight" && it.parameterTypes.isEmpty() }
+    val startX = geometryTitle.methods.single { it.origName == "getTextStartX" && it.parameterTypes.isEmpty() }
+    val startY = geometryTitle.methods.single { it.origName == "getTextStartY" && it.parameterTypes.isEmpty() }
     // These two complete field layouts belong to the declared web and beta fixtures. Keep them
     // coherent: accepting any same-typed field would also accept a width as the line height.
     val heightField = ownField(height, height.body().first(), "I")
-    val (padding, rightInside, offset) = when (heightField.name) {
+    val (padding, rightInside, offset) = when (heightField.origName) {
         "f0" -> Triple("H", "E", "b0")
         "g0" -> Triple("I", "F", "c0")
         else -> refuse("the title geometry field layout changed")
@@ -322,7 +331,7 @@ internal fun BytecodePatchContext.resolveHolidayLogoSites(holiday: HolidayLookSi
         nop
     """.trimIndent(), "title vertical placement")
     for (offset in listOf("D1", "E1")) {
-        shape(classDefByOrNull(theme)?.fields?.count { it.name == offset && it.type == "I" &&
+        shape(tgClassDefByOrNull(theme)?.fields?.count { it.origName == offset && it.origType == "I" &&
             AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) } == 1,
             "the holiday $offset offset is no longer public static")
     }
@@ -419,15 +428,15 @@ internal fun BytecodePatchContext.resolveHolidayLogoSites(holiday: HolidayLookSi
     """.trimIndent(), "String gate and holiday placement math")
 
     val screens = mutableListOf<Method>()
-    forEachClassMentioning(Mention.member(bar.definingClass, "setSupportsHolidayImage")) { owner -> if (!owner.type.startsWith("Lapp/hushtelegram/extension/")) {
+    forEachClassMentioning(Mention.member(bar.definingClass, "setSupportsHolidayImage")) { owner -> if (!owner.origType.startsWith("Lapp/hushtelegram/extension/")) {
         owner.methods.filterTo(screens) { method -> method.body().any { it.call()?.let { call ->
-            call.definingClass == bar.definingClass && call.name == "setSupportsHolidayImage" &&
-                call.parameterTypes.map(CharSequence::toString) == listOf("Z") && call.returnType == "V" } == true } }
+            call.origDefiningClass == bar.origDefiningClass && call.origName == "setSupportsHolidayImage" &&
+                call.parameterTypes.map(CharSequence::toString) == listOf("Z") && call.origReturnType == "V" } == true } }
     } }
-    shape(screens.size == 1 && screens.single().name == "createView", "the holiday image no longer belongs to one chat list screen")
+    shape(screens.size == 1 && screens.single().origName == "createView", "the holiday image no longer belongs to one chat list screen")
     val originalCreate = screens.single()
-    val create = mutableClassDefBy(originalCreate.definingClass).methods.single { it.name == "createView" &&
-        it.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;") && it.returnType == VIEW }
+    val create = tgMutableClassDefBy(originalCreate.definingClass).methods.single { it.origName == "createView" &&
+        it.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;") && it.origReturnType == VIEW }
     val title = create.body()
     val logoReads = title.indices.filter { title[it].reference() == LOGO }
     shape(logoReads.size == 1 && logoReads.single() > 59 && title.size > logoReads.single() + 50,
@@ -442,10 +451,10 @@ internal fun BytecodePatchContext.resolveHolidayLogoSites(holiday: HolidayLookSi
     val colorGetter = title[logo + 21].call() ?: refuse("no logo color getter")
     // R8 renames the setter between builds (I in beta 71159, G in beta 71179). Its call site is
     // fixed above and requireTitleStorage proves its body, so the name itself is not pinned.
-    shape(actionBar.name == "actionBar" && actionBar.type == bar.definingClass && titleSetter.definingClass == bar.definingClass &&
-        titleSetter.returnType == "V" &&
+    shape(actionBar.origName == "actionBar" && actionBar.origType == bar.origDefiningClass && titleSetter.origDefiningClass == bar.origDefiningClass &&
+        titleSetter.origReturnType == "V" &&
         titleSetter.parameterTypes.map(CharSequence::toString) == listOf(TEXT, decoration.type) &&
-        color.definingClass == theme && color.type == "I" && colorGetter.name == "getThemedColor",
+        color.origDefiningClass == theme && color.origType == "I" && colorGetter.origName == "getThemedColor",
         "the logo is no longer the chat list's action bar title")
     requireTitleStorage(titleSetter, titleType, titleViews)
     window(create, start, """
@@ -500,10 +509,10 @@ internal fun BytecodePatchContext.resolveHolidayLogoSites(holiday: HolidayLookSi
     val flags = (0 until start).lastOrNull { title[it].writes(6) } ?: refuse("no logo span flags")
     shape(title[flags].opcode == Opcode.CONST_16 && title[flags].literal() == 33L &&
         flow.preservesValue(flags, logo + 35, 6), "the logo's span flags changed or can be overwritten")
-    val support = title.indices.singleOrNull { title[it].call()?.name == "setSupportsHolidayImage" }
+    val support = title.indices.singleOrNull { title[it].call()?.origName == "setSupportsHolidayImage" }
         ?: refuse("no unique holiday support call")
     val mode = title[support - 3].field() ?: refuse("no chat list mode gate")
-    shape(mode.definingClass == create.definingClass && mode.type == "I" &&
+    shape(mode.origDefiningClass == create.origDefiningClass && mode.origType == "I" &&
         title[support - 2].opcode == Opcode.IF_NEZ && title[support - 2].namedRegisters() == listOf(3) &&
         flow.normal[support - 2].toSet() == setOf(support - 1, support + 1) &&
         flow.preservesValue(66, support, 8) && title[66].opcode == Opcode.CONST_4 && title[66].literal() == 1L,
@@ -521,9 +530,9 @@ internal fun BytecodePatchContext.resolveHolidayLogoSites(holiday: HolidayLookSi
 /** The owned ImageSpan must reach the exact field getText reads, without a String conversion. */
 private fun BytecodePatchContext.requireTitleStorage(setter: MethodReference, titleType: String, titleViews: FieldReference) {
     fun method(reference: MethodReference): MutableMethod {
-        val methods = mutableClassDefBy(reference.definingClass).methods.filter { it.name == reference.name &&
+        val methods = tgMutableClassDefBy(reference.definingClass).methods.filter { it.origName == reference.origName &&
             it.parameterTypes.map(CharSequence::toString) == reference.parameterTypes.map(CharSequence::toString) &&
-            it.returnType == reference.returnType }
+            it.origReturnType == reference.origReturnType }
         shape(methods.size == 1 && AccessFlags.PUBLIC.isSet(methods.single().accessFlags) &&
             !AccessFlags.STATIC.isSet(methods.single().accessFlags) && !AccessFlags.NATIVE.isSet(methods.single().accessFlags) &&
             !AccessFlags.ABSTRACT.isSet(methods.single().accessFlags) && methods.single().body().isNotEmpty(),
@@ -545,8 +554,8 @@ private fun BytecodePatchContext.requireTitleStorage(setter: MethodReference, ti
     val hidden = ownField(actionBarSetter, body[9], "Z")
     val storedTitle = body[16].field()!!
     val createTitle = body[5].call() ?: refuse("no title view creation")
-    shape(createTitle.definingClass == setter.definingClass && createTitle.parameterTypes.map(CharSequence::toString) == listOf("I") &&
-        createTitle.returnType == "V", "the logo's title view creation changed")
+    shape(createTitle.origDefiningClass == setter.origDefiningClass && createTitle.parameterTypes.map(CharSequence::toString) == listOf("I") &&
+        createTitle.origReturnType == "V", "the logo's title view creation changed")
     // Telegram 13.0 copies VISIBLE (0) from v1, the title index it loaded first.
     val forwardingPrefix = """
         iget-object v0, p0, $titleViews
@@ -582,12 +591,12 @@ private fun BytecodePatchContext.requireTitleStorage(setter: MethodReference, ti
         flow.normal[15] == listOf(16) && flow.normal[16] == listOf(17) && flow.dominates(15, 17),
         "the logo title or its destination can be overwritten before forwarding")
     val forward = body[17].call() ?: refuse("no logo title forwarding call")
-    shape(forward.definingClass == titleType && forward.parameterTypes.map(CharSequence::toString) == listOf(TEXT) &&
-        forward.returnType == "Z", "the logo title no longer reaches the text view as a CharSequence")
+    shape(forward.origDefiningClass == titleType && forward.parameterTypes.map(CharSequence::toString) == listOf(TEXT) &&
+        forward.origReturnType == "Z", "the logo title no longer reaches the text view as a CharSequence")
     val wrapper = method(forward)
     val nested = wrapper.body().getOrNull(1)?.call() ?: refuse("no logo title storage call")
-    shape(nested.definingClass == titleType && nested.parameterTypes.map(CharSequence::toString) == listOf(TEXT, "Z") &&
-        nested.returnType == "Z", "the logo title storage signature changed")
+    shape(nested.origDefiningClass == titleType && nested.parameterTypes.map(CharSequence::toString) == listOf(TEXT, "Z") &&
+        nested.origReturnType == "Z", "the logo title storage signature changed")
     window(wrapper, 0, """
         const/4 v0, 0x0
         invoke-virtual {p0, p1, v0}, $nested
@@ -600,7 +609,7 @@ private fun BytecodePatchContext.requireTitleStorage(setter: MethodReference, ti
     val textField = ownField(storage, storage.body()[0], TEXT)
     val refreshField = ownField(storage, storage.body()[12], "I")
     val refresh = storage.body()[13].call() ?: refuse("no title layout refresh")
-    shape(refresh.definingClass == titleType && refresh.parameterTypes.isEmpty() && refresh.returnType == "Z",
+    shape(refresh.origDefiningClass == titleType && refresh.parameterTypes.isEmpty() && refresh.origReturnType == "Z",
         "the logo text layout refresh changed")
     window(storage, 0, """
         iget-object v0, p0, $textField
@@ -624,7 +633,7 @@ private fun BytecodePatchContext.requireTitleStorage(setter: MethodReference, ti
         return p1
         nop
     """.trimIndent(), "owned logo CharSequence storage")
-    val getter = mutableClassDefBy(titleType).methods.single { it.name == "getText" && it.parameterTypes.isEmpty() }
+    val getter = tgMutableClassDefBy(titleType).methods.single { it.origName == "getText" && it.parameterTypes.isEmpty() }
     window(getter, 0, """
         iget-object v0, p0, $textField
         if-nez v0, :done
@@ -637,11 +646,11 @@ private fun BytecodePatchContext.requireTitleStorage(setter: MethodReference, ti
 
 private fun BytecodePatchContext.runtimeMethod(name: String, parameters: List<String>, result: String,
                                                type: String = HOLIDAY_LOOK): MutableMethod {
-    val owner = mutableClassDefByOrNull(type) ?: refuse("no logo runtime $type")
-    val methods = owner.methods.filter { it.name == name }
+    val owner = tgMutableClassDefByOrNull(type) ?: refuse("no logo runtime $type")
+    val methods = owner.methods.filter { it.origName == name }
     shape(AccessFlags.PUBLIC.isSet(owner.accessFlags) && methods.size == 1, "no unique public logo runtime $name")
     val method = methods.single()
-    shape(method.parameterTypes.map(CharSequence::toString) == parameters && method.returnType == result &&
+    shape(method.parameterTypes.map(CharSequence::toString) == parameters && method.origReturnType == result &&
         AccessFlags.PUBLIC.isSet(method.accessFlags) && AccessFlags.STATIC.isSet(method.accessFlags) &&
         !AccessFlags.NATIVE.isSet(method.accessFlags) && !AccessFlags.ABSTRACT.isSet(method.accessFlags) && method.body().isNotEmpty(),
         "no callable public static logo runtime $name")
@@ -650,8 +659,8 @@ private fun BytecodePatchContext.runtimeMethod(name: String, parameters: List<St
 
 private fun BytecodePatchContext.ownField(method: Method, instruction: Instruction, type: String?): FieldReference {
     val field = instruction.field() ?: refuse("a title field disappeared")
-    shape(field.definingClass == method.definingClass && (type == null || field.type == type) &&
-        classDefByOrNull(field.definingClass)?.fields?.count { it.name == field.name && it.type == field.type &&
+    shape(field.origDefiningClass == method.origDefiningClass && (type == null || field.origType == type) &&
+        tgClassDefByOrNull(field.definingClass)?.fields?.count { it.origName == field.origName && it.origType == field.origType &&
             !AccessFlags.STATIC.isSet(it.accessFlags) } == 1, "a title field no longer belongs to its host")
     return field
 }
@@ -735,7 +744,7 @@ private fun Instruction.writes(register: Int): Boolean {
 }
 private fun operation(instruction: Instruction) = listOf(instruction.opcode, instruction.namedRegisters(), instruction.reference(), instruction.literal())
 private fun Instruction.literal() = (this as? WideLiteralInstruction)?.wideLiteral
-private fun Instruction.reference() = (this as? ReferenceInstruction)?.reference?.toString()
+private fun Instruction.reference() = origRef()
 private fun Instruction.field() = (this as? ReferenceInstruction)?.reference as? FieldReference
 private fun Method.body() = implementation?.instructions?.toList().orEmpty()
 private fun shape(valid: Boolean, reason: String) { if (!valid) refuse(reason) }

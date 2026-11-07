@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.folders
 
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.chattypefolders.CLIENT_ACTIVATED
@@ -20,6 +20,8 @@ import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val HIDDEN_ACCOUNTS = "$EXTENSION_PACKAGE/misc/HiddenAccounts;"
 private const val ADD_ACCOUNT_LABEL = "Lorg/telegram/messenger/R\$string;->AddAccount:I"
@@ -51,7 +53,7 @@ internal fun BytecodePatchContext.resolveHiddenAccounts(): HiddenAccountsResult 
     }
     val lists = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.reference(ADD_ACCOUNT_LABEL) and Mention.reference(CLIENT_ACTIVATED)) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.filter { m ->
             m.controlBody().let { body -> body.any { it.controlRef() == ADD_ACCOUNT_LABEL } && body.any { it.controlRef() == CLIENT_ACTIVATED } }
         }.forEach { lists += cls.type to "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" }
@@ -59,7 +61,7 @@ internal fun BytecodePatchContext.resolveHiddenAccounts(): HiddenAccountsResult 
     if (lists.isEmpty()) return refuse("Telegram's account lists are missing")
     val calls = mutableListOf<Pair<MutableMethod, List<Int>>>()
     for ((type, signature) in lists) {
-        val method = mutableClassDefBy(type).methods.single { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == signature }
+        val method = tgMutableClassDefBy(type).methods.single { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == signature }
         val body = method.controlBody()
         val at = body.indices.filter { body[it].controlRef() == CLIENT_ACTIVATED }
         // A plain one-register call, so it can be swapped for a static call on the same register.

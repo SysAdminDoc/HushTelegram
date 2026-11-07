@@ -17,6 +17,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** The story menu's real Save to Gallery checks in every declared build. */
 class StorySaveFixtureTest {
@@ -31,7 +32,7 @@ class StorySaveFixtureTest {
             val stock = classes.flatMap { it.methods }.single { it.isStorySaveMenu() }
             val before = stock.controlBody().map(::operand)
             plan.apply()
-            val patched = context.mutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
+            val patched = context.tgMutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
             val after = patched.controlBody()
             val hooks = after.indices.filter { after[it].controlRef()?.startsWith(STORY_SAVE) == true }
             assertEquals(build.name, listOf(STORY_SHAREABLE, STORY_PREMIUM), hooks.map { after[it].controlRef() })

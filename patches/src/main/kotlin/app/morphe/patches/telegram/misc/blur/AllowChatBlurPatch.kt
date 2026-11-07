@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.blur
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
@@ -23,6 +23,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val CHAT_BLUR = "$EXTENSION_PACKAGE/misc/ChatBlur;"
 internal const val SHARED_CONFIG = "Lorg/telegram/messenger/SharedConfig;"
@@ -63,7 +64,7 @@ internal fun insertBlurAnswer(target: MutableMethod) {
 internal fun BytecodePatchContext.resolveAllowChatBlur(): MutableMethod {
     requireStatusMethod("allowChatBlur")
     controlHook(CHAT_BLUR, "allowed", listOf(), "Z")
-    val config = mutableClassDefByOrNull(SHARED_CONFIG)
+    val config = tgMutableClassDefByOrNull(SHARED_CONFIG)
     controlShape(config != null, "SharedConfig is missing")
     val rating = config!!.methods.filter { "${it.definingClass}->${it.name}()${it.returnType}" == CAN_BLUR && it.parameterTypes.isEmpty() &&
         AccessFlags.STATIC.isSet(it.accessFlags) }.controlSingle("chat blur rating")

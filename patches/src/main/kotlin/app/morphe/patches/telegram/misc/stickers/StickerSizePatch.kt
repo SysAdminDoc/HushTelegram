@@ -4,7 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.stickers
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.loadsInt
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -29,6 +30,9 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val STICKER_SIZE = "$EXTENSION_PACKAGE/misc/StickerSize;"
 internal const val SIZE_HOOK = "$STICKER_SIZE->size(Ljava/lang/Object;F)F"
@@ -99,14 +103,14 @@ internal fun BytecodePatchContext.resolveStickerSize(): StickerSizePlan {
 
     val setters = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.reference(CONTENT_LABEL)) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.filter { m ->
-            m.parameterTypes.map { it.toString() } == listOf(MESSAGE_OBJECT, GROUPED, "Z", "Z", "Z", "Z") && m.returnType == "V" &&
-                m.controlBody().any { it.opcode == Opcode.SGET && it.controlRef() == CONTENT_LABEL }
+            m.parameterTypes.map { it.toString() } == listOf(MESSAGE_OBJECT, GROUPED, "Z", "Z", "Z", "Z") && m.origReturnType == "V" &&
+                m.controlBody().any { it.loadsInt() && it.controlRef() == CONTENT_LABEL }
         }.forEach { setters += cls.type to signature(it) }
     }
     val (type, wanted) = setters.controlSingle("a message bubble's content setter")
-    val method = mutableClassDefBy(type).methods.single { signature(it) == wanted }
+    val method = tgMutableClassDefBy(type).methods.single { signature(it) == wanted }
     val body = method.controlBody()
     val flow = ControlFlow.of(method)
 

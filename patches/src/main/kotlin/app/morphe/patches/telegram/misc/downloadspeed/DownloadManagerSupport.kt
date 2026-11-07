@@ -19,6 +19,9 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.ThreeRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val DOWNLOAD_MANAGER = "$EXTENSION_PACKAGE/misc/DownloadManager;"
 private const val FILE_LOADER = "Lorg/telegram/messenger/FileLoader;"
@@ -101,10 +104,10 @@ internal fun BytecodePatchContext.resolveDownloadManager(): DownloadManagerPlan 
 }
 
 private fun BytecodePatchContext.plan(): DownloadManagerPlan {
-    val loader = mutableClassDefByOrNull(FILE_LOADER)
-    val queue = mutableClassDefByOrNull(PRIORITY_QUEUE)
+    val loader = tgMutableClassDefByOrNull(FILE_LOADER)
+    val queue = tgMutableClassDefByOrNull(PRIORITY_QUEUE)
     need(loader != null && queue != null, "Telegram's download queues are missing")
-    val load = loader!!.methods.filter { it.name == "loadFileInternal" && it.returnType == "Lorg/telegram/messenger/FileLoadOperation;" && it.implementation != null }
+    val load = loader!!.methods.filter { it.origName == "loadFileInternal" && it.origReturnType == "Lorg/telegram/messenger/FileLoadOperation;" && it.implementation != null }
     need(load.size == 1, "FileLoader.loadFileInternal is missing or ambiguous")
     val pick = load.single()
     val body = pick.controlBody()
@@ -137,7 +140,7 @@ private fun BytecodePatchContext.plan(): DownloadManagerPlan {
     need(scratch !in RegisterLiveness.of(pick).liveInto(join), "the register that held the queue array is still in use after it")
     need(chosen != self && chosen != scratch, "the queue registers overlap")
 
-    val check = queue!!.methods.filter { it.name == "checkLoadingOperationInternal" && it.parameterTypes.isEmpty() && it.returnType == "V" && it.implementation != null }
+    val check = queue!!.methods.filter { it.origName == "checkLoadingOperationInternal" && it.parameterTypes.isEmpty() && it.origReturnType == "V" && it.implementation != null }
     need(check.size == 1, "FileLoaderPriorityQueue.checkLoadingOperationInternal is missing or ambiguous")
     val count = check.single()
     val countBody = count.controlBody()

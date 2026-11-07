@@ -5,7 +5,7 @@
 package app.morphe.patches.telegram.misc.volume
 
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -30,6 +30,10 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val VOLUME_KEYS = "$EXTENSION_PACKAGE/misc/VolumeKeys;"
 internal const val LAUNCH_ACTIVITY = "Lorg/telegram/ui/LaunchActivity;"
@@ -107,7 +111,7 @@ internal fun BytecodePatchContext.resolveKeepVideosMuted(): KeepVideosMutedSite 
     controlHook(VOLUME_KEYS, "chatTakesKey", listOf("Ljava/lang/Object;"), "Z")
     controlHook(VOLUME_KEYS, "stockChatTakesKey", listOf("Ljava/lang/Object;"), "Z")
 
-    val launch = mutableClassDefByOrNull(LAUNCH_ACTIVITY)
+    val launch = tgMutableClassDefByOrNull(LAUNCH_ACTIVITY)
     controlShape(launch != null, "LaunchActivity is missing")
     val dispatch = launch!!.methods.filter { it.toString() == DISPATCH_KEY }.controlSingle("key dispatch")
     val body = dispatch.controlBody()
@@ -115,9 +119,9 @@ internal fun BytecodePatchContext.resolveKeepVideosMuted(): KeepVideosMutedSite 
     // Each offer: the chat cast, then asked at once, about nothing, for a yes or no.
     val indices = body.indices.filter { i ->
         val call = (body[i] as? ReferenceInstruction)?.reference as? MethodReference
-        i > 0 && body[i].opcode == Opcode.INVOKE_VIRTUAL && call != null && call.definingClass in chats && call.parameterTypes.isEmpty() &&
-            call.returnType == "Z" && body[i - 1].opcode == Opcode.CHECK_CAST &&
-            ((body[i - 1] as ReferenceInstruction).reference as TypeReference).type == call.definingClass &&
+        i > 0 && body[i].opcode == Opcode.INVOKE_VIRTUAL && call != null && call.origDefiningClass in chats && call.parameterTypes.isEmpty() &&
+            call.origReturnType == "Z" && body[i - 1].opcode == Opcode.CHECK_CAST &&
+            ((body[i - 1] as ReferenceInstruction).reference as TypeReference).origType == call.origDefiningClass &&
             body[i - 1].namedRegisters() == body[i].namedRegisters()
     }
     controlShape(indices.isNotEmpty(), "the key dispatch no longer offers a volume key to the chat")
@@ -125,7 +129,7 @@ internal fun BytecodePatchContext.resolveKeepVideosMuted(): KeepVideosMutedSite 
     val handler = indices.map { (body[it] as ReferenceInstruction).reference as MethodReference }.distinctBy { it.toString() }
         .controlSingle("chat's volume key answer")
 
-    val chat = mutableClassDefByOrNull(handler.definingClass)
+    val chat = tgMutableClassDefByOrNull(handler.definingClass)
     controlShape(chat != null && AccessFlags.PUBLIC.isSet(chat.accessFlags) &&
         chat.methods.any { "${it.name}${it.parameterTypes.joinToString("", "(", ")")}${it.returnType}" == SWIPE_BACK },
         "${handler.definingClass} isn't a public screen")

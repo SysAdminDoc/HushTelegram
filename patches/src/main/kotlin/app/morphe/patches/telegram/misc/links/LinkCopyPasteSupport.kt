@@ -19,6 +19,10 @@ import app.morphe.patches.telegram.misc.paste.resolveNormalPaste
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.AccessFlags
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 private const val ANDROID_UTILITIES = "Lorg/telegram/messenger/AndroidUtilities;"
 private const val CHAR_SEQUENCE = "Ljava/lang/CharSequence;"
@@ -54,13 +58,13 @@ internal fun BytecodePatchContext.resolveCopyPaste(): CopyPasteSites {
     controlHook(LINKS, "cleanCopiedLink", listOf(CHAR_SEQUENCE), CHAR_SEQUENCE)
     controlHook(LINKS, "watchPaste", listOf("Landroid/view/View;", "I"), "V")
     val found = classDefsMentioning(Mention.reference(PLAIN_TEXT) and Mention.reference(HTML_TEXT))
-        .filter { it.type == ANDROID_UTILITIES }.flatMap { it.methods.toList() }.filter { method ->
-            method.name == "addToClipboard" && method.parameterTypes.map { it.toString() } == listOf(CHAR_SEQUENCE) &&
-                method.returnType == "Z" && method.controlCallable(true) &&
+        .filter { it.origType == ANDROID_UTILITIES }.flatMap { it.methods.toList() }.filter { method ->
+            method.origName == "addToClipboard" && method.parameterTypes.map { it.toString() } == listOf(CHAR_SEQUENCE) &&
+                method.origReturnType == "Z" && method.controlCallable(true) &&
                 method.controlBody().any { it.controlRef() == PLAIN_TEXT } && method.controlBody().any { it.controlRef() == HTML_TEXT }
         }
     controlShape(found.size == 1, "the one-argument clipboard copy is missing or ambiguous")
-    val copy = mutableClassDefBy(found.single().definingClass).methods.single { it.toString() == found.single().toString() }
+    val copy = tgMutableClassDefBy(found.single().definingClass).methods.single { it.toString() == found.single().toString() }
     controlShape(!AccessFlags.NATIVE.isSet(copy.accessFlags), "the clipboard copy is native")
     val pastes = try {
         resolveNormalPaste().map { it.method }

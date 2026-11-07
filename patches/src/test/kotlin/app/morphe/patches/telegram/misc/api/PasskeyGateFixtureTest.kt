@@ -22,6 +22,11 @@ import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstructio
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import app.morphe.util.names.origRef
+import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.tgMutableClassDefBy
 
 /**
  * The passkey gate on each declared build: Telegram's five reads of BuildVars.SUPPORTS_PASSKEYS
@@ -30,7 +35,7 @@ import org.junit.Test
  * extension, in the same register, and the rest of each method is Telegram's code unchanged.
  */
 class PasskeyGateFixtureTest {
-    private fun Instruction.shape() = listOf(opcode, (this as? ReferenceInstruction)?.reference?.toString())
+    private fun Instruction.shape() = listOf(opcode, origRef())
 
     @Test
     fun `every passkey check asks the extension on each declared build`() {
@@ -56,8 +61,8 @@ class PasskeyGateFixtureTest {
                 val where = "$name: $type->${stock.name}"
                 val gates = passkeyGates(stock).toSet()
                 val before = stock.controlBody()
-                val after = context.mutableClassDefBy(type).methods.single {
-                    it.name == stock.name && it.parameterTypes == stock.parameterTypes && it.returnType == stock.returnType
+                val after = context.tgMutableClassDefBy(type).methods.single {
+                    it.origName == stock.origName && it.origParameterTypes == stock.origParameterTypes && it.origReturnType == stock.origReturnType
                 }.controlBody().filter { it.opcode != Opcode.NOP }
                 val expected = mutableListOf<List<Any?>>()
                 for ((index, instruction) in before.withIndex()) {
@@ -127,7 +132,7 @@ class PasskeyGateFixtureTest {
         val warnings = PatchLogCapture.warnings { passkeyGatePatch.execute(context) }
         assertEquals(listOf("Passkeys: 1 of 3 passkey checks have another way in, so those still offer passkeys on a " +
             "re-signed install."), warnings)
-        val patched = context.mutableClassDefBy("Lcom/example/Host;").methods.associateBy { it.name }
+        val patched = context.tgMutableClassDefBy("Lcom/example/Host;").methods.associateBy { it.name }
         assertEquals(PASSKEYS_WORK, patched.getValue("plain").controlBody()[1].controlRef())
         assertEquals(PASSKEYS_WORK, patched.getValue("banner").controlBody()[3].controlRef())
         assertEquals(listOf(Opcode.SGET_BOOLEAN, Opcode.IF_NEZ, Opcode.CONST_4, Opcode.GOTO, Opcode.RETURN_VOID),

@@ -7,10 +7,10 @@ package app.morphe.patches.telegram.misc.api
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.addInstruction
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -44,6 +44,11 @@ import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File
 import java.lang.ref.SoftReference
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
+import app.morphe.util.names.origString
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** Registered credentials change two initialization literals and tag the native init version. Authentication stays intact. */
 class UseRegisteredApiCredentialsFixtureTest {
@@ -108,9 +113,9 @@ class UseRegisteredApiCredentialsFixtureTest {
 
     @Test
     fun `missing native declaration or changed native modifiers refuse before edits`() {
-        refusal { context, _ -> context.mutableClassDefBy(CONNECTIONS).methods.removeAll { it.name == "native_init" } }
+        refusal { context, _ -> context.tgMutableClassDefBy(CONNECTIONS).methods.removeAll { it.origName == "native_init" } }
         for (flag in listOf(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.NATIVE)) refusal { context, _ ->
-            val method = context.mutableClassDefBy(CONNECTIONS).methods.single { it.name == "native_init" }
+            val method = context.tgMutableClassDefBy(CONNECTIONS).methods.single { it.origName == "native_init" }
             method.accessFlags = method.accessFlags and flag.value.inv()
         }
     }
@@ -128,7 +133,7 @@ class UseRegisteredApiCredentialsFixtureTest {
                 val arguments = plan.connectionInitializer.instructions()[plan.nativeCall].namedRegisters()
                 withOptions(id.toString(), HASH) { useRegisteredApiCredentialsPatch.execute(context) }
                 val code = plan.connectionInitializer.instructions()
-                val nativeCall = code.indices.single { code[it].call()?.name == "native_init" }
+                val nativeCall = code.indices.single { code[it].call()?.origName == "native_init" }
                 for (version in versions) {
                     val registers = IntArray(plan.connectionInitializer.implementation!!.registerCount) { 0x13579 + it }
                     registers[arguments[1]] = version
@@ -185,8 +190,8 @@ class UseRegisteredApiCredentialsFixtureTest {
             val parameters = reference.parameterTypes.map(CharSequence::toString).toMutableList()
             if (mutation == "parameter" || mutation == "declaration") parameters[4] = "I"
             if (mutation == "declaration") {
-                val owner = context.mutableClassDefBy(CONNECTIONS)
-                val definition = owner.methods.single { it.name == "native_init" }
+                val owner = context.tgMutableClassDefBy(CONNECTIONS)
+                val definition = owner.methods.single { it.origName == "native_init" }
                 val changed = definition.parameters.mapIndexed { index, parameter ->
                     if (index == 4) ImmutableMethodParameter("I", parameter.annotations, parameter.name) else parameter
                 }
@@ -274,20 +279,20 @@ class UseRegisteredApiCredentialsFixtureTest {
     @Test
     fun `each missing field and changed field flag refuses before either literal changes`() {
         for (name in listOf("APP_ID", "APP_HASH")) {
-            refusal { context, _ -> context.mutableClassDefBy(BUILD_VARS).fields.removeAll { it.name == name } }
+            refusal { context, _ -> context.tgMutableClassDefBy(BUILD_VARS).fields.removeAll { it.origName == name } }
             for (flag in listOf(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL)) refusal { context, _ ->
-                val field = context.mutableClassDefBy(BUILD_VARS).fields.single { it.name == name }
+                val field = context.tgMutableClassDefBy(BUILD_VARS).fields.single { it.origName == name }
                 field.accessFlags = if (flag == AccessFlags.FINAL) field.accessFlags or flag.value
                     else field.accessFlags and flag.value.inv()
             }
         }
-        refusal { context, _ -> context.mutableClassDefBy(BUILD_VARS).accessFlags = 0 }
+        refusal { context, _ -> context.tgMutableClassDefBy(BUILD_VARS).accessFlags = 0 }
     }
 
     @Test
     fun `encoded nondefault credentials refuse before initialization literals change`() {
         for (name in listOf("APP_ID", "APP_HASH")) refusal { context, _ ->
-            val field = context.mutableClassDefBy(BUILD_VARS).fields.single { it.name == name }
+            val field = context.tgMutableClassDefBy(BUILD_VARS).fields.single { it.origName == name }
             field.initialValue = (if (name == "APP_ID") ImmutableIntEncodedValue(7) else ImmutableStringEncodedValue(HASH)).toMutable()
         }
     }
@@ -308,7 +313,7 @@ class UseRegisteredApiCredentialsFixtureTest {
         refusal { _, plan -> plan.initializer.replaceInstruction(plan.hash.index,
             "const-string v${plan.hash.register}, \"invalid hash\"") }
         refusal { context, plan ->
-            context.mutableClassDefBy(BUILD_VARS).methods.add(ImmutableMethod(BUILD_VARS, "duplicateInitialization",
+            context.tgMutableClassDefBy(BUILD_VARS).methods.add(ImmutableMethod(BUILD_VARS, "duplicateInitialization",
                 plan.initializer.parameters, "V", plan.initializer.accessFlags, plan.initializer.annotations,
                 plan.initializer.hiddenApiRestrictions, plan.initializer.implementation).toMutable())
         }
@@ -342,9 +347,9 @@ class UseRegisteredApiCredentialsFixtureTest {
     @Test
     fun `support email identity reads refuse when the appendix stops using the API ID`() {
         for (reader in 0..1) refusal { _, plan ->
-            val appendices = plan.readers.filter { it.definingClass != CONNECTIONS &&
+            val appendices = plan.readers.filter { it.origDefiningClass != CONNECTIONS &&
                 it.instructions().none { instruction -> instruction.field()?.let { field ->
-                    field.isCredential() && field.name == "APP_HASH"
+                    field.isCredential() && field.origName == "APP_HASH"
                 } == true }
             }.sortedBy { it.definingClass + it.name }
             assertEquals("both support email readers must be present", 2, appendices.size)
@@ -352,8 +357,8 @@ class UseRegisteredApiCredentialsFixtureTest {
             val read = method.instructions().indices.single { method.instructions()[it].field()?.isCredential() == true }
             val source = method.instructions()[read].namedRegisters().single()
             val index = method.instructions().indices.first { index ->
-                method.instructions()[index].call()?.let { it.definingClass == "Ljava/lang/StringBuilder;" &&
-                    it.name == "append" && it.parameterTypes == listOf("I") } == true &&
+                method.instructions()[index].call()?.let { it.origDefiningClass == "Ljava/lang/StringBuilder;" &&
+                    it.origName == "append" && it.origParameterTypes == listOf("I") } == true &&
                     method.instructions()[index].namedRegisters().getOrNull(1) == source && index > read
             }
             val instruction = method.instructions()[index]
@@ -367,9 +372,9 @@ class UseRegisteredApiCredentialsFixtureTest {
         for (request in listOf("Lorg/telegram/tgnet/TLRPC\$TL_auth_sendCode;",
             "Lorg/telegram/tgnet/tl/TL_account\$initPasskeyLogin;")) {
             for (field in listOf("api_id", "api_hash")) refusal { _, plan ->
-                val method = plan.readers.single { reader -> reader.instructions().any { it.field()?.definingClass == request } } as MutableMethod
+                val method = plan.readers.single { reader -> reader.instructions().any { it.field()?.origDefiningClass == request } } as MutableMethod
                 val index = method.instructions().indices.single { method.instructions()[it].field()?.let {
-                    it.definingClass == request && it.name == field
+                    it.origDefiningClass == request && it.origName == field
                 } == true }
                 val instruction = method.instructions()[index]
                 val registers = instruction.namedRegisters()
@@ -382,15 +387,15 @@ class UseRegisteredApiCredentialsFixtureTest {
     @Test
     fun `overwriting the API ID before Java or native initialization refuses before edits`() {
         refusal { context, _ ->
-            val constructor = context.mutableClassDefBy(CONNECTIONS).methods.single { it.name == "<init>" && it.parameterTypes == listOf("I") }
+            val constructor = context.tgMutableClassDefBy(CONNECTIONS).methods.single { it.origName == "<init>" && it.origParameterTypes == listOf("I") }
             val index = constructor.instructions().indices.single { constructor.instructions()[it].call()?.let {
-                it.definingClass == CONNECTIONS && it.name == "init"
+                it.origDefiningClass == CONNECTIONS && it.origName == "init"
             } == true }
             constructor.addInstruction(index, "const v${constructor.instructions()[index].namedRegisters()[3]}, 0x1")
         }
         refusal { _, plan ->
             val method = plan.connectionInitializer
-            val index = method.instructions().indices.single { method.instructions()[it].call()?.name == "native_init" }
+            val index = method.instructions().indices.single { method.instructions()[it].call()?.origName == "native_init" }
             method.addInstruction(index, "const v${method.instructions()[index].namedRegisters()[3]}, 0x1")
         }
     }
@@ -422,7 +427,7 @@ class UseRegisteredApiCredentialsFixtureTest {
 
     @Suppress("UNCHECKED_CAST")
     private fun otherMethods(state: Map<String, List<Any?>>, method: Method) =
-        (state.getValue(CONNECTIONS)[2] as List<List<Any?>>).filterNot { it[0] == method.name && it[1] == method.parameterTypes }
+        (state.getValue(CONNECTIONS)[2] as List<List<Any?>>).filterNot { it[0] == method.origName && it[1] == method.origParameterTypes }
 
     private fun withOptions(id: String?, hash: String?, action: () -> Unit) {
         useRegisteredApiCredentialsPatch.options["apiId"] = id
@@ -430,7 +435,7 @@ class UseRegisteredApiCredentialsFixtureTest {
         try { action() } finally { useRegisteredApiCredentialsPatch.options.values.forEach { it.reset() } }
     }
     private fun state(context: BytecodePatchContext, hosts: List<ClassDef>) = hosts.associate { host ->
-        val current = context.mutableClassDefBy(host.type)
+        val current = context.tgMutableClassDefBy(host.type)
         host.type to listOf(current.accessFlags, current.fields.map { listOf(it.name, it.type, it.accessFlags, it.initialValue) },
             current.methods.map { method ->
                 val flow = method.implementation?.takeIf { method.instructions().isNotEmpty() }?.let { ControlFlow.of(method) }
@@ -457,7 +462,7 @@ class UseRegisteredApiCredentialsFixtureTest {
     private fun operation(instruction: Instruction): List<Any?> {
         val reference = (instruction as? ReferenceInstruction)?.reference
         return listOf(instruction.opcode, instruction.namedRegisters(),
-            if (reference is StringReference) reference.string.hashCode() else reference?.toString(),
+            if (reference is StringReference) reference.string.hashCode() else reference?.origString(),
             (instruction as? WideLiteralInstruction)?.wideLiteral)
     }
     private companion object {

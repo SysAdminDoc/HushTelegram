@@ -8,8 +8,9 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
@@ -32,6 +33,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** FileLoadOperation.updateParams on both declared builds, where Telegram picks a download's piece size. */
 class FasterDownloadsFixtureTest {
@@ -42,15 +45,15 @@ class FasterDownloadsFixtureTest {
         return PatchContexts.of(ExtensionDex.classes() + host)
     }
 
-    private fun ClassDef.status(name: String) = methods.single { it.name == name }.controlBody()
+    private fun ClassDef.status(name: String) = methods.single { it.origName == name }.controlBody()
 
     private fun BytecodePatchContext.flag(name: String) =
-        (mutableClassDefBy(SETTINGS_STATUS).status(name).first() as WideLiteralInstruction).wideLiteral
+        (tgMutableClassDefBy(SETTINGS_STATUS).status(name).first() as WideLiteralInstruction).wideLiteral
 
     private fun literal(after: List<Instruction>, size: Long) =
         after.indices.single { (after[it] as? WideLiteralInstruction)?.wideLiteral == size }
 
-    private fun Instruction.shape() = listOf(opcode, namedRegisters(), (this as? ReferenceInstruction)?.reference?.toString())
+    private fun Instruction.shape() = listOf(opcode, namedRegisters(), origRef())
 
     @Test fun `the upload piece limit goes through the extension once and the rest of the uploader is untouched`() {
         for (build in Fixtures.declaredBuilds()) {
@@ -138,10 +141,10 @@ class FasterDownloadsFixtureTest {
             },
             // The extension's own runtime refuses, since it ships with the patch.
             "holdMask runtime hook is missing or ambiguous" to { context ->
-                context.mutableClassDefBy(DATA_SAVER).methods.removeAll { it.name == "holdMask" }
+                context.tgMutableClassDefBy(DATA_SAVER).methods.removeAll { it.origName == "holdMask" }
             },
             "checkAgain runtime hook is missing or ambiguous" to { context ->
-                context.mutableClassDefBy(DATA_SAVER).methods.removeAll { it.name == "checkAgain" }
+                context.tgMutableClassDefBy(DATA_SAVER).methods.removeAll { it.origName == "checkAgain" }
             },
         )
         for ((why, change) in shapes) {
@@ -164,21 +167,21 @@ class FasterDownloadsFixtureTest {
         val build = Fixtures.declaredBuilds().first()
         val shapes = listOf<Pair<String, (BytecodePatchContext) -> Unit>>(
             "DownloadController.canPreloadStories()Z no longer reads the network's download settings" to { context ->
-                val method = context.mutableClassDefBy(DOWNLOAD_CONTROLLER).methods.single { it.name == "canPreloadStories" }
+                val method = context.tgMutableClassDefBy(DOWNLOAD_CONTROLLER).methods.single { it.origName == "canPreloadStories" }
                 val body = method.controlBody()
                 method.replaceInstruction(body.indices.single { body[it].controlRef() == NETWORK_TYPE_READ },
                     "invoke-static {}, Lorg/telegram/messenger/ApplicationLoader;->isNetworkOnline()Z")
             },
             // An answer the hold doesn't know would let automatic downloads around it.
             "DownloadController has answers the hold doesn't know (canPreloadChannelStories()Z)" to { context ->
-                val controller = context.mutableClassDefBy(DOWNLOAD_CONTROLLER)
-                val stories = controller.methods.single { it.name == "canPreloadStories" }
+                val controller = context.tgMutableClassDefBy(DOWNLOAD_CONTROLLER)
+                val stories = controller.methods.single { it.origName == "canPreloadStories" }
                 controller.methods.add(ImmutableMethod(stories.definingClass, "canPreloadChannelStories", stories.parameters,
                     stories.returnType, stories.accessFlags, stories.annotations, stories.hiddenApiRestrictions,
                     ImmutableMethod.of(stories).implementation).toMutable())
             },
             "DownloadController.checkAutodownloadSettings()V no longer reads the download mask" to { context ->
-                val method = context.mutableClassDefBy(DOWNLOAD_CONTROLLER).methods.single { it.name == "checkAutodownloadSettings" }
+                val method = context.tgMutableClassDefBy(DOWNLOAD_CONTROLLER).methods.single { it.origName == "checkAutodownloadSettings" }
                 val body = method.controlBody()
                 val at = body.indices.single { body[it].controlRef() == CURRENT_MASK }
                 method.replaceInstruction(at, "invoke-virtual {v${body[at].namedRegisters().single()}}, $DOWNLOAD_CONTROLLER->getAutodownloadMaskAll()I")
@@ -201,15 +204,15 @@ class FasterDownloadsFixtureTest {
 
     /** Every method body the patch may edit, as opcodes and registers. */
     private fun snapshot(context: BytecodePatchContext) = listOf(LOAD_OPERATION, DOWNLOAD_CONTROLLER, DATA_SAVER)
-        .flatMap { type -> context.mutableClassDefBy(type).methods.filter { it.implementation != null }
+        .flatMap { type -> context.tgMutableClassDefBy(type).methods.filter { it.implementation != null }
             .map { m -> "$type->${m.name}" to m.controlBody().map { it.opcode to it.namedRegisters() } } }
 
     /** Each DownloadController method by its signature, as opcodes, registers and references. */
-    private fun controllerSnapshot(context: BytecodePatchContext) = context.mutableClassDefBy(DOWNLOAD_CONTROLLER).methods
+    private fun controllerSnapshot(context: BytecodePatchContext) = context.tgMutableClassDefBy(DOWNLOAD_CONTROLLER).methods
         .filter { it.implementation != null }
         .associate { m -> "${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}" to m.controlBody().map { it.shape() } }
 
-    private fun checkAgain(context: BytecodePatchContext) = context.mutableClassDefBy(DATA_SAVER).methods.single { it.name == "checkAgain" }.controlBody()
+    private fun checkAgain(context: BytecodePatchContext) = context.tgMutableClassDefBy(DATA_SAVER).methods.single { it.origName == "checkAgain" }.controlBody()
 
     @Test fun `automatic downloads and the download mask ask the Data Saver hold first, and its check is Telegram's own`() {
         for (build in Fixtures.declaredBuilds()) {

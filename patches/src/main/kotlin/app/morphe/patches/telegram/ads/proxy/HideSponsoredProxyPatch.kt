@@ -32,6 +32,11 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 private const val PATCH = "Hide sponsored proxy channel"
 internal const val PROXY_PROMOTIONS = "$EXTENSION_PACKAGE/ads/ProxyPromotions;"
@@ -82,8 +87,8 @@ internal data class ProxyPlan(val hooks: List<ProxyHook>, val scope: String)
 
 /** Kept controller/protocol members identify the two stock decisions, never a renamed class literal. */
 internal fun BytecodePatchContext.resolveProxyHooks(): ProxyPlan {
-    val controller = mutableClassDefBy(MESSAGES_CONTROLLER)
-    fun member(name: String, type: String) = controller.fields.filter { it.name == name && it.type == type }
+    val controller = tgMutableClassDefBy(MESSAGES_CONTROLLER)
+    fun member(name: String, type: String) = controller.fields.filter { it.origName == name && it.origType == type }
         .unique("controller field $name")
     val promo = member("promoDialog", PROXY_DIALOG)
     val left = member("isLeftPromoChannel", "Z")
@@ -96,15 +101,15 @@ internal fun BytecodePatchContext.resolveProxyHooks(): ProxyPlan {
         AccessFlags.PUBLIC.isSet(proxyType.accessFlags) && AccessFlags.STATIC.isSet(proxyType.accessFlags),
         "proxy type scope is inaccessible")
     val sort = controller.methods.filter { method ->
-        method.returnType == "V" && method.parameterTypes.size == 1 && method.parameterTypes[0].startsWith("L") &&
+        method.origReturnType == "V" && method.parameterTypes.size == 1 && method.parameterTypes[0].startsWith("L") &&
             method.instructions().any { it.field() == promo } && method.instructions().any { it.field() == left } &&
-            method.instructions().any { it.call()?.let { call -> call.definingClass == ARRAY_LIST &&
-                call.name == "add" && call.hasShape(listOf("I", "Ljava/lang/Object;"), "V") } == true }
+            method.instructions().any { it.call()?.let { call -> call.origDefiningClass == ARRAY_LIST &&
+                call.origName == "add" && call.hasShape(listOf("I", "Ljava/lang/Object;"), "V") } == true }
     }.unique("cached proxy sorting method")
     val instructions = sort.instructions()
     val flow = ControlFlow.of(sort)
     val add = instructions.indices.filter { index ->
-        instructions[index].call()?.let { call -> call.definingClass == ARRAY_LIST && call.name == "add" &&
+        instructions[index].call()?.let { call -> call.origDefiningClass == ARRAY_LIST && call.origName == "add" &&
             call.hasShape(listOf("I", "Ljava/lang/Object;"), "V") } == true &&
             instructions.getOrNull(index - 6)?.field() == promo
     }.unique("left promo reinsertion")
@@ -129,8 +134,8 @@ internal fun BytecodePatchContext.resolveProxyHooks(): ProxyPlan {
         instructions[add - 1].literal() == 0 && instructions[add].namedRegisters() == listOf(list, indexRegister, cachedDialog) &&
         instructions[add + 1].literal() == -2 && instructions[add + 2].opcode == Opcode.IGET_OBJECT &&
         instructions[add + 2].field() == promo && instructions[add + 2].namedRegisters().getOrNull(1) == owner &&
-        instructions[add + 3].call()?.let { call -> call.definingClass == MESSAGES_CONTROLLER &&
-            call.name == "addDialogToItsFolder" && call.hasShape(listOf("I", PROXY_DIALOG), "V") } == true &&
+        instructions[add + 3].call()?.let { call -> call.origDefiningClass == MESSAGES_CONTROLLER &&
+            call.origName == "addDialogToItsFolder" && call.hasShape(listOf("I", PROXY_DIALOG), "V") } == true &&
         instructions[add + 3].namedRegisters() == listOf(owner, instructions[add + 1].namedRegisters().firstOrNull(),
             instructions[add + 2].namedRegisters().firstOrNull()), "cached insertion lost its null/left exclusions or folder merge")
     noBypass(sort, cachedAt, add + 3)
@@ -146,26 +151,26 @@ internal fun BytecodePatchContext.resolveProxyHooks(): ProxyPlan {
         }, "presentation owner is not the intact sorting controller")
 
     val include = instructions.indices.filter { index -> instructions[index].call()?.let { call ->
-        call.definingClass == MESSAGES_CONTROLLER.dropLast(1) + "\$DialogFilter;" && call.name == "includesDialog" &&
+        call.origDefiningClass == MESSAGES_CONTROLLER.dropLast(1) + "\$DialogFilter;" && call.origName == "includesDialog" &&
             call.hasShape(listOf("Lorg/telegram/messenger/AccountInstance;", "J", PROXY_DIALOG), "Z")
     } == true }.unique("selected folder inclusion")
     shape(include >= 2 && include + 8 < instructions.size, "selected folder inclusion has incomplete surroundings")
     val filterAt = include + 2
     val visible = instructions[include + 1].namedRegisters().firstOrNull()
     val candidate = instructions[include].namedRegisters().lastOrNull()
-    shape(instructions[include - 2].call()?.let { call -> call.name == "getAccountInstance" &&
-        call.definingClass == "Lorg/telegram/messenger/BaseController;" && call.hasShape(emptyList(),
+    shape(instructions[include - 2].call()?.let { call -> call.origName == "getAccountInstance" &&
+        call.origDefiningClass == "Lorg/telegram/messenger/BaseController;" && call.hasShape(emptyList(),
             "Lorg/telegram/messenger/AccountInstance;") } == true &&
         instructions[include - 2].namedRegisters() == listOf(owner) &&
         instructions[include - 1].opcode == Opcode.MOVE_RESULT_OBJECT &&
         instructions[include].namedRegisters().getOrNull(1) == instructions[include - 1].namedRegisters().firstOrNull() &&
         instructions[include + 1].opcode == Opcode.MOVE_RESULT && instructions[filterAt].opcode == Opcode.IF_EQZ &&
         instructions[filterAt].namedRegisters() == listOf(visible) &&
-        instructions[filterAt + 1].call()?.let { call -> call.definingClass == MESSAGES_CONTROLLER &&
-            call.name == "canAddToForward" && call.hasShape(listOf(PROXY_DIALOG), "Z") } == true &&
+        instructions[filterAt + 1].call()?.let { call -> call.origDefiningClass == MESSAGES_CONTROLLER &&
+            call.origName == "canAddToForward" && call.hasShape(listOf(PROXY_DIALOG), "Z") } == true &&
         instructions[filterAt + 1].namedRegisters() == listOf(owner, candidate) &&
-        instructions[filterAt + 4].call()?.let { call -> call.definingClass == ARRAY_LIST &&
-            call.name == "add" && call.hasShape(listOf("Ljava/lang/Object;"), "Z") } == true &&
+        instructions[filterAt + 4].call()?.let { call -> call.origDefiningClass == ARRAY_LIST &&
+            call.origName == "add" && call.hasShape(listOf("Ljava/lang/Object;"), "Z") } == true &&
         instructions[filterAt + 5].call() == instructions[filterAt + 4].call() &&
         instructions[filterAt + 4].namedRegisters().lastOrNull() == candidate &&
         instructions[filterAt + 5].namedRegisters().lastOrNull() == candidate &&
@@ -174,26 +179,26 @@ internal fun BytecodePatchContext.resolveProxyHooks(): ProxyPlan {
         "selected folder inclusion lost its candidate or stock false branch")
     noBypass(sort, filterAt, filterAt + 5)
 
-    val dialog = mutableClassDefBy(PROXY_DIALOG)
-    val chat = mutableClassDefBy(PROXY_CHAT)
-    val dialogId = dialog.fields.filter { it.name == "id" && it.type == "J" }.unique("dialog id")
-    val chatLeft = chat.fields.filter { it.name == "left" && it.type == "Z" }.unique("chat membership")
-    val isPromo = controller.methods.filter { it.name == "isPromoDialog" && it.hasShape(listOf("J", "Z"), "Z") }
+    val dialog = tgMutableClassDefBy(PROXY_DIALOG)
+    val chat = tgMutableClassDefBy(PROXY_CHAT)
+    val dialogId = dialog.fields.filter { it.origName == "id" && it.origType == "J" }.unique("dialog id")
+    val chatLeft = chat.fields.filter { it.origName == "left" && it.origType == "Z" }.unique("chat membership")
+    val isPromo = controller.methods.filter { it.origName == "isPromoDialog" && it.hasShape(listOf("J", "Z"), "Z") }
         .unique("promo identity predicate")
-    val getChat = controller.methods.filter { it.name == "getChat" && it.hasShape(listOf("Ljava/lang/Long;"), PROXY_CHAT) }
+    val getChat = controller.methods.filter { it.origName == "getChat" && it.hasShape(listOf("Ljava/lang/Long;"), PROXY_CHAT) }
         .unique("cached chat lookup")
     shape(listOf(dialog.accessFlags, chat.accessFlags, dialogId.accessFlags, chatLeft.accessFlags,
         isPromo.accessFlags, getChat.accessFlags).all { AccessFlags.PUBLIC.isSet(it) } &&
         listOf(dialogId.accessFlags, chatLeft.accessFlags, isPromo.accessFlags, getChat.accessFlags)
             .none { AccessFlags.STATIC.isSet(it) },
         "folder proxy scope cannot access kept host members")
-    val runtime = mutableClassDefBy(PROXY_PROMOTIONS)
+    val runtime = tgMutableClassDefBy(PROXY_PROMOTIONS)
     shape(AccessFlags.PUBLIC.isSet(runtime.accessFlags), "extension presentation class is inaccessible")
     for ((name, parameters) in listOf(
         "hideCachedProxyDialog" to listOf("Ljava/lang/Object;", "Ljava/lang/Object;"),
         "showSelectedDialog" to listOf("Z", "Ljava/lang/Object;", "Ljava/lang/Object;"),
         "isSponsoredProxyDialog" to listOf("Ljava/lang/Object;", "Ljava/lang/Object;"),
-    )) shape(runtime.methods.count { it.name == name && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
+    )) shape(runtime.methods.count { it.origName == name && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
         AccessFlags.STATIC.isSet(it.accessFlags) && !AccessFlags.ABSTRACT.isSet(it.accessFlags) &&
         !AccessFlags.NATIVE.isSet(it.accessFlags) && it.hasShape(parameters, "Z") && it.implementation?.let { body ->
             body.registerCount >= parameters.sumOf { type -> if (type == "J" || type == "D") 2 else 1 } &&

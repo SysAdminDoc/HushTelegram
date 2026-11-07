@@ -12,6 +12,9 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.io.File
+import app.morphe.util.names.origName
+import app.morphe.util.names.origString
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** Both pinned builds' SharedConfig, which the passcode stubs read. */
 class AppPasscodeFixtureTest {
@@ -23,15 +26,15 @@ class AppPasscodeFixtureTest {
             val context = PatchContexts.of(hosts(build))
             context.requireAppPasscodeRuntime()
             context.writeAppPasscodeStubs()
-            val classDef = context.mutableClassDefBy(APP_PASSCODE)
-            fun body(method: String) = classDef.methods.single { it.name == method }.implementation!!.instructions.toList()
-            fun refs(method: String) = body(method).filterIsInstance<ReferenceInstruction>().map { it.reference.toString() }
+            val classDef = context.tgMutableClassDefBy(APP_PASSCODE)
+            fun body(method: String) = classDef.methods.single { it.origName == method }.implementation!!.instructions.toList()
+            fun refs(method: String) = body(method).filterIsInstance<ReferenceInstruction>().map { it.reference.origString() }
 
             assertEquals("$name: set", listOf(PASSCODE_HASH, "Ljava/lang/String;->length()I"), refs("passcodeSet"))
             assertEquals("$name: type", listOf(PASSCODE_TYPE), refs("passcodePin"))
             val check = body("passcodeMatches")
             assertEquals("$name: check", listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.RETURN), check.map { it.opcode })
-            assertEquals("$name: Telegram's check", CHECK_PASSCODE, (check[0] as ReferenceInstruction).reference.toString())
+            assertEquals("$name: Telegram's check", CHECK_PASSCODE, (check[0] as ReferenceInstruction).reference.origString())
         }
     }
 }

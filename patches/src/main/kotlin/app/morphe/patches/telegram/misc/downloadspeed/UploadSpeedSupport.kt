@@ -17,6 +17,7 @@ import app.morphe.util.addInstructionsAtControlFlowLabel
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val UPLOAD_SPEED = "$EXTENSION_PACKAGE/misc/UploadSpeed;"
 internal const val UPLOAD_OPERATION = "Lorg/telegram/messenger/FileUploadOperation;"
@@ -40,7 +41,7 @@ internal class FasterUploadsPlan(val method: MutableMethod, val index: Int, val 
 internal fun BytecodePatchContext.resolveFasterUploads(): FasterUploadsPlan {
     requireStatusMethod("fasterUploads")
     controlHook(UPLOAD_SPEED, "requests", listOf("I"), "I")
-    val owner = mutableClassDefByOrNull(UPLOAD_OPERATION)
+    val owner = tgMutableClassDefByOrNull(UPLOAD_OPERATION)
     controlShape(owner != null, "Telegram's file uploader is missing")
     val writes = owner!!.methods.filter { method -> method.controlBody().any { it.opcode == Opcode.IPUT && it.controlRef() == UPLOAD_REQUESTS } }
     val method = writes.controlSingle("the upload piece limit")

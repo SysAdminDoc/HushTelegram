@@ -4,8 +4,9 @@
  */
 package app.morphe.patches.telegram.misc.folders
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.loadsInt
+import app.morphe.util.names.addInstructions
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -44,6 +45,13 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origSuperclass
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val HIDDEN_CHATS = "$EXTENSION_PACKAGE/misc/HiddenChats;"
 private const val HIDDEN_OBJECT = "Ljava/lang/Object;"
@@ -228,9 +236,9 @@ internal fun BytecodePatchContext.resolveHiddenChats(): HiddenChatsPlan = try {
 }
 
 private fun BytecodePatchContext.emptyFolderWalk(): HiddenChatsPlan {
-    val controller = mutableClassDefByOrNull(MESSAGES_CONTROLLER)
+    val controller = tgMutableClassDefByOrNull(MESSAGES_CONTROLLER)
     val sorts = controller?.methods?.filter {
-        it.name == "sortDialogs" && it.returnType == "V" && it.parameterTypes.size == 1 && !AccessFlags.STATIC.isSet(it.accessFlags)
+        it.origName == "sortDialogs" && it.origReturnType == "V" && it.parameterTypes.size == 1 && !AccessFlags.STATIC.isSet(it.accessFlags)
     }.orEmpty()
     hiddenFits(sorts.size == 1, "the chat sort is missing or ambiguous")
     val method = sorts.single()
@@ -307,7 +315,7 @@ private fun BytecodePatchContext.emptyFolderWalk(): HiddenChatsPlan {
  * so the extension gets the same list right before that call and does the same for them.
  */
 private fun BytecodePatchContext.serverPinsCall(): ServerPinsPlan {
-    val answers = mutableClassDefBy(MESSAGES_CONTROLLER).methods.filter { m -> m.keepPinsCall() >= 0 }
+    val answers = tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.filter { m -> m.keepPinsCall() >= 0 }
     hiddenFits(answers.size == 1, "the server's pins are no longer handled in one place")
     val method = answers.single()
     val body = method.controlBody()
@@ -393,7 +401,7 @@ internal fun BytecodePatchContext.resolveHiddenPickers(): HiddenPickersPlan {
 private fun BytecodePatchContext.oneMethodReading(first: String, second: String, what: String): MutableMethod {
     val readers = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.allReferences(listOf(first, second))) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.type == MESSAGES_CONTROLLER) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/") || cls.origType == MESSAGES_CONTROLLER) return@forEachClassMentioning
         cls.methods.filter { m ->
             val reads = m.controlBody().mapNotNull { it.controlRef() }
             first in reads && second in reads
@@ -401,7 +409,7 @@ private fun BytecodePatchContext.oneMethodReading(first: String, second: String,
     }
     hiddenFits(readers.size == 1, "$what is no longer one method")
     val (type, method) = readers.single()
-    return mutableClassDefBy(type).methods.single { it.toString() == method }
+    return tgMutableClassDefBy(type).methods.single { it.toString() == method }
 }
 
 private fun nothingJumpsTo(method: Method, at: Int, what: String) {
@@ -422,13 +430,13 @@ private fun nothingJumpsTo(method: Method, at: Int, what: String) {
 private fun BytecodePatchContext.pinLimitReaders(): List<MutableMethod> {
     val readers = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.allReferences(listOf(FOLDER_PIN_LIMIT))) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.type == MESSAGES_CONTROLLER) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/") || cls.origType == MESSAGES_CONTROLLER) return@forEachClassMentioning
         cls.methods.filter { m -> m.controlBody().any { it.opcode == Opcode.IGET && it.controlRef() == FOLDER_PIN_LIMIT } }
             .forEach { readers += cls.type to it.toString() }
     }
     hiddenFits(readers.size == 2, "the pin checks are no longer two")
     return readers.map { (type, method) ->
-        val reader = mutableClassDefBy(type).methods.single { it.toString() == method }
+        val reader = tgMutableClassDefBy(type).methods.single { it.toString() == method }
         hiddenFits(reader.mainPinLimitReads().size == 2, "a pin check's limit reads changed")
         reader
     }
@@ -440,8 +448,8 @@ private fun BytecodePatchContext.pinLimitReaders(): List<MutableMethod> {
  * swap goes right after that read, the method's only one.
  */
 private fun BytecodePatchContext.pinOrderRead(): PinOrderPlan {
-    val methods = mutableClassDefBy(MESSAGES_CONTROLLER).methods.filter { m ->
-        !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" &&
+    val methods = tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.filter { m ->
+        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" &&
             m.controlBody().any { it.opcode == Opcode.NEW_INSTANCE && it.controlRef() == REORDER_PINS }
     }
     hiddenFits(methods.size == 1, "the pinned order is missing or ambiguous")
@@ -535,7 +543,7 @@ internal class UnreadCountsPlan(val skips: List<CountSkip>, val missing: String?
 internal fun BytecodePatchContext.resolveUnreadCounts(): UnreadCountsPlan = try {
     UnreadCountsPlan(listOf(unreadRowSkip(), readChangeSkip()), null).also {
         // The hook hands controllerUser this MessagesStorage, and the settings page's recount reaches it by account.
-        hiddenFits(mutableClassDefBy(STORAGE).superclass == BASE_CONTROLLER, "MessagesStorage no longer reads its account the same way")
+        hiddenFits(tgMutableClassDefBy(STORAGE).origSuperclass == BASE_CONTROLLER, "MessagesStorage no longer reads its account the same way")
         for ((reference, static) in listOf(STORAGE_INSTANCE to true, RECOUNT to false, STORAGE_QUEUE to false, POST_RUNNABLE to false)) {
             try {
                 requireReachable(reference, static)
@@ -552,8 +560,8 @@ internal fun BytecodePatchContext.resolveUnreadCounts(): UnreadCountsPlan = try 
 }
 
 private fun BytecodePatchContext.storageMethod(name: String, parameters: List<String>): MutableMethod {
-    val found = mutableClassDefByOrNull(STORAGE)?.methods?.filter {
-        it.name == name && it.returnType == "V" && !AccessFlags.STATIC.isSet(it.accessFlags) &&
+    val found = tgMutableClassDefByOrNull(STORAGE)?.methods?.filter {
+        it.origName == name && it.origReturnType == "V" && !AccessFlags.STATIC.isSet(it.accessFlags) &&
             it.parameterTypes.map(CharSequence::toString) == parameters
     }.orEmpty()
     hiddenFits(found.size == 1, "MessagesStorage.$name is missing or ambiguous")
@@ -760,8 +768,8 @@ private fun BytecodePatchContext.hideMenu(): HideMenuPlan {
     val builds = folderTabBuilds()
     hiddenFits(builds.size == 1, "the chat list is missing or ambiguous")
     val list = builds.single().definingClass
-    val creates = mutableClassDefBy(list).methods.filter { m ->
-        !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;") &&
+    val creates = tgMutableClassDefBy(list).methods.filter { m ->
+        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;") &&
             m.controlBody().let { body -> body.any { it.controlRef() == BLOCK_ICON } && body.any { it.controlRef() == BLOCK_LABEL } }
     }
     hiddenFits(creates.size == 1, "the long press menu is missing or ambiguous")
@@ -769,7 +777,7 @@ private fun BytecodePatchContext.hideMenu(): HideMenuPlan {
     val body = create.controlBody()
 
     // more.addSubItem(block, R.drawable.msg_block, text), its result kept in a field of the chat list.
-    val icon = body.indexOfFirst { it.opcode == Opcode.SGET && it.controlRef() == BLOCK_ICON }
+    val icon = body.indexOfFirst { it.loadsInt() && it.controlRef() == BLOCK_ICON }
     val add = (icon + 1 until body.size).firstOrNull { body[it].opcode == Opcode.INVOKE_VIRTUAL }
     hiddenFits(icon >= 0 && add != null && add >= 1 && add + 2 < body.size, "the long press menu's Block item changed")
     val call = body[add!!]
@@ -781,7 +789,7 @@ private fun BytecodePatchContext.hideMenu(): HideMenuPlan {
     hiddenFits(addSubItem != null && SUB_ITEM_TAKES in addSubItem && addSubItem.substringAfter(")").startsWith("L") &&
         handed.size == 4 && handed[2] == (body[icon] as OneRegisterInstruction).registerA &&
         id.opcode in CONSTS && (id as WideLiteralInstruction).wideLiteral == BLOCK_ID && (id as OneRegisterInstruction).registerA == handed[1] &&
-        result.opcode == Opcode.MOVE_RESULT_OBJECT && store.opcode == Opcode.IPUT_OBJECT && store.controlField()?.definingClass == list &&
+        result.opcode == Opcode.MOVE_RESULT_OBJECT && store.opcode == Opcode.IPUT_OBJECT && store.controlField()?.origDefiningClass == list &&
         (store as TwoRegisterInstruction).registerA == (result as OneRegisterInstruction).registerA,
         "the long press menu's Block item changed")
     val more = handed[0]
@@ -803,7 +811,7 @@ private fun BytecodePatchContext.hideMenu(): HideMenuPlan {
     val asked = body.filter { it.opcode == Opcode.INVOKE_VIRTUAL }.mapNotNull { it.controlRef() }
         .filter { it.startsWith("$list->") && it.endsWith("(Z)V") }.distinct()
     hiddenFits(asked.size == 1, "the long press menu no longer checks its items")
-    val counters = mutableClassDefBy(list).methods.singleOrNull { it.toString() == asked.single() && !AccessFlags.STATIC.isSet(it.accessFlags) }
+    val counters = tgMutableClassDefBy(list).methods.singleOrNull { it.toString() == asked.single() && !AccessFlags.STATIC.isSet(it.accessFlags) }
     hiddenFits(counters != null && startsClean(counters), "the long press menu's item check changed")
     // selectedDialogs, the list whose size the check reads.
     val countersBody = counters!!.controlBody()
@@ -811,7 +819,7 @@ private fun BytecodePatchContext.hideMenu(): HideMenuPlan {
         val read = countersBody[index]
         val field = read.controlField()
         val size = countersBody.getOrNull(index + 1)
-        if (read.opcode == Opcode.IGET_OBJECT && field?.definingClass == list && field.type == HIDDEN_LIST &&
+        if (read.opcode == Opcode.IGET_OBJECT && field?.origDefiningClass == list && field.origType == HIDDEN_LIST &&
             size?.opcode == Opcode.INVOKE_VIRTUAL && size.controlRef() == LIST_SIZE &&
             size.namedRegisters() == listOf((read as TwoRegisterInstruction).registerA)) field.toString() else null
     }
@@ -820,14 +828,14 @@ private fun BytecodePatchContext.hideMenu(): HideMenuPlan {
     // The action bar's click handler: a class of its own holding the chat list, reading the selection, telling the more menu's ids apart.
     val clicks = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.allReferences(listOf(selected!!))) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.type == list) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/") || cls.origType == list) return@forEachClassMentioning
         cls.methods.filter { it.isMenuClick(cls.type, list, selected) }.forEach { clicks += cls.type to it.toString() }
     }
     hiddenFits(clicks.size == 1, "the long press menu's click handler is missing or ambiguous")
     val (owner, handler) = clicks.single()
-    val click = mutableClassDefBy(owner).methods.single { it.toString() == handler }
+    val click = tgMutableClassDefBy(owner).methods.single { it.toString() == handler }
     hiddenFits(startsClean(click), "something jumps back to the start of the long press menu's click handler")
-    val listener = click.controlBody().first { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.definingClass == owner && f.type == list } == true }
+    val listener = click.controlBody().first { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.origDefiningClass == owner && f.origType == list } == true }
         .controlRef()!!
 
     for (reference in listOf(addSubItem!!, listener, selected)) {
@@ -854,7 +862,7 @@ private fun com.android.tools.smali.dexlib2.iface.Method.isMenuClick(type: Strin
     !AccessFlags.STATIC.isSet(accessFlags) && returnType == "V" && parameterTypes.map(CharSequence::toString) == listOf("I") &&
         controlBody().let { body ->
             val literals = body.filter { it.opcode in CONSTS }.map { (it as WideLiteralInstruction).wideLiteral }.toSet()
-            body.any { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.definingClass == type && f.type == list } == true } &&
+            body.any { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.origDefiningClass == type && f.origType == list } == true } &&
                 body.any { it.opcode == Opcode.IGET_OBJECT && it.controlRef() == selected } &&
                 literals.containsAll(MORE_IDS) && -1L in literals
         }

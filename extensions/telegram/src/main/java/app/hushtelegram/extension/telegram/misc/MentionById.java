@@ -143,13 +143,13 @@ public final class MentionById {
 
     private static Object telegramInputUser(int account, long id) throws ReflectiveOperationException {
         Class<?> controller = Class.forName("org.telegram.messenger.MessagesController");
-        Object instance = controller.getMethod("getInstance", int.class).invoke(null, account);
+        Object instance = HostNames.method(controller, "getInstance", int.class).invoke(null, account);
         if (instance == null) return null;
-        Object user = controller.getMethod("getUser", Long.class).invoke(instance, id);
+        Object user = HostNames.method(controller, "getUser", Long.class).invoke(instance, id);
         if (user == null) return null;
         Method input = null;
         for (Method each : controller.getMethods()) {
-            if (each.getName().equals("getInputUser") && each.getParameterTypes().length == 1
+            if (HostNames.named(each, "getInputUser") && each.getParameterTypes().length == 1
                     && each.getParameterTypes()[0].isInstance(user)) {
                 input = each;
                 break;
@@ -167,19 +167,19 @@ public final class MentionById {
         @Override public Object mention(Object inputUser, int start, int size) throws ReflectiveOperationException {
             Class<?> type = Class.forName("org.telegram.tgnet.TLRPC$TL_inputMessageEntityMentionName");
             Object entity = type.getConstructor().newInstance();
-            type.getField("user_id").set(entity, inputUser);
-            type.getField("offset").setInt(entity, start);
-            type.getField("length").setInt(entity, size);
+            HostNames.field(type, "user_id").set(entity, inputUser);
+            HostNames.field(type, "offset").setInt(entity, start);
+            HostNames.field(type, "length").setInt(entity, size);
             return entity;
         }
 
         @Override public int offset(Object entity) throws ReflectiveOperationException {
-            if (offset == null) offset = entity.getClass().getField("offset");
+            if (offset == null) offset = HostNames.field(entity.getClass(), "offset");
             return offset.getInt(entity);
         }
 
         @Override public int length(Object entity) throws ReflectiveOperationException {
-            if (length == null) length = entity.getClass().getField("length");
+            if (length == null) length = HostNames.field(entity.getClass(), "length");
             return length.getInt(entity);
         }
     }

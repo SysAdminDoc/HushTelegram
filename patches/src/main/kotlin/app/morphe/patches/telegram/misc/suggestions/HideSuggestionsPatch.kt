@@ -5,7 +5,8 @@
 package app.morphe.patches.telegram.misc.suggestions
 
 import app.morphe.patcher.Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
@@ -24,6 +25,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import app.morphe.util.names.origDefiningClass
 
 private const val PATCH = "Hide promotional banners"
 private const val SUGGESTIONS = "$EXTENSION_PACKAGE/misc/Suggestions;"
@@ -41,7 +43,7 @@ internal object ChatListSuggestionsFingerprint : Fingerprint(
     returnType = "V",
     parameters = listOf(),
     custom = { method, _ ->
-        method.definingClass.startsWith("Lorg/telegram/ui/") &&
+        method.origDefiningClass.startsWith("Lorg/telegram/ui/") &&
             method.implementation?.instructions?.any { it.reference() == SUGGESTION_FILL } == true
     },
 )
@@ -156,7 +158,7 @@ private fun MutableMethod.guardBirthdayGiftBanner(): String? {
     return null
 }
 
-private fun Instruction.reference(): String? = (this as? ReferenceInstruction)?.reference?.toString()
+private fun Instruction.reference(): String? = origRef()
 
 /** Track Set/Iterator aliases through their complete normal and exceptional lifetimes. */
 private fun ControlFlow.keepsPresentationLocal(source: Int): Boolean {

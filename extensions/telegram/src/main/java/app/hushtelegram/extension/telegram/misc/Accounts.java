@@ -51,7 +51,7 @@ public final class Accounts {
             if (field == null) {
                 for (Class<?> type = connectionsManager.getClass(); type != null && field == null; type = type.getSuperclass()) {
                     try {
-                        field = type.getDeclaredField("currentAccount");
+                        field = HostNames.declaredField(type, "currentAccount");
                     } catch (NoSuchFieldException notHere) {
                         // Climb to the controller base class that holds it.
                     }
@@ -72,9 +72,9 @@ public final class Accounts {
         List<Entry> found = new ArrayList<>();
         try {
             Class<?> config = Class.forName(USER_CONFIG);
-            Method instance = config.getMethod("getInstance", int.class);
-            Method activated = config.getMethod("isClientActivated");
-            Method user = config.getMethod("getCurrentUser");
+            Method instance = HostNames.method(config, "getInstance", int.class);
+            Method activated = HostNames.method(config, "isClientActivated");
+            Method user = HostNames.method(config, "getCurrentUser");
             for (int index = 0; index < MAX; index++) {
                 Object each = instance.invoke(null, index);
                 if (each == null || !Boolean.TRUE.equals(activated.invoke(each))) continue;
@@ -89,7 +89,7 @@ public final class Accounts {
     /** The account the app is showing now, or -1. */
     public static int selected() {
         try {
-            return Class.forName(USER_CONFIG).getField("selectedAccount").getInt(null);
+            return HostNames.field(Class.forName(USER_CONFIG), "selectedAccount").getInt(null);
         } catch (ReflectiveOperationException | RuntimeException failure) {
             Logger.printException(() -> "Accounts: the selected account can't be read", failure);
             return -1;
@@ -101,9 +101,9 @@ public final class Accounts {
         if (userId == 0) return -1;
         try {
             Class<?> config = Class.forName(USER_CONFIG);
-            Method instance = config.getMethod("getInstance", int.class);
-            Method id = config.getMethod("getClientUserId");
-            Method activated = config.getMethod("isClientActivated");
+            Method instance = HostNames.method(config, "getInstance", int.class);
+            Method id = HostNames.method(config, "getClientUserId");
+            Method activated = HostNames.method(config, "isClientActivated");
             for (int index = 0; index < MAX; index++) {
                 Object each = instance.invoke(null, index);
                 if (each != null && Boolean.TRUE.equals(activated.invoke(each)) && ((Long) id.invoke(each)) == userId) return index;
@@ -118,8 +118,8 @@ public final class Accounts {
         String name = "";
         try {
             if (user != null) {
-                String first = (String) user.getClass().getField("first_name").get(user);
-                String last = (String) user.getClass().getField("last_name").get(user);
+                String first = (String) HostNames.field(user.getClass(), "first_name").get(user);
+                String last = (String) HostNames.field(user.getClass(), "last_name").get(user);
                 name = ((first == null ? "" : first) + " " + (last == null ? "" : last)).trim();
             }
         } catch (ReflectiveOperationException | RuntimeException failure) {
@@ -131,7 +131,7 @@ public final class Accounts {
     /** Telegram's connection manager for an account, or null. */
     static Object connections(int account) {
         try {
-            return Class.forName(CONNECTIONS).getMethod("getInstance", int.class).invoke(null, account);
+            return HostNames.method(Class.forName(CONNECTIONS), "getInstance", int.class).invoke(null, account);
         } catch (ReflectiveOperationException | RuntimeException failure) {
             Logger.printException(() -> "Accounts: the connection manager can't be reached", failure);
             return null;

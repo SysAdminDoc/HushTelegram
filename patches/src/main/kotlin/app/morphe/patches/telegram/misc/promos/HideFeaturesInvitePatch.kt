@@ -4,8 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.promos
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.addInstructions
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -34,6 +34,12 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val FEATURES_INVITE = "$EXTENSION_PACKAGE/misc/FeaturesInvite;"
 internal const val ADD_FEATURES = "$FEATURES_INVITE->addFeaturesRow(Ljava/util/ArrayList;Ljava/lang/Object;)Z"
@@ -167,19 +173,19 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
     val builders = mutableListOf<Pair<String, String>>()
     val binders = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.reference(FEATURES_LABEL) or (Mention.reference(INVITE_LABEL) and Mention.reference(INVITE_ICON))) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
             val refs = m.controlBody().mapNotNull { it.controlRef() }
-            if (FEATURES_LABEL in refs && AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" &&
+            if (FEATURES_LABEL in refs && AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" &&
                 m.parameterTypes.map(CharSequence::toString) == listOf(cls.type, "Ljava/util/ArrayList;")) builders += cls.type to ref(m)
-            if (INVITE_LABEL in refs && INVITE_ICON in refs && !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" &&
+            if (INVITE_LABEL in refs && INVITE_ICON in refs && !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" &&
                 m.parameterTypes.size == 3 && m.parameterTypes.take(2).map(CharSequence::toString) == listOf("I", "I")) binders += cls.type to ref(m)
         }
     }
 
     // Settings: the Telegram Features label, its title, the row factory and the row's own append.
     val (settingsType, settingsRef) = builders.controlSingle("Settings' list builder")
-    val settings = mutableClassDefBy(settingsType).methods.single { ref(it) == settingsRef }
+    val settings = tgMutableClassDefBy(settingsType).methods.single { ref(it) == settingsRef }
     val body = settings.controlBody()
     val label = body.indices.filter { body[it].controlRef() == FEATURES_LABEL }.controlSingle("Telegram Features label")
     controlShape(body.getOrNull(label + 1)?.controlRef() == STRING && body.getOrNull(label + 2)?.opcode == Opcode.MOVE_RESULT_OBJECT,
@@ -205,27 +211,27 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
 
     // Settings keeps the rows it built: onResume reaches its adapter through the list view, and the
     // screen's one (Z)V call on that adapter builds the rows again.
-    val screen = classDefByOrNull(settingsType)!!
-    val resume = screen.methods.filter { it.name == "onResume" && shape(it, emptyList(), "V") }.controlSingle("Settings' onResume").controlBody()
+    val screen = tgClassDefByOrNull(settingsType)!!
+    val resume = screen.methods.filter { it.origName == "onResume" && shape(it, emptyList(), "V") }.controlSingle("Settings' onResume").controlBody()
     val view = resume.indices.filter { at ->
-        resume[at].opcode == Opcode.IGET_OBJECT && resume[at].controlField()?.definingClass == settingsType &&
+        resume[at].opcode == Opcode.IGET_OBJECT && resume[at].controlField()?.origDefiningClass == settingsType &&
             resume.getOrNull(at + 1)?.opcode == Opcode.IGET_OBJECT && resume[at + 1].namedRegisters().getOrNull(1) == resume[at].namedRegisters()[0]
     }.controlSingle("Settings' list adapter")
     val listField = resume[view].controlField()!!
     val adapterField = resume[view + 1].controlField()!!
-    controlShape(adapterField.definingClass == listField.type, "Settings' adapter isn't its list view's")
+    controlShape(adapterField.origDefiningClass == listField.origType, "Settings' adapter isn't its list view's")
     val update = screen.methods.flatMap { m -> m.controlBody().filter { it.opcode == Opcode.INVOKE_VIRTUAL } }.mapNotNull { it.call() }
-        .filter { it.definingClass == adapterField.type && it.parameterTypes.map(CharSequence::toString) == listOf("Z") && it.returnType == "V" }
+        .filter { it.origDefiningClass == adapterField.origType && it.parameterTypes.map(CharSequence::toString) == listOf("Z") && it.origReturnType == "V" }
         .map { "${it.definingClass}->${it.name}(Z)V" }.distinct().controlSingle("Settings' list update")
     controlShape(AccessFlags.PUBLIC.isSet(screen.accessFlags) && reachable(listField.definingClass, listField.name) &&
-        reachable(adapterField.definingClass, adapterField.name) && classDefByOrNull(adapterField.type)?.let { found ->
+        reachable(adapterField.definingClass, adapterField.name) && tgClassDefByOrNull(adapterField.type)?.let { found ->
             AccessFlags.PUBLIC.isSet(found.accessFlags) && found.methods.any { "${it.definingClass}->${it.name}(Z)V" == update && AccessFlags.PUBLIC.isSet(it.accessFlags) }
         } == true, "Settings' list update can't be called from outside")
 
     // Contacts: the adapter that binds Invite Friends, and the sectioned list base it extends.
     val (adapterType, binderRef) = binders.controlSingle("the Contacts list's row binder")
-    val adapter = classDefByOrNull(adapterType)!!
-    val base = classDefByOrNull(adapter.superclass ?: "")
+    val adapter = tgClassDefByOrNull(adapterType)!!
+    val base = tgClassDefByOrNull(adapter.superclass ?: "")
     controlShape(base != null && AccessFlags.ABSTRACT.isSet(base.accessFlags), "the Contacts list no longer extends a sectioned list")
     val count = base!!.methods.filter { AccessFlags.ABSTRACT.isSet(it.accessFlags) && shape(it, listOf("I"), "I") }.controlSingle("a section's row count")
     val counter = base.methods.filter { m -> !AccessFlags.STATIC.isSet(m.accessFlags) && shape(m, listOf("I"), "I") &&
@@ -258,7 +264,7 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
     }
 
     // The adapter's flags: the constructor's boolean and first int arguments, and the flag tested just before the empty list's heading.
-    val init = adapter.methods.filter { it.name == "<init>" }.controlSingle("Contacts list constructor")
+    val init = adapter.methods.filter { it.origName == "<init>" }.controlSingle("Contacts list constructor")
     val initBody = init.controlBody()
     controlShape(ControlFlow.of(init).normal.withIndex().all { (at, next) -> next.all { it > at } }, "the Contacts list constructor loops")
     fun stored(parameter: String, opcode: Opcode): String {
@@ -277,16 +283,16 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
     val binder = adapter.methods.single { ref(it) == binderRef }
     val bound = binder.controlBody()
     val inviteList = bound.indices.filter { bound[it].controlRef() == INVITE_LABEL }.flatMap { at ->
-        (maxOf(0, at - HEADING_REACH) until at).filter { bound[it].opcode == Opcode.IGET_BOOLEAN && bound[it].controlField()?.definingClass == adapterType }
+        (maxOf(0, at - HEADING_REACH) until at).filter { bound[it].opcode == Opcode.IGET_BOOLEAN && bound[it].controlField()?.origDefiningClass == adapterType }
             .map { bound[it].controlRef()!! }
     }.filter { it != phonebook }.distinct().controlSingle("the empty Contacts list's flag")
-    controlShape(adapter.methods.any { it.name == count.name && shape(it, listOf("I"), "I") && it.controlBody().firstOrNull()?.controlRef() == inviteList },
+    controlShape(adapter.methods.any { it.origName == count.origName && shape(it, listOf("I"), "I") && it.controlBody().firstOrNull()?.controlRef() == inviteList },
         "the empty Contacts list's flag no longer decides its section counts")
     controlShape(AccessFlags.PUBLIC.isSet(adapter.accessFlags) && listOf(phonebook, onlyUsers, inviteList).all { wanted ->
         adapter.fields.any { "${it.definingClass}->${it.name}:${it.type}" == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) }
     }, "the Contacts list's flags can't be read from outside")
 
-    val base2 = mutableClassDefBy(base.type)
+    val base2 = tgMutableClassDefBy(base.type)
     return FeaturesInviteSite(settings, append, base2.methods.single { ref(it) == ref(counter) }, counted,
         base2.methods.single { ref(it) == ref(rows) }, row, adapterType, phonebook, onlyUsers, inviteList,
         settingsType, "${listField.definingClass}->${listField.name}:${listField.type}",
@@ -295,9 +301,9 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
 
 /** A public instance field of a public class, so the extension's stub can read it. */
 private fun BytecodePatchContext.reachable(type: String, name: String): Boolean {
-    val owner = classDefByOrNull(type) ?: return false
+    val owner = tgClassDefByOrNull(type) ?: return false
     return AccessFlags.PUBLIC.isSet(owner.accessFlags) &&
-        owner.fields.any { it.name == name && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) }
+        owner.fields.any { it.origName == name && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) }
 }
 
 /** Only [from] reaches [at], so an insert there runs on every path. */
@@ -312,5 +318,5 @@ private fun Instruction.writes(register: Int): Boolean {
     return destination == register || opcode.setsWideRegister() && destination + 1 == register
 }
 
-private fun shape(m: Method, parameters: List<String>, result: String) = m.parameterTypes.map(CharSequence::toString) == parameters && m.returnType == result
+private fun shape(m: Method, parameters: List<String>, result: String) = m.parameterTypes.map(CharSequence::toString) == parameters && m.origReturnType == result
 private fun ref(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"

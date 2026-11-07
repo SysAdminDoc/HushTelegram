@@ -30,6 +30,14 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.w3c.dom.Element
 import java.util.BitSet
+import app.morphe.util.names.origRef
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** Android 11+ filters browser queries unless the host declares the intents it resolves. */
 internal val browserVisibilityPatch = resourcePatch {
@@ -84,8 +92,8 @@ internal data class LinkPlan(
 /** Every host shape and extension signature is checked before either patch writes bytecode. */
 internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
     val classes = linkedMapOf<String, ClassDef>()
-    classDefForEach { if (!it.type.startsWith("Lapp/hushtelegram/extension/")) classes[it.type] = it }
-    fun mutable(method: Method) = mutableClassDefBy(method.definingClass).methods.single { it.same(method) }
+    classDefForEach { if (!it.origType.startsWith("Lapp/hushtelegram/extension/")) classes[it.type] = it }
+    fun mutable(method: Method) = tgMutableClassDefBy(method.definingClass).methods.single { it.same(method) }
     // Each search reads only the methods of classes that might mention its anchors, in the app's
     // order, and checks them in full.
     fun methods(mentioning: Mention) = classDefsMentioning(mentioning).mapNotNull { classes[it.type] }.flatMap { it.methods.toList() }
@@ -93,7 +101,7 @@ internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
     val candidates = methods(Mention.allOf(anchors.map { Mention.string(it) }) and
         Mention.reference("$MC->isWebBrowserOpenInApp(Ljava/lang/String;)Z")).filter { method ->
         val parameters = method.parameterTypes.map { it.toString() }
-        AccessFlags.STATIC.isSet(method.accessFlags) && method.returnType == "V" && parameters.size == 10 &&
+        AccessFlags.STATIC.isSet(method.accessFlags) && method.origReturnType == "V" && parameters.size == 10 &&
             parameters.take(5) == listOf(CONTEXT, URI, "Z", "Z", "Z") && parameters[5].startsWith("L") &&
             parameters.drop(6) == listOf("Ljava/lang/String;", "Z", "Z", "Z") &&
             anchors.all { anchor -> method.instructions().any { it.string() == anchor } } &&
@@ -103,7 +111,7 @@ internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
     val browser = mutable(candidates.single())
     val code = browser.instructions()
     val classification = code.indices.singleOrNull { index -> code[index].call()?.let {
-        it.definingClass == browser.definingClass && it.parameterTypes.map(CharSequence::toString) == listOf(URI, "Z", "[Z") && it.returnType == "Z"
+        it.origDefiningClass == browser.origDefiningClass && it.parameterTypes.map(CharSequence::toString) == listOf(URI, "Z", "[Z") && it.origReturnType == "Z"
     } == true } ?: fail("no unique native (Uri,boolean,boolean[]) classifier")
     val classifier = code[classification].call()!!
     val classifierBody = classes[classifier.definingClass]?.methods?.singleOrNull { it.same(classifier) }
@@ -144,8 +152,8 @@ internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
         (code[it] as? NarrowLiteralInstruction)?.narrowLiteral == 0
     }, "native classifier doesn't receive a one-element array and its stock false argument")
     val external = code.indices.singleOrNull { code[it].call()?.let { call ->
-        call.definingClass == browser.definingClass && call.parameterTypes.map(CharSequence::toString) ==
-            listOf(CONTEXT, "Ljava/lang/String;", "Z", "Ljava/lang/String;") && call.returnType == "Z"
+        call.origDefiningClass == browser.origDefiningClass && call.parameterTypes.map(CharSequence::toString) ==
+            listOf(CONTEXT, "Ljava/lang/String;", "Z", "Ljava/lang/String;") && call.origReturnType == "Z"
     } == true } ?: fail("no unique stock external-browser helper")
     val externalArgs = code[external].namedRegisters()
     val context = externalArgs[0]
@@ -194,8 +202,8 @@ internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
             ShareSite(mutable(method), chooser, register)
         }
     }
-    checkShape(shares.any { it.method.definingClass == "Lorg/telegram/messenger/ShareBroadcastReceiver;" && it.method.name == "onReceive" &&
-        it.method.parameterTypes == listOf(CONTEXT, INTENT) }, "the kept Share Link broadcast receiver has no verified outgoing chooser")
+    checkShape(shares.any { it.method.origDefiningClass == "Lorg/telegram/messenger/ShareBroadcastReceiver;" && it.method.origName == "onReceive" &&
+        it.method.origParameterTypes == listOf(CONTEXT, INTENT) }, "the kept Share Link broadcast receiver has no verified outgoing chooser")
     return LinkPlan(browser, classifier, cleanAt, cleanCode, routingAt, routingCode, shares)
 }
 
@@ -248,11 +256,11 @@ private fun autologinAppend(code: List<Instruction>): Int? = code.indices.single
 }
 
 internal fun BytecodePatchContext.requireRuntime(name: String, parameters: List<String>, result: String) {
-    val owner = mutableClassDefBy(LINKS)
+    val owner = tgMutableClassDefBy(LINKS)
     // A static method's frame has to hold its parameters, and a body of only payloads never runs.
     val parameterWords = parameters.sumOf { if (it == "J" || it == "D") 2 else 1 }
     checkShape(AccessFlags.PUBLIC.isSet(owner.accessFlags) && owner.methods.count {
-        it.name == name && it.parameterTypes.map(CharSequence::toString) == parameters && it.returnType == result &&
+        it.origName == name && it.parameterTypes.map(CharSequence::toString) == parameters && it.origReturnType == result &&
             AccessFlags.STATIC.isSet(it.accessFlags) && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
             !AccessFlags.NATIVE.isSet(it.accessFlags) && !AccessFlags.ABSTRACT.isSet(it.accessFlags) &&
             it.implementation?.let { body -> body.registerCount >= parameterWords &&
@@ -261,16 +269,16 @@ internal fun BytecodePatchContext.requireRuntime(name: String, parameters: List<
 }
 
 internal fun BytecodePatchContext.writeProtection(plan: LinkPlan) {
-    val stub = mutableClassDefBy(LINKS).methods.singleOrNull { it.name == "protectedByTelegram" &&
-        it.parameterTypes == listOf(URI) && it.returnType == "Z" && AccessFlags.STATIC.isSet(it.accessFlags) }
+    val stub = tgMutableClassDefBy(LINKS).methods.singleOrNull { it.origName == "protectedByTelegram" &&
+        it.origParameterTypes == listOf(URI) && it.origReturnType == "Z" && AccessFlags.STATIC.isSet(it.accessFlags) }
     checkShape(stub != null, "no native-protection stub")
     for ((owner, name, type) in listOf(Triple(MC, "authDomains", "Ljava/util/Set;"),
         Triple(MC, "autologinDomains", "Ljava/util/Set;"), Triple(UC, "selectedAccount", "I"))) {
-        val field = classDefByOrNull(owner)?.fields?.singleOrNull { it.name == name && it.type == type }
+        val field = tgClassDefByOrNull(owner)?.fields?.singleOrNull { it.origName == name && it.origType == type }
         checkShape(field != null && AccessFlags.PUBLIC.isSet(field.accessFlags) &&
             AccessFlags.STATIC.isSet(field.accessFlags) == (owner == UC), "kept protection field $owner->$name is inaccessible")
     }
-    val getter = classDefByOrNull(MC)?.methods?.singleOrNull { it.name == "getInstance" && it.parameterTypes == listOf("I") && it.returnType == MC }
+    val getter = tgClassDefByOrNull(MC)?.methods?.singleOrNull { it.origName == "getInstance" && it.origParameterTypes == listOf("I") && it.origReturnType == MC }
     checkShape(getter != null && AccessFlags.PUBLIC.isSet(getter.accessFlags) && AccessFlags.STATIC.isSet(getter.accessFlags), "account controller getter changed")
     writeStub(LINKS, "protectedByTelegram", 7, """
         const/4 v0, 0x1
@@ -327,7 +335,7 @@ private fun reachingWrites(method: Method, register: Int, at: Int): Set<Int> {
 private val OBJECT_MOVES = setOf(Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16)
 private val GOTOS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
-private fun Instruction.ref() = (this as? ReferenceInstruction)?.reference?.toString()
+private fun Instruction.ref() = origRef()
 private fun Instruction.string() = ((this as? ReferenceInstruction)?.reference as? StringReference)?.string
 private fun Method.same(other: MethodReference) = name == other.name && parameterTypes == other.parameterTypes && returnType == other.returnType
 internal fun checkShape(ok: Boolean, reason: String) { if (!ok) fail(reason) }

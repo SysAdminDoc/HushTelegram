@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.messagemenu
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -29,6 +29,12 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val SELECT_BETWEEN = "$EXTENSION_PACKAGE/misc/SelectBetween;"
 internal const val SELECT_ADD_ITEM = "$SELECT_BETWEEN->addItem(Ljava/lang/Object;)V"
@@ -184,12 +190,12 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
     controlHook(SELECT_BETWEEN, "contentType", listOf(OBJECT), "I")
     controlMembers(DRAWABLES, "static msg_select:I")
     controlMembers(MESSAGE, "getId()I", "contentType:I")
-    val chatClass = mutableClassDefBy(chat)
+    val chatClass = tgMutableClassDefBy(chat)
     fun Method.instance() = !AccessFlags.STATIC.isSet(accessFlags)
 
     // The bar's builder.
     val create = chatClass.methods.filter { m ->
-        m.instance() && m.returnType == "V" && m.parameterTypes.isEmpty() && m.controlBody().let { body ->
+        m.instance() && m.origReturnType == "V" && m.parameterTypes.isEmpty() && m.controlBody().let { body ->
             BAR_ICONS.all { icon -> body.any { it.controlRef() == icon } } && body.any { it.controlRef() == BAR_LABEL }
         }
     }.controlSingle("the selection bar's builder")
@@ -198,21 +204,21 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
     controlShape(body[last].opcode == Opcode.RETURN_VOID && body.count { it.opcode == Opcode.RETURN_VOID } == 1 && last >= 2,
         "the selection bar's builder no longer ends in its one return")
     // Telegram's bar object comes from the chat's action bar, and its buttons through one add call.
-    val barRead = body.indexOfFirst { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.name == "actionBar" }
+    val barRead = body.indexOfFirst { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.origName == "actionBar" }
     // A null title is loaded between the field read and the call.
     val menuCall = if (barRead < 0) null else body.drop(barRead + 1).take(3).firstOrNull { it.opcode == Opcode.INVOKE_VIRTUAL }
     val menuMethod = menuCall?.call()
     controlShape(barRead >= 0 && menuCall?.opcode == Opcode.INVOKE_VIRTUAL && menuMethod != null &&
-        menuMethod.parameterTypes.map(CharSequence::toString) == listOf(STRING) && menuMethod.returnType.startsWith("L"),
+        menuMethod.parameterTypes.map(CharSequence::toString) == listOf(STRING) && menuMethod.origReturnType.startsWith("L"),
         "the selection bar's menu is no longer taken from the action bar")
     val adds = body.mapNotNull { it.call() }.filter {
-        it.definingClass == menuMethod!!.returnType && it.parameterTypes.map(CharSequence::toString) == listOf("I", "I", STRING, "I")
+        it.origDefiningClass == menuMethod!!.origReturnType && it.parameterTypes.map(CharSequence::toString) == listOf("I", "I", STRING, "I")
     }.map { it.toString() }.distinct()
     controlShape(adds.size == 1, "the selection bar's buttons are no longer added through one call")
     // The field is protected, so the extension goes through the screen's public getter.
     val barFieldRef = body[barRead].controlField()!!
-    val barGetter = mutableClassDefBy(barFieldRef.definingClass).methods.filter { m ->
-        m.instance() && AccessFlags.PUBLIC.isSet(m.accessFlags) && m.parameterTypes.isEmpty() && m.returnType == barFieldRef.type &&
+    val barGetter = tgMutableClassDefBy(barFieldRef.definingClass).methods.filter { m ->
+        m.instance() && AccessFlags.PUBLIC.isSet(m.accessFlags) && m.parameterTypes.isEmpty() && m.origReturnType == barFieldRef.origType &&
             m.controlBody().map { it.opcode } == listOf(Opcode.IGET_OBJECT, Opcode.RETURN_OBJECT) && m.controlBody()[0].controlRef() == body[barRead].controlRef()
     }.controlSingle("the action bar's getter").toString()
     requireReachable(barGetter, false)
@@ -236,7 +242,7 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
         val method0 = method.controlBody()
         method0.forEachIndexed { index, instruction ->
             val target = instruction.call()
-            if (instruction.opcode == Opcode.INVOKE_VIRTUAL && target?.name == SET_CLICK && target.parameterTypes.size == 1) {
+            if (instruction.opcode == Opcode.INVOKE_VIRTUAL && target?.origName == SET_CLICK && target.parameterTypes.size == 1) {
                 val argument = instruction.namedRegisters().last()
                 val made = (index - 1 downTo 0).firstOrNull { (method0[it] as? OneRegisterInstruction)?.registerA == argument && method0[it].opcode.setsRegister() }
                 if (made != null && method0[made].opcode == Opcode.NEW_INSTANCE) handlers += method0[made].controlRef()!!
@@ -244,12 +250,12 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
         }
     }
     val handlerType = handlers.distinct().controlSingle("the selection bar's click handler")
-    val handlerClass = mutableClassDefBy(handlerType)
+    val handlerClass = tgMutableClassDefBy(handlerType)
     val click = handlerClass.methods.filter { m ->
-        m.instance() && m.returnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
-            m.controlBody().any { it.controlField()?.type == chat }
+        m.instance() && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
+            m.controlBody().any { it.controlField()?.origType == chat }
     }.controlSingle("the selection bar's click method")
-    val ownerFields = handlerClass.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.type == chat }
+    val ownerFields = handlerClass.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.origType == chat }
         .controlSingle("the click handler's chat field")
     val ownerField = "$handlerType->${ownerFields.name}:${ownerFields.type}"
     controlShape(AccessFlags.PUBLIC.isSet(ownerFields.accessFlags), "the click handler's chat field is inaccessible")
@@ -260,10 +266,10 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
 
     // Selecting: the chat's (message, Z) wrapper over the three-argument method that records the selection.
     val wrappers = chatClass.methods.filter { m ->
-        m.instance() && m.returnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE, "Z") &&
+        m.instance() && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE, "Z") &&
             m.controlBody().let { b ->
                 b.size <= 4 && b.count { it.opcode == Opcode.INVOKE_VIRTUAL } == 1 && b.first { it.opcode == Opcode.INVOKE_VIRTUAL }.call().let { c ->
-                    c != null && c.definingClass == chat && c.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE, "Z", "Z") && c.returnType == "V"
+                    c != null && c.origDefiningClass == chat && c.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE, "Z", "Z") && c.origReturnType == "V"
                 }
             }
     }
@@ -274,7 +280,7 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
     val selectFlow = ControlFlow.of(selectMethod)
     controlShape(selectFlow.normal.none { 0 in it } && selectFlow.exceptional.none { 0 in it }, "something jumps back to the start of the selection recorder")
     val selectBody = selectMethod.controlBody()
-    val firstArrayRead = selectBody.indexOfFirst { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.definingClass == chat && f.type == SPARSE_ARRAYS } == true }
+    val firstArrayRead = selectBody.indexOfFirst { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.origDefiningClass == chat && f.origType == SPARSE_ARRAYS } == true }
     controlShape(firstArrayRead >= 0 && selectBody.drop(firstArrayRead + 1).take(8).any { it.controlRef() == INDEX_OF_KEY },
         "the selection recorder no longer starts from the selected messages")
     val selectedField = selectBody[firstArrayRead].controlField()!!.let { "$chat->${it.name}:${it.type}" }
@@ -282,17 +288,17 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
         "the selected messages field is inaccessible")
 
     // The list adapter's getter: frozen, filtered or the chat's own full list.
-    val getters = chatClass.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.type.startsWith("L") }.mapNotNull { field ->
-        val adapter = classDefByOrNull(field.type) ?: return@mapNotNull null
-        val getter = adapter.methods.filter { m -> m.instance() && m.parameterTypes.isEmpty() && m.returnType == LIST && m.isMessagesGetter(chat) }
-        if (getter.size == 1 && chatClass.fields.count { it.type == field.type } == 1) Triple(field, adapter.type, getter.single()) else null
+    val getters = chatClass.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.origType.startsWith("L") }.mapNotNull { field ->
+        val adapter = tgClassDefByOrNull(field.type) ?: return@mapNotNull null
+        val getter = adapter.methods.filter { m -> m.instance() && m.parameterTypes.isEmpty() && m.origReturnType == LIST && m.isMessagesGetter(chat) }
+        if (getter.size == 1 && chatClass.fields.count { it.origType == field.origType } == 1) Triple(field, adapter.type, getter.single()) else null
     }
     val (adapterField, adapterType, getter) = getters.controlSingle("the chat's list adapter")
     controlShape(AccessFlags.PUBLIC.isSet(adapterField.accessFlags), "the chat's list adapter field is inaccessible")
     val getterRef = getter.toString()
     requireReachable(getterRef, false)
     val adapterRef = "$chat->${adapterField.name}:${adapterField.type}"
-    controlShape(adapterType == adapterField.type, "the chat's list adapter changed")
+    controlShape(adapterType == adapterField.origType, "the chat's list adapter changed")
     return SelectBetweenSites(null, chat, create, at, click, handlerType, ownerField, selectMethod, wrapper.toString(), selectedField,
         adapterRef, getterRef, barGetter, menuMethod.toString(), adds.single())
 }
@@ -304,8 +310,8 @@ internal fun Method.isMessagesGetter(chat: String): Boolean {
         Opcode.IGET_BOOLEAN, Opcode.IF_EQZ, Opcode.IGET_OBJECT, Opcode.RETURN_OBJECT,
         Opcode.IGET_BOOLEAN, Opcode.IF_EQZ, Opcode.IGET_OBJECT, Opcode.RETURN_OBJECT,
         Opcode.IGET_OBJECT, Opcode.IGET_OBJECT, Opcode.RETURN_OBJECT,
-    ) && body[8].controlField()?.type == chat && body[9].controlField()?.let { it.definingClass == chat && it.type == LIST } == true &&
-        body[2].controlField()?.type == LIST && body[6].controlField()?.type == LIST
+    ) && body[8].controlField()?.origType == chat && body[9].controlField()?.let { it.origDefiningClass == chat && it.origType == LIST } == true &&
+        body[2].controlField()?.origType == LIST && body[6].controlField()?.origType == LIST
 }
 
 private fun Instruction.writes(register: Int): Boolean {

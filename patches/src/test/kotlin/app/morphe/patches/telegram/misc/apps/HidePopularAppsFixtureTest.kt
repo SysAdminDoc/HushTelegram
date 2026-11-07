@@ -8,8 +8,9 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstructions
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
@@ -29,6 +30,9 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import app.morphe.util.names.origName
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** The loader's class, the Apps tab's class, what Search only my chats reads or edits and the runtime are the whole context. */
 class HidePopularAppsFixtureTest {
@@ -74,12 +78,12 @@ class HidePopularAppsFixtureTest {
             }
             // No heading, bot row or placeholder can be added between the gate and that point unless the gate let it through.
             val heading = stock.indexOfFirst { it.opcode == Opcode.SGET && (it as ReferenceInstruction).reference.let { ref ->
-                ref is FieldReference && ref.name == "SearchAppsPopular" } }
+                ref is FieldReference && ref.origName == "SearchAppsPopular" } }
             assertTrue("$name: the heading is inside the gated section", heading in sites.read until sites.empty)
             assertFalse("$name: the heading is reached around the gate", moved.getValue(heading) in reachable(sectionFlow, 0, gate))
 
             for (flag in listOf("hidePopularApps", "myChatsSearch")) {
-                val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
+                val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.instructions()
                 assertEquals("$name: $flag build fact", 1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
             }
         }
@@ -92,7 +96,7 @@ class HidePopularAppsFixtureTest {
                 method.instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.reference() == GET_POPULAR_APP_BOTS } }
             assertEquals("${build.name}: one getPopularAppBots builder", 1, builders.size)
             val headings = FixtureDex.methodsWhere(build, { true }) { method -> method.instructions().any { it.opcode == Opcode.SGET &&
-                (it as ReferenceInstruction).reference.let { ref -> ref is FieldReference && ref.name == "SearchAppsPopular" } } }
+                (it as ReferenceInstruction).reference.let { ref -> ref is FieldReference && ref.origName == "SearchAppsPopular" } } }
             assertEquals("${build.name}: one place draws the Popular apps heading", 1, headings.size)
         }
     }
@@ -110,7 +114,7 @@ class HidePopularAppsFixtureTest {
                     sites.section.replaceInstruction(emptyBranch + 2, "nop")
                 },
                 "a second request builder" to { context, sites ->
-                    val other = context.mutableClassDefBy(sites.section.definingClass).methods.first { it != sites.section &&
+                    val other = context.tgMutableClassDefBy(sites.section.definingClass).methods.first { it != sites.section &&
                         (it.implementation?.registerCount ?: 0) > 0 }
                     other.addInstructions(0, "new-instance v0, $GET_POPULAR_APP_BOTS")
                 },
@@ -127,7 +131,7 @@ class HidePopularAppsFixtureTest {
     private fun assertRefusedUntouched(file: java.io.File, case: String, context: BytecodePatchContext) {
         val build = file.name
         val owners = owners(file).map { it.type }
-        val before = owners.associateWith { type -> context.mutableClassDefBy(type).methods.map { it.instructions().map(::operation) } }
+        val before = owners.associateWith { type -> context.tgMutableClassDefBy(type).methods.map { it.instructions().map(::operation) } }
         try {
             hidePopularAppsPatch.execute(context)
             fail("$build: $case was accepted")
@@ -135,9 +139,9 @@ class HidePopularAppsFixtureTest {
             assertTrue("$build: $case: ${expected.message}", expected.message.orEmpty().contains("before editing"))
         }
         assertEquals("$build: $case doesn't partly mutate the loader or the Apps tab", before,
-            owners.associateWith { type -> context.mutableClassDefBy(type).methods.map { it.instructions().map(::operation) } })
+            owners.associateWith { type -> context.tgMutableClassDefBy(type).methods.map { it.instructions().map(::operation) } })
         for (flag in listOf("hidePopularApps", "myChatsSearch")) {
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.instructions()
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.instructions()
             assertEquals("$build: $case leaves $flag false", 0, (status[0] as NarrowLiteralInstruction).narrowLiteral)
         }
     }
@@ -165,13 +169,13 @@ class HidePopularAppsFixtureTest {
 
     private fun owners(build: java.io.File) = FixtureDex.classesWhere(build, { true }) { method ->
         method.instructions().any { (it.opcode == Opcode.NEW_INSTANCE && it.reference() == GET_POPULAR_APP_BOTS) ||
-            (it.opcode == Opcode.SGET && (it as ReferenceInstruction).reference.let { ref -> ref is FieldReference && ref.name == "SearchAppsPopular" }) }
+            (it.opcode == Opcode.SGET && (it as ReferenceInstruction).reference.let { ref -> ref is FieldReference && ref.origName == "SearchAppsPopular" }) }
     }
 
     private fun contextFor(build: java.io.File, runtime: Boolean = true): BytecodePatchContext {
         val owners = owners(build)
         assertEquals("${build.name}: the loader and the Apps tab", 2, owners.size)
-        val extension = ExtensionDex.classes().filter { runtime || it.type != POPULAR_APPS }
+        val extension = ExtensionDex.classes().filter { runtime || it.origType != POPULAR_APPS }
         return PatchContexts.of((extension + owners + myChatsSearchHosts(build) + nameFoldHosts(build) + newChatsHosts(build))
             .distinctBy { it.type })
     }
@@ -192,7 +196,7 @@ class HidePopularAppsFixtureTest {
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
     private fun List<Instruction>.isPadding(index: Int) = this[index].opcode == Opcode.NOP && getOrNull(index + 1)?.opcode in
         setOf(Opcode.PACKED_SWITCH_PAYLOAD, Opcode.SPARSE_SWITCH_PAYLOAD, Opcode.ARRAY_PAYLOAD)
-    private fun Instruction.reference() = (this as? ReferenceInstruction)?.reference?.toString()
+    private fun Instruction.reference() = origRef()
     @Suppress("unused")
     private fun Instruction.call(): MethodReference? = (this as? ReferenceInstruction)?.reference as? MethodReference
     private fun operation(instruction: Instruction) = instruction.opcode to instruction.reference()

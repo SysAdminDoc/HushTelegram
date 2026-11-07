@@ -4,8 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.commerce
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.addInstructions
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -24,6 +24,9 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val LOCAL_STATUS = "$EXTENSION_PACKAGE/misc/LocalEmojiStatus;"
 internal const val LOCAL_STATUS_ID = "$LOCAL_STATUS->documentId(Ljava/lang/Long;Ljava/lang/Object;)Ljava/lang/Long;"
@@ -97,7 +100,7 @@ internal fun BytecodePatchContext.resolveLocalEmojiStatus(): LocalEmojiStatusPla
 
     val titles = classDefsMentioning(Mention.reference(LIST_STAR)).filter { classDef ->
         classDef.methods.any { it.drawsTitleStatus() }
-    }.flatMap { classDef -> mutableClassDefBy(classDef).methods.filter { it.drawsTitleStatus() } }
+    }.flatMap { classDef -> tgMutableClassDefBy(classDef).methods.filter { it.drawsTitleStatus() } }
     val title = titles.singleOrNull() ?: return missing(
         if (titles.isEmpty()) "the chat list title no longer draws the emoji status" else "the chat list title's status has ${titles.size} places to draw it")
     val reads = title.statusReads()
@@ -118,8 +121,8 @@ internal fun BytecodePatchContext.resolveLocalEmojiStatus(): LocalEmojiStatusPla
         }
     }
 
-    val sends = mutableClassDefBy(STICKER_CONTROLLER).methods.filter {
-        it.name == SEND_STATUS_NAME && it.returnType == "V" && it.parameterTypes.map(CharSequence::toString) == SEND_STATUS_PARAMETERS
+    val sends = tgMutableClassDefBy(STICKER_CONTROLLER).methods.filter {
+        it.origName == SEND_STATUS_NAME && it.origReturnType == "V" && it.parameterTypes.map(CharSequence::toString) == SEND_STATUS_PARAMETERS
     }
     val send = sends.singleOrNull() ?: return missing("MessagesController no longer sends the account's own status in one place")
     if (send.localRegisterCount() < 1) return missing("the account's status send has no spare register")

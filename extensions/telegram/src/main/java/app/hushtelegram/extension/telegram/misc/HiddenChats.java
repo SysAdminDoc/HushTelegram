@@ -605,8 +605,8 @@ public final class HiddenChats {
         /** {@code UserConfig.MAX_ACCOUNT_COUNT}, read the way KeepDeletedBridge reads it. */
         @Override public int accountSlots() {
             try {
-                return Class.forName("org.telegram.messenger.UserConfig", true, HiddenChats.class.getClassLoader())
-                        .getField("MAX_ACCOUNT_COUNT").getInt(null);
+                return HostNames.field(Class.forName("org.telegram.messenger.UserConfig", true, HiddenChats.class.getClassLoader()),
+                        "MAX_ACCOUNT_COUNT").getInt(null);
             } catch (ReflectiveOperationException missing) {
                 throw new IllegalStateException("no account slots", missing);
             }

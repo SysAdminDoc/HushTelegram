@@ -8,7 +8,8 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.origRef
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
@@ -37,6 +38,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.lang.ref.SoftReference
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** LocaleController, every class that shortens a count, and the runtime. */
 class ExactNumbersFixtureTest {
@@ -76,7 +80,7 @@ class ExactNumbersFixtureTest {
             }
             assertTrue("$name: nothing jumps into the hook", (3 until b.normal.size).none { from -> b.normal[from].any { it in 1..3 } })
             assertEquals("$name: every caller and every other host method", untouched, hostState(build, context, setOf(formatter)))
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "exactNumbers" }.controlBody()
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "exactNumbers" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }
     }
@@ -96,10 +100,10 @@ class ExactNumbersFixtureTest {
                 "formatter no longer static" to { _, s -> s.method.accessFlags = s.method.accessFlags and AccessFlags.STATIC.value.inv() },
                 "formatter no longer writes K" to { _, s -> s.method.replaceInstruction(s.method.controlBody().indexOfFirst { it.controlString() == "K" },
                     "const-string v${s.method.controlBody().first { it.controlString() == "K" }.namedRegisters().single()}, \"k\"") },
-                "missing build flag" to { c, _ -> c.mutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.name == "exactNumbers" } },
-                "private format hook" to { c, _ -> val h = c.mutableClassDefBy(EXACT_NUMBERS).methods.single { it.name == "format" }
+                "missing build flag" to { c, _ -> c.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == "exactNumbers" } },
+                "private format hook" to { c, _ -> val h = c.tgMutableClassDefBy(EXACT_NUMBERS).methods.single { it.origName == "format" }
                     h.accessFlags = h.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value },
-                "empty format hook" to { c, _ -> val owner = c.mutableClassDefBy(EXACT_NUMBERS); val h = owner.methods.single { it.name == "format" }
+                "empty format hook" to { c, _ -> val owner = c.tgMutableClassDefBy(EXACT_NUMBERS); val h = owner.methods.single { it.origName == "format" }
                     owner.methods.remove(h)
                     owner.methods.add(ImmutableMethod(h.definingClass, h.name, h.parameters, h.returnType, h.accessFlags, h.annotations,
                         h.hiddenApiRestrictions, ImmutableMethodImplementation(2, emptyList(), emptyList(), emptyList())).toMutable()) },
@@ -116,10 +120,10 @@ class ExactNumbersFixtureTest {
 
     private fun context(build: File) = PatchContexts.of(ExtensionDex.classes() + hosts(build))
     private fun completeState(build: File, c: BytecodePatchContext) = (hosts(build).map { it.type } + listOf(EXACT_NUMBERS, SETTINGS_STATUS))
-        .filter { c.classDefByOrNull(it) != null }.associateWith { type -> c.mutableClassDefBy(type).let { cls ->
+        .filter { c.tgClassDefByOrNull(it) != null }.associateWith { type -> c.tgMutableClassDefBy(type).let { cls ->
             listOf(cls.accessFlags, cls.methods.map { key(it) to it.state() }) } }
     private fun hostState(build: File, c: BytecodePatchContext, except: Set<String>) = hosts(build)
-        .flatMap { c.mutableClassDefBy(it.type).methods }.filter { key(it) !in except }.associate { key(it) to it.state() }
+        .flatMap { c.tgMutableClassDefBy(it.type).methods }.filter { key(it) !in except }.associate { key(it) to it.state() }
 
     private fun hosts(build: File): List<ClassDef> {
         val identity = FixtureDex.inputIdentity(build)
@@ -140,7 +144,7 @@ class ExactNumbersFixtureTest {
         return listOf(accessFlags, implementation?.registerCount, body.map { it.operand() }, body.map { listOf(it.codeUnits, (it as? OffsetInstruction)?.codeOffset) },
             flow?.normal?.toList(), flow?.exceptional?.toList())
     }
-    private fun Instruction.operand() = listOf(opcode, namedRegisters(), (this as? ReferenceInstruction)?.reference?.toString(),
+    private fun Instruction.operand() = listOf(opcode, namedRegisters(), origRef(),
         (this as? WideLiteralInstruction)?.wideLiteral)
     private fun key(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
 

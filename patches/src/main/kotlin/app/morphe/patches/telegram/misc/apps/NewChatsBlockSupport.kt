@@ -28,6 +28,12 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 private const val PATCH = "Hide popular apps"
 
@@ -172,7 +178,7 @@ private fun chatsFit(ok: Boolean, why: String) {
 }
 
 private fun BytecodePatchContext.requireChatChecks() {
-    val chats = classDefByOrNull(CHAT_OBJECT)
+    val chats = tgClassDefByOrNull(CHAT_OBJECT)
     chatsFit(chats != null && AccessFlags.PUBLIC.isSet(chats.accessFlags) && listOf(IS_NOT_IN_CHAT, IS_MONO_FORUM).all { wanted ->
         chats.methods.any { it.toString() == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) }
     }, "ChatObject no longer tells a chat you aren't in or a channel's direct messages apart")
@@ -181,8 +187,8 @@ private fun BytecodePatchContext.requireChatChecks() {
 private fun Method.isFragmentCreate() = name == FRAGMENT_CREATE && parameterTypes.isEmpty() && returnType == "Z" &&
     !AccessFlags.STATIC.isSet(accessFlags) && implementation != null
 
-private fun Instruction.poll(): List<String>? = call()?.takeIf { it.definingClass == MESSAGES_CONTROLLER &&
-    it.name == START_SHORT_POLL && it.returnType == "V" }?.parameterTypes?.map(CharSequence::toString)
+private fun Instruction.poll(): List<String>? = call()?.takeIf { it.origDefiningClass == MESSAGES_CONTROLLER &&
+    it.origName == START_SHORT_POLL && it.origReturnType == "V" }?.parameterTypes?.map(CharSequence::toString)
 
 /** The watch Telegram keeps on a chat you aren't in, which also hears back when it changes. */
 private fun Instruction.isVisitorPoll() = poll()?.let { it.size == 4 && it.take(3) == listOf(TL_CHAT, "I", "Z") } == true
@@ -205,13 +211,13 @@ private fun flowOf(method: Method, what: String): ControlFlow = try {
 private fun BytecodePatchContext.chatScreenSite(): NewChatOpenSite {
     val found = mutableListOf<Method>()
     forEachClassMentioning(Mention.reference(IS_NOT_IN_CHAT) and Mention.member(MESSAGES_CONTROLLER, START_SHORT_POLL)) { classDef ->
-        if (classDef.type.startsWith(EXTENSION_TYPES)) return@forEachClassMentioning
+        if (classDef.origType.startsWith(EXTENSION_TYPES)) return@forEachClassMentioning
         classDef.methods.filterTo(found) { method -> method.isFragmentCreate() && method.controlBody().let { body ->
             body.any { it.controlRef() == IS_NOT_IN_CHAT } && body.any { it.isVisitorPoll() }
         } }
     }
     chatsFit(found.size == 1, "${found.size} chat screens watch a channel you aren't in, not one")
-    val method = mutableClassDefBy(found.single().definingClass).methods.single { it.isFragmentCreate() }
+    val method = tgMutableClassDefBy(found.single().definingClass).methods.single { it.isFragmentCreate() }
     val body = method.controlBody()
     val checks = body.indices.filter { body[it].controlRef() == IS_NOT_IN_CHAT }
     chatsFit(checks.size == 1, "the chat screen asks ${checks.size} times whether you're in the chat, not once")
@@ -253,14 +259,14 @@ private fun BytecodePatchContext.topicsScreenSite(chatScreen: String): NewChatOp
     val found = mutableListOf<Method>()
     val query = Mention.reference(TOPICS_LOADED) and Mention.reference(LOAD_FULL_CHAT) and Mention.member(MESSAGES_CONTROLLER, START_SHORT_POLL)
     forEachClassMentioning(query) { classDef ->
-        if (classDef.type == chatScreen || classDef.type.startsWith(EXTENSION_TYPES)) return@forEachClassMentioning
+        if (classDef.origType == chatScreen || classDef.origType.startsWith(EXTENSION_TYPES)) return@forEachClassMentioning
         classDef.methods.filterTo(found) { method -> method.isFragmentCreate() && method.controlBody().let { body ->
             body.any { it.opcode == Opcode.SGET && it.controlRef() == TOPICS_LOADED } &&
                 body.any { it.controlRef() == LOAD_FULL_CHAT } && body.any { it.isPlainPoll() }
         } }
     }
     chatsFit(found.size == 1, "${found.size} topic lists load a forum by its id, not one")
-    val method = mutableClassDefBy(found.single().definingClass).methods.single { it.isFragmentCreate() }
+    val method = tgMutableClassDefBy(found.single().definingClass).methods.single { it.isFragmentCreate() }
     val body = method.controlBody()
     // The check writes v0 to v3 and reads this, the last register; nothing is live at the start.
     chatsFit(method.localRegisterCount() >= 4, "the topic list has no room for its check")
@@ -270,13 +276,13 @@ private fun BytecodePatchContext.topicsScreenSite(chatScreen: String): NewChatOp
     val read = (0 until load).lastOrNull { body[it].opcode == Opcode.IGET_WIDE }
     val field = read?.let { (body[it] as ReferenceInstruction).reference as? FieldReference }
     chatsFit(read != null && field != null && body[read].namedRegisters() == listOf(id, self) &&
-        field.definingClass == method.definingClass && field.type == "J" &&
+        field.origDefiningClass == method.origDefiningClass && field.origType == "J" &&
         (read + 1 until load).none { body[it].namedRegisters().firstOrNull().let { written -> written == id || written == id + 1 } },
         "the topic list no longer loads its forum by the id it keeps")
     chatsFit(body.any { it.controlRef() == GET_CHAT_BY_ID }, "the topic list no longer reads its forum by id")
     val controller = body.firstOrNull { instruction -> instruction.opcode == Opcode.INVOKE_VIRTUAL &&
         instruction.namedRegisters() == listOf(self) && instruction.call()?.let {
-            it.name == "getMessagesController" && it.parameterTypes.isEmpty() && it.returnType == MESSAGES_CONTROLLER
+            it.origName == "getMessagesController" && it.parameterTypes.isEmpty() && it.origReturnType == MESSAGES_CONTROLLER
         } == true }?.controlRef() ?: throw ChatsUnfit("the topic list no longer reaches its MessagesController")
     val flow = flowOf(method, "the topic list")
     chatsFit(flow.normal.none { 0 in it } && flow.exceptional.none { 0 in it }, "something jumps back to the start of the topic list")

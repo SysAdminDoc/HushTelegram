@@ -377,7 +377,8 @@ public class PatchFamilyTest {
             assertFalse(setting.key, setting.defaultValue);
             assertFalse(setting.key, setting.rebootApp);
         }
-        assertEquals(java.util.EnumSet.of(PatchFamily.Capability.COPY_SELECTION, PatchFamily.Capability.STORY_SAVE), family.expectedCapabilities(), assertEquals(EnumSet.of(PatchFamily.Capability.COPY_SELECTION, PatchFamily.Capability.SELECT_BETWEEN));
+        assertEquals(EnumSet.of(PatchFamily.Capability.COPY_SELECTION, PatchFamily.Capability.STORY_SAVE,
+                PatchFamily.Capability.SELECT_BETWEEN), family.expectedCapabilities());
         assertOnItsPage(family);
     }
 

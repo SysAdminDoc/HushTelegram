@@ -17,6 +17,9 @@ import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val MENTION_BY_ID = "$EXTENSION_PACKAGE/misc/MentionById;"
 private const val OBJECT = "Ljava/lang/Object;"
@@ -45,11 +48,11 @@ internal class MentionSite(val method: MutableMethod, val index: Int, val regist
  */
 internal fun BytecodePatchContext.resolveMentionById(): MentionSite {
     controlHook(MENTION_BY_ID, "add", listOf(OBJECT, OBJECT, OBJECT), ARRAY_LIST)
-    val owner = mutableClassDefByOrNull(MEDIA_DATA)
+    val owner = tgMutableClassDefByOrNull(MEDIA_DATA)
     controlShape(owner != null, "the media controller is missing")
     val method = owner!!.methods.filter { candidate ->
-        candidate.name == "getEntities" && candidate.parameterTypes.map { it.toString() } == listOf("[Ljava/lang/CharSequence;", "Z") &&
-            candidate.returnType == ARRAY_LIST
+        candidate.origName == "getEntities" && candidate.parameterTypes.map { it.toString() } == listOf("[Ljava/lang/CharSequence;", "Z") &&
+            candidate.origReturnType == ARRAY_LIST
     }.controlSingle("the message entities method")
     controlShape(method.controlCallable(false), "the message entities method is not public")
     val body = method.controlBody()

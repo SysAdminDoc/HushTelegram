@@ -4,9 +4,9 @@
  */
 package app.morphe.patches.telegram.misc.voice
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -36,6 +36,12 @@ import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origInterfaces
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val VOICE_PLAYER = "$EXTENSION_PACKAGE/misc/VoicePlayer;"
 internal const val PLAYER_MUSIC = "$VOICE_PLAYER->music(Ljava/lang/Object;)Z"
@@ -142,7 +148,7 @@ internal fun BytecodePatchContext.resolveVoiceMusicPlayer(): VoiceMusicPlayerSit
     controlHook(VOICE_PLAYER, "isMusic", listOf("Ljava/lang/Object;"), "Z")
     controlHook(VOICE_PLAYER, "isVoice", listOf("Ljava/lang/Object;"), "Z")
     controlHook(VOICE_PLAYER, "once", listOf("Ljava/lang/Object;"), "Z")
-    val message = classDefByOrNull(MESSAGE)
+    val message = tgClassDefByOrNull(MESSAGE)
     controlShape(message != null && listOf("isMusic()Z", "isVoice()Z", "isVoiceOnce()Z").all { wanted ->
         message.methods.any { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) }
     }, "a message no longer says whether it's music, voice or view-once")
@@ -151,7 +157,7 @@ internal fun BytecodePatchContext.resolveVoiceMusicPlayer(): VoiceMusicPlayerSit
     val bar = mutableListOf<Triple<String, String, Int>>()
     val players = mutableSetOf<String>()
     forEachClassMentioning(Mention.reference(IS_MUSIC)) { cls ->
-        if (cls.type != FRAGMENT_CONTEXT_VIEW && cls.fields.none { it.type == FRAGMENT_CONTEXT_VIEW && !AccessFlags.STATIC.isSet(it.accessFlags) }) return@forEachClassMentioning
+        if (cls.origType != FRAGMENT_CONTEXT_VIEW && cls.fields.none { it.origType == FRAGMENT_CONTEXT_VIEW && !AccessFlags.STATIC.isSet(it.accessFlags) }) return@forEachClassMentioning
         cls.methods.forEach { m ->
             val body = m.controlBody()
             for (i in body.indices) {
@@ -159,7 +165,7 @@ internal fun BytecodePatchContext.resolveVoiceMusicPlayer(): VoiceMusicPlayerSit
                 val created = (i + 1 until minOf(body.size, i + 14)).map { body[it] }
                     .filter { it.opcode == Opcode.NEW_INSTANCE }
                     .map { ((it as ReferenceInstruction).reference as TypeReference).type }
-                    .filter { isPlayer(classDefByOrNull(it)) }
+                    .filter { isPlayer(tgClassDefByOrNull(it)) }
                 if (created.isEmpty()) continue
                 bar += Triple(cls.type, signature(m), i)
                 players += created
@@ -173,13 +179,13 @@ internal fun BytecodePatchContext.resolveVoiceMusicPlayer(): VoiceMusicPlayerSit
     val found = mutableListOf(Triple(bar.single().first, bar.single().second, listOf(bar.single().third)))
     var inPlayer = 0
     forEachClassMentioning(Mention.reference(IS_MUSIC)) { cls ->
-        val holds = cls.type == player || cls.fields.any { it.type == player && !AccessFlags.STATIC.isSet(it.accessFlags) }
-        if (!holds || cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        val holds = cls.origType == player || cls.fields.any { it.origType == player && !AccessFlags.STATIC.isSet(it.accessFlags) }
+        if (!holds || cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
             val body = m.controlBody()
             val indices = body.indices.filter { body[it].opcode in VIRTUAL && body[it].controlRef() == IS_MUSIC }
             if (indices.isEmpty()) return@forEach
-            if (cls.type == player) inPlayer += indices.size
+            if (cls.origType == player) inPlayer += indices.size
             found += Triple(cls.type, signature(m), indices)
         }
     }
@@ -187,8 +193,8 @@ internal fun BytecodePatchContext.resolveVoiceMusicPlayer(): VoiceMusicPlayerSit
     val profile = resolveProfileButtons(player)
     return VoiceMusicPlayerSite(
         player,
-        found.map { (type, wanted, indices) -> mutableClassDefBy(type).methods.single { signature(it) == wanted } to indices },
-        mutableClassDefBy(player).methods.single { signature(it) == profile.first } to profile.second,
+        found.map { (type, wanted, indices) -> tgMutableClassDefBy(type).methods.single { signature(it) == wanted } to indices },
+        tgMutableClassDefBy(player).methods.single { signature(it) == profile.first } to profile.second,
     )
 }
 
@@ -200,20 +206,20 @@ internal fun BytecodePatchContext.resolveVoiceMusicPlayer(): VoiceMusicPlayerSit
 private fun BytecodePatchContext.resolveProfileButtons(player: String): Pair<String, Int> {
     controlHook(VOICE_PLAYER, "keepsProfileOut", listOf("I"), "Z")
     controlHook(VOICE_PLAYER, "playing", emptyList(), "Ljava/lang/Object;")
-    val controller = classDefByOrNull(MEDIA_CONTROLLER)
-    controlShape(controller != null && controller.methods.any { it.name == "getInstance" && it.parameterTypes.isEmpty() &&
-        it.returnType == MEDIA_CONTROLLER && AccessFlags.STATIC.isSet(it.accessFlags) && AccessFlags.PUBLIC.isSet(it.accessFlags) } &&
+    val controller = tgClassDefByOrNull(MEDIA_CONTROLLER)
+    controlShape(controller != null && controller.methods.any { it.origName == "getInstance" && it.parameterTypes.isEmpty() &&
+        it.origReturnType == MEDIA_CONTROLLER && AccessFlags.STATIC.isSet(it.accessFlags) && AccessFlags.PUBLIC.isSet(it.accessFlags) } &&
         controller.methods.any { "$MEDIA_CONTROLLER->${signature(it)}" == PLAYING_NOW && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
             !AccessFlags.STATIC.isSet(it.accessFlags) }, "the music player no longer says which message is playing")
-    val methods = classDefByOrNull(player)!!.methods.filter { !AccessFlags.STATIC.isSet(it.accessFlags) }
+    val methods = tgClassDefByOrNull(player)!!.methods.filter { !AccessFlags.STATIC.isSet(it.accessFlags) }
     val mine = methods.filter { m ->
-        m.parameterTypes.isEmpty() && m.returnType == "Z" &&
+        m.parameterTypes.isEmpty() && m.origReturnType == "Z" &&
             m.controlBody().any { it.opcode == Opcode.IGET_OBJECT && it.controlRef()?.endsWith(":$SAVED_MUSIC") == true }
     }.controlSingle("the player's check for your own profile list")
     val asks = "$player->${signature(mine)}"
     val toggle = methods.filter { m ->
         val body = m.controlBody()
-        m.parameterTypes.map { it.toString() } == listOf("Z") && m.returnType == "V" && body.size > 2 &&
+        m.parameterTypes.map { it.toString() } == listOf("Z") && m.origReturnType == "V" && body.size > 2 &&
             body[0].opcode == Opcode.INVOKE_VIRTUAL && body[0].controlRef() == asks && body[1].opcode == Opcode.MOVE_RESULT &&
             body.count { it.controlRef() == ANIMATE } >= 2
     }.controlSingle("the player's Add to Profile toggle")
@@ -225,7 +231,7 @@ private fun BytecodePatchContext.resolveProfileButtons(player: String): Pair<Str
 }
 
 /** AudioPlayerAlert keeps its listener interfaces and its saved-music field through R8. */
-private fun isPlayer(cls: ClassDef?) = cls != null && PLAYER_TRAITS.all { it in cls.interfaces } &&
-    cls.fields.any { it.type == SAVED_MUSIC && !AccessFlags.STATIC.isSet(it.accessFlags) }
+private fun isPlayer(cls: ClassDef?) = cls != null && PLAYER_TRAITS.all { it in cls.origInterfaces } &&
+    cls.fields.any { it.origType == SAVED_MUSIC && !AccessFlags.STATIC.isSet(it.accessFlags) }
 
 private fun signature(method: Method) = "${method.name}${method.parameterTypes.joinToString("", "(", ")")}${method.returnType}"

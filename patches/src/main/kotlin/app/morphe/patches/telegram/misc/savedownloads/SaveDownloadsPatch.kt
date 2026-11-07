@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.savedownloads
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -30,6 +30,10 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.value.IntEncodedValue
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origInterfaces
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val SAVE_DOWNLOADS = "$EXTENSION_PACKAGE/misc/SaveDownloads;"
 private const val OBJECT = "Ljava/lang/Object;"
@@ -174,7 +178,7 @@ internal fun insertFoundFileHook(method: MutableMethod) {
  */
 internal fun BytecodePatchContext.resolveFoundFiles(): MutableMethod {
     controlHook(SAVE_DOWNLOADS, "finishing", listOf(OBJECT, FILE, FILE), "V")
-    val owner = mutableClassDefByOrNull(LOAD_OPERATION)
+    val owner = tgMutableClassDefByOrNull(LOAD_OPERATION)
     controlShape(owner != null, "FileLoadOperation is missing")
     val fields = owner!!.instanceFields.map { "${it.definingClass}->${it.name}:${it.type}" }.toSet()
     controlShape(PATH_SAVE_DATA in fields && CACHE_FILE_TEMP in fields && STORAGE_CACHE_FINAL in fields,
@@ -193,8 +197,8 @@ internal fun BytecodePatchContext.resolveFoundFiles(): MutableMethod {
 
 /** ImageLoader makes one delegate per account and keeps that account in its one int field. */
 internal fun BytecodePatchContext.delegateAccount(callback: MutableMethod): String {
-    val delegate = mutableClassDefBy(callback.definingClass)
-    val field = delegate.instanceFields.filter { it.type == "I" }.controlSingle("the download callback's account")
+    val delegate = tgMutableClassDefBy(callback.definingClass)
+    val field = delegate.instanceFields.filter { it.origType == "I" }.controlSingle("the download callback's account")
     return "${field.definingClass}->${field.name}:I"
 }
 
@@ -377,11 +381,11 @@ internal fun BytecodePatchContext.resolveSaveDownloads(): MutableMethod {
     controlHook(SAVE_DOWNLOADS, "attachName", listOf(OBJECT), STRING)
     controlHook(SAVE_DOWNLOADS, "documentName", listOf(OBJECT), STRING)
 
-    val images = mutableClassDefByOrNull(IMAGE_LOADER)
+    val images = tgMutableClassDefByOrNull(IMAGE_LOADER)
     controlShape(images != null, "ImageLoader is missing")
     val delegate = images!!.delegateCandidates()
-        .mapNotNull { mutableClassDefByOrNull(it) }
-        .filter { LOADER_DELEGATE in it.interfaces }
+        .mapNotNull { tgMutableClassDefByOrNull(it) }
+        .filter { LOADER_DELEGATE in it.origInterfaces }
         .controlSingle("ImageLoader's download callback")
     val callback = delegate.methods.filter { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == FILE_LOADED }
         .controlSingle("the finished-download callback")
@@ -392,7 +396,7 @@ internal fun BytecodePatchContext.resolveSaveDownloads(): MutableMethod {
     controlShape(locals >= 1 && locals + 4 <= 16, "the finished-download callback's registers changed")
 
     // Telegram's own Save to Downloads rules read the same three facts the stubs do.
-    val loader = mutableClassDefByOrNull(FILE_LOADER)
+    val loader = tgMutableClassDefByOrNull(FILE_LOADER)
     controlShape(loader != null && loader.methods.any { method ->
         val refs = method.controlBody().mapNotNull { it.controlRef() }
         PEER_NO_FORWARDS in refs && IS_ENCRYPTED in refs && NO_FORWARDS in refs
@@ -400,7 +404,7 @@ internal fun BytecodePatchContext.resolveSaveDownloads(): MutableMethod {
     // The extension reads the background queue's key the way FileLoader does, and knows a file and a song by type.
     controlShape(loader!!.methods.any { method -> method.controlBody().any { it.controlString() == SENT_KEY } },
         "the background download key changed")
-    val types = mutableClassDefByOrNull(MESSAGE_OBJECT)?.staticFields
+    val types = tgMutableClassDefByOrNull(MESSAGE_OBJECT)?.staticFields
         ?.associate { it.name to (it.initialValue as? IntEncodedValue)?.value }.orEmpty()
     controlShape(types["TYPE_FILE"] == 9 && types["TYPE_MUSIC"] == 14 && types["TYPE_PHOTO"] == 1 && types["TYPE_VIDEO"] == 3
             && types["TYPE_VOICE"] == 2 && types["TYPE_ROUND_VIDEO"] == 5,

@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.channelbar
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
@@ -19,6 +19,10 @@ import app.morphe.util.refusedByVerifier
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val CHANNEL_SHARE = "$EXTENSION_PACKAGE/misc/ChannelShare;"
 internal const val SHARE_ON = "$CHANNEL_SHARE->on()Z"
@@ -122,14 +126,14 @@ internal fun BytecodePatchContext.resolveChannelShare(): ChannelShareButton {
     requireStatusMethod("hideChannelShare")
     fun missing(why: String) = ChannelShareButton(null, null, null, null, why)
 
-    val owner = mutableClassDefByOrNull(SHARE_MESSAGE) ?: return missing("the app has no message class to ask")
-    val decision = owner.methods.singleOrNull { it.name == SHARE_DECISION && it.parameterTypes.isEmpty() && it.returnType == "Z" }
+    val owner = tgMutableClassDefByOrNull(SHARE_MESSAGE) ?: return missing("the app has no message class to ask")
+    val decision = owner.methods.singleOrNull { it.origName == SHARE_DECISION && it.parameterTypes.isEmpty() && it.origReturnType == "Z" }
         ?: return missing("messages no longer decide their share button in one place")
     if (AccessFlags.STATIC.isSet(decision.accessFlags) || AccessFlags.ABSTRACT.isSet(decision.accessFlags) ||
         decision.implementation == null) {
         return missing("the share button decision is no longer a method of the message itself")
     }
-    if (owner.methods.any { it.name == STOCK_SHARE }) return missing("the share button decision is already wrapped")
+    if (owner.methods.any { it.origName == STOCK_SHARE }) return missing("the share button decision is already wrapped")
     val reads = decision.controlBody().mapNotNull { it.controlRef() }.toSet()
     SHARE_FACTS.firstOrNull { it !in reads }?.let { return missing("the share button decision no longer reads $it") }
 
@@ -138,8 +142,8 @@ internal fun BytecodePatchContext.resolveChannelShare(): ChannelShareButton {
     val wrapper = ImmutableMethod(SHARE_MESSAGE, decision.name, decision.parameters, decision.returnType, decision.accessFlags,
         decision.annotations, decision.hiddenApiRestrictions, MutableMethodImplementation(9))
         .toMutable().apply { addInstructionsWithLabels(0, WRAPPER) }
-    val refusals = refusedByVerifier(wrapper, { classDefByOrNull(it)?.superclass },
-        { classDefByOrNull(it)?.let { found -> AccessFlags.INTERFACE.isSet(found.accessFlags) } })
+    val refusals = refusedByVerifier(wrapper, { tgClassDefByOrNull(it)?.superclass },
+        { tgClassDefByOrNull(it)?.let { found -> AccessFlags.INTERFACE.isSet(found.accessFlags) } })
     if (refusals.isNotEmpty()) throw PatchException("$SHARE_MESSAGE->$SHARE_DECISION would fail Android's verifier: ${refusals.joinToString("; ")}")
     return ChannelShareButton(owner, decision, stock, wrapper, null)
 }

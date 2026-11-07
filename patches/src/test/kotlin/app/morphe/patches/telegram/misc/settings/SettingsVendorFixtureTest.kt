@@ -16,6 +16,10 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import app.morphe.util.names.origRef
+import app.morphe.util.names.origName
+import app.morphe.util.names.origString
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** The actual vendor application and launcher bodies, independent of the shortcut stand-ins. */
 class SettingsVendorFixtureTest {
@@ -25,9 +29,9 @@ class SettingsVendorFixtureTest {
             val hosts = NativeSettingsFixtures.hosts(build)
             val context = PatchContexts.of(ExtensionDex.classes() + SettingsPatchHosts.all() + hosts)
             settingsPatch.execute(context)
-            val owner = context.mutableClassDefBy(hosts.first().type)
+            val owner = context.tgMutableClassDefBy(hosts.first().type)
             assertEquals("${build.name}: dedicated row uses the native owner", 1,
-                owner.methods.count { it.name == "hushTelegramAddSettingsRow" })
+                owner.methods.count { it.origName == "hushTelegramAddSettingsRow" })
         }
     }
 
@@ -50,7 +54,7 @@ class SettingsVendorFixtureTest {
             settingsPatch.execute(context)
             assertEquals("${build.name}: extension initializes before native application startup",
                 "Lapp/hushtelegram/extension/shared/Utils;->setContext(Landroid/content/Context;)V",
-                (application.implementation!!.instructions.first() as ReferenceInstruction).reference.toString())
+                (application.implementation!!.instructions.first() as ReferenceInstruction).reference.origString())
             for (method in listOf(application, create, intent)) {
                 val added = method.operations().filter { it.second?.startsWith("Lapp/hushtelegram/extension/") == true }
                 val expected = when (method) {
@@ -69,6 +73,6 @@ class SettingsVendorFixtureTest {
     private fun Method.signature() = "$definingClass->$name(${parameterTypes.joinToString("")})$returnType"
     // dexlib adds or drops a payload-alignment NOP when the entry hook shifts a switch body.
     private fun Method.operations() = implementation!!.instructions.filter { it.opcode != Opcode.NOP }.map { instruction ->
-        instruction.opcode to (instruction as? ReferenceInstruction)?.reference?.toString()
+        instruction.opcode to instruction.origRef()
     }
 }

@@ -8,9 +8,10 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.chattypefolders.CLIENT_USER_ID
@@ -42,6 +43,11 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** Both pinned builds' chat sort, which hands its full lists to the extension before it drops empty folders. */
 class HiddenChatsFixtureTest {
@@ -262,7 +268,7 @@ class HiddenChatsFixtureTest {
     @Test fun `a pinned order that changed leaves the switch out and both methods as they were`() {
         for (build in Fixtures.declaredBuilds()) {
             val context = PatchContexts.of(ExtensionDex.classes() + launchFolderHosts(build))
-            val reorder = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == "reorderPinnedDialogs" }
+            val reorder = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.origName == "reorderPinnedDialogs" }
             val read = reorder.body().indexOfFirst { it.ref() == GET_DIALOGS }
             // A second read of the folder's chats: which one the server's order comes from is no longer clear.
             val (self, folder) = reorder.body()[read].namedRegisters()
@@ -360,8 +366,8 @@ class HiddenChatsFixtureTest {
             val hosts = (folderCounterHosts(build) + launchFolderHosts(build) + menuHosts(build) + allChatsPlaceHosts(build) + accountListHosts(build)).distinctBy { it.type }
             val context = PatchContexts.of((ExtensionDex.classes() + hosts).distinctBy { it.type })
             assertEquals(name, emptyList<String>(), PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) })
-            val stubs = context.mutableClassDefBy(HIDDEN_CHATS).methods.associateBy { it.name }
-            val sort = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == "sortDialogs" }.toString()
+            val stubs = context.tgMutableClassDefBy(HIDDEN_CHATS).methods.associateBy { it.name }
+            val sort = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.origName == "sortDialogs" }.toString()
             // Each one whole: smali drops what it can't build, and the count shows it.
             val expected = mapOf(
                 "controllerUser" to (6 to listOf(GET_USER_CONFIG, CLIENT_USER_ID)),
@@ -408,22 +414,22 @@ class HiddenChatsFixtureTest {
             assertEquals(1L, statusOf(context, "adminChats"))
             assertEquals(1L, statusOf(context, "hiddenAccounts"))
             assertEquals(1L, statusOf(context, "launchFolder"))
-            assertEquals(1, context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == "sortDialogs" }.body()
+            assertEquals(1, context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.origName == "sortDialogs" }.body()
                 .count { it.ref() == "$HIDDEN_CHATS->prune(Ljava/lang/Object;)V" })
-            assertEquals(1, context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == "reorderPinnedDialogs" }.body()
+            assertEquals(1, context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.origName == "reorderPinnedDialogs" }.body()
                 .count { it.ref() == PIN_ORDER })
             // The server's pins once, and each of the two pin checks' two limits.
-            val controllerCalls = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.sumOf { m -> m.body().count { it.ref() == SERVER_PINS } }
+            val controllerCalls = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.sumOf { m -> m.body().count { it.ref() == SERVER_PINS } }
             assertEquals(name, 1, controllerCalls)
-            assertEquals(name, 4, context.mutableClassDefBy(launchFolderList(build)).methods.sumOf { m -> m.body().count { it.ref() == PIN_ROOM } })
+            assertEquals(name, 4, context.tgMutableClassDefBy(launchFolderList(build)).methods.sumOf { m -> m.body().count { it.ref() == PIN_ROOM } })
             // One skip in each unread count.
             assertEquals(name, mapOf("calcUnreadCounters" to 1, "updateFiltersReadCounter" to 1),
-                context.mutableClassDefBy(STORAGE).methods.groupBy { it.name }
+                context.tgMutableClassDefBy(STORAGE).methods.groupBy { it.name }
                     .mapValues { (_, methods) -> methods.sumOf { m -> m.body().count { it.ref() == UNCOUNTED } } }.filterValues { it > 0 })
             // The long press item's three calls, each once in the whole app.
             for (hook in listOf(MENU_ITEM, MENU_SHOWN, MENU_CHOICE)) {
-                val calls = hosts.filter { !it.type.startsWith("Lapp/hushtelegram/") }
-                    .sumOf { cls -> context.mutableClassDefBy(cls.type).methods.sumOf { m -> m.body().count { it.ref() == hook } } }
+                val calls = hosts.filter { !it.origType.startsWith("Lapp/hushtelegram/") }
+                    .sumOf { cls -> context.tgMutableClassDefBy(cls.type).methods.sumOf { m -> m.body().count { it.ref() == hook } } }
                 assertEquals("$name: $hook", 1, calls)
             }
         }
@@ -439,14 +445,14 @@ class HiddenChatsFixtureTest {
             assertEquals("$name: $warnings", 1, warnings.size)
             assertTrue("$name: ${warnings.single()}", "click handler is missing or ambiguous" in warnings.single() && "without Hide from chat list" in warnings.single())
             assertEquals(1L, statusOf(context, "hiddenChats"))
-            assertEquals(1, context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == "sortDialogs" }.body()
+            assertEquals(1, context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.origName == "sortDialogs" }.body()
                 .count { it.ref() == "$HIDDEN_CHATS->prune(Ljava/lang/Object;)V" })
-            val stubs = context.mutableClassDefBy(HIDDEN_CHATS).methods.associateBy { it.name }
+            val stubs = context.tgMutableClassDefBy(HIDDEN_CHATS).methods.associateBy { it.name }
             assertTrue("$name: addMenuItem stays a stub", stubs.getValue("addMenuItem").body().none { it.ref() == refs.addSubItem })
             assertTrue("$name: selectedChats stays a stub", stubs.getValue("selectedChats").body().none { it.ref() == refs.selected })
             for (hook in listOf(MENU_ITEM, MENU_SHOWN, MENU_CHOICE)) {
-                val calls = hosts.filter { !it.type.startsWith("Lapp/hushtelegram/") }
-                    .sumOf { cls -> context.mutableClassDefBy(cls.type).methods.sumOf { m -> m.body().count { it.ref() == hook } } }
+                val calls = hosts.filter { !it.origType.startsWith("Lapp/hushtelegram/") }
+                    .sumOf { cls -> context.tgMutableClassDefBy(cls.type).methods.sumOf { m -> m.body().count { it.ref() == hook } } }
                 assertEquals("$name: $hook", 0, calls)
             }
         }
@@ -462,7 +468,7 @@ class HiddenChatsFixtureTest {
             assertEquals(name, listOf("calcUnreadCounters", "updateFiltersReadCounter"), plan.skips.map { it.method.name })
             // controllerUser takes either as the BaseController it is.
             for (type in listOf(MESSAGES_CONTROLLER, STORAGE)) {
-                assertEquals("$name: $type", "Lorg/telegram/messenger/BaseController;", context.mutableClassDefBy(type).superclass)
+                assertEquals("$name: $type", "Lorg/telegram/messenger/BaseController;", context.tgMutableClassDefBy(type).superclass)
             }
             val stock = plan.skips.map { it.method.body().code() }
             val landings = plan.skips.map { operands(it.method.body()[it.to]) }
@@ -517,23 +523,23 @@ class HiddenChatsFixtureTest {
             val name = build.name
             val hosts = (folderCounterHosts(build) + launchFolderHosts(build) + menuHosts(build)).distinctBy { it.type }
             val context = PatchContexts.of((ExtensionDex.classes() + hosts + allChatsPlaceHosts(build) + accountListHosts(build)).distinctBy { it.type })
-            val storage = context.mutableClassDefBy(STORAGE)
+            val storage = context.tgMutableClassDefBy(STORAGE)
             // A reworded query: which rows the walk reads is no longer clear.
-            val calc = storage.methods.single { it.name == "calcUnreadCounters" }
+            val calc = storage.methods.single { it.origName == "calcUnreadCounters" }
             val query = calc.body().indexOfFirst { it.opcode == Opcode.CONST_STRING && it.ref().orEmpty().startsWith("SELECT did, folder_id, unread_count") }
             calc.replaceInstruction(query, "const-string v${(calc.body()[query] as OneRegisterInstruction).registerA}, \"SELECT did FROM dialogs\"")
             val counts = listOf("calcUnreadCounters", "updateFiltersReadCounter")
-            val before = counts.map { count -> storage.methods.single { it.name == count }.body().code() }
+            val before = counts.map { count -> storage.methods.single { it.origName == count }.body().code() }
             val warnings = PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) }
             assertEquals("$name: $warnings", 1, warnings.size)
             assertTrue("$name: ${warnings.single()}", "the unread count's query is missing or ambiguous" in warnings.single() &&
                 "Hidden chats go on with their unread counts" in warnings.single())
             assertEquals(1L, statusOf(context, "hiddenChats"))
             assertEquals(0L, statusOf(context, "hiddenUnread"))
-            assertEquals(name, before, counts.map { count -> storage.methods.single { it.name == count }.body().code() })
-            assertTrue("$name: recount stays a stub", context.mutableClassDefBy(HIDDEN_CHATS).methods.single { it.name == "recount" }.body()
+            assertEquals(name, before, counts.map { count -> storage.methods.single { it.origName == count }.body().code() })
+            assertTrue("$name: recount stays a stub", context.tgMutableClassDefBy(HIDDEN_CHATS).methods.single { it.origName == "recount" }.body()
                 .none { it.ref() == RECOUNT })
-            assertTrue("$name: onStorageThread stays a stub", context.mutableClassDefBy(HIDDEN_CHATS).methods.single { it.name == "onStorageThread" }.body()
+            assertTrue("$name: onStorageThread stays a stub", context.tgMutableClassDefBy(HIDDEN_CHATS).methods.single { it.origName == "onStorageThread" }.body()
                 .none { it.ref() == POST_RUNNABLE })
         }
     }
@@ -566,7 +572,7 @@ class HiddenChatsFixtureTest {
     @Test fun `without the notification centre the switch is left out`() {
         for (build in Fixtures.declaredBuilds()) {
             val context = PatchContexts.of(ExtensionDex.classes() + launchFolderHosts(build)
-                .filter { it.type != "Lorg/telegram/messenger/NotificationCenter;" })
+                .filter { it.origType != "Lorg/telegram/messenger/NotificationCenter;" })
             val plan = context.resolveHiddenChats()
             assertTrue("${build.name}: ${plan.missing}", plan.missing.orEmpty().contains("isn't reachable from the extension"))
         }
@@ -575,9 +581,9 @@ class HiddenChatsFixtureTest {
     @Test fun `without the account count the switch is left out`() {
         for (build in Fixtures.declaredBuilds()) {
             val hosts = launchFolderHosts(build).map { host ->
-                if (host.type != USER_CONFIG) host
+                if (host.origType != USER_CONFIG) host
                 else ImmutableClassDef(host.type, host.accessFlags, host.superclass, host.interfaces, host.sourceFile,
-                    host.annotations, host.fields.filter { it.name != "MAX_ACCOUNT_COUNT" }, host.methods)
+                    host.annotations, host.fields.filter { it.origName != "MAX_ACCOUNT_COUNT" }, host.methods)
             }
             val plan = PatchContexts.of(ExtensionDex.classes() + hosts).resolveHiddenChats()
             assertTrue("${build.name}: ${plan.missing}", plan.missing.orEmpty().contains("$ACCOUNT_SLOTS isn't reachable"))
@@ -593,23 +599,23 @@ class HiddenChatsFixtureTest {
     }
 
     private fun BytecodePatchContext.sortDialogs(): MutableMethod =
-        mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.name == "sortDialogs" }
+        tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.origName == "sortDialogs" }
 
     private fun menuContext(build: File) = PatchContexts.of((ExtensionDex.classes() + menuHosts(build)).distinctBy { it.type })
 
     private fun List<Instruction>.code() = filter { it.opcode != Opcode.NOP }.map(::operands)
 
     private fun BytecodePatchContext.createActionMode(list: String): MutableMethod =
-        mutableClassDefBy(list).methods.single { it.isCreateActionMode() }
+        tgMutableClassDefBy(list).methods.single { it.isCreateActionMode() }
 
     private fun statusOf(context: BytecodePatchContext, flag: String) =
-        (context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.body()[0] as WideLiteralInstruction).wideLiteral
+        (context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.body()[0] as WideLiteralInstruction).wideLiteral
 
     private fun operands(instruction: Instruction): List<Any?> = listOf(instruction.opcode, instruction.namedRegisters(), instruction.ref())
 
     private fun Method.body(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 
-    private fun Instruction.ref() = (this as? ReferenceInstruction)?.reference?.toString()
+    private fun Instruction.ref() = origRef()
 }
 
 private val MENU_HOSTS = mutableMapOf<String, List<ClassDef>>()
@@ -621,7 +627,7 @@ internal fun menuHosts(build: File, clicks: Boolean = true): List<ClassDef> = ME
     val more = create.controlBody().first { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef()?.contains("(IILjava/lang/String;)") == true }
         .controlRef()!!.substringBefore("->")
     val handlers = if (!clicks) emptyList() else FixtureDex.classesWhere(build, { true }) { m ->
-        m.definingClass != list && m.returnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
+        m.origDefiningClass != list && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
             m.controlBody().any { it.opcode == Opcode.IGET_OBJECT && it.controlRef()?.endsWith(":$list") == true }
     }
     launchFolderHosts(build) + handlers + FixtureDex.classes(build, setOf(more)).values

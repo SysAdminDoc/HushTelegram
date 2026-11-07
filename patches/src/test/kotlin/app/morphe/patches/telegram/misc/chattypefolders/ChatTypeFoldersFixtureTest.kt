@@ -8,7 +8,7 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.encodedValue.MutableEncodedValue.Companion.toMutable
@@ -33,6 +33,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** The folder stubs on both declared builds: Telegram's own folder list, limit, update request and local list. */
 class ChatTypeFoldersFixtureTest {
@@ -54,12 +56,12 @@ class ChatTypeFoldersFixtureTest {
         return PatchContexts.of(ExtensionDex.classes() + host)
     }
 
-    private fun ClassDef.method(name: String) = methods.single { it.name == name }
-    private fun BytecodePatchContext.method(name: String) = mutableClassDefBy(CHAT_TYPE_FOLDERS).method(name)
+    private fun ClassDef.method(name: String) = methods.single { it.origName == name }
+    private fun BytecodePatchContext.method(name: String) = tgMutableClassDefBy(CHAT_TYPE_FOLDERS).method(name)
     private fun BytecodePatchContext.stub(name: String) = method(name).controlBody()
     private fun List<Instruction>.refs() = mapNotNull { it.controlRef() }
     private fun BytecodePatchContext.status() =
-        (mutableClassDefBy(SETTINGS_STATUS).method("chatTypeFolders").controlBody().first() as WideLiteralInstruction).wideLiteral
+        (tgMutableClassDefBy(SETTINGS_STATUS).method("chatTypeFolders").controlBody().first() as WideLiteralInstruction).wideLiteral
 
     /** The register each parameter arrives in; none of these stubs takes a long. */
     private fun Method.param(index: Int) = implementation!!.registerCount - parameters.size + index
@@ -152,7 +154,7 @@ class ChatTypeFoldersFixtureTest {
             assertEquals(listOf(LOCAL_FILTER, LOCAL_INIT, LOCAL_ID, LOCAL_NAME, LOCAL_FLAGS, LOCAL_COLOR, LOCAL_UNREAD,
                 LOCAL_PENDING_UNREAD, CONTROLLER_INSTANCE, ADD_FILTER, STORAGE_INSTANCE, SAVE_FILTER, NOTIFICATIONS_INSTANCE,
                 FILTERS_UPDATED, "[Ljava/lang/Object;"), add.dropLast(1))
-            val post = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.toString() == REMOVE_FILTER }
+            val post = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.toString() == REMOVE_FILTER }
                 .controlBody().refs().first { it.startsWith("$NOTIFICATIONS->") && it.endsWith("(I[Ljava/lang/Object;)V") }
             assertEquals(name, post, add.last())
             context.assertParams(name, "addFolder", listOf(LOCAL_ID to 1, LOCAL_NAME to 2, LOCAL_FLAGS to 3,
@@ -223,11 +225,11 @@ class ChatTypeFoldersFixtureTest {
 
     /** Makes the bots bit something else, wherever this build keeps its starting value. */
     private fun BytecodePatchContext.changeBotsFlag() {
-        val controller = mutableClassDefBy(MESSAGES_CONTROLLER)
+        val controller = tgMutableClassDefBy(MESSAGES_CONTROLLER)
         val bots = TYPE_FLAGS.last().first
         val field = controller.fields.single { "$MESSAGES_CONTROLLER->${it.name}:${it.type}" == bots }
         if (field.initialValue is IntEncodedValue) field.initialValue = ImmutableIntEncodedValue(32).toMutable()
-        val init = controller.methods.singleOrNull { it.name == "<clinit>" } ?: return
+        val init = controller.methods.singleOrNull { it.origName == "<clinit>" } ?: return
         val body = init.controlBody()
         val put = body.indexOfFirst { it.opcode == Opcode.SPUT && it.controlRef() == bots }
         if (put < 0) return
@@ -241,26 +243,26 @@ class ChatTypeFoldersFixtureTest {
         val shapes = listOf<Pair<String, (BytecodePatchContext) -> Unit>>(
             "Telegram's folder chat type flags changed" to { context -> context.changeBotsFlag() },
             "Telegram's folder list update changed" to { context ->
-                val remove = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.toString() == REMOVE_FILTER }
+                val remove = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.toString() == REMOVE_FILTER }
                 val at = remove.controlBody().indexOfFirst { it.opcode == Opcode.SGET && it.controlRef() == FILTERS_UPDATED }
                 remove.replaceInstruction(at, "const/4 v0, 0x0")
             },
             "$REMOVE_FILTER isn't reachable from the extension" to { context ->
-                val remove = context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.toString() == REMOVE_FILTER }
+                val remove = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.toString() == REMOVE_FILTER }
                 remove.accessFlags = remove.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value
             },
             "$UPDATE_FILTER_FIELD isn't reachable from the extension" to { context ->
-                val update = context.mutableClassDefBy(UPDATE_FILTER)
+                val update = context.tgMutableClassDefBy(UPDATE_FILTER)
                 val field = update.fields.single { "$UPDATE_FILTER->${it.name}:${it.type}" == UPDATE_FILTER_FIELD }
                 field.accessFlags = field.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value
             },
             // A callback the Proxy can't implement, from the extension's package, leaves every answer unheard.
             "Telegram's request callback changed" to { context ->
-                val delegate = context.mutableClassDefBy(REQUEST_DELEGATE)
+                val delegate = context.tgMutableClassDefBy(REQUEST_DELEGATE)
                 delegate.accessFlags = delegate.accessFlags and AccessFlags.PUBLIC.value.inv()
             },
             "$FILTER_COLOR isn't reachable from the extension" to { context ->
-                val filter = context.mutableClassDefBy(SERVER_FILTER)
+                val filter = context.tgMutableClassDefBy(SERVER_FILTER)
                 val field = filter.fields.single { "$SERVER_FILTER->${it.name}:${it.type}" == FILTER_COLOR }
                 field.accessFlags = field.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value
             },

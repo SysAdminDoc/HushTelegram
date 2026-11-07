@@ -400,6 +400,20 @@
       "via": [],
       "license": "GPL-3.0-only",
       "changes": "Register kind analysis written for HushTelegram, so a hook's jump is checked against what ART's verifier accepts before the method changes."
+    },
+    {
+      "paths": [
+        "patches/src/main/kotlin/app/morphe/util/names/OrigNames.kt",
+        "patches/src/main/kotlin/app/morphe/util/names/Smali.kt",
+        "patches/src/main/kotlin/app/morphe/util/names/TelegramNames.kt",
+        "patches/src/main/kotlin/app/morphe/util/names/HostNamesTable.kt",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/HostNames.java"
+      ],
+      "origin": "original",
+      "upstream": "https://github.com/SysAdminDoc/HushTelegram",
+      "via": [],
+      "license": "GPL-3.0-only",
+      "changes": "Name translation written for HushTelegram when Telegram 13.2 began shipping R8-renamed classes: per-build tables matched from the dex, smali and reference rewriting for the patches, and the run-time table the extension's reflection reads."
     }
   ]
 }

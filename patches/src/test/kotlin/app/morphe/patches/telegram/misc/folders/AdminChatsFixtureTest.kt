@@ -13,6 +13,9 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.io.File
+import app.morphe.util.names.origName
+import app.morphe.util.names.origString
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** Both pinned builds' MessagesController and Chat, which the Administrators stub reads. */
 class AdminChatsFixtureTest {
@@ -24,10 +27,10 @@ class AdminChatsFixtureTest {
             val context = PatchContexts.of(hosts(build))
             context.requireAdminChatsRuntime()
             context.writeAdminChatsStubs()
-            val classDef = context.mutableClassDefBy(ADMIN_CHATS)
-            val body = classDef.methods.single { it.name == "isAdmin" }.implementation!!.instructions
+            val classDef = context.tgMutableClassDefBy(ADMIN_CHATS)
+            val body = classDef.methods.single { it.origName == "isAdmin" }.implementation!!.instructions
                 .filter { it.opcode != Opcode.NOP }.toList()
-            val refs = body.filterIsInstance<ReferenceInstruction>().map { it.reference.toString() }
+            val refs = body.filterIsInstance<ReferenceInstruction>().map { it.reference.origString() }
             assertEquals(
                 "$name: cast, valueOf, getChat, creator, admin rights",
                 listOf(MESSAGES_CONTROLLER, "Ljava/lang/Long;->valueOf(J)Ljava/lang/Long;", GET_CHAT, CHAT_CREATOR, CHAT_ADMIN_RIGHTS),

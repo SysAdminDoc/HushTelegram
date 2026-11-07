@@ -8,7 +8,8 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
@@ -30,6 +31,11 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origInterfaces
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** The five places the questions stand, the call sites that move, the stubs that run the stock work again, and the runtime. */
 class SendConfirmFixtureTest {
@@ -44,23 +50,23 @@ class SendConfirmFixtureTest {
 
     private val WIDE_GOTOS = setOf(Opcode.GOTO_16, Opcode.GOTO_32)
 
-    private fun Instruction.shape() = listOf(opcode, namedRegisters(), (this as? ReferenceInstruction)?.reference?.toString())
+    private fun Instruction.shape() = listOf(opcode, namedRegisters(), origRef())
     private fun signature(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
 
     /** A method that starts a call, or one of the places that could stand in front of a send: the classes the resolver reads. */
     private fun wanted(m: Method): Boolean {
         val params = m.parameterTypes.map(CharSequence::toString)
         val instance = !com.android.tools.smali.dexlib2.AccessFlags.STATIC.isSet(m.accessFlags)
-        if (!instance && m.returnType == "V" && params == callParameters) return true
-        if (instance && m.returnType == "V" && params == listOf(
+        if (!instance && m.origReturnType == "V" && params == callParameters) return true
+        if (instance && m.origReturnType == "V" && params == listOf(
                 "Landroid/view/View;", "Ljava/lang/Object;", "Ljava/lang/String;", "Ljava/lang/Object;", "Z", "I", "I",
                 "Lorg/telegram/messenger/MediaController\$PhotoEntry;", "Z",
             )) return true
         val body = m.controlBody()
         if (body.isEmpty()) return false
-        if (instance && m.returnType == "V" && VideoShape.values().any { it.target == params } && body.any { it.controlRef() == CAMERA_ALLOWED }) return true
-        if (body.any { it.call()?.let { c -> c.definingClass == SEND_HELPER && c.name == "sendSticker" } == true }) return true
-        return body.any { it.call()?.let { c -> c.returnType == "V" && c.parameterTypes.map(CharSequence::toString) == callParameters } == true }
+        if (instance && m.origReturnType == "V" && VideoShape.values().any { it.target == params } && body.any { it.controlRef() == CAMERA_ALLOWED }) return true
+        if (body.any { it.call()?.let { c -> c.origDefiningClass == SEND_HELPER && c.origName == "sendSticker" } == true }) return true
+        return body.any { it.call()?.let { c -> c.origReturnType == "V" && c.parameterTypes.map(CharSequence::toString) == callParameters } == true }
     }
 
     @Test fun `each question stands in front of its method and each call goes through the extension`() {
@@ -171,7 +177,7 @@ class SendConfirmFixtureTest {
             assertEquals("$name: the header call is the only start of a call in its method", 1,
                 before.getValue("header").controlBody().count { it.controlRef() == site.startCall })
 
-            val stub = { n: String -> context.mutableClassDefBy(SEND_CONFIRM).methods.single { it.name == n }.controlBody() }
+            val stub = { n: String -> context.tgMutableClassDefBy(SEND_CONFIRM).methods.single { it.origName == n }.controlBody() }
             val again = { n: String, target: Method, words: Int ->
                 val call = stub(n).single { it.opcode == Opcode.INVOKE_VIRTUAL_RANGE }
                 assertEquals("$name $n: Telegram's own method again", signature(target), call.controlRef())
@@ -185,10 +191,10 @@ class SendConfirmFixtureTest {
             // Send in front of a paused recording: the chat bar's own send, the one its send button
             // runs, from the bar that holds the clip in its preview.
             val enterView = "Lorg/telegram/ui/Components/ChatActivityEnterView;"
-            val bar = context.mutableClassDefBy(enterView)
+            val bar = context.tgMutableClassDefBy(enterView)
             assertTrue("$name: the chat bar's send", site.barSend.startsWith("$enterView->") && site.barSend.endsWith("(IZIZJ)Z"))
             assertTrue("$name: the send button runs it", bar.methods.any { m ->
-                m.parameterTypes.isEmpty() && m.returnType == "Z" && m.implementation != null && m.controlBody().any { it.controlRef() == site.barSend }
+                m.parameterTypes.isEmpty() && m.origReturnType == "Z" && m.implementation != null && m.controlBody().any { it.controlRef() == site.barSend }
             })
             val fromBar = stub("sendFromBar")
             val send = fromBar.single { it.opcode == Opcode.INVOKE_VIRTUAL_RANGE }
@@ -225,8 +231,8 @@ class SendConfirmFixtureTest {
                 assertEquals("$name $n", ref, call.controlRef())
                 assertEquals("$name $n: the controller and its view-once flag", registers, call.namedRegisters())
             }
-            val chat = context.mutableClassDefBy(site.video.definingClass)
-            assertTrue("$name: the chat implements the recorder", site.recorder in chat.interfaces)
+            val chat = context.tgMutableClassDefBy(site.video.definingClass)
+            assertTrue("$name: the chat implements the recorder", site.recorder in chat.origInterfaces)
             assertTrue("$name: a paused check and a pause", site.videoPaused.endsWith("()Z") && site.pauseVideo.endsWith("()V"))
             for ((n, ref, registers) in listOf(Triple("videoPaused", site.videoPaused, listOf(1)), Triple("pauseVideo", site.pauseVideo, listOf(0)))) {
                 val body = stub(n)
@@ -243,7 +249,7 @@ class SendConfirmFixtureTest {
             assertEquals(listOf(Opcode.CHECK_CAST, Opcode.INVOKE_INTERFACE, Opcode.RETURN_VOID), resume.map { it.opcode })
             assertEquals("$name: the strip's callback again", "$CALLBACK->run(Ljava/lang/Object;)V", resume[1].controlRef())
             assertEquals(listOf(0, 1), resume[1].namedRegisters())
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "askBeforeSending" }.controlBody()
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "askBeforeSending" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }
     }

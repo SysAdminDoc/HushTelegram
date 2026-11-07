@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.deleted
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -24,6 +24,11 @@ import app.morphe.patches.telegram.misc.localcontrols.requireReachable
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val KEEP_TIMED_MEDIA = "$EXTENSION_PACKAGE/misc/KeepTimedMedia;"
 internal const val TIMED_DIALOG_OBJECT = "Lorg/telegram/messenger/DialogObject;"
@@ -55,7 +60,7 @@ internal class TimedMediaSite(val method: MutableMethod, val what: String, priva
         } else {
             "move-object/from16 v0, $parameter\ninvoke-static {v0}, $TIMED_HOLD"
         }
-        val answer = if (target.returnType == "V") "return-void" else "const/4 v0, 0x0\nreturn-object v0"
+        val answer = if (target.origReturnType == "V") "return-void" else "const/4 v0, 0x0\nreturn-object v0"
         target.addInstructionsWithLabels(0, """
             $ask
             move-result v0
@@ -153,15 +158,15 @@ private fun ready(method: Method, what: String) {
 private fun BytecodePatchContext.opener(): TimedMediaSite {
     val found = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.reference(TIMED_OPENED) and Mention.reference(TIMED_IS_SECRET_MEDIA)) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         for (m in cls.methods) {
-            if (m.takes(MESSAGE_OBJECT, "Z") && m.returnType.startsWith("L") && !AccessFlags.STATIC.isSet(m.accessFlags) &&
+            if (m.takes(MESSAGE_OBJECT, "Z") && m.origReturnType.startsWith("L") && !AccessFlags.STATIC.isSet(m.accessFlags) &&
                 m.refs().let { TIMED_OPENED in it && TIMED_IS_SECRET_MEDIA in it }) found += cls.type to m.name
         }
     }
     timedNeed(found.size == 1, "the chat's timed media opening is missing or ambiguous (${found.size} found)")
     val (type, name) = found.single()
-    val method = mutableClassDefBy(type).methods.single { it.name == name && it.takes(MESSAGE_OBJECT, "Z") }
+    val method = tgMutableClassDefBy(type).methods.single { it.origName == name && it.takes(MESSAGE_OBJECT, "Z") }
     ready(method, "the chat's timed media opening")
     return TimedMediaSite(method, "timed media opening", method.parameterRegister(0), stored = false)
 }
@@ -174,15 +179,15 @@ private fun BytecodePatchContext.opener(): TimedMediaSite {
 private fun BytecodePatchContext.expirer(): TimedMediaSite {
     val found = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.reference(TIMED_SHOW_ONCE) and Mention.reference(TIMED_FORCE_EXPIRED)) { cls ->
-        if (cls.type == MESSAGES_CONTROLLER || cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        if (cls.origType == MESSAGES_CONTROLLER || cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         for (m in cls.methods) {
-            if (m.parameterTypes.count { it.toString() == MESSAGE_OBJECT } == 1 && m.returnType.startsWith("L") &&
+            if (m.parameterTypes.count { it.toString() == MESSAGE_OBJECT } == 1 && m.origReturnType.startsWith("L") &&
                 m.refs().let { TIMED_SHOW_ONCE in it && TIMED_FORCE_EXPIRED in it }) found += cls.type to m.toString()
         }
     }
     timedNeed(found.size == 1, "the chat's view-once expiry is missing or ambiguous (${found.size} found)")
     val (type, signature) = found.single()
-    val method = mutableClassDefBy(type).methods.single { it.toString() == signature }
+    val method = tgMutableClassDefBy(type).methods.single { it.toString() == signature }
     ready(method, "the chat's view-once expiry")
     return TimedMediaSite(method, "view-once expiry", method.parameterRegister(method.parameterTypes.indexOfFirst { it.toString() == MESSAGE_OBJECT }),
         stored = false)
@@ -190,8 +195,8 @@ private fun BytecodePatchContext.expirer(): TimedMediaSite {
 
 /** MessagesController's marking a voice or video message played, which also tells the server. */
 private fun BytecodePatchContext.contentRead(): TimedMediaSite {
-    val method = mutableClassDefBy(MESSAGES_CONTROLLER).methods.filter {
-        it.name == "markMessageContentAsRead" && it.takes(MESSAGE_OBJECT) && it.returnType == "V" && !AccessFlags.STATIC.isSet(it.accessFlags)
+    val method = tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.filter {
+        it.origName == "markMessageContentAsRead" && it.takes(MESSAGE_OBJECT) && it.origReturnType == "V" && !AccessFlags.STATIC.isSet(it.accessFlags)
     }
     timedNeed(method.size == 1, "MessagesController.markMessageContentAsRead is missing or ambiguous")
     ready(method.single(), "the played mark")
@@ -200,10 +205,10 @@ private fun BytecodePatchContext.contentRead(): TimedMediaSite {
 
 /** MessagesStorage's emptying of expired timed media from a chat's stored messages. */
 private fun BytecodePatchContext.emptyMedia(): TimedMediaSite {
-    val storage = mutableClassDefByOrNull(TIMED_STORAGE)
+    val storage = tgMutableClassDefByOrNull(TIMED_STORAGE)
     timedNeed(storage != null, "MessagesStorage is missing")
     val method = storage!!.methods.filter {
-        it.name == "emptyMessagesMedia" && it.takes("J", "Ljava/util/ArrayList;") && it.returnType == "V" && !AccessFlags.STATIC.isSet(it.accessFlags)
+        it.origName == "emptyMessagesMedia" && it.takes("J", "Ljava/util/ArrayList;") && it.origReturnType == "V" && !AccessFlags.STATIC.isSet(it.accessFlags)
     }
     timedNeed(method.size == 1, "MessagesStorage.emptyMessagesMedia is missing or ambiguous")
     ready(method.single(), "the stored media emptying")

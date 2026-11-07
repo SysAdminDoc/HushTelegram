@@ -126,7 +126,7 @@ public final class SignInHelp {
         try {
             String code = refusal(error, request);
             if (code == null) return false;
-            Activity activity = (Activity) fragment.getClass().getMethod("getParentActivity").invoke(fragment);
+            Activity activity = (Activity) HostNames.method(fragment.getClass(), "getParentActivity").invoke(fragment);
             if (activity == null || activity.isFinishing()) return false;
             show(activity, code);
             Logger.printInfo(() -> "Explained a sign-in refusal: " + code);
@@ -141,7 +141,7 @@ public final class SignInHelp {
     @Nullable
     static String refusal(Object error, Object request) throws ReflectiveOperationException {
         if (error == null || request == null || !SEND_CODE.equals(request.getClass().getName())) return null;
-        Object text = error.getClass().getField("text").get(error);
+        Object text = HostNames.field(error.getClass(), "text").get(error);
         if (!(text instanceof String)) return null;
         if (((String) text).contains(PUBLISHED_FLOOD)) return PUBLISHED_FLOOD;
         if (((String) text).contains(INVALID)) return INVALID;

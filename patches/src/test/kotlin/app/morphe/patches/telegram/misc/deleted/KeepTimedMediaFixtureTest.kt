@@ -25,6 +25,11 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 private const val STORAGE_TYPE = "Lorg/telegram/messenger/MessagesStorage;"
 
@@ -48,7 +53,7 @@ class KeepTimedMediaFixtureTest {
                 plan.sites.map { it.what })
             assertEquals("$name: the played mark and the emptying are Telegram's own", listOf(MESSAGES_CONTROLLER, STORAGE_TYPE),
                 plan.sites.drop(2).map { it.method.definingClass })
-            assertTrue("$name: the opening and the expiry live in the chat", plan.sites.take(2).all { it.method.definingClass !in setOf(MESSAGES_CONTROLLER, STORAGE_TYPE) })
+            assertTrue("$name: the opening and the expiry live in the chat", plan.sites.take(2).all { it.method.origDefiningClass !in setOf(MESSAGES_CONTROLLER, STORAGE_TYPE) })
             val before = plan.sites.associate { it.what to body(it.method).map(::shape) }
 
             context.applyKeepTimedMedia(plan)
@@ -57,7 +62,7 @@ class KeepTimedMediaFixtureTest {
                 val method = site.method
                 val after = body(method)
                 val stored = site.what == "stored media emptying"
-                val returns = if (method.returnType == "V") listOf(Opcode.RETURN_VOID) else listOf(Opcode.CONST_4, Opcode.RETURN_OBJECT)
+                val returns = if (method.origReturnType == "V") listOf(Opcode.RETURN_VOID) else listOf(Opcode.CONST_4, Opcode.RETURN_OBJECT)
                 val ask = if (stored) listOf(Opcode.INVOKE_STATIC_RANGE) else listOf(Opcode.MOVE_OBJECT_FROM16, Opcode.INVOKE_STATIC)
                 val hook = ask + listOf(Opcode.MOVE_RESULT, Opcode.IF_EQZ) + returns
                 assertEquals("$name ${site.what}: the hook comes first", hook, after.take(hook.size).map { it.opcode })
@@ -77,7 +82,7 @@ class KeepTimedMediaFixtureTest {
                 assertEquals("$name ${site.what}: no answer goes on to the stock code", hook.size, branch.target.location.index)
             }
 
-            val stubs = context.mutableClassDefBy(KEEP_TIMED_MEDIA).methods.associate { it.name to it.controlBody().mapNotNull { i -> i.controlRef() } }
+            val stubs = context.tgMutableClassDefBy(KEEP_TIMED_MEDIA).methods.associate { it.name to it.controlBody().mapNotNull { i -> i.controlRef() } }
             assertTrue("$name: ${stubs["receivedTimedMedia"]}", stubs.getValue("receivedTimedMedia").containsAll(
                 listOf("$MESSAGE_OBJECT->isOut()Z", "$MESSAGE_OBJECT->isSecretMedia()Z")))
             assertTrue("$name: ${stubs["secretChat"]}", stubs.getValue("secretChat").containsAll(
@@ -89,20 +94,20 @@ class KeepTimedMediaFixtureTest {
     @Test fun `a moved or doubled place leaves the switch out before any edit`() {
         val changes = linkedMapOf<String, (BytecodePatchContext, KeepTimedMediaPlan) -> Unit>(
             "no stored media emptying" to { context, _ ->
-                context.mutableClassDefBy(STORAGE_TYPE).methods.removeAll { it.name == "emptyMessagesMedia" }
+                context.tgMutableClassDefBy(STORAGE_TYPE).methods.removeAll { it.origName == "emptyMessagesMedia" }
             },
             "no chat kind" to { context, _ ->
-                context.mutableClassDefBy(TIMED_DIALOG_OBJECT).methods.removeAll { it.name == "isEncryptedDialog" }
+                context.tgMutableClassDefBy(TIMED_DIALOG_OBJECT).methods.removeAll { it.origName == "isEncryptedDialog" }
             },
             "two openings" to { context, known ->
                 val opening = known.sites.first().method
-                val owner = context.mutableClassDefBy(opening.definingClass)
+                val owner = context.tgMutableClassDefBy(opening.definingClass)
                 val copy = owner.methods.single { it.toString() == opening.toString() }
                 owner.methods.add(ImmutableMethod(owner.type, "openAgain", copy.parameters, copy.returnType, copy.accessFlags, copy.annotations,
                     copy.hiddenApiRestrictions, copy.implementation).toMutable())
             },
             "no played mark" to { context, _ ->
-                context.mutableClassDefBy(MESSAGES_CONTROLLER).methods.removeAll { it.name == "markMessageContentAsRead" }
+                context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.removeAll { it.origName == "markMessageContentAsRead" }
             },
         )
         for (build in Fixtures.declaredBuilds()) {
@@ -114,7 +119,7 @@ class KeepTimedMediaFixtureTest {
                 assertNotNull("${build.name}: $change", plan.missing)
                 assertTrue("${build.name}: $change leaves nothing to hook", plan.sites.isEmpty())
                 val hooked = listOf(MESSAGES_CONTROLLER, STORAGE_TYPE, known.sites.first().method.definingClass).flatMap { type ->
-                    context.mutableClassDefBy(type).methods.filter { m -> m.controlBody().any { it.controlRef()?.startsWith(KEEP_TIMED_MEDIA) == true } }
+                    context.tgMutableClassDefBy(type).methods.filter { m -> m.controlBody().any { it.controlRef()?.startsWith(KEEP_TIMED_MEDIA) == true } }
                 }
                 assertEquals("${build.name}: $change hooks nothing", emptyList<Any>(), hooked)
             }
@@ -127,7 +132,7 @@ class KeepTimedMediaFixtureTest {
         assertEquals("${build.name}: every class the switch reads", types, telegram.keys)
         val hosts = FixtureDex.classesWhere(build, { true }) { m ->
             m.controlBody().any { it.controlRef().let { ref -> ref == TIMED_OPENED || ref == TIMED_SHOW_ONCE } }
-        }.filter { it.type !in types }.distinctBy { it.type }.map(ImmutableClassDef::of)
+        }.filter { it.origType !in types }.distinctBy { it.type }.map(ImmutableClassDef::of)
         return PatchContexts.of(ExtensionDex.classes() + telegram.values + hosts)
     }
 }

@@ -8,7 +8,8 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.origRef
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -43,6 +44,12 @@ import org.junit.AfterClass
 import org.junit.Test
 import java.io.File
 import java.lang.ref.SoftReference
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 class LocalControlsFixtureTest {
     @Test fun `normal paste changes only the action operand before the complete stock editor`() {
@@ -71,13 +78,13 @@ class LocalControlsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val context = context(build)
             val sites = context.resolveDoubleTapReactions()
-            assertEquals("no gesture state", 0, context.mutableClassDefBy(DOUBLE_TAP_REACTIONS).fields.size)
+            assertEquals("no gesture state", 0, context.tgMutableClassDefBy(DOUBLE_TAP_REACTIONS).fields.size)
             val originals = sites.associate { key(it.method) to ImmutableMethod.of(it.method) }
             val untouched = hostState(build, context, sites.map { it.method }.toSet())
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { disableDoubleTapReactionsPatch.execute(context) }.filterNot { "reaction rows switch" in it || "reaction picker switch" in it || "what TalkBack reads" in it })
             for (site in sites) {
                 val body = site.method.controlBody()
-                val extra = if (site.method.returnType == "V") 4 else 5
+                val extra = if (site.method.origReturnType == "V") 4 else 5
                 assertEquals("$DOUBLE_TAP_REACTIONS->stopReaction()Z", body[0].controlRef())
                 assertEquals(listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ), body.take(3).map { it.opcode })
                 assertEquals(setOf(3, extra), ControlFlow.of(site.method).normal[2].toSet())
@@ -104,15 +111,15 @@ class LocalControlsFixtureTest {
             assertEquals(listOf(Opcode.MOVE_OBJECT_FROM16, Opcode.IGET_WIDE, Opcode.IGET_WIDE, Opcode.IGET_OBJECT, Opcode.INVOKE_STATIC_RANGE), inserted.map { it.opcode })
             assertEquals(listOf(plan.user.toString(), plan.chat.toString(), plan.menu.toString()), inserted.subList(1, 4).map { it.controlRef() })
             assertEquals("$LOCAL_IDS->addToProfile(Landroid/view/View;JJ)V", inserted.last().controlRef())
-            val add = context.mutableClassDefBy(LOCAL_IDS).methods.single { it.name == "nativeAddRow" }.controlBody()
+            val add = context.tgMutableClassDefBy(LOCAL_IDS).methods.single { it.origName == "nativeAddRow" }.controlBody()
             assertEquals(listOf(Opcode.CHECK_CAST, Opcode.CONST, Opcode.SGET, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.RETURN_OBJECT), add.map { it.opcode })
             assertEquals(LOCAL_ID_ROW.toLong(), (add[1] as WideLiteralInstruction).wideLiteral)
             assertEquals("Lorg/telegram/messenger/R\$drawable;->msg_copy:I", add[2].controlRef())
             assertEquals(plan.addRow.toString(), add[3].controlRef())
-            val dismiss = context.mutableClassDefBy(LOCAL_IDS).methods.single { it.name == "nativeDismiss" }.controlBody()
+            val dismiss = context.tgMutableClassDefBy(LOCAL_IDS).methods.single { it.origName == "nativeDismiss" }.controlBody()
             assertEquals(listOf(Opcode.CHECK_CAST, Opcode.INVOKE_VIRTUAL, Opcode.RETURN_VOID), dismiss.map { it.opcode })
             assertEquals(plan.dismiss.toString(), dismiss[1].controlRef())
-            assertFalse((inserted + add + dismiss).any { it.controlRef()?.contains("access_hash") == true || it.call()?.name == "sendRequest" })
+            assertFalse((inserted + add + dismiss).any { it.controlRef()?.contains("access_hash") == true || it.call()?.origName == "sendRequest" })
             assertEquals("${build.name}: local row leaves all server, opening and stock menu methods intact", untouched,
                 hostState(build, context, setOf(plan.method)))
             flags(context, ID_FLAGS, true)
@@ -145,7 +152,7 @@ class LocalControlsFixtureTest {
     @Test fun `changed editor and reaction geometry refuse without any normal or exceptional path mutation`() {
         for (build in Fixtures.declaredBuilds()) {
             val paste: List<Pair<String, (BytecodePatchContext) -> Unit>> = listOf(
-                "missing HTML converter" to { c -> val site = c.resolveNormalPaste().first(); site.method.replaceInstruction(site.method.controlBody().indexOfFirst { it.call()?.name == "getHtmlText" }, "nop") },
+                "missing HTML converter" to { c -> val site = c.resolveNormalPaste().first(); site.method.replaceInstruction(site.method.controlBody().indexOfFirst { it.call()?.origName == "getHtmlText" }, "nop") },
                 "paste action moved" to { c -> c.resolveNormalPaste().first().method.replaceInstruction(0, "const v0, 0x1020031") },
                 "copy dispatch removed" to { c -> val site = c.resolveNormalPaste().last(); val at = site.method.controlBody().indexOfFirst { (it as? WideLiteralInstruction)?.wideLiteral == 0x1020021L }; site.method.replaceInstruction(at, "nop") },
                 "stock superclass fallback removed" to { c -> val site = c.resolveNormalPaste().last(); site.method.replaceInstruction(site.method.controlBody().size - 3, "nop") },
@@ -158,8 +165,8 @@ class LocalControlsFixtureTest {
                 "reaction sink removed" to { c -> val site = c.resolveDoubleTapReactions().first(); site.method.replaceInstruction(site.method.controlBody().indexOfFirst { it.call()?.parameterTypes?.take(2)?.map { p -> p.toString() } == listOf("Landroid/view/View;", "Lorg/telegram/messenger/MessageObject;") }, "nop") },
                 "private chat gesture" to { c -> makePrivate(c.resolveDoubleTapReactions().first().method) },
                 "duplicate preview gesture" to { c -> duplicateCandidate(c, c.resolveDoubleTapReactions().last().method) },
-                "missing eligibility contract" to { c -> val m = c.resolveDoubleTapReactions().first().method; val owner = c.mutableClassDefBy(m.definingClass); val iface = c.mutableClassDefBy(owner.interfaces.single()); iface.methods.removeAll { it.controlShape(listOf("Landroid/view/View;"), "Z") } },
-                "native double-tap dispatch removed" to { c -> val s = c.resolveDoubleTapReactions().first(); val d = s.dispatcher!!; d.replaceInstruction(d.controlBody().indexOfFirst { it.call()?.name == s.method.name }, "nop") },
+                "missing eligibility contract" to { c -> val m = c.resolveDoubleTapReactions().first().method; val owner = c.tgMutableClassDefBy(m.definingClass); val iface = c.tgMutableClassDefBy(owner.interfaces.single()); iface.methods.removeAll { it.controlShape(listOf("Landroid/view/View;"), "Z") } },
+                "native double-tap dispatch removed" to { c -> val s = c.resolveDoubleTapReactions().first(); val d = s.dispatcher!!; d.replaceInstruction(d.controlBody().indexOfFirst { it.call()?.origName == s.method.origName }, "nop") },
                 "native gesture coordinates removed" to { c -> val d = c.resolveDoubleTapReactions().first().dispatcher!!; d.replaceInstruction(d.controlBody().indexOfFirst { it.controlRef() == "Landroid/view/MotionEvent;->getX()F" }, "nop") },
                 "shared explicit reaction caller" to { c -> duplicate(c, c.resolveDoubleTapReactions().first().dispatcher!!, "explicitReactionFromMenu") },
             )
@@ -170,18 +177,18 @@ class LocalControlsFixtureTest {
     @Test fun `changed local ID binding menu access and register lifetime refuse before either bridge`() {
         for (build in Fixtures.declaredBuilds()) {
             val mutations: List<Pair<String, (BytecodePatchContext, LocalIdsPlan) -> Unit>> = listOf(
-                "user argument renamed" to { c, _ -> val init = c.mutableClassDefBy(PROFILE).methods.single { it.name == "onFragmentCreate" }; init.replaceInstruction(init.controlBody().indexOfFirst { it.controlString() == "user_id" }, "const-string v1, \"access_hash\"") },
-                "local ID read removed" to { c, _ -> val init = c.mutableClassDefBy(PROFILE).methods.single { it.name == "onFragmentCreate" }; init.replaceInstruction(init.controlBody().indexOfFirst { it.call()?.name == "getLong" }, "nop") },
-                "static user ID field" to { c, p -> val f = c.mutableClassDefBy(PROFILE).fields.single { it.name == p.user.name }; f.accessFlags = f.accessFlags or AccessFlags.STATIC.value },
-                "static menu field" to { c, p -> val f = c.mutableClassDefBy(PROFILE).fields.single { it.name == p.menu.name }; f.accessFlags = f.accessFlags or AccessFlags.STATIC.value },
-                "different profile receiver" to { c, _ -> val view = c.mutableClassDefBy(PROFILE).methods.single { it.name == "createView" }; val at = view.controlBody().indexOfFirst { it.controlRef() == "Lorg/telegram/messenger/R\$drawable;->ic_ab_other:I" } + 5; val store = view.controlBody()[at]; view.replaceInstruction(at, "iput-object v${store.namedRegisters()[0]}, v0, ${store.controlRef()}") },
-                "overwritten profile receiver alias" to { c, _ -> val view = c.mutableClassDefBy(PROFILE).methods.single { it.name == "createView" }; view.replaceInstruction(3, "const/4 v1, 0x0") },
-                "private native submenu factory" to { c, p -> makePrivate(c.mutableClassDefBy(p.menu.type).methods.single { it.toString() == p.addRow.toString() }) },
-                "native submenu text operand changed" to { c, p -> val factory = c.mutableClassDefBy(p.menu.type).methods.single { it.toString() == p.addRow.toString() }; factory.replaceInstruction(7, "move-object v4, p0") },
-                "native row builder requests transport" to { c, p -> val factory = c.mutableClassDefBy(p.menu.type).methods.single { it.toString() == p.addRow.toString() }; val core = factory.controlBody()[8].call()!!; c.mutableClassDefBy(p.menu.type).methods.single { it.toString() == core.toString() }.replaceInstruction(0, "invoke-static {}, Lorg/telegram/tgnet/ConnectionsManager;->getInstance(I)Lorg/telegram/tgnet/ConnectionsManager;") },
-                "private menu owner" to { c, p -> val cls = c.mutableClassDefBy(p.menu.type); cls.accessFlags = cls.accessFlags and AccessFlags.PUBLIC.value.inv() },
-                "missing dismiss bridge target" to { c, p -> c.mutableClassDefBy(p.menu.type).methods.removeAll { it.toString() == p.dismiss.toString() } },
-                "dismiss receiver changed" to { c, p -> c.mutableClassDefBy(p.menu.type).methods.single { it.toString() == p.dismiss.toString() }.replaceInstruction(0, "iget-object v0, v0, " + c.mutableClassDefBy(p.menu.type).methods.single { it.toString() == p.dismiss.toString() }.controlBody()[0].controlRef()) },
+                "user argument renamed" to { c, _ -> val init = c.tgMutableClassDefBy(PROFILE).methods.single { it.origName == "onFragmentCreate" }; init.replaceInstruction(init.controlBody().indexOfFirst { it.controlString() == "user_id" }, "const-string v1, \"access_hash\"") },
+                "local ID read removed" to { c, _ -> val init = c.tgMutableClassDefBy(PROFILE).methods.single { it.origName == "onFragmentCreate" }; init.replaceInstruction(init.controlBody().indexOfFirst { it.call()?.origName == "getLong" }, "nop") },
+                "static user ID field" to { c, p -> val f = c.tgMutableClassDefBy(PROFILE).fields.single { it.origName == p.user.origName }; f.accessFlags = f.accessFlags or AccessFlags.STATIC.value },
+                "static menu field" to { c, p -> val f = c.tgMutableClassDefBy(PROFILE).fields.single { it.origName == p.menu.origName }; f.accessFlags = f.accessFlags or AccessFlags.STATIC.value },
+                "different profile receiver" to { c, _ -> val view = c.tgMutableClassDefBy(PROFILE).methods.single { it.origName == "createView" }; val at = view.controlBody().indexOfFirst { it.controlRef() == "Lorg/telegram/messenger/R\$drawable;->ic_ab_other:I" } + 5; val store = view.controlBody()[at]; view.replaceInstruction(at, "iput-object v${store.namedRegisters()[0]}, v0, ${store.controlRef()}") },
+                "overwritten profile receiver alias" to { c, _ -> val view = c.tgMutableClassDefBy(PROFILE).methods.single { it.origName == "createView" }; view.replaceInstruction(3, "const/4 v1, 0x0") },
+                "private native submenu factory" to { c, p -> makePrivate(c.tgMutableClassDefBy(p.menu.type).methods.single { it.toString() == p.addRow.toString() }) },
+                "native submenu text operand changed" to { c, p -> val factory = c.tgMutableClassDefBy(p.menu.type).methods.single { it.toString() == p.addRow.toString() }; factory.replaceInstruction(7, "move-object v4, p0") },
+                "native row builder requests transport" to { c, p -> val factory = c.tgMutableClassDefBy(p.menu.type).methods.single { it.toString() == p.addRow.toString() }; val core = factory.controlBody()[8].call()!!; c.tgMutableClassDefBy(p.menu.type).methods.single { it.toString() == core.toString() }.replaceInstruction(0, "invoke-static {}, Lorg/telegram/tgnet/ConnectionsManager;->getInstance(I)Lorg/telegram/tgnet/ConnectionsManager;") },
+                "private menu owner" to { c, p -> val cls = c.tgMutableClassDefBy(p.menu.type); cls.accessFlags = cls.accessFlags and AccessFlags.PUBLIC.value.inv() },
+                "missing dismiss bridge target" to { c, p -> c.tgMutableClassDefBy(p.menu.type).methods.removeAll { it.toString() == p.dismiss.toString() } },
+                "dismiss receiver changed" to { c, p -> c.tgMutableClassDefBy(p.menu.type).methods.single { it.toString() == p.dismiss.toString() }.replaceInstruction(0, "iget-object v0, v0, " + c.tgMutableClassDefBy(p.menu.type).methods.single { it.toString() == p.dismiss.toString() }.controlBody()[0].controlRef()) },
                 "duplicate native menu builder" to { c, p -> duplicate(c, p.method) },
                 "stock visibility refresh removed" to { _, p -> p.method.replaceInstruction(p.index + 1, "nop") },
                 "entry profile receiver overwritten" to { _, p -> val self = p.method.implementation!!.registerCount - 2; p.method.replaceInstruction(0, "const/16 v$self, 0x0") },
@@ -193,11 +200,11 @@ class LocalControlsFixtureTest {
                     val implementation = ImmutableMethodImplementation(method.implementation!!.registerCount, body,
                         listOf(ImmutableTryBlock(start, body[p.index].codeUnits + body[p.index + 1].codeUnits,
                             listOf(ImmutableExceptionHandler("Ljava/lang/Exception;", 0)))), emptyList())
-                    c.mutableClassDefBy(PROFILE).methods.remove(method)
-                    c.mutableClassDefBy(PROFILE).methods.add(ImmutableMethod(method.definingClass, method.name, method.parameters,
+                    c.tgMutableClassDefBy(PROFILE).methods.remove(method)
+                    c.tgMutableClassDefBy(PROFILE).methods.add(ImmutableMethod(method.definingClass, method.name, method.parameters,
                         method.returnType, method.accessFlags, method.annotations, method.hiddenApiRestrictions, implementation).toMutable())
                 },
-                "inaccessible copy icon" to { c, _ -> val f = c.mutableClassDefBy("Lorg/telegram/messenger/R\$drawable;").fields.single { it.name == "msg_copy" }; f.accessFlags = f.accessFlags and AccessFlags.PUBLIC.value.inv() },
+                "inaccessible copy icon" to { c, _ -> val f = c.tgMutableClassDefBy("Lorg/telegram/messenger/R\$drawable;").fields.single { it.origName == "msg_copy" }; f.accessFlags = f.accessFlags and AccessFlags.PUBLIC.value.inv() },
             )
             for ((name, change) in mutations) {
                 val c = context(build); change(c, c.resolveLocalIds()); refused(build, name, c) { showLocalIdsPatch.execute(c) }
@@ -215,12 +222,12 @@ class LocalControlsFixtureTest {
                 LOCAL_IDS -> showLocalIdsPatch.execute(c)
                 else -> disableDoubleTapReactionsPatch.execute(c)
             }
-            val absent = PatchContexts.of(ExtensionDex.classes().filter { it.type != runtime } + hosts(build))
+            val absent = PatchContexts.of(ExtensionDex.classes().filter { it.origType != runtime } + hosts(build))
             refused(build, "absent $runtime runtime", absent) { execute(absent) }
             for (name in names) for (mutation in 0..7) {
                 val c = context(build)
-                val cls = c.mutableClassDefBy(runtime)
-                val method = cls.methods.single { it.name == name }
+                val cls = c.tgMutableClassDefBy(runtime)
+                val method = cls.methods.single { it.origName == name }
                 when (mutation) {
                     0 -> cls.methods.remove(method)
                     1 -> makePrivate(method)
@@ -237,7 +244,7 @@ class LocalControlsFixtureTest {
             }
             for (flag in flags) {
                 val c = context(build)
-                c.mutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.name == flag }
+                c.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == flag }
                 refused(build, "missing $flag", c) { execute(c) }
             }
         }
@@ -251,9 +258,9 @@ class LocalControlsFixtureTest {
 
     private fun context(build: File) = PatchContexts.of(ExtensionDex.classes() + hosts(build))
     private fun completeState(build: File, c: BytecodePatchContext) = (hosts(build).map { it.type } +
-        listOf(NORMAL_PASTE, LOCAL_IDS, DOUBLE_TAP_REACTIONS, SETTINGS_STATUS)).filter { c.classDefByOrNull(it) != null }
-        .associateWith { c.mutableClassDefBy(it).state() }
-    private fun hostState(build: File, c: BytecodePatchContext, except: Set<Method>) = hosts(build).flatMap { c.mutableClassDefBy(it.type).methods }
+        listOf(NORMAL_PASTE, LOCAL_IDS, DOUBLE_TAP_REACTIONS, SETTINGS_STATUS)).filter { c.tgClassDefByOrNull(it) != null }
+        .associateWith { c.tgMutableClassDefBy(it).state() }
+    private fun hostState(build: File, c: BytecodePatchContext, except: Set<Method>) = hosts(build).flatMap { c.tgMutableClassDefBy(it.type).methods }
         .filter { it !in except }.associate { key(it) to it.state() }
 
     private fun hosts(build: File): List<ClassDef> {
@@ -267,12 +274,12 @@ class LocalControlsFixtureTest {
 
     private fun loadHosts(build: File): List<ClassDef> {
         val result = FixtureDex.classesWhere(build, { true }) { method ->
-            method.definingClass == PROFILE || method.name == "onTextContextMenuItem" || method.name == "onDoubleTap" ||
+            method.origDefiningClass == PROFILE || method.origName == "onTextContextMenuItem" || method.origName == "onDoubleTap" ||
                 method.controlBody().any { it.controlRef() == DOUBLE_TAP_CHOICE }
         }.associateByTo(linkedMapOf()) { it.type }
         val profile = result.getValue(PROFILE)
         // The menu is identified by its overflow icon/store, rather than any obfuscated name.
-        val create = profile.methods.single { it.name == "createView" }.controlBody()
+        val create = profile.methods.single { it.origName == "createView" }.controlBody()
         val icon = create.indexOfFirst { it.controlRef() == "Lorg/telegram/messenger/R\$drawable;->ic_ab_other:I" }
         val boundMenu = create[icon + 5].controlField()!!.type
         result.putAll(FixtureDex.classes(build, setOf(boundMenu, "Lorg/telegram/messenger/R\$drawable;") + PROFILE_DC_TYPES))
@@ -309,27 +316,27 @@ class LocalControlsFixtureTest {
         return listOf(accessFlags, implementation?.registerCount, body.map { it.operand() }, body.map { listOf(it.codeUnits, (it as? OffsetInstruction)?.codeOffset) },
             flow?.normal?.toList(), flow?.exceptional?.toList(), implementation?.tryBlocks?.map { listOf(it.startCodeAddress, it.codeUnitCount, it.exceptionHandlers.map { h -> h.exceptionType to h.handlerCodeAddress }) })
     }
-    private fun Instruction.operand() = listOf(opcode, namedRegisters(), (this as? ReferenceInstruction)?.reference?.toString(),
+    private fun Instruction.operand() = listOf(opcode, namedRegisters(), origRef(),
         (this as? WideLiteralInstruction)?.wideLiteral, (this as? SwitchPayload)?.switchElements?.map { it.key })
     private fun key(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
     private fun duplicate(c: BytecodePatchContext, method: Method, name: String = method.name + "Duplicate") {
-        c.mutableClassDefBy(method.definingClass).methods.add(ImmutableMethod(method.definingClass, name, method.parameters, method.returnType,
+        c.tgMutableClassDefBy(method.definingClass).methods.add(ImmutableMethod(method.definingClass, name, method.parameters, method.returnType,
             method.accessFlags, method.annotations, method.hiddenApiRestrictions, method.implementation).toMutable())
     }
     private fun duplicateCandidate(c: BytecodePatchContext, source: Method) {
         val candidates = mutableListOf<MutableMethod>()
-        c.classDefForEach { cls -> cls.methods.filter { it.name == source.name && it.controlShape(source.parameterTypes.map { p -> p.toString() }, source.returnType) &&
-            it.definingClass != source.definingClass && it.controlBody().none { instruction -> instruction.controlRef() == DOUBLE_TAP_CHOICE || instruction.call()?.name == "getHtmlText" } }
-            .forEach { m -> candidates += c.mutableClassDefBy(cls.type).methods.single { it.toString() == m.toString() } } }
+        c.classDefForEach { cls -> cls.methods.filter { it.origName == source.origName && it.controlShape(source.parameterTypes.map { p -> p.toString() }, source.returnType) &&
+            it.origDefiningClass != source.origDefiningClass && it.controlBody().none { instruction -> instruction.controlRef() == DOUBLE_TAP_CHOICE || instruction.call()?.origName == "getHtmlText" } }
+            .forEach { m -> candidates += c.tgMutableClassDefBy(cls.type).methods.single { it.toString() == m.toString() } } }
         val target = candidates.first()
-        val owner = c.mutableClassDefBy(target.definingClass)
+        val owner = c.tgMutableClassDefBy(target.definingClass)
         owner.methods.remove(target)
         owner.methods.add(ImmutableMethod(target.definingClass, target.name, target.parameters, target.returnType,
             target.accessFlags, target.annotations, target.hiddenApiRestrictions, source.implementation).toMutable())
     }
     private fun makePrivate(m: MutableMethod) { m.accessFlags = m.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value }
     private fun flags(c: BytecodePatchContext, names: List<String>, expected: Boolean) = names.forEach { name ->
-        val body = c.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }.controlBody()
+        val body = c.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == name }.controlBody()
         assertEquals("$name", if (expected) 1L else 0L, (body.first() as WideLiteralInstruction).wideLiteral)
     }
     companion object {

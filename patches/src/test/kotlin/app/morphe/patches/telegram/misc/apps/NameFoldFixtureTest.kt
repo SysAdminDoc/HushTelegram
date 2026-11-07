@@ -8,9 +8,10 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
@@ -32,6 +33,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import app.morphe.util.names.origName
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 /** Both pinned builds' LocaleController, where search's transliteration takes the name fold. */
 class NameFoldFixtureTest {
@@ -55,7 +60,7 @@ class NameFoldFixtureTest {
             assertEquals(listOf(registers - 3), body[1].namedRegisters())
             assertEquals("$name: Telegram's own transliteration follows unchanged", stock, body.drop(NAME_FOLD_SIZE).map(::operands))
             // The shorter overloads, where they're still there, call this one, so they're folded too.
-            for (other in context.mutableClassDefBy(LOCALE_CONTROLLER).methods.filter { it.name == TRANSLIT && it !== method }) {
+            for (other in context.tgMutableClassDefBy(LOCALE_CONTROLLER).methods.filter { it.origName == TRANSLIT && it !== method }) {
                 assertTrue("$name: ${other.parameterTypes}", other.body().any { it.ref() == TRANSLIT_FULL })
             }
         }
@@ -65,9 +70,9 @@ class NameFoldFixtureTest {
         class Case(val name: String, val reason: String, val hosts: (List<ClassDef>) -> List<ClassDef> = { it },
                    val context: (BytecodePatchContext) -> Unit = {})
         val cases = listOf(
-            Case("no LocaleController", "LocaleController is missing", hosts = { hosts -> hosts.filter { it.type != LOCALE_CONTROLLER } }),
+            Case("no LocaleController", "LocaleController is missing", hosts = { hosts -> hosts.filter { it.origType != LOCALE_CONTROLLER } }),
             Case("an overload with its own body", "another transliteration doesn't go through the full one", context = { context ->
-                val short = context.mutableClassDefBy(LOCALE_CONTROLLER).methods.first { it.name == TRANSLIT && it.parameterTypes.size == 1 }
+                val short = context.tgMutableClassDefBy(LOCALE_CONTROLLER).methods.first { it.origName == TRANSLIT && it.parameterTypes.size == 1 }
                 val call = short.body().indexOfFirst { it.ref() == TRANSLIT_FULL }
                 val registers = short.body()[call].namedRegisters().joinToString { "v$it" }
                 short.replaceInstruction(call, "invoke-virtual {$registers}, $LOCALE_CONTROLLER->other(Ljava/lang/String;ZZ)Ljava/lang/String;")
@@ -83,7 +88,7 @@ class NameFoldFixtureTest {
                 full.addInstructionsWithLabels(full.body().size, "goto/16 :hush_back", ExternalLabel("hush_back", full.getInstruction(0)))
             }),
             Case("too many registers", "keeps its name past register 255", context = { context ->
-                val owner = context.mutableClassDefBy(LOCALE_CONTROLLER)
+                val owner = context.tgMutableClassDefBy(LOCALE_CONTROLLER)
                 val full = context.full()
                 owner.methods.remove(full)
                 owner.methods.add(padded(full, 256))
@@ -141,12 +146,12 @@ class NameFoldFixtureTest {
         }
     }
 
-    private fun BytecodePatchContext.full() = mutableClassDefBy(LOCALE_CONTROLLER).methods.single {
-        it.name == TRANSLIT && it.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;", "Z", "Z")
+    private fun BytecodePatchContext.full() = tgMutableClassDefBy(LOCALE_CONTROLLER).methods.single {
+        it.origName == TRANSLIT && it.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;", "Z", "Z")
     }
 
-    private fun BytecodePatchContext.translits() = mutableClassDefByOrNull(LOCALE_CONTROLLER)?.methods.orEmpty()
-        .filter { it.name == TRANSLIT }.associate { it.parameterTypes.joinToString("") to it.body().map(::operands) }
+    private fun BytecodePatchContext.translits() = tgMutableClassDefByOrNull(LOCALE_CONTROLLER)?.methods.orEmpty()
+        .filter { it.origName == TRANSLIT }.associate { it.parameterTypes.joinToString("") to it.body().map(::operands) }
 
     /** [method] with [extra] more registers, so its parameters sit that much higher. */
     private fun padded(method: Method, extra: Int): MutableMethod {
@@ -158,7 +163,7 @@ class NameFoldFixtureTest {
     }
 
     private fun statusOf(context: BytecodePatchContext, flag: String) =
-        (context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.body()[0] as NarrowLiteralInstruction).narrowLiteral
+        (context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.body()[0] as NarrowLiteralInstruction).narrowLiteral
 
     private fun operands(instruction: Instruction): List<Any?> = listOf(instruction.opcode, instruction.namedRegisters(), instruction.ref())
 }
@@ -173,4 +178,4 @@ internal fun nameFoldHosts(build: File): List<ClassDef> = NAME_FOLD_HOSTS.getOrP
 }
 
 private fun Method.body(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
-private fun Instruction.ref() = (this as? ReferenceInstruction)?.reference?.toString()
+private fun Instruction.ref() = origRef()

@@ -8,10 +8,11 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstructions
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -45,6 +46,11 @@ import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import app.morphe.util.names.origName
+import app.morphe.util.names.origString
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 private const val PLAIN_POLL = "$MESSAGES_CONTROLLER->startShortPoll(${TL_CHAT}IZ)V"
 
@@ -56,7 +62,7 @@ private const val PLAIN_POLL = "$MESSAGES_CONTROLLER->startShortPoll(${TL_CHAT}I
  */
 class NewChatsBlockFixtureTest {
     @Test fun `every join the block drops is a class each declared build still has under that name`() {
-        val named = ExtensionDex.classes().single { it.type == NEW_CHATS_BLOCK }.methods.flatMap { it.body() }
+        val named = ExtensionDex.classes().single { it.origType == NEW_CHATS_BLOCK }.methods.flatMap { it.body() }
             .mapNotNull { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string }
             .filter { it.startsWith("org.telegram.tgnet.") }
             .map { "L" + it.replace('.', '/') + ";" }.toSet()
@@ -74,15 +80,15 @@ class NewChatsBlockFixtureTest {
             val where = build.name
             val found = FixtureDex.classes(build, setOf(delegate, error))
             assertEquals("$where: both by name", setOf(delegate, error), found.keys)
-            val runs = found.getValue(delegate).methods.filter { it.name == "run" }
+            val runs = found.getValue(delegate).methods.filter { it.origName == "run" }
             assertTrue("$where: RequestDelegate is an interface", AccessFlags.INTERFACE.isSet(found.getValue(delegate).accessFlags))
             assertEquals("$where: RequestDelegate's run", listOf(listOf("Lorg/telegram/tgnet/TLObject;", error)),
                 runs.map { run -> run.parameterTypes.map { it.toString() } })
             val errorClass = found.getValue(error)
             assertTrue("$where: TL_error is public", AccessFlags.PUBLIC.isSet(errorClass.accessFlags))
-            assertTrue("$where: TL_error()", errorClass.methods.any { it.name == "<init>" && it.parameterTypes.isEmpty() && AccessFlags.PUBLIC.isSet(it.accessFlags) })
+            assertTrue("$where: TL_error()", errorClass.methods.any { it.origName == "<init>" && it.parameterTypes.isEmpty() && AccessFlags.PUBLIC.isSet(it.accessFlags) })
             for ((name, type) in listOf("code" to "I", "text" to "Ljava/lang/String;")) {
-                assertTrue("$where: TL_error.$name", errorClass.fields.any { it.name == name && it.type == type && AccessFlags.PUBLIC.isSet(it.accessFlags) })
+                assertTrue("$where: TL_error.$name", errorClass.fields.any { it.origName == name && it.origType == type && AccessFlags.PUBLIC.isSet(it.accessFlags) })
             }
         }
     }
@@ -117,10 +123,10 @@ class NewChatsBlockFixtureTest {
             assertEquals(where, emptyList<String>(), PatchLogCapture.warnings { hidePopularAppsPatch.execute(context) })
             assertGate(where, sendStock, send(context), listOf(NEW_CHATS_BLOCK_DROP))
             val asks = newChatsHosts(build).map { it.type }.filter { it != CONNECTIONS_MANAGER }.flatMap { type ->
-                context.mutableClassDefBy(type).methods.filter { method -> method.body().any { it.ref() == NEW_CHATS_BLOCK_OPEN } }
+                context.tgMutableClassDefBy(type).methods.filter { method -> method.body().any { it.ref() == NEW_CHATS_BLOCK_OPEN } }
             }
             assertEquals("$where: one check on each screen", 2, asks.size)
-            assertTrue("$where: ${asks.map { it.name }}", asks.all { it.name == "onFragmentCreate" })
+            assertTrue("$where: ${asks.map { it.name }}", asks.all { it.origName == "onFragmentCreate" })
             assertEquals("$where: on two screens", 2, asks.map { it.definingClass }.toSet().size)
             for (method in asks) assertEquals("$where: ${method.definingClass} asks once", 1, method.body().count { it.ref() == NEW_CHATS_BLOCK_OPEN })
             assertFlag(context, "blockNewChats", true)
@@ -154,8 +160,8 @@ class NewChatsBlockFixtureTest {
         class Case(val name: String, val reason: String, val hosts: (List<ClassDef>) -> List<ClassDef> = { it },
                    val change: ((BytecodePatchContext, NewChatsBlockPlan) -> Unit)? = null)
         val cases = listOf(
-            Case("no ConnectionsManager", "ConnectionsManager is missing", hosts = { hosts -> hosts.filter { it.type != CONNECTIONS_MANAGER } }),
-            Case("no ChatObject", "ChatObject no longer tells a chat you aren't in", hosts = { hosts -> hosts.filter { it.type != CHAT_OBJECT } }),
+            Case("no ConnectionsManager", "ConnectionsManager is missing", hosts = { hosts -> hosts.filter { it.origType != CONNECTIONS_MANAGER } }),
+            Case("no ChatObject", "ChatObject no longer tells a chat you aren't in", hosts = { hosts -> hosts.filter { it.origType != CHAT_OBJECT } }),
             // Play also watches a channel's linked group the visitor's way, so every such watch goes.
             Case("no visitor's watch", "0 chat screens watch a channel you aren't in, not one", change = { _, plan ->
                 val method = plan.sites[0].method
@@ -225,7 +231,7 @@ class NewChatsBlockFixtureTest {
     @Test fun `no runtime or status stub refuses before anything is edited`() {
         for (build in Fixtures.declaredBuilds()) {
             val hosts = popularAppsOwners(build) + myChatsSearchHosts(build) + nameFoldHosts(build) + newChatsHosts(build)
-            val withoutRuntime = PatchContexts.of((ExtensionDex.classes().filter { it.type != NEW_CHATS_BLOCK } + hosts).distinctBy { it.type })
+            val withoutRuntime = PatchContexts.of((ExtensionDex.classes().filter { it.origType != NEW_CHATS_BLOCK } + hosts).distinctBy { it.type })
             val stock = snapshot(withoutRuntime, build)
             val runtime = refusal(withoutRuntime)
             assertTrue(runtime, runtime.contains("NewChatsBlock") && runtime.contains("before editing"))
@@ -234,7 +240,7 @@ class NewChatsBlockFixtureTest {
             assertFlag(withoutRuntime, "hidePopularApps", false)
 
             val withoutStub = PatchContexts.of((ExtensionDex.classes() + hosts).distinctBy { it.type })
-            withoutStub.mutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.name == "blockNewChats" }
+            withoutStub.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == "blockNewChats" }
             val unstubbed = snapshot(withoutStub, build)
             val stub = refusal(withoutStub)
             assertTrue(stub, stub.contains("no boolean method blockNewChats()"))
@@ -255,17 +261,17 @@ class NewChatsBlockFixtureTest {
 
     /** What the block could edit, ConnectionsManager and the screens the fixture carries, by type. */
     private fun snapshot(context: BytecodePatchContext, build: File): Map<String, List<List<Any?>>> =
-        newChatsHosts(build).map { it.type }.filter { it != CHAT_OBJECT && it != MESSAGES_CONTROLLER && context.classDefByOrNull(it) != null }
-            .associateWith { type -> context.mutableClassDefBy(type).methods.map { it.operations() } }
+        newChatsHosts(build).map { it.type }.filter { it != CHAT_OBJECT && it != MESSAGES_CONTROLLER && context.tgClassDefByOrNull(it) != null }
+            .associateWith { type -> context.tgMutableClassDefBy(type).methods.map { it.operations() } }
 
     private fun assertFlag(context: BytecodePatchContext, name: String, expected: Boolean) {
-        val body = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }.body()
+        val body = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == name }.body()
         assertEquals(name, if (expected) 1 else 0, (body[0] as NarrowLiteralInstruction).narrowLiteral)
         assertEquals(Opcode.RETURN, body[1].opcode)
     }
 
     private fun send(context: BytecodePatchContext): MutableMethod =
-        context.mutableClassDefBy(CONNECTIONS_MANAGER).methods.single { it.name == SEND_REQUEST_INTERNAL }
+        context.tgMutableClassDefBy(CONNECTIONS_MANAGER).methods.single { it.origName == SEND_REQUEST_INTERNAL }
 
     /**
      * [patched] opens with one gate per hook in [asks], in the order they ask, each handing the
@@ -340,7 +346,7 @@ class NewChatsBlockFixtureTest {
         assertEquals("$where: through the screen's own controller", controller, after[1].ref())
         val load = stock.indexOfFirst { it.ref() == LOAD_FULL_CHAT }
         val kept = stock.subList(0, load).last { it.opcode == Opcode.IGET_WIDE }
-        assertEquals("$where: by the id the screen loads", (kept as ReferenceInstruction).reference.toString(), after[3].ref())
+        assertEquals("$where: by the id the screen loads", (kept as ReferenceInstruction).reference.origString(), after[3].ref())
         assertEquals("$where: its own field", patched.definingClass, ((after[3] as ReferenceInstruction).reference as FieldReference).definingClass)
         assertEquals("$where: asks in order", listOf("Ljava/lang/Long;->valueOf(J)Ljava/lang/Long;", GET_CHAT_BY_ID, IS_MONO_FORUM,
             IS_NOT_IN_CHAT, NEW_CHATS_BLOCK_OPEN), listOf(4, 6, 9, 12, 15).map { after[it].ref() })
@@ -372,10 +378,10 @@ private val NEW_CHATS_HOSTS = ConcurrentHashMap<String, List<ClassDef>>()
  * MessagesController and ChatObject they ask.
  */
 internal fun newChatsHosts(build: File): List<ClassDef> = NEW_CHATS_HOSTS.getOrPut(build.path) {
-    val screens = FixtureDex.classesWhere(build, { true }) { method -> method.name == "onFragmentCreate" &&
+    val screens = FixtureDex.classesWhere(build, { true }) { method -> method.origName == "onFragmentCreate" &&
         method.body().any { it.ref()?.startsWith("$MESSAGES_CONTROLLER->startShortPoll(") == true } }
     (ghostModeHosts(build) + screens + FixtureDex.classes(build, setOf(CHAT_OBJECT, MESSAGES_CONTROLLER)).values).distinctBy { it.type }
 }
 
 private fun Method.body(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
-private fun Instruction.ref() = (this as? ReferenceInstruction)?.reference?.toString()
+private fun Instruction.ref() = origRef()

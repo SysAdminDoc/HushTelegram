@@ -21,6 +21,10 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import app.morphe.util.names.origRef
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** The silent notification check, the stubs and the runtime. */
 class SilenceNonContactsFixtureTest {
@@ -29,7 +33,7 @@ class SilenceNonContactsFixtureTest {
     @Test fun `a message from a stranger counts as silent before Telegram's own check`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
-            val hosts = FixtureDex.classesWhere(build, { true }) { m -> m.definingClass in hostTypes }.map(ImmutableClassDef::of)
+            val hosts = FixtureDex.classesWhere(build, { true }) { m -> m.origDefiningClass in hostTypes }.map(ImmutableClassDef::of)
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
             val check = context.resolveSilenceNonContacts()
             val old = ImmutableMethod.of(check)
@@ -43,15 +47,15 @@ class SilenceNonContactsFixtureTest {
             assertEquals(SILENCED, after[0].controlRef())
             assertEquals("$name: the message", listOf(message), after[0].namedRegisters())
             for (i in before.indices) {
-                assertEquals("$name: stock $i", listOf(before[i].opcode, before[i].namedRegisters(), (before[i] as? ReferenceInstruction)?.reference?.toString()),
-                    listOf(after[i + 5].opcode, after[i + 5].namedRegisters(), (after[i + 5] as? ReferenceInstruction)?.reference?.toString()))
+                assertEquals("$name: stock $i", listOf(before[i].opcode, before[i].namedRegisters(), before[i].origRef()),
+                    listOf(after[i + 5].opcode, after[i + 5].namedRegisters(), after[i + 5].origRef()))
             }
 
-            val stub = { n: String -> context.mutableClassDefBy(NON_CONTACTS).methods.single { it.name == n }.controlBody().map { it.controlRef() } }
+            val stub = { n: String -> context.tgMutableClassDefBy(NON_CONTACTS).methods.single { it.origName == n }.controlBody().map { it.controlRef() } }
             assertTrue("$MESSAGE_OBJECT->getDialogId()J" in stub("dialog"))
             assertTrue("Lorg/telegram/messenger/MessagesController;->getUser(Ljava/lang/Long;)$TL_USER" in stub("user"))
             for (flag in listOf("contact", "bot", "self")) assertTrue("$TL_USER->$flag:Z" in stub(flag))
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "silenceNonContacts" }.controlBody()
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "silenceNonContacts" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }
     }

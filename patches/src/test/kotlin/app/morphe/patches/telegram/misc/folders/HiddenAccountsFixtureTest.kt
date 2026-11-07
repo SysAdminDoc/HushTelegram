@@ -18,12 +18,15 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import app.morphe.util.names.origRef
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgMutableClassDefBy
 
 private const val ADD_ACCOUNT = "Lorg/telegram/messenger/R\$string;->AddAccount:I"
 
 /** The classes with an account list: a method that adds the Add account row and asks who is signed in. */
 internal fun accountListHosts(build: File) = FixtureDex.classesWhere(build, { true }) { m ->
-    val refs = m.implementation?.instructions?.mapNotNull { (it as? ReferenceInstruction)?.reference?.toString() }.orEmpty()
+    val refs = m.implementation?.instructions?.mapNotNull { it.origRef() }.orEmpty()
     ADD_ACCOUNT in refs && CLIENT_ACTIVATED in refs
 }
 
@@ -45,10 +48,10 @@ class HiddenAccountsFixtureTest {
             plan.calls.forEachIndexed { i, (method, at) ->
                 val body = method.implementation!!.instructions.filter { it.opcode != Opcode.NOP }
                 assertEquals("$name: same length", before[i].second, body.size)
-                val refs = body.map { (it as? ReferenceInstruction)?.reference?.toString() }
+                val refs = body.map { it.origRef() }
                 assertEquals("$name: no stock question left", 0, refs.count { it == CLIENT_ACTIVATED })
                 assertEquals("$name: each question handed over", at.size, refs.count { it == "$HIDDEN_ACCOUNTS->activated(Ljava/lang/Object;)Z" })
-                body.filter { (it as? ReferenceInstruction)?.reference?.toString()?.startsWith(HIDDEN_ACCOUNTS) == true }
+                body.filter { it.origRef()?.startsWith(HIDDEN_ACCOUNTS) == true }
                     .forEach { assertEquals("$name: a static call", Opcode.INVOKE_STATIC, it.opcode) }
             }
         }
@@ -58,9 +61,9 @@ class HiddenAccountsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val context = PatchContexts.of(hosts(build))
             context.writeHiddenAccountsStubs()
-            val classDef = context.mutableClassDefBy(HIDDEN_ACCOUNTS)
-            fun refs(method: String): List<String?> = classDef.methods.single { it.name == method }.implementation!!.instructions
-                .filter { it.opcode != Opcode.NOP }.map { (it as? ReferenceInstruction)?.reference?.toString() }
+            val classDef = context.tgMutableClassDefBy(HIDDEN_ACCOUNTS)
+            fun refs(method: String): List<String?> = classDef.methods.single { it.origName == method }.implementation!!.instructions
+                .filter { it.opcode != Opcode.NOP }.map { it.origRef() }
             assertEquals("${build.name} isActive", listOf(USER_CONFIG, CLIENT_ACTIVATED, null, null), refs("isActive"))
             assertEquals("${build.name} userIdOf", listOf(USER_CONFIG, CLIENT_USER_ID, null, null), refs("userIdOf"))
         }

@@ -10,6 +10,7 @@
  */
 package app.morphe
 
+import app.morphe.util.names.TelegramNames
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -53,11 +54,27 @@ internal object FixtureDex {
     /** The base APK's entry in a bundle: base.apk in an .apkm, the package's name in an .xapk. */
     private val BASE_NAMES = listOf("base.apk", "com.instagram.barcelona.apk")
 
+    /**
+     * A class read from a fixture, carrying the build's version code so a patch context made from it
+     * picks that build's name table (see [PatchContexts]).
+     */
+    class FixtureClassDef(val versionCode: String, c: ImmutableClassDef) : ImmutableClassDef(
+        c.type, c.accessFlags, c.superclass, c.interfaces, c.sourceFile, c.annotations, c.fields, c.methods,
+    )
+
+    private fun copy(classDef: ClassDef, table: TelegramNames.Table): ClassDef =
+        if (table.isIdentity) ImmutableClassDef.of(classDef) else FixtureClassDef(table.build, ImmutableClassDef.of(classDef))
+
     private fun forEachDex(build: File, visit: (DexBackedDexFile) -> Unit) {
+        // Names read off the copies made here, which no longer know their dex, come from this build.
+        val named: (DexBackedDexFile) -> Unit = { dex ->
+            TelegramNames.ambient = TelegramNames.forDex(dex)
+            visit(dex)
+        }
         fun read(apk: InputStream) = ZipInputStream(apk.buffered()).use { entries ->
             while (true) {
                 val entry = entries.nextEntry ?: break
-                if (DEX.matches(entry.name)) visit(DexBackedDexFile(Opcodes.getDefault(), ByteBuffer.wrap(entries.readBytes())))
+                if (DEX.matches(entry.name)) named(DexBackedDexFile(Opcodes.getDefault(), ByteBuffer.wrap(entries.readBytes())))
             }
         }
         if (build.extension == "apk") return ZipFile(build).use { zip ->
@@ -65,7 +82,7 @@ internal object FixtureDex {
             // while ZipInputStream advances to the next entry.
             for (entry in zip.entries()) if (DEX.matches(entry.name)) {
                 val bytes = zip.getInputStream(entry).use { it.readBytes() }
-                visit(DexBackedDexFile(Opcodes.getDefault(), ByteBuffer.wrap(bytes)))
+                named(DexBackedDexFile(Opcodes.getDefault(), ByteBuffer.wrap(bytes)))
             }
         }
         ZipFile(build).use { zip ->
@@ -81,12 +98,15 @@ internal object FixtureDex {
      */
     fun forEach(build: File, visit: (DexBackedDexFile) -> Unit) = forEachDex(build, visit)
 
-    /** The classes of [types] the build carries, by type. */
+    /** The classes of [types] (source names) the build carries, keyed by those names. */
     fun classes(build: File, types: Set<String>): Map<String, ClassDef> {
         val found = mutableMapOf<String, ClassDef>()
         forEachDex(build) { dex ->
+            val table = TelegramNames.forDex(dex)
+            val wanted = types.associateBy(table::type)
             for (classDef in dex.classes) {
-                if (classDef.type in types && classDef.type !in found) found[classDef.type] = ImmutableClassDef.of(classDef)
+                val source = wanted[classDef.type] ?: continue
+                if (source !in found) found[source] = copy(classDef, table)
             }
         }
         return found
@@ -102,8 +122,9 @@ internal object FixtureDex {
         val found = mutableListOf<ClassDef>()
         forEachDex(build) { dex ->
             if (!dexFilter(dex)) return@forEachDex
+            val table = TelegramNames.forDex(dex)
             for (classDef in dex.classes) {
-                if (classDef.methods.any(wanted)) found += ImmutableClassDef.of(classDef)
+                if (classDef.methods.any(wanted)) found += copy(classDef, table)
             }
         }
         return found
@@ -120,12 +141,13 @@ internal object FixtureDex {
         var nextDex = 0
         forEachDex(build) { dex ->
             val dexIndex = nextDex++
+            val table = TelegramNames.forDex(dex)
             if (retained != null) {
-                for (index in byDex[dexIndex].orEmpty()) found += ImmutableClassDef.of(dex.classSection[index])
+                for (index in byDex[dexIndex].orEmpty()) found += copy(dex.classSection[index], table)
             } else if (dexFilter(dex)) {
                 for ((index, classDef) in dex.classSection.withIndex()) if (classDef.methods.any(wanted)) {
                     locations += dexIndex to index
-                    found += ImmutableClassDef.of(classDef)
+                    found += copy(classDef, table)
                 }
             }
         }

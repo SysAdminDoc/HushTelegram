@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.notifications
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
@@ -27,6 +27,12 @@ import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val NON_CONTACTS = "$EXTENSION_PACKAGE/misc/NonContacts;"
 internal const val SILENCED = "$NON_CONTACTS->silenced(Ljava/lang/Object;)Z"
@@ -105,23 +111,23 @@ internal fun BytecodePatchContext.resolveSilenceNonContacts(): MutableMethod {
     controlHook(NON_CONTACTS, "user", listOf("Ljava/lang/Object;"), "Ljava/lang/Object;")
     for (flag in listOf("contact", "bot", "self")) controlHook(NON_CONTACTS, flag, listOf("Ljava/lang/Object;"), "Z")
 
-    val notifications = mutableClassDefByOrNull(NOTIFICATIONS)
+    val notifications = tgMutableClassDefByOrNull(NOTIFICATIONS)
     controlShape(notifications != null, "NotificationsController is missing")
-    val check = notifications!!.methods.filter { it.name == "isSilentMessage" && it.parameterTypes == listOf(MESSAGE_OBJECT) &&
-        it.returnType == "Z" && !AccessFlags.STATIC.isSet(it.accessFlags) }.controlSingle("silent notification check")
+    val check = notifications!!.methods.filter { it.origName == "isSilentMessage" && it.origParameterTypes == listOf(MESSAGE_OBJECT) &&
+        it.origReturnType == "Z" && !AccessFlags.STATIC.isSet(it.accessFlags) }.controlSingle("silent notification check")
     controlShape(check.controlBody().any { it.controlRef() == SILENT_FLAG }, "the silent notification check no longer reads the sender's flag")
     controlShape(ControlFlow.of(check).normal.none { 0 in it }, "something jumps back to the start of the silent notification check")
 
-    val message = classDefByOrNull(MESSAGE_OBJECT)
-    controlShape(message != null && message.fields.any { it.name == "currentAccount" && it.type == "I" && !AccessFlags.STATIC.isSet(it.accessFlags) } &&
-        message.methods.any { it.name == "getDialogId" && it.parameterTypes.isEmpty() && it.returnType == "J" && AccessFlags.PUBLIC.isSet(it.accessFlags) },
+    val message = tgClassDefByOrNull(MESSAGE_OBJECT)
+    controlShape(message != null && message.fields.any { it.origName == "currentAccount" && it.origType == "I" && !AccessFlags.STATIC.isSet(it.accessFlags) } &&
+        message.methods.any { it.origName == "getDialogId" && it.parameterTypes.isEmpty() && it.origReturnType == "J" && AccessFlags.PUBLIC.isSet(it.accessFlags) },
         "a message no longer says which chat and account it belongs to")
-    val messages = classDefByOrNull(MESSAGES)
-    controlShape(messages != null && messages.methods.any { it.name == "getInstance" && it.parameterTypes == listOf("I") && it.returnType == MESSAGES } &&
-        messages.methods.any { it.name == "getUser" && it.parameterTypes == listOf("Ljava/lang/Long;") && it.returnType == TL_USER && AccessFlags.PUBLIC.isSet(it.accessFlags) },
+    val messages = tgClassDefByOrNull(MESSAGES)
+    controlShape(messages != null && messages.methods.any { it.origName == "getInstance" && it.origParameterTypes == listOf("I") && it.origReturnType == MESSAGES } &&
+        messages.methods.any { it.origName == "getUser" && it.origParameterTypes == listOf("Ljava/lang/Long;") && it.origReturnType == TL_USER && AccessFlags.PUBLIC.isSet(it.accessFlags) },
         "MessagesController no longer looks up a user by ID")
-    val user = classDefByOrNull(TL_USER)
-    controlShape(user != null && listOf("contact", "bot", "self").all { flag -> user.fields.any { it.name == flag && it.type == "Z" && !AccessFlags.STATIC.isSet(it.accessFlags) } },
+    val user = tgClassDefByOrNull(TL_USER)
+    controlShape(user != null && listOf("contact", "bot", "self").all { flag -> user.fields.any { it.origName == flag && it.origType == "Z" && !AccessFlags.STATIC.isSet(it.accessFlags) } },
         "a Telegram user no longer says whether they're a contact, a bot or you")
     return check
 }

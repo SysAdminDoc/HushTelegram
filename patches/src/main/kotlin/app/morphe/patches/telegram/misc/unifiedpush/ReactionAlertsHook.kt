@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.unifiedpush
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -27,6 +27,12 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origSuperclass
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val REACTION_ALERTS = "$EXTENSION_PACKAGE/misc/ReactionAlerts;"
 internal const val REACTIONS_UPDATE = "Lorg/telegram/tgnet/tl/TL_update\$TL_updateMessageReactions;"
@@ -183,25 +189,25 @@ internal fun BytecodePatchContext.resolveReactionAlerts(): Pair<ReactionHook?, S
 
 private fun BytecodePatchContext.reactionHook(): ReactionHook {
     for (call in CALLS) {
-        val owner = classDefByOrNull(call.owner)
+        val owner = tgClassDefByOrNull(call.owner)
         needed(owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags) && owner.methods.any {
-            it.name == call.name && it.parameterTypes.joinToString("") == call.parameters && it.returnType == call.result &&
+            it.origName == call.name && it.parameterTypes.joinToString("") == call.parameters && it.origReturnType == call.result &&
                 AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == call.static
         }, "${call.owner}->${call.name} is no longer a public method reaction notifications can call")
     }
     for ((owner, name, type) in FIELDS) {
-        val cls = classDefByOrNull(owner)
+        val cls = tgClassDefByOrNull(owner)
         needed(cls != null && AccessFlags.PUBLIC.isSet(cls.accessFlags) && cls.fields.any {
-            it.name == name && it.type == type && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
+            it.origName == name && it.origType == type && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
         }, "$owner->$name is no longer a public field reaction notifications can read")
     }
-    val strings = classDefByOrNull(STRINGS)
+    val strings = tgClassDefByOrNull(STRINGS)
     needed(strings != null && LINES.all { line ->
-        strings.fields.any { it.name == line && it.type == "I" && AccessFlags.STATIC.isSet(it.accessFlags) && AccessFlags.PUBLIC.isSet(it.accessFlags) }
+        strings.fields.any { it.origName == line && it.origType == "I" && AccessFlags.STATIC.isSet(it.accessFlags) && AccessFlags.PUBLIC.isSet(it.accessFlags) }
     }, "Telegram's reaction notification lines are gone")
 
     // The update loop: the one method that also collects both kinds of deleted IDs.
-    val loops = mutableClassDefByOrNull(CONTROLLER)?.methods?.filter { m ->
+    val loops = tgMutableClassDefByOrNull(CONTROLLER)?.methods?.filter { m ->
         val refs = m.controlBody().mapNotNull { it.controlRef() }.toSet()
         USER_DELETE_MESSAGES in refs && CHANNEL_DELETE_MESSAGES in refs && REACTIONS_UPDATE in refs
     } ?: emptyList()
@@ -238,7 +244,7 @@ internal const val EMOJI_NAME = "${MESSAGE_OBJECT}->findAnimatedEmojiEmoticon($D
  * a HashMap and cast.
  */
 internal fun isEmojiLookup(owner: ClassDef, method: Method): Boolean =
-    owner.superclass == DRAWABLE && AccessFlags.PUBLIC.isSet(owner.accessFlags) && method.returnType == DOCUMENT &&
+    owner.origSuperclass == DRAWABLE && AccessFlags.PUBLIC.isSet(owner.accessFlags) && method.origReturnType == DOCUMENT &&
         method.parameterTypes.joinToString("") == "IJ" && AccessFlags.PUBLIC.isSet(method.accessFlags) &&
         AccessFlags.STATIC.isSet(method.accessFlags) && method.controlBody().let { body ->
             body.any { it.controlRef() == CACHE_READ } && body.any { it.opcode == Opcode.CHECK_CAST && it.controlRef() == DOCUMENT }
@@ -257,7 +263,7 @@ internal fun BytecodePatchContext.resolveEmojiLookup(): Pair<String?, String?> {
         owner.methods.filter { isEmojiLookup(owner, it) }
     }
     if (lookups.size != 1) return Pair(null, "the lookup of loaded custom emoji is missing or ambiguous")
-    val name = classDefByOrNull(MESSAGE_OBJECT)?.methods?.any {
+    val name = tgClassDefByOrNull(MESSAGE_OBJECT)?.methods?.any {
         it.toString() == EMOJI_NAME && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags)
     }
     if (name != true) return Pair(null, "$EMOJI_NAME is no longer a public method custom emoji can call")
@@ -307,8 +313,8 @@ internal fun BytecodePatchContext.resolveReactionSound(): Pair<ReactionSoundHook
 }
 
 private fun BytecodePatchContext.reactionSoundHook(): ReactionSoundHook {
-    val checks = mutableClassDefByOrNull(NOTIFIER)?.methods?.filter {
-        it.name == "isSilentMessage" && it.parameterTypes.joinToString("") == MESSAGE_OBJECT && it.returnType == "Z" &&
+    val checks = tgMutableClassDefByOrNull(NOTIFIER)?.methods?.filter {
+        it.origName == "isSilentMessage" && it.parameterTypes.joinToString("") == MESSAGE_OBJECT && it.origReturnType == "Z" &&
             !AccessFlags.STATIC.isSet(it.accessFlags)
     } ?: emptyList()
     needed(checks.size == 1, "the silent notification check is missing or ambiguous")

@@ -4,9 +4,9 @@
  */
 package app.morphe.patches.telegram.misc.savedownloads
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
@@ -19,6 +19,8 @@ import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val GALLERY_FOLDER = "$EXTENSION_PACKAGE/misc/GalleryFolder;"
 internal const val GALLERY_MEDIA_CONTROLLER = "Lorg/telegram/messenger/MediaController;"
@@ -91,13 +93,13 @@ internal fun BytecodePatchContext.requireGalleryFolderRuntime() {
  * Telegram's. Anything else about them, or a third such method, keeps Telegram's folders.
  */
 internal fun BytecodePatchContext.resolveGalleryFolder(): GalleryFolderPlan {
-    val owner = mutableClassDefByOrNull(GALLERY_MEDIA_CONTROLLER) ?: return GalleryFolderPlan.missing("MediaController is missing")
+    val owner = tgMutableClassDefByOrNull(GALLERY_MEDIA_CONTROLLER) ?: return GalleryFolderPlan.missing("MediaController is missing")
     val saves = owner.methods.filter { method ->
         val body = method.controlBody()
         body.any { it.controlString() == GALLERY_RELATIVE_PATH } &&
             body.any { it.opcode == Opcode.SGET_OBJECT && it.controlRef() == GALLERY_PICTURES }
     }
-    if (saves.size != 2 || saves.count { it.name == "saveFileInternal" } != 1) {
+    if (saves.size != 2 || saves.count { it.origName == "saveFileInternal" } != 1) {
         return GalleryFolderPlan.missing("Telegram's gallery saves changed (${saves.map { it.name }.sorted().joinToString()})")
     }
     val plan = saves.map { method ->

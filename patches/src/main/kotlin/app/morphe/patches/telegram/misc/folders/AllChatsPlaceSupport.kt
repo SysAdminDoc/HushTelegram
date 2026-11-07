@@ -4,7 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.folders
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.loadsInt
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.chattypefolders.CLIENT_USER_ID
@@ -27,6 +28,11 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val ALL_CHATS_PLACE = "$EXTENSION_PACKAGE/misc/AllChatsPlace;"
 internal const val PLACE_REQUEST = "Lorg/telegram/tgnet/TLRPC\$TL_messages_updateDialogFiltersOrder;"
@@ -127,13 +133,13 @@ private fun Method.key() = toString()
 private fun BytecodePatchContext.orderSites(): List<AllChatsSite> {
     val found = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.type(PLACE_REQUEST)) { cls ->
-        if (cls.type == PLACE_REQUEST) return@forEachClassMentioning
+        if (cls.origType == PLACE_REQUEST) return@forEachClassMentioning
         cls.methods.filter { m -> m.controlBody().any { it.opcode == Opcode.NEW_INSTANCE && it.controlRef() == PLACE_REQUEST } }
             .forEach { found += cls.type to it.key() }
     }
     placeFits(found.size == 3, "the folder order is no longer sent from three places")
     return found.map { (type, key) ->
-        val method = mutableClassDefBy(type).methods.single { it.key() == key }
+        val method = tgMutableClassDefBy(type).methods.single { it.key() == key }
         val body = method.controlBody()
         val created = body.indexOfFirst { it.opcode == Opcode.NEW_INSTANCE && it.controlRef() == PLACE_REQUEST }
         val request = (body[created] as OneRegisterInstruction).registerA
@@ -148,7 +154,7 @@ private fun BytecodePatchContext.orderSites(): List<AllChatsSite> {
 
 /** The tab strip: the class of the order site in its setIsEditing. */
 private fun stripOf(orders: List<AllChatsSite>): String {
-    val strip = orders.singleOrNull { it.method.name == "setIsEditing" }
+    val strip = orders.singleOrNull { it.method.origName == "setIsEditing" }
     placeFits(strip != null, "the tab strip no longer sends the folder order when editing ends")
     return strip!!.method.definingClass
 }
@@ -175,14 +181,14 @@ private fun BytecodePatchContext.answerSite(method: MutableMethod, question: Int
 private fun BytecodePatchContext.dragSites(strip: String): List<AllChatsSite> {
     val callbacks = mutableListOf<String>()
     forEachClassMentioning(Mention.reference(PLACE_DRAGGING)) { cls ->
-        if (cls.fields.any { it.type == strip || it.type == PLACE_SETUP } &&
-            cls.methods.any { m -> m.controlBody().any { it.opcode == Opcode.SGET && it.controlRef() == PLACE_DRAGGING } }) {
+        if (cls.fields.any { it.origType == strip || it.origType == PLACE_SETUP } &&
+            cls.methods.any { m -> m.controlBody().any { it.loadsInt() && it.controlRef() == PLACE_DRAGGING } }) {
             callbacks += cls.type
         }
     }
     placeFits(callbacks.size == 2, "the folders' drag callbacks changed")
     return callbacks.flatMap { callback ->
-        val cls = mutableClassDefBy(callback)
+        val cls = tgMutableClassDefBy(callback)
         val own = cls.methods.flatMap { method ->
             method.controlBody().withIndex().filter { (_, it) -> it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == PLACE_PREMIUM }
                 .map { (index, _) -> answerSite(method, index) }
@@ -197,20 +203,20 @@ private fun BytecodePatchContext.dragSites(strip: String): List<AllChatsSite> {
 }
 
 private fun BytecodePatchContext.resetIn(runner: String, callback: String): AllChatsSite? {
-    val run = classDefByOrNull(runner)?.methods?.singleOrNull { it.name == "run" && it.parameterTypes.isEmpty() && it.returnType == "V" } ?: return null
+    val run = tgClassDefByOrNull(runner)?.methods?.singleOrNull { it.origName == "run" && it.parameterTypes.isEmpty() && it.origReturnType == "V" } ?: return null
     val body = run.controlBody()
     val cast = body.indexOfFirst { it.opcode == Opcode.CHECK_CAST && it.controlRef() == callback }
     if (cast < 0) return null
     val question = (cast until minOf(cast + 12, body.size)).firstOrNull {
         body[it].opcode == Opcode.INVOKE_VIRTUAL && body[it].controlRef() == PLACE_PREMIUM
     } ?: return null
-    val mutable = mutableClassDefBy(runner).methods.single { it.name == "run" && it.parameterTypes.isEmpty() && it.returnType == "V" }
+    val mutable = tgMutableClassDefBy(runner).methods.single { it.origName == "run" && it.parameterTypes.isEmpty() && it.origReturnType == "V" }
     return answerSite(mutable, question)
 }
 
 /** MessagesController.updatePremium, which moves All Chats back at startup unless it's already first. */
 private fun BytecodePatchContext.firstCheckSite(): AllChatsSite {
-    val method = mutableClassDefBy(MESSAGES_CONTROLLER).methods.singleOrNull { it.name == "updatePremium" && it.parameterTypes.map(CharSequence::toString) == listOf("Z") }
+    val method = tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.singleOrNull { it.origName == "updatePremium" && it.parameterTypes.map(CharSequence::toString) == listOf("Z") }
     placeFits(method != null, "Telegram's Premium update changed")
     val question = method!!.controlBody().indexOfFirst { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == PLACE_IS_DEFAULT }
     placeFits(question >= 0, "Telegram's Premium update no longer looks for All Chats")
@@ -219,7 +225,7 @@ private fun BytecodePatchContext.firstCheckSite(): AllChatsSite {
 
 /** The sort of a freshly loaded folder list, the one the list field is read for just before. */
 private fun BytecodePatchContext.loadSite(): AllChatsSite {
-    val sites = mutableClassDefBy(MESSAGES_CONTROLLER).methods.filter { it.name.startsWith("lambda\$processLoadedDialogFilters\$") }.mapNotNull { method ->
+    val sites = tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.filter { it.origName.startsWith("lambda\$processLoadedDialogFilters\$") }.mapNotNull { method ->
         val body = method.controlBody()
         body.indices.firstOrNull { index ->
             body[index].opcode == Opcode.INVOKE_STATIC && body[index].controlRef() == PLACE_SORT &&
@@ -241,7 +247,7 @@ private fun BytecodePatchContext.loadSite(): AllChatsSite {
 
 /** lockFiltersInternal's copy of the folders, right after it's reversed. */
 private fun BytecodePatchContext.lockSite(): AllChatsSite {
-    val method = mutableClassDefBy(MESSAGES_CONTROLLER).methods.singleOrNull { it.name == "lockFiltersInternal" && it.parameterTypes.isEmpty() }
+    val method = tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.singleOrNull { it.origName == "lockFiltersInternal" && it.parameterTypes.isEmpty() }
     placeFits(method != null, "Telegram's folder locking changed")
     val body = method!!.controlBody()
     val reverse = body.indices.filter { body[it].opcode == Opcode.INVOKE_STATIC && body[it].controlRef() == PLACE_REVERSE }

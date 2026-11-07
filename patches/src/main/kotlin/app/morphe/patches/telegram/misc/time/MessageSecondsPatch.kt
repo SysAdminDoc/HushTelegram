@@ -5,7 +5,7 @@
 package app.morphe.patches.telegram.misc.time
 
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -27,6 +27,11 @@ import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val MESSAGE_TIME = "$EXTENSION_PACKAGE/misc/MessageTime;"
 internal const val MESSAGE_TIME_SHOWN = "$MESSAGE_TIME->shown(Ljava/lang/Object;J)Ljava/lang/String;"
@@ -93,14 +98,14 @@ internal fun replaceTimeCalls(target: MutableMethod, indices: List<Int>) {
 internal fun BytecodePatchContext.resolveMessageTime(): Pair<MutableMethod, List<Int>> {
     controlHook(MESSAGE_TIME, "shown", listOf("Ljava/lang/Object;", "J"), "Ljava/lang/String;")
     controlHook(MESSAGE_TIME, "stockFormat", listOf("Ljava/lang/Object;", "J"), "Ljava/lang/String;")
-    controlShape(classDefByOrNull(FAST_DATE_FORMAT)?.methods?.any { "$FAST_DATE_FORMAT->${it.name}(J)${it.returnType}" == TIME_FORMAT &&
+    controlShape(tgClassDefByOrNull(FAST_DATE_FORMAT)?.methods?.any { "$FAST_DATE_FORMAT->${it.name}(J)${it.returnType}" == TIME_FORMAT &&
         AccessFlags.PUBLIC.isSet(it.accessFlags) } == true, "Telegram's time formatter changed")
 
     val found = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.allReferences(listOf(EDITED_MESSAGE, FORMATTER_DAY, TIME_FORMAT))) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { method ->
-            if (method.parameterTypes.map(CharSequence::toString) == listOf("Lorg/telegram/messenger/MessageObject;") && method.returnType == "V" &&
+            if (method.parameterTypes.map(CharSequence::toString) == listOf("Lorg/telegram/messenger/MessageObject;") && method.origReturnType == "V" &&
                 !AccessFlags.STATIC.isSet(method.accessFlags)) {
                 val refs = method.controlBody().mapNotNull { it.controlRef() }.toSet()
                 if (EDITED_MESSAGE in refs && FORMATTER_DAY in refs && TIME_FORMAT in refs) found += cls.type to method.name
@@ -108,8 +113,8 @@ internal fun BytecodePatchContext.resolveMessageTime(): Pair<MutableMethod, List
         }
     }
     val (type, name) = found.controlSingle("message time measuring")
-    val method = mutableClassDefBy(type).methods.single { it.name == name && it.parameterTypes.size == 1 &&
-        it.parameterTypes[0].toString() == "Lorg/telegram/messenger/MessageObject;" && it.returnType == "V" }
+    val method = tgMutableClassDefBy(type).methods.single { it.origName == name && it.parameterTypes.size == 1 &&
+        it.parameterTypes[0].toString() == "Lorg/telegram/messenger/MessageObject;" && it.origReturnType == "V" }
     val body = method.controlBody()
     val indices = body.indices.filter { body[it].controlRef() == TIME_FORMAT }
     controlShape(indices.all { body[it].opcode == Opcode.INVOKE_VIRTUAL || body[it].opcode == Opcode.INVOKE_VIRTUAL_RANGE },

@@ -17,6 +17,9 @@ import app.morphe.util.addInstructionsAtControlFlowLabel
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val SECRET_CHATS = "$EXTENSION_PACKAGE/misc/SecretChats;"
 internal const val SECRET_HELPER = "Lorg/telegram/messenger/SecretChatHelper;"
@@ -55,9 +58,9 @@ internal class SecretChatsSite(val method: MutableMethod) {
 internal fun BytecodePatchContext.resolveSecretChats(): SecretChatsSite {
     requireStatusMethod("disableSecretChats")
     controlHook(SECRET_CHATS, "refuse", emptyList(), "Z")
-    val owner = mutableClassDefByOrNull(SECRET_HELPER)
+    val owner = tgMutableClassDefByOrNull(SECRET_HELPER)
     controlShape(owner != null, "Telegram's secret chat helper is missing")
-    val method = owner!!.methods.filter { it.name == "processUpdateEncryption" && it.returnType == "V" &&
+    val method = owner!!.methods.filter { it.origName == "processUpdateEncryption" && it.origReturnType == "V" &&
         it.parameterTypes.size == 2 && it.parameterTypes[0].toString() == SECRET_UPDATE && it.implementation != null &&
         !AccessFlags.STATIC.isSet(it.accessFlags) }.controlSingle("the secret chat update entry")
     val body = method.controlBody()

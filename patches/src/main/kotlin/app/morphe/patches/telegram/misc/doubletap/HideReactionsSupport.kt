@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.doubletap
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.classDefsMentioning
@@ -18,6 +18,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val MESSAGE_OBJECT = "Lorg/telegram/messenger/MessageObject;"
 internal const val MESSAGE_REACTIONS = "Lorg/telegram/tgnet/TLRPC\$MessageReactions;"
@@ -44,7 +45,7 @@ internal fun BytecodePatchContext.resolveReactionRows(): ReactionPlan {
         cls.methods.filter { it.isRowSetter() }
     }
     val match = found.singleOrNull() ?: return nothing("the reaction row no longer has one setMessage method")
-    val method = mutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
+    val method = tgMutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
     return object : ReactionPlan(null) {
         override fun apply() {
             method.addInstructions(
@@ -88,7 +89,7 @@ internal fun BytecodePatchContext.resolveReactionSpeech(): ReactionPlan {
         cls.methods.filter { it.isSpokenBuilder() }
     }
     val match = found.singleOrNull() ?: return nothing("the chat message's TalkBack text is no longer built in one place")
-    val method = mutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
+    val method = tgMutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
     val body = method.controlBody()
     val read = body.indexOfFirst { it.controlRef() == STORED_REACTIONS }
     val test = body.getOrNull(read + 1)
@@ -133,7 +134,7 @@ internal fun BytecodePatchContext.resolveReactionPicker(): ReactionPlan {
         cls.methods.filter { it.isMenuBuilder() }
     }
     val match = found.singleOrNull() ?: return nothing("the chat's message menu builder is no longer found in one place")
-    val method = mutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
+    val method = tgMutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
     val body = method.controlBody()
     val lastCall = body.indexOfLast { it.controlRef() == REACTIONS_AVAILABLE }
     val flow = try { ControlFlow.of(method) } catch (failure: IllegalArgumentException) {
@@ -185,7 +186,7 @@ internal fun BytecodePatchContext.resolveReactionSelection(): ReactionPlan {
         cls.methods.filter { it.isSelectionSetter() }
     }
     val match = found.singleOrNull() ?: return nothing("the selection's reaction bubble no longer has one setter")
-    val method = mutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
+    val method = tgMutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
     return object : ReactionPlan(null) {
         override fun apply() {
             method.addInstructions(
@@ -231,7 +232,7 @@ internal fun BytecodePatchContext.resolveEmojiPackNote(): ReactionPlan {
         cls.methods.filter { it.isMenuBuilder() }
     }
     val match = found.singleOrNull() ?: return nothing("the chat's message menu builder is no longer found in one place")
-    val method = mutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
+    val method = tgMutableClassDefBy(match.definingClass).methods.single { it.toString() == match.toString() }
     if (method.packNoteCall(button) < 0) return nothing("the chat's message menu no longer tests premium right before the emoji pack line")
     return object : ReactionPlan(null) {
         override fun apply() {

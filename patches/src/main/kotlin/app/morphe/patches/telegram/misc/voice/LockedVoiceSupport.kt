@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.voice
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -22,6 +22,11 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val LOCKED_VOICE = "$EXTENSION_PACKAGE/misc/LockedVoice;"
 internal const val LOCKED_REFUSE = "$LOCKED_VOICE->refuse(Ljava/lang/Object;Ljava/lang/Object;Z)Z"
@@ -98,10 +103,10 @@ internal fun BytecodePatchContext.writeLockedVoiceStub() {
 internal fun BytecodePatchContext.resolveLockedVoiceGuard(): LockedVoiceGuard {
     controlHook(LOCKED_VOICE, "refuse", listOf("Ljava/lang/Object;", "Ljava/lang/Object;", "Z"), "Z")
     controlHook(LOCKED_VOICE, "voiceOrRound", listOf("Ljava/lang/Object;"), "Z")
-    val controller = classDefByOrNull(MEDIA_CONTROLLER) ?: return LockedVoiceGuard.missing("MediaController is missing")
-    val message = classDefByOrNull(MESSAGE)
+    val controller = tgClassDefByOrNull(MEDIA_CONTROLLER) ?: return LockedVoiceGuard.missing("MediaController is missing")
+    val message = tgClassDefByOrNull(MESSAGE)
     if (message == null || listOf("isVoice", "isRoundVideo").any { name -> message.methods.none {
-            it.name == name && it.parameterTypes.isEmpty() && it.returnType == "Z" && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
+            it.origName == name && it.parameterTypes.isEmpty() && it.origReturnType == "Z" && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
                 !AccessFlags.STATIC.isSet(it.accessFlags) } }) {
         return LockedVoiceGuard.missing("a message no longer says whether it's voice or a round video")
     }
@@ -137,10 +142,10 @@ internal fun BytecodePatchContext.resolveLockedVoiceGuard(): LockedVoiceGuard {
     if (found.localRegisterCount() < 3) {
         return LockedVoiceGuard.missing("the play method has no three registers the hook can borrow")
     }
-    return LockedVoiceGuard(mutableClassDefBy(MEDIA_CONTROLLER).methods.single { signature(it) == PLAY_MESSAGE }, null)
+    return LockedVoiceGuard(tgMutableClassDefBy(MEDIA_CONTROLLER).methods.single { signature(it) == PLAY_MESSAGE }, null)
 }
 
 private fun ClassDef.hasField(name: String, type: String) =
-    fields.any { it.name == name && it.type == type && !AccessFlags.STATIC.isSet(it.accessFlags) }
+    fields.any { it.origName == name && it.origType == type && !AccessFlags.STATIC.isSet(it.accessFlags) }
 
 private fun signature(method: Method) = "${method.definingClass}->${method.name}(${method.parameterTypes.joinToString("")})${method.returnType}"

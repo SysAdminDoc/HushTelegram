@@ -21,6 +21,10 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import app.morphe.util.names.origRef
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** The four mention swaps in NotificationsController, the stubs and the runtime. */
 class IgnoreMutedMentionsFixtureTest {
@@ -29,11 +33,11 @@ class IgnoreMutedMentionsFixtureTest {
     @Test fun `every mention swap asks the extension with the same message`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
-            val hosts = FixtureDex.classesWhere(build, { true }) { m -> m.definingClass in hostTypes }.map(ImmutableClassDef::of)
+            val hosts = FixtureDex.classesWhere(build, { true }) { m -> m.origDefiningClass in hostTypes }.map(ImmutableClassDef::of)
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
             val sites = context.resolveIgnoreMutedMentions()
             assertEquals("$name: new, loaded twice and shown", listOf("lambda\$processLoadedUnreadMessages", "lambda\$processNewMessages", "showOrUpdateNotification"),
-                sites.map { it.first.name.substringBeforeLast('$').substringBefore("(") }.sorted())
+                sites.map { it.first.origName.substringBeforeLast('$').substringBefore("(") }.sorted())
             assertEquals("$name: four swaps", 4, sites.sumOf { it.second.size })
             val old = sites.map { ImmutableMethod.of(it.first) }
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { ignoreMutedMentionsPatch.execute(context) })
@@ -50,19 +54,19 @@ class IgnoreMutedMentionsFixtureTest {
                         assertEquals(FROM_CHAT, before[i].controlRef())
                         assertEquals(Opcode.MOVE_RESULT_WIDE, after[i + 1].opcode)
                     } else {
-                        assertEquals("$name: stock $i", listOf(before[i].opcode, before[i].namedRegisters(), (before[i] as? ReferenceInstruction)?.reference?.toString()),
-                            listOf(after[i].opcode, after[i].namedRegisters(), (after[i] as? ReferenceInstruction)?.reference?.toString()))
+                        assertEquals("$name: stock $i", listOf(before[i].opcode, before[i].namedRegisters(), before[i].origRef()),
+                            listOf(after[i].opcode, after[i].namedRegisters(), after[i].origRef()))
                     }
                 }
             }
             // One swap is a range call on both builds, so both forms are covered.
             assertTrue("$name: a range swap", old.withIndex().any { (s, m) -> sites[s].second.any { m.controlBody()[it].opcode == Opcode.INVOKE_VIRTUAL_RANGE } })
 
-            val stub = { n: String -> context.mutableClassDefBy(MUTED_MENTIONS).methods.single { it.name == n }.controlBody().map { it.controlRef() } }
+            val stub = { n: String -> context.tgMutableClassDefBy(MUTED_MENTIONS).methods.single { it.origName == n }.controlBody().map { it.controlRef() } }
             assertTrue(FROM_CHAT in stub("sender"))
             assertTrue("$MESSAGE_OBJECT->getDialogId()J" in stub("chat"))
             assertTrue(DIALOG_MUTED in stub("muted"))
-            val status = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == "ignoreMutedMentions" }.controlBody()
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "ignoreMutedMentions" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }
     }

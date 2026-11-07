@@ -8,10 +8,10 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.addInstruction
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -33,6 +33,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** MediaController's Save to Gallery writes on both declared builds, where the gallery folder is chosen. */
 class GalleryFolderFixtureTest {
@@ -48,15 +50,15 @@ class GalleryFolderFixtureTest {
 
     private fun Instruction.shape() = listOf(opcode, namedRegisters(), controlRef())
 
-    private fun BytecodePatchContext.flag(name: String) = (mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }
+    private fun BytecodePatchContext.flag(name: String) = (tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == name }
         .controlBody().first() as WideLiteralInstruction).wideLiteral
 
     /** Every MediaController method body, as opcodes, registers and references. */
-    private fun BytecodePatchContext.media() = mutableClassDefBy(GALLERY_MEDIA_CONTROLLER).methods.filter { it.implementation != null }
+    private fun BytecodePatchContext.media() = tgMutableClassDefBy(GALLERY_MEDIA_CONTROLLER).methods.filter { it.implementation != null }
         .associate { m -> "${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}" to m.controlBody().map { it.shape() } }
 
     private fun BytecodePatchContext.saveFileInternal() =
-        mutableClassDefBy(GALLERY_MEDIA_CONTROLLER).methods.single { it.name == "saveFileInternal" }
+        tgMutableClassDefBy(GALLERY_MEDIA_CONTROLLER).methods.single { it.origName == "saveFileInternal" }
 
     @Test fun `every string Save to Gallery puts goes past the extension and nothing else in MediaController changes`() {
         for (build in Fixtures.declaredBuilds()) {
@@ -78,7 +80,7 @@ class GalleryFolderFixtureTest {
             assertTrue("$name: $thread", thread.startsWith("lambda\$saveFile\$"))
             assertEquals(name, 2, older.getValue(thread).size)
             assertEquals(name, 1, older.getValue(live).size)
-            val edited = plan.saves.map { it.first } + plan.older.map { it.first }.filter { it.name !in saves.keys }
+            val edited = plan.saves.map { it.first } + plan.older.map { it.first }.filter { it.origName !in saves.keys }
             val stock = edited.associate { method -> method.name to ImmutableMethod.of(method).controlBody() }
             val others = context.media().filterKeys { key -> stock.keys.none { key.startsWith("$it(") } }
 
@@ -128,8 +130,8 @@ class GalleryFolderFixtureTest {
         val build = Fixtures.declaredBuilds().first()
         val shapes = listOf<Pair<String, (BytecodePatchContext) -> Unit>>(
             "Telegram's gallery saves changed (saveFileInternal)" to { context ->
-                val media = context.mutableClassDefBy(GALLERY_MEDIA_CONTROLLER)
-                val live = media.methods.single { it.name.startsWith("lambda\$saveFile\$") &&
+                val media = context.tgMutableClassDefBy(GALLERY_MEDIA_CONTROLLER)
+                val live = media.methods.single { it.origName.startsWith("lambda\$saveFile\$") &&
                     it.controlBody().any { i -> i.controlString() == GALLERY_RELATIVE_PATH } }
                 val body = live.controlBody()
                 val at = body.indexOfFirst { it.controlString() == GALLERY_RELATIVE_PATH }
@@ -137,7 +139,7 @@ class GalleryFolderFixtureTest {
             },
             // A third writer would save somewhere the choice doesn't reach.
             "Telegram's gallery saves changed" to { context ->
-                val media = context.mutableClassDefBy(GALLERY_MEDIA_CONTROLLER)
+                val media = context.tgMutableClassDefBy(GALLERY_MEDIA_CONTROLLER)
                 val save = context.saveFileInternal()
                 media.methods.add(ImmutableMethod(save.definingClass, "saveFileInternalAgain", save.parameters, save.returnType,
                     save.accessFlags, save.annotations, save.hiddenApiRestrictions, ImmutableMethod.of(save).implementation).toMutable())
@@ -165,8 +167,8 @@ class GalleryFolderFixtureTest {
 
     @Test fun `changed Android 9 saves keep Telegram's folders there and the Android 10 choice goes on`() {
         val build = Fixtures.declaredBuilds().first()
-        fun BytecodePatchContext.thread() = mutableClassDefBy(GALLERY_MEDIA_CONTROLLER).methods.single { method ->
-            method.name.startsWith("lambda\$saveFile\$") && method.controlBody().none { it.controlString() == GALLERY_RELATIVE_PATH } &&
+        fun BytecodePatchContext.thread() = tgMutableClassDefBy(GALLERY_MEDIA_CONTROLLER).methods.single { method ->
+            method.origName.startsWith("lambda\$saveFile\$") && method.controlBody().none { it.controlString() == GALLERY_RELATIVE_PATH } &&
                 method.controlBody().any { it.controlRef() == GALLERY_MOVIES }
         }
         val shapes = listOf<Pair<String, (BytecodePatchContext) -> Unit>>(
@@ -205,10 +207,10 @@ class GalleryFolderFixtureTest {
         val shapes = listOf<Pair<String, (BytecodePatchContext) -> Unit>>(
             // The extension ships with the patch, so a mismatch there is a build bug, not a Telegram change.
             "put runtime hook is missing or ambiguous" to { context ->
-                context.mutableClassDefBy(GALLERY_FOLDER).methods.removeAll { it.name == "put" }
+                context.tgMutableClassDefBy(GALLERY_FOLDER).methods.removeAll { it.origName == "put" }
             },
             "SettingsStatus has no boolean method galleryFolder()" to { context ->
-                context.mutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.name == "galleryFolder" }
+                context.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == "galleryFolder" }
             },
         )
         for ((why, change) in shapes) {

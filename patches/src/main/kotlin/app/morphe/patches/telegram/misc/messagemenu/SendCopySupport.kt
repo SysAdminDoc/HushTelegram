@@ -9,6 +9,9 @@ import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.writeStub
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.Method
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.tgClassDefByOrNull
 
 private const val COPY_SEND_HELPER = "Lorg/telegram/messenger/SendMessagesHelper;"
 private const val COPY_STRING = "Ljava/lang/String;"
@@ -26,9 +29,9 @@ private fun Method.callable() = AccessFlags.PUBLIC.isSet(accessFlags) && AccessF
  * of calling the wrong method. Null when any of them is missing.
  */
 internal fun BytecodePatchContext.resolveCopySends(): Triple<CopySend, CopySend, CopySend>? {
-    val methods = classDefByOrNull(COPY_SEND_HELPER)?.methods?.toList() ?: return null
+    val methods = tgClassDefByOrNull(COPY_SEND_HELPER)?.methods?.toList() ?: return null
     fun find(name: String, size: Int, shape: Map<Int, String>) = methods.filter { m ->
-        m.name == name && m.callable() && m.types().size == size && shape.all { (i, t) -> m.types()[i] == t }
+        m.origName == name && m.callable() && m.types().size == size && shape.all { (i, t) -> m.types()[i] == t }
     }.singleOrNull()
     val text = find("prepareSendingText", 7, mapOf(1 to COPY_TEXT_TYPE, 2 to "J", 3 to "Z", 4 to "I", 5 to "I", 6 to "J"))
     val photo = find("prepareSendingPhoto", 17, mapOf(1 to COPY_STRING, 3 to "J", 7 to COPY_TEXT_TYPE, 11 to "I", 13 to "Z", 14 to "I", 15 to "I"))
@@ -36,8 +39,8 @@ internal fun BytecodePatchContext.resolveCopySends(): Triple<CopySend, CopySend,
     if (text == null || photo == null || document == null) return null
     // The first argument is the account's holder, made with its own getInstance(I).
     val holder = listOf(text, photo, document).map { it.types()[0] }.toSet().singleOrNull() ?: return null
-    val made = classDefByOrNull(holder)?.methods?.any {
-        it.name == "getInstance" && AccessFlags.STATIC.isSet(it.accessFlags) && it.types() == listOf("I") && it.returnType == holder
+    val made = tgClassDefByOrNull(holder)?.methods?.any {
+        it.origName == "getInstance" && AccessFlags.STATIC.isSet(it.accessFlags) && it.types() == listOf("I") && it.origReturnType == holder
     } ?: false
     if (!made) return null
     // Stub registers: p0 account, p1/p2 chat, then the strings in order.

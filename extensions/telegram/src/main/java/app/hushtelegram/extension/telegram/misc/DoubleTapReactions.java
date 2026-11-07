@@ -54,7 +54,7 @@ public final class DoubleTapReactions {
         HookStatus.invoked(FamilyNames.DISABLE_DOUBLE_TAP_REACTIONS);
         try {
             if (reactions == null || !Utils.settingsReady() || !Settings.HIDE_REACTION_ROWS.get()) return reactions;
-            if (reactions.getClass().getField("reactions_as_tags").getBoolean(reactions)) return reactions;
+            if (HostNames.field(reactions.getClass(), "reactions_as_tags").getBoolean(reactions)) return reactions;
             HookStatus.counted(FamilyNames.DISABLE_DOUBLE_TAP_REACTIONS, "reactions left out of TalkBack");
             return null;
         } catch (Throwable failure) {

@@ -8,8 +8,9 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstructions
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.drafts.ChatSearchHooks
@@ -42,6 +43,10 @@ import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 private const val CHANNELS_POSTS = "Lorg/telegram/tgnet/TLRPC\$TL_channels_searchPosts;"
 private const val TITLES = "Lorg/telegram/messenger/R\$string;"
@@ -94,9 +99,9 @@ class SearchOnlyMyChatsFixtureTest {
                 Opcode.INVOKE_VIRTUAL, Opcode.NOP), step.subList(helper + 3, helper + 8).map { it.opcode })
             assertEquals("$name: the lookUp stub calls the helper on what it's handed",
                 listOf(Opcode.CHECK_CAST, Opcode.INVOKE_VIRTUAL_RANGE, Opcode.RETURN_VOID),
-                context.mutableClassDefBy(MY_CHATS_SEARCH).methods.single { it.name == "lookUp" }.body().map { it.opcode })
+                context.tgMutableClassDefBy(MY_CHATS_SEARCH).methods.single { it.origName == "lookUp" }.body().map { it.opcode })
             assertEquals("$name: the stub's call is the helper's lookup", step[helper].ref(),
-                context.mutableClassDefBy(MY_CHATS_SEARCH).methods.single { it.name == "lookUp" }.body()[1].ref())
+                context.tgMutableClassDefBy(MY_CHATS_SEARCH).methods.single { it.origName == "lookUp" }.body()[1].ref())
 
             // The tab row: every way to its end now passes the runtime its list first.
             val update = sites.tabs.update
@@ -185,8 +190,8 @@ class SearchOnlyMyChatsFixtureTest {
                 page.drop(5).any { it.opcode == Opcode.NEW_INSTANCE && it.ref() == PUBLIC_STORIES })
 
             // The stubs read what was found.
-            val runtime = context.mutableClassDefBy(MY_CHATS_SEARCH)
-            fun stub(name: String) = runtime.methods.single { it.name == name }.body()
+            val runtime = context.tgMutableClassDefBy(MY_CHATS_SEARCH)
+            fun stub(name: String) = runtime.methods.single { it.origName == name }.body()
             fun literals(body: List<Instruction>) = body.filter { it.opcode == Opcode.CONST }.map { (it as NarrowLiteralInstruction).narrowLiteral }.toSet()
             assertEquals("$name: public tabs", setOf(1, 4, 6, 5), literals(stub("publicTab")))
             assertEquals("$name: Downloads", setOf(2), literals(stub("downloadsTab")))
@@ -283,7 +288,7 @@ class SearchOnlyMyChatsFixtureTest {
             // The Apps tab's title reads another string, so no method names all five tabs.
             Triple("a public tab's title gone", "search tab titles has 0 matches") { context, sites ->
                 val apps = "$TITLES->AppsTab:I"
-                val title = context.mutableClassDefBy(sites.tabs.update.definingClass).methods.single { method ->
+                val title = context.tgMutableClassDefBy(sites.tabs.update.definingClass).methods.single { method ->
                     method.body().any { it.opcode == Opcode.SGET && it.ref() == apps } }
                 val body = title.body()
                 val at = body.indices.single { body[it].opcode == Opcode.SGET && body[it].ref() == apps }
@@ -297,7 +302,7 @@ class SearchOnlyMyChatsFixtureTest {
             Triple("public posts tab always added", "the public posts tab is no longer added only while it's open") { _, sites ->
                 val code = sites.tabs.update.body()
                 val posts = code.indices.first { at -> code[at].opcode == Opcode.CONST_4 &&
-                    (code[at] as NarrowLiteralInstruction).narrowLiteral == 5 && code.getOrNull(at + 1)?.call()?.name == "<init>" }
+                    (code[at] as NarrowLiteralInstruction).narrowLiteral == 5 && code.getOrNull(at + 1)?.call()?.origName == "<init>" }
                 val guard = (posts downTo 0).first { code[it].opcode == Opcode.IF_EQZ }
                 sites.tabs.update.replaceInstruction(guard, "nop")
             },
@@ -351,14 +356,14 @@ class SearchOnlyMyChatsFixtureTest {
             assertEquals("$name: one method names all five tabs", 1, titled.size)
             val shortcuts = FixtureDex.methodsWhere(build, { true }) { method -> method.body().let { body ->
                 body.indices.any { at -> at + 2 < body.size && body[at].opcode == Opcode.IGET_BOOLEAN &&
-                    body[at + 1].opcode == Opcode.ADD_INT_LIT8 && body[at + 2].call()?.name == "setPosition" } } }
+                    body[at + 1].opcode == Opcode.ADD_INT_LIT8 && body[at + 2].call()?.origName == "setPosition" } } }
             assertEquals("$name: one place opens search at a counted tab", 1, shortcuts.size)
             val posts = FixtureDex.methodsWhere(build, { true }) { method -> method.body().any {
                 it.opcode == Opcode.NEW_INSTANCE && it.ref() == CHANNELS_POSTS } }
             assertTrue("$name: the hashtag search asks for public posts: ${posts.map { it.definingClass }}",
-                posts.any { it.definingClass == HASHTAG_SEARCH && it.name == "searchHashtag" })
+                posts.any { it.origDefiningClass == HASHTAG_SEARCH && it.origName == "searchHashtag" })
             // Every account search answer is read by the one reader, whichever screen asked.
-            val readers = FixtureDex.methodsWhere(build, { true }) { method -> method.definingClass == CONTACTS_FOUND && method.name == "readParams" }
+            val readers = FixtureDex.methodsWhere(build, { true }) { method -> method.origDefiningClass == CONTACTS_FOUND && method.origName == "readParams" }
             assertEquals("$name: one account search answer reader", 1, readers.size)
             val stories = FixtureDex.methodsWhere(build, { true }) { method -> method.body().any {
                 it.opcode == Opcode.NEW_INSTANCE && it.ref() == PUBLIC_STORIES } }
@@ -369,7 +374,7 @@ class SearchOnlyMyChatsFixtureTest {
     private fun assertRefusedUntouched(file: File, case: String, reason: String, context: BytecodePatchContext) {
         val build = file.name
         val hosts = (myChatsSearchHosts(file) + popularAppsOwners(file)).map { it.type }.distinct()
-        val before = hosts.associateWith { type -> context.mutableClassDefBy(type).methods.map { it.body().map(::operation) } }
+        val before = hosts.associateWith { type -> context.tgMutableClassDefBy(type).methods.map { it.body().map(::operation) } }
         try {
             hidePopularAppsPatch.execute(context)
             fail("$build: $case was accepted")
@@ -379,17 +384,17 @@ class SearchOnlyMyChatsFixtureTest {
             assertTrue("$build: $case refused for its own reason: $message", message.contains(reason))
         }
         for (type in hosts) assertEquals("$build: $case doesn't partly mutate $type", before.getValue(type),
-            context.mutableClassDefBy(type).methods.map { it.body().map(::operation) })
+            context.tgMutableClassDefBy(type).methods.map { it.body().map(::operation) })
         for (flag in listOf("hidePopularApps", "myChatsSearch")) {
             assertEquals("$build: $case leaves $flag false", 0, statusOf(context, flag))
         }
     }
 
     private fun statusOf(context: BytecodePatchContext, flag: String) =
-        (context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.body()[0] as NarrowLiteralInstruction).narrowLiteral
+        (context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.body()[0] as NarrowLiteralInstruction).narrowLiteral
 
     private fun contextFor(build: File, runtime: Boolean = true): BytecodePatchContext {
-        val extension = ExtensionDex.classes().filter { runtime || it.type != MY_CHATS_SEARCH }
+        val extension = ExtensionDex.classes().filter { runtime || it.origType != MY_CHATS_SEARCH }
         return PatchContexts.of((extension + popularAppsOwners(build) + myChatsSearchHosts(build) + nameFoldHosts(build) +
             newChatsHosts(build)).distinctBy { it.type })
     }
@@ -418,7 +423,7 @@ private fun Method.namesEveryTab() = body().let { body ->
 internal fun myChatsSearchHosts(build: File): List<ClassDef> = HOSTS.getOrPut(build.path) {
     val found = FixtureDex.classesWhere(build, { true }) { method -> method.namesEveryTab() || method.body().let { body ->
         body.indices.any { at -> at + 2 < body.size && body[at].opcode == Opcode.IGET_BOOLEAN &&
-            body[at + 1].opcode == Opcode.ADD_INT_LIT8 && body[at + 2].call()?.name == "setPosition" } ||
+            body[at + 1].opcode == Opcode.ADD_INT_LIT8 && body[at + 2].call()?.origName == "setPosition" } ||
             body.any { it.opcode == Opcode.NEW_INSTANCE && it.ref() == PUBLIC_STORIES } } }
     // The adapter's tab items and the pager whose flag it reads.
     val adapter = found.single { classDef -> classDef.methods.any { it.namesEveryTab() } }
@@ -434,7 +439,7 @@ internal fun myChatsSearchHosts(build: File): List<ClassDef> = HOSTS.getOrPut(bu
 }
 
 private fun Method.body(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
-private fun Instruction.ref(): String? = (this as? ReferenceInstruction)?.reference?.toString()
+private fun Instruction.ref(): String? = origRef()
 private fun Instruction.call(): MethodReference? = (this as? ReferenceInstruction)?.reference as? MethodReference
 private fun operation(instruction: Instruction) = instruction.opcode to instruction.ref()
 /** An instruction's opcode, registers and reference; a goto that grew to reach past a hook still counts as that goto. */

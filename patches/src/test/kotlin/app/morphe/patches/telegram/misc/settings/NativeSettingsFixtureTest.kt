@@ -8,8 +8,9 @@ import app.morphe.FixtureDex
 import app.morphe.ExtensionDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.util.names.origRef
+import app.morphe.util.names.replaceInstruction
+import app.morphe.util.names.addInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -44,6 +45,11 @@ import org.junit.Test
 import java.io.File
 import java.lang.ref.SoftReference
 import java.security.MessageDigest
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origString
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 class NativeSettingsFixtureTest {
     @Test fun clickInputAndCallbackCastsRefuseDriftAtomically() {
@@ -55,10 +61,10 @@ class NativeSettingsFixtureTest {
                 plan.click.addInstruction(plan.clickIndex - 1, "const/16 v$input, 0x0")
             } else {
                 val tap = classes(context).flatMap { it.methods.toList() }.single { method ->
-                    method.name == "run" && method.returnType == "V" && method.parameterTypes.size == 5 &&
+                    method.origName == "run" && method.origReturnType == "V" && method.parameterTypes.size == 5 &&
                         method.body().any { it.ref() == plan.click.toString() }
                 }
-                val mutable = context.mutableClassDefBy(tap.definingClass).methods.single { it.toString() == tap.toString() }
+                val mutable = context.tgMutableClassDefBy(tap.definingClass).methods.single { it.toString() == tap.toString() }
                 when (change) {
                     "item cast" -> mutable.replaceInstruction(1, "check-cast v1, Ljava/lang/String;")
                     "view cast" -> mutable.replaceInstruction(1, "check-cast v2, Ljava/lang/String;")
@@ -81,8 +87,8 @@ class NativeSettingsFixtureTest {
             assertEquals("$build: the new Wallet row's time and availability skips", 2, skips.size)
             assertEquals(APPEND, stock[account - 1].ref())
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { settingsPatch.execute(context) })
-            val owner = context.mutableClassDefBy(plan.builder.definingClass)
-            val row = owner.methods.single { it.name == NATIVE_ROW_BRIDGE }
+            val owner = context.tgMutableClassDefBy(plan.builder.definingClass)
+            val row = owner.methods.single { it.origName == NATIVE_ROW_BRIDGE }
             val factory = plan.builder.body().mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
                 .first { it.parameterTypes.map { p -> p.toString() } == ROW_PARAMS }
             assertEquals(1, row.body().count { it.ref() == "$ENTRY->nativeSettingsTitle()Ljava/lang/String;" })
@@ -172,7 +178,7 @@ class NativeSettingsFixtureTest {
                 "commerceProfileGiftMenu" to 0,
                 "commercePremiumStickers" to 0, "commercePremiumEffects" to 0, "commercePremiumEmojiPacks" to 0,
                 "commerceEmojiStatus" to 0, "commercePremiumIcons" to 0, "commerceLocalEmojiStatus" to 0)) {
-                val flag = context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == name }
+                val flag = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == name }
                 assertEquals(expected, (flag.body().first() as NarrowLiteralInstruction).narrowLiteral)
             }
         }
@@ -220,20 +226,20 @@ class NativeSettingsFixtureTest {
         ) + listOf("openFromNative", "nativeSettingsTitle", "nativeRowShown").flatMap { listOf("missing $it", "access $it", "ambiguous $it") }) {
             val context = context(build)
             val plan = context.resolveNativeSettings()!!
-            val owner = context.mutableClassDefBy(plan.builder.definingClass)
+            val owner = context.tgMutableClassDefBy(plan.builder.definingClass)
             val click = plan.click
             val tap = classes(context).single { type -> type.methods.any { method ->
-                method.name == "run" && method.returnType == "V" && method.body().any { it.ref() == click.toString() }
+                method.origName == "run" && method.origReturnType == "V" && method.body().any { it.ref() == click.toString() }
             } }
-            val tapRun = tap.methods.single { it.name == "run" && it.returnType == "V" && it.parameterTypes.size == 5 }
+            val tapRun = tap.methods.single { it.origName == "run" && it.origReturnType == "V" && it.parameterTypes.size == 5 }
             val fill = classes(context).single { type -> type.methods.any { method ->
-                method.name == "run" && method.body().any { it.ref() == plan.builder.toString() }
+                method.origName == "run" && method.body().any { it.ref() == plan.builder.toString() }
             } }
-            val fillRun = fill.methods.single { it.name == "run" && it.returnType == "V" && it.parameterTypes.size == 2 }
-            val view = owner.methods.single { it.name == "createView" }
+            val fillRun = fill.methods.single { it.origName == "run" && it.origReturnType == "V" && it.parameterTypes.size == 2 }
+            val view = owner.methods.single { it.origName == "createView" }
             val rowFactory = plan.builder.body().mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
                 .first { it.parameterTypes.map { p -> p.toString() } == ROW_PARAMS }
-            val factory = context.mutableClassDefBy(rowFactory.definingClass).methods.single { it.toString() == rowFactory.toString() }
+            val factory = context.tgMutableClassDefBy(rowFactory.definingClass).methods.single { it.toString() == rowFactory.toString() }
             when (change) {
                 "missing builder" -> owner.methods.remove(plan.builder)
                 "ambiguous builder" -> owner.methods.add(copyNamed(plan.builder, "ambiguousNativeRows"))
@@ -248,13 +254,13 @@ class NativeSettingsFixtureTest {
                     click.replaceInstruction(at, "new-instance v8, Lorg/telegram/ui/ThemeActivity;")
                 }
                 "click callback target" -> tapRun.replaceInstruction(tapRun.body().indexOfFirst { it.ref() == click.toString() }, "nop")
-                "click capture" -> tap.methods.single { it.name == "<init>" }.replaceInstruction(0, "nop")
+                "click capture" -> tap.methods.single { it.origName == "<init>" }.replaceInstruction(0, "nop")
                 "fill dispatch" -> fillRun.replaceInstruction(1, "const/4 v1, 0x0")
                 "fill route" -> fillRun.replaceInstruction(fillRun.body().indexOfFirst { it.ref() == plan.builder.toString() }, "nop")
                 "view binding" -> view.replaceInstruction(view.body().indexOfFirst { instruction ->
-                    instruction.ref() == tap.methods.single { it.name == "<init>" }.toString() }, "nop")
+                    instruction.ref() == tap.methods.single { it.origName == "<init>" }.toString() }, "nop")
                 "view owner" -> view.replaceInstruction(0, "const/4 v0, 0x0")
-                "parent access" -> context.mutableClassDefBy(owner.superclass!!).methods.single { it.name == "getParentActivity" }
+                "parent access" -> context.tgMutableClassDefBy(owner.superclass!!).methods.single { it.origName == "getParentActivity" }
                     .accessFlags = AccessFlags.PRIVATE.value
                 "factory access" -> factory.accessFlags = AccessFlags.PRIVATE.value or AccessFlags.STATIC.value
                 "factory store" -> factory.replaceInstruction(3, "nop")
@@ -265,12 +271,12 @@ class NativeSettingsFixtureTest {
                     factory.replaceInstruction(5, "iput-object v5, v0, $subtitle")
                     factory.replaceInstruction(6, "iput-object v6, v0, $text")
                 }
-                "renderer title" -> context.mutableClassDefBy(rowFactory.definingClass).methods.single { it.name == "bindView" }
+                "renderer title" -> context.tgMutableClassDefBy(rowFactory.definingClass).methods.single { it.origName == "bindView" }
                     .replaceInstruction(45, "nop")
                 else -> {
-                    val entry = context.mutableClassDefBy(ENTRY)
+                    val entry = context.tgMutableClassDefBy(ENTRY)
                     val name = change.substringAfter(' ')
-                    val method = entry.methods.single { it.name == name }
+                    val method = entry.methods.single { it.origName == name }
                     when {
                         change.startsWith("missing") -> entry.methods.remove(method)
                         change.startsWith("access") -> method.accessFlags = AccessFlags.PRIVATE.value or AccessFlags.STATIC.value
@@ -289,9 +295,9 @@ class NativeSettingsFixtureTest {
                 val plan = context.resolveNativeSettings()!!
                 val ref = plan.builder.body().mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
                     .first { it.parameterTypes.map { p -> p.toString() } == ROW_PARAMS }
-                val factory = context.mutableClassDefBy(ref.definingClass).methods.single { it.toString() == ref.toString() }
-                val fieldRef = (factory.body()[slot] as ReferenceInstruction).reference.toString()
-                val item = context.mutableClassDefBy(ref.returnType)
+                val factory = context.tgMutableClassDefBy(ref.definingClass).methods.single { it.toString() == ref.origString() }
+                val fieldRef = (factory.body()[slot] as ReferenceInstruction).reference.origString()
+                val item = context.tgMutableClassDefBy(ref.returnType)
                 val field = item.fields.single { it.toString() == fieldRef }
                 when (change) {
                     "missing" -> item.fields.remove(field)
@@ -301,7 +307,7 @@ class NativeSettingsFixtureTest {
                     else -> {
                         item.fields.remove(field)
                         item.fields.add(ImmutableField(field.definingClass, field.name,
-                            if (field.type == "I") "J" else "I", field.accessFlags, null,
+                            if (field.origType == "I") "J" else "I", field.accessFlags, null,
                             field.annotations, field.hiddenApiRestrictions).toMutable())
                     }
                 }
@@ -317,7 +323,7 @@ class NativeSettingsFixtureTest {
             val plan = context.resolveNativeSettings()!!
             val factory = plan.builder.body().mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
                 .first { it.parameterTypes.map(CharSequence::toString) == ROW_PARAMS }
-            val renderer = context.mutableClassDefBy(factory.definingClass).methods.single { it.name == "bindView" }
+            val renderer = context.tgMutableClassDefBy(factory.definingClass).methods.single { it.origName == "bindView" }
             val code = renderer.body()
             val title = code[10].namedRegisters().first()
             val subtitle = code[11].namedRegisters().first()
@@ -368,9 +374,9 @@ class NativeSettingsFixtureTest {
             val plan = context.resolveNativeSettings()!!
             val factory = plan.builder.body().mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
                 .first { it.parameterTypes.map(CharSequence::toString) == ROW_PARAMS }
-            val renderer = context.mutableClassDefBy(factory.definingClass).methods.single { it.name == "bindView" }
-            val cell = context.mutableClassDefBy(renderer.body()[5].ref()!!)
-            val constructor = cell.methods.single { it.name == "<init>" }
+            val renderer = context.tgMutableClassDefBy(factory.definingClass).methods.single { it.origName == "bindView" }
+            val cell = context.tgMutableClassDefBy(renderer.body()[5].ref()!!)
+            val constructor = cell.methods.single { it.origName == "<init>" }
             val body = constructor.body()
             when (change) {
                 "title store" -> constructor.replaceInstruction(28, "iput-object v2, v11, ${body[41].ref()}")
@@ -382,7 +388,7 @@ class NativeSettingsFixtureTest {
                     AccessFlags.PRIVATE.value or AccessFlags.FINAL.value
                 else -> {
                     val ref = (body[if (change == "append return") 39 else 24] as ReferenceInstruction).reference as MethodReference
-                    val helper = context.mutableClassDefBy(ref.definingClass).methods.single { it.toString() == ref.toString() }
+                    val helper = context.tgMutableClassDefBy(ref.definingClass).methods.single { it.toString() == ref.origString() }
                     helper.replaceInstruction(3, "return-object v1")
                 }
             }
@@ -400,14 +406,14 @@ class NativeSettingsFixtureTest {
             assertTrue(warnings.single().contains("launcher shortcut and Android App info entry remain available"))
             for (hook in listOf("onApplicationCreate", "onActivityCreate", "onNewIntent"))
                 assertTrue(methods(context).any { it.body().any { instruction -> instruction.ref()?.startsWith("$ENTRY->$hook(") == true } })
-            assertTrue(methods(context).none { it.name == NATIVE_ROW_BRIDGE })
+            assertTrue(methods(context).none { it.origName == NATIVE_ROW_BRIDGE })
         }
     }
 
     private fun context(build: File) = PatchContexts.of(ExtensionDex.classes() + SettingsPatchHosts.all() + NativeSettingsFixtures.hosts(build))
     private fun classes(context: BytecodePatchContext) = mutableListOf<String>().also { types ->
         context.classDefForEach { types += it.type }
-    }.map { context.mutableClassDefBy(it) }
+    }.map { context.tgMutableClassDefBy(it) }
     private fun methods(context: BytecodePatchContext) = classes(context).flatMap { it.methods.toList() }
     private fun refusesUnchanged(detail: String, context: BytecodePatchContext) {
         val before = snapshot(context)
@@ -436,7 +442,7 @@ class NativeSettingsFixtureTest {
         ImmutableMethod(method.definingClass, name, method.parameters, result, flags,
             method.annotations, method.hiddenApiRestrictions, method.implementation).toMutable()
     private fun Method.body() = implementation?.instructions?.toList().orEmpty()
-    private fun Instruction.ref() = (this as? ReferenceInstruction)?.reference?.toString()
+    private fun Instruction.ref() = origRef()
     private fun operations(method: Method, excluded: IntRange = IntRange.EMPTY, skip: (Instruction) -> Boolean = { false }) =
         method.body().withIndex().filter { it.index !in excluded && it.value.opcode != Opcode.NOP && !skip(it.value) }
             .map { listOf(it.value.opcode, it.value.ref(), it.value.namedRegisters(),
@@ -456,7 +462,7 @@ internal object NativeSettingsFixtures {
         val owners = FixtureDex.classesWhere(build, { true }) { method ->
             method.parameterTypes.map { it.toString() } == listOf(method.definingClass, "Ljava/util/ArrayList;") &&
                 method.implementation?.instructions?.any { instruction ->
-                    (instruction as? ReferenceInstruction)?.reference?.toString() ==
+                    instruction.origRef() ==
                         "Lorg/telegram/messenger/R\$string;->SettingsAccount:I"
                 } == true
         }
@@ -465,7 +471,7 @@ internal object NativeSettingsFixtures {
         val builder = owner.methods.single { method ->
             method.parameterTypes.map { it.toString() } == listOf(owner.type, "Ljava/util/ArrayList;") &&
                 method.implementation?.instructions?.any {
-                    (it as? ReferenceInstruction)?.reference?.toString() ==
+                    it.origRef() ==
                         "Lorg/telegram/messenger/R\$string;->SettingsAccount:I"
                 } == true
         }
@@ -473,22 +479,22 @@ internal object NativeSettingsFixtures {
             (it as? ReferenceInstruction)?.reference as? MethodReference
         }.first { it.parameterTypes.map { p -> p.toString() } ==
             List(4) { "I" } + List(3) { "Ljava/lang/CharSequence;" } }
-        val view = owner.methods.single { it.name == "createView" }.implementation!!.instructions.toList()
+        val view = owner.methods.single { it.origName == "createView" }.implementation!!.instructions.toList()
         val list = view.indexOfFirst { instruction ->
             val call = (instruction as? ReferenceInstruction)?.reference as? MethodReference
-            call?.name == "<init>" && call.parameterTypes.any { it.toString() ==
+            call?.origName == "<init>" && call.parameterTypes.any { it.toString() ==
                 "Lorg/telegram/messenger/Utilities\$Callback5;" }
         }
         check(list >= 8)
         val callbacks = view.subList(list - 8, list).filter { it.opcode == Opcode.NEW_INSTANCE }
-            .map { (it as ReferenceInstruction).reference.toString() }
+            .map { (it as ReferenceInstruction).reference.origString() }
         val factoryClass = FixtureDex.classes(build, setOf(factory.definingClass)).getValue(factory.definingClass)
-        val cellType = factoryClass.methods.single { it.name == "bindView" }.implementation!!.instructions
-            .first { it.opcode == Opcode.CHECK_CAST }.let { (it as ReferenceInstruction).reference.toString() }
+        val cellType = factoryClass.methods.single { it.origName == "bindView" }.implementation!!.instructions
+            .first { it.opcode == Opcode.CHECK_CAST }.let { (it as ReferenceInstruction).reference.origString() }
         val cell = FixtureDex.classes(build, setOf(cellType)).getValue(cellType)
-        val helperTypes = cell.methods.single { it.name == "<init>" }.implementation!!.instructions.mapNotNull {
+        val helperTypes = cell.methods.single { it.origName == "<init>" }.implementation!!.instructions.mapNotNull {
             ((it as? ReferenceInstruction)?.reference as? MethodReference)?.takeIf { call ->
-                call.returnType in listOf("Landroid/widget/TextView;", "Landroid/widget/LinearLayout;")
+                call.origReturnType in listOf("Landroid/widget/TextView;", "Landroid/widget/LinearLayout;")
             }?.definingClass
         }
         (owners + listOf(factoryClass, cell) + FixtureDex.classes(build, (callbacks + helperTypes +

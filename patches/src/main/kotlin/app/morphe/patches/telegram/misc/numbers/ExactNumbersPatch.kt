@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.numbers
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
@@ -26,6 +26,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val EXACT_NUMBERS = "$EXTENSION_PACKAGE/misc/ExactNumbers;"
 internal const val LOCALE_CONTROLLER = "Lorg/telegram/messenger/LocaleController;"
@@ -72,7 +73,7 @@ internal fun BytecodePatchContext.resolveExactNumbers(): ExactNumbersSite {
     requireStatusMethod("exactNumbers")
     controlHook(EXACT_NUMBERS, "format", listOf("I", "[I"), "Ljava/lang/String;")
 
-    val owner = mutableClassDefByOrNull(LOCALE_CONTROLLER)
+    val owner = tgMutableClassDefByOrNull(LOCALE_CONTROLLER)
     controlShape(owner != null, "LocaleController is missing")
     val method = owner!!.methods.filter { it.toString() == SHORT_NUMBER }.controlSingle("short number formatter")
     controlShape(AccessFlags.STATIC.isSet(method.accessFlags), "the short number formatter is no longer static")

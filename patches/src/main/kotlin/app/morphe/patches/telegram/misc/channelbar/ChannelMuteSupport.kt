@@ -4,8 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.channelbar
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.addInstruction
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
@@ -18,6 +18,9 @@ import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val CHANNEL_MUTE = "$EXTENSION_PACKAGE/misc/ChannelMute;"
 internal const val MUTE_BEGIN = "$CHANNEL_MUTE->begin()V"
@@ -83,13 +86,13 @@ internal class MuteBubble(val draw: MutableMethod, val at: Int, val flag: Int, v
 private fun BytecodePatchContext.resolveMuteBubble(): MuteBubble? {
     var holder: String? = null
     classDefForEach { cls ->
-        if (holder == null && cls.methods.any { it.name == "getInputIslandBubbleContainer" && it.parameterTypes.isEmpty() }) holder = cls.type
+        if (holder == null && cls.methods.any { it.origName == "getInputIslandBubbleContainer" && it.parameterTypes.isEmpty() }) holder = cls.type
     }
-    val cls = holder?.let { mutableClassDefByOrNull(it) } ?: return null
-    val faded = cls.methods.singleOrNull { it.name == "setInputBubbleAlpha" && it.parameterTypes.map { p -> p.toString() } == listOf("I") }
+    val cls = holder?.let { tgMutableClassDefByOrNull(it) } ?: return null
+    val faded = cls.methods.singleOrNull { it.origName == "setInputBubbleAlpha" && it.parameterTypes.map { p -> p.toString() } == listOf("I") }
         ?.controlBody()?.firstOrNull { it.opcode == Opcode.IGET_OBJECT }?.controlField() ?: return null
     val draw = cls.methods.singleOrNull {
-        it.name == "dispatchDraw" && it.parameterTypes.map { p -> p.toString() } == listOf("Landroid/graphics/Canvas;") && it.implementation != null
+        it.origName == "dispatchDraw" && it.parameterTypes.map { p -> p.toString() } == listOf("Landroid/graphics/Canvas;") && it.implementation != null
     } ?: return null
     val body = draw.controlBody()
     val read = body.indices.singleOrNull {
@@ -140,8 +143,8 @@ internal fun BytecodePatchContext.resolveChannelMute(plan: ChannelBarPlan): Chan
     val reads = (0 until last).lastOrNull { body[it].writes(bar) }
     val field = reads?.takeIf { body[it].opcode == Opcode.IGET_OBJECT }?.let { body[it].controlField() }
         ?: return missing("the chat screen no longer reads its bar from a field before placing the last button")
-    val setVisibility = mutableClassDefByOrNull(field.type)?.methods?.singleOrNull {
-        it.name == "setVisibility" && it.parameterTypes.map { p -> p.toString() } == listOf("I") && it.returnType == "V" &&
+    val setVisibility = tgMutableClassDefByOrNull(field.type)?.methods?.singleOrNull {
+        it.origName == "setVisibility" && it.parameterTypes.map { p -> p.toString() } == listOf("I") && it.origReturnType == "V" &&
             !AccessFlags.STATIC.isSet(it.accessFlags) && !AccessFlags.ABSTRACT.isSet(it.accessFlags) && it.implementation != null
     } ?: return missing("the bar no longer has a setVisibility of its own")
     val bubble = resolveMuteBubble() ?: return missing("the chat screen no longer draws the bubble behind its bar in a way the switch can skip")

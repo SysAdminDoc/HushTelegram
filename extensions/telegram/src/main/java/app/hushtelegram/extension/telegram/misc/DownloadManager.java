@@ -207,19 +207,19 @@ public final class DownloadManager {
             ClassLoader loader = DownloadManager.class.getClassLoader();
             Class<?> configs = Class.forName("org.telegram.messenger.UserConfig", true, loader);
             Class<?> controllers = Class.forName("org.telegram.messenger.DownloadController", true, loader);
-            int account = configs.getField("selectedAccount").getInt(null);
-            return controllers.getMethod("getInstance", int.class).invoke(null, account);
+            int account = HostNames.field(configs, "selectedAccount").getInt(null);
+            return HostNames.method(controllers, "getInstance", int.class).invoke(null, account);
         }
 
         private static List<Item> items(String field, boolean runningFirst) throws Exception {
             Object controller = controller();
-            List<?> messages = (List<?>) controller.getClass().getField(field).get(controller);
+            List<?> messages = (List<?>) HostNames.field(controller.getClass(), field).get(controller);
             List<Item> items = new ArrayList<>();
             if (messages == null) return items;
             for (Object message : new ArrayList<>(messages)) {
                 if (message == null) continue;
-                Method name = message.getClass().getMethod("getFileName");
-                Method size = message.getClass().getMethod("getSize");
+                Method name = HostNames.method(message.getClass(), "getFileName");
+                Method size = HostNames.method(message.getClass(), "getSize");
                 String file = (String) name.invoke(message);
                 items.add(new Item(message, file == null || file.isEmpty() ? "?" : file,
                         ((Number) size.invoke(message)).longValue(), runningFirst && items.isEmpty()));
@@ -239,7 +239,7 @@ public final class DownloadManager {
             Object controller = controller();
             ArrayList<Object> one = new ArrayList<>();
             one.add(item.message);
-            controller.getClass().getMethod("cancelDownloading", ArrayList.class).invoke(controller, one);
+            HostNames.method(controller.getClass(), "cancelDownloading", ArrayList.class).invoke(controller, one);
         }
     }
 }

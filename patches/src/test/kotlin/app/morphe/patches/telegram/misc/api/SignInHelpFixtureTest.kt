@@ -19,6 +19,9 @@ import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstructio
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import app.morphe.util.names.origRef
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgMutableClassDefBy
 
 /**
  * Sign-in help on each declared build: exactly one method is Telegram's general error handler, the
@@ -38,7 +41,7 @@ class SignInHelpFixtureTest {
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
             assertEquals("$name: no warning", emptyList<String>(), PatchLogCapture.warnings { signInHelpPatch.execute(context) })
 
-            val handler = context.mutableClassDefBy(host.type).methods.single { isProcessError(it) }
+            val handler = context.tgMutableClassDefBy(host.type).methods.single { isProcessError(it) }
             val after = handler.controlBody()
             assertEquals("$name: five instructions", before.size + 5, after.size)
             assertEquals(
@@ -53,8 +56,8 @@ class SignInHelpFixtureTest {
             for (i in before.indices) {
                 assertEquals(
                     "$name: stock $i",
-                    listOf(before[i].opcode, (before[i] as? ReferenceInstruction)?.reference?.toString()),
-                    listOf(after[i + 5].opcode, (after[i + 5] as? ReferenceInstruction)?.reference?.toString()),
+                    listOf(before[i].opcode, before[i].origRef()),
+                    listOf(after[i + 5].opcode, after[i + 5].origRef()),
                 )
             }
         }
@@ -66,14 +69,14 @@ class SignInHelpFixtureTest {
             val name = build.name
             val hosts = FixtureDex.classesWhere(build, { true }) { it.googleFailureAt() != null }
             assertEquals(name, 2, hosts.size)
-            val operand = { op: Instruction -> op.opcode to (op as? ReferenceInstruction)?.reference?.toString() }
+            val operand = { op: Instruction -> op.opcode to op.origRef() }
             val stock = hosts.associate { host -> host.type to host.methods.single { it.googleFailureAt() != null }.controlBody().map(operand) }
 
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
             assertTrue(name, context.sayWhenGoogleFails())
 
             for (host in hosts) {
-                val after = context.mutableClassDefBy(host.type).methods.single { it.name == "didReceivedNotification" }.controlBody()
+                val after = context.tgMutableClassDefBy(host.type).methods.single { it.origName == "didReceivedNotification" }.controlBody()
                 val caught = after.indexOfFirst { it.opcode == Opcode.MOVE_EXCEPTION }
                 assertEquals(name, SIGN_IN_GOOGLE_FAILED, after[caught + 1].controlRef())
                 val call = after[caught + 1] as RegisterRangeInstruction

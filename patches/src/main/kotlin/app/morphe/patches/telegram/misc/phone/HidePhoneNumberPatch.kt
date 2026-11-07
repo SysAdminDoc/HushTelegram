@@ -5,7 +5,7 @@
 package app.morphe.patches.telegram.misc.phone
 
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -31,6 +31,11 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val HIDE_PHONE = "$EXTENSION_PACKAGE/misc/HidePhone;"
 internal const val SHOWN = "$HIDE_PHONE->shown(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;"
@@ -122,19 +127,19 @@ internal fun BytecodePatchContext.resolveHidePhoneNumber(): HidePhoneSite {
 
     val formatters = mutableListOf<String>()
     forEachClassMentioning(Mention.string(PHONE_FORMATS)) { cls ->
-        if (cls.methods.any { it.name == "<init>" && it.controlBody().any { i -> ((i as? ReferenceInstruction)?.reference as? StringReference)?.string == PHONE_FORMATS } }) {
+        if (cls.methods.any { it.origName == "<init>" && it.controlBody().any { i -> ((i as? ReferenceInstruction)?.reference as? StringReference)?.string == PHONE_FORMATS } }) {
             formatters += cls.type
         }
     }
     val formatter = formatters.controlSingle("phone formatter")
-    val format = mutableClassDefBy(formatter).methods.filter {
+    val format = tgMutableClassDefBy(formatter).methods.filter {
         !AccessFlags.STATIC.isSet(it.accessFlags) && it.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;") &&
-            it.returnType == "Ljava/lang/String;"
+            it.origReturnType == "Ljava/lang/String;"
     }.controlSingle("phone format method").let { "${it.definingClass}->${it.name}(Ljava/lang/String;)Ljava/lang/String;" }
 
     val found = mutableListOf<Triple<String, String, List<Int>>>()
     forEachClassMentioning(Mention.reference(format)) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.type in KEPT) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/") || cls.origType in KEPT) return@forEachClassMentioning
         cls.methods.forEach { method ->
             val body = method.controlBody()
             val indices = body.indices.filter { body[it].controlRef() == format }
@@ -143,18 +148,18 @@ internal fun BytecodePatchContext.resolveHidePhoneNumber(): HidePhoneSite {
     }
     controlShape(found.isNotEmpty(), "nothing formats a phone number for the screen")
     val calls = found.map { (type, wanted, indices) ->
-        val method = mutableClassDefBy(type).methods.single { signature(it) == wanted }
+        val method = tgMutableClassDefBy(type).methods.single { signature(it) == wanted }
         val body = method.controlBody()
         controlShape(indices.all { body[it].opcode == Opcode.INVOKE_VIRTUAL || body[it].opcode == Opcode.INVOKE_VIRTUAL_RANGE },
             "$type calls the phone formatter in an unexpected way")
         method to indices
     }
 
-    val config = classDefByOrNull(USER_CONFIG)
+    val config = tgClassDefByOrNull(USER_CONFIG)
     controlShape(config != null && listOf("getInstance(I)$USER_CONFIG", "isClientActivated()Z", "getCurrentUser()$TL_USER", "getMaxAccountCount()I")
         .all { wanted -> config.methods.any { signature(it) == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) } },
         "Telegram's account list changed")
-    controlShape(classDefByOrNull(TL_USER)?.fields?.any { it.name == "phone" && it.type == "Ljava/lang/String;" } == true,
+    controlShape(tgClassDefByOrNull(TL_USER)?.fields?.any { it.origName == "phone" && it.origType == "Ljava/lang/String;" } == true,
         "a Telegram user no longer has a phone number")
     return HidePhoneSite(formatter, format, calls)
 }

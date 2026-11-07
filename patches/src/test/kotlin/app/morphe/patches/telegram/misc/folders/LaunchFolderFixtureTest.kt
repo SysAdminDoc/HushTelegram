@@ -8,10 +8,11 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstructions
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
@@ -38,6 +39,12 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 /** Both pinned builds' chat list, whose first folder tab build asks the extension which tab to start on. */
 class LaunchFolderFixtureTest {
@@ -92,7 +99,7 @@ class LaunchFolderFixtureTest {
             val refs = launch.refs!!
             val all = context.resolveAllChats(launch).refs!!
             assertEquals(name, emptyList<String>(), PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) })
-            val stubs = context.mutableClassDefBy(LAUNCH_FOLDER).methods.associateBy { it.name }
+            val stubs = context.tgMutableClassDefBy(LAUNCH_FOLDER).methods.associateBy { it.name }
             // Each one whole: smali drops what it can't build, and the count shows it.
             val expected = mapOf(
                 "tabsEmpty" to (9 to listOf(refs.strip, refs.tabs, "Ljava/util/ArrayList;->isEmpty()Z")),
@@ -119,7 +126,7 @@ class LaunchFolderFixtureTest {
                 "scrollStrip" to (9 to listOf(refs.strip, refs.tabList!!, refs.scrollTo!!)),
             )
             // Fit all folder tabs: the strip, and the width of its tabs through the same list.
-            val fit = context.mutableClassDefBy(TAB_FIT).methods.associateBy { it.name }
+            val fit = context.tgMutableClassDefBy(TAB_FIT).methods.associateBy { it.name }
             assertEquals("$name: the strip", listOf(Opcode.CHECK_CAST, Opcode.IGET_OBJECT, Opcode.RETURN_OBJECT),
                 fit.getValue("tabStrip").body().filter { it.opcode != Opcode.NOP }.map { it.opcode })
             val range = fit.getValue("tabsRange").body()
@@ -225,7 +232,7 @@ class LaunchFolderFixtureTest {
                    val context: (BytecodePatchContext) -> Unit = { })
         val cases = listOf(
             Case("no archive title", "isn't reachable from the extension", hosts = { hosts ->
-                hosts.filter { it.type != "Lorg/telegram/messenger/LocaleController;" }
+                hosts.filter { it.origType != "Lorg/telegram/messenger/LocaleController;" }
             }),
             Case("a jump to the Done button's start", "something jumps back to the start of the chat list's Done button", context = { context ->
                 val done = context.resolveAllChats(context.resolveLaunchFolder()).done!!
@@ -274,13 +281,13 @@ class LaunchFolderFixtureTest {
                 method.addInstructionsWithLabels(method.body().size, "goto/16 :hush_in", ExternalLabel("hush_in", method.getInstruction(at)))
             }),
             Case("the selected tab computed", "the tab strip's selected tab changed", context = { context, list ->
-                val current = context.tabStrip(list).methods.single { it.name == "getCurrentTabId" }
+                val current = context.tabStrip(list).methods.single { it.origName == "getCurrentTabId" }
                 current.replaceInstruction(0, "const/4 v0, 0x0")
             }),
             Case("no BaseFragment", "the chat list's account or arguments can't be read", hosts = { hosts ->
-                hosts.filter { host -> host.methods.none { it.name == "getArguments" && it.returnType == "Landroid/os/Bundle;" } }
+                hosts.filter { host -> host.methods.none { it.origName == "getArguments" && it.origReturnType == "Landroid/os/Bundle;" } }
             }),
-            Case("no local folders", "isn't reachable from the extension", hosts = { hosts -> hosts.filter { it.type != LOCAL_FILTER } }),
+            Case("no local folders", "isn't reachable from the extension", hosts = { hosts -> hosts.filter { it.origType != LOCAL_FILTER } }),
         )
         for (build in Fixtures.declaredBuilds()) for (case in cases) {
             val where = "${build.name} ${case.name}"
@@ -326,12 +333,12 @@ class LaunchFolderFixtureTest {
             assertEquals(1, statusOf(context, "hideFolderCounters"))
             assertEquals(0, statusOf(context, "launchFolder"))
             assertEquals(0, statusOf(context, "hideAllChats"))
-            assertTrue(context.mutableClassDefBy(LAUNCH_FOLDER).methods.single { it.name == "select" }.body().none { it.opcode == Opcode.IPUT })
+            assertTrue(context.tgMutableClassDefBy(LAUNCH_FOLDER).methods.single { it.origName == "select" }.body().none { it.opcode == Opcode.IPUT })
         }
     }
 
     private fun statusOf(context: BytecodePatchContext, flag: String) =
-        (context.mutableClassDefBy(SETTINGS_STATUS).methods.single { it.name == flag }.body()[0] as NarrowLiteralInstruction).narrowLiteral
+        (context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.body()[0] as NarrowLiteralInstruction).narrowLiteral
 
     private fun operands(instruction: Instruction): List<Any?> = listOf(instruction.opcode, instruction.namedRegisters(), instruction.ref())
 }
@@ -368,7 +375,7 @@ internal fun launchFolderHosts(build: File): List<ClassDef> = LAUNCH_FOLDER_HOST
         "Lorg/telegram/messenger/R\$string;", "Lorg/telegram/messenger/LocaleController;")
     for (instruction in tabs.body()) {
         val field = (instruction as? ReferenceInstruction)?.reference as? com.android.tools.smali.dexlib2.iface.reference.FieldReference ?: continue
-        if (field.definingClass == list || field.definingClass.startsWith("Lorg/telegram/ui/")) {
+        if (field.origDefiningClass == list || field.origDefiningClass.startsWith("Lorg/telegram/ui/")) {
             wanted += field.definingClass
             field.type.trimStart('[').takeIf { it.startsWith("Lorg/telegram/ui/") }?.let { wanted += it }
         }
@@ -404,18 +411,18 @@ internal fun launchFolderHosts(build: File): List<ClassDef> = LAUNCH_FOLDER_HOST
 
 /** The class with the folder tab counter. */
 internal fun folderCounterHosts(build: File): List<ClassDef> = FixtureDex.classesWhere(build, { true }) { m ->
-    m.returnType == "I" && m.body().map { it.ref() }.let { MAIN_UNREAD in it && FILTER_UNREAD in it }
+    m.origReturnType == "I" && m.body().map { it.ref() }.let { MAIN_UNREAD in it && FILTER_UNREAD in it }
 }
 
 private fun BytecodePatchContext.tabBuildOrNull(list: String): MutableMethod? =
-    mutableClassDefByOrNull(list)?.methods?.singleOrNull { it.isTabBuildLike() }
+    tgMutableClassDefByOrNull(list)?.methods?.singleOrNull { it.isTabBuildLike() }
 
 private fun BytecodePatchContext.tabBuild(list: String): MutableMethod = tabBuildOrNull(list)!!
 
 /** The tab strip class whose tab list the first build reads. */
-private fun BytecodePatchContext.tabStrip(list: String) = mutableClassDefBy(
+private fun BytecodePatchContext.tabStrip(list: String) = tgMutableClassDefBy(
     tabBuild(list).body().first { it.ref()?.endsWith(":Ljava/util/ArrayList;") == true && it.opcode == Opcode.IGET_OBJECT &&
         it.ref()!!.substringBefore("->") != list }.ref()!!.substringBefore("->"))
 
 private fun Method.body(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
-private fun Instruction.ref() = (this as? ReferenceInstruction)?.reference?.toString()
+private fun Instruction.ref() = origRef()

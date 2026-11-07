@@ -20,6 +20,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import app.morphe.util.names.tgMutableClassDefBy
 
 /** The real reaction row and long-press menu builder of every declared build. */
 class HideReactionsFixtureTest {
@@ -40,7 +41,7 @@ class HideReactionsFixtureTest {
             val stock = classes.flatMap { it.methods }.single { it.isRowSetter() }
             val before = stock.controlBody()
             plan.apply()
-            val patched = context.mutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
+            val patched = context.tgMutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
             val after = patched.controlBody()
             assertEquals("${build.name}: register count", stock.implementation!!.registerCount, patched.implementation!!.registerCount)
             assertEquals(listOf(Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT_OBJECT, Opcode.CHECK_CAST), after.take(3).map { it.opcode })
@@ -60,7 +61,7 @@ class HideReactionsFixtureTest {
             val stock = classes.flatMap { it.methods }.single { it.isMenuBuilder() }
             val before = stock.controlBody()
             plan.apply()
-            val patched = context.mutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
+            val patched = context.tgMutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
             val after = patched.controlBody()
             val at = after.indexOfFirst { it.controlRef() == "$DOUBLE_TAP_REACTIONS->picker(Z)Z" }
             assertTrue("${build.name}: hook inserted", at > 0)
@@ -85,7 +86,7 @@ class HideReactionsFixtureTest {
             val stock = classes.flatMap { it.methods }.single { it.isSpokenBuilder() }
             val before = stock.controlBody().filter { it.opcode != Opcode.NOP }
             plan.apply()
-            val patched = context.mutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
+            val patched = context.tgMutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
             val after = patched.controlBody().filter { it.opcode != Opcode.NOP }
             assertEquals("${build.name}: register count", stock.implementation!!.registerCount, patched.implementation!!.registerCount)
             val at = after.indexOfFirst { it.controlRef() == "$DOUBLE_TAP_REACTIONS->spoken(Ljava/lang/Object;)Ljava/lang/Object;" }
@@ -115,7 +116,7 @@ class HideReactionsFixtureTest {
             val stock = classes.flatMap { it.methods }.single { it.isSelectionSetter() }
             val before = stock.controlBody()
             plan.apply()
-            val patched = context.mutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
+            val patched = context.tgMutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
             val after = patched.controlBody()
             assertEquals("${build.name}: register count", stock.implementation!!.registerCount, patched.implementation!!.registerCount)
             assertEquals(listOf(Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT_OBJECT), after.take(2).map { it.opcode })
@@ -137,7 +138,7 @@ class HideReactionsFixtureTest {
             val stockAt = stockBody.indexOfLast { it.controlRef() == PREMIUM_BLOCKED }
             picker.apply()
             plan.apply()
-            val patched = context.mutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
+            val patched = context.tgMutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
             val after = patched.controlBody()
             assertEquals("${build.name}: register count", stock.implementation!!.registerCount, patched.implementation!!.registerCount)
             val at = after.indexOfFirst { it.controlRef() == "$DOUBLE_TAP_REACTIONS->packNote(I)Z" }

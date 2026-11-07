@@ -24,6 +24,9 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.value.IntEncodedValue
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val CHAT_TYPE_FOLDERS = "$EXTENSION_PACKAGE/misc/ChatTypeFolders;"
 private const val STRING = "Ljava/lang/String;"
@@ -453,13 +456,13 @@ internal fun BytecodePatchContext.resolveChatTypeFolders(): String {
 
     // Telegram calls a request's callback through RequestDelegate's one method, and the extension answers
     // it with a Proxy that knows only that method, so the interface has to be exactly that.
-    val delegate = mutableClassDefByOrNull(REQUEST_DELEGATE)
+    val delegate = tgMutableClassDefByOrNull(REQUEST_DELEGATE)
     controlShape(delegate != null && AccessFlags.PUBLIC.isSet(delegate.accessFlags) &&
         AccessFlags.INTERFACE.isSet(delegate.accessFlags) &&
         delegate.methods.map { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" } == listOf(DELEGATE_RUN),
         "Telegram's request callback changed")
 
-    val controller = mutableClassDefByOrNull(MESSAGES_CONTROLLER)
+    val controller = tgMutableClassDefByOrNull(MESSAGES_CONTROLLER)
     controlShape(controller != null, "MessagesController is missing")
     // A starting value the compiler moved into the class's static values, or failing that, the last
     // constant the register held when the static initializer puts it, straight through.
@@ -467,7 +470,7 @@ internal fun BytecodePatchContext.resolveChatTypeFolders(): String {
     for (field in controller!!.staticFields) {
         (field.initialValue as? IntEncodedValue)?.let { stored["$MESSAGES_CONTROLLER->${field.name}:${field.type}"] = it.value }
     }
-    val init = controller.methods.singleOrNull { it.name == "<clinit>" }?.controlBody().orEmpty()
+    val init = controller.methods.singleOrNull { it.origName == "<clinit>" }?.controlBody().orEmpty()
     val constants = mutableMapOf<Int, Int>()
     for (instruction in init) {
         val register = (instruction as? OneRegisterInstruction)?.registerA ?: continue
@@ -484,7 +487,7 @@ internal fun BytecodePatchContext.resolveChatTypeFolders(): String {
     val remove = controller.methods.singleOrNull { it.toString() == REMOVE_FILTER }?.controlBody().orEmpty()
     val read = remove.indexOfFirst { it.opcode == Opcode.SGET && it.controlRef() == FILTERS_UPDATED }
     val post = if (read < 0) null else remove.drop(read + 1).firstOrNull { it.opcode == Opcode.INVOKE_VIRTUAL }?.call()
-    controlShape(post != null && post.definingClass == NOTIFICATIONS &&
+    controlShape(post != null && post.origDefiningClass == NOTIFICATIONS &&
         post.controlShape(listOf("I", "[Ljava/lang/Object;"), "V"), "Telegram's folder list update changed")
 
     for ((reference, static) in listOf(SELECTED_ACCOUNT to true, USER_CONFIG_INSTANCE to true, CLIENT_ACTIVATED to false,

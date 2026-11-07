@@ -4,7 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.messagemenu
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.loadsInt
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
@@ -51,6 +52,12 @@ import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstructio
 import com.android.tools.smali.dexlib2.iface.instruction.SwitchPayload
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val MESSAGE_MENU = "$EXTENSION_PACKAGE/misc/MessageMenu;"
 internal const val FILL = "$MESSAGE_MENU->fill(Ljava/lang/Object;Ljava/lang/Object;Ljava/util/ArrayList;Ljava/util/ArrayList;Ljava/util/ArrayList;)V"
@@ -219,12 +226,12 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     val option = built.getOrNull(label + 1) as? NarrowLiteralInstruction
     val add = built.getOrNull(label + 2)
     val helper = add?.call()
-    controlShape(built[label].opcode == Opcode.SGET && option != null && built[label + 1].opcode in setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST) &&
+    controlShape(built[label].loadsInt() && option != null && built[label + 1].opcode in setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST) &&
         add != null && add.opcode == Opcode.INVOKE_STATIC && helper != null &&
-        helper.parameterTypes.map(CharSequence::toString) == listOf("I", "I", LIST, LIST) && helper.returnType == "V" &&
+        helper.parameterTypes.map(CharSequence::toString) == listOf("I", "I", LIST, LIST) && helper.origReturnType == "V" &&
         add.namedRegisters().take(2) == listOf((built[label] as OneRegisterInstruction).registerA, (option as OneRegisterInstruction).registerA),
         "Forward no longer goes into the menu with its number")
-    val helperMethod = classDefByOrNull(helper!!.definingClass)?.methods?.singleOrNull { signature(it) == helper.toString() }
+    val helperMethod = tgClassDefByOrNull(helper!!.definingClass)?.methods?.singleOrNull { signature(it) == helper.toString() }
     val helperBody = helperMethod?.controlBody().orEmpty()
     val base = (helperMethod?.implementation?.registerCount ?: 0) - 4
     controlShape(helperMethod != null && AccessFlags.STATIC.isSet(helperMethod.accessFlags) && helperBody.map { it.opcode } == listOf(
@@ -239,21 +246,21 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     val forwardOption = option!!.narrowLiteral
 
     // The selected message and its album, as the builder reads them.
-    val selected = built.firstOrNull { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.definingClass == chat && f.type == MESSAGE } == true }?.controlField()
-    val group = built.firstOrNull { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.definingClass == chat && f.type == GROUPED } == true }?.controlField()
+    val selected = built.firstOrNull { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.origDefiningClass == chat && f.origType == MESSAGE } == true }?.controlField()
+    val group = built.firstOrNull { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.origDefiningClass == chat && f.origType == GROUPED } == true }?.controlField()
     controlShape(selected != null && group != null, "the message menu builder no longer reads the selected message and its album")
     for (field in listOf(selected!!, group!!)) {
-        val declared = chatClass.fields.filter { it.name == field.name && it.type == field.type }.controlSingle("${field.name} field")
+        val declared = chatClass.fields.filter { it.origName == field.origName && it.origType == field.origType }.controlSingle("${field.name} field")
         controlShape(AccessFlags.PUBLIC.isSet(declared.accessFlags) && !AccessFlags.STATIC.isSet(declared.accessFlags), "${field.name} is inaccessible")
     }
 
     // The choice handler: a switch on the number that starts from the selected message and clears its album after.
     val choose = chatClass.methods.filter { m ->
-        !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
+        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
             m.controlBody().let { body -> body.any { it.opcode == Opcode.PACKED_SWITCH || it.opcode == Opcode.SPARSE_SWITCH } && body.any { it.controlString() == "hasInvoice" } }
     }.controlSingle("message menu choice")
     val chosen = choose.controlBody()
-    controlShape(chosen.firstOrNull { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.type == MESSAGE }?.controlField().toString() == selected.toString(),
+    controlShape(chosen.firstOrNull { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.origType == MESSAGE }?.controlField().toString() == selected.toString(),
         "the menu choice no longer starts from the selected message")
     controlShape(chosen.any { it.opcode == Opcode.IPUT_OBJECT && it.controlField().toString() == group.toString() }, "the menu choice no longer clears the selected album")
     val cases = chosen.filterIsInstance<SwitchPayload>().flatMap { it.switchElements.map { e -> e.key } }
@@ -261,23 +268,23 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     controlShape(ControlFlow.of(choose).normal.none { 0 in it }, "something jumps back to the start of the menu choice")
 
     // The chat's activity, through the getter the choice handler itself uses.
-    val activity = chosen.mapNotNull { it.call() }.firstOrNull { it.name == "getParentActivity" && it.parameterTypes.isEmpty() && it.returnType == ACTIVITY }
-    val activityOwner = activity?.let { classDefByOrNull(it.definingClass) }
+    val activity = chosen.mapNotNull { it.call() }.firstOrNull { it.origName == "getParentActivity" && it.parameterTypes.isEmpty() && it.origReturnType == ACTIVITY }
+    val activityOwner = activity?.let { tgClassDefByOrNull(it.definingClass) }
     controlShape(activityOwner != null && AccessFlags.PUBLIC.isSet(activityOwner.accessFlags) && activityOwner.methods.any {
         signature(it) == activity.toString() && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
     }, "the chat screen no longer has its activity")
 
     // Telegram's file provider, which the choice handler's Share hands its files to under the app's ".provider" authority.
-    val provider = chosen.mapNotNull { it.call() }.filter { it.parameterTypes.map(CharSequence::toString) == listOf(CONTEXT, "Ljava/lang/String;", FILE) && it.returnType == URI }
+    val provider = chosen.mapNotNull { it.call() }.filter { it.parameterTypes.map(CharSequence::toString) == listOf(CONTEXT, "Ljava/lang/String;", FILE) && it.origReturnType == URI }
         .map { it.toString() }.distinct().controlSingle("Telegram's file provider")
-    val providerOwner = classDefByOrNull(provider.substringBefore("->"))
+    val providerOwner = tgClassDefByOrNull(provider.substringBefore("->"))
     controlShape(providerOwner != null && AccessFlags.PUBLIC.isSet(providerOwner.accessFlags) && providerOwner.methods.any {
         signature(it) == provider && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags)
     } && chosen.any { it.controlRef() == APPLICATION_ID } && chosen.any { it.controlString() == ".provider" }, "Telegram's file provider changed")
 
     // Telegram's forward into the open chat, which the extension calls with the sender hidden.
     val forward = chatClass.methods.filter { m ->
-        !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf(LIST, "Z", "Z", "Z", "I", "J") &&
+        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf(LIST, "Z", "Z", "Z", "I", "J") &&
             m.controlBody().count { it.controlRef() == FORWARD_SEND } == 1
     }.controlSingle("forward into the open chat")
     controlShape(AccessFlags.PUBLIC.isSet(forward.accessFlags), "the forward into the open chat is inaccessible")
@@ -295,10 +302,10 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
 internal fun BytecodePatchContext.messageMenuBuilders(): List<Pair<String, String>> {
     val builders = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.reference(FORWARD_LABEL) and Mention.reference(CANCEL_SENDING)) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
             val body = m.controlBody()
-            if (!AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "V" &&
+            if (!AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" &&
                 m.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE, LIST, LIST, LIST) &&
                 body.any { it.controlRef() == FORWARD_LABEL } && body.any { it.controlRef() == CANCEL_SENDING }) builders += cls.type to signature(m)
         }
@@ -315,7 +322,7 @@ internal data class MessageMenuBuilder(val chat: String, val chatClass: MutableC
  */
 internal fun BytecodePatchContext.messageMenuBuilder(builders: List<Pair<String, String>>, patch: String): MessageMenuBuilder {
     val (chat, wanted) = builders.controlSingle("message menu builder")
-    val chatClass = mutableClassDefBy(chat)
+    val chatClass = tgMutableClassDefBy(chat)
     controlShape(AccessFlags.PUBLIC.isSet(chatClass.accessFlags), "the chat screen is inaccessible")
     val fill = chatClass.methods.single { signature(it) == wanted }
     val built = fill.controlBody()

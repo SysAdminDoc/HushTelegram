@@ -5,7 +5,7 @@
 package app.morphe.patches.telegram.misc.volume
 
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
@@ -20,6 +20,9 @@ import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origSuperclass
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val VIDEO_UPRIGHT = "$EXTENSION_PACKAGE/misc/VideoUpright;"
 internal const val LISTENER_ON_HOOK = "$VIDEO_UPRIGHT->listenerOn(Landroid/view/OrientationEventListener;)V"
@@ -50,7 +53,7 @@ internal class UprightHooks(val edits: List<Edit>, val missing: String?) {
     }
 
     private fun grouped(context: BytecodePatchContext) = edits.groupBy { it.type to it.signature }.map { (key, calls) ->
-        context.mutableClassDefBy(key.first).methods.single { it.toString() == key.second } to calls
+        context.tgMutableClassDefBy(key.first).methods.single { it.toString() == key.second } to calls
     }
 
     /** Each call keeps its registers: the activity, the listener or the side, and any result goes where it did. */
@@ -89,9 +92,9 @@ internal fun BytecodePatchContext.resolveVideoUpright(turn: FullScreenTurn): Upr
     var activityFields = 0
     val wanted = listOf(SET_ORIENTATION, GET_ORIENTATION, LISTENER_ON, LISTENER_OFF)
     forEachClassMentioning(Mention.type(PHOTO_VIEWER) and Mention.anyReference(wanted)) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
-        if (cls.type == PHOTO_VIEWER) activityFields += cls.fields.count { it.type == ACTIVITY }
-        if (cls.superclass == LISTENER && cls.fields.count { it.type == PHOTO_VIEWER } == 1) listenerTypes += cls.type
+        if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        if (cls.origType == PHOTO_VIEWER) activityFields += cls.fields.count { it.origType == ACTIVITY }
+        if (cls.origSuperclass == LISTENER && cls.fields.count { it.origType == PHOTO_VIEWER } == 1) listenerTypes += cls.type
         for (m in cls.methods) {
             val body = m.controlBody()
             if (body.none { it.controlRef()?.startsWith("$PHOTO_VIEWER->") == true }) continue

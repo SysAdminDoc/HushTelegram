@@ -11,6 +11,7 @@ import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.requireReachable
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val CHAT_SORT = "$EXTENSION_PACKAGE/misc/ChatSort;"
 internal const val DIALOG_LAST_DATE = "Lorg/telegram/tgnet/TLRPC\$Dialog;->last_message_date:I"
@@ -26,7 +27,7 @@ internal fun BytecodePatchContext.requireChatSortRuntime() {
     controlHook(CHAT_SORT, "lastDate", listOf("Ljava/lang/Object;"), "I")
     controlHook(CHAT_SORT, "isFolder", listOf("Ljava/lang/Object;"), "Z")
     requireReachable(DIALOG_LAST_DATE, false)
-    controlShape(mutableClassDefByOrNull(ARCHIVE_ROW) != null, "$ARCHIVE_ROW is missing")
+    controlShape(tgMutableClassDefByOrNull(ARCHIVE_ROW) != null, "$ARCHIVE_ROW is missing")
 }
 
 internal fun BytecodePatchContext.writeChatSortStubs() {

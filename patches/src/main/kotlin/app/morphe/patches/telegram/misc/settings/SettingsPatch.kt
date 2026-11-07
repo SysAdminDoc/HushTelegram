@@ -12,8 +12,10 @@
  */
 package app.morphe.patches.telegram.misc.settings
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.loadsInt
+import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstruction
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
@@ -54,6 +56,15 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import org.w3c.dom.Element
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origInterfaces
+import app.morphe.util.names.origName
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origString
+import app.morphe.util.names.origSuperclass
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val ENTRY = "$EXTENSION_PACKAGE/settings/SettingsEntry;"
 
@@ -92,10 +103,10 @@ internal fun BytecodePatchContext.declaredInHierarchy(
     name: String,
     vararg parameters: String,
 ): MutableMethod = superclassChain(type)
-    .mapNotNull { mutableClassDefByOrNull(it) }
+    .mapNotNull { tgMutableClassDefByOrNull(it) }
     .firstNotNullOfOrNull { classDef ->
         classDef.methods.singleOrNull { method ->
-            method.name == name && method.returnType == "V" && method.implementation != null &&
+            method.origName == name && method.origReturnType == "V" && method.implementation != null &&
                 method.parameterTypes.map { it.toString() } == parameters.toList()
         }
     } ?: throw PatchException("No class of $type's hierarchy declares $name(${parameters.joinToString("")})V")
@@ -166,7 +177,7 @@ private val NATIVE_ROWS = listOf(
 )
 private fun nativeLabel(name: String) = "Lorg/telegram/messenger/R\$string;->Settings$name:I"
 private fun nativeIcon(name: String) = "Lorg/telegram/messenger/R\$drawable;->settings_$name:I"
-private fun Instruction.nativeRef() = (this as? ReferenceInstruction)?.reference?.toString()
+private fun Instruction.nativeRef() = origRef()
 private fun Instruction.nativeCall() = (this as? ReferenceInstruction)?.reference as? MethodReference
 private fun Instruction.nativeField() = (this as? ReferenceInstruction)?.reference as? FieldReference
 private fun Instruction.nativeInt() = (this as? NarrowLiteralInstruction)?.narrowLiteral
@@ -192,7 +203,7 @@ private fun Method.nativeCallable(static: Boolean) =
         !AccessFlags.ABSTRACT.isSet(accessFlags) && !AccessFlags.NATIVE.isSet(accessFlags) && nativeBody().isNotEmpty()
 
 private fun BytecodePatchContext.requireSettingsEntry() {
-    val owner = mutableClassDefBy(ENTRY)
+    val owner = tgMutableClassDefBy(ENTRY)
     nativeShape(AccessFlags.PUBLIC.isSet(owner.accessFlags), "extension entry is inaccessible")
     for ((name, parameters, result) in listOf(
         Triple("onApplicationCreate", listOf("Landroid/content/Context;"), "V"),
@@ -202,7 +213,7 @@ private fun BytecodePatchContext.requireSettingsEntry() {
         Triple("nativeSettingsTitle", emptyList(), "Ljava/lang/String;"),
         Triple("nativeRowShown", emptyList(), "Z"),
     )) {
-        val method = owner.methods.filter { it.name == name }.nativeSingle("extension $name")
+        val method = owner.methods.filter { it.origName == name }.nativeSingle("extension $name")
         nativeShape(method.nativeShape(parameters, result) && method.nativeCallable(true), "extension $name changed")
     }
 }
@@ -220,13 +231,13 @@ internal data class NativeSettingsPlan(
  */
 internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
     val classes = mutableMapOf<String, ClassDef>()
-    classDefForEach { if (!it.type.startsWith(EXTENSION_ROOT)) classes[it.type] = it }
+    classDefForEach { if (!it.origType.startsWith(EXTENSION_ROOT)) classes[it.type] = it }
     val candidates = classes.values.flatMap { it.methods.toList() }.filter { method ->
         method.nativeShape(listOf(method.definingClass, NATIVE_LIST), "V") &&
             NATIVE_ROWS.any { (_, title, _) -> method.nativeBody().any { it.nativeRef() == nativeLabel(title) } }
     }
     val shells = classes.values.filter { type -> type.methods.any { method ->
-        method.name == "createView" && method.nativeBody().any {
+        method.origName == "createView" && method.nativeBody().any {
             it.nativeRef() == "Lorg/telegram/messenger/R\$string;->Settings:I"
         } && method.nativeBody().any { it.nativeCall()?.parameterTypes?.map { p -> p.toString() }?.drop(1) ==
             listOf("Lorg/telegram/messenger/Utilities\$Callback2;", "Lorg/telegram/messenger/Utilities\$Callback5;",
@@ -235,10 +246,10 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
     if (candidates.isEmpty() && shells.isEmpty()) return null
     val found = candidates.nativeSingle("row builder")
     val owner = classes.getValue(found.definingClass)
-    nativeShape(shells.size == 1 && shells.single().type == owner.type, "view owner is missing or ambiguous")
+    nativeShape(shells.size == 1 && shells.single().origType == owner.origType, "view owner is missing or ambiguous")
     nativeShape(AccessFlags.PUBLIC.isSet(owner.accessFlags) && found.nativeCallable(true), "row owner is inaccessible")
-    nativeShape(owner.methods.none { it.name == NATIVE_ROW_BRIDGE }, "row bridge already exists")
-    val builder = mutableClassDefBy(owner.type).methods.filter { it.toString() == found.toString() }.nativeSingle("mutable builder")
+    nativeShape(owner.methods.none { it.origName == NATIVE_ROW_BRIDGE }, "row bridge already exists")
+    val builder = tgMutableClassDefBy(owner.type).methods.filter { it.toString() == found.toString() }.nativeSingle("mutable builder")
     val body = builder.nativeBody()
     val flow = builder.nativeFlow()
     nativeShape(body.none { it.nativeInt() == NATIVE_ROW_ID }, "dedicated row identity collides")
@@ -257,8 +268,8 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
         val idAt = callAt - 3
         val end = callAt + 2
         nativeShape(start >= 0 && end < body.size && (previousEnd < 0 || start == previousEnd + 1) &&
-            body[start].opcode == Opcode.SGET && body[start].nativeRef() == nativeIcon(icon) &&
-            body[at].opcode == Opcode.SGET && body[at + 1].opcode == Opcode.INVOKE_STATIC &&
+            body[start].loadsInt() && body[start].nativeRef() == nativeIcon(icon) &&
+            body[at].loadsInt() && body[at + 1].opcode == Opcode.INVOKE_STATIC &&
             body[at + 1].nativeRef() == NATIVE_STRING && body[at].namedRegisters() == body[at + 1].namedRegisters() &&
             body[at + 2].opcode == Opcode.MOVE_RESULT_OBJECT &&
             body[callAt].opcode == Opcode.INVOKE_STATIC_RANGE &&
@@ -278,7 +289,7 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
                 body[at + 4].opcode == Opcode.MOVE_RESULT_OBJECT &&
                 body[at + 4].namedRegisters() == listOf(args[5]), "language subtitle changed")
         } else {
-            nativeShape(body[at + 3].opcode == Opcode.SGET && body[at + 3].nativeRef() == nativeLabel(title + "Info") &&
+            nativeShape(body[at + 3].loadsInt() && body[at + 3].nativeRef() == nativeLabel(title + "Info") &&
                 body[at + 4].opcode == Opcode.INVOKE_STATIC && body[at + 4].nativeRef() == NATIVE_STRING &&
                 body[at + 3].namedRegisters() == body[at + 4].namedRegisters() &&
                 body[at + 5].opcode == Opcode.MOVE_RESULT_OBJECT &&
@@ -318,9 +329,9 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
             Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.INT_TO_LONG, Opcode.CONST_16,
             Opcode.SHL_LONG_2ADDR, Opcode.INT_TO_LONG, Opcode.CONST_WIDE, Opcode.AND_LONG_2ADDR,
             Opcode.OR_LONG_2ADDR, Opcode.IPUT_WIDE, Opcode.RETURN_OBJECT,
-        ) && makeBody[0].nativeRef() == factoryOwner.type && makeBody[1].nativeCall()?.let {
-            it.definingClass == itemType && it.parameterTypes.map { p -> p.toString() } == listOf("Ljava/lang/Class;") &&
-                it.returnType == itemType
+        ) && makeBody[0].nativeRef() == factoryOwner.origType && makeBody[1].nativeCall()?.let {
+            it.origDefiningClass == itemType && it.parameterTypes.map { p -> p.toString() } == listOf("Ljava/lang/Class;") &&
+                it.origReturnType == itemType
         } == true && makeBody.map { it.namedRegisters() } == listOf(listOf(0), listOf(0), listOf(0),
             listOf(1, 0), listOf(4, 0), listOf(5, 0), listOf(6, 0), listOf(7, 0), listOf(3, 3), listOf(1),
             listOf(3, 1), listOf(1, 2), listOf(5), listOf(1, 5), listOf(1, 3), listOf(1, 0), listOf(0)) &&
@@ -331,12 +342,12 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
     for (index in listOf(3, 4, 5, 6, 7, 15)) {
         val field = makeBody[index].nativeField()!!
         val declared = item.fields.filter { it.toString() == field.toString() }.nativeSingle("cell field")
-        nativeShape(field.definingClass == itemType && AccessFlags.PUBLIC.isSet(declared.accessFlags) &&
+        nativeShape(field.origDefiningClass == itemType && AccessFlags.PUBLIC.isSet(declared.accessFlags) &&
             !AccessFlags.STATIC.isSet(declared.accessFlags) && !AccessFlags.FINAL.isSet(declared.accessFlags) &&
-            field.type == if (index in listOf(3, 4)) "I" else if (index == 15) "J" else "Ljava/lang/CharSequence;",
+            field.origType == if (index in listOf(3, 4)) "I" else if (index == 15) "J" else "Ljava/lang/CharSequence;",
             "cell field type or access changed")
     }
-    val render = factoryOwner.methods.filter { it.name == "bindView" }.nativeSingle("cell renderer")
+    val render = factoryOwner.methods.filter { it.origName == "bindView" }.nativeSingle("cell renderer")
     val painted = render.nativeBody()
     nativeShape(render.nativeCallable(false) && render.parameterTypes.take(3).map { it.toString() } ==
         listOf("Landroid/view/View;", itemType, "Z") && painted.size == 58 &&
@@ -349,11 +360,11 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
         } && painted[2].nativeInt() == 32, "cell renderer no longer reads the factory's values")
     val cell = classes[painted[5].nativeRef()]
         ?: throw PatchException("HushTelegram settings: native self-settings cell is missing (before editing)")
-    val constructor = cell.methods.filter { it.name == "<init>" }.nativeSingle("cell constructor")
+    val constructor = cell.methods.filter { it.origName == "<init>" }.nativeSingle("cell constructor")
     val built = constructor.nativeBody()
     // Telegram 13.0 loads the column orientation (1) once at the top, where it also marks the cell
     // as having an icon background, and reuses it for the text column.
-    nativeShape(cell.superclass == "Landroid/widget/LinearLayout;" && constructor.nativeCallable(false) &&
+    nativeShape(cell.origSuperclass == "Landroid/widget/LinearLayout;" && constructor.nativeCallable(false) &&
         constructor.parameterTypes.firstOrNull()?.toString() == "Landroid/content/Context;" &&
         constructor.implementation!!.registerCount == 14 && built.size > 53 &&
         built[1].opcode == Opcode.CONST_4 && built[1].namedRegisters() == listOf(0) && built[1].nativeInt() == 1 &&
@@ -386,7 +397,7 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
     // R8 may move these helpers to unrelated packages. Prove their bodies, not their names.
     for (at in listOf(24, 39)) {
         val reference = built[at].nativeCall()!!
-        val helper = classes[reference.definingClass]?.methods?.filter { it.toString() == reference.toString() }
+        val helper = classes[reference.definingClass]?.methods?.filter { it.toString() == reference.origString() }
             ?.nativeSingle("cell construction helper")
             ?: throw PatchException("HushTelegram settings: native self-settings cell helper is missing (before editing)")
         val code = helper.nativeBody()
@@ -413,8 +424,8 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
     }
     val textFields = listOf(28, 41, 52).map { built[it].nativeField() }
     nativeShape(textFields.toSet().size == 3 && textFields.all { reference -> reference != null &&
-        reference.definingClass == cell.type && reference.type == "Landroid/widget/TextView;" &&
-        cell.fields.count { it.toString() == reference.toString() && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
+        reference.origDefiningClass == cell.origType && reference.origType == "Landroid/widget/TextView;" &&
+        cell.fields.count { it.toString() == reference.origString() && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
             AccessFlags.FINAL.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) } == 1 },
         "cell text fields changed")
     val viewParameter = render.parameterRegisterNumber(0)
@@ -437,7 +448,7 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
             painted[consumer].namedRegisters() == listOf(viewRegister, value) &&
             painted[consumer].nativeCall()?.let { call ->
                 call.nativeShape(listOf("Ljava/lang/CharSequence;"), "V") &&
-                    if (consumer == 55) call.name == "setValue" && call.definingClass == painted[5].nativeRef()
+                    if (consumer == 55) call.origName == "setValue" && call.origDefiningClass == painted[5].nativeRef()
                     else call.toString() == "Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V"
             } == true && (source + 1 until consumer).none { index ->
                 painted[index].opcode.setsRegister() && painted[index].namedRegisters().firstOrNull()?.let {
@@ -452,7 +463,7 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
     val idField = makeBody[3].nativeField()!!.toString()
     val dispatcher = owner.methods.filter { it.nativeShape(listOf(owner.type, itemType), "V") }.nativeSingle("item click dispatcher")
     nativeShape(dispatcher.nativeCallable(true), "click dispatcher is inaccessible")
-    val click = mutableClassDefBy(owner.type).methods.filter { it.toString() == dispatcher.toString() }.nativeSingle("mutable click dispatcher")
+    val click = tgMutableClassDefBy(owner.type).methods.filter { it.toString() == dispatcher.toString() }.nativeSingle("mutable click dispatcher")
     val clickBody = click.nativeBody()
     val idRead = clickBody.indices.filter { clickBody[it].nativeRef() == idField && clickBody[it].opcode == Opcode.IGET }
         .nativeSingle("click identity read")
@@ -507,10 +518,10 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
         nativeShape(arm.map { it.opcode } == listOf(Opcode.NEW_INSTANCE, Opcode.INVOKE_DIRECT,
             Opcode.INVOKE_VIRTUAL, Opcode.RETURN_VOID) &&
             (type == null || allocation == "Lorg/telegram/ui/$type;") &&
-            arm[0].namedRegisters() == listOf(idRegister) && construction?.name == "<init>" &&
-            construction.definingClass == allocation && construction.returnType == "V" &&
+            arm[0].namedRegisters() == listOf(idRegister) && construction?.origName == "<init>" &&
+            construction.origDefiningClass == allocation && construction.origReturnType == "V" &&
             construction.parameterTypes.map { it.toString() } == (if (key == 2 || key == 8) listOf("I") else emptyList()) &&
-            display?.definingClass == owner.type && display.nativeShape(listOf(owner.superclass!!), "V") &&
+            display?.origDefiningClass == owner.origType && display.nativeShape(listOf(owner.superclass!!), "V") &&
             arm[2].namedRegisters() == listOf(click.parameterRegisterNumber(0), idRegister),
             "ordinary account setting click changed")
         val constructorArguments = arm[1].namedRegisters()
@@ -526,7 +537,7 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
     }
     validateSettingsCallbacks(classes, owner, builder, click, itemType)
     val base = classes[owner.superclass] ?: throw PatchException("HushTelegram settings: native self-settings parent is missing (before editing)")
-    val activityGetter = base.methods.filter { it.name == "getParentActivity" }.nativeSingle("parent activity reader")
+    val activityGetter = base.methods.filter { it.origName == "getParentActivity" }.nativeSingle("parent activity reader")
     nativeShape(AccessFlags.PUBLIC.isSet(base.accessFlags) && activityGetter.nativeCallable(false) &&
         activityGetter.nativeShape(emptyList(), "Landroid/app/Activity;"), "parent activity reader changed")
     val activityRegister = click.parameterRegisterNumber(0)
@@ -582,12 +593,12 @@ internal fun BytecodePatchContext.resolveNativeSettings(): NativeSettingsPlan? {
 }
 
 private fun validateSettingsCallbacks(classes: Map<String, ClassDef>, owner: ClassDef, builder: Method, click: Method, item: String) {
-    val view = owner.methods.filter { it.name == "createView" }.nativeSingle("self-settings view")
+    val view = owner.methods.filter { it.origName == "createView" }.nativeSingle("self-settings view")
     nativeShape(view.nativeCallable(false) && view.nativeShape(listOf("Landroid/content/Context;"), "Landroid/view/View;") &&
         view.nativeBody().count { it.nativeRef() == "Lorg/telegram/messenger/R\$string;->Settings:I" } == 1,
         "self-settings view ownership changed")
     val body = view.nativeBody()
-    val at = body.indices.filter { body[it].nativeCall()?.let { call -> call.name == "<init>" &&
+    val at = body.indices.filter { body[it].nativeCall()?.let { call -> call.origName == "<init>" &&
         call.parameterTypes.map { it.toString() }.drop(1) == listOf(
             "Lorg/telegram/messenger/Utilities\$Callback2;", "Lorg/telegram/messenger/Utilities\$Callback5;",
             "Lorg/telegram/messenger/Utilities\$Callback5Return;") } == true }.nativeSingle("native list callback binding")
@@ -613,8 +624,8 @@ private fun validateSettingsCallbacks(classes: Map<String, ClassDef>, owner: Cla
     val clickType = segment[4].nativeRef()!!
     val fill = classes[fillType] ?: throw PatchException("HushTelegram settings: native self-settings fill callback missing (before editing)")
     val tap = classes[clickType] ?: throw PatchException("HushTelegram settings: native self-settings click callback missing (before editing)")
-    nativeShape("Lorg/telegram/messenger/Utilities\$Callback2;" in fill.interfaces &&
-        "Lorg/telegram/messenger/Utilities\$Callback5;" in tap.interfaces &&
+    nativeShape("Lorg/telegram/messenger/Utilities\$Callback2;" in fill.origInterfaces &&
+        "Lorg/telegram/messenger/Utilities\$Callback5;" in tap.origInterfaces &&
         segment[3].nativeRef() == "$fillType-><init>(Ljava/lang/Object;I)V" &&
         segment[5].nativeRef() == "$clickType-><init>(" + owner.type + ")V" &&
         segment[7].nativeRef() == segment[5].nativeRef(), "native callback interface or constructor changed")
@@ -624,7 +635,7 @@ private fun validateSettingsCallbacks(classes: Map<String, ClassDef>, owner: Cla
         AccessFlags.PUBLIC.isSet(fill.accessFlags) && fillConstructor.nativeCallable(false) &&
         constructor.map { it.namedRegisters() } == listOf(listOf(2, 0), listOf(1, 0), listOf(0), emptyList()) &&
         constructor[2].nativeRef() == "Ljava/lang/Object;-><init>()V", "fill callback capture changed")
-    val fillRun = fill.methods.filter { it.name == "run" && it.nativeShape(List(2) { "Ljava/lang/Object;" }, "V") }
+    val fillRun = fill.methods.filter { it.origName == "run" && it.nativeShape(List(2) { "Ljava/lang/Object;" }, "V") }
         .nativeSingle("fill callback")
     val ops = fillRun.nativeBody()
     nativeShape(fillRun.nativeCallable(false), "fill callback is inaccessible")
@@ -644,12 +655,12 @@ private fun validateSettingsCallbacks(classes: Map<String, ClassDef>, owner: Cla
     nativeShape(arm.map { it.opcode } == listOf(Opcode.IGET_OBJECT, Opcode.CHECK_CAST, Opcode.MOVE_OBJECT_FROM16,
         Opcode.CHECK_CAST, Opcode.MOVE_OBJECT_FROM16, Opcode.CHECK_CAST, Opcode.INVOKE_STATIC, Opcode.RETURN_VOID) &&
         arm[0].nativeRef() == constructor[1].nativeRef() && arm[0].namedRegisters() == listOf(1, 0) &&
-        arm[1].nativeRef() == owner.type && arm[1].namedRegisters() == listOf(1) &&
+        arm[1].nativeRef() == owner.origType && arm[1].namedRegisters() == listOf(1) &&
         arm[2].namedRegisters() == listOf(2, fillRun.parameterRegisterNumber(0)) &&
         arm[3].nativeRef() == NATIVE_LIST && arm[3].namedRegisters() == listOf(2) &&
         arm[4].namedRegisters() == listOf(3, fillRun.parameterRegisterNumber(1)) &&
         arm[6].nativeRef() == builder.toString() && arm[6].namedRegisters() == listOf(1, 2), "fill callback no longer calls this builder")
-    val tapRun = tap.methods.filter { it.name == "run" && it.nativeShape(List(5) { "Ljava/lang/Object;" }, "V") }
+    val tapRun = tap.methods.filter { it.origName == "run" && it.nativeShape(List(5) { "Ljava/lang/Object;" }, "V") }
         .nativeSingle("click callback")
     val taps = tapRun.nativeBody()
     val tapConstructor = tap.methods.filter { it.toString() == segment[5].nativeRef() }.nativeSingle("click constructor")
@@ -671,7 +682,7 @@ private fun validateSettingsCallbacks(classes: Map<String, ClassDef>, owner: Cla
             taps[at].nativeRef() == "Ljava/lang/Object;->getClass()Ljava/lang/Class;" &&
                 taps[at].namedRegisters() == listOf(register)
         } &&
-        taps[8].nativeField()?.type == owner.type && taps[8].namedRegisters() == listOf(2, 0) &&
+        taps[8].nativeField()?.origType == owner.origType && taps[8].namedRegisters() == listOf(2, 0) &&
         taps[9].nativeRef() == click.toString() && taps[9].namedRegisters() == listOf(2, 1),
         "click callback no longer calls this dispatcher")
 }
@@ -731,7 +742,7 @@ val settingsPatch = bytecodePatch(
             patchLog.warning("HushTelegram settings: native self-settings row is unavailable. " +
                 "The launcher shortcut and Android App info entry remain available.")
         } else {
-            val owner = mutableClassDefBy(native.builder.definingClass)
+            val owner = tgMutableClassDefBy(native.builder.definingClass)
             owner.methods.remove(native.builder)
             owner.methods.remove(native.click)
             owner.methods.add(native.patchedBuilder)

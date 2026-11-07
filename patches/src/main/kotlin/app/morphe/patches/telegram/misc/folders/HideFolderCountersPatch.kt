@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.folders
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
@@ -29,6 +29,9 @@ import app.morphe.util.ControlFlow
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val FOLDER_TABS = "$EXTENSION_PACKAGE/misc/FolderTabs;"
 internal const val MAIN_UNREAD = "Lorg/telegram/messenger/MessagesStorage;->getMainUnreadCount()I"
@@ -234,14 +237,14 @@ internal fun BytecodePatchContext.resolveHideFolderCounters(): MutableMethod {
     controlHook(FOLDER_TABS, "countersHidden", listOf(), "Z")
     val found = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.allReferences(listOf(MAIN_UNREAD, FILTERS, FILTER_UNREAD))) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.filter { m ->
-            !AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "I" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
+            !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "I" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
                 m.controlBody().map { it.controlRef() }.let { refs -> MAIN_UNREAD in refs && FILTERS in refs && FILTER_UNREAD in refs }
         }.forEach { found += cls.type to ref(it) }
     }
     val (type, wanted) = found.controlSingle("folder tab counter")
-    val counter = mutableClassDefBy(type).methods.single { ref(it) == wanted }
+    val counter = tgMutableClassDefBy(type).methods.single { ref(it) == wanted }
     controlShape(counter.implementation!!.registerCount >= 3, "the folder tab counter has no register to answer in")
     controlShape(ControlFlow.of(counter).normal.none { 0 in it }, "something jumps back to the start of the folder tab counter")
     return counter

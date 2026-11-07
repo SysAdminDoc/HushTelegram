@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.voice
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
@@ -17,6 +17,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.tgMutableClassDefBy
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val PLAYBACK_POSITION = "$EXTENSION_PACKAGE/misc/PlaybackPosition;"
 internal const val VIDEO_SECONDS = "$PLAYBACK_POSITION->videoSeconds(I)I"
@@ -54,7 +56,7 @@ internal class PlaybackPositionSites(val edits: List<PositionEdit>, val missing:
     }
 
     private fun methodOf(context: BytecodePatchContext, edit: PositionEdit) =
-        context.mutableClassDefBy(edit.type).methods.single { it.toString() == edit.signature }
+        context.tgMutableClassDefBy(edit.type).methods.single { it.toString() == edit.signature }
 
     /** Highest index first, so an insertion never moves one still waiting. */
     private fun insert(target: MutableMethod, list: List<PositionEdit>) {
@@ -75,9 +77,9 @@ internal fun BytecodePatchContext.resolvePlaybackPosition(): PlaybackPositionSit
     controlHook(PLAYBACK_POSITION, "audioSeconds", listOf("D"), "D")
     fun missing(why: String) = PlaybackPositionSites(emptyList(), why)
 
-    val message = mutableClassDefByOrNull(MESSAGE_TYPE) ?: return missing("MessageObject is missing")
-    val viewer = mutableClassDefByOrNull(PHOTO_VIEWER_TYPE) ?: return missing("the video viewer is missing")
-    val player = mutableClassDefByOrNull(MEDIA_CONTROLLER_TYPE) ?: return missing("MediaController is missing")
+    val message = tgMutableClassDefByOrNull(MESSAGE_TYPE) ?: return missing("MessageObject is missing")
+    val viewer = tgMutableClassDefByOrNull(PHOTO_VIEWER_TYPE) ?: return missing("the video viewer is missing")
+    val player = tgMutableClassDefByOrNull(MEDIA_CONTROLLER_TYPE) ?: return missing("MediaController is missing")
     fun MutableMethod.remembers() = controlBody().any { it.controlString() == SAVED_POSITIONS }
     fun MutableMethod.shape() = "$name(${parameterTypes.joinToString("")})$returnType"
 
