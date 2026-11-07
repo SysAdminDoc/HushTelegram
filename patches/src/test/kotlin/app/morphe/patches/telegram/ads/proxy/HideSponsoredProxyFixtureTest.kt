@@ -119,7 +119,10 @@ class HideSponsoredProxyFixtureTest {
             assertEquals(MESSAGES_CONTROLLER, scopeBody[0].reference())
             assertEquals(PROXY_DIALOG, scopeBody[2].reference())
             assertEquals("$MESSAGES_CONTROLLER->promoDialogType:I", scopeBody[6].reference())
-            assertEquals("$MESSAGES_CONTROLLER->PROMO_TYPE_PROXY:I", scopeBody[7].reference())
+            // 13.2 folded PROMO_TYPE_PROXY (0) into its uses, so the scope loads the value itself.
+            assertEquals(Opcode.CONST_4, scopeBody[7].opcode)
+            assertEquals(listOf(1), scopeBody[7].namedRegisters())
+            assertEquals(0L, (scopeBody[7] as WideLiteralInstruction).wideLiteral)
             assertEquals(Opcode.IF_NE, scopeBody[8].opcode)
             assertEquals("$PROXY_DIALOG->id:J", scopeBody[9].reference())
             assertEquals(Opcode.IF_GEZ, scopeBody[12].opcode)
@@ -138,7 +141,7 @@ class HideSponsoredProxyFixtureTest {
             for (guard in listOf(1, 3, 8, 12, 16, 22)) {
                 assertEquals("${build.name}: scope guard $guard fails open", listOf(25, guard + 1), scopeFlow.normal[guard])
             }
-            for (index in listOf(6, 7, 9, 23)) {
+            for (index in listOf(6, 9, 23)) {
                 val field = (scopeBody[index] as ReferenceInstruction).reference as FieldReference
                 val definition = hosts.single { it.origType == field.origDefiningClass }.fields.single { it.origName == field.origName && it.origType == field.origType }
                 assertTrue("${build.name}: bridge uses public ${field.name}", AccessFlags.PUBLIC.isSet(definition.accessFlags))
@@ -221,6 +224,14 @@ class HideSponsoredProxyFixtureTest {
     fun `static promo type refuses before any host scope or build flag changes`() = refusal { context, _ ->
         val field = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).fields.single { it.origName == "promoDialogType" }
         field.accessFlags = field.accessFlags or AccessFlags.STATIC.value
+    }
+
+    @Test
+    fun `a promo check that no longer compares the proxy type refuses before any host scope changes`() = refusal { context, _ ->
+        val controller = context.tgMutableClassDefBy(MESSAGES_CONTROLLER)
+        val check = controller.methods.single { method -> method.instructions().any { it.reference() == "proxy_secret" } }
+        val read = check.instructions().indexOfFirst { it.reference() == "$MESSAGES_CONTROLLER->promoDialogType:I" }
+        check.replaceInstruction(read + 1, "nop")
     }
 
     @Test

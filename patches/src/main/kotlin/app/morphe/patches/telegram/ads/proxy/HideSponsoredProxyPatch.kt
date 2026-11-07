@@ -25,6 +25,7 @@ import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
@@ -32,8 +33,10 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origType
 import app.morphe.util.names.tgMutableClassDefBy
@@ -94,12 +97,11 @@ internal fun BytecodePatchContext.resolveProxyHooks(): ProxyPlan {
     val left = member("isLeftPromoChannel", "Z")
     val allDialogs = member("allDialogs", ARRAY_LIST)
     val promoType = member("promoDialogType", "I")
-    val proxyType = member("PROMO_TYPE_PROXY", "I")
     shape(listOf(promo, left, allDialogs, promoType).none { AccessFlags.STATIC.isSet(it.accessFlags) },
         "cached proxy fields no longer match instance reads")
-    shape(AccessFlags.PUBLIC.isSet(controller.accessFlags) && AccessFlags.PUBLIC.isSet(promoType.accessFlags) &&
-        AccessFlags.PUBLIC.isSet(proxyType.accessFlags) && AccessFlags.STATIC.isSet(proxyType.accessFlags),
+    shape(AccessFlags.PUBLIC.isSet(controller.accessFlags) && AccessFlags.PUBLIC.isSet(promoType.accessFlags),
         "proxy type scope is inaccessible")
+    val proxyType = proxyTypeLoad(controller, promoType)
     val sort = controller.methods.filter { method ->
         method.origReturnType == "V" && method.parameterTypes.size == 1 && method.parameterTypes[0].startsWith("L") &&
             method.instructions().any { it.field() == promo } && method.instructions().any { it.field() == left } &&
@@ -213,7 +215,7 @@ internal fun BytecodePatchContext.resolveProxyHooks(): ProxyPlan {
         check-cast p0, $MESSAGES_CONTROLLER
         check-cast p1, $PROXY_DIALOG
         iget v0, p0, $promoType
-        sget v1, $proxyType
+        $proxyType
         if-ne v0, v1, :hush_other
         iget-wide v0, p1, $dialogId
         const-wide/16 v2, 0x0
@@ -248,6 +250,38 @@ internal fun BytecodePatchContext.resolveProxyHooks(): ProxyPlan {
     ), scope)
 }
 
+/**
+ * The instruction that puts PROMO_TYPE_PROXY in v1. 13.1.1 kept it as a public static field; 13.2 folded it
+ * into every use, so the value comes from checkPromoInfoInternal, which compares promoDialogType with it
+ * right before it reads the proxy's address.
+ */
+private fun proxyTypeLoad(controller: ClassDef, promoType: FieldReference): String {
+    val fields = controller.fields.filter { it.origName == "PROMO_TYPE_PROXY" && it.origType == "I" }
+    if (fields.isNotEmpty()) {
+        val field = fields.unique("controller field PROMO_TYPE_PROXY")
+        shape(AccessFlags.PUBLIC.isSet(field.accessFlags) && AccessFlags.STATIC.isSet(field.accessFlags),
+            "proxy type scope is inaccessible")
+        return "sget v1, $field"
+    }
+    val check = controller.methods.filter { method -> method.instructions().let { body ->
+        body.any { it.string() == "proxy_secret" } && body.count { it.field() == promoType } == 1
+    } }.unique("proxy promo check")
+    val body = check.instructions()
+    val read = body.indexOfFirst { it.field() == promoType }
+    val type = body[read].namedRegisters().firstOrNull()
+    val next = body.getOrNull(read + 1)
+    val folded = next != null && next.opcode == Opcode.IF_NEZ && next.namedRegisters() == listOf(type)
+    val literal = next?.takeIf { it.opcode in setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST) }?.literal()
+    val compared = next != null && literal != null && body.getOrNull(read + 2)?.let { branch -> branch.opcode == Opcode.IF_NE &&
+        branch.namedRegisters().toSet() == setOf(type, next.namedRegisters().firstOrNull()) } == true
+    val address = body.getOrNull(read + if (folded) 2 else 3)
+    shape(body[read].opcode == Opcode.IGET && (folded || compared) && address?.opcode == Opcode.IGET_OBJECT &&
+        address.field()?.let { it.origDefiningClass == MESSAGES_CONTROLLER && it.origType == "Ljava/lang/String;" } == true,
+        "proxy type comparison changed")
+    val value = if (folded) 0 else literal!!
+    return if (value in -8..7) "const/4 v1, $value" else "const v1, $value"
+}
+
 private fun noBypass(method: Method, first: Int, last: Int) {
     val flow = ControlFlow.of(method)
     shape(flow.normal.indices.none { source -> source !in first..last &&
@@ -263,5 +297,6 @@ private fun <T> List<T>.unique(what: String): T {
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference
 private fun Instruction.literal(): Int? = (this as? NarrowLiteralInstruction)?.narrowLiteral
-private fun MethodReference.hasShape(parameters: List<String>, returns: String) = returnType == returns &&
-    parameterTypes.map { it.toString() } == parameters
+private fun Instruction.string(): String? = ((this as? ReferenceInstruction)?.reference as? StringReference)?.string
+private fun MethodReference.hasShape(parameters: List<String>, returns: String) = origReturnType == returns &&
+    origParameterTypes == parameters
