@@ -20,6 +20,9 @@ import org.junit.Test
 import java.io.File
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
+import app.morphe.util.names.origInterfaces
+import app.morphe.util.names.origSuperclass
+import app.morphe.util.names.origType
 
 /** The copy and paste hooks of Strip link tracking, on the real pinned web and Play builds. */
 class LinkCopyPasteFixtureTest {
@@ -47,9 +50,9 @@ class LinkCopyPasteFixtureTest {
         val found = FixtureDex.classesWhere(build, { true }) { method: Method ->
             method.origName == "onTextContextMenuItem" ||
                 (method.origDefiningClass == "Lorg/telegram/messenger/AndroidUtilities;" && method.origName == "addToClipboard")
-        }.associateByTo(linkedMapOf()) { it.type }
+        }.associateByTo(linkedMapOf()) { it.origType }
         while (true) {
-            val ancestors = found.values.flatMap { listOfNotNull(it.superclass) + it.interfaces }
+            val ancestors = found.values.flatMap { listOfNotNull(it.origSuperclass) + it.origInterfaces }
                 .filter { it.startsWith("Lorg/telegram/") && it !in found }.toSet()
             if (ancestors.isEmpty()) break
             val more = FixtureDex.classes(build, ancestors)
