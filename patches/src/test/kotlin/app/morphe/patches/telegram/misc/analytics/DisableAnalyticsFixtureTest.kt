@@ -83,9 +83,11 @@ class DisableAnalyticsFixtureTest {
             assertEquals(Opcode.RETURN, capability[1].opcode)
 
             val connections = ghostModeHosts(build).single()
-            GhostModeFixtureTest.assertGhostGate(
+            // The per-account guard stacks its gate ahead of Ghost mode's on the same send.
+            GhostModeFixtureTest.assertGates(
                 "$where: request send", connections.methods.single { it.origName == SEND_REQUEST_INTERNAL },
                 context.tgMutableClassDefBy(CONNECTIONS_MANAGER).methods.single { it.origName == SEND_REQUEST_INTERNAL },
+                ACCOUNT_GUARD_DROP, GHOST_MODE_DROP,
             )
             val ghost = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "ghostMode" }.instructions()
             assertEquals("$where: ghostMode is an injected build fact", 1, (ghost[0] as NarrowLiteralInstruction).narrowLiteral)
