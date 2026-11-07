@@ -28,8 +28,15 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11n
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11x
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
+import app.morphe.util.names.origString
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -50,7 +57,9 @@ class LockedVoiceFixtureTest {
             val guard = context.resolveLockedVoiceGuard()
             assertNull("$name: ${guard.missing}", guard.missing)
             val play = guard.play!!
-            assertEquals("$name: the play method", PLAY_MESSAGE, "${play.definingClass}->${play.name}(${play.parameterTypes.joinToString("")})${play.returnType}")
+            // 13.2 folded the overload with the silent flag into the plain one.
+            val silent = context.tgMutableClassDefBy(MEDIA_CONTROLLER).methods.any { it.origString() == PLAY_MESSAGE }
+            assertEquals("$name: the play method", if (silent) PLAY_MESSAGE else PLAY_MESSAGE_PLAIN, play.origString())
             val before = ImmutableMethod.of(play).controlBody().map(::operands)
             guard.rehearse()
             assertEquals("$name: the rehearsal leaves the play method alone", before, play.controlBody().map(::operands))
@@ -90,11 +99,18 @@ class LockedVoiceFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val controller = lockedVoiceHosts(build).single { it.origType == MEDIA_CONTROLLER }
-            val plain = controller.methods.single { it.origName == "playMessage" && it.parameterTypes.size == 1 }.controlBody()
-            assertEquals("$name: the plain play method hands over", listOf(PLAY_MESSAGE), plain.mapNotNull { it.controlRef() })
+            val plays = controller.methods.filter { it.origName == "playMessage" }
+            val plain = plays.single { it.parameterTypes.size == 1 }
+            if (plays.size == 1) {
+                // 13.2: the plain play method is the only one and plays itself.
+                assertEquals("$name: the only play method", PLAY_MESSAGE_PLAIN, plain.origString())
+            } else {
+                assertEquals("$name: the plain play method hands over", listOf(PLAY_MESSAGE), plain.controlBody().mapNotNull { it.controlRef() })
+            }
             // Only the play method resumes, so a paused voice message can't start again around the hook.
             val resumers = controller.methods.filter { method -> method.controlBody().any { it.controlRef()?.contains("->resumeAudio(") == true } }
-            assertEquals("$name: one resume caller", listOf("playMessage"), resumers.map { it.name })
+            assertEquals("$name: one resume caller", listOf("playMessage"), resumers.map { it.origName })
+            assertEquals("$name: the resume caller", (plays - plain).ifEmpty { listOf(plain) }, resumers)
         }
     }
 
@@ -104,10 +120,19 @@ class LockedVoiceFixtureTest {
                 val other = context.tgMutableClassDefBy(MEDIA_CONTROLLER).methods.single { it.origName == "playMessageAtIndex" }
                 other.addInstructions(0, "invoke-direct {p0, v0}, $MEDIA_CONTROLLER->resumeAudio($MESSAGE)Z")
             },
-            Triple("plain play goes elsewhere", "the play method without a silent flag no longer hands over to it") { context, _ ->
-                val plain = context.tgMutableClassDefBy(MEDIA_CONTROLLER).methods.single { it.origName == "playMessage" && it.parameterTypes.size == 1 }
+            Triple("plain play goes elsewhere", "the play method without a silent flag no longer hands over to it") { context, play ->
+                val controller = context.tgMutableClassDefBy(MEDIA_CONTROLLER)
+                val plain = controller.methods.single { it.origName == "playMessage" && it.parameterTypes.size == 1 }
                 val call = plain.controlBody().indexOfFirst { it.controlRef() == PLAY_MESSAGE }
-                plain.replaceInstruction(call, "invoke-virtual {p0, p1}, $MEDIA_CONTROLLER->pauseMessage($MESSAGE)Z")
+                if (call >= 0) {
+                    plain.replaceInstruction(call, "invoke-virtual {p0, p1}, $MEDIA_CONTROLLER->pauseMessage($MESSAGE)Z")
+                } else {
+                    // 13.2 has no overload with the silent flag: one comes back that the plain one doesn't hand over to.
+                    controller.methods.add(ImmutableMethod(controller.type, "playMessage", listOf(
+                        ImmutableMethodParameter(play.parameterTypes[0].toString(), null, null), ImmutableMethodParameter("Z", null, null)),
+                        "Z", AccessFlags.PUBLIC.value or AccessFlags.FINAL.value, null, null, ImmutableMethodImplementation(3,
+                            listOf(ImmutableInstruction11n(Opcode.CONST_4, 0, 0), ImmutableInstruction11x(Opcode.RETURN, 0)), null, null)).toMutable())
+                }
             },
             Triple("loop to the start", "something jumps back to the start of the play method") { _, play ->
                 play.addInstructionsWithLabels(1, "goto :hush_start", ExternalLabel("hush_start", play.getInstruction(0)))
