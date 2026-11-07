@@ -15,6 +15,7 @@ import app.morphe.patcher.PatcherConfig
 import app.morphe.patcher.PatcherContext
 import app.morphe.patcher.PatcherProgress
 import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.util.names.TelegramNames
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import java.io.File
@@ -58,6 +59,9 @@ internal object PatchContexts {
         BytecodePatchContext::class.java.getMethod("setOpcodes\$morphe_patcher", Opcodes::class.java)
             .invoke(context, Opcodes.getDefault())
         makeCurrent(context, metadata)
+        // A slice a test kept from an earlier read never sets the ambient table again, so the names
+        // of copies made from this context's classes would come from whichever build was read last.
+        TelegramNames.forVersionCode(versionCode)?.let { TelegramNames.ambient = it }
         return context
     }
 
