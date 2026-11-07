@@ -23,6 +23,7 @@ import app.morphe.util.names.TelegramNames
 import app.morphe.util.names.origDescriptor
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origRef
+import app.morphe.util.names.origString
 import app.morphe.util.names.origName
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origType
@@ -62,11 +63,13 @@ internal fun BytecodePatchContext.requireReachable(reference: String, static: Bo
     val member = reference.substringAfter("->")
     val reachable = owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags) && if ('(' in member) {
         owner.methods.any {
-            it.toString() == reference && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static
+            (it.toString() == reference || it.origString() == reference) &&
+                AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static
         }
     } else {
         owner.fields.any {
-            "${it.name}:${it.type}" == member && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static
+            ("${it.name}:${it.type}" == member || "${it.origName}:${it.origType}" == member) &&
+                AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static
         }
     }
     controlShape(reachable, "$reference isn't reachable from the extension")
