@@ -20851,3 +20851,7 @@ m Lorg/telegram/messenger/SecretChatHelper; processUpdateEncryption (Lorg/telegr
 # added by hand: locked voice
 f Lorg/telegram/messenger/MediaController; isPaused Z Lorg/telegram/messenger/MediaController; f0 Z
 m Lorg/telegram/messenger/MediaController; resumeAudio (Lorg/telegram/messenger/MessageObject;)Z Lorg/telegram/messenger/MediaController; b0 (Lorg/telegram/messenger/ej;)V
+
+# added by hand: hide keyboard on scroll
+f Lorg/telegram/messenger/NotificationCenter; startSpoilers I Lorg/telegram/messenger/os; l1 I
+f Lorg/telegram/messenger/NotificationCenter; stopSpoilers I Lorg/telegram/messenger/os; k1 I
