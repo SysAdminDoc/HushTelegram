@@ -135,8 +135,11 @@ internal fun BytecodePatchContext.resolveApiCredentials(): ApiCredentialsPlan {
         val initial = field.initialValue
         val defaultValue = initial == null || if (name == "APP_ID")
             (initial as? IntEncodedValue)?.value == 0 else initial is NullEncodedValue
+        // 13.2's R8 marks both fields final since only the initializer sets them. With no encoded value
+        // that holds no constant a reader could have copied; a final field carrying one would.
+        val constant = AccessFlags.FINAL.isSet(field.accessFlags) && initial != null
         requireShape(field.origType == type && AccessFlags.PUBLIC.isSet(field.accessFlags) &&
-            AccessFlags.STATIC.isSet(field.accessFlags) && !AccessFlags.FINAL.isSet(field.accessFlags) &&
+            AccessFlags.STATIC.isSet(field.accessFlags) && !constant &&
             defaultValue, "$name is not an initialized mutable static field")
     }
     val initializer = build.methods.filter { it.origName == "<clinit>" && it.parameterTypes.isEmpty() &&

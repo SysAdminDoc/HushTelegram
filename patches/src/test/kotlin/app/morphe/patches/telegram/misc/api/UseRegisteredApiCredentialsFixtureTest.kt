@@ -34,6 +34,7 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import com.android.tools.smali.dexlib2.immutable.value.ImmutableIntEncodedValue
+import com.android.tools.smali.dexlib2.immutable.value.ImmutableNullEncodedValue
 import com.android.tools.smali.dexlib2.immutable.value.ImmutableStringEncodedValue
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -286,6 +287,10 @@ class UseRegisteredApiCredentialsFixtureTest {
                 val field = context.tgMutableClassDefBy(BUILD_VARS).fields.single { it.origName == name }
                 field.accessFlags = if (flag == AccessFlags.FINAL) field.accessFlags or flag.value
                     else field.accessFlags and flag.value.inv()
+                // 13.2 already ships both final with no encoded value; a final field that carries
+                // one is a constant its readers may hold a copy of.
+                if (flag == AccessFlags.FINAL) field.initialValue =
+                    (if (name == "APP_ID") ImmutableIntEncodedValue(0) else ImmutableNullEncodedValue.INSTANCE).toMutable()
             }
         }
         refusal { context, _ -> context.tgMutableClassDefBy(BUILD_VARS).accessFlags = 0 }
