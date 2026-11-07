@@ -219,7 +219,6 @@ c Lorg/telegram/messenger/NotificationsSettingsFacade; Lorg/telegram/messenger/o
 c Lorg/telegram/messenger/OpenAttachedMenuBotReceiver; Lorg/telegram/messenger/OpenAttachedMenuBotReceiver; Landroid/app/Activity; Landroid/app/Activity;
 c Lorg/telegram/messenger/OpenChatReceiver; Lorg/telegram/messenger/OpenChatReceiver; Landroid/app/Activity; Landroid/app/Activity;
 c Lorg/telegram/messenger/PackageValidator; Lorg/telegram/messenger/pt; Ljava/lang/Object; Ljava/lang/Object;
-c Lorg/telegram/messenger/PasskeysController; Lorg/telegram/messenger/rt; Ljava/lang/Object; Ljava/lang/Object;
 c Lorg/telegram/messenger/PopupReplyReceiver; Lorg/telegram/messenger/PopupReplyReceiver; Landroid/content/BroadcastReceiver; Landroid/content/BroadcastReceiver;
 c Lorg/telegram/messenger/PushListenerController$IPushListenerServiceProvider; Lorg/telegram/messenger/PushListenerController$IPushListenerServiceProvider; Ljava/lang/Object; Ljava/lang/Object;
 c Lorg/telegram/messenger/PushListenerController; Lorg/telegram/messenger/PushListenerController; Ljava/lang/Object; Ljava/lang/Object;
@@ -3108,12 +3107,10 @@ f Lorg/telegram/messenger/BuildVars; APP_HASH Ljava/lang/String; Lorg/telegram/m
 f Lorg/telegram/messenger/BuildVars; APP_ID I Lorg/telegram/messenger/n2; d I w
 f Lorg/telegram/messenger/BuildVars; BUILD_VERSION_STRING Ljava/lang/String; Lorg/telegram/messenger/n2; c Ljava/lang/String;
 f Lorg/telegram/messenger/BuildVars; GOOGLE_AUTH_CLIENT_ID Ljava/lang/String; Lorg/telegram/messenger/n2; h Ljava/lang/String;
-f Lorg/telegram/messenger/BuildVars; IS_BILLING_UNAVAILABLE Z Lorg/telegram/messenger/n2; i Z
 f Lorg/telegram/messenger/BuildVars; LOGS_ENABLED Z Lorg/telegram/messenger/n2; a Z
 f Lorg/telegram/messenger/BuildVars; NO_SCOPED_STORAGE Z Lorg/telegram/messenger/n2; b Z
 f Lorg/telegram/messenger/BuildVars; PLAYSTORE_APP_URL Ljava/lang/String; Lorg/telegram/messenger/n2; g Ljava/lang/String;
 f Lorg/telegram/messenger/BuildVars; SAFETYNET_KEY Ljava/lang/String; Lorg/telegram/messenger/n2; f Ljava/lang/String;
-f Lorg/telegram/messenger/BuildVars; SUPPORTS_PASSKEYS Z Lorg/telegram/messenger/n2; j Z
 f Lorg/telegram/messenger/BuildVars; betaApp Ljava/lang/Boolean; Lorg/telegram/messenger/n2; k Ljava/lang/Boolean; w
 f Lorg/telegram/messenger/CacheByChatsController$KeepMediaException; dialogId J Lorg/telegram/messenger/o2; a J
 f Lorg/telegram/messenger/CacheByChatsController$KeepMediaFile; dialogType I Lorg/telegram/messenger/p2; c I
@@ -20831,3 +20828,7 @@ m Lorg/telegram/messenger/MessagesController; deleteMessagesByPush (JLjava/util/
 m Lorg/telegram/messenger/MessagesController; createDeleteShowOnceTask (JI)J Lorg/telegram/messenger/vp; V (IJ)J
 # added by hand: commerce
 m Lorg/telegram/messenger/MessagesController; isPremiumUser (Lorg/telegram/tgnet/TLRPC$User;)Z Lorg/telegram/messenger/vp; B2 (Lorg/telegram/tgnet/TLRPC$User;)Z
+# added by hand: passkeys
+f Lorg/telegram/messenger/BuildVars; SUPPORTS_PASSKEYS Z Lorg/telegram/messenger/n2; i Z
+c Lorg/telegram/messenger/PasskeysController; Lorg/telegram/messenger/yt; Ljava/lang/Object; Ljava/lang/Object;
+m Lorg/telegram/messenger/PasskeysController; create (Landroid/content/Context;ILorg/telegram/messenger/Utilities$Callback2;)V Lorg/telegram/messenger/yt; b (ILandroid/content/Context;Lorg/telegram/messenger/i20;)V
