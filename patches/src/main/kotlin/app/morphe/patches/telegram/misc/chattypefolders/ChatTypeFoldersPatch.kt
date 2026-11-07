@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.chattypefolders
 
+import app.morphe.util.names.origDescriptor
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
@@ -459,7 +460,7 @@ internal fun BytecodePatchContext.resolveChatTypeFolders(): String {
     val delegate = tgMutableClassDefByOrNull(REQUEST_DELEGATE)
     controlShape(delegate != null && AccessFlags.PUBLIC.isSet(delegate.accessFlags) &&
         AccessFlags.INTERFACE.isSet(delegate.accessFlags) &&
-        delegate.methods.map { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" } == listOf(DELEGATE_RUN),
+        delegate.methods.map { "${it.origName}${it.origDescriptor}" } == listOf(DELEGATE_RUN),
         "Telegram's request callback changed")
 
     val controller = tgMutableClassDefByOrNull(MESSAGES_CONTROLLER)

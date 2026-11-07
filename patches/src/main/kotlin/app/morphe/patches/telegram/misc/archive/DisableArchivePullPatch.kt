@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.archive
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -234,7 +235,7 @@ internal fun BytecodePatchContext.resolveDisableArchivePull(): ArchivePullSites 
     val dialogs = hiddenBody.mapNotNull { instruction -> instruction.takeIf { it.opcode == Opcode.IGET_OBJECT }?.controlField() }
         .filter { it.origDefiningClass == MESSAGES_CONTROLLER && it.origName == "dialogs_dict" }.distinct().controlSingle("the account's dialog map")
     val lookup = hiddenBody.mapNotNull { it.takeIf { i -> i.opcode in INVOKES }?.call() }
-        .filter { it.origDefiningClass == dialogs.origType && it.parameterTypes.map(CharSequence::toString) == listOf("J") && it.origReturnType == "Ljava/lang/Object;" }
+        .filter { it.origDefiningClass == dialogs.origType && it.origParameterTypes == listOf("J") && it.origReturnType == "Ljava/lang/Object;" }
         .distinct().controlSingle("the dialog map's lookup")
     hidden.requireEntryRoom("hasHiddenArchive")
 
@@ -282,7 +283,7 @@ internal fun BytecodePatchContext.resolveDisableArchivePull(): ArchivePullSites 
         "the chat list's menu no longer adds an entry from an icon, a text and a click")
 
     // Tapping the archive's row opens a new chat list for its folder with presentFragment.
-    controlShape(chatList.methods.any { it.origName == "<init>" && it.parameterTypes.map(CharSequence::toString) == listOf(BUNDLE) },
+    controlShape(chatList.methods.any { it.origName == "<init>" && it.origParameterTypes == listOf(BUNDLE) },
         "the chat list can no longer be opened for a folder")
     val presents = mutableSetOf<String>()
     var present: MethodReference? = null

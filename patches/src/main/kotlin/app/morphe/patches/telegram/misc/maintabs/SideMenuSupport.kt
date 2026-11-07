@@ -4,6 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.maintabs
 
+import app.morphe.util.names.origDescriptor
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -159,7 +161,7 @@ internal fun BytecodePatchContext.resolveSideMenu(plan: MainTabsPlan): SideMenu 
 
     // The account switcher Telegram shows on a long press of the Profile tab.
     val switchers = screen.methods.filter { m ->
-        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf(VIEW) &&
+        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.origParameterTypes == listOf(VIEW) &&
             m.controlBody().let { body -> body.any { it.controlRef() == ADD_ACCOUNT } && body.any { it.controlRef() == CLIENT_ACTIVATED } }
     }
     if (switchers.size != 1) return missing("the main screen's account switcher is missing or ambiguous (${switchers.size})")
@@ -168,7 +170,7 @@ internal fun BytecodePatchContext.resolveSideMenu(plan: MainTabsPlan): SideMenu 
     // Back: the main screen's own answer, with a local free at its start for the menu's answer.
     val backs = tgMutableClassDefBy(plan.screen).methods.filter { m ->
         m.origName == "onBackPressed" && !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "Z" &&
-            m.parameterTypes.map(CharSequence::toString) == listOf("Z") && m.controlBody().isNotEmpty()
+            m.origParameterTypes == listOf("Z") && m.controlBody().isNotEmpty()
     }
     if (backs.size != 1) return missing("the main screen no longer answers Back itself (${backs.size})")
     val back = backs.single()
@@ -293,7 +295,7 @@ private fun BytecodePatchContext.reaches(reference: String, static: Boolean): Bo
     return if ('(' in member) {
         // A method may be inherited, so the whole chain counts.
         superclassChain(owner.type).mapNotNull { tgClassDefByOrNull(it) }.any { cls ->
-            cls.methods.any { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == member &&
+            cls.methods.any { "${it.origName}${it.origDescriptor}" == member &&
                 AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static }
         }
     } else {

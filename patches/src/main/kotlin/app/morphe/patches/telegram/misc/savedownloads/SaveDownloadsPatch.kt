@@ -4,6 +4,9 @@
  */
 package app.morphe.patches.telegram.misc.savedownloads
 
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origDescriptor
+import app.morphe.util.names.origName
 import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
@@ -180,10 +183,10 @@ internal fun BytecodePatchContext.resolveFoundFiles(): MutableMethod {
     controlHook(SAVE_DOWNLOADS, "finishing", listOf(OBJECT, FILE, FILE), "V")
     val owner = tgMutableClassDefByOrNull(LOAD_OPERATION)
     controlShape(owner != null, "FileLoadOperation is missing")
-    val fields = owner!!.instanceFields.map { "${it.definingClass}->${it.name}:${it.type}" }.toSet()
+    val fields = owner!!.instanceFields.map { "${it.origDefiningClass}->${it.origName}:${it.origType}" }.toSet()
     controlShape(PATH_SAVE_DATA in fields && CACHE_FILE_TEMP in fields && STORAGE_CACHE_FINAL in fields,
         "FileLoadOperation's file fields changed")
-    val finishing = owner.methods.filter { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == FINISH_LOADING }
+    val finishing = owner.methods.filter { "${it.origName}${it.origDescriptor}" == FINISH_LOADING }
         .controlSingle("FileLoadOperation.onFinishLoadingFile")
     controlShape(!AccessFlags.STATIC.isSet(finishing.accessFlags) && finishing.controlBody().isNotEmpty(),
         "FileLoadOperation.onFinishLoadingFile has no body of its own")
@@ -387,7 +390,7 @@ internal fun BytecodePatchContext.resolveSaveDownloads(): MutableMethod {
         .mapNotNull { tgMutableClassDefByOrNull(it) }
         .filter { LOADER_DELEGATE in it.origInterfaces }
         .controlSingle("ImageLoader's download callback")
-    val callback = delegate.methods.filter { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == FILE_LOADED }
+    val callback = delegate.methods.filter { "${it.origName}${it.origDescriptor}" == FILE_LOADED }
         .controlSingle("the finished-download callback")
     controlShape(!AccessFlags.STATIC.isSet(callback.accessFlags) && callback.controlBody().isNotEmpty(),
         "the finished-download callback has no body of its own")

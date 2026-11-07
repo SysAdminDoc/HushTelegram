@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.messagemenu
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -209,10 +210,10 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
     val menuCall = if (barRead < 0) null else body.drop(barRead + 1).take(3).firstOrNull { it.opcode == Opcode.INVOKE_VIRTUAL }
     val menuMethod = menuCall?.call()
     controlShape(barRead >= 0 && menuCall?.opcode == Opcode.INVOKE_VIRTUAL && menuMethod != null &&
-        menuMethod.parameterTypes.map(CharSequence::toString) == listOf(STRING) && menuMethod.origReturnType.startsWith("L"),
+        menuMethod.origParameterTypes == listOf(STRING) && menuMethod.origReturnType.startsWith("L"),
         "the selection bar's menu is no longer taken from the action bar")
     val adds = body.mapNotNull { it.call() }.filter {
-        it.origDefiningClass == menuMethod!!.origReturnType && it.parameterTypes.map(CharSequence::toString) == listOf("I", "I", STRING, "I")
+        it.origDefiningClass == menuMethod!!.origReturnType && it.origParameterTypes == listOf("I", "I", STRING, "I")
     }.map { it.toString() }.distinct()
     controlShape(adds.size == 1, "the selection bar's buttons are no longer added through one call")
     // The field is protected, so the extension goes through the screen's public getter.
@@ -252,7 +253,7 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
     val handlerType = handlers.distinct().controlSingle("the selection bar's click handler")
     val handlerClass = tgMutableClassDefBy(handlerType)
     val click = handlerClass.methods.filter { m ->
-        m.instance() && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
+        m.instance() && m.origReturnType == "V" && m.origParameterTypes == listOf("I") &&
             m.controlBody().any { it.controlField()?.origType == chat }
     }.controlSingle("the selection bar's click method")
     val ownerFields = handlerClass.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.origType == chat }
@@ -266,10 +267,10 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
 
     // Selecting: the chat's (message, Z) wrapper over the three-argument method that records the selection.
     val wrappers = chatClass.methods.filter { m ->
-        m.instance() && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE, "Z") &&
+        m.instance() && m.origReturnType == "V" && m.origParameterTypes == listOf(MESSAGE, "Z") &&
             m.controlBody().let { b ->
                 b.size <= 4 && b.count { it.opcode == Opcode.INVOKE_VIRTUAL } == 1 && b.first { it.opcode == Opcode.INVOKE_VIRTUAL }.call().let { c ->
-                    c != null && c.origDefiningClass == chat && c.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE, "Z", "Z") && c.origReturnType == "V"
+                    c != null && c.origDefiningClass == chat && c.origParameterTypes == listOf(MESSAGE, "Z", "Z") && c.origReturnType == "V"
                 }
             }
     }

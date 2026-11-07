@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.promos
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origString
 import app.morphe.util.names.addInstructions
 import app.morphe.util.names.replaceInstruction
@@ -180,7 +181,7 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
         cls.methods.forEach { m ->
             val refs = m.controlBody().mapNotNull { it.controlRef() }
             if (FEATURES_LABEL in refs && AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" &&
-                m.parameterTypes.map(CharSequence::toString) == listOf(cls.type, "Ljava/util/ArrayList;")) builders += cls.type to ref(m)
+                m.origParameterTypes == listOf(cls.origType, "Ljava/util/ArrayList;")) builders += cls.type to ref(m)
             if (INVITE_LABEL in refs && INVITE_ICON in refs && !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" &&
                 m.parameterTypes.size == 3 && m.parameterTypes.take(2).map(CharSequence::toString) == listOf("I", "I")) binders += cls.type to ref(m)
         }
@@ -224,7 +225,7 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
     val adapterField = resume[view + 1].controlField()!!
     controlShape(adapterField.origDefiningClass == listField.origType, "Settings' adapter isn't its list view's")
     val update = screen.methods.flatMap { m -> m.controlBody().filter { it.opcode == Opcode.INVOKE_VIRTUAL } }.mapNotNull { it.call() }
-        .filter { it.origDefiningClass == adapterField.origType && it.parameterTypes.map(CharSequence::toString) == listOf("Z") && it.origReturnType == "V" }
+        .filter { it.origDefiningClass == adapterField.origType && it.origParameterTypes == listOf("Z") && it.origReturnType == "V" }
         .map { "${it.definingClass}->${it.name}(Z)V" }.distinct().controlSingle("Settings' list update")
     controlShape(AccessFlags.PUBLIC.isSet(screen.accessFlags) && reachable(listField.definingClass, listField.name) &&
         reachable(adapterField.definingClass, adapterField.name) && tgClassDefByOrNull(adapterField.type)?.let { found ->
@@ -321,10 +322,10 @@ private fun Instruction.writes(register: Int): Boolean {
     return destination == register || opcode.setsWideRegister() && destination + 1 == register
 }
 
-private fun shape(m: Method, parameters: List<String>, result: String) = m.parameterTypes.map(CharSequence::toString) == parameters && m.origReturnType == result
+private fun shape(m: Method, parameters: List<String>, result: String) = m.origParameterTypes == parameters && m.origReturnType == result
 private fun ref(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
 
 /** LocaleController.getString(int), which 13.2 mostly inlines into getString(null, int) with the two swapped. */
 private fun Instruction.isGetString() = controlRef() == STRING || ((this as? ReferenceInstruction)?.reference as? MethodReference)?.let {
     it.origDefiningClass == "Lorg/telegram/messenger/LocaleController;" && it.origName == "getString" &&
-        it.parameterTypes.map(CharSequence::toString) == listOf("I", "Ljava/lang/String;") } == true
+        it.origParameterTypes == listOf("I", "Ljava/lang/String;") } == true

@@ -54,6 +54,7 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origType
 import app.morphe.util.names.tgClassDefByOrNull
@@ -228,7 +229,7 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     val helper = add?.call()
     controlShape(built[label].loadsInt() && option != null && built[label + 1].opcode in setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST) &&
         add != null && add.opcode == Opcode.INVOKE_STATIC && helper != null &&
-        helper.parameterTypes.map(CharSequence::toString) == listOf("I", "I", LIST, LIST) && helper.origReturnType == "V" &&
+        helper.origParameterTypes == listOf("I", "I", LIST, LIST) && helper.origReturnType == "V" &&
         add.namedRegisters().take(2) == listOf((built[label] as OneRegisterInstruction).registerA, (option as OneRegisterInstruction).registerA),
         "Forward no longer goes into the menu with its number")
     val helperMethod = tgClassDefByOrNull(helper!!.definingClass)?.methods?.singleOrNull { signature(it) == helper.toString() }
@@ -256,7 +257,7 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
 
     // The choice handler: a switch on the number that starts from the selected message and clears its album after.
     val choose = chatClass.methods.filter { m ->
-        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
+        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.origParameterTypes == listOf("I") &&
             m.controlBody().let { body -> body.any { it.opcode == Opcode.PACKED_SWITCH || it.opcode == Opcode.SPARSE_SWITCH } && body.any { it.controlString() == "hasInvoice" } }
     }.controlSingle("message menu choice")
     val chosen = choose.controlBody()
@@ -275,7 +276,7 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     }, "the chat screen no longer has its activity")
 
     // Telegram's file provider, which the choice handler's Share hands its files to under the app's ".provider" authority.
-    val provider = chosen.mapNotNull { it.call() }.filter { it.parameterTypes.map(CharSequence::toString) == listOf(CONTEXT, "Ljava/lang/String;", FILE) && it.origReturnType == URI }
+    val provider = chosen.mapNotNull { it.call() }.filter { it.origParameterTypes == listOf(CONTEXT, "Ljava/lang/String;", FILE) && it.origReturnType == URI }
         .map { it.toString() }.distinct().controlSingle("Telegram's file provider")
     val providerOwner = tgClassDefByOrNull(provider.substringBefore("->"))
     controlShape(providerOwner != null && AccessFlags.PUBLIC.isSet(providerOwner.accessFlags) && providerOwner.methods.any {
@@ -284,7 +285,7 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
 
     // Telegram's forward into the open chat, which the extension calls with the sender hidden.
     val forward = chatClass.methods.filter { m ->
-        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf(LIST, "Z", "Z", "Z", "I", "J") &&
+        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.origParameterTypes == listOf(LIST, "Z", "Z", "Z", "I", "J") &&
             m.controlBody().count { it.controlRef() == FORWARD_SEND } == 1
     }.controlSingle("forward into the open chat")
     controlShape(AccessFlags.PUBLIC.isSet(forward.accessFlags), "the forward into the open chat is inaccessible")
@@ -306,7 +307,7 @@ internal fun BytecodePatchContext.messageMenuBuilders(): List<Pair<String, Strin
         cls.methods.forEach { m ->
             val body = m.controlBody()
             if (!AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" &&
-                m.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE, LIST, LIST, LIST) &&
+                m.origParameterTypes == listOf(MESSAGE, LIST, LIST, LIST) &&
                 body.any { it.controlRef() == FORWARD_LABEL } && body.any { it.controlRef() == CANCEL_SENDING }) builders += cls.type to signature(m)
         }
     }

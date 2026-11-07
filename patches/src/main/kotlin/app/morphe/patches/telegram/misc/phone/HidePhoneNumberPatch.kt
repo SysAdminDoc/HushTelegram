@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.phone
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -133,7 +134,7 @@ internal fun BytecodePatchContext.resolveHidePhoneNumber(): HidePhoneSite {
     }
     val formatter = formatters.controlSingle("phone formatter")
     val format = tgMutableClassDefBy(formatter).methods.filter {
-        !AccessFlags.STATIC.isSet(it.accessFlags) && it.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;") &&
+        !AccessFlags.STATIC.isSet(it.accessFlags) && it.origParameterTypes == listOf("Ljava/lang/String;") &&
             it.origReturnType == "Ljava/lang/String;"
     }.controlSingle("phone format method").let { "${it.definingClass}->${it.name}(Ljava/lang/String;)Ljava/lang/String;" }
 

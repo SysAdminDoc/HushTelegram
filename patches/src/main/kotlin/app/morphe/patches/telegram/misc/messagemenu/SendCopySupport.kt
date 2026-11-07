@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.messagemenu
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.writeStub
@@ -20,7 +21,7 @@ private const val COPY_TEXT_TYPE = "Ljava/lang/CharSequence;"
 /** One Telegram send method Forward as copy calls, with the stub register each argument reads and the literals the rest take. */
 internal class CopySend(val method: Method, val sources: Map<Int, String>, val literals: Map<Int, Int>)
 
-private fun Method.types() = parameterTypes.map { it.toString() }
+private fun Method.types() = origParameterTypes
 private fun Method.callable() = AccessFlags.PUBLIC.isSet(accessFlags) && AccessFlags.STATIC.isSet(accessFlags)
 
 /**

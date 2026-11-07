@@ -161,7 +161,7 @@ internal fun BytecodePatchContext.resolvePopularAppsSites(): PopularAppsSites {
     }
     val fill = fills.one("Apps tab fill", ::refuse)
     val section = tgMutableClassDefBy(fill.definingClass).methods.single { it.origName == fill.origName &&
-        it.parameterTypes.map(CharSequence::toString) == fill.parameterTypes.map(CharSequence::toString) && it.origReturnType == fill.origReturnType }
+        it.origParameterTypes == fill.origParameterTypes && it.origReturnType == fill.origReturnType }
     val body = section.instructions()
     val read = body.indices.filter { body[it].opcode == Opcode.IGET_OBJECT && body[it].field() == list }.one("list read in the Apps tab", ::refuse)
     val listRegister = body[read].namedRegisters()[0]

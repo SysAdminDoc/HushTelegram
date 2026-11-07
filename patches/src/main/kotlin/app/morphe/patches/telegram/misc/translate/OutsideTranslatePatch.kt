@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.translate
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -216,7 +217,7 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
 
     // The choice handler: a switch on the number that starts from the selected message.
     val choose = chatClass.methods.filter { m ->
-        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
+        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.origParameterTypes == listOf("I") &&
             m.controlBody().let { body -> body.any { it.opcode == Opcode.PACKED_SWITCH || it.opcode == Opcode.SPARSE_SWITCH } && body.any { it.controlString() == "hasInvoice" } }
     }.controlSingle("message menu choice")
     val chosen = choose.controlBody()
@@ -260,7 +261,7 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
     val made = creator.controlBody()
     val lazyCall = made.getOrNull(put - 2)?.call()
     controlShape(put >= 3 && made[put - 1].opcode == Opcode.MOVE_RESULT_OBJECT && made[put - 2].opcode == Opcode.INVOKE_VIRTUAL && lazyCall != null &&
-        lazyCall.origReturnType == translateItem.origType && lazyCall.parameterTypes.map(CharSequence::toString).let {
+        lazyCall.origReturnType == translateItem.origType && lazyCall.origParameterTypes.let {
             it.size == 3 && it[0] == "I" && it[1] == "I" && it[2] in setOf("Ljava/lang/String;", "Ljava/lang/CharSequence;")
         },
         "the translate item is no longer added with an ID, an icon and a label")
@@ -281,7 +282,7 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
     // R8 renames Item.setText, unlike the submenu view's TextView override. Bind the wrapper's
     // label setter by its argument and field write, then require it to update the visible text.
     val setHeaderText = itemOwner!!.methods.filter {
-        it.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/CharSequence;") && it.origReturnType == "V" &&
+        it.origParameterTypes == listOf("Ljava/lang/CharSequence;") && it.origReturnType == "V" &&
             it.controlBody().any { instruction -> instruction.opcode == Opcode.IPUT_OBJECT && instruction.controlField()?.let { field ->
                 field.origDefiningClass == itemOwner.origType && field.origType == "Ljava/lang/CharSequence;"
             } == true }
@@ -290,7 +291,7 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
         !AccessFlags.ABSTRACT.isSet(setHeaderText.accessFlags) && !AccessFlags.NATIVE.isSet(setHeaderText.accessFlags),
         "the header item's text setter is inaccessible")
     controlShape(setHeaderText.controlBody().any { instruction -> instruction.call()?.let { method ->
-        method.origName == "setText" && method.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/CharSequence;") && method.origReturnType == "V"
+        method.origName == "setText" && method.origParameterTypes == listOf("Ljava/lang/CharSequence;") && method.origReturnType == "V"
     } == true }, "the header item's text setter no longer updates its view")
 
     // The header's click delegate, the one that calls Telegram's own translate toggle.
@@ -298,7 +299,7 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
     forEachClassMentioning(Mention.reference(TOGGLE)) { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/") || cls.origType == TRANSLATE_CONTROLLER) return@forEachClassMentioning
         cls.methods.forEach { m ->
-            if (!AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
+            if (!AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.origParameterTypes == listOf("I") &&
                 m.controlBody().any { it.controlRef() == TOGGLE }) delegates += cls.type to signature(m)
         }
     }

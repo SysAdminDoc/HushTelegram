@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.sendconfirm
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.util.names.replaceInstruction
@@ -271,7 +272,7 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     classDefForEach { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/")) return@classDefForEach
         cls.methods.forEach { m ->
-            val params = m.parameterTypes.map(CharSequence::toString)
+            val params = m.origParameterTypes
             if (AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && params == CALL_TARGET) starts += cls.type to signature(m)
             if (!AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && params == GIF_TARGET) gifs += cls.type to signature(m)
         }
@@ -292,7 +293,7 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     forEachClassMentioning(stripMention or Mention.reference(CAMERA_ALLOWED) or Mention.reference(startRef)) { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
-            val params = m.parameterTypes.map(CharSequence::toString)
+            val params = m.origParameterTypes
             val instance = !AccessFlags.STATIC.isSet(m.accessFlags)
             if (m.implementation == null) return@forEach
             val body = m.controlBody()
@@ -320,7 +321,7 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     val barClass = tgMutableClassDefBy(ENTER_VIEW)
     controlShape(AccessFlags.PUBLIC.isSet(barClass.accessFlags), "the chat bar is inaccessible")
     val sticker = barClass.methods.filter { m ->
-        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == STICKER_TARGET
+        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.origParameterTypes == STICKER_TARGET
     }.controlSingle("the chat bar's sticker send")
     requireGateable(sticker, "the chat bar's sticker send")
 
@@ -336,7 +337,7 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     controlShape(AccessFlags.PUBLIC.isSet(mediaClass.accessFlags), "the media controller is inaccessible")
     val voice = mediaClass.methods.filter { m ->
         m.origName == "stopRecording" && !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" &&
-            m.parameterTypes.map(CharSequence::toString) == VOICE_TARGET
+            m.origParameterTypes == VOICE_TARGET
     }.controlSingle("Telegram's end of a recording")
     requireGateable(voice, "Telegram's end of a recording")
 
@@ -374,7 +375,7 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     // Send from a question in front of a paused recording goes through it. The stubs that read the
     // two fields get them opened when the stubs are written.
     controlShape(!AccessFlags.STATIC.isSet(paidPause.accessFlags) && AccessFlags.PUBLIC.isSet(paidPause.accessFlags) &&
-        paidPause.origReturnType == "Z" && paidPause.parameterTypes.map(CharSequence::toString) == BAR_SEND,
+        paidPause.origReturnType == "Z" && paidPause.origParameterTypes == BAR_SEND,
         "the chat bar's send no longer takes a date, sound, its paid-message question and stars")
     val (voiceClip, videoClip) = listOf(TL_DOCUMENT to "voice clip", VIDEO_INFO to "round video").map { (type, what) ->
         val field = barClass.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.origType == type }
@@ -417,7 +418,7 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     // The field LaunchActivity.onCreate sets to itself, which is the app's main window.
     val launchClass = tgMutableClassDefBy(LAUNCH_ACTIVITY)
     controlShape(AccessFlags.PUBLIC.isSet(launchClass.accessFlags), "the main window is inaccessible")
-    val onCreate = launchClass.methods.filter { it.origName == "onCreate" && it.parameterTypes.map(CharSequence::toString) == listOf("Landroid/os/Bundle;") }
+    val onCreate = launchClass.methods.filter { it.origName == "onCreate" && it.origParameterTypes == listOf("Landroid/os/Bundle;") }
         .controlSingle("the main window's start")
     val own = onCreate.controlBody().filter { it.opcode == Opcode.SPUT_OBJECT && it.controlField()?.let { f -> f.origDefiningClass == LAUNCH_ACTIVITY && f.origType == LAUNCH_ACTIVITY } == true }
         .map { it.controlField().toString() }.distinct().controlSingle("the main window's own field")
@@ -428,7 +429,7 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     // paid-message check has answered. Send runs the callback again through the interface.
     val callback = tgMutableClassDefBy(CALLBACK)
     controlShape(AccessFlags.PUBLIC.isSet(callback.accessFlags) && AccessFlags.INTERFACE.isSet(callback.accessFlags) &&
-        callback.methods.any { it.origName == "run" && it.origReturnType == "V" && it.parameterTypes.map(CharSequence::toString) == listOf(OBJECT) },
+        callback.methods.any { it.origName == "run" && it.origReturnType == "V" && it.origParameterTypes == listOf(OBJECT) },
         "Telegram's callback is no longer a public interface run with one argument")
     controlShape(strips.isNotEmpty(), "the sticker suggestion strip's send is gone")
     controlShape(strips.map { it.second }.distinct().size == strips.size, "a callback sends from the sticker strip more than once")

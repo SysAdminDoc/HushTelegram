@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.channelbar
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -119,7 +120,7 @@ internal fun BytecodePatchContext.resolveChannelBarButtons(): ChannelBarPlan {
         if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.filterTo(placers) { m ->
             !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" &&
-                m.parameterTypes.map { it.toString() } == listOf("I", "Z", "Z") &&
+                m.origParameterTypes == listOf("I", "Z", "Z") &&
                 m.controlBody().let { body -> (SIDE_LABELS + GIFT_LABEL).all { label -> body.any { it.controlRef() == label } } }
         }
     }

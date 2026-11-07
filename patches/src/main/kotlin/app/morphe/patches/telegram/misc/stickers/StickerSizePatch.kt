@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.stickers
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.loadsInt
 import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -105,7 +106,7 @@ internal fun BytecodePatchContext.resolveStickerSize(): StickerSizePlan {
     forEachClassMentioning(Mention.reference(CONTENT_LABEL)) { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.filter { m ->
-            m.parameterTypes.map { it.toString() } == listOf(MESSAGE_OBJECT, GROUPED, "Z", "Z", "Z", "Z") && m.origReturnType == "V" &&
+            m.origParameterTypes == listOf(MESSAGE_OBJECT, GROUPED, "Z", "Z", "Z", "Z") && m.origReturnType == "V" &&
                 m.controlBody().any { it.loadsInt() && it.controlRef() == CONTENT_LABEL }
         }.forEach { setters += cls.type to signature(it) }
     }

@@ -119,7 +119,7 @@ internal fun BytecodePatchContext.resolveContactsNagSites(): ContactsNagSites {
     val mark = (badgeGate until badgeClear).filter { badgeBody[it].string() == "!" }.one("badge mark", ::refuse)
     val setMark = badgeBody.getOrNull(mark + 1)
     val setter = setMark?.call()
-    shape(setter != null && setMark.opcode == Opcode.INVOKE_VIRTUAL && setter.parameterTypes.map(CharSequence::toString) ==
+    shape(setter != null && setMark.opcode == Opcode.INVOKE_VIRTUAL && setter.origParameterTypes ==
         listOf("Ljava/lang/String;", "Z", "Z") && setter.origReturnType == "V" &&
         setMark.namedRegisters()[1] == badgeBody[mark].namedRegisters()[0] && badgeBody.getOrNull(mark + 2)?.opcode == Opcode.RETURN_VOID,
         "the badge no longer sets \"!\" and returns")
@@ -159,7 +159,7 @@ internal fun BytecodePatchContext.resolveContactsNagSites(): ContactsNagSites {
         "the Contacts tab's prompt no longer stands alone at the end of the check")
     shape(askBody[askGate].call()?.origName == "shouldShowRequestPermissionRationale", "the prompt no longer starts with Android's rationale check")
     val calls = region.sorted().mapNotNull { askBody[it].call() }
-    val request = calls.filter { it.origDefiningClass == ask.origDefiningClass && it.parameterTypes.map(CharSequence::toString) == listOf("Z") }
+    val request = calls.filter { it.origDefiningClass == ask.origDefiningClass && it.origParameterTypes == listOf("Z") }
         .one("Contacts tab's own request", ::refuse)
     shape(calls.count { it.origName == "showDialog" } == 1, "the prompt no longer shows one dialog")
     shape(calls.all { it.origName in setOf("shouldShowRequestPermissionRationale", "<init>", "showDialog") || it == request ||
@@ -167,7 +167,7 @@ internal fun BytecodePatchContext.resolveContactsNagSites(): ContactsNagSites {
     shape(region.none { askBody[it].opcode.isFieldWrite() && askBody[it].opcode != Opcode.IPUT_OBJECT },
         "the prompt writes more than its dialog")
     val requester = tgClassDefBy(ask.definingClass).methods.single { it.origName == request.origName &&
-        it.parameterTypes.map(CharSequence::toString) == listOf("Z") && it.origReturnType == request.origReturnType }
+        it.origParameterTypes == listOf("Z") && it.origReturnType == request.origReturnType }
     shape(requester.instructions().let { body -> body.any { it.string() == READ_CONTACTS } && body.any { it.call()?.origName == "requestPermissions" } },
         "the Contacts tab's own request no longer asks Android for contacts")
 
@@ -198,7 +198,7 @@ private fun BytecodePatchContext.requireRuntimeHooks() {
     val owner = tgClassDefByOrNull(CONTACTS_NAG)
     shape(owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags), "no public contacts nag runtime")
     for (name in listOf("skipAsk", "hideBadge")) {
-        shape(owner!!.methods.count { it.origName == name && it.parameterTypes.map(CharSequence::toString) == listOf(PREFS) && it.origReturnType == "Z" &&
+        shape(owner!!.methods.count { it.origName == name && it.origParameterTypes == listOf(PREFS) && it.origReturnType == "Z" &&
             AccessFlags.STATIC.isSet(it.accessFlags) && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
             !AccessFlags.NATIVE.isSet(it.accessFlags) && !AccessFlags.ABSTRACT.isSet(it.accessFlags) &&
             it.implementation?.instructions?.any { instruction -> !instruction.opcode.format.isPayloadFormat } == true } == 1,
@@ -232,7 +232,7 @@ private fun Instruction.isGetBoolean() =
 private fun Instruction.isZero(register: Int) = (opcode == Opcode.CONST_4 || opcode == Opcode.CONST_16) &&
     namedRegisters().firstOrNull() == register && (this as NarrowLiteralInstruction).narrowLiteral == 0
 private fun Method.sameAs(other: Method) = name == other.name && returnType == other.returnType &&
-    parameterTypes.map(CharSequence::toString) == other.parameterTypes.map(CharSequence::toString)
+    origParameterTypes == other.origParameterTypes
 private fun refuse(reason: String): Nothing =
     throw PatchException("$PATCH: $reason; refuses changed contacts prompt geometry before editing")
 private fun shape(valid: Boolean, reason: String) {

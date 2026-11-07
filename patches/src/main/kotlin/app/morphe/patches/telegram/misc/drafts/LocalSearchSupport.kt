@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.drafts
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.loadsInt
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -605,8 +606,8 @@ private fun reaches(method: Method, target: Int, avoiding: Int): Boolean {
 /** Every instruction that can run right before [index], by a fall-through, a branch or a throw. */
 private fun ControlFlow.into(index: Int): List<Int> = instructions.indices.filter { index in normal[it] || index in exceptional[it] }
 
-private fun Method.params(): List<String> = parameterTypes.map { it.toString() }
-private fun MethodReference.params(): List<String> = parameterTypes.map { it.toString() }
+private fun Method.params(): List<String> = origParameterTypes
+private fun MethodReference.params(): List<String> = origParameterTypes
 private fun Method.sameSignature(other: Method) = name == other.name && returnType == other.returnType && params() == other.params()
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Method.constructs(type: String) = instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.reference() == type }

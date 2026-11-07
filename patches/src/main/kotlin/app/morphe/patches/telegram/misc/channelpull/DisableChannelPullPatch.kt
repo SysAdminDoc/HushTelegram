@@ -190,7 +190,7 @@ internal fun BytecodePatchContext.resolveChannelPullSites(): ChannelPullSites {
         val call = body[at].call() ?: refuse("ordinary scroll lost its target")
         shape(at < channelCall - 3, "bottom pull no longer follows ordinary scrolling")
         shape(call.origName == scroll.origName && call.origReturnType == "I" &&
-            call.parameterTypes.map(CharSequence::toString) == scroll.parameterTypes.map(CharSequence::toString) &&
+            call.origParameterTypes == scroll.origParameterTypes &&
             call.origDefiningClass == superOwner, "ordinary scroll target changed from the inherited callback")
         shape(body[at + 1].opcode == Opcode.MOVE_RESULT, "ordinary scroll result is no longer retained")
     }
@@ -225,7 +225,7 @@ internal fun BytecodePatchContext.resolveChannelPullSites(): ChannelPullSites {
     val drawBody = draw.instructions()
     val drawable = body.mapNotNull { it.field() }.filter { field -> field.origDefiningClass == owner.origType && field.origType != list.origType &&
         drawBody.any { it.opcode == Opcode.IPUT_OBJECT && it.field() == field } &&
-        tgClassDefByOrNull(field.type)?.methods?.any { method -> method.origName == "<init>" && method.parameterTypes.map(CharSequence::toString).let { params ->
+        tgClassDefByOrNull(field.type)?.methods?.any { method -> method.origName == "<init>" && method.origParameterTypes.let { params ->
             params.size == 7 && params.take(6) == listOf("I", VIEW, "J", "I", "I", "J") && params[6].startsWith("L") } } == true }
         .distinct().one("pull drawable field", ::refuse)
     // The constructor has seven declared parameters, with wide dialog/topic identifiers.

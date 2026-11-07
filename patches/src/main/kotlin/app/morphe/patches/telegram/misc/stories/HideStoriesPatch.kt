@@ -420,7 +420,7 @@ private fun Instruction.reference(): String? = origRef()
 private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference
 private fun MethodReference.hasShape(parameters: List<String>, returns: String) = returnType == returns && parameterTypes.map { it.toString() } == parameters
 private fun MethodReference.sameSignature(other: MethodReference) = name == other.name && returnType == other.returnType &&
-    parameterTypes.map { it.toString() } == other.parameterTypes.map { it.toString() }
+    origParameterTypes == other.origParameterTypes
 
 private fun predecessors(flow: ControlFlow, size: Int): Array<MutableList<Int>> {
     val predecessors = Array(size) { mutableListOf<Int>() }

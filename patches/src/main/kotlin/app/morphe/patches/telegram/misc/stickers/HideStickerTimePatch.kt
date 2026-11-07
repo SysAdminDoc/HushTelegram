@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.stickers
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -98,12 +99,12 @@ internal fun BytecodePatchContext.resolveHideStickerTime(): Pair<MutableMethod, 
     val found = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.reference(MESSAGE_TYPE) and Mention.literal(TYPE_JOINED_CHANNEL)) { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
-        val drawers = cls.methods.filter { m -> m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString).let { CANVAS in it && STATIC_LAYOUT in it } }
+        val drawers = cls.methods.filter { m -> m.origReturnType == "V" && m.origParameterTypes.let { CANVAS in it && STATIC_LAYOUT in it } }
             .map { "${cls.type}->${it.name}(${it.parameterTypes.joinToString("")})V" }.toSet()
         if (drawers.isEmpty()) return@forEachClassMentioning
         cls.methods.filter { m ->
             !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" &&
-                m.parameterTypes.map(CharSequence::toString).sorted() == listOf("F", CANVAS, "Z").sorted() &&
+                m.origParameterTypes.sorted() == listOf("F", CANVAS, "Z").sorted() &&
                 m.controlBody().let { body ->
                     body.any { it.controlRef() == MESSAGE_TYPE } && body.any { (it as? NarrowLiteralInstruction)?.narrowLiteral == TYPE_JOINED_CHANNEL } &&
                         body.any { it.controlRef() in drawers }

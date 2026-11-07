@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.numbers
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -90,7 +91,7 @@ internal fun BytecodePatchContext.resolveExactNumbers(): ExactNumbersSite {
         body.any { it.controlRef() == "Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;" },
         "the short number formatter no longer writes K")
     val first = method.localRegisterCount()
-    val types = method.parameterTypes.map { it.toString() }
+    val types = method.origParameterTypes
     val count = first + types.indexOf("I")
     val array = first + types.indexOf("[I")
     controlShape(array == count + 1 || maxOf(count, array) <= 15, "the short number formatter's count and array are out of a call's reach")

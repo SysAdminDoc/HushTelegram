@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.keyboard
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
@@ -71,7 +72,7 @@ internal fun BytecodePatchContext.resolveHideKeyboardOnScroll(): MutableMethod {
     forEachClassMentioning(Mention.reference(START_SPOILERS) and Mention.reference(STOP_SPOILERS)) { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { method ->
-            if (method.parameterTypes.map(CharSequence::toString) == listOf(RECYCLER_VIEW, "I") && method.origReturnType == "V" &&
+            if (method.origParameterTypes == listOf(RECYCLER_VIEW, "I") && method.origReturnType == "V" &&
                 !AccessFlags.STATIC.isSet(method.accessFlags)) {
                 val refs = method.controlBody().mapNotNull { it.controlRef() }.toSet()
                 if (START_SPOILERS in refs && STOP_SPOILERS in refs) found += cls.type to signature(method)

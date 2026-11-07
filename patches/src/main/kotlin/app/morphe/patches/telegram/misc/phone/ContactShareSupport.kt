@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.phone
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -94,7 +95,7 @@ internal fun BytecodePatchContext.resolveContactShare(): ContactShareSite {
         body.indices.filter { body[it].opcode == Opcode.IPUT_BOOLEAN && body[it].controlField() == box }.map { method to it }
     }
     val (view, tick) = ticks.controlSingle("share box tick")
-    controlShape(view.origName == "createView" && view.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;"),
+    controlShape(view.origName == "createView" && view.origParameterTypes == listOf("Landroid/content/Context;"),
         "Telegram ticks the share box outside createView")
     val body = view.controlBody()
     val (value, owner) = body[tick].namedRegisters()

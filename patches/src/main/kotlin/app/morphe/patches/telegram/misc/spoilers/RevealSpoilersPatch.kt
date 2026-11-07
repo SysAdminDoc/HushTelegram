@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.spoilers
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.util.names.replaceInstruction
@@ -181,11 +182,11 @@ internal fun BytecodePatchContext.resolveRevealSpoilers(): RevealSpoilersSite {
     val revealed = layout.indexOfFirst { it.controlRef() == SPOILERS_REVEALED }
     controlShape(revealed >= 0, "the text layout no longer checks whether spoilers are revealed")
     val add = layout.drop(revealed).mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
-        .firstOrNull { it.parameterTypes.map(CharSequence::toString) == ADD && it.origReturnType == "V" }
+        .firstOrNull { it.origParameterTypes == ADD && it.origReturnType == "V" }
     controlShape(add != null, "the text layout no longer covers spoilers after checking")
     val effect = tgMutableClassDefByOrNull(add!!.definingClass)
     controlShape(effect != null && AccessFlags.PUBLIC.isSet(effect.accessFlags), "SpoilerEffect ${add.definingClass} is missing")
-    val textCovers = effect!!.methods.filter { it.parameterTypes.map(CharSequence::toString) == ADD_CORE && it.origReturnType == "V" }
+    val textCovers = effect!!.methods.filter { it.origParameterTypes == ADD_CORE && it.origReturnType == "V" }
         .controlSingle("SpoilerEffect's text cover")
     controlShape(AccessFlags.STATIC.isSet(textCovers.accessFlags), "SpoilerEffect's text cover is no longer static")
     val covers = textCovers.controlBody()

@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.apps
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -657,8 +658,8 @@ private fun Method.isCallable() = AccessFlags.PUBLIC.isSet(accessFlags) && !Acce
 private fun Method.isPublicStatic() = AccessFlags.PUBLIC.isSet(accessFlags) && AccessFlags.STATIC.isSet(accessFlags)
 private fun ClassDef.hasField(name: String, type: String, static: Boolean) = fields.any { it.origName == name && it.origType == type &&
     AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static }
-private fun Method.params(): List<String> = parameterTypes.map { it.toString() }
-private fun MethodReference.params(): List<String> = parameterTypes.map { it.toString() }
+private fun Method.params(): List<String> = origParameterTypes
+private fun MethodReference.params(): List<String> = origParameterTypes
 private fun Method.sameSignature(other: Method) = name == other.name && returnType == other.returnType && params() == other.params()
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference

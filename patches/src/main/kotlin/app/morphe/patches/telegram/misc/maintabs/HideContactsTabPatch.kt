@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.maintabs
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -270,7 +271,7 @@ internal fun BytecodePatchContext.resolveMainTabs(): MainTabsPlan {
         val choice = body[read].namedRegisters()[0]
         (read + 1 until minOf(body.size, read + 4)).filter { at ->
             body[at].opcode == Opcode.INVOKE_VIRTUAL && body[at].call()?.let { c ->
-                c.origDefiningClass == screenType && c.parameterTypes.map(CharSequence::toString) == listOf("Z", "Z") && c.origReturnType == "V"
+                c.origDefiningClass == screenType && c.origParameterTypes == listOf("Z", "Z") && c.origReturnType == "V"
             } == true && body[at].namedRegisters().getOrNull(1) == choice
         }.map { body[it].controlRef()!! }
     }.distinct()
@@ -287,7 +288,7 @@ internal fun BytecodePatchContext.resolveMainTabs(): MainTabsPlan {
     // In it, the bar shows or hides each of the two tabs, a tab view taken from the kept array.
     val toggles = shownBody.indices.filter { at ->
         shownBody[at].opcode == Opcode.INVOKE_VIRTUAL && shownBody[at].call()?.let { c ->
-            c.parameterTypes.map(CharSequence::toString) == listOf(VIEW, "Z", "Z") && c.origReturnType == "V"
+            c.origParameterTypes == listOf(VIEW, "Z", "Z") && c.origReturnType == "V"
         } == true
     }
     shape(toggles.size == 2 && toggles.map { shownBody[it].controlRef() }.distinct().size == 1,
@@ -348,7 +349,7 @@ internal fun BytecodePatchContext.resolveMainTabs(): MainTabsPlan {
     // page and the mark on its tab, both with the same page.
     val notified = screen.methods.filter { m ->
         m.origName == "didReceivedNotification" && !AccessFlags.STATIC.isSet(m.accessFlags) &&
-            m.parameterTypes.map(CharSequence::toString) == listOf("I", "I", "[Ljava/lang/Object;")
+            m.origParameterTypes == listOf("I", "I", "[Ljava/lang/Object;")
     }
     shape(notified.size == 1, "the main screen no longer hears Telegram's notifications")
     val heard = notified.single().controlBody()
@@ -356,12 +357,12 @@ internal fun BytecodePatchContext.resolveMainTabs(): MainTabsPlan {
         val window = switched + 1 until minOf(heard.size, switched + LEAVE_WITHIN)
         val slideAt = window.firstOrNull { at ->
             heard[at].opcode == Opcode.INVOKE_VIRTUAL && heard[at].call()?.let { c ->
-                c.origDefiningClass in pagerChain && c.parameterTypes.map(CharSequence::toString) == listOf("I") && c.origReturnType == "Z"
+                c.origDefiningClass in pagerChain && c.origParameterTypes == listOf("I") && c.origReturnType == "Z"
             } == true
         } ?: return@mapNotNull null
         val markAt = (slideAt + 1 until window.last + 1).firstOrNull { at ->
             heard[at].opcode == Opcode.INVOKE_VIRTUAL && heard[at].call()?.let { c ->
-                c.origDefiningClass == screenType && c.parameterTypes.map(CharSequence::toString) == listOf("I", "Z") && c.origReturnType == "V"
+                c.origDefiningClass == screenType && c.origParameterTypes == listOf("I", "Z") && c.origReturnType == "V"
             } == true
         } ?: return@mapNotNull null
         if (heard[slideAt].namedRegisters()[1] != heard[markAt].namedRegisters()[1]) return@mapNotNull null
@@ -377,7 +378,7 @@ internal fun BytecodePatchContext.resolveMainTabs(): MainTabsPlan {
     val sets = holderBody.indices.filter { at ->
         val c = holderBody[at].call()
         holderBody[at].opcode == Opcode.INVOKE_VIRTUAL && c != null && c.origDefiningClass in pagerChain &&
-            c.parameterTypes.map(CharSequence::toString) == listOf("I") && c.origReturnType == "V" &&
+            c.origParameterTypes == listOf("I") && c.origReturnType == "V" &&
             holderBody.getOrNull(at - 1)?.let { read ->
                 read.opcode == Opcode.IGET && read.controlField()?.let { it.origDefiningClass == superType && it.origType == "I" } == true &&
                     read.namedRegisters()[0] == holderBody[at].namedRegisters()[1]
@@ -456,7 +457,7 @@ internal class SwipeTurn(val forward: String, val backward: String, val position
 private fun swipeTurn(base: ClassDef): SwipeTurn? {
     val starts = base.methods.filter { m ->
         !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "Z" &&
-            m.parameterTypes.map(CharSequence::toString) == listOf(MOTION_EVENT, "Z") && m.controlBody().isNotEmpty()
+            m.origParameterTypes == listOf(MOTION_EVENT, "Z") && m.controlBody().isNotEmpty()
     }
     val found = starts.mapNotNull { start ->
         val body = start.controlBody()
@@ -464,7 +465,7 @@ private fun swipeTurn(base: ClassDef): SwipeTurn? {
         fun asked(test: Opcode) = body.indices.filter { at ->
             at > 0 && body[at - 1].opcode == test && body[at - 1].namedRegisters() == listOf(way) &&
                 body[at].opcode == Opcode.INVOKE_VIRTUAL && body[at].call()?.let { c ->
-                    c.origDefiningClass == base.origType && c.parameterTypes.map(CharSequence::toString) == listOf(MOTION_EVENT) && c.origReturnType == "Z"
+                    c.origDefiningClass == base.origType && c.origParameterTypes == listOf(MOTION_EVENT) && c.origReturnType == "Z"
                 } == true
         }
         val forward = asked(Opcode.IF_EQZ).singleOrNull() ?: return@mapNotNull null
@@ -490,7 +491,7 @@ private fun swipeTurn(base: ClassDef): SwipeTurn? {
 
 /** A swipe question as a subclass answers it: an instance method of [name] taking the event and answering a boolean. */
 private fun gateShape(m: Method, name: String) = m.origName == name && !AccessFlags.STATIC.isSet(m.accessFlags) &&
-    m.origReturnType == "Z" && m.parameterTypes.map(CharSequence::toString) == listOf(MOTION_EVENT) && m.controlBody().isNotEmpty()
+    m.origReturnType == "Z" && m.origParameterTypes == listOf(MOTION_EVENT) && m.controlBody().isNotEmpty()
 
 /** The number of the page the screen builds Contacts for. */
 private fun contactsPage(screen: ClassDef): Int? = pageBuilt(screen, CONTACTS_SCREEN)
@@ -501,7 +502,7 @@ private fun contactsPage(screen: ClassDef): Int? = pageBuilt(screen, CONTACTS_SC
  */
 internal fun pageBuilt(screen: ClassDef, type: String): Int? {
     val builders = screen.methods.filter { m ->
-        !AccessFlags.STATIC.isSet(m.accessFlags) && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
+        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origParameterTypes == listOf("I") &&
             m.origReturnType.startsWith("L") && m.controlBody().any { it.opcode == Opcode.NEW_INSTANCE && it.controlRef() == CONTACTS_SCREEN }
     }
     if (builders.size != 1) return null
@@ -526,7 +527,7 @@ internal fun pageBuilt(screen: ClassDef, type: String): Int? {
 
 /** Whether [m] is a view's build: an instance `createView` taking a context. */
 internal fun isBuild(m: Method) = m.origName == "createView" && !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == VIEW &&
-    m.parameterTypes.map(CharSequence::toString) == listOf(CONTEXT) && m.controlBody().isNotEmpty()
+    m.origParameterTypes == listOf(CONTEXT) && m.controlBody().isNotEmpty()
 
 /** The one instruction before [use] whose write of [register] reaches it on every path, or null. */
 internal fun defined(flow: ControlFlow, use: Int, register: Int): Int? = (use - 1 downTo 0).firstOrNull { at ->

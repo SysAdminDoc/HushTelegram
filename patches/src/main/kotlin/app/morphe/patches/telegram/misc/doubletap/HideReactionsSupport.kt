@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.doubletap
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patches.telegram.misc.localcontrols.Mention
@@ -62,7 +63,7 @@ internal fun BytecodePatchContext.resolveReactionRows(): ReactionPlan {
 
 internal fun Method.isRowSetter(): Boolean {
     if (AccessFlags.STATIC.isSet(accessFlags) || returnType != "V") return false
-    val parameters = parameterTypes.map { it.toString() }
+    val parameters = origParameterTypes
     if (parameters.size != 4 || parameters[0] != MESSAGE_OBJECT || parameters[1] != "Z" || parameters[2] != "Z" ||
         !parameters[3].startsWith("L")) return false
     val body = controlBody()
@@ -76,7 +77,7 @@ internal const val REACTED_WITH = "AccDescrReactedWith"
 private const val SPOKEN_REACTIONS = "Lorg/telegram/tgnet/TLRPC\$TL_messageReactions;"
 
 internal fun Method.isSpokenBuilder() = name == "createAccessibilityNodeInfo" &&
-    parameterTypes.map { it.toString() } == listOf("I") && returnType == "Landroid/view/accessibility/AccessibilityNodeInfo;" &&
+    origParameterTypes == listOf("I") && returnType == "Landroid/view/accessibility/AccessibilityNodeInfo;" &&
     controlBody().any { it.controlRef() == STORED_REACTIONS } && controlBody().any { it.controlString() == REACTED_WITH }
 
 /**
@@ -121,7 +122,7 @@ internal fun BytecodePatchContext.resolveReactionSpeech(): ReactionPlan {
 }
 
 internal fun Method.isMenuBuilder() =!AccessFlags.STATIC.isSet(accessFlags) && returnType == "Z" &&
-    parameterTypes.map { it.toString() } == listOf("Landroid/view/View;", "Z", "Z", "F", "F", "Z", "Z", "Z") &&
+    origParameterTypes == listOf("Landroid/view/View;", "Z", "Z", "F", "F", "Z", "Z", "Z") &&
     controlBody().any { it.controlRef() == REACTIONS_AVAILABLE } && controlBody().any { it.controlRef() == ENABLED_REACTIONS }
 
 /**
@@ -174,7 +175,7 @@ internal fun BytecodePatchContext.resolveReactionPicker(): ReactionPlan {
 }
 
 internal fun Method.isSelectionSetter() = !AccessFlags.STATIC.isSet(accessFlags) && returnType == "V" &&
-    parameterTypes.map { it.toString() } == listOf("Ljava/util/List;") && controlBody().any { it.controlRef() == MESSAGE_GROUP_ID }
+    origParameterTypes == listOf("Ljava/util/List;") && controlBody().any { it.controlRef() == MESSAGE_GROUP_ID }
 
 /**
  * The bubble of reactions over a selected message lives in its own overlay, away from the long-press

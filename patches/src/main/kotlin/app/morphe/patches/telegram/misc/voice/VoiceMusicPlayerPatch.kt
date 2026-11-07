@@ -4,6 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.voice
 
+import app.morphe.util.names.origDescriptor
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.util.names.replaceInstruction
@@ -150,7 +152,7 @@ internal fun BytecodePatchContext.resolveVoiceMusicPlayer(): VoiceMusicPlayerSit
     controlHook(VOICE_PLAYER, "once", listOf("Ljava/lang/Object;"), "Z")
     val message = tgClassDefByOrNull(MESSAGE)
     controlShape(message != null && listOf("isMusic()Z", "isVoice()Z", "isVoiceOnce()Z").all { wanted ->
-        message.methods.any { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) }
+        message.methods.any { "${it.origName}${it.origDescriptor}" == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) }
     }, "a message no longer says whether it's music, voice or view-once")
 
     // The bar: a music check followed closely by the full player being created.
@@ -219,7 +221,7 @@ private fun BytecodePatchContext.resolveProfileButtons(player: String): Pair<Str
     val asks = "$player->${signature(mine)}"
     val toggle = methods.filter { m ->
         val body = m.controlBody()
-        m.parameterTypes.map { it.toString() } == listOf("Z") && m.origReturnType == "V" && body.size > 2 &&
+        m.origParameterTypes == listOf("Z") && m.origReturnType == "V" && body.size > 2 &&
             body[0].opcode == Opcode.INVOKE_VIRTUAL && body[0].controlRef() == asks && body[1].opcode == Opcode.MOVE_RESULT &&
             body.count { it.controlRef() == ANIMATE } >= 2
     }.controlSingle("the player's Add to Profile toggle")

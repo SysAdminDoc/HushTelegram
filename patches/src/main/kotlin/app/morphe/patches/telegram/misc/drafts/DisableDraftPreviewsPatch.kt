@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.drafts
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -618,8 +619,8 @@ private fun shape(valid: Boolean, reason: String) {
     if (!valid) refuse(reason)
 }
 private fun Method.isStatic() = AccessFlags.STATIC.isSet(accessFlags)
-private fun Method.params(): List<String> = parameterTypes.map { it.toString() }
-private fun MethodReference.params(): List<String> = parameterTypes.map { it.toString() }
+private fun Method.params(): List<String> = origParameterTypes
+private fun MethodReference.params(): List<String> = origParameterTypes
 private fun Method.hasShape(parameters: List<String>, returns: String) = returnType == returns && params() == parameters
 private fun MethodReference.hasShape(parameters: List<String>, returns: String) = returnType == returns && params() == parameters
 private fun Method.sameSignature(other: Method) = name == other.name && returnType == other.returnType && params() == other.params()

@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.savedownloads
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -119,7 +120,7 @@ internal fun BytecodePatchContext.resolveOlderFiles(): OlderFilePlan {
     val owner = tgMutableClassDefByOrNull(FILE_LOADER) ?: return OlderFilePlan.missing("FileLoader is missing")
     val wanted = listOf(TL_OBJECT, "Ljava/lang/String;", "Ljava/lang/String;", "Z", "Z")
     val methods = owner.methods.filter {
-        it.origName == "getPathToAttach" && it.origReturnType == "Ljava/io/File;" && it.parameterTypes.map(CharSequence::toString) == wanted
+        it.origName == "getPathToAttach" && it.origReturnType == "Ljava/io/File;" && it.origParameterTypes == wanted
     }
     val method = methods.singleOrNull() ?: return OlderFilePlan.missing("FileLoader.getPathToAttach changed")
     val body = method.controlBody()
@@ -151,7 +152,7 @@ internal fun BytecodePatchContext.resolveOlderLoads(): OlderFilePlan {
     val owner = tgMutableClassDefByOrNull(LOAD_OPERATION) ?: return OlderFilePlan.missing("FileLoadOperation is missing")
     val wanted = listOf("Lorg/telegram/messenger/FileLoadOperationStream;", "J", "Z")
     val methods = owner.methods.filter {
-        it.origName == "start" && it.origReturnType == "Z" && it.parameterTypes.map(CharSequence::toString) == wanted
+        it.origName == "start" && it.origReturnType == "Z" && it.origParameterTypes == wanted
     }
     val method = methods.singleOrNull() ?: return OlderFilePlan.missing("FileLoadOperation.start changed")
     val body = method.controlBody()

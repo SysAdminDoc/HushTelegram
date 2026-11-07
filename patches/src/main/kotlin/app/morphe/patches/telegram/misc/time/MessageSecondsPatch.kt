@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.time
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -105,7 +106,7 @@ internal fun BytecodePatchContext.resolveMessageTime(): Pair<MutableMethod, List
     forEachClassMentioning(Mention.allReferences(listOf(EDITED_MESSAGE, FORMATTER_DAY, TIME_FORMAT))) { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { method ->
-            if (method.parameterTypes.map(CharSequence::toString) == listOf("Lorg/telegram/messenger/MessageObject;") && method.origReturnType == "V" &&
+            if (method.origParameterTypes == listOf("Lorg/telegram/messenger/MessageObject;") && method.origReturnType == "V" &&
                 !AccessFlags.STATIC.isSet(method.accessFlags)) {
                 val refs = method.controlBody().mapNotNull { it.controlRef() }.toSet()
                 if (EDITED_MESSAGE in refs && FORMATTER_DAY in refs && TIME_FORMAT in refs) found += cls.type to method.name
