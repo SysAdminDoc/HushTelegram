@@ -157,6 +157,9 @@ internal object FixtureDex {
     }
 
     fun inputIdentity(build: File): String {
+        // Tests key their kept copies of a build's classes by this identity and then read names off
+        // them without reading the fixture again, so the names have to come from this build's table.
+        TelegramNames.forVersionCode(build.nameWithoutExtension.substringAfterLast('-'))?.let { TelegramNames.ambient = it }
         val digest = MessageDigest.getInstance("SHA-256")
         build.inputStream().use { input ->
             val buffer = ByteArray(256 * 1024)
