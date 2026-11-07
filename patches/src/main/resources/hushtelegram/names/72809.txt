@@ -20855,3 +20855,6 @@ m Lorg/telegram/messenger/MediaController; resumeAudio (Lorg/telegram/messenger/
 # added by hand: hide keyboard on scroll
 f Lorg/telegram/messenger/NotificationCenter; startSpoilers I Lorg/telegram/messenger/os; l1 I
 f Lorg/telegram/messenger/NotificationCenter; stopSpoilers I Lorg/telegram/messenger/os; k1 I
+
+# added by hand: link routing
+m Lorg/telegram/messenger/MessagesController; isWebBrowserOpenInApp (Ljava/lang/String;)Z Lorg/telegram/messenger/lp; L2 (Ljava/lang/String;)Z

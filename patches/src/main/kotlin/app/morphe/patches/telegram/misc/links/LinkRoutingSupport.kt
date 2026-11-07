@@ -142,6 +142,8 @@ internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
     checkShape(code[append + 2].ref() == "$URI_BUILDER->build()$URI" && code[append + 3].opcode == Opcode.MOVE_RESULT_OBJECT &&
         (code[append + 4].opcode in GOTOS || copied), "autologin builder has no guarded merge")
     var routingAt = ControlFlow.of(browser).normal[append + 4].single()
+    // Web 13.2.0 jumps from that copy to the merge rather than falling through to it.
+    if (copied && code[routingAt].opcode in GOTOS) routingAt = ControlFlow.of(browser).normal[routingAt].single()
     // The other independently selectable patch may already have moved the merge label to its hook.
     val routingLength = if (carried) 7 else 6
     if (code.getOrNull(routingAt + routingLength - 5)?.ref() == "$LINKS->tryOpenExternal($CONTEXT$URI" + "Z[ZLjava/lang/String;)Z") {
@@ -152,8 +154,20 @@ internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
         "browser-choice merge changed")
     checkShape(reachingWrites(browser, internal, routingAt) == setOf(classification + 1), "native classification was overwritten")
     val flagsWrite = reachingWrites(browser, flags, classification).singleOrNull() ?: fail("native flag array isn't uniquely initialized")
-    checkShape(code[flagsWrite].opcode == Opcode.NEW_ARRAY && code[flagsWrite].ref() == "[Z" &&
-        reachingWrites(browser, flags, routingAt) == setOf(flagsWrite), "native routing flags were overwritten")
+    // The array reaches the merge in its own register, or (web 13.2.0) in the one copy of it made on
+    // every path before its register is reused.
+    val routingFlags = (listOf(flags) + code.indices.filter { code[it].opcode in OBJECT_MOVES && code[it].namedRegisters()[1] == flags }
+        .map { code[it].namedRegisters()[0] }).distinct().filter { register ->
+        reachingWrites(browser, register, routingAt, required = false).let { writes ->
+            writes.isNotEmpty() && writes.all { write ->
+                if (register == flags) write == flagsWrite
+                else code[write].opcode in OBJECT_MOVES && code[write].namedRegisters() == listOf(register, flags) &&
+                    reachingWrites(browser, flags, write) == setOf(flagsWrite)
+            }
+        }
+    }.singleOrNull() ?: fail("native routing flags were overwritten")
+    checkShape(code[flagsWrite].opcode == Opcode.NEW_ARRAY && code[flagsWrite].ref() == "[Z" && routingFlags <= 15,
+        "native routing flags were overwritten")
     checkShape(reachingWrites(browser, code[flagsWrite].namedRegisters()[1], flagsWrite).all {
         (code[it] as? NarrowLiteralInstruction)?.narrowLiteral == 1
     } && reachingWrites(browser, operands[1], classification).all {
@@ -177,7 +191,7 @@ internal fun BytecodePatchContext.resolveLinkHooks(): LinkPlan {
     val routingInternal = if (carried) routingLocals[1] else internal
     val routingCode = (if (carried) "move/from16 v$routingInternal, v$internal\n" else "") + """
         move-object/from16 v$scratch, v$chosenPackage
-        invoke-static {v$context, v$routingUri, v$routingInternal, v$flags, v$scratch}, $LINKS->tryOpenExternal($CONTEXT$URI""" + "Z[ZLjava/lang/String;)Z\n" + """
+        invoke-static {v$context, v$routingUri, v$routingInternal, v$routingFlags, v$scratch}, $LINKS->tryOpenExternal($CONTEXT$URI""" + "Z[ZLjava/lang/String;)Z\n" + """
         move-result v$scratch
         if-eqz v$scratch, :hush_stock_browser
         return-void
@@ -324,8 +338,11 @@ internal fun BytecodePatchContext.writeProtection(plan: LinkPlan) {
     """)
 }
 
-/** Definitions reaching a read, including branch and handler predecessors, before a write kills them. */
-private fun reachingWrites(method: Method, register: Int, at: Int): Set<Int> {
+/**
+ * Definitions reaching a read, including branch and handler predecessors, before a write kills them.
+ * Unless [required], a register nothing defines answers no definitions rather than refusing.
+ */
+private fun reachingWrites(method: Method, register: Int, at: Int, required: Boolean = true): Set<Int> {
     val flow = ControlFlow.of(method)
     val predecessors = Array(flow.instructions.size) { mutableSetOf<Int>() }
     for (index in flow.instructions.indices) for (next in flow.normal[index] + flow.exceptional[index]) predecessors[next] += index
@@ -340,7 +357,7 @@ private fun reachingWrites(method: Method, register: Int, at: Int): Set<Int> {
         if (instruction.opcode.setsRegister() && (instruction as? OneRegisterInstruction)?.registerA == register) writes += index
         else pending.addAll(predecessors[index])
     }
-    checkShape(writes.isNotEmpty(), "v$register has no provable definition before instruction $at")
+    checkShape(!required || writes.isNotEmpty(), "v$register has no provable definition before instruction $at")
     return writes
 }
 
