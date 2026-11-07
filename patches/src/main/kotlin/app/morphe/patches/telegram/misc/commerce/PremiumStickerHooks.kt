@@ -26,6 +26,7 @@ import app.morphe.util.names.origName
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origType
+import app.morphe.util.names.tgClassDefByOrNull
 import app.morphe.util.names.tgMutableClassDefBy
 
 private const val PATCH = "Hide Premium, gifts and Stars"
@@ -153,12 +154,14 @@ internal fun BytecodePatchContext.resolvePremiumStickerHooks(): PremiumStickerPl
         listOf(edit)
     }
 
-    val blocked = methodsOf(STICKER_CONTROLLER).singleOrNull { it.origDefiningClass == STICKER_CONTROLLER && it.origName == "premiumFeaturesBlocked" }
+    // The map holds the build's class names, which 13.2 renamed.
+    val controller = tgClassDefByOrNull(STICKER_CONTROLLER)?.type ?: STICKER_CONTROLLER
+    val blocked = methodsOf(controller).singleOrNull { it.origDefiningClass == STICKER_CONTROLLER && it.origName == "premiumFeaturesBlocked" }
     // The stubs read the account the same way Telegram's own answer does.
     val answer = blocked?.instructions()?.mapNotNull { it.reference() }.orEmpty()
     if (blocked == null || ACCOUNT_CONFIG !in answer || IS_PREMIUM !in answer) return PremiumStickerPlan(hooks, stubs, leftOut)
 
-    val filters = methodsOf(STICKER_CONTROLLER).filter { it.origDefiningClass == STICKER_CONTROLLER && it.origName == FILTER }
+    val filters = methodsOf(controller).filter { it.origDefiningClass == STICKER_CONTROLLER && it.origName == FILTER }
     val keyboard = methods(Mention.reference(PREMIUM_BLOCKED) and Mention.reference(PREMIUM_DOCUMENT)).filter { method ->
         !AccessFlags.STATIC.isSet(method.accessFlags) && method.hasShape(listOf("Z"), "V") &&
             method.instructions().let { body ->
@@ -277,7 +280,8 @@ private fun emojiEdit(method: MutableMethod): Pair<CommerceEdit, Map<String, Str
 
     // A featured pack is free when none of its emoji needs Premium (the one xor in the pass); an
     // installed pack that isn't a Premium pack gets the same flag set first after the question.
-    val xor = body.indices.filter { body[it].opcode == Opcode.XOR_INT_2ADDR }.singleOrNull()
+    // 13.2's R8 folds the flip's constant into xor-int/lit8.
+    val xor = body.indices.filter { body[it].opcode in setOf(Opcode.XOR_INT_2ADDR, Opcode.XOR_INT_LIT8) }.singleOrNull()
     val free = xor?.let { body.getOrNull(it + 1) }
     val ask = body.indexOfFirst { it.reference() == PREMIUM_EMOJI_PACK }
     drift(free?.opcode == Opcode.IPUT_BOOLEAN &&

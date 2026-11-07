@@ -161,7 +161,7 @@ class PremiumStickerFixtureTest {
             assertTrue("${build.name}: the free flag is on the pack the pass builds", sorted.any {
                 it.opcode == Opcode.NEW_INSTANCE && it.reference() == free.substringBefore("->") })
             assertTrue("${build.name}: a featured pack's free answer goes into it", sorted.indices.any {
-                sorted[it].opcode == Opcode.XOR_INT_2ADDR && sorted[it + 1].reference() == free })
+                sorted[it].opcode in FLIPS && sorted[it + 1].reference() == free })
             assertTrue(stubs.getValue("premiumBlocked").instructions().any { it.reference() == "$CONTROLLER->premiumFeaturesBlocked()Z" })
             assertTrue(stubs.getValue("premiumAccount").instructions().any { it.reference() == "Lorg/telegram/messenger/UserConfig;->isPremium()Z" })
             assertTrue(stubs.getValue("premiumSticker").instructions().any { it.reference() == "Lorg/telegram/messenger/MessageObject;->isPremiumSticker()Z" })
@@ -263,7 +263,7 @@ class PremiumStickerFixtureTest {
             val sorter = context.resolvePremiumStickerHooks().getValue(PremiumStickerTarget.EMOJI_PACKS).single().method
             // The pass is still found by what it references, and the strip, the clear and the account
             // read are all where they were, so only the free flag is missing.
-            sorter.replaceInstruction(sorter.instructions().indexOfFirst { it.opcode == Opcode.XOR_INT_2ADDR }, "nop")
+            sorter.replaceInstruction(sorter.instructions().indexOfFirst { it.opcode in FLIPS }, "nop")
             val before = sorter.instructions().map(::operation)
             val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
             assertTrue("${build.name}: $warnings", warnings.any {
@@ -283,7 +283,8 @@ class PremiumStickerFixtureTest {
             val hosts = hosts(build)
             val controller = hosts.single { it.origType == CONTROLLER }
             val filter = controller.methods.single { it.origName == "filterPremiumStickers" && it.parameterTypes.single().toString() == STICKER_SET }
-            val third = ImmutableMethod(CONTROLLER, filter.name, listOf(ImmutableMethodParameter("Ljava/lang/Object;", null, null)),
+            // The build's own class, and the source name, which no table row renames for this new descriptor.
+            val third = ImmutableMethod(controller.type, "filterPremiumStickers", listOf(ImmutableMethodParameter("Ljava/lang/Object;", null, null)),
                 filter.returnType, filter.accessFlags, filter.annotations, filter.hiddenApiRestrictions, filter.implementation)
             val altered = ImmutableClassDef(controller.type, controller.accessFlags, controller.superclass, controller.interfaces,
                 controller.sourceFile, controller.annotations, controller.fields, controller.methods.toList() + third)
@@ -376,5 +377,7 @@ class PremiumStickerFixtureTest {
     private companion object {
         const val CONTROLLER = "Lorg/telegram/messenger/MessagesController;"
         const val STICKER_SET = "Lorg/telegram/tgnet/TLRPC\$TL_messages_stickerSet;"
+        /** The featured pack's free flip: 13.2's R8 folds its constant into xor-int/lit8. */
+        val FLIPS = setOf(Opcode.XOR_INT_2ADDR, Opcode.XOR_INT_LIT8)
     }
 }
