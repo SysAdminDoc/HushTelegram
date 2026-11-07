@@ -28,6 +28,7 @@ internal const val SECRET_CHAT = "Lorg/telegram/tgnet/TLRPC\$EncryptedChat;"
 internal const val SECRET_REQUESTED = "Lorg/telegram/tgnet/TLRPC\$TL_encryptedChatRequested;"
 internal const val SECRET_REFUSE = "$SECRET_CHATS->refuse()Z"
 private const val SECRET_CHAT_FIELD = "$SECRET_UPDATE->chat:$SECRET_CHAT"
+private const val SECRET_DH_CONFIG = "Lorg/telegram/tgnet/TLRPC\$TL_messages_getDhConfig;"
 
 /** processUpdateEncryption, and the check that goes in front of it. */
 internal class SecretChatsSite(val method: MutableMethod) {
@@ -66,8 +67,10 @@ internal fun BytecodePatchContext.resolveSecretChats(): SecretChatsSite {
     val body = method.controlBody()
     controlShape(body.firstOrNull()?.let { it.opcode == Opcode.IGET_OBJECT && it.controlRef() == SECRET_CHAT_FIELD } == true,
         "the secret chat update no longer starts by reading its chat")
+    // 13.2 inlined acceptSecretChat here, which starts by asking for the key exchange's DH config.
     controlShape(body.any { it.opcode == Opcode.INSTANCE_OF && it.controlRef() == SECRET_REQUESTED } &&
-        body.any { it.controlRef()?.startsWith("$SECRET_HELPER->acceptSecretChat(") == true },
+        body.any { it.controlRef()?.startsWith("$SECRET_HELPER->acceptSecretChat(") == true ||
+            (it.opcode == Opcode.NEW_INSTANCE && it.controlRef() == SECRET_DH_CONFIG) },
         "the secret chat update no longer accepts a requested chat")
     controlShape(method.implementation!!.registerCount - method.parameterTypes.size - 1 >= 2, "the secret chat update has no free registers")
     return SecretChatsSite(method).also { it.rehearse() }

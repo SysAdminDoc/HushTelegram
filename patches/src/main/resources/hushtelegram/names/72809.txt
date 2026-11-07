@@ -20842,3 +20842,8 @@ f Lorg/telegram/messenger/MessagePreviewParams; hideForwardSendersName Z Lorg/te
 
 # added by hand: getString(String, int), which 13.2 inlines getString(int) into with its parameters swapped
 m Lorg/telegram/messenger/LocaleController; getString (Ljava/lang/String;I)Ljava/lang/String; Lorg/telegram/messenger/yc; L0 (ILjava/lang/String;)Ljava/lang/String;
+
+# added by hand: secret chats
+c Lorg/telegram/messenger/SecretChatHelper; Lorg/telegram/messenger/jw; Lorg/telegram/messenger/BaseController; Lorg/telegram/messenger/j1;
+m Lorg/telegram/messenger/SecretChatHelper; getInstance (I)Lorg/telegram/messenger/SecretChatHelper; Lorg/telegram/messenger/jw; i (I)Lorg/telegram/messenger/jw;
+m Lorg/telegram/messenger/SecretChatHelper; processUpdateEncryption (Lorg/telegram/tgnet/tl/TL_update$TL_updateEncryption;Lj$/util/concurrent/ConcurrentHashMap;)V Lorg/telegram/messenger/jw; n (Lorg/telegram/tgnet/tl/TL_update$TL_updateEncryption;Lj$/util/concurrent/ConcurrentHashMap;)V
