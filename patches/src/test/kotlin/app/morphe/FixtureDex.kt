@@ -10,6 +10,7 @@
  */
 package app.morphe
 
+import app.morphe.patcher.PatcherContext
 import app.morphe.util.names.TelegramNames
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile
@@ -66,6 +67,20 @@ internal object FixtureDex {
         if (table.isIdentity) ImmutableClassDef.of(classDef) else FixtureClassDef(table.build, ImmutableClassDef.of(classDef))
 
     private fun forEachDex(build: File, visit: (DexBackedDexFile) -> Unit) {
+        // A resource id 13.2 inlined into a const names its R field through the current context's
+        // table, which a context made earlier for another build would answer. The scan puts that
+        // context aside, so what it reads goes by this build's table, and restores it after.
+        val current = PatcherContext::class.java.getDeclaredField("current").apply { isAccessible = true }
+        val patcher = current.get(null)
+        current.set(null, null)
+        try {
+            readDex(build, visit)
+        } finally {
+            current.set(null, patcher)
+        }
+    }
+
+    private fun readDex(build: File, visit: (DexBackedDexFile) -> Unit) {
         // Names read off the copies made here, which no longer know their dex, come from this build.
         val named: (DexBackedDexFile) -> Unit = { dex ->
             TelegramNames.ambient = TelegramNames.forDex(dex)
