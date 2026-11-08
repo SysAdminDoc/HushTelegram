@@ -140,11 +140,24 @@ class DisableCallDebugFixtureTest {
             val emptyCheck = responseBody.indexOfFirst { it.call()?.origName == "isEmpty" }
             assertEquals("${build.name}: empty path returns", wrongResponse,
                 responseFlow.normal[emptyCheck + 2].single { it != emptyCheck + 3 })
-            val compression = owner.methods.single { method -> method.instructions().any { it.call()?.origName == "gzip" } }
+            val compression = owner.methods.single { method -> method.instructions().any { it.call()?.origName == "gzip" || it.gzipWrite() } }
             val body = compression.instructions()
             val gzip = body.indexOfFirst { it.call()?.origName == "gzip" }
-            assertEquals("${build.name}: failed compression returns", Opcode.RETURN_VOID, body[gzip + 3].opcode)
-            assertTrue("${build.name}: failure exit is the false compression branch", gzip + 3 in ControlFlow.of(compression).normal[gzip + 2])
+            if (gzip >= 0) {
+                assertEquals("${build.name}: failed compression returns", Opcode.RETURN_VOID, body[gzip + 3].opcode)
+                assertTrue("${build.name}: failure exit is the false compression branch", gzip + 3 in ControlFlow.of(compression).normal[gzip + 2])
+            } else {
+                // 13.2 inlines gzip: a failed write is caught and logged, and returns without posting the upload.
+                val flow = ControlFlow.of(compression)
+                val writes = body.indices.filter { body[it].gzipWrite() }
+                val post = body.indices.single { body[it].call()?.origName == "runOnUIThread" }
+                val failed = mutableSetOf<Int>()
+                val queue = ArrayDeque(writes.flatMap { flow.exceptional[it] })
+                while (queue.isNotEmpty()) queue.removeFirst().let { at -> if (failed.add(at)) queue.addAll(flow.normal[at] + flow.exceptional[at]) }
+                assertTrue("${build.name}: every write can fail", writes.isNotEmpty() && writes.all { flow.exceptional[it].isNotEmpty() })
+                assertFalse("${build.name}: a failed compression never posts the upload", post in failed)
+                assertTrue("${build.name}: failed compression returns", failed.any { body[it].opcode == Opcode.RETURN_VOID })
+            }
             assertFalse(responseBody.any { it.reference()?.startsWith("$CALL_DEBUG->") == true })
             assertFalse(body.any { it.reference()?.startsWith("$CALL_DEBUG->") == true })
         }
@@ -366,6 +379,7 @@ class DisableCallDebugFixtureTest {
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
     private fun Instruction.reference() = origRef()
     private fun Instruction.call(): MethodReference? = (this as? ReferenceInstruction)?.reference as? MethodReference
+    private fun Instruction.gzipWrite() = call()?.let { it.definingClass == "Ljava/util/zip/GZIPOutputStream;" && it.name == "write" } == true
     private fun operation(instruction: Instruction) = instruction.opcode to instruction.reference()
     private fun Method.sameSignature(other: Method) = name == other.name && returnType == other.returnType &&
         parameterTypes.map { it.toString() } == other.parameterTypes.map { it.toString() }

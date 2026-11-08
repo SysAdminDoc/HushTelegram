@@ -192,17 +192,28 @@ internal fun BytecodePatchContext.resolveCallDebugHooks(): Map<CallDebugTarget, 
             call.origDefiningClass == "Lorg/telegram/messenger/DispatchQueue;" && call.origName == "postRunnable"
         } == true }, "wrong response/empty log path no longer leave before log preparation")
 
-    val compress = methods.filter { method -> method.instructions().any { it.gzip() } }.one("call log compression", ::refuse)
+    val compress = methods.filter { method -> method.instructions().any { it.gzip() || it.gzipWrite() } }.one("call log compression", ::refuse)
     shape(compress.hasShape(listOf(dataType, FILE, SAVE_CALL_DEBUG), "V"), "call log compression signature changed")
     val compressing = compress.instructions()
-    val gzip = compressing.indices.filter { compressing[it].gzip() }.one("call log gzip call", ::refuse)
-    val compressionBranch = gzip + 2
-    shape(compressing.getOrNull(gzip + 1)?.opcode == Opcode.MOVE_RESULT &&
-        compressing.getOrNull(compressionBranch)?.opcode == Opcode.IF_NEZ &&
-        compressing[compressionBranch].namedRegisters() == compressing[gzip + 1].namedRegisters() &&
-        compressing.getOrNull(compressionBranch + 1)?.opcode == Opcode.RETURN_VOID &&
-        compressing.any { it.call()?.let { call -> call.origDefiningClass == "Lorg/telegram/messenger/AndroidUtilities;" &&
-            call.origName == "runOnUIThread" } == true }, "failed compression no longer returns before file upload")
+    val posts = compressing.indices.filter { compressing[it].call()?.let { call ->
+        call.origDefiningClass == "Lorg/telegram/messenger/AndroidUtilities;" && call.origName == "runOnUIThread" } == true }
+    if (compressing.any { it.gzip() }) {
+        val gzip = compressing.indices.filter { compressing[it].gzip() }.one("call log gzip call", ::refuse)
+        val compressionBranch = gzip + 2
+        shape(compressing.getOrNull(gzip + 1)?.opcode == Opcode.MOVE_RESULT &&
+            compressing.getOrNull(compressionBranch)?.opcode == Opcode.IF_NEZ &&
+            compressing[compressionBranch].namedRegisters() == compressing[gzip + 1].namedRegisters() &&
+            compressing.getOrNull(compressionBranch + 1)?.opcode == Opcode.RETURN_VOID &&
+            posts.isNotEmpty(), "failed compression no longer returns before file upload")
+    } else {
+        // 13.2's R8 inlined AndroidUtilities.gzip: the copy runs here, and its catches log and return.
+        // Whatever a failed write can reach has to end in a return without posting the upload.
+        val flow = ControlFlow.of(compress)
+        val writes = compressing.indices.filter { compressing[it].gzipWrite() }
+        val failed = flow.reachableFrom(writes.flatMap { flow.exceptional[it] })
+        shape(posts.size == 1 && writes.all { flow.exceptional[it].isNotEmpty() } && posts.single() !in failed &&
+            failed.any { compressing[it].opcode == Opcode.RETURN_VOID }, "failed compression no longer returns before file upload")
+    }
 
     return linkedMapOf(
         CallDebugTarget.DEBUG to gate(done, request, finish, "skipCallDebugUpload(Z)Z", requested),
@@ -247,3 +258,15 @@ private fun Instruction.fileUpload() = call()?.let { it.origDefiningClass == "Lo
     it.hasShape(listOf("Ljava/lang/String;", "Lorg/telegram/messenger/Utilities\$Callback;"), "V") } == true
 private fun Instruction.gzip() = call()?.let { it.origDefiningClass == "Lorg/telegram/messenger/AndroidUtilities;" && it.origName == "gzip" &&
     it.hasShape(listOf(FILE, FILE), "Z") } == true
+private fun Instruction.gzipWrite() = call()?.let { it.definingClass == "Ljava/util/zip/GZIPOutputStream;" && it.name == "write" } == true
+
+/** Every instruction [starts] lead to, by normal and exceptional edges, [starts] included. */
+private fun ControlFlow.reachableFrom(starts: List<Int>): Set<Int> {
+    val seen = starts.toMutableSet()
+    val queue = ArrayDeque(starts)
+    while (queue.isNotEmpty()) {
+        val at = queue.removeFirst()
+        for (next in normal[at] + exceptional[at]) if (seen.add(next)) queue.addLast(next)
+    }
+    return seen
+}
