@@ -90,8 +90,7 @@ val hidePhoneNumberPatch = bytecodePatch(
             return-object v0
         """)
         writeStub(HIDE_PHONE, "accounts", 1, """
-            invoke-static {}, $USER_CONFIG->getMaxAccountCount()I
-            move-result v0
+            ${site.accounts}
             return v0
         """)
         site.calls.forEach { (method, indices) -> site.replace(method, indices) }
@@ -101,8 +100,12 @@ val hidePhoneNumberPatch = bytecodePatch(
     }
 }
 
-/** Telegram's phone [formatter] class, its [format] method, and every screen's call to it. */
-internal class HidePhoneSite(val formatter: String, val format: String, val calls: List<Pair<MutableMethod, List<Int>>>) {
+/**
+ * Telegram's phone [formatter] class, its [format] method, every screen's call to it, and the
+ * smali that leaves how many accounts to check in v0.
+ */
+internal class HidePhoneSite(val formatter: String, val format: String, val calls: List<Pair<MutableMethod, List<Int>>>,
+                             val accounts: String) {
     /** The formatter and the number go to the extension instead, in the same registers. */
     fun replace(target: MutableMethod, indices: List<Int>) {
         for (index in indices) {
@@ -159,12 +162,20 @@ internal fun BytecodePatchContext.resolveHidePhoneNumber(): HidePhoneSite {
     }
 
     val config = tgClassDefByOrNull(USER_CONFIG)
-    controlShape(config != null && listOf("getInstance(I)$USER_CONFIG", "isClientActivated()Z", "getCurrentUser()$TL_USER", "getMaxAccountCount()I")
-        .all { wanted -> config.methods.any { signature(it) == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) } },
+    fun public(wanted: String) = config?.methods?.any { signature(it) == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) } == true
+    // 13.2 inlines getMaxAccountCount, so the per-account table, as long as the slot count, stands in for it.
+    val slots = config?.fields?.any { it.origName == "Instance" && it.origType == "[$USER_CONFIG" &&
+        AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) } == true
+    val accounts = when {
+        public("getMaxAccountCount()I") -> "invoke-static {}, $USER_CONFIG->getMaxAccountCount()I\nmove-result v0"
+        slots -> "sget-object v0, $USER_CONFIG->Instance:[$USER_CONFIG\narray-length v0, v0"
+        else -> null
+    }
+    controlShape(accounts != null && listOf("getInstance(I)$USER_CONFIG", "isClientActivated()Z", "getCurrentUser()$TL_USER").all(::public),
         "Telegram's account list changed")
     controlShape(tgClassDefByOrNull(TL_USER)?.fields?.any { it.origName == "phone" && it.origType == "Ljava/lang/String;" } == true,
         "a Telegram user no longer has a phone number")
-    return HidePhoneSite(formatter, format, calls)
+    return HidePhoneSite(formatter, format, calls, accounts!!)
 }
 
 private fun signature(method: Method) = "${method.origName}${method.origDescriptor}"

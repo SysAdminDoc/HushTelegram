@@ -110,9 +110,9 @@ class ContactShareFixtureTest {
             Triple("save reads the box alone", "add contact save that reads the share box is missing or ambiguous") { context, site ->
                 // The offer's check goes, so the box alone decides what's shared.
                 val save = saveOf(context, site.box)
-                val call = save.controlBody().indexOfFirst { it.controlRef() == ADD_CONTACT }
-                assertEquals(Opcode.IF_EQZ, save.controlBody()[call - 6].opcode)
-                save.replaceInstruction(call - 6, "nop")
+                val offer = save.controlBody().indexOfFirst { it.opcode == Opcode.IGET_BOOLEAN && it.controlField().toString() == site.offer }
+                assertEquals(Opcode.IF_EQZ, save.controlBody()[offer + 1].opcode)
+                save.replaceInstruction(offer + 1, "nop")
             },
         )
         for (build in Fixtures.declaredBuilds()) {
@@ -140,20 +140,23 @@ class ContactShareFixtureTest {
         .associateWith { type -> context.tgMutableClassDefBy(type).methods.map { it.toString() to it.controlBody().map(::operands) } }
 }
 
-/** The one method that hands Telegram's addContact the screen's share box. */
+/** The one method that hands Telegram's addContact (or, inlined, its request) the screen's share box. */
 internal fun saveOf(context: BytecodePatchContext, box: String): MutableMethod {
     val found = mutableListOf<Method>()
     context.classDefForEach { cls ->
-        cls.methods.filterTo(found) { m -> m.controlBody().let { body -> body.any { it.controlRef() == ADD_CONTACT } && body.any { it.controlRef() == box } } }
+        cls.methods.filterTo(found) { m -> m.controlBody().let { body -> body.any { it.controlRef() in SAVES } && body.any { it.controlRef() == box } } }
     }
     val save = found.single()
     return context.tgMutableClassDefBy(save.definingClass).methods.single { it.toString() == save.toString() }
 }
 
+/** addContact, or the request field its share boolean lands in where 13.2 inlines it. */
+private val SAVES = setOf(ADD_CONTACT, PRIVACY_EXCEPTION)
+
 /** The classes that save a contact and every screen whose flags they read. */
 internal fun contactShareHosts(build: File): List<ClassDef> {
-    val savers = FixtureDex.classesWhere(build, { true }) { m -> m.controlBody().any { it.controlRef() == ADD_CONTACT } }
-    val screens = savers.flatMap { it.methods }.filter { m -> m.controlBody().any { it.controlRef() == ADD_CONTACT } }
+    val savers = FixtureDex.classesWhere(build, { true }) { m -> m.controlBody().any { it.controlRef() in SAVES } }
+    val screens = savers.flatMap { it.methods }.filter { m -> m.controlBody().any { it.controlRef() in SAVES } }
         .flatMap { m -> m.controlBody().filter { it.opcode == Opcode.IGET_BOOLEAN }.mapNotNull { it.controlField()?.definingClass } }
         .filter { it.startsWith("Lorg/telegram/") }.toSet()
     return (savers + FixtureDex.classes(build, screens).values.map(ImmutableClassDef::of)).distinctBy { it.type }
