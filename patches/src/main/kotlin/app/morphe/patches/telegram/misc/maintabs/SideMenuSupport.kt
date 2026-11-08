@@ -34,6 +34,7 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origName
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origType
+import app.morphe.util.names.TelegramNames
 import app.morphe.util.names.tgClassDefBy
 import app.morphe.util.names.tgClassDefByOrNull
 import app.morphe.util.names.tgMutableClassDefBy
@@ -290,6 +291,8 @@ internal fun BytecodePatchContext.writeSideMenuStubs(menu: SideMenu) {
 
 /** Whether [reference], a method or a field, is public on a public class, and static or not as [static] says. */
 private fun BytecodePatchContext.reaches(reference: String, static: Boolean): Boolean {
+    // A resource id 13.2 inlined has no field left; the stub's read of it becomes that number.
+    if (static && TelegramNames.current().resourceOf(reference) != null) return true
     val owner = tgClassDefByOrNull(reference.substringBefore("->")) ?: return false
     val member = reference.substringAfter("->")
     if (!AccessFlags.PUBLIC.isSet(owner.accessFlags)) return false
