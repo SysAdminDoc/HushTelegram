@@ -10,6 +10,7 @@
  */
 package app.morphe
 
+import app.morphe.patcher.PatcherContext
 import app.morphe.util.names.TelegramNames
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile
@@ -97,6 +98,23 @@ internal object FixtureDex {
      * Whatever [visit] keeps has to be copied out, as the other readers here do.
      */
     fun forEach(build: File, visit: (DexBackedDexFile) -> Unit) = forEachDex(build, visit)
+
+    /**
+     * Runs [block] with [build]'s names. A helper that reads a resource id 13.2 inlined into a const
+     * off copies it kept, outside any scan, would otherwise name it through whichever context a test
+     * made last, which may be the other build's.
+     */
+    fun <T> namedBy(build: File, block: () -> T): T {
+        val current = PatcherContext::class.java.getDeclaredField("current").apply { isAccessible = true }
+        val patcher = current.get(null)
+        current.set(null, null)
+        TelegramNames.forVersionCode(build.nameWithoutExtension.substringAfterLast('-'))?.let { TelegramNames.ambient = it }
+        try {
+            return block()
+        } finally {
+            current.set(null, patcher)
+        }
+    }
 
     /** The classes of [types] (source names) the build carries, keyed by those names. */
     fun classes(build: File, types: Set<String>): Map<String, ClassDef> {

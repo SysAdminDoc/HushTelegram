@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.apps
 
+import app.morphe.util.names.loadsInt
 import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
@@ -289,9 +290,9 @@ class SearchOnlyMyChatsFixtureTest {
             Triple("a public tab's title gone", "search tab titles has 0 matches") { context, sites ->
                 val apps = "$TITLES->AppsTab:I"
                 val title = context.tgMutableClassDefBy(sites.tabs.update.definingClass).methods.single { method ->
-                    method.body().any { it.opcode == Opcode.SGET && it.ref() == apps } }
+                    method.body().any { it.loadsInt() && it.ref() == apps } }
                 val body = title.body()
-                val at = body.indices.single { body[it].opcode == Opcode.SGET && body[it].ref() == apps }
+                val at = body.indices.single { body[it].loadsInt() && body[it].ref() == apps }
                 title.replaceInstruction(at, "sget v${body[at].namedRegisters()[0]}, $TITLES->SearchAppsPopular:I")
             },
             Triple("Downloads counted from another place", "no longer opens the Downloads tab by its place on the row") { _, sites ->
@@ -352,7 +353,7 @@ class SearchOnlyMyChatsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val titled = FixtureDex.methodsWhere(build, { true }) { method -> method.body().let { body ->
-                SearchTab.entries.all { tab -> body.any { it.opcode == Opcode.SGET && it.ref() == "$TITLES->${tab.title}:I" } } } }
+                SearchTab.entries.all { tab -> body.any { it.loadsInt() && it.ref() == "$TITLES->${tab.title}:I" } } } }
             assertEquals("$name: one method names all five tabs", 1, titled.size)
             val shortcuts = FixtureDex.methodsWhere(build, { true }) { method -> method.body().let { body ->
                 body.indices.any { at -> at + 2 < body.size && body[at].opcode == Opcode.IGET_BOOLEAN &&
@@ -407,12 +408,12 @@ private val OWNERS = ConcurrentHashMap<String, List<ClassDef>>()
 internal fun popularAppsOwners(build: File): List<ClassDef> = OWNERS.getOrPut(build.path) {
     FixtureDex.classesWhere(build, { true }) { method ->
         method.body().any { (it.opcode == Opcode.NEW_INSTANCE && it.ref() == GET_POPULAR_APP_BOTS) ||
-            (it.opcode == Opcode.SGET && it.ref() == "$TITLES->SearchAppsPopular:I") }
+            (it.loadsInt() && it.ref() == "$TITLES->SearchAppsPopular:I") }
     }
 }
 
 private fun Method.namesEveryTab() = body().let { body ->
-    SearchTab.entries.all { tab -> body.any { it.opcode == Opcode.SGET && it.ref() == "$TITLES->${tab.title}:I" } } }
+    SearchTab.entries.all { tab -> body.any { it.loadsInt() && it.ref() == "$TITLES->${tab.title}:I" } } }
 
 /**
  * Everything Search only my chats reads or edits: chat search and what it builds or calls, the tab
@@ -420,7 +421,7 @@ private fun Method.namesEveryTab() = body().let { body ->
  * with its results and the notification center it posts to, the account search answer with the
  * accounts, chats and peers it lists, the lookup that tells your chats apart, and the public stories search.
  */
-internal fun myChatsSearchHosts(build: File): List<ClassDef> = HOSTS.getOrPut(build.path) {
+internal fun myChatsSearchHosts(build: File): List<ClassDef> = HOSTS.getOrPut(build.path) { FixtureDex.namedBy(build) {
     val found = FixtureDex.classesWhere(build, { true }) { method -> method.namesEveryTab() || method.body().let { body ->
         body.indices.any { at -> at + 2 < body.size && body[at].opcode == Opcode.IGET_BOOLEAN &&
             body[at + 1].opcode == Opcode.ADD_INT_LIT8 && body[at + 2].call()?.origName == "setPosition" } ||
@@ -436,7 +437,7 @@ internal fun myChatsSearchHosts(build: File): List<ClassDef> = HOSTS.getOrPut(bu
     val kept = FixtureDex.classes(build, named.toSet() + setOf(HASHTAG_SEARCH, HASHTAG_RESULT, NOTIFICATIONS, CONTACTS_FOUND,
         MESSAGES_CONTROLLER, CHAT_OBJECT, TL_USER, TL_CHAT, TL_PEER)).values
     (localSearchHosts(build) + found + kept).distinctBy { it.type }.map(ImmutableClassDef::of)
-}
+} }
 
 private fun Method.body(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Instruction.ref(): String? = origRef()

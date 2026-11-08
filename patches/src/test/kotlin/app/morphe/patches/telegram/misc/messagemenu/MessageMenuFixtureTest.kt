@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.messagemenu
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
@@ -62,7 +63,7 @@ class MessageMenuFixtureTest {
 
     private fun baseHosts(build: File): List<ClassDef> {
         val found = FixtureDex.classesWhere(build, { true }) { m ->
-            val params = m.parameterTypes.map(CharSequence::toString)
+            val params = m.origParameterTypes
             params == listOf("Lorg/telegram/messenger/MessageObject;", list, list, list) && m.controlBody().any { it.controlRef() == FORWARD_LABEL } ||
                 AccessFlags.STATIC.isSet(m.accessFlags) && params == listOf("I", "I", list, list) && m.origReturnType == "V" ||
                 m.origName == "getParentActivity" && params.isEmpty() || m.isSelectionCanCopy() || m.isStorySaveMenu() ||
