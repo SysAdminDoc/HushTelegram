@@ -5414,6 +5414,7 @@ f Lorg/telegram/messenger/NotificationCenter; uploadStoryEnd I Lorg/telegram/mes
 f Lorg/telegram/messenger/NotificationCenter; uploadStoryProgress I Lorg/telegram/messenger/ys; z5 I
 f Lorg/telegram/messenger/NotificationCenter; userEmojiStatusUpdated I Lorg/telegram/messenger/ys; l5 I
 f Lorg/telegram/messenger/NotificationCenter; userInfoDidLoad I Lorg/telegram/messenger/ys; D0 I
+f Lorg/telegram/messenger/NotificationCenter; userEmojiStatusUpdated I Lorg/telegram/messenger/ys; l5 I
 f Lorg/telegram/messenger/NotificationCenter; userIsPremiumBlockedUpadted I Lorg/telegram/messenger/ys; h3 I
 f Lorg/telegram/messenger/NotificationCenter; voiceTranscriptionUpdate I Lorg/telegram/messenger/ys; z1 I
 f Lorg/telegram/messenger/NotificationCenter; wallpapersDidLoad I Lorg/telegram/messenger/ys; d4 I

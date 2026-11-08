@@ -5400,6 +5400,7 @@ f Lorg/telegram/messenger/NotificationCenter; updatedChatbot I Lorg/telegram/mes
 f Lorg/telegram/messenger/NotificationCenter; uploadStoryEnd I Lorg/telegram/messenger/os; B5 I
 f Lorg/telegram/messenger/NotificationCenter; uploadStoryProgress I Lorg/telegram/messenger/os; A5 I
 f Lorg/telegram/messenger/NotificationCenter; userInfoDidLoad I Lorg/telegram/messenger/os; D0 I
+f Lorg/telegram/messenger/NotificationCenter; userEmojiStatusUpdated I Lorg/telegram/messenger/os; m5 I
 f Lorg/telegram/messenger/NotificationCenter; userIsPremiumBlockedUpadted I Lorg/telegram/messenger/os; h3 I
 f Lorg/telegram/messenger/NotificationCenter; wallpapersDidLoad I Lorg/telegram/messenger/os; e4 I
 f Lorg/telegram/messenger/NotificationCenter; wallpapersNeedReload I Lorg/telegram/messenger/os; f4 I
