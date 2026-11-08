@@ -329,7 +329,11 @@ class LinkRoutingFixtureTest {
         val append = code.indices.single { code[it].ref()?.endsWith("->appendQueryParameter(Ljava/lang/String;Ljava/lang/String;)Landroid/net/Uri\$Builder;") == true &&
             code.subList(it - 2, it).any { instruction -> instruction.ref() == "autologin_token" } }
         val skip = flow.normal[gate + 2].single { it != gate + 3 }
-        assertEquals("$where: with the token or without, routing picks up in one place", listOf(skip), flow.normal[append + 4])
+        // 13.2 copies the signed-in link back first, and web 13.2.0 then jumps to the merge.
+        val copied = code[append + 4].opcode == Opcode.MOVE_OBJECT || code[append + 4].opcode == Opcode.MOVE_OBJECT_FROM16
+        val after = flow.normal[append + 4].single()
+        val rejoin = if (copied && code[after].opcode in setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)) flow.normal[after] else listOf(after)
+        assertEquals("$where: with the token or without, routing picks up in one place", listOf(skip), if (copied) rejoin else flow.normal[append + 4])
     }
 
     private fun operands(instruction: Instruction): List<Any?> = listOf(

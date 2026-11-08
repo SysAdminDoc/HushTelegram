@@ -259,7 +259,10 @@ internal fun resolveAutologinGate(plan: LinkPlan): AutologinGate {
     val flow = ControlFlow.of(browser)
     val skip = flow.normal[gate].filter { it != gate + 1 }.singleOrNull() ?: fail("autologin skip has no single target")
     val append = autologinAppend(code) ?: fail("autologin augmentation no longer has its unique builder call")
-    checkShape(append > gate && flow.normal[append + 4].singleOrNull() == skip, "autologin token doesn't rejoin where it's skipped")
+    // 13.2 copies the signed-in link back first, and web 13.2.0 then jumps to where the skip lands.
+    var rejoin = flow.normal.getOrNull(append + 4)?.singleOrNull()
+    if (rejoin != null && code[append + 4].opcode in OBJECT_MOVES && code[rejoin].opcode in GOTOS) rejoin = flow.normal[rejoin].singleOrNull()
+    checkShape(append > gate && rejoin == skip, "autologin token doesn't rejoin where it's skipped")
     val reads = code.indices.filter { code[it].ref() == "$MC->autologinToken:Ljava/lang/String;" }
     checkShape(reads.size == 1 && reads.single() in gate + 1 until append, "autologin token is read outside its branch")
     // Nothing reaches the append, or the token read, without passing the check.
