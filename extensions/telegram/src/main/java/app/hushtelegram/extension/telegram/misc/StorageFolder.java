@@ -9,12 +9,15 @@ import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.MediaScannerConnection;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Process;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -50,6 +53,14 @@ public final class StorageFolder {
     /** The characters Android's shared storage refuses in a folder's name. */
     private static final String REFUSED = "\\:*?\"<>|";
     private static final String EARLIER_KEY = "earlier";
+    static final String NO_MEDIA = ".nomedia";
+    /** Android's own folders at the top of Internal storage, which hold the user's other files too. */
+    private static final Set<String> SHARED_FOLDERS = new HashSet<>(Arrays.asList("alarms", "audiobooks", "dcim",
+            "documents", "download", "movies", "music", "notifications", "pictures", "podcasts", "recordings",
+            "ringtones", "screenshots"));
+    /** The folders Telegram makes inside its own for photos, videos, sound and files. */
+    static final String[] TELEGRAM_FOLDERS = {"Telegram Images", "Telegram Video", "Telegram Audio",
+            "Telegram Documents", "Telegram Files", "Telegram Stories"};
     /** Telegram's own folder, the one it moved to, then the ones it was moved to before, or null while it hasn't moved. */
     static volatile File[] moved;
     /** Remembers the folders Telegram has used. It isn't a setting, so a settings file doesn't carry it. */
@@ -68,11 +79,13 @@ public final class StorageFolder {
         try {
             // Telegram sets up its folders on its own queue, sometimes before the settings have loaded.
             boolean chosen = Utils.awaitSettingsReady(startupWaitMillis) && Settings.STORAGE_FOLDER.get();
+            String name = chosen ? name() : DEFAULT_NAME;
             File chosenFolder = folderFor(folder, Build.VERSION.SDK_INT, chosen, chosen && allFilesAccess(),
-                    chosen ? Environment.getExternalStorageDirectory() : null, chosen ? name() : DEFAULT_NAME);
+                    chosen ? Environment.getExternalStorageDirectory() : null, name);
             moved = chosenFolder == folder ? null : places(folder, chosenFolder);
             if (chosenFolder == folder) return folder;
             HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, "storage folder");
+            keepOutOfGallery(chosenFolder, name);
             return chosenFolder;
         } catch (Throwable t) {
             HookStatus.threw(FamilyNames.SAVE_DOWNLOADS, "storage folder", t);
@@ -127,6 +140,45 @@ public final class StorageFolder {
         File moved = new File(storage, name);
         if (!moved.mkdirs() && !moved.isDirectory()) return folder;
         return moved;
+    }
+
+    /**
+     * Keeps the moved folder out of the gallery and music apps (#60). Nothing indexes Android/data,
+     * so there a photo only reached the gallery when Save to Gallery copied it out. Internal storage
+     * is indexed, so the moved folder needs a .nomedia to stay out the same way. Files the gallery
+     * already found are scanned again once, when the .nomedia is new, so it drops them too.
+     */
+    private static void keepOutOfGallery(File folder, String name) {
+        try {
+            if (!hideFromGallery(folder, name)) return;
+            Context context = Utils.getContext();
+            if (context != null) MediaScannerConnection.scanFile(context, new String[] {folder.getPath()}, null, null);
+            HookStatus.counted(FamilyNames.SAVE_DOWNLOADS, "kept out of the gallery");
+        } catch (Throwable t) {
+            HookStatus.threw(FamilyNames.SAVE_DOWNLOADS, "kept out of the gallery", t);
+        }
+    }
+
+    /**
+     * Puts a .nomedia in the moved folder, true when one is new. A folder of its own gets it at its
+     * top. A folder inside one of Android's shared folders gets it in each of Telegram's folders
+     * instead, so the user's other files there still show, along with the copies Save to Gallery
+     * and Save to Downloads make. Telegram Images and Telegram Video under Internal storage/Telegram
+     * aren't enough: Telegram deletes the .nomedia in those two at every start.
+     */
+    static boolean hideFromGallery(File folder, String name) throws IOException {
+        List<File> hidden = new ArrayList<>();
+        if (SHARED_FOLDERS.contains(name.split("/", 2)[0].toLowerCase(Locale.ROOT))) {
+            for (String inside : TELEGRAM_FOLDERS) hidden.add(new File(folder, inside));
+        } else {
+            hidden.add(folder);
+        }
+        boolean made = false;
+        for (File each : hidden) {
+            if (!each.mkdirs() && !each.isDirectory()) continue;
+            made |= new File(each, NO_MEDIA).createNewFile();
+        }
+        return made;
     }
 
     /** The saved name, or Telegram's when there's none or it isn't one the row would save. */

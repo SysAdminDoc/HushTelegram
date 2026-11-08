@@ -26,6 +26,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
+import org.robolectric.shadows.ShadowMediaScannerConnection;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
@@ -192,6 +193,52 @@ public class StorageFolderTest {
 
         Settings.STORAGE_FOLDER.save(false);
         assertSame(folder, StorageFolder.telegramFolder(folder));
+    }
+
+    /** The reporter's case: Save to Gallery off, yet every downloaded photo showed in the gallery (#60). */
+    @Test public void theMovedFolderStaysOutOfTheGallery() throws IOException {
+        File folder = temporary.newFolder("data");
+        Settings.STORAGE_FOLDER.save(true);
+        allFilesAccess(true);
+        File moved = StorageFolder.telegramFolder(folder);
+        assertEquals(new File(Environment.getExternalStorageDirectory(), "Telegram"), moved);
+        assertTrue(new File(moved, StorageFolder.NO_MEDIA).isFile());
+        assertTrue("what the gallery found already goes too",
+                ShadowMediaScannerConnection.getSavedPaths().contains(moved.getPath()));
+        assertTrue(HookStatus.report().get(0), HookStatus.report().get(0).contains("kept out of the gallery 1"));
+
+        // Telegram deletes the .nomedia in its Images and Video folders at every start; the one at the top stays.
+        File images = new File(moved, "Telegram Images");
+        assertTrue(images.mkdirs());
+        new File(images, StorageFolder.NO_MEDIA).delete();
+        assertEquals(moved, StorageFolder.telegramFolder(folder));
+        assertTrue(new File(moved, StorageFolder.NO_MEDIA).isFile());
+        assertTrue("a .nomedia already there isn't scanned again",
+                HookStatus.report().get(0).contains("kept out of the gallery 1"));
+    }
+
+    @Test public void aFolderInsideAnAndroidFolderHidesOnlyTelegramsFolders() throws IOException {
+        File folder = temporary.newFolder("data");
+        Settings.STORAGE_FOLDER.save(true);
+        Settings.STORAGE_FOLDER_NAME.save("Pictures/TG");
+        allFilesAccess(true);
+        File pictures = new File(Environment.getExternalStorageDirectory(), "Pictures");
+        File moved = StorageFolder.telegramFolder(folder);
+        assertEquals(new File(pictures, "TG"), moved);
+        // Save to Gallery's copies and the user's own photos there still show.
+        assertFalse(new File(moved, StorageFolder.NO_MEDIA).exists());
+        assertFalse(new File(pictures, StorageFolder.NO_MEDIA).exists());
+        for (String inside : StorageFolder.TELEGRAM_FOLDERS) {
+            assertTrue(inside, new File(new File(moved, inside), StorageFolder.NO_MEDIA).isFile());
+        }
+
+        // Any case of the shared folder's name counts, and a file in the way of one folder leaves the rest.
+        File download = temporary.newFolder("download", "Telegram");
+        assertTrue(new File(download, "Telegram Images").createNewFile());
+        assertTrue(StorageFolder.hideFromGallery(download, "download/Telegram"));
+        assertFalse(new File(download, StorageFolder.NO_MEDIA).exists());
+        assertTrue(new File(new File(download, "Telegram Video"), StorageFolder.NO_MEDIA).isFile());
+        assertFalse(StorageFolder.hideFromGallery(download, "download/Telegram"));
     }
 
     @Test public void aStartBeforeSettingsKeepsAndroidData() throws Exception {
