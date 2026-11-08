@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.voice
 
+import app.morphe.util.names.origString
 import app.morphe.util.names.origDescriptor
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
@@ -218,7 +219,7 @@ private fun BytecodePatchContext.resolveProfileButtons(player: String): Pair<Str
         m.parameterTypes.isEmpty() && m.origReturnType == "Z" &&
             m.controlBody().any { it.opcode == Opcode.IGET_OBJECT && it.controlRef()?.endsWith(":$SAVED_MUSIC") == true }
     }.controlSingle("the player's check for your own profile list")
-    val asks = "$player->${signature(mine)}"
+    val asks = mine.origString()
     val toggle = methods.filter { m ->
         val body = m.controlBody()
         m.origParameterTypes == listOf("Z") && m.origReturnType == "V" && body.size > 2 &&
@@ -236,4 +237,4 @@ private fun BytecodePatchContext.resolveProfileButtons(player: String): Pair<Str
 private fun isPlayer(cls: ClassDef?) = cls != null && PLAYER_TRAITS.all { it in cls.origInterfaces } &&
     cls.fields.any { it.origType == SAVED_MUSIC && !AccessFlags.STATIC.isSet(it.accessFlags) }
 
-private fun signature(method: Method) = "${method.name}${method.parameterTypes.joinToString("", "(", ")")}${method.returnType}"
+private fun signature(method: Method) = "${method.origName}${method.origDescriptor}"

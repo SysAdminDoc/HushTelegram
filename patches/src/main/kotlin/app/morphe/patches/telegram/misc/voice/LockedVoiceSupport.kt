@@ -158,7 +158,7 @@ private fun ClassDef.hasField(name: String, type: String) =
     fields.any { it.origName == name && it.origType == type && !AccessFlags.STATIC.isSet(it.accessFlags) }
 
 /** Build-to-build: the same method in the class read and its mutable copy. */
-private fun signature(method: Method) = "${method.definingClass}->${method.name}(${method.parameterTypes.joinToString("")})${method.returnType}"
+private fun signature(method: Method) = method.origString()
 
 /** The player's resume. 13.2 made it public and void. */
 private fun MethodReference.isResume() = origDefiningClass == MEDIA_CONTROLLER && origName == "resumeAudio" &&

@@ -320,5 +320,5 @@ private fun MutableMethod.requireEntryRoom(what: String) {
     controlShape(ControlFlow.of(this).normal.none { 0 in it }, "something jumps back to the start of $what")
 }
 
-private fun Method.ref() = "$definingClass->$name(${parameterTypes.joinToString("")})$returnType"
-private fun MethodReference.ref() = "$definingClass->$name(${parameterTypes.joinToString("")})$returnType"
+private fun Method.ref() = origString()
+private fun MethodReference.ref() = origString()

@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.apps
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
@@ -62,7 +63,7 @@ internal fun BytecodePatchContext.resolveSecretChats(): SecretChatsSite {
     val owner = tgMutableClassDefByOrNull(SECRET_HELPER)
     controlShape(owner != null, "Telegram's secret chat helper is missing")
     val method = owner!!.methods.filter { it.origName == "processUpdateEncryption" && it.origReturnType == "V" &&
-        it.parameterTypes.size == 2 && it.parameterTypes[0].toString() == SECRET_UPDATE && it.implementation != null &&
+        it.parameterTypes.size == 2 && it.origParameterTypes[0] == SECRET_UPDATE && it.implementation != null &&
         !AccessFlags.STATIC.isSet(it.accessFlags) }.controlSingle("the secret chat update entry")
     val body = method.controlBody()
     controlShape(body.firstOrNull()?.let { it.opcode == Opcode.IGET_OBJECT && it.controlRef() == SECRET_CHAT_FIELD } == true,

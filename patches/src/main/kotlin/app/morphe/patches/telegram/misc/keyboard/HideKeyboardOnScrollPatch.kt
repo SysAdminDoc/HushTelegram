@@ -4,6 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.keyboard
 
+import app.morphe.util.names.origDescriptor
+import app.morphe.util.names.origName
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -86,4 +88,4 @@ internal fun BytecodePatchContext.resolveHideKeyboardOnScroll(): MutableMethod {
     return listener
 }
 
-private fun signature(method: Method) = "${method.name}${method.parameterTypes.joinToString("", "(", ")")}${method.returnType}"
+private fun signature(method: Method) = "${method.origName}${method.origDescriptor}"

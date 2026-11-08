@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.messagemenu
 
+import app.morphe.util.names.origString
 import app.morphe.util.names.loadsInt
 import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -232,7 +233,7 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
         helper.origParameterTypes == listOf("I", "I", LIST, LIST) && helper.origReturnType == "V" &&
         add.namedRegisters().take(2) == listOf((built[label] as OneRegisterInstruction).registerA, (option as OneRegisterInstruction).registerA),
         "Forward no longer goes into the menu with its number")
-    val helperMethod = tgClassDefByOrNull(helper!!.definingClass)?.methods?.singleOrNull { signature(it) == helper.toString() }
+    val helperMethod = tgClassDefByOrNull(helper!!.definingClass)?.methods?.singleOrNull { signature(it) == helper.origString() }
     val helperBody = helperMethod?.controlBody().orEmpty()
     val base = (helperMethod?.implementation?.registerCount ?: 0) - 4
     controlShape(helperMethod != null && AccessFlags.STATIC.isSet(helperMethod.accessFlags) && helperBody.map { it.opcode } == listOf(
@@ -272,12 +273,12 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     val activity = chosen.mapNotNull { it.call() }.firstOrNull { it.origName == "getParentActivity" && it.parameterTypes.isEmpty() && it.origReturnType == ACTIVITY }
     val activityOwner = activity?.let { tgClassDefByOrNull(it.definingClass) }
     controlShape(activityOwner != null && AccessFlags.PUBLIC.isSet(activityOwner.accessFlags) && activityOwner.methods.any {
-        signature(it) == activity.toString() && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
+        signature(it) == activity.origString() && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
     }, "the chat screen no longer has its activity")
 
     // Telegram's file provider, which the choice handler's Share hands its files to under the app's ".provider" authority.
     val provider = chosen.mapNotNull { it.call() }.filter { it.origParameterTypes == listOf(CONTEXT, "Ljava/lang/String;", FILE) && it.origReturnType == URI }
-        .map { it.toString() }.distinct().controlSingle("Telegram's file provider")
+        .map { it.origString() }.distinct().controlSingle("Telegram's file provider")
     val providerOwner = tgClassDefByOrNull(provider.substringBefore("->"))
     controlShape(providerOwner != null && AccessFlags.PUBLIC.isSet(providerOwner.accessFlags) && providerOwner.methods.any {
         signature(it) == provider && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags)
@@ -842,4 +843,4 @@ private fun BytecodePatchContext.writeQuickForwardStubs() {
     """)
 }
 
-private fun signature(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+private fun signature(m: Method) = m.origString()

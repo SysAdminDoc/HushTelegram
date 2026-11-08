@@ -4,6 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.stickers
 
+import app.morphe.util.names.origDescriptor
+import app.morphe.util.names.origName
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.loadsInt
 import app.morphe.util.names.addInstructions
@@ -170,4 +172,4 @@ private fun writes(instruction: Instruction, register: Int): Boolean {
         instruction.opcode.setsWideRegister() && first == register - 1
 }
 
-private fun signature(m: Method) = "${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+private fun signature(m: Method) = "${m.origName}${m.origDescriptor}"

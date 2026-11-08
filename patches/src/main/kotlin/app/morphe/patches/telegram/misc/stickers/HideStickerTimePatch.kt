@@ -4,6 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.stickers
 
+import app.morphe.util.names.origName
+import app.morphe.util.names.origString
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -92,7 +94,7 @@ internal fun BytecodePatchContext.resolveHideStickerTime(): Pair<MutableMethod, 
     requireStatusMethod("hideStickerTime")
     controlHook(STICKER_TIME, "hidden", listOf("Ljava/lang/Object;"), "Z")
     controlHook(STICKER_TIME, "isSticker", listOf("Ljava/lang/Object;"), "Z")
-    controlShape(tgClassDefByOrNull(MESSAGE_OBJECT)?.methods?.any { "$MESSAGE_OBJECT->${it.name}()${it.returnType}" == ANY_STICKER &&
+    controlShape(tgClassDefByOrNull(MESSAGE_OBJECT)?.methods?.any { "$MESSAGE_OBJECT->${it.origName}()${it.origReturnType}" == ANY_STICKER &&
         it.parameterTypes.isEmpty() && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) } == true,
         "Telegram's sticker check changed")
 
@@ -100,7 +102,7 @@ internal fun BytecodePatchContext.resolveHideStickerTime(): Pair<MutableMethod, 
     forEachClassMentioning(Mention.reference(MESSAGE_TYPE) and Mention.literal(TYPE_JOINED_CHANNEL)) { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         val drawers = cls.methods.filter { m -> m.origReturnType == "V" && m.origParameterTypes.let { CANVAS in it && STATIC_LAYOUT in it } }
-            .map { "${cls.type}->${it.name}(${it.parameterTypes.joinToString("")})V" }.toSet()
+            .map { it.origString() }.toSet()
         if (drawers.isEmpty()) return@forEachClassMentioning
         cls.methods.filter { m ->
             !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" &&
@@ -121,4 +123,4 @@ internal fun BytecodePatchContext.resolveHideStickerTime(): Pair<MutableMethod, 
     return drawTime to message
 }
 
-private fun ref(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+private fun ref(m: Method) = m.origString()

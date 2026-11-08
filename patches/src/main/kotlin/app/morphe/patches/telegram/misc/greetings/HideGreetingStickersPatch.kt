@@ -124,7 +124,7 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
         it.origParameterTypes == listOf(DOCUMENT) }.controlSingle("greeting setSticker")
     val draw = owner.methods.filter { it.origName == "dispatchDraw" && it.origParameterTypes == listOf("Landroid/graphics/Canvas;") }
         .controlSingle("greeting dispatchDraw")
-    val setStickerKey = "${owner.type}->${setSticker.name}($DOCUMENT)V"
+    val setStickerKey = "${setSticker.origDefiningClass}->${setSticker.origName}($DOCUMENT)V"
     controlShape(draw.controlBody().any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == setStickerKey },
         "the greeting no longer loads its sticker when it first draws")
     val stickerBody = setSticker.controlBody()

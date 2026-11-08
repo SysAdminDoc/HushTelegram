@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.channelpull
 
+import app.morphe.util.names.origString
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -242,7 +243,7 @@ internal fun BytecodePatchContext.resolveChannelPullSites(): ChannelPullSites {
     shape(progress >= 7 && progress + 12 < touchBody.size &&
         touchBody[progress - 7].opcode == Opcode.IGET && touchBody[progress - 7].field() == offset &&
         touchBody[progress - 6].let { it is NarrowLiteralInstruction && it.narrowLiteral == 110f.toBits() } &&
-        touchBody[progress - 5].call()?.toString() == "Lorg/telegram/messenger/AndroidUtilities;->dp(F)I" &&
+        touchBody[progress - 5].call()?.origString() == "Lorg/telegram/messenger/AndroidUtilities;->dp(F)I" &&
         touchBody[progress - 2].opcode == Opcode.DIV_FLOAT_2ADDR &&
         touchBody[progress - 1].let { it is NarrowLiteralInstruction && it.narrowLiteral == 1f.toBits() } &&
         touchBody[progress + 1].opcode == Opcode.MOVE_RESULT && touchBody[progress + 2].call()?.toString() == "$MOTION_EVENT->getAction()I" &&
@@ -326,5 +327,5 @@ private fun shape(valid: Boolean, reason: String) { if (!valid) refuse(reason) }
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Instruction.reference() = origRef()
 private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference
-private fun Instruction.isChannelCall() = call()?.toString() == "$CHAT_OBJECT->isChannel($CHAT)Z"
-private fun Instruction.isBotForumCall() = call()?.toString() == "Lorg/telegram/messenger/UserObject;->isBotForum($USER)Z"
+private fun Instruction.isChannelCall() = call()?.origString() == "$CHAT_OBJECT->isChannel($CHAT)Z"
+private fun Instruction.isBotForumCall() = call()?.origString() == "Lorg/telegram/messenger/UserObject;->isBotForum($USER)Z"

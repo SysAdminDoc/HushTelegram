@@ -284,8 +284,8 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
     val firstArrayRead = selectBody.indexOfFirst { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.origDefiningClass == chat && f.origType == SPARSE_ARRAYS } == true }
     controlShape(firstArrayRead >= 0 && selectBody.drop(firstArrayRead + 1).take(8).any { it.controlRef() == INDEX_OF_KEY },
         "the selection recorder no longer starts from the selected messages")
-    val selectedField = selectBody[firstArrayRead].controlField()!!.let { "$chat->${it.name}:${it.type}" }
-    controlShape(chatClass.fields.any { "$chat->${it.name}:${it.type}" == selectedField && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) },
+    val selectedField = selectBody[firstArrayRead].controlField()!!.let { "$chat->${it.origName}:${it.origType}" }
+    controlShape(chatClass.fields.any { "$chat->${it.origName}:${it.origType}" == selectedField && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "the selected messages field is inaccessible")
 
     // The list adapter's getter: frozen, filtered or the chat's own full list.

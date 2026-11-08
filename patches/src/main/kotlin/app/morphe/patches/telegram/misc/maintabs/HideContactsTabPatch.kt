@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.maintabs
 
+import app.morphe.util.names.origString
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -542,7 +543,7 @@ internal fun constant(body: List<Instruction>, flow: ControlFlow, use: Int, regi
     return if (body[at].opcode in CONSTANTS) (body[at] as NarrowLiteralInstruction).narrowLiteral else null
 }
 
-private fun signature(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+private fun signature(m: Method) = m.origString()
 
 private fun shapeError(what: String) = PatchException("$PATCH: $what (before editing)")
 

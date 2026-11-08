@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.messagemenu
 
+import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origParameterTypes
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patches.telegram.misc.extension.patchLog
@@ -80,7 +81,7 @@ internal fun copyCall(send: CopySend, stubParams: Int): Pair<String, Int> {
         reg += widths[i]
     }
     val m = send.method
-    lines.append("invoke-static/range {v0 .. v${locals - 1}}, ${m.definingClass}->${m.name}(${types.joinToString("")})${m.returnType}\n")
+    lines.append("invoke-static/range {v0 .. v${locals - 1}}, ${m.origDefiningClass}->${m.origName}(${types.joinToString("")})${m.origReturnType}\n")
     lines.append("const/4 v0, 0x1\nreturn v0")
     return lines.toString() to locals + stubParams
 }

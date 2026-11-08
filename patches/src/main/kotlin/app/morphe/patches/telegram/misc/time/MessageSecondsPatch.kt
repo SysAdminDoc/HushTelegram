@@ -115,7 +115,7 @@ internal fun BytecodePatchContext.resolveMessageTime(): Pair<MutableMethod, List
     }
     val (type, name) = found.controlSingle("message time measuring")
     val method = tgMutableClassDefBy(type).methods.single { it.origName == name && it.parameterTypes.size == 1 &&
-        it.parameterTypes[0].toString() == "Lorg/telegram/messenger/MessageObject;" && it.origReturnType == "V" }
+        it.origParameterTypes[0] == "Lorg/telegram/messenger/MessageObject;" && it.origReturnType == "V" }
     val body = method.controlBody()
     val indices = body.indices.filter { body[it].controlRef() == TIME_FORMAT }
     controlShape(indices.all { body[it].opcode == Opcode.INVOKE_VIRTUAL || body[it].opcode == Opcode.INVOKE_VIRTUAL_RANGE },

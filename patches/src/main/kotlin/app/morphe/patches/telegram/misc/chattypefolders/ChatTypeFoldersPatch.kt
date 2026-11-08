@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.chattypefolders
 
+import app.morphe.util.names.origString
 import app.morphe.util.names.origDescriptor
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
@@ -485,7 +486,7 @@ internal fun BytecodePatchContext.resolveChatTypeFolders(): String {
     controlShape(TYPE_FLAGS.all { (field, bit) -> stored[field] == bit }, "Telegram's folder chat type flags changed")
 
     // removeFilter reads dialogFiltersUpdated and hands it straight to NotificationCenter's post.
-    val remove = controller.methods.singleOrNull { it.toString() == REMOVE_FILTER }?.controlBody().orEmpty()
+    val remove = controller.methods.singleOrNull { it.origString() == REMOVE_FILTER }?.controlBody().orEmpty()
     val read = remove.indexOfFirst { it.opcode == Opcode.SGET && it.controlRef() == FILTERS_UPDATED }
     val post = if (read < 0) null else remove.drop(read + 1).firstOrNull { it.opcode == Opcode.INVOKE_VIRTUAL }?.call()
     controlShape(post != null && post.origDefiningClass == NOTIFICATIONS &&

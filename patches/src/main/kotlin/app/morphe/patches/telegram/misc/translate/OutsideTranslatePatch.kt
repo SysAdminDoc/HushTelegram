@@ -4,6 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.translate
 
+import app.morphe.util.names.origDescriptor
+import app.morphe.util.names.origString
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
 import app.morphe.util.names.addInstructionsWithLabels
@@ -199,7 +201,7 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
     // The message's own decision.
     val messageClass = tgMutableClassDefByOrNull(MESSAGE_OBJECT)
     controlShape(messageClass != null && AccessFlags.PUBLIC.isSet(messageClass.accessFlags), "MessageObject is missing")
-    val update = messageClass!!.methods.filter { "${it.origName}(${it.parameterTypes.joinToString("")})${it.origReturnType}" == UPDATE }.controlSingle("updateTranslation")
+    val update = messageClass!!.methods.filter { "${it.origName}${it.origDescriptor}" == UPDATE }.controlSingle("updateTranslation")
     controlShape(AccessFlags.PUBLIC.isSet(update.accessFlags) && !AccessFlags.STATIC.isSet(update.accessFlags) &&
         update.implementation!!.registerCount >= 3 && update.controlBody().any { it.controlRef() == TRANSLATING },
         "updateTranslation no longer asks whether the dialog is being translated")
@@ -246,7 +248,7 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
         getter != null && getter.parameterTypes.isEmpty() && getter.origReturnType == "J", "the chat's ID getter changed")
     val getterOwner = tgClassDefByOrNull(getter!!.definingClass)
     controlShape(getterOwner != null && AccessFlags.PUBLIC.isSet(getterOwner.accessFlags) && getterOwner.methods.any {
-        signature(it) == getter.toString() && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
+        signature(it) == getter.origString() && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
     }, "the chat's ID getter is inaccessible")
     controlShape(visibility.implementation!!.registerCount >= 1 && ControlFlow.of(visibility).normal.none { 0 in it },
         "something jumps back to the start of the translate item updater")
@@ -275,7 +277,7 @@ internal fun BytecodePatchContext.resolveOutsideTranslate(): OutsideTranslateSit
     controlShape(!AccessFlags.STATIC.isSet(headerDeclared.accessFlags), "${header.name} is static")
     val lazyOwner = tgClassDefByOrNull(lazyCall!!.definingClass)
     controlShape(lazyOwner != null && AccessFlags.PUBLIC.isSet(lazyOwner.accessFlags) && lazyOwner.methods.any {
-        signature(it) == lazyCall.toString() && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
+        signature(it) == lazyCall.origString() && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
     }, "the header menu's item adder is inaccessible")
     val itemOwner = tgClassDefByOrNull(lazyCall.returnType)
     controlShape(itemOwner != null && AccessFlags.PUBLIC.isSet(itemOwner.accessFlags), "the header item's class is inaccessible")
@@ -522,4 +524,4 @@ internal fun BytecodePatchContext.writeOutsideTranslateStubs(site: OutsideTransl
     """)
 }
 
-private fun signature(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+private fun signature(m: Method) = m.origString()

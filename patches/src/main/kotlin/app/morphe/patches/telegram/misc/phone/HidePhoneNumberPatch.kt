@@ -4,6 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.phone
 
+import app.morphe.util.names.origDescriptor
+import app.morphe.util.names.origString
 import app.morphe.util.names.origParameterTypes
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.util.names.replaceInstruction
@@ -136,7 +138,7 @@ internal fun BytecodePatchContext.resolveHidePhoneNumber(): HidePhoneSite {
     val format = tgMutableClassDefBy(formatter).methods.filter {
         !AccessFlags.STATIC.isSet(it.accessFlags) && it.origParameterTypes == listOf("Ljava/lang/String;") &&
             it.origReturnType == "Ljava/lang/String;"
-    }.controlSingle("phone format method").let { "${it.definingClass}->${it.name}(Ljava/lang/String;)Ljava/lang/String;" }
+    }.controlSingle("phone format method").origString()
 
     val found = mutableListOf<Triple<String, String, List<Int>>>()
     forEachClassMentioning(Mention.reference(format)) { cls ->
@@ -165,4 +167,4 @@ internal fun BytecodePatchContext.resolveHidePhoneNumber(): HidePhoneSite {
     return HidePhoneSite(formatter, format, calls)
 }
 
-private fun signature(method: Method) = "${method.name}${method.parameterTypes.joinToString("", "(", ")")}${method.returnType}"
+private fun signature(method: Method) = "${method.origName}${method.origDescriptor}"

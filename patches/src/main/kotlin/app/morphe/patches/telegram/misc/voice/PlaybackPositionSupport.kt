@@ -17,6 +17,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origDescriptor
+import app.morphe.util.names.origName
 import app.morphe.util.names.tgMutableClassDefBy
 import app.morphe.util.names.tgMutableClassDefByOrNull
 
@@ -81,7 +83,7 @@ internal fun BytecodePatchContext.resolvePlaybackPosition(): PlaybackPositionSit
     val viewer = tgMutableClassDefByOrNull(PHOTO_VIEWER_TYPE) ?: return missing("the video viewer is missing")
     val player = tgMutableClassDefByOrNull(MEDIA_CONTROLLER_TYPE) ?: return missing("MediaController is missing")
     fun MutableMethod.remembers() = controlBody().any { it.controlString() == SAVED_POSITIONS }
-    fun MutableMethod.shape() = "$name(${parameterTypes.joinToString("")})$returnType"
+    fun MutableMethod.shape() = "$origName$origDescriptor"
 
     /** Indices of [literal] loads in [method], by one of [loads], that the very next instruction compares in the same register. */
     fun sites(method: MutableMethod, literal: Long, loads: Set<Opcode>, compares: Set<Opcode>): List<Int> {

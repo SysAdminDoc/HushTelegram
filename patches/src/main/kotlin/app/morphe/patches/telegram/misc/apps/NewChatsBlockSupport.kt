@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.apps
 
+import app.morphe.util.names.origString
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
@@ -180,7 +181,7 @@ private fun chatsFit(ok: Boolean, why: String) {
 private fun BytecodePatchContext.requireChatChecks() {
     val chats = tgClassDefByOrNull(CHAT_OBJECT)
     chatsFit(chats != null && AccessFlags.PUBLIC.isSet(chats.accessFlags) && listOf(IS_NOT_IN_CHAT, IS_MONO_FORUM).all { wanted ->
-        chats.methods.any { it.toString() == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) }
+        chats.methods.any { it.origString() == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) }
     }, "ChatObject no longer tells a chat you aren't in or a channel's direct messages apart")
 }
 

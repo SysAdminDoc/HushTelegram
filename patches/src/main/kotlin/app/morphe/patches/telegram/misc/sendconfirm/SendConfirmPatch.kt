@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.sendconfirm
 
+import app.morphe.util.names.origString
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -380,8 +381,8 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     val (voiceClip, videoClip) = listOf(TL_DOCUMENT to "voice clip", VIDEO_INFO to "round video").map { (type, what) ->
         val field = barClass.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.origType == type }
             .controlSingle("the chat bar's paused $what")
-        val ref = "${field.definingClass}->${field.name}:${field.type}"
-        controlShape(pauseBody.any { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.toString() == ref },
+        val ref = field.origString()
+        controlShape(pauseBody.any { it.opcode == Opcode.IGET_OBJECT && it.controlRef() == ref },
             "the chat bar's send no longer sends its paused $what")
         ref
     }
@@ -421,8 +422,8 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     val onCreate = launchClass.methods.filter { it.origName == "onCreate" && it.origParameterTypes == listOf("Landroid/os/Bundle;") }
         .controlSingle("the main window's start")
     val own = onCreate.controlBody().filter { it.opcode == Opcode.SPUT_OBJECT && it.controlField()?.let { f -> f.origDefiningClass == LAUNCH_ACTIVITY && f.origType == LAUNCH_ACTIVITY } == true }
-        .map { it.controlField().toString() }.distinct().controlSingle("the main window's own field")
-    val declared = launchClass.fields.filter { "${it.definingClass}->${it.name}:${it.type}" == own }.controlSingle("the main window's field")
+        .map { it.controlRef()!! }.distinct().controlSingle("the main window's own field")
+    val declared = launchClass.fields.filter { it.origString() == own }.controlSingle("the main window's field")
     controlShape(AccessFlags.PUBLIC.isSet(declared.accessFlags) && AccessFlags.STATIC.isSet(declared.accessFlags), "the main window's field is inaccessible")
 
     // The suggestion strip's sends, each a case of a merged callback that Telegram runs once its own
@@ -458,7 +459,7 @@ internal fun previewStarts(method: Method, field: String): List<Int> {
     val flow = ControlFlow.of(method)
     val into = Array(body.size) { mutableListOf<Int>() }
     body.indices.forEach { from -> (flow.normal[from] + flow.exceptional[from]).forEach { into[it] += from } }
-    return body.indices.filter { body[it].opcode == Opcode.IGET_OBJECT && body[it].controlField()?.toString() == field }
+    return body.indices.filter { body[it].opcode == Opcode.IGET_OBJECT && body[it].controlRef() == field }
         .mapNotNull { read -> nullTest(body, into, read) }
         .filter { test -> test + 1 < body.size && into[test + 1] == listOf(test) }
         .map { it + 1 }
@@ -573,7 +574,7 @@ internal fun BytecodePatchContext.writeSendConfirmStubs(site: SendConfirmSite) {
     """)
     val barFields = tgMutableClassDefBy(bar).fields
     for ((name, clip) in listOf("voiceClip" to site.voiceClip, "videoClip" to site.videoClip)) {
-        barFields.single { "${it.definingClass}->${it.name}:${it.type}" == clip }.apply {
+        barFields.single { it.origString() == clip }.apply {
             accessFlags = accessFlags and (AccessFlags.PRIVATE.value or AccessFlags.PROTECTED.value).inv() or AccessFlags.PUBLIC.value
         }
         writeStub(SEND_CONFIRM, name, 2, """
@@ -609,4 +610,4 @@ internal fun BytecodePatchContext.writeSendConfirmStubs(site: SendConfirmSite) {
     """)
 }
 
-private fun signature(m: MethodReference) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+private fun signature(m: MethodReference) = m.origString()

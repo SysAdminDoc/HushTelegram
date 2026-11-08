@@ -148,7 +148,7 @@ internal fun BytecodePatchContext.resolveNewMessageButton(): NewMessageButton {
     }
     val animation = animations.singleOrNull()
         ?: return missing("the compose button no longer has one native visibility animator (${animations.size})")
-    val animationRef = "${animation.definingClass}->${animation.name}(Landroid/view/View;F)V"
+    val animationRef = "${animation.origDefiningClass}->${animation.origName}(Landroid/view/View;F)V"
     val callbacks = buttonClass.methods.filter { m ->
         val parameters = m.parameterTypes.map(CharSequence::toString)
         if (AccessFlags.STATIC.isSet(m.accessFlags) || m.origReturnType != "V" || parameters.size != 4 ||

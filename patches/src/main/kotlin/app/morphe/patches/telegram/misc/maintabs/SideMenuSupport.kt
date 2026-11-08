@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.maintabs
 
+import app.morphe.util.names.origString
 import app.morphe.util.names.origDescriptor
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
@@ -299,9 +300,8 @@ private fun BytecodePatchContext.reaches(reference: String, static: Boolean): Bo
                 AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static }
         }
     } else {
-        owner.fields.any { "${it.name}:${it.type}" == member && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static }
+        owner.fields.any { "${it.origName}:${it.origType}" == member && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static }
     }
 }
 
-private fun signatureOf(m: Method) =
-    "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+private fun signatureOf(m: Method) = m.origString()

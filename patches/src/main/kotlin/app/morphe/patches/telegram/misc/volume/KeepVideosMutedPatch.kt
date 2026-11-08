@@ -4,6 +4,9 @@
  */
 package app.morphe.patches.telegram.misc.volume
 
+import app.morphe.util.names.origString
+import app.morphe.util.names.origDescriptor
+import app.morphe.util.names.origName
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -113,7 +116,7 @@ internal fun BytecodePatchContext.resolveKeepVideosMuted(): KeepVideosMutedSite 
 
     val launch = tgMutableClassDefByOrNull(LAUNCH_ACTIVITY)
     controlShape(launch != null, "LaunchActivity is missing")
-    val dispatch = launch!!.methods.filter { it.toString() == DISPATCH_KEY }.controlSingle("key dispatch")
+    val dispatch = launch!!.methods.filter { it.origString() == DISPATCH_KEY }.controlSingle("key dispatch")
     val body = dispatch.controlBody()
     val chats = body.filter { it.opcode == Opcode.INSTANCE_OF }.map { ((it as ReferenceInstruction).reference as TypeReference).type }.toSet()
     // Each offer: the chat cast, then asked at once, about nothing, for a yes or no.
@@ -131,7 +134,7 @@ internal fun BytecodePatchContext.resolveKeepVideosMuted(): KeepVideosMutedSite 
 
     val chat = tgMutableClassDefByOrNull(handler.definingClass)
     controlShape(chat != null && AccessFlags.PUBLIC.isSet(chat.accessFlags) &&
-        chat.methods.any { "${it.name}${it.parameterTypes.joinToString("", "(", ")")}${it.returnType}" == SWIPE_BACK },
+        chat.methods.any { "${it.origName}${it.origDescriptor}" == SWIPE_BACK },
         "${handler.definingClass} isn't a public screen")
     val answer = chat!!.methods.singleOrNull { it.toString() == handler.toString() }
     controlShape(answer != null && AccessFlags.PUBLIC.isSet(answer.accessFlags) && !AccessFlags.STATIC.isSet(answer.accessFlags),

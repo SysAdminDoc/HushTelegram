@@ -226,10 +226,10 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
     controlShape(adapterField.origDefiningClass == listField.origType, "Settings' adapter isn't its list view's")
     val update = screen.methods.flatMap { m -> m.controlBody().filter { it.opcode == Opcode.INVOKE_VIRTUAL } }.mapNotNull { it.call() }
         .filter { it.origDefiningClass == adapterField.origType && it.origParameterTypes == listOf("Z") && it.origReturnType == "V" }
-        .map { "${it.definingClass}->${it.name}(Z)V" }.distinct().controlSingle("Settings' list update")
+        .map { "${it.origDefiningClass}->${it.origName}(Z)V" }.distinct().controlSingle("Settings' list update")
     controlShape(AccessFlags.PUBLIC.isSet(screen.accessFlags) && reachable(listField.definingClass, listField.name) &&
         reachable(adapterField.definingClass, adapterField.name) && tgClassDefByOrNull(adapterField.type)?.let { found ->
-            AccessFlags.PUBLIC.isSet(found.accessFlags) && found.methods.any { "${it.definingClass}->${it.name}(Z)V" == update && AccessFlags.PUBLIC.isSet(it.accessFlags) }
+            AccessFlags.PUBLIC.isSet(found.accessFlags) && found.methods.any { "${it.origDefiningClass}->${it.origName}(Z)V" == update && AccessFlags.PUBLIC.isSet(it.accessFlags) }
         } == true, "Settings' list update can't be called from outside")
 
     // Contacts: the adapter that binds Invite Friends, and the sectioned list base it extends.
@@ -323,7 +323,7 @@ private fun Instruction.writes(register: Int): Boolean {
 }
 
 private fun shape(m: Method, parameters: List<String>, result: String) = m.origParameterTypes == parameters && m.origReturnType == result
-private fun ref(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+private fun ref(m: Method) = m.origString()
 
 /** LocaleController.getString(int), which 13.2 mostly inlines into getString(null, int) with the two swapped. */
 private fun Instruction.isGetString() = controlRef() == STRING || ((this as? ReferenceInstruction)?.reference as? MethodReference)?.let {
