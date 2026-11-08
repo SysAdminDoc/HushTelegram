@@ -37,6 +37,8 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import app.morphe.util.names.origRef
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
+import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origString
 import app.morphe.util.names.origType
 import app.morphe.util.names.tgMutableClassDefBy
@@ -240,7 +242,7 @@ private fun Method.instructions(): List<Instruction> = implementation?.instructi
 private fun Instruction.reference(): String? = origRef()
 private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference
 private fun Method.constructs(type: String) = instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.reference() == type }
-private fun MethodReference.hasShape(parameters: List<String>, returns: String) = returnType == returns && parameterTypes.map { it.toString() } == parameters
+private fun MethodReference.hasShape(parameters: List<String>, returns: String) = origReturnType == returns && origParameterTypes == parameters
 private fun Instruction.fileUpload() = call()?.let { it.origDefiningClass == "Lorg/telegram/messenger/FileLoader;" && it.origName == "uploadFile" &&
     it.hasShape(listOf("Ljava/lang/String;", "Lorg/telegram/messenger/Utilities\$Callback;"), "V") } == true
 private fun Instruction.gzip() = call()?.let { it.origDefiningClass == "Lorg/telegram/messenger/AndroidUtilities;" && it.origName == "gzip" &&
