@@ -51,6 +51,8 @@ Every HushTelegram release, newest first.
 * **Telegram:** When Google sign-in fails on Telegram's login email screen, a short message now points at the email box. Telegram used to just stay on the screen after you picked an account, and a patched copy can't get past Google there.
 * **Telegram:** If you use Telegram's Keep-Alive Service instead of push, messages no longer wait until you open the app. Android stopped that service about a minute after you left Telegram. Now it runs with a quiet notification and keeps going. A new switch under **Repair Firebase push registration**, **Keep the Keep-Alive Service running**, is on by default and only matters while Keep-Alive Service is on in Telegram's own settings. (#50, #54)
 * **Telegram:** **Keep deleted messages** now saves a kept photo, and any kept file or video up to 20 MB, the moment the sender deletes it. Before, a photo you hadn't opened yet just spun forever, because Telegram can't fetch a deleted message's file later. (#2)
+* **Telegram:** **Disable update checks** now hides the Update Telegram bar even when Telegram found the update before you turned the switch on. The bar used to stay, since Telegram only forgets an update when a later check comes back empty. (#60)
+* **Telegram:** With **Keep Telegram's files in internal storage** on, the photos and videos Telegram downloads no longer fill up the phone's gallery. The folder now gets a .nomedia file, so the gallery only shows what you save to it yourself. (#60)
 
 ## 0.0.23 (2026-10-31)
 
