@@ -136,6 +136,7 @@ body:
         - Hide Contacts tab
         - Hide messages by keyword
         - Strip link tracking
+        - Test server sign-in
         - HushTelegram settings
     validations:
       required: true

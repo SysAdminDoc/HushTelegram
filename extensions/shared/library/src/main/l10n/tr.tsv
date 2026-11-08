@@ -1395,3 +1395,7 @@ A ghost at the top of the chat list turns Ghost mode on and off with a tap. It's
 Ghost mode on	Hayalet modu açık
 # context: short message shown after a tap on the chat list's ghost button turned Ghost mode off.
 Ghost mode off	Hayalet modu kapalı
+# context: a switch on the Chat list page (#59). It lets Telegram's sign-in screen offer its own test servers, which Telegram keeps for developers and which hold separate test accounts.
+Test server sign-in	Test sunucusunda oturum açma
+# context: that switch's summary. "Test Backend" is the checkbox under the phone number field on Telegram's sign-in screen, written with Telegram's applied label for this language (key DebugTestBackend on translations.telegram.org; Bulgarian has none applied, so Telegram shows the English "Test Backend" there).
+Signing in or adding an account shows Telegram's Test Backend box on the phone number screen. Tick it to sign that account in on Telegram's test servers, kept apart from your other accounts.	Oturum açarken veya hesap eklerken telefon numarası ekranında Telegram'ın Backend'i Test Et kutusu görünür. Bu hesapla Telegram'ın test sunucularında, diğer hesaplarınızdan ayrı olarak oturum açmak için kutuyu işaretleyin.

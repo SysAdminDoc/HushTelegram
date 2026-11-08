@@ -200,6 +200,7 @@ public final class SettingsStatus {
     public static boolean unifiedPush() { return false; }
     public static boolean reactionAlerts() { return false; }
     public static boolean reactionSound() { return false; }
+    public static boolean testServerSignIn() { return false; }
 
     public static boolean channelAds() {
         return false;

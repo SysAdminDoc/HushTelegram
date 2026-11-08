@@ -403,6 +403,7 @@ public final class SelectionCheck {
         hook(calls, flags, "hideByKeyword", "misc/MessageFilters", "type");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");
         hook(calls, flags, "disableUpdateChecks", "misc/UpdateChecks", "skipUpdateCheck");
+        hook(calls, flags, "testServerSignIn", "misc/TestServers", "shown");
         for (String[] bridge : List.of(
                 new String[]{"nativeTokenPresence", "Lorg/telegram/messenger/SharedConfig;->hushTelegramTokenPresence()I"},
                 new String[]{"nativeAccountCounts", "Lorg/telegram/messenger/UserConfig;->hushTelegramAccountCounts()I"})) {

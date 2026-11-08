@@ -245,6 +245,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/KeepDeletedBridge.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/KeepEdits.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/KeepTimedMedia.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TestServers.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/localcontrols/**",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/paste/**",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/ids/**",

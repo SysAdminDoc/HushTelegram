@@ -189,6 +189,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.DISABLE_UPDATE_CHECKS, "Turn off Telegram's update checks");
         ROW_TITLES.put(PatchFamily.REPAIR_FIREBASE_PUSH, "Repair Firebase push registration");
         ROW_TITLES.put(PatchFamily.UNIFIED_PUSH, "UnifiedPush notifications");
+        ROW_TITLES.put(PatchFamily.TEST_SERVER_SIGN_IN, "Test server sign-in");
     }
 
     /** The sections every build has, in the order they're drawn. */
@@ -948,6 +949,12 @@ public class HushTelegramPreferenceFragmentTest {
                     String.valueOf(page.findPreference(Settings.HIDE_NEW_MESSAGE.key).getSummary()));
             // The pencil button stays until the switch is turned on.
             assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_NEW_MESSAGE.key)).isChecked());
+            assertEquals("Test server sign-in", String.valueOf(page.findPreference(Settings.TEST_SERVER_SIGN_IN.key).getTitle()));
+            assertEquals("Signing in or adding an account shows Telegram's Test Backend box on the phone number screen. "
+                            + "Tick it to sign that account in on Telegram's test servers, kept apart from your other accounts.",
+                    String.valueOf(page.findPreference(Settings.TEST_SERVER_SIGN_IN.key).getSummary()));
+            // The sign-in screen offers Test Backend only to test accounts until the switch is turned on.
+            assertFalse(((SwitchPreference) page.findPreference(Settings.TEST_SERVER_SIGN_IN.key)).isChecked());
             assertEquals("Ask before sending a GIF", String.valueOf(page.findPreference(Settings.ASK_BEFORE_GIF.key).getTitle()));
             assertEquals("Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs "
                     + "go out without asking.",

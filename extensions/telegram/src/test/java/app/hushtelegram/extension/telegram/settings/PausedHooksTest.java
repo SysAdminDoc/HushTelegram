@@ -444,6 +444,9 @@ public class PausedHooksTest {
         // A Firebase sign-up signs up the UnifiedPush address instead.
         probes.put(PatchFamily.UNIFIED_PUSH, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.UnifiedPushForTests.swapsFirebase()));
+        // The sign-in screen offers Test Backend on an account that isn't on the test servers.
+        probes.put(PatchFamily.TEST_SERVER_SIGN_IN, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.TestServers.shown(0)));
         return probes;
     }
 

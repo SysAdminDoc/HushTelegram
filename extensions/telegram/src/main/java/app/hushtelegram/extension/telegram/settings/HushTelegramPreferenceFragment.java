@@ -645,6 +645,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "Restart Telegram to see the change.")));
             }
         }
+        if (build.contains(PatchFamily.TEST_SERVER_SIGN_IN)) {
+            on(pages, PatchFamily.TEST_SERVER_SIGN_IN).addPreference(toggle(context, Settings.TEST_SERVER_SIGN_IN, L10n.t("Test server sign-in"),
+                    PatchFamily.TEST_SERVER_SIGN_IN.coverageSummary(L10n.t("Signing in or adding an account shows Telegram's Test Backend box "
+                            + "on the phone number screen. Tick it to sign that account in on Telegram's test servers, kept apart from "
+                            + "your other accounts."))));
+        }
     }
 
     /** The Conversations page: in a chat, its menus, sending, translation, hidden and kept messages. */

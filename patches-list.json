@@ -3334,6 +3334,63 @@
       "options": []
     },
     {
+      "name": "Test server sign-in",
+      "description": "Shows Telegram's Test Backend box on the sign-in screen for every new account. Tick it to sign that account in on Telegram's test servers, kept apart from your other accounts. Starts off. Turn it on in HushTelegram settings > Chat list.",
+      "category": "Chats",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger": [
+          "13.1.1"
+        ],
+        "org.telegram.messenger.web": [
+          "13.1.0"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.1.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72371
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram (telegram.org)",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.1.0",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72299
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Translate with an outside service",
       "description": "Adds Translate here to a message's menu and Translate this chat to a chat's menu. Text you turn on goes to Google's web translate, or to an AI service with your own key if you set one, one message at a time, and nothing is sent before that. With an AI service, a How to translate box lets you say how you want it done. Telegram's own translation and its Premium checks stay as they are. Starts off. Turn it on in HushTelegram settings > Conversations.",
       "category": "Conversations",

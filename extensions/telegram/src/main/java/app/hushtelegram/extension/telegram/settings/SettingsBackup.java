@@ -188,6 +188,7 @@ public final class SettingsBackup {
             Settings.COMPACT_TAB_BAR,
             Settings.SIDE_MENU,
             Settings.HIDE_NEW_MESSAGE,
+            Settings.TEST_SERVER_SIGN_IN,
             SettingsRoutes.SETTINGS_ROW,
             SettingsRoutes.TITLE_PRESS,
             SettingsRoutes.SIDE_MENU_ROW,

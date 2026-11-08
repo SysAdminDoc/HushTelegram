@@ -895,6 +895,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_reaction_sound", FALSE);
 
     /**
+     * Telegram's Test Backend checkbox shows on the sign-in phone screen for every account being
+     * added, not only one already on the test servers. Ticking it signs that account in on
+     * Telegram's test servers, apart from the accounts already signed in. Off by default.
+     */
+    public static final BooleanSetting TEST_SERVER_SIGN_IN =
+            new BooleanSetting("hushtelegram_test_server_sign_in", FALSE);
+
+    /**
      * Once a day, when Telegram starts, ask api.github.com whether a newer HushTelegram release is
      * out, and say so on the settings screen ({@link ReleaseCheck}). It's the settings entry's own
      * switch rather than a patch's, so every build has it ({@link PatchFamily#ENTRY_SWITCHES}). Off
