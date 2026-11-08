@@ -2343,7 +2343,7 @@
     },
     {
       "name": "HushTelegram icon and name",
-      "description": "Gives your patched Telegram HushTelegram's own home screen icon, with a themed version on Android 13 and up, and can change the name under it. An alternate icon picked in Telegram's settings keeps its own look. It isn't selected by default. Turn on Expert mode in Morphe Manager to pick it and name the app. Only patching again without it puts Telegram's icon back.",
+      "description": "Gives your patched Telegram HushTelegram's own home screen icon, with a themed version on Android 13 and up, and can change the name under it. Pick Telegram's own icon as the icon style to keep Telegram's icon and change only the name. An alternate icon picked in Telegram's settings keeps its own look. It isn't selected by default. Turn on Expert mode in Morphe Manager to pick it and name the app. Only patching again without it puts Telegram's icon back.",
       "category": "Interface",
       "use": false,
       "dependencies": [],
@@ -2406,14 +2406,15 @@
         {
           "key": "iconStyle",
           "title": "Icon style",
-          "description": "HushTelegram colors is the blue badge. The plain styles draw just the H and plane, white on black or black on white, on Android 8 and up. Every style keeps the themed icon on Android 13.",
+          "description": "HushTelegram colors is the blue badge. The plain styles draw just the H and plane, white on black or black on white, on Android 8 and up. Every style keeps the themed icon on Android 13. Telegram's own icon leaves Telegram's icon as it is, so only the app name changes.",
           "required": true,
           "type": "kotlin.String",
           "default": "hushtelegram",
           "values": {
             "HushTelegram colors": "hushtelegram",
             "White on black": "white-on-black",
-            "Black on white": "black-on-white"
+            "Black on white": "black-on-white",
+            "Telegram's own icon": "telegram"
           }
         }
       ]
