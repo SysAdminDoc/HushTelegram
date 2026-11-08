@@ -9,6 +9,7 @@ import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.util.names.origRef
+import app.morphe.util.names.loadsInt
 import app.morphe.util.names.addInstructions
 import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -77,8 +78,7 @@ class HidePopularAppsFixtureTest {
                 assertFalse("$name: stock empty path at $at writes a field", stock[at].opcode.name.let { op -> op.startsWith("iput") || op.startsWith("sput") })
             }
             // No heading, bot row or placeholder can be added between the gate and that point unless the gate let it through.
-            val heading = stock.indexOfFirst { it.opcode == Opcode.SGET && (it as ReferenceInstruction).reference.let { ref ->
-                ref is FieldReference && ref.origName == "SearchAppsPopular" } }
+            val heading = stock.indexOfFirst { it.namesPopularApps() }
             assertTrue("$name: the heading is inside the gated section", heading in sites.read until sites.empty)
             assertFalse("$name: the heading is reached around the gate", moved.getValue(heading) in reachable(sectionFlow, 0, gate))
 
@@ -95,8 +95,7 @@ class HidePopularAppsFixtureTest {
             val builders = FixtureDex.methodsWhere(build, { true }) { method ->
                 method.instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.reference() == GET_POPULAR_APP_BOTS } }
             assertEquals("${build.name}: one getPopularAppBots builder", 1, builders.size)
-            val headings = FixtureDex.methodsWhere(build, { true }) { method -> method.instructions().any { it.opcode == Opcode.SGET &&
-                (it as ReferenceInstruction).reference.let { ref -> ref is FieldReference && ref.origName == "SearchAppsPopular" } } }
+            val headings = FixtureDex.methodsWhere(build, { true }) { method -> method.instructions().any { it.namesPopularApps() } }
             assertEquals("${build.name}: one place draws the Popular apps heading", 1, headings.size)
         }
     }
@@ -168,9 +167,11 @@ class HidePopularAppsFixtureTest {
     }
 
     private fun owners(build: java.io.File) = FixtureDex.classesWhere(build, { true }) { method ->
-        method.instructions().any { (it.opcode == Opcode.NEW_INSTANCE && it.reference() == GET_POPULAR_APP_BOTS) ||
-            (it.opcode == Opcode.SGET && (it as ReferenceInstruction).reference.let { ref -> ref is FieldReference && ref.origName == "SearchAppsPopular" }) }
+        method.instructions().any { (it.opcode == Opcode.NEW_INSTANCE && it.reference() == GET_POPULAR_APP_BOTS) || it.namesPopularApps() }
     }
+
+    /** The Popular apps heading's string id: an sget of the R field, or the const 13.2 inlined it into. */
+    private fun Instruction.namesPopularApps() = loadsInt() && origRef() == "Lorg/telegram/messenger/R\$string;->SearchAppsPopular:I"
 
     private fun contextFor(build: java.io.File, runtime: Boolean = true): BytecodePatchContext {
         val owners = owners(build)

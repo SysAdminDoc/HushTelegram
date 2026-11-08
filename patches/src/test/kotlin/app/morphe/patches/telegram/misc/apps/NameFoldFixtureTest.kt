@@ -75,7 +75,8 @@ class NameFoldFixtureTest {
                 val short = context.tgMutableClassDefBy(LOCALE_CONTROLLER).methods.first { it.origName == TRANSLIT && it.parameterTypes.size == 1 }
                 val call = short.body().indexOfFirst { it.ref() == TRANSLIT_FULL }
                 val registers = short.body()[call].namedRegisters().joinToString { "v$it" }
-                short.replaceInstruction(call, "invoke-virtual {$registers}, $LOCALE_CONTROLLER->other(Ljava/lang/String;ZZ)Ljava/lang/String;")
+                // A class of its own: 13.2's name table only lets a patch name LocaleController members it has.
+                short.replaceInstruction(call, "invoke-static {$registers}, Lorg/telegram/ui/OwnTranslit;->other(${LOCALE_CONTROLLER}Ljava/lang/String;ZZ)Ljava/lang/String;")
             }),
             Case("no case-keeping flag", "case-keeping flag changed", context = { context ->
                 val full = context.full()
