@@ -7,6 +7,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** Moved telegram.org's build to Telegram 13.1.1 (version code 72379). Every patch carried over without a change.
 ### Added
 
+* **Telegram:** **Ghost mode button**, under Ghost mode in Privacy and off by default. It puts a ghost at the top of the chat list, next to Telegram's own buttons, and one tap turns Ghost mode on or off with a short message saying which. The ghost is filled while Ghost mode is on and just an outline while it's off. It steps aside while search is open.
 * **Telegram:** **Add Repeat to the message menu** has a new switch, **Add Save to Gallery to stories**, off by default. A story's three-dot menu gets Telegram's own Save to Gallery without Premium, on stories that don't allow saving too. It saves only the ones you pick.
 * **Telegram:** **Save downloaded files** has a **What to copy** row right under its switch. Tick documents, music, photos, videos or voice messages, and only those kinds get a copy in Download/Telegram. Everything is ticked to start, so nothing changes until you untick something.
 * **Telegram:** **Keep videos muted on volume keys** has a new switch, **Start videos without sound**, off by default. A video you open plays muted, so it won't blast out in public or cut over your music. Press a volume key and that video gets its sound. The next one you open starts quiet again. Round videos keep their sound. (#61)

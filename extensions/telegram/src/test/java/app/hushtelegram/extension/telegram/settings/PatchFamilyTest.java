@@ -76,6 +76,7 @@ public class PatchFamilyTest {
         Settings.RECEIVE_ONLY.resetToDefault();
         Settings.POWER_OFF_ACCOUNTS.resetToDefault();
         Settings.GHOST_ONLINE.resetToDefault();
+        Settings.GHOST_BUTTON.resetToDefault();
         Settings.DISABLE_UPDATE_CHECKS.resetToDefault();
         Settings.NORMAL_PASTE.resetToDefault();
         Settings.MENTION_BY_ID.resetToDefault();
@@ -253,7 +254,7 @@ public class PatchFamilyTest {
     public void ghostModeIsAnOffByDefaultPartOfDisableAnalyticsWithBothItsPartsReadyForWhenItIsOn() {
         PatchFamily family = PatchFamily.DISABLE_ANALYTICS;
         assertEquals(Arrays.asList(Settings.DISABLE_ANALYTICS, Settings.GHOST_MODE, Settings.GHOST_READS,
-                Settings.GHOST_STORIES, Settings.GHOST_TYPING, Settings.GHOST_ONLINE, Settings.RECEIVE_ONLY,
+                Settings.GHOST_STORIES, Settings.GHOST_TYPING, Settings.GHOST_ONLINE, Settings.GHOST_BUTTON, Settings.RECEIVE_ONLY,
                 Settings.POWER_OFF_ACCOUNTS), family.switches);
         assertFalse(Settings.GHOST_MODE.defaultValue);
         // Each part does nothing until Ghost mode is on, so turning that on alone covers both.
@@ -273,6 +274,10 @@ public class PatchFamilyTest {
         assertEquals("hushtelegram_ghost_stories", Settings.GHOST_STORIES.key);
         assertEquals("hushtelegram_ghost_typing", Settings.GHOST_TYPING.key);
         assertEquals("hushtelegram_ghost_online", Settings.GHOST_ONLINE.key);
+        // The chat list's ghost button starts off and follows its switch without a restart.
+        assertFalse(Settings.GHOST_BUTTON.defaultValue);
+        assertFalse(Settings.GHOST_BUTTON.rebootApp);
+        assertEquals("hushtelegram_ghost_button", Settings.GHOST_BUTTON.key);
         assertTrue(family.expectedCapabilities().contains(PatchFamily.Capability.GHOST_MODE));
         assertEquals("ghostMode", PatchFamily.Capability.GHOST_MODE.statusMethod);
         assertEquals("read receipts and story views", PatchFamily.Capability.GHOST_MODE.label);
@@ -1093,7 +1098,7 @@ public class PatchFamilyTest {
         assertEquals(Arrays.asList(
                 "Hide ads: on (hushtelegram_hide_ads=on)",
                 "Disable analytics: on (hushtelegram_disable_analytics=off, hushtelegram_ghost_mode=off, "
-                        + "hushtelegram_ghost_read_receipts=on, hushtelegram_ghost_stories=on, hushtelegram_ghost_typing=off, hushtelegram_ghost_online=off, hushtelegram_receive_only=off, hushtelegram_power_off_accounts=off)",
+                        + "hushtelegram_ghost_read_receipts=on, hushtelegram_ghost_stories=on, hushtelegram_ghost_typing=off, hushtelegram_ghost_online=off, hushtelegram_ghost_button=off, hushtelegram_receive_only=off, hushtelegram_power_off_accounts=off)",
                 "not in this build: Hide Stories, Hide recommendations, Hide Premium, gifts and Stars, Hide promotional banners, Hide sponsored proxy channel, Hide popular apps, Hide contacts on Telegram, Hide greeting stickers, Disable chat swipe actions, Disable pull to next channel, Use normal paste, Show user and chat IDs, Disable double-tap reactions, Quiet contacts nag, Holiday look all year, Use system font, AMOLED black, Hide translate bar, Exact numbers, Reveal spoilers, Hide keyboard on scroll, Keep videos muted on volume keys, Swipe back on profiles, Hide phone number, Message times with seconds, Allow chat blur on slower phones, Play voice messages one at a time, Turn off haptic feedback, Turn off reaction effects, Hide folder tab counters, Hide sender names when forwarding, Voice messages in the music player, Silence people outside your contacts, Disable pull to archive, Start the camera on the rear lens, Hide gallery camera tile, Hide time on stickers, Change sticker size, Ignore mentions in muted chats, Hide blocked users in groups, Hide messages by keyword, Hide Telegram Features and Invite Friends, Add Repeat to the message menu, Keep deleted messages, Ask before sending a sticker, Translate with an outside service, Hide channel bar buttons, Hide Send as button, Hide Contacts tab, Faster downloads, Save downloaded files, Folders by chat type, Disable call debug upload, Disable draft link previews, Gallery camera on tap, Open links externally, Strip link tracking, Disable update checks, Repair Firebase push registration, UnifiedPush notifications",
                 "Hide ads coverage: channel ads, video ads, search ads",
                 "Disable analytics coverage: channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports, read receipts and story views, receive only mode, powering off accounts"),
@@ -1112,7 +1117,7 @@ public class PatchFamilyTest {
         assertEquals("Hide ads: disabled while paused (saved hushtelegram_hide_ads=on); stays in while paused: "
                 + "the sponsored message cache cleared when you patched", paused.get(0));
         assertEquals("Disable analytics: disabled while paused (saved hushtelegram_disable_analytics=off, "
-                        + "hushtelegram_ghost_mode=off, hushtelegram_ghost_read_receipts=on, hushtelegram_ghost_stories=on, hushtelegram_ghost_typing=off, hushtelegram_ghost_online=off, hushtelegram_receive_only=off, hushtelegram_power_off_accounts=off)",
+                        + "hushtelegram_ghost_mode=off, hushtelegram_ghost_read_receipts=on, hushtelegram_ghost_stories=on, hushtelegram_ghost_typing=off, hushtelegram_ghost_online=off, hushtelegram_ghost_button=off, hushtelegram_receive_only=off, hushtelegram_power_off_accounts=off)",
                 paused.get(1));
         assertEquals(running.get(2), paused.get(2));
         assertEquals("Pause must keep patch-time coverage facts", running.subList(3, 5), paused.subList(3, 5));

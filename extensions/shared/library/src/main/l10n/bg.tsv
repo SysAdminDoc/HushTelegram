@@ -1375,3 +1375,11 @@ Start videos without sound	Пускане на видеоклиповете бе
 A video you open plays muted until you press a volume key. Round videos keep their sound.	Отвореният видеоклип се пуска без звук, докато не натиснете бутон за звука. Видеосъобщенията запазват звука си.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that starts opened videos without sound.
 videos starting without sound	пускане на видеоклиповете без звук
+# context: a switch under Ghost mode (#62). With it on, a ghost button sits at the top of the chat list, among Telegram's own buttons there.
+Ghost mode button	Бутон за режим „Призрак“
+# context: that switch's summary. Filled means the ghost icon is drawn solid rather than as an outline.
+A ghost at the top of the chat list turns Ghost mode on and off with a tap. It's filled while Ghost mode is on.	Призрак горе в списъка с чатове включва и изключва режим „Призрак“ с едно докосване. Запълнен е, докато режимът е включен.
+# context: short message shown after a tap on the chat list's ghost button turned Ghost mode on.
+Ghost mode on	Режим „Призрак“ е включен
+# context: short message shown after a tap on the chat list's ghost button turned Ghost mode off.
+Ghost mode off	Режим „Призрак“ е изключен

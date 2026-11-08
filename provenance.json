@@ -336,6 +336,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/NameFold.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/apps/NameFoldSupport.kt",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GhostMode.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GhostButton.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/extension/SendRequestGate.kt",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/NewChatsBlock.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/RequestAnswers.java",

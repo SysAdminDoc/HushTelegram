@@ -354,6 +354,11 @@ public class HushTelegramPreferenceFragmentTest {
                     + "Works with Ghost mode on.", String.valueOf(page.findPreference(Settings.GHOST_ONLINE.key).getSummary()));
             assertFalse(Settings.GHOST_TYPING.key, ((SwitchPreference) page.findPreference(Settings.GHOST_TYPING.key)).isChecked());
             assertFalse(Settings.GHOST_ONLINE.key, ((SwitchPreference) page.findPreference(Settings.GHOST_ONLINE.key)).isChecked());
+            assertEquals("Ghost mode button", String.valueOf(page.findPreference(Settings.GHOST_BUTTON.key).getTitle()));
+            assertEquals("A ghost at the top of the chat list turns Ghost mode on and off with a tap. It's filled while "
+                    + "Ghost mode is on.", String.valueOf(page.findPreference(Settings.GHOST_BUTTON.key).getSummary()));
+            // The chat list's top bar stays as Telegram made it until the button is asked for.
+            assertFalse(Settings.GHOST_BUTTON.key, ((SwitchPreference) page.findPreference(Settings.GHOST_BUTTON.key)).isChecked());
             // Receipts go out as usual until Ghost mode itself is turned on; its two parts start on under it.
             assertFalse(Settings.GHOST_MODE.key, ((SwitchPreference) page.findPreference(Settings.GHOST_MODE.key)).isChecked());
             assertTrue(Settings.GHOST_READS.key, ((SwitchPreference) page.findPreference(Settings.GHOST_READS.key)).isChecked());

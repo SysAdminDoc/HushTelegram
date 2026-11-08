@@ -1253,6 +1253,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             L10n.t("Other people don't see that you're typing, recording or sending a file. Works with Ghost mode on.")));
                     privacy.addPreference(toggle(context, Settings.GHOST_ONLINE, L10n.t("Hide online status"),
                             L10n.t("Telegram isn't told that you're online while you use it. Going offline still goes out. Works with Ghost mode on.")));
+                    privacy.addPreference(toggle(context, Settings.GHOST_BUTTON, L10n.t("Ghost mode button"),
+                            L10n.t("A ghost at the top of the chat list turns Ghost mode on and off with a tap. It's filled while Ghost mode is on.")));
                 }
                 if (PatchFamily.Capability.RECEIVE_ONLY.installed()) {
                     privacy.addPreference(toggle(context, Settings.RECEIVE_ONLY, L10n.t("Receive only mode"),

@@ -754,6 +754,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_ghost_online", FALSE);
 
     /**
+     * A ghost on the chat list's top bar that turns {@link #GHOST_MODE} on and off with a tap
+     * ({@link app.hushtelegram.extension.telegram.misc.GhostButton}). The chat list follows it as
+     * soon as it's back on screen.
+     */
+    public static final BooleanSetting GHOST_BUTTON =
+            new BooleanSetting("hushtelegram_ghost_button", FALSE);
+
+    /**
      * Receive only mode: the accounts on {@link #RECEIVE_ONLY_ACCOUNTS} send nothing that writes.
      * With it off every account sends as in stock Telegram.
      */

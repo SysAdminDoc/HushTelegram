@@ -49,6 +49,7 @@ import app.hushtelegram.extension.shared.Logger;
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.settings.preference.ReopenSettingsAfterRestart;
 import app.hushtelegram.extension.telegram.misc.BlackTheme;
+import app.hushtelegram.extension.telegram.misc.GhostButton;
 import app.hushtelegram.extension.telegram.misc.UnifiedPush;
 
 /**
@@ -401,6 +402,8 @@ public final class SettingsEntry {
      *
      * <p>No switch reads this, so Pause leaves it working: it's the way back to the switch that
      * resumes HushTelegram. Anything that goes wrong leaves the bar as Telegram made it.
+     *
+     * <p>The bar also gets the Ghost mode button here, which shows only while its switch is on.
      */
     public static void watchChatListTitle(View bar) {
         if (bar == null) return;
@@ -410,6 +413,7 @@ public final class SettingsEntry {
         } catch (Throwable failure) {
             Logger.printException(() -> "Settings entry: could not watch the chat list title", failure);
         }
+        GhostButton.attach(bar);
     }
 
     /**
