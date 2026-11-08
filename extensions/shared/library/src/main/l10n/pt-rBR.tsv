@@ -1370,3 +1370,9 @@ Tick at least one kind of file.	Marque pelo menos um tipo de arquivo.
 Couldn't save the kinds. Try again in a moment.	Não foi possível salvar os tipos. Tente de novo em instantes.
 # context: In the settings import preview, What to copy leaving no kind of file out, as in "What to copy: Every kind to Documents and Photos"
 Every kind	Todos os tipos
+# context: a switch under Keep videos muted on volume keys (#61). With it on, a video opened in Telegram's video viewer plays with no sound until a volume key is pressed.
+Start videos without sound	Iniciar vídeos sem som
+# context: that switch's summary. A round video is Telegram's circular video message, which plays in the chat and keeps its sound.
+A video you open plays muted until you press a volume key. Round videos keep their sound.	Um vídeo que você abre toca sem som até você apertar uma tecla de volume. Vídeos redondos mantêm o som.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that starts opened videos without sound.
+videos starting without sound	iniciar vídeos sem som

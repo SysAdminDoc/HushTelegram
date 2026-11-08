@@ -9,6 +9,7 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** **Add Repeat to the message menu** has a new switch, **Add Save to Gallery to stories**, off by default. A story's three-dot menu gets Telegram's own Save to Gallery without Premium, on stories that don't allow saving too. It saves only the ones you pick.
 * **Telegram:** **Save downloaded files** has a **What to copy** row right under its switch. Tick documents, music, photos, videos or voice messages, and only those kinds get a copy in Download/Telegram. Everything is ticked to start, so nothing changes until you untick something.
+* **Telegram:** **Keep videos muted on volume keys** has a new switch, **Start videos without sound**, off by default. A video you open plays muted, so it won't blast out in public or cut over your music. Press a volume key and that video gets its sound. The next one you open starts quiet again. Round videos keep their sound. (#61)
 * **Telegram:** **Disable double-tap reactions** has a new switch, **Hide the emoji pack line**, off by default. It takes the line that says a message contains emoji from some pack off the bottom of the long-press menu, along with the gap above it.
 
 ### Changed

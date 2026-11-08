@@ -566,6 +566,13 @@ public class HushTelegramPreferenceFragmentTest {
             // The chat gets volume keys until the switch is turned on.
             assertFalse(Settings.KEEP_VIDEOS_MUTED.key,
                     ((SwitchPreference) page.findPreference(Settings.KEEP_VIDEOS_MUTED.key)).isChecked());
+            assertEquals("Start videos without sound",
+                    String.valueOf(page.findPreference(Settings.VIDEO_STARTS_SILENT.key).getTitle()));
+            assertEquals("A video you open plays muted until you press a volume key. Round videos keep their sound.",
+                    String.valueOf(page.findPreference(Settings.VIDEO_STARTS_SILENT.key).getSummary()));
+            // Opened videos play with sound until the switch is turned on.
+            assertFalse(Settings.VIDEO_STARTS_SILENT.key,
+                    ((SwitchPreference) page.findPreference(Settings.VIDEO_STARTS_SILENT.key)).isChecked());
             assertEquals("Full screen videos turn either way",
                     String.valueOf(page.findPreference(Settings.VIDEO_EITHER_LANDSCAPE.key).getTitle()));
             assertEquals("After you tap full screen, a video follows your phone to either landscape side, even with "

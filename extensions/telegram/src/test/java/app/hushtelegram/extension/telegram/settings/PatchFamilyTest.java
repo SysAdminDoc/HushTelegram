@@ -95,6 +95,7 @@ public class PatchFamilyTest {
         Settings.KEEP_VIDEOS_MUTED.resetToDefault();
         Settings.VIDEO_EITHER_LANDSCAPE.resetToDefault();
         Settings.VIDEO_ONLY_FROM_BUTTON.resetToDefault();
+        Settings.VIDEO_STARTS_SILENT.resetToDefault();
         Settings.SWIPE_BACK_ON_PROFILES.resetToDefault();
         Settings.HIDE_PHONE_NUMBER.resetToDefault();
         Settings.MESSAGE_SECONDS.resetToDefault();
@@ -783,13 +784,15 @@ public class PatchFamilyTest {
     public void keepVideosMutedHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
         PatchFamily family = PatchFamily.KEEP_VIDEOS_MUTED;
         assertEquals("Keep videos muted on volume keys", family.patchName);
-        assertEquals(Arrays.asList(Settings.KEEP_VIDEOS_MUTED, Settings.VIDEO_EITHER_LANDSCAPE, Settings.VIDEO_ONLY_FROM_BUTTON), family.switches);
-        for (BooleanSetting setting : Arrays.asList(Settings.KEEP_VIDEOS_MUTED, Settings.VIDEO_EITHER_LANDSCAPE, Settings.VIDEO_ONLY_FROM_BUTTON)) {
+        assertEquals(Arrays.asList(Settings.KEEP_VIDEOS_MUTED, Settings.VIDEO_EITHER_LANDSCAPE, Settings.VIDEO_ONLY_FROM_BUTTON, Settings.VIDEO_STARTS_SILENT), family.switches);
+        for (BooleanSetting setting : Arrays.asList(Settings.KEEP_VIDEOS_MUTED, Settings.VIDEO_EITHER_LANDSCAPE, Settings.VIDEO_ONLY_FROM_BUTTON, Settings.VIDEO_STARTS_SILENT)) {
             assertFalse(setting.key, setting.defaultValue);
             assertFalse(setting.key, setting.rebootApp);
         }
-        assertEquals(EnumSet.of(PatchFamily.Capability.VIDEO_EITHER_LANDSCAPE, PatchFamily.Capability.VIDEO_ONLY_FROM_BUTTON), family.expectedCapabilities());
+        assertEquals(EnumSet.of(PatchFamily.Capability.VIDEO_EITHER_LANDSCAPE, PatchFamily.Capability.VIDEO_ONLY_FROM_BUTTON,
+                PatchFamily.Capability.VIDEO_STARTS_SILENT), family.expectedCapabilities());
         assertEquals("videoOnlyFromButton", PatchFamily.Capability.VIDEO_ONLY_FROM_BUTTON.statusMethod);
+        assertEquals("videoStartsSilent", PatchFamily.Capability.VIDEO_STARTS_SILENT.statusMethod);
         assertEquals("videoEitherLandscape", PatchFamily.Capability.VIDEO_EITHER_LANDSCAPE.statusMethod);
         assertOnItsPage(family);
     }

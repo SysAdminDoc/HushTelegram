@@ -93,6 +93,7 @@ public final class SettingsStatus {
     public static boolean keepVideosMuted() { return false; }
     public static boolean videoEitherLandscape() { return false; }
     public static boolean videoOnlyFromButton() { return false; }
+    public static boolean videoStartsSilent() { return false; }
     public static boolean swipeBackOnProfiles() { return false; }
     public static boolean hidePhoneNumber() { return false; }
     public static boolean shareNumberUnticked() { return false; }

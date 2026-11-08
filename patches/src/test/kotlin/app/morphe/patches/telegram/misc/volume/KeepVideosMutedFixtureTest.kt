@@ -39,6 +39,7 @@ import java.lang.ref.SoftReference
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
 import app.morphe.util.names.origString
+import app.morphe.util.names.origType
 import app.morphe.util.names.tgClassDefByOrNull
 import app.morphe.util.names.tgMutableClassDefBy
 
@@ -58,8 +59,9 @@ class KeepVideosMutedFixtureTest {
             val oldTurn = ImmutableMethod.of(turnMethod)
             // The viewer's other orientation calls are checked in their own test.
             val upright = context.resolveVideoUpright(turn)
-            val beside = upright.edits.filter { it.signature == turnMethod.toString() }.map { it.index }.toSet()
-            val edited = setOf(key(site.dispatch), key(turnMethod)) + upright.edits.map { it.signature }
+            val sound = context.resolveVideoSound()
+            val beside = (upright.edits + sound.edits).filter { it.signature == turnMethod.toString() }.map { it.index }.toSet()
+            val edited = setOf(key(site.dispatch), key(turnMethod)) + upright.edits.map { it.signature } + sound.edits.map { it.signature }
             val untouched = hostState(build, context, edited)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { keepVideosMutedPatch.execute(context) })
 
@@ -107,6 +109,80 @@ class KeepVideosMutedFixtureTest {
             assertEquals(1L, status(context, "keepVideosMuted"))
             assertEquals(1L, status(context, "videoEitherLandscape"))
             assertEquals(1L, status(context, "videoOnlyFromButton"))
+            assertEquals(1L, status(context, "videoStartsSilent"))
+        }
+    }
+
+    @Test fun `the video viewer's mute and volume calls go to the extension in the same registers`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = context(build)
+            val sound = context.resolveVideoSound()
+            assertEquals("$name", null, sound.missing)
+            val mute = sound.setMute!!
+            val volume = sound.setVolume!!
+            assertEquals("$name: one player", mute.definingClass, volume.definingClass)
+            // A video starting, buffering, showing its first frame, the cast button and the editor's sound button.
+            assertEquals("$name: every place the viewer mutes its player", 5, sound.edits.count { it.hook == SET_MUTE_HOOK })
+            // Volume keys, the editor's tap and the editor starting a video.
+            assertEquals("$name: every place the viewer sets its player's volume", 3, sound.edits.count { it.hook == SET_VOLUME_HOOK })
+            assertEquals("$name: the window's volume keys", 1,
+                sound.edits.count { it.hook == SET_VOLUME_HOOK && "->dispatchKeyEvent(Landroid/view/KeyEvent;)Z" in it.signature })
+            val turn = context.resolveFullScreenTurn()
+            val others = context.resolveVideoUpright(turn).edits.map { it.signature to it.index }.toSet() +
+                turn.calls.map { turn.method.toString() to it }
+            val before = sound.edits.groupBy { it.signature }.mapValues { (signature, edits) ->
+                ImmutableMethod.of(context.tgMutableClassDefBy(edits.first().type).methods.single { it.toString() == signature })
+            }
+            assertEquals("$name", emptyList<String>(), PatchLogCapture.warnings { keepVideosMutedPatch.execute(context) })
+            for ((signature, old) in before) {
+                val here = sound.edits.filter { it.signature == signature }.associateBy { it.index }
+                val now = context.tgMutableClassDefBy(here.values.first().type).methods.single { it.toString() == signature }
+                val a = old.controlBody()
+                val b = now.controlBody()
+                assertEquals("$name: $signature keeps its length", a.size, b.size)
+                for (i in a.indices) {
+                    val edit = here[i]
+                    if (edit != null) {
+                        assertEquals(if (edit.hook == SET_MUTE_HOOK) mute.toString() else volume.toString(), a[i].controlRef())
+                        assertEquals(Opcode.INVOKE_STATIC, b[i].opcode)
+                        assertEquals(edit.hook, b[i].controlRef())
+                        assertEquals("$name: $signature $i the player and its value", a[i].namedRegisters(), b[i].namedRegisters())
+                    } else if ((signature to i) !in others) {
+                        assertEquals("$name: $signature stock operand $i", a[i].operand(), b[i].operand())
+                    }
+                }
+                val x = ControlFlow.of(old)
+                val y = ControlFlow.of(now)
+                assertEquals("$name: $signature same paths", x.normal.toList(), y.normal.toList())
+                assertEquals("$name: $signature same handlers", x.exceptional.toList(), y.exceptional.toList())
+            }
+            val stubs = context.tgMutableClassDefBy(VIDEO_SOUND).methods
+            for ((stub, call) in listOf("stockSetMute" to mute, "stockSetVolume" to volume)) {
+                val body = stubs.single { it.origName == stub }.controlBody()
+                assertEquals("$name: $stub", listOf(Opcode.CHECK_CAST, Opcode.INVOKE_VIRTUAL, Opcode.RETURN_VOID), body.map { it.opcode })
+                assertEquals("$name: $stub", call.toString(), body[1].controlRef())
+            }
+            assertEquals(1L, status(context, "videoStartsSilent"))
+        }
+    }
+
+    @Test fun `a viewer whose volume keys changed keeps the rest of the patch and goes on without the silent start switch`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val c = context(build)
+            val sound = c.resolveVideoSound()
+            val keys = sound.edits.single { it.hook == SET_VOLUME_HOOK && "->dispatchKeyEvent(" in it.signature }
+            c.tgMutableClassDefBy(keys.type).methods.single { it.toString() == keys.signature }.replaceInstruction(keys.index, "nop")
+            val warnings = PatchLogCapture.warnings { keepVideosMutedPatch.execute(c) }
+            assertEquals("${build.name}: $warnings", 1, warnings.size)
+            assertTrue(warnings.single(), "in one place (0)" in warnings.single() && "starts videos without sound" in warnings.single())
+            assertEquals(1L, status(c, "keepVideosMuted"))
+            assertEquals(1L, status(c, "videoOnlyFromButton"))
+            assertEquals(0L, status(c, "videoStartsSilent"))
+            for (edit in sound.edits.filter { it !== keys }) {
+                val m = c.tgMutableClassDefBy(edit.type).methods.single { it.toString() == edit.signature }
+                assertTrue("${build.name}: ${edit.signature} ${edit.index} stays Telegram's", m.controlBody()[edit.index].controlRef() != edit.hook)
+            }
         }
     }
 
@@ -134,6 +210,7 @@ class KeepVideosMutedFixtureTest {
                 val type = upright.edits.first { it.signature == signature }.type
                 ImmutableMethod.of(context.tgMutableClassDefBy(type).methods.single { it.toString() == signature })
             }
+            val soundAt = context.resolveVideoSound().edits.map { it.signature to it.index }.toSet()
             assertEquals("$name", emptyList<String>(), PatchLogCapture.warnings { keepVideosMutedPatch.execute(context) })
             for ((signature, old) in before) {
                 val type = upright.edits.first { it.signature == signature }.type
@@ -148,7 +225,7 @@ class KeepVideosMutedFixtureTest {
                         assertEquals(Opcode.INVOKE_STATIC, b[i].opcode)
                         assertEquals(edit.hook, b[i].controlRef())
                         assertEquals("$name: $signature $i registers", a[i].namedRegisters(), b[i].namedRegisters())
-                    } else if (i !in turn.calls || signature != turn.method.toString()) {
+                    } else if ((i !in turn.calls || signature != turn.method.toString()) && (signature to i) !in soundAt) {
                         assertEquals("$name: $signature stock operand $i", a[i].operand(), b[i].operand())
                     }
                 }
@@ -217,6 +294,10 @@ class KeepVideosMutedFixtureTest {
                     h.accessFlags = h.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value },
                 "private turn hook" to { c, _ -> val h = c.tgMutableClassDefBy(VIDEO_TURN).methods.single { it.origName == "fullScreen" }
                     h.accessFlags = h.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value },
+                "missing silent start flag" to { c, _ -> c.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == "videoStartsSilent" } },
+                "private sound hook" to { c, _ -> val h = c.tgMutableClassDefBy(VIDEO_SOUND).methods.single { it.origName == "setMute" }
+                    h.accessFlags = h.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value },
+                "missing sound stub" to { c, _ -> c.tgMutableClassDefBy(VIDEO_SOUND).methods.removeAll { it.origName == "stockSetVolume" } },
             )
             for ((case, change) in mutations) {
                 val c = context(build)
@@ -231,7 +312,7 @@ class KeepVideosMutedFixtureTest {
     private fun context(build: File) = PatchContexts.of(ExtensionDex.classes() + hosts(build))
     private fun status(c: BytecodePatchContext, name: String) =
         (c.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == name }.controlBody().first() as WideLiteralInstruction).wideLiteral
-    private fun completeState(build: File, c: BytecodePatchContext) = (hosts(build).map { it.type } + listOf(VOLUME_KEYS, VIDEO_TURN, VIDEO_UPRIGHT, SETTINGS_STATUS))
+    private fun completeState(build: File, c: BytecodePatchContext) = (hosts(build).map { it.type } + listOf(VOLUME_KEYS, VIDEO_TURN, VIDEO_UPRIGHT, VIDEO_SOUND, SETTINGS_STATUS))
         .filter { c.tgClassDefByOrNull(it) != null }.associateWith { type -> c.tgMutableClassDefBy(type).let { cls ->
             listOf(cls.accessFlags, cls.methods.map { key(it) to it.state() }) } }
     private fun hostState(build: File, c: BytecodePatchContext, except: Set<String>) = hosts(build)
@@ -245,7 +326,11 @@ class KeepVideosMutedFixtureTest {
         }
     }
 
-    /** LaunchActivity, the screen its key dispatch casts to before asking, and the video viewer's full screen button. */
+    /**
+     * LaunchActivity, the screen its key dispatch casts to before asking, the video viewer's full
+     * screen button and orientation calls, and the viewer's code that reads one of its flags and
+     * calls something with a boolean or a float, which holds every mute and volume call.
+     */
     private fun loadHosts(build: File): List<ClassDef> {
         val launch = FixtureDex.classes(build, setOf(LAUNCH_ACTIVITY)).values.single()
         val dispatch = launch.methods.single { it.toString() == DISPATCH_KEY }.controlBody()
@@ -254,9 +339,17 @@ class KeepVideosMutedFixtureTest {
         val turns = FixtureDex.classesWhere(build, { true }) { m ->
             val refs = m.instructions().mapNotNull { it.origRef() }
             refs.any { it.startsWith("$PHOTO_VIEWER->") } &&
-                refs.any { it == SET_ORIENTATION || it == GET_ORIENTATION || it == LISTENER_ON || it == LISTENER_OFF }
+                (refs.any { it == SET_ORIENTATION || it == GET_ORIENTATION || it == LISTENER_ON || it == LISTENER_OFF } ||
+                    refs.any { it.startsWith("$PHOTO_VIEWER->") && it.endsWith(":Z") } && refs.any { it.endsWith("(Z)V") || it.endsWith("(F)V") })
         }
-        return (listOf(launch) + FixtureDex.classes(build, chats).values).map(ImmutableClassDef::of) + turns
+        // The viewer's player, whose mute and volume calls the extension makes.
+        val players = turns.flatMap { cls -> cls.methods.flatMap { it.instructions() } }
+            .filter { it.opcode == Opcode.INVOKE_VIRTUAL }
+            .mapNotNull { (it as ReferenceInstruction).reference as? MethodReference }
+            .filter { it.returnType == "V" && it.parameterTypes.map(CharSequence::toString).let { p -> p == listOf("Z") || p == listOf("F") } }
+            .map { it.origDefiningClass }.filter { it.startsWith("Lorg/telegram/") && it != PHOTO_VIEWER }.toSet() -
+            turns.map { it.origType }.toSet()
+        return (listOf(launch) + FixtureDex.classes(build, chats).values + FixtureDex.classes(build, players).values).map(ImmutableClassDef::of) + turns
     }
 
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()

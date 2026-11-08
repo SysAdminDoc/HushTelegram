@@ -245,6 +245,12 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_video_only_from_button", FALSE);
 
     /**
+     * Videos open in the viewer without sound until a volume key gives that video its sound (#61).
+     */
+    public static final BooleanSetting VIDEO_STARTS_SILENT =
+            new BooleanSetting("hushtelegram_video_starts_silent", FALSE);
+
+    /**
      * A swipe to the right on a profile's photos or media tabs goes back instead of to the previous
      * photo or tab.
      */
