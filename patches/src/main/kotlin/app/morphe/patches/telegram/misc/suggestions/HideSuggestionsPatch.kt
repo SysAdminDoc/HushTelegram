@@ -33,18 +33,21 @@ internal const val PENDING_SUGGESTIONS = "Lorg/telegram/messenger/MessagesContro
 internal const val DISMISSED_SUGGESTIONS = "Lorg/telegram/messenger/MessagesController;->dismissedSuggestions:Ljava/util/Set;"
 private const val SET_CONTAINS = "Ljava/util/Set;->contains(Ljava/lang/Object;)Z"
 private const val SET_ITERATOR = "Ljava/util/Set;->iterator()Ljava/util/Iterator;"
-internal const val SUGGESTION_FILL = "Lorg/telegram/messenger/ApplicationLoader;->onSuggestionFill(Ljava/lang/String;[Ljava/lang/CharSequence;[Z)Z"
+internal val BIRTHDAY_KEYS = setOf("BIRTHDAY_SETUP", "BIRTHDAY_CONTACTS_TODAY")
 
 /**
- * DialogsActivity's suggestion renderer. The UI class and method are renamed, but its call to
- * ApplicationLoader.onSuggestionFill is kept. No other no-argument UI method calls it in 12.10.6.
+ * DialogsActivity's suggestion renderer. The UI class and method are renamed, but it is the one
+ * no-argument UI method that names a birthday suggestion (each build through 13.2). It used to be
+ * found by its ApplicationLoader.onSuggestionFill call, which the Play build of 13.2 drops since
+ * it always answers no there. Either key is enough, so one missing target still leaves the other.
  */
 internal object ChatListSuggestionsFingerprint : Fingerprint(
     returnType = "V",
     parameters = listOf(),
     custom = { method, _ ->
-        method.origDefiningClass.startsWith("Lorg/telegram/ui/") &&
-            method.implementation?.instructions?.any { it.reference() == SUGGESTION_FILL } == true
+        method.origDefiningClass.startsWith("Lorg/telegram/ui/") && method.implementation?.instructions?.any {
+            (it as? ReferenceInstruction)?.reference.let { it as? StringReference }?.string in BIRTHDAY_KEYS
+        } == true
     },
 )
 
@@ -70,7 +73,7 @@ val hideSuggestionsPatch = bytecodePatch(
         requireStatusMethod("birthdayGiftBanner")
         val renderer = ChatListSuggestionsFingerprint.methodOrNull
         handleTargets(PATCH, "chat-list banner targets", BannerTarget.entries) { target ->
-            if (renderer == null) "no chat-list renderer calls $SUGGESTION_FILL"
+            if (renderer == null) "no chat-list renderer names a birthday suggestion (${BIRTHDAY_KEYS.joinToString()})"
             else when (target) {
                 BannerTarget.PENDING -> renderer.filterPresentationReads().also {
                     if (it == null) enableCapability("promotionalSuggestions")

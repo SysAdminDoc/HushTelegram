@@ -46,19 +46,22 @@ class HideSuggestionsFixtureTest {
     private val filter = "Lapp/hushtelegram/extension/telegram/misc/Suggestions;->filterChatList(Ljava/util/Set;)Ljava/util/Set;"
     private val birthday = "Lapp/hushtelegram/extension/telegram/misc/Suggestions;->birthdayGiftBannerDismissed(Z)Z"
     private val flags = listOf("hidePromotionalBanners", "promotionalSuggestions", "birthdayGiftBanner")
+    private val fill = "Lorg/telegram/messenger/ApplicationLoader;->onSuggestionFill(Ljava/lang/String;[Ljava/lang/CharSequence;[Z)Z"
 
     @Test
     fun `each declared build hooks every presentation read and birthday gift check without changing stored suggestions`() {
         for (build in Fixtures.declaredBuilds()) {
             val where = build.name
+            // 13.2.1 Play drops the renderer's always-false onSuggestionFill call, so the birthday keys anchor it alone.
+            fun Method.renders() = parameterTypes.isEmpty() &&
+                instructions().any { (it as? ReferenceInstruction)?.reference.let { it as? StringReference }?.string == "BIRTHDAY_SETUP" } &&
+                instructions().any { (it as? ReferenceInstruction)?.reference.let { it as? StringReference }?.string == "BIRTHDAY_CONTACTS_TODAY" }
             val hosts = FixtureDex.classesWhere(build, { true }) { method ->
-                method.origDefiningClass.startsWith("Lorg/telegram/ui/") && method.origReturnType == "V" &&
-                    method.parameterTypes.isEmpty() && method.instructions().any { it.reference() == SUGGESTION_FILL } &&
-                    method.instructions().any { (it as? ReferenceInstruction)?.reference.let { it as? StringReference }?.string == "BIRTHDAY_SETUP" }
+                method.origDefiningClass.startsWith("Lorg/telegram/ui/") && method.origReturnType == "V" && method.renders()
             }
             assertEquals("$where: one independently anchored chat-list renderer", 1, hosts.size)
             val host = hosts.single()
-            val original = host.methods.single { it.instructions().any { instruction -> instruction.reference() == SUGGESTION_FILL } }
+            val original = host.methods.single { it.renders() }
             val messages = FixtureDex.classes(build, setOf(controller)).getValue(controller)
             assertEquals("$where: pendingSuggestions is a Set", "Ljava/util/Set;", messages.fields.single { it.origName == "pendingSuggestions" }.type)
             val context = PatchContexts.of(ExtensionDex.classes() + listOf(host, messages))
@@ -292,7 +295,7 @@ class HideSuggestionsFixtureTest {
                 const/4 v1, 0x0
                 const/4 v2, 0x0
                 const/4 v3, 0x0
-                invoke-virtual {v0, v1, v2, v3}, $SUGGESTION_FILL
+                invoke-virtual {v0, v1, v2, v3}, $fill
                 move-result v0
                 return-void
             """.trimIndent())
