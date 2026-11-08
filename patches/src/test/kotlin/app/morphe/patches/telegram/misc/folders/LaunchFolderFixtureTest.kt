@@ -411,7 +411,7 @@ internal fun launchFolderHosts(build: File): List<ClassDef> = LAUNCH_FOLDER_HOST
 
 /** The class with the folder tab counter. */
 internal fun folderCounterHosts(build: File): List<ClassDef> = FixtureDex.classesWhere(build, { true }) { m ->
-    m.origReturnType == "I" && m.body().map { it.ref() }.let { MAIN_UNREAD in it && FILTER_UNREAD in it }
+    m.origReturnType == "I" && m.body().map { it.ref() }.let { it.any(::isMainUnread) && FILTER_UNREAD in it }
 }
 
 private fun BytecodePatchContext.tabBuildOrNull(list: String): MutableMethod? =

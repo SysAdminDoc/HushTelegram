@@ -35,6 +35,9 @@ import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val FOLDER_TABS = "$EXTENSION_PACKAGE/misc/FolderTabs;"
 internal const val MAIN_UNREAD = "Lorg/telegram/messenger/MessagesStorage;->getMainUnreadCount()I"
+/** The field 13.2's R8 reads in place of the getMainUnreadCount() it inlined. */
+internal const val MAIN_UNREAD_FIELD = "Lorg/telegram/messenger/MessagesStorage;->mainUnreadCount:I"
+internal fun isMainUnread(ref: String?) = ref == MAIN_UNREAD || ref == MAIN_UNREAD_FIELD
 internal const val FILTER_UNREAD = "Lorg/telegram/messenger/MessagesController\$DialogFilter;->unreadCount:I"
 private const val FILTERS = "Lorg/telegram/messenger/MessagesController;->getDialogFilters()Ljava/util/ArrayList;"
 
@@ -236,11 +239,12 @@ internal fun BytecodePatchContext.resolveHideFolderCounters(): MutableMethod {
     requireStatusMethod("hideFolderCounters")
     controlHook(FOLDER_TABS, "countersHidden", listOf(), "Z")
     val found = mutableListOf<Pair<String, String>>()
-    forEachClassMentioning(Mention.allReferences(listOf(MAIN_UNREAD, FILTERS, FILTER_UNREAD))) { cls ->
+    val mainUnread = Mention.reference(MAIN_UNREAD) or Mention.reference(MAIN_UNREAD_FIELD)
+    forEachClassMentioning(Mention.allReferences(listOf(FILTERS, FILTER_UNREAD)) and mainUnread) { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.filter { m ->
             !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "I" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
-                m.controlBody().map { it.controlRef() }.let { refs -> MAIN_UNREAD in refs && FILTERS in refs && FILTER_UNREAD in refs }
+                m.controlBody().map { it.controlRef() }.let { refs -> refs.any(::isMainUnread) && FILTERS in refs && FILTER_UNREAD in refs }
         }.forEach { found += cls.type to ref(it) }
     }
     val (type, wanted) = found.controlSingle("folder tab counter")
