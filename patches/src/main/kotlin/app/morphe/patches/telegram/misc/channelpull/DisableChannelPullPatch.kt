@@ -37,6 +37,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origRef
 import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origInterfaces
 import app.morphe.util.names.origName
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origReturnType
@@ -231,9 +232,9 @@ internal fun BytecodePatchContext.resolveChannelPullSites(): ChannelPullSites {
         .distinct().one("pull drawable field", ::refuse)
     // The constructor has seven declared parameters, with wide dialog/topic identifiers.
     val drawableOwner = tgMutableClassDefBy(drawable.type)
-    shape(drawableOwner.interfaces.contains("Lorg/telegram/messenger/NotificationCenter\$NotificationCenterDelegate;") &&
+    shape(drawableOwner.origInterfaces.contains("Lorg/telegram/messenger/NotificationCenter\$NotificationCenterDelegate;") &&
         drawBody.any { it.field() == offset } && drawBody.any { it.call()?.let { call -> call.origDefiningClass == drawable.origType &&
-            call.origParameterTypes == listOf(CANVAS, list.type, "F", "F") && call.origReturnType == "V" } == true },
+            call.origParameterTypes == listOf(CANVAS, list.origType, "F", "F") && call.origReturnType == "V" } == true },
         "the accumulated offset isn't the drawn channel pull")
     instanceField(owner, drawable)
     val touch = listOwner.methods.filter { it.origName == "onTouchEvent" && it.origParameterTypes == listOf(MOTION_EVENT) && it.origReturnType == "Z" }.one("channel list touch", ::refuse)
