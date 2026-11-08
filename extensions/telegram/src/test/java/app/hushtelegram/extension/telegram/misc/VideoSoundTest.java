@@ -13,6 +13,7 @@ import app.hushtelegram.extension.shared.settings.PauseForTests;
 import app.hushtelegram.extension.shared.settings.SettingReadsForTests;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
+import android.view.KeyEvent;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -66,6 +67,49 @@ public class VideoSoundTest {
 
         Object next = new Object();
         assertTrue("the next video gets a new player", VideoSound.muted(next, false));
+    }
+
+    private static KeyEvent press(int key) { return new KeyEvent(KeyEvent.ACTION_DOWN, key); }
+
+    @Test public void aVolumeKeyInTheViewerGivesTheSilentVideoItsSound() {
+        Settings.VIDEO_STARTS_SILENT.save(true);
+        Object player = new Object();
+        assertTrue(VideoSound.muted(player, false));
+        // A held key, a key let go, another key or no video open leave it silent.
+        VideoSound.volumeKey(player, new KeyEvent(0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_VOLUME_UP, 1));
+        VideoSound.volumeKey(player, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_VOLUME_UP));
+        VideoSound.volumeKey(player, press(KeyEvent.KEYCODE_BACK));
+        VideoSound.volumeKey(null, press(KeyEvent.KEYCODE_VOLUME_UP));
+        VideoSound.volumeKey(player, null);
+        assertTrue(VideoSound.muted(player, false));
+        assertFalse(report(), report().contains(VideoSound.GIVEN_SOUND));
+
+        VideoSound.volumeKey(player, press(KeyEvent.KEYCODE_VOLUME_DOWN));
+        assertFalse("either volume key", VideoSound.muted(player, false));
+        assertFalse("still after it buffers", VideoSound.muted(player, false));
+        assertTrue(report(), report().contains(VideoSound.GIVEN_SOUND + " 1"));
+        assertTrue("the next video starts silent again", VideoSound.muted(new Object(), false));
+    }
+
+    @Test public void aVolumeKeyLeavesTelegramsOwnMuteAndVideosTheSwitchNeverSilenced() {
+        Object player = new Object();
+        assertFalse("switch off", VideoSound.muted(player, false));
+        VideoSound.volumeKey(player, press(KeyEvent.KEYCODE_VOLUME_UP));
+
+        Settings.VIDEO_STARTS_SILENT.save(true);
+        Object cast = new Object();
+        assertTrue(VideoSound.muted(cast, false));
+        assertTrue("a cast device or a video sent without sound", VideoSound.muted(cast, true));
+        VideoSound.volumeKey(cast, press(KeyEvent.KEYCODE_VOLUME_UP));
+        assertTrue(VideoSound.muted(cast, true));
+        // An older video's key doesn't reach the one open now.
+        Object old = new Object();
+        Object open = new Object();
+        assertTrue(VideoSound.muted(old, false));
+        assertTrue(VideoSound.muted(open, false));
+        VideoSound.volumeKey(old, press(KeyEvent.KEYCODE_VOLUME_UP));
+        assertTrue(VideoSound.muted(open, false));
+        assertFalse(report(), report().contains(VideoSound.GIVEN_SOUND));
     }
 
     @Test public void theEditorStartingAVideoAtNoVolumeDoesntCountAsSound() {

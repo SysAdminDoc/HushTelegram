@@ -16,16 +16,24 @@ import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.localcontrols.requireReachable
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.util.names.addInstructions
+import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origType
+import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val VIDEO_SOUND = "$EXTENSION_PACKAGE/misc/VideoSound;"
 internal const val SET_MUTE_HOOK = "$VIDEO_SOUND->setMute(Ljava/lang/Object;I)V"
 internal const val SET_VOLUME_HOOK = "$VIDEO_SOUND->setVolume(Ljava/lang/Object;F)V"
+internal const val VOLUME_KEY_HOOK = "$VIDEO_SOUND->volumeKey(Ljava/lang/Object;Landroid/view/KeyEvent;)V"
 private const val OBJECT = "Ljava/lang/Object;"
 private const val KEY_EVENT = "Landroid/view/KeyEvent;"
 private const val REPEAT_COUNT = "$KEY_EVENT->getRepeatCount()I"
@@ -45,12 +53,16 @@ internal class SoundHooks(
     val setMute: MethodReference?,
     val setVolume: MethodReference?,
     val missing: String?,
+    val key: KeyHook? = null,
 ) {
     private val calls = UprightHooks(edits, missing)
     val edits get() = calls.edits
 
     /** The same edits on copies, so a smali problem refuses before the app is touched. */
-    fun rehearse(context: BytecodePatchContext) = calls.rehearse(context)
+    fun rehearse(context: BytecodePatchContext) {
+        calls.rehearse(context)
+        key?.let { MutableMethod(ImmutableMethod.of(it.method(context))).addInstructions(0, it.smali) }
+    }
 
     /** The stubs first, then each call: the player and its value go to the extension in the same registers. */
     fun apply(context: BytecodePatchContext) {
@@ -66,8 +78,36 @@ internal class SoundHooks(
             invoke-virtual {p0, p1}, $volume
             return-void
         """)
+        // The calls go in by index first, then the key hook goes in ahead of them.
         calls.apply(context)
+        key!!.let { it.method(context).addInstructions(0, it.smali) }
     }
+}
+
+/**
+ * The viewer window's key dispatch gives its player full volume only for a video in the editor, so
+ * a chat video the switch kept silent never got its sound back from a volume key (#61). Before
+ * anything else, the dispatch hands the extension its viewer's player and the key: [viewer] read
+ * from the window in [window], then [player] read from the viewer, through local [scratch].
+ */
+internal class KeyHook(
+    val type: String,
+    val signature: String,
+    val viewer: FieldReference,
+    val player: FieldReference,
+    val scratch: Int,
+    val window: Int,
+    val event: Int,
+) {
+    val smali get() = """
+        iget-object v$scratch, v$window, ${viewer.smali()}
+        iget-object v$scratch, v$scratch, ${player.smali()}
+        invoke-static {v$scratch, v$event}, $VOLUME_KEY_HOOK
+    """
+
+    fun method(context: BytecodePatchContext) = context.tgMutableClassDefBy(type).methods.single { it.toString() == signature }
+
+    private fun FieldReference.smali() = "$definingClass->$name:$type"
 }
 
 /**
@@ -87,10 +127,11 @@ internal fun BytecodePatchContext.resolveVideoSound(): SoundHooks {
     controlHook(VIDEO_SOUND, "setVolume", listOf(OBJECT, "F"), "V")
     controlHook(VIDEO_SOUND, "stockSetMute", listOf(OBJECT, "Z"), "V")
     controlHook(VIDEO_SOUND, "stockSetVolume", listOf(OBJECT, "F"), "V")
+    controlHook(VIDEO_SOUND, "volumeKey", listOf(OBJECT, KEY_EVENT), "V")
     requireStatusMethod("videoStartsSilent")
     fun missing(why: String) = SoundHooks(emptyList(), null, null, why)
 
-    class Keys(val flag: String, val volume: MethodReference)
+    class Keys(val flag: String, val volume: MethodReference, val key: KeyHook?)
     val keys = mutableListOf<Keys>()
     val mention = Mention.type(PHOTO_VIEWER) and Mention.reference(REPEAT_COUNT) and Mention.literal(VOLUME_UP) and Mention.literal(VOLUME_DOWN)
     forEachClassMentioning(mention) { cls ->
@@ -104,11 +145,12 @@ internal fun BytecodePatchContext.resolveVideoSound(): SoundHooks {
             for (i in read + 1 until body.size) {
                 val call = body[i].method() ?: continue
                 if (body[i].opcode != Opcode.INVOKE_VIRTUAL || call.parameterTypes.map { it.toString() } != listOf("F") || call.returnType != "V") continue
-                if (playerField(body, i)?.type == call.definingClass) keys += Keys(body[read].controlRef()!!, call)
+                if (playerField(body, i)?.type == call.definingClass) keys += Keys(body[read].controlRef()!!, call, keyHook(cls.type, m, body, read, i))
             }
         }
     }
     if (keys.size != 1) return missing("the video viewer's volume keys no longer give its player full volume in one place (${keys.size})")
+    val key = keys.single().key ?: return missing("the video viewer's window no longer reads its player where a volume key can reach it")
     val flag = keys.single().flag
     val volume = keys.single().volume
     val player = volume.definingClass
@@ -157,7 +199,29 @@ internal fun BytecodePatchContext.resolveVideoSound(): SoundHooks {
     }
     val muteCalls = edits.count { it.hook == SET_MUTE_HOOK }
     if (muteCalls < 2) return missing("the video viewer mutes its player in too few places ($muteCalls)")
-    return SoundHooks(edits, mute, volume, null)
+    return SoundHooks(edits, mute, volume, null, key)
+}
+
+/**
+ * Where the window's dispatch [method] in [type] can hand its player to the extension: the viewer
+ * field the flag read at [read] got its viewer from, read from the window itself, and the player
+ * field the volume call at [call] reads. Null when the window and key registers don't fit a plain
+ * call, there's no local to read into, or something branches back to the start.
+ */
+private fun keyHook(type: String, method: Method, body: List<Instruction>, read: Int, call: Int): KeyHook? {
+    val registers = method.implementation?.registerCount ?: return null
+    val window = registers - 2
+    val event = registers - 1
+    if (window < 1 || event > 15) return null
+    val viewerRegister = body[read].namedRegisters().getOrNull(1) ?: return null
+    val viewer = (read - 1 downTo 0).map { body[it] }
+        .firstOrNull { it.namedRegisters().firstOrNull() == viewerRegister && it.opcode != Opcode.IF_EQZ && it.opcode != Opcode.IF_NEZ }
+        ?.takeIf { it.opcode == Opcode.IGET_OBJECT && it.namedRegisters().getOrNull(1) == window }
+        ?.controlField()?.takeIf { it.definingClass == type } ?: return null
+    val player = playerField(body, call) ?: return null
+    val flow = ControlFlow.of(method)
+    if (flow.normal.any { 0 in it } || flow.exceptional.any { 0 in it }) return null
+    return KeyHook(type, method.toString(), viewer, player, 0, window, event)
 }
 
 private fun Instruction.method() = (this as? ReferenceInstruction)?.reference as? MethodReference

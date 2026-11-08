@@ -15,6 +15,7 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
+import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
@@ -134,12 +135,35 @@ class KeepVideosMutedFixtureTest {
             val before = sound.edits.groupBy { it.signature }.mapValues { (signature, edits) ->
                 ImmutableMethod.of(context.tgMutableClassDefBy(edits.first().type).methods.single { it.toString() == signature })
             }
+            // The window's key dispatch also hands its player and the key to the extension first.
+            val key = sound.key!!
+            val window = before.getValue(key.signature)
+            val windowRegisters = window.implementation!!.registerCount
+            assertEquals("$name: the window's own register", windowRegisters - 2, key.window)
+            assertEquals("$name: the key's register", windowRegisters - 1, key.event)
+            assertTrue("$name: a local to read into", key.scratch < key.window)
+            assertEquals("$name: the viewer the window reads from itself", key.viewer, window.controlBody().first {
+                it.opcode == Opcode.IGET_OBJECT && it.namedRegisters()[1] == key.window && it.controlRef()!!.endsWith(":$PHOTO_VIEWER")
+            }.controlField())
+            assertEquals("$name: the viewer's player", mute.definingClass, key.player.type)
+            assertEquals("$name: a viewer field", key.viewer.type, key.player.definingClass)
             assertEquals("$name", emptyList<String>(), PatchLogCapture.warnings { keepVideosMutedPatch.execute(context) })
             for ((signature, old) in before) {
                 val here = sound.edits.filter { it.signature == signature }.associateBy { it.index }
                 val now = context.tgMutableClassDefBy(here.values.first().type).methods.single { it.toString() == signature }
                 val a = old.controlBody()
-                val b = now.controlBody()
+                val shift = if (signature == key.signature) 3 else 0
+                val head = now.controlBody().take(shift)
+                if (shift > 0) {
+                    assertEquals("$name: the key hook", listOf(Opcode.IGET_OBJECT, Opcode.IGET_OBJECT, Opcode.INVOKE_STATIC), head.map { it.opcode })
+                    assertEquals("$name: the window's viewer", listOf(key.scratch, key.window), head[0].namedRegisters())
+                    assertEquals(key.viewer, head[0].controlField())
+                    assertEquals("$name: the viewer's player", listOf(key.scratch, key.scratch), head[1].namedRegisters())
+                    assertEquals(key.player, head[1].controlField())
+                    assertEquals(VOLUME_KEY_HOOK, head[2].controlRef())
+                    assertEquals("$name: the player and the key", listOf(key.scratch, key.event), head[2].namedRegisters())
+                }
+                val b = now.controlBody().drop(shift)
                 assertEquals("$name: $signature keeps its length", a.size, b.size)
                 for (i in a.indices) {
                     val edit = here[i]
@@ -154,8 +178,10 @@ class KeepVideosMutedFixtureTest {
                 }
                 val x = ControlFlow.of(old)
                 val y = ControlFlow.of(now)
-                assertEquals("$name: $signature same paths", x.normal.toList(), y.normal.toList())
-                assertEquals("$name: $signature same handlers", x.exceptional.toList(), y.exceptional.toList())
+                fun Array<List<Int>>.past(shift: Int) = drop(shift).map { next -> next.map { it - shift } }
+                assertEquals("$name: $signature same paths", x.normal.toList(), y.normal.past(shift))
+                assertEquals("$name: $signature same handlers", x.exceptional.toList(), y.exceptional.past(shift))
+                assertEquals("$name: the key hook runs straight into Telegram's", (1..shift).map { listOf(it) }, y.normal.take(shift))
             }
             val stubs = context.tgMutableClassDefBy(VIDEO_SOUND).methods
             for ((stub, call) in listOf("stockSetMute" to mute, "stockSetVolume" to volume)) {
@@ -183,6 +209,8 @@ class KeepVideosMutedFixtureTest {
                 val m = c.tgMutableClassDefBy(edit.type).methods.single { it.toString() == edit.signature }
                 assertTrue("${build.name}: ${edit.signature} ${edit.index} stays Telegram's", m.controlBody()[edit.index].controlRef() != edit.hook)
             }
+            val window = c.tgMutableClassDefBy(keys.type).methods.single { it.toString() == keys.signature }
+            assertTrue("${build.name}: no key hook", window.controlBody().none { it.controlRef() == VOLUME_KEY_HOOK })
         }
     }
 
