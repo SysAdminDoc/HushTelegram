@@ -5,6 +5,7 @@
 package app.morphe.patches.telegram.misc.spoilers
 
 import app.morphe.util.names.origDescriptor
+import app.morphe.util.names.origString
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -201,7 +202,7 @@ internal fun BytecodePatchContext.resolveRevealSpoilers(): RevealSpoilersSite {
     controlShape(spanClass != null && AccessFlags.PUBLIC.isSet(spanClass.accessFlags) && spanMethod != null &&
         AccessFlags.PUBLIC.isSet(spanMethod.accessFlags) && !AccessFlags.STATIC.isSet(spanMethod.accessFlags),
         "the spoiler span check isn't public")
-    val handsOver = effect.methods.singleOrNull { key(it) == add.toString() }
+    val handsOver = effect.methods.singleOrNull { key(it) == add.origString() }
     controlShape(handsOver != null && handsOver.controlBody().any { it.controlRef() == key(textCovers) },
         "SpoilerEffect's spoiler cover no longer does its work in one place")
 
@@ -244,4 +245,4 @@ internal fun BytecodePatchContext.resolveRevealSpoilers(): RevealSpoilersSite {
 }
 
 private fun signature(method: Method) = "${method.origName}${method.origDescriptor}"
-private fun key(method: Method) = "${method.definingClass}->${signature(method)}"
+private fun key(method: Method) = "${method.origDefiningClass}->${signature(method)}"
