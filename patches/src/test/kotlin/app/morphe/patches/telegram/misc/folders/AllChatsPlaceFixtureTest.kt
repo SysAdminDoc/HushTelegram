@@ -23,9 +23,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import app.morphe.util.names.loadsInt
 import app.morphe.util.names.origRef
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
+import app.morphe.util.names.origType
 import app.morphe.util.names.tgMutableClassDefBy
 
 private val PLACE_HOSTS = ConcurrentHashMap<String, List<ClassDef>>()
@@ -33,13 +35,19 @@ private val PLACE_HOSTS = ConcurrentHashMap<String, List<ClassDef>>()
 private fun Method.placeBody(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Instruction.placeRef() = origRef()
 
-/** Every class a place hook goes in, with the classes the stubs and the drag resets read. */
+/**
+ * Every class a place hook goes in, with the classes the stubs and the drag resets read. 13.2 loads
+ * the drag id as a const and its merged drag callback casts the runners it was handed.
+ */
 internal fun allChatsPlaceHosts(build: File): List<ClassDef> = PLACE_HOSTS.getOrPut(build.path) {
     val sites = FixtureDex.classesWhere(build, { true }) { m ->
-        m.placeBody().any { (it.opcode == Opcode.NEW_INSTANCE && it.placeRef() == PLACE_REQUEST) || (it.opcode == Opcode.SGET && it.placeRef() == PLACE_DRAGGING) }
+        m.placeBody().any { (it.opcode == Opcode.NEW_INSTANCE && it.placeRef() == PLACE_REQUEST) || (it.loadsInt() && it.placeRef() == PLACE_DRAGGING) } ||
+            m.placeBody().let { body -> body.any { it.placeRef() == PLACE_SORT } && body.any { it.placeRef() == PLACE_FILTERS } }
     }
     val runners = sites.flatMap { cls ->
-        cls.fields.map { it.type } + cls.methods.flatMap { m -> m.placeBody().filter { it.opcode == Opcode.NEW_INSTANCE }.mapNotNull { it.placeRef() } }
+        cls.fields.map { it.type } + cls.methods.flatMap { m ->
+            m.placeBody().filter { it.opcode == Opcode.NEW_INSTANCE || it.opcode == Opcode.CHECK_CAST }.mapNotNull { it.placeRef() }
+        }
     }.filter { it.startsWith("Lorg/telegram/ui/") }
     val wanted = runners.toSet() + setOf(MESSAGES_CONTROLLER, LOCAL_FILTER, USER_CONFIG, PLACE_REQUEST,
         "Lorg/telegram/messenger/BaseController;", "Lorg/telegram/tgnet/ConnectionsManager;")
@@ -100,11 +108,14 @@ class AllChatsPlaceFixtureTest {
 
     @Test fun `a loaded list goes back in place before anyone hears of it and the locks skip All Chats`() {
         for (build in Fixtures.declaredBuilds()) {
-            val plan = contextOf(build).resolveAllChatsPlace()
+            val context = contextOf(build)
+            val plan = context.resolveAllChatsPlace()
             assertNull(build.name, plan.missing)
             val load = plan.sites.single { it.smali.contains(PLACE_LOADED) }
             val body = load.method.placeBody()
-            assertTrue(build.name, load.method.origName.startsWith("lambda\$processLoadedDialogFilters\$"))
+            // 13.2 inlined the load's lambda into the run() of its Runnable, which holds the controller.
+            assertTrue(build.name, load.method.origName.startsWith("lambda\$processLoadedDialogFilters\$") ||
+                (load.method.origName == "run" && context.tgMutableClassDefBy(load.method.definingClass).fields.any { it.origType == MESSAGES_CONTROLLER }))
             assertEquals(build.name, Opcode.INVOKE_STATIC, body[load.at - 1].opcode)
             assertEquals(build.name, "Ljava/util/Collections;->sort(Ljava/util/List;Ljava/util/Comparator;)V", body[load.at - 1].placeRef())
             val sorted = body[load.at - 1].namedRegisters().first()
@@ -112,7 +123,7 @@ class AllChatsPlaceFixtureTest {
             assertTrue(build.name, body.drop(load.at).any { it.placeRef()?.endsWith("NotificationCenter;->dialogFiltersUpdated:I") == true })
 
             val lock = plan.sites.single { it.smali.contains(PLACE_LOCK_ORDER) }
-            assertEquals(build.name, "lockFiltersInternal", lock.method.name)
+            assertEquals(build.name, "lockFiltersInternal", lock.method.origName)
             val locks = lock.method.placeBody()
             assertEquals(build.name, "Ljava/util/Collections;->reverse(Ljava/util/List;)V", locks[lock.at - 1].placeRef())
             assertTrue(build.name, lock.smali.contains("{v${locks[lock.at - 1].namedRegisters().single()}}"))

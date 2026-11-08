@@ -40,9 +40,9 @@ internal const val PLACE_SEND = "Lorg/telegram/tgnet/ConnectionsManager;->sendRe
 internal const val PLACE_PREMIUM = "$USER_CONFIG->isPremium()Z"
 internal const val PLACE_DRAGGING = "Lorg/telegram/messenger/R\$id;->dragging:I"
 internal const val PLACE_SETUP = "Lorg/telegram/ui/FiltersSetupActivity;"
-private const val PLACE_FILTERS = "$MESSAGES_CONTROLLER->dialogFilters:Ljava/util/ArrayList;"
+internal const val PLACE_FILTERS = "$MESSAGES_CONTROLLER->dialogFilters:Ljava/util/ArrayList;"
 private const val PLACE_IS_DEFAULT = "$LOCAL_FILTER->isDefault()Z"
-private const val PLACE_SORT = "Ljava/util/Collections;->sort(Ljava/util/List;Ljava/util/Comparator;)V"
+internal const val PLACE_SORT = "Ljava/util/Collections;->sort(Ljava/util/List;Ljava/util/Comparator;)V"
 private const val PLACE_REVERSE = "Ljava/util/Collections;->reverse(Ljava/util/List;)V"
 private const val PLACE_GET_CONFIG = "Lorg/telegram/messenger/BaseController;->getUserConfig()$USER_CONFIG"
 internal const val PLACE_KEEPS = "$ALL_CHATS_PLACE->keeps(I)Z"
@@ -129,6 +129,8 @@ private fun onlyFromAbove(method: Method, at: Int): Boolean = try {
 
 private fun Method.key() = toString()
 
+private fun Method.isRun() = origName == "run" && parameterTypes.isEmpty() && origReturnType == "V"
+
 /** The three places that tell the server the folder order. Each builds the request and sends it. */
 private fun BytecodePatchContext.orderSites(): List<AllChatsSite> {
     val found = mutableListOf<Pair<String, String>>()
@@ -176,28 +178,32 @@ private fun BytecodePatchContext.answerSite(method: MutableMethod, question: Int
 /**
  * The drag callbacks of the tab strip and of the Folders settings page. Each posts a reset once a
  * drag ends, inside a run() R8 merged with other lambdas, so the callback's cast finds its case. The
- * strip's callback also asks Premium itself where Telegram blocks Premium features.
+ * strip's callback also asks Premium itself where Telegram blocks Premium features. 13.2's R8 merged
+ * the two callbacks into one class that holds either page in an Object field and casts it, so a
+ * callback serves a page it has a field of or casts to, and posts one reset per page it serves.
  */
 private fun BytecodePatchContext.dragSites(strip: String): List<AllChatsSite> {
-    val callbacks = mutableListOf<String>()
+    val pages = listOf(strip, PLACE_SETUP)
+    val callbacks = mutableMapOf<String, List<String>>()
     forEachClassMentioning(Mention.reference(PLACE_DRAGGING)) { cls ->
-        if (cls.fields.any { it.origType == strip || it.origType == PLACE_SETUP } &&
-            cls.methods.any { m -> m.controlBody().any { it.loadsInt() && it.controlRef() == PLACE_DRAGGING } }) {
-            callbacks += cls.type
-        }
+        val bodies = cls.methods.map { it.controlBody() }
+        if (bodies.none { body -> body.any { it.loadsInt() && it.controlRef() == PLACE_DRAGGING } }) return@forEachClassMentioning
+        val served = pages.filter { page -> cls.fields.any { it.origType == page } ||
+            bodies.any { body -> body.any { it.opcode == Opcode.CHECK_CAST && it.controlRef() == page } } }
+        if (served.isNotEmpty()) callbacks[cls.type] = served
     }
-    placeFits(callbacks.size == 2, "the folders' drag callbacks changed")
-    return callbacks.flatMap { callback ->
+    placeFits(callbacks.values.flatten().sorted() == pages.sorted(), "the folders' drag callbacks changed")
+    return callbacks.flatMap { (callback, served) ->
         val cls = tgMutableClassDefBy(callback)
         val own = cls.methods.flatMap { method ->
             method.controlBody().withIndex().filter { (_, it) -> it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == PLACE_PREMIUM }
                 .map { (index, _) -> answerSite(method, index) }
         }
         val runners = (cls.fields.map { it.type } + cls.methods.flatMap { m ->
-            m.controlBody().filter { it.opcode == Opcode.NEW_INSTANCE }.mapNotNull { it.controlRef() }
-        }).distinct().filter { it.startsWith("Lorg/telegram/") && it != strip && it != PLACE_SETUP }
+            m.controlBody().filter { it.opcode == Opcode.NEW_INSTANCE || it.opcode == Opcode.CHECK_CAST }.mapNotNull { it.controlRef() }
+        }).distinct().filter { it.startsWith("Lorg/telegram/") && it !in pages }
         val resets = runners.mapNotNull { runner -> resetIn(runner, callback) }
-        placeFits(resets.size == 1, "the drag reset of $callback changed")
+        placeFits(resets.size == served.size, "the drag reset of $callback changed")
         own + resets
     }
 }
@@ -223,9 +229,20 @@ private fun BytecodePatchContext.firstCheckSite(): AllChatsSite {
     return answerSite(method, question)
 }
 
-/** The sort of a freshly loaded folder list, the one the list field is read for just before. */
+/**
+ * The sort of a freshly loaded folder list, the one the list field is read for just before. 13.2's
+ * R8 inlined the load's lambda into the run() of the Runnable that posts it, which holds the
+ * controller in a field, so that run() counts as the lambda.
+ */
 private fun BytecodePatchContext.loadSite(): AllChatsSite {
-    val sites = tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.filter { it.origName.startsWith("lambda\$processLoadedDialogFilters\$") }.mapNotNull { method ->
+    val runners = mutableListOf<String>()
+    forEachClassMentioning(Mention.reference(PLACE_FILTERS)) { cls ->
+        if (cls.origType != MESSAGES_CONTROLLER && cls.fields.any { it.origType == MESSAGES_CONTROLLER } &&
+            cls.methods.any { it.isRun() && it.controlBody().any { op -> op.controlRef() == PLACE_SORT } }) runners += cls.type
+    }
+    val candidates = tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.filter { it.origName.startsWith("lambda\$processLoadedDialogFilters\$") } +
+        runners.map { type -> tgMutableClassDefBy(type).methods.single { it.isRun() } }
+    val sites = candidates.mapNotNull { method ->
         val body = method.controlBody()
         body.indices.firstOrNull { index ->
             body[index].opcode == Opcode.INVOKE_STATIC && body[index].controlRef() == PLACE_SORT &&
