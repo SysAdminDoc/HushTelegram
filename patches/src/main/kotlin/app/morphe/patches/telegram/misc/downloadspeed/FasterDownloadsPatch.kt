@@ -23,6 +23,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.definitionReaches
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -125,12 +126,12 @@ internal fun BytecodePatchContext.resolveFasterDownloads(): FasterDownloadsPlan 
     val read = body.indices.filter { body[it].opcode == Opcode.IGET_BOOLEAN && body[it].controlRef() == EXPERIMENTAL_PARAMS }
         .controlSingle("the server's big-piece flag")
     val register = (body[read] as TwoRegisterInstruction).registerA
-    val small = body.indices.filter { body[it].piece(SMALL_PIECE) && body.getOrNull(it + 1)?.controlRef() == CHUNK_SIZE }
-        .controlSingle("the small-piece tier")
     val flow = ControlFlow.of(method)
     val branch = body.getOrNull(read + 1)
-    controlShape(branch?.opcode == Opcode.IF_EQZ && branch.namedRegisters() == listOf(register) &&
+    val small = flow.normal.getOrNull(read + 1).orEmpty().filter { it != read + 2 }.singleOrNull()
+    controlShape(branch?.opcode == Opcode.IF_EQZ && branch.namedRegisters() == listOf(register) && small != null &&
         flow.normal[read + 1].toSet() == setOf(read + 2, small), "the server's flag no longer picks the piece size")
+    controlShape(smallTier(body, flow, small!!), "the small-piece tier is missing or ambiguous")
     controlShape(flow.normal.indices.none { it != read && (read + 1) in flow.normal[it] },
         "something else jumps to the server's flag check")
     val fallback = body.getOrNull(read + 3)
@@ -145,3 +146,18 @@ internal fun BytecodePatchContext.resolveFasterDownloads(): FasterDownloadsPlan 
 }
 
 private fun Instruction.piece(size: Long) = (this as? WideLiteralInstruction)?.wideLiteral == size
+
+/**
+ * The tier the flag's no goes to starts by storing 128 KB as the piece size: loaded right there, or
+ * (13.2's R8 hoists it) from a register that holds that size on every path into the store. 13.2
+ * writes the register again further on, with a wide conversion of the size, after the store.
+ */
+internal fun smallTier(body: List<Instruction>, flow: ControlFlow, at: Int): Boolean {
+    if (body[at].piece(SMALL_PIECE) && body.getOrNull(at + 1)?.controlRef() == CHUNK_SIZE) return true
+    val store = body[at] as? TwoRegisterInstruction ?: return false
+    if (store.opcode != Opcode.IPUT || store.controlRef() != CHUNK_SIZE) return false
+    return body.indices.any { load ->
+        body[load].piece(SMALL_PIECE) && !body[load].opcode.setsWideRegister() &&
+            body[load].namedRegisters().firstOrNull() == store.registerA && flow.definitionReaches(load, at, store.registerA)
+    }
+}

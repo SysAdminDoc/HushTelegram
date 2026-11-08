@@ -46,6 +46,7 @@ import java.io.File
 import java.lang.ref.SoftReference
 import java.security.MessageDigest
 import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origString
 import app.morphe.util.names.origType
@@ -60,15 +61,13 @@ class NativeSettingsFixtureTest {
                 val input = plan.click.parameterRegisterNumber(if (change == "item clobber") 1 else 0)
                 plan.click.addInstruction(plan.clickIndex - 1, "const/16 v$input, 0x0")
             } else {
-                val tap = classes(context).flatMap { it.methods.toList() }.single { method ->
-                    method.origName == "run" && method.origReturnType == "V" && method.parameterTypes.size == 5 &&
-                        method.body().any { it.ref() == plan.click.toString() }
-                }
+                val tap = classes(context).flatMap { it.methods.toList() }.single { method -> tapsInto(method, plan.click) }
                 val mutable = context.tgMutableClassDefBy(tap.definingClass).methods.single { it.toString() == tap.toString() }
+                // 13.2's click callback casts its five arguments in order: item, view, position, then the two touch points.
                 when (change) {
-                    "item cast" -> mutable.replaceInstruction(1, "check-cast v1, Ljava/lang/String;")
+                    "item cast" -> mutable.replaceInstruction(0, "check-cast v1, Ljava/lang/String;")
                     "view cast" -> mutable.replaceInstruction(1, "check-cast v2, Ljava/lang/String;")
-                    else -> mutable.replaceInstruction(3, "invoke-virtual {v1}, Ljava/lang/Integer;->intValue()I")
+                    else -> mutable.replaceInstruction(2, "check-cast v3, Ljava/lang/Long;")
                 }
             }
             refusesUnchanged("$build $change", context)
@@ -81,18 +80,25 @@ class NativeSettingsFixtureTest {
             val plan = context.resolveNativeSettings()!!
             val originals = methods(context).associate { it.toString() to operations(it) }
             val stock = plan.builder.body()
-            val account = stock.indexOfFirst { it.ref() == "Lorg/telegram/messenger/R\$drawable;->settings_account:I" }
+            val account = plan.rowIndex
+            assertEquals(label("Account"), stock[account].ref())
             val stockFlow = ControlFlow.of(plan.builder)
-            val skips = stock.indices.filter { account in stockFlow.normal[it] && it != account - 1 }
+            // Play 13.2.1 loads a later row's constant between the Wallet row and Account, and the
+            // Wallet skips land on that constant; the divider's append jumps over it straight to Account.
+            val hoisted = stock[account - 1].opcode == Opcode.CONST
+            val landing = if (hoisted) account - 1 else account
+            val skips = stock.indices.filter { landing in stockFlow.normal[it] && it != landing - 1 }
             assertEquals("$build: the new Wallet row's time and availability skips", 2, skips.size)
-            assertEquals(APPEND, stock[account - 1].ref())
+            val divider = (landing - 1 downTo 0).first { stock[it].opcode !in setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32) }
+            assertEquals(APPEND, stock[divider].ref())
+            assertTrue("$build: the divider reaches Account", account in stockFlow.normal[landing - 1])
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { settingsPatch.execute(context) })
             val owner = context.tgMutableClassDefBy(plan.builder.definingClass)
             val row = owner.methods.single { it.origName == NATIVE_ROW_BRIDGE }
             val factory = plan.builder.body().mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
                 .first { it.parameterTypes.map { p -> p.toString() } == ROW_PARAMS }
             assertEquals(1, row.body().count { it.ref() == "$ENTRY->nativeSettingsTitle()Ljava/lang/String;" })
-            assertEquals(1, row.body().count { it.ref() == factory.toString() })
+            assertEquals(1, row.body().count { it.ref() == factory.origString() })
             assertEquals(1, row.body().count { it.ref() == APPEND })
             // The way's switch is asked first, and the row is only built when it answers yes.
             assertEquals("$ENTRY->nativeRowShown()Z", row.body().first().ref())
@@ -100,7 +106,7 @@ class NativeSettingsFixtureTest {
             assertEquals(Opcode.IF_EQZ, row.body()[2].opcode)
             assertEquals(NATIVE_ROW_ID, (row.body()[3] as NarrowLiteralInstruction).narrowLiteral)
             assertEquals(Opcode.RETURN_VOID, row.body().last().opcode)
-            assertEquals(listOf(0, 1, 2, 3, 4, 5, 6), row.body().single { it.ref() == factory.toString() }.namedRegisters())
+            assertEquals(listOf(0, 1, 2, 3, 4, 5, 6), row.body().single { it.ref() == factory.origString() }.namedRegisters())
             assertEquals(listOf(7, 0), row.body().single { it.ref() == APPEND }.namedRegisters())
             val builder = owner.methods.single { it.toString() == plan.builder.toString() }
             val bridge = row.toString()
@@ -110,10 +116,12 @@ class NativeSettingsFixtureTest {
             // above it and by both Wallet skips, so the new Wallet row shown or hidden it comes first.
             val call = builder.body().indexOfFirst { it.ref() == bridge }
             assertEquals("$build: the row goes in where Account began", account, call)
-            assertEquals("Lorg/telegram/messenger/R\$drawable;->settings_account:I", builder.body()[call + 1].ref())
+            assertEquals(label("Account"), builder.body()[call + 1].ref())
             val patchedFlow = ControlFlow.of(builder)
             assertEquals(listOf(call + 1), patchedFlow.normal[call])
-            for (from in skips + (account - 1)) assertTrue("$build: $from reaches the row", call in patchedFlow.normal[from])
+            for (from in skips) assertTrue("$build: $from reaches the row", landing in patchedFlow.normal[from])
+            if (hoisted) assertEquals("$build: the hoisted constant falls into the row", listOf(call), patchedFlow.normal[landing])
+            assertTrue("$build: the divider reaches the row", call in patchedFlow.normal[landing - 1])
             assertTrue("$build: nothing jumps past the row into Account",
                 builder.body().indices.none { call + 1 in patchedFlow.normal[it] && it != call })
             val click = owner.methods.single { it.toString() == plan.click.toString() }
@@ -126,7 +134,7 @@ class NativeSettingsFixtureTest {
             assertEquals(setOf(start + 2, start + 6), flow.normal[start + 1].toSet())
             assertEquals(Opcode.IF_NE, body[start + 1].opcode)
             assertEquals(Opcode.RETURN_VOID, body[start + 5].opcode)
-            for (id in (1..26).toList() + listOf(-1, 0, NATIVE_ROW_ID)) {
+            for (id in (1..27).toList() + listOf(-1, 0, NATIVE_ROW_ID)) {
                 val next = if (id == NATIVE_ROW_ID) start + 2 else start + 6
                 assertTrue(next in flow.normal[start + 1])
                 assertEquals(if (id == NATIVE_ROW_ID) Opcode.INVOKE_VIRTUAL else Opcode.CONST_STRING, body[next].opcode)
@@ -189,15 +197,14 @@ class NativeSettingsFixtureTest {
             val context = context(build)
             val plan = context.resolveNativeSettings()!!
             val body = plan.builder.body()
-            val at = body.indexOfFirst { it.ref() == label(title) }
-            val call = (at + 1 until at + 12).first { body[it].ref()?.contains("(IIIILjava/lang/CharSequence;") == true }
+            val (at, call, args) = row(body, title)
+            // 0x7f000001 names no resource: an icon or title id the row no longer loads.
             when (change) {
-                "icon" -> plan.builder.replaceInstruction(at - 1,
-                    "sget v" + body[at - 1].namedRegisters().single() + ", Lorg/telegram/messenger/R\$drawable;->settings_gift:I")
-                "title" -> plan.builder.replaceInstruction(at,
-                    "sget v" + body[at].namedRegisters().single() + ", Lorg/telegram/messenger/R\$string;->TelegramFAQ:I")
-                "identity" -> plan.builder.replaceInstruction(call - 3,
-                    "const/16 v" + body[call - 3].namedRegisters().single() + ", 0x7b")
+                "icon" -> lastWrite(body, args[3], call).let { icon ->
+                    plan.builder.replaceInstruction(icon, "const v${args[3]}, 0x7f000001")
+                }
+                "title" -> plan.builder.replaceInstruction(at, "const v" + body[at].namedRegisters().single() + ", 0x7f000001")
+                "identity" -> plan.builder.replaceInstruction(lastWrite(body, args[0], call), "const/16 v${args[0]}, 0x7b")
                 "factory" -> plan.builder.replaceInstruction(call, "nop")
                 else -> plan.builder.replaceInstruction(call + 2, "nop")
             }
@@ -210,9 +217,9 @@ class NativeSettingsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val context = context(build)
             val plan = context.resolveNativeSettings()!!
-            val value = plan.builder.body().indexOfFirst { it.ref() == label("Account") } + 6
-            val register = plan.builder.body()[value].namedRegisters().single()
-            plan.builder.replaceInstruction(value, "const/16 v$register, 0x1")
+            val body = plan.builder.body()
+            val (_, call, args) = row(body, "Account")
+            plan.builder.replaceInstruction(lastWrite(body, args[6], call), "const/16 v${args[6]}, 0x1")
             refusesUnchanged("$build account value", context)
         }
     }
@@ -228,14 +235,12 @@ class NativeSettingsFixtureTest {
             val plan = context.resolveNativeSettings()!!
             val owner = context.tgMutableClassDefBy(plan.builder.definingClass)
             val click = plan.click
-            val tap = classes(context).single { type -> type.methods.any { method ->
-                method.origName == "run" && method.origReturnType == "V" && method.body().any { it.ref() == click.toString() }
-            } }
-            val tapRun = tap.methods.single { it.origName == "run" && it.origReturnType == "V" && it.parameterTypes.size == 5 }
-            val fill = classes(context).single { type -> type.methods.any { method ->
-                method.origName == "run" && method.body().any { it.ref() == plan.builder.toString() }
-            } }
-            val fillRun = fill.methods.single { it.origName == "run" && it.origReturnType == "V" && it.parameterTypes.size == 2 }
+            // 13.2 renames both callbacks' methods; they're found by shape and by what they call.
+            val tap = classes(context).single { type -> type.methods.any { tapsInto(it, click) } }
+            val tapRun = tap.methods.single { tapsInto(it, click) }
+            val tapInit = tap.methods.single { it.origName == "<init>" }
+            val fill = classes(context).single { type -> type.type != owner.type && type.methods.any { fills(it, plan.builder) } }
+            val fillRun = fill.methods.single { fills(it, plan.builder) }
             val view = owner.methods.single { it.origName == "createView" }
             val rowFactory = plan.builder.body().mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
                 .first { it.parameterTypes.map { p -> p.toString() } == ROW_PARAMS }
@@ -251,14 +256,14 @@ class NativeSettingsFixtureTest {
                 "click switch" -> click.replaceInstruction(plan.clickIndex + 1, "nop")
                 "ordinary account click" -> {
                     val at = click.body().indexOfFirst { it.opcode == Opcode.NEW_INSTANCE && it.ref() == "Lorg/telegram/ui/UserInfoActivity;" }
-                    click.replaceInstruction(at, "new-instance v8, Lorg/telegram/ui/ThemeActivity;")
+                    // Into the stock register: 13.2's click has eight registers, so v8 isn't one of them.
+                    click.replaceInstruction(at, "new-instance v${click.body()[at].namedRegisters().single()}, Lorg/telegram/ui/ThemeActivity;")
                 }
-                "click callback target" -> tapRun.replaceInstruction(tapRun.body().indexOfFirst { it.ref() == click.toString() }, "nop")
-                "click capture" -> tap.methods.single { it.origName == "<init>" }.replaceInstruction(0, "nop")
+                "click callback target" -> tapRun.replaceInstruction(tapRun.body().indexOfFirst { it.ref() == click.origString() }, "nop")
+                "click capture" -> tapInit.replaceInstruction(0, "nop")
                 "fill dispatch" -> fillRun.replaceInstruction(1, "const/4 v1, 0x0")
-                "fill route" -> fillRun.replaceInstruction(fillRun.body().indexOfFirst { it.ref() == plan.builder.toString() }, "nop")
-                "view binding" -> view.replaceInstruction(view.body().indexOfFirst { instruction ->
-                    instruction.ref() == tap.methods.single { it.origName == "<init>" }.toString() }, "nop")
+                "fill route" -> fillRun.replaceInstruction(fillRun.body().indexOfFirst { it.ref() == plan.builder.origString() }, "nop")
+                "view binding" -> view.replaceInstruction(view.body().indexOfFirst { it.ref() == tapInit.origString() }, "nop")
                 "view owner" -> view.replaceInstruction(0, "const/4 v0, 0x0")
                 "parent access" -> context.tgMutableClassDefBy(owner.superclass!!).methods.single { it.origName == "getParentActivity" }
                     .accessFlags = AccessFlags.PRIVATE.value
@@ -271,7 +276,7 @@ class NativeSettingsFixtureTest {
                     factory.replaceInstruction(5, "iput-object v5, v0, $subtitle")
                     factory.replaceInstruction(6, "iput-object v6, v0, $text")
                 }
-                "renderer title" -> context.tgMutableClassDefBy(rowFactory.definingClass).methods.single { it.origName == "bindView" }
+                "renderer title" -> renderer(context.tgMutableClassDefBy(rowFactory.definingClass).methods, rowFactory.returnType)
                     .replaceInstruction(45, "nop")
                 else -> {
                     val entry = context.tgMutableClassDefBy(ENTRY)
@@ -323,7 +328,7 @@ class NativeSettingsFixtureTest {
             val plan = context.resolveNativeSettings()!!
             val factory = plan.builder.body().mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
                 .first { it.parameterTypes.map(CharSequence::toString) == ROW_PARAMS }
-            val renderer = context.tgMutableClassDefBy(factory.definingClass).methods.single { it.origName == "bindView" }
+            val renderer = renderer(context.tgMutableClassDefBy(factory.definingClass).methods, factory.returnType)
             val code = renderer.body()
             val title = code[10].namedRegisters().first()
             val subtitle = code[11].namedRegisters().first()
@@ -374,7 +379,7 @@ class NativeSettingsFixtureTest {
             val plan = context.resolveNativeSettings()!!
             val factory = plan.builder.body().mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
                 .first { it.parameterTypes.map(CharSequence::toString) == ROW_PARAMS }
-            val renderer = context.tgMutableClassDefBy(factory.definingClass).methods.single { it.origName == "bindView" }
+            val renderer = renderer(context.tgMutableClassDefBy(factory.definingClass).methods, factory.returnType)
             val cell = context.tgMutableClassDefBy(renderer.body()[5].ref()!!)
             val constructor = cell.methods.single { it.origName == "<init>" }
             val body = constructor.body()
@@ -448,6 +453,19 @@ class NativeSettingsFixtureTest {
             .map { listOf(it.value.opcode, it.value.ref(), it.value.namedRegisters(),
                 (it.value as? WideLiteralInstruction)?.wideLiteral) }
     private fun label(title: String) = "Lorg/telegram/messenger/R\$string;->Settings$title:I"
+    /** A row's title load, its factory call and the call's seven argument registers. */
+    private fun row(body: List<Instruction>, title: String): Triple<Int, Int, List<Int>> {
+        val at = body.indexOfFirst { it.ref() == label(title) }
+        val call = (at + 1 until minOf(body.size, at + 17)).first { body[it].ref()?.contains("(IIIILjava/lang/CharSequence;") == true }
+        return Triple(at, call, body[call].namedRegisters())
+    }
+    private fun lastWrite(body: List<Instruction>, register: Int, before: Int) = (before - 1 downTo 0).first {
+        body[it].opcode.setsRegister() && body[it].namedRegisters().firstOrNull() == register
+    }
+    private fun tapsInto(method: Method, click: Method) = method.returnType == "V" && method.parameterTypes.size == 5 &&
+        method.body().any { it.ref() == click.origString() }
+    private fun fills(method: Method, builder: Method) = method.returnType == "V" && method.parameterTypes.size == 2 &&
+        method.body().any { it.ref() == builder.origString() }
     private companion object {
         val TITLES = listOf("Account", "Chat", "PrivacySecurity", "Notifications", "Data", "Folders", "Devices", "PowerSaving", "Language")
         val ROW_PARAMS = List(4) { "I" } + List(3) { "Ljava/lang/CharSequence;" }
@@ -482,14 +500,13 @@ internal object NativeSettingsFixtures {
         val view = owner.methods.single { it.origName == "createView" }.implementation!!.instructions.toList()
         val list = view.indexOfFirst { instruction ->
             val call = (instruction as? ReferenceInstruction)?.reference as? MethodReference
-            call?.origName == "<init>" && call.parameterTypes.any { it.toString() ==
-                "Lorg/telegram/messenger/Utilities\$Callback5;" }
+            call?.origName == "<init>" && "Lorg/telegram/messenger/Utilities\$Callback5;" in call.origParameterTypes
         }
         check(list >= 8)
         val callbacks = view.subList(list - 8, list).filter { it.opcode == Opcode.NEW_INSTANCE }
             .map { (it as ReferenceInstruction).reference.origString() }
         val factoryClass = FixtureDex.classes(build, setOf(factory.definingClass)).getValue(factory.definingClass)
-        val cellType = factoryClass.methods.single { it.origName == "bindView" }.implementation!!.instructions
+        val cellType = renderer(factoryClass.methods, factory.returnType).implementation!!.instructions
             .first { it.opcode == Opcode.CHECK_CAST }.let { (it as ReferenceInstruction).reference.origString() }
         val cell = FixtureDex.classes(build, setOf(cellType)).getValue(cellType)
         val helperTypes = cell.methods.single { it.origName == "<init>" }.implementation!!.instructions.mapNotNull {
@@ -500,4 +517,10 @@ internal object NativeSettingsFixtures {
         (owners + listOf(factoryClass, cell) + FixtureDex.classes(build, (callbacks + helperTypes +
             listOf(owner.superclass!!, factory.returnType)).toSet()).values).also { cached[build] = SoftReference(it) }
     }
+}
+
+/** The row renderer: 13.2 renames bindView, so it's the instance method that takes a view, the row item and a flag. */
+internal fun <M : Method> renderer(methods: Iterable<M>, item: String): M = methods.single {
+    !AccessFlags.STATIC.isSet(it.accessFlags) && it.returnType == "V" &&
+        it.parameterTypes.take(3).map(CharSequence::toString) == listOf("Landroid/view/View;", item, "Z")
 }

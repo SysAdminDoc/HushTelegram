@@ -311,6 +311,8 @@ c Lorg/telegram/messenger/UserObject; Lorg/telegram/messenger/z10; Ljava/lang/Ob
 c Lorg/telegram/messenger/Utilities$Callback2; Lorg/telegram/messenger/b20; Ljava/lang/Object; Ljava/lang/Object;
 c Lorg/telegram/messenger/Utilities$Callback3; Lorg/telegram/messenger/d20; Ljava/lang/Object; Ljava/lang/Object;
 c Lorg/telegram/messenger/Utilities$Callback4; Lorg/telegram/messenger/f20; Ljava/lang/Object; Ljava/lang/Object;
+c Lorg/telegram/messenger/Utilities$Callback5; Lorg/telegram/messenger/g20; Ljava/lang/Object; Ljava/lang/Object;
+c Lorg/telegram/messenger/Utilities$Callback5Return; Lorg/telegram/messenger/h20; Ljava/lang/Object; Ljava/lang/Object;
 c Lorg/telegram/messenger/Utilities$Callback; Lorg/telegram/messenger/i20; Ljava/lang/Object; Ljava/lang/Object;
 c Lorg/telegram/messenger/Utilities$CallbackReturn; Lorg/telegram/messenger/j20; Ljava/lang/Object; Ljava/lang/Object;
 c Lorg/telegram/messenger/Utilities; Lorg/telegram/messenger/Utilities; Ljava/lang/Object; Ljava/lang/Object;
@@ -3399,7 +3401,7 @@ f Lorg/telegram/messenger/FileLoadOperation; cancelAfterNoStreamListeners Ljava/
 f Lorg/telegram/messenger/FileLoadOperation; cancelledRequestInfos Ljava/util/ArrayList; Lorg/telegram/messenger/h7; H0 Ljava/util/ArrayList;
 f Lorg/telegram/messenger/FileLoadOperation; caughtPremiumFloodWait Z Lorg/telegram/messenger/h7; l Z
 f Lorg/telegram/messenger/FileLoadOperation; cdnCheckBytes [B Lorg/telegram/messenger/h7; D0 [B
-f Lorg/telegram/messenger/FileLoadOperation; cdnChunkCheckSize I Lorg/telegram/messenger/h7; p I
+f Lorg/telegram/messenger/FileLoadOperation; maxDownloadRequestsBig I Lorg/telegram/messenger/h7; p I
 f Lorg/telegram/messenger/FileLoadOperation; cdnDatacenterId I Lorg/telegram/messenger/h7; y0 I
 f Lorg/telegram/messenger/FileLoadOperation; cdnHashes Ljava/util/HashMap; Lorg/telegram/messenger/h7; q0 Ljava/util/HashMap;
 f Lorg/telegram/messenger/FileLoadOperation; cdnIv [B Lorg/telegram/messenger/h7; v0 [B w
@@ -3413,7 +3415,7 @@ f Lorg/telegram/messenger/FileLoadOperation; currentType I Lorg/telegram/messeng
 f Lorg/telegram/messenger/FileLoadOperation; datacenterId I Lorg/telegram/messenger/h7; T I
 f Lorg/telegram/messenger/FileLoadOperation; delayedRequestInfos Ljava/util/ArrayList; Lorg/telegram/messenger/h7; I0 Ljava/util/ArrayList;
 f Lorg/telegram/messenger/FileLoadOperation; delegate Lorg/telegram/messenger/FileLoadOperation$FileLoadOperationDelegate; Lorg/telegram/messenger/h7; M Ljava/util/ArrayList;
-f Lorg/telegram/messenger/FileLoadOperation; downloadChunkSize I Lorg/telegram/messenger/h7; n I
+f Lorg/telegram/messenger/FileLoadOperation; downloadChunkSizeBig I Lorg/telegram/messenger/h7; n I
 f Lorg/telegram/messenger/FileLoadOperation; downloadConnectionsCount I Lorg/telegram/messenger/h7; g I
 f Lorg/telegram/messenger/FileLoadOperation; downloadedBytes J Lorg/telegram/messenger/h7; a0 J
 f Lorg/telegram/messenger/FileLoadOperation; encryptFile Z Lorg/telegram/messenger/h7; n0 Z
@@ -20831,3 +20833,15 @@ r string items_other 7f0fcfee
 r string messages_one 7f0fcfec
 r string messages_other 7f0fcfeb
 r string project_id 7f0f00c2
+# added by hand: DispatchQueue
+c Lorg/telegram/messenger/DispatchQueue; Lorg/telegram/messenger/n5; Ljava/lang/Thread; Ljava/lang/Thread;
+m Lorg/telegram/messenger/DispatchQueue; postRunnable (Ljava/lang/Runnable;)Z Lorg/telegram/messenger/n5; c (Ljava/lang/Runnable;)V
+m Lorg/telegram/messenger/DispatchQueue; postRunnable (Ljava/lang/Runnable;J)Z Lorg/telegram/messenger/n5; e (Ljava/lang/Runnable;J)Z
+m Lorg/telegram/messenger/DispatchQueue; cancelRunnable (Ljava/lang/Runnable;)V Lorg/telegram/messenger/n5; a (Ljava/lang/Runnable;)V
+m Lorg/telegram/messenger/DispatchQueue; getHandler ()Landroid/os/Handler; Lorg/telegram/messenger/n5; b ()Landroid/os/Handler;
+f Lorg/telegram/messenger/DispatchQueue; handler Landroid/os/Handler; Lorg/telegram/messenger/n5; a Landroid/os/Handler;
+f Lorg/telegram/messenger/DispatchQueue; syncLatch Ljava/util/concurrent/CountDownLatch; Lorg/telegram/messenger/n5; d Ljava/util/concurrent/CountDownLatch;
+# added by hand: deleteMessagesByPush, which R8 kept but gave reordered parameters (dialog, channel, ids)
+m Lorg/telegram/messenger/MessagesController; deleteMessagesByPush (JLjava/util/ArrayList;J)V Lorg/telegram/messenger/lp; c0 (JJLjava/util/ArrayList;)V
+# added by hand: createDeleteShowOnceTask, kept with the message ID first (writes task 102, then the chat, then the ID)
+m Lorg/telegram/messenger/MessagesController; createDeleteShowOnceTask (JI)J Lorg/telegram/messenger/lp; V (IJ)J

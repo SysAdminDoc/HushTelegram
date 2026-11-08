@@ -197,6 +197,11 @@ public final class KeepDeleted {
         }
     }
 
+    /** {@link #push(Object, long, ArrayList, long)} for a build whose push deletion takes the IDs last (13.2). */
+    public static boolean pushIdsLast(Object controller, long dialogId, long channelId, ArrayList<?> ids) {
+        return push(controller, dialogId, ids, channelId);
+    }
+
     /** Told which message the bubble is measuring, so the next time it formats can carry the label. */
     public static void measuring(Object message) {
         LABELLED.remove();

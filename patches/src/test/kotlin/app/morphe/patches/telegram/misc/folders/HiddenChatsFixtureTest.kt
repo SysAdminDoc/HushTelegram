@@ -583,7 +583,7 @@ class HiddenChatsFixtureTest {
             val hosts = launchFolderHosts(build).map { host ->
                 if (host.origType != USER_CONFIG) host
                 else ImmutableClassDef(host.type, host.accessFlags, host.superclass, host.interfaces, host.sourceFile,
-                    host.annotations, host.fields.filter { it.origName != "MAX_ACCOUNT_COUNT" }, host.methods)
+                    host.annotations, host.fields.filter { it.origName != "Instance" }, host.methods)
             }
             val plan = PatchContexts.of(ExtensionDex.classes() + hosts).resolveHiddenChats()
             assertTrue("${build.name}: ${plan.missing}", plan.missing.orEmpty().contains("$ACCOUNT_SLOTS isn't reachable"))

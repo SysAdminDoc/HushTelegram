@@ -42,7 +42,7 @@ final class KeepDeletedBridge implements KeepDeleted.Source, KeepEdits.Source {
         ClassLoader loader = KeepDeletedBridge.class.getClassLoader();
         Class<?> configs = Class.forName("org.telegram.messenger.UserConfig", true, loader);
         Class<?> controllers = Class.forName("org.telegram.messenger.MessagesController", true, loader);
-        int slots = HostNames.field(configs, "MAX_ACCOUNT_COUNT").getInt(null);
+        int slots = Accounts.slots(loader);
         Method config = method(configs, "getInstance", int.class);
         Method controller = method(controllers, "getInstance", int.class);
         ArrayList<KeepDeleted.Source> accounts = new ArrayList<>();
@@ -163,10 +163,19 @@ final class KeepDeletedBridge implements KeepDeleted.Source, KeepEdits.Source {
     }
 
     @Override public void stock(long dialogId, ArrayList<Integer> ids, long channelId) throws Exception {
-        Method delete = method(controller.getClass(), "deleteMessagesByPush", long.class, ArrayList.class, long.class);
+        Method delete;
+        boolean idsLast = false;
+        try {
+            delete = method(controller.getClass(), "deleteMessagesByPush", long.class, ArrayList.class, long.class);
+        } catch (NoSuchMethodException reordered) {
+            // R8 moved the IDs to the end in 13.2.
+            delete = method(controller.getClass(), "deleteMessagesByPush", long.class, long.class, ArrayList.class);
+            idsLast = true;
+        }
         KeepDeleted.STOCK.set(Boolean.TRUE);
         try {
-            delete.invoke(controller, dialogId, ids, channelId);
+            if (idsLast) delete.invoke(controller, dialogId, channelId, ids);
+            else delete.invoke(controller, dialogId, ids, channelId);
         } finally {
             KeepDeleted.STOCK.remove();
         }

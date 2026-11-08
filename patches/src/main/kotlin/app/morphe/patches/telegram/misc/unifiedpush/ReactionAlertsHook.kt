@@ -54,7 +54,6 @@ private const val QUEUE = "${TG}DispatchQueue;"
 private const val DATABASE = "Lorg/telegram/SQLite/SQLiteDatabase;"
 private const val CURSOR = "Lorg/telegram/SQLite/SQLiteCursor;"
 private const val BUFFER = "Lorg/telegram/tgnet/NativeByteBuffer;"
-private const val ACCOUNT = "${TG}AccountInstance;"
 private const val CONFIG = "${TG}UserConfig;"
 private const val CONNECTION = "Lorg/telegram/tgnet/ConnectionsManager;"
 private const val NOTIFIER = "${TG}NotificationsController;"
@@ -66,16 +65,15 @@ private class Call(val owner: String, val name: String, val parameters: String, 
 
 private val CALLS = listOf(
     Call(BASE, "getMessagesStorage", "", STORAGE),
-    Call(BASE, "getAccountInstance", "", ACCOUNT),
     Call(BASE, "getUserConfig", "", CONFIG),
     Call(BASE, "getConnectionsManager", "", CONNECTION),
     Call(BASE, "getNotificationsController", "", NOTIFIER),
-    Call(ACCOUNT, "getCurrentAccount", "", "I"),
     Call(CONFIG, "getClientUserId", "", "J"),
     Call(CONNECTION, "getCurrentTime", "", "I"),
     Call(STORAGE, "getStorageQueue", "", QUEUE),
     Call(STORAGE, "getDatabase", "", DATABASE),
-    Call(QUEUE, "postRunnable", "Ljava/lang/Runnable;", "Z"),
+    // R8 turned the queue's boolean answer into void in 13.2; the extension reads either.
+    Call(QUEUE, "postRunnable", "Ljava/lang/Runnable;", "V"),
     Call(DATABASE, "queryFinalized", "$TEXT[$ANY", CURSOR),
     Call(CURSOR, "next", "", "Z"),
     Call(CURSOR, "intValue", "I", "I"),
@@ -201,6 +199,10 @@ private fun BytecodePatchContext.reactionHook(): ReactionHook {
             it.origName == name && it.origType == type && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
         }, "$owner->$name is no longer a public field reaction notifications can read")
     }
+    // The account a controller serves: BaseController's own field, which the extension opens itself.
+    val base = tgClassDefByOrNull(BASE)
+    needed(base != null && base.fields.any { it.origName == "currentAccount" && it.type == "I" && !AccessFlags.STATIC.isSet(it.accessFlags) },
+        "$BASE->currentAccount is no longer the account a controller serves")
     val strings = tgClassDefByOrNull(STRINGS)
     needed(strings != null && LINES.all { line ->
         strings.fields.any { it.origName == line && it.origType == "I" && AccessFlags.STATIC.isSet(it.accessFlags) && AccessFlags.PUBLIC.isSet(it.accessFlags) }

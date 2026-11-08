@@ -42,7 +42,8 @@ final class ReactionAlertsBridge implements ReactionAlerts.Source {
         if (controller == null) throw new IllegalArgumentException("no message controller");
         Object storage = call(controller, "getMessagesStorage");
         if (storage == null) throw new IllegalStateException("no message storage");
-        int account = ((Number) call(call(controller, "getAccountInstance"), "getCurrentAccount")).intValue();
+        int account = Accounts.indexOf(controller);
+        if (account < 0) throw new IllegalStateException("the controller's account can't be read");
         return new ReactionAlertsBridge(controller, storage, account);
     }
 

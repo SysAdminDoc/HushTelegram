@@ -15,10 +15,14 @@ import app.morphe.util.ControlFlow
 import app.morphe.util.RegisterLiveness
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.namedRegisters
+import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ThreeRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.TelegramNames
 import app.morphe.util.names.origName
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.tgMutableClassDefByOrNull
@@ -140,7 +144,7 @@ private fun BytecodePatchContext.plan(): DownloadManagerPlan {
     need(scratch !in RegisterLiveness.of(pick).liveInto(join), "the register that held the queue array is still in use after it")
     need(chosen != self && chosen != scratch, "the queue registers overlap")
 
-    val check = queue!!.methods.filter { it.origName == "checkLoadingOperationInternal" && it.parameterTypes.isEmpty() && it.origReturnType == "V" && it.implementation != null }
+    val check = queueCounters(queue!!)
     need(check.size == 1, "FileLoaderPriorityQueue.checkLoadingOperationInternal is missing or ambiguous")
     val count = check.single()
     val countBody = count.controlBody()
@@ -156,4 +160,31 @@ private fun BytecodePatchContext.plan(): DownloadManagerPlan {
         countFlow.normal[big + 1].toSet() == setOf(countJoin), "the two limits no longer meet in one place")
     need(limit <= 15, "the limit register moved past the short instruction forms")
     return DownloadManagerPlan(pick, join, chosen, scratch, self, count, countJoin, limit, null)
+}
+
+/**
+ * Where the queue counts its running files: checkLoadingOperationInternal, or, where R8 folded that
+ * into the runnable checkLoadingOperations(boolean) runs (13.2), that runnable's run(), which reads
+ * the limits. A run() reading neither limit belongs to some other class R8 merged in, so it's skipped.
+ */
+internal fun BytecodePatchContext.queueCounters(queue: MutableClass): List<MutableMethod> {
+    val named = queue.methods.filter {
+        it.origName == "checkLoadingOperationInternal" && it.parameterTypes.isEmpty() && it.origReturnType == "V" && it.implementation != null
+    }
+    if (named.isNotEmpty()) return named
+    val runners = queue.methods.filter { method ->
+        method.origName == "checkLoadingOperations" && method.parameterTypes.map(CharSequence::toString) == listOf("Z") && method.implementation != null
+    }
+    val owners = runners.flatMap { method ->
+        method.controlBody().mapNotNull { ((it as? ReferenceInstruction)?.reference as? MethodReference) }
+            .filter { it.name == "run" && it.parameterTypes.isEmpty() && it.returnType == "V" && it.definingClass != "Ljava/lang/Runnable;" }
+            .map { it.definingClass }
+    }.toSet()
+    val names = TelegramNames.of(this)
+    return owners.mapNotNull { tgMutableClassDefByOrNull(names.origType(it)) }.flatMap { owner ->
+        owner.methods.filter { method ->
+            method.name == "run" && method.parameterTypes.isEmpty() && method.returnType == "V" && method.implementation != null &&
+                method.controlBody().any { it.controlRef() == SMALL_LIMIT || it.controlRef() == LARGE_LIMIT }
+        }
+    }
 }

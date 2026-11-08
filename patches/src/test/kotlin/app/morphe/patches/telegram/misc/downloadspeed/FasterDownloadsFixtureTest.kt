@@ -25,7 +25,9 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import java.io.File
@@ -33,16 +35,42 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import app.morphe.util.names.TelegramNames
 import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
+import app.morphe.util.names.origReturnType
 import app.morphe.util.names.tgMutableClassDefBy
+
+private val queueStarters = FixtureDex.ClassCensus()
+
+/**
+ * The classes beyond DownloadController that the Data Saver hold edits: MediaController, whose next
+ * song preload 13.2 folded canDownloadNextTrack into, and the class outside DownloadController that
+ * reads the download queue's keys and pairs, the storage runnable 13.2 folded processDownloadObjects into.
+ */
+internal fun dataSaverClasses(build: File): Collection<ClassDef> {
+    val player = FixtureDex.classes(build, setOf("Lorg/telegram/messenger/MediaController;")).values
+    assertEquals("${build.name}: MediaController", 1, player.size)
+    val starters = FixtureDex.classesWhere(build, queueStarters, { true }) { method ->
+        val table = TelegramNames.tableOf(method)
+        val keys = table.field(DOWNLOAD_CONTROLLER, "downloadQueueKeys", "Ljava/util/HashMap;")
+        val pairs = table.field(DOWNLOAD_CONTROLLER, "downloadQueuePairs", "Ljava/util/HashMap;")
+        val read = method.implementation?.instructions?.mapNotNull { instruction ->
+            ((instruction as? ReferenceInstruction)?.reference as? FieldReference)?.let { it.definingClass to it.name }
+        }?.toSet() ?: emptySet()
+        method.definingClass != keys.owner && (keys.owner to keys.name) in read && (pairs.owner to pairs.name) in read
+    }
+    return (player + starters).map(ImmutableClassDef::of)
+}
 
 /** FileLoadOperation.updateParams on both declared builds, where Telegram picks a download's piece size. */
 class FasterDownloadsFixtureTest {
     private fun context(build: File): BytecodePatchContext {
-        val host = FixtureDex.classes(build, setOf(LOAD_OPERATION, DOWNLOAD_CONTROLLER, UPLOAD_OPERATION, "Lorg/telegram/messenger/FileLoader;",
-            "Lorg/telegram/messenger/FileLoaderPriorityQueue;")).values.map(ImmutableClassDef::of)
+        val queue = "Lorg/telegram/messenger/FileLoaderPriorityQueue;"
+        val found = FixtureDex.classes(build, setOf(LOAD_OPERATION, DOWNLOAD_CONTROLLER, UPLOAD_OPERATION, "Lorg/telegram/messenger/FileLoader;", queue))
+        val host = found.values.map(ImmutableClassDef::of)
         assertEquals("${build.name}: FileLoadOperation, DownloadController, FileUploadOperation and the download queues", 5, host.size)
-        return PatchContexts.of(ExtensionDex.classes() + host)
+        return PatchContexts.of(ExtensionDex.classes() + host + queueRunnables(build, found.getValue(queue)) + dataSaverClasses(build))
     }
 
     private fun ClassDef.status(name: String) = methods.single { it.origName == name }.controlBody()
@@ -107,14 +135,21 @@ class FasterDownloadsFixtureTest {
 
             // A no still goes to the 128 KB tier, and forceSmallChunk still sends a yes there too.
             val flow = ControlFlow.of(plan.method)
-            val small = literal(after, SMALL_PIECE)
+            // 13.2 loads the 128 KB size once at the top and the tier only stores it.
+            val small = flow.normal[read + 3].single { it != read + 4 }
             val big = literal(after, BIG_PIECE)
             assertEquals("$name: the stock branch", setOf(read + 4, small), flow.normal[read + 3].toSet())
             assertEquals(FORCE_SMALL_CHUNK, after[read + 4].controlRef())
             assertEquals("$name: the fallback", setOf(read + 6, small), flow.normal[read + 5].toSet())
             assertEquals("$name: a yes reaches the 512 KB tier", read + 6, big)
             assertEquals(CHUNK_SIZE, after[big + 1].controlRef())
-            assertEquals(CHUNK_SIZE, after[small + 1].controlRef())
+            val store = if (after[small].opcode == Opcode.IPUT) small else small + 1
+            assertEquals(CHUNK_SIZE, after[store].controlRef())
+            val size = (after[store] as TwoRegisterInstruction).registerA
+            val load = after.indices.single { after[it].opcode.setsRegister() && after[it].namedRegisters().firstOrNull() == size &&
+                (after[it] as? WideLiteralInstruction)?.wideLiteral == SMALL_PIECE }
+            assertTrue("$name: the size is loaded before the store", load < store)
+            assertTrue("$name: the tier keeps its size", smallTier(after, flow, small))
 
             for (i in before.indices) {
                 val j = if (i <= read) i else i + 2
@@ -172,6 +207,13 @@ class FasterDownloadsFixtureTest {
                 method.replaceInstruction(body.indices.single { body[it].controlRef() == NETWORK_TYPE_READ },
                     "invoke-static {}, Lorg/telegram/messenger/ApplicationLoader;->isNetworkOnline()Z")
             },
+            "MediaController.checkIsNextMusicFileDownloaded(I)V no longer reads the network's download settings and loads the next song" to { context ->
+                val method = context.tgMutableClassDefBy("Lorg/telegram/messenger/MediaController;").methods
+                    .single { it.origName == "checkIsNextMusicFileDownloaded" }
+                val body = method.controlBody()
+                method.replaceInstruction(body.indices.single { body[it].controlRef() == NETWORK_TYPE_READ },
+                    "invoke-static {}, Lorg/telegram/messenger/ApplicationLoader;->isNetworkOnline()Z")
+            },
             // An answer the hold doesn't know would let automatic downloads around it.
             "DownloadController has answers the hold doesn't know (canPreloadChannelStories()Z)" to { context ->
                 val controller = context.tgMutableClassDefBy(DOWNLOAD_CONTROLLER)
@@ -207,10 +249,10 @@ class FasterDownloadsFixtureTest {
         .flatMap { type -> context.tgMutableClassDefBy(type).methods.filter { it.implementation != null }
             .map { m -> "$type->${m.name}" to m.controlBody().map { it.opcode to it.namedRegisters() } } }
 
-    /** Each DownloadController method by its signature, as opcodes, registers and references. */
+    /** Each DownloadController method by its source signature, as opcodes, registers and references. */
     private fun controllerSnapshot(context: BytecodePatchContext) = context.tgMutableClassDefBy(DOWNLOAD_CONTROLLER).methods
         .filter { it.implementation != null }
-        .associate { m -> "${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}" to m.controlBody().map { it.shape() } }
+        .associate { m -> "${m.origName}(${m.origParameterTypes.joinToString("")})${m.origReturnType}" to m.controlBody().map { it.shape() } }
 
     private fun checkAgain(context: BytecodePatchContext) = context.tgMutableClassDefBy(DATA_SAVER).methods.single { it.origName == "checkAgain" }.controlBody()
 
@@ -220,42 +262,58 @@ class FasterDownloadsFixtureTest {
             val context = context(build)
             val saver = context.resolveDataSaverDownloads()
             assertEquals("$name: nothing missing", null, saver.missing)
-            assertEquals("$name: every answer", AutoDownloadAnswer.entries.toSet(), saver.answers.keys)
-            val stock = saver.answers.mapValues { ImmutableMethod.of(it.value).controlBody() }
-            val signatures = saver.answers.entries.associate { (answer, _) -> answer.signature to answer }
+            assertEquals("$name: every answer", AutoDownloadAnswer.entries.toSet(), saver.holds.keys)
+            val stock = saver.holds.mapValues { ImmutableMethod.of(it.value.method).controlBody() }
+            val signatures = AutoDownloadAnswer.entries.filter { it.owner == DOWNLOAD_CONTROLLER }.map { it.signature }.toSet()
             val others = controllerSnapshot(context).filterKeys { it !in signatures }
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { fasterDownloadsPatch.execute(context) })
 
-            for ((answer, method) in saver.answers) {
-                val where = "$name: ${answer.signature}"
+            for ((answer, site) in saver.holds) {
+                val where = "$name: ${answer.label}"
+                val method = site.method
+                val at = site.at
                 val before = stock.getValue(answer)
                 val after = method.controlBody()
-                val void = answer.signature.endsWith("V")
-                val gate = if (void) 4 else 5
-                assertEquals(where, before.size + gate, after.size)
+                val gate = if (answer.void) 4 else 5
+                // Counted past the alignment nop a switch payload may gain or lose when code goes in.
+                assertEquals(where, before.count { it.opcode != Opcode.NOP } + gate, after.count { it.opcode != Opcode.NOP })
                 val call = if (answer == AutoDownloadAnswer.MASK) Opcode.INVOKE_STATIC_RANGE else Opcode.INVOKE_STATIC
-                assertEquals(where, listOf(call, Opcode.MOVE_RESULT, Opcode.IF_EQZ), after.subList(0, 3).map { it.opcode })
+                assertEquals(where, listOf(call, Opcode.MOVE_RESULT, Opcode.IF_EQZ), after.subList(at, at + 3).map { it.opcode })
                 if (answer == AutoDownloadAnswer.MASK) {
                     // The mask hands over its controller, so the runtime can run Telegram's check on it later.
                     // A range call, so p0 is reached past v15 too.
-                    assertEquals(where, "$DATA_SAVER->holdMask(Ljava/lang/Object;)Z", after[0].controlRef())
-                    assertEquals(where, listOf(method.implementation!!.registerCount - 1), after[0].namedRegisters())
+                    assertEquals(where, "$DATA_SAVER->holdMask(Ljava/lang/Object;)Z", after[at].controlRef())
+                    assertEquals(where, listOf(method.implementation!!.registerCount - 1), after[at].namedRegisters())
                 } else {
-                    assertEquals(where, "$DATA_SAVER->hold()Z", after[0].controlRef())
+                    assertEquals(where, "$DATA_SAVER->hold()Z", after[at].controlRef())
                 }
-                val held = after[1].namedRegisters()
-                assertEquals(where, held, after[2].namedRegisters())
-                if (void) {
-                    assertEquals(where, Opcode.RETURN_VOID, after[3].opcode)
+                val held = after[at + 1].namedRegisters()
+                assertEquals(where, held, after[at + 2].namedRegisters())
+                if (answer.void) {
+                    assertEquals(where, Opcode.RETURN_VOID, after[at + 3].opcode)
                 } else {
-                    assertEquals(where, Opcode.CONST_4, after[3].opcode)
-                    assertEquals(where, 0, (after[3] as NarrowLiteralInstruction).narrowLiteral)
-                    assertEquals(where, Opcode.RETURN, after[4].opcode)
-                    assertEquals(where, held, after[4].namedRegisters())
+                    assertEquals(where, Opcode.CONST_4, after[at + 3].opcode)
+                    assertEquals(where, 0, (after[at + 3] as NarrowLiteralInstruction).narrowLiteral)
+                    assertEquals(where, Opcode.RETURN, after[at + 4].opcode)
+                    assertEquals(where, held, after[at + 4].namedRegisters())
                 }
+                val flow = ControlFlow.of(method)
                 // A no carries on into Telegram's own answer, untouched.
-                assertEquals(where, setOf(3, gate), ControlFlow.of(method).normal[2].toSet())
-                for (i in before.indices) assertEquals("$where: stock $i", before[i].shape(), after[i + gate].shape())
+                assertEquals(where, setOf(at + 3, at + gate), flow.normal[at + 2].toSet())
+                assertEquals("$where: the stock code", before.filter { it.opcode != Opcode.NOP }.map { it.shape() },
+                    after.filterIndexed { i, _ -> i !in at until at + gate }.filter { it.opcode != Opcode.NOP }.map { it.shape() })
+                if (at > 0) {
+                    // The queue's case: its switch now lands on the hold, and the hold's register is
+                    // written by the case before anything reads it.
+                    assertTrue(where, (0 until at).any { at in flow.normal[it] && after[it].opcode in setOf(Opcode.PACKED_SWITCH, Opcode.SPARSE_SWITCH) })
+                    assertTrue(where, (0 until at + gate).none { at + gate in flow.normal[it] && it != at + 2 })
+                    assertEquals(where, QUEUE_KEYS, after.drop(at + gate).first { it.controlRef()?.startsWith(DOWNLOAD_CONTROLLER) == true &&
+                        it.opcode == Opcode.IGET_OBJECT }.controlRef())
+                    val stretch = after.subList(at + gate, after.size)
+                    val write = stretch.indexOfFirst { it.opcode.setsRegister() && it.namedRegisters().firstOrNull() == held.single() }
+                    val read = stretch.indexOfFirst { held.single() in it.namedRegisters() }
+                    assertEquals(where, write, read)
+                }
             }
             // The rest of DownloadController, its network change check among it, stays Telegram's.
             assertEquals(name, others, controllerSnapshot(context).filterKeys { it !in signatures })

@@ -602,11 +602,10 @@ public final class HiddenChats {
         @Override public void unpin(Object dialog) { HiddenChats.unpin(dialog); }
         @Override public int selectedAccount() { return HiddenChats.selectedAccount(); }
 
-        /** {@code UserConfig.MAX_ACCOUNT_COUNT}, read the way KeepDeletedBridge reads it. */
+        /** Telegram's account slots, read the way KeepDeletedBridge reads them. */
         @Override public int accountSlots() {
             try {
-                return HostNames.field(Class.forName("org.telegram.messenger.UserConfig", true, HiddenChats.class.getClassLoader()),
-                        "MAX_ACCOUNT_COUNT").getInt(null);
+                return Accounts.slots(HiddenChats.class.getClassLoader());
             } catch (ReflectiveOperationException missing) {
                 throw new IllegalStateException("no account slots", missing);
             }

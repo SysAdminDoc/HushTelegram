@@ -19,6 +19,7 @@ import org.junit.Test
 import app.morphe.util.names.origRef
 import app.morphe.util.names.origName
 import app.morphe.util.names.origString
+import app.morphe.util.names.origSuperclass
 import app.morphe.util.names.tgMutableClassDefBy
 
 /** The actual vendor application and launcher bodies, independent of the shortcut stand-ins. */
@@ -42,7 +43,7 @@ class SettingsVendorFixtureTest {
                 "Lorg/telegram/messenger/ApplicationLoader;", MAIN_ACTIVITY))
             assertEquals("${build.name}: exact native application and launcher classes", 3, hosts.size)
             assertEquals("${build.name}: native application base", "Lorg/telegram/messenger/ApplicationLoader;",
-                hosts.getValue(TELEGRAM_APPLICATION).superclass)
+                hosts.getValue(TELEGRAM_APPLICATION).origSuperclass)
             val context = PatchContexts.of(ExtensionDex.classes() + hosts.values)
             val application = context.declaredInHierarchy(TELEGRAM_APPLICATION, "onCreate")
             val create = context.declaredInHierarchy(MAIN_ACTIVITY, "onCreate", "Landroid/os/Bundle;")

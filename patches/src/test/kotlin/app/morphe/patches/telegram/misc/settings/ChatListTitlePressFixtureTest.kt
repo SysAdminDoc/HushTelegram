@@ -22,7 +22,6 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
-import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.junit.Assert.assertEquals
@@ -30,6 +29,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import app.morphe.util.names.origName
+import app.morphe.util.names.origRef
 
 /**
  * A long press on the "Telegram" title at the top of the chat list opens HushTelegram settings. The
@@ -147,8 +147,8 @@ class ChatListTitlePressFixtureTest {
     }
 
     private fun Method.body(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
-    private fun Instruction.reference(): String? = ((this as? ReferenceInstruction)?.reference as? Any)?.let {
-        if (it is FieldReference) "${it.definingClass}->${it.name}:${it.type}" else it.toString() }
+    // Source names, with R8's inlined resource ids read back as their R fields.
+    private fun Instruction.reference(): String? = origRef()
     private fun Instruction.callName(): String? = reference()?.takeIf {
         (this as? ReferenceInstruction)?.reference is MethodReference
     }

@@ -67,6 +67,21 @@ public final class Accounts {
         }
     }
 
+    /**
+     * How many account slots Telegram has: UserConfig.MAX_ACCOUNT_COUNT, or the length of its
+     * per-account table where R8 folded that constant away (13.2).
+     */
+    static int slots(ClassLoader loader) throws ReflectiveOperationException {
+        Class<?> config = Class.forName(USER_CONFIG, false, loader);
+        try {
+            return HostNames.field(config, "MAX_ACCOUNT_COUNT").getInt(null);
+        } catch (NoSuchFieldException folded) {
+            Field table = HostNames.declaredField(config, "Instance");
+            table.setAccessible(true);
+            return java.lang.reflect.Array.getLength(table.get(null));
+        }
+    }
+
     /** The accounts that are signed in, with a name for each. Empty when Telegram's tables can't be read. */
     public static List<Entry> signedIn() {
         List<Entry> found = new ArrayList<>();

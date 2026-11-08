@@ -18,9 +18,11 @@ import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import java.io.File
@@ -31,16 +33,30 @@ import org.junit.Test
 import app.morphe.util.names.origName
 import app.morphe.util.names.tgMutableClassDefBy
 
-/** The download queues on both declared builds: FileLoader.loadFileInternal and FileLoaderPriorityQueue.checkLoadingOperationInternal. */
+/**
+ * The classes whose run() a sliced download queue calls in place. Telegram 13.2 folded the queue's
+ * count into that runnable, which R8 named; an older build's queue counts in a method of its own.
+ */
+internal fun queueRunnables(build: File, queue: ClassDef): Collection<ClassDef> {
+    val runners = queue.methods.flatMap { it.implementation?.instructions?.toList() ?: emptyList() }
+        .mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
+        .filter { it.name == "run" && it.parameterTypes.isEmpty() && it.returnType == "V" && it.definingClass.startsWith("Lorg/telegram/messenger/") }
+        .map { it.definingClass }.toSet() - queue.type
+    return FixtureDex.classes(build, runners).values.map(ImmutableClassDef::of)
+}
+
+/** The download queues on both declared builds: FileLoader.loadFileInternal and where the queue counts its running files. */
 class DownloadManagerFixtureTest {
     private val loader = "Lorg/telegram/messenger/FileLoader;"
     private val queue = "Lorg/telegram/messenger/FileLoaderPriorityQueue;"
     private val largeQueues = "Lorg/telegram/messenger/FileLoader;->largeFilesQueue:[Lorg/telegram/messenger/FileLoaderPriorityQueue;"
 
     private fun context(build: File): BytecodePatchContext {
-        val host = FixtureDex.classes(build, setOf(LOAD_OPERATION, DOWNLOAD_CONTROLLER, loader, queue)).values.map(ImmutableClassDef::of)
-        assertEquals("${build.name}: the download classes", 4, host.size)
-        return PatchContexts.of(ExtensionDex.classes() + host)
+        // The whole patch runs, so the uploader and the Data Saver hold's classes come too.
+        val found = FixtureDex.classes(build, setOf(LOAD_OPERATION, DOWNLOAD_CONTROLLER, UPLOAD_OPERATION, loader, queue))
+        val host = found.values.map(ImmutableClassDef::of)
+        assertEquals("${build.name}: the download classes", 5, host.size)
+        return PatchContexts.of(ExtensionDex.classes() + host + queueRunnables(build, found.getValue(queue)) + dataSaverClasses(build))
     }
 
     private fun Instruction.shape() = listOf(opcode, namedRegisters(), origRef())
@@ -107,7 +123,7 @@ class DownloadManagerFixtureTest {
                 method.replaceInstruction(body.indices.first { body[it].controlRef() == largeQueues }, "nop")
             },
             "the queue's limit is no longer read once for each queue" to { context ->
-                val method = context.tgMutableClassDefBy(queue).methods.single { it.origName == "checkLoadingOperationInternal" }
+                val method = context.queueCounters(context.tgMutableClassDefBy(queue)).single()
                 val body = method.controlBody()
                 method.replaceInstruction(body.indices.first { body[it].controlRef()?.endsWith("->smallQueueMaxActiveOperations:I") == true }, "nop")
             },

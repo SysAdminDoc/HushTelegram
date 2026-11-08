@@ -72,8 +72,11 @@ internal const val DIALOG_ID = "Lorg/telegram/tgnet/TLRPC\$Dialog;->id:J"
 internal const val GET_DIALOGS = "$MESSAGES_CONTROLLER->getDialogs(I)$HIDDEN_LIST"
 internal const val PEER_NAME = "$MESSAGES_CONTROLLER->getPeerName(J)Ljava/lang/String;"
 internal const val GET_USER_CONFIG = "Lorg/telegram/messenger/BaseController;->getUserConfig()$USER_CONFIG"
-/** Read by reflection when the switch recounts every signed-in account's folder tabs. */
-internal const val ACCOUNT_SLOTS = "$USER_CONFIG->MAX_ACCOUNT_COUNT:I"
+/**
+ * Read by reflection when the switch recounts every signed-in account's folder tabs: its length is
+ * the account slot count, since R8 folded MAX_ACCOUNT_COUNT away in 13.2.
+ */
+internal const val ACCOUNT_SLOTS = "$USER_CONFIG->Instance:[$USER_CONFIG"
 private const val NOTIFICATIONS = "Lorg/telegram/messenger/NotificationCenter;"
 internal const val NOTIFICATIONS_INSTANCE = "$NOTIFICATIONS->getInstance(I)$NOTIFICATIONS"
 internal const val DIALOGS_NEED_RELOAD = "$NOTIFICATIONS->dialogsNeedReload:I"

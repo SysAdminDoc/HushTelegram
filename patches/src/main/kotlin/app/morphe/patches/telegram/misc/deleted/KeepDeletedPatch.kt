@@ -22,7 +22,6 @@ import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
-import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
@@ -30,23 +29,33 @@ import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.controlString
-import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
-import app.morphe.patches.telegram.misc.time.EDITED_MESSAGE
 import app.morphe.patches.telegram.misc.time.MESSAGE_TIME_SHOWN
 import app.morphe.patches.telegram.misc.time.messageTimePatch
+import app.morphe.patches.telegram.misc.time.timeFormatting
+import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.definitionReaches
+import app.morphe.util.namedRegisters
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference
+import com.android.tools.smali.dexlib2.iface.value.IntEncodedValue
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.TelegramNames
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origType
 import app.morphe.util.names.tgClassDefByOrNull
@@ -97,9 +106,10 @@ val keepDeletedPatch = bytecodePatch(
         val plan = resolveKeepDeleted()
         val timed = resolveKeepTimedMedia()
         // Assembled on copies first, so a refusal leaves the app untouched.
+        val measure = MutableMethod(ImmutableMethod.of(plan.measure))
         plan.applyTo(MutableMethod(ImmutableMethod.of(plan.updates)), MutableMethod(ImmutableMethod.of(plan.push)),
-            MutableMethod(ImmutableMethod.of(plan.measure)))
-        plan.applyTo(plan.updates, plan.push, plan.measure)
+            measure, if (plan.start === plan.measure) measure else MutableMethod(ImmutableMethod.of(plan.start)))
+        plan.applyTo(plan.updates, plan.push, plan.measure, plan.start)
         if (plan.red != null) {
             enableCapability("redDeletedLabel")
         } else {
@@ -155,7 +165,12 @@ internal class KeepDeletedPlan(
     val branches: List<DeleteBranch>,
     val push: MutableMethod,
     val pushResult: Int,
+    /** The push deletion takes the IDs last (13.2), so the hook is the overload that does too. */
+    val pushIdsLast: Boolean,
     val measure: MutableMethod,
+    /** Where the times are formatted and the extension is told the message: [measure] itself up to 13.1. */
+    val start: MutableMethod,
+    /** The register in [start] holding the message being measured. */
     val measuredMessage: Int,
     /** The bubble's own layout, which measures the time again when a message is marked. Not edited. */
     val layout: Method,
@@ -167,7 +182,7 @@ internal class KeepDeletedPlan(
     val editsMissing: String?,
 ) {
     /** Each hook goes in the method it was found for, the later one in the update loop first. */
-    fun applyTo(updates: MutableMethod, push: MutableMethod, measure: MutableMethod) {
+    fun applyTo(updates: MutableMethod, push: MutableMethod, measure: MutableMethod, start: MutableMethod) {
         for (hook in (branches + edits).sortedByDescending { it.insertAt }) {
             if (hook is EditHook) {
                 val a = hook.scratch
@@ -203,7 +218,7 @@ internal class KeepDeletedPlan(
         push.addInstructionsAtControlFlowLabel(
             0,
             """
-                invoke-static/range {v$first .. v${first + 5}}, $KEEP_DELETED->push(${OBJECT}J${LIST}J)Z
+                invoke-static/range {v$first .. v${first + 5}}, $KEEP_DELETED->${pushHook(pushIdsLast)}
                 move-result v$pushResult
                 if-eqz v$pushResult, :hush_stock
                 return-void
@@ -226,7 +241,7 @@ internal class KeepDeletedPlan(
                 )
             }
         }
-        measure.addInstructionsAtControlFlowLabel(
+        start.addInstructionsAtControlFlowLabel(
             0, "invoke-static/range {v$measuredMessage .. v$measuredMessage}, $KEEP_DELETED->measuring($OBJECT)V",
         )
     }
@@ -343,7 +358,16 @@ private fun redLabel(bubble: ClassDef, measure: Method): RedLabel {
 }
 
 /** What the extension reaches by name, with the class and member each one lives on. */
-private class Api(val owner: String, val name: String, val parameters: String, val result: String, val static: Boolean = false)
+private class Api(val owner: String, val name: String, val parameters: String, val result: String, val static: Boolean = false,
+    /** The same parameters as a build where R8 reordered them, which the extension also calls. */
+    val reordered: String? = null)
+
+/** The push deletion's parameters: dialog, IDs and channel, or with the IDs last where R8 moved them (13.2). */
+private val PUSH_PARAMETERS = listOf("J", LIST, "J")
+private val PUSH_PARAMETERS_IDS_LAST = listOf("J", "J", LIST)
+
+/** The extension's push answer taking the push deletion's own parameter order, after the controller. */
+internal fun pushHook(idsLast: Boolean) = if (idsLast) "pushIdsLast(${OBJECT}JJ$LIST)Z" else "push(${OBJECT}J${LIST}J)Z"
 
 private const val BASE_CONTROLLER = "Lorg/telegram/messenger/BaseController;"
 private const val STORAGE = "Lorg/telegram/messenger/MessagesStorage;"
@@ -365,14 +389,15 @@ private val API = listOf(
     Api(BASE_CONTROLLER, "getUserConfig", "", USER_CONFIG),
     Api(BASE_CONTROLLER, "getNotificationCenter", "", NOTIFICATION_CENTER),
     Api(NOTIFICATION_CENTER, "postNotificationName", "I[$OBJECT", "V"),
-    Api(MESSAGES_CONTROLLER, "deleteMessagesByPush", "J${LIST}J", "V"),
+    Api(MESSAGES_CONTROLLER, "deleteMessagesByPush", "J${LIST}J", "V", reordered = "JJ$LIST"),
     Api(MESSAGES_CONTROLLER, "getChat", "Ljava/lang/Long;", TL_CHAT),
     Api(MESSAGES_CONTROLLER, "getInstance", "I", MESSAGES_CONTROLLER, static = true),
     Api(STORAGE, "getChat", "J", TL_CHAT),
     Api(CHAT_OBJECT, "isChannel", TL_CHAT, "Z", static = true),
     Api(STORAGE, "getStorageQueue", "", QUEUE),
     Api(STORAGE, "getDatabase", "", DATABASE),
-    Api(QUEUE, "postRunnable", "Ljava/lang/Runnable;", "Z"),
+    // R8 turned the queue's boolean answer into void in 13.2; the extension reads either.
+    Api(QUEUE, "postRunnable", "Ljava/lang/Runnable;", "V"),
     Api(DATABASE, "queryFinalized", "Ljava/lang/String;[Ljava/lang/Object;", CURSOR),
     Api(CURSOR, "next", "", "Z"),
     Api(CURSOR, "longValue", "I", "J"),
@@ -403,9 +428,12 @@ private val FIELDS = listOf(
     Triple(MESSAGE_OBJECT, "forceUpdate", "Z"),
 )
 
-/** Telegram's numbers the extension reads by name: the account slots and the replaced messages event. */
+/**
+ * Telegram's statics the extension reads by name: the per-account table, whose length is the account
+ * slots since R8 folded MAX_ACCOUNT_COUNT away (13.2), and the replaced messages event.
+ */
 private val STATIC_FIELDS = listOf(
-    Triple(USER_CONFIG, "MAX_ACCOUNT_COUNT", "I"),
+    Triple(USER_CONFIG, "Instance", "[$USER_CONFIG"),
     Triple(NOTIFICATION_CENTER, "replaceMessagesObjects", "I"),
 )
 
@@ -422,7 +450,8 @@ private fun BytecodePatchContext.requireTelegramNames() {
     for (api in API) {
         val owner = tgClassDefByOrNull(api.owner)
         controlShape(owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags) && owner.methods.any {
-            it.origName == api.name && it.parameterTypes.joinToString("") == api.parameters && it.origReturnType == api.result &&
+            it.origName == api.name && it.parameterTypes.joinToString("").let { p -> p == api.parameters || p == api.reordered } &&
+                it.origReturnType == api.result &&
                 AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == api.static
         }, "${api.owner}->${api.name} is no longer a public method Keep deleted messages can call")
     }
@@ -455,6 +484,7 @@ internal fun BytecodePatchContext.resolveKeepDeleted(): KeepDeletedPlan {
     controlHook(KEEP_DELETED, "userUpdate", listOf(OBJECT, OBJECT), "Z")
     controlHook(KEEP_DELETED, "channelUpdate", listOf(OBJECT, OBJECT), "Z")
     controlHook(KEEP_DELETED, "push", listOf(OBJECT, "J", LIST, "J"), "Z")
+    controlHook(KEEP_DELETED, "pushIdsLast", listOf(OBJECT, "J", "J", LIST), "Z")
     controlHook(KEEP_DELETED, "measuring", listOf(OBJECT), "V")
     controlHook(KEEP_DELETED, "labelled", listOf("Ljava/lang/String;"), "Ljava/lang/String;")
     controlHook(KEEP_DELETED, "painted", listOf(CHAR_SEQUENCE), CHAR_SEQUENCE)
@@ -482,41 +512,141 @@ internal fun BytecodePatchContext.resolveKeepDeleted(): KeepDeletedPlan {
 
     // The push deletion, whose own entry the extension answers first.
     val push = controller.methods.filter { m ->
-        m.origName == "deleteMessagesByPush" && m.parameterTypes.map(CharSequence::toString) == listOf("J", LIST, "J") &&
+        m.origName == "deleteMessagesByPush" && m.parameterTypes.map(CharSequence::toString).let { it == PUSH_PARAMETERS || it == PUSH_PARAMETERS_IDS_LAST } &&
             m.origReturnType == "V" && !AccessFlags.STATIC.isSet(m.accessFlags)
     }.controlSingle("push deletion")
-    // It posts its work to the storage queue, and that work, a lambda of its own, marks the messages deleted.
-    val pushRefs = push.controlBody().mapNotNull { it.controlRef() }
-    controlShape("$STORAGE->getStorageQueue()$QUEUE" in pushRefs && "$QUEUE->postRunnable(Ljava/lang/Runnable;)Z" in pushRefs,
+    val idsLast = push.parameterTypes.map(CharSequence::toString) == PUSH_PARAMETERS_IDS_LAST
+    // It posts its work to the storage queue (13.2 reads the queue's field where the getter was), and
+    // that work marks the messages deleted: a lambda of the controller's, or the runnable's own run()
+    // where R8 moved the lambda's body into it (13.2).
+    val pushBody = push.controlBody()
+    val pushRefs = pushBody.mapNotNull { it.controlRef() }
+    controlShape(("$STORAGE->getStorageQueue()$QUEUE" in pushRefs || "$STORAGE->storageQueue:$QUEUE" in pushRefs) &&
+        ("$QUEUE->postRunnable(Ljava/lang/Runnable;)Z" in pushRefs || "$QUEUE->postRunnable(Ljava/lang/Runnable;)V" in pushRefs),
         "the push deletion no longer posts its work to the storage queue")
-    controlShape(controller.methods.any { m ->
-        m.origName.startsWith("lambda\$deleteMessagesByPush\$") && m.controlBody().any { it.controlRef()?.startsWith("$STORAGE->markMessagesAsDeleted(") == true }
-    }, "the push deletion no longer marks messages deleted in the storage")
+    val marks: (Method) -> Boolean = { m -> m.controlBody().any { it.controlRef()?.startsWith("$STORAGE->markMessagesAsDeleted(") == true } }
+    val names = TelegramNames.of(this)
+    val posted = pushBody.filter { it.opcode == Opcode.NEW_INSTANCE }
+        .mapNotNull { ((it as ReferenceInstruction).reference as? TypeReference)?.type }
+        .mapNotNull { tgClassDefByOrNull(names.origType(it)) }
+    controlShape(controller.methods.any { m -> m.origName.startsWith("lambda\$deleteMessagesByPush\$") && marks(m) } ||
+        posted.any { runnable -> runnable.methods.any { it.name == "run" && it.parameterTypes.isEmpty() && marks(it) } },
+        "the push deletion no longer marks messages deleted in the storage")
     controlShape(push.localRegisterCount() >= 1, "the push deletion has no register for the answer")
     controlShape(ControlFlow.of(push).normal.none { 0 in it }, "something jumps back to the start of the push deletion")
     val pushResult = push.freeLocalsAt(PATCH, 0, 1, highest = 255).single()
 
-    // The bubble's time measuring, found by what Message times with seconds left in it.
-    val measures = mutableListOf<Pair<String, String>>()
-    forEachClassMentioning(Mention.allReferences(listOf(EDITED_MESSAGE, MESSAGE_TIME_SHOWN))) { cls ->
-        if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
-        cls.methods.forEach { m ->
-            if (m.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE_OBJECT) && m.origReturnType == "V" &&
-                !AccessFlags.STATIC.isSet(m.accessFlags)) {
-                val refs = m.controlBody().mapNotNull { it.controlRef() }.toSet()
-                if (EDITED_MESSAGE in refs && MESSAGE_TIME_SHOWN in refs) measures += cls.type to m.name
-            }
-        }
-    }
-    val (type, name) = measures.controlSingle("message time measuring")
+    // The bubble's time formatting, found by what Message times with seconds left in it.
+    val (type, format) = timeFormatting(MESSAGE_TIME_SHOWN)
     val bubble = tgMutableClassDefBy(type)
-    val measure = bubble.methods.single { it.origName == name && it.parameterTypes.size == 1 &&
-        it.parameterTypes[0].toString() == MESSAGE_OBJECT && it.origReturnType == "V" }
-    controlShape(ControlFlow.of(measure).normal.none { 0 in it }, "something jumps back to the start of the message time measuring")
+    val (measure, message) = if (format.origParameterTypes == listOf(MESSAGE_OBJECT) && format.origReturnType == "V" &&
+        !AccessFlags.STATIC.isSet(format.accessFlags)) {
+        format to format.parameterRegisterNumber(0)
+    } else {
+        measuringAround(bubble, format)
+    }
+    controlShape(ControlFlow.of(format).normal.none { 0 in it }, "something jumps back to the start of the message time formatting")
     val layout = requireRedraw(bubble, measure)
     val (red, redMissing) = resolveRedLabel(bubble, measure)
-    return KeepDeletedPlan(updates, branches, push, pushResult, measure, measure.parameterRegisterNumber(0), layout, red, redMissing,
+    return KeepDeletedPlan(updates, branches, push, pushResult, idsLast, measure, format, message, layout, red, redMissing,
         edits, editsMissing)
+}
+
+/**
+ * 13.2: the bubble's measuring, `(MessageObject)V`, calls [format] once and hands it its own message
+ * as one of two. A message preview elsewhere calls [format] too, so the extension is told the message
+ * at the start of [format], from that parameter, and never keeps a measured bubble's message for it.
+ *
+ * @return the measuring, and the register in [format] that holds the message being measured
+ */
+private fun measuringAround(bubble: MutableClass, format: MutableMethod): Pair<MutableMethod, Int> {
+    val calls: (Instruction) -> Boolean = { instruction ->
+        ((instruction as? ReferenceInstruction)?.reference as? MethodReference)?.let {
+            it.definingClass == format.definingClass && it.name == format.name && it.returnType == format.returnType &&
+                it.parameterTypes.map(CharSequence::toString) == format.parameterTypes.map(CharSequence::toString)
+        } == true
+    }
+    val measure = bubble.methods.filter { m ->
+        m.origParameterTypes == listOf(MESSAGE_OBJECT) && m.origReturnType == "V" && !AccessFlags.STATIC.isSet(m.accessFlags) &&
+            m.controlBody().any(calls)
+    }.controlSingle("the message time measuring")
+    val body = measure.controlBody()
+    val call = body.indices.filter { calls(body[it]) }.controlSingle("the measuring's time formatting")
+    val arguments = body[call].namedRegisters()
+    val own = measure.parameterRegisterNumber(0)
+    controlShape(body.none { it.opcode.setsRegister() && it.namedRegisters().firstOrNull().let { r -> r == own ||
+        it.opcode.setsWideRegister() && r != null && r + 1 == own } }, "the message time measuring writes over its message")
+    val flow = ControlFlow.of(measure)
+    // The register a parameter goes in, counting `this` and the wide parameters in front of it.
+    val static = AccessFlags.STATIC.isSet(format.accessFlags)
+    val types = format.parameterTypes.map(CharSequence::toString)
+    fun slot(index: Int) = (if (static) 0 else 1) + types.take(index).sumOf { if (it == "J" || it == "D") 2 else 1 }
+    val holder = types.indices.filter { index ->
+        val register = arguments.getOrNull(slot(index))
+        format.origParameterTypes[index] == MESSAGE_OBJECT && register != null && (register == own || body.indices.any { at ->
+            body[at].opcode in MOVE_OBJECTS && body[at].namedRegisters() == listOf(register, own) &&
+                flow.definitionReaches(at, call, register)
+        })
+    }.controlSingle("the measured message in the time formatting")
+    return measure to format.parameterRegisterNumber(holder)
+}
+
+/** A message's chat, read off the message (13.1) or, as 13.2 inlined it, off its stored message. */
+internal val DIALOG_ID_READS = setOf("$MESSAGE_OBJECT->getDialogId()J", "$MESSAGE_OBJECT->getDialogId(Lorg/telegram/tgnet/TLRPC\$Message;)J")
+
+private val CONSTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST, Opcode.CONST_HIGH16)
+private val ENDS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32, Opcode.THROW, Opcode.RETURN_VOID, Opcode.RETURN,
+    Opcode.RETURN_WIDE, Opcode.RETURN_OBJECT)
+
+/**
+ * The value of NotificationCenter's event [name] where it's a constant, which R8 reads in place of
+ * the field on 13.2; null where the event is counted out at startup.
+ */
+internal fun BytecodePatchContext.constantEvent(name: String): Int? =
+    tgClassDefByOrNull(NOTIFICATION_CENTER)?.fields?.singleOrNull { it.origName == name }
+        ?.takeIf { AccessFlags.STATIC.isSet(it.accessFlags) && AccessFlags.FINAL.isSet(it.accessFlags) }
+        ?.let { (it.initialValue as? IntEncodedValue)?.value }
+
+/**
+ * Where Telegram's storage posts the replaced messages event after replacing a stored message, as
+ * the method and the post's index, or null. 13.1 posts it from a lambda of the storage's. 13.2 moved
+ * that body into a merged runnable that replaceMessageIfExists queues, which posts another to the UI
+ * thread, and that one posts the event.
+ */
+internal fun BytecodePatchContext.storageReplacedPost(): Pair<Method, Int>? {
+    val storage = tgClassDefByOrNull(STORAGE) ?: return null
+    val event = constantEvent("replaceMessagesObjects")
+    val names = TelegramNames.of(this)
+    val candidates = storage.methods.filter { it.origName.startsWith(REPLACE_IF_EXISTS) && !AccessFlags.STATIC.isSet(it.accessFlags) }
+        .toMutableList<Method>()
+    var from: List<Method> = storage.methods.filter { it.origName == "replaceMessageIfExists" }
+    repeat(2) {
+        from = from.flatMap { m -> m.controlBody().filter { it.opcode == Opcode.NEW_INSTANCE } }
+            .mapNotNull { ((it as ReferenceInstruction).reference as? TypeReference)?.type }.distinct()
+            .mapNotNull { tgClassDefByOrNull(names.origType(it)) }
+            .flatMap { runnable -> runnable.methods.filter { it.name == "run" && it.parameterTypes.isEmpty() && it.returnType == "V" } }
+        candidates += from
+    }
+    for (method in candidates) {
+        val body = method.controlBody()
+        body.indices.firstOrNull { postsReplaced(body, it, event) }?.let { return method to it }
+    }
+    return null
+}
+
+/**
+ * Whether [body] posts the replaced messages event at [post]: the event, the field or its
+ * constant, is what the post is handed, and the chat is read in the same straight stretch.
+ */
+private fun postsReplaced(body: List<Instruction>, post: Int, event: Int?): Boolean {
+    if (body[post].controlRef() != POST_NOTIFICATION) return false
+    val id = body[post].namedRegisters().getOrNull(1) ?: return false
+    val start = (post - 1 downTo 0).firstOrNull { body[it].opcode in ENDS }?.plus(1) ?: 0
+    val stretch = start until post
+    val set = stretch.lastOrNull { body[it].opcode.setsRegister() && body[it].namedRegisters().firstOrNull() == id } ?: return false
+    val loaded = body[set].let { it.controlRef() == REPLACE_MESSAGES ||
+        (event != null && it.opcode in CONSTS && (it as NarrowLiteralInstruction).narrowLiteral == event) }
+    return loaded && stretch.any { body[it].controlRef() in DIALOG_ID_READS }
 }
 
 /**
@@ -529,15 +659,10 @@ internal fun BytecodePatchContext.resolveKeepDeleted(): KeepDeletedPlan {
  * @return the bubble's layout
  */
 internal fun BytecodePatchContext.requireRedraw(bubble: ClassDef, measure: Method): Method {
-    controlShape(tgClassDefByOrNull(STORAGE)?.methods?.any { m ->
-        m.origName.startsWith(REPLACE_IF_EXISTS) && !AccessFlags.STATIC.isSet(m.accessFlags) &&
-            m.controlBody().mapNotNull { it.controlRef() }.let { refs ->
-                REPLACE_MESSAGES in refs && "$MESSAGE_OBJECT->getDialogId()J" in refs && POST_NOTIFICATION in refs
-            }
-    } == true, "Telegram's storage no longer tells the open chat that a message was replaced")
+    controlShape(storageReplacedPost() != null, "Telegram's storage no longer tells the open chat that a message was replaced")
     val measured = "${measure.definingClass}->${measure.name}($MESSAGE_OBJECT)V"
     return bubble.methods.filter { m ->
-        m.parameterTypes.map(CharSequence::toString).take(2) == listOf(MESSAGE_OBJECT, GROUPED_MESSAGES) && m.origReturnType == "V" &&
+        m.origParameterTypes.take(2) == listOf(MESSAGE_OBJECT, GROUPED_MESSAGES) && m.origReturnType == "V" &&
             !AccessFlags.STATIC.isSet(m.accessFlags) && m.controlBody().let { body ->
                 body.any { it.opcode == Opcode.IGET_BOOLEAN && it.controlRef() == FORCE_UPDATE } &&
                     body.any { it.opcode == Opcode.IPUT_BOOLEAN && it.controlRef() == FORCE_UPDATE } &&

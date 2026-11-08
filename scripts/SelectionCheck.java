@@ -224,7 +224,9 @@ public final class SelectionCheck {
                              String status, String owner, String... methods) {
         boolean installed = Boolean.TRUE.equals(flags.get(status));
         for (String method : methods) {
-            int count = calls.getOrDefault(OWN + "telegram/" + owner + ";->" + method, 0);
+            // "a|b": either hook counts, for a hook whose name depends on the build.
+            int count = 0;
+            for (String name : method.split("[|]")) count += calls.getOrDefault(OWN + "telegram/" + owner + ";->" + name, 0);
             require(installed ? count > 0 : count == 0);
         }
     }
@@ -376,7 +378,7 @@ public final class SelectionCheck {
         hook(calls, flags, "hideBlockedInGroups", "misc/BlockedSenders", "type", "hideReply");
         hook(calls, flags, "hideFeaturesAndInvite", "misc/FeaturesInvite", "addFeaturesRow", "listShown");
         hook(calls, flags, "messageMenuRepeat", "misc/MessageMenu", "fill");
-        hook(calls, flags, "keepDeleted", "misc/KeepDeleted", "userUpdate", "channelUpdate", "push", "measuring");
+        hook(calls, flags, "keepDeleted", "misc/KeepDeleted", "userUpdate", "channelUpdate", "push|pushIdsLast", "measuring");
         hook(calls, flags, "redDeletedLabel", "misc/KeepDeleted", "painted");
         hook(calls, flags, "askBeforeSending", "misc/SendConfirm", "sticker", "gif", "voice", "call");
         hook(calls, flags, "outsideTranslate", "misc/OutsideTranslate", "show", "fill", "chosen", "headerMenu", "headerClick");
