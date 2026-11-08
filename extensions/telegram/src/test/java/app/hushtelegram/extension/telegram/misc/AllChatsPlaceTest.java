@@ -27,6 +27,8 @@ import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.PauseForTests;
+import app.hushtelegram.extension.telegram.settings.PatchFamily;
+import app.hushtelegram.extension.telegram.settings.PatchFamilyForTests;
 import app.hushtelegram.extension.telegram.settings.Settings;
 
 @RunWith(RobolectricTestRunner.class)
@@ -99,6 +101,23 @@ public class AllChatsPlaceTest {
 
         assertEquals("the server still has it first", request(0, 11, 12), sent);
         assertEquals(folders(11, 0, 12), afterRestart(ME));
+    }
+
+    @Test public void folderByChatTypeOrdersGoOutAllChatsFirstToo() {
+        try {
+            PatchFamilyForTests.inBuild(PatchFamily.HIDE_FOLDER_COUNTERS);
+            List<Integer> sent = request(11, 0, 12, 21);
+            ChatTypeFolders.outgoingOrder(sent);
+            assertEquals("the server gets All Chats first", request(0, 11, 12, 21), sent);
+            assertEquals("and the place stays on the phone", folders(11, 0, 12), afterRestart(ME));
+
+            PatchFamilyForTests.inBuild();
+            List<Integer> without = request(11, 0, 12);
+            ChatTypeFolders.outgoingOrder(without);
+            assertEquals("without the family the request goes as built", request(11, 0, 12), without);
+        } finally {
+            PatchFamilyForTests.reset();
+        }
     }
 
     @Test public void offAndEveryPauseAreStockAndThePlaceWaits() {

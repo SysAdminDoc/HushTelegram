@@ -504,6 +504,7 @@ private fun BytecodePatchContext.writeChatTypeFolderStubs(site: ChatTypeFoldersS
         add-int/lit8 v4, v4, 0x1
         goto :hush_next
         :hush_send
+        invoke-static {v0}, $CHAT_TYPE_FOLDERS->outgoingOrder(Ljava/lang/Object;)V
         invoke-static {p0}, $CONNECTIONS_INSTANCE
         move-result-object v2
         check-cast p1, $REQUEST_DELEGATE
@@ -576,6 +577,7 @@ internal fun BytecodePatchContext.resolveChatTypeFolders(): ChatTypeFoldersSite 
     controlHook(CHAT_TYPE_FOLDERS, "deleteFolder", listOf("I", "I", OBJECT), "V")
     controlHook(CHAT_TYPE_FOLDERS, "dropFolder", listOf("I", "I"), "V")
     controlHook(CHAT_TYPE_FOLDERS, "sendFolderOrder", listOf("I", OBJECT), "V")
+    controlHook(CHAT_TYPE_FOLDERS, "outgoingOrder", listOf(OBJECT), "V")
     controlHook(CHAT_TYPE_FOLDERS, "fetchFolders", listOf("I", OBJECT), "V")
     controlHook(CHAT_TYPE_FOLDERS, "setFolderColor", listOf("I", "I", "I"), "V")
 

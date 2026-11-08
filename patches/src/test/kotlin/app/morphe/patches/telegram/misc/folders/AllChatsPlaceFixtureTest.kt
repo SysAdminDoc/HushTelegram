@@ -9,7 +9,10 @@ import app.morphe.Fixtures
 import app.morphe.hostsOf
 import app.morphe.FixtureDex
 import app.morphe.PatchContexts
+import app.morphe.patches.telegram.misc.chattypefolders.CHAT_TYPE_FOLDERS
 import app.morphe.patches.telegram.misc.chattypefolders.LOCAL_FILTER
+import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.telegram.misc.extension.writeStub
 import app.morphe.patches.telegram.misc.chattypefolders.MESSAGES_CONTROLLER
 import app.morphe.patches.telegram.misc.chattypefolders.USER_CONFIG
 import app.morphe.util.namedRegisters
@@ -76,6 +79,24 @@ class AllChatsPlaceFixtureTest {
             }
             assertEquals(build.name, 1, orders.count { it.method.origName == "setIsEditing" })
             assertEquals(build.name, 1, orders.count { it.method.origDefiningClass == PLACE_SETUP })
+        }
+    }
+
+    @Test fun `Folders by chat type's own order send doesn't count as one of Telegram's`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = contextOf(build)
+            // What Folders by chat type leaves when it runs first: the extension builds the request too.
+            context.writeStub(CHAT_TYPE_FOLDERS, "sendFolderOrder", 3, """
+                new-instance v0, $PLACE_REQUEST
+                invoke-direct {v0}, $PLACE_REQUEST-><init>()V
+                invoke-static {v0}, $CHAT_TYPE_FOLDERS->outgoingOrder(Ljava/lang/Object;)V
+                return-void
+            """)
+            val plan = context.resolveAllChatsPlace()
+            assertNull(build.name, plan.missing)
+            val orders = plan.sites.filter { it.smali.contains(PLACE_SERVER_ORDER) }
+            assertEquals(build.name, 3, orders.size)
+            assertTrue(build.name, orders.none { it.method.definingClass.startsWith("$EXTENSION_PACKAGE/") })
         }
     }
 

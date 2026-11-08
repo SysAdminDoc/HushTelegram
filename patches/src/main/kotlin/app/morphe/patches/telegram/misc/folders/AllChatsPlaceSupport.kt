@@ -131,11 +131,15 @@ private fun Method.key() = toString()
 
 private fun Method.isRun() = origName == "run" && parameterTypes.isEmpty() && origReturnType == "V"
 
-/** The three places that tell the server the folder order. Each builds the request and sends it. */
+/**
+ * The three places in Telegram that tell the server the folder order. Each builds the request and
+ * sends it. Folders by chat type's stub sends one too once it's written, which depends on patch
+ * order, so the extension's classes don't count; that stub hands its request to the same hook itself.
+ */
 private fun BytecodePatchContext.orderSites(): List<AllChatsSite> {
     val found = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.type(PLACE_REQUEST)) { cls ->
-        if (cls.origType == PLACE_REQUEST) return@forEachClassMentioning
+        if (cls.origType == PLACE_REQUEST || cls.type.startsWith("$EXTENSION_PACKAGE/")) return@forEachClassMentioning
         cls.methods.filter { m -> m.controlBody().any { it.opcode == Opcode.NEW_INSTANCE && it.controlRef() == PLACE_REQUEST } }
             .forEach { found += cls.type to it.key() }
     }

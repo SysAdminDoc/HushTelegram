@@ -270,16 +270,19 @@ class ChatTypeFoldersFixtureTest {
             assertEquals(name, context.method("dropFolder").param(1),
                 context.stub("dropFolder").single { it.controlRef() == sparseGet }.namedRegisters()[1])
 
-            // Every folder id in the list, All chats too, goes into the order request that is sent.
+            // Every folder id in the list, All chats too, goes into the order request, which the extension
+            // sees right before it is sent, so a moved All Chats can go out first.
             val order = context.stub("sendFolderOrder")
+            val outgoing = "$CHAT_TYPE_FOLDERS->outgoingOrder(Ljava/lang/Object;)V"
             assertEquals(listOf(UPDATE_ORDER, ORDER_INIT, ORDER_IDS, CONTROLLER_INSTANCE, FILTERS, size,
                 get, LOCAL_FILTER, LOCAL_ID, "Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;",
-                "Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z", CONNECTIONS_INSTANCE, REQUEST_DELEGATE, SEND_REQUEST),
+                "Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z", outgoing, CONNECTIONS_INSTANCE, REQUEST_DELEGATE, SEND_REQUEST),
                 order.refs())
             context.assertParams(name, "sendFolderOrder", listOf(CONTROLLER_INSTANCE to 0, CONNECTIONS_INSTANCE to 0))
             context.assertSentWith(name, "sendFolderOrder", 1)
             val request = order.first { it.controlRef() == UPDATE_ORDER }.namedRegisters().first()
             assertEquals(name, request, order.single { it.controlRef() == SEND_REQUEST }.namedRegisters()[1])
+            assertEquals(name, listOf(request), order.single { it.controlRef() == outgoing }.namedRegisters())
             assertEquals(name, order.single { it.controlRef() == ORDER_IDS }.namedRegisters()[0],
                 order.single { it.controlRef() == "Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z" }.namedRegisters()[0])
             assertTrue(name, order.any { it.opcode == Opcode.GOTO } && order.any { it.opcode == Opcode.IF_GE })
