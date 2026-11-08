@@ -4,8 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.commerce
 
-import app.morphe.util.names.addInstructionsWithLabels
-import app.morphe.util.names.replaceInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels as rawAddInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction as rawReplaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
@@ -48,31 +48,38 @@ internal const val STOCK_DIALOG_STATUS_ID = "$EMOJI_DIALOGS->$STOCK_DIALOG_STATU
 internal const val STATUSES_EQUAL = "$EMOJI_DIALOGS->emojiStatusesEqual($EMOJI_STATUS_TYPE$EMOJI_STATUS_TYPE)Z"
 private const val ADMIN_LOG_EVENT = "Lorg/telegram/tgnet/TLRPC\$TL_channelAdminLogEvent;"
 
-/** No status when the switch is on, Telegram's answer otherwise. The user getter answers a boxed id. */
-private val USER_WRAPPER = """
+/**
+ * No status when the switch is on, Telegram's answer ([stock], in the build's names) otherwise.
+ * The user getter answers a boxed id.
+ */
+private fun userWrapper(stock: String) = """
     invoke-static {}, $EMOJI_HIDE
     move-result v0
     if-eqz v0, :stock
     const/4 v0, 0x0
     return-object v0
     :stock
-    invoke-static {p0}, $EMOJI_USERS->$STOCK_USER_STATUS($EMOJI_STATUS_TYPE)Ljava/lang/Long;
+    invoke-static {p0}, $stock
     move-result-object v0
     return-object v0
 """.trimIndent()
 
 /** The same for a chat's or a person's status read as a plain id, where 0 means none. */
-private val DIALOG_WRAPPER = """
+private fun dialogWrapper(stock: String) = """
     invoke-static {}, $EMOJI_HIDE
     move-result v0
     if-eqz v0, :stock
     const-wide/16 v0, 0x0
     return-wide v0
     :stock
-    invoke-static {p0}, $STOCK_DIALOG_STATUS_ID
+    invoke-static {p0}, $stock
     move-result-wide v0
     return-wide v0
 """.trimIndent()
+
+/** [method]'s owner and shape under [name], in the build's own names. */
+private fun buildRef(method: Method, name: String) =
+    "${method.definingClass}->$name(${method.parameterTypes.joinToString("")})${method.returnType}"
 
 /** A getter ([getter], on [owner]) and the two methods that take its place. */
 internal class EmojiStatusSwap(
@@ -94,8 +101,10 @@ internal class EmojiStatusPlan(
 ) {
     fun apply() {
         if (missing != null) return
-        // Read again here: an earlier edit in the same method moves indexes, never the calls.
-        keepers.forEach { method -> method.statusReads().forEach { (index, call) -> method.replaceInstruction(index, call) } }
+        // Read again here: an earlier edit in the same method moves indexes, never the calls. The kept
+        // original isn't in the app or its name table yet, so its call goes in under the build's names.
+        val stock = swaps.single { it.stock.name == STOCK_DIALOG_STATUS }.stock.let { buildRef(it, it.name) }
+        keepers.forEach { method -> method.statusReads(stock).forEach { (index, call) -> method.rawReplaceInstruction(index, call) } }
         swaps.forEach { swap ->
             swap.owner.methods.remove(swap.getter)
             swap.owner.methods.add(swap.stock)
@@ -141,8 +150,10 @@ internal fun BytecodePatchContext.resolveEmojiStatus(): EmojiStatusPlan {
     }?.let { keepers += it }
 
     val swaps = listOf(
-        swap(users, userGetter, STOCK_USER_STATUS, AccessFlags.PRIVATE.value or AccessFlags.STATIC.value, 2, USER_WRAPPER),
-        swap(dialogs, dialogGetter, STOCK_DIALOG_STATUS, AccessFlags.PUBLIC.value or AccessFlags.STATIC.value, 3, DIALOG_WRAPPER),
+        swap(users, userGetter, STOCK_USER_STATUS, AccessFlags.PRIVATE.value or AccessFlags.STATIC.value, 2,
+            userWrapper(buildRef(userGetter, STOCK_USER_STATUS))),
+        swap(dialogs, dialogGetter, STOCK_DIALOG_STATUS, AccessFlags.PUBLIC.value or AccessFlags.STATIC.value, 3,
+            dialogWrapper(buildRef(dialogGetter, STOCK_DIALOG_STATUS))),
     )
     return EmojiStatusPlan(swaps, keepers, null)
 }
@@ -163,20 +174,20 @@ private fun BytecodePatchContext.swap(
         null, null, getter.implementation))
     val wrapper = ImmutableMethod(owner.type, getter.name, getter.parameters, getter.returnType, getter.accessFlags,
         getter.annotations, getter.hiddenApiRestrictions, MutableMethodImplementation(registers))
-        .toMutable().apply { addInstructionsWithLabels(0, smali) }
+        .toMutable().apply { rawAddInstructionsWithLabels(0, smali) }
     val refusals = refusedByVerifier(wrapper, { tgClassDefByOrNull(it)?.superclass },
         { tgClassDefByOrNull(it)?.let { found -> AccessFlags.INTERFACE.isSet(found.accessFlags) } })
     if (refusals.isNotEmpty()) throw PatchException("$getter would fail Android's verifier: ${refusals.joinToString("; ")}")
     return EmojiStatusSwap(owner, getter, stock, wrapper)
 }
 
-/** Each call to the chat getter in this method, with the same call pointed at the kept original. */
-private fun Method.statusReads(): List<Pair<Int, String>> = controlBody().mapIndexedNotNull { index, instruction ->
+/** Each call to the chat getter in this method, with the same call pointed at the kept original ([stock]). */
+private fun Method.statusReads(stock: String = STOCK_DIALOG_STATUS_ID): List<Pair<Int, String>> = controlBody().mapIndexedNotNull { index, instruction ->
     if (instruction.controlRef() != DIALOG_STATUS_ID) return@mapIndexedNotNull null
     when (instruction.opcode) {
-        Opcode.INVOKE_STATIC -> index to "invoke-static {v${(instruction as FiveRegisterInstruction).registerC}}, $STOCK_DIALOG_STATUS_ID"
+        Opcode.INVOKE_STATIC -> index to "invoke-static {v${(instruction as FiveRegisterInstruction).registerC}}, $stock"
         Opcode.INVOKE_STATIC_RANGE -> (instruction as RegisterRangeInstruction).startRegister.let { register ->
-            index to "invoke-static/range {v$register .. v$register}, $STOCK_DIALOG_STATUS_ID"
+            index to "invoke-static/range {v$register .. v$register}, $stock"
         }
         else -> null
     }

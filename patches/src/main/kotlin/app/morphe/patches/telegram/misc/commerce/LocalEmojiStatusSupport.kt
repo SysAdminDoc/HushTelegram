@@ -38,7 +38,8 @@ internal const val IS_PREMIUM_USER = "$STICKER_CONTROLLER->isPremiumUser($STATUS
 /** The star Telegram draws by a Premium account's name when it has no status: the chat list title's way into the picker. */
 internal const val LIST_STAR = "Lorg/telegram/messenger/R\$drawable;->msg_premium_liststar:I"
 internal const val SEND_STATUS_NAME = "updateEmojiStatus"
-internal val SEND_STATUS_PARAMETERS = listOf(EMOJI_STATUS_TYPE, "Lorg/telegram/tgnet/tl/TL_stars\$StarGift;")
+/** The gift the send takes beside the status; 13.2's R8 narrowed it to the unique gift every caller passes. */
+private val SEND_STATUS_GIFTS = setOf("Lorg/telegram/tgnet/tl/TL_stars\$StarGift;", "Lorg/telegram/tgnet/tl/TL_stars\$TL_starGiftUnique;")
 private const val STATUS_BASE_CONTROLLER = "Lorg/telegram/messenger/BaseController;"
 private const val STATUS_USER_CONFIG = "Lorg/telegram/messenger/UserConfig;"
 private const val STATUS_NOTIFICATIONS = "Lorg/telegram/messenger/NotificationCenter;"
@@ -121,9 +122,7 @@ internal fun BytecodePatchContext.resolveLocalEmojiStatus(): LocalEmojiStatusPla
         }
     }
 
-    val sends = tgMutableClassDefBy(STICKER_CONTROLLER).methods.filter {
-        it.origName == SEND_STATUS_NAME && it.origReturnType == "V" && it.parameterTypes.map(CharSequence::toString) == SEND_STATUS_PARAMETERS
-    }
+    val sends = tgMutableClassDefBy(STICKER_CONTROLLER).methods.filter { it.sendsOwnStatus() }
     val send = sends.singleOrNull() ?: return missing("MessagesController no longer sends the account's own status in one place")
     if (send.localRegisterCount() < 1) return missing("the account's status send has no spare register")
     return LocalEmojiStatusPlan(title, send, null)
@@ -183,6 +182,10 @@ private fun BytecodePatchContext.writeStatusStubs() {
         return-void
     """)
 }
+
+/** MessagesController's send of the account's own new status: a status and its gift, nothing back. */
+internal fun Method.sendsOwnStatus(): Boolean = origName == SEND_STATUS_NAME && origReturnType == "V" &&
+    parameterTypes.map(CharSequence::toString).let { it.size == 2 && it[0] == EMOJI_STATUS_TYPE && it[1] in SEND_STATUS_GIFTS }
 
 /** Takes a user and an animated flag, and both reads the user's status and asks about Premium. */
 private fun Method.drawsTitleStatus(): Boolean {

@@ -20836,3 +20836,5 @@ m Lorg/telegram/messenger/PasskeysController; create (Landroid/content/Context;I
 f Lorg/telegram/messenger/AppGlobalConfig; walletAvailable Lorg/telegram/messenger/AppGlobalConfig$ConfigBoolean; Lorg/telegram/messenger/q0; j0 Lj7/h;
 c Lorg/telegram/messenger/AppGlobalConfig$ConfigBoolean$Internal; Lorg/telegram/messenger/i0; Ljava/lang/Object; Ljava/lang/Object;
 f Lorg/telegram/messenger/AppGlobalConfig$ConfigBoolean$Internal; value Z Lorg/telegram/messenger/i0; c Z
+# added by hand: own emoji status send
+m Lorg/telegram/messenger/MessagesController; updateEmojiStatus (Lorg/telegram/tgnet/TLRPC$EmojiStatus;Lorg/telegram/tgnet/tl/TL_stars$StarGift;)V Lorg/telegram/messenger/vp; i5 (Lorg/telegram/tgnet/TLRPC$EmojiStatus;Lorg/telegram/tgnet/tl/TL_stars$TL_starGiftUnique;)V
