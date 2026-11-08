@@ -77,7 +77,7 @@ private const val OBJECT = "Ljava/lang/Object;"
 private const val NAME = "Translate with an outside service"
 
 /** The extension's option numbers, which Telegram's own may never use. */
-internal val TRANSLATE_NUMBERS = listOf(0x48545405, 0x48545406)
+internal val TRANSLATE_NUMBERS = listOf(0x48545405, 0x48545406, 0x48545407)
 
 @Suppress("unused")
 val outsideTranslatePatch = bytecodePatch(

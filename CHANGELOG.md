@@ -35,6 +35,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** **Folder icons** is a new row with the folder tab settings. Pick Regular, Bold or Filled and HushTelegram draws a small icon beside each folder in its own lists, like Folder to open. A folder called Work gets a briefcase, Friends a group, and a name it doesn't know gets a plain folder. Telegram 13.1 doesn't draw folder icons at all, so its own tabs stay as they are. The icons are from Phosphor Icons (MIT). Off by default. (#53)
 * **Telegram:** **HushTelegram icon and name** has a fourth **Icon style**, **Telegram's own icon**. Pick it with an **App name** and Telegram keeps its usual icon, with only the name under it changed. (#37)
 * **Telegram:** **Test server sign-in**, under Chat list and off by default. When you sign in or add an account, the phone number screen shows Telegram's own Test Backend box. Tick it to sign that account in on Telegram's test servers, kept apart from your other accounts. Untick it to go back. With the box ticked, the phone screen also takes Telegram's test numbers (+999 66 X YYYY), which the regular app turns away as an unknown country code. (#59)
+* **Telegram:** **Translate with an outside service** adds **Translate into** to a chat's three-dot menu, right under Translate this chat. It opens the same language list as the settings row, so you can switch between your language and English without leaving the chat. Pick one and the chat is written again in it. (#35)
 
 ### Changed
 

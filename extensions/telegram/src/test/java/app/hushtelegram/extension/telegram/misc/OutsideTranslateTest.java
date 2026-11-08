@@ -472,14 +472,18 @@ public class OutsideTranslateTest {
         Chat chat = new Chat(42);
         OutsideTranslate.headerMenu(chat);
         OutsideTranslate.headerMenu(chat);
-        assertEquals(1, chat.items.size());
+        assertEquals(2, chat.items.size());
         HeaderItem item = chat.items.get(0);
         assertEquals("Stop translating this chat", item.text);
         assertEquals(OutsideTranslate.HEADER_ITEM, item.id);
+        HeaderItem language = chat.items.get(1);
+        assertEquals("Translate into", language.text);
+        assertEquals(OutsideTranslate.HEADER_LANGUAGE, language.id);
         OutsideTranslate.toggleChat(OWNER, 42);
         OutsideTranslate.headerMenu(chat);
         assertEquals("Translate this chat", item.text);
-        assertEquals(1, chat.items.size());
+        assertEquals("Translate into", language.text);
+        assertEquals(2, chat.items.size());
         assertEquals(0, fetches.get());
     }
 
@@ -494,7 +498,7 @@ public class OutsideTranslateTest {
         assertTrue(OutsideTranslate.headerClick(chat, OutsideTranslate.HEADER_ITEM));
         assertFalse(OutsideTranslate.chatOn(OWNER, 42));
         assertEquals("Translate this chat", chat.items.get(0).text);
-        assertEquals(1, chat.items.size());
+        assertEquals(2, chat.items.size());
         assertEquals(2, HeaderHost.refreshed);
         assertEquals(0, fetches.get());
     }
@@ -518,7 +522,7 @@ public class OutsideTranslateTest {
         assertTrue(chat.items.isEmpty());
         chat.failAdd = false;
         OutsideTranslate.headerMenu(chat);
-        assertEquals(1, chat.items.size());
+        assertEquals(2, chat.items.size());
         chat.items.get(0).failText = true;
         assertTrue(OutsideTranslate.headerClick(chat, OutsideTranslate.HEADER_ITEM));
         assertTrue(OutsideTranslate.chatOn(OWNER, 42));
@@ -526,7 +530,7 @@ public class OutsideTranslateTest {
         chat.items.get(0).failText = false;
         OutsideTranslate.headerMenu(chat);
         assertEquals("Stop translating this chat", chat.items.get(0).text);
-        assertEquals(1, chat.items.size());
+        assertEquals(2, chat.items.size());
         assertEquals(0, fetches.get());
     }
 
@@ -542,8 +546,84 @@ public class OutsideTranslateTest {
         ((WeakReference<?>) remembered).clear();
         OutsideTranslate.headerMenu(chat);
         assertTrue(OutsideTranslate.headerClick(chat, OutsideTranslate.HEADER_ITEM));
-        assertEquals(1, chat.items.size());
+        assertEquals(2, chat.items.size());
         assertEquals(1, HeaderHost.refreshed);
+    }
+
+    /**
+     * Translate into in the chat's menu (#35): the language list opens over the chat, a pick is
+     * saved and the chat is drawn again in it, and closing the list changes nothing.
+     */
+    @Test public void theChatsTranslateIntoItemPicksTheLanguageWithoutTheSettings() throws Exception {
+        Settings.OUTSIDE_TRANSLATE.save(true);
+        android.app.Activity previous = app.hushtelegram.extension.shared.Utils.getActivity();
+        try (org.robolectric.android.controller.ActivityController<android.app.Activity> controller =
+                     org.robolectric.Robolectric.buildActivity(android.app.Activity.class).setup()) {
+            app.hushtelegram.extension.shared.Utils.setActivity(controller.get());
+            Chat chat = new Chat(42);
+            OutsideTranslate.headerMenu(chat);
+            assertEquals(OutsideTranslate.HEADER_LANGUAGE, chat.items.get(1).id);
+
+            assertTrue(OutsideTranslate.headerClick(chat, OutsideTranslate.HEADER_LANGUAGE));
+            ShadowLooper.idleMainLooper();
+            android.app.AlertDialog closed = (android.app.AlertDialog) org.robolectric.shadows.ShadowAlertDialog.getLatestDialog();
+            assertTrue(closed.isShowing());
+            closed.dismiss();
+            ShadowLooper.idleMainLooper();
+            assertEquals("closing the list writes nothing again", 0, HeaderHost.refreshed);
+            assertEquals(app.hushtelegram.extension.telegram.misc.TranslateTarget.TELEGRAM, Settings.TRANSLATE_TARGET.savedValue());
+
+            assertTrue(OutsideTranslate.headerClick(chat, OutsideTranslate.HEADER_LANGUAGE));
+            ShadowLooper.idleMainLooper();
+            android.app.AlertDialog list = (android.app.AlertDialog) org.robolectric.shadows.ShadowAlertDialog.getLatestDialog();
+            assertNotSame(closed, list);
+            android.view.View decor = list.getWindow().getDecorView();
+            android.widget.EditText search = decor.findViewWithTag("hushtelegram_translate_target_search");
+            android.widget.ListView choices = decor.findViewWithTag("hushtelegram_translate_target_list");
+            search.setText("Deutsch");
+            assertEquals(1, choices.getCount());
+            choices.performItemClick(null, 0, 0);
+            app.hushtelegram.extension.shared.Utils.awaitBackgroundTasksForTests();
+            ShadowLooper.idleMainLooper();
+            assertFalse(list.isShowing());
+            assertEquals("de", Settings.TRANSLATE_TARGET.savedValue());
+            assertEquals("the chat is written again in the new language", 1, HeaderHost.refreshed);
+            assertFalse("the chat's own item is untouched", OutsideTranslate.chatOn(OWNER, 42));
+            assertEquals(0, fetches.get());
+        } finally {
+            app.hushtelegram.extension.shared.Utils.setActivity(previous);
+            Settings.TRANSLATE_TARGET.resetToDefault();
+        }
+    }
+
+    @Test public void theTranslateIntoItemOpensNothingWhenItCantAndNeverBlocksTheChatItem() {
+        android.app.Activity previous = app.hushtelegram.extension.shared.Utils.getActivity();
+        try {
+            app.hushtelegram.extension.shared.Utils.setActivity(null);
+            // Switch off: an item left in an open menu is still ours, and does nothing.
+            assertTrue(OutsideTranslate.headerClick(new Chat(42), OutsideTranslate.HEADER_LANGUAGE));
+            assertNull(org.robolectric.shadows.ShadowAlertDialog.getLatestDialog());
+
+            Settings.OUTSIDE_TRANSLATE.save(true);
+            // No window to show the list on.
+            assertTrue(OutsideTranslate.headerClick(new Chat(42), OutsideTranslate.HEADER_LANGUAGE));
+            assertNull(org.robolectric.shadows.ShadowAlertDialog.getLatestDialog());
+            assertTrue(String.join("\n", HookStatus.report()).contains("no window for the language list"));
+
+            // A language item Telegram refuses leaves the chat's own item in and working, once.
+            Chat chat = new Chat(42);
+            chat.failAddId = OutsideTranslate.HEADER_LANGUAGE;
+            OutsideTranslate.headerMenu(chat);
+            OutsideTranslate.headerMenu(chat);
+            assertEquals(1, chat.items.size());
+            assertEquals(OutsideTranslate.HEADER_ITEM, chat.items.get(0).id);
+            assertTrue(OutsideTranslate.headerClick(chat, OutsideTranslate.HEADER_ITEM));
+            assertTrue(OutsideTranslate.chatOn(OWNER, 42));
+            assertEquals(1, HeaderHost.refreshed);
+            assertFalse("the next number isn't ours", OutsideTranslate.headerClick(chat, OutsideTranslate.HEADER_LANGUAGE + 1));
+        } finally {
+            app.hushtelegram.extension.shared.Utils.setActivity(previous);
+        }
     }
 
     @Test public void theChatsThatAreOnAreRememberedOnThePhone() {
@@ -1185,6 +1265,8 @@ public class OutsideTranslateTest {
         final List<HeaderItem> items = new ArrayList<>();
         boolean hasTranslateItem = true;
         boolean failAdd;
+        /** One item number Telegram's menu refuses, 0 for none. */
+        int failAddId;
         Chat(long dialog) { this.dialog = dialog; }
     }
 
@@ -1205,7 +1287,7 @@ public class OutsideTranslateTest {
         @Implementation protected static Object chatOf(Object delegate) { return delegate; }
         @Implementation protected static Object addHeaderItem(Object chat, int id, int icon, String text) {
             Chat owner = (Chat) chat;
-            if (owner.failAdd) throw new IllegalStateException("native menu unavailable");
+            if (owner.failAdd || (owner.failAddId != 0 && owner.failAddId == id)) throw new IllegalStateException("native menu unavailable");
             HeaderItem item = new HeaderItem(owner, id, text);
             owner.items.add(item);
             return item;
