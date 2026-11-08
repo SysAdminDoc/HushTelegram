@@ -43,12 +43,25 @@ class HideReactionsFixtureTest {
             plan.apply()
             val patched = context.tgMutableClassDefBy(stock.definingClass).methods.single { it.toString() == stock.toString() }
             val after = patched.controlBody()
-            assertEquals("${build.name}: register count", stock.implementation!!.registerCount, patched.implementation!!.registerCount)
-            assertEquals(listOf(Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT_OBJECT, Opcode.CHECK_CAST), after.take(3).map { it.opcode })
-            assertEquals("$DOUBLE_TAP_REACTIONS->rows(Ljava/lang/Object;ZZ)Ljava/lang/Object;", after[0].controlRef())
-            assertEquals(MESSAGE_OBJECT, after[2].controlRef())
-            assertEquals(after[1].namedRegisters(), after[2].namedRegisters())
-            assertEquals("${build.name}: stock code follows unchanged", before.map(::operand), after.drop(3).map(::operand))
+            val registers = stock.implementation!!.registerCount
+            assertEquals("${build.name}: register count", registers, patched.implementation!!.registerCount)
+            // 13.2 dropped the small flag, so its hook moves the message and the tag flag down and passes a clear small flag.
+            val lead = if (stock.parameterTypes.size == 4) 0 else 3
+            if (lead == 3) {
+                assertEquals(listOf(Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_FROM16, Opcode.CONST_4), after.take(3).map { it.opcode })
+                assertEquals("${build.name}: the message", listOf(0, registers - 3), after[0].namedRegisters())
+                assertEquals("${build.name}: the tag flag", listOf(1, registers - 2), after[1].namedRegisters())
+                assertEquals("${build.name}: the small flag", 0L, (after[2] as WideLiteralInstruction).wideLiteral)
+                assertEquals("${build.name}: message, small, tag", listOf(0, 2, 1), after[3].namedRegisters())
+            } else {
+                assertEquals(Opcode.INVOKE_STATIC_RANGE, after[0].opcode)
+            }
+            assertEquals(listOf(Opcode.MOVE_RESULT_OBJECT, Opcode.CHECK_CAST), after.drop(lead + 1).take(2).map { it.opcode })
+            assertEquals("$DOUBLE_TAP_REACTIONS->rows(Ljava/lang/Object;ZZ)Ljava/lang/Object;", after[lead].controlRef())
+            assertEquals(MESSAGE_OBJECT, after[lead + 2].controlRef())
+            assertEquals("${build.name}: the message comes back in its own register", listOf(registers - stock.parameterTypes.size), after[lead + 1].namedRegisters())
+            assertEquals(after[lead + 1].namedRegisters(), after[lead + 2].namedRegisters())
+            assertEquals("${build.name}: stock code follows unchanged", before.map(::operand), after.drop(lead + 3).map(::operand))
         }
     }
 

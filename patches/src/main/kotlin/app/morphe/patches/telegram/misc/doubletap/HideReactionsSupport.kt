@@ -51,8 +51,15 @@ internal fun BytecodePatchContext.resolveReactionRows(): ReactionPlan {
         override fun apply() {
             method.addInstructions(
                 0,
-                """
+                if (method.parameterTypes.size == 4) """
                     invoke-static/range {p1 .. p3}, $DOUBLE_TAP_REACTIONS->rows(Ljava/lang/Object;ZZ)Ljava/lang/Object;
+                    move-result-object p1
+                    check-cast p1, $MESSAGE_OBJECT
+                """ else """
+                    move-object/from16 v0, p1
+                    move/from16 v1, p2
+                    const/4 v2, 0x0
+                    invoke-static {v0, v2, v1}, $DOUBLE_TAP_REACTIONS->rows(Ljava/lang/Object;ZZ)Ljava/lang/Object;
                     move-result-object p1
                     check-cast p1, $MESSAGE_OBJECT
                 """,
@@ -61,11 +68,18 @@ internal fun BytecodePatchContext.resolveReactionRows(): ReactionPlan {
     }
 }
 
+/**
+ * setMessage(message, small, tag, resources), or 13.2's (message, tag, resources), where R8 dropped
+ * the small flag the row no longer reads. The 13.2 hook hands the extension a clear small flag
+ * through three of the setter's own locals, which it writes before reading anyway.
+ */
 internal fun Method.isRowSetter(): Boolean {
     if (AccessFlags.STATIC.isSet(accessFlags) || returnType != "V") return false
     val parameters = origParameterTypes
-    if (parameters.size != 4 || parameters[0] != MESSAGE_OBJECT || parameters[1] != "Z" || parameters[2] != "Z" ||
-        !parameters[3].startsWith("L")) return false
+    val full = parameters.size == 4 && parameters[0] == MESSAGE_OBJECT && parameters[1] == "Z" && parameters[2] == "Z" && parameters[3].startsWith("L")
+    val dropped = parameters.size == 3 && parameters[0] == MESSAGE_OBJECT && parameters[1] == "Z" && parameters[2].startsWith("L") &&
+        (implementation?.registerCount ?: 0) - 4 >= 3
+    if (!full && !dropped) return false
     val body = controlBody()
     return body.any { it.controlRef() == "$MESSAGE_REACTIONS->results:Ljava/util/ArrayList;" } &&
         body.any { it.controlRef() == "Ljava/util/ArrayList;->clear()V" } &&
@@ -121,9 +135,14 @@ internal fun BytecodePatchContext.resolveReactionSpeech(): ReactionPlan {
     }
 }
 
+/** 13.2 inlines getEnabledReactionsList, so the builder reads the list's field instead. */
+internal const val ENABLED_REACTIONS_FIELD = "Lorg/telegram/messenger/MediaDataController;->enabledReactionsList:Ljava/util/ArrayList;"
+private val ENABLED_REACTIONS_READS = setOf(ENABLED_REACTIONS, ENABLED_REACTIONS_FIELD)
+private val MENU_BUILDER_MENTION get() = Mention.reference(REACTIONS_AVAILABLE) and Mention.anyReference(ENABLED_REACTIONS_READS)
+
 internal fun Method.isMenuBuilder() =!AccessFlags.STATIC.isSet(accessFlags) && returnType == "Z" &&
     origParameterTypes == listOf("Landroid/view/View;", "Z", "Z", "F", "F", "Z", "Z", "Z") &&
-    controlBody().any { it.controlRef() == REACTIONS_AVAILABLE } && controlBody().any { it.controlRef() == ENABLED_REACTIONS }
+    controlBody().any { it.controlRef() == REACTIONS_AVAILABLE } && controlBody().any { it.controlRef() in ENABLED_REACTIONS_READS }
 
 /**
  * The chat's long-press menu builder decides whether the reaction strip exists in one boolean that
@@ -131,7 +150,7 @@ internal fun Method.isMenuBuilder() =!AccessFlags.STATIC.isSet(accessFlags) && r
  * that reads it. The hook filters that register right at the merge, so every path in is covered.
  */
 internal fun BytecodePatchContext.resolveReactionPicker(): ReactionPlan {
-    val found = classDefsMentioning(Mention.reference(REACTIONS_AVAILABLE) and Mention.reference(ENABLED_REACTIONS)).flatMap { cls ->
+    val found = classDefsMentioning(MENU_BUILDER_MENTION).flatMap { cls ->
         cls.methods.filter { it.isMenuBuilder() }
     }
     val match = found.singleOrNull() ?: return nothing("the chat's message menu builder is no longer found in one place")
@@ -229,7 +248,7 @@ internal fun BytecodePatchContext.resolveEmojiPackNote(): ReactionPlan {
         cls.methods.any { method -> method.controlBody().any { it.controlString() == EMOJI_PACK_PLURAL } }
     }.singleOrNull()?.type
         ?: return nothing("the emoji pack line is no longer built by one class")
-    val found = classDefsMentioning(Mention.reference(REACTIONS_AVAILABLE) and Mention.reference(ENABLED_REACTIONS)).flatMap { cls ->
+    val found = classDefsMentioning(MENU_BUILDER_MENTION).flatMap { cls ->
         cls.methods.filter { it.isMenuBuilder() }
     }
     val match = found.singleOrNull() ?: return nothing("the chat's message menu builder is no longer found in one place")
