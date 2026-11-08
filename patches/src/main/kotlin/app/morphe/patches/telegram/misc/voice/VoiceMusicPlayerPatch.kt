@@ -38,6 +38,7 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origInterfaces
 import app.morphe.util.names.origName
@@ -89,8 +90,7 @@ val voiceMusicPlayerPatch = bytecodePatch(
         writeStub(VOICE_PLAYER, "playing", 1, """
             invoke-static {}, $MEDIA_CONTROLLER->getInstance()$MEDIA_CONTROLLER
             move-result-object v0
-            invoke-virtual {v0}, $PLAYING_NOW
-            move-result-object v0
+            ${site.playing}
             return-object v0
         """)
         site.calls.forEach { (method, indices) -> replaceMusicChecks(method, indices) }
@@ -107,12 +107,14 @@ val voiceMusicPlayerPatch = bytecodePatch(
 
 /**
  * The player bar's tap, the full player and its helpers, with the indices of their music checks, and
- * the player's Add to Profile toggle with the index right after it reads whether it shows your own list.
+ * the player's Add to Profile toggle with the index right after it reads whether it shows your own list,
+ * and how the runtime's stub reads the message playing from MediaController in v0.
  */
 internal class VoiceMusicPlayerSite(
     val player: String,
     val calls: List<Pair<MutableMethod, List<Int>>>,
     val profile: Pair<MutableMethod, Int>,
+    val playing: String,
 )
 
 /** The toggle hides both profile buttons when the extension says so, the way it does on your own list. */
@@ -183,10 +185,12 @@ internal fun BytecodePatchContext.resolveVoiceMusicPlayer(): VoiceMusicPlayerSit
     var inPlayer = 0
     forEachClassMentioning(Mention.reference(IS_MUSIC)) { cls ->
         val holds = cls.origType == player || cls.fields.any { it.origType == player && !AccessFlags.STATIC.isSet(it.accessFlags) }
-        if (!holds || cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
             val body = m.controlBody()
-            val indices = body.indices.filter { body[it].opcode in VIRTUAL && body[it].controlRef() == IS_MUSIC }
+            // 13.2 merges the player's helpers into shared classes that keep it as an Object they cast back.
+            val indices = body.indices.filter { body[it].opcode in VIRTUAL && body[it].controlRef() == IS_MUSIC &&
+                (holds || castsToPlayer(body, it, player)) }
             if (indices.isEmpty()) return@forEach
             if (cls.origType == player) inPlayer += indices.size
             found += Triple(cls.type, signature(m), indices)
@@ -198,7 +202,26 @@ internal fun BytecodePatchContext.resolveVoiceMusicPlayer(): VoiceMusicPlayerSit
         player,
         found.map { (type, wanted, indices) -> tgMutableClassDefBy(type).methods.single { signature(it) == wanted } to indices },
         tgMutableClassDefBy(player).methods.single { signature(it) == profile.first } to profile.second,
+        resolvePlayingRead(),
     )
+}
+
+/**
+ * The read of the message MediaController plays, from the controller in v0 into v0: its getter, or
+ * where the build inlines the getter everywhere (13.2), the field it read, which the build makes public.
+ */
+private fun BytecodePatchContext.resolvePlayingRead(): String {
+    val controller = tgClassDefByOrNull(MEDIA_CONTROLLER)
+    controlShape(controller != null && controller.methods.any { it.origName == "getInstance" && it.parameterTypes.isEmpty() &&
+        it.origReturnType == MEDIA_CONTROLLER && AccessFlags.STATIC.isSet(it.accessFlags) && AccessFlags.PUBLIC.isSet(it.accessFlags) },
+        "the music player no longer says which message is playing")
+    val open = { flags: Int -> AccessFlags.PUBLIC.isSet(flags) && !AccessFlags.STATIC.isSet(flags) }
+    if (controller!!.methods.any { "$MEDIA_CONTROLLER->${signature(it)}" == PLAYING_NOW && open(it.accessFlags) }) {
+        return "invoke-virtual {v0}, $PLAYING_NOW\n            move-result-object v0"
+    }
+    controlShape(controller.fields.any { it.origName == "playingMessageObject" && it.origType == MESSAGE && open(it.accessFlags) },
+        "the music player no longer says which message is playing")
+    return "iget-object v0, v0, $PLAYING_MESSAGE"
 }
 
 /**
@@ -209,11 +232,6 @@ internal fun BytecodePatchContext.resolveVoiceMusicPlayer(): VoiceMusicPlayerSit
 private fun BytecodePatchContext.resolveProfileButtons(player: String): Pair<String, Int> {
     controlHook(VOICE_PLAYER, "keepsProfileOut", listOf("I"), "Z")
     controlHook(VOICE_PLAYER, "playing", emptyList(), "Ljava/lang/Object;")
-    val controller = tgClassDefByOrNull(MEDIA_CONTROLLER)
-    controlShape(controller != null && controller.methods.any { it.origName == "getInstance" && it.parameterTypes.isEmpty() &&
-        it.origReturnType == MEDIA_CONTROLLER && AccessFlags.STATIC.isSet(it.accessFlags) && AccessFlags.PUBLIC.isSet(it.accessFlags) } &&
-        controller.methods.any { "$MEDIA_CONTROLLER->${signature(it)}" == PLAYING_NOW && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
-            !AccessFlags.STATIC.isSet(it.accessFlags) }, "the music player no longer says which message is playing")
     val methods = tgClassDefByOrNull(player)!!.methods.filter { !AccessFlags.STATIC.isSet(it.accessFlags) }
     val mine = methods.filter { m ->
         m.parameterTypes.isEmpty() && m.origReturnType == "Z" &&
@@ -236,5 +254,12 @@ private fun BytecodePatchContext.resolveProfileButtons(player: String): Pair<Str
 /** AudioPlayerAlert keeps its listener interfaces and its saved-music field through R8. */
 private fun isPlayer(cls: ClassDef?) = cls != null && PLAYER_TRAITS.all { it in cls.origInterfaces } &&
     cls.fields.any { it.origType == SAVED_MUSIC && !AccessFlags.STATIC.isSet(it.accessFlags) }
+
+/** Whether the music check at [index] leads within a few instructions into a cast to [player]. */
+private fun BytecodePatchContext.castsToPlayer(body: List<Instruction>, index: Int, player: String) =
+    (index + 1 until minOf(body.size, index + 8)).any { at ->
+        body[at].opcode == Opcode.CHECK_CAST &&
+            tgClassDefByOrNull(((body[at] as ReferenceInstruction).reference as TypeReference).type)?.origType == player
+    }
 
 private fun signature(method: Method) = "${method.origName}${method.origDescriptor}"
