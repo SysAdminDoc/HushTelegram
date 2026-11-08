@@ -52,6 +52,33 @@ private const val SHARED_CONFIG = "Lorg/telegram/messenger/SharedConfig;"
 
 private const val GET_APP_UPDATE = "Lorg/telegram/tgnet/TLRPC\$TL_help_getAppUpdate;"
 
+private const val APP_UPDATE = "Lorg/telegram/tgnet/TLRPC\$TL_help_appUpdate;"
+
+/**
+ * `SharedConfig.isAppUpdateAvailable()`, what the Update Telegram bar and the update screen ask. It
+ * reads the update the last check found and the build that check ran on. Play's 13.2 has no update
+ * code left, this method included.
+ */
+internal val AppUpdateAvailableFingerprint by tgFingerprint {
+    Fingerprint(
+        definingClass = type(SHARED_CONFIG),
+        returnType = "Z",
+        parameters = emptyList(),
+        filters = listOf(
+            fieldAccess(
+                definingClass = type(SHARED_CONFIG),
+                name = field(SHARED_CONFIG, "pendingAppUpdate", APP_UPDATE).name,
+                type = APP_UPDATE,
+            ),
+            fieldAccess(
+                definingClass = type(SHARED_CONFIG),
+                name = field(SHARED_CONFIG, "pendingAppUpdateBuildVersion", "I").name,
+                type = "I",
+            ),
+        ),
+    )
+}
+
 /** Whether any method of the class builds `help.getAppUpdate`. */
 private fun ClassDef.sendsAppUpdateRequest() = methods.any { method ->
     method.implementation?.instructions?.any {
@@ -64,7 +91,8 @@ private fun ClassDef.sendsAppUpdateRequest() = methods.any { method ->
  *
  * That build downloads and offers the next version itself, but the APK it gets is signed with
  * Telegram's key and Android won't install it over a patched build. The check asks the extension
- * first and returns before reaching the server while the switch is on.
+ * first and returns before reaching the server while the switch is on, and so does
+ * isAppUpdateAvailable(), so an update found while the switch was off doesn't keep its bar up.
  *
  * Found by reading 12.10.6 (2026-09-30).
  */
@@ -93,6 +121,15 @@ val disableUpdateChecksPatch = bytecodePatch(
             throw PatchException("$PATCH: the launcher activity sends help.getAppUpdate, but not from a (boolean) method that waits out SharedConfig.lastUpdateCheckTime")
         }
         method.returnEarlyWhen(PATCH, "$EXTENSION_PACKAGE/misc/UpdateChecks;->skipUpdateCheck()Z", "return-void")
+
+        // An update found while the switch was off stays saved, since the next check never runs (#60).
+        val waiting = AppUpdateAvailableFingerprint.methodOrNull
+        if (waiting == null) {
+            patchLog.warning("$PATCH: SharedConfig.isAppUpdateAvailable() wasn't found, so an update Telegram found " +
+                "while the switch was off can still show its bar")
+        } else {
+            waiting.returnEarlyWhen(PATCH, "$EXTENSION_PACKAGE/misc/UpdateChecks;->hideWaitingUpdate()Z", "const/4 v0, 0x0\nreturn v0")
+        }
 
         enableStatus("disableUpdateChecks")
     }

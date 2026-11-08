@@ -8,6 +8,7 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.settings.MAIN_ACTIVITY
 import com.android.tools.smali.dexlib2.Opcode
@@ -36,6 +37,9 @@ import app.morphe.util.names.tgMutableClassDefBy
 class DisableUpdateChecksFixtureTest {
     private val updateChecks = "Lapp/hushtelegram/extension/telegram/misc/UpdateChecks;"
     private val getAppUpdate = "Lorg/telegram/tgnet/TLRPC\$TL_help_getAppUpdate;"
+    private val sharedConfig = "Lorg/telegram/messenger/SharedConfig;"
+    private val pendingUpdate = "$sharedConfig->pendingAppUpdate:Lorg/telegram/tgnet/TLRPC\$TL_help_appUpdate;"
+    private val pendingBuild = "$sharedConfig->pendingAppUpdateBuildVersion:I"
 
     @Test
     fun `the web build's update check is hooked, and the Play build has none to hook`() {
@@ -44,8 +48,8 @@ class DisableUpdateChecksFixtureTest {
             builds.any { it.name.startsWith("telegram-play-") })
         for (build in builds) {
             val where = build.name
-            val classes = FixtureDex.classes(build, setOf(MAIN_ACTIVITY))
-            assertEquals("$where: the launcher activity", setOf(MAIN_ACTIVITY), classes.keys)
+            val classes = FixtureDex.classes(build, setOf(MAIN_ACTIVITY, sharedConfig))
+            assertEquals("$where: the launcher activity and SharedConfig", setOf(MAIN_ACTIVITY, sharedConfig), classes.keys)
 
             val checks = classes.getValue(MAIN_ACTIVITY).methods.filter {
                 it.origParameterTypes == listOf("Z") && it.origReturnType == "V" &&
@@ -53,13 +57,20 @@ class DisableUpdateChecksFixtureTest {
                         instruction.opcode == Opcode.NEW_INSTANCE && instruction.origRef() == getAppUpdate
                     }
             }
+            // SharedConfig.isAppUpdateAvailable(): what the Update Telegram bar asks.
+            val waiting = classes.getValue(sharedConfig).methods.filter { method ->
+                method.origParameterTypes.isEmpty() && method.origReturnType == "Z" &&
+                    method.instructions().map { it.origRef() }.containsAll(listOf(pendingUpdate, pendingBuild))
+            }
             val context = PatchContexts.of(ExtensionDex.classes() + classes.values)
-            disableUpdateChecksPatch.execute(context)
+            assertEquals("$where: no warning", emptyList<String>(),
+                PatchLogCapture.warnings { disableUpdateChecksPatch.execute(context) })
             val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods
                 .single { it.origName == "disableUpdateChecks" }.instructions()
 
             if (build.name.startsWith("telegram-play-")) {
                 assertTrue("$where: Play has no update check", checks.isEmpty())
+                assertTrue("$where: and no saved update to ask about", waiting.isEmpty())
                 val stock = classes.getValue(MAIN_ACTIVITY).methods.associate { it.toString() to it.instructions().size }
                 val after = context.tgMutableClassDefBy(MAIN_ACTIVITY).methods.associate { it.toString() to it.instructions().size }
                 assertEquals("$where: the launcher activity is left alone", stock, after)
@@ -79,6 +90,17 @@ class DisableUpdateChecksFixtureTest {
             assertEquals(Opcode.IF_EQZ, after[2].opcode)
             assertEquals("$where: the early return", Opcode.RETURN_VOID, after[3].opcode)
             assertEquals("$where: nothing else moved", before.map { it.opcode }, after.subList(4, after.size).map { it.opcode })
+
+            // An update found while the switch was off gets a no while it's on (#60).
+            val stock = waiting.single()
+            val asked = context.tgMutableClassDefBy(sharedConfig).methods.single { it.sameSignatureAs(stock) }.instructions()
+            val kept = stock.instructions()
+            assertEquals("$where: instructions added to isAppUpdateAvailable", kept.size + 5, asked.size)
+            assertEquals("$updateChecks->hideWaitingUpdate()Z", (asked[0] as ReferenceInstruction).reference.origString())
+            assertEquals(listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.CONST_4, Opcode.RETURN),
+                asked.subList(0, 5).map { it.opcode })
+            assertEquals("$where: the answer is no", 0, (asked[3] as NarrowLiteralInstruction).narrowLiteral)
+            assertEquals("$where: the stock answer follows", kept.map { it.opcode }, asked.subList(5, asked.size).map { it.opcode })
 
             assertEquals("$where: SettingsStatus.disableUpdateChecks() answers true first", Opcode.CONST_4, status[0].opcode)
             assertEquals(1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
