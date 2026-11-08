@@ -36,6 +36,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstructio
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
@@ -70,12 +71,14 @@ class HideCommerceFixtureTest {
             val wallet = settings.filter { !it.replace }
             assertEquals("${build.name}: both Wallet placements", 2, wallet.size)
             val builder = settings.first().method.instructions()
+            // 13.2 loads the Wallet label once ahead of both placements, so each block reads it.
+            val labelReads = walletLabelReads(builder, ControlFlow.of(settings.first().method))
             for (gate in wallet) {
-                assertEquals("${build.name}: Wallet gate reads walletAvailable", WALLET_AVAILABLE, builder[gate.index - 3].reference())
+                assertWalletGate("${build.name}: Wallet", builder, gate.index)
                 assertEquals(Opcode.IF_EQZ, builder[gate.index].opcode)
                 val skip = ControlFlow.of(settings.first().method).normal[gate.index].single { it != gate.index + 1 }
-                assertEquals("${build.name}: the skipped block holds one Wallet label", 1,
-                    (gate.index + 1 until skip).count { builder[it].reference() == WALLET_LABEL })
+                assertEquals("${build.name}: the skipped block reads one Wallet label", 1,
+                    (gate.index + 1 until skip).count { it in labelReads })
             }
             val profile = plan.hooks.getValue(CommerceTarget.PROFILE_GIFTS)
             assertEquals("${build.name}: fresh and cached edit candidates", 2, profile.count { it.replace })
@@ -92,7 +95,9 @@ class HideCommerceFixtureTest {
             gift.forEach { edit ->
                 val menu = edit.method.instructions()
                 assertEquals(Opcode.IF_NEZ, menu[edit.index].opcode)
-                assertEquals(PROFILE_GIFT_GATE, menu[edit.index - 2].reference())
+                // 13.2 reads premiumPurchaseBlocked()'s field in place of the call.
+                assertTrue("${build.name}: the branch tests the purchase check's answer",
+                    giftCheckAnswers(menu, edit.index - 1))
                 val skip = ControlFlow.of(edit.method).normal[edit.index].single { it != edit.index + 1 }
                 assertEquals("${build.name}: the check skips one Send a Gift", 1,
                     (edit.index + 1 until skip).count { menu[it].reference() in PROFILE_GIFT_ITEMS })
@@ -103,7 +108,7 @@ class HideCommerceFixtureTest {
             val attach = plan.hooks.getValue(CommerceTarget.ATTACH_WALLET).single()
             assertFalse(attach.replace)
             val numbering = attach.method.instructions()
-            assertEquals("${build.name}: attach gate reads walletAvailable", WALLET_AVAILABLE, numbering[attach.index - 3].reference())
+            assertWalletGate("${build.name}: attach", numbering, attach.index)
             assertEquals(Opcode.IF_EQZ, numbering[attach.index].opcode)
             val skipped = attach.index + 1 until ControlFlow.of(attach.method).normal[attach.index].single { it != attach.index + 1 }
             val bound = binder(context, attach.method.definingClass).instructions()
@@ -126,7 +131,7 @@ class HideCommerceFixtureTest {
             // on after it, a path that never reaches the side menu mini apps.
             val menu = plan.hooks.getValue(CommerceTarget.MENU_WALLET).single()
             val entries = menu.method.instructions()
-            assertEquals("${build.name}: menu gate reads walletAvailable", WALLET_AVAILABLE, entries[menu.index - 4].reference())
+            assertWalletGate("${build.name}: menu", entries, menu.index - 1)
             assertEquals(Opcode.IF_EQZ, entries[menu.index - 1].opcode)
             val menuExit = labelTarget(menu)
             assertEquals("${build.name}: the entry holds one Wallet label", 1, (menu.index until menuExit).count { entries[it].reference() == WALLET_LABEL })
@@ -146,7 +151,7 @@ class HideCommerceFixtureTest {
                 assertFalse(gate.replace)
                 val body = gate.method.instructions()
                 val flow = ControlFlow.of(gate.method)
-                assertEquals("${build.name}: $target gate reads walletAvailable", WALLET_AVAILABLE, body[gate.index - 3].reference())
+                assertWalletGate("${build.name}: $target", body, gate.index)
                 assertEquals(Opcode.IF_EQZ, body[gate.index].opcode)
                 val skip = flow.normal[gate.index].single { it != gate.index + 1 }
                 val branch = gate.index + 1 until skip
@@ -174,7 +179,7 @@ class HideCommerceFixtureTest {
             val getters = hosts.filter { it.origType == EMOJI_USERS || it.origType == EMOJI_DIALOGS }.flatMap { it.methods.toList() }
                 .filter { it.origName == EMOJI_GETTER && it.parameterTypes.map { type -> type.toString() } == listOf(EMOJI_STATUS_TYPE) }
             assertEquals("${build.name}: one status getter each for people and chats", setOf(EMOJI_USERS, EMOJI_DIALOGS),
-                getters.map { it.definingClass }.toSet())
+                getters.map { it.origDefiningClass }.toSet())
             assertEquals(2, getters.size)
             val keepers = statusKeepers(hosts)
             assertTrue("${build.name}: the changed check keeps the real status", keepers.any { it.origName == "emojiStatusesEqual" })
@@ -203,7 +208,10 @@ class HideCommerceFixtureTest {
             assertTrue("${build.name}: includes the ordinary channel footer controls", untouched.any { method ->
                 method.instructions().any { it.reference() == JOIN } && method.instructions().any { it.reference() == UNMUTE }
             })
+            val declared = hosts.flatMap { it.methods.toList() }.filter { it.origDefiningClass == CONTROLLER }.map { it.origName }.toSet()
             for (gate in listOf("premiumFeaturesBlocked", "premiumPurchaseBlocked", "starsPurchaseAvailable")) {
+                // 13.2's R8 inlined premiumPurchaseBlocked() into its callers as a premiumLocked read.
+                if (gate == "premiumPurchaseBlocked" && gate !in declared) continue
                 assertTrue("${build.name}: includes stock $gate", untouched.any { it.origDefiningClass == CONTROLLER && it.origName == gate })
             }
             assertTrue("${build.name}: includes stock Premium entitlement", untouched.any {
@@ -258,7 +266,7 @@ class HideCommerceFixtureTest {
                 val body = wrapper.instructions()
                 assertEquals("${build.name}: the wrapper asks the switch first", EMOJI_HIDE, body.first().reference())
                 assertEquals("${build.name}: and otherwise answers Telegram's own", 1,
-                    body.count { it.reference() == "${getter.definingClass}->$stockName($EMOJI_STATUS_TYPE)${getter.returnType}" })
+                    body.count { it.reference() == "${getter.origDefiningClass}->$stockName($EMOJI_STATUS_TYPE)${getter.origReturnType}" })
             }
             for (keeper in keepers) {
                 val after = context.tgMutableClassDefBy(keeper.definingClass).methods.single { it.sameSignature(keeper) }
@@ -303,11 +311,15 @@ class HideCommerceFixtureTest {
             val body = method.instructions()
             val labels = body.indices.filter { body[it].reference() == PROFILE_GIFTS }
             val cachedPair = edits.filter { it.replace }.maxOf { it.index } - 1
+            // 13.2 loads the fresh title above the fresh branch and allocation, and reads the cached
+            // title through a forwarded call that takes a null set up first.
+            val allocation = if (body[labels.first() + 1].opcode == Opcode.IF_EQZ) labels.first() + 2 else labels.first() - 3
+            val cachedTitle = (labels.last() + 1..labels.last() + 3).first { body[it].opcode == Opcode.MOVE_RESULT_OBJECT }
             when (change) {
-                "allocation" -> method.replaceInstruction(labels.first() - 3, "nop")
+                "allocation" -> method.replaceInstruction(allocation, "nop")
                 "cached title" -> {
-                    val title = body[labels.last() + 2].namedRegisters().single()
-                    method.replaceInstruction(labels.last() + 2, "move-result-object v${if (title == 8) 9 else 8}")
+                    val title = body[cachedTitle].namedRegisters().single()
+                    method.replaceInstruction(cachedTitle, "move-result-object v${if (title == 8) 9 else 8}")
                 }
                 "cached ID" -> {
                     val branch = body.indices.single { body[it].opcode == Opcode.IF_EQ &&
@@ -335,7 +347,7 @@ class HideCommerceFixtureTest {
                     }
                 }
                 "visibility" -> {
-                    val guard = labels.first() - 4
+                    val guard = allocation - 1
                     val visible = body[guard].namedRegisters().single()
                     method.addInstructionsAtControlFlowLabel(guard, "const-wide/16 v${visible - 1}, 0x0")
                 }
@@ -398,7 +410,9 @@ class HideCommerceFixtureTest {
                     val id = (gate + 1 until row).single { (body[it] as? NarrowLiteralInstruction)?.narrowLiteral == 25 }
                     method.replaceInstruction(id, "const/16 v${body[id].namedRegisters().single()}, 0x18")
                 }
-                "divider" -> method.replaceInstruction(skip - 1, "nop")
+                // 13.2's Play build ends the first block with a jump after its divider.
+                "divider" -> method.replaceInstruction((gate + 1 until skip).last {
+                    body[it].reference() == "Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z" }, "nop")
                 "availability read" -> method.replaceInstruction(gate - 2, "nop")
                 // A jump from before the gate straight to the row skips Telegram's own answer. The
                 // jumped-over registers would fail ART's verifier, and the patch must still turn it
@@ -611,7 +625,7 @@ class HideCommerceFixtureTest {
             val answers = builder.indices.filter { builder[it].reference()?.endsWith("->profileGiftMenuBlocked(I)Z") == true }
             assertEquals("${build.name}: both Send a Gift checks answered after Send Gram went in", 2, answers.size)
             answers.forEach { answer ->
-                assertEquals(PROFILE_GIFT_GATE, builder[answer - 2].reference())
+                assertTrue("${build.name}: the hook reads the purchase check's answer", giftCheckAnswers(builder, answer - 1))
                 assertEquals(Opcode.MOVE_RESULT, builder[answer + 1].opcode)
                 assertEquals(Opcode.IF_NEZ, builder[answer + 2].opcode)
             }
@@ -870,9 +884,13 @@ class HideCommerceFixtureTest {
         val title = FixtureDex.classesWhere(build, { true }) { method ->
             method.parameterTypes.map { it.toString() } == listOf(USER, "Z") && method.instructions().any { it.reference() == LIST_STAR }
         }
+        // 13.2 merges the walletAvailable flag's class into one other sources share, and the Gram
+        // transfer menu still calls its get() there, so the patch reads that getter's body.
+        val flags = anchors.flatMap { it.methods }.flatMap { it.instructions() }.filter { it.readsWalletAvailable() }
+            .map { ((it as ReferenceInstruction).reference as FieldReference).type }.toSet()
         // LocaleController holds the getString(int) wrapper whose forwarded call 13.2 inlined into the title sites.
         val kept = FixtureDex.classes(build, setOf(TABS, CONTROLLER, USER_CONFIG, EMOJI_USERS, EMOJI_DIALOGS, MESSAGE_OBJECT,
-            "Lorg/telegram/messenger/LocaleController;")).values
+            "Lorg/telegram/messenger/LocaleController;") + flags).values
         return (icons + anchors + title + kept).distinctBy { it.type }
     }
 
@@ -884,9 +902,7 @@ class HideCommerceFixtureTest {
     }
 
     /** MessagesController's send of the account's own new status. */
-    private fun statusSend(hosts: List<ClassDef>) = hosts.single { it.origType == CONTROLLER }.methods.single { method ->
-        method.origName == SEND_STATUS_NAME && method.parameterTypes.map { it.toString() } == SEND_STATUS_PARAMETERS
-    }
+    private fun statusSend(hosts: List<ClassDef>) = hosts.single { it.origType == CONTROLLER }.methods.single { it.sendsOwnStatus() }
 
     /** The App Icon list's Premium flag: the one instance boolean of the enum naming the launcher aliases. */
     private fun iconFlag(hosts: List<ClassDef>): String {
@@ -949,6 +965,21 @@ class HideCommerceFixtureTest {
         if (instruction.opcode == Opcode.GOTO_16 || instruction.opcode == Opcode.GOTO_32) listOf(Opcode.GOTO) + it.drop(1) else it
     }
     private fun Instruction.reference() = origRef()
+
+    /** Whether [answer] holds a Send a Gift purchase check's result: the call's move-result, or 13.2's field read. */
+    private fun giftCheckAnswers(body: List<Instruction>, answer: Int) =
+        (answer - 1..answer).any { it >= 0 && profileGiftAnswer(body, it) == answer }
+
+    /**
+     * [gate] decides on a walletAvailable read alone: three instructions back through
+     * ConfigBoolean.get() and its result, or four where 13.2 inlines get() as the flag's handler,
+     * its cast and its value.
+     */
+    private fun assertWalletGate(where: String, body: List<Instruction>, gate: Int) {
+        val read = gate - if (body[gate - 1].opcode == Opcode.IGET_BOOLEAN) 4 else 3
+        assertTrue("$where gate reads walletAvailable", body[read].readsWalletAvailable())
+        assertEquals("$where gate decides on that read alone", gate, walletGate(body, read))
+    }
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
     private fun Method.sameSignature(other: Method) = name == other.name && returnType == other.returnType &&
         parameterTypes.map { it.toString() } == other.parameterTypes.map { it.toString() }

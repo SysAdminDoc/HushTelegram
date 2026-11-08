@@ -20832,3 +20832,7 @@ m Lorg/telegram/messenger/MessagesController; isPremiumUser (Lorg/telegram/tgnet
 f Lorg/telegram/messenger/BuildVars; SUPPORTS_PASSKEYS Z Lorg/telegram/messenger/n2; i Z
 c Lorg/telegram/messenger/PasskeysController; Lorg/telegram/messenger/yt; Ljava/lang/Object; Ljava/lang/Object;
 m Lorg/telegram/messenger/PasskeysController; create (Landroid/content/Context;ILorg/telegram/messenger/Utilities$Callback2;)V Lorg/telegram/messenger/yt; b (ILandroid/content/Context;Lorg/telegram/messenger/i20;)V
+# added by hand: commerce wallet
+f Lorg/telegram/messenger/AppGlobalConfig; walletAvailable Lorg/telegram/messenger/AppGlobalConfig$ConfigBoolean; Lorg/telegram/messenger/q0; j0 Lj7/h;
+c Lorg/telegram/messenger/AppGlobalConfig$ConfigBoolean$Internal; Lorg/telegram/messenger/i0; Ljava/lang/Object; Ljava/lang/Object;
+f Lorg/telegram/messenger/AppGlobalConfig$ConfigBoolean$Internal; value Z Lorg/telegram/messenger/i0; c Z
