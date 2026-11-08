@@ -73,6 +73,12 @@ final class SideMenuPanel extends FrameLayout {
     static final long SETTLE_MS = 220;
     /** How dark the screen behind gets with the menu all the way open. */
     static final float SCRIM = 0.5f;
+    /**
+     * Telegram's drawable for each {@link SideMenu.Row}, in order. New Message takes the outline pencil:
+     * Telegram 13 draws its msg_message as an eye.
+     */
+    static final String[] ICONS = {"msg_openprofile", "msg_edit", "msg_contacts", "msg_calls", "msg_saved",
+            "msg_settings_old", "msg_archive", "msg_admins", "msg_settings", "msg_download"};
 
     Object screen;
     final View scrim;
@@ -147,7 +153,6 @@ final class SideMenuPanel extends FrameLayout {
         menu.addView(accounts);
         menu.addView(divider());
         String[] labels = SideMenu.rowLabels();
-        String[] icons = {"msg_openprofile", "msg_message", "msg_contacts", "msg_calls", "msg_saved", "msg_settings_old", "msg_archive", "msg_admins", "msg_settings", "msg_download"};
         for (SideMenu.Row each : SideMenu.Row.values()) {
             if (each == SideMenu.Row.HUSH) {
                 hushDivider = divider();
@@ -160,7 +165,7 @@ final class SideMenuPanel extends FrameLayout {
                 archiveLabel = labels[each.ordinal()];
                 continue;
             }
-            TextView added = row(labels[each.ordinal()], icons[each.ordinal()], each);
+            TextView added = row(labels[each.ordinal()], ICONS[each.ordinal()], each);
             if (each == SideMenu.Row.HUSH) hushRow = added;
             if (each == SideMenu.Row.DOWNLOADS) downloadsRow = added;
             menu.addView(added);

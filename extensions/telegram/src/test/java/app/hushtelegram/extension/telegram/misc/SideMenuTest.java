@@ -415,6 +415,15 @@ public class SideMenuTest {
         assertTrue(report(), report().contains("2 missing. First missing: a working 'side menu accounts' hook"));
     }
 
+    @Test public void newMessageRowShowsAPencilNotTheEye() {
+        // Telegram 13.2 draws msg_message as an eye; the S22 showed it beside New Message.
+        assertEquals(SideMenu.Row.values().length, SideMenuPanel.ICONS.length);
+        assertEquals("msg_edit", SideMenuPanel.ICONS[SideMenu.Row.NEW_MESSAGE.ordinal()]);
+        assertEquals("msg_openprofile", SideMenuPanel.ICONS[SideMenu.Row.PROFILE.ordinal()]);
+        assertEquals("msg_admins", SideMenuPanel.ICONS[SideMenu.Row.ADMINS.ordinal()]);
+        assertFalse(java.util.Arrays.asList(SideMenuPanel.ICONS).contains("msg_message"));
+    }
+
     @Test public void textIsDarkOnALightMenuAndLightOnADarkOne() {
         assertEquals(0xFF000000, new SideMenuPanel.Colors(Color.WHITE).text);
         assertEquals(0xFFFFFFFF, new SideMenuPanel.Colors(0xFF1F1F1F).text);
