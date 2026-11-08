@@ -444,10 +444,18 @@ public class PausedHooksTest {
         // A Firebase sign-up signs up the UnifiedPush address instead.
         probes.put(PatchFamily.UNIFIED_PUSH, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.UnifiedPushForTests.swapsFirebase()));
-        // The sign-in screen offers Test Backend on an account that isn't on the test servers.
-        probes.put(PatchFamily.TEST_SERVER_SIGN_IN, Collections.singletonList(
-                () -> app.hushtelegram.extension.telegram.misc.TestServers.shown(0)));
+        // The sign-in screen offers Test Backend on an account that isn't on the test servers, and
+        // takes the 999 code of a test number.
+        probes.put(PatchFamily.TEST_SERVER_SIGN_IN, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.TestServers.shown(0),
+                () -> app.hushtelegram.extension.telegram.misc.TestServers.countryState(2, testNumberCode()) == 0));
         return probes;
+    }
+
+    private static android.widget.TextView testNumberCode() {
+        android.widget.TextView field = new android.widget.TextView(org.robolectric.RuntimeEnvironment.getApplication());
+        field.setText("999");
+        return field;
     }
 
     private static boolean firebaseHeaderChanged() {

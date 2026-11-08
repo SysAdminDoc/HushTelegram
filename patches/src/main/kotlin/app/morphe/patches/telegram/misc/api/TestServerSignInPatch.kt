@@ -22,17 +22,30 @@ import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.names.addInstructions
+import app.morphe.util.names.origString
 import app.morphe.util.names.origType
 import app.morphe.util.names.tgMutableClassDefBy
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 
 internal const val TEST_SERVERS = "$EXTENSION_PACKAGE/misc/TestServers;"
 internal const val TEST_SERVERS_SHOWN = "$TEST_SERVERS->shown(I)Z"
 internal const val DEBUG_TEST_BACKEND = "Lorg/telegram/messenger/R\$string;->DebugTestBackend:I"
 internal const val IS_TEST_BACKEND = "Lorg/telegram/tgnet/ConnectionsManager;->isTestBackend()Z"
+internal const val TEST_SERVERS_COUNTRY_STATE = "$TEST_SERVERS->countryState(ILjava/lang/Object;)I"
+internal const val CHOOSE_COUNTRY = "Lorg/telegram/messenger/R\$string;->ChooseCountry:I"
+internal const val WRONG_COUNTRY = "Lorg/telegram/messenger/R\$string;->WrongCountry:I"
+private const val EDIT_TEXT_GET_TEXT = "Landroid/widget/EditText;->getText()Landroid/text/Editable;"
+/** The phone screen's country state for a code no country has, the one Next answers with WrongCountry. */
+private const val UNKNOWN_COUNTRY_STATE = 2
+private val CONSTANT_LOADS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST, Opcode.CONST_HIGH16)
 private const val CELLS_PACKAGE = "Lorg/telegram/ui/Cells/"
 private const val CELL_INIT = "-><init>(Landroid/content/Context;I)V"
 
@@ -56,11 +69,115 @@ val testServerSignInPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.telegram())
     execute {
         val check = resolveTestServerSignIn()
-        // Assembled on a copy first, so a refusal leaves the app untouched.
+        val code = resolveTestNumberCode()
+        // Assembled on copies first, so a refusal leaves the app untouched.
         insertTestServersAnswer(MutableMethod(ImmutableMethod.of(check.method)), check)
+        insertCountryStateAnswer(MutableMethod(ImmutableMethod.of(code.method)), code)
         insertTestServersAnswer(check.method, check)
+        insertCountryStateAnswer(code.method, code)
         enableStatus("testServerSignIn")
     }
+}
+
+/**
+ * Where Next on the sign-in phone screen refuses a country code no country has: the method, the
+ * index right after it reads the screen's country state, the registers holding that state and the
+ * screen, the field holding the typed code, and a register the next instruction overwrites anyway.
+ */
+internal class CountryCodeCheck(
+    val method: MutableMethod,
+    val at: Int,
+    val state: Int,
+    val screen: Int,
+    val codeField: String,
+    val scratch: Int,
+)
+
+/**
+ * The extension gets the country state and the code field before Next tests the state, and its
+ * answer goes back in the same register, so a 999 test number passes both of Telegram's tests.
+ */
+internal fun insertCountryStateAnswer(target: MutableMethod, check: CountryCodeCheck) {
+    target.addInstructions(
+        check.at,
+        """
+            iget-object v${check.scratch}, v${check.screen}, ${check.codeField}
+            invoke-static { v${check.state}, v${check.scratch} }, $TEST_SERVERS_COUNTRY_STATE
+            move-result v${check.state}
+        """,
+    )
+}
+
+/**
+ * Next on the sign-in phone screen. Telegram reads the screen's country state, shows ChooseCountry
+ * for state 1 and WrongCountry for state 2, then builds the number from the code field's text and
+ * the phone field's. Release builds know no 999 country, so a test number always lands on state 2.
+ * Every piece of that is checked here before anything is edited.
+ */
+internal fun BytecodePatchContext.resolveTestNumberCode(): CountryCodeCheck {
+    controlHook(TEST_SERVERS, "countryState", listOf("I", "Ljava/lang/Object;"), "I")
+    val hosts = mutableListOf<Pair<String, Method>>()
+    // Changing a number has the same alerts, but only signing in asks which servers an account is on.
+    val refs = listOf(CHOOSE_COUNTRY, WRONG_COUNTRY, IS_TEST_BACKEND)
+    forEachClassMentioning(Mention.allOf(refs.map { Mention.reference(it) })) { cls ->
+        if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        for (method in cls.methods) {
+            val body = method.controlBody()
+            if (refs.all { ref -> body.any { it.controlRef() == ref } }) hosts += cls.type to method
+        }
+    }
+    val (type, found) = hosts.controlSingle("the phone screen's Next")
+    val signature = found.name + found.parameterTypes.joinToString("", "(", ")") + found.returnType
+    val method = tgMutableClassDefBy(type).methods.single {
+        it.name + it.parameterTypes.joinToString("", "(", ")") + it.returnType == signature
+    }
+    val body = method.controlBody()
+    val choose = body.indices.filter { body[it].controlRef() == CHOOSE_COUNTRY }.controlSingle("the ChooseCountry alert")
+    val wrong = body.indices.filter { body[it].controlRef() == WRONG_COUNTRY }.controlSingle("the WrongCountry alert")
+    val refusal = (wrong - 1 downTo choose + 1).firstOrNull { body[it].opcode == Opcode.IF_NE }
+    controlShape(refusal != null, "the WrongCountry alert is no longer behind a test")
+    val tested = body[refusal!!] as TwoRegisterInstruction
+    val state = tested.registerA
+    controlShape((choose + 1 until refusal).any {
+        val two = body[it]
+        two.opcode == Opcode.CONST_4 && (two as OneRegisterInstruction).registerA == tested.registerB &&
+            (two as NarrowLiteralInstruction).narrowLiteral == UNKNOWN_COUNTRY_STATE
+    }, "the WrongCountry alert no longer waits on an unknown country code")
+    val read = (choose - 1 downTo 0).firstOrNull { body[it].opcode == Opcode.IGET && (body[it] as OneRegisterInstruction).registerA == state }
+    controlShape(read != null, "Next no longer reads the country state")
+    val stateField = (body[read!!] as ReferenceInstruction).reference as FieldReference
+    val screen = (body[read] as TwoRegisterInstruction).registerB
+    controlShape(stateField.definingClass == method.definingClass && stateField.type == "I",
+        "the country state is no longer the screen's own int")
+    val next = body[read + 1]
+    controlShape(next.opcode in CONSTANT_LOADS && (next as OneRegisterInstruction).registerA.let { it != state && it != screen },
+        "Next no longer loads a constant right after reading the country state")
+    val scratch = (next as OneRegisterInstruction).registerA
+    val first = read + 2
+    controlShape(body[first].opcode == Opcode.IF_NE && (body[first] as TwoRegisterInstruction).registerA == state,
+        "Next no longer tests the country state right after reading it")
+    // Both tests read the state the hook answered: past ChooseCountry, Telegram goes straight to the
+    // WrongCountry test with constants only, so nothing on the way changes it.
+    val flow = ControlFlow.of(method)
+    val past = flow.normal[first].filter { it != first + 1 }.controlSingle("the ChooseCountry test's way past the alert")
+    controlShape(past in (choose + 1)..refusal && (past until refusal).all { i ->
+        flow.normal[i] == listOf(i + 1) && body[i].opcode in CONSTANT_LOADS && (body[i] as OneRegisterInstruction).registerA != state
+    }, "Next changes the country state before testing it again")
+    val code = (wrong + 1 until body.size).firstOrNull { i ->
+        val get = body[i]
+        get.opcode == Opcode.IGET_OBJECT && (get as TwoRegisterInstruction).registerB == screen &&
+            body.getOrNull(i + 1)?.controlRef() == EDIT_TEXT_GET_TEXT &&
+            (body[i + 1] as FiveRegisterInstruction).registerC == get.registerA
+    }
+    controlShape(code != null, "Next no longer starts the number with a field's text")
+    val codeField = (body[code!!] as ReferenceInstruction).reference as FieldReference
+    controlShape(codeField.definingClass == method.definingClass, "the number no longer starts with the screen's own field")
+    controlShape(listOf(state, screen, scratch).all { it <= 15 }, "Next's registers no longer fit the hook")
+    // Nothing but the read itself may reach the instruction after it, or that way in would skip the hook.
+    val otherEntry = flow.normal.indices.any { it != read && read + 1 in flow.normal[it] } ||
+        flow.exceptional.any { read + 1 in it }
+    controlShape(!otherEntry, "something else jumps past Next's country state read")
+    return CountryCodeCheck(method, read + 1, state, screen, codeField.origString(), scratch)
 }
 
 /**

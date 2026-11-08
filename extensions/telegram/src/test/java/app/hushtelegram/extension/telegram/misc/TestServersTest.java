@@ -6,6 +6,8 @@ package app.hushtelegram.extension.telegram.misc;
 
 import static org.junit.Assert.*;
 
+import android.widget.TextView;
+
 import app.hushtelegram.extension.shared.SettingsContextRule;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
@@ -19,6 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
@@ -64,5 +67,44 @@ public class TestServersTest {
         assertTrue(TestServers.shown(1));
         assertFalse(TestServers.shown(0));
         assertFalse(HookStatus.missing(FamilyNames.TEST_SERVER_SIGN_IN).isEmpty());
+    }
+
+    @Test public void theTestNumberCodePassesOnlyWithTheSwitchOn() {
+        TextView test = code("999");
+        assertEquals(2, TestServers.countryState(2, test));
+        Settings.TEST_SERVER_SIGN_IN.save(true);
+        assertEquals(0, TestServers.countryState(2, test));
+        assertEquals("a code Telegram knows keeps its state", 0, TestServers.countryState(0, test));
+        assertEquals("choose a country stays choose a country", 1, TestServers.countryState(1, test));
+        assertTrue(String.join("\n", HookStatus.report()).contains(FamilyNames.TEST_SERVER_SIGN_IN));
+    }
+
+    @Test public void anyOtherUnknownCodeIsStillRefused() {
+        Settings.TEST_SERVER_SIGN_IN.save(true);
+        for (String typed : new String[]{"99", "9999", "998", "", " 999"}) {
+            assertEquals(typed, 2, TestServers.countryState(2, code(typed)));
+        }
+        assertEquals(2, TestServers.countryState(2, null));
+        assertEquals(2, TestServers.countryState(2, "999"));
+    }
+
+    @Test public void aPausedOrBrokenSwitchRefusesTheTestCode() {
+        Settings.TEST_SERVER_SIGN_IN.save(true);
+        TextView test = code("999");
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
+            PauseForTests.pause(reason);
+            assertEquals(reason.name(), 2, TestServers.countryState(2, test));
+            PauseForTests.resume();
+        }
+        SettingsContextRule.withoutContext(() -> assertEquals(2, TestServers.countryState(2, test)));
+        SettingReadsForTests.breakReads(Settings.TEST_SERVER_SIGN_IN);
+        assertEquals(2, TestServers.countryState(2, test));
+    }
+
+    private static TextView code(String typed) {
+        TextView field = new TextView(RuntimeEnvironment.getApplication());
+        field.setText(typed);
+        return field;
     }
 }
