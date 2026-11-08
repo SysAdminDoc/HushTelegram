@@ -370,7 +370,8 @@ function Invoke-PatchSelectionMatrix {
         (Join-Path $PSScriptRoot 'DexDiff.java'), (Join-Path $PSScriptRoot 'SelectionCheck.java'),
         (Join-Path $PSScriptRoot 'ResourceTableCheck.java')) -PrivateOutput (Join-Path $run 'compiler-private.txt')
     if ($compiled -ne 0) { throw 'CHECKER_COMPILE_FAILED' }
-    $classPath = $classes + [IO.Path]::PathSeparator + $DesktopJar
+    # The patches' resources carry each Telegram build's name table, which the checker reads too.
+    $classPath = ($classes, $DesktopJar, (Join-Path $root 'patches/src/main/resources')) -join [IO.Path]::PathSeparator
     # The fixture is hashed once a run, not once a case: every case compares its size and write
     # time, which a rewrite moves, and the whole hash is read again once after the last case.
     $sourceHash = Get-Sha256Hex -Path $Apk

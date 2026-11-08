@@ -194,18 +194,20 @@ try {
         (Join-Path $Root 'scripts/SelectionCheckNativeVersionTest.java'), (Join-Path $Root 'scripts/SelectionCheckFixtureTest.java')) `
         -PrivateOutput (Join-Path $scratch 'compile-private.txt')
     Assert-Selection ($compile -eq 0) 'The compiled selection checker tests did not compile.'
+    # The checker reads each Telegram build's name table from the patches' resources, as the matrix runs it.
+    $checkerPath = ($classes, $desktop, (Join-Path $Root 'patches/src/main/resources')) -join [IO.Path]::PathSeparator
     $nativeOutput = Join-Path $scratch 'native-private.txt'
     $native = Invoke-SelectionTool -Program $java -Arguments (@('-Xmx512m', '-XX:ActiveProcessorCount=2', '-cp',
-        ($classes + [IO.Path]::PathSeparator + $desktop), 'SelectionCheckNativeVersionTest') + $fixtures) -PrivateOutput $nativeOutput
+        $checkerPath, 'SelectionCheckNativeVersionTest') + $fixtures) -PrivateOutput $nativeOutput
     Assert-Selection ($native -eq 0 -and (Get-Content $nativeOutput -Raw).Contains('NATIVE_VERSION_CHECKS_PASSED checks=90')) `
         'The native-version checker lost its exact insertion, refusal or initial-value controls.'
     $fixtureOutput = Join-Path $scratch 'fixture-private.txt'
     $fixtureCode = Invoke-SelectionTool -Program $java -Arguments (@('-Xmx512m', '-XX:ActiveProcessorCount=2', '-cp',
-        ($classes + [IO.Path]::PathSeparator + $desktop), 'SelectionCheckFixtureTest') + $fixtures) -PrivateOutput $fixtureOutput
+        $checkerPath, 'SelectionCheckFixtureTest') + $fixtures) -PrivateOutput $fixtureOutput
     Assert-Selection ($fixtureCode -eq 0 -and (Get-Content $fixtureOutput -Raw).Contains('FIXTURE_CHECKS_PASSED checks=8')) `
         'The checker lost its BuildVars refusal control or its launcher icon control.'
     # A matrix run keeps one checker, which decodes the clean fixture once and answers each case.
-    $checker = Start-SelectionChecker -Java $java -ClassPath ($classes + [IO.Path]::PathSeparator + $desktop) -Apk $fixtures[0] `
+    $checker = Start-SelectionChecker -Java $java -ClassPath $checkerPath -Apk $fixtures[0] `
         -PrivateOutput (Join-Path $scratch 'checker-private.txt')
     $answers = @(foreach ($n in 1..2) {
         Invoke-SelectionChecker -Checker $checker -Request @((Join-Path $scratch "missing-$n.apk"), (Join-Path $scratch 'missing.json'),

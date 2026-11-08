@@ -50,7 +50,8 @@ import java.util.zip.ZipFile;
 public final class SelectionCheck {
     private static final String OWN = "Lapp/hushtelegram/extension/";
     private static final String STATUS = OWN + "telegram/settings/SettingsStatus;";
-    private static final String API = "Lorg/telegram/messenger/BuildVars;-><clinit>()V";
+    static final String BUILD_VARS = "Lorg/telegram/messenger/BuildVars;";
+    private static final String API = BUILD_VARS + "-><clinit>()V";
     private static final String CONNECTIONS = "Lorg/telegram/tgnet/ConnectionsManager;";
     private static final String ANDROID = "{http://schemas.android.com/apk/res/android}";
     private static final String ALIAS = "app.hushtelegram.extension.telegram.settings.OpenSettings";
@@ -106,17 +107,103 @@ public final class SelectionCheck {
                 + String.join("", method.getParameterTypes()) + ")" + method.getReturnType();
     }
 
-    /** One APK decoded once: its dex entry names, method prints and classes. */
+    /**
+     * Telegram 13.2 ships org.telegram.messenger's top-level classes under R8's names (BuildVars is
+     * r2 on telegram.org's 13.2.0). The patches translate through one table a build, at
+     * patches/src/main/resources/hushtelegram/names/versionCode.txt, and the checker reads the same
+     * table off its classpath, so a host member named here in source names is looked for under the
+     * build's name. A build without a table keeps the source names.
+     */
+    static final class Names {
+        static final Names SOURCE = new Names();
+        private final Map<String, String> classes = new HashMap<>(), supers = new HashMap<>();
+        /** `Lsource;->name(sourceDesc)` to `Lbuild;->name(buildDesc)`. */
+        private final Map<String, String> methods = new HashMap<>();
+        /** `Lsource;->name` to `Lbuild;->name:buildType`. */
+        private final Map<String, String> fields = new HashMap<>();
+
+        static Names of(File apk) throws Exception {
+            String code = manifest(apk).attributes.get(ANDROID + "versionCode");
+            require(code != null && code.matches("INT:\\d+"));
+            var stream = SelectionCheck.class.getResourceAsStream("/hushtelegram/names/" + code.substring(4) + ".txt");
+            if (stream == null) return SOURCE;
+            Names names = new Names();
+            try (var reader = new java.io.BufferedReader(new java.io.InputStreamReader(stream, StandardCharsets.UTF_8))) {
+                for (String line; (line = reader.readLine()) != null; ) {
+                    String[] p = line.split(" ");
+                    switch (p[0]) {
+                        case "c" -> {
+                            names.classes.put(p[1], p[2]);
+                            names.supers.put(p[1], p[3]);
+                        }
+                        case "m" -> names.methods.put(p[1] + "->" + p[2] + p[3], p[4] + "->" + p[5] + p[6]);
+                        case "f" -> names.fields.put(p[1] + "->" + p[2], p[4] + "->" + p[5] + ":" + p[6]);
+                        default -> { }
+                    }
+                }
+            }
+            require(!names.classes.isEmpty());
+            return names;
+        }
+
+        /** The build's name for a source type, arrays included. */
+        String type(String type) {
+            int dims = 0;
+            while (dims < type.length() && type.charAt(dims) == '[') dims++;
+            String mapped = classes.get(type.substring(dims));
+            return mapped == null ? type : type.substring(0, dims) + mapped;
+        }
+
+        String descriptor(String descriptor) {
+            StringBuilder out = new StringBuilder();
+            for (int i = 0; i < descriptor.length(); i++) {
+                char c = descriptor.charAt(i);
+                if (c != 'L') {
+                    out.append(c);
+                    continue;
+                }
+                int end = descriptor.indexOf(';', i);
+                require(end > i);
+                out.append(type(descriptor.substring(i, end + 1)));
+                i = end;
+            }
+            return out.toString();
+        }
+
+        /** A method `Lowner;->name(params)return` in source names, as this build names it, inherited ones included. */
+        String method(String reference) {
+            int arrow = reference.indexOf("->"), paren = reference.indexOf('(');
+            require(arrow > 0 && paren > arrow);
+            String owner = reference.substring(0, arrow), name = reference.substring(arrow + 2, paren);
+            String descriptor = reference.substring(paren);
+            String c = owner;
+            for (int depth = 0; c != null && depth < 32; depth++, c = supers.get(c)) {
+                String found = methods.get(c + "->" + name + descriptor);
+                if (found != null) return c.equals(owner) ? found : type(owner) + found.substring(found.indexOf("->"));
+            }
+            return type(owner) + "->" + name + descriptor(descriptor);
+        }
+
+        /** A field `Lowner;->name:Type` in source names, as this build names it. */
+        String field(String owner, String name, String fieldType) {
+            String found = fields.get(owner + "->" + name);
+            return found != null ? found : type(owner) + "->" + name + ":" + type(fieldType);
+        }
+    }
+
+    /** One APK decoded once: its dex entry names, method prints, classes and the names of its build. */
     static final class Side {
         static int decodes;
         final File apk;
         final TreeSet<String> dexEntries;
         final Map<String, String> bodies;
         final Map<String, ClassDef> classes;
+        final Names names;
 
         Side(File apk) throws Exception {
             this.apk = apk;
             dexEntries = dexEntries(apk);
+            names = Names.of(apk);
             var dex = DexFileFactory.loadDexContainer(apk, Opcodes.getDefault());
             bodies = DexDiff.fingerprintAll(dex);
             classes = classes(dex);
@@ -231,7 +318,7 @@ public final class SelectionCheck {
         }
     }
 
-    private static void compiledHooks(Map<String, ClassDef> types, Map<String, Boolean> flags) {
+    private static void compiledHooks(Map<String, ClassDef> types, Map<String, Boolean> flags, Names names) {
         Map<String, Integer> calls = new HashMap<>();
         for (ClassDef type : types.values()) {
             if (type.getType().startsWith(OWN)) continue;
@@ -407,8 +494,8 @@ public final class SelectionCheck {
         hook(calls, flags, "testServerSignIn", "misc/TestServers", "shown", "countryState");
         hook(calls, flags, "botTokenSignIn", "misc/BotSignIn", "phoneScreen", "drop");
         for (String[] bridge : List.of(
-                new String[]{"nativeTokenPresence", "Lorg/telegram/messenger/SharedConfig;->hushTelegramTokenPresence()I"},
-                new String[]{"nativeAccountCounts", "Lorg/telegram/messenger/UserConfig;->hushTelegramAccountCounts()I"})) {
+                new String[]{"nativeTokenPresence", names.method("Lorg/telegram/messenger/SharedConfig;->hushTelegramTokenPresence()I")},
+                new String[]{"nativeAccountCounts", names.method("Lorg/telegram/messenger/UserConfig;->hushTelegramAccountCounts()I")})) {
             Method stub = method(types, OWN + "telegram/misc/FirebasePush;->" + bridge[0] + "()I");
             List<Instruction> code = instructions(stub);
             boolean linked = code.size() == 3 && code.get(0).getOpcode() == Opcode.INVOKE_STATIC
@@ -419,38 +506,44 @@ public final class SelectionCheck {
             if (linked) method(types, bridge[1]);
         }
         // UnifiedPush hands its address to Telegram's own sign-up through a stub the patch writes.
+        String pushSignUp = names.method(PUSH_SIGN_UP);
         List<Instruction> signUp = instructions(method(types, OWN + "telegram/misc/UnifiedPush;->sendToTelegram(ILjava/lang/String;)V"));
         boolean signUpLinked = signUp.size() == 2 && signUp.get(0).getOpcode() == Opcode.INVOKE_STATIC
                 && signUp.get(0) instanceof ReferenceInstruction reference
-                && reference.getReference().toString().equals(PUSH_SIGN_UP)
+                && reference.getReference().toString().equals(pushSignUp)
                 && signUp.get(1).getOpcode() == Opcode.RETURN_VOID;
         require(signUpLinked == Boolean.TRUE.equals(flags.get("unifiedPush")));
-        if (signUpLinked) method(types, PUSH_SIGN_UP);
+        if (signUpLinked) method(types, pushSignUp);
         // Save downloaded files tells a document from its thumbnail by the downloader's own name for it.
+        String attachName = names.method(ATTACH_NAME);
         List<Instruction> attach = instructions(method(types, OWN + "telegram/misc/SaveDownloads;->attachName(Ljava/lang/Object;)Ljava/lang/String;"));
         boolean attachLinked = attach.size() == 4 && attach.get(1).getOpcode() == Opcode.INVOKE_STATIC
                 && attach.get(1) instanceof ReferenceInstruction call
-                && call.getReference().toString().equals(ATTACH_NAME)
+                && call.getReference().toString().equals(attachName)
                 && attach.get(3).getOpcode() == Opcode.RETURN_OBJECT;
         require(attachLinked == Boolean.TRUE.equals(flags.get("saveDownloads")));
-        if (attachLinked) method(types, ATTACH_NAME);
+        if (attachLinked) method(types, attachName);
         // Folders by chat type has no hook; its stubs are the patch, so the one that takes a folder out of
         // Telegram's list stands for them.
+        String removeFilter = names.method(REMOVE_FILTER);
         List<Instruction> delete = instructions(method(types, OWN + "telegram/misc/ChatTypeFolders;->dropFolder(II)V"));
         long removes = delete.stream().filter(instruction -> instruction.getOpcode() == Opcode.INVOKE_VIRTUAL
                 && instruction instanceof ReferenceInstruction call
-                && call.getReference().toString().equals(REMOVE_FILTER)).count();
+                && call.getReference().toString().equals(removeFilter)).count();
         boolean deleteLinked = removes == 1 && delete.get(delete.size() - 1).getOpcode() == Opcode.RETURN_VOID;
         require(deleteLinked == Boolean.TRUE.equals(flags.get("chatTypeFolders")));
-        if (deleteLinked) method(types, REMOVE_FILTER);
+        if (deleteLinked) method(types, removeFilter);
     }
 
-    private static int apiChanges(Map<String, ClassDef> before, Map<String, ClassDef> after, Expected expected) {
-        return buildVarsChanges(method(before, API), method(after, API), expected.api, expected.apiId, expected.apiHash);
+    private static int apiChanges(Map<String, ClassDef> before, Map<String, ClassDef> after, Expected expected, Names names) {
+        String api = names.method(API);
+        return buildVarsChanges(method(before, api), method(after, api), expected.api, expected.apiId, expected.apiHash, names);
     }
 
     /** BuildVars' initializer differs only by the API pair written in place. */
-    static int buildVarsChanges(Method original, Method patched, boolean api, int apiId, String apiHash) {
+    static int buildVarsChanges(Method original, Method patched, boolean api, int apiId, String apiHash, Names names) {
+        String idField = names.field(BUILD_VARS, "APP_ID", "I");
+        String hashField = names.field(BUILD_VARS, "APP_HASH", "Ljava/lang/String;");
         MethodImplementation reference = original.getImplementation();
         require(original.getAccessFlags() == patched.getAccessFlags()
                 && reference.getRegisterCount() == patched.getImplementation().getRegisterCount()
@@ -471,16 +564,16 @@ public final class SelectionCheck {
             require(writer instanceof ReferenceInstruction
                     && ((ReferenceInstruction) writer).getReference() instanceof FieldReference);
             FieldReference field = (FieldReference) ((ReferenceInstruction) writer).getReference();
-            require(field.getDefiningClass().equals("Lorg/telegram/messenger/BuildVars;")
-                    && ((OneRegisterInstruction) writer).getRegisterA()
+            String written = field.getDefiningClass() + "->" + field.getName() + ":" + field.getType();
+            require(((OneRegisterInstruction) writer).getRegisterA()
                     == ((OneRegisterInstruction) next).getRegisterA());
-            if (field.getName().equals("APP_ID") && field.getType().equals("I")) {
+            if (written.equals(idField)) {
                 require(writer.getOpcode() == Opcode.SPUT && next.getOpcode() == Opcode.CONST
                         && next instanceof NarrowLiteralInstruction
                         && ((NarrowLiteralInstruction) next).getNarrowLiteral() == apiId);
                 id++;
             } else {
-                require(field.getName().equals("APP_HASH") && field.getType().equals("Ljava/lang/String;")
+                require(written.equals(hashField)
                         && writer.getOpcode() == Opcode.SPUT_OBJECT
                         && (next.getOpcode() == Opcode.CONST_STRING
                         || next.getOpcode() == Opcode.CONST_STRING_JUMBO)
@@ -609,7 +702,7 @@ public final class SelectionCheck {
         try (ZipFile zip = new ZipFile(apk)) {
             var entry = zip.getEntry(TableBlock.FILE_NAME);
             require(entry != null);
-            try (var input = new java.io.BufferedInputStream(zip.getInputStream(entry))) { table = TableBlock.load(input); }
+            try (var input = new java.io.BufferedInputStream(zip.getInputStream(entry))) { table = TableBlock.load(input, (read, total) -> { }); }
         }
         int found = 0;
         for (PackageBlock block : table.listPackages()) {
@@ -719,11 +812,13 @@ public final class SelectionCheck {
         for (String key : oldBodies.keySet()) if (!oldBodies.get(key).equals(newBodies.get(key))) changed.add(key);
         require(expected.settings && !credentialsOnlyDelta || added.isEmpty());
         Map<String, ClassDef> before = clean.classes, after = patched.classes;
+        // A patched build keeps its version code, so the clean side's names name both.
+        Names names = clean.names;
         Method originalInit = nativeInitializer(before.get(CONNECTIONS));
         Method patchedInit = nativeInitializer(after.get(CONNECTIONS));
         result.nativeVersionChanges = nativeVersionChanges(originalInit, patchedInit, expected.api, expected.apiId);
         if (!expected.settings || credentialsOnlyDelta) require(changed.equals(expected.api
-                ? new TreeSet<>(List.of(API, signature(originalInit))) : new TreeSet<>()));
+                ? new TreeSet<>(List.of(names.method(API), signature(originalInit))) : new TreeSet<>()));
         require(after.keySet().containsAll(before.keySet()));
         // Mutable host classes can move into a new main DEX without adding a runtime extension.
         require(expected.settings && !credentialsOnlyDelta || before.keySet().equals(after.keySet()));
@@ -751,9 +846,9 @@ public final class SelectionCheck {
                 result.flags.put(method.getName(), value);
             }
             require(result.flags.keySet().equals(expected.flags.keySet()));
-            compiledHooks(after, result.flags);
+            compiledHooks(after, result.flags, names);
         }
-        result.apiLiteralChanges = apiChanges(before, after, expected);
+        result.apiLiteralChanges = apiChanges(before, after, expected, names);
         result.mapsValueChanges = manifestChanges(clean.apk, patched.apk, expected, credentialsOnlyDelta);
         result.changedMethods = changed.size();
         result.addedMethods = added.size();
