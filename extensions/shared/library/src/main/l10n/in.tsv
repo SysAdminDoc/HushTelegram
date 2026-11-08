@@ -1480,3 +1480,29 @@ May have blocked you. A guess: their photo and last seen went away together.	Mun
 May have unblocked you. A guess: their photo or last seen came back.	Mungkin membuka blokir Anda. Hanya dugaan: foto atau status terakhir dilihat muncul lagi.
 # context: history line: Telegram now shows the person as Deleted Account
 Deleted their account	Menghapus akunnya
+# context: a switch on the Chat list page (#53). It adds a button to Telegram's phone number screen that signs the account in as a bot made with @BotFather, using the bot's token instead of a phone number.
+Bot token sign-in	Masuk via token bot
+# context: that switch's summary. "Sign in with a bot token" is the button it adds, written here the way that button's own row translates it.
+Signing in or adding an account shows a Sign in with a bot token button on the phone number screen. Paste the token from @BotFather to use that account as your bot. A chat shows up once someone messages the bot, without older history, and a bot has no contacts, stickers or folders. A bot with a webhook set, or one another program is reading, may not get its messages here. Turning this off only hides the button.	Saat masuk atau menambahkan akun, layar nomor telepon menampilkan tombol Masuk dengan token bot. Tempel token dari @BotFather untuk memakai akun itu sebagai bot Anda. Obrolan muncul setelah seseorang mengirim pesan ke bot, tanpa riwayat lama, dan bot tidak punya kontak, stiker, atau folder. Bot yang memakai webhook, atau yang sedang dibaca program lain, mungkin tidak menerima pesannya di sini. Mematikan ini hanya menyembunyikan tombolnya.
+# context: the button the switch adds under the phone number on Telegram's sign-in screen, and the title of the box it opens.
+Sign in with a bot token	Masuk dengan token bot
+# context: the box's button that sends the bot token to Telegram.
+Sign in	Masuk
+# context: the hint inside the box's text field, where the bot token is pasted.
+Bot token	Token bot
+# context: the line above that field. @BotFather is the Telegram bot that makes bots and hands out their tokens.
+Paste the token @BotFather gave your bot. It goes only to Telegram, which keeps it with the account like any sign-in.	Tempel token yang diberikan @BotFather untuk bot Anda. Token hanya dikirim ke Telegram, yang menyimpannya bersama akun seperti proses masuk lainnya.
+# context: shown under the field after Sign in, until Telegram answers.
+Waiting for Telegram.	Menunggu Telegram.
+# context: short message when Telegram gave no sign-in for the bot token, or the request couldn't go out.
+Telegram didn't sign the bot in.	Bot gagal masuk ke Telegram.
+# context: short message when what was typed doesn't have a bot token's shape (digits, a colon, then 35 letters and digits).
+That isn't a bot token.	Itu bukan token bot.
+# context: short message when Telegram says the bot token is wrong.
+That bot token isn't valid.	Token bot itu tidak valid.
+# context: short message when Telegram says the bot token was revoked in @BotFather.
+That bot token was revoked.	Token bot itu sudah dicabut.
+# context: short message when Telegram asks to wait before trying again. %1$s is a number of seconds.
+Wait %1$s seconds, then try again.	Tunggu %1$s detik, lalu coba lagi.
+# context: short message when Telegram refuses the sign-in with an error code of its own. %1$s is that code, in capitals, as Telegram sends it.
+Telegram refused it: %1$s	Telegram menolaknya: %1$s

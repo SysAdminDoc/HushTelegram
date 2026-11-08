@@ -908,6 +908,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_test_server_sign_in", FALSE);
 
     /**
+     * Whether Telegram's phone number screen offers Sign in with a bot token, for first sign-in and
+     * Add account alike, so an account can be a bot made with @BotFather. Turning it off hides the
+     * button and leaves a bot account that's already signed in working. Off by default.
+     */
+    public static final BooleanSetting BOT_TOKEN_SIGN_IN =
+            new BooleanSetting("hushtelegram_bot_sign_in", FALSE);
+
+    /**
      * Once a day, when Telegram starts, ask api.github.com whether a newer HushTelegram release is
      * out, and say so on the settings screen ({@link ReleaseCheck}). It's the settings entry's own
      * switch rather than a patch's, so every build has it ({@link PatchFamily#ENTRY_SWITCHES}). Off

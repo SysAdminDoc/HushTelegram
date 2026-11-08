@@ -1480,3 +1480,29 @@ May have blocked you. A guess: their photo and last seen went away together.	Sen
 May have unblocked you. A guess: their photo or last seen came back.	Engelini kaldırmış olabilir. Bir tahmin: fotoğrafı veya son görülmesi geri geldi.
 # context: history line: Telegram now shows the person as Deleted Account
 Deleted their account	Hesabını sildi
+# context: a switch on the Chat list page (#53). It adds a button to Telegram's phone number screen that signs the account in as a bot made with @BotFather, using the bot's token instead of a phone number.
+Bot token sign-in	Bot jetonuyla oturum açma
+# context: that switch's summary. "Sign in with a bot token" is the button it adds, written here the way that button's own row translates it.
+Signing in or adding an account shows a Sign in with a bot token button on the phone number screen. Paste the token from @BotFather to use that account as your bot. A chat shows up once someone messages the bot, without older history, and a bot has no contacts, stickers or folders. A bot with a webhook set, or one another program is reading, may not get its messages here. Turning this off only hides the button.	Oturum açarken veya hesap eklerken telefon numarası ekranında Bot jetonuyla oturum aç düğmesi görünür. Bu hesabı botunuz olarak kullanmak için @BotFather'dan aldığınız jetonu yapıştırın. Biri bota yazınca bir sohbet görünür, eski geçmişi olmadan, ve botun kişileri, çıkartmaları veya klasörleri olmaz. Webhook ayarlı bir bot veya başka bir programın okuduğu bir bot mesajlarını burada almayabilir. Bunu kapatmak yalnızca düğmeyi gizler.
+# context: the button the switch adds under the phone number on Telegram's sign-in screen, and the title of the box it opens.
+Sign in with a bot token	Bot jetonuyla oturum aç
+# context: the box's button that sends the bot token to Telegram.
+Sign in	Oturum aç
+# context: the hint inside the box's text field, where the bot token is pasted.
+Bot token	Bot jetonu
+# context: the line above that field. @BotFather is the Telegram bot that makes bots and hands out their tokens.
+Paste the token @BotFather gave your bot. It goes only to Telegram, which keeps it with the account like any sign-in.	@BotFather'ın botunuza verdiği jetonu yapıştırın. Jeton yalnızca Telegram'a gider ve Telegram onu her oturum açmada olduğu gibi hesapla birlikte saklar.
+# context: shown under the field after Sign in, until Telegram answers.
+Waiting for Telegram.	Telegram bekleniyor.
+# context: short message when Telegram gave no sign-in for the bot token, or the request couldn't go out.
+Telegram didn't sign the bot in.	Telegram botla oturum açmadı.
+# context: short message when what was typed doesn't have a bot token's shape (digits, a colon, then 35 letters and digits).
+That isn't a bot token.	Bu bir bot jetonu değil.
+# context: short message when Telegram says the bot token is wrong.
+That bot token isn't valid.	Bu bot jetonu geçerli değil.
+# context: short message when Telegram says the bot token was revoked in @BotFather.
+That bot token was revoked.	Bu bot jetonu iptal edilmiş.
+# context: short message when Telegram asks to wait before trying again. %1$s is a number of seconds.
+Wait %1$s seconds, then try again.	%1$s saniye bekleyin, sonra tekrar deneyin.
+# context: short message when Telegram refuses the sign-in with an error code of its own. %1$s is that code, in capitals, as Telegram sends it.
+Telegram refused it: %1$s	Telegram reddetti: %1$s

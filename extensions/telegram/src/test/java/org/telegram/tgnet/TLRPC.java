@@ -186,6 +186,57 @@ public final class TLRPC {
 
     public static class TL_sendMessageRecordAudioAction extends SendMessageAction { }
 
+    /** A sign-in's answer, which a bot token sign-in hands to the login screen. */
+    public static class TL_auth_authorization { }
+
+    /** Requests a bot can't make, and the empty answers a bot account gets for them on the phone. */
+    public static class TL_messages_getDialogs { }
+
+    public static class TL_messages_getHistory { }
+
+    public static class TL_contacts_getContacts { }
+
+    public static class TL_messages_getAllStickers { }
+
+    public static class TL_messages_getMaskStickers { }
+
+    public static class TL_messages_getEmojiStickers { }
+
+    public static class TL_messages_getFeaturedStickers { }
+
+    public static class TL_messages_getFeaturedEmojiStickers { }
+
+    /** Telegram fills some lists where it declares them and leaves others for the reader. */
+    public static class TL_messages_dialogs {
+        public java.util.ArrayList<Object> dialogs = new java.util.ArrayList<>();
+        public java.util.ArrayList<Object> messages;
+        public java.util.ArrayList<Object> chats;
+        public java.util.ArrayList<Object> users;
+        public int count;
+    }
+
+    public static class TL_messages_messages {
+        public java.util.ArrayList<Object> messages;
+        public java.util.ArrayList<Object> chats;
+        public java.util.ArrayList<Object> users;
+    }
+
+    public static class TL_contacts_contacts {
+        public java.util.ArrayList<Object> contacts;
+        public java.util.ArrayList<Object> users;
+        public int saved_count;
+    }
+
+    public static class TL_messages_allStickers {
+        public long hash;
+        public java.util.ArrayList<Object> sets;
+    }
+
+    public static class TL_messages_featuredStickers {
+        public java.util.ArrayList<Object> sets;
+        public java.util.ArrayList<Object> unread;
+    }
+
     public static class TL_error {
         public int code;
         public String text;

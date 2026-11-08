@@ -663,6 +663,14 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             + "on the phone number screen. Tick it to sign that account in on Telegram's test servers, kept apart from "
                             + "your other accounts."))));
         }
+        if (build.contains(PatchFamily.BOT_TOKEN_SIGN_IN)) {
+            on(pages, PatchFamily.BOT_TOKEN_SIGN_IN).addPreference(toggle(context, Settings.BOT_TOKEN_SIGN_IN, L10n.t("Bot token sign-in"),
+                    PatchFamily.BOT_TOKEN_SIGN_IN.coverageSummary(L10n.t("Signing in or adding an account shows a Sign in with a bot token "
+                            + "button on the phone number screen. Paste the token from @BotFather to use that account as your bot. "
+                            + "A chat shows up once someone messages the bot, without older history, and a bot has no contacts, "
+                            + "stickers or folders. A bot with a webhook set, or one another program is reading, may not get its "
+                            + "messages here. Turning this off only hides the button."))));
+        }
     }
 
     /** The Conversations page: in a chat, its menus, sending, translation, hidden and kept messages. */

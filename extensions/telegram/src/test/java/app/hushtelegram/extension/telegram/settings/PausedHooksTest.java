@@ -450,6 +450,9 @@ public class PausedHooksTest {
         probes.put(PatchFamily.TEST_SERVER_SIGN_IN, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.TestServers.shown(0),
                 () -> app.hushtelegram.extension.telegram.misc.TestServers.countryState(2, testNumberCode()) == 0));
+        // The phone number screen offers a bot token sign-in.
+        probes.put(PatchFamily.BOT_TOKEN_SIGN_IN, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.BotSignIn.offered(0)));
         return probes;
     }
 

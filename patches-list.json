@@ -290,6 +290,63 @@
       "options": []
     },
     {
+      "name": "Bot token sign-in",
+      "description": "Adds a Sign in with a bot token button to the phone number screen, so an account can sign in as a bot made with @BotFather. The bot sees a chat once someone messages it, without older history, contacts or stickers. Starts off. Turn it on in HushTelegram settings > Chat list.",
+      "category": "Chats",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger": [
+          "13.1.1"
+        ],
+        "org.telegram.messenger.web": [
+          "13.1.0"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.1.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72371
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram (telegram.org)",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.1.0",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72299
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Change sticker size",
       "description": "Shows stickers in chats smaller or larger than Telegram does, at a size you pick. Animated emoji and dice keep their size. Starts off. Turn it on in HushTelegram settings > Look and feel.",
       "category": "Interface",

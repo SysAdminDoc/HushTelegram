@@ -137,6 +137,7 @@ body:
         - Hide messages by keyword
         - Strip link tracking
         - Test server sign-in
+        - Bot token sign-in
         - HushTelegram settings
     validations:
       required: true

@@ -191,6 +191,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.REPAIR_FIREBASE_PUSH, "Repair Firebase push registration");
         ROW_TITLES.put(PatchFamily.UNIFIED_PUSH, "UnifiedPush notifications");
         ROW_TITLES.put(PatchFamily.TEST_SERVER_SIGN_IN, "Test server sign-in");
+        ROW_TITLES.put(PatchFamily.BOT_TOKEN_SIGN_IN, "Bot token sign-in");
     }
 
     /** The sections every build has, in the order they're drawn. */
@@ -956,6 +957,15 @@ public class HushTelegramPreferenceFragmentTest {
                     String.valueOf(page.findPreference(Settings.TEST_SERVER_SIGN_IN.key).getSummary()));
             // The sign-in screen offers Test Backend only to test accounts until the switch is turned on.
             assertFalse(((SwitchPreference) page.findPreference(Settings.TEST_SERVER_SIGN_IN.key)).isChecked());
+            assertEquals("Bot token sign-in", String.valueOf(page.findPreference(Settings.BOT_TOKEN_SIGN_IN.key).getTitle()));
+            assertEquals("Signing in or adding an account shows a Sign in with a bot token button on the phone number screen. "
+                            + "Paste the token from @BotFather to use that account as your bot. A chat shows up once someone "
+                            + "messages the bot, without older history, and a bot has no contacts, stickers or folders. A bot "
+                            + "with a webhook set, or one another program is reading, may not get its messages here. Turning "
+                            + "this off only hides the button.",
+                    String.valueOf(page.findPreference(Settings.BOT_TOKEN_SIGN_IN.key).getSummary()));
+            // The phone number screen has no bot token button until the switch is turned on.
+            assertFalse(((SwitchPreference) page.findPreference(Settings.BOT_TOKEN_SIGN_IN.key)).isChecked());
             assertEquals("Ask before sending a GIF", String.valueOf(page.findPreference(Settings.ASK_BEFORE_GIF.key).getTitle()));
             assertEquals("Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs "
                     + "go out without asking.",

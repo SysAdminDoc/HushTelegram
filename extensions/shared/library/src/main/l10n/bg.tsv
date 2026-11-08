@@ -1476,3 +1476,29 @@ May have blocked you. A guess: their photo and last seen went away together.	М�
 May have unblocked you. A guess: their photo or last seen came back.	Може би сте отблокирани. Предположение: снимката или последната активност се върнаха.
 # context: history line: Telegram now shows the person as Deleted Account
 Deleted their account	Изтри профила си
+# context: a switch on the Chat list page (#53). It adds a button to Telegram's phone number screen that signs the account in as a bot made with @BotFather, using the bot's token instead of a phone number.
+Bot token sign-in	Вход с токен на бот
+# context: that switch's summary. "Sign in with a bot token" is the button it adds, written here the way that button's own row translates it.
+Signing in or adding an account shows a Sign in with a bot token button on the phone number screen. Paste the token from @BotFather to use that account as your bot. A chat shows up once someone messages the bot, without older history, and a bot has no contacts, stickers or folders. A bot with a webhook set, or one another program is reading, may not get its messages here. Turning this off only hides the button.	При вход или добавяне на акаунт екранът за телефонния номер показва бутона „Влизане с токен на бот“. Поставете токена от @BotFather, за да използвате този акаунт като свой бот. Чатът се появява, след като някой пише на бота, без по-стара история, а ботът няма контакти, стикери и папки. Бот със зададен webhook или бот, който друга програма чете, може да не получава съобщенията си тук. Изключването само скрива бутона.
+# context: the button the switch adds under the phone number on Telegram's sign-in screen, and the title of the box it opens.
+Sign in with a bot token	Влизане с токен на бот
+# context: the box's button that sends the bot token to Telegram.
+Sign in	Вход
+# context: the hint inside the box's text field, where the bot token is pasted.
+Bot token	Токен на бот
+# context: the line above that field. @BotFather is the Telegram bot that makes bots and hands out their tokens.
+Paste the token @BotFather gave your bot. It goes only to Telegram, which keeps it with the account like any sign-in.	Поставете токена, който @BotFather даде на бота ви. Той отива само до Telegram, който го пази с акаунта като всеки вход.
+# context: shown under the field after Sign in, until Telegram answers.
+Waiting for Telegram.	Изчакване на Telegram.
+# context: short message when Telegram gave no sign-in for the bot token, or the request couldn't go out.
+Telegram didn't sign the bot in.	Telegram не вписа бота.
+# context: short message when what was typed doesn't have a bot token's shape (digits, a colon, then 35 letters and digits).
+That isn't a bot token.	Това не е токен на бот.
+# context: short message when Telegram says the bot token is wrong.
+That bot token isn't valid.	Този токен на бот е невалиден.
+# context: short message when Telegram says the bot token was revoked in @BotFather.
+That bot token was revoked.	Този токен на бот е отменен.
+# context: short message when Telegram asks to wait before trying again. %1$s is a number of seconds.
+Wait %1$s seconds, then try again.	Изчакайте %1$s секунди и опитайте пак.
+# context: short message when Telegram refuses the sign-in with an error code of its own. %1$s is that code, in capitals, as Telegram sends it.
+Telegram refused it: %1$s	Telegram отказа: %1$s
