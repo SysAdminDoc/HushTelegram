@@ -23,8 +23,9 @@ import java.util.Set;
  * and last one already selected. While the chat stays in selection, picking a message above or
  * below the range fills the gap to it too, so a range grows with one tap.
  *
- * <p>Telegram does the selecting. Each message goes through the chat's own select method, so the
- * count, the bar's buttons and the rows all update as if it had been tapped. Service messages and
+ * <p>Telegram does the selecting. Each message goes through the chat's own select method, which
+ * also sets the bar's buttons, and then the count and the rows' checks are redrawn the way
+ * Telegram's own tap redraws them (the select method alone leaves both stale). Service messages and
  * date rows can't be selected and are skipped. If a selected message has scrolled out of what the
  * chat has loaded the range can't be known, so nothing is selected and a toast says why. The
  * selection stops at Telegram's 100 message limit, again with a toast.
@@ -183,6 +184,8 @@ public final class SelectBetween {
         }
         Plan plan = between(snapshot.ids, snapshot.selectable, selected, LIMIT);
         apply(chat, snapshot, plan, true);
+        // A tap on a message redraws after selecting it. The picks here come from a bar button, so nothing else would.
+        if (!plan.pick.isEmpty()) refresh(chat);
         if (plan.outcome == Outcome.SELECTED || plan.outcome == Outcome.LIMIT) armed = new WeakReference<>(chat);
     }
 
@@ -253,6 +256,9 @@ public final class SelectBetween {
 
     /** Selects the message the way tapping it would. */
     public static void pick(Object chat, Object message) {}
+
+    /** Redraws the selection count and the rows' checks, the two calls Telegram's own tap makes after selecting. */
+    public static void refresh(Object chat) {}
 
     /** The selection bar's menu. */
     public static Object menu(Object chat) { return null; }

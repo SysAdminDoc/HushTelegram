@@ -79,6 +79,9 @@ internal class SelectBetweenSites(
     private val addRef: String = "",
     /** The stub's registers (menu, ID, icon, label, width) in the add call's parameter order. */
     private val addArgs: String = "p0, p1, p2, p3, p4",
+    /** What Telegram's tap runs after selecting: the bar's count, then the rows' checks (given false). */
+    private val title: String = "",
+    private val rows: String = "",
 ) {
     /** The same edits on copies, so a smali problem refuses before the app is touched. */
     fun rehearse() = edit { MutableMethod(ImmutableMethod.of(it)) }
@@ -129,6 +132,13 @@ internal class SelectBetweenSites(
             check-cast p1, $MESSAGE
             const/4 v0, 0x0
             invoke-virtual {p0, p1, v0}, $wrapper
+            return-void
+        """)
+        writeStub(SELECT_BETWEEN, "refresh", 2, """
+            check-cast p0, $chat
+            invoke-virtual {p0}, $title
+            const/4 v0, 0x0
+            invoke-virtual {p0, v0}, $rows
             return-void
         """)
         writeStub(SELECT_BETWEEN, "menu", 3, """
@@ -186,6 +196,7 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
     controlHook(SELECT_BETWEEN, "selected", listOf(OBJECT), SPARSE_ARRAYS)
     controlHook(SELECT_BETWEEN, "messages", listOf(OBJECT), LIST)
     controlHook(SELECT_BETWEEN, "pick", listOf(OBJECT, OBJECT), "V")
+    controlHook(SELECT_BETWEEN, "refresh", listOf(OBJECT), "V")
     controlHook(SELECT_BETWEEN, "menu", listOf(OBJECT), OBJECT)
     controlHook(SELECT_BETWEEN, "addMenuItem", listOf(OBJECT, "I", "I", STRING, "I"), "V")
     controlHook(SELECT_BETWEEN, "icon", listOf(), "I")
@@ -294,6 +305,26 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
     controlShape(chatClass.fields.any { "$chat->${it.origName}:${it.origType}" == selectedField && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "the selected messages field is inaccessible")
 
+    // The redraw: wherever the chat's tap selects a message, it next calls the chat's no-argument
+    // count update, then its rows update with one boolean. The recorder alone leaves both stale.
+    val redraws = chatClass.methods.flatMap { m ->
+        val b = m.controlBody()
+        b.indices.mapNotNull { i ->
+            if (b[i].call()?.toString() != recorder.toString()) return@mapNotNull null
+            val next = b.drop(i + 1).filter { it.opcode != Opcode.CONST_4 }.take(2).map { it.opcode to it.call() }
+            val (count, rowsCall) = next.getOrNull(0) to next.getOrNull(1)
+            if (count?.first != Opcode.INVOKE_VIRTUAL || rowsCall?.first != Opcode.INVOKE_VIRTUAL) return@mapNotNull null
+            val c = count.second ?: return@mapNotNull null
+            val r = rowsCall.second ?: return@mapNotNull null
+            if (c.origDefiningClass != chat || c.origParameterTypes.isNotEmpty() || c.origReturnType != "V") return@mapNotNull null
+            if (r.origDefiningClass != chat || r.origParameterTypes != listOf("Z") || r.origReturnType != "V") return@mapNotNull null
+            c.toString() to r.toString()
+        }
+    }.distinct()
+    val (titleRef, rowsRef) = redraws.controlSingle("the redraw after a tap selects")
+    requireReachable(titleRef, false)
+    requireReachable(rowsRef, false)
+
     // The list adapter's getter: frozen, filtered or the chat's own full list.
     val getters = chatClass.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.origType.startsWith("L") }.mapNotNull { field ->
         val adapter = tgClassDefByOrNull(field.type) ?: return@mapNotNull null
@@ -307,7 +338,7 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
     val adapterRef = "$chat->${adapterField.name}:${adapterField.type}"
     controlShape(adapterType == adapterField.origType, "the chat's list adapter changed")
     return SelectBetweenSites(null, chat, create, at, click, handlerType, ownerField, selectMethod, wrapper.toString(), selectedField,
-        adapterRef, getterRef, barGetter, menuMethod.toString(), adds.single(), addArgs)
+        adapterRef, getterRef, barGetter, menuMethod.toString(), adds.single(), addArgs, titleRef, rowsRef)
 }
 
 /** Whether this is the adapter's getter: the frozen list, the filtered list, then the chat's full list. */

@@ -16,6 +16,7 @@ import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -87,6 +88,14 @@ class SelectBetweenFixtureTest {
             assertTrue("$name: the selected messages", stub("selected").any { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.origType == "[Landroid/util/SparseArray;" })
             assertTrue("$name: Telegram's list getter", stub("messages").any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef()?.endsWith(")Ljava/util/ArrayList;") == true })
             assertEquals("$name: the chat's select method", wrapper.origString(), stub("pick").single { it.opcode == Opcode.INVOKE_VIRTUAL }.controlRef())
+            // The redraw after picking: the bar's "N Selected" title, then the rows' checks (the method walking the list's children), given false.
+            val redraw = stub("refresh").filter { it.opcode == Opcode.INVOKE_VIRTUAL }.map { call -> chat.methods.single { it.origString() == call.controlRef() } }
+            assertEquals("$name: two calls", 2, redraw.size)
+            assertTrue("$name: the title", redraw[0].parameterTypes.isEmpty() && redraw[0].controlBody().any { it.controlString() == "MessagesSelected" })
+            assertEquals("$name: the rows take a flag", listOf("Z"), redraw[1].origParameterTypes)
+            assertTrue("$name: the rows", redraw[1].controlBody().any { it.controlRef()?.contains("->getChildAt(I)") == true })
+            val flag = stub("refresh").filter { it.opcode != Opcode.NOP }.let { it[it.indexOfLast { i -> i.opcode == Opcode.INVOKE_VIRTUAL } - 1] }
+            assertEquals("$name: false", 0L, (flag as WideLiteralInstruction).wideLiteral)
             assertTrue("$name: the bar's menu", stub("menu").any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef()?.contains("(Ljava/lang/String;)") == true })
             // The label and the width land in their own slots whichever order the build takes them in (Play's 13.2 has the width first).
             val add = stub("addMenuItem").single { it.opcode == Opcode.INVOKE_VIRTUAL }
