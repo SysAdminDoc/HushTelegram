@@ -7,6 +7,7 @@ package app.morphe.patches.telegram.misc.folders
 import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
+import app.morphe.hostsOf
 import app.morphe.PatchContexts
 import app.morphe.util.names.origRef
 import app.morphe.util.names.addInstructions
@@ -18,6 +19,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.telegram.misc.chattypefolders.LOCAL_FILTER
 import app.morphe.patches.telegram.misc.chattypefolders.MESSAGES_CONTROLLER
+import app.morphe.patches.telegram.misc.chattypefolders.STORAGE
 import app.morphe.patches.telegram.misc.chattypefolders.USER_CONFIG
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
@@ -363,7 +365,7 @@ internal fun launchFolderList(build: File): String = LAUNCH_FOLDER_LISTS.getOrPu
  * DialogsActivity and the classes its first tab build reads, each with its parents, and the
  * account and folder classes the stubs call.
  */
-internal fun launchFolderHosts(build: File): List<ClassDef> = LAUNCH_FOLDER_HOSTS.getOrPut(build.path) {
+internal fun launchFolderHosts(build: File): List<ClassDef> = LAUNCH_FOLDER_HOSTS.hostsOf(build.path) {
     val list = launchFolderList(build)
     val first = FixtureDex.classes(build, setOf(list)).getValue(list)
     val tabs = first.methods.single { it.isTabBuildLike() }
@@ -403,10 +405,18 @@ internal fun launchFolderHosts(build: File): List<ClassDef> = LAUNCH_FOLDER_HOST
         wanted += parents
         loaded = FixtureDex.classes(build, wanted)
     }
-    // The share sheet and quick share, for the hidden chats' pickers (13.2 reads allDialogs in place of its getter).
-    (loaded.values + FixtureDex.classesWhere(build, { true }) { m ->
-        m.body().mapNotNull { it.ref() }.let { refs -> (GET_ALL_DIALOGS in refs || ALL_DIALOGS_FIELD in refs) && (DIALOGS_FORWARD in refs || TOP_PEERS in refs) }
-    }).distinctBy { it.type }
+    // The share sheet and quick share, for the hidden chats' pickers (13.2 reads allDialogs in place of its getter), and
+    // the storage task 13.2 unpins the server's old pins in.
+    val found = FixtureDex.classesWhere(build, { true }) { m ->
+        m.body().mapNotNull { it.ref() }.let { refs -> (GET_ALL_DIALOGS in refs || ALL_DIALOGS_FIELD in refs) && (DIALOGS_FORWARD in refs || TOP_PEERS in refs) ||
+            UNPIN_QUERY in refs }
+    }
+    // The answer to loadPinnedDialogs that builds that task. Only its own constructor counts: R8 merged many
+    // lambdas built from the storage, a list and a case, and one of Play's is the chat list's click handler.
+    val unpin = found.filter { c -> c.methods.any { m -> m.body().any { it.ref() == UNPIN_QUERY } } }
+        .map { "${it.origType}-><init>(${STORAGE}Ljava/util/ArrayList;I)V" }.toSet()
+    val builders = if (unpin.isEmpty()) emptyList() else FixtureDex.classesWhere(build, { true }) { m -> m.body().any { it.ref() in unpin } }
+    (loaded.values + found + builders).distinctBy { it.type }
 }
 
 /** The class with the folder tab counter. */

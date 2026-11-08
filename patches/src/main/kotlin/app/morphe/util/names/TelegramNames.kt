@@ -100,6 +100,19 @@ object TelegramNames {
         }
 
         /**
+         * How [origRef] reads this build's member for the source reference [text]: source names, with
+         * the descriptor the dex carries. R8 changes some (13.2's DispatchQueue.postRunnable(Runnable)
+         * returns void), so a patch looking for a call compares with this; a stub keeps [text], which
+         * [translate] turns into the build's member.
+         */
+        fun asRead(text: String): String {
+            val built = reference(text)
+            if (built == text || "->" !in text) return text
+            return if ('(' in text) text.substringBefore('(') + origDescriptor(built.substring(built.indexOf('(')))
+            else text.substringBefore(':') + ":" + origType(built.substringAfter("->").substringAfter(':'))
+        }
+
+        /**
          * Every name this build gives a member called [name] of [owner] or its superclasses, with
          * [name] itself, for a search that can't tell overloads or fields apart. A name read off the
          * build comes back as it is.

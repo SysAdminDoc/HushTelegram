@@ -19,6 +19,7 @@ import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.classDefsMentioning
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.patches.telegram.misc.notifications.silentCheckHost
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -29,7 +30,9 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import app.morphe.util.names.origName
 import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origString
 import app.morphe.util.names.origSuperclass
+import app.morphe.util.names.TelegramNames
 import app.morphe.util.names.origType
 import app.morphe.util.names.tgClassDefByOrNull
 import app.morphe.util.names.tgMutableClassDefByOrNull
@@ -136,7 +139,7 @@ private val LINES = listOf("PushReactText", "PushReactNoText", "PushChatReactTex
 
 /** Every type the extension reaches by name, for a test to load. */
 internal val REACTION_ALERT_TYPES: Set<String> =
-    (CALLS.map { it.owner } + FIELDS.map { it.first } + listOf(STRINGS, CONTROLLER)).toSet()
+    (CALLS.map { it.owner } + FIELDS.map { it.first } + listOf(CONTROLLER)).toSet()
 
 /** One place the update loop hands an update over: right after it's cast, with two free registers in a row. */
 internal class ReactionSite(val type: String, val insertAt: Int, val update: Int, val scratch: Int)
@@ -203,10 +206,17 @@ private fun BytecodePatchContext.reactionHook(): ReactionHook {
     val base = tgClassDefByOrNull(BASE)
     needed(base != null && base.fields.any { it.origName == "currentAccount" && it.type == "I" && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "$BASE->currentAccount is no longer the account a controller serves")
-    val strings = tgClassDefByOrNull(STRINGS)
-    needed(strings != null && LINES.all { line ->
-        strings.fields.any { it.origName == line && it.origType == "I" && AccessFlags.STATIC.isSet(it.accessFlags) && AccessFlags.PUBLIC.isSet(it.accessFlags) }
-    }, "Telegram's reaction notification lines are gone")
+    // 13.2 folds R.string into constants, so a build's lines are its name table's resource rows,
+    // which the extension reads too; an unrenamed build still has the class.
+    val table = TelegramNames.of(this)
+    if (table.isIdentity) {
+        val strings = tgClassDefByOrNull(STRINGS)
+        needed(strings != null && LINES.all { line ->
+            strings.fields.any { it.origName == line && it.origType == "I" && AccessFlags.STATIC.isSet(it.accessFlags) && AccessFlags.PUBLIC.isSet(it.accessFlags) }
+        }, "Telegram's reaction notification lines are gone")
+    } else {
+        needed(LINES.all { table.resourceId("string", it) != null }, "Telegram's reaction notification lines are gone")
+    }
 
     // The update loop: the one method that also collects both kinds of deleted IDs.
     val loops = tgMutableClassDefByOrNull(CONTROLLER)?.methods?.filter { m ->
@@ -238,7 +248,8 @@ private fun BytecodePatchContext.reactionHook(): ReactionHook {
 private const val DOCUMENT = "${TL}Document;"
 private const val DRAWABLE = "Landroid/graphics/drawable/Drawable;"
 private const val CACHE_READ = "Ljava/util/HashMap;->get(Ljava/lang/Object;)Ljava/lang/Object;"
-internal const val EMOJI_NAME = "${MESSAGE_OBJECT}->findAnimatedEmojiEmoticon($DOCUMENT$TEXT)$TEXT"
+// 13.2 inlined the two-argument overload, so its callers pass a null account to this one.
+internal const val EMOJI_NAME = "${MESSAGE_OBJECT}->findAnimatedEmojiEmoticon($DOCUMENT${TEXT}Ljava/lang/Integer;)$TEXT"
 
 /**
  * Whether [method] of [owner] has the shape of AnimatedEmojiDrawable.findDocument, which R8 renames:
@@ -266,7 +277,7 @@ internal fun BytecodePatchContext.resolveEmojiLookup(): Pair<String?, String?> {
     }
     if (lookups.size != 1) return Pair(null, "the lookup of loaded custom emoji is missing or ambiguous")
     val name = tgClassDefByOrNull(MESSAGE_OBJECT)?.methods?.any {
-        it.toString() == EMOJI_NAME && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags)
+        it.origString() == EMOJI_NAME && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags)
     }
     if (name != true) return Pair(null, "$EMOJI_NAME is no longer a public method custom emoji can call")
     return Pair(lookups.single().toString(), null)
@@ -281,28 +292,34 @@ internal fun BytecodePatchContext.writeEmojiLookup(lookup: String) {
     """)
 }
 
-private const val REACTION_PUSH = "${MESSAGE_OBJECT}->isReactionPush:Z"
 internal const val REACTION_QUIET = "$REACTION_ALERTS->quiet(I)Z"
 
-/** Right after Telegram's silent notification check reads whether a notification is for a reaction. */
-internal class ReactionSoundHook(val check: MutableMethod, val insertAt: Int, val flag: Int) {
+/** One reaction flag read of the silent notification check: the hook goes at [insertAt] and answers in [flag]. */
+internal class ReactionSoundSite(val insertAt: Int, val flag: Int)
+
+/** Right after each copy of Telegram's silent notification check reads whether a notification is for a reaction. */
+internal class ReactionSoundHook(val check: MutableMethod, val sites: List<ReactionSoundSite>) {
     fun applyTo(method: MutableMethod) {
-        method.addInstructions(
-            insertAt,
-            """
-                invoke-static/range {v$flag .. v$flag}, $REACTION_QUIET
-                move-result v$flag
-            """.trimIndent(),
-        )
+        // The later site first, so the earlier one's index still holds.
+        for (site in sites.sortedByDescending { it.insertAt }) {
+            method.addInstructions(
+                site.insertAt,
+                """
+                    invoke-static/range {v${site.flag} .. v${site.flag}}, $REACTION_QUIET
+                    move-result v${site.flag}
+                """.trimIndent(),
+            )
+        }
     }
 }
 
 /**
  * Telegram's silent notification check counts every reaction as silent, so a reaction's
  * notification never plays the sound or vibration Telegram's own Notifications and Sounds sets for
- * reactions. The hook goes right after the check reads the reaction flag and lets the extension
- * clear it. It goes there and not at the top, where Silence non-contacts hooks the same method. A
- * build where the read can't be found keeps the rest of the patch.
+ * reactions. 13.2 inlines the check twice into showOrUpdateNotification. A hook goes right after
+ * each copy reads the reaction flag and lets the extension clear it. It goes there and not at the
+ * copy's start, where Silence non-contacts hooks. A build where the reads can't be found keeps the
+ * rest of the patch.
  *
  * @return the hook, and null; or null and why there's none
  */
@@ -315,24 +332,23 @@ internal fun BytecodePatchContext.resolveReactionSound(): Pair<ReactionSoundHook
 }
 
 private fun BytecodePatchContext.reactionSoundHook(): ReactionSoundHook {
-    val checks = tgMutableClassDefByOrNull(NOTIFIER)?.methods?.filter {
-        it.origName == "isSilentMessage" && it.parameterTypes.joinToString("") == MESSAGE_OBJECT && it.origReturnType == "Z" &&
-            !AccessFlags.STATIC.isSet(it.accessFlags)
-    } ?: emptyList()
-    needed(checks.size == 1, "the silent notification check is missing or ambiguous")
-    val check = checks.single()
+    val host = silentCheckHost()
+    needed(host != null, "the silent notification check no longer reads the reaction flag in one place")
+    val (check, copies) = host!!
     val body = check.controlBody()
-    val reads = body.indices.filter { body[it].opcode == Opcode.IGET_BOOLEAN && body[it].controlRef() == REACTION_PUSH }
-    needed(reads.size == 1, "the silent notification check no longer reads the reaction flag once")
-    val read = reads.single()
-    val insertAt = read + 1
-    val flag = (body[read] as TwoRegisterInstruction).registerA
-    val test = body.getOrNull(insertAt)
-    needed(test != null && (test.opcode == Opcode.IF_EQZ || test.opcode == Opcode.IF_NEZ) &&
-        (test as OneRegisterInstruction).registerA == flag,
-        "the silent notification check no longer tests the reaction flag right after reading it")
     val flow = ControlFlow.of(check)
-    needed(flow.normal.indices.none { it != read && insertAt in flow.normal[it] },
-        "something jumps past the silent notification check's reaction flag read")
-    return ReactionSoundHook(check, insertAt, flag)
+    val sites = copies.map { copy ->
+        val read = copy.reaction
+        val insertAt = read + 1
+        val flag = (body[read] as TwoRegisterInstruction).registerA
+        val test = body.getOrNull(insertAt)
+        needed(flag <= 255, "the silent notification check keeps the reaction flag in a register a hook can't answer in")
+        needed(test != null && (test.opcode == Opcode.IF_EQZ || test.opcode == Opcode.IF_NEZ) &&
+            (test as OneRegisterInstruction).registerA == flag,
+            "the silent notification check no longer tests the reaction flag right after reading it")
+        needed(flow.normal.indices.none { it != read && insertAt in flow.normal[it] },
+            "something jumps past the silent notification check's reaction flag read")
+        ReactionSoundSite(insertAt, flag)
+    }
+    return ReactionSoundHook(check, sites)
 }

@@ -539,6 +539,7 @@ m Lorg/telegram/messenger/ApplicationLoader; getAutodownloadNetworkType ()I Lorg
 m Lorg/telegram/messenger/ApplicationLoader; getCurrentNetworkType ()I Lorg/telegram/messenger/x0; f ()I
 m Lorg/telegram/messenger/ApplicationLoader; getFilesDirFixed ()Ljava/io/File; Lorg/telegram/messenger/x0; g ()Ljava/io/File;
 m Lorg/telegram/messenger/ApplicationLoader; getLocationServiceProvider ()Lorg/telegram/messenger/ILocationServiceProvider; Lorg/telegram/messenger/x0; i ()Lorg/telegram/messenger/ILocationServiceProvider;
+m Lorg/telegram/messenger/ApplicationLoader; getPushProvider ()Lorg/telegram/messenger/PushListenerController$IPushListenerServiceProvider; Lorg/telegram/messenger/x0; k ()Lorg/telegram/messenger/PushListenerController$IPushListenerServiceProvider;
 m Lorg/telegram/messenger/ApplicationLoader; isConnectedOrConnectingToWiFi ()Z Lorg/telegram/messenger/x0; m ()Z w
 m Lorg/telegram/messenger/ApplicationLoader; isConnectionSlow ()Z Lorg/telegram/messenger/x0; n ()Z
 m Lorg/telegram/messenger/ApplicationLoader; isNetworkOnlineRealtime ()Z Lorg/telegram/messenger/x0; o ()Z

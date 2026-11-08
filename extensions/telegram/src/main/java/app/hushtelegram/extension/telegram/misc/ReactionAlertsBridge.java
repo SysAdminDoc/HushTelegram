@@ -194,8 +194,10 @@ final class ReactionAlertsBridge implements ReactionAlerts.Source {
         Object loaded = ReactionAlerts.emojiDocument(account, document);
         if (loaded == null) return null;
         ClassLoader loader = controller.getClass().getClassLoader();
+        // 13.2 inlined the two-argument overload into its callers, which pass a null account to this one.
         return (String) method(Class.forName("org.telegram.messenger.MessageObject", true, loader), "findAnimatedEmojiEmoticon",
-                Class.forName("org.telegram.tgnet.TLRPC$Document", true, loader), String.class).invoke(null, loaded, null);
+                Class.forName("org.telegram.tgnet.TLRPC$Document", true, loader), String.class, Integer.class)
+                .invoke(null, loaded, null, null);
     }
 
     /** The reactor's name the way Telegram writes it in a notification, or null when it isn't known. */

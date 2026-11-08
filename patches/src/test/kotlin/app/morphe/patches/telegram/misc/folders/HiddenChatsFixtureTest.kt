@@ -7,6 +7,7 @@ package app.morphe.patches.telegram.misc.folders
 import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
+import app.morphe.hostsOf
 import app.morphe.PatchContexts
 import app.morphe.util.names.origRef
 import app.morphe.util.names.addInstructions
@@ -43,9 +44,12 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import app.morphe.util.names.TelegramNames
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
 import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origString
+import app.morphe.util.names.origSuperclass
 import app.morphe.util.names.origType
 import app.morphe.util.names.tgMutableClassDefBy
 
@@ -92,7 +96,7 @@ class HiddenChatsFixtureTest {
             val plan = context.resolveHiddenChats()
             assertNull("$name: ${plan.missing}", plan.missing)
             val pins = plan.pins!!
-            assertEquals(name, "reorderPinnedDialogs", pins.method.name)
+            assertEquals(name, "reorderPinnedDialogs", pins.method.origName)
             val stock = pins.method.body().map(::operands)
             val read = stock[pins.at - 2]
             plan.apply()
@@ -126,21 +130,26 @@ class HiddenChatsFixtureTest {
             assertEquals(name, emptyList<String>(), plan.pinGaps)
             val pins = plan.serverPins!!
             val stock = pins.method.body().code()
-            val at = pins.method.keepPinsCall()
-            val handed = pins.method.body()[at].namedRegisters()
-            assertEquals(name, listOf(pins.ids, pins.folder), handed.drop(1))
+            val at = pins.hookAt(pins.method)
+            val handed = pins.method.body()[at + 2].namedRegisters()
+            assertEquals(name, listOf(pins.ids, pins.folder), handed.drop(2))
             plan.apply()
             val body = pins.method.body()
             val hook = body[at]
             assertEquals(name, SERVER_PINS, hook.ref())
             assertEquals(name, Opcode.INVOKE_STATIC, hook.opcode)
             assertEquals(name, listOf(pins.controller, pins.folder, pins.ids), hook.namedRegisters())
-            // The storage read, its result, this call, then Telegram's own on the same result.
+            // The storage read, its result, this call, then Telegram's own on the same result: the storage's
+            // queue, the unpin task built with the server's ids and the folder, and posted to that queue.
             assertEquals(name, "Lorg/telegram/messenger/BaseController;->getMessagesStorage()Lorg/telegram/messenger/MessagesStorage;", body[at - 2].ref())
             assertEquals(name, listOf(pins.controller), body[at - 2].namedRegisters())
             assertEquals(name, Opcode.MOVE_RESULT_OBJECT, body[at - 1].opcode)
-            assertEquals(name, KEEP_PINS, body[at + 1].ref())
-            assertEquals(name, handed, body[at + 1].namedRegisters())
+            assertEquals(name, Opcode.IGET_OBJECT, body[at + 1].opcode)
+            assertEquals(name, pins.task, body[at + 2].ref())
+            assertTrue(name, body[at + 3].buildsUnpinTask(pins.task))
+            assertEquals(name, handed, body[at + 3].namedRegisters())
+            assertEquals(name, TelegramNames.of(context).asRead(POST_RUNNABLE), body[at + 4].ref())
+            assertEquals(name, 1, context.tgMutableClassDefBy(pins.task).methods.count { m -> m.body().any { it.ref() == UNPIN_QUERY } })
             assertEquals("$name: Telegram's own code is unchanged around it", stock, body.filterIndexed { index, _ -> index != at }.code())
         }
     }
@@ -254,9 +263,10 @@ class HiddenChatsFixtureTest {
             val found = context.resolveHiddenChats()
             // A second handover and a third limit read: which one to hook is no longer clear.
             val answer = found.serverPins!!.method
-            val call = answer.keepPinsCall()
-            val handed = answer.body()[call].namedRegisters()
-            answer.addInstructions(call + 1, "invoke-virtual {v${handed[0]}, v${handed[1]}, v${handed[2]}}, $KEEP_PINS")
+            val built = found.serverPins!!.hookAt(answer) + 2
+            val handed = answer.body()[built].namedRegisters()
+            val task = (answer.body()[built] as ReferenceInstruction).reference.toString()
+            answer.addInstructions(built + 1, "invoke-direct {${handed.joinToString { "v$it" }}}, $task")
             val reader = found.pinLimits.first()
             val read = reader.mainPinLimitReads().first()
             val limit = reader.body()[read] as TwoRegisterInstruction
@@ -377,7 +387,8 @@ class HiddenChatsFixtureTest {
             val context = PatchContexts.of((ExtensionDex.classes() + hosts).distinctBy { it.type })
             assertEquals(name, emptyList<String>(), PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) })
             val stubs = context.tgMutableClassDefBy(HIDDEN_CHATS).methods.associateBy { it.name }
-            val sort = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.origName == "sortDialogs" }.toString()
+            // In source names, as ref() reads the stub's call.
+            val sort = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.origName == "sortDialogs" }.origString()
             // Each one whole: smali drops what it can't build, and the count shows it.
             val expected = mapOf(
                 "controllerUser" to (6 to listOf(GET_USER_CONFIG, CLIENT_USER_ID)),
@@ -399,7 +410,7 @@ class HiddenChatsFixtureTest {
                 // The handler's field is cast to the chat list: 13.2 Play's merged handler keeps it as an Object.
                 "selectedChats" to (8 to listOf(refs.listener, refs.selected.substringBefore("->"), refs.selected)),
                 "recount" to (5 to listOf(STORAGE_INSTANCE, RECOUNT)),
-                "onStorageThread" to (6 to listOf(STORAGE_INSTANCE, STORAGE_QUEUE, POST_RUNNABLE)),
+                "onStorageThread" to (6 to listOf(STORAGE_INSTANCE, STORAGE_QUEUE, TelegramNames.of(context).asRead(POST_RUNNABLE))),
             )
             for ((stub, want) in expected) {
                 val body = stubs.getValue(stub).body()
@@ -429,13 +440,14 @@ class HiddenChatsFixtureTest {
                 .count { it.ref() == "$HIDDEN_CHATS->prune(Ljava/lang/Object;)V" })
             assertEquals(1, context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.origName == "reorderPinnedDialogs" }.body()
                 .count { it.ref() == PIN_ORDER })
-            // The server's pins once, and each of the two pin checks' two limits.
-            val controllerCalls = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.sumOf { m -> m.body().count { it.ref() == SERVER_PINS } }
-            assertEquals(name, 1, controllerCalls)
+            // The server's pins once in the whole app (13.2 answers them in a lambda), and each of the two pin checks' two limits.
+            val serverPinCalls = hosts.filter { !it.origType.startsWith("Lapp/hushtelegram/") }
+                .sumOf { cls -> context.tgMutableClassDefBy(cls).methods.sumOf { m -> m.body().count { it.ref() == SERVER_PINS } } }
+            assertEquals(name, 1, serverPinCalls)
             assertEquals(name, 4, context.tgMutableClassDefBy(launchFolderList(build)).methods.sumOf { m -> m.body().count { it.ref() == PIN_ROOM } })
             // One skip in each unread count.
             assertEquals(name, mapOf("calcUnreadCounters" to 1, "updateFiltersReadCounter" to 1),
-                context.tgMutableClassDefBy(STORAGE).methods.groupBy { it.name }
+                context.tgMutableClassDefBy(STORAGE).methods.groupBy { it.origName }
                     .mapValues { (_, methods) -> methods.sumOf { m -> m.body().count { it.ref() == UNCOUNTED } } }.filterValues { it > 0 })
             // The long press item's three calls, each once in the whole app.
             for (hook in listOf(MENU_ITEM, MENU_SHOWN, MENU_CHOICE)) {
@@ -450,7 +462,13 @@ class HiddenChatsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val refs = menuContext(build).also { it.requireHiddenChatsRuntime() }.resolveHideMenu().refs!!
-            val hosts = (folderCounterHosts(build) + menuHosts(build, clicks = false) + allChatsPlaceHosts(build) + accountListHosts(build)).distinctBy { it.type }
+            // 13.2 merged every action bar's click handler into one class most screens make, so the other slices
+            // bring it along; it's left out by its more-menu ids.
+            val hosts = (folderCounterHosts(build) + menuHosts(build, clicks = false) + allChatsPlaceHosts(build) + accountListHosts(build))
+                .distinctBy { it.type }.filterNot { cls -> cls.methods.any { m ->
+                    m.returnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
+                        m.body().mapNotNull { (it as? NarrowLiteralInstruction)?.narrowLiteral }.containsAll(listOf(0x6c, 0x6d, 0x6e, -1))
+                } }
             val context = PatchContexts.of((ExtensionDex.classes() + hosts).distinctBy { it.type })
             val warnings = PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) }
             assertEquals("$name: $warnings", 1, warnings.size)
@@ -476,10 +494,10 @@ class HiddenChatsFixtureTest {
             context.requireHiddenChatsRuntime()
             val plan = context.resolveUnreadCounts()
             assertNull("$name: ${plan.missing}", plan.missing)
-            assertEquals(name, listOf("calcUnreadCounters", "updateFiltersReadCounter"), plan.skips.map { it.method.name })
+            assertEquals(name, listOf("calcUnreadCounters", "updateFiltersReadCounter"), plan.skips.map { it.method.origName })
             // controllerUser takes either as the BaseController it is.
             for (type in listOf(MESSAGES_CONTROLLER, STORAGE)) {
-                assertEquals("$name: $type", "Lorg/telegram/messenger/BaseController;", context.tgMutableClassDefBy(type).superclass)
+                assertEquals("$name: $type", "Lorg/telegram/messenger/BaseController;", context.tgMutableClassDefBy(type).origSuperclass)
             }
             val stock = plan.skips.map { it.method.body().code() }
             val landings = plan.skips.map { operands(it.method.body()[it.to]) }
@@ -551,7 +569,7 @@ class HiddenChatsFixtureTest {
             assertTrue("$name: recount stays a stub", context.tgMutableClassDefBy(HIDDEN_CHATS).methods.single { it.origName == "recount" }.body()
                 .none { it.ref() == RECOUNT })
             assertTrue("$name: onStorageThread stays a stub", context.tgMutableClassDefBy(HIDDEN_CHATS).methods.single { it.origName == "onStorageThread" }.body()
-                .none { it.ref() == POST_RUNNABLE })
+                .none { it.ref() == TelegramNames.of(context).asRead(POST_RUNNABLE) })
         }
     }
 
@@ -632,7 +650,7 @@ class HiddenChatsFixtureTest {
 private val MENU_HOSTS = mutableMapOf<String, List<ClassDef>>()
 
 /** The chat list's hosts, the more menu's class and every (I)V handler that holds a chat list, as candidates for the click handler. */
-internal fun menuHosts(build: File, clicks: Boolean = true): List<ClassDef> = MENU_HOSTS.getOrPut("${build.path} $clicks") {
+internal fun menuHosts(build: File, clicks: Boolean = true): List<ClassDef> = MENU_HOSTS.hostsOf("${build.path} $clicks") {
     val list = launchFolderList(build)
     val create = FixtureDex.classes(build, setOf(list)).getValue(list).methods.single { it.isCreateActionMode() }
     // 13.2's R8 folded the String submenu add into the CharSequence one on the menu item's base.

@@ -72,7 +72,8 @@ internal fun BytecodePatchContext.requireReachable(reference: String, static: Bo
     val member = reference.substringAfter("->")
     val reachable = owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags) && if ('(' in member) {
         owner.methods.any {
-            (it.toString() == reference || it.origString() == reference) &&
+            // The member a stub's call turns into, whose descriptor R8 may have changed.
+            (it.toString() == reference || it.origString() == reference || it.toString() == table.reference(reference)) &&
                 AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static
         }
     } else {

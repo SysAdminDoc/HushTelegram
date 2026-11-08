@@ -40,14 +40,22 @@ import app.morphe.util.definitionReaches
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.SwitchPayload
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.TelegramNames
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origSuperclass
 import app.morphe.util.names.origType
@@ -94,7 +102,7 @@ internal const val DIALOG_PIN_NUM = "Lorg/telegram/tgnet/TLRPC\$Dialog;->pinnedN
 internal const val PIN_ORDER = "$HIDDEN_CHATS->pinOrder(${HIDDEN_OBJECT}I$HIDDEN_OBJECT)$HIDDEN_OBJECT"
 internal const val SERVER_PINS = "$HIDDEN_CHATS->serverPins(${HIDDEN_OBJECT}I$HIDDEN_OBJECT)V"
 internal const val PIN_ROOM = "$HIDDEN_CHATS->pinRoom(I)I"
-internal const val KEEP_PINS = "$STORAGE->unpinAllDialogsExceptNew(${HIDDEN_LIST}I)V"
+private const val DISPATCH_QUEUE = "Lorg/telegram/messenger/DispatchQueue;"
 private const val BASE_CONTROLLER = "Lorg/telegram/messenger/BaseController;"
 private const val GET_STORAGE = "$BASE_CONTROLLER->getMessagesStorage()$STORAGE"
 /** Read only by the two pin checks and the controller itself, so it finds them. */
@@ -115,11 +123,31 @@ internal const val PIN_ORDER_SIZE = 3
  */
 internal class PinOrderPlan(val method: MutableMethod, val at: Int, val controller: Int, val folder: Int, val list: Int)
 
-/** Where the answer to loadPinnedDialogs hands the storage the server's pins, and the registers the extension takes there. */
-internal class ServerPinsPlan(val method: MutableMethod, val controller: Int, val folder: Int, val ids: Int)
+/**
+ * Where the answer to loadPinnedDialogs hands the storage the server's pins, and the registers the
+ * extension takes there. 13.2 inlined unpinAllDialogsExceptNew: the answer builds [task], one of
+ * the storage's merged queue tasks, with the server's ids and the folder, and posts it.
+ */
+internal class ServerPinsPlan(val method: MutableMethod, val controller: Int, val folder: Int, val ids: Int, val task: String) {
+    /**
+     * Where the call goes in [answer]: right after the storage is read, before its queue is. Looked
+     * up when it's needed, since another hook can move it.
+     */
+    fun hookAt(answer: Method): Int = answer.controlBody().indexOfFirst { it.buildsUnpinTask(task) } - UNPIN_BUILT_AFTER
+}
 
-/** The storage call in [this], looked up when it's needed, since another hook can move it. */
-internal fun Method.keepPinsCall(): Int = controlBody().indexOfFirst { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == KEEP_PINS }
+/** The query the unpin task runs: the pinned chats the server no longer names. */
+internal const val UNPIN_QUERY = "SELECT did, folder_id FROM dialogs WHERE pinned > 0 AND did NOT IN ("
+/** The unpin task's constructor: the storage, the server's ids and the folder. */
+private val UNPIN_TASK_SHAPE = listOf(STORAGE, HIDDEN_LIST, "I")
+/** The queue read and the new-instance come between the storage's result and the task's constructor. */
+private const val UNPIN_BUILT_AFTER = 2
+
+/** Whether [this] builds [task] the way the answer to loadPinnedDialogs does. */
+internal fun Instruction.buildsUnpinTask(task: String): Boolean {
+    val call = (this as? ReferenceInstruction)?.reference as? MethodReference ?: return false
+    return opcode == Opcode.INVOKE_DIRECT && call.definingClass == task && call.name == "<init>" && call.origParameterTypes == UNPIN_TASK_SHAPE
+}
 
 /** Each read of the chat list's own pin limit in [this], looked up the same way. */
 internal fun Method.mainPinLimitReads(): List<Int> {
@@ -157,7 +185,7 @@ internal class HiddenChatsPlan(val sort: MutableMethod?, val at: Int, val contro
             val answer = into(plan.method)
             val untouched = answer.implementation!!.instructions.count { it.opcode != Opcode.NOP }
             // Between the storage read's result and the call: nothing jumps there, and the branch past Telegram's resort lands before the read.
-            answer.addInstructions(answer.keepPinsCall(), "invoke-static {v${plan.controller}, v${plan.folder}, v${plan.ids}}, $SERVER_PINS")
+            answer.addInstructions(plan.hookAt(answer), "invoke-static {v${plan.controller}, v${plan.folder}, v${plan.ids}}, $SERVER_PINS")
             hiddenFits(answer.implementation!!.instructions.count { it.opcode != Opcode.NOP } - untouched == 1, "the server's pins call didn't compile whole")
         }
         for (reader in pinLimits.map(into)) {
@@ -318,31 +346,109 @@ private fun BytecodePatchContext.emptyFolderWalk(): HiddenChatsPlan {
 /**
  * The answer to loadPinnedDialogs unpins the pinned chats the sorted list holds and the server no
  * longer names, then hands the storage what the server named. The sorted list has no hidden chats,
- * so the extension gets the same list right before that call and does the same for them.
+ * so the extension gets the same list right before the unpin is queued and does the same for them.
  */
 private fun BytecodePatchContext.serverPinsCall(): ServerPinsPlan {
-    val answers = tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.filter { m -> m.keepPinsCall() >= 0 }
+    val tasks = mutableListOf<ClassDef>()
+    forEachClassMentioning(Mention.string(UNPIN_QUERY)) { cls ->
+        if (cls.methods.any { m -> m.controlBody().any { it.controlString() == UNPIN_QUERY } }) tasks += cls
+    }
+    hiddenFits(tasks.size == 1, "the server's pins are no longer unpinned in one place")
+    val task = tasks.single()
+    unpinCaseChecked(task)
+
+    val answers = mutableListOf<Pair<ClassDef, Method>>()
+    forEachClassMentioning(Mention.type(task.type)) { cls ->
+        cls.methods.filter { m -> m.controlBody().any { it.buildsUnpinTask(task.type) } }.mapTo(answers) { cls to it }
+    }
     hiddenFits(answers.size == 1, "the server's pins are no longer handled in one place")
-    val method = answers.single()
+    val (owner, found) = answers.single()
+    val method = tgMutableClassDefBy(owner).methods.single { it.name == found.name &&
+        it.parameterTypes.map(CharSequence::toString) == found.parameterTypes.map(CharSequence::toString) && it.returnType == found.returnType }
     val body = method.controlBody()
-    hiddenFits(body.count { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == KEEP_PINS } == 1, "the server's pins are no longer handed over once")
-    val at = method.keepPinsCall()
-    val handed = body[at].namedRegisters()
-    val result = body.getOrNull(at - 1)
+    hiddenFits(body.count { it.buildsUnpinTask(task.type) } == 1, "the server's pins are no longer handed over once")
+    // getMessagesStorage, its result, the storage's queue, the task, the task built, then posted.
+    val built = body.indexOfFirst { it.buildsUnpinTask(task.type) }
+    val at = built - UNPIN_BUILT_AFTER
     val read = body.getOrNull(at - 2)
-    hiddenFits(handed.size == 3 && result?.opcode == Opcode.MOVE_RESULT_OBJECT && (result as OneRegisterInstruction).registerA == handed[0] &&
-        read?.opcode == Opcode.INVOKE_VIRTUAL && read.controlRef() == GET_STORAGE, "the server's pins call changed")
+    val result = body.getOrNull(at - 1) as? OneRegisterInstruction
+    val queue = body.getOrNull(at) as? TwoRegisterInstruction
+    val made = body.getOrNull(at + 1) as? OneRegisterInstruction
+    val handed = body[built].namedRegisters()
+    val post = body.getOrNull(built + 1)
+    hiddenFits(read?.opcode == Opcode.INVOKE_VIRTUAL && read.controlRef() == GET_STORAGE && read.namedRegisters().size == 1 &&
+        result != null && body[at - 1].opcode == Opcode.MOVE_RESULT_OBJECT &&
+        queue != null && body[at].opcode == Opcode.IGET_OBJECT && body[at].controlField()?.origDefiningClass == STORAGE &&
+        body[at].controlField()?.origType == DISPATCH_QUEUE && queue.registerB == result.registerA &&
+        made != null && body[at + 1].opcode == Opcode.NEW_INSTANCE && (body[at + 1] as ReferenceInstruction).reference.toString() == task.type &&
+        handed.size == 4 && handed[0] == made.registerA && handed[1] == result.registerA &&
+        post?.opcode == Opcode.INVOKE_VIRTUAL && post.controlRef() == TelegramNames.of(this).asRead(POST_RUNNABLE) &&
+        post.namedRegisters() == listOf(queue.registerA, made.registerA), "the server's pins call changed")
     val controller = read!!.namedRegisters().single()
-    val (storage, ids, folder) = handed
-    hiddenFits(controller != storage && listOf(controller, folder, ids).all { it in 0..15 }, "the server's pins registers don't fit the call")
+    val (_, storage, ids, folder) = handed
+    // The ids and the folder hold what the task gets from the hook on: only the storage, its queue and the task are written on the way.
+    hiddenFits(listOf(controller, storage, ids, folder).distinct().size == 4 && ids !in setOf(queue!!.registerA, made!!.registerA) &&
+        folder !in setOf(queue.registerA, made.registerA) && listOf(controller, folder, ids).all { it in 0..15 },
+        "the server's pins registers don't fit the call")
     val flow = try {
         ControlFlow.of(method)
     } catch (failed: IllegalArgumentException) {
         throw Unhidden("the server's pins can't be read (${failed.message})")
     }
-    hiddenFits(flow.normal.withIndex().none { (index, next) -> at in next && index != at - 1 } && flow.exceptional.none { at in it },
-        "something jumps into the server's pins call")
-    return ServerPinsPlan(method, controller, folder, ids)
+    hiddenFits((at - 1..built + 1).all { index -> flow.normal.withIndex().none { (from, next) -> index in next && from != index - 1 } } &&
+        flow.exceptional.none { next -> (at..built + 1).any { it in next } }, "something jumps into the server's pins call")
+    return ServerPinsPlan(method, controller, folder, ids, task.type)
+}
+
+/**
+ * R8 merged several of the storage's queue tasks into [task], which picks its work by a case the
+ * constructor sets. Throws unless the constructor the answer uses picks the case that runs the
+ * unpin query, and no other case reaches it.
+ */
+private fun unpinCaseChecked(task: ClassDef) {
+    val inits = task.methods.filter { it.name == "<init>" && it.origParameterTypes == UNPIN_TASK_SHAPE }
+    hiddenFits(inits.size == 1, "the unpin task's constructor is missing or ambiguous")
+    val init = inits.single().controlBody()
+    // The case: a constant the constructor stores in one of the task's int fields.
+    val cases = init.indices.mapNotNull { index ->
+        val store = init[index] as? TwoRegisterInstruction ?: return@mapNotNull null
+        val field = init[index].controlField()
+        if (init[index].opcode != Opcode.IPUT || field?.definingClass != task.type || field.type != "I") return@mapNotNull null
+        val set = (index - 1 downTo 0).firstOrNull { (init[it] as? OneRegisterInstruction)?.registerA == store.registerA && init[it].opcode.setsRegister() }
+        val literal = set?.let { init[it] as? NarrowLiteralInstruction }
+        if (literal == null || init[set].opcode !in setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST)) null else field to literal.narrowLiteral
+    }
+    hiddenFits(cases.size == 1, "the unpin task no longer picks its case as it's built")
+    val (caseField, case) = cases.single()
+    val runs = task.methods.filter { it.name == "run" && it.parameterTypes.isEmpty() && it.returnType == "V" }
+    hiddenFits(runs.size == 1, "the unpin task's run is missing")
+    val run = runs.single()
+    val body = run.controlBody()
+    val switch = body.indexOfFirst { it.opcode == Opcode.PACKED_SWITCH || it.opcode == Opcode.SPARSE_SWITCH }
+    val selector = body.getOrNull(switch - 1)
+    hiddenFits(switch > 0 && selector?.opcode == Opcode.IGET && selector.controlField()?.toString() == caseField.toString() &&
+        body[switch].namedRegisters() == listOf((selector as OneRegisterInstruction).registerA), "the unpin task no longer switches on its case")
+    val address = IntArray(body.size + 1)
+    for (index in body.indices) address[index + 1] = address[index] + body[index].codeUnits
+    fun at(offset: Int) = body.indices.firstOrNull { address[it] == address[switch] + offset }
+    val payload = at((body[switch] as OffsetInstruction).codeOffset)?.let { body[it] as? SwitchPayload }
+    val starts = payload?.switchElements?.associate { it.key to at(it.offset) }
+    val start = starts?.get(case)
+    hiddenFits(start != null && starts.values.all { it != null }, "the unpin task's case is missing")
+    val query = body.indices.filter { body[it].controlString() == UNPIN_QUERY }
+    val flow = ControlFlow.of(run)
+    fun reached(from: Int): Set<Int> {
+        val seen = mutableSetOf<Int>()
+        val pending = ArrayDeque(listOf(from))
+        while (pending.isNotEmpty()) {
+            val index = pending.removeFirst()
+            if (seen.add(index)) pending.addAll(flow.normal[index] + flow.exceptional[index])
+        }
+        return seen
+    }
+    val others = starts!!.filterKeys { it != case }.values.filterNotNull() + (switch + 1)
+    hiddenFits(query.size == 1 && query.single() in reached(start!!) && others.none { query.single() in reached(it) },
+        "the unpin task's case no longer runs the unpin query alone")
 }
 
 /**
