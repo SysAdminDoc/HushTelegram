@@ -4,7 +4,7 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
-* **Telegram:** Moved telegram.org's build to Telegram 13.1.1 (version code 72379). Every patch carried over without a change.
+* **Telegram:** Moved to Telegram 13.2. telegram.org's build is 13.2.0 (version code 72809) and the Google Play build is 13.2.1 (version code 72911). The 13.1 builds aren't supported anymore, so update Telegram before you patch.
 
 ### Added
 
