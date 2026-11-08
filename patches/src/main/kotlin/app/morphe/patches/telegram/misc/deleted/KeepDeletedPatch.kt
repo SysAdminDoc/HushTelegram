@@ -378,6 +378,11 @@ private const val BUFFER = "Lorg/telegram/tgnet/NativeByteBuffer;"
 private const val TL_MESSAGE = "Lorg/telegram/tgnet/TLRPC\$Message;"
 private const val TL_MEDIA = "Lorg/telegram/tgnet/TLRPC\$MessageMedia;"
 private const val TL_CHAT = "Lorg/telegram/tgnet/TLRPC\$Chat;"
+private const val TL_PHOTO = "Lorg/telegram/tgnet/TLRPC\$Photo;"
+private const val TL_PHOTO_SIZE = "Lorg/telegram/tgnet/TLRPC\$PhotoSize;"
+private const val TL_DOCUMENT = "Lorg/telegram/tgnet/TLRPC\$Document;"
+private const val FILE_LOADER = "Lorg/telegram/messenger/FileLoader;"
+private const val IMAGE_LOCATION = "Lorg/telegram/messenger/ImageLocation;"
 private const val USER_CONFIG = "Lorg/telegram/messenger/UserConfig;"
 private const val CHAT_OBJECT = "Lorg/telegram/messenger/ChatObject;"
 internal const val NOTIFICATIONS = "Lorg/telegram/messenger/NotificationsController;"
@@ -412,6 +417,12 @@ private val API = listOf(
     Api(USER_CONFIG, "isClientActivated", "", "Z"),
     Api(MESSAGE_OBJECT, "getDialogId", "", "J"),
     Api(MESSAGE_OBJECT, "getId", "", "I"),
+    // A kept photo or file downloads as it's kept (#2), the way Telegram's own download asks for it.
+    Api(BASE_CONTROLLER, "getFileLoader", "", FILE_LOADER),
+    Api(FILE_LOADER, "loadFile", "$IMAGE_LOCATION${OBJECT}Ljava/lang/String;II", "V"),
+    Api(FILE_LOADER, "loadFile", "$TL_DOCUMENT${OBJECT}II", "V"),
+    Api(IMAGE_LOCATION, "getForPhoto", "$TL_PHOTO_SIZE$TL_PHOTO", IMAGE_LOCATION, static = true),
+    Api(IMAGE_LOCATION, "getForDocument", "$TL_PHOTO_SIZE$TL_DOCUMENT", IMAGE_LOCATION, static = true),
 )
 
 private val FIELDS = listOf(
@@ -420,6 +431,11 @@ private val FIELDS = listOf(
     Triple(TL_MESSAGE, "noforwards", "Z"),
     Triple(TL_MESSAGE, "media", TL_MEDIA),
     Triple(TL_MEDIA, "ttl_seconds", "I"),
+    Triple(TL_MEDIA, "photo", TL_PHOTO),
+    Triple(TL_MEDIA, "document", TL_DOCUMENT),
+    Triple(TL_PHOTO, "sizes", LIST),
+    Triple(TL_DOCUMENT, "size", "J"),
+    Triple(TL_DOCUMENT, "thumbs", LIST),
     Triple(TL_CHAT, "noforwards", "Z"),
     Triple(USER_DELETE, "messages", LIST),
     Triple(CHANNEL_DELETE, "messages", LIST),
@@ -450,7 +466,8 @@ private fun BytecodePatchContext.requireTelegramNames() {
     for (api in API) {
         val owner = tgClassDefByOrNull(api.owner)
         controlShape(owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags) && owner.methods.any {
-            it.origName == api.name && it.parameterTypes.joinToString("").let { p -> p == api.parameters || p == api.reordered } &&
+            // Parameter types by their source names: R8 renamed ImageLocation's class in 13.2.
+            it.origName == api.name && it.origParameterTypes.joinToString("").let { p -> p == api.parameters || p == api.reordered } &&
                 it.origReturnType == api.result &&
                 AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == api.static
         }, "${api.owner}->${api.name} is no longer a public method Keep deleted messages can call")

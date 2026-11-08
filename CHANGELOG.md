@@ -49,6 +49,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** If you hide a pinned chat and unpin it on another device, the unpin now sticks. Hidden pins also count toward your pin limit here, so you see Telegram's limit message instead of a pin the server would turn down.
 * **Telegram:** When Google sign-in fails on Telegram's login email screen, a short message now points at the email box. Telegram used to just stay on the screen after you picked an account, and a patched copy can't get past Google there.
 * **Telegram:** If you use Telegram's Keep-Alive Service instead of push, messages no longer wait until you open the app. Android stopped that service about a minute after you left Telegram. Now it runs with a quiet notification and keeps going. A new switch under **Repair Firebase push registration**, **Keep the Keep-Alive Service running**, is on by default and only matters while Keep-Alive Service is on in Telegram's own settings. (#50, #54)
+* **Telegram:** **Keep deleted messages** now saves a kept photo, and any kept file or video up to 20 MB, the moment the sender deletes it. Before, a photo you hadn't opened yet just spun forever, because Telegram can't fetch a deleted message's file later. (#2)
 
 ## 0.0.23 (2026-10-31)
 

@@ -151,10 +151,11 @@ final class KeepDeletedBridge implements KeepDeleted.Source, KeepEdits.Source {
                 int id = (Integer) intValue.invoke(cursor, 1);
                 boolean mine = (Integer) intValue.invoke(cursor, 2) != 0;
                 boolean timed = (Integer) intValue.invoke(cursor, 3) != 0;
-                boolean[] data = readData(cursor, 4);
+                Object message = readMessage(cursor, 4);
+                boolean[] data = message == null ? null : flags(message);
                 // A message that can't be read is left to Telegram.
                 rows.add(new KeepDeleted.Row(dialog, id, mine || (data != null && data[0]), timed || data == null || data[1],
-                        data == null || data[2] || chatIsProtected(dialog)));
+                        data == null || data[2] || chatIsProtected(dialog), message));
             }
         } finally {
             method(cursor.getClass(), "dispose").invoke(cursor);
@@ -229,6 +230,88 @@ final class KeepDeletedBridge implements KeepDeleted.Source, KeepEdits.Source {
     }
 
     /**
+     * Every size of a kept photo, so the bubble and the full-screen viewer each find theirs, and a
+     * document's previews plus the document itself up to {@link #MEDIA_LIMIT}. Each goes through the
+     * account's FileLoader the way Telegram's own download asks for it, so it lands under the name
+     * and in the folder the bubble looks in, with the message as its parent.
+     */
+    @Override public int saveMedia(List<Object> messages) throws Exception {
+        Object loader = call(controller, "getFileLoader");
+        ClassLoader classes = loader.getClass().getClassLoader();
+        Class<?> locations = Class.forName("org.telegram.messenger.ImageLocation", true, classes);
+        Class<?> sizes = Class.forName("org.telegram.tgnet.TLRPC$PhotoSize", true, classes);
+        Class<?> photos = Class.forName("org.telegram.tgnet.TLRPC$Photo", true, classes);
+        Class<?> documents = Class.forName("org.telegram.tgnet.TLRPC$Document", true, classes);
+        Method forPhoto = method(locations, "getForPhoto", sizes, photos);
+        Method forDocument = method(locations, "getForDocument", sizes, documents);
+        Method loadImage = method(loader.getClass(), "loadFile", locations, Object.class, String.class, int.class, int.class);
+        Method loadDocument = method(loader.getClass(), "loadFile", documents, Object.class, int.class, int.class);
+        List<Class<?>> previews = previews(classes);
+        int asked = 0;
+        for (Object message : messages) {
+            Object media = HostNames.field(message.getClass(), "media").get(message);
+            if (media == null) continue;
+            Object photo = HostNames.field(media.getClass(), "photo").get(media);
+            if (photo != null) {
+                for (Object size : list(photo, "sizes")) {
+                    Object location = downloadable(size, previews) ? forPhoto.invoke(null, size, photo) : null;
+                    if (location == null) continue;
+                    loadImage.invoke(loader, location, message, "jpg", PRIORITY_LOW, 0);
+                    asked++;
+                }
+            }
+            Object document = HostNames.field(media.getClass(), "document").get(media);
+            if (document == null) continue;
+            for (Object thumb : list(document, "thumbs")) {
+                Object location = downloadable(thumb, previews) ? forDocument.invoke(null, thumb, document) : null;
+                if (location == null) continue;
+                loadImage.invoke(loader, location, message, "jpg", PRIORITY_LOW, 0);
+                asked++;
+            }
+            long length = HostNames.field(document.getClass(), "size").getLong(document);
+            if (length <= 0 || length > MEDIA_LIMIT) continue;
+            loadDocument.invoke(loader, document, message, PRIORITY_LOW, 0);
+            asked++;
+        }
+        return asked;
+    }
+
+    /** A video or file bigger than this keeps only its preview, so a deleted movie doesn't eat the data plan. */
+    static final long MEDIA_LIMIT = 20L * 1024 * 1024;
+
+    /** FileLoader's lowest priority, the one its own auto-download uses, so a chat being opened loads first. */
+    private static final int PRIORITY_LOW = 0;
+
+    /** The sizes with nothing to download: an empty one, an outline, and the tiny previews a message carries inside itself. */
+    private static final String[] PREVIEWS = {
+        "org.telegram.tgnet.TLRPC$TL_photoSizeEmpty", "org.telegram.tgnet.TLRPC$TL_photoPathSize",
+        "org.telegram.tgnet.TLRPC$TL_photoStrippedSize", "org.telegram.tgnet.TLRPC$TL_photoCachedSize",
+    };
+
+    private static List<Class<?>> previews(ClassLoader classes) {
+        List<Class<?>> out = new ArrayList<>();
+        for (String name : PREVIEWS) {
+            try {
+                out.add(Class.forName(name, true, classes));
+            } catch (ClassNotFoundException absent) {
+                // A build without the type has no size of that kind to skip.
+            }
+        }
+        return out;
+    }
+
+    private static boolean downloadable(Object size, List<Class<?>> previews) {
+        if (size == null) return false;
+        for (Class<?> preview : previews) if (preview.isInstance(size)) return false;
+        return true;
+    }
+
+    private static List<?> list(Object owner, String name) throws Exception {
+        Object value = HostNames.field(owner.getClass(), name).get(owner);
+        return value == null ? new ArrayList<>() : (List<?>) value;
+    }
+
+    /**
      * The cleanup and the put that fills its argument. The argument is androidx's LongSparseArray,
      * which R8 renames, so its type comes from the cleanup's own signature and its put is the one
      * (Object, long) method that type has. The patch refuses a build where either isn't single.
@@ -259,12 +342,6 @@ final class KeepDeletedBridge implements KeepDeleted.Source, KeepEdits.Source {
         METHODS.put(key, clear);
         METHODS.put(key + "#put", put);
         return new Method[] {clear, put};
-    }
-
-    /** Whether the message is sent by me, disappears on a timer, or can't be saved. Null when it can't be read. */
-    private boolean[] readData(Object cursor, int column) throws Exception {
-        Object message = readMessage(cursor, column);
-        return message == null ? null : flags(message);
     }
 
     /** The stored message in [column], or null when there's none. Reaction notifications read it too. */

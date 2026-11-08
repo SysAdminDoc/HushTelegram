@@ -76,6 +76,42 @@ public final class TLRPC {
         public boolean out;
         public Peer peer_id;
         public TL_messageReactions reactions;
+        public MessageMedia media;
+    }
+
+    /** A message's attachment: a photo or a document, each null for the other kind. */
+    public static class MessageMedia {
+        public Photo photo;
+        public Document document;
+    }
+
+    public static class TL_messageMediaPhoto extends MessageMedia { }
+
+    public static class TL_messageMediaDocument extends MessageMedia { }
+
+    public static class Photo {
+        public java.util.ArrayList<PhotoSize> sizes = new java.util.ArrayList<>();
+    }
+
+    public static class PhotoSize {
+        public String type;
+    }
+
+    public static class TL_photoSize extends PhotoSize { }
+
+    public static class TL_photoSizeProgressive extends PhotoSize { }
+
+    public static class TL_photoStrippedSize extends PhotoSize { }
+
+    public static class TL_photoCachedSize extends PhotoSize { }
+
+    public static class TL_photoPathSize extends PhotoSize { }
+
+    public static class TL_photoSizeEmpty extends PhotoSize { }
+
+    public static class Document {
+        public long size;
+        public java.util.ArrayList<PhotoSize> thumbs = new java.util.ArrayList<>();
     }
 
     /** The typing, recording or uploading status shown in a chat. */
