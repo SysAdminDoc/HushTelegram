@@ -15,8 +15,9 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * Telegram's sign-in phone screen has a Test Backend checkbox that only shows while the account
  * being added already sits on Telegram's test servers. With the switch on, it shows for every new
  * sign-in. Ticking it moves only that account's connection to the test servers, the way Telegram's
- * own box does, so test sessions stay apart from the accounts already signed in. The screen also
- * takes the 999 code of Telegram's test numbers, which release builds refuse as an unknown country.
+ * own box does, so test sessions stay apart from the accounts already signed in. While the box is
+ * ticked, the screen also takes the 999 code of Telegram's test numbers, which release builds refuse
+ * as an unknown country.
  */
 public final class TestServers {
     private TestServers() {}
@@ -41,7 +42,8 @@ public final class TestServers {
 
     /**
      * Asked with the phone screen's country state, right before Next refuses a code no country has,
-     * and the field holding the typed code. Telegram's test numbers start with 999, so with the switch
+     * and the field holding the typed code, only while the Test Backend box is ticked (the patch
+     * leaves Next to Telegram otherwise). Telegram's test numbers start with 999, so with the switch
      * on that code reads as known and the number goes to the servers like any other. Everything else
      * keeps Telegram's answer.
      */

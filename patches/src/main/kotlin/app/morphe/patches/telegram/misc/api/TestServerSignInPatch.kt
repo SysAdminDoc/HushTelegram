@@ -21,7 +21,10 @@ import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.util.names.addInstructions
+import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.util.names.origString
 import app.morphe.util.names.origType
 import app.morphe.util.names.tgMutableClassDefBy
@@ -82,7 +85,8 @@ val testServerSignInPatch = bytecodePatch(
 /**
  * Where Next on the sign-in phone screen refuses a country code no country has: the method, the
  * index right after it reads the screen's country state, the registers holding that state and the
- * screen, the field holding the typed code, and a register the next instruction overwrites anyway.
+ * screen, the field holding the typed code, a register the next instruction overwrites anyway, and
+ * the screen's field for its sign-in page plus that page's Test Backend flag.
  */
 internal class CountryCodeCheck(
     val method: MutableMethod,
@@ -91,20 +95,28 @@ internal class CountryCodeCheck(
     val screen: Int,
     val codeField: String,
     val scratch: Int,
+    val pageField: String,
+    val testBoxField: String,
 )
 
 /**
- * The extension gets the country state and the code field before Next tests the state, and its
- * answer goes back in the same register, so a 999 test number passes both of Telegram's tests.
+ * While the Test Backend box is ticked, the extension gets the country state and the code field
+ * before Next tests the state, and its answer goes back in the same register, so a 999 test number
+ * passes both of Telegram's tests. Unticked, Next is Telegram's own: test numbers only exist on the
+ * test servers, and the regular ones would take one and wait for a code that never comes.
  */
 internal fun insertCountryStateAnswer(target: MutableMethod, check: CountryCodeCheck) {
-    target.addInstructions(
+    target.addInstructionsWithLabels(
         check.at,
         """
+            iget-object v${check.scratch}, v${check.screen}, ${check.pageField}
+            iget-boolean v${check.scratch}, v${check.scratch}, ${check.testBoxField}
+            if-eqz v${check.scratch}, :hush_stock
             iget-object v${check.scratch}, v${check.screen}, ${check.codeField}
             invoke-static { v${check.state}, v${check.scratch} }, $TEST_SERVERS_COUNTRY_STATE
             move-result v${check.state}
         """,
+        ExternalLabel("hush_stock", target.getInstruction(check.at)),
     )
 }
 
@@ -172,12 +184,27 @@ internal fun BytecodePatchContext.resolveTestNumberCode(): CountryCodeCheck {
     controlShape(code != null, "Next no longer starts the number with a field's text")
     val codeField = (body[code!!] as ReferenceInstruction).reference as FieldReference
     controlShape(codeField.definingClass == method.definingClass, "the number no longer starts with the screen's own field")
+    // The box's flag is the one Next compares with isTestBackend() before warning that a number is
+    // already signed in: the sign-in page's boolean, read through the screen's field for that page.
+    val box = body.indices.filter { i ->
+        body[i].controlRef() == IS_TEST_BACKEND && i + 4 < body.size &&
+            body[i + 1].opcode == Opcode.MOVE_RESULT && body[i + 2].opcode == Opcode.IGET_OBJECT &&
+            body[i + 3].opcode == Opcode.IGET_BOOLEAN && body[i + 4].opcode in setOf(Opcode.IF_EQ, Opcode.IF_NE) &&
+            (body[i + 3] as TwoRegisterInstruction).registerB == (body[i + 2] as OneRegisterInstruction).registerA &&
+            (body[i + 4] as TwoRegisterInstruction).let { setOf(it.registerA, it.registerB) } ==
+            setOf((body[i + 1] as OneRegisterInstruction).registerA, (body[i + 3] as OneRegisterInstruction).registerA)
+    }.controlSingle("the Test Backend box's flag")
+    val pageField = (body[box + 2] as ReferenceInstruction).reference as FieldReference
+    val testBoxField = (body[box + 3] as ReferenceInstruction).reference as FieldReference
+    controlShape(pageField.definingClass == method.definingClass && testBoxField.definingClass == pageField.type &&
+        testBoxField.type == "Z", "the Test Backend box's flag is no longer on the screen's sign-in page")
     controlShape(listOf(state, screen, scratch).all { it <= 15 }, "Next's registers no longer fit the hook")
     // Nothing but the read itself may reach the instruction after it, or that way in would skip the hook.
     val otherEntry = flow.normal.indices.any { it != read && read + 1 in flow.normal[it] } ||
         flow.exceptional.any { read + 1 in it }
     controlShape(!otherEntry, "something else jumps past Next's country state read")
-    return CountryCodeCheck(method, read + 1, state, screen, codeField.origString(), scratch)
+    return CountryCodeCheck(method, read + 1, state, screen, codeField.origString(), scratch,
+        pageField.origString(), testBoxField.origString())
 }
 
 /**

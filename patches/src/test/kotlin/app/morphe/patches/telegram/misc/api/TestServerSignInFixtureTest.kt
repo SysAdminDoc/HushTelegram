@@ -130,6 +130,9 @@ class TestServerSignInFixtureTest {
             for ((index, instruction) in before.withIndex()) {
                 if (instruction.opcode == Opcode.NOP) continue
                 if (index == check.at) {
+                    expected += listOf(Opcode.IGET_OBJECT, check.pageField)
+                    expected += listOf(Opcode.IGET_BOOLEAN, check.testBoxField)
+                    expected += listOf(Opcode.IF_EQZ, null)
                     expected += listOf(Opcode.IGET_OBJECT, check.codeField)
                     expected += listOf(Opcode.INVOKE_STATIC, TEST_SERVERS_COUNTRY_STATE)
                     expected += listOf(Opcode.MOVE_RESULT, null)
@@ -138,6 +141,19 @@ class TestServerSignInFixtureTest {
             }
             val after = check.method.controlBody().filter { it.opcode != Opcode.NOP }
             assertEquals("$name: hooked after the read, stock otherwise", expected, after.map { it.shape() })
+
+            val box = before.indices.single { before[it].controlRef() == IS_TEST_BACKEND && before.getOrNull(it + 3)?.controlRef() == check.testBoxField }
+            assertEquals("$name: the flag is the one Telegram compares with isTestBackend()",
+                listOf(check.pageField, check.testBoxField), listOf(before[box + 2].controlRef(), before[box + 3].controlRef()))
+            val patched = check.method.controlBody()
+            val page = patched[check.at] as TwoRegisterInstruction
+            val flag = patched[check.at + 1] as TwoRegisterInstruction
+            assertEquals("$name: the box's flag comes off the screen's page into the scratch register",
+                listOf(check.scratch, check.screen, check.scratch, check.scratch), listOf(page.registerA, page.registerB, flag.registerA, flag.registerB))
+            assertEquals("$name: the flag is what's tested", check.scratch, (patched[check.at + 2] as OneRegisterInstruction).registerA)
+            assertEquals("$name: unticked goes straight to Telegram's own instruction",
+                setOf(check.at + 3, check.at + 6), ControlFlow.of(check.method).normal[check.at + 2].toSet())
+            assertEquals("$name: and that instruction is the stock one after the read", before[check.at].shape(), patched[check.at + 6].shape())
 
             val at = after.indexOfFirst { it.controlRef() == TEST_SERVERS_COUNTRY_STATE }
             val field = after[at - 1] as TwoRegisterInstruction
@@ -165,6 +181,7 @@ class TestServerSignInFixtureTest {
             "way in" to "something else jumps past Next's country state read",
             "state" to "the WrongCountry alert no longer waits on an unknown country code",
             "between" to "Next changes the country state before testing it again",
+            "box" to "the Test Backend box's flag is missing or ambiguous",
         )
         for (build in Fixtures.declaredBuilds()) for ((change, why) in changes) {
             val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
@@ -183,6 +200,12 @@ class TestServerSignInFixtureTest {
                 }
                 "state" -> method.replaceInstruction(two, "const/4 v${(body[two] as OneRegisterInstruction).registerA}, 0x3")
                 "between" -> method.replaceInstruction(two - 1, "const/4 v${check.state}, 0x0")
+                "box" -> {
+                    val flag = body.indices.single {
+                        body[it].controlRef() == IS_TEST_BACKEND && body.getOrNull(it + 3)?.opcode == Opcode.IGET_BOOLEAN
+                    } + 3
+                    method.replaceInstruction(flag, "const/16 v${(body[flag] as OneRegisterInstruction).registerA}, 0x0")
+                }
             }
             val changed = method.controlBody().map { it.shape() }
             try {
