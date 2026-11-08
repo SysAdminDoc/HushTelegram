@@ -34,7 +34,8 @@ internal fun Method.isScreenshotSlice(): Boolean {
         text == "Landroid/view/Window;->addFlags(I)V" || text == "Landroid/view/SurfaceView;->setSecure(Z)V" ||
             text == "Landroid/view/WindowManager\$LayoutParams;->flags:I" ||
             (ref is MethodReference && ref.name == "<init>" && ref.parameterTypes.firstOrNull()?.toString() == "Landroid/view/Window;") ||
-            (name == "run" && ref is FieldReference && ref.type == "Lorg/telegram/tgnet/TLRPC\$EncryptedChat;")
+            (name == "run" && ref is FieldReference && ref.type == "Lorg/telegram/tgnet/TLRPC\$EncryptedChat;") ||
+            (name == "run" && ref is FieldReference && text == "Lorg/telegram/tgnet/TLRPC\$Message;->noforwards:Z")
     }
 }
 
@@ -48,8 +49,8 @@ class ScreenshotsFixtureTest {
             val context = PatchContexts.of(ExtensionDex.classes() + classes)
             val plan = context.resolveScreenshots()
             assertEquals("${build.name}: ${plan.missing}", null, plan.missing)
-            assertEquals(build.name, listOf(ScreenshotSite.CONDITION, ScreenshotSite.CONDITION, ScreenshotSite.VIEWER,
-                ScreenshotSite.STORY, ScreenshotSite.TRANSLATE), plan.targets.map { it.second })
+            assertEquals(build.name, listOf(ScreenshotSite.CONDITION, ScreenshotSite.CONDITION, ScreenshotSite.CELL,
+                ScreenshotSite.VIEWER, ScreenshotSite.STORY, ScreenshotSite.TRANSLATE), plan.targets.map { it.second })
             val before = plan.targets.map { (method, _) -> method.controlBody().map(::operand) }
             plan.apply()
             plan.targets.forEachIndexed { n, (method, site) ->
@@ -91,6 +92,14 @@ class ScreenshotsFixtureTest {
                 assertEquals("${build.name} $site", Opcode.IF_NEZ, after[secret + 1].opcode)
                 assertEquals("${build.name} $site", true, secret in 0 until hook)
             }
+            // The message cell hands over the message's noforwards answer, read right before the hook.
+            // Its paid media and view-once checks come after and are left as they were.
+            val (cell, _) = plan.targets.single { it.second == ScreenshotSite.CELL }
+            val after = cell.controlBody()
+            val hook = after.indexOfFirst { it.controlRef() == SCREENSHOTS_PROTECTED }
+            assertEquals(build.name, Opcode.IGET_BOOLEAN, after[hook - 1].opcode)
+            assertEquals(build.name, "Lorg/telegram/tgnet/TLRPC\$Message;->noforwards:Z", after[hook - 1].controlRef())
+            assertEquals(build.name, (after[hook - 1] as OneRegisterInstruction).registerA, (after[hook] as RegisterRangeInstruction).startRegister)
         }
     }
 }

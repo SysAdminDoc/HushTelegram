@@ -48,6 +48,7 @@ internal class ScreenshotSpot(val at: Int, val register: Int, val hook: String)
 /** The kinds of spot, each a finder that reads them off a method again at apply time. */
 internal enum class ScreenshotSite(val find: (Method) -> List<ScreenshotSpot>?) {
     CONDITION(Method::conditionSpots),
+    CELL(Method::cellSpots),
     VIEWER(Method::viewerSpots),
     STORY(Method::storySpots),
     TRANSLATE(Method::translateSpots),
@@ -142,6 +143,23 @@ private fun List<Instruction>.conditionSpotAt(at: Int): ScreenshotSpot? {
     val branch = getOrNull(at + 4) ?: return null
     if (branch.opcode != Opcode.IF_EQZ || branch.register() != answer) return null
     return ScreenshotSpot(at + 4, answer, SCREENSHOTS_PROTECTED)
+}
+
+/**
+ * Each chat message cell builds a FlagSecureReason of its own, true while it shows a message that
+ * doesn't allow saving (`messageOwner.noforwards`, unless the message is local or ephemeral), paid
+ * media not yet unlocked or view-once voice and video. Only the noforwards read is handed over,
+ * right before the branch that tests it, so paid and view-once media stay secure whatever the switch
+ * says. Without this a single protected message keeps the whole chat window secure.
+ */
+internal fun Method.cellSpots(): List<ScreenshotSpot>? {
+    if (name != "run" || parameterTypes.isNotEmpty() || returnType != "Z") return null
+    val code = code() ?: return null
+    val read = code.indices.singleOrNull { code[it].opcode == Opcode.IGET_BOOLEAN && code[it].controlRef() == NO_FORWARDS } ?: return null
+    val answer = code[read].register() ?: return null
+    val test = code.getOrNull(read + 1) ?: return null
+    if (test.opcode != Opcode.IF_EQZ || test.register() != answer || (read + 1) in landings()) return null
+    return listOf(ScreenshotSpot(read + 1, answer, SCREENSHOTS_PROTECTED))
 }
 
 /** `layoutParams.flags |= FLAG_SECURE` starting at [at]. */
@@ -267,6 +285,8 @@ internal fun BytecodePatchContext.resolveScreenshots(): ScreenshotsPlan {
     val chats = conditions.flatMap { c -> c.methods.filter { it.conditionSpots() != null } }
     if (chats.size != 2) return missing("the chat and profile screenshot checks aren't both there (found ${chats.size})")
     chats.mapTo(found) { it to ScreenshotSite.CONDITION }
+    val cells = conditions.flatMap { c -> c.methods.filter { it.cellSpots() != null } }
+    found += (cells.singleOrNull() ?: return missing("the message cell's screenshot check moved (found ${cells.size})")) to ScreenshotSite.CELL
 
     val viewers = classDefsMentioning(Mention.reference(NO_FORWARDS) and Mention.reference(LAYOUT_FLAGS) and Mention.literal(SECURE))
         .flatMap { c -> c.methods.filter { it.viewerSpots() != null } }
