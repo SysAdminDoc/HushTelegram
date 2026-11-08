@@ -53,7 +53,8 @@ internal const val STORY_CAMERA_ICON = "Lorg/telegram/messenger/R\$drawable;->ou
 internal const val CHAT_PREVIEW_ACTION = "Lorg/telegram/messenger/R\$id;->acc_action_chat_preview:I"
 private const val CANVAS = "Landroid/graphics/Canvas;"
 private const val IMAGE = "Lorg/telegram/messenger/ImageReceiver;"
-private val TOUCH_PARAMETERS = listOf("Landroid/view/MotionEvent;", "Landroid/view/View;")
+/** The avatar's touch check takes the event and the cell; 13.2 takes the cell first. */
+private val TOUCH_PARAMETERS = listOf("Landroid/view/MotionEvent;", "Landroid/view/View;").let { setOf(it, it.reversed()) }
 private val COMMUNITY_PARAMETERS = listOf("Lorg/telegram/tgnet/TLRPC\$Chat;", "Lorg/telegram/tgnet/TLRPC\$User;")
 private val GOTOS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)
 private val MOVES = setOf(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_16)
@@ -165,7 +166,7 @@ internal fun BytecodePatchContext.resolveStoryHooks(): StoryPlan {
     }.unique("dialog avatar cell") ?: return StoryPlan(hooks, null)
     val intercept = cell.methods.single { it.origName == "onInterceptTouchEvent" && it.hasShape(listOf("Landroid/view/MotionEvent;"), "Z") }
     val intercepted = intercept.instructions()
-    val touchAt = intercepted.indices.filter { intercepted[it].call()?.hasShape(TOUCH_PARAMETERS, "Z") == true }
+    val touchAt = intercepted.indices.filter { at -> intercepted[at].call()?.let { call -> TOUCH_PARAMETERS.any { call.hasShape(it, "Z") } } == true }
         .unique("dialog avatar touch call") ?: throw PatchException("$PATCH: no dialog avatar touch call")
     val touchCall = intercepted[touchAt].call()!!
     val paramsRead = intercepted.getOrNull(touchAt - 1)
@@ -418,7 +419,7 @@ private fun <T> List<T>.unique(what: String): T? {
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Instruction.reference(): String? = origRef()
 private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference
-private fun MethodReference.hasShape(parameters: List<String>, returns: String) = returnType == returns && parameterTypes.map { it.toString() } == parameters
+private fun MethodReference.hasShape(parameters: List<String>, returns: String) = origReturnType == returns && origParameterTypes == parameters
 private fun MethodReference.sameSignature(other: MethodReference) = name == other.name && returnType == other.returnType &&
     origParameterTypes == other.origParameterTypes
 
