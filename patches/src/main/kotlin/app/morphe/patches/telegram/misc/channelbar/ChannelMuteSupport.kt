@@ -14,9 +14,16 @@ import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origName
 import app.morphe.util.names.origReturnType
@@ -75,6 +82,14 @@ internal class ChannelMuteBar(
     }
 }
 
+/** Whether [call] draws the drawable in [field]: as a Drawable, or (13.2) as the field's own class. */
+internal fun drawsBubble(call: Instruction, field: FieldReference): Boolean {
+    if (call.controlRef() == DRAWABLE_DRAW) return true
+    val ref = (call as? ReferenceInstruction)?.reference as? MethodReference ?: return false
+    return call.opcode == Opcode.INVOKE_VIRTUAL && ref.definingClass == field.type && ref.name == "draw" &&
+        ref.parameterTypes.map { it.toString() } == listOf("Landroid/graphics/Canvas;") && ref.returnType == "V"
+}
+
 /** In [draw], the bubble's show flag sits in register [flag] from just before [at], and `this` in [self]. */
 internal class MuteBubble(val draw: MutableMethod, val at: Int, val flag: Int, val self: Int)
 
@@ -96,7 +111,7 @@ private fun BytecodePatchContext.resolveMuteBubble(): MuteBubble? {
     } ?: return null
     val body = draw.controlBody()
     val read = body.indices.singleOrNull {
-        body[it].opcode == Opcode.IGET_OBJECT && body[it].controlField() == faded && body.getOrNull(it + 1)?.controlRef() == DRAWABLE_DRAW
+        body[it].opcode == Opcode.IGET_OBJECT && body[it].controlField() == faded && body.getOrNull(it + 1)?.let { next -> drawsBubble(next, faded) } == true
     } ?: return null
     if (read < 2 || body[read - 1].opcode != Opcode.IF_EQZ || body[read - 2].opcode != Opcode.IGET_BOOLEAN) return null
     val flag = body[read - 1].namedRegisters().single()
@@ -124,13 +139,13 @@ internal fun BytecodePatchContext.resolveChannelMute(plan: ChannelBarPlan): Chan
 
     val body = plan.update.controlBody()
     val owners = body.indices.filter { body[it].controlRef() == NOT_IN_CHAT || body[it].controlRef() == REPLY_USER }
-    val joined = body.indices.filter { body[it].controlRef() == MUTE_LABEL || body[it].controlRef() == UNMUTE_LABEL }.filter { at ->
+    val joined = labelUses(plan.update, body).filter { (at, _) ->
         owners.lastOrNull { it < at }?.let { body[it].controlRef() == NOT_IN_CHAT } == true
     }
-    if (joined.size != 2 || joined.mapNotNull { body[it].controlRef() }.toSet() != setOf(MUTE_LABEL, UNMUTE_LABEL)) {
+    if (joined.size != 2 || joined.map { it.second }.toSet() != setOf(MUTE_LABEL, UNMUTE_LABEL)) {
         return missing("the chat screen no longer names a joined channel's button Mute and Unmute in one place each (${joined.size})")
     }
-    val after = joined.map { at ->
+    val after = joined.map { it.first }.map { at ->
         val set = (at + 1 until minOf(body.size, at + LABEL_WINDOW)).firstOrNull {
             body[it].opcode == Opcode.INVOKE_VIRTUAL && body[it].controlRef()?.endsWith("(Ljava/lang/String;Z)V") == true
         } ?: return missing("the chat screen no longer sets the Mute button's text with a plain call")
@@ -149,4 +164,40 @@ internal fun BytecodePatchContext.resolveChannelMute(plan: ChannelBarPlan): Chan
     } ?: return missing("the bar no longer has a setVisibility of its own")
     val bubble = resolveMuteBubble() ?: return missing("the chat screen no longer draws the bubble behind its bar in a way the switch can skip")
     return ChannelMuteBar(plan.update, setVisibility, bubble, after, last + 1, bar, null)
+}
+
+/**
+ * Each call in [method] that is handed the Mute or Unmute label, with that label. 13.1.1 reads a label
+ * just before each use; 13.2 loads both once at the top of the update and passes the registers on, so
+ * a call counts when every path to it leaves one label, and only that label, in a register it reads.
+ */
+private fun labelUses(method: Method, body: List<Instruction>): List<Pair<Int, String>> {
+    val labels = setOf(MUTE_LABEL, UNMUTE_LABEL)
+    if (body.none { it.controlRef() in labels }) return emptyList()
+    val flow = ControlFlow.of(method)
+    val predecessors = Array(body.size) { mutableSetOf<Int>() }
+    for (i in body.indices) for (next in flow.normal[i] + flow.exceptional[i]) predecessors[next] += i
+    fun writes(i: Int, register: Int): Boolean {
+        val written = (body[i] as? OneRegisterInstruction)?.registerA ?: return false
+        return body[i].opcode.setsRegister() && (written == register || body[i].opcode.setsWideRegister() && written + 1 == register)
+    }
+    /** The label every definition of [register] reaching [at] loads, or null if any path leaves something else or nothing. */
+    fun label(register: Int, at: Int): String? {
+        val pending = ArrayDeque(predecessors[at])
+        val seen = HashSet<Int>()
+        val found = HashSet<String?>()
+        if (pending.isEmpty()) return null
+        while (pending.isNotEmpty()) {
+            val i = pending.removeFirst()
+            if (!seen.add(i)) continue
+            if (writes(i, register)) found += body[i].controlRef()?.takeIf { it in labels }
+            else if (i == 0 || predecessors[i].isEmpty()) return null
+            else pending.addAll(predecessors[i])
+        }
+        return found.singleOrNull()
+    }
+    return body.indices.mapNotNull { at ->
+        if ((body[at] as? ReferenceInstruction)?.reference !is MethodReference) return@mapNotNull null
+        body[at].namedRegisters().distinct().firstNotNullOfOrNull { label(it, at) }?.let { at to it }
+    }
 }

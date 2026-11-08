@@ -103,7 +103,9 @@ class HideChannelBarButtonsFixtureTest {
             assertEquals("$name: the holder and its flag", listOf(self, flag), draw[asked].namedRegisters())
             assertEquals("$name: the answer replaces the flag", listOf(Opcode.MOVE_RESULT, Opcode.IF_EQZ), draw.subList(asked + 1, asked + 3).map { it.opcode })
             assertEquals("$name: the guard tests the answer", listOf(flag, flag), listOf(draw[asked + 1], draw[asked + 2]).map { it.namedRegisters().single() })
-            assertEquals("$name: the guard keeps the bubble's draw", "Landroid/graphics/drawable/Drawable;->draw(Landroid/graphics/Canvas;)V", draw[asked + 4].controlRef())
+            // 13.2 calls draw on the bubble field's own class rather than on Drawable.
+            assertEquals("$name: the guard reads the bubble", Opcode.IGET_OBJECT, draw[asked + 3].opcode)
+            assertTrue("$name: the guard keeps the bubble's draw", drawsBubble(draw[asked + 4], draw[asked + 3].controlField()!!))
             val muteStatus = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "hideChannelMute" }.controlBody()
             assertEquals("$name: the Mute capability", 1L, (muteStatus.first() as WideLiteralInstruction).wideLiteral)
             // The share button's decision asks Telegram's own answer, kept whole and private, before the switch and the extension.
