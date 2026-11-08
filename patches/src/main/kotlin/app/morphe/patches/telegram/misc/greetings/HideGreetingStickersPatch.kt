@@ -45,6 +45,18 @@ import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val GREETING_STICKERS = "$EXTENSION_PACKAGE/misc/GreetingStickers;"
 internal const val GREETINGS_STICKER = "Lorg/telegram/messenger/MediaDataController;->getGreetingsSticker()Lorg/telegram/tgnet/TLRPC\$Document;"
+private const val GREETINGS_FIELD = "Lorg/telegram/messenger/MediaDataController;->greetingsSticker:Lorg/telegram/tgnet/TLRPC\$Document;"
+private const val PRELOAD_NEXT = "Lorg/telegram/messenger/MediaDataController;->preloadNextGreetingsSticker()V"
+
+/**
+ * Whether this body asks for the greeting sticker: through getGreetingsSticker, or the copy of it
+ * 13.2 inlines, which reads the field and then preloads the next sticker.
+ */
+internal fun Method.asksGreetingsSticker(): Boolean {
+    val body = controlBody()
+    return body.indices.any { i -> body[i].controlRef() == GREETINGS_STICKER || body[i].opcode == Opcode.IGET_OBJECT &&
+        body[i].controlRef() == GREETINGS_FIELD && body.getOrNull(i + 1)?.controlRef() == PRELOAD_NEXT }
+}
 private const val LINEAR_LAYOUT = "Landroid/widget/LinearLayout;"
 private const val FRAME_LAYOUT = "Landroid/widget/FrameLayout;"
 private const val SUPER_MEASURE = "Landroid/widget/LinearLayout;->onMeasure(II)V"
@@ -104,7 +116,7 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
     val owners = mutableListOf<ClassDef>()
     classDefForEach { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/") || cls.origSuperclass != LINEAR_LAYOUT) return@classDefForEach
-        val asks = cls.methods.filter { m -> m.controlBody().any { it.controlRef() == GREETINGS_STICKER } }
+        val asks = cls.methods.filter { it.asksGreetingsSticker() }
         if (asks.any { it.origName == "<init>" && it.parameterTypes.getOrNull(2)?.toString() == "Lorg/telegram/tgnet/TLRPC\$Document;" } &&
             asks.any { it.origName == "onAttachedToWindow" && it.parameterTypes.isEmpty() }) owners += cls
     }

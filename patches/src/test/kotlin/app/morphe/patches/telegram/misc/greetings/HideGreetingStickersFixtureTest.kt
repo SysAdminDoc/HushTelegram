@@ -217,9 +217,9 @@ class HideGreetingStickersFixtureTest {
 
     /** Every class that asks for the greeting sticker, then every class reading a field of the greeting view or extending it. */
     private fun loadHosts(build: File): List<ClassDef> {
-        val askers = FixtureDex.classesWhere(build, { true }) { method -> method.controlBody().any { it.controlRef() == GREETINGS_STICKER } }
+        val askers = FixtureDex.classesWhere(build, { true }) { method -> method.asksGreetingsSticker() }
         val owners = askers.filter { cls -> cls.origSuperclass == "Landroid/widget/LinearLayout;" &&
-            cls.methods.any { m -> m.origName == "onAttachedToWindow" && m.controlBody().any { it.controlRef() == GREETINGS_STICKER } } }.map { it.type }.toSet()
+            cls.methods.any { m -> m.origName == "onAttachedToWindow" && m.asksGreetingsSticker() } }.map { it.type }.toSet()
         val readers = FixtureDex.classesWhere(build, { true }) { m -> m.controlBody().any { it.controlField()?.origDefiningClass in owners } }
         // R8 inlines trivial subclass constructors, so look for subclasses by their declared parent.
         val subclasses = mutableListOf<ClassDef>()
