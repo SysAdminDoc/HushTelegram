@@ -88,12 +88,13 @@ class ExactNumbersFixtureTest {
         }
     }
 
-    @Test fun `the callers are the eleven reviewed count displays`() {
+    @Test fun `the callers are the twelve reviewed count displays`() {
         // Reviewed 2026-10-06: member, subscriber and bot-user counts, views, replies, reactions and
-        // Premium limit previews. A new caller fails here so it gets the same review.
+        // Premium limit previews. Reviewed 2026-11-07: 13.2 adds the view count an embedded page block
+        // measures. A new caller fails here so it gets the same review.
         for (build in Fixtures.declaredBuilds()) {
             val callers = hosts(build).flatMap { it.methods }.filter { m -> m.controlBody().any { it.callsShortNumber() } }
-            assertEquals("${build.name}: calling methods", 11, callers.size)
+            assertEquals("${build.name}: calling methods", 12, callers.size)
         }
     }
 

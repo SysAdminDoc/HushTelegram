@@ -23,6 +23,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import app.morphe.util.names.origRef
+import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.tgMutableClassDefBy
@@ -35,7 +36,8 @@ class HideStickerTimeFixtureTest {
             val hosts = FixtureDex.classesWhere(build, { true }) { m ->
                 m.origReturnType == "V" && m.parameterTypes.size == 3 && m.controlBody().any { it.controlRef() == MESSAGE_TYPE } &&
                     m.parameterTypes.any { it.toString() == "Landroid/graphics/Canvas;" }
-            }.map(ImmutableClassDef::of) + FixtureDex.classesWhere(build, { true }) { m -> "${m.definingClass}->${m.name}()${m.returnType}" == ANY_STICKER }
+            }.map(ImmutableClassDef::of) + FixtureDex.classesWhere(build, { true }) { m ->
+                m.parameterTypes.isEmpty() && "${m.origDefiningClass}->${m.origName}()${m.origReturnType}" == ANY_STICKER }
                 .map(ImmutableClassDef::of)
             val context = PatchContexts.of(ExtensionDex.classes() + hosts.distinctBy { it.type })
             val (drawTime, message) = context.resolveHideStickerTime()
