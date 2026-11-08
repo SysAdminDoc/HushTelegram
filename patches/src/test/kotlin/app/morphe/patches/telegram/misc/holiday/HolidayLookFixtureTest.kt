@@ -38,6 +38,7 @@ import org.junit.Assert.fail
 import org.junit.Test
 import app.morphe.util.names.origName
 import app.morphe.util.names.origParameterTypes
+import app.morphe.util.names.origRef
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origString
 import app.morphe.util.names.origType
@@ -223,27 +224,34 @@ class HolidayLookFixtureTest {
                     val at = (logo.gate until logo.afterHat).first { logo.bar.instructions()[it].reference()?.endsWith("->setBounds(IIII)V") == true }
                     logo.bar.replaceInstruction(at, "invoke-virtual {v9, v10, v14, v11, v13}, Landroid/graphics/drawable/Drawable;->setBounds(IIII)V")
                 },
+                // 13.2 builds the span in the register the stock call names, so the swaps read it from there.
                 "logo constructor drawable" to { _, _, logo ->
+                    val init = logo.create.instructions()[logo.registerAt - 1].namedRegisters()
                     logo.create.replaceInstruction(logo.registerAt - 1,
-                        "invoke-direct {v5, v3}, Landroid/text/style/ImageSpan;-><init>(Landroid/graphics/drawable/Drawable;)V")
+                        "invoke-direct {v${init[0]}, v3}, Landroid/text/style/ImageSpan;-><init>(Landroid/graphics/drawable/Drawable;)V")
                 },
                 "logo alignment" to { _, _, logo ->
+                    val init = logo.create.instructions()[logo.registerAt - 1].namedRegisters()
                     logo.create.replaceInstruction(logo.registerAt - 1,
-                        "invoke-direct {v5, v9, v8}, Landroid/text/style/ImageSpan;-><init>(Landroid/graphics/drawable/Drawable;I)V")
+                        "invoke-direct {v${init[0]}, v${init[1]}, v11}, Landroid/text/style/ImageSpan;-><init>(Landroid/graphics/drawable/Drawable;I)V")
                 },
                 "logo span range" to { _, _, logo ->
                     val at = logo.create.instructions().indexOfFirst { it.reference()?.endsWith("->setSpan(Ljava/lang/Object;III)V") == true }
+                    val span = logo.create.instructions()[at].namedRegisters()
                     logo.create.replaceInstruction(at,
-                        "invoke-virtual {v3, v5, v11, v6, v6}, Landroid/text/SpannableStringBuilder;->setSpan(Ljava/lang/Object;III)V")
+                        "invoke-virtual {v3, v${span[1]}, v11, v${span[4]}, v${span[4]}}, Landroid/text/SpannableStringBuilder;->setSpan(Ljava/lang/Object;III)V")
                 },
                 "logo bounds start" to { _, _, logo -> logo.create.replaceInstruction(2, "const/4 v11, 0x1") },
                 "logo span flags" to { _, _, logo ->
+                    val flags = logo.create.instructions().first { it.reference()?.endsWith("->setSpan(Ljava/lang/Object;III)V") == true }
+                        .namedRegisters()[4]
                     val at = (0 until logo.registerAt).last { logo.create.instructions()[it].opcode.setsRegister() &&
-                        logo.create.instructions()[it].namedRegisters().firstOrNull() == 6 }
-                    logo.create.replaceInstruction(at, "const/16 v6, 0x22")
+                        logo.create.instructions()[it].namedRegisters().firstOrNull() == flags }
+                    logo.create.replaceInstruction(at, "const/16 v$flags, 0x22")
                 },
                 "main chat list guard" to { _, _, logo ->
-                    val at = logo.create.instructions().indexOfFirst { it.reference() == "Lorg/telegram/messenger/R\$drawable;->telegram_logo_2:I" } - 58
+                    // 13.2 moved getResources() into a loader helper, so the guard sits 56 before the logo id, not 58.
+                    val at = logo.create.instructions().indexOfFirst { it.reference() == "Lorg/telegram/messenger/R\$drawable;->telegram_logo_2:I" } - 56
                     val original = logo.create.getInstruction(at) as BuilderOffsetInstruction
                     logo.create.replaceInstruction(at, BuilderInstruction21t(Opcode.IF_NEZ, 3, original.target))
                 },
@@ -462,7 +470,14 @@ class HolidayLookFixtureTest {
         val readers = FixtureDex.classesWhere(build, SNOW_CENSUS, { true }) { method -> method.origName == "getTextStartX" ||
             method.instructions().any { (it.opcode == Opcode.SGET_BOOLEAN && it.reference() == snow) ||
                 (method.origName == "createView" && it.reference() == "Lorg/telegram/messenger/R\$drawable;->telegram_logo_2:I") } }
-        return (check + readers).distinctBy { it.type }
+        // 13.2 loads the logo through a static helper right after its id, and the patch reads that helper's body.
+        val loaders = readers.flatMap { it.methods }.filter { it.origName == "createView" }.mapNotNull { method ->
+            val body = method.instructions()
+            val logo = body.indexOfFirst { it.reference() == "Lorg/telegram/messenger/R\$drawable;->telegram_logo_2:I" }
+            body.getOrNull(logo + 1)?.takeIf { logo >= 0 && it.opcode == Opcode.INVOKE_STATIC }
+                ?.let { ((it as ReferenceInstruction).reference as MethodReference).definingClass }
+        }.toSet()
+        return (check + readers + FixtureDex.classes(build, loaders).values).distinctBy { it.type }
     }
 
     private fun contextFor(build: java.io.File, runtime: Boolean = true): BytecodePatchContext {
@@ -488,8 +503,10 @@ class HolidayLookFixtureTest {
     }
 
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
-    private fun Instruction.reference() = ((this as? ReferenceInstruction)?.reference as? Any)?.let {
-        if (it is FieldReference) "${it.definingClass}->${it.name}:${it.type}" else it.toString() }
+    // 13.2 inlined its R classes: a const holding a resource id reads as the R field it stands for.
+    private fun Instruction.reference() = if (this is NarrowLiteralInstruction) origRef() else
+        ((this as? ReferenceInstruction)?.reference as? Any)?.let {
+            if (it is FieldReference) "${it.definingClass}->${it.name}:${it.type}" else it.toString() }
     private fun operation(instruction: Instruction) = listOf(instruction.opcode, instruction.reference(), instruction.namedRegisters(),
         (instruction as? WideLiteralInstruction)?.wideLiteral)
 }

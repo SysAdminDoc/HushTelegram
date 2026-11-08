@@ -37,6 +37,7 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
 import app.morphe.util.names.origParameterTypes
+import app.morphe.util.names.origRef
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origType
 import app.morphe.util.names.tgClassDefByOrNull
@@ -101,7 +102,7 @@ internal fun BytecodePatchContext.resolveHolidayLookSites(): HolidayLookSites {
     val users = mutableListOf<Method>()
     forEachClassMentioning(Mention.reference(NEW_YEAR_HAT)) { classDef ->
         if (classDef.origType.startsWith("Lapp/hushtelegram/extension/")) return@forEachClassMentioning
-        classDef.methods.filterTo(users) { method -> method.instructions().any { it.field()?.toString() == NEW_YEAR_HAT } }
+        classDef.methods.filterTo(users) { method -> method.instructions().any { it.origRef() == NEW_YEAR_HAT } }
     }
     val user = users.one("reader of the New Year hat", ::refuse)
     shape(AccessFlags.STATIC.isSet(user.accessFlags) && user.parameterTypes.isEmpty() && user.origReturnType == DRAWABLE,
@@ -127,9 +128,9 @@ internal fun BytecodePatchContext.resolveHolidayLookSites(): HolidayLookSites {
     val snow = snowWrites[0].field()!!.immutable()
 
     // The hat's load: application resources, the hat's id, getDrawable, stored to the hat field.
-    val read = body.indices.filter { body[it].field()?.toString() == NEW_YEAR_HAT }.one("read of the hat's id", ::refuse)
+    val read = body.indices.filter { body[it].origRef() == NEW_YEAR_HAT }.one("read of the hat's id", ::refuse)
     val load = read - 3
-    shape(load >= 0 && body[load].opcode == Opcode.SGET_OBJECT && body[load].field()?.toString() == APP_CONTEXT &&
+    shape(load >= 0 && body[load].opcode == Opcode.SGET_OBJECT && body[load].origRef() == APP_CONTEXT &&
         body[load + 1].call()?.origName == "getResources" && body[load + 2].opcode == Opcode.MOVE_RESULT_OBJECT &&
         body[read + 1].call()?.let { it.origName == "getDrawable" && it.parameterTypes.map(CharSequence::toString) == listOf("I") } == true &&
         body[read + 2].opcode == Opcode.MOVE_RESULT_OBJECT && body[read + 3].opcode == Opcode.SPUT_OBJECT,
