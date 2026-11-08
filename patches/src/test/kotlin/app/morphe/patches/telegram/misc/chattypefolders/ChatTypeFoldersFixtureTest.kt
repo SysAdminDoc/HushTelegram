@@ -24,7 +24,14 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference
+import app.morphe.util.call
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origParameterTypes
 import com.android.tools.smali.dexlib2.iface.value.IntEncodedValue
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.value.ImmutableIntEncodedValue
@@ -55,7 +62,89 @@ class ChatTypeFoldersFixtureTest {
     private fun context(build: File): BytecodePatchContext {
         val host = FixtureDex.classes(build, hosts).values.map(ImmutableClassDef::of)
         assertEquals("${build.name}: Telegram's folder classes", emptySet<String>(), hosts - host.map { it.origType }.toSet())
-        return PatchContexts.of(ExtensionDex.classes() + host)
+        val known = host.map { it.type }.toSet()
+        return PatchContexts.of(ExtensionDex.classes() + host + savers(build).filter { it.type !in known }.map(ImmutableClassDef::of))
+    }
+
+    /**
+     * The classes that post on the storage queue and handle local folders, where 13.2 inlined the folder
+     * save and delete, and the lambdas they post there. A whole-APK search, so once per build.
+     */
+    private fun savers(build: File): List<ClassDef> = saverCache.getOrPut(build.path) {
+        // The copies' member names read outside the scan, so through this build's table.
+        FixtureDex.namedBy(build) {
+            val posting = FixtureDex.classesWhere(build, { true }) { m -> m.controlBody().any { it.readsStorageQueue() } }
+                .filter { cls -> cls.methods.any { m -> m.controlBody().any { it.controlRef()?.startsWith(LOCAL_FILTER) == true } } }
+            val lambdas = posting.flatMap { it.methods }.flatMap { m ->
+                m.controlBody().zipWithNext().filter { (read, made) -> read.readsStorageQueue() && made.opcode == Opcode.NEW_INSTANCE }
+                    .map { (_, made) -> ((made as ReferenceInstruction).reference as TypeReference).type }
+            }.toSet()
+            // The queue's own class, whose post the stubs call.
+            val queues = posting.flatMap { it.methods }.flatMap { m -> m.controlBody().filter { it.readsStorageQueue() } }
+                .map { ((it as ReferenceInstruction).reference as FieldReference).type }.toSet()
+            // A lambda can post on the queue itself, so it may already be one of the posting classes.
+            (posting + FixtureDex.classes(build, lambdas + queues).values).distinctBy { it.type }
+        }
+    }
+
+    /**
+     * What [stub] does in place of Telegram's [kept] storage call: the call itself with [storage] and [folder],
+     * or where 13.2 inlined it, the storage queue read, the lambda posted there, its constructor and the post.
+     * Each of those is checked against Telegram's own post of that lambda with that case, and the case
+     * against the storage's own [internal] save or delete.
+     */
+    private fun BytecodePatchContext.storageRefs(name: String, stub: String, kept: String, internal: List<String>,
+        storage: Int, folder: Int, savers: List<ClassDef>): List<String> {
+        val body = stub(stub)
+        if (tgMutableClassDefBy(STORAGE).methods.any { it.origString() == kept }) {
+            assertEquals("$name: $stub", listOf(storage, folder), body.single { it.controlRef() == kept }.namedRegisters().take(2))
+            return listOf(kept)
+        }
+        val read = body.indexOfFirst { it.readsStorageQueue() }
+        val queue = body[read] as TwoRegisterInstruction
+        assertEquals("$name: $stub queue", storage, queue.registerB)
+        assertEquals("$name: $stub lambda", Opcode.NEW_INSTANCE, body[read + 1].opcode)
+        val lambda = ((body[read + 1] as ReferenceInstruction).reference as TypeReference).type
+        val made = (body[read + 1] as OneRegisterInstruction).registerA
+        val key = (body[read + 2] as NarrowLiteralInstruction).narrowLiteral
+        val keyRegister = (body[read + 2] as OneRegisterInstruction).registerA
+        val init = body[read + 3].call()!!
+        val passed = body[read + 3].namedRegisters()
+        val posted = body[read + 4]
+        assertEquals("$name: $stub init", lambda, init.definingClass)
+        assertEquals("$name: $stub init", made, passed.first())
+        assertEquals("$name: $stub post", listOf(queue.registerA, made), posted.namedRegisters())
+        // Telegram posts the same lambda through the same constructor and post, with this case, and its own
+        // storage at the place the stub's storage goes.
+        val telegram = savers.flatMap { it.methods }.flatMap { m ->
+            val b = m.controlBody()
+            b.indices.filter { b[it].readsStorageQueue() &&
+                ((b.getOrNull(it + 1) as? ReferenceInstruction)?.reference as? TypeReference)?.type == lambda }.map { b to it }
+        }
+        assertTrue("$name: $stub posts what Telegram posts", telegram.any { (b, at) ->
+            val call = (at + 2..minOf(at + 4, b.lastIndex)).firstOrNull { b[it].opcode == Opcode.INVOKE_DIRECT } ?: return@any false
+            val args = b[call].namedRegisters()
+            val constants = (at + 2 until call).mapNotNull { i ->
+                (b[i] as? NarrowLiteralInstruction)?.let { (b[i] as OneRegisterInstruction).registerA to it.narrowLiteral }
+            }.toMap()
+            b[call].call().toString() == init.toString() && b.getOrNull(call + 1)?.call().toString() == posted.call().toString() &&
+                args.size == passed.size && args.indices.all { n -> (args[n] == (b[at] as TwoRegisterInstruction).registerB) == (passed[n] == storage) } &&
+                constants[args[passed.indexOf(keyRegister)]] == key
+        })
+        // The folder goes in at the one object place left.
+        val objects = init.parameterTypes.indices.filter { init.parameterTypes[it].startsWith("L") && passed[it + 1] != storage }
+        assertEquals("$name: $stub folder", listOf(folder), objects.map { passed[it + 1] })
+        // That case runs the storage's own save or delete.
+        val lambdaClass = savers.single { it.type == lambda }
+        val run = lambdaClass.methods.single { it.name == "run" && it.parameterTypes.isEmpty() }.controlBody()
+        val opened = run.drop(switchCaseStart(run, key)!!).take(12)
+        // Play's 13.2 moves the case into a method of the lambda's own, which the case calls and returns.
+        val own = opened.first().takeIf { it.opcode == Opcode.INVOKE_DIRECT && opened[1].opcode == Opcode.RETURN_VOID }?.call()
+            ?.takeIf { it.definingClass == lambda }
+        val case = if (own == null) opened else lambdaClass.methods.single { it.name == own.name && it.parameterTypes.isEmpty() }.controlBody().take(12)
+        assertTrue("$name: $stub case $key", case.any { c ->
+            c.call()?.let { it.origDefiningClass == STORAGE && it.origParameterTypes == internal } == true })
+        return listOf(read, read + 1, read + 3, read + 4).map { body[it].controlRef()!! }
     }
 
     private fun ClassDef.method(name: String) = methods.single { it.origName == name }
@@ -152,11 +241,13 @@ class ChatTypeFoldersFixtureTest {
             // The filter flag is set before the filter goes in, so the request carries it.
             assertTrue(name, context.stub("createFolder").any { it.opcode == Opcode.OR_INT_LIT8 })
 
+            val posters = savers(build)
             val add = context.stub("addFolder").refs()
+            val saved = context.storageRefs(name, "addFolder", SAVE_FILTER, listOf(LOCAL_FILTER, "Z"), 1, 0, posters)
             assertEquals(listOf(LOCAL_FILTER, LOCAL_INIT, LOCAL_ID, LOCAL_NAME, LOCAL_FLAGS, LOCAL_COLOR, LOCAL_UNREAD,
-                LOCAL_PENDING_UNREAD, CONTROLLER_INSTANCE, ADD_FILTER, STORAGE_INSTANCE, SAVE_FILTER, NOTIFICATIONS_INSTANCE,
+                LOCAL_PENDING_UNREAD, CONTROLLER_INSTANCE, ADD_FILTER, STORAGE_INSTANCE) + saved + listOf(NOTIFICATIONS_INSTANCE,
                 FILTERS_UPDATED, "[Ljava/lang/Object;"), add.dropLast(1))
-            val post = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.toString() == REMOVE_FILTER }
+            val post = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.origString() == REMOVE_FILTER }
                 .controlBody().refs().first { it.startsWith("$NOTIFICATIONS->") && it.endsWith("(I[Ljava/lang/Object;)V") }
             assertEquals(name, post, add.last())
             context.assertParams(name, "addFolder", listOf(LOCAL_ID to 1, LOCAL_NAME to 2, LOCAL_FLAGS to 3,
@@ -172,8 +263,9 @@ class ChatTypeFoldersFixtureTest {
                 delete.single { it.controlRef() == SEND_REQUEST }.namedRegisters()[1])
             assertTrue(name, delete.none { it.controlRef() == UPDATE_FILTER_FIELD })
 
-            assertEquals(listOf(CONTROLLER_INSTANCE, FILTERS_BY_ID, sparseGet, LOCAL_FILTER, REMOVE_FILTER, STORAGE_INSTANCE,
-                DELETE_FILTER), context.stub("dropFolder").refs())
+            assertEquals(listOf(CONTROLLER_INSTANCE, FILTERS_BY_ID, sparseGet, LOCAL_FILTER, REMOVE_FILTER, STORAGE_INSTANCE) +
+                context.storageRefs(name, "dropFolder", DELETE_FILTER, listOf(LOCAL_FILTER), 0, 1, posters),
+                context.stub("dropFolder").refs())
             context.assertParams(name, "dropFolder", listOf(CONTROLLER_INSTANCE to 0, STORAGE_INSTANCE to 0))
             assertEquals(name, context.method("dropFolder").param(1),
                 context.stub("dropFolder").single { it.controlRef() == sparseGet }.namedRegisters()[1])
@@ -201,16 +293,16 @@ class ChatTypeFoldersFixtureTest {
 
             // The color goes on the folder with this id, saved as an edit is and posted as removeFilter posts.
             val recolor = context.stub("setFolderColor").refs()
-            assertEquals(listOf(CONTROLLER_INSTANCE, FILTERS_BY_ID, sparseGet, LOCAL_FILTER, LOCAL_COLOR, STORAGE_INSTANCE,
-                SAVE_FILTER, NOTIFICATIONS_INSTANCE, FILTERS_UPDATED, "[Ljava/lang/Object;"), recolor.dropLast(1))
+            val folder = context.stub("setFolderColor").single { it.controlRef() == LOCAL_FILTER }.namedRegisters().single()
+            assertEquals(listOf(CONTROLLER_INSTANCE, FILTERS_BY_ID, sparseGet, LOCAL_FILTER, LOCAL_COLOR, STORAGE_INSTANCE) +
+                context.storageRefs(name, "setFolderColor", SAVE_FILTER, listOf(LOCAL_FILTER, "Z"), 1, folder, posters) +
+                listOf(NOTIFICATIONS_INSTANCE, FILTERS_UPDATED, "[Ljava/lang/Object;"), recolor.dropLast(1))
             assertEquals(name, post, recolor.last())
             context.assertParams(name, "setFolderColor", listOf(CONTROLLER_INSTANCE to 0, LOCAL_COLOR to 2,
                 STORAGE_INSTANCE to 0, NOTIFICATIONS_INSTANCE to 0))
             assertEquals(name, context.method("setFolderColor").param(1),
                 context.stub("setFolderColor").single { it.controlRef() == sparseGet }.namedRegisters()[1])
-            val folder = context.stub("setFolderColor").single { it.controlRef() == LOCAL_FILTER }.namedRegisters().single()
             assertEquals(name, folder, context.stub("setFolderColor").single { it.controlRef() == LOCAL_COLOR }.namedRegisters()[1])
-            assertEquals(name, folder, context.stub("setFolderColor").single { it.controlRef() == SAVE_FILTER }.namedRegisters()[1])
 
             for (stub in stubs) {
                 val method = context.method(stub)
@@ -229,15 +321,17 @@ class ChatTypeFoldersFixtureTest {
     private fun BytecodePatchContext.changeBotsFlag() {
         val controller = tgMutableClassDefBy(MESSAGES_CONTROLLER)
         val bots = TYPE_FLAGS.last().first
-        val field = controller.fields.single { it.origString() == bots }
-        if (field.initialValue is IntEncodedValue) field.initialValue = ImmutableIntEncodedValue(32).toMutable()
+        // 13.2 keeps only ALL_CHATS, so there the bots bit moves inside it.
+        val (flag, value) = if (controller.fields.any { it.origString() == bots }) bots to 0x20 else ALL_CHATS_FLAG to 0x2f
+        val field = controller.fields.single { it.origString() == flag }
+        if (field.initialValue is IntEncodedValue) field.initialValue = ImmutableIntEncodedValue(value).toMutable()
         val init = controller.methods.singleOrNull { it.origName == "<clinit>" } ?: return
         val body = init.controlBody()
-        val put = body.indexOfFirst { it.opcode == Opcode.SPUT && it.controlRef() == bots }
+        val put = body.indexOfFirst { it.opcode == Opcode.SPUT && it.controlRef() == flag }
         if (put < 0) return
         val register = (body[put] as OneRegisterInstruction).registerA
         val set = (put - 1 downTo 0).first { (body[it] as? OneRegisterInstruction)?.registerA == register }
-        init.replaceInstruction(set, "const/16 v$register, 0x20")
+        init.replaceInstruction(set, "const/16 v$register, 0x${value.toString(16)}")
     }
 
     @Test fun `changed folder flags, a changed list update or an unreachable member refuse before anything is written`() {
@@ -245,12 +339,12 @@ class ChatTypeFoldersFixtureTest {
         val shapes = listOf<Pair<String, (BytecodePatchContext) -> Unit>>(
             "Telegram's folder chat type flags changed" to { context -> context.changeBotsFlag() },
             "Telegram's folder list update changed" to { context ->
-                val remove = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.toString() == REMOVE_FILTER }
+                val remove = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.origString() == REMOVE_FILTER }
                 val at = remove.controlBody().indexOfFirst { it.opcode == Opcode.SGET && it.controlRef() == FILTERS_UPDATED }
                 remove.replaceInstruction(at, "const/4 v0, 0x0")
             },
             "$REMOVE_FILTER isn't reachable from the extension" to { context ->
-                val remove = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.toString() == REMOVE_FILTER }
+                val remove = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.origString() == REMOVE_FILTER }
                 remove.accessFlags = remove.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value
             },
             "$UPDATE_FILTER_FIELD isn't reachable from the extension" to { context ->
@@ -282,5 +376,9 @@ class ChatTypeFoldersFixtureTest {
             assertEquals(why, untouched, stubs.associateWith { stub -> context.stub(stub).map { it.opcode } })
             assertEquals(why, 0L, context.status())
         }
+    }
+
+    private companion object {
+        val saverCache = mutableMapOf<String, List<ClassDef>>()
     }
 }
