@@ -20857,3 +20857,5 @@ f Lorg/telegram/messenger/AppGlobalConfig$ConfigBoolean$Internal; value Z Lorg/t
 m Lorg/telegram/messenger/MessagesController; updateEmojiStatus (Lorg/telegram/tgnet/TLRPC$EmojiStatus;Lorg/telegram/tgnet/tl/TL_stars$StarGift;)V Lorg/telegram/messenger/lp; f5 (Lorg/telegram/tgnet/TLRPC$EmojiStatus;Lorg/telegram/tgnet/tl/TL_stars$TL_starGiftUnique;)V
 # added by hand: double-tap preview
 m Lorg/telegram/messenger/MessageObject; selectReaction (Lvf/p0;ZZ)Z Lorg/telegram/messenger/ej; G5 (Lnf/n0;Z)Z
+# added by hand: pinned order
+m Lorg/telegram/messenger/MessagesController; reorderPinnedDialogs (ILjava/util/ArrayList;J)V Lorg/telegram/messenger/lp; j4 (IJLjava/util/ArrayList;)V

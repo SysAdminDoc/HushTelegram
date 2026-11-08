@@ -194,9 +194,14 @@ class HiddenChatsFixtureTest {
 
             val sheetBody = sheet.body().filter { it.opcode != Opcode.NOP }
             val hook = sheetBody.indexOfFirst { it.ref() == SHARE_SHEET_CHATS }
-            assertEquals(name, GET_ALL_DIALOGS, sheetBody[hook - 2].ref())
             val chats = (sheetBody[hook - 1] as OneRegisterInstruction).registerA
-            assertEquals(name, Opcode.MOVE_RESULT_OBJECT, sheetBody[hook - 1].opcode)
+            // 13.1 calls getAllDialogs() and moves its result; 13.2 reads the field that call returned.
+            if (sheetBody[hook - 1].opcode == Opcode.IGET_OBJECT) {
+                assertEquals(name, ALL_DIALOGS_FIELD, sheetBody[hook - 1].ref())
+            } else {
+                assertEquals(name, GET_ALL_DIALOGS, sheetBody[hook - 2].ref())
+                assertEquals(name, Opcode.MOVE_RESULT_OBJECT, sheetBody[hook - 1].opcode)
+            }
             assertEquals(name, Opcode.INVOKE_STATIC_RANGE, sheetBody[hook].opcode)
             assertEquals(name, listOf(chats), sheetBody[hook].namedRegisters())
             assertEquals(name, Opcode.MOVE_RESULT_OBJECT, sheetBody[hook + 1].opcode)
@@ -221,11 +226,14 @@ class HiddenChatsFixtureTest {
             val found = context.resolveHiddenPickers()
             val sheet = found.shareSheet!!
             val read = sheet.allChatsRead()
-            val self = sheet.controlBody()[read].namedRegisters().single()
-            val result = (sheet.controlBody()[read + 1] as OneRegisterInstruction).registerA
-            // A second read of every chat: which one the sheet lists is no longer clear.
-            sheet.addInstructions(read + 2, """
-                invoke-virtual {v$self}, $GET_ALL_DIALOGS
+            val past = sheet.allChatsReadEnd(read)
+            val result = (sheet.controlBody()[past - 1] as OneRegisterInstruction).registerA
+            // A second read of every chat: which one the sheet lists is no longer clear. 13.2 reads the field.
+            val first = sheet.controlBody()[read]
+            sheet.addInstructions(past, if (first.opcode == Opcode.IGET_OBJECT) {
+                "iget-object v$result, v${(first as TwoRegisterInstruction).registerB}, $ALL_DIALOGS_FIELD"
+            } else """
+                invoke-virtual {v${first.namedRegisters().single()}}, $GET_ALL_DIALOGS
                 move-result-object v$result
             """)
             val before = sheet.body().code()
@@ -306,7 +314,9 @@ class HiddenChatsFixtureTest {
             assertEquals(Opcode.IPUT_OBJECT, made[plan.at - 1].opcode)
             assertEquals(refs.addSubItem, made[plan.at - 3].ref())
             assertEquals(plan.more, made[plan.at - 3].namedRegisters()[0])
-            assertEquals(0x6aL, (made[plan.at - 4] as WideLiteralInstruction).wideLiteral)
+            // 13.2 loads the icon, a const now, between the id and the call, so the id is the load that fills the id operand.
+            val id = listOf(plan.at - 4, plan.at - 5).map { made[it] }.first { it.namedRegisters() == listOf(made[plan.at - 3].namedRegisters()[1]) }
+            assertEquals(0x6aL, (id as WideLiteralInstruction).wideLiteral)
             assertEquals("$name: createActionMode is unchanged around it", stock[0], (made.take(plan.at) + made.drop(plan.at + 1)).code())
             assertEquals("$name: the call is createActionMode's", 1, made.count { it.ref() == MENU_ITEM })
 
@@ -386,7 +396,8 @@ class HiddenChatsFixtureTest {
                 "peerName" to (5 to listOf(CONTROLLER_INSTANCE, PEER_NAME)),
                 "resort" to (11 to listOf(CONTROLLER_INSTANCE, sort, NOTIFICATIONS_INSTANCE, DIALOGS_NEED_RELOAD, POST_NOTIFICATION)),
                 "addMenuItem" to (4 to listOf(refs.addSubItem)),
-                "selectedChats" to (7 to listOf(refs.listener, refs.selected)),
+                // The handler's field is cast to the chat list: 13.2 Play's merged handler keeps it as an Object.
+                "selectedChats" to (8 to listOf(refs.listener, refs.selected.substringBefore("->"), refs.selected)),
                 "recount" to (5 to listOf(STORAGE_INSTANCE, RECOUNT)),
                 "onStorageThread" to (6 to listOf(STORAGE_INSTANCE, STORAGE_QUEUE, POST_RUNNABLE)),
             )
@@ -624,8 +635,11 @@ private val MENU_HOSTS = mutableMapOf<String, List<ClassDef>>()
 internal fun menuHosts(build: File, clicks: Boolean = true): List<ClassDef> = MENU_HOSTS.getOrPut("${build.path} $clicks") {
     val list = launchFolderList(build)
     val create = FixtureDex.classes(build, setOf(list)).getValue(list).methods.single { it.isCreateActionMode() }
-    val more = create.controlBody().first { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef()?.contains("(IILjava/lang/String;)") == true }
-        .controlRef()!!.substringBefore("->")
+    // 13.2's R8 folded the String submenu add into the CharSequence one on the menu item's base.
+    val adds = listOf("(IILjava/lang/String;)", "(IILjava/lang/CharSequence;)").map { shape ->
+        create.controlBody().firstOrNull { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef()?.contains(shape) == true }
+    }
+    val more = adds.filterNotNull().first().controlRef()!!.substringBefore("->")
     val handlers = if (!clicks) emptyList() else FixtureDex.classesWhere(build, { true }) { m ->
         m.origDefiningClass != list && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
             m.controlBody().any { it.opcode == Opcode.IGET_OBJECT && it.controlRef()?.endsWith(":$list") == true }

@@ -403,9 +403,9 @@ internal fun launchFolderHosts(build: File): List<ClassDef> = LAUNCH_FOLDER_HOST
         wanted += parents
         loaded = FixtureDex.classes(build, wanted)
     }
-    // The share sheet and quick share, for the hidden chats' pickers.
+    // The share sheet and quick share, for the hidden chats' pickers (13.2 reads allDialogs in place of its getter).
     (loaded.values + FixtureDex.classesWhere(build, { true }) { m ->
-        m.body().mapNotNull { it.ref() }.let { refs -> GET_ALL_DIALOGS in refs && (DIALOGS_FORWARD in refs || TOP_PEERS in refs) }
+        m.body().mapNotNull { it.ref() }.let { refs -> (GET_ALL_DIALOGS in refs || ALL_DIALOGS_FIELD in refs) && (DIALOGS_FORWARD in refs || TOP_PEERS in refs) }
     }).distinctBy { it.type }
 }
 

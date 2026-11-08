@@ -41,6 +41,7 @@ import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
@@ -63,6 +64,8 @@ internal const val FILTER_DIALOGS = "$LOCAL_FILTER->dialogs:$HIDDEN_LIST"
 internal const val DIALOGS_FORWARD = "$MESSAGES_CONTROLLER->dialogsForward:$HIDDEN_LIST"
 internal const val FILTER_FORWARD = "$LOCAL_FILTER->dialogsForward:$HIDDEN_LIST"
 internal const val GET_ALL_DIALOGS = "$MESSAGES_CONTROLLER->getAllDialogs()$HIDDEN_LIST"
+/** The field 13.2's R8 reads in place of the getAllDialogs() it inlined. */
+internal const val ALL_DIALOGS_FIELD = "$MESSAGES_CONTROLLER->allDialogs:$HIDDEN_LIST"
 /** The people Telegram suggests. Quick share is the one method that reads these and every chat. */
 internal const val TOP_PEERS = "Lorg/telegram/messenger/MediaDataController;->hints:$HIDDEN_LIST"
 private const val LIST_ADD_ALL = "$HIDDEN_LIST->addAll(Ljava/util/Collection;)Z"
@@ -350,10 +353,10 @@ private fun BytecodePatchContext.serverPinsCall(): ServerPinsPlan {
 internal class HiddenPickersPlan(val shareSheet: MutableMethod?, val quickShare: MutableMethod?, val gaps: List<String>) {
     fun apply(into: (MutableMethod) -> MutableMethod = { it }) {
         shareSheet?.let(into)?.let { sheet ->
-            val read = sheet.allChatsRead()
-            val chats = (sheet.controlBody()[read + 1] as OneRegisterInstruction).registerA
+            val past = sheet.allChatsReadEnd(sheet.allChatsRead())
+            val chats = (sheet.controlBody()[past - 1] as OneRegisterInstruction).registerA
             // Past the read's result, on the only way on: the method has just read the forward list's first chat.
-            sheet.addInstructions(read + 2, """
+            sheet.addInstructions(past, """
                 invoke-static/range {v$chats .. v$chats}, $SHARE_SHEET_CHATS
                 move-result-object v$chats
             """)
@@ -367,7 +370,14 @@ internal class HiddenPickersPlan(val shareSheet: MutableMethod?, val quickShare:
 }
 
 /** The read of every chat in [this], looked up when it's needed, since another hook can move it. */
-internal fun Method.allChatsRead(): Int = controlBody().indexOfFirst { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == GET_ALL_DIALOGS }
+internal fun Method.allChatsRead(): Int = controlBody().indexOfFirst { it.isAllChatsRead() }
+
+/** A call of getAllDialogs(), or in 13.2 a read of the field it returned. */
+internal fun Instruction.isAllChatsRead() = (opcode == Opcode.INVOKE_VIRTUAL && controlRef() == GET_ALL_DIALOGS) ||
+    (opcode == Opcode.IGET_OBJECT && controlRef() == ALL_DIALOGS_FIELD)
+
+/** Right past the read at [read] and its result: after the move-result of a call, after a field read itself. */
+internal fun Method.allChatsReadEnd(read: Int): Int = if (controlBody()[read].opcode == Opcode.IGET_OBJECT) read + 1 else read + 2
 
 /** Where the archive's ids join the rest in [this], the last addition to quick share's list. */
 internal fun Method.idsAdded(): Int = controlBody().indexOfFirst { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == LIST_ADD_ALL }
@@ -375,19 +385,20 @@ internal fun Method.idsAdded(): Int = controlBody().indexOfFirst { it.opcode == 
 internal fun BytecodePatchContext.resolveHiddenPickers(): HiddenPickersPlan {
     val gaps = mutableListOf<String>()
     val sheet = try {
-        val method = oneMethodReading(DIALOGS_FORWARD, GET_ALL_DIALOGS, "the share sheet")
+        val method = oneMethodReading(DIALOGS_FORWARD, "the share sheet")
         val body = method.controlBody()
         val read = method.allChatsRead()
-        hiddenFits(body.count { it.controlRef() == GET_ALL_DIALOGS } == 1 && body.getOrNull(read + 1)?.opcode == Opcode.MOVE_RESULT_OBJECT,
+        hiddenFits(body.count { it.controlRef() == GET_ALL_DIALOGS || it.controlRef() == ALL_DIALOGS_FIELD } == 1 &&
+            (body[read].opcode == Opcode.IGET_OBJECT || body.getOrNull(read + 1)?.opcode == Opcode.MOVE_RESULT_OBJECT),
             "the share sheet's read of every chat changed")
-        nothingJumpsTo(method, read + 2, "the share sheet's read of every chat")
+        nothingJumpsTo(method, method.allChatsReadEnd(read), "the share sheet's read of every chat")
         method
     } catch (gap: Unhidden) {
         gaps += gap.message.orEmpty()
         null
     }
     val quick = try {
-        val method = oneMethodReading(TOP_PEERS, GET_ALL_DIALOGS, "quick share")
+        val method = oneMethodReading(TOP_PEERS, "quick share")
         val body = method.controlBody()
         val added = method.idsAdded()
         hiddenFits(body.count { it.controlRef() == LIST_ADD_ALL } == 1 && added > method.allChatsRead() &&
@@ -401,13 +412,15 @@ internal fun BytecodePatchContext.resolveHiddenPickers(): HiddenPickersPlan {
     return HiddenPickersPlan(sheet, quick, gaps)
 }
 
-private fun BytecodePatchContext.oneMethodReading(first: String, second: String, what: String): MutableMethod {
+/** The one method outside the controller that reads [first] and every chat. */
+private fun BytecodePatchContext.oneMethodReading(first: String, what: String): MutableMethod {
     val readers = mutableListOf<Pair<String, String>>()
-    forEachClassMentioning(Mention.allReferences(listOf(first, second))) { cls ->
+    val mentions = Mention.reference(first) and (Mention.reference(GET_ALL_DIALOGS) or Mention.reference(ALL_DIALOGS_FIELD))
+    forEachClassMentioning(mentions) { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/") || cls.origType == MESSAGES_CONTROLLER) return@forEachClassMentioning
         cls.methods.filter { m ->
-            val reads = m.controlBody().mapNotNull { it.controlRef() }
-            first in reads && second in reads
+            val body = m.controlBody()
+            body.any { it.controlRef() == first } && body.any { it.isAllChatsRead() }
         }.forEach { readers += cls.type to it.toString() }
     }
     hiddenFits(readers.size == 1, "$what is no longer one method")
@@ -688,7 +701,8 @@ internal const val MENU_CHOICE = "$HIDDEN_CHATS->menuChoice(${HIDDEN_OBJECT}I)I"
 private const val BLOCK_ICON = "Lorg/telegram/messenger/R\$drawable;->msg_block:I"
 private const val BLOCK_LABEL = "Lorg/telegram/messenger/R\$string;->BlockUser:I"
 private const val LIST_SIZE = "$HIDDEN_LIST->size()I"
-private const val SUB_ITEM_TAKES = "(IILjava/lang/String;)"
+/** addSubItem(id, icon, text): 13.2's R8 folded the String overload into the CharSequence one. */
+private val SUB_ITEM_TAKES = listOf("(IILjava/lang/String;)", "(IILjava/lang/CharSequence;)")
 private val CONSTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST)
 
 /** DialogsActivity's long press menu ids: block, then pin2, add_to_folder and remove_from_folder in the more menu. */
@@ -786,10 +800,11 @@ private fun BytecodePatchContext.hideMenu(): HideMenuPlan {
     val call = body[add!!]
     val handed = call.namedRegisters()
     val addSubItem = call.controlRef()
-    val id = body[add - 1]
+    // 13.1 loads the id right before the call; 13.2 loads the icon, a const now, last, the id just before it.
+    val id = body[if (icon == add - 1) add - 2 else add - 1]
     val result = body[add + 1]
     val store = body[add + 2]
-    hiddenFits(addSubItem != null && SUB_ITEM_TAKES in addSubItem && addSubItem.substringAfter(")").startsWith("L") &&
+    hiddenFits(addSubItem != null && SUB_ITEM_TAKES.any { it in addSubItem } && addSubItem.substringAfter(")").startsWith("L") &&
         handed.size == 4 && handed[2] == (body[icon] as OneRegisterInstruction).registerA &&
         id.opcode in CONSTS && (id as WideLiteralInstruction).wideLiteral == BLOCK_ID && (id as OneRegisterInstruction).registerA == handed[1] &&
         result.opcode == Opcode.MOVE_RESULT_OBJECT && store.opcode == Opcode.IPUT_OBJECT && store.controlField()?.origDefiningClass == list &&
@@ -838,8 +853,7 @@ private fun BytecodePatchContext.hideMenu(): HideMenuPlan {
     val (owner, handler) = clicks.single()
     val click = tgMutableClassDefBy(owner).methods.single { it.toString() == handler }
     hiddenFits(startsClean(click), "something jumps back to the start of the long press menu's click handler")
-    val listener = click.controlBody().first { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.origDefiningClass == owner && f.origType == list } == true }
-        .controlRef()!!
+    val listener = menuClickOwner(click.controlBody(), owner, list)!!
 
     for (reference in listOf(addSubItem!!, listener, selected)) {
         try {
@@ -865,10 +879,22 @@ private fun com.android.tools.smali.dexlib2.iface.Method.isMenuClick(type: Strin
     !AccessFlags.STATIC.isSet(accessFlags) && returnType == "V" && parameterTypes.map(CharSequence::toString) == listOf("I") &&
         controlBody().let { body ->
             val literals = body.filter { it.opcode in CONSTS }.map { (it as WideLiteralInstruction).wideLiteral }.toSet()
-            body.any { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.origDefiningClass == type && f.origType == list } == true } &&
+            menuClickOwner(body, type, list) != null &&
                 body.any { it.opcode == Opcode.IGET_OBJECT && it.controlRef() == selected } &&
                 literals.containsAll(MORE_IDS) && -1L in literals
         }
+
+/**
+ * The handler's own field that holds the chat list: one typed as the chat list, or, where R8 merged
+ * the action bar handlers into one class that keeps its owner as an Object and switches on a tag
+ * (13.2 Play), that Object field, read by a body that casts to the chat list.
+ */
+private fun menuClickOwner(body: List<Instruction>, type: String, list: String): String? {
+    fun own(fieldType: String) = body.firstOrNull { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.origDefiningClass == type && f.origType == fieldType } == true }
+    own(list)?.let { return it.controlRef() }
+    val merged = own("Ljava/lang/Object;") ?: return null
+    return merged.controlRef().takeIf { body.any { it.opcode == Opcode.CHECK_CAST && it.controlRef() == list } }
+}
 
 private fun com.android.tools.smali.dexlib2.iface.instruction.Instruction.writesRegister(register: Int): Boolean {
     val target = (this as? OneRegisterInstruction)?.registerA ?: return false
@@ -890,6 +916,7 @@ internal fun BytecodePatchContext.writeHideMenuStubs(refs: HideMenuRefs) {
         const/4 v1, 0x0
         return-object v1
         :hush_read
+        check-cast v0, ${refs.selected.substringBefore("->")}
         iget-object v0, v0, ${refs.selected}
         return-object v0
     """)
