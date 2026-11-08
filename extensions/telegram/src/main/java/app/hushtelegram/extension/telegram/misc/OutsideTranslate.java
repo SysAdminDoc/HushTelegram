@@ -29,6 +29,7 @@ import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
+import app.hushtelegram.extension.telegram.settings.SettingsEntry;
 import app.hushtelegram.extension.telegram.settings.TranslateTargetPicker;
 
 /**
@@ -1049,8 +1050,9 @@ public final class OutsideTranslate {
             Object chat = chatOf(delegate);
             if (chat == null) return false;
             long dialog = chatDialog(chat);
-            Activity window = Utils.getActivity();
-            if (window == null || window.isFinishing() || window.isDestroyed()) {
+            // Utils.getActivity() is always null in Telegram, so the list goes over the resumed screen.
+            Activity window = SettingsEntry.inFront();
+            if (window == null) {
                 HookStatus.counted(FamilyNames.OUTSIDE_TRANSLATE, "no window for the language list");
                 return true;
             }

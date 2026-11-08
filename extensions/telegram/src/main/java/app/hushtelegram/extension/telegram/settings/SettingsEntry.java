@@ -94,12 +94,23 @@ public final class SettingsEntry {
     /** Fragment transactions are queued, so a second tap can arrive before the tag exists. */
     private static WeakReference<Activity> openingHost;
     private static volatile boolean closedByUser;
+    /**
+     * The Telegram screen in front, for a dialog a Telegram menu item opens over it. Utils never
+     * learns an activity here: the extension starts from the application's onCreate.
+     */
+    private static volatile WeakReference<Activity> front = new WeakReference<>(null);
     /** The long label last pushed, or found already on the shortcut, in this process. */
     private static volatile String publishedLabel;
     /** A check of the shortcut's place is waiting for the background thread. */
     private static final AtomicBoolean keepFirstQueued = new AtomicBoolean();
 
     private SettingsEntry() {
+    }
+
+    /** The Telegram screen that's resumed, or null while none is. */
+    public static Activity inFront() {
+        Activity window = front.get();
+        return window == null || window.isFinishing() || window.isDestroyed() ? null : window;
     }
 
     /**
@@ -532,13 +543,14 @@ public final class SettingsEntry {
         return null;
     }
 
-    static final class OpenWhenResumed implements Application.ActivityLifecycleCallbacks {
+    public static final class OpenWhenResumed implements Application.ActivityLifecycleCallbacks {
         /** The Telegram screen in front right now, if any. */
         private WeakReference<Activity> resumed;
 
         @Override
         public void onActivityResumed(Activity activity) {
             resumed = new WeakReference<>(activity);
+            front = new WeakReference<>(activity);
             if (openPending) openWhenSettled(activity);
             relabelIfStale(activity);
         }
@@ -546,6 +558,7 @@ public final class SettingsEntry {
         @Override
         public void onActivityPaused(Activity activity) {
             if (resumed != null && resumed.get() == activity) resumed = null;
+            if (front.get() == activity) front = new WeakReference<>(null);
         }
 
         @Override public void onActivityCreated(Activity activity, Bundle state) { }

@@ -13,6 +13,7 @@ import app.hushtelegram.extension.shared.settings.PauseForTests;
 import app.hushtelegram.extension.shared.settings.SettingReadsForTests;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
+import app.hushtelegram.extension.telegram.settings.SettingsEntry;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -559,9 +560,12 @@ public class OutsideTranslateTest {
     @Test public void theChatsTranslateIntoItemPicksTheLanguageWithoutTheSettings() throws Exception {
         Settings.OUTSIDE_TRANSLATE.save(true);
         android.app.Activity previous = app.hushtelegram.extension.shared.Utils.getActivity();
+        SettingsEntry.OpenWhenResumed watcher = new SettingsEntry.OpenWhenResumed();
         try (org.robolectric.android.controller.ActivityController<android.app.Activity> controller =
                      org.robolectric.Robolectric.buildActivity(android.app.Activity.class).setup()) {
-            app.hushtelegram.extension.shared.Utils.setActivity(controller.get());
+            // As in Telegram: the extension never learns an activity, only the activity watcher sees the chat's.
+            app.hushtelegram.extension.shared.Utils.setActivity(null);
+            watcher.onActivityResumed(controller.get());
             Chat chat = new Chat(42);
             OutsideTranslate.headerMenu(chat);
             assertEquals(OutsideTranslate.HEADER_LANGUAGE, chat.items.get(1).id);
@@ -592,6 +596,7 @@ public class OutsideTranslateTest {
             assertEquals("the chat is written again in the new language", 1, HeaderHost.refreshed);
             assertFalse("the chat's own item is untouched", OutsideTranslate.chatOn(OWNER, 42));
             assertEquals(0, fetches.get());
+            watcher.onActivityPaused(controller.get());
         } finally {
             app.hushtelegram.extension.shared.Utils.setActivity(previous);
             Settings.TRANSLATE_TARGET.resetToDefault();
@@ -600,14 +605,18 @@ public class OutsideTranslateTest {
 
     @Test public void theTranslateIntoItemOpensNothingWhenItCantAndNeverBlocksTheChatItem() {
         android.app.Activity previous = app.hushtelegram.extension.shared.Utils.getActivity();
-        try {
-            app.hushtelegram.extension.shared.Utils.setActivity(null);
+        SettingsEntry.OpenWhenResumed watcher = new SettingsEntry.OpenWhenResumed();
+        try (org.robolectric.android.controller.ActivityController<android.app.Activity> controller =
+                     org.robolectric.Robolectric.buildActivity(android.app.Activity.class).setup()) {
+            app.hushtelegram.extension.shared.Utils.setActivity(controller.get());
             // Switch off: an item left in an open menu is still ours, and does nothing.
             assertTrue(OutsideTranslate.headerClick(new Chat(42), OutsideTranslate.HEADER_LANGUAGE));
             assertNull(org.robolectric.shadows.ShadowAlertDialog.getLatestDialog());
 
             Settings.OUTSIDE_TRANSLATE.save(true);
-            // No window to show the list on.
+            // No Telegram screen in front, whatever Utils holds: no window to show the list on.
+            watcher.onActivityResumed(controller.get());
+            watcher.onActivityPaused(controller.get());
             assertTrue(OutsideTranslate.headerClick(new Chat(42), OutsideTranslate.HEADER_LANGUAGE));
             assertNull(org.robolectric.shadows.ShadowAlertDialog.getLatestDialog());
             assertTrue(String.join("\n", HookStatus.report()).contains("no window for the language list"));
