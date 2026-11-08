@@ -44,6 +44,7 @@ Every HushTelegram release, newest first.
 ### Fixed
 
 * **Telegram:** **Import settings** no longer says nothing will change for a file that only picks other folder icons. It lists the change and offers to import it.
+* **Telegram:** **Hide sponsored proxy channel** works the moment you flip it. The proxy's channel used to stay in the chat list until the next message or update came in.
 * **Telegram:** **Hide Premium, gifts and Stars** now takes Send a Gift out of the three-dot menu on profiles and channels too. It was still sitting there with the switch on.
 * **Telegram:** If you hide a pinned chat and unpin it on another device, the unpin now sticks. Hidden pins also count toward your pin limit here, so you see Telegram's limit message instead of a pin the server would turn down.
 * **Telegram:** When Google sign-in fails on Telegram's login email screen, a short message now points at the email box. Telegram used to just stay on the screen after you picked an account, and a patched copy can't get past Google there.

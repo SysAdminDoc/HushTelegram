@@ -399,9 +399,15 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             + "Account security notices and other suggestions still show."))));
         }
         if (build.contains(PatchFamily.HIDE_SPONSORED_PROXY)) {
-            on(pages, PatchFamily.HIDE_SPONSORED_PROXY).addPreference(toggle(context, Settings.HIDE_SPONSORED_PROXY, L10n.t("Hide sponsored proxy channel"),
+            SwitchPreference proxy = toggle(context, Settings.HIDE_SPONSORED_PROXY, L10n.t("Hide sponsored proxy channel"),
                     PatchFamily.HIDE_SPONSORED_PROXY.coverageSummary(L10n.t("Hides the sponsored channel a proxy adds to your chat list and folders. Your "
-                            + "proxy settings aren't touched."))));
+                            + "proxy settings aren't touched.")));
+            proxy.setOnPreferenceChangeListener((row, value) -> {
+                // The channel is put in or left out while Telegram sorts the chats, so they're sorted again once the switch is saved.
+                Utils.runOnMainThreadDelayed(HiddenChats::refreshAll, 0);
+                return true;
+            });
+            on(pages, PatchFamily.HIDE_SPONSORED_PROXY).addPreference(proxy);
         }
         if (build.contains(PatchFamily.HIDE_POPULAR_APPS)) {
             on(pages, PatchFamily.HIDE_POPULAR_APPS).addPreference(toggle(context, Settings.HIDE_POPULAR_APPS, L10n.t("Hide popular apps"),

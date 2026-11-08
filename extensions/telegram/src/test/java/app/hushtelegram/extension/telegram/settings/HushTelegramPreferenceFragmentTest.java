@@ -1946,6 +1946,31 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
+     * The proxy's channel goes in or stays out while Telegram sorts the chats, so flipping Hide
+     * sponsored proxy channel sorts every signed-in account's chats again instead of waiting for
+     * the next update to arrive.
+     */
+    @Test
+    public void hideSponsoredProxySortsEveryAccountsChatsAgainAtOnce() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_SPONSORED_PROXY);
+        HiddenChatsForTests.Fake telegram = HiddenChatsForTests.use(new HiddenChatsForTests.Fake());
+        telegram.users.put(0, 1000L);
+        telegram.users.put(2, 3000L);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Preference proxy = pageOf(controller).findPreference(Settings.HIDE_SPONSORED_PROXY.key);
+            for (Boolean value : new Boolean[]{Boolean.TRUE, Boolean.FALSE}) {
+                telegram.resorted.clear();
+                assertTrue(proxy.getOnPreferenceChangeListener().onPreferenceChange(proxy, value));
+                assertTrue("not before the switch is saved", telegram.resorted.isEmpty());
+                ShadowLooper.idleMainLooper();
+                assertEquals(value + " sorts each signed-in account's chats again", Arrays.asList(0, 2), telegram.resorted);
+            }
+        } finally {
+            HiddenChatsForTests.restore();
+        }
+    }
+
+    /**
      * Folder tabs ask for their counts only when the counts change, so flipping Hide folder tab
      * counters has every signed-in account's tabs counted again instead of waiting for a restart.
      */
