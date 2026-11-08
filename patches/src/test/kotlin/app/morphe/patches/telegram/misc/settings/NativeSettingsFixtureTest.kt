@@ -19,6 +19,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutab
 import app.morphe.patches.telegram.misc.commerce.CommerceTarget
 import app.morphe.patches.telegram.misc.commerce.PremiumStickerTarget
 import app.morphe.patches.telegram.misc.commerce.hideCommercePatch
+import app.morphe.patches.telegram.misc.commerce.readsWalletAvailable
 import app.morphe.patches.telegram.misc.commerce.resolveCommerceHooks
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
@@ -37,6 +38,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.SwitchPayload
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableField
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
@@ -159,7 +161,7 @@ class NativeSettingsFixtureTest {
 
     @Test fun commerceFilteringRetainsNativeAndOrdinaryAccountRows() {
         for (build in Fixtures.declaredBuilds()) {
-            val context = context(build)
+            val context = commerceContext(build)
             settingsPatch.execute(context)
             val plan = context.resolveCommerceHooks()
             assertEquals(setOf(CommerceTarget.SETTINGS), plan.hooks.keys)
@@ -416,6 +418,18 @@ class NativeSettingsFixtureTest {
     }
 
     private fun context(build: File) = PatchContexts.of(ExtensionDex.classes() + SettingsPatchHosts.all() + NativeSettingsFixtures.hosts(build))
+    /**
+     * Hide Premium reads 13.2's row titles through LocaleController's getString(int) wrapper, which R8
+     * inlined into the rows, and the Wallet gates through the merged walletAvailable flag class.
+     */
+    private fun commerceContext(build: File): BytecodePatchContext {
+        val hosts = NativeSettingsFixtures.hosts(build)
+        val flags = hosts.flatMap { it.methods }.flatMap { it.implementation?.instructions?.toList().orEmpty() }
+            .filter { it.readsWalletAvailable() }
+            .map { ((it as ReferenceInstruction).reference as FieldReference).type }.toSet()
+        val kept = FixtureDex.classes(build, setOf("Lorg/telegram/messenger/LocaleController;") + flags).values
+        return PatchContexts.of((ExtensionDex.classes() + SettingsPatchHosts.all() + hosts + kept).distinctBy { it.type })
+    }
     private fun classes(context: BytecodePatchContext) = mutableListOf<String>().also { types ->
         context.classDefForEach { types += it.type }
     }.map { context.tgMutableClassDefBy(it) }

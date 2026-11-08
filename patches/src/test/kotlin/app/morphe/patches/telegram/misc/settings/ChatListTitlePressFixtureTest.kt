@@ -135,7 +135,14 @@ class ChatListTitlePressFixtureTest {
         val readers = FixtureDex.classesWhere(build, READER_CENSUS, { true }) { method -> method.origName == "getTextStartX" ||
             method.body().any { (it.opcode == Opcode.SGET_BOOLEAN && it.reference() == snow) ||
                 (method.origName == "createView" && it.reference() == LOGO) } }
-        return (check + readers).distinctBy { it.type }
+        // 13.2 loads the logo through a static helper right after its id, and the holiday look reads that helper's body.
+        val loaders = readers.flatMap { it.methods }.filter { it.origName == "createView" }.mapNotNull { method ->
+            val body = method.body()
+            val logo = body.indexOfFirst { it.reference() == LOGO }
+            body.getOrNull(logo + 1)?.takeIf { logo >= 0 && it.opcode == Opcode.INVOKE_STATIC }
+                ?.let { ((it as ReferenceInstruction).reference as MethodReference).definingClass }
+        }.toSet()
+        return (check + readers + FixtureDex.classes(build, loaders).values).distinctBy { it.type }
     }
 
     private fun contextFor(build: File): BytecodePatchContext = PatchContexts.of(ExtensionDex.classes() + owners(build))
